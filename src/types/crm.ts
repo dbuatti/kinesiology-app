@@ -1,6 +1,6 @@
 export type Pronoun = string;
 export type AppointmentTag = "Kinesiology" | "Community Kinesiology" | string;
-export type AppointmentStatus = "Scheduled" | "Completed" | "Cancelled" | "No Show" | string;
+export type AppointmentStatus = "Scheduled" | "Completed" | "Cancelled" | "No Show" | "AP" | "OPEN" | string;
 
 export interface Appointment {
   id: string; 
@@ -13,7 +13,14 @@ export interface Appointment {
   goal: string;
   issue: string;
   acupoints: string;
-  notion_link?: string; // For those Notion session links
+  // New CSV fields
+  name?: string;
+  additional_notes?: string;
+  priority_pattern?: string;
+  session_north_star?: string;
+  modes_balances?: string;
+  journal?: string;
+  notion_link?: string;
 }
 
 export interface Client {

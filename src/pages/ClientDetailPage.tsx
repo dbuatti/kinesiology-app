@@ -7,7 +7,8 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { 
   ArrowLeft, Plus, Mail, Phone, MapPin, Calendar, 
-  Clock, Star, Loader2, Briefcase, Heart, Baby, ExternalLink, BookOpen 
+  Clock, Star, Loader2, Briefcase, Heart, Baby, ExternalLink, BookOpen,
+  Target, Zap, Activity
 } from "lucide-react";
 import { format } from "date-fns";
 import { Client, Appointment } from "@/types/crm";
@@ -221,8 +222,13 @@ const ClientDetailPage = () => {
                     <div className="space-y-3">
                       <div className="flex items-center gap-3">
                         <Badge variant="secondary" className="font-bold">{(app as any).display_id || app.id.slice(0,8)}</Badge>
-                        <span className="font-bold">{format(app.date, "MMM d, yyyy")}</span>
+                        <span className="font-bold">{app.name || format(app.date, "MMM d, yyyy")}</span>
                         <Badge variant="outline">{app.tag}</Badge>
+                        {app.notion_link && (
+                          <a href={app.notion_link} target="_blank" rel="noopener noreferrer" className="text-indigo-600 hover:text-indigo-800">
+                            <ExternalLink size={14} />
+                          </a>
+                        )}
                       </div>
                       <div className="flex items-center gap-4 text-sm text-slate-500">
                         <span className="flex items-center gap-1"><Clock size={14} /> {format(app.date, "h:mm a")}</span>
@@ -231,20 +237,43 @@ const ClientDetailPage = () => {
                     </div>
                   </div>
                   
-                  <div className="mt-6 grid grid-cols-1 md:grid-cols-2 gap-4 text-sm border-t pt-4">
-                    <div>
-                      <p className="font-bold text-slate-400 uppercase text-[10px] mb-1">Goal/Issue</p>
-                      <p className="text-slate-700">{app.goal || 'Not specified'} • {app.issue || 'Not specified'}</p>
+                  <div className="mt-6 grid grid-cols-1 md:grid-cols-2 gap-6 text-sm border-t pt-4">
+                    <div className="space-y-3">
+                      <div>
+                        <p className="font-bold text-slate-400 uppercase text-[10px] mb-1 flex items-center gap-1">
+                          <Target size={12} /> Goal / Session North Star
+                        </p>
+                        <p className="text-slate-700">{app.session_north_star || app.goal || 'Not specified'}</p>
+                      </div>
+                      <div>
+                        <p className="font-bold text-slate-400 uppercase text-[10px] mb-1 flex items-center gap-1">
+                          <Activity size={12} /> Priority Pattern
+                        </p>
+                        <p className="text-slate-700">{app.priority_pattern || 'No priority set'}</p>
+                      </div>
                     </div>
-                    <div>
-                      <p className="font-bold text-slate-400 uppercase text-[10px] mb-1">Acupoints</p>
-                      <p className="text-slate-700 font-mono">{app.acupoints || 'None'}</p>
+                    <div className="space-y-3">
+                      <div>
+                        <p className="font-bold text-slate-400 uppercase text-[10px] mb-1 flex items-center gap-1">
+                          <Zap size={12} /> Modes & Balances / Acupoints
+                        </p>
+                        <p className="text-slate-700">{app.modes_balances || 'None'}</p>
+                        <p className="text-slate-700 font-mono mt-1">{app.acupoints}</p>
+                      </div>
                     </div>
                   </div>
                   
-                  {app.notes && (
-                    <div className="mt-4 bg-slate-50 p-3 rounded-lg text-sm italic text-slate-600">
-                       " {app.notes} "
+                  {(app.notes || app.additional_notes) && (
+                    <div className="mt-4 bg-slate-50 p-3 rounded-lg text-sm text-slate-600 border-l-4 border-slate-200">
+                       <p className="italic">"{app.notes}"</p>
+                       {app.additional_notes && <p className="mt-2 text-xs border-t pt-2">{app.additional_notes}</p>}
+                    </div>
+                  )}
+                  
+                  {app.journal && (
+                    <div className="mt-4 bg-amber-50/30 p-3 rounded-lg text-xs text-amber-900/70 border border-amber-100">
+                      <strong>Session Journal:</strong>
+                      <p className="mt-1 whitespace-pre-wrap">{app.journal}</p>
                     </div>
                   )}
                 </CardContent>

@@ -5,7 +5,10 @@ import { calculateAge, getStarSign, getClientRollups } from "@/utils/crm-utils";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { ArrowLeft, Plus, Mail, Phone, MapPin, Calendar, Clock, Star, Loader2 } from "lucide-react";
+import { 
+  ArrowLeft, Plus, Mail, Phone, MapPin, Calendar, 
+  Clock, Star, Loader2, Briefcase, Heart, Baby, ExternalLink, BookOpen 
+} from "lucide-react";
 import { format } from "date-fns";
 import { Client, Appointment } from "@/types/crm";
 
@@ -17,7 +20,6 @@ const ClientDetailPage = () => {
 
   const fetchClientData = async () => {
     try {
-      // Fetch Client
       const { data: clientData, error: clientError } = await supabase
         .from('clients')
         .select('*')
@@ -26,7 +28,6 @@ const ClientDetailPage = () => {
 
       if (clientError) throw clientError;
 
-      // Fetch Related Appointments
       const { data: appData, error: appError } = await supabase
         .from('appointments')
         .select('*')
@@ -37,7 +38,7 @@ const ClientDetailPage = () => {
 
       setClient({
         ...clientData,
-        born: new Date(clientData.born),
+        born: clientData.born ? new Date(clientData.born) : null,
         suburb: clientData.suburbs || []
       } as unknown as Client);
 
@@ -89,45 +90,92 @@ const ClientDetailPage = () => {
               </div>
               <div>
                 <h2 className="text-2xl font-bold">{client.name}</h2>
-                <p className="text-slate-500 font-medium">{client.pronouns}</p>
+                <p className="text-slate-500 font-medium">{client.pronouns || 'No pronouns set'}</p>
               </div>
               <div className="flex justify-center gap-2">
-                <Badge className="bg-indigo-50 text-indigo-600 hover:bg-indigo-100 border-none">
-                  {calculateAge(client.born)} years old
-                </Badge>
-                <Badge variant="outline" className="flex gap-1 items-center">
-                  <Star size={12} className="fill-amber-400 text-amber-400" />
-                  {getStarSign(client.born)}
-                </Badge>
+                {client.born && (
+                  <>
+                    <Badge className="bg-indigo-50 text-indigo-600 hover:bg-indigo-100 border-none">
+                      {calculateAge(client.born)} years old
+                    </Badge>
+                    <Badge variant="outline" className="flex gap-1 items-center">
+                      <Star size={12} className="fill-amber-400 text-amber-400" />
+                      {getStarSign(client.born)}
+                    </Badge>
+                  </>
+                )}
               </div>
             </CardContent>
           </Card>
 
           <Card>
             <CardHeader>
-              <CardTitle className="text-lg">Contact Info</CardTitle>
+              <CardTitle className="text-lg">Personal Details</CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
+              {client.occupation && (
+                <div className="flex items-center gap-3 text-sm">
+                  <Briefcase size={16} className="text-slate-400" />
+                  <span>{client.occupation}</span>
+                </div>
+              )}
+              {client.marital_status && (
+                <div className="flex items-center gap-3 text-sm">
+                  <Heart size={16} className="text-slate-400" />
+                  <span>{client.marital_status}</span>
+                </div>
+              )}
+              {client.children && (
+                <div className="flex items-center gap-3 text-sm">
+                  <Baby size={16} className="text-slate-400" />
+                  <span>Children: {client.children}</span>
+                </div>
+              )}
+              <hr className="border-slate-100" />
               <div className="flex items-center gap-3 text-sm">
                 <Mail size={16} className="text-slate-400" />
-                <span>{client.email}</span>
+                <span>{client.email || 'No email'}</span>
               </div>
               <div className="flex items-center gap-3 text-sm">
                 <Phone size={16} className="text-slate-400" />
-                <span>{client.phone}</span>
+                <span>{client.phone || 'No phone'}</span>
               </div>
               <div className="flex items-center gap-3 text-sm">
                 <MapPin size={16} className="text-slate-400" />
-                <div className="flex gap-1">
-                  {client.suburb.map(s => <span key={s}>{s}</span>)}
+                <div className="flex gap-1 flex-wrap">
+                  {client.suburb.length > 0 ? client.suburb.map(s => <span key={s}>{s}</span>) : 'No suburb'}
                 </div>
               </div>
-              <div className="flex items-center gap-3 text-sm">
-                <Calendar size={16} className="text-slate-400" />
-                <span>Born: {format(client.born, "MMMM d, yyyy")}</span>
-              </div>
+              {client.born && (
+                <div className="flex items-center gap-3 text-sm">
+                  <Calendar size={16} className="text-slate-400" />
+                  <span>Born: {format(client.born, "MMMM d, yyyy")}</span>
+                </div>
+              )}
+              {client.chatgpt_url && (
+                <div className="pt-2">
+                  <Button variant="outline" size="sm" className="w-full text-xs" asChild>
+                    <a href={client.chatgpt_url} target="_blank" rel="noopener noreferrer">
+                      <ExternalLink size={14} className="mr-2" /> View ChatGPT Insights
+                    </a>
+                  </Button>
+                </div>
+              )}
             </CardContent>
           </Card>
+
+          {client.journal && (
+            <Card className="bg-amber-50/50 border-amber-100">
+              <CardHeader className="pb-2">
+                <CardTitle className="text-sm flex items-center gap-2 text-amber-700">
+                  <BookOpen size={16} /> Journal / History
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <p className="text-sm text-amber-900/80 whitespace-pre-wrap">{client.journal}</p>
+              </CardContent>
+            </Card>
+          )}
 
           <Card className="bg-slate-900 text-white">
             <CardHeader>
@@ -159,7 +207,7 @@ const ClientDetailPage = () => {
 
         <div className="lg:col-span-2 space-y-6">
           <div className="flex justify-between items-center">
-            <h3 className="text-xl font-bold">Related to Appointments</h3>
+            <h3 className="text-xl font-bold">Related Appointments</h3>
             <Button size="sm" className="bg-indigo-600">
               <Plus size={16} className="mr-2" /> Book Session
             </Button>
@@ -186,17 +234,19 @@ const ClientDetailPage = () => {
                   <div className="mt-6 grid grid-cols-1 md:grid-cols-2 gap-4 text-sm border-t pt-4">
                     <div>
                       <p className="font-bold text-slate-400 uppercase text-[10px] mb-1">Goal/Issue</p>
-                      <p className="text-slate-700">{app.goal} • {app.issue}</p>
+                      <p className="text-slate-700">{app.goal || 'Not specified'} • {app.issue || 'Not specified'}</p>
                     </div>
                     <div>
                       <p className="font-bold text-slate-400 uppercase text-[10px] mb-1">Acupoints</p>
-                      <p className="text-slate-700 font-mono">{app.acupoints}</p>
+                      <p className="text-slate-700 font-mono">{app.acupoints || 'None'}</p>
                     </div>
                   </div>
                   
-                  <div className="mt-4 bg-slate-50 p-3 rounded-lg text-sm italic text-slate-600">
-                     " {app.notes} "
-                  </div>
+                  {app.notes && (
+                    <div className="mt-4 bg-slate-50 p-3 rounded-lg text-sm italic text-slate-600">
+                       " {app.notes} "
+                    </div>
+                  )}
                 </CardContent>
               </Card>
             ))}

@@ -1,9 +1,10 @@
-export type Pronoun = "He/Him" | "She/Her" | "They/Them" | "Other";
-export type AppointmentTag = "Kinesiology" | "Community Kinesiology";
-export type AppointmentStatus = "Scheduled" | "Completed" | "Cancelled" | "No Show";
+export type Pronoun = string;
+export type AppointmentTag = "Kinesiology" | "Community Kinesiology" | string;
+export type AppointmentStatus = "Scheduled" | "Completed" | "Cancelled" | "No Show" | string;
 
 export interface Appointment {
-  id: string; // APP-xxxx
+  id: string; 
+  display_id?: string;
   clientId: string;
   date: Date;
   tag: AppointmentTag;
@@ -12,14 +13,21 @@ export interface Appointment {
   goal: string;
   issue: string;
   acupoints: string;
+  notion_link?: string; // For those Notion session links
 }
 
 export interface Client {
   id: string;
   name: string;
-  pronouns: Pronoun;
+  pronouns: string;
   born: Date;
   suburb: string[];
   email: string;
   phone: string;
+  occupation?: string;
+  marital_status?: string;
+  children?: string;
+  chatgpt_url?: string;
+  journal?: string;
+  created_at?: string;
 }

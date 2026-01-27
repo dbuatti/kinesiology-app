@@ -1,17 +1,48 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
-import { INITIAL_CLIENTS } from "@/data/store";
+import { supabase } from "@/integrations/supabase/client";
 import { calculateAge, getStarSign } from "@/utils/crm-utils";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Plus, Search } from "lucide-react";
+import { Plus, Search, Loader2 } from "lucide-react";
 import { Input } from "@/components/ui/input";
+import { Client } from "@/types/crm";
 
 const ClientsPage = () => {
   const [search, setSearch] = useState("");
+  const [clients, setClients] = useState<Client[]>([]);
+  const [loading, setLoading] = useState(true);
   
-  const filteredClients = INITIAL_CLIENTS.filter(c => 
+  const fetchClients = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('clients')
+        .select('*')
+        .order('name', { ascending: true });
+      
+      if (error) throw error;
+      
+      // Map Supabase dates back to JS Dates
+      const mapped = (data || []).map(c => ({
+        ...c,
+        born: new Date(c.born),
+        suburb: c.suburbs || []
+      })) as unknown as Client[];
+      
+      setClients(mapped);
+    } catch (err) {
+      console.error("Error fetching clients:", err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchClients();
+  }, []);
+
+  const filteredClients = clients.filter(c => 
     c.name.toLowerCase().includes(search.toLowerCase())
   );
 
@@ -38,50 +69,63 @@ const ClientsPage = () => {
       </div>
 
       <div className="bg-white rounded-xl border shadow-sm overflow-hidden">
-        <Table>
-          <TableHeader className="bg-slate-50">
-            <TableRow>
-              <TableHead className="font-bold">Name</TableHead>
-              <TableHead>Pronouns</TableHead>
-              <TableHead>Age</TableHead>
-              <TableHead>Star Sign</TableHead>
-              <TableHead>Suburb</TableHead>
-              <TableHead>Email</TableHead>
-              <TableHead className="text-right">Action</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {filteredClients.map((client) => (
-              <TableRow key={client.id} className="hover:bg-slate-50/50 transition-colors">
-                <TableCell className="font-medium">
-                  <Link to={`/clients/${client.id}`} className="text-indigo-600 hover:underline">
-                    {client.name}
-                  </Link>
-                </TableCell>
-                <TableCell>{client.pronouns}</TableCell>
-                <TableCell>{calculateAge(client.born)}</TableCell>
-                <TableCell>
-                  <Badge variant="outline" className="font-normal">
-                    {getStarSign(client.born)}
-                  </Badge>
-                </TableCell>
-                <TableCell>
-                  <div className="flex gap-1">
-                    {client.suburb.map(s => (
-                      <Badge key={s} variant="secondary" className="bg-slate-100 text-slate-700 hover:bg-slate-200">
-                        {s}
-                      </Badge>
-                    ))}
-                  </div>
-                </TableCell>
-                <TableCell className="text-slate-500">{client.email}</TableCell>
-                <TableCell className="text-right">
-                  <Button variant="ghost" size="sm">Edit</Button>
-                </TableCell>
+        {loading ? (
+          <div className="p-12 flex justify-center">
+            <Loader2 className="animate-spin text-indigo-500" size={32} />
+          </div>
+        ) : (
+          <Table>
+            <TableHeader className="bg-slate-50">
+              <TableRow>
+                <TableHead className="font-bold">Name</TableHead>
+                <TableHead>Pronouns</TableHead>
+                <TableHead>Age</TableHead>
+                <TableHead>Star Sign</TableHead>
+                <TableHead>Suburb</TableHead>
+                <TableHead>Email</TableHead>
+                <TableHead className="text-right">Action</TableHead>
               </TableRow>
-            ))}
-          </TableBody>
-        </Table>
+            </TableHeader>
+            <TableBody>
+              {filteredClients.map((client) => (
+                <TableRow key={client.id} className="hover:bg-slate-50/50 transition-colors">
+                  <TableCell className="font-medium">
+                    <Link to={`/clients/${client.id}`} className="text-indigo-600 hover:underline">
+                      {client.name}
+                    </Link>
+                  </TableCell>
+                  <TableCell>{client.pronouns}</TableCell>
+                  <TableCell>{calculateAge(client.born)}</TableCell>
+                  <TableCell>
+                    <Badge variant="outline" className="font-normal">
+                      {getStarSign(client.born)}
+                    </Badge>
+                  </TableCell>
+                  <TableCell>
+                    <div className="flex gap-1">
+                      {client.suburb.map(s => (
+                        <Badge key={s} variant="secondary" className="bg-slate-100 text-slate-700 hover:bg-slate-200">
+                          {s}
+                        </Badge>
+                      ))}
+                    </div>
+                  </TableCell>
+                  <TableCell className="text-slate-500">{client.email}</TableCell>
+                  <TableCell className="text-right">
+                    <Button variant="ghost" size="sm">Edit</Button>
+                  </TableCell>
+                </TableRow>
+              ))}
+              {filteredClients.length === 0 && !loading && (
+                <TableRow>
+                  <TableCell colSpan={7} className="h-24 text-center text-slate-500">
+                    No clients found.
+                  </TableCell>
+                </TableRow>
+              )}
+            </TableBody>
+          </Table>
+        )}
       </div>
     </div>
   );

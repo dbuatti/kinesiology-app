@@ -1,10 +1,47 @@
+import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
-import { INITIAL_CLIENTS, INITIAL_APPOINTMENTS } from "@/data/store";
+import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Users, Calendar, Activity, TrendingUp } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Users, Calendar, Activity, TrendingUp, Loader2 } from "lucide-react";
 import { MadeWithDyad } from "@/components/made-with-dyad";
+import { Client } from "@/types/crm";
 
 const Index = () => {
+  const [stats, setStats] = useState({ clients: 0, appointments: 0 });
+  const [recentClients, setRecentClients] = useState<Client[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  const fetchDashboardData = async () => {
+    try {
+      const [{ count: clientCount }, { count: appCount }, { data: recent }] = await Promise.all([
+        supabase.from('clients').select('*', { count: 'exact', head: true }),
+        supabase.from('appointments').select('*', { count: 'exact', head: true }),
+        supabase.from('clients').select('*').order('created_at', { ascending: false }).limit(3)
+      ]);
+
+      setStats({ 
+        clients: clientCount || 0, 
+        appointments: appCount || 0 
+      });
+      setRecentClients(recent as unknown as Client[] || []);
+    } catch (err) {
+      console.error("Error fetching dashboard data:", err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchDashboardData();
+  }, []);
+
+  if (loading) return (
+    <div className="flex min-h-screen items-center justify-center">
+      <Loader2 className="animate-spin text-indigo-500" size={48} />
+    </div>
+  );
+
   return (
     <div className="p-8 max-w-7xl mx-auto space-y-8">
       <div>
@@ -18,7 +55,7 @@ const Index = () => {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm font-medium text-slate-500 uppercase">Total Clients</p>
-                <h4 className="text-3xl font-bold">{INITIAL_CLIENTS.length}</h4>
+                <h4 className="text-3xl font-bold">{stats.clients}</h4>
               </div>
               <div className="p-3 bg-indigo-50 text-indigo-600 rounded-xl">
                 <Users size={24} />
@@ -32,7 +69,7 @@ const Index = () => {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm font-medium text-slate-500 uppercase">Sessions Done</p>
-                <h4 className="text-3xl font-bold">{INITIAL_APPOINTMENTS.length}</h4>
+                <h4 className="text-3xl font-bold">{stats.appointments}</h4>
               </div>
               <div className="p-3 bg-emerald-50 text-emerald-600 rounded-xl">
                 <Activity size={24} />
@@ -46,7 +83,7 @@ const Index = () => {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm font-medium text-slate-500 uppercase">Upcoming</p>
-                <h4 className="text-3xl font-bold">2</h4>
+                <h4 className="text-3xl font-bold">0</h4>
               </div>
               <div className="p-3 bg-amber-50 text-amber-600 rounded-xl">
                 <Calendar size={24} />
@@ -60,7 +97,7 @@ const Index = () => {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm font-medium text-slate-500 uppercase">New Leads</p>
-                <h4 className="text-3xl font-bold">+12%</h4>
+                <h4 className="text-3xl font-bold">+0%</h4>
               </div>
               <div className="p-3 bg-rose-50 text-rose-600 rounded-xl">
                 <TrendingUp size={24} />
@@ -77,7 +114,7 @@ const Index = () => {
           </CardHeader>
           <CardContent>
             <div className="space-y-4">
-              {INITIAL_CLIENTS.slice(0, 3).map(client => (
+              {recentClients.map(client => (
                 <div key={client.id} className="flex items-center justify-between p-3 bg-slate-50 rounded-lg">
                   <div className="flex items-center gap-3">
                     <div className="w-10 h-10 bg-indigo-100 rounded-full flex items-center justify-center text-indigo-700 font-bold">
@@ -93,6 +130,9 @@ const Index = () => {
                   </Link>
                 </div>
               ))}
+              {recentClients.length === 0 && (
+                 <p className="text-center py-4 text-slate-500">No clients yet.</p>
+              )}
             </div>
           </CardContent>
         </Card>

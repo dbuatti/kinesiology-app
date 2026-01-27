@@ -12,12 +12,21 @@ import {
 } from "lucide-react";
 import { format } from "date-fns";
 import { Client, Appointment } from "@/types/crm";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
+import AppointmentForm from "@/components/crm/AppointmentForm";
 
 const ClientDetailPage = () => {
   const { id } = useParams();
   const [client, setClient] = useState<Client | null>(null);
   const [appointments, setAppointments] = useState<Appointment[]>([]);
   const [loading, setLoading] = useState(true);
+  const [open, setOpen] = useState(false);
 
   const fetchClientData = async () => {
     try {
@@ -144,7 +153,7 @@ const ClientDetailPage = () => {
               <div className="flex items-center gap-3 text-sm">
                 <MapPin size={16} className="text-slate-400" />
                 <div className="flex gap-1 flex-wrap">
-                  {client.suburb.length > 0 ? client.suburb.map(s => <span key={s}>{s}</span>) : 'No suburb'}
+                  {client.suburb.length > 0 ? client.suburb.map(s => <span key={s} className="mr-1">{s}</span>) : 'No suburb'}
                 </div>
               </div>
               {client.born && (
@@ -209,9 +218,25 @@ const ClientDetailPage = () => {
         <div className="lg:col-span-2 space-y-6">
           <div className="flex justify-between items-center">
             <h3 className="text-xl font-bold">Related Appointments</h3>
-            <Button size="sm" className="bg-indigo-600">
-              <Plus size={16} className="mr-2" /> Book Session
-            </Button>
+            <Dialog open={open} onOpenChange={setOpen}>
+              <DialogTrigger asChild>
+                <Button size="sm" className="bg-indigo-600">
+                  <Plus size={16} className="mr-2" /> Book Session
+                </Button>
+              </DialogTrigger>
+              <DialogContent className="sm:max-w-[500px]">
+                <DialogHeader>
+                  <DialogTitle>Schedule New Appointment</DialogTitle>
+                </DialogHeader>
+                <AppointmentForm 
+                  initialClientId={id}
+                  onSuccess={() => {
+                    setOpen(false);
+                    fetchClientData();
+                  }} 
+                />
+              </DialogContent>
+            </Dialog>
           </div>
 
           <div className="grid gap-4">

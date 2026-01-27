@@ -3,8 +3,17 @@ import { supabase } from "@/integrations/supabase/client";
 import { groupAppointmentsByMonth } from "@/utils/crm-utils";
 import { format } from "date-fns";
 import { Badge } from "@/components/ui/badge";
-import { Calendar as CalendarIcon, Clock, Tag, Loader2 } from "lucide-react";
+import { Calendar as CalendarIcon, Clock, Tag, Loader2, Plus } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
+import AppointmentForm from "@/components/crm/AppointmentForm";
 import { Appointment } from "@/types/crm";
 
 interface AppointmentWithClient extends Appointment {
@@ -14,6 +23,7 @@ interface AppointmentWithClient extends Appointment {
 const AppointmentsPage = () => {
   const [appointments, setAppointments] = useState<AppointmentWithClient[]>([]);
   const [loading, setLoading] = useState(true);
+  const [open, setOpen] = useState(false);
 
   const fetchAppointments = async () => {
     try {
@@ -50,9 +60,29 @@ const AppointmentsPage = () => {
 
   return (
     <div className="p-8 max-w-5xl mx-auto space-y-8">
-      <div>
-        <h1 className="text-3xl font-bold tracking-tight">CRM_Appointments</h1>
-        <p className="text-slate-500">View and manage upcoming and past sessions</p>
+      <div className="flex justify-between items-center">
+        <div>
+          <h1 className="text-3xl font-bold tracking-tight">CRM_Appointments</h1>
+          <p className="text-slate-500">View and manage upcoming and past sessions</p>
+        </div>
+        <Dialog open={open} onOpenChange={setOpen}>
+          <DialogTrigger asChild>
+            <Button className="bg-indigo-600 hover:bg-indigo-700">
+              <Plus size={18} className="mr-2" /> New Appointment
+            </Button>
+          </DialogTrigger>
+          <DialogContent className="sm:max-w-[500px]">
+            <DialogHeader>
+              <DialogTitle>Schedule New Appointment</DialogTitle>
+            </DialogHeader>
+            <AppointmentForm 
+              onSuccess={() => {
+                setOpen(false);
+                fetchAppointments();
+              }} 
+            />
+          </DialogContent>
+        </Dialog>
       </div>
 
       {loading ? (

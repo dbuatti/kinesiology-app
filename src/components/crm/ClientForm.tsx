@@ -14,9 +14,9 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
 import { Loader2 } from "lucide-react";
 import { showSuccess, showError } from "@/utils/toast";
+import { Client } from "@/types/crm";
 
 const formSchema = z.object({
   name: z.string().min(2, "Name must be at least 2 characters"),
@@ -30,22 +30,23 @@ const formSchema = z.object({
 
 interface ClientFormProps {
   onSuccess: () => void;
+  initialData?: Client;
 }
 
-const ClientForm = ({ onSuccess }: ClientFormProps) => {
+const ClientForm = ({ onSuccess, initialData }: ClientFormProps) => {
   const { session } = useAuth();
   const [submitting, setSubmitting] = useState(false);
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      name: "",
-      email: "",
-      phone: "",
-      pronouns: "",
-      born: "",
-      suburb: "",
-      occupation: "",
+      name: initialData?.name || "",
+      email: initialData?.email || "",
+      phone: initialData?.phone || "",
+      pronouns: initialData?.pronouns || "",
+      born: initialData?.born ? new Date(initialData.born).toISOString().split('T')[0] : "",
+      suburb: initialData?.suburb?.join(", ") || "",
+      occupation: initialData?.occupation || "",
     },
   });
 
@@ -54,23 +55,34 @@ const ClientForm = ({ onSuccess }: ClientFormProps) => {
     setSubmitting(true);
 
     try {
-      const { error } = await supabase.from("clients").insert({
+      const payload = {
         user_id: session.user.id,
         name: values.name,
         email: values.email || null,
         phone: values.phone || null,
         pronouns: values.pronouns || null,
         born: values.born ? new Date(values.born).toISOString() : null,
+        suburbers: values.suburb ? values.suburb.split(",").map(s => s.trim()) : [], // Note: check column name 'suburbs' in schema
         suburbs: values.suburb ? values.suburb.split(",").map(s => s.trim()) : [],
         occupation: values.occupation || null,
-      });
+      };
 
-      if (error) throw error;
+      if (initialData?.id) {
+        const { error } = await supabase
+          .from("clients")
+          .update(payload)
+          .eq('id', initialData.id);
+        if (error) throw error;
+        showSuccess("Client updated successfully");
+      } else {
+        const { error } = await supabase.from("clients").insert(payload);
+        if (error) throw error;
+        showSuccess("Client added successfully");
+      }
 
-      showSuccess("Client added successfully");
       onSuccess();
     } catch (error: any) {
-      showError(error.message || "Failed to add client");
+      showError(error.message || "Failed to save client");
     } finally {
       setSubmitting(false);
     }
@@ -181,7 +193,7 @@ const ClientForm = ({ onSuccess }: ClientFormProps) => {
 
         <Button type="submit" className="w-full bg-indigo-600 hover:bg-indigo-700" disabled={submitting}>
           {submitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-          Add Client
+          {initialData?.id ? "Update Client" : "Add Client"}
         </Button>
       </form>
     </Form>

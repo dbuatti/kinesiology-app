@@ -1,16 +1,123 @@
-// Update this page (the content is just a fallback if you fail to update the page)
-
+import { Link } from "react-router-dom";
+import { INITIAL_CLIENTS, INITIAL_APPOINTMENTS } from "@/data/store";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Users, Calendar, Activity, TrendingUp } from "lucide-react";
 import { MadeWithDyad } from "@/components/made-with-dyad";
 
 const Index = () => {
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-100">
-      <div className="text-center">
-        <h1 className="text-4xl font-bold mb-4">Welcome to Your Blank App</h1>
-        <p className="text-xl text-gray-600">
-          Start building your amazing project here!
-        </p>
+    <div className="p-8 max-w-7xl mx-auto space-y-8">
+      <div>
+        <h1 className="text-3xl font-bold tracking-tight">Antigravity Dashboard</h1>
+        <p className="text-slate-500">Welcome back! Here is what's happening today.</p>
       </div>
+
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        <Card className="border-l-4 border-indigo-500">
+          <CardContent className="pt-6">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm font-medium text-slate-500 uppercase">Total Clients</p>
+                <h4 className="text-3xl font-bold">{INITIAL_CLIENTS.length}</h4>
+              </div>
+              <div className="p-3 bg-indigo-50 text-indigo-600 rounded-xl">
+                <Users size={24} />
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card className="border-l-4 border-emerald-500">
+          <CardContent className="pt-6">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm font-medium text-slate-500 uppercase">Sessions Done</p>
+                <h4 className="text-3xl font-bold">{INITIAL_APPOINTMENTS.length}</h4>
+              </div>
+              <div className="p-3 bg-emerald-50 text-emerald-600 rounded-xl">
+                <Activity size={24} />
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card className="border-l-4 border-amber-500">
+          <CardContent className="pt-6">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm font-medium text-slate-500 uppercase">Upcoming</p>
+                <h4 className="text-3xl font-bold">2</h4>
+              </div>
+              <div className="p-3 bg-amber-50 text-amber-600 rounded-xl">
+                <Calendar size={24} />
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card className="border-l-4 border-rose-500">
+          <CardContent className="pt-6">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm font-medium text-slate-500 uppercase">New Leads</p>
+                <h4 className="text-3xl font-bold">+12%</h4>
+              </div>
+              <div className="p-3 bg-rose-50 text-rose-600 rounded-xl">
+                <TrendingUp size={24} />
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+        <Card>
+          <CardHeader>
+            <CardTitle>Recent Clients</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-4">
+              {INITIAL_CLIENTS.slice(0, 3).map(client => (
+                <div key={client.id} className="flex items-center justify-between p-3 bg-slate-50 rounded-lg">
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 bg-indigo-100 rounded-full flex items-center justify-center text-indigo-700 font-bold">
+                      {client.name.charAt(0)}
+                    </div>
+                    <div>
+                      <p className="font-bold">{client.name}</p>
+                      <p className="text-xs text-slate-500">{client.email}</p>
+                    </div>
+                  </div>
+                  <Link to={`/clients/${client.id}`}>
+                    <Button variant="ghost" size="sm">View</Button>
+                  </Link>
+                </div>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader>
+            <CardTitle>Quick Links</CardTitle>
+          </CardHeader>
+          <CardContent className="grid grid-cols-2 gap-4">
+            <Button variant="outline" className="h-24 flex flex-col gap-2" asChild>
+              <Link to="/clients">
+                <Users size={24} className="text-indigo-500" />
+                <span>Client List</span>
+              </Link>
+            </Button>
+            <Button variant="outline" className="h-24 flex flex-col gap-2" asChild>
+              <Link to="/appointments">
+                <Calendar size={24} className="text-emerald-500" />
+                <span>Schedule</span>
+              </Link>
+            </Button>
+          </CardContent>
+        </Card>
+      </div>
+      
       <MadeWithDyad />
     </div>
   );

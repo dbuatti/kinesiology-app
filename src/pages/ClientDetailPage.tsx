@@ -27,9 +27,8 @@ import {
 } from "@/components/ui/dropdown-menu";
 import AppointmentForm from "@/components/crm/AppointmentForm";
 import ClientForm from "@/components/crm/ClientForm";
-import BoltTestCard from "@/components/crm/BoltTestCard"; // New import
 import { showSuccess, showError } from "@/utils/toast";
-import { cn } from "@/lib/utils"; // Ensure cn is imported
+import { cn } from "@/lib/utils";
 
 const ClientDetailPage = () => {
   const { id } = useParams();
@@ -52,7 +51,7 @@ const ClientDetailPage = () => {
 
       const { data: appData, error: appError } = await supabase
         .from('appointments')
-        .select('*, bolt_score') // Added bolt_score here
+        .select('*')
         .eq('client_id', id)
         .order('date', { ascending: false });
 
@@ -317,14 +316,14 @@ const ClientDetailPage = () => {
 
           <div className="grid gap-4">
             {appointments.map(app => (
-              <Card key={app.id} className="hover:shadow-md transition-all border-slate-200 bg-white group rounded-2xl overflow-hidden">
-                <CardContent className="p-0">
-                  <div className="p-6">
+              <Link key={app.id} to={`/appointments/${app.id}`}>
+                <Card className="hover:shadow-md transition-all border-slate-200 bg-white group rounded-2xl overflow-hidden cursor-pointer">
+                  <CardContent className="p-6">
                     <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
                       <div className="space-y-3">
                         <div className="flex items-center gap-3">
                           <Badge variant="secondary" className="font-bold bg-slate-100 text-slate-600">{(app as any).display_id || app.id.slice(0,8)}</Badge>
-                          <span className="font-bold text-lg text-slate-900">{app.name || format(app.date, "MMM d, yyyy")}</span>
+                          <span className="font-bold text-lg text-slate-900 group-hover:text-indigo-600 transition-colors">{app.name || format(app.date, "MMM d, yyyy")}</span>
                           <Badge className="bg-indigo-50 text-indigo-700 hover:bg-indigo-100 border-none">{app.tag}</Badge>
                           {app.notion_link && (
                             <a href={app.notion_link} target="_blank" rel="noopener noreferrer" className="text-indigo-400 hover:text-indigo-600 transition-colors">
@@ -344,60 +343,9 @@ const ClientDetailPage = () => {
                         </div>
                       </div>
                     </div>
-                    
-                    <div className="mt-6 grid grid-cols-1 md:grid-cols-2 gap-6 text-sm border-t border-slate-50 pt-6">
-                      <div className="space-y-4">
-                        <div>
-                          <p className="font-bold text-slate-400 uppercase text-[10px] mb-1.5 flex items-center gap-2 tracking-widest">
-                            <Target size={12} className="text-indigo-400" /> Goal / North Star
-                          </p>
-                          <p className="text-slate-700 leading-relaxed bg-slate-50/50 p-2.5 rounded-xl">{app.session_north_star || app.goal || 'No goal set'}</p>
-                        </div>
-                        <div>
-                          <p className="font-bold text-slate-400 uppercase text-[10px] mb-1.5 flex items-center gap-2 tracking-widest">
-                            <Activity size={12} className="text-indigo-400" /> Priority Pattern
-                          </p>
-                          <p className="text-slate-700 leading-relaxed">{app.priority_pattern || 'No pattern identified'}</p>
-                        </div>
-                      </div>
-                      <div className="space-y-4">
-                        <div>
-                          <p className="font-bold text-slate-400 uppercase text-[10px] mb-1.5 flex items-center gap-2 tracking-widest">
-                            <Zap size={12} className="text-indigo-400" /> Balances & Acupoints
-                          </p>
-                          <div className="space-y-2">
-                            {app.modes_balances && <p className="text-slate-700 bg-indigo-50/30 p-2.5 rounded-xl border border-indigo-50/50">{app.modes_balances}</p>}
-                            <p className="text-indigo-600 font-mono font-medium tracking-tight bg-slate-50 p-2 rounded-lg">{app.acupoints || 'No acupoints logged'}</p>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                    
-                    {(app.notes || app.additional_notes) && (
-                      <div className="mt-6 bg-slate-50/50 p-4 rounded-2xl text-sm text-slate-600 border border-slate-100 relative">
-                         <p className="italic leading-relaxed">"{app.notes}"</p>
-                         {app.additional_notes && <p className="mt-3 text-xs border-t border-slate-200/50 pt-3">{app.additional_notes}</p>}
-                      </div>
-                    )}
-                    
-                    {app.journal && (
-                      <div className="mt-4 bg-amber-50/20 p-4 rounded-2xl text-xs text-amber-900/70 border border-amber-100/50">
-                        <strong className="block mb-1 text-amber-800">Session Narrative:</strong>
-                        <p className="leading-relaxed whitespace-pre-wrap">{app.journal}</p>
-                      </div>
-                    )}
-
-                    {/* Add the BoltTestCard here */}
-                    <div className="mt-6">
-                      <BoltTestCard
-                        appointmentId={app.id}
-                        initialBoltScore={app.bolt_score}
-                        onUpdate={fetchClientData}
-                      />
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
+                  </CardContent>
+                </Card>
+              </Link>
             ))}
             {appointments.length === 0 && (
               <div className="text-center py-16 bg-white rounded-3xl border-2 border-dashed border-slate-100">

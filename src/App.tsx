@@ -9,6 +9,7 @@ import Index from "./pages/Index";
 import ClientsPage from "./pages/ClientsPage";
 import ClientDetailPage from "./pages/ClientDetailPage";
 import AppointmentsPage from "./pages/AppointmentsPage";
+import AppointmentDetailPage from "./pages/AppointmentDetailPage"; // New import
 import Login from "./pages/Login";
 import NotFound from "./pages/NotFound";
 import { AuthProvider, useAuth } from "./components/AuthProvider";
@@ -45,6 +46,7 @@ const App = () => (
             <Route path="/clients" element={<ProtectedLayout><ClientsPage /></ProtectedLayout>} />
             <Route path="/clients/:id" element={<ProtectedLayout><ClientDetailPage /></ProtectedLayout>} />
             <Route path="/appointments" element={<ProtectedLayout><AppointmentsPage /></ProtectedLayout>} />
+            <Route path="/appointments/:id" element={<ProtectedLayout><AppointmentDetailPage /></ProtectedLayout>} />
             <Route path="*" element={<NotFound />} />
           </Routes>
         </BrowserRouter>

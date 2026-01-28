@@ -3,7 +3,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { groupAppointmentsByMonth } from "@/utils/crm-utils";
 import { format } from "date-fns";
 import { Badge } from "@/components/ui/badge";
-import { Calendar as CalendarIcon, Clock, Tag, Loader2, Plus, Trash2, MoreVertical, ExternalLink } from "lucide-react";
+import { Calendar as CalendarIcon, Clock, Loader2, Plus, Trash2, MoreVertical, ExternalLink } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import {
@@ -132,60 +132,62 @@ const AppointmentsPage = () => {
                 {apps.map(app => (
                   <Card key={app.id} className="border-slate-200 hover:border-indigo-200 transition-all group overflow-hidden relative">
                     <CardContent className="p-0">
-                      <div className="flex flex-col sm:flex-row sm:items-stretch">
-                        <div className="p-6 flex-1 space-y-4">
-                          <div className="flex items-start justify-between">
-                            <div className="space-y-1">
-                              <Link 
-                                to={`/clients/${(app as any).clients?.id}`}
-                                className="font-bold text-xl text-slate-900 hover:text-indigo-600 flex items-center gap-2"
-                              >
-                                {(app as any).clients?.name}
-                                <ExternalLink size={14} className="opacity-0 group-hover:opacity-100 transition-opacity" />
-                              </Link>
-                              <div className="flex flex-wrap items-center gap-4 text-sm text-slate-500">
-                                <span className="flex items-center gap-1.5 font-medium">
-                                  <Clock size={14} className="text-indigo-500" />
-                                  {format(app.date, "EEEE, d MMM • h:mm a")}
-                                </span>
-                                <Badge variant="secondary" className="bg-indigo-50 text-indigo-700 hover:bg-indigo-100 border-none px-2 py-0">
-                                   {app.tag}
+                      <Link to={`/appointments/${app.id}`} className="block">
+                        <div className="flex flex-col sm:flex-row sm:items-stretch">
+                          <div className="p-6 flex-1 space-y-4">
+                            <div className="flex items-start justify-between">
+                              <div className="space-y-1">
+                                <div className="font-bold text-xl text-slate-900 hover:text-indigo-600 flex items-center gap-2">
+                                  {(app as any).clients?.name}
+                                  <ExternalLink size={14} className="opacity-0 group-hover:opacity-100 transition-opacity" />
+                                </div>
+                                <div className="flex flex-wrap items-center gap-4 text-sm text-slate-500">
+                                  <span className="flex items-center gap-1.5 font-medium">
+                                    <Clock size={14} className="text-indigo-500" />
+                                    {format(app.date, "EEEE, d MMM • h:mm a")}
+                                  </span>
+                                  <Badge variant="secondary" className="bg-indigo-50 text-indigo-700 hover:bg-indigo-100 border-none px-2 py-0">
+                                    {app.tag}
+                                  </Badge>
+                                </div>
+                              </div>
+                              <div className="flex items-center gap-2">
+                                <Badge 
+                                  variant={app.status === 'Completed' ? 'default' : 'outline'} 
+                                  className={app.status === 'Completed' ? 'bg-emerald-500 hover:bg-emerald-600 border-none' : 'border-slate-200 text-slate-500'}
+                                >
+                                  {app.status}
                                 </Badge>
+                                <DropdownMenu>
+                                  <DropdownMenuTrigger asChild>
+                                    <Button variant="ghost" size="icon" className="h-8 w-8 text-slate-400 hover:text-slate-900">
+                                      <MoreVertical size={16} />
+                                    </Button>
+                                  </DropdownMenuTrigger>
+                                  <DropdownMenuContent align="end">
+                                    <DropdownMenuItem 
+                                      className="text-destructive focus:text-destructive flex items-center gap-2"
+                                      onClick={(e) => {
+                                        e.preventDefault(); // Prevent navigation when clicking delete
+                                        deleteAppointment(app.id);
+                                      }}
+                                    >
+                                      <Trash2 size={14} /> Delete
+                                    </DropdownMenuItem>
+                                  </DropdownMenuContent>
+                                </DropdownMenu>
                               </div>
                             </div>
-                            <div className="flex items-center gap-2">
-                              <Badge 
-                                variant={app.status === 'Completed' ? 'default' : 'outline'} 
-                                className={app.status === 'Completed' ? 'bg-emerald-500 hover:bg-emerald-600 border-none' : 'border-slate-200 text-slate-500'}
-                              >
-                                {app.status}
-                              </Badge>
-                              <DropdownMenu>
-                                <DropdownMenuTrigger asChild>
-                                  <Button variant="ghost" size="icon" className="h-8 w-8 text-slate-400 hover:text-slate-900">
-                                    <MoreVertical size={16} />
-                                  </Button>
-                                </DropdownMenuTrigger>
-                                <DropdownMenuContent align="end">
-                                  <DropdownMenuItem 
-                                    className="text-destructive focus:text-destructive flex items-center gap-2"
-                                    onClick={() => deleteAppointment(app.id)}
-                                  >
-                                    <Trash2 size={14} /> Delete
-                                  </DropdownMenuItem>
-                                </DropdownMenuContent>
-                              </DropdownMenu>
-                            </div>
+                            
+                            {app.goal && (
+                              <div className="text-sm bg-slate-50 rounded-xl p-3 border border-slate-100">
+                                <span className="text-xs font-bold text-slate-400 uppercase tracking-widest block mb-1">Session Goal</span>
+                                <p className="text-slate-700 leading-relaxed">{app.goal}</p>
+                              </div>
+                            )}
                           </div>
-                          
-                          {app.goal && (
-                            <div className="text-sm bg-slate-50 rounded-xl p-3 border border-slate-100">
-                              <span className="text-xs font-bold text-slate-400 uppercase tracking-widest block mb-1">Session Goal</span>
-                              <p className="text-slate-700 leading-relaxed">{app.goal}</p>
-                            </div>
-                          )}
                         </div>
-                      </div>
+                      </Link>
                     </CardContent>
                   </Card>
                 ))}

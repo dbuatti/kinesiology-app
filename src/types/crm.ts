@@ -21,6 +21,7 @@ export interface Appointment {
   modes_balances?: string;
   journal?: string;
   notion_link?: string;
+  bolt_score?: number | null; // Added bolt_score
 }
 
 export interface Client {

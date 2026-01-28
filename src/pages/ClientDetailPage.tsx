@@ -27,7 +27,9 @@ import {
 } from "@/components/ui/dropdown-menu";
 import AppointmentForm from "@/components/crm/AppointmentForm";
 import ClientForm from "@/components/crm/ClientForm";
+import BoltTestCard from "@/components/crm/BoltTestCard"; // New import
 import { showSuccess, showError } from "@/utils/toast";
+import { cn } from "@/lib/utils"; // Ensure cn is imported
 
 const ClientDetailPage = () => {
   const { id } = useParams();
@@ -50,7 +52,7 @@ const ClientDetailPage = () => {
 
       const { data: appData, error: appError } = await supabase
         .from('appointments')
-        .select('*')
+        .select('*, bolt_score') // Added bolt_score here
         .eq('client_id', id)
         .order('date', { ascending: false });
 
@@ -384,6 +386,15 @@ const ClientDetailPage = () => {
                         <p className="leading-relaxed whitespace-pre-wrap">{app.journal}</p>
                       </div>
                     )}
+
+                    {/* Add the BoltTestCard here */}
+                    <div className="mt-6">
+                      <BoltTestCard
+                        appointmentId={app.id}
+                        initialBoltScore={app.bolt_score}
+                        onUpdate={fetchClientData}
+                      />
+                    </div>
                   </div>
                 </CardContent>
               </Card>

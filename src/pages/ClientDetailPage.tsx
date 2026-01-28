@@ -8,7 +8,7 @@ import { Button } from "@/components/ui/button";
 import { 
   ArrowLeft, Plus, Mail, Phone, MapPin, Calendar, 
   Clock, Star, Loader2, Briefcase, Heart, Baby, ExternalLink, BookOpen,
-  Target, Zap, Activity, Edit3, Trash2, MoreHorizontal
+  Target, Zap, Activity, Edit3, Trash2, MoreHorizontal, FlaskConical, TrendingUp
 } from "lucide-react";
 import { format } from "date-fns";
 import { Client, Appointment } from "@/types/crm";
@@ -101,6 +101,20 @@ const ClientDetailPage = () => {
   if (!client) return <div className="p-12 text-center">Client not found</div>;
 
   const rollups = getClientRollups(appointments);
+  
+  // Calculate BOLT metrics
+  const boltScores = appointments
+    .filter(app => app.bolt_score !== null && app.bolt_score !== undefined)
+    .map(app => app.bolt_score as number);
+
+  const totalBoltScores = boltScores.length;
+  const averageBoltScore = totalBoltScores > 0 
+    ? Math.round(boltScores.reduce((sum, score) => sum + score, 0) / totalBoltScores) 
+    : null;
+  
+  // Appointments are already sorted descending by date, so the first one with a score is the latest.
+  const lastBoltScore = appointments.find(app => app.bolt_score !== null && app.bolt_score !== undefined)?.bolt_score || null;
+
 
   return (
     <div className="p-4 md:p-8 max-w-7xl mx-auto space-y-8">
@@ -261,37 +275,58 @@ const ClientDetailPage = () => {
               </CardContent>
             </Card>
           )}
-
-          <Card className="bg-slate-950 text-white border-none shadow-xl rounded-2xl overflow-hidden">
-            <CardHeader>
-              <CardTitle className="text-lg flex items-center justify-between">
-                Practice Overview
-                <Badge variant="outline" className="border-slate-800 text-indigo-400 bg-indigo-500/5">
-                  {rollups.totalSessions} sessions
-                </Badge>
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-6">
-              <div>
-                <label className="text-[10px] font-bold text-slate-500 uppercase tracking-widest block mb-1">Last Session</label>
-                <p className="text-xl font-bold text-white">{rollups.lastAppointment}</p>
-              </div>
-              <div>
-                <label className="text-[10px] font-bold text-slate-500 uppercase tracking-widest block mb-1">Recent History</label>
-                <div className="flex flex-wrap gap-2 mt-2">
-                  {rollups.allAppointmentDates.slice(0, 5).map((date, i) => (
-                    <Badge key={i} className="bg-slate-900 text-slate-400 border-slate-800">
-                      {date}
-                    </Badge>
-                  ))}
-                </div>
-              </div>
-            </CardContent>
-          </Card>
         </div>
 
         <div className="lg:col-span-2 space-y-6">
-          <div className="flex justify-between items-center">
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
+            <Card className="border-none shadow-sm rounded-2xl bg-white">
+              <CardHeader className="pb-2">
+                <CardTitle className="text-sm flex items-center gap-2 text-slate-700">
+                  <Activity size={16} className="text-indigo-500" /> Total Sessions
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <p className="text-3xl font-extrabold text-slate-900">{rollups.totalSessions}</p>
+                <p className="text-xs text-slate-400 mt-1">Last: {rollups.lastAppointment}</p>
+              </CardContent>
+            </Card>
+            
+            <Card className="border-none shadow-sm rounded-2xl bg-white">
+              <CardHeader className="pb-2">
+                <CardTitle className="text-sm flex items-center gap-2 text-slate-700">
+                  <FlaskConical size={16} className="text-indigo-500" /> Avg. BOLT Score
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <p className={cn(
+                  "text-3xl font-extrabold",
+                  averageBoltScore === null ? "text-slate-400" : averageBoltScore >= 25 ? "text-emerald-600" : "text-amber-600"
+                )}>
+                  {averageBoltScore !== null ? `${averageBoltScore}s` : 'N/A'}
+                </p>
+                <p className="text-xs text-slate-400 mt-1">{totalBoltScores} recorded tests</p>
+              </CardContent>
+            </Card>
+
+            <Card className="border-none shadow-sm rounded-2xl bg-white">
+              <CardHeader className="pb-2">
+                <CardTitle className="text-sm flex items-center gap-2 text-slate-700">
+                  <TrendingUp size={16} className="text-indigo-500" /> Last BOLT Score
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <p className={cn(
+                  "text-3xl font-extrabold",
+                  lastBoltScore === null ? "text-slate-400" : lastBoltScore >= 25 ? "text-emerald-600" : "text-amber-600"
+                )}>
+                  {lastBoltScore !== null ? `${lastBoltScore}s` : 'N/A'}
+                </p>
+                <p className="text-xs text-slate-400 mt-1">Latest recorded session</p>
+              </CardContent>
+            </Card>
+          </div>
+
+          <div className="flex justify-between items-center pt-4">
             <h3 className="text-xl font-bold text-slate-900">Appointments</h3>
             <Dialog open={appOpen} onOpenChange={setAppOpen}>
               <DialogTrigger asChild>

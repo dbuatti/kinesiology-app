@@ -7,13 +7,13 @@ import {
   CollapsibleTrigger,
 } from "@/components/ui/collapsible";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { ChevronDown, Loader2, FlaskConical } from "lucide-react";
+import { ChevronDown, FlaskConical } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { supabase } from "@/integrations/supabase/client";
 import { showSuccess, showError } from "@/utils/toast";
 import { Badge } from "@/components/ui/badge";
+import BoltTimer from "./BoltTimer";
 
 interface BoltTestCardProps {
   appointmentId: string;
@@ -23,18 +23,10 @@ interface BoltTestCardProps {
 
 const BoltTestCard = ({ appointmentId, initialBoltScore, onUpdate }: BoltTestCardProps) => {
   const [isOpen, setIsOpen] = useState(false);
-  const [boltScore, setBoltScore] = useState<string>(initialBoltScore?.toString() || "");
   const [loading, setLoading] = useState(false);
 
-  const handleSave = async () => {
+  const handleSaveScore = async (score: number) => {
     setLoading(true);
-    const score = parseInt(boltScore, 10);
-
-    if (isNaN(score) || score < 0) {
-      showError("Please enter a valid positive number for the BOLT score.");
-      setLoading(false);
-      return;
-    }
 
     try {
       const { error } = await supabase
@@ -76,6 +68,12 @@ const BoltTestCard = ({ appointmentId, initialBoltScore, onUpdate }: BoltTestCar
         </CollapsibleTrigger>
         <CollapsibleContent className="p-4 border-t border-slate-100">
           <div className="space-y-4 text-sm text-slate-700">
+            <BoltTimer 
+              initialScore={initialBoltScore}
+              onScoreRecorded={handleSaveScore}
+              isSaving={loading}
+            />
+
             <p className="leading-relaxed">
               The BOLT test measures a client's CO2 tolerance and their ability to cope without oxygen.
               Poor breathing can constantly trigger the sympathetic nervous system (fight/flight response)
@@ -106,24 +104,6 @@ const BoltTestCard = ({ appointmentId, initialBoltScore, onUpdate }: BoltTestCar
                 <li>Breathing exercises can be stressful or triggering for a client's nervous system.</li>
                 <li>If stress occurs, use the Nociceptive Threat Assessment to clear the nervous system's negative response before continuing.</li>
               </ul>
-            </div>
-
-            <div className="flex items-center gap-2 pt-4 border-t border-slate-100">
-              <Input
-                type="number"
-                placeholder="Enter BOLT score (seconds)"
-                value={boltScore}
-                onChange={(e) => setBoltScore(e.target.value)}
-                className="flex-1 rounded-xl border-slate-200 focus:ring-indigo-500"
-              />
-              <Button 
-                onClick={handleSave} 
-                disabled={loading}
-                className="bg-indigo-600 hover:bg-indigo-700 rounded-xl shadow-md shadow-indigo-100"
-              >
-                {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                Save Score
-              </Button>
             </div>
           </div>
         </CollapsibleContent>

@@ -22,64 +22,106 @@ export interface CsvRow {
 }
 
 export function parseCSV(csvText: string): CsvRow[] {
-  const lines = csvText.trim().split('\n');
+  // Remove BOM if present
+  const cleanText = csvText.replace(/^\ufeff/, '');
+  const lines = cleanText.split('\n');
+  
   if (lines.length === 0) return [];
 
-  // Simple header parsing, assuming the first line is the header
-  const header = lines[0].split(',').map(h => h.trim().replace(/[\ufeff\r]/g, ''));
+  // Parse header
+  const header = parseCSVLine(lines[0]);
   const data: CsvRow[] = [];
 
-  for (let i = 1; i < lines.length; i++) {
-    const line = lines[i].trim();
-    if (!line) continue;
-
-    const row: Partial<CsvRow> = {};
-    let lineToParse = line;
-
-    // Handle potential leading BOM character
-    if (i === 1 && lineToParse.startsWith('\ufeff')) {
-        lineToParse = lineToParse.substring(1);
+  let i = 1;
+  while (i < lines.length) {
+    const { values, linesConsumed } = parseCSVRow(lines, i, header.length);
+    
+    if (values.length === header.length) {
+      const row: Partial<CsvRow> = {};
+      values.forEach((value, index) => {
+        (row as any)[header[index]] = value;
+      });
+      data.push(row as CsvRow);
+    } else if (values.length > 0) {
+      console.warn(`CSV parsing: Skipping row at line ${i + 1} - expected ${header.length} columns, got ${values.length}`);
     }
-
-    // Simple parser that handles quoted fields
-    const values = [];
-    let current = '';
-    let inQuotes = false;
-
-    for (let j = 0; j < lineToParse.length; j++) {
-        const char = lineToParse[j];
-        if (char === '"') {
-            inQuotes = !inQuotes;
-        } else if (char === ',' && !inQuotes) {
-            values.push(current.trim());
-            current = '';
-        } else {
-            current += char;
-        }
-    }
-    values.push(current.trim()); // Push the last value
-
-    if (values.length !== header.length) {
-        console.error("CSV parsing error: Column count mismatch on line", i + 1, values.length, header.length);
-        // Fallback to simple split if complex parsing fails (less reliable)
-        const simpleValues = lines[i].split(',').map(v => v.trim().replace(/^"|"$/g, ''));
-        if (simpleValues.length === header.length) {
-             simpleValues.forEach((value, index) => {
-                (row as any)[header[index]] = value;
-            });
-        } else {
-            continue; // Skip problematic row
-        }
-    } else {
-        values.forEach((value, index) => {
-            // Clean up quotes if they were used
-            const cleanedValue = value.replace(/^"|"$/g, '');
-            (row as any)[header[index]] = cleanedValue;
-        });
-    }
-
-    data.push(row as CsvRow);
+    
+    i += linesConsumed;
   }
 
   return data;
+}
+
+function parseCSVLine(line: string): string[] {
+  const values: string[] = [];
+  let current = '';
+  let inQuotes = false;
+
+  for (let i = 0; i < line.length; i++) {
+    const char = line[i];
+    
+    if (char === '"') {
+      if (inQuotes && line[i + 1] === '"') {
+        // Escaped quote
+        current += '"';
+        i++;
+      } else {
+        // Toggle quote state
+        inQuotes = !inQuotes;
+      }
+    } else if (char === ',' && !inQuotes) {
+      values.push(current.trim());
+      current = '';
+    } else {
+      current += char;
+    }
+  }
+  
+  values.push(current.trim());
+  return values;
+}
+
+function parseCSVRow(lines: string[], startIndex: number, expectedColumns: number): { values: string[], linesConsumed: number } {
+  const values: string[] = [];
+  let current = '';
+  let inQuotes = false;
+  let linesConsumed = 0;
+  let lineIndex = startIndex;
+
+  while (lineIndex < lines.length) {
+    const line = lines[lineIndex];
+    linesConsumed++;
+
+    for (let i = 0; i < line.length; i++) {
+      const char = line[i];
+      
+      if (char === '"') {
+        if (inQuotes && line[i + 1] === '"') {
+          // Escaped quote
+          current += '"';
+          i++;
+        } else {
+          // Toggle quote state
+          inQuotes = !inQuotes;
+        }
+      } else if (char === ',' && !inQuotes) {
+        values.push(current.trim());
+        current = '';
+      } else {
+        current += char;
+      }
+    }
+
+    // If we're in quotes, this field continues on the next line
+    if (inQuotes) {
+      current += '\n';
+      lineIndex++;
+    } else {
+      // End of row
+      values.push(current.trim());
+      break;
+    }
+  }
+
+  return { values, linesConsumed };
 }

@@ -7,19 +7,27 @@ interface ClientLookup {
 }
 
 const cleanClientName = (clientString: string): string => {
-  // 1. Remove Notion URL part: " (https://...)"
-  let name = clientString.replace(/\s*\(https?:\/\/.+\)/, '').trim();
+  if (!clientString) return '';
   
-  // 2. Remove session/date details in brackets: "(Session 2, 19 April 2025)" or "(Monday August 25 2025 90 minutes)"
-  name = name.replace(/\s*\([\w\s\/,]+\)/, '').trim();
+  // 1. Extract name from Notion URL format: "Name (https://...)"
+  const notionMatch = clientString.match(/^"?([^(]+)\s*\(https?:\/\/[^)]+\)"?$/);
+  if (notionMatch) {
+    return notionMatch[1].trim();
+  }
   
-  // 3. Remove session number prefix: "1 - " or "2 - "
+  // 2. Remove any remaining quotes
+  let name = clientString.replace(/^"|"$/g, '').trim();
+  
+  // 3. Remove session/date details in brackets
+  name = name.replace(/\s*\([^)]*\d{4}[^)]*\)/g, '').trim();
+  
+  // 4. Remove session number prefix: "1 - " or "2 - "
   name = name.replace(/^\d+\s*-\s*/, '').trim();
   
-  // 4. Remove session details suffix: " Kinesiology (90 minutes)"
-  name = name.replace(/\s*Kinesiology\s*\(.+\)/, '').trim();
+  // 5. Remove session details suffix
+  name = name.replace(/\s*Kinesiology\s*\([^)]+\)/g, '').trim();
   
-  // 5. Handle specific cases like "Georg, January 12, 90 minutes"
+  // 6. Take only the first part before comma (for cases like "Georg, January 12")
   name = name.split(',')[0].trim();
 
   return name;
@@ -31,6 +39,8 @@ export async function importAppointmentsFromCSV(csvText: string) {
     showError("No data found in CSV.");
     return { success: 0, failed: 0 };
   }
+
+  console.log(`Parsed ${rows.length} rows from CSV`);
 
   // 1. Fetch all clients for lookup
   const { data: clientsData, error: clientError } = await supabase
@@ -45,65 +55,91 @@ export async function importAppointmentsFromCSV(csvText: string) {
 
   const clientLookup: ClientLookup = {};
   clientsData.forEach(client => {
-    clientLookup[client.name.trim()] = client.id;
+    clientLookup[client.name.trim().toLowerCase()] = client.id;
   });
 
-  // 2. Process and insert appointments
-  const appointmentsToInsert = [];
-  let failedCount = 0;
+  console.log(`Loaded ${Object.keys(clientLookup).length} clients for matching`);
 
+  // 2. Get authenticated user
   const user = (await supabase.auth.getUser()).data.user;
   if (!user) {
-      showError("User not authenticated. Cannot import data.");
-      return { success: 0, failed: rows.length };
+    showError("User not authenticated. Cannot import data.");
+    return { success: 0, failed: rows.length };
   }
   const user_id = user.id;
+
+  // 3. Fetch existing display_ids to avoid duplicates
+  const { data: existingAppointments } = await supabase
+    .from('appointments')
+    .select('display_id')
+    .not('display_id', 'is', null);
+
+  const existingDisplayIds = new Set(
+    (existingAppointments || []).map(a => a.display_id)
+  );
+
+  // 4. Process and insert appointments
+  const appointmentsToInsert = [];
+  let failedCount = 0;
+  let skippedDuplicates = 0;
 
   for (const row of rows) {
     const rawClientName = row['Client'];
     const clientName = cleanClientName(rawClientName);
-    const clientId = clientLookup[clientName];
     
-    if (!clientId) {
-      console.warn(`Skipping appointment ${row.Name}: Client "${clientName}" not found.`);
+    if (!clientName) {
+      console.warn(`Skipping appointment ${row.Name}: Empty client name`);
       failedCount++;
       continue;
     }
 
-    // Attempt to parse date. CSV date format is "Month Day, Year" (e.g., "December 6, 2021")
+    const clientId = clientLookup[clientName.toLowerCase()];
+    
+    if (!clientId) {
+      console.warn(`Skipping appointment ${row.Name}: Client "${clientName}" not found (raw: "${rawClientName}")`);
+      failedCount++;
+      continue;
+    }
+
+    // Check for duplicate display_id
+    const displayId = row['ID'] || null;
+    if (displayId && existingDisplayIds.has(displayId)) {
+      console.warn(`Skipping appointment ${row.Name}: Duplicate display_id "${displayId}"`);
+      skippedDuplicates++;
+      failedCount++;
+      continue;
+    }
+
+    // Parse date
     const dateString = row['Date'];
     let date: Date | null = null;
     try {
-        // Use Date constructor for flexible parsing, then set a default time (10:00 AM)
-        date = new Date(dateString);
-        if (isNaN(date.getTime())) throw new Error("Invalid date");
-        
-        // Set a default time if none is specified (assuming 10:00 AM)
-        date.setHours(10, 0, 0, 0); 
+      date = new Date(dateString);
+      if (isNaN(date.getTime())) throw new Error("Invalid date");
+      date.setHours(10, 0, 0, 0);
     } catch (e) {
-        console.error(`Invalid date for appointment ${row.Name}: ${dateString}`);
-        failedCount++;
-        continue;
+      console.error(`Invalid date for appointment ${row.Name}: ${dateString}`);
+      failedCount++;
+      continue;
     }
 
-    // Extract Notion link from the 'Notes' column if present
+    // Extract Notion link from Notes
     let notionLink = null;
-    if (row['Notes'] && row['Notes'].includes('https://www.notion.so/')) {
-        // Simple extraction: find the first URL that looks like a Notion link
-        const urlMatch = row['Notes'].match(/https:\/\/www\.notion\.so\/[a-zA-Z0-9-]+/);
-        if (urlMatch) {
-            notionLink = urlMatch[0];
-        }
+    if (row['Notes'] && row['Notes'].includes('notion.so')) {
+      const urlMatch = row['Notes'].match(/https:\/\/[^\s,)]+notion\.so[^\s,)]+/);
+      if (urlMatch) {
+        notionLink = urlMatch[0];
+      }
     }
     
     const appointment = {
       user_id: user_id,
       client_id: clientId,
-      display_id: row['ID'] || null,
+      display_id: displayId,
       name: row['Name'] || null,
       date: date.toISOString(),
       tag: row['tag'] || 'Kinesiology',
-      status: row['Status'] === 'AP' ? 'Completed' : row['Status'] || 'Scheduled', // Map 'AP' to 'Completed'
+      status: row['Status'] === 'AP' ? 'Completed' : row['Status'] || 'Scheduled',
       goal: row['Goal'] || null,
       issue: row['Issue'] || null,
       notes: row['Notes'] || null,
@@ -120,11 +156,13 @@ export async function importAppointmentsFromCSV(csvText: string) {
   }
 
   if (appointmentsToInsert.length === 0) {
-    showError("No valid appointments to insert after client mapping.");
+    showError(`No valid appointments to insert. ${skippedDuplicates} duplicates skipped.`);
     return { success: 0, failed: rows.length };
   }
 
-  // 3. Bulk insert
+  console.log(`Attempting to insert ${appointmentsToInsert.length} appointments`);
+
+  // 5. Bulk insert
   const { error: insertError } = await supabase
     .from('appointments')
     .insert(appointmentsToInsert);
@@ -136,6 +174,10 @@ export async function importAppointmentsFromCSV(csvText: string) {
   }
 
   const successfulCount = appointmentsToInsert.length;
+  
+  if (skippedDuplicates > 0) {
+    showSuccess(`Import complete: ${successfulCount} imported, ${skippedDuplicates} duplicates skipped`);
+  }
   
   return { success: successfulCount, failed: rows.length - successfulCount };
 }

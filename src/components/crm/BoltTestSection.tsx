@@ -30,6 +30,16 @@ const BoltTestSection = ({ appointmentId, initialBoltScore, onUpdate }: BoltTest
     setLoading(true);
 
     try {
+      // First, check if this is a new BOLT score or an update
+      const { data: existingAppointment } = await supabase
+        .from("appointments")
+        .select("bolt_score")
+        .eq("id", appointmentId)
+        .single();
+
+      const isNewScore = !existingAppointment?.bolt_score;
+
+      // Update the appointment with the new BOLT score
       const { error } = await supabase
         .from("appointments")
         .update({ bolt_score: score })
@@ -37,7 +47,12 @@ const BoltTestSection = ({ appointmentId, initialBoltScore, onUpdate }: BoltTest
 
       if (error) throw error;
 
-      showSuccess("BOLT score updated successfully!");
+      showSuccess(
+        isNewScore 
+          ? "BOLT score saved! Procedure count updated." 
+          : "BOLT score updated successfully!"
+      );
+      
       onUpdate();
     } catch (error: any) {
       showError(error.message || "Failed to update BOLT score.");

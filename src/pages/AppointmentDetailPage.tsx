@@ -187,6 +187,11 @@ const AppointmentDetailPage = () => {
     className?: string;
     placeholder?: string;
   }) => {
+    // Use a ref to track if this is the initial mount
+    const isInitialMount = useRef(true);
+    const lastPropValue = useRef(value);
+    
+    // Initialize with prop value, but this will be controlled by the sync logic below
     const [localValue, setLocalValue] = useState(value || '');
     const [isFocused, setIsFocused] = useState(false);
     const inputRef = useRef<HTMLInputElement | HTMLTextAreaElement>(null);
@@ -197,20 +202,38 @@ const AppointmentDetailPage = () => {
     // 2. Not saving
     // 3. No pending save
     // 4. This field is NOT currently being edited anywhere
+    // 5. The prop value has actually changed (not just a re-render)
     useEffect(() => {
       const isSaving = savingFieldsRef.current.has(field);
       const isCurrentlyEditing = currentlyEditingFieldRef.current === field;
       const hasPendingSave = pendingSaveValueRef.current !== null;
+      const propValueChanged = lastPropValue.current !== value;
       
-      console.log(`[EditableField:${field}] 🔄 Prop value changed. Checking if should sync...`);
+      console.log(`[EditableField:${field}] 🔄 Effect triggered. Checking if should sync...`);
       console.log(`[EditableField:${field}]   - Prop value:`, value);
+      console.log(`[EditableField:${field}]   - Last prop value:`, lastPropValue.current);
       console.log(`[EditableField:${field}]   - Local value:`, localValue);
       console.log(`[EditableField:${field}]   - isFocused:`, isFocused);
       console.log(`[EditableField:${field}]   - isSaving:`, isSaving);
       console.log(`[EditableField:${field}]   - isCurrentlyEditing:`, isCurrentlyEditing);
       console.log(`[EditableField:${field}]   - hasPendingSave:`, hasPendingSave);
+      console.log(`[EditableField:${field}]   - propValueChanged:`, propValueChanged);
+      console.log(`[EditableField:${field}]   - isInitialMount:`, isInitialMount.current);
       
-      if (!isFocused && !isSaving && !isCurrentlyEditing && !hasPendingSave) {
+      // Update the last prop value tracker
+      lastPropValue.current = value;
+      
+      // On initial mount, always sync
+      if (isInitialMount.current) {
+        isInitialMount.current = false;
+        const newValue = value || '';
+        console.log(`[EditableField:${field}] ✅ Initial mount - syncing to:`, newValue);
+        setLocalValue(newValue);
+        return;
+      }
+      
+      // For subsequent updates, only sync if conditions are met AND prop actually changed
+      if (!isFocused && !isSaving && !isCurrentlyEditing && !hasPendingSave && propValueChanged) {
         const newValue = value || '';
         if (localValue !== newValue) {
           console.log(`[EditableField:${field}] ✅ Syncing prop value to local state. New value:`, newValue);

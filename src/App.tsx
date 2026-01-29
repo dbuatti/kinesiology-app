@@ -14,6 +14,7 @@ import AppointmentDetailPage from "./pages/AppointmentDetailPage";
 import ImportPage from "./pages/ImportPage";
 import ProceduresPage from "./pages/ProceduresPage";
 import DebugAppointmentPage from "./pages/DebugAppointmentPage";
+import SettingsPage from "./pages/SettingsPage";
 import Login from "./pages/Login";
 import NotFound from "./pages/NotFound";
 import { AuthProvider, useAuth } from "./components/AuthProvider";
@@ -55,6 +56,7 @@ const App = () => (
             <Route path="/import" element={<ProtectedLayout><ImportPage /></ProtectedLayout>} />
             <Route path="/procedures" element={<ProtectedLayout><ProceduresPage /></ProtectedLayout>} />
             <Route path="/debug" element={<ProtectedLayout><DebugAppointmentPage /></ProtectedLayout>} />
+            <Route path="/settings" element={<ProtectedLayout><SettingsPage /></ProtectedLayout>} />
             <Route path="*" element={<NotFound />} />
           </Routes>
         </BrowserRouter>

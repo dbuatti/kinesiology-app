@@ -24,7 +24,7 @@ const formSchema = z.object({
   phone: z.string().optional(),
   pronouns: z.string().optional(),
   born: z.string().optional(),
-  suburb: z.string().optional(),
+  suburb: z.string().optional(), // Handled as comma-separated string in form
   occupation: z.string().optional(),
 });
 
@@ -45,7 +45,7 @@ const ClientForm = ({ onSuccess, initialData }: ClientFormProps) => {
       phone: initialData?.phone || "",
       pronouns: initialData?.pronouns || "",
       born: initialData?.born ? new Date(initialData.born).toISOString().split('T')[0] : "",
-      suburb: initialData?.suburb?.join(", ") || "",
+      suburb: initialData?.suburb?.join(", ") || "", // Convert array to string for form
       occupation: initialData?.occupation || "",
     },
   });
@@ -55,6 +55,11 @@ const ClientForm = ({ onSuccess, initialData }: ClientFormProps) => {
     setSubmitting(true);
 
     try {
+      // Convert comma-separated string back to array, filtering out empty strings
+      const suburbsArray = values.suburb 
+        ? values.suburb.split(",").map(s => s.trim()).filter(s => s.length > 0) 
+        : [];
+
       const payload = {
         user_id: session.user.id,
         name: values.name,
@@ -62,8 +67,7 @@ const ClientForm = ({ onSuccess, initialData }: ClientFormProps) => {
         phone: values.phone || null,
         pronouns: values.pronouns || null,
         born: values.born ? new Date(values.born).toISOString() : null,
-        suburbers: values.suburb ? values.suburb.split(",").map(s => s.trim()) : [], // Note: check column name 'suburbs' in schema
-        suburbs: values.suburb ? values.suburb.split(",").map(s => s.trim()) : [],
+        suburbs: suburbsArray, // Use the correct column name and array format
         occupation: values.occupation || null,
       };
 

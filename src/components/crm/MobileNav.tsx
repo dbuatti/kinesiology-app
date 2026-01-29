@@ -1,13 +1,16 @@
 import { Sheet, SheetContent, SheetTrigger, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
-import { Menu, LayoutDashboard, Users, Calendar, Settings, Target } from "lucide-react";
-import { Link, useLocation } from "react-router-dom";
+import { Menu, LayoutDashboard, Users, Calendar, Settings, Target, LogOut } from "lucide-react";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import { cn } from "@/lib/utils";
 import { useState } from "react";
+import { supabase } from "@/integrations/supabase/client";
+import { showSuccess } from "@/utils/toast";
 
 const MobileNav = () => {
   const [open, setOpen] = useState(false);
   const location = useLocation();
+  const navigate = useNavigate();
 
   const navItems = [
     { label: "Dashboard", icon: LayoutDashboard, path: "/" },
@@ -15,6 +18,16 @@ const MobileNav = () => {
     { label: "Appointments", icon: Calendar, path: "/appointments" },
     { label: "Procedures", icon: Target, path: "/procedures" },
   ];
+
+  const handleSignOut = async () => {
+    try {
+      await supabase.auth.signOut();
+      showSuccess("Signed out successfully");
+      navigate('/login');
+    } catch (error) {
+      console.error("Error signing out:", error);
+    }
+  };
 
   return (
     <div className="lg:hidden flex items-center justify-between p-4 bg-white border-b sticky top-0 z-50">
@@ -53,10 +66,21 @@ const MobileNav = () => {
                 <span className="font-medium">{item.label}</span>
               </Link>
             ))}
-            <div className="mt-8 pt-6 border-t border-slate-800">
-               <div className="flex items-center gap-3 px-4 py-3 text-slate-400 hover:text-white transition-all cursor-pointer">
+            <div className="mt-8 pt-6 border-t border-slate-800 space-y-2">
+               <Link 
+                  to="/settings"
+                  onClick={() => setOpen(false)}
+                  className="flex items-center gap-3 px-4 py-3 text-slate-400 hover:text-white hover:bg-slate-800 transition-all rounded-xl"
+                >
                   <Settings size={20} />
                   <span className="font-medium">Settings</span>
+               </Link>
+               <div 
+                  onClick={handleSignOut}
+                  className="flex items-center gap-3 px-4 py-3 text-slate-400 hover:text-red-400 hover:bg-slate-800 transition-all rounded-xl cursor-pointer"
+                >
+                  <LogOut size={20} />
+                  <span className="font-medium">Sign Out</span>
                </div>
             </div>
           </nav>

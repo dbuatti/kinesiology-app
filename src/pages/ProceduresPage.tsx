@@ -4,9 +4,10 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/com
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import { Badge } from "@/components/ui/badge";
+import { Switch } from "@/components/ui/switch";
 import { 
   Target, Plus, TrendingUp, CheckCircle2, Loader2, 
-  FlaskConical, Brain, Activity, Zap, Edit3, Trash2
+  FlaskConical, Brain, Activity, Zap, Edit3, Trash2, Power, PowerOff
 } from "lucide-react";
 import {
   Dialog,
@@ -28,6 +29,7 @@ interface Procedure {
   target_count: number;
   current_count: number;
   icon: string;
+  enabled: boolean;
   created_at: string;
 }
 
@@ -73,6 +75,22 @@ const ProceduresPage = () => {
     }
   };
 
+  const handleToggleEnabled = async (id: string, currentEnabled: boolean) => {
+    try {
+      const { error } = await supabase
+        .from('procedures')
+        .update({ enabled: !currentEnabled })
+        .eq('id', id);
+
+      if (error) throw error;
+      
+      showSuccess(currentEnabled ? "Procedure disabled" : "Procedure enabled");
+      fetchProcedures();
+    } catch (err: any) {
+      showError(err.message || "Failed to update procedure");
+    }
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
@@ -103,6 +121,7 @@ const ProceduresPage = () => {
             target_count: formData.target_count,
             current_count: 0,
             icon: formData.icon,
+            enabled: true,
           });
 
         if (error) throw error;
@@ -158,10 +177,11 @@ const ProceduresPage = () => {
     fetchProcedures();
   }, []);
 
-  const completedCount = procedures.filter(p => p.current_count >= p.target_count).length;
-  const totalProgress = procedures.length > 0 
-    ? Math.round((procedures.reduce((sum, p) => sum + Math.min(p.current_count, p.target_count), 0) / 
-        procedures.reduce((sum, p) => sum + p.target_count, 0)) * 100)
+  const enabledProcedures = procedures.filter(p => p.enabled);
+  const completedCount = enabledProcedures.filter(p => p.current_count >= p.target_count).length;
+  const totalProgress = enabledProcedures.length > 0 
+    ? Math.round((enabledProcedures.reduce((sum, p) => sum + Math.min(p.current_count, p.target_count), 0) / 
+        enabledProcedures.reduce((sum, p) => sum + p.target_count, 0)) * 100)
     : 0;
 
   if (loading) return (
@@ -254,12 +274,12 @@ const ProceduresPage = () => {
         <Card className="border-none shadow-sm rounded-2xl bg-white">
           <CardHeader className="pb-2">
             <CardTitle className="text-sm flex items-center gap-2 text-slate-700">
-              <Target size={16} className="text-indigo-500" /> Total Procedures
+              <Target size={16} className="text-indigo-500" /> Active Procedures
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <p className="text-3xl font-extrabold text-slate-900">{procedures.length}</p>
-            <p className="text-xs text-slate-400 mt-1">Being tracked</p>
+            <p className="text-3xl font-extrabold text-slate-900">{enabledProcedures.length}</p>
+            <p className="text-xs text-slate-400 mt-1">{procedures.length - enabledProcedures.length} disabled</p>
           </CardContent>
         </Card>
 
@@ -283,7 +303,7 @@ const ProceduresPage = () => {
           </CardHeader>
           <CardContent>
             <p className="text-3xl font-extrabold text-blue-600">{totalProgress}%</p>
-            <p className="text-xs text-slate-400 mt-1">Across all procedures</p>
+            <p className="text-xs text-slate-400 mt-1">Across active procedures</p>
           </CardContent>
         </Card>
       </div>
@@ -297,24 +317,33 @@ const ProceduresPage = () => {
           return (
             <Card key={procedure.id} className={cn(
               "border-none shadow-md rounded-2xl overflow-hidden transition-all hover:shadow-lg",
-              isComplete ? "bg-gradient-to-br from-emerald-50 to-emerald-100" : "bg-white"
+              !procedure.enabled && "opacity-60",
+              isComplete && procedure.enabled ? "bg-gradient-to-br from-emerald-50 to-emerald-100" : "bg-white"
             )}>
               <CardHeader className="pb-3">
                 <div className="flex items-start justify-between">
-                  <div className="flex items-center gap-3">
+                  <div className="flex items-center gap-3 flex-1">
                     <div className={cn(
                       "w-12 h-12 rounded-xl flex items-center justify-center shadow-sm",
+                      !procedure.enabled ? "bg-slate-300" :
                       isComplete ? "bg-emerald-500" : "bg-indigo-600"
                     )}>
                       <IconComponent size={24} className="text-white" />
                     </div>
-                    <div>
+                    <div className="flex-1">
                       <CardTitle className="text-lg font-bold text-slate-900">{procedure.name}</CardTitle>
-                      {isComplete && (
-                        <Badge className="mt-1 bg-emerald-600 hover:bg-emerald-700 text-white border-none">
-                          <CheckCircle2 size={12} className="mr-1" /> Complete
-                        </Badge>
-                      )}
+                      <div className="flex items-center gap-2 mt-1">
+                        {isComplete && procedure.enabled && (
+                          <Badge className="bg-emerald-600 hover:bg-emerald-700 text-white border-none text-xs">
+                            <CheckCircle2 size={12} className="mr-1" /> Complete
+                          </Badge>
+                        )}
+                        {!procedure.enabled && (
+                          <Badge variant="outline" className="border-slate-300 text-slate-500 text-xs">
+                            <PowerOff size={12} className="mr-1" /> Disabled
+                          </Badge>
+                        )}
+                      </div>
                     </div>
                   </div>
                   <div className="flex gap-1">
@@ -341,30 +370,41 @@ const ProceduresPage = () => {
                 {procedure.description && (
                   <p className="text-sm text-slate-600 leading-relaxed">{procedure.description}</p>
                 )}
-                <div className="space-y-2">
-                  <div className="flex items-center justify-between text-sm">
-                    <span className="font-bold text-slate-700">Progress</span>
-                    <span className={cn(
-                      "font-bold",
-                      isComplete ? "text-emerald-600" : "text-indigo-600"
-                    )}>
-                      {procedure.current_count} / {procedure.target_count}
-                    </span>
-                  </div>
-                  <Progress 
-                    value={progress} 
-                    className={cn(
-                      "h-3",
-                      isComplete ? "[&>div]:bg-emerald-500" : "[&>div]:bg-indigo-600"
-                    )}
+                
+                <div className="flex items-center justify-between">
+                  <span className="text-sm font-medium text-slate-700">Track in appointments</span>
+                  <Switch
+                    checked={procedure.enabled}
+                    onCheckedChange={() => handleToggleEnabled(procedure.id, procedure.enabled)}
                   />
-                  <p className="text-xs text-slate-500 text-center">
-                    {isComplete 
-                      ? "🎉 Target reached!" 
-                      : `${procedure.target_count - procedure.current_count} more to go`
-                    }
-                  </p>
                 </div>
+
+                {procedure.enabled && (
+                  <div className="space-y-2">
+                    <div className="flex items-center justify-between text-sm">
+                      <span className="font-bold text-slate-700">Progress</span>
+                      <span className={cn(
+                        "font-bold",
+                        isComplete ? "text-emerald-600" : "text-indigo-600"
+                      )}>
+                        {procedure.current_count} / {procedure.target_count}
+                      </span>
+                    </div>
+                    <Progress 
+                      value={progress} 
+                      className={cn(
+                        "h-3",
+                        isComplete ? "[&>div]:bg-emerald-500" : "[&>div]:bg-indigo-600"
+                      )}
+                    />
+                    <p className="text-xs text-slate-500 text-center">
+                      {isComplete 
+                        ? "🎉 Target reached!" 
+                        : `${procedure.target_count - procedure.current_count} more to go`
+                      }
+                    </p>
+                  </div>
+                )}
               </CardContent>
             </Card>
           );
@@ -378,7 +418,8 @@ const ProceduresPage = () => {
           </div>
           <h3 className="text-slate-900 font-bold text-lg">No procedures yet</h3>
           <p className="text-slate-500 mt-1 max-w-sm mx-auto">
-            Start tracking your functional neurology procedures to monitor your learning progress.
+            Procedures will automatically appear here when you use them in appointments (like BOLT tests).
+            You can also manually add procedures to track.
           </p>
           <Button 
             className="mt-6 bg-indigo-600 hover:bg-indigo-700"

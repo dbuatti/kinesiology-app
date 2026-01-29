@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useParams, Link, useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Badge } from "@/components/ui/badge";
@@ -8,7 +8,7 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { 
   ArrowLeft, Calendar, Clock, Target, Zap, 
-  ExternalLink, Loader2, Trash2, Edit3, User, Save, X
+  ExternalLink, Loader2, Trash2, User, Check
 } from "lucide-react";
 import { format } from "date-fns";
 import { Appointment } from "@/types/crm";
@@ -34,7 +34,10 @@ const AppointmentDetailPage = () => {
   // Edit states for each field
   const [editingField, setEditingField] = useState<string | null>(null);
   const [editValues, setEditValues] = useState<Record<string, string>>({});
-  const [saving, setSaving] = useState(false);
+  const [savingField, setSavingField] = useState<string | null>(null);
+  const [savedField, setSavedField] = useState<string | null>(null);
+  
+  const saveTimeoutRef = useRef<Record<string, NodeJS.Timeout>>({});
 
   const fetchAppointmentData = async () => {
     if (!id) return;
@@ -82,23 +85,14 @@ const AppointmentDetailPage = () => {
     }
   };
 
-  const startEditing = (field: string, currentValue: string | null | undefined) => {
-    setEditingField(field);
-    setEditValues({ ...editValues, [field]: currentValue || '' });
-  };
-
-  const cancelEditing = () => {
-    setEditingField(null);
-    setEditValues({});
-  };
-
-  const saveField = async (field: string) => {
+  const saveField = async (field: string, value: string) => {
     if (!id) return;
-    setSaving(true);
+    
+    setSavingField(field);
 
     try {
       const updateData: Record<string, any> = {
-        [field]: editValues[field] || null
+        [field]: value || null
       };
 
       const { error } = await supabase
@@ -108,18 +102,66 @@ const AppointmentDetailPage = () => {
 
       if (error) throw error;
 
-      showSuccess("Field updated successfully");
-      setEditingField(null);
-      fetchAppointmentData();
+      // Show saved indicator
+      setSavedField(field);
+      setTimeout(() => setSavedField(null), 2000);
+      
+      // Update local state
+      if (appointment) {
+        setAppointment({
+          ...appointment,
+          [field]: value || null
+        });
+      }
     } catch (err: any) {
-      showError(err.message || "Failed to update field");
+      showError(err.message || "Failed to save");
     } finally {
-      setSaving(false);
+      setSavingField(null);
+    }
+  };
+
+  const handleFieldChange = (field: string, value: string) => {
+    setEditValues({ ...editValues, [field]: value });
+    
+    // Clear existing timeout for this field
+    if (saveTimeoutRef.current[field]) {
+      clearTimeout(saveTimeoutRef.current[field]);
+    }
+    
+    // Set new timeout to auto-save after 1 second of no typing
+    saveTimeoutRef.current[field] = setTimeout(() => {
+      saveField(field, value);
+    }, 1000);
+  };
+
+  const handleFieldBlur = (field: string) => {
+    // Clear timeout and save immediately on blur
+    if (saveTimeoutRef.current[field]) {
+      clearTimeout(saveTimeoutRef.current[field]);
+    }
+    
+    const value = editValues[field];
+    if (value !== undefined) {
+      saveField(field, value);
+    }
+    
+    setEditingField(null);
+  };
+
+  const handleFieldFocus = (field: string, currentValue: string | null | undefined) => {
+    setEditingField(field);
+    if (editValues[field] === undefined) {
+      setEditValues({ ...editValues, [field]: currentValue || '' });
     }
   };
 
   useEffect(() => {
     fetchAppointmentData();
+    
+    // Cleanup timeouts on unmount
+    return () => {
+      Object.values(saveTimeoutRef.current).forEach(timeout => clearTimeout(timeout));
+    };
   }, [id]);
 
   if (loading) return (
@@ -137,78 +179,67 @@ const AppointmentDetailPage = () => {
     label, 
     value, 
     multiline = false,
-    className = ""
+    className = "",
+    placeholder = "Click to add..."
   }: { 
     field: string; 
     label: string; 
     value: string | null | undefined; 
     multiline?: boolean;
     className?: string;
+    placeholder?: string;
   }) => {
     const isEditing = editingField === field;
-    const displayValue = value || 'N/A';
-
-    if (isEditing) {
-      return (
-        <div className={cn("space-y-2", className)}>
-          <p className="font-bold text-slate-400 uppercase text-[10px] tracking-widest">{label}</p>
-          {multiline ? (
-            <Textarea
-              value={editValues[field] || ''}
-              onChange={(e) => setEditValues({ ...editValues, [field]: e.target.value })}
-              className="min-h-[100px]"
-              autoFocus
-            />
-          ) : (
-            <Input
-              value={editValues[field] || ''}
-              onChange={(e) => setEditValues({ ...editValues, [field]: e.target.value })}
-              autoFocus
-            />
-          )}
-          <div className="flex gap-2">
-            <Button 
-              size="sm" 
-              onClick={() => saveField(field)}
-              disabled={saving}
-              className="bg-emerald-600 hover:bg-emerald-700"
-            >
-              {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save size={14} className="mr-1" />}
-              Save
-            </Button>
-            <Button 
-              size="sm" 
-              variant="outline"
-              onClick={cancelEditing}
-              disabled={saving}
-            >
-              <X size={14} className="mr-1" />
-              Cancel
-            </Button>
-          </div>
-        </div>
-      );
-    }
+    const isSaving = savingField === field;
+    const isSaved = savedField === field;
+    const currentValue = editValues[field] !== undefined ? editValues[field] : (value || '');
+    const isEmpty = !currentValue;
 
     return (
       <div className={cn("group relative", className)}>
-        <p className="font-bold text-slate-400 uppercase text-[10px] mb-1.5 tracking-widest">{label}</p>
-        <div className="flex items-start justify-between gap-2">
-          <p className={cn(
-            "text-slate-800 leading-relaxed flex-1",
-            multiline ? "whitespace-pre-wrap" : ""
-          )}>
-            {displayValue}
-          </p>
-          <Button
-            size="sm"
-            variant="ghost"
-            className="opacity-0 group-hover:opacity-100 transition-opacity h-7 w-7 p-0"
-            onClick={() => startEditing(field, value)}
-          >
-            <Edit3 size={14} />
-          </Button>
+        <div className="flex items-center justify-between mb-1.5">
+          <p className="font-bold text-slate-400 uppercase text-[10px] tracking-widest">{label}</p>
+          {isSaving && (
+            <span className="text-[10px] text-slate-400 flex items-center gap-1">
+              <Loader2 size={10} className="animate-spin" />
+              Saving...
+            </span>
+          )}
+          {isSaved && (
+            <span className="text-[10px] text-emerald-600 flex items-center gap-1">
+              <Check size={10} />
+              Saved
+            </span>
+          )}
         </div>
+        
+        {multiline ? (
+          <Textarea
+            value={currentValue}
+            onChange={(e) => handleFieldChange(field, e.target.value)}
+            onFocus={() => handleFieldFocus(field, value)}
+            onBlur={() => handleFieldBlur(field)}
+            placeholder={placeholder}
+            className={cn(
+              "min-h-[100px] resize-none transition-all",
+              isEmpty && !isEditing && "text-slate-400 italic",
+              isEditing && "ring-2 ring-indigo-500 border-indigo-500"
+            )}
+          />
+        ) : (
+          <Input
+            value={currentValue}
+            onChange={(e) => handleFieldChange(field, e.target.value)}
+            onFocus={() => handleFieldFocus(field, value)}
+            onBlur={() => handleFieldBlur(field)}
+            placeholder={placeholder}
+            className={cn(
+              "transition-all",
+              isEmpty && !isEditing && "text-slate-400 italic",
+              isEditing && "ring-2 ring-indigo-500 border-indigo-500"
+            )}
+          />
+        )}
       </div>
     );
   };
@@ -281,6 +312,7 @@ const AppointmentDetailPage = () => {
                 field="goal"
                 label="Goal"
                 value={appointment.goal}
+                placeholder="What's the goal?"
               />
             </div>
             <div className="space-y-1">
@@ -288,6 +320,7 @@ const AppointmentDetailPage = () => {
                 field="issue"
                 label="Issue"
                 value={appointment.issue}
+                placeholder="Main concern?"
               />
             </div>
           </div>
@@ -305,18 +338,21 @@ const AppointmentDetailPage = () => {
                   label="Session North Star"
                   value={appointment.session_north_star}
                   multiline
+                  placeholder="What's the guiding focus for this session?"
                 />
                 <EditableField
                   field="priority_pattern"
                   label="Priority Pattern"
                   value={appointment.priority_pattern}
                   multiline
+                  placeholder="What patterns are we addressing?"
                 />
                 <EditableField
                   field="modes_balances"
                   label="Modes & Balances"
                   value={appointment.modes_balances}
                   multiline
+                  placeholder="Which modes and balances were used?"
                 />
               </CardContent>
             </Card>
@@ -332,18 +368,21 @@ const AppointmentDetailPage = () => {
                   field="acupoints"
                   label="Acupoints"
                   value={appointment.acupoints}
+                  placeholder="Which acupoints were used?"
                 />
                 <EditableField
                   field="notes"
                   label="Session Notes"
                   value={appointment.notes}
                   multiline
+                  placeholder="Session observations and notes..."
                 />
                 <EditableField
                   field="additional_notes"
                   label="Additional Notes"
                   value={appointment.additional_notes}
                   multiline
+                  placeholder="Any additional observations..."
                 />
                 <EditableField
                   field="journal"
@@ -351,6 +390,7 @@ const AppointmentDetailPage = () => {
                   value={appointment.journal}
                   multiline
                   className="bg-amber-50/50 p-3 rounded-xl border border-amber-100"
+                  placeholder="Personal reflections and insights..."
                 />
                 {appointment.notion_link && (
                   <Button variant="outline" size="sm" className="w-full text-xs rounded-xl" asChild>

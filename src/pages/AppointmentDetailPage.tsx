@@ -159,7 +159,7 @@ const AppointmentDetailPage = () => {
         status={appointment.status} 
       />
       
-      <div className="p-4 md:p-8 max-w-6xl mx-auto space-y-8 pt-[70px]"> {/* Added pt-[70px] for fixed header */}
+      <div className="p-4 md:p-8 max-w-6xl mx-auto space-y-8 pt-[80px]"> {/* Increased padding to pt-[80px] */}
         <div className="flex items-center justify-between gap-4">
           <Link to="/appointments">
             <Button variant="ghost" size="sm">

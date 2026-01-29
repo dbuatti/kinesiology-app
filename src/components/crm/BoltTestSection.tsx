@@ -158,7 +158,7 @@ const BoltTestSection = ({ appointmentId, initialBoltScore, onUpdate }: BoltTest
                   </div>
                   <div className="flex items-center gap-3 p-3 bg-amber-50 border border-amber-200 rounded-lg">
                     <div className="w-12 h-12 bg-amber-500 rounded-lg flex items-center justify-center text-white font-bold text-lg flex-shrink-0">
-                      <25
+                      {'<25'}
                     </div>
                     <div>
                       <p className="font-bold text-amber-900">Below Target</p>

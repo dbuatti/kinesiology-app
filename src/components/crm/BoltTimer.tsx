@@ -15,7 +15,7 @@ const BoltTimer = ({ initialScore, onScoreRecorded, isSaving }: BoltTimerProps) 
   const [isRunning, setIsRunning] = useState(false);
   const [isFinished, setIsFinished] = useState(false);
   const [showInstructions, setShowInstructions] = useState(true);
-  const timerRef = useRef<number | null>(null);
+  const timerRef = useRef<NodeJS.Timeout | null>(null);
 
   useEffect(() => {
     if (isRunning) {

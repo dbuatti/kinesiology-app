@@ -100,6 +100,15 @@ const AppointmentDetailPage = () => {
 
       if (error) throw error;
 
+      // Update local state immediately after successful save
+      setAppointment(prev => {
+        if (!prev) return prev;
+        return {
+          ...prev,
+          [field]: value || null
+        };
+      });
+
       // Show saved indicator
       setSavedField(field);
       setTimeout(() => setSavedField(null), 2000);
@@ -145,17 +154,14 @@ const AppointmentDetailPage = () => {
     className?: string;
     placeholder?: string;
   }) => {
-    // Initialize with the prop value and only update from props on initial mount
     const [localValue, setLocalValue] = useState(value || '');
     const [isFocused, setIsFocused] = useState(false);
     const inputRef = useRef<HTMLInputElement | HTMLTextAreaElement>(null);
-    const initialValueRef = useRef(value || '');
 
-    // Only sync from props on initial mount or when the field key changes
+    // Sync with prop value whenever it changes
     useEffect(() => {
-      initialValueRef.current = value || '';
       setLocalValue(value || '');
-    }, [field]); // Only re-run when field changes, not when value changes
+    }, [value]);
 
     // Debounce logic for auto-save while typing
     useEffect(() => {
@@ -168,10 +174,9 @@ const AppointmentDetailPage = () => {
       
       // Set new timeout to auto-save after 1 second of no typing
       saveTimeoutRef.current[field] = setTimeout(() => {
-        // Only save if the local value differs from the initial value
-        if (localValue !== initialValueRef.current) {
+        // Only save if the local value differs from the prop value
+        if (localValue !== (value || '')) {
           saveField(field, localValue);
-          initialValueRef.current = localValue; // Update the reference after saving
         }
       }, 1000);
 
@@ -180,7 +185,7 @@ const AppointmentDetailPage = () => {
           clearTimeout(saveTimeoutRef.current[field]);
         }
       };
-    }, [localValue, isFocused, field]);
+    }, [localValue, isFocused, field, value]);
 
     const handleBlur = () => {
       setIsFocused(false);
@@ -188,9 +193,8 @@ const AppointmentDetailPage = () => {
       if (saveTimeoutRef.current[field]) {
         clearTimeout(saveTimeoutRef.current[field]);
       }
-      if (localValue !== initialValueRef.current) {
+      if (localValue !== (value || '')) {
         saveField(field, localValue);
-        initialValueRef.current = localValue;
       }
     };
 

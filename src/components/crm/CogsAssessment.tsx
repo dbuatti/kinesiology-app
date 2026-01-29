@@ -8,7 +8,7 @@ import {
 } from "@/components/ui/collapsible";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
-import { ChevronDown, Move, Info, Save, Loader2 } from "lucide-react";
+import { ChevronDown, Move, Info, Save, Loader2, ImageOff } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { supabase } from "@/integrations/supabase/client";
 import { showSuccess, showError } from "@/utils/toast";
@@ -39,6 +39,10 @@ const CogsAssessment = ({
   const [sagittalNotes, setSagittalNotes] = useState(initialSagittalNotes || '');
   const [frontalNotes, setFrontalNotes] = useState(initialFrontalNotes || '');
   const [transverseNotes, setTransverseNotes] = useState(initialTransverseNotes || '');
+
+  const [sagittalImageError, setSagittalImageError] = useState(false);
+  const [frontalImageError, setFrontalImageError] = useState(false);
+  const [transverseImageError, setTransverseImageError] = useState(false);
 
   const handleSave = async () => {
     setLoading(true);
@@ -151,7 +155,7 @@ const CogsAssessment = ({
               <Info className="h-4 w-4 text-blue-600" />
               <AlertDescription className="text-sm text-blue-900">
                 <strong>Assessment Guide:</strong> Observe and document the client's range of motion across all three anatomical planes. 
-                Use the reference diagrams below to identify movement patterns and restrictions.
+                Reference diagrams help identify movement patterns and restrictions.
               </AlertDescription>
             </Alert>
 
@@ -175,14 +179,23 @@ const CogsAssessment = ({
                     Sagittal Plane Movements
                   </h4>
                   <div className="bg-white rounded-lg p-4 mb-4">
-                    <img 
-                      src="/images/cogs/sagittal-plane.png" 
-                      alt="Sagittal Plane Cogs Reference"
-                      className="w-full h-auto rounded-lg"
-                      onError={(e) => {
-                        e.currentTarget.style.display = 'none';
-                      }}
-                    />
+                    {!sagittalImageError ? (
+                      <img 
+                        src="/images/cogs/sagittal-plane.png" 
+                        alt="Sagittal Plane Cogs Reference"
+                        className="w-full h-auto rounded-lg"
+                        onError={(e) => {
+                          console.error("Failed to load sagittal plane image");
+                          setSagittalImageError(true);
+                        }}
+                      />
+                    ) : (
+                      <div className="flex flex-col items-center justify-center py-8 text-slate-400">
+                        <ImageOff size={48} className="mb-2" />
+                        <p className="text-sm">Reference diagram not available</p>
+                        <p className="text-xs mt-1">Place image at: public/images/cogs/sagittal-plane.png</p>
+                      </div>
+                    )}
                   </div>
                   <ul className="space-y-2 text-sm text-orange-900">
                     <li className="flex items-start gap-2">
@@ -224,14 +237,23 @@ const CogsAssessment = ({
                     Frontal Plane Movements
                   </h4>
                   <div className="bg-white rounded-lg p-4 mb-4">
-                    <img 
-                      src="/images/cogs/frontal-plane.png" 
-                      alt="Frontal Plane Cogs Reference"
-                      className="w-full h-auto rounded-lg"
-                      onError={(e) => {
-                        e.currentTarget.style.display = 'none';
-                      }}
-                    />
+                    {!frontalImageError ? (
+                      <img 
+                        src="/images/cogs/frontal-plane.png" 
+                        alt="Frontal Plane Cogs Reference"
+                        className="w-full h-auto rounded-lg"
+                        onError={(e) => {
+                          console.error("Failed to load frontal plane image");
+                          setFrontalImageError(true);
+                        }}
+                      />
+                    ) : (
+                      <div className="flex flex-col items-center justify-center py-8 text-slate-400">
+                        <ImageOff size={48} className="mb-2" />
+                        <p className="text-sm">Reference diagram not available</p>
+                        <p className="text-xs mt-1">Place image at: public/images/cogs/frontal-plane.png</p>
+                      </div>
+                    )}
                   </div>
                   <ul className="space-y-2 text-sm text-emerald-900">
                     <li className="flex items-start gap-2">
@@ -273,14 +295,23 @@ const CogsAssessment = ({
                     Transverse Plane Movements
                   </h4>
                   <div className="bg-white rounded-lg p-4 mb-4">
-                    <img 
-                      src="/images/cogs/transverse-plane.png" 
-                      alt="Transverse Plane Cogs Reference"
-                      className="w-full h-auto rounded-lg"
-                      onError={(e) => {
-                        e.currentTarget.style.display = 'none';
-                      }}
-                    />
+                    {!transverseImageError ? (
+                      <img 
+                        src="/images/cogs/transverse-plane.png" 
+                        alt="Transverse Plane Cogs Reference"
+                        className="w-full h-auto rounded-lg"
+                        onError={(e) => {
+                          console.error("Failed to load transverse plane image");
+                          setTransverseImageError(true);
+                        }}
+                      />
+                    ) : (
+                      <div className="flex flex-col items-center justify-center py-8 text-slate-400">
+                        <ImageOff size={48} className="mb-2" />
+                        <p className="text-sm">Reference diagram not available</p>
+                        <p className="text-xs mt-1">Place image at: public/images/cogs/transverse-plane.png</p>
+                      </div>
+                    )}
                   </div>
                   <ul className="space-y-2 text-sm text-blue-900">
                     <li className="flex items-start gap-2">

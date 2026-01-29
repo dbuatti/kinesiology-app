@@ -185,15 +185,20 @@ const AppointmentDetailPage = () => {
   }) => {
     const [localValue, setLocalValue] = useState(value || '');
     const [isFocused, setIsFocused] = useState(false);
+    const [isSaving, setIsSaving] = useState(false);
     const inputRef = useRef<HTMLInputElement | HTMLTextAreaElement>(null);
 
-    console.log(`[EditableField:${field}] Render - localValue: "${localValue}", propValue: "${value}", isFocused: ${isFocused}`);
+    console.log(`[EditableField:${field}] Render - localValue: "${localValue}", propValue: "${value}", isFocused: ${isFocused}, isSaving: ${isSaving}`);
 
-    // Sync with prop value whenever it changes
+    // Sync with prop value ONLY when not focused and not saving
     useEffect(() => {
-      console.log(`[EditableField:${field}] Prop value changed from "${localValue}" to "${value || ''}"`);
-      setLocalValue(value || '');
-    }, [value]);
+      if (!isFocused && !isSaving) {
+        console.log(`[EditableField:${field}] Syncing prop value from "${localValue}" to "${value || ''}"`);
+        setLocalValue(value || '');
+      } else {
+        console.log(`[EditableField:${field}] Skipping prop sync - isFocused: ${isFocused}, isSaving: ${isSaving}`);
+      }
+    }, [value, isFocused, isSaving]);
 
     // Debounce logic for auto-save while typing
     useEffect(() => {
@@ -216,7 +221,11 @@ const AppointmentDetailPage = () => {
         // Only save if the local value differs from the prop value
         if (localValue !== (value || '')) {
           console.log(`[EditableField:${field}] Values differ, triggering save`);
-          saveField(field, localValue);
+          setIsSaving(true);
+          saveField(field, localValue).finally(() => {
+            console.log(`[EditableField:${field}] Save completed, clearing isSaving flag`);
+            setIsSaving(false);
+          });
         } else {
           console.log(`[EditableField:${field}] Values match, skipping save`);
         }
@@ -240,7 +249,11 @@ const AppointmentDetailPage = () => {
       }
       if (localValue !== (value || '')) {
         console.log(`[EditableField:${field}] Saving on blur`);
-        saveField(field, localValue);
+        setIsSaving(true);
+        saveField(field, localValue).finally(() => {
+          console.log(`[EditableField:${field}] Blur save completed, clearing isSaving flag`);
+          setIsSaving(false);
+        });
       } else {
         console.log(`[EditableField:${field}] No changes on blur, skipping save`);
       }
@@ -257,8 +270,8 @@ const AppointmentDetailPage = () => {
       setLocalValue(newValue);
     };
 
-    const isSaving = savingField === field;
-    const isSaved = savedField === field;
+    const isFieldSaving = savingField === field;
+    const isFieldSaved = savedField === field;
     const isEmpty = !localValue && !isFocused;
 
     const InputComponent = multiline ? Textarea : Input;
@@ -267,13 +280,13 @@ const AppointmentDetailPage = () => {
       <div className={cn("group relative", className)}>
         <div className="flex items-center justify-between mb-1.5">
           <p className="font-bold text-slate-400 uppercase text-[10px] tracking-widest">{label}</p>
-          {isSaving && (
+          {isFieldSaving && (
             <span className="text-[10px] text-slate-400 flex items-center gap-1">
               <Loader2 size={10} className="animate-spin" />
               Saving...
             </span>
           )}
-          {isSaved && (
+          {isFieldSaved && (
             <span className="text-[10px] text-emerald-600 flex items-center gap-1 animate-in fade-in duration-200">
               <Check size={10} />
               Saved

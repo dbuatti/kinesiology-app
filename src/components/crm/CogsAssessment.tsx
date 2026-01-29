@@ -44,12 +44,16 @@ const CogsAssessment = ({
   const [frontalImageError, setFrontalImageError] = useState(false);
   const [transverseImageError, setTransverseImageError] = useState(false);
 
+  const sagittalImagePath = "/images/cogs/sagittal-plane.png"; // Assuming user wants PNG
+  const frontalImagePath = "/images/cogs/frontal-plane.png";
+  const transverseImagePath = "/images/cogs/transverse-plane.png";
+
   useEffect(() => {
     // Log the paths we're trying to load
     console.log("[CogsAssessment] Image paths:");
-    console.log("  Sagittal:", window.location.origin + "/images/cogs/sagittal-plane.png");
-    console.log("  Frontal:", window.location.origin + "/images/cogs/frontal-plane.png");
-    console.log("  Transverse:", window.location.origin + "/images/cogs/transverse-plane.png");
+    console.log("  Sagittal:", window.location.origin + sagittalImagePath);
+    console.log("  Frontal:", window.location.origin + frontalImagePath);
+    console.log("  Transverse:", window.location.origin + transverseImagePath);
   }, []);
 
   const handleSave = async () => {
@@ -189,7 +193,7 @@ const CogsAssessment = ({
                   <div className="bg-white rounded-lg p-4 mb-4">
                     {!sagittalImageError ? (
                       <img 
-                        src="/images/cogs/sagittal-plane.png" 
+                        src={sagittalImagePath} 
                         alt="Sagittal Plane Cogs Reference"
                         className="w-full h-auto rounded-lg"
                         onLoad={() => console.log("[CogsAssessment] Sagittal image loaded successfully")}
@@ -204,7 +208,7 @@ const CogsAssessment = ({
                         <ImageOff size={48} className="mb-2" />
                         <p className="text-sm font-semibold">Reference diagram not available</p>
                         <p className="text-xs mt-2 text-center">Expected location:<br/><code className="bg-slate-100 px-2 py-1 rounded">public/images/cogs/sagittal-plane.png</code></p>
-                        <p className="text-xs mt-2 text-amber-600">Try restarting the dev server after adding images</p>
+                        <p className="text-xs mt-2 text-amber-600">Please ensure the file exists or use the placeholder SVG.</p>
                       </div>
                     )}
                   </div>
@@ -250,7 +254,7 @@ const CogsAssessment = ({
                   <div className="bg-white rounded-lg p-4 mb-4">
                     {!frontalImageError ? (
                       <img 
-                        src="/images/cogs/frontal-plane.png" 
+                        src={frontalImagePath} 
                         alt="Frontal Plane Cogs Reference"
                         className="w-full h-auto rounded-lg"
                         onLoad={() => console.log("[CogsAssessment] Frontal image loaded successfully")}
@@ -265,7 +269,7 @@ const CogsAssessment = ({
                         <ImageOff size={48} className="mb-2" />
                         <p className="text-sm font-semibold">Reference diagram not available</p>
                         <p className="text-xs mt-2 text-center">Expected location:<br/><code className="bg-slate-100 px-2 py-1 rounded">public/images/cogs/frontal-plane.png</code></p>
-                        <p className="text-xs mt-2 text-amber-600">Try restarting the dev server after adding images</p>
+                        <p className="text-xs mt-2 text-amber-600">Please ensure the file exists or use the placeholder SVG.</p>
                       </div>
                     )}
                   </div>
@@ -311,7 +315,7 @@ const CogsAssessment = ({
                   <div className="bg-white rounded-lg p-4 mb-4">
                     {!transverseImageError ? (
                       <img 
-                        src="/images/cogs/transverse-plane.png" 
+                        src={transverseImagePath} 
                         alt="Transverse Plane Cogs Reference"
                         className="w-full h-auto rounded-lg"
                         onLoad={() => console.log("[CogsAssessment] Transverse image loaded successfully")}
@@ -326,7 +330,7 @@ const CogsAssessment = ({
                         <ImageOff size={48} className="mb-2" />
                         <p className="text-sm font-semibold">Reference diagram not available</p>
                         <p className="text-xs mt-2 text-center">Expected location:<br/><code className="bg-slate-100 px-2 py-1 rounded">public/images/cogs/transverse-plane.png</code></p>
-                        <p className="text-xs mt-2 text-amber-600">Try restarting the dev server after adding images</p>
+                        <p className="text-xs mt-2 text-amber-600">Please ensure the file exists or use the placeholder SVG.</p>
                       </div>
                     )}
                   </div>

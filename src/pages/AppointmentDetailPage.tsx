@@ -34,15 +34,11 @@ const AppointmentDetailPage = () => {
   const navigate = useNavigate();
   const [appointment, setAppointment] = useState<AppointmentWithClient | null>(null);
   const [loading, setLoading] = useState(true);
-  
-  // Removed global saving/saved state and refs to fix tabbing issue
-  const saveTimeoutRef = useRef<Record<string, NodeJS.Timeout>>({});
 
   const fetchAppointmentData = async () => {
     if (!id) return;
     setLoading(true);
     try {
-      console.log(`[fetchAppointmentData] Fetching appointment data for ID: ${id}`);
       const { data, error } = await supabase
         .from('appointments')
         .select(`
@@ -57,17 +53,45 @@ const AppointmentDetailPage = () => {
 
       if (error) throw error;
 
-      console.log(`[fetchAppointmentData] Data fetched successfully:`, data);
       setAppointment({
         ...data,
         date: new Date(data.date),
       } as unknown as AppointmentWithClient);
 
     } catch (err) {
-      console.error("[fetchAppointmentData] Error fetching appointment details:", err);
+      console.error("Error fetching appointment details:", err);
       showError("Failed to load appointment details.");
     } finally {
       setLoading(false);
+    }
+  };
+
+  const saveField = async (field: string, value: string | boolean | null) => {
+    if (!id || !appointment) return;
+
+    // Normalize empty string to null
+    const normalizedValue = typeof value === 'string' && value.trim() === '' 
+      ? null 
+      : value;
+
+    // Optimistic update
+    const originalValue = appointment[field as keyof AppointmentWithClient];
+    setAppointment(prev => prev ? { ...prev, [field]: normalizedValue } : null);
+
+    try {
+      const { error } = await supabase
+        .from('appointments')
+        .update({ [field]: normalizedValue })
+        .eq('id', id);
+
+      if (error) throw error;
+    } catch (err: any) {
+      console.error(`Failed to save ${field}:`, err);
+      showError("Could not save change");
+
+      // Revert optimistic update on error
+      setAppointment(prev => prev ? { ...prev, [field]: originalValue } : null);
+      throw err;
     }
   };
 
@@ -84,50 +108,12 @@ const AppointmentDetailPage = () => {
     }
   };
 
-  // Simplified saveField: only handles API call and local appointment state update
-  const saveField = async (field: string, value: string | boolean) => {
-    if (!id) return;
-    
-    try {
-      const updateData: Record<string, any> = {
-        [field]: value === '' ? null : value
-      };
-
-      const { error } = await supabase
-        .from('appointments')
-        .update(updateData)
-        .eq('id', id)
-        .select();
-
-      if (error) throw error;
-
-      // Update local state immediately after successful save
-      setAppointment(prev => {
-        if (!prev) return prev;
-        return {
-          ...prev,
-          [field]: value === '' ? null : value
-        };
-      });
-      
-    } catch (err: any) {
-      console.error(`[saveField:${field}] ❌ Error saving field:`, err);
-      showError(err.message || "Failed to save");
-      throw err; // Re-throw so EditableField can handle its local state
-    }
-  };
-
   const handleHydrationToggle = async (checked: boolean) => {
     await saveField('hydrated', checked);
   };
 
   useEffect(() => {
     fetchAppointmentData();
-    
-    // Cleanup timeouts on unmount
-    return () => {
-      Object.values(saveTimeoutRef.current).forEach(timeout => clearTimeout(timeout));
-    };
   }, [id]);
 
   if (loading) return (
@@ -143,7 +129,7 @@ const AppointmentDetailPage = () => {
   const EditableField = ({ 
     field, 
     label, 
-    value, 
+    value: propValue, 
     multiline = false,
     className = "",
     placeholder = "Click to add..."
@@ -155,141 +141,108 @@ const AppointmentDetailPage = () => {
     className?: string;
     placeholder?: string;
   }) => {
-    const isInitialMount = useRef(true);
-    const lastPropValue = useRef(value);
-    
-    const [localValue, setLocalValue] = useState(value || '');
+    const initialValue = (propValue ?? '').toString();
+    const [localValue, setLocalValue] = useState(initialValue);
     const [isFocused, setIsFocused] = useState(false);
-    const inputRef = useRef<HTMLInputElement | HTMLTextAreaElement>(null);
-    
-    // NEW LOCAL STATE FOR SAVING FEEDBACK
     const [isSaving, setIsSaving] = useState(false);
-    const [isSaved, setIsSaved] = useState(false);
-    
-    const localSaveTimeoutRef = useRef<NodeJS.Timeout | null>(null);
-    const savedIndicatorTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+    const [justSaved, setJustSaved] = useState(false);
 
-    // Focus restoration effect: runs synchronously after DOM mutations
-    useLayoutEffect(() => {
-      if (isFocused && inputRef.current && document.activeElement !== inputRef.current) {
-        // If we believe we are focused, but the DOM says otherwise (due to re-render), restore focus.
-        inputRef.current.focus();
-      }
-    });
+    const inputRef = useRef<HTMLInputElement | HTMLTextAreaElement>(null);
+    const saveTimeout = useRef<NodeJS.Timeout | null>(null);
+    const savedTimeout = useRef<NodeJS.Timeout | null>(null);
+    const lastCommittedValue = useRef(initialValue);
 
-    // Function to handle the actual save logic, including local state updates
-    const performSave = async (newValue: string) => {
-      if (newValue === (value || '')) return; // Skip if value hasn't changed from prop
-
-      setIsSaving(true);
-      setIsSaved(false);
-      
-      // Clear any existing saved indicator timeout
-      if (savedIndicatorTimeoutRef.current) clearTimeout(savedIndicatorTimeoutRef.current);
-
-      try {
-        await saveField(field, newValue); // Use the parent's saveField function
-        
-        setIsSaved(true);
-        savedIndicatorTimeoutRef.current = setTimeout(() => {
-          setIsSaved(false);
-        }, 2000);
-        
-      } catch (error) {
-        // Error handled by parent's saveField (showError toast)
-      } finally {
-        setIsSaving(false);
-      }
-    };
-
-    // Sync with prop value ONLY when not focused and not saving
+    // Sync from prop only when not focused and value actually changed externally
     useEffect(() => {
-      const propValueChanged = lastPropValue.current !== value;
-      lastPropValue.current = value;
-      
-      if (isInitialMount.current) {
-        isInitialMount.current = false;
-        setLocalValue(value || '');
-        return;
-      }
-      
-      // Only sync if the prop value changed AND we are not currently focused or saving
-      if (!isFocused && !isSaving && propValueChanged) {
-        const newValue = value || '';
-        if (localValue !== newValue) {
-          setLocalValue(newValue);
-        }
-      }
-    }, [value, isFocused, isSaving, localValue]);
+      const normalizedProp = (propValue ?? '').toString();
 
-    // Debounce logic for auto-save while typing
+      if (isFocused) return;
+      if (normalizedProp === lastCommittedValue.current) return;
+
+      setLocalValue(normalizedProp);
+      lastCommittedValue.current = normalizedProp;
+    }, [propValue, isFocused]);
+
+    // Auto-save debounce while typing
     useEffect(() => {
       if (!isFocused) return;
 
-      // Clear existing debounce timeout
-      if (localSaveTimeoutRef.current) {
-        clearTimeout(localSaveTimeoutRef.current);
-      }
-      
-      // Set new timeout to auto-save after 1 second of no typing
-      const currentLocalValue = localValue;
-      localSaveTimeoutRef.current = setTimeout(() => {
-        if (currentLocalValue !== (value || '')) {
-          performSave(currentLocalValue);
-        }
-      }, 1000);
+      if (saveTimeout.current) clearTimeout(saveTimeout.current);
+
+      const current = localValue;
+
+      saveTimeout.current = setTimeout(() => {
+        if (current === lastCommittedValue.current) return;
+
+        setIsSaving(true);
+
+        saveField(field, current)
+          .then(() => {
+            lastCommittedValue.current = current;
+            setJustSaved(true);
+            savedTimeout.current = setTimeout(() => setJustSaved(false), 1800);
+          })
+          .catch(() => {
+            setLocalValue(lastCommittedValue.current);
+          })
+          .finally(() => setIsSaving(false));
+      }, 800);
 
       return () => {
-        if (localSaveTimeoutRef.current) {
-          clearTimeout(localSaveTimeoutRef.current);
-        }
+        if (saveTimeout.current) clearTimeout(saveTimeout.current);
       };
-    }, [localValue, isFocused, field, value]);
+    }, [localValue, isFocused, field]);
 
     const handleBlur = () => {
-      // Clear debounce timeout
-      if (localSaveTimeoutRef.current) {
-        clearTimeout(localSaveTimeoutRef.current);
+      if (saveTimeout.current) clearTimeout(saveTimeout.current);
+
+      const trimmed = localValue.trim();
+      if (trimmed !== lastCommittedValue.current) {
+        setIsSaving(true);
+        saveField(field, trimmed)
+          .then(() => {
+            lastCommittedValue.current = trimmed;
+            setJustSaved(true);
+            setTimeout(() => setJustSaved(false), 1800);
+          })
+          .catch(() => {
+            setLocalValue(lastCommittedValue.current);
+          })
+          .finally(() => setIsSaving(false));
       }
-      
-      // Fire off save immediately on blur if value changed
-      if (localValue !== (value || '')) {
-        performSave(localValue);
-      }
-      
+
       setIsFocused(false);
     };
 
-    const handleFocus = () => {
-      setIsFocused(true);
-    };
+    const handleFocus = () => setIsFocused(true);
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
       setLocalValue(e.target.value);
     };
 
     const isEmpty = !localValue && !isFocused;
-
     const InputComponent = multiline ? Textarea : Input;
 
     return (
       <div className={cn("group relative", className)}>
         <div className="flex items-center justify-between mb-1.5">
-          <p className="font-bold text-slate-400 uppercase text-[10px] tracking-widest">{label}</p>
+          <p className="font-bold text-slate-400 uppercase text-[10px] tracking-widest">
+            {label}
+          </p>
           {isSaving && (
             <span className="text-[10px] text-slate-400 flex items-center gap-1">
               <Loader2 size={10} className="animate-spin" />
-              Saving...
+              Saving…
             </span>
           )}
-          {isSaved && (
+          {justSaved && (
             <span className="text-[10px] text-emerald-600 flex items-center gap-1 animate-in fade-in duration-200">
               <Check size={10} />
               Saved
             </span>
           )}
         </div>
-        
+
         <InputComponent
           ref={inputRef as any}
           value={localValue}
@@ -297,11 +250,13 @@ const AppointmentDetailPage = () => {
           onFocus={handleFocus}
           onBlur={handleBlur}
           placeholder={placeholder}
+          disabled={isSaving}
           className={cn(
             multiline ? "min-h-[100px] resize-none" : "",
-            "transition-all",
+            "transition-all duration-150",
             isEmpty && !isFocused && "text-slate-400 italic",
-            isFocused && "ring-2 ring-indigo-500 border-indigo-500"
+            isFocused && "ring-2 ring-indigo-500/70 border-indigo-400 shadow-sm",
+            isSaving && "opacity-80 cursor-wait"
           )}
         />
       </div>
@@ -337,8 +292,8 @@ const AppointmentDetailPage = () => {
                 </Badge>
                 <Badge className="bg-indigo-50 text-indigo-700 hover:bg-indigo-100 border-none">{appointment.tag}</Badge>
                 <span className={cn(
-                    "px-3 py-1 rounded-full text-xs font-bold",
-                    appointment.status === 'Completed' ? "bg-emerald-500 text-white" : "bg-slate-200 text-slate-700"
+                  "px-3 py-1 rounded-full text-xs font-bold",
+                  appointment.status === 'Completed' ? "bg-emerald-500 text-white" : "bg-slate-200 text-slate-700"
                 )}>
                   {appointment.status}
                 </span>
@@ -355,6 +310,7 @@ const AppointmentDetailPage = () => {
             </div>
           </div>
         </CardHeader>
+
         <CardContent className="p-6 space-y-6">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4 border-b border-slate-100 pb-6">
             <div className="space-y-1">
@@ -514,14 +470,12 @@ const AppointmentDetailPage = () => {
         </CardContent>
       </Card>
 
-      {/* BOLT Test - Always show */}
       <BoltTestSection
         appointmentId={appointment.id}
         initialBoltScore={appointment.bolt_score}
         onUpdate={fetchAppointmentData}
       />
 
-      {/* Coherence Assessment - Always show */}
       <CoherenceAssessment
         appointmentId={appointment.id}
         initialHeartRate={appointment.heart_rate}
@@ -530,7 +484,6 @@ const AppointmentDetailPage = () => {
         onUpdate={fetchAppointmentData}
       />
 
-      {/* Cogs Assessment - Always show */}
       <CogsAssessment
         appointmentId={appointment.id}
         initialSagittalNotes={appointment.sagittal_plane_notes}

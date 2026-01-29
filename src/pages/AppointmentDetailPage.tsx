@@ -89,6 +89,8 @@ const AppointmentDetailPage = () => {
   const saveField = async (field: string, value: string | boolean) => {
     if (!id) return;
     
+    console.log(`[EditableField:${field}] Starting save. Value:`, value);
+    
     savingFieldsRef.current.add(field);
     setSavingField(field);
 
@@ -104,6 +106,8 @@ const AppointmentDetailPage = () => {
         .select();
 
       if (error) throw error;
+
+      console.log(`[EditableField:${field}] Save successful.`);
 
       // Update local state immediately after successful save
       setAppointment(prev => {
@@ -121,7 +125,7 @@ const AppointmentDetailPage = () => {
       }, 2000);
       
     } catch (err: any) {
-      console.error(`Error saving field ${field}:`, err);
+      console.error(`[EditableField:${field}] Error saving field:`, err);
       showError(err.message || "Failed to save");
     } finally {
       savingFieldsRef.current.delete(field);
@@ -176,14 +180,20 @@ const AppointmentDetailPage = () => {
     useEffect(() => {
       const isSaving = savingFieldsRef.current.has(field);
       if (!isFocused && !isSaving && pendingSaveValueRef.current === null) {
-        setLocalValue(value || '');
+        const newValue = value || '';
+        if (localValue !== newValue) {
+          console.log(`[EditableField:${field}] Syncing prop value to local state. New value:`, newValue);
+          setLocalValue(newValue);
+        }
       }
-    }, [value, isFocused]);
+    }, [value, isFocused, field]);
 
     // Debounce logic for auto-save while typing
     useEffect(() => {
       if (!isFocused) return;
 
+      console.log(`[EditableField:${field}] Typing detected. Clearing previous debounce timer.`);
+      
       // Clear existing timeout for this field
       if (saveTimeoutRef.current[field]) {
         clearTimeout(saveTimeoutRef.current[field]);
@@ -193,21 +203,27 @@ const AppointmentDetailPage = () => {
       saveTimeoutRef.current[field] = setTimeout(() => {
         // Only save if the local value differs from the prop value
         if (localValue !== (value || '')) {
+          console.log(`[EditableField:${field}] Debounce fired. Initiating auto-save.`);
           pendingSaveValueRef.current = localValue;
           saveField(field, localValue).finally(() => {
             pendingSaveValueRef.current = null;
           });
+        } else {
+          console.log(`[EditableField:${field}] Debounce fired, but value unchanged. Skipping save.`);
         }
       }, 1000);
 
       return () => {
         if (saveTimeoutRef.current[field]) {
+          console.log(`[EditableField:${field}] Cleanup: Clearing debounce timer.`);
           clearTimeout(saveTimeoutRef.current[field]);
         }
       };
     }, [localValue, isFocused, field, value]);
 
     const handleBlur = () => {
+      console.log(`[EditableField:${field}] Blur event triggered.`);
+      
       // Clear debounce timeout
       if (saveTimeoutRef.current[field]) {
         clearTimeout(saveTimeoutRef.current[field]);
@@ -215,10 +231,13 @@ const AppointmentDetailPage = () => {
       
       // Fire off save in background (non-blocking)
       if (localValue !== (value || '')) {
+        console.log(`[EditableField:${field}] Blur save initiated. Value:`, localValue);
         pendingSaveValueRef.current = localValue;
         saveField(field, localValue).finally(() => {
           pendingSaveValueRef.current = null;
         });
+      } else {
+        console.log(`[EditableField:${field}] Blur save skipped: value unchanged.`);
       }
       
       // Immediately unfocus so user can click into next field
@@ -226,10 +245,12 @@ const AppointmentDetailPage = () => {
     };
 
     const handleFocus = () => {
+      console.log(`[EditableField:${field}] Focus event triggered.`);
       setIsFocused(true);
     };
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+      console.log(`[EditableField:${field}] Change event. New value length: ${e.target.value.length}`);
       setLocalValue(e.target.value);
     };
 

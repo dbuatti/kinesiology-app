@@ -31,7 +31,7 @@ const AppointmentDetailPage = () => {
   const [appointment, setAppointment] = useState<AppointmentWithClient | null>(null);
   const [loading, setLoading] = useState(true);
   
-  // State for visual feedback (kept in parent)
+  // State for visual feedback
   const [savingField, setSavingField] = useState<string | null>(null);
   const [savedField, setSavedField] = useState<string | null>(null);
   
@@ -100,15 +100,6 @@ const AppointmentDetailPage = () => {
 
       if (error) throw error;
 
-      // Update local state to reflect the saved value, triggering a re-render 
-      // but without losing focus because the input manages its own state.
-      if (appointment) {
-        setAppointment({
-          ...appointment,
-          [field]: value || null
-        });
-      }
-
       // Show saved indicator
       setSavedField(field);
       setTimeout(() => setSavedField(null), 2000);
@@ -154,18 +145,19 @@ const AppointmentDetailPage = () => {
     className?: string;
     placeholder?: string;
   }) => {
+    // Initialize with the prop value and only update from props on initial mount
     const [localValue, setLocalValue] = useState(value || '');
     const [isFocused, setIsFocused] = useState(false);
     const inputRef = useRef<HTMLInputElement | HTMLTextAreaElement>(null);
+    const initialValueRef = useRef(value || '');
 
-    // 1. Sync external value (after successful save) to local state if not currently focused
+    // Only sync from props on initial mount or when the field key changes
     useEffect(() => {
-      if (!isFocused && value !== localValue) {
-        setLocalValue(value || '');
-      }
-    }, [value, isFocused]);
+      initialValueRef.current = value || '';
+      setLocalValue(value || '');
+    }, [field]); // Only re-run when field changes, not when value changes
 
-    // 2. Debounce logic for auto-save while typing
+    // Debounce logic for auto-save while typing
     useEffect(() => {
       if (!isFocused) return;
 
@@ -176,9 +168,10 @@ const AppointmentDetailPage = () => {
       
       // Set new timeout to auto-save after 1 second of no typing
       saveTimeoutRef.current[field] = setTimeout(() => {
-        // Only save if the local value differs from the last saved value
-        if (localValue !== (value || '')) {
-            saveField(field, localValue);
+        // Only save if the local value differs from the initial value
+        if (localValue !== initialValueRef.current) {
+          saveField(field, localValue);
+          initialValueRef.current = localValue; // Update the reference after saving
         }
       }, 1000);
 
@@ -187,7 +180,7 @@ const AppointmentDetailPage = () => {
           clearTimeout(saveTimeoutRef.current[field]);
         }
       };
-    }, [localValue, isFocused, field, value]);
+    }, [localValue, isFocused, field]);
 
     const handleBlur = () => {
       setIsFocused(false);
@@ -195,8 +188,9 @@ const AppointmentDetailPage = () => {
       if (saveTimeoutRef.current[field]) {
         clearTimeout(saveTimeoutRef.current[field]);
       }
-      if (localValue !== (value || '')) {
+      if (localValue !== initialValueRef.current) {
         saveField(field, localValue);
+        initialValueRef.current = localValue;
       }
     };
 
@@ -221,7 +215,7 @@ const AppointmentDetailPage = () => {
             </span>
           )}
           {isSaved && (
-            <span className="text-[10px] text-emerald-600 flex items-center gap-1">
+            <span className="text-[10px] text-emerald-600 flex items-center gap-1 animate-in fade-in duration-200">
               <Check size={10} />
               Saved
             </span>

@@ -14,6 +14,7 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
 import { Loader2 } from "lucide-react";
 import { showSuccess, showError } from "@/utils/toast";
 import { Client } from "@/types/crm";
@@ -26,6 +27,10 @@ const formSchema = z.object({
   born: z.string().optional(),
   suburb: z.string().optional(), // Handled as comma-separated string in form
   occupation: z.string().optional(),
+  marital_status: z.string().optional(),
+  children: z.string().optional(),
+  chatgpt_url: z.string().url("Must be a valid URL").or(z.string().length(0)).optional(),
+  journal: z.string().optional(),
 });
 
 interface ClientFormProps {
@@ -47,6 +52,10 @@ const ClientForm = ({ onSuccess, initialData }: ClientFormProps) => {
       born: initialData?.born ? new Date(initialData.born).toISOString().split('T')[0] : "",
       suburb: initialData?.suburb?.join(", ") || "", // Convert array to string for form
       occupation: initialData?.occupation || "",
+      marital_status: initialData?.marital_status || "",
+      children: initialData?.children || "",
+      chatgpt_url: initialData?.chatgpt_url || "",
+      journal: initialData?.journal || "",
     },
   });
 
@@ -69,6 +78,10 @@ const ClientForm = ({ onSuccess, initialData }: ClientFormProps) => {
         born: values.born ? new Date(values.born).toISOString() : null,
         suburbs: suburbsArray, // Use the correct column name and array format
         occupation: values.occupation || null,
+        marital_status: values.marital_status || null,
+        children: values.children || null,
+        chatgpt_url: values.chatgpt_url || null,
+        journal: values.journal || null,
       };
 
       if (initialData?.id) {
@@ -181,14 +194,75 @@ const ClientForm = ({ onSuccess, initialData }: ClientFormProps) => {
           )}
         />
 
+        <div className="grid grid-cols-2 gap-4">
+          <FormField
+            control={form.control}
+            name="occupation"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Occupation</FormLabel>
+                <FormControl>
+                  <Input placeholder="Graphic Designer" {...field} />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+          <FormField
+            control={form.control}
+            name="marital_status"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Marital Status</FormLabel>
+                <FormControl>
+                  <Input placeholder="Single, Married, etc." {...field} />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+        </div>
+
         <FormField
           control={form.control}
-          name="occupation"
+          name="children"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Occupation</FormLabel>
+              <FormLabel>Children</FormLabel>
               <FormControl>
-                <Input placeholder="Graphic Designer" {...field} />
+                <Input placeholder="e.g., 2 (ages 5, 8)" {...field} />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+
+        <FormField
+          control={form.control}
+          name="chatgpt_url"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>ChatGPT URL</FormLabel>
+              <FormControl>
+                <Input placeholder="https://chat.openai.com/c/..." {...field} />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+
+        <FormField
+          control={form.control}
+          name="journal"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>History & Notes (Journal)</FormLabel>
+              <FormControl>
+                <Textarea 
+                  placeholder="Long-term history, key notes, and personal reflections..." 
+                  className="min-h-[100px] resize-none"
+                  {...field} 
+                />
               </FormControl>
               <FormMessage />
             </FormItem>

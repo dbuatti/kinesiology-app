@@ -149,6 +149,7 @@ const AppointmentDetailPage = () => {
   if (!appointment) return <div className="p-12 text-center">Appointment not found</div>;
 
   const clientLink = `/clients/${appointment.clients.id}`;
+  const isHydrated = appointment.hydrated === true;
 
   return (
     <div className="p-4 md:p-8 max-w-6xl mx-auto space-y-8">
@@ -184,6 +185,15 @@ const AppointmentDetailPage = () => {
                 )}>
                   {appointment.status}
                 </span>
+                {appointment.hydrated !== null && (
+                  <Badge className={cn(
+                    "px-3 py-1 rounded-full text-xs font-bold flex items-center gap-1",
+                    isHydrated ? "bg-blue-600 text-white" : "bg-red-500 text-white"
+                  )}>
+                    <Droplets size={12} />
+                    {isHydrated ? "Hydrated" : "Dehydrated"}
+                  </Badge>
+                )}
               </div>
               <CardTitle className="text-3xl font-extrabold text-slate-900 pt-2">
                 {appointment.name || "Kinesiology Session"}

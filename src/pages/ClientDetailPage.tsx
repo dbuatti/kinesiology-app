@@ -7,8 +7,8 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { 
   ArrowLeft, Plus, Mail, Phone, MapPin, Calendar, 
-  Clock, Star, Loader2, Briefcase, Heart, Baby, ExternalLink, BookOpen,
-  Target, Zap, Activity, Edit3, Trash2, MoreHorizontal, FlaskConical, TrendingUp
+  Star, Loader2, Briefcase, Heart, Baby, ExternalLink,
+  Activity, Edit3, Trash2, MoreHorizontal, FlaskConical, TrendingUp
 } from "lucide-react";
 import { format } from "date-fns";
 import { Client, Appointment } from "@/types/crm";
@@ -267,7 +267,7 @@ const ClientDetailPage = () => {
             <Card className="bg-amber-50/50 border-amber-100 shadow-none rounded-2xl">
               <CardHeader className="pb-2">
                 <CardTitle className="text-sm flex items-center gap-2 text-amber-700">
-                  <BookOpen size={16} /> History & Notes
+                  History & Notes
                 </CardTitle>
               </CardHeader>
               <CardContent>
@@ -385,7 +385,7 @@ const ClientDetailPage = () => {
             {appointments.length === 0 && (
               <div className="text-center py-16 bg-white rounded-3xl border-2 border-dashed border-slate-100">
                 <div className="w-16 h-16 bg-indigo-50 rounded-full flex items-center justify-center mx-auto mb-4">
-                    <Calendar className="text-indigo-300" size={32} />
+                    <Calendar size={32} className="text-indigo-300" />
                 </div>
                 <h4 className="text-slate-900 font-bold text-lg">No appointments yet</h4>
                 <p className="text-slate-400 mt-1 max-w-xs mx-auto">Start building this client's history by booking their first session.</p>

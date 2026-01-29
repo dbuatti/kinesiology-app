@@ -97,7 +97,7 @@ const EmotionAssessment = ({
         onSaveField('emotion_primary_selection', newPrimary || null),
         onSaveField('emotion_secondary_selection', newSecondary || null),
       ]);
-      onUpdate(); 
+      // Removed onUpdate() call here to prevent full page refresh
     } catch (error) {
       console.error("Failed to save emotion assessment:", error);
     } finally {

@@ -221,6 +221,22 @@ const AppointmentDetailPage = () => {
       };
     }, [localValue, isFocused, field, value]);
 
+    // NEW: Fallback effect to catch saves missed by handleBlur when focus moves quickly
+    useEffect(() => {
+      // If we just lost focus AND we have unsaved local changes
+      if (!isFocused && localValue !== (value || '')) {
+        console.log(`[EditableField:${field}] CATCH-UP SAVE: Detected unfocus with unsaved changes. Initiating save.`);
+        
+        // Clear any pending debounce save first (to prevent double save)
+        if (saveTimeoutRef.current[field]) {
+          clearTimeout(saveTimeoutRef.current[field]);
+        }
+        
+        // Trigger save
+        saveField(field, localValue);
+      }
+    }, [isFocused, localValue, value, field]);
+
     const handleBlur = () => {
       console.log(`[EditableField:${field}] Blur event triggered.`);
       

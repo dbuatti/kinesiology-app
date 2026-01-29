@@ -6,9 +6,11 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
+import { Switch } from "@/components/ui/switch";
+import { Label } from "@/components/ui/label";
 import { 
   ArrowLeft, Calendar, Clock, Target, Zap, 
-  ExternalLink, Loader2, Trash2, User, Check
+  ExternalLink, Loader2, Trash2, User, Check, Droplets
 } from "lucide-react";
 import { format } from "date-fns";
 import { Appointment } from "@/types/crm";
@@ -23,6 +25,8 @@ interface AppointmentWithClient extends Appointment {
   sagittal_plane_notes?: string | null;
   frontal_plane_notes?: string | null;
   transverse_plane_notes?: string | null;
+  hydrated?: boolean | null;
+  hydration_notes?: string | null;
 }
 
 const AppointmentDetailPage = () => {
@@ -40,6 +44,7 @@ const AppointmentDetailPage = () => {
   const fetchAppointmentData = async () => {
     if (!id) return;
     setLoading(true);
+    console.log("[AppointmentDetail] Fetching appointment data for ID:", id);
     try {
       const { data, error } = await supabase
         .from('appointments')
@@ -63,7 +68,7 @@ const AppointmentDetailPage = () => {
       } as unknown as AppointmentWithClient);
 
     } catch (err) {
-      console.error("Error fetching appointment details:", err);
+      console.error("[AppointmentDetail] Error fetching appointment details:", err);
       showError("Failed to load appointment details.");
     } finally {
       setLoading(false);
@@ -83,41 +88,64 @@ const AppointmentDetailPage = () => {
     }
   };
 
-  const saveField = async (field: string, value: string) => {
+  const saveField = async (field: string, value: string | boolean) => {
     if (!id) return;
+    
+    console.log(`[AppointmentDetail] saveField called - field: ${field}, value:`, value);
+    console.log(`[AppointmentDetail] Current appointment state before save:`, appointment?.[field as keyof AppointmentWithClient]);
     
     setSavingField(field);
 
     try {
       const updateData: Record<string, any> = {
-        [field]: value || null
+        [field]: value === '' ? null : value
       };
 
-      const { error } = await supabase
+      console.log(`[AppointmentDetail] Sending update to Supabase:`, updateData);
+
+      const { error, data: updatedData } = await supabase
         .from('appointments')
         .update(updateData)
-        .eq('id', id);
+        .eq('id', id)
+        .select();
 
       if (error) throw error;
 
+      console.log(`[AppointmentDetail] Supabase update successful:`, updatedData);
+
       // Update local state immediately after successful save
       setAppointment(prev => {
-        if (!prev) return prev;
-        return {
+        if (!prev) {
+          console.log(`[AppointmentDetail] No previous appointment state`);
+          return prev;
+        }
+        const newState = {
           ...prev,
-          [field]: value || null
+          [field]: value === '' ? null : value
         };
+        console.log(`[AppointmentDetail] Updated local state:`, newState[field as keyof AppointmentWithClient]);
+        return newState;
       });
 
       // Show saved indicator
       setSavedField(field);
-      setTimeout(() => setSavedField(null), 2000);
+      setTimeout(() => {
+        console.log(`[AppointmentDetail] Clearing saved indicator for field: ${field}`);
+        setSavedField(null);
+      }, 2000);
       
     } catch (err: any) {
+      console.error(`[AppointmentDetail] Error saving field ${field}:`, err);
       showError(err.message || "Failed to save");
     } finally {
+      console.log(`[AppointmentDetail] Clearing saving indicator for field: ${field}`);
       setSavingField(null);
     }
+  };
+
+  const handleHydrationToggle = async (checked: boolean) => {
+    console.log("[AppointmentDetail] Hydration toggle changed:", checked);
+    await saveField('hydrated', checked);
   };
 
   useEffect(() => {
@@ -125,6 +153,7 @@ const AppointmentDetailPage = () => {
     
     // Cleanup timeouts on unmount
     return () => {
+      console.log("[AppointmentDetail] Cleaning up save timeouts");
       Object.values(saveTimeoutRef.current).forEach(timeout => clearTimeout(timeout));
     };
   }, [id]);
@@ -158,48 +187,74 @@ const AppointmentDetailPage = () => {
     const [isFocused, setIsFocused] = useState(false);
     const inputRef = useRef<HTMLInputElement | HTMLTextAreaElement>(null);
 
+    console.log(`[EditableField:${field}] Render - localValue: "${localValue}", propValue: "${value}", isFocused: ${isFocused}`);
+
     // Sync with prop value whenever it changes
     useEffect(() => {
+      console.log(`[EditableField:${field}] Prop value changed from "${localValue}" to "${value || ''}"`);
       setLocalValue(value || '');
     }, [value]);
 
     // Debounce logic for auto-save while typing
     useEffect(() => {
-      if (!isFocused) return;
+      if (!isFocused) {
+        console.log(`[EditableField:${field}] Not focused, skipping debounce setup`);
+        return;
+      }
+
+      console.log(`[EditableField:${field}] Setting up debounce - localValue: "${localValue}"`);
 
       // Clear existing timeout for this field
       if (saveTimeoutRef.current[field]) {
+        console.log(`[EditableField:${field}] Clearing existing timeout`);
         clearTimeout(saveTimeoutRef.current[field]);
       }
       
       // Set new timeout to auto-save after 1 second of no typing
       saveTimeoutRef.current[field] = setTimeout(() => {
+        console.log(`[EditableField:${field}] Debounce timeout fired - comparing "${localValue}" vs "${value || ''}"`);
         // Only save if the local value differs from the prop value
         if (localValue !== (value || '')) {
+          console.log(`[EditableField:${field}] Values differ, triggering save`);
           saveField(field, localValue);
+        } else {
+          console.log(`[EditableField:${field}] Values match, skipping save`);
         }
       }, 1000);
 
       return () => {
         if (saveTimeoutRef.current[field]) {
+          console.log(`[EditableField:${field}] Cleanup - clearing timeout`);
           clearTimeout(saveTimeoutRef.current[field]);
         }
       };
     }, [localValue, isFocused, field, value]);
 
     const handleBlur = () => {
+      console.log(`[EditableField:${field}] Blur event - localValue: "${localValue}", propValue: "${value || ''}"`);
       setIsFocused(false);
       // Clear debounce timeout and save immediately on blur if value changed
       if (saveTimeoutRef.current[field]) {
+        console.log(`[EditableField:${field}] Clearing debounce timeout on blur`);
         clearTimeout(saveTimeoutRef.current[field]);
       }
       if (localValue !== (value || '')) {
+        console.log(`[EditableField:${field}] Saving on blur`);
         saveField(field, localValue);
+      } else {
+        console.log(`[EditableField:${field}] No changes on blur, skipping save`);
       }
     };
 
     const handleFocus = () => {
+      console.log(`[EditableField:${field}] Focus event`);
       setIsFocused(true);
+    };
+
+    const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+      const newValue = e.target.value;
+      console.log(`[EditableField:${field}] Change event - old: "${localValue}", new: "${newValue}"`);
+      setLocalValue(newValue);
     };
 
     const isSaving = savingField === field;
@@ -229,7 +284,7 @@ const AppointmentDetailPage = () => {
         <InputComponent
           ref={inputRef as any}
           value={localValue}
-          onChange={(e) => setLocalValue(e.target.value)}
+          onChange={handleChange}
           onFocus={handleFocus}
           onBlur={handleBlur}
           placeholder={placeholder}
@@ -324,6 +379,51 @@ const AppointmentDetailPage = () => {
               />
             </div>
           </div>
+
+          {/* Hydration Assessment */}
+          <Card className="border-2 border-blue-200 bg-blue-50/50 shadow-none rounded-2xl">
+            <CardHeader className="pb-3">
+              <CardTitle className="text-sm flex items-center gap-2 text-blue-900">
+                <Droplets size={18} className="text-blue-600" /> Hydration Assessment
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="flex items-center justify-between p-4 bg-white rounded-xl border border-blue-200">
+                <div className="flex items-center gap-3">
+                  <div className={cn(
+                    "w-10 h-10 rounded-full flex items-center justify-center transition-colors",
+                    appointment.hydrated 
+                      ? "bg-emerald-100 text-emerald-600" 
+                      : "bg-slate-100 text-slate-400"
+                  )}>
+                    <Droplets size={20} />
+                  </div>
+                  <div>
+                    <Label htmlFor="hydration-toggle" className="text-base font-bold text-slate-900 cursor-pointer">
+                      Client Hydrated
+                    </Label>
+                    <p className="text-xs text-slate-500">
+                      {appointment.hydrated ? "Hydration test passed" : "Hydration test not passed"}
+                    </p>
+                  </div>
+                </div>
+                <Switch
+                  id="hydration-toggle"
+                  checked={appointment.hydrated || false}
+                  onCheckedChange={handleHydrationToggle}
+                  className="data-[state=checked]:bg-emerald-500"
+                />
+              </div>
+              
+              <EditableField
+                field="hydration_notes"
+                label="Hydration Recommendations"
+                value={appointment.hydration_notes}
+                multiline
+                placeholder="e.g., Drink 500ml water before next session, increase daily intake to 2L..."
+              />
+            </CardContent>
+          </Card>
 
           <div className="space-y-6">
             <Card className="border-slate-200 shadow-none rounded-2xl bg-slate-50">

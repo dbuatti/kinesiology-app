@@ -30,6 +30,9 @@ export interface Appointment {
   sagittal_plane_notes?: string | null;
   frontal_plane_notes?: string | null;
   transverse_plane_notes?: string | null;
+  // Hydration tracking fields
+  hydrated?: boolean | null;
+  hydration_notes?: string | null;
 }
 
 export interface Client {

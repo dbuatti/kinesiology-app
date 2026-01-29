@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import {
   Collapsible,
   CollapsibleContent,
@@ -15,7 +15,6 @@ import { showSuccess, showError } from "@/utils/toast";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 interface CogsAssessmentProps {
   appointmentId: string;
@@ -44,17 +43,9 @@ const CogsAssessment = ({
   const [frontalImageError, setFrontalImageError] = useState(false);
   const [transverseImageError, setTransverseImageError] = useState(false);
 
-  const sagittalImagePath = "/images/cogs/sagittal-plane.png"; // Assuming user wants PNG
+  const sagittalImagePath = "/images/cogs/sagittal-plane.png";
   const frontalImagePath = "/images/cogs/frontal-plane.png";
   const transverseImagePath = "/images/cogs/transverse-plane.png";
-
-  useEffect(() => {
-    // Log the paths we're trying to load
-    console.log("[CogsAssessment] Image paths:");
-    console.log("  Sagittal:", window.location.origin + sagittalImagePath);
-    console.log("  Frontal:", window.location.origin + frontalImagePath);
-    console.log("  Transverse:", window.location.origin + transverseImagePath);
-  }, []);
 
   const handleSave = async () => {
     setLoading(true);
@@ -66,9 +57,7 @@ const CogsAssessment = ({
       if (!user) {
         throw new Error("User not authenticated");
       }
-      console.log("[CogsAssessment] User ID:", user.id);
 
-      // Check existing data
       const { data: existingAppointment, error: fetchError } = await supabase
         .from("appointments")
         .select("sagittal_plane_notes, frontal_plane_notes, transverse_plane_notes, user_id")
@@ -83,8 +72,6 @@ const CogsAssessment = ({
       const isNewAssessment = !existingAppointment?.sagittal_plane_notes && 
                               !existingAppointment?.frontal_plane_notes && 
                               !existingAppointment?.transverse_plane_notes;
-      console.log("[CogsAssessment] Is new assessment:", isNewAssessment);
-      console.log("[CogsAssessment] Existing notes:", existingAppointment);
 
       const { error } = await supabase
         .from("appointments")
@@ -98,21 +85,6 @@ const CogsAssessment = ({
       if (error) {
         console.error("[CogsAssessment] Error updating appointment:", error);
         throw error;
-      }
-
-      console.log("[CogsAssessment] Cogs assessment saved successfully");
-
-      // Check if procedure was created
-      const { data: procedures, error: procError } = await supabase
-        .from("procedures")
-        .select("*")
-        .eq("user_id", user.id)
-        .or("name.ilike.%range of motion%,name.ilike.%cogs%");
-
-      if (procError) {
-        console.error("[CogsAssessment] Error fetching procedures:", procError);
-      } else {
-        console.log("[CogsAssessment] Cogs procedures found:", procedures);
       }
 
       showSuccess(
@@ -143,8 +115,8 @@ const CogsAssessment = ({
                   <Move size={24} className="text-white" />
                 </div>
                 <div>
-                  <CardTitle className="text-xl font-bold text-slate-900">Range of Motion Assessment</CardTitle>
-                  <CardDescription className="text-slate-600">"Cogs" - Mobility evaluation across three planes</CardDescription>
+                  <CardTitle className="text-xl font-bold text-slate-900">Range of Motion/Mobility Assessment</CardTitle>
+                  <CardDescription className="text-slate-600">"Cogs" - Evaluate all three anatomical planes</CardDescription>
                 </div>
               </div>
               <div className="flex items-center gap-3">
@@ -166,334 +138,257 @@ const CogsAssessment = ({
             <Alert className="bg-blue-50 border-blue-200">
               <Info className="h-4 w-4 text-blue-600" />
               <AlertDescription className="text-sm text-blue-900">
-                <strong>Assessment Guide:</strong> Observe and document the client's range of motion across all three anatomical planes. 
-                Reference diagrams help identify movement patterns and restrictions.
+                <strong>Assessment Guide:</strong> Document observations for all three anatomical planes. 
+                Reference diagrams on the left show movement patterns for each plane.
               </AlertDescription>
             </Alert>
 
-            <Tabs defaultValue="sagittal" className="w-full">
-              <TabsList className="grid w-full grid-cols-3 bg-slate-100 p-1 rounded-xl">
-                <TabsTrigger value="sagittal" className="rounded-lg data-[state=active]:bg-white data-[state=active]:shadow-sm">
-                  Sagittal Plane
-                </TabsTrigger>
-                <TabsTrigger value="frontal" className="rounded-lg data-[state=active]:bg-white data-[state=active]:shadow-sm">
-                  Frontal Plane
-                </TabsTrigger>
-                <TabsTrigger value="transverse" className="rounded-lg data-[state=active]:bg-white data-[state=active]:shadow-sm">
-                  Transverse Plane
-                </TabsTrigger>
-              </TabsList>
-
-              <TabsContent value="sagittal" className="space-y-4 mt-6">
+            {/* Sagittal Plane */}
+            <div className="space-y-3">
+              <h3 className="text-lg font-bold text-orange-900 flex items-center gap-2">
+                <span className="w-8 h-8 bg-orange-500 text-white rounded-full flex items-center justify-center text-sm">S</span>
+                Sagittal Plane
+              </h3>
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                 <div className="bg-orange-50 border-2 border-orange-200 rounded-xl p-4">
-                  <h4 className="font-bold text-orange-900 mb-3 flex items-center gap-2">
-                    <span className="w-6 h-6 bg-orange-500 text-white rounded-full flex items-center justify-center text-xs">S</span>
-                    Sagittal Plane Movements
-                  </h4>
-                  <div className="bg-white rounded-lg p-4 mb-4">
+                  <div className="bg-white rounded-lg p-4 mb-3">
                     {!sagittalImageError ? (
                       <img 
                         src={sagittalImagePath} 
-                        alt="Sagittal Plane Cogs Reference"
+                        alt="Sagittal Plane Reference"
                         className="w-full h-auto rounded-lg"
-                        onLoad={() => console.log("[CogsAssessment] Sagittal image loaded successfully")}
-                        onError={(e) => {
-                          console.error("[CogsAssessment] Failed to load sagittal plane image");
-                          console.error("[CogsAssessment] Attempted URL:", e.currentTarget.src);
-                          setSagittalImageError(true);
-                        }}
+                        onError={() => setSagittalImageError(true)}
                       />
                     ) : (
-                      <div className="flex flex-col items-center justify-center py-8 text-slate-400">
-                        <ImageOff size={48} className="mb-2" />
-                        <p className="text-sm font-semibold">Reference diagram not available</p>
-                        <p className="text-xs mt-2 text-center">Expected location:<br/><code className="bg-slate-100 px-2 py-1 rounded">public/images/cogs/sagittal-plane.png</code></p>
-                        <p className="text-xs mt-2 text-amber-600">Please ensure the file exists or use the placeholder SVG.</p>
+                      <div className="flex flex-col items-center justify-center py-12 text-slate-400">
+                        <ImageOff size={40} className="mb-2" />
+                        <p className="text-xs">Diagram not available</p>
                       </div>
                     )}
                   </div>
-                  <ul className="space-y-2 text-sm text-orange-900">
+                  <ul className="space-y-1.5 text-xs text-orange-900">
                     <li className="flex items-start gap-2">
-                      <span className="w-1.5 h-1.5 bg-orange-500 rounded-full mt-2 flex-shrink-0"></span>
-                      <span><strong>Flexion (FX):</strong> Forward bending movements</span>
+                      <span className="w-1 h-1 bg-orange-500 rounded-full mt-1.5 flex-shrink-0"></span>
+                      <span><strong>Flexion (FX):</strong> Forward bending</span>
                     </li>
                     <li className="flex items-start gap-2">
-                      <span className="w-1.5 h-1.5 bg-orange-500 rounded-full mt-2 flex-shrink-0"></span>
-                      <span><strong>Extension (EX):</strong> Backward bending movements</span>
+                      <span className="w-1 h-1 bg-orange-500 rounded-full mt-1.5 flex-shrink-0"></span>
+                      <span><strong>Extension (EX):</strong> Backward bending</span>
                     </li>
                     <li className="flex items-start gap-2">
-                      <span className="w-1.5 h-1.5 bg-orange-500 rounded-full mt-2 flex-shrink-0"></span>
-                      <span><strong>Anterior Tilt (AT):</strong> Forward tilting movements</span>
+                      <span className="w-1 h-1 bg-orange-500 rounded-full mt-1.5 flex-shrink-0"></span>
+                      <span><strong>Anterior Tilt (AT):</strong> Forward tilting</span>
                     </li>
                     <li className="flex items-start gap-2">
-                      <span className="w-1.5 h-1.5 bg-orange-500 rounded-full mt-2 flex-shrink-0"></span>
-                      <span><strong>Posterior Tilt (PT):</strong> Backward tilting movements</span>
+                      <span className="w-1 h-1 bg-orange-500 rounded-full mt-1.5 flex-shrink-0"></span>
+                      <span><strong>Posterior Tilt (PT):</strong> Backward tilting</span>
                     </li>
                   </ul>
                 </div>
                 <div>
                   <Label htmlFor="sagittalNotes" className="text-base font-bold text-slate-900 mb-2 block">
-                    Sagittal Plane Observations
+                    Sagittal Plane Cogs Notes:
                   </Label>
                   <Textarea
                     id="sagittalNotes"
                     placeholder="Document flexion/extension patterns, restrictions, asymmetries..."
                     value={sagittalNotes}
                     onChange={(e) => setSagittalNotes(e.target.value)}
-                    className="min-h-[120px] resize-none"
+                    className="min-h-[280px] resize-none"
                   />
                 </div>
-              </TabsContent>
+              </div>
+            </div>
 
-              <TabsContent value="frontal" className="space-y-4 mt-6">
+            {/* Frontal Plane */}
+            <div className="space-y-3">
+              <h3 className="text-lg font-bold text-emerald-900 flex items-center gap-2">
+                <span className="w-8 h-8 bg-emerald-500 text-white rounded-full flex items-center justify-center text-sm">F</span>
+                Frontal Plane
+              </h3>
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                 <div className="bg-emerald-50 border-2 border-emerald-200 rounded-xl p-4">
-                  <h4 className="font-bold text-emerald-900 mb-3 flex items-center gap-2">
-                    <span className="w-6 h-6 bg-emerald-500 text-white rounded-full flex items-center justify-center text-xs">F</span>
-                    Frontal Plane Movements
-                  </h4>
-                  <div className="bg-white rounded-lg p-4 mb-4">
+                  <div className="bg-white rounded-lg p-4 mb-3">
                     {!frontalImageError ? (
                       <img 
                         src={frontalImagePath} 
-                        alt="Frontal Plane Cogs Reference"
+                        alt="Frontal Plane Reference"
                         className="w-full h-auto rounded-lg"
-                        onLoad={() => console.log("[CogsAssessment] Frontal image loaded successfully")}
-                        onError={(e) => {
-                          console.error("[CogsAssessment] Failed to load frontal plane image");
-                          console.error("[CogsAssessment] Attempted URL:", e.currentTarget.src);
-                          setFrontalImageError(true);
-                        }}
+                        onError={() => setFrontalImageError(true)}
                       />
                     ) : (
-                      <div className="flex flex-col items-center justify-center py-8 text-slate-400">
-                        <ImageOff size={48} className="mb-2" />
-                        <p className="text-sm font-semibold">Reference diagram not available</p>
-                        <p className="text-xs mt-2 text-center">Expected location:<br/><code className="bg-slate-100 px-2 py-1 rounded">public/images/cogs/frontal-plane.png</code></p>
-                        <p className="text-xs mt-2 text-amber-600">Please ensure the file exists or use the placeholder SVG.</p>
+                      <div className="flex flex-col items-center justify-center py-12 text-slate-400">
+                        <ImageOff size={40} className="mb-2" />
+                        <p className="text-xs">Diagram not available</p>
                       </div>
                     )}
                   </div>
-                  <ul className="space-y-2 text-sm text-emerald-900">
+                  <ul className="space-y-1.5 text-xs text-emerald-900">
                     <li className="flex items-start gap-2">
-                      <span className="w-1.5 h-1.5 bg-emerald-500 rounded-full mt-2 flex-shrink-0"></span>
-                      <span><strong>Left Flexion (LFX):</strong> Side bending to the left</span>
+                      <span className="w-1 h-1 bg-emerald-500 rounded-full mt-1.5 flex-shrink-0"></span>
+                      <span><strong>Left Flexion (LFX):</strong> Side bending left</span>
                     </li>
                     <li className="flex items-start gap-2">
-                      <span className="w-1.5 h-1.5 bg-emerald-500 rounded-full mt-2 flex-shrink-0"></span>
-                      <span><strong>Right Flexion (RFX):</strong> Side bending to the right</span>
+                      <span className="w-1 h-1 bg-emerald-500 rounded-full mt-1.5 flex-shrink-0"></span>
+                      <span><strong>Right Flexion (RFX):</strong> Side bending right</span>
                     </li>
                     <li className="flex items-start gap-2">
-                      <span className="w-1.5 h-1.5 bg-emerald-500 rounded-full mt-2 flex-shrink-0"></span>
-                      <span><strong>Hip Hike:</strong> Elevation of the hip</span>
+                      <span className="w-1 h-1 bg-emerald-500 rounded-full mt-1.5 flex-shrink-0"></span>
+                      <span><strong>Hip Hike:</strong> Hip elevation</span>
                     </li>
                     <li className="flex items-start gap-2">
-                      <span className="w-1.5 h-1.5 bg-emerald-500 rounded-full mt-2 flex-shrink-0"></span>
-                      <span><strong>Hip Drop:</strong> Depression of the hip</span>
+                      <span className="w-1 h-1 bg-emerald-500 rounded-full mt-1.5 flex-shrink-0"></span>
+                      <span><strong>Hip Drop:</strong> Hip depression</span>
                     </li>
                   </ul>
                 </div>
                 <div>
                   <Label htmlFor="frontalNotes" className="text-base font-bold text-slate-900 mb-2 block">
-                    Frontal Plane Observations
+                    Frontal Plane Cogs Notes:
                   </Label>
                   <Textarea
                     id="frontalNotes"
                     placeholder="Document lateral flexion patterns, hip movements, asymmetries..."
                     value={frontalNotes}
                     onChange={(e) => setFrontalNotes(e.target.value)}
-                    className="min-h-[120px] resize-none"
+                    className="min-h-[280px] resize-none"
                   />
                 </div>
-              </TabsContent>
+              </div>
+            </div>
 
-              <TabsContent value="transverse" className="space-y-4 mt-6">
+            {/* Transverse Plane */}
+            <div className="space-y-3">
+              <h3 className="text-lg font-bold text-blue-900 flex items-center gap-2">
+                <span className="w-8 h-8 bg-blue-500 text-white rounded-full flex items-center justify-center text-sm">T</span>
+                Transverse Plane
+              </h3>
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                 <div className="bg-blue-50 border-2 border-blue-200 rounded-xl p-4">
-                  <h4 className="font-bold text-blue-900 mb-3 flex items-center gap-2">
-                    <span className="w-6 h-6 bg-blue-500 text-white rounded-full flex items-center justify-center text-xs">T</span>
-                    Transverse Plane Movements
-                  </h4>
-                  <div className="bg-white rounded-lg p-4 mb-4">
+                  <div className="bg-white rounded-lg p-4 mb-3">
                     {!transverseImageError ? (
                       <img 
                         src={transverseImagePath} 
-                        alt="Transverse Plane Cogs Reference"
+                        alt="Transverse Plane Reference"
                         className="w-full h-auto rounded-lg"
-                        onLoad={() => console.log("[CogsAssessment] Transverse image loaded successfully")}
-                        onError={(e) => {
-                          console.error("[CogsAssessment] Failed to load transverse plane image");
-                          console.error("[CogsAssessment] Attempted URL:", e.currentTarget.src);
-                          setTransverseImageError(true);
-                        }}
+                        onError={() => setTransverseImageError(true)}
                       />
                     ) : (
-                      <div className="flex flex-col items-center justify-center py-8 text-slate-400">
-                        <ImageOff size={48} className="mb-2" />
-                        <p className="text-sm font-semibold">Reference diagram not available</p>
-                        <p className="text-xs mt-2 text-center">Expected location:<br/><code className="bg-slate-100 px-2 py-1 rounded">public/images/cogs/transverse-plane.png</code></p>
-                        <p className="text-xs mt-2 text-amber-600">Please ensure the file exists or use the placeholder SVG.</p>
+                      <div className="flex flex-col items-center justify-center py-12 text-slate-400">
+                        <ImageOff size={40} className="mb-2" />
+                        <p className="text-xs">Diagram not available</p>
                       </div>
                     )}
                   </div>
-                  <ul className="space-y-2 text-sm text-blue-900">
+                  <ul className="space-y-1.5 text-xs text-blue-900">
                     <li className="flex items-start gap-2">
-                      <span className="w-1.5 h-1.5 bg-blue-500 rounded-full mt-2 flex-shrink-0"></span>
-                      <span><strong>Left Rotation (L ROT):</strong> Rotational movement to the left</span>
+                      <span className="w-1 h-1 bg-blue-500 rounded-full mt-1.5 flex-shrink-0"></span>
+                      <span><strong>Left Rotation (L ROT):</strong> Rotation left</span>
                     </li>
                     <li className="flex items-start gap-2">
-                      <span className="w-1.5 h-1.5 bg-blue-500 rounded-full mt-2 flex-shrink-0"></span>
-                      <span><strong>Right Rotation (R ROT):</strong> Rotational movement to the right</span>
+                      <span className="w-1 h-1 bg-blue-500 rounded-full mt-1.5 flex-shrink-0"></span>
+                      <span><strong>Right Rotation (R ROT):</strong> Rotation right</span>
                     </li>
                     <li className="flex items-start gap-2">
-                      <span className="w-1.5 h-1.5 bg-blue-500 rounded-full mt-2 flex-shrink-0"></span>
-                      <span>Assess rotation at skull, cervical/thoracic spine, ribs, and pelvis</span>
+                      <span className="w-1 h-1 bg-blue-500 rounded-full mt-1.5 flex-shrink-0"></span>
+                      <span>Assess rotation at skull, cervical/thoracic spine, ribs, pelvis</span>
                     </li>
                   </ul>
                 </div>
                 <div>
                   <Label htmlFor="transverseNotes" className="text-base font-bold text-slate-900 mb-2 block">
-                    Transverse Plane Observations
+                    Transverse Plane Cogs Notes:
                   </Label>
                   <Textarea
                     id="transverseNotes"
                     placeholder="Document rotational patterns, restrictions, asymmetries..."
                     value={transverseNotes}
                     onChange={(e) => setTransverseNotes(e.target.value)}
-                    className="min-h-[120px] resize-none"
+                    className="min-h-[280px] resize-none"
                   />
                 </div>
-              </TabsContent>
-            </Tabs>
+              </div>
+            </div>
 
-            <Button 
-              onClick={handleSave}
-              disabled={loading}
-              className="w-full bg-purple-600 hover:bg-purple-700 h-12 text-base font-semibold rounded-xl shadow-lg shadow-purple-200"
-            >
-              {loading ? (
-                <>
-                  <Loader2 className="mr-2 h-5 w-5 animate-spin" />
-                  Saving Assessment...
-                </>
-              ) : (
-                <>
-                  <Save size={20} className="mr-2" />
-                  Save Range of Motion Assessment
-                </>
-              )}
-            </Button>
+            <div className="flex gap-3 pt-4 border-t border-slate-200">
+              <Button 
+                onClick={handleSave}
+                disabled={loading}
+                className="flex-1 bg-purple-600 hover:bg-purple-700 h-12 text-base font-semibold rounded-xl shadow-lg shadow-purple-200"
+              >
+                {loading ? (
+                  <>
+                    <Loader2 className="mr-2 h-5 w-5 animate-spin" />
+                    Saving Assessment...
+                  </>
+                ) : (
+                  <>
+                    <Save size={20} className="mr-2" />
+                    Save Range of Motion Assessment
+                  </>
+                )}
+              </Button>
 
-            <Collapsible open={detailsOpen} onOpenChange={setDetailsOpen}>
-              <CollapsibleTrigger asChild>
-                <Button 
-                  variant="ghost" 
-                  className="w-full justify-between hover:bg-slate-50 rounded-xl h-12"
-                >
-                  <span className="font-semibold text-slate-700">View Full Assessment Protocol</span>
-                  <ChevronDown className={cn("h-5 w-5 transition-transform", detailsOpen && "rotate-180")} />
-                </Button>
-              </CollapsibleTrigger>
-              
-              <CollapsibleContent className="space-y-6 pt-4">
-                <div className="space-y-4 text-sm">
-                  <div className="bg-slate-50 p-4 rounded-xl border border-slate-200">
-                    <h4 className="font-bold text-slate-900 mb-2 flex items-center gap-2">
-                      <Move size={16} className="text-purple-500" />
-                      What is the "Cogs" Assessment?
-                    </h4>
-                    <p className="text-slate-700 leading-relaxed">
-                      The Range of Motion/Mobility Assessment (nicknamed "Cogs") evaluates movement patterns across 
-                      the three anatomical planes: Sagittal (forward/backward), Frontal (side-to-side), and Transverse (rotational). 
-                      This comprehensive assessment helps identify movement restrictions, asymmetries, and compensatory patterns 
-                      that may be contributing to the client's presenting issues.
-                    </p>
+              <Collapsible open={detailsOpen} onOpenChange={setDetailsOpen}>
+                <CollapsibleTrigger asChild>
+                  <Button 
+                    variant="outline" 
+                    className="h-12 px-6 rounded-xl border-slate-200"
+                  >
+                    <Info size={18} className="mr-2" />
+                    {detailsOpen ? "Hide" : "View"} Protocol
+                  </Button>
+                </CollapsibleTrigger>
+                
+                <CollapsibleContent className="mt-4">
+                  <div className="space-y-4 text-sm bg-slate-50 p-6 rounded-xl border border-slate-200">
+                    <div>
+                      <h4 className="font-bold text-slate-900 mb-2 flex items-center gap-2">
+                        <Move size={16} className="text-purple-500" />
+                        What is the "Cogs" Assessment?
+                      </h4>
+                      <p className="text-slate-700 leading-relaxed">
+                        The Range of Motion/Mobility Assessment (nicknamed "Cogs") evaluates movement patterns across 
+                        the three anatomical planes: Sagittal (forward/backward), Frontal (side-to-side), and Transverse (rotational). 
+                        This comprehensive assessment helps identify movement restrictions, asymmetries, and compensatory patterns.
+                      </p>
+                    </div>
+
+                    <div className="bg-purple-50 border-2 border-purple-200 p-4 rounded-xl">
+                      <h4 className="font-bold text-purple-900 mb-2">Assessment Protocol</h4>
+                      <ol className="space-y-2 text-sm text-purple-800 list-decimal list-inside">
+                        <li>Observe standing posture in neutral position</li>
+                        <li>Test each plane systematically (sagittal, frontal, transverse)</li>
+                        <li>Document restrictions, asymmetries, pain points, and compensatory patterns</li>
+                        <li>Compare bilateral movements for both left and right sides</li>
+                      </ol>
+                    </div>
+
+                    <div className="bg-amber-50 border-2 border-amber-200 p-4 rounded-xl">
+                      <h4 className="font-bold text-amber-900 mb-2">Key Observation Points</h4>
+                      <ul className="space-y-1.5 text-sm text-amber-800">
+                        <li className="flex items-start gap-2">
+                          <span className="w-1 h-1 bg-amber-500 rounded-full mt-2 flex-shrink-0"></span>
+                          <span>Look for asymmetries between left and right sides</span>
+                        </li>
+                        <li className="flex items-start gap-2">
+                          <span className="w-1 h-1 bg-amber-500 rounded-full mt-2 flex-shrink-0"></span>
+                          <span>Note any pain or discomfort during specific movements</span>
+                        </li>
+                        <li className="flex items-start gap-2">
+                          <span className="w-1 h-1 bg-amber-500 rounded-full mt-2 flex-shrink-0"></span>
+                          <span>Observe compensatory movements in other body segments</span>
+                        </li>
+                        <li className="flex items-start gap-2">
+                          <span className="w-1 h-1 bg-amber-500 rounded-full mt-2 flex-shrink-0"></span>
+                          <span>Document quality of movement, not just range</span>
+                        </li>
+                      </ul>
+                    </div>
                   </div>
-
-                  <div className="space-y-3">
-                    <h4 className="font-bold text-slate-900 flex items-center gap-2">
-                      <span className="w-6 h-6 bg-purple-100 text-purple-600 rounded-full flex items-center justify-center text-xs font-bold">1</span>
-                      Assessment Protocol
-                    </h4>
-                    <ol className="space-y-3 ml-8">
-                      <li className="flex items-start gap-3">
-                        <span className="w-6 h-6 bg-purple-500 text-white rounded-full flex items-center justify-center text-xs font-bold flex-shrink-0 mt-0.5">1</span>
-                        <div>
-                          <p className="font-semibold text-slate-900">Observe Standing Posture</p>
-                          <p className="text-slate-600">Begin with the client in a neutral standing position</p>
-                        </div>
-                      </li>
-                      <li className="flex items-start gap-3">
-                        <span className="w-6 h-6 bg-purple-500 text-white rounded-full flex items-center justify-center text-xs font-bold flex-shrink-0 mt-0.5">2</span>
-                        <div>
-                          <p className="font-semibold text-slate-900">Test Each Plane Systematically</p>
-                          <p className="text-slate-600">Move through sagittal, frontal, and transverse planes in order</p>
-                        </div>
-                      </li>
-                      <li className="flex items-start gap-3">
-                        <span className="w-6 h-6 bg-purple-500 text-white rounded-full flex items-center justify-center text-xs font-bold flex-shrink-0 mt-0.5">3</span>
-                        <div>
-                          <p className="font-semibold text-slate-900">Document Findings</p>
-                          <p className="text-slate-600">Note restrictions, asymmetries, pain points, and compensatory patterns</p>
-                        </div>
-                      </li>
-                      <li className="flex items-start gap-3">
-                        <span className="w-6 h-6 bg-purple-500 text-white rounded-full flex items-center justify-center text-xs font-bold flex-shrink-0 mt-0.5">4</span>
-                        <div>
-                          <p className="font-semibold text-slate-900">Compare Bilateral Movements</p>
-                          <p className="text-slate-600">Always assess both left and right sides for comparison</p>
-                        </div>
-                      </li>
-                    </ol>
-                  </div>
-
-                  <div className="bg-purple-50 border-2 border-purple-200 p-4 rounded-xl">
-                    <h4 className="font-bold text-purple-900 mb-2 flex items-center gap-2">
-                      <Info size={18} className="text-purple-600" />
-                      Clinical Applications
-                    </h4>
-                    <ul className="space-y-2 text-sm text-purple-800">
-                      <li className="flex items-start gap-2">
-                        <span className="w-1.5 h-1.5 bg-purple-500 rounded-full mt-2 flex-shrink-0"></span>
-                        <span>Identify primary movement restrictions that may be causing compensatory patterns</span>
-                      </li>
-                      <li className="flex items-start gap-2">
-                        <span className="w-1.5 h-1.5 bg-purple-500 rounded-full mt-2 flex-shrink-0"></span>
-                        <span>Track progress in mobility and range of motion over multiple sessions</span>
-                      </li>
-                      <li className="flex items-start gap-2">
-                        <span className="w-1.5 h-1.5 bg-purple-500 rounded-full mt-2 flex-shrink-0"></span>
-                        <span>Correlate movement patterns with muscle testing and other assessments</span>
-                      </li>
-                      <li className="flex items-start gap-2">
-                        <span className="w-1.5 h-1.5 bg-purple-500 rounded-full mt-2 flex-shrink-0"></span>
-                        <span>Use findings to guide treatment priorities and exercise prescription</span>
-                      </li>
-                    </ul>
-                  </div>
-
-                  <div className="bg-amber-50 border-2 border-amber-200 p-4 rounded-xl">
-                    <h4 className="font-bold text-amber-900 mb-2">Key Observation Points</h4>
-                    <ul className="space-y-2 text-sm text-amber-800">
-                      <li className="flex items-start gap-2">
-                        <span className="w-1.5 h-1.5 bg-amber-500 rounded-full mt-2 flex-shrink-0"></span>
-                        <span>Look for asymmetries between left and right sides</span>
-                      </li>
-                      <li className="flex items-start gap-2">
-                        <span className="w-1.5 h-1.5 bg-amber-500 rounded-full mt-2 flex-shrink-0"></span>
-                        <span>Note any pain or discomfort during specific movements</span>
-                      </li>
-                      <li className="flex items-start gap-2">
-                        <span className="w-1.5 h-1.5 bg-amber-500 rounded-full mt-2 flex-shrink-0"></span>
-                        <span>Observe compensatory movements in other body segments</span>
-                      </li>
-                      <li className="flex items-start gap-2">
-                        <span className="w-1.5 h-1.5 bg-amber-500 rounded-full mt-2 flex-shrink-0"></span>
-                        <span>Document quality of movement, not just range</span>
-                      </li>
-                    </ul>
-                  </div>
-                </div>
-              </CollapsibleContent>
-            </Collapsible>
+                </CollapsibleContent>
+              </Collapsible>
+            </div>
           </CardContent>
         </CollapsibleContent>
       </Card>

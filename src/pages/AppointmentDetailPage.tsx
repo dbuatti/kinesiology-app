@@ -37,9 +37,6 @@ const AppointmentDetailPage = () => {
   const [appointment, setAppointment] = useState<AppointmentWithClient | null>(null);
   const [loading, setLoading] = useState(true);
   const [editOpen, setEditOpen] = useState(false);
-  const [boltEnabled, setBoltEnabled] = useState(false);
-  const [coherenceEnabled, setCoherenceEnabled] = useState(false);
-  const [cogsEnabled, setCogsEnabled] = useState(false);
 
   const fetchAppointmentData = async () => {
     if (!id) return;
@@ -59,28 +56,12 @@ const AppointmentDetailPage = () => {
 
       if (error) throw error;
 
+      console.log("[AppointmentDetail] Fetched appointment data:", data);
+
       setAppointment({
         ...data,
         date: new Date(data.date),
       } as unknown as AppointmentWithClient);
-
-      // Check which procedures are enabled
-      const { data: { user } } = await supabase.auth.getUser();
-      if (user) {
-        const { data: procedures } = await supabase
-          .from('procedures')
-          .select('name, enabled')
-          .eq('user_id', user.id)
-          .in('name', ['BOLT Test', 'Heart/Brain Coherence', 'Range of Motion Assessment']);
-        
-        const boltProc = procedures?.find(p => p.name.toLowerCase().includes('bolt'));
-        const coherenceProc = procedures?.find(p => p.name.toLowerCase().includes('coherence'));
-        const cogsProc = procedures?.find(p => p.name.toLowerCase().includes('range of motion') || p.name.toLowerCase().includes('cogs'));
-        
-        setBoltEnabled(boltProc?.enabled ?? false);
-        setCoherenceEnabled(coherenceProc?.enabled ?? false);
-        setCogsEnabled(cogsProc?.enabled ?? false);
-      }
 
     } catch (err) {
       console.error("Error fetching appointment details:", err);
@@ -271,33 +252,30 @@ const AppointmentDetailPage = () => {
         </CardContent>
       </Card>
 
-      {boltEnabled && (
-        <BoltTestSection
-          appointmentId={appointment.id}
-          initialBoltScore={appointment.bolt_score}
-          onUpdate={fetchAppointmentData}
-        />
-      )}
+      {/* BOLT Test - Always show */}
+      <BoltTestSection
+        appointmentId={appointment.id}
+        initialBoltScore={appointment.bolt_score}
+        onUpdate={fetchAppointmentData}
+      />
 
-      {coherenceEnabled && (
-        <CoherenceAssessment
-          appointmentId={appointment.id}
-          initialHeartRate={appointment.heart_rate}
-          initialBreathRate={appointment.breath_rate}
-          initialCoherenceScore={appointment.coherence_score}
-          onUpdate={fetchAppointmentData}
-        />
-      )}
+      {/* Coherence Assessment - Always show */}
+      <CoherenceAssessment
+        appointmentId={appointment.id}
+        initialHeartRate={appointment.heart_rate}
+        initialBreathRate={appointment.breath_rate}
+        initialCoherenceScore={appointment.coherence_score}
+        onUpdate={fetchAppointmentData}
+      />
 
-      {cogsEnabled && (
-        <CogsAssessment
-          appointmentId={appointment.id}
-          initialSagittalNotes={appointment.sagittal_plane_notes}
-          initialFrontalNotes={appointment.frontal_plane_notes}
-          initialTransverseNotes={appointment.transverse_plane_notes}
-          onUpdate={fetchAppointmentData}
-        />
-      )}
+      {/* Cogs Assessment - Always show */}
+      <CogsAssessment
+        appointmentId={appointment.id}
+        initialSagittalNotes={appointment.sagittal_plane_notes}
+        initialFrontalNotes={appointment.frontal_plane_notes}
+        initialTransverseNotes={appointment.transverse_plane_notes}
+        onUpdate={fetchAppointmentData}
+      />
     </div>
   );
 };

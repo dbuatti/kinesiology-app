@@ -41,6 +41,9 @@ const AppointmentDetailPage = () => {
   
   const saveTimeoutRef = useRef<Record<string, NodeJS.Timeout>>({});
   const savingFieldsRef = useRef<Set<string>>(new Set());
+  
+  // Track which field is currently being edited to prevent unwanted syncs
+  const currentlyEditingFieldRef = useRef<string | null>(null);
 
   const fetchAppointmentData = async () => {
     if (!id) return;
@@ -176,17 +179,23 @@ const AppointmentDetailPage = () => {
     const inputRef = useRef<HTMLInputElement | HTMLTextAreaElement>(null);
     const pendingSaveValueRef = useRef<string | null>(null);
 
-    // Sync with prop value ONLY when not focused and no pending save
+    // Sync with prop value ONLY when:
+    // 1. Not focused
+    // 2. Not saving
+    // 3. No pending save
+    // 4. This field is NOT currently being edited anywhere
     useEffect(() => {
       const isSaving = savingFieldsRef.current.has(field);
-      if (!isFocused && !isSaving && pendingSaveValueRef.current === null) {
+      const isCurrentlyEditing = currentlyEditingFieldRef.current === field;
+      
+      if (!isFocused && !isSaving && !isCurrentlyEditing && pendingSaveValueRef.current === null) {
         const newValue = value || '';
         if (localValue !== newValue) {
           console.log(`[EditableField:${field}] Syncing prop value to local state. New value:`, newValue);
           setLocalValue(newValue);
         }
       }
-    }, [value, isFocused, field]);
+    }, [value, isFocused, field, localValue]);
 
     // Debounce logic for auto-save while typing
     useEffect(() => {
@@ -224,6 +233,9 @@ const AppointmentDetailPage = () => {
     const handleBlur = () => {
       console.log(`[EditableField:${field}] Blur event triggered.`);
       
+      // Clear the currently editing field tracker
+      currentlyEditingFieldRef.current = null;
+      
       // Clear debounce timeout
       if (saveTimeoutRef.current[field]) {
         clearTimeout(saveTimeoutRef.current[field]);
@@ -247,6 +259,8 @@ const AppointmentDetailPage = () => {
     const handleFocus = () => {
       console.log(`[EditableField:${field}] Focus event triggered.`);
       setIsFocused(true);
+      // Mark this field as currently being edited
+      currentlyEditingFieldRef.current = field;
     };
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {

@@ -44,12 +44,31 @@ const CogsAssessment = ({
     setLoading(true);
 
     try {
-      console.log("[CogsAssessment] Saving Cogs assessment");
+      console.log("[CogsAssessment] Starting to save Cogs assessment");
       
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) {
         throw new Error("User not authenticated");
       }
+      console.log("[CogsAssessment] User ID:", user.id);
+
+      // Check existing data
+      const { data: existingAppointment, error: fetchError } = await supabase
+        .from("appointments")
+        .select("sagittal_plane_notes, frontal_plane_notes, transverse_plane_notes, user_id")
+        .eq("id", appointmentId)
+        .single();
+
+      if (fetchError) {
+        console.error("[CogsAssessment] Error fetching appointment:", fetchError);
+        throw fetchError;
+      }
+
+      const isNewAssessment = !existingAppointment?.sagittal_plane_notes && 
+                              !existingAppointment?.frontal_plane_notes && 
+                              !existingAppointment?.transverse_plane_notes;
+      console.log("[CogsAssessment] Is new assessment:", isNewAssessment);
+      console.log("[CogsAssessment] Existing notes:", existingAppointment);
 
       const { error } = await supabase
         .from("appointments")
@@ -66,7 +85,26 @@ const CogsAssessment = ({
       }
 
       console.log("[CogsAssessment] Cogs assessment saved successfully");
-      showSuccess("Range of Motion assessment saved successfully!");
+
+      // Check if procedure was created
+      const { data: procedures, error: procError } = await supabase
+        .from("procedures")
+        .select("*")
+        .eq("user_id", user.id)
+        .or("name.ilike.%range of motion%,name.ilike.%cogs%");
+
+      if (procError) {
+        console.error("[CogsAssessment] Error fetching procedures:", procError);
+      } else {
+        console.log("[CogsAssessment] Cogs procedures found:", procedures);
+      }
+
+      showSuccess(
+        isNewAssessment 
+          ? "Range of Motion assessment saved! Check Procedures page to see your progress." 
+          : "Range of Motion assessment updated successfully!"
+      );
+      
       onUpdate();
     } catch (error: any) {
       console.error("[CogsAssessment] Error in handleSave:", error);
@@ -138,7 +176,7 @@ const CogsAssessment = ({
                   </h4>
                   <div className="bg-white rounded-lg p-4 mb-4">
                     <img 
-                      src="/lovable-uploads/d8e7c8e0-c0e5-4e8e-b0e5-8e0c0e5c8e0d.png" 
+                      src="/images/cogs/sagittal-plane.png" 
                       alt="Sagittal Plane Cogs Reference"
                       className="w-full h-auto rounded-lg"
                       onError={(e) => {
@@ -187,7 +225,7 @@ const CogsAssessment = ({
                   </h4>
                   <div className="bg-white rounded-lg p-4 mb-4">
                     <img 
-                      src="/lovable-uploads/e8f7d9f1-d1f6-4f9f-a1f6-9f1d1f6f9f1e.png" 
+                      src="/images/cogs/frontal-plane.png" 
                       alt="Frontal Plane Cogs Reference"
                       className="w-full h-auto rounded-lg"
                       onError={(e) => {
@@ -236,7 +274,7 @@ const CogsAssessment = ({
                   </h4>
                   <div className="bg-white rounded-lg p-4 mb-4">
                     <img 
-                      src="/lovable-uploads/f9g8e0h2-e2g7-5g0g-b2g7-0g2e2g7g0g2f.png" 
+                      src="/images/cogs/transverse-plane.png" 
                       alt="Transverse Plane Cogs Reference"
                       className="w-full h-auto rounded-lg"
                       onError={(e) => {

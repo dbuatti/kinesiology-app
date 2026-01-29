@@ -4,9 +4,11 @@ import { supabase } from "@/integrations/supabase/client";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
 import { 
   ArrowLeft, Calendar, Clock, Target, Zap, 
-  ExternalLink, Loader2, Trash2, Edit3, User
+  ExternalLink, Loader2, Trash2, Edit3, User, Save, X
 } from "lucide-react";
 import { format } from "date-fns";
 import { Appointment } from "@/types/crm";
@@ -15,14 +17,6 @@ import { cn } from "@/lib/utils";
 import BoltTestSection from "@/components/crm/BoltTestSection";
 import CoherenceAssessment from "@/components/crm/CoherenceAssessment";
 import CogsAssessment from "@/components/crm/CogsAssessment";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "@/components/ui/dialog";
-import AppointmentForm from "@/components/crm/AppointmentForm";
 
 interface AppointmentWithClient extends Appointment {
   clients: { name: string; id: string };
@@ -36,7 +30,11 @@ const AppointmentDetailPage = () => {
   const navigate = useNavigate();
   const [appointment, setAppointment] = useState<AppointmentWithClient | null>(null);
   const [loading, setLoading] = useState(true);
-  const [editOpen, setEditOpen] = useState(false);
+  
+  // Edit states for each field
+  const [editingField, setEditingField] = useState<string | null>(null);
+  const [editValues, setEditValues] = useState<Record<string, string>>({});
+  const [saving, setSaving] = useState(false);
 
   const fetchAppointmentData = async () => {
     if (!id) return;
@@ -84,6 +82,42 @@ const AppointmentDetailPage = () => {
     }
   };
 
+  const startEditing = (field: string, currentValue: string | null | undefined) => {
+    setEditingField(field);
+    setEditValues({ ...editValues, [field]: currentValue || '' });
+  };
+
+  const cancelEditing = () => {
+    setEditingField(null);
+    setEditValues({});
+  };
+
+  const saveField = async (field: string) => {
+    if (!id) return;
+    setSaving(true);
+
+    try {
+      const updateData: Record<string, any> = {
+        [field]: editValues[field] || null
+      };
+
+      const { error } = await supabase
+        .from('appointments')
+        .update(updateData)
+        .eq('id', id);
+
+      if (error) throw error;
+
+      showSuccess("Field updated successfully");
+      setEditingField(null);
+      fetchAppointmentData();
+    } catch (err: any) {
+      showError(err.message || "Failed to update field");
+    } finally {
+      setSaving(false);
+    }
+  };
+
   useEffect(() => {
     fetchAppointmentData();
   }, [id]);
@@ -98,6 +132,87 @@ const AppointmentDetailPage = () => {
 
   const clientLink = `/clients/${appointment.clients.id}`;
 
+  const EditableField = ({ 
+    field, 
+    label, 
+    value, 
+    multiline = false,
+    className = ""
+  }: { 
+    field: string; 
+    label: string; 
+    value: string | null | undefined; 
+    multiline?: boolean;
+    className?: string;
+  }) => {
+    const isEditing = editingField === field;
+    const displayValue = value || 'N/A';
+
+    if (isEditing) {
+      return (
+        <div className={cn("space-y-2", className)}>
+          <p className="font-bold text-slate-400 uppercase text-[10px] tracking-widest">{label}</p>
+          {multiline ? (
+            <Textarea
+              value={editValues[field] || ''}
+              onChange={(e) => setEditValues({ ...editValues, [field]: e.target.value })}
+              className="min-h-[100px]"
+              autoFocus
+            />
+          ) : (
+            <Input
+              value={editValues[field] || ''}
+              onChange={(e) => setEditValues({ ...editValues, [field]: e.target.value })}
+              autoFocus
+            />
+          )}
+          <div className="flex gap-2">
+            <Button 
+              size="sm" 
+              onClick={() => saveField(field)}
+              disabled={saving}
+              className="bg-emerald-600 hover:bg-emerald-700"
+            >
+              {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save size={14} className="mr-1" />}
+              Save
+            </Button>
+            <Button 
+              size="sm" 
+              variant="outline"
+              onClick={cancelEditing}
+              disabled={saving}
+            >
+              <X size={14} className="mr-1" />
+              Cancel
+            </Button>
+          </div>
+        </div>
+      );
+    }
+
+    return (
+      <div className={cn("group relative", className)}>
+        <p className="font-bold text-slate-400 uppercase text-[10px] mb-1.5 tracking-widest">{label}</p>
+        <div className="flex items-start justify-between gap-2">
+          <p className={cn(
+            "text-slate-800 leading-relaxed flex-1",
+            multiline ? "whitespace-pre-wrap" : ""
+          )}>
+            {displayValue}
+          </p>
+          <Button
+            size="sm"
+            variant="ghost"
+            className="opacity-0 group-hover:opacity-100 transition-opacity h-7 w-7 p-0"
+            onClick={() => startEditing(field, value)}
+          >
+            <Edit3 size={14} />
+          </Button>
+        </div>
+      </div>
+    );
+  };
+
   return (
     <div className="p-4 md:p-8 max-w-6xl mx-auto space-y-8">
       <div className="flex items-center justify-between gap-4">
@@ -107,24 +222,6 @@ const AppointmentDetailPage = () => {
           </Button>
         </Link>
         <div className="flex gap-2">
-          <Dialog open={editOpen} onOpenChange={setEditOpen}>
-            <DialogTrigger asChild>
-              <Button variant="outline" size="sm" className="bg-white">
-                <Edit3 size={16} className="mr-2" /> Edit Session
-              </Button>
-            </DialogTrigger>
-            <DialogContent className="sm:max-w-[500px]">
-              <DialogHeader>
-                <DialogTitle>Edit Appointment</DialogTitle>
-              </DialogHeader>
-              <AppointmentForm 
-                onSuccess={() => {
-                  setEditOpen(false);
-                  fetchAppointmentData();
-                }} 
-              />
-            </DialogContent>
-          </Dialog>
           <Button 
             variant="destructive" 
             size="sm" 
@@ -180,12 +277,18 @@ const AppointmentDetailPage = () => {
               </div>
             </div>
             <div className="space-y-1">
-              <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Goal</p>
-              <p className="text-slate-700 font-medium truncate">{appointment.goal || 'N/A'}</p>
+              <EditableField
+                field="goal"
+                label="Goal"
+                value={appointment.goal}
+              />
             </div>
             <div className="space-y-1">
-              <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Issue</p>
-              <p className="text-slate-700 font-medium truncate">{appointment.issue || 'N/A'}</p>
+              <EditableField
+                field="issue"
+                label="Issue"
+                value={appointment.issue}
+              />
             </div>
           </div>
 
@@ -197,18 +300,24 @@ const AppointmentDetailPage = () => {
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-4 text-sm">
-                <div>
-                  <p className="font-bold text-slate-400 uppercase text-[10px] mb-1.5 tracking-widest">Session North Star</p>
-                  <p className="text-slate-800 leading-relaxed">{appointment.session_north_star || appointment.goal || 'No North Star defined.'}</p>
-                </div>
-                <div>
-                  <p className="font-bold text-slate-400 uppercase text-[10px] mb-1.5 tracking-widest">Priority Pattern</p>
-                  <p className="text-slate-800 leading-relaxed">{appointment.priority_pattern || 'No priority pattern identified.'}</p>
-                </div>
-                <div>
-                  <p className="font-bold text-slate-400 uppercase text-[10px] mb-1.5 tracking-widest">Modes & Balances</p>
-                  <p className="text-slate-800 leading-relaxed">{appointment.modes_balances || 'No modes or balances logged.'}</p>
-                </div>
+                <EditableField
+                  field="session_north_star"
+                  label="Session North Star"
+                  value={appointment.session_north_star}
+                  multiline
+                />
+                <EditableField
+                  field="priority_pattern"
+                  label="Priority Pattern"
+                  value={appointment.priority_pattern}
+                  multiline
+                />
+                <EditableField
+                  field="modes_balances"
+                  label="Modes & Balances"
+                  value={appointment.modes_balances}
+                  multiline
+                />
               </CardContent>
             </Card>
 
@@ -219,26 +328,30 @@ const AppointmentDetailPage = () => {
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-4 text-sm">
-                <div>
-                  <p className="font-bold text-slate-400 uppercase text-[10px] mb-1.5 tracking-widest">Acupoints</p>
-                  <p className="text-indigo-600 font-mono font-medium tracking-tight bg-white p-2 rounded-lg border border-slate-100">{appointment.acupoints || 'N/A'}</p>
-                </div>
-                <div>
-                  <p className="font-bold text-slate-400 uppercase text-[10px] mb-1.5 tracking-widest">Session Notes</p>
-                  <p className="text-slate-800 leading-relaxed whitespace-pre-wrap">{appointment.notes || 'No general notes.'}</p>
-                </div>
-                {appointment.additional_notes && (
-                  <div>
-                    <p className="font-bold text-slate-400 uppercase text-[10px] mb-1.5 tracking-widest">Additional Notes</p>
-                    <p className="text-slate-800 leading-relaxed whitespace-pre-wrap">{appointment.additional_notes}</p>
-                  </div>
-                )}
-                {appointment.journal && (
-                  <div className="bg-amber-50/50 p-3 rounded-xl border border-amber-100">
-                    <p className="font-bold text-amber-800 uppercase text-[10px] mb-1.5 tracking-widest">Journal Entry</p>
-                    <p className="text-amber-900 leading-relaxed whitespace-pre-wrap">{appointment.journal}</p>
-                  </div>
-                )}
+                <EditableField
+                  field="acupoints"
+                  label="Acupoints"
+                  value={appointment.acupoints}
+                />
+                <EditableField
+                  field="notes"
+                  label="Session Notes"
+                  value={appointment.notes}
+                  multiline
+                />
+                <EditableField
+                  field="additional_notes"
+                  label="Additional Notes"
+                  value={appointment.additional_notes}
+                  multiline
+                />
+                <EditableField
+                  field="journal"
+                  label="Journal Entry"
+                  value={appointment.journal}
+                  multiline
+                  className="bg-amber-50/50 p-3 rounded-xl border border-amber-100"
+                />
                 {appointment.notion_link && (
                   <Button variant="outline" size="sm" className="w-full text-xs rounded-xl" asChild>
                     <a href={appointment.notion_link} target="_blank" rel="noopener noreferrer">

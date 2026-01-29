@@ -14,6 +14,7 @@ import { showSuccess, showError } from "@/utils/toast";
 import { cn } from "@/lib/utils";
 import BoltTestSection from "@/components/crm/BoltTestSection";
 import CoherenceAssessment from "@/components/crm/CoherenceAssessment";
+import CogsAssessment from "@/components/crm/CogsAssessment";
 import {
   Dialog,
   DialogContent,
@@ -25,6 +26,9 @@ import AppointmentForm from "@/components/crm/AppointmentForm";
 
 interface AppointmentWithClient extends Appointment {
   clients: { name: string; id: string };
+  sagittal_plane_notes?: string | null;
+  frontal_plane_notes?: string | null;
+  transverse_plane_notes?: string | null;
 }
 
 const AppointmentDetailPage = () => {
@@ -35,6 +39,7 @@ const AppointmentDetailPage = () => {
   const [editOpen, setEditOpen] = useState(false);
   const [boltEnabled, setBoltEnabled] = useState(false);
   const [coherenceEnabled, setCoherenceEnabled] = useState(false);
+  const [cogsEnabled, setCogsEnabled] = useState(false);
 
   const fetchAppointmentData = async () => {
     if (!id) return;
@@ -66,13 +71,15 @@ const AppointmentDetailPage = () => {
           .from('procedures')
           .select('name, enabled')
           .eq('user_id', user.id)
-          .in('name', ['BOLT Test', 'Heart/Brain Coherence']);
+          .in('name', ['BOLT Test', 'Heart/Brain Coherence', 'Range of Motion Assessment']);
         
         const boltProc = procedures?.find(p => p.name.toLowerCase().includes('bolt'));
         const coherenceProc = procedures?.find(p => p.name.toLowerCase().includes('coherence'));
+        const cogsProc = procedures?.find(p => p.name.toLowerCase().includes('range of motion') || p.name.toLowerCase().includes('cogs'));
         
         setBoltEnabled(boltProc?.enabled ?? false);
         setCoherenceEnabled(coherenceProc?.enabled ?? false);
+        setCogsEnabled(cogsProc?.enabled ?? false);
       }
 
     } catch (err) {
@@ -278,6 +285,16 @@ const AppointmentDetailPage = () => {
           initialHeartRate={appointment.heart_rate}
           initialBreathRate={appointment.breath_rate}
           initialCoherenceScore={appointment.coherence_score}
+          onUpdate={fetchAppointmentData}
+        />
+      )}
+
+      {cogsEnabled && (
+        <CogsAssessment
+          appointmentId={appointment.id}
+          initialSagittalNotes={appointment.sagittal_plane_notes}
+          initialFrontalNotes={appointment.frontal_plane_notes}
+          initialTransverseNotes={appointment.transverse_plane_notes}
           onUpdate={fetchAppointmentData}
         />
       )}

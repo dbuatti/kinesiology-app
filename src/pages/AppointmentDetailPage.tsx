@@ -169,6 +169,14 @@ const AppointmentDetailPage = () => {
     const localSaveTimeoutRef = useRef<NodeJS.Timeout | null>(null);
     const savedIndicatorTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
+    // Focus restoration effect: runs on every render to ensure focus stability
+    useEffect(() => {
+      if (isFocused && inputRef.current && document.activeElement !== inputRef.current) {
+        // If we believe we are focused, but the DOM says otherwise (due to re-render), restore focus.
+        inputRef.current.focus();
+      }
+    });
+
     // Function to handle the actual save logic, including local state updates
     const performSave = async (newValue: string) => {
       if (newValue === (value || '')) return; // Skip if value hasn't changed from prop

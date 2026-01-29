@@ -6,6 +6,9 @@ import { Textarea } from "@/components/ui/textarea";
 import { cn } from "@/lib/utils";
 import { Loader2 } from "lucide-react";
 
+// Define the union type for the ref element
+type InputElement = HTMLInputElement | HTMLTextAreaElement;
+
 interface EditableFieldProps {
   field: string;
   label: string;
@@ -30,7 +33,8 @@ const EditableField = ({
   const [isFocused, setIsFocused] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   
-  const inputRef = useRef<HTMLInputElement | HTMLTextAreaElement>(null);
+  // Use the union type for the ref
+  const inputRef = useRef<InputElement>(null);
   const debounceTimer = useRef<NodeJS.Timeout | null>(null);
   const lastCommittedRef = useRef(normalizedProp);
 
@@ -104,7 +108,8 @@ const EditableField = ({
   }, [isFocused, localValue]);
 
   const isEmpty = !localValue && !isFocused;
-  const InputComponent = multiline ? Textarea : Input;
+  // Cast InputComponent to accept the generic InputElement ref
+  const InputComponent = multiline ? Textarea : Input as React.ElementType<any>;
 
   return (
     <div className={cn("group relative", className)}>

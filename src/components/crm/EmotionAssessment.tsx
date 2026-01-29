@@ -14,6 +14,7 @@ import { Badge } from "@/components/ui/badge";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import EditableField from "./EditableField";
 import { CHANNEL_EMOTIONS, ELEMENT_EMOTIONS } from "@/data/emotion-data";
+import { showSuccess, showError } from "@/utils/toast"; // <-- Added imports
 
 // --- Data Definitions are now imported ---
 

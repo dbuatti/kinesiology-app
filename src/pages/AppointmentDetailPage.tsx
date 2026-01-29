@@ -31,9 +31,7 @@ const AppointmentDetailPage = () => {
   const [appointment, setAppointment] = useState<AppointmentWithClient | null>(null);
   const [loading, setLoading] = useState(true);
   
-  // Edit states for each field
-  const [editingField, setEditingField] = useState<string | null>(null);
-  const [editValues, setEditValues] = useState<Record<string, string>>({});
+  // State for visual feedback (kept in parent)
   const [savingField, setSavingField] = useState<string | null>(null);
   const [savedField, setSavedField] = useState<string | null>(null);
   
@@ -102,7 +100,8 @@ const AppointmentDetailPage = () => {
 
       if (error) throw error;
 
-      // Update local state WITHOUT re-fetching to prevent focus loss
+      // Update local state to reflect the saved value, triggering a re-render 
+      // but without losing focus because the input manages its own state.
       if (appointment) {
         setAppointment({
           ...appointment,
@@ -118,41 +117,6 @@ const AppointmentDetailPage = () => {
       showError(err.message || "Failed to save");
     } finally {
       setSavingField(null);
-    }
-  };
-
-  const handleFieldChange = (field: string, value: string) => {
-    setEditValues({ ...editValues, [field]: value });
-    
-    // Clear existing timeout for this field
-    if (saveTimeoutRef.current[field]) {
-      clearTimeout(saveTimeoutRef.current[field]);
-    }
-    
-    // Set new timeout to auto-save after 1 second of no typing
-    saveTimeoutRef.current[field] = setTimeout(() => {
-      saveField(field, value);
-    }, 1000);
-  };
-
-  const handleFieldBlur = (field: string) => {
-    // Clear timeout and save immediately on blur
-    if (saveTimeoutRef.current[field]) {
-      clearTimeout(saveTimeoutRef.current[field]);
-    }
-    
-    const value = editValues[field];
-    if (value !== undefined) {
-      saveField(field, value);
-    }
-    
-    setEditingField(null);
-  };
-
-  const handleFieldFocus = (field: string, currentValue: string | null | undefined) => {
-    setEditingField(field);
-    if (editValues[field] === undefined) {
-      setEditValues({ ...editValues, [field]: currentValue || '' });
     }
   };
 
@@ -190,11 +154,61 @@ const AppointmentDetailPage = () => {
     className?: string;
     placeholder?: string;
   }) => {
-    const isEditing = editingField === field;
+    const [localValue, setLocalValue] = useState(value || '');
+    const [isFocused, setIsFocused] = useState(false);
+    const inputRef = useRef<HTMLInputElement | HTMLTextAreaElement>(null);
+
+    // 1. Sync external value (after successful save) to local state if not currently focused
+    useEffect(() => {
+      if (!isFocused && value !== localValue) {
+        setLocalValue(value || '');
+      }
+    }, [value, isFocused]);
+
+    // 2. Debounce logic for auto-save while typing
+    useEffect(() => {
+      if (!isFocused) return;
+
+      // Clear existing timeout for this field
+      if (saveTimeoutRef.current[field]) {
+        clearTimeout(saveTimeoutRef.current[field]);
+      }
+      
+      // Set new timeout to auto-save after 1 second of no typing
+      saveTimeoutRef.current[field] = setTimeout(() => {
+        // Only save if the local value differs from the last saved value
+        if (localValue !== (value || '')) {
+            saveField(field, localValue);
+        }
+      }, 1000);
+
+      return () => {
+        if (saveTimeoutRef.current[field]) {
+          clearTimeout(saveTimeoutRef.current[field]);
+        }
+      };
+    }, [localValue, isFocused, field, value]);
+
+    const handleBlur = () => {
+      setIsFocused(false);
+      // Clear debounce timeout and save immediately on blur if value changed
+      if (saveTimeoutRef.current[field]) {
+        clearTimeout(saveTimeoutRef.current[field]);
+      }
+      if (localValue !== (value || '')) {
+        saveField(field, localValue);
+      }
+    };
+
+    const handleFocus = () => {
+      setIsFocused(true);
+    };
+
     const isSaving = savingField === field;
     const isSaved = savedField === field;
-    const currentValue = editValues[field] !== undefined ? editValues[field] : (value || '');
-    const isEmpty = !currentValue;
+    const isEmpty = !localValue && !isFocused;
+
+    const InputComponent = multiline ? Textarea : Input;
 
     return (
       <div className={cn("group relative", className)}>
@@ -214,33 +228,20 @@ const AppointmentDetailPage = () => {
           )}
         </div>
         
-        {multiline ? (
-          <Textarea
-            value={currentValue}
-            onChange={(e) => handleFieldChange(field, e.target.value)}
-            onFocus={() => handleFieldFocus(field, value)}
-            onBlur={() => handleFieldBlur(field)}
-            placeholder={placeholder}
-            className={cn(
-              "min-h-[100px] resize-none transition-all",
-              isEmpty && !isEditing && "text-slate-400 italic",
-              isEditing && "ring-2 ring-indigo-500 border-indigo-500"
-            )}
-          />
-        ) : (
-          <Input
-            value={currentValue}
-            onChange={(e) => handleFieldChange(field, e.target.value)}
-            onFocus={() => handleFieldFocus(field, value)}
-            onBlur={() => handleFieldBlur(field)}
-            placeholder={placeholder}
-            className={cn(
-              "transition-all",
-              isEmpty && !isEditing && "text-slate-400 italic",
-              isEditing && "ring-2 ring-indigo-500 border-indigo-500"
-            )}
-          />
-        )}
+        <InputComponent
+          ref={inputRef as any}
+          value={localValue}
+          onChange={(e) => setLocalValue(e.target.value)}
+          onFocus={handleFocus}
+          onBlur={handleBlur}
+          placeholder={placeholder}
+          className={cn(
+            multiline ? "min-h-[100px] resize-none" : "",
+            "transition-all",
+            isEmpty && !isFocused && "text-slate-400 italic",
+            isFocused && "ring-2 ring-indigo-500 border-indigo-500"
+          )}
+        />
       </div>
     );
   };

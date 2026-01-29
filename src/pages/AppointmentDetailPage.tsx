@@ -13,6 +13,7 @@ import { Appointment } from "@/types/crm";
 import { showSuccess, showError } from "@/utils/toast";
 import { cn } from "@/lib/utils";
 import BoltTestSection from "@/components/crm/BoltTestSection";
+import CoherenceAssessment from "@/components/crm/CoherenceAssessment";
 import {
   Dialog,
   DialogContent,
@@ -33,6 +34,7 @@ const AppointmentDetailPage = () => {
   const [loading, setLoading] = useState(true);
   const [editOpen, setEditOpen] = useState(false);
   const [boltEnabled, setBoltEnabled] = useState(false);
+  const [coherenceEnabled, setCoherenceEnabled] = useState(false);
 
   const fetchAppointmentData = async () => {
     if (!id) return;
@@ -57,17 +59,20 @@ const AppointmentDetailPage = () => {
         date: new Date(data.date),
       } as unknown as AppointmentWithClient);
 
-      // Check if BOLT procedure is enabled
+      // Check which procedures are enabled
       const { data: { user } } = await supabase.auth.getUser();
       if (user) {
         const { data: procedures } = await supabase
           .from('procedures')
-          .select('enabled')
+          .select('name, enabled')
           .eq('user_id', user.id)
-          .ilike('name', '%bolt%')
-          .single();
+          .in('name', ['BOLT Test', 'Heart/Brain Coherence']);
         
-        setBoltEnabled(procedures?.enabled ?? false);
+        const boltProc = procedures?.find(p => p.name.toLowerCase().includes('bolt'));
+        const coherenceProc = procedures?.find(p => p.name.toLowerCase().includes('coherence'));
+        
+        setBoltEnabled(boltProc?.enabled ?? false);
+        setCoherenceEnabled(coherenceProc?.enabled ?? false);
       }
 
     } catch (err) {
@@ -263,6 +268,16 @@ const AppointmentDetailPage = () => {
         <BoltTestSection
           appointmentId={appointment.id}
           initialBoltScore={appointment.bolt_score}
+          onUpdate={fetchAppointmentData}
+        />
+      )}
+
+      {coherenceEnabled && (
+        <CoherenceAssessment
+          appointmentId={appointment.id}
+          initialHeartRate={appointment.heart_rate}
+          initialBreathRate={appointment.breath_rate}
+          initialCoherenceScore={appointment.coherence_score}
           onUpdate={fetchAppointmentData}
         />
       )}

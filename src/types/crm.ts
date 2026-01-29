@@ -21,7 +21,11 @@ export interface Appointment {
   modes_balances?: string;
   journal?: string;
   notion_link?: string;
-  bolt_score?: number | null; // Added bolt_score
+  bolt_score?: number | null;
+  // Heart/Brain Coherence fields
+  heart_rate?: number | null;
+  breath_rate?: number | null;
+  coherence_score?: number | null;
 }
 
 export interface Client {

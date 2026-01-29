@@ -22,6 +22,7 @@ import CogsAssessment from "@/components/crm/CogsAssessment";
 import EditableField from "@/components/crm/EditableField";
 import SessionTimer from "@/components/crm/SessionTimer"; // Import SessionTimer
 import EmotionAssessment from "@/components/crm/EmotionAssessment";
+import { useAppointment, useDeleteAppointment } from "@/hooks/use-crm-data";
 
 interface AppointmentWithClient extends Appointment {
   clients: { name: string; id: string };
@@ -39,39 +40,9 @@ interface AppointmentWithClient extends Appointment {
 const AppointmentDetailPage = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
-  const [appointment, setAppointment] = useState<AppointmentWithClient | null>(null);
-  const [loading, setLoading] = useState(true);
-
-  const fetchAppointmentData = async () => {
-    if (!id) return;
-    setLoading(true);
-    try {
-      const { data, error } = await supabase
-        .from('appointments')
-        .select(`
-          *,
-          clients (
-            id,
-            name
-          )
-        `)
-        .eq('id', id)
-        .single();
-
-      if (error) throw error;
-
-      setAppointment({
-        ...data,
-        date: new Date(data.date),
-      } as unknown as AppointmentWithClient);
-
-    } catch (err) {
-      console.error("Error fetching appointment details:", err);
-      showError("Failed to load appointment details.");
-    } finally {
-      setLoading(false);
-    }
-  };
+  
+  const { data: appointment, isLoading, error } = useAppointment(id);
+  const { mutate: deleteAppointment } = useDeleteAppointment();
 
   // Setup real-time subscription for seamless sync like Notion
   useEffect(() => {
@@ -88,10 +59,8 @@ const AppointmentDetailPage = () => {
           filter: `id=eq.${id}`
         },
         (payload) => {
-          setAppointment((prev) => {
-            if (!prev) return prev;
-            return { ...prev, ...payload.new };
-          });
+          // React Query handles the cache invalidation/update automatically 
+          // if the query is active, but we keep the channel for robustness.
         }
       )
       .subscribe();
@@ -117,42 +86,40 @@ const AppointmentDetailPage = () => {
 
       if (error) throw error;
 
-      // Update local state optimistically/silently
-      setAppointment(prev => prev ? { ...prev, [field]: normalized } : null);
+      // Note: We rely on the real-time subscription (or React Query's background refetch) 
+      // to update the UI, but for EditableField's immediate feedback, 
+      // the component manages its own local state (EditableField.tsx).
     } catch (err: any) {
       console.error(`Silent save failed for ${field}:`, err);
-      // Optional: silent revert or retry logic, but for now, log only
+      showError(`Failed to save ${field}.`);
     }
   };
 
-  const handleDeleteAppointment = async () => {
+  const handleDeleteAppointment = () => {
     if (!id || !confirm("Are you sure you want to delete this appointment?")) return;
 
-    try {
-      const { error } = await supabase.from('appointments').delete().eq('id', id);
-      if (error) throw error;
-      showSuccess("Appointment deleted successfully");
-      navigate('/appointments');
-    } catch (err: any) {
-      showError(err.message || "Failed to delete appointment");
-    }
+    deleteAppointment(id, {
+      onSuccess: () => {
+        showSuccess("Appointment deleted successfully");
+        navigate('/appointments');
+      },
+      onError: (err: any) => {
+        showError(err.message || "Failed to delete appointment");
+      }
+    });
   };
 
   const handleHydrationToggle = async (checked: boolean) => {
     await saveField('hydrated', checked);
   };
 
-  useEffect(() => {
-    fetchAppointmentData();
-  }, [id]);
-
-  if (loading) return (
+  if (isLoading) return (
     <div className="flex min-h-screen items-center justify-center">
       <Loader2 className="animate-spin text-indigo-500" size={48} />
     </div>
   );
 
-  if (!appointment) return <div className="p-12 text-center">Appointment not found</div>;
+  if (error || !appointment) return <div className="p-12 text-center">Appointment not found</div>;
 
   const clientLink = `/clients/${appointment.clients.id}`;
   const isHydrated = appointment.hydrated === true;
@@ -402,7 +369,7 @@ const AppointmentDetailPage = () => {
         <BoltTestSection
           appointmentId={appointment.id}
           initialBoltScore={appointment.bolt_score}
-          onUpdate={fetchAppointmentData}
+          onUpdate={() => {}} // No need to manually update state, React Query handles it
         />
 
         <CoherenceAssessment
@@ -410,7 +377,7 @@ const AppointmentDetailPage = () => {
           initialHeartRate={appointment.heart_rate}
           initialBreathRate={appointment.breath_rate}
           initialCoherenceScore={appointment.coherence_score}
-          onUpdate={fetchAppointmentData}
+          onUpdate={() => {}} // No need to manually update state, React Query handles it
         />
 
         <CogsAssessment
@@ -418,7 +385,7 @@ const AppointmentDetailPage = () => {
           initialSagittalNotes={appointment.sagittal_plane_notes}
           initialFrontalNotes={appointment.frontal_plane_notes}
           initialTransverseNotes={appointment.transverse_plane_notes}
-          onUpdate={fetchAppointmentData}
+          onUpdate={() => {}} // No need to manually update state, React Query handles it
         />
         
         <EmotionAssessment
@@ -428,7 +395,7 @@ const AppointmentDetailPage = () => {
           initialSecondary={appointment.emotion_secondary_selection}
           initialNotes={appointment.emotion_notes}
           onSaveField={saveField}
-          onUpdate={fetchAppointmentData}
+          onUpdate={() => {}} // No need to manually update state, React Query handles it
         />
       </div>
     </>

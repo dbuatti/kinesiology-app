@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   Collapsible,
   CollapsibleContent,
@@ -15,13 +15,14 @@ import { showSuccess, showError } from "@/utils/toast";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Alert, AlertDescription } from "@/components/ui/alert";
+import { useAppointmentMutation } from "@/hooks/use-crm-data";
 
 interface CogsAssessmentProps {
   appointmentId: string;
   initialSagittalNotes: string | null | undefined;
   initialFrontalNotes: string | null | undefined;
   initialTransverseNotes: string | null | undefined;
-  onUpdate: () => void;
+  onUpdate: () => void; // Kept for consistency, but now triggers cache invalidation
 }
 
 const CogsAssessment = ({ 
@@ -31,7 +32,6 @@ const CogsAssessment = ({
   initialTransverseNotes,
   onUpdate 
 }: CogsAssessmentProps) => {
-  const [loading, setLoading] = useState(false);
   const [isOpen, setIsOpen] = useState(false);
   const [detailsOpen, setDetailsOpen] = useState(false);
   
@@ -43,91 +43,53 @@ const CogsAssessment = ({
   const [frontalImageError, setFrontalImageError] = useState(false);
   const [transverseImageError, setTransverseImageError] = useState(false);
 
+  const { mutateAsync: updateAppointment, isLoading: isSaving } = useAppointmentMutation();
+
+  // Sync local state with initial props on load
+  useEffect(() => {
+    setSagittalNotes(initialSagittalNotes || '');
+    setFrontalNotes(initialFrontalNotes || '');
+    setTransverseNotes(initialTransverseNotes || '');
+  }, [initialSagittalNotes, initialFrontalNotes, initialTransverseNotes]);
+
   const sagittalImagePath = "/images/cogs/sagittal-plane.png";
   const frontalImagePath = "/images/cogs/frontal-plane.png";
   const transverseImagePath = "/images/cogs/transverse-plane.png";
 
   const handleSave = async () => {
-    setLoading(true);
-
     try {
-      console.log("[CogsAssessment] Starting to save Cogs assessment");
-      
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) {
-        throw new Error("User not authenticated");
-      }
+      await updateAppointment({
+        id: appointmentId,
+        sagittal_plane_notes: sagittalNotes || null,
+        frontal_plane_notes: frontalNotes || null,
+        transverse_plane_notes: transverseNotes || null,
+      });
 
-      const { data: existingAppointment, error: fetchError } = await supabase
-        .from("appointments")
-        .select("sagittal_plane_notes, frontal_plane_notes, transverse_plane_notes, user_id")
-        .eq("id", appointmentId)
-        .single();
-
-      if (fetchError) {
-        console.error("[CogsAssessment] Error fetching appointment:", fetchError);
-        throw fetchError;
-      }
-
-      const isNewAssessment = !existingAppointment?.sagittal_plane_notes && 
-                              !existingAppointment?.frontal_plane_notes && 
-                              !existingAppointment?.transverse_plane_notes;
-
-      const { error } = await supabase
-        .from("appointments")
-        .update({ 
-          sagittal_plane_notes: sagittalNotes || null,
-          frontal_plane_notes: frontalNotes || null,
-          transverse_plane_notes: transverseNotes || null,
-        })
-        .eq("id", appointmentId);
-
-      if (error) {
-        console.error("[CogsAssessment] Error updating appointment:", error);
-        throw error;
-      }
-
-      showSuccess(
-        isNewAssessment 
-          ? "Range of Motion assessment saved! Check Procedures page to see your progress." 
-          : "Range of Motion assessment updated successfully!"
-      );
-      
-      onUpdate();
+      showSuccess("Range of Motion assessment saved successfully!");
     } catch (error: any) {
-      console.error("[CogsAssessment] Error in handleSave:", error);
       showError(error.message || "Failed to save Cogs assessment.");
-    } finally {
-      setLoading(false);
     }
   };
 
   const handleReset = async () => {
     if (!confirm("Are you sure you want to reset the Range of Motion assessment notes for this session?")) return;
-    setLoading(true);
+    
     try {
-      const { error } = await supabase
-        .from("appointments")
-        .update({ 
-          sagittal_plane_notes: null,
-          frontal_plane_notes: null,
-          transverse_plane_notes: null,
-        })
-        .eq("id", appointmentId);
-
-      if (error) throw error;
-      showSuccess("Range of Motion assessment notes reset successfully.");
+      await updateAppointment({
+        id: appointmentId,
+        sagittal_plane_notes: null,
+        frontal_plane_notes: null,
+        transverse_plane_notes: null,
+      });
       
       // Reset local state immediately
       setSagittalNotes('');
       setFrontalNotes('');
       setTransverseNotes('');
       
-      onUpdate();
+      showSuccess("Range of Motion assessment notes reset successfully.");
     } catch (error: any) {
       showError(error.message || "Failed to reset Cogs assessment.");
-    } finally {
-      setLoading(false);
     }
   };
 
@@ -156,7 +118,7 @@ const CogsAssessment = ({
                       e.stopPropagation();
                       handleReset();
                     }}
-                    disabled={loading}
+                    disabled={isSaving}
                     className="border-red-200 text-red-600 hover:bg-red-50 h-8 px-3"
                   >
                     <RotateCcw size={16} className="mr-1" />
@@ -356,10 +318,10 @@ const CogsAssessment = ({
             <div className="flex gap-3 pt-4 border-t border-slate-200">
               <Button 
                 onClick={handleSave}
-                disabled={loading}
+                disabled={isSaving}
                 className="flex-1 bg-purple-600 hover:bg-purple-700 h-12 text-base font-semibold rounded-xl shadow-lg shadow-purple-200"
               >
-                {loading ? (
+                {isSaving ? (
                   <>
                     <Loader2 className="mr-2 h-5 w-5 animate-spin" />
                     Saving Assessment...

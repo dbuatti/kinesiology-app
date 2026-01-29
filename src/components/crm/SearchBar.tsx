@@ -13,6 +13,8 @@ import {
 } from "@/components/ui/command";
 import { Search, User, Calendar } from "lucide-react";
 import { format } from "date-fns";
+import { useQuery } from "@tanstack/react-query";
+import { useDebounce } from "@/hooks/use-debounce";
 
 interface SearchResult {
   type: "client" | "appointment";
@@ -22,11 +24,73 @@ interface SearchResult {
   path: string;
 }
 
+const fetchSearchResults = async (query: string): Promise<SearchResult[]> => {
+  if (!query || query.length < 2) {
+    return [];
+  }
+
+  const [clientsData, appointmentsData] = await Promise.all([
+    supabase
+      .from("clients")
+      .select("id, name, email")
+      .ilike("name", `%${query}%`)
+      .limit(5),
+    supabase
+      .from("appointments")
+      .select(`
+        id,
+        name,
+        date,
+        display_id,
+        clients (
+          name
+        )
+      `)
+      .or(`name.ilike.%${query}%,display_id.ilike.%${query}%`)
+      .limit(5),
+  ]);
+
+  const searchResults: SearchResult[] = [];
+
+  if (clientsData.data) {
+    clientsData.data.forEach((client) => {
+      searchResults.push({
+        type: "client",
+        id: client.id,
+        title: client.name,
+        subtitle: client.email || undefined,
+        path: `/clients/${client.id}`,
+      });
+    });
+  }
+
+  if (appointmentsData.data) {
+    appointmentsData.data.forEach((appointment: any) => {
+      searchResults.push({
+        type: "appointment",
+        id: appointment.id,
+        title: appointment.name || appointment.display_id || "Appointment",
+        subtitle: `${appointment.clients?.name} • ${format(new Date(appointment.date), "MMM d, yyyy")}`,
+        path: `/appointments/${appointment.id}`,
+      });
+    });
+  }
+
+  return searchResults;
+};
+
 const SearchBar = () => {
   const [open, setOpen] = useState(false);
-  const [results, setResults] = useState<SearchResult[]>([]);
-  const [loading, setLoading] = useState(false);
+  const [searchQuery, setSearchQuery] = useState("");
+  const debouncedQuery = useDebounce(searchQuery, 300);
   const navigate = useNavigate();
+
+  const { data: results, isLoading } = useQuery<SearchResult[], Error>({
+    queryKey: ['globalSearch', debouncedQuery],
+    queryFn: () => fetchSearchResults(debouncedQuery),
+    enabled: open && debouncedQuery.length >= 2,
+    staleTime: 1000 * 60 * 5, // 5 minutes cache
+  });
 
   useEffect(() => {
     const down = (e: KeyboardEvent) => {
@@ -40,72 +104,9 @@ const SearchBar = () => {
     return () => document.removeEventListener("keydown", down);
   }, []);
 
-  const handleSearch = async (query: string) => {
-    if (!query || query.length < 2) {
-      setResults([]);
-      return;
-    }
-
-    setLoading(true);
-
-    try {
-      const [clientsData, appointmentsData] = await Promise.all([
-        supabase
-          .from("clients")
-          .select("id, name, email")
-          .ilike("name", `%${query}%`)
-          .limit(5),
-        supabase
-          .from("appointments")
-          .select(`
-            id,
-            name,
-            date,
-            display_id,
-            clients (
-              name
-            )
-          `)
-          .or(`name.ilike.%${query}%,display_id.ilike.%${query}%`)
-          .limit(5),
-      ]);
-
-      const searchResults: SearchResult[] = [];
-
-      if (clientsData.data) {
-        clientsData.data.forEach((client) => {
-          searchResults.push({
-            type: "client",
-            id: client.id,
-            title: client.name,
-            subtitle: client.email || undefined,
-            path: `/clients/${client.id}`,
-          });
-        });
-      }
-
-      if (appointmentsData.data) {
-        appointmentsData.data.forEach((appointment: any) => {
-          searchResults.push({
-            type: "appointment",
-            id: appointment.id,
-            title: appointment.name || appointment.display_id || "Appointment",
-            subtitle: `${appointment.clients?.name} • ${format(new Date(appointment.date), "MMM d, yyyy")}`,
-            path: `/appointments/${appointment.id}`,
-          });
-        });
-      }
-
-      setResults(searchResults);
-    } catch (error) {
-      console.error("Search error:", error);
-    } finally {
-      setLoading(false);
-    }
-  };
-
   const handleSelect = (path: string) => {
     setOpen(false);
+    setSearchQuery("");
     navigate(path);
   };
 
@@ -125,13 +126,14 @@ const SearchBar = () => {
       <CommandDialog open={open} onOpenChange={setOpen}>
         <CommandInput
           placeholder="Search clients and appointments..."
-          onValueChange={handleSearch}
+          value={searchQuery}
+          onValueChange={setSearchQuery}
         />
         <CommandList>
           <CommandEmpty>
-            {loading ? "Searching..." : "No results found."}
+            {isLoading ? "Searching..." : "No results found."}
           </CommandEmpty>
-          {results.length > 0 && (
+          {results && results.length > 0 && (
             <>
               <CommandGroup heading="Clients">
                 {results

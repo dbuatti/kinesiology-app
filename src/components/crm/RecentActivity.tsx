@@ -1,13 +1,13 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
-import { supabase } from "@/integrations/supabase/client";
+import React from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
 import { Clock, User, Calendar, Loader2 } from "lucide-react";
 import { Link } from "react-router-dom";
 import { format, formatDistanceToNow } from "date-fns";
 import { cn } from "@/lib/utils";
+import { useDashboardStats } from "@/hooks/use-crm-data";
+import { Skeleton } from "@/components/ui/skeleton";
 
 interface Activity {
   id: string;
@@ -19,11 +19,67 @@ interface Activity {
 }
 
 const RecentActivity = () => {
+  const { data, isLoading, error } = useDashboardStats();
+
+  if (isLoading) {
+    return (
+      <Card className="border-none shadow-sm rounded-2xl bg-white">
+        <CardHeader>
+          <CardTitle className="text-lg font-bold flex items-center gap-2">
+            <Clock size={20} className="text-indigo-500" />
+            Recent Activity
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-3">
+          {[1, 2, 3].map((i) => (
+            <div key={i} className="flex items-start gap-3 p-3 rounded-xl border border-slate-100">
+              <Skeleton className="w-8 h-8 rounded-lg" />
+              <div className="flex-1 min-w-0 space-y-1">
+                <Skeleton className="h-4 w-32" />
+                <Skeleton className="h-3 w-40" />
+              </div>
+              <Skeleton className="h-3 w-16" />
+            </div>
+          ))}
+        </CardContent>
+      </Card>
+    );
+  }
+
+  if (error) {
+    return (
+      <Card className="border-none shadow-sm rounded-2xl bg-white">
+        <CardHeader>
+          <CardTitle className="text-lg font-bold flex items-center gap-2">
+            <Clock size={20} className="text-indigo-500" />
+            Recent Activity
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <p className="text-center text-red-500 text-sm py-8">Error loading activity.</p>
+        </CardContent>
+      </Card>
+    );
+  }
+
+  const recentClients = data?.recentClients || [];
+  
+  // Fetch recent appointments separately for better sorting logic
+  // NOTE: Since we are limited to one hook per component for dashboard, 
+  // we will rely on the dashboard hook for recent clients and fetch recent appointments here if needed, 
+  // but for simplicity and to avoid re-fetching, we'll stick to the combined data for now.
+  // However, the original component logic was flawed as it tried to combine two separate queries 
+  // based on different sorting criteria (client by created_at, app by date). 
+  // We will only show recent clients for now, as the dashboard hook only provides recent clients.
+  
+  // To properly show combined activity, we need to fetch both and combine them.
+  // Let's fetch recent appointments here to combine them correctly.
   const [activities, setActivities] = useState<Activity[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [isActivityLoading, setIsActivityLoading] = useState(true);
 
   useEffect(() => {
-    const fetchActivity = async () => {
+    const fetchCombinedActivity = async () => {
+      setIsActivityLoading(true);
       try {
         const [clientsData, appointmentsData] = await Promise.all([
           supabase
@@ -42,7 +98,7 @@ const RecentActivity = () => {
                 name
               )
             `)
-            .order("date", { ascending: false })
+            .order("created_at", { ascending: false }) // Sort by created_at for recent activity
             .limit(5),
         ]);
 
@@ -64,8 +120,8 @@ const RecentActivity = () => {
             id: app.id,
             type: "appointment",
             title: app.name || app.display_id || "Session",
-            subtitle: `${app.clients?.name} • ${format(new Date(app.date), "MMM d")}`,
-            timestamp: new Date(app.date),
+            subtitle: `${app.clients?.name} • ${format(new Date(app.created_at), "MMM d")}`,
+            timestamp: new Date(app.created_at),
             link: `/appointments/${app.id}`,
           });
         });
@@ -75,14 +131,14 @@ const RecentActivity = () => {
       } catch (error) {
         console.error("Error fetching activity:", error);
       } finally {
-        setLoading(false);
+        setIsActivityLoading(false);
       }
     };
 
-    fetchActivity();
-  }, []);
+    fetchCombinedActivity();
+  }, [data]); // Re-fetch if dashboard data changes (e.g., client added)
 
-  if (loading) {
+  if (isActivityLoading) {
     return (
       <Card className="border-none shadow-sm rounded-2xl bg-white">
         <CardHeader>

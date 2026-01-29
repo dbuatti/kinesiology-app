@@ -2,7 +2,6 @@ import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
-import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/components/AuthProvider";
 import { Button } from "@/components/ui/button";
 import {
@@ -18,6 +17,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Loader2 } from "lucide-react";
 import { showSuccess, showError } from "@/utils/toast";
 import { Client } from "@/types/crm";
+import { useClientMutation } from "@/hooks/use-crm-data";
 
 const formSchema = z.object({
   name: z.string().min(2, "Name must be at least 2 characters"),
@@ -33,6 +33,8 @@ const formSchema = z.object({
   journal: z.string().optional(),
 });
 
+type ClientFormValues = z.infer<typeof formSchema>;
+
 interface ClientFormProps {
   onSuccess: () => void;
   initialData?: Client;
@@ -41,15 +43,16 @@ interface ClientFormProps {
 const ClientForm = ({ onSuccess, initialData }: ClientFormProps) => {
   const { session } = useAuth();
   const [submitting, setSubmitting] = useState(false);
+  const { mutateAsync: clientMutation } = useClientMutation();
 
-  const form = useForm<z.infer<typeof formSchema>>({
+  const form = useForm<ClientFormValues>({
     resolver: zodResolver(formSchema),
     defaultValues: {
       name: initialData?.name || "",
       email: initialData?.email || "",
       phone: initialData?.phone || "",
       pronouns: initialData?.pronouns || "",
-      born: initialData?.born ? new Date(initialData.born).toISOString().split('T')[0] : "",
+      born: initialData?.born ? format(initialData.born, 'yyyy-MM-dd') : "",
       suburb: initialData?.suburb?.join(", ") || "", // Convert array to string for form
       occupation: initialData?.occupation || "",
       marital_status: initialData?.marital_status || "",
@@ -59,7 +62,7 @@ const ClientForm = ({ onSuccess, initialData }: ClientFormProps) => {
     },
   });
 
-  const onSubmit = async (values: z.infer<typeof formSchema>) => {
+  const onSubmit = async (values: ClientFormValues) => {
     if (!session?.user?.id) return;
     setSubmitting(true);
 
@@ -82,21 +85,12 @@ const ClientForm = ({ onSuccess, initialData }: ClientFormProps) => {
         children: values.children || null,
         chatgpt_url: values.chatgpt_url || null,
         journal: values.journal || null,
+        id: initialData?.id, // Include ID for update mutation
       };
 
-      if (initialData?.id) {
-        const { error } = await supabase
-          .from("clients")
-          .update(payload)
-          .eq('id', initialData.id);
-        if (error) throw error;
-        showSuccess("Client updated successfully");
-      } else {
-        const { error } = await supabase.from("clients").insert(payload);
-        if (error) throw error;
-        showSuccess("Client added successfully");
-      }
+      await clientMutation(payload);
 
+      showSuccess(initialData?.id ? "Client updated successfully" : "Client added successfully");
       onSuccess();
     } catch (error: any) {
       showError(error.message || "Failed to save client");

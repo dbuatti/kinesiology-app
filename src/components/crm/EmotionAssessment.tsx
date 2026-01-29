@@ -14,8 +14,8 @@ import { Badge } from "@/components/ui/badge";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import EditableField from "./EditableField";
 import { CHANNEL_EMOTIONS, ELEMENT_EMOTIONS } from "@/data/emotion-data";
-
-// --- Data Definitions are now imported ---
+import { useAppointmentMutation } from "@/hooks/use-crm-data";
+import { showSuccess, showError } from "@/utils/toast";
 
 interface EmotionAssessmentProps {
   appointmentId: string;
@@ -24,10 +24,11 @@ interface EmotionAssessmentProps {
   initialSecondary: string | null | undefined;
   initialNotes: string | null | undefined;
   onSaveField: (field: string, value: string | null) => Promise<void>;
-  onUpdate: () => void;
+  onUpdate: () => void; // Kept for consistency, but now triggers cache invalidation
 }
 
 const EmotionAssessment = ({ 
+  appointmentId,
   initialMode, 
   initialPrimary, 
   initialSecondary, 
@@ -39,9 +40,10 @@ const EmotionAssessment = ({
   const [mode, setMode] = useState<string>(initialMode || 'channel');
   const [primarySelection, setPrimarySelection] = useState<string>(initialPrimary || '');
   const [secondarySelection, setSecondarySelection] = useState<string>(initialSecondary || '');
-  const [isSaving, setIsSaving] = useState(false);
+  
+  const { mutateAsync: updateAppointment, isLoading: isSaving } = useAppointmentMutation();
 
-  // Sync internal state when external props change (e.g., from real-time update)
+  // Sync local state when external props change (e.g., from real-time update)
   useEffect(() => {
     setMode(initialMode || 'channel');
     setPrimarySelection(initialPrimary || '');
@@ -73,33 +75,31 @@ const EmotionAssessment = ({
   };
 
   const handleSave = async (newMode: string, newPrimary: string, newSecondary: string) => {
-    setIsSaving(true);
     try {
-      await Promise.all([
-        onSaveField('emotion_mode', newMode),
-        onSaveField('emotion_primary_selection', newPrimary || null),
-        onSaveField('emotion_secondary_selection', newSecondary || null),
-      ]);
-      // Removed onUpdate() call here to prevent full page refresh
+      await updateAppointment({
+        id: appointmentId,
+        emotion_mode: newMode,
+        emotion_primary_selection: newPrimary || null,
+        emotion_secondary_selection: newSecondary || null,
+      });
+      // Success handled by mutation hook
     } catch (error) {
       console.error("Failed to save emotion assessment:", error);
-    } finally {
-      setIsSaving(false);
+      showError("Failed to save emotional selection.");
     }
   };
 
   const handleReset = async () => {
     if (!confirm("Are you sure you want to reset the Emotional Assessment data for this session?")) return;
     
-    setIsSaving(true);
     try {
-      // 1. Clear database fields to null
-      await Promise.all([
-        onSaveField('emotion_mode', null),
-        onSaveField('emotion_primary_selection', null),
-        onSaveField('emotion_secondary_selection', null),
-        onSaveField('emotion_notes', null),
-      ]);
+      await updateAppointment({
+        id: appointmentId,
+        emotion_mode: null,
+        emotion_primary_selection: null,
+        emotion_secondary_selection: null,
+        emotion_notes: null,
+      });
       
       // 2. Reset local state
       setMode('channel');
@@ -107,11 +107,8 @@ const EmotionAssessment = ({
       setSecondarySelection('');
       
       showSuccess("Emotional assessment reset successfully.");
-      onUpdate();
     } catch (error: any) {
       showError(error.message || "Failed to reset emotional assessment.");
-    } finally {
-      setIsSaving(false);
     }
   };
 

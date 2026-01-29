@@ -1,9 +1,9 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { groupAppointmentsByMonth } from "@/utils/crm-utils";
 import { format } from "date-fns";
 import { Badge } from "@/components/ui/badge";
-import { Calendar as CalendarIcon, Clock, Loader2, Plus, Trash2, MoreVertical, ExternalLink, FlaskConical, Activity, Move } from "lucide-react";
+import { Calendar as CalendarIcon, Clock, Loader2, Plus, Trash2, MoreVertical, ExternalLink, FlaskConical, Activity, Move, MoreHorizontal } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import {
@@ -24,67 +24,49 @@ import { Appointment } from "@/types/crm";
 import { showSuccess, showError } from "@/utils/toast";
 import { Link } from "react-router-dom";
 import { cn } from "@/lib/utils";
+import { useAppointments, useDeleteAppointment } from "@/hooks/use-crm-data";
+import { useDebounce } from "@/hooks/use-debounce";
+import { Input } from "@/components/ui/input";
+import { Search } from "lucide-react";
 
 interface AppointmentWithClient extends Appointment {
   clients: { name: string; id: string };
 }
 
 const AppointmentsPage = () => {
-  const [appointments, setAppointments] = useState<AppointmentWithClient[]>([]);
-  const [loading, setLoading] = useState(true);
   const [open, setOpen] = useState(false);
+  const [search, setSearch] = useState("");
+  
+  const { data: appointments, isLoading, error } = useAppointments();
+  const { mutate: deleteAppointment, isLoading: isDeleting } = useDeleteAppointment();
+  
+  const debouncedSearch = useDebounce(search, 300);
 
-  const fetchAppointments = async () => {
-    try {
-      const { data, error } = await supabase
-        .from('appointments')
-        .select(`
-          *,
-          clients (
-            id,
-            name
-          )
-        `)
-        .order('date', { ascending: false });
+  const filteredAppointments = useMemo(() => {
+    return (appointments || []).filter(app => 
+      app.name?.toLowerCase().includes(debouncedSearch.toLowerCase()) ||
+      app.clients.name.toLowerCase().includes(debouncedSearch.toLowerCase()) ||
+      app.display_id?.toLowerCase().includes(debouncedSearch.toLowerCase()) ||
+      app.tag.toLowerCase().includes(debouncedSearch.toLowerCase())
+    );
+  }, [appointments, debouncedSearch]);
 
-      if (error) throw error;
+  const grouped = useMemo(() => {
+    return groupAppointmentsByMonth(filteredAppointments);
+  }, [filteredAppointments]);
 
-      const mapped = (data || []).map(a => ({
-        ...a,
-        date: new Date(a.date),
-      })) as unknown as AppointmentWithClient[];
-
-      setAppointments(mapped);
-    } catch (err) {
-      console.error("Error fetching appointments:", err);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const deleteAppointment = async (id: string) => {
+  const handleDelete = (id: string) => {
     if (!confirm("Are you sure you want to delete this appointment?")) return;
 
-    try {
-      const { error } = await supabase
-        .from('appointments')
-        .delete()
-        .eq('id', id);
-
-      if (error) throw error;
-      
-      showSuccess("Appointment deleted");
-      fetchAppointments();
-    } catch (err: any) {
-      showError(err.message || "Failed to delete appointment");
-    }
+    deleteAppointment(id, {
+      onSuccess: () => {
+        showSuccess("Appointment deleted successfully");
+      },
+      onError: (err: any) => {
+        showError(err.message || "Failed to delete appointment");
+      }
+    });
   };
-
-  useEffect(() => {
-    fetchAppointments();
-  }, []);
-
-  const grouped = groupAppointmentsByMonth(appointments);
 
   return (
     <div className="p-8 max-w-5xl mx-auto space-y-8">
@@ -106,18 +88,34 @@ const AppointmentsPage = () => {
             <AppointmentForm 
               onSuccess={() => {
                 setOpen(false);
-                fetchAppointments();
               }} 
             />
           </DialogContent>
         </Dialog>
       </div>
 
-      {loading ? (
+      <div className="flex items-center gap-4">
+        <div className="relative flex-1 max-w-sm">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
+          <Input 
+            placeholder="Search by client, name, or tag..." 
+            className="pl-10 bg-white border-slate-200 focus:ring-indigo-500"
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+          />
+        </div>
+        <div className="text-sm text-slate-500 font-medium">
+          {filteredAppointments.length} {filteredAppointments.length === 1 ? 'session' : 'sessions'} found
+        </div>
+      </div>
+
+      {isLoading ? (
         <div className="p-12 flex flex-col items-center justify-center gap-4">
           <Loader2 className="animate-spin text-indigo-500" size={32} />
           <p className="text-slate-400">Loading your schedule...</p>
         </div>
+      ) : error ? (
+        <div className="p-12 text-center text-red-600">Error loading appointments.</div>
       ) : (
         <div className="space-y-10">
           {grouped.map(([month, apps]) => (
@@ -144,7 +142,7 @@ const AppointmentsPage = () => {
                               <div className="flex items-start justify-between">
                                 <div className="space-y-1">
                                   <div className="font-bold text-xl text-slate-900 hover:text-indigo-600 flex items-center gap-2">
-                                    {(app as any).clients?.name}
+                                    {app.clients?.name}
                                     <ExternalLink size={14} className="opacity-0 group-hover:opacity-100 transition-opacity" />
                                   </div>
                                   <div className="flex flex-wrap items-center gap-4 text-sm text-slate-500">
@@ -167,7 +165,7 @@ const AppointmentsPage = () => {
                                   <DropdownMenu>
                                     <DropdownMenuTrigger asChild>
                                       <Button variant="ghost" size="icon" className="h-8 w-8 text-slate-400 hover:text-slate-900">
-                                        <MoreVertical size={16} />
+                                        <MoreHorizontal size={16} />
                                       </Button>
                                     </DropdownMenuTrigger>
                                     <DropdownMenuContent align="end">
@@ -175,8 +173,9 @@ const AppointmentsPage = () => {
                                         className="text-destructive focus:text-destructive flex items-center gap-2"
                                         onClick={(e) => {
                                           e.preventDefault();
-                                          deleteAppointment(app.id);
+                                          handleDelete(app.id);
                                         }}
+                                        disabled={isDeleting}
                                       >
                                         <Trash2 size={14} /> Delete
                                       </DropdownMenuItem>
@@ -226,7 +225,7 @@ const AppointmentsPage = () => {
               </div>
             </div>
           ))}
-          {appointments.length === 0 && (
+          {filteredAppointments.length === 0 && (
             <div className="text-center py-20 bg-slate-50 rounded-3xl border-2 border-dashed border-slate-200">
               <div className="w-16 h-16 bg-white rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-sm">
                 <CalendarIcon className="text-slate-300" size={32} />

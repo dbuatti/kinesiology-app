@@ -28,6 +28,7 @@ import { format } from "date-fns";
 import { CalendarIcon, Loader2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { showSuccess, showError } from "@/utils/toast";
+import { useAppointmentMutation, useClients } from "@/hooks/use-crm-data";
 
 const formSchema = z.object({
   clientId: z.string().min(1, "Client is required"),
@@ -42,46 +43,35 @@ const formSchema = z.object({
   issue: z.string().optional(),
 });
 
+type AppointmentFormValues = z.infer<typeof formSchema>;
+
 interface AppointmentFormProps {
   onSuccess: () => void;
   initialClientId?: string;
+  initialData?: any; // Use 'any' for simplicity as full Appointment type is complex here
 }
 
-const AppointmentForm = ({ onSuccess, initialClientId }: AppointmentFormProps) => {
+const AppointmentForm = ({ onSuccess, initialClientId, initialData }: AppointmentFormProps) => {
   const { session } = useAuth();
-  const [clients, setClients] = useState<{ id: string; name: string }[]>([]);
-  const [loadingClients, setLoadingClients] = useState(true);
+  const { data: clients, isLoading: loadingClients } = useClients();
   const [submitting, setSubmitting] = useState(false);
+  const { mutateAsync: appointmentMutation } = useAppointmentMutation();
 
-  const form = useForm<z.infer<typeof formSchema>>({
+  const form = useForm<AppointmentFormValues>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      clientId: initialClientId || "",
-      name: "",
-      tag: "Kinesiology",
-      status: "Scheduled",
-      time: "10:00",
-      date: new Date(),
+      clientId: initialData?.clientId || initialClientId || "",
+      name: initialData?.name || "",
+      tag: initialData?.tag || "Kinesiology",
+      status: initialData?.status || "Scheduled",
+      time: initialData?.date ? format(initialData.date, 'HH:mm') : "10:00",
+      date: initialData?.date || new Date(),
+      goal: initialData?.goal || "",
+      issue: initialData?.issue || "",
     },
   });
 
-  useEffect(() => {
-    const fetchClients = async () => {
-      const { data, error } = await supabase
-        .from("clients")
-        .select("id, name")
-        .order("name");
-      
-      if (!error && data) {
-        setClients(data);
-      }
-      setLoadingClients(false);
-    };
-
-    fetchClients();
-  }, []);
-
-  const onSubmit = async (values: z.infer<typeof formSchema>) => {
+  const onSubmit = async (values: AppointmentFormValues) => {
     if (!session?.user?.id) return;
     setSubmitting(true);
 
@@ -90,20 +80,21 @@ const AppointmentForm = ({ onSuccess, initialClientId }: AppointmentFormProps) =
       const appointmentDate = new Date(values.date);
       appointmentDate.setHours(parseInt(hours), parseInt(minutes));
 
-      const { error } = await supabase.from("appointments").insert({
+      const payload = {
         user_id: session.user.id,
         client_id: values.clientId,
         name: values.name,
         date: appointmentDate.toISOString(),
         tag: values.tag,
         status: values.status,
-        goal: values.goal,
-        issue: values.issue,
-      });
+        goal: values.goal || null,
+        issue: values.issue || null,
+        id: initialData?.id, // Include ID for update mutation
+      };
 
-      if (error) throw error;
+      await appointmentMutation(payload);
 
-      showSuccess("Appointment scheduled successfully");
+      showSuccess(initialData?.id ? "Appointment updated successfully" : "Appointment scheduled successfully");
       onSuccess();
     } catch (error: any) {
       showError(error.message || "Failed to schedule appointment");
@@ -132,7 +123,7 @@ const AppointmentForm = ({ onSuccess, initialClientId }: AppointmentFormProps) =
                   </SelectTrigger>
                 </FormControl>
                 <SelectContent>
-                  {clients.map((client) => (
+                  {clients?.map((client) => (
                     <SelectItem key={client.id} value={client.id}>
                       {client.name}
                     </SelectItem>
@@ -295,7 +286,7 @@ const AppointmentForm = ({ onSuccess, initialClientId }: AppointmentFormProps) =
 
         <Button type="submit" className="w-full bg-indigo-600 hover:bg-indigo-700" disabled={submitting}>
           {submitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-          Schedule Appointment
+          {initialData?.id ? "Update Appointment" : "Schedule Appointment"}
         </Button>
       </form>
     </Form>

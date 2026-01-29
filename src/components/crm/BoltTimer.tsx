@@ -1,3 +1,5 @@
+"use client";
+
 import React, { useState, useEffect, useRef } from 'react';
 import { Button } from '@/components/ui/button';
 import { Play, Square, RotateCcw, Save, Loader2, Info } from 'lucide-react';
@@ -34,10 +36,11 @@ const BoltTimer = ({ initialScore, onScoreRecorded, isSaving }: BoltTimerProps) 
   }, [isRunning]);
 
   useEffect(() => {
+    // Only sync initialScore if the timer is not running and not finished
     if (initialScore !== null && initialScore !== undefined && !isRunning && !isFinished) {
       setTime(initialScore);
     }
-  }, [initialScore]);
+  }, [initialScore, isRunning, isFinished]);
 
   const startTimer = () => {
     setTime(0);
@@ -133,6 +136,7 @@ const BoltTimer = ({ initialScore, onScoreRecorded, isSaving }: BoltTimerProps) 
           <Button 
             onClick={startTimer} 
             className="flex-1 bg-indigo-600 hover:bg-indigo-700 rounded-xl shadow-md shadow-indigo-100 h-12 text-base font-semibold"
+            disabled={isSaving}
           >
             <Play size={20} className="mr-2" /> Start BOLT Test
           </Button>
@@ -142,6 +146,7 @@ const BoltTimer = ({ initialScore, onScoreRecorded, isSaving }: BoltTimerProps) 
           <Button 
             onClick={stopTimer} 
             className="flex-1 bg-red-600 hover:bg-red-700 rounded-xl shadow-md shadow-red-100 h-12 text-base font-semibold"
+            disabled={isSaving}
           >
             <Square size={20} className="mr-2" /> Stop Test
           </Button>
@@ -154,7 +159,7 @@ const BoltTimer = ({ initialScore, onScoreRecorded, isSaving }: BoltTimerProps) 
               disabled={isSaving}
               className="flex-1 bg-emerald-600 hover:bg-emerald-700 rounded-xl shadow-md shadow-emerald-100 h-12 text-base font-semibold"
             >
-              {isSaving ? <Loader2 className="mr-2 h-5 w-5 animate-spin" /> : <Save size={20} className="mr-2" />}
+              {isSaving ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Save size={20} className="mr-2" />}
               Save Score ({time}s)
             </Button>
             <Button 

@@ -102,17 +102,18 @@ const AppointmentDetailPage = () => {
 
       if (error) throw error;
 
-      // Show saved indicator
-      setSavedField(field);
-      setTimeout(() => setSavedField(null), 2000);
-      
-      // Update local state
+      // Update local state WITHOUT re-fetching to prevent focus loss
       if (appointment) {
         setAppointment({
           ...appointment,
           [field]: value || null
         });
       }
+
+      // Show saved indicator
+      setSavedField(field);
+      setTimeout(() => setSavedField(null), 2000);
+      
     } catch (err: any) {
       showError(err.message || "Failed to save");
     } finally {

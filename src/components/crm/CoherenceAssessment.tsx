@@ -1,8 +1,8 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
-import { Activity, ChevronDown, AlertCircle, Info, Heart, Brain } from "lucide-react";
+import { Activity, ChevronDown, AlertCircle, Info, Heart, Brain, Play, Square, RotateCcw } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { showSuccess, showError } from "@/utils/toast";
 import { Badge } from "@/components/ui/badge";
@@ -36,20 +36,105 @@ const CoherenceAssessment = ({
   const [isOpen, setIsOpen] = useState(false);
   const [detailsOpen, setDetailsOpen] = useState(false);
   
-  const [heartRate, setHeartRate] = useState<string>(initialHeartRate?.toString() || '');
-  const [breathRate, setBreathRate] = useState<string>(initialBreathRate?.toString() || '');
+  // Raw values (before multiply by 2)
+  const [heartRateRaw, setHeartRateRaw] = useState<string>(initialHeartRate ? (initialHeartRate / 2).toString() : '');
+  const [breathRateRaw, setBreathRateRaw] = useState<string>(initialBreathRate ? (initialBreathRate / 2).toString() : '');
+  
+  // Calculated final values (after multiply by 2)
+  const heartRate = heartRateRaw ? parseInt(heartRateRaw) * 2 : 0;
+  const breathRate = breathRateRaw ? parseInt(breathRateRaw) * 2 : 0;
+  
   const [calculatedScore, setCalculatedScore] = useState<number | null>(initialCoherenceScore || null);
 
+  // Timer states
+  const [heartTimer, setHeartTimer] = useState(30);
+  const [breathTimer, setBreathTimer] = useState(30);
+  const [heartTimerRunning, setHeartTimerRunning] = useState(false);
+  const [breathTimerRunning, setBreathTimerRunning] = useState(false);
+  const heartIntervalRef = useRef<NodeJS.Timeout | null>(null);
+  const breathIntervalRef = useRef<NodeJS.Timeout | null>(null);
+
+  // Heart rate timer
+  useEffect(() => {
+    if (heartTimerRunning && heartTimer > 0) {
+      heartIntervalRef.current = setInterval(() => {
+        setHeartTimer(prev => {
+          if (prev <= 1) {
+            setHeartTimerRunning(false);
+            return 0;
+          }
+          return prev - 1;
+        });
+      }, 1000);
+    } else if (heartIntervalRef.current) {
+      clearInterval(heartIntervalRef.current);
+    }
+
+    return () => {
+      if (heartIntervalRef.current) {
+        clearInterval(heartIntervalRef.current);
+      }
+    };
+  }, [heartTimerRunning, heartTimer]);
+
+  // Breath rate timer
+  useEffect(() => {
+    if (breathTimerRunning && breathTimer > 0) {
+      breathIntervalRef.current = setInterval(() => {
+        setBreathTimer(prev => {
+          if (prev <= 1) {
+            setBreathTimerRunning(false);
+            return 0;
+          }
+          return prev - 1;
+        });
+      }, 1000);
+    } else if (breathIntervalRef.current) {
+      clearInterval(breathIntervalRef.current);
+    }
+
+    return () => {
+      if (breathIntervalRef.current) {
+        clearInterval(breathIntervalRef.current);
+      }
+    };
+  }, [breathTimerRunning, breathTimer]);
+
+  const startHeartTimer = () => {
+    setHeartTimer(30);
+    setHeartTimerRunning(true);
+  };
+
+  const stopHeartTimer = () => {
+    setHeartTimerRunning(false);
+  };
+
+  const resetHeartTimer = () => {
+    setHeartTimerRunning(false);
+    setHeartTimer(30);
+  };
+
+  const startBreathTimer = () => {
+    setBreathTimer(30);
+    setBreathTimerRunning(true);
+  };
+
+  const stopBreathTimer = () => {
+    setBreathTimerRunning(false);
+  };
+
+  const resetBreathTimer = () => {
+    setBreathTimerRunning(false);
+    setBreathTimer(30);
+  };
+
   const calculateCoherence = () => {
-    const hr = parseInt(heartRate);
-    const br = parseInt(breathRate);
-    
-    if (isNaN(hr) || isNaN(br) || br === 0) {
+    if (!heartRate || !breathRate || breathRate === 0) {
       showError("Please enter valid heart rate and breath rate");
       return;
     }
     
-    const score = hr / br;
+    const score = heartRate / breathRate;
     setCalculatedScore(score);
   };
 
@@ -70,9 +155,6 @@ const CoherenceAssessment = ({
       }
       console.log("[CoherenceAssessment] User ID:", user.id);
 
-      const hr = parseInt(heartRate);
-      const br = parseInt(breathRate);
-
       // Check existing data
       const { data: existingAppointment, error: fetchError } = await supabase
         .from("appointments")
@@ -92,8 +174,8 @@ const CoherenceAssessment = ({
       const { error } = await supabase
         .from("appointments")
         .update({ 
-          heart_rate: hr,
-          breath_rate: br,
+          heart_rate: heartRate,
+          breath_rate: breathRate,
           coherence_score: calculatedScore 
         })
         .eq("id", appointmentId);
@@ -192,46 +274,156 @@ const CoherenceAssessment = ({
             <Alert className="bg-blue-50 border-blue-200">
               <Info className="h-4 w-4 text-blue-600" />
               <AlertDescription className="text-sm text-blue-900">
-                <strong>Quick Guide:</strong> Measure pulse for 30s (×2), count breaths for 30s (×2), then divide heart rate by breath rate.
-                A whole number indicates harmony; a partial number suggests dysregulation.
+                <strong>Quick Guide:</strong> Use the 30-second timers to count pulse and breaths. 
+                Enter the raw count (app will multiply by 2 automatically). Then divide heart rate by breath rate.
               </AlertDescription>
             </Alert>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              {/* Heart Rate Section */}
               <div className="space-y-3">
                 <div className="flex items-center gap-2 mb-2">
                   <div className="w-8 h-8 bg-rose-100 rounded-lg flex items-center justify-center">
                     <Heart size={18} className="text-rose-600" />
                   </div>
-                  <Label htmlFor="heartRate" className="text-base font-bold text-slate-900">Heart Rate (BPM)</Label>
+                  <Label htmlFor="heartRate" className="text-base font-bold text-slate-900">Heart Rate</Label>
                 </div>
-                <Input
-                  id="heartRate"
-                  type="number"
-                  placeholder="e.g., 72"
-                  value={heartRate}
-                  onChange={(e) => setHeartRate(e.target.value)}
-                  className="h-12 text-lg"
-                />
-                <p className="text-xs text-slate-500">Count pulse for 30 seconds, then multiply by 2</p>
+
+                {/* Timer Display */}
+                <div className={cn(
+                  "flex items-center justify-center p-4 rounded-xl border-2 transition-all",
+                  heartTimerRunning ? "bg-rose-50 border-rose-300 animate-pulse" : "bg-slate-50 border-slate-200"
+                )}>
+                  <span className={cn(
+                    "text-5xl font-black tabular-nums",
+                    heartTimerRunning ? "text-rose-600" : "text-slate-400"
+                  )}>
+                    {heartTimer}s
+                  </span>
+                </div>
+
+                {/* Timer Controls */}
+                <div className="flex gap-2">
+                  {!heartTimerRunning && heartTimer === 30 && (
+                    <Button 
+                      onClick={startHeartTimer}
+                      className="flex-1 bg-rose-600 hover:bg-rose-700 rounded-xl"
+                      size="sm"
+                    >
+                      <Play size={16} className="mr-2" /> Start Timer
+                    </Button>
+                  )}
+                  {heartTimerRunning && (
+                    <Button 
+                      onClick={stopHeartTimer}
+                      className="flex-1 bg-red-600 hover:bg-red-700 rounded-xl"
+                      size="sm"
+                    >
+                      <Square size={16} className="mr-2" /> Stop
+                    </Button>
+                  )}
+                  {!heartTimerRunning && heartTimer !== 30 && (
+                    <Button 
+                      onClick={resetHeartTimer}
+                      variant="outline"
+                      className="flex-1 rounded-xl border-slate-200"
+                      size="sm"
+                    >
+                      <RotateCcw size={16} className="mr-2" /> Reset
+                    </Button>
+                  )}
+                </div>
+
+                {/* Input Field */}
+                <div>
+                  <Label htmlFor="heartRateInput" className="text-sm text-slate-600">Pulse count (30 seconds)</Label>
+                  <Input
+                    id="heartRateInput"
+                    type="number"
+                    placeholder="e.g., 36"
+                    value={heartRateRaw}
+                    onChange={(e) => setHeartRateRaw(e.target.value)}
+                    className="h-12 text-lg mt-1"
+                  />
+                  {heartRateRaw && (
+                    <p className="text-xs text-rose-600 font-bold mt-1">
+                      = {heartRate} BPM (×2)
+                    </p>
+                  )}
+                </div>
               </div>
 
+              {/* Breath Rate Section */}
               <div className="space-y-3">
                 <div className="flex items-center gap-2 mb-2">
                   <div className="w-8 h-8 bg-blue-100 rounded-lg flex items-center justify-center">
                     <Brain size={18} className="text-blue-600" />
                   </div>
-                  <Label htmlFor="breathRate" className="text-base font-bold text-slate-900">Breath Rate (BPM)</Label>
+                  <Label htmlFor="breathRate" className="text-base font-bold text-slate-900">Breath Rate</Label>
                 </div>
-                <Input
-                  id="breathRate"
-                  type="number"
-                  placeholder="e.g., 12"
-                  value={breathRate}
-                  onChange={(e) => setBreathRate(e.target.value)}
-                  className="h-12 text-lg"
-                />
-                <p className="text-xs text-slate-500">Count breaths for 30 seconds, then multiply by 2</p>
+
+                {/* Timer Display */}
+                <div className={cn(
+                  "flex items-center justify-center p-4 rounded-xl border-2 transition-all",
+                  breathTimerRunning ? "bg-blue-50 border-blue-300 animate-pulse" : "bg-slate-50 border-slate-200"
+                )}>
+                  <span className={cn(
+                    "text-5xl font-black tabular-nums",
+                    breathTimerRunning ? "text-blue-600" : "text-slate-400"
+                  )}>
+                    {breathTimer}s
+                  </span>
+                </div>
+
+                {/* Timer Controls */}
+                <div className="flex gap-2">
+                  {!breathTimerRunning && breathTimer === 30 && (
+                    <Button 
+                      onClick={startBreathTimer}
+                      className="flex-1 bg-blue-600 hover:bg-blue-700 rounded-xl"
+                      size="sm"
+                    >
+                      <Play size={16} className="mr-2" /> Start Timer
+                    </Button>
+                  )}
+                  {breathTimerRunning && (
+                    <Button 
+                      onClick={stopBreathTimer}
+                      className="flex-1 bg-red-600 hover:bg-red-700 rounded-xl"
+                      size="sm"
+                    >
+                      <Square size={16} className="mr-2" /> Stop
+                    </Button>
+                  )}
+                  {!breathTimerRunning && breathTimer !== 30 && (
+                    <Button 
+                      onClick={resetBreathTimer}
+                      variant="outline"
+                      className="flex-1 rounded-xl border-slate-200"
+                      size="sm"
+                    >
+                      <RotateCcw size={16} className="mr-2" /> Reset
+                    </Button>
+                  )}
+                </div>
+
+                {/* Input Field */}
+                <div>
+                  <Label htmlFor="breathRateInput" className="text-sm text-slate-600">Breath count (30 seconds)</Label>
+                  <Input
+                    id="breathRateInput"
+                    type="number"
+                    placeholder="e.g., 6"
+                    value={breathRateRaw}
+                    onChange={(e) => setBreathRateRaw(e.target.value)}
+                    className="h-12 text-lg mt-1"
+                  />
+                  {breathRateRaw && (
+                    <p className="text-xs text-blue-600 font-bold mt-1">
+                      = {breathRate} BPM (×2)
+                    </p>
+                  )}
+                </div>
               </div>
             </div>
 
@@ -239,7 +431,7 @@ const CoherenceAssessment = ({
               <Button 
                 onClick={calculateCoherence}
                 className="flex-1 bg-rose-600 hover:bg-rose-700 h-12 text-base font-semibold rounded-xl"
-                disabled={!heartRate || !breathRate}
+                disabled={!heartRateRaw || !breathRateRaw}
               >
                 Calculate Coherence Score
               </Button>
@@ -340,21 +532,21 @@ const CoherenceAssessment = ({
                         <span className="w-6 h-6 bg-rose-500 text-white rounded-full flex items-center justify-center text-xs font-bold flex-shrink-0 mt-0.5">1</span>
                         <div>
                           <p className="font-semibold text-slate-900">Measure Heart Rate</p>
-                          <p className="text-slate-600">Take client's pulse for 30 seconds and multiply by 2</p>
+                          <p className="text-slate-600">Start the timer and count pulse for 30 seconds. Enter the count (app multiplies by 2)</p>
                         </div>
                       </li>
                       <li className="flex items-start gap-3">
                         <span className="w-6 h-6 bg-rose-500 text-white rounded-full flex items-center justify-center text-xs font-bold flex-shrink-0 mt-0.5">2</span>
                         <div>
                           <p className="font-semibold text-slate-900">Observe Breathing</p>
-                          <p className="text-slate-600">Watch how they breathe for 30 seconds, count breaths, multiply by 2</p>
+                          <p className="text-slate-600">Start the timer and count breaths for 30 seconds. Enter the count (app multiplies by 2)</p>
                         </div>
                       </li>
                       <li className="flex items-start gap-3">
                         <span className="w-6 h-6 bg-rose-500 text-white rounded-full flex items-center justify-center text-xs font-bold flex-shrink-0 mt-0.5">3</span>
                         <div>
                           <p className="font-semibold text-slate-900">Calculate Score</p>
-                          <p className="text-slate-600">Divide Heart Rate by Breath Rate</p>
+                          <p className="text-slate-600">Click "Calculate Coherence Score" to divide Heart Rate by Breath Rate</p>
                         </div>
                       </li>
                       <li className="flex items-start gap-3">

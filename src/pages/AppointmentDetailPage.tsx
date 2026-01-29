@@ -42,8 +42,7 @@ const AppointmentDetailPage = () => {
   const saveTimeoutRef = useRef<Record<string, NodeJS.Timeout>>({});
   const savingFieldsRef = useRef<Set<string>>(new Set());
   
-  // Track which field is currently being edited to prevent unwanted syncs
-  const currentlyEditingFieldRef = useRef<string | null>(null);
+  // Removed currentlyEditingFieldRef
 
   const fetchAppointmentData = async () => {
     if (!id) return;
@@ -97,7 +96,6 @@ const AppointmentDetailPage = () => {
     console.log(`[saveField:${field}] ========== SAVE INITIATED ==========`);
     console.log(`[saveField:${field}] Value to save:`, value);
     console.log(`[saveField:${field}] Currently saving fields:`, Array.from(savingFieldsRef.current));
-    console.log(`[saveField:${field}] Currently editing field:`, currentlyEditingFieldRef.current);
     
     savingFieldsRef.current.add(field);
     setSavingField(field);
@@ -201,11 +199,9 @@ const AppointmentDetailPage = () => {
     // 1. Not focused
     // 2. Not saving
     // 3. No pending save
-    // 4. This field is NOT currently being edited anywhere
-    // 5. The prop value has actually changed (not just a re-render)
+    // 4. The prop value has actually changed (not just a re-render)
     useEffect(() => {
       const isSaving = savingFieldsRef.current.has(field);
-      const isCurrentlyEditing = currentlyEditingFieldRef.current === field;
       const hasPendingSave = pendingSaveValueRef.current !== null;
       const propValueChanged = lastPropValue.current !== value;
       
@@ -215,7 +211,6 @@ const AppointmentDetailPage = () => {
       console.log(`[EditableField:${field}]   - Local value:`, localValue);
       console.log(`[EditableField:${field}]   - isFocused:`, isFocused);
       console.log(`[EditableField:${field}]   - isSaving:`, isSaving);
-      console.log(`[EditableField:${field}]   - isCurrentlyEditing:`, isCurrentlyEditing);
       console.log(`[EditableField:${field}]   - hasPendingSave:`, hasPendingSave);
       console.log(`[EditableField:${field}]   - propValueChanged:`, propValueChanged);
       console.log(`[EditableField:${field}]   - isInitialMount:`, isInitialMount.current);
@@ -233,7 +228,7 @@ const AppointmentDetailPage = () => {
       }
       
       // For subsequent updates, only sync if conditions are met AND prop actually changed
-      if (!isFocused && !isSaving && !isCurrentlyEditing && !hasPendingSave && propValueChanged) {
+      if (!isFocused && !isSaving && !hasPendingSave && propValueChanged) {
         const newValue = value || '';
         if (localValue !== newValue) {
           console.log(`[EditableField:${field}] ✅ Syncing prop value to local state. New value:`, newValue);
@@ -288,10 +283,6 @@ const AppointmentDetailPage = () => {
       console.log(`[EditableField:${field}]   - Local value at blur:`, localValue);
       console.log(`[EditableField:${field}]   - Prop value at blur:`, value);
       
-      // Clear the currently editing field tracker
-      console.log(`[EditableField:${field}] Clearing currently editing field tracker.`);
-      currentlyEditingFieldRef.current = null;
-      
       // Clear debounce timeout
       if (saveTimeoutRef.current[field]) {
         console.log(`[EditableField:${field}] Clearing debounce timeout on blur.`);
@@ -320,9 +311,6 @@ const AppointmentDetailPage = () => {
       console.log(`[EditableField:${field}]   - Local value at focus:`, localValue);
       console.log(`[EditableField:${field}]   - Prop value at focus:`, value);
       setIsFocused(true);
-      // Mark this field as currently being edited
-      console.log(`[EditableField:${field}] Setting as currently editing field.`);
-      currentlyEditingFieldRef.current = field;
     };
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {

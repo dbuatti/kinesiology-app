@@ -5,6 +5,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import Sidebar from "./components/crm/Sidebar";
 import MobileNav from "./components/crm/MobileNav";
+import QuickActions from "./components/crm/QuickActions";
 import Index from "./pages/Index";
 import ClientsPage from "./pages/ClientsPage";
 import ClientDetailPage from "./pages/ClientDetailPage";
@@ -32,6 +33,7 @@ const ProtectedLayout = ({ children }: { children: React.ReactNode }) => {
       <main className="flex-1 overflow-auto">
         {children}
       </main>
+      <QuickActions />
     </div>
   );
 };

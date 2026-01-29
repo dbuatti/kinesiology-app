@@ -1,6 +1,7 @@
 import { Link, useLocation } from "react-router-dom";
 import { Users, Calendar, LayoutDashboard, Settings, Target } from "lucide-react";
 import { cn } from "@/lib/utils";
+import SearchBar from "./SearchBar";
 
 const Sidebar = () => {
   const location = useLocation();
@@ -20,6 +21,10 @@ const Sidebar = () => {
             <h1 className="text-lg font-bold tracking-tight">Antigravity</h1>
             <p className="text-[10px] text-slate-500 uppercase font-bold tracking-widest">Kinesiology CRM</p>
         </div>
+      </div>
+
+      <div className="px-2">
+        <SearchBar />
       </div>
       
       <nav className="flex flex-col gap-1.5">

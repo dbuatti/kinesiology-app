@@ -69,28 +69,37 @@ const AppointmentDetailPage = () => {
   const saveField = async (field: string, value: string | boolean | null) => {
     if (!id || !appointment) return;
 
-    // Normalize empty string to null
-    const normalizedValue = typeof value === 'string' && value.trim() === '' 
-      ? null 
+    const isStringField = typeof value === 'string' || value === null;
+    const normalized = isStringField && typeof value === 'string' 
+      ? (value.trim() || null) 
       : value;
 
-    // Optimistic update
-    const originalValue = appointment[field as keyof AppointmentWithClient];
-    setAppointment(prev => prev ? { ...prev, [field]: normalizedValue } : null);
+    // Optimistic update ONLY for non-string fields (e.g. hydrated toggle)
+    if (!isStringField) {
+      const original = appointment[field as keyof AppointmentWithClient];
+      setAppointment(prev => prev ? { ...prev, [field]: normalized } : null);
 
+      try {
+        const { error } = await supabase.from('appointments').update({ [field]: normalized }).eq('id', id);
+        if (error) throw error;
+      } catch (err: any) {
+        showError("Could not save change");
+        setAppointment(prev => prev ? { ...prev, [field]: original } : null);
+        throw err;
+      }
+      return;
+    }
+
+    // For string fields: no optimistic update → EditableField handles local display
     try {
       const { error } = await supabase
         .from('appointments')
-        .update({ [field]: normalizedValue })
+        .update({ [field]: normalized })
         .eq('id', id);
 
       if (error) throw error;
     } catch (err: any) {
-      console.error(`Failed to save ${field}:`, err);
-      showError("Could not save change");
-
-      // Revert optimistic update on error
-      setAppointment(prev => prev ? { ...prev, [field]: originalValue } : null);
+      showError("Could not save – check your connection");
       throw err;
     }
   };
@@ -141,84 +150,84 @@ const AppointmentDetailPage = () => {
     className?: string;
     placeholder?: string;
   }) => {
-    const initialValue = (propValue ?? '').toString();
-    const [localValue, setLocalValue] = useState(initialValue);
+    const [localValue, setLocalValue] = useState(propValue ?? '');
     const [isFocused, setIsFocused] = useState(false);
     const [isSaving, setIsSaving] = useState(false);
     const [justSaved, setJustSaved] = useState(false);
 
     const inputRef = useRef<HTMLInputElement | HTMLTextAreaElement>(null);
-    const saveTimeout = useRef<NodeJS.Timeout | null>(null);
-    const savedTimeout = useRef<NodeJS.Timeout | null>(null);
-    const lastCommittedValue = useRef(initialValue);
+    const saveTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+    const savedTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+    const lastSavedValueRef = useRef(propValue ?? '');
 
-    // Sync from prop only when not focused and value actually changed externally
+    // Sync from prop ONLY when not focused
     useEffect(() => {
-      const normalizedProp = (propValue ?? '').toString();
-
       if (isFocused) return;
-      if (normalizedProp === lastCommittedValue.current) return;
 
-      setLocalValue(normalizedProp);
-      lastCommittedValue.current = normalizedProp;
+      const normalized = propValue ?? '';
+      if (normalized !== lastSavedValueRef.current) {
+        setLocalValue(normalized);
+        lastSavedValueRef.current = normalized;
+      }
     }, [propValue, isFocused]);
 
-    // Auto-save debounce while typing
+    // Debounced auto-save
     useEffect(() => {
-      if (!isFocused) return;
+      if (!isFocused || localValue === lastSavedValueRef.current) return;
 
-      if (saveTimeout.current) clearTimeout(saveTimeout.current);
+      if (saveTimeoutRef.current) clearTimeout(saveTimeoutRef.current);
 
-      const current = localValue;
-
-      saveTimeout.current = setTimeout(() => {
-        if (current === lastCommittedValue.current) return;
-
-        setIsSaving(true);
-
-        saveField(field, current)
-          .then(() => {
-            lastCommittedValue.current = current;
-            setJustSaved(true);
-            savedTimeout.current = setTimeout(() => setJustSaved(false), 1800);
-          })
-          .catch(() => {
-            setLocalValue(lastCommittedValue.current);
-          })
-          .finally(() => setIsSaving(false));
-      }, 800);
+      saveTimeoutRef.current = setTimeout(() => {
+        performSave(localValue);
+      }, 700);
 
       return () => {
-        if (saveTimeout.current) clearTimeout(saveTimeout.current);
+        if (saveTimeoutRef.current) clearTimeout(saveTimeoutRef.current);
       };
-    }, [localValue, isFocused, field]);
+    }, [localValue, isFocused]);
 
-    const handleBlur = () => {
-      if (saveTimeout.current) clearTimeout(saveTimeout.current);
+    const performSave = async (newVal: string) => {
+      const trimmed = newVal.trim();
+      if (trimmed === lastSavedValueRef.current) return;
 
-      const trimmed = localValue.trim();
-      if (trimmed !== lastCommittedValue.current) {
-        setIsSaving(true);
-        saveField(field, trimmed)
-          .then(() => {
-            lastCommittedValue.current = trimmed;
-            setJustSaved(true);
-            setTimeout(() => setJustSaved(false), 1800);
-          })
-          .catch(() => {
-            setLocalValue(lastCommittedValue.current);
-          })
-          .finally(() => setIsSaving(false));
+      setIsSaving(true);
+
+      try {
+        await saveField(field, trimmed);
+        lastSavedValueRef.current = trimmed;
+        setJustSaved(true);
+        savedTimeoutRef.current = setTimeout(() => setJustSaved(false), 1600);
+      } catch (err) {
+        setLocalValue(lastSavedValueRef.current); // revert on error
+      } finally {
+        setIsSaving(false);
       }
-
-      setIsFocused(false);
     };
-
-    const handleFocus = () => setIsFocused(true);
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
       setLocalValue(e.target.value);
     };
+
+    const handleFocus = () => {
+      setIsFocused(true);
+    };
+
+    const handleBlur = () => {
+      if (saveTimeoutRef.current) clearTimeout(saveTimeoutRef.current);
+      setIsFocused(false);
+      performSave(localValue);
+    };
+
+    // Aggressive focus restoration + cursor position preservation
+    useLayoutEffect(() => {
+      if (!isFocused || !inputRef.current) return;
+
+      if (document.activeElement !== inputRef.current) {
+        const len = inputRef.current.value.length;
+        inputRef.current.focus();
+        inputRef.current.setSelectionRange(len, len);
+      }
+    }, [isFocused, localValue, isSaving]); // re-run when these change
 
     const isEmpty = !localValue && !isFocused;
     const InputComponent = multiline ? Textarea : Input;
@@ -226,9 +235,7 @@ const AppointmentDetailPage = () => {
     return (
       <div className={cn("group relative", className)}>
         <div className="flex items-center justify-between mb-1.5">
-          <p className="font-bold text-slate-400 uppercase text-[10px] tracking-widest">
-            {label}
-          </p>
+          <p className="font-bold text-slate-400 uppercase text-[10px] tracking-widest">{label}</p>
           {isSaving && (
             <span className="text-[10px] text-slate-400 flex items-center gap-1">
               <Loader2 size={10} className="animate-spin" />
@@ -244,7 +251,7 @@ const AppointmentDetailPage = () => {
         </div>
 
         <InputComponent
-          ref={inputRef as any}
+          ref={inputRef}
           value={localValue}
           onChange={handleChange}
           onFocus={handleFocus}
@@ -256,7 +263,7 @@ const AppointmentDetailPage = () => {
             "transition-all duration-150",
             isEmpty && !isFocused && "text-slate-400 italic",
             isFocused && "ring-2 ring-indigo-500/70 border-indigo-400 shadow-sm",
-            isSaving && "opacity-80 cursor-wait"
+            isSaving && "opacity-75 cursor-wait"
           )}
         />
       </div>
@@ -329,6 +336,7 @@ const AppointmentDetailPage = () => {
             </div>
             <div className="space-y-1">
               <EditableField
+                key={`goal-${appointment.id}`}
                 field="goal"
                 label="Goal"
                 value={appointment.goal}
@@ -337,6 +345,7 @@ const AppointmentDetailPage = () => {
             </div>
             <div className="space-y-1">
               <EditableField
+                key={`issue-${appointment.id}`}
                 field="issue"
                 label="Issue"
                 value={appointment.issue}
@@ -381,6 +390,7 @@ const AppointmentDetailPage = () => {
               </div>
               
               <EditableField
+                key={`hydration_notes-${appointment.id}`}
                 field="hydration_notes"
                 label="Hydration Recommendations"
                 value={appointment.hydration_notes}
@@ -399,6 +409,7 @@ const AppointmentDetailPage = () => {
               </CardHeader>
               <CardContent className="space-y-4 text-sm">
                 <EditableField
+                  key={`session_north_star-${appointment.id}`}
                   field="session_north_star"
                   label="Session North Star"
                   value={appointment.session_north_star}
@@ -406,6 +417,7 @@ const AppointmentDetailPage = () => {
                   placeholder="What's the guiding focus for this session?"
                 />
                 <EditableField
+                  key={`priority_pattern-${appointment.id}`}
                   field="priority_pattern"
                   label="Priority Pattern"
                   value={appointment.priority_pattern}
@@ -413,6 +425,7 @@ const AppointmentDetailPage = () => {
                   placeholder="What patterns are we addressing?"
                 />
                 <EditableField
+                  key={`modes_balances-${appointment.id}`}
                   field="modes_balances"
                   label="Modes & Balances"
                   value={appointment.modes_balances}
@@ -430,12 +443,14 @@ const AppointmentDetailPage = () => {
               </CardHeader>
               <CardContent className="space-y-4 text-sm">
                 <EditableField
+                  key={`acupoints-${appointment.id}`}
                   field="acupoints"
                   label="Acupoints"
                   value={appointment.acupoints}
                   placeholder="Which acupoints were used?"
                 />
                 <EditableField
+                  key={`notes-${appointment.id}`}
                   field="notes"
                   label="Session Notes"
                   value={appointment.notes}
@@ -443,6 +458,7 @@ const AppointmentDetailPage = () => {
                   placeholder="Session observations and notes..."
                 />
                 <EditableField
+                  key={`additional_notes-${appointment.id}`}
                   field="additional_notes"
                   label="Additional Notes"
                   value={appointment.additional_notes}
@@ -450,6 +466,7 @@ const AppointmentDetailPage = () => {
                   placeholder="Any additional observations..."
                 />
                 <EditableField
+                  key={`journal-${appointment.id}`}
                   field="journal"
                   label="Journal Entry"
                   value={appointment.journal}

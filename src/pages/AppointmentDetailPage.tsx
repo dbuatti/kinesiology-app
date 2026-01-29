@@ -10,7 +10,7 @@ import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import { 
   ArrowLeft, Calendar, Clock, Target, Zap, 
-  ExternalLink, Loader2, Trash2, User, Check, Droplets
+  ExternalLink, Loader2, Trash2, User, Droplets
 } from "lucide-react";
 import { format } from "date-fns";
 import { Appointment } from "@/types/crm";
@@ -66,20 +66,42 @@ const AppointmentDetailPage = () => {
     }
   };
 
+  // Setup real-time subscription for seamless sync like Notion
+  useEffect(() => {
+    if (!id) return;
+
+    const channel = supabase
+      .channel(`appointment-${id}`)
+      .on(
+        'postgres_changes',
+        {
+          event: 'UPDATE',
+          schema: 'public',
+          table: 'appointments',
+          filter: `id=eq.${id}`
+        },
+        (payload) => {
+          setAppointment((prev) => {
+            if (!prev) return prev;
+            return { ...prev, ...payload.new };
+          });
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [id]);
+
   const saveField = async (field: string, value: string | boolean | null) => {
     if (!id || !appointment) return;
 
-    const isStringField = typeof value === 'string' || value === null;
-    const normalized = isStringField && typeof value === 'string' 
-      ? (value.trim() === '' ? null : value.trim())
+    const normalized = typeof value === 'string' 
+      ? (value.trim() === '' ? null : value.trim()) 
       : value;
 
-    // Optimistic only for boolean-like fields
-    if (!isStringField) {
-      const original = appointment[field as keyof AppointmentWithClient];
-      setAppointment(prev => prev ? { ...prev, [field]: normalized } : null);
-    }
-
+    // Silent save - no UI feedback
     try {
       const { error } = await supabase
         .from('appointments')
@@ -88,18 +110,11 @@ const AppointmentDetailPage = () => {
 
       if (error) throw error;
 
-      // After successful save → sync parent state for strings too (prevents prop lag)
-      if (isStringField) {
-        setAppointment(prev => prev ? { ...prev, [field]: normalized } : null);
-      }
-
+      // Update local state optimistically/silently
+      setAppointment(prev => prev ? { ...prev, [field]: normalized } : null);
     } catch (err: any) {
-      if (!isStringField) {
-        // Revert optimistic only for non-strings
-        setAppointment(prev => prev ? { ...prev, [field]: appointment[field as keyof AppointmentWithClient] } : null);
-      }
-      showError("Save failed – please try again");
-      throw err;
+      console.error(`Silent save failed for ${field}:`, err);
+      // Optional: silent revert or retry logic, but for now, log only
     }
   };
 
@@ -152,14 +167,12 @@ const AppointmentDetailPage = () => {
     const normalizedProp = propValue ?? '';
     const [localValue, setLocalValue] = useState(normalizedProp);
     const [isFocused, setIsFocused] = useState(false);
-    const [isActuallySaving, setIsActuallySaving] = useState(false); // only true during network
-    const [justSaved, setJustSaved] = useState(false);
 
     const inputRef = useRef<HTMLInputElement | HTMLTextAreaElement>(null);
     const debounceTimer = useRef<NodeJS.Timeout | null>(null);
     const lastCommittedRef = useRef(normalizedProp);
 
-    // Sync local from prop ONLY when not typing & value actually changed externally
+    // Sync from prop/realtime ONLY when not focused
     useEffect(() => {
       if (isFocused) return;
       if (normalizedProp === lastCommittedRef.current) return;
@@ -168,41 +181,33 @@ const AppointmentDetailPage = () => {
       lastCommittedRef.current = normalizedProp;
     }, [normalizedProp, isFocused]);
 
-    const trySave = async (val: string) => {
-      const trimmed = val.trim();
-      if (trimmed === lastCommittedRef.current) return;
-
-      setIsActuallySaving(true);
-      try {
-        await saveField(field, trimmed);
-        lastCommittedRef.current = trimmed;
-        setJustSaved(true);
-        setTimeout(() => setJustSaved(false), 1400);
-      } catch {
-        setLocalValue(lastCommittedRef.current); // revert visual
-      } finally {
-        setIsActuallySaving(false);
-      }
-    };
-
-    // Debounce while typing
+    // Silent debounced save
     useEffect(() => {
       if (!isFocused) return;
-      if (localValue.trim() === lastCommittedRef.current) return;
+
+      const trimmed = localValue.trim();
+      if (trimmed === lastCommittedRef.current) return;
 
       if (debounceTimer.current) clearTimeout(debounceTimer.current);
 
       debounceTimer.current = setTimeout(() => {
-        trySave(localValue);
-      }, 900);
+        saveField(field, localValue);
+        lastCommittedRef.current = trimmed;
+      }, 1500); // Longer debounce for less frequent saves
 
-      return () => { if (debounceTimer.current) clearTimeout(debounceTimer.current); };
-    }, [localValue, isFocused]);
+      return () => {
+        if (debounceTimer.current) clearTimeout(debounceTimer.current);
+      };
+    }, [localValue, isFocused, field]);
 
     const handleBlur = () => {
       if (debounceTimer.current) clearTimeout(debounceTimer.current);
       setIsFocused(false);
-      trySave(localValue); // force save on blur
+      const trimmed = localValue.trim();
+      if (trimmed !== lastCommittedRef.current) {
+        saveField(field, localValue);
+        lastCommittedRef.current = trimmed;
+      }
     };
 
     const handleFocus = () => setIsFocused(true);
@@ -211,10 +216,10 @@ const AppointmentDetailPage = () => {
       setLocalValue(e.target.value);
     };
 
-    // Restore focus + cursor if needed
+    // Strong focus/cursor restoration
     useLayoutEffect(() => {
       if (isFocused && inputRef.current && document.activeElement !== inputRef.current) {
-        const pos = inputRef.current.selectionStart ?? localValue.length;
+        const pos = localValue.length; // Default to end
         inputRef.current.focus();
         inputRef.current.setSelectionRange(pos, pos);
       }
@@ -225,22 +230,7 @@ const AppointmentDetailPage = () => {
 
     return (
       <div className={cn("group relative", className)}>
-        <div className="flex items-center justify-between mb-1.5">
-          <p className="font-bold text-slate-400 uppercase text-[10px] tracking-widest">{label}</p>
-          {isActuallySaving && (
-            <span className="text-[10px] text-slate-400 flex items-center gap-1">
-              <Loader2 size={10} className="animate-spin" />
-              Saving…
-            </span>
-          )}
-          {justSaved && (
-            <span className="text-[10px] text-emerald-600 flex items-center gap-1">
-              <Check size={10} />
-              Saved
-            </span>
-          )}
-        </div>
-
+        <p className="font-bold text-slate-400 uppercase text-[10px] tracking-widest mb-1.5">{label}</p>
         <InputComponent
           ref={inputRef}
           value={localValue}
@@ -248,13 +238,11 @@ const AppointmentDetailPage = () => {
           onFocus={handleFocus}
           onBlur={handleBlur}
           placeholder={placeholder}
-          disabled={isActuallySaving}
           className={cn(
             multiline ? "min-h-[100px] resize-none" : "",
             "transition-all duration-150",
             isEmpty && !isFocused && "text-slate-400 italic",
-            isFocused && "ring-2 ring-indigo-500/70 border-indigo-400 shadow-sm",
-            isActuallySaving && "opacity-75 cursor-wait bg-slate-50/50"
+            isFocused && "ring-2 ring-indigo-500/70 border-indigo-400 shadow-sm"
           )}
         />
       </div>
@@ -345,6 +333,7 @@ const AppointmentDetailPage = () => {
             </div>
           </div>
 
+          {/* Hydration Assessment */}
           <Card className="border-2 border-blue-200 bg-blue-50/50 shadow-none rounded-2xl">
             <CardHeader className="pb-3">
               <CardTitle className="text-sm flex items-center gap-2 text-blue-900">

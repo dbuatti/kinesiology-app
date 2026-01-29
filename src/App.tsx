@@ -10,7 +10,8 @@ import ClientsPage from "./pages/ClientsPage";
 import ClientDetailPage from "./pages/ClientDetailPage";
 import AppointmentsPage from "./pages/AppointmentsPage";
 import AppointmentDetailPage from "./pages/AppointmentDetailPage";
-import ImportPage from "./pages/ImportPage"; // New import
+import ImportPage from "./pages/ImportPage";
+import ProceduresPage from "./pages/ProceduresPage";
 import Login from "./pages/Login";
 import NotFound from "./pages/NotFound";
 import { AuthProvider, useAuth } from "./components/AuthProvider";
@@ -49,6 +50,7 @@ const App = () => (
             <Route path="/appointments" element={<ProtectedLayout><AppointmentsPage /></ProtectedLayout>} />
             <Route path="/appointments/:id" element={<ProtectedLayout><AppointmentDetailPage /></ProtectedLayout>} />
             <Route path="/import" element={<ProtectedLayout><ImportPage /></ProtectedLayout>} />
+            <Route path="/procedures" element={<ProtectedLayout><ProceduresPage /></ProtectedLayout>} />
             <Route path="*" element={<NotFound />} />
           </Routes>
         </BrowserRouter>

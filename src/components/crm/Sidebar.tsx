@@ -1,5 +1,5 @@
 import { Link, useLocation } from "react-router-dom";
-import { Users, Calendar, LayoutDashboard, Settings } from "lucide-react";
+import { Users, Calendar, LayoutDashboard, Settings, Target } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 const Sidebar = () => {
@@ -9,6 +9,7 @@ const Sidebar = () => {
     { label: "Dashboard", icon: LayoutDashboard, path: "/" },
     { label: "Clients", icon: Users, path: "/clients" },
     { label: "Appointments", icon: Calendar, path: "/appointments" },
+    { label: "Procedures", icon: Target, path: "/procedures" },
   ];
 
   return (

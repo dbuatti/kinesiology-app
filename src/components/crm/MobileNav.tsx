@@ -1,6 +1,6 @@
 import { Sheet, SheetContent, SheetTrigger, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
-import { Menu, LayoutDashboard, Users, Calendar, Settings } from "lucide-react";
+import { Menu, LayoutDashboard, Users, Calendar, Settings, Target } from "lucide-react";
 import { Link, useLocation } from "react-router-dom";
 import { cn } from "@/lib/utils";
 import { useState } from "react";
@@ -13,6 +13,7 @@ const MobileNav = () => {
     { label: "Dashboard", icon: LayoutDashboard, path: "/" },
     { label: "Clients", icon: Users, path: "/clients" },
     { label: "Appointments", icon: Calendar, path: "/appointments" },
+    { label: "Procedures", icon: Target, path: "/procedures" },
   ];
 
   return (

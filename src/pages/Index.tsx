@@ -14,6 +14,8 @@ import {
 } from "@/components/ui/dialog";
 import ClientForm from "@/components/crm/ClientForm";
 import AppointmentForm from "@/components/crm/AppointmentForm";
+import RecentActivity from "@/components/crm/RecentActivity";
+import UpcomingAppointments from "@/components/crm/UpcomingAppointments";
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 import { format, subMonths } from "date-fns";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -235,62 +237,8 @@ const Index = () => {
             </Card>
 
             <div className="space-y-6">
-              <Card className="border-none shadow-xl bg-slate-950 text-white overflow-hidden rounded-2xl relative">
-                <div className="absolute top-0 right-0 p-4 opacity-10">
-                  <Sparkles size={100} />
-                </div>
-                <CardHeader>
-                  <CardTitle className="text-lg flex items-center gap-2">
-                    Quick Action
-                  </CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-4 relative z-10">
-                  <p className="text-slate-400 text-sm leading-relaxed">Book a session or update your practice records in seconds.</p>
-                  <Button 
-                    variant="secondary" 
-                    className="w-full bg-indigo-600 text-white hover:bg-indigo-700 border-none rounded-xl h-11 font-bold shadow-lg shadow-indigo-950/20"
-                    onClick={() => setAppDialogOpen(true)}
-                  >
-                    Log New Session
-                  </Button>
-                </CardContent>
-              </Card>
-
-              <Card className="border-none shadow-sm rounded-2xl bg-white">
-                <CardHeader className="pb-2">
-                  <CardTitle className="text-lg font-bold">Recent Sign-ups</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="space-y-4">
-                    {recentClients.map(client => (
-                      <div key={client.id} className="flex items-center justify-between group">
-                        <div className="flex items-center gap-3">
-                          <div className="w-9 h-9 bg-indigo-50 text-indigo-600 rounded-xl flex items-center justify-center font-bold text-xs uppercase group-hover:bg-indigo-100 transition-colors">
-                            {client.name.charAt(0)}
-                          </div>
-                          <div>
-                            <p className="font-bold text-slate-900 text-sm group-hover:text-indigo-600 transition-colors">{client.name}</p>
-                            <p className="text-[10px] text-slate-400 font-bold uppercase tracking-wider">{client.suburb?.[0] || 'Remote'}</p>
-                          </div>
-                        </div>
-                        <Link to={`/clients/${client.id}`}>
-                          <Button variant="ghost" size="sm" className="h-8 w-8 p-0 rounded-full hover:bg-indigo-50 hover:text-indigo-600">
-                            <ArrowRight size={16} />
-                          </Button>
-                        </Link>
-                      </div>
-                    ))}
-                    {recentClients.length === 0 && (
-                      <p className="text-center text-slate-400 text-sm py-4">No clients yet.</p>
-                    )}
-                  </div>
-                  <Link to="/clients" className="mt-6 block text-center">
-                    <Button variant="ghost" className="text-indigo-600 text-xs font-bold hover:bg-indigo-50 rounded-xl w-full">
-                      VIEW ALL CLIENTS
-                    </Button>
-                  </Link>
-                </CardContent>
-              </Card>
+              <UpcomingAppointments />
+              <RecentActivity />
             </div>
           </div>
         </>

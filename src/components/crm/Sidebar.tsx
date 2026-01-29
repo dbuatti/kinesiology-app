@@ -1,11 +1,15 @@
-import { Link, useLocation } from "react-router-dom";
-import { Users, Calendar, LayoutDashboard, Settings, Target, Keyboard } from "lucide-react";
+import { Link, useLocation, useNavigate } from "react-router-dom";
+import { Users, Calendar, LayoutDashboard, Settings, Target, Keyboard, LogOut } from "lucide-react";
 import { cn } from "@/lib/utils";
 import SearchBar from "./SearchBar";
 import { Badge } from "@/components/ui/badge";
+import { supabase } from "@/integrations/supabase/client";
+import { showSuccess } from "@/utils/toast";
+import { useEffect } from "react";
 
 const Sidebar = () => {
   const location = useLocation();
+  const navigate = useNavigate();
   
   const navItems = [
     { label: "Dashboard", icon: LayoutDashboard, path: "/", shortcut: "⌘D" },
@@ -13,6 +17,40 @@ const Sidebar = () => {
     { label: "Appointments", icon: Calendar, path: "/appointments", shortcut: "⌘2" },
     { label: "Procedures", icon: Target, path: "/procedures", shortcut: "⌘P" },
   ];
+
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.metaKey || e.ctrlKey) {
+        switch (e.key) {
+          case 'd':
+            e.preventDefault();
+            navigate('/');
+            break;
+          case '1':
+            e.preventDefault();
+            navigate('/clients');
+            break;
+          case '2':
+            e.preventDefault();
+            navigate('/appointments');
+            break;
+        }
+      }
+    };
+
+    document.addEventListener('keydown', handleKeyDown);
+    return () => document.removeEventListener('keydown', handleKeyDown);
+  }, [navigate]);
+
+  const handleSignOut = async () => {
+    try {
+      await supabase.auth.signOut();
+      showSuccess("Signed out successfully");
+      navigate('/login');
+    } catch (error) {
+      console.error("Error signing out:", error);
+    }
+  };
 
   return (
     <div className="hidden lg:flex w-64 bg-slate-950 text-white min-h-screen p-6 flex-col gap-8 sticky top-0 h-screen overflow-y-auto">
@@ -63,6 +101,14 @@ const Sidebar = () => {
         <div className="flex items-center gap-3 px-4 py-2.5 rounded-xl text-slate-400 hover:text-white hover:bg-slate-900 transition-all cursor-pointer group">
           <Settings size={20} className="group-hover:rotate-45 transition-transform" />
           <span className="font-medium">Settings</span>
+        </div>
+
+        <div 
+          onClick={handleSignOut}
+          className="flex items-center gap-3 px-4 py-2.5 rounded-xl text-slate-400 hover:text-red-400 hover:bg-slate-900 transition-all cursor-pointer group"
+        >
+          <LogOut size={20} />
+          <span className="font-medium">Sign Out</span>
         </div>
         
         <div className="px-4 py-3 bg-slate-900 rounded-xl">

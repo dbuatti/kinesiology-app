@@ -19,6 +19,7 @@ import { cn } from "@/lib/utils";
 import BoltTestSection from "@/components/crm/BoltTestSection";
 import CoherenceAssessment from "@/components/crm/CoherenceAssessment";
 import CogsAssessment from "@/components/crm/CogsAssessment";
+import EditableField from "@/components/crm/EditableField"; // Import the new component
 
 interface AppointmentWithClient extends Appointment {
   clients: { name: string; id: string };
@@ -149,106 +150,6 @@ const AppointmentDetailPage = () => {
 
   const clientLink = `/clients/${appointment.clients.id}`;
 
-  const EditableField = ({ 
-    field, 
-    label, 
-    value: propValue, 
-    multiline = false,
-    className = "",
-    placeholder = "Click to add..."
-  }: { 
-    field: string; 
-    label: string; 
-    value: string | null | undefined; 
-    multiline?: boolean;
-    className?: string;
-    placeholder?: string;
-  }) => {
-    const normalizedProp = propValue ?? '';
-    const [localValue, setLocalValue] = useState(normalizedProp);
-    const [isFocused, setIsFocused] = useState(false);
-
-    const inputRef = useRef<HTMLInputElement | HTMLTextAreaElement>(null);
-    const debounceTimer = useRef<NodeJS.Timeout | null>(null);
-    const lastCommittedRef = useRef(normalizedProp);
-
-    // Sync from prop/realtime ONLY when not focused
-    useEffect(() => {
-      if (isFocused) return;
-      if (normalizedProp === lastCommittedRef.current) return;
-
-      setLocalValue(normalizedProp);
-      lastCommittedRef.current = normalizedProp;
-    }, [normalizedProp, isFocused]);
-
-    // Silent debounced save
-    useEffect(() => {
-      if (!isFocused) return;
-
-      const trimmed = localValue.trim();
-      if (trimmed === lastCommittedRef.current) return;
-
-      if (debounceTimer.current) clearTimeout(debounceTimer.current);
-
-      debounceTimer.current = setTimeout(() => {
-        saveField(field, localValue);
-        lastCommittedRef.current = trimmed;
-      }, 1500); // Longer debounce for less frequent saves
-
-      return () => {
-        if (debounceTimer.current) clearTimeout(debounceTimer.current);
-      };
-    }, [localValue, isFocused, field]);
-
-    const handleBlur = () => {
-      if (debounceTimer.current) clearTimeout(debounceTimer.current);
-      setIsFocused(false);
-      const trimmed = localValue.trim();
-      if (trimmed !== lastCommittedRef.current) {
-        saveField(field, localValue);
-        lastCommittedRef.current = trimmed;
-      }
-    };
-
-    const handleFocus = () => setIsFocused(true);
-
-    const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
-      setLocalValue(e.target.value);
-    };
-
-    // Strong focus/cursor restoration
-    useLayoutEffect(() => {
-      if (isFocused && inputRef.current && document.activeElement !== inputRef.current) {
-        const pos = localValue.length; // Default to end
-        inputRef.current.focus();
-        inputRef.current.setSelectionRange(pos, pos);
-      }
-    }, [isFocused, localValue]);
-
-    const isEmpty = !localValue && !isFocused;
-    const InputComponent = multiline ? Textarea : Input;
-
-    return (
-      <div className={cn("group relative", className)}>
-        <p className="font-bold text-slate-400 uppercase text-[10px] tracking-widest mb-1.5">{label}</p>
-        <InputComponent
-          ref={inputRef}
-          value={localValue}
-          onChange={handleChange}
-          onFocus={handleFocus}
-          onBlur={handleBlur}
-          placeholder={placeholder}
-          className={cn(
-            multiline ? "min-h-[100px] resize-none" : "",
-            "transition-all duration-150",
-            isEmpty && !isFocused && "text-slate-400 italic",
-            isFocused && "ring-2 ring-indigo-500/70 border-indigo-400 shadow-sm"
-          )}
-        />
-      </div>
-    );
-  };
-
   return (
     <div className="p-4 md:p-8 max-w-6xl mx-auto space-y-8">
       <div className="flex items-center justify-between gap-4">
@@ -320,6 +221,7 @@ const AppointmentDetailPage = () => {
                 label="Goal"
                 value={appointment.goal}
                 placeholder="What's the goal?"
+                onSave={saveField}
               />
             </div>
             <div className="space-y-1">
@@ -329,6 +231,7 @@ const AppointmentDetailPage = () => {
                 label="Issue"
                 value={appointment.issue}
                 placeholder="Main concern?"
+                onSave={saveField}
               />
             </div>
           </div>
@@ -375,6 +278,7 @@ const AppointmentDetailPage = () => {
                 value={appointment.hydration_notes}
                 multiline
                 placeholder="e.g., Drink 500ml water before next session, increase daily intake to 2L..."
+                onSave={saveField}
               />
             </CardContent>
           </Card>
@@ -394,6 +298,7 @@ const AppointmentDetailPage = () => {
                   value={appointment.session_north_star}
                   multiline
                   placeholder="What's the guiding focus for this session?"
+                  onSave={saveField}
                 />
                 <EditableField
                   key={`priority_pattern-${appointment.id}`}
@@ -402,6 +307,7 @@ const AppointmentDetailPage = () => {
                   value={appointment.priority_pattern}
                   multiline
                   placeholder="What patterns are we addressing?"
+                  onSave={saveField}
                 />
                 <EditableField
                   key={`modes_balances-${appointment.id}`}
@@ -410,6 +316,7 @@ const AppointmentDetailPage = () => {
                   value={appointment.modes_balances}
                   multiline
                   placeholder="Which modes and balances were used?"
+                  onSave={saveField}
                 />
               </CardContent>
             </Card>
@@ -427,6 +334,7 @@ const AppointmentDetailPage = () => {
                   label="Acupoints"
                   value={appointment.acupoints}
                   placeholder="Which acupoints were used?"
+                  onSave={saveField}
                 />
                 <EditableField
                   key={`notes-${appointment.id}`}
@@ -435,6 +343,7 @@ const AppointmentDetailPage = () => {
                   value={appointment.notes}
                   multiline
                   placeholder="Session observations and notes..."
+                  onSave={saveField}
                 />
                 <EditableField
                   key={`additional_notes-${appointment.id}`}
@@ -443,6 +352,7 @@ const AppointmentDetailPage = () => {
                   value={appointment.additional_notes}
                   multiline
                   placeholder="Any additional observations..."
+                  onSave={saveField}
                 />
                 <EditableField
                   key={`journal-${appointment.id}`}
@@ -452,6 +362,7 @@ const AppointmentDetailPage = () => {
                   multiline
                   className="bg-amber-50/50 p-3 rounded-xl border border-amber-100"
                   placeholder="Personal reflections and insights..."
+                  onSave={saveField}
                 />
                 {appointment.notion_link && (
                   <Button variant="outline" size="sm" className="w-full text-xs rounded-xl" asChild>

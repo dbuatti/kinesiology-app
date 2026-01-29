@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useLayoutEffect } from "react";
 import { useParams, Link, useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Badge } from "@/components/ui/badge";
@@ -169,8 +169,8 @@ const AppointmentDetailPage = () => {
     const localSaveTimeoutRef = useRef<NodeJS.Timeout | null>(null);
     const savedIndicatorTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
-    // Focus restoration effect: runs on every render to ensure focus stability
-    useEffect(() => {
+    // Focus restoration effect: runs synchronously after DOM mutations
+    useLayoutEffect(() => {
       if (isFocused && inputRef.current && document.activeElement !== inputRef.current) {
         // If we believe we are focused, but the DOM says otherwise (due to re-render), restore focus.
         inputRef.current.focus();

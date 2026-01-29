@@ -216,16 +216,15 @@ const AppointmentDetailPage = () => {
       }
       
       // Set new timeout to auto-save after 1 second of no typing
-      saveTimeoutRef.current[field] = setTimeout(() => {
+      saveTimeoutRef.current[field] = setTimeout(async () => {
         console.log(`[EditableField:${field}] Debounce timeout fired - comparing "${localValue}" vs "${value || ''}"`);
         // Only save if the local value differs from the prop value
         if (localValue !== (value || '')) {
           console.log(`[EditableField:${field}] Values differ, triggering save`);
           setIsSaving(true);
-          saveField(field, localValue).finally(() => {
-            console.log(`[EditableField:${field}] Save completed, clearing isSaving flag`);
-            setIsSaving(false);
-          });
+          await saveField(field, localValue);
+          setIsSaving(false);
+          console.log(`[EditableField:${field}] Auto-save completed`);
         } else {
           console.log(`[EditableField:${field}] Values match, skipping save`);
         }
@@ -239,24 +238,28 @@ const AppointmentDetailPage = () => {
       };
     }, [localValue, isFocused, field, value]);
 
-    const handleBlur = () => {
+    const handleBlur = async () => {
       console.log(`[EditableField:${field}] Blur event - localValue: "${localValue}", propValue: "${value || ''}"`);
-      setIsFocused(false);
-      // Clear debounce timeout and save immediately on blur if value changed
+      
+      // Clear debounce timeout
       if (saveTimeoutRef.current[field]) {
         console.log(`[EditableField:${field}] Clearing debounce timeout on blur`);
         clearTimeout(saveTimeoutRef.current[field]);
       }
+      
+      // Save immediately on blur if value changed
       if (localValue !== (value || '')) {
-        console.log(`[EditableField:${field}] Saving on blur`);
+        console.log(`[EditableField:${field}] Saving on blur - setting isSaving BEFORE blur completes`);
         setIsSaving(true);
-        saveField(field, localValue).finally(() => {
-          console.log(`[EditableField:${field}] Blur save completed, clearing isSaving flag`);
-          setIsSaving(false);
-        });
+        await saveField(field, localValue);
+        console.log(`[EditableField:${field}] Blur save completed`);
+        setIsSaving(false);
       } else {
         console.log(`[EditableField:${field}] No changes on blur, skipping save`);
       }
+      
+      // Set focused to false AFTER save completes
+      setIsFocused(false);
     };
 
     const handleFocus = () => {

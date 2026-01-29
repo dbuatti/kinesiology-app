@@ -26,6 +26,10 @@ export interface Appointment {
   heart_rate?: number | null;
   breath_rate?: number | null;
   coherence_score?: number | null;
+  // Range of Motion/Cogs fields
+  sagittal_plane_notes?: string | null;
+  frontal_plane_notes?: string | null;
+  transverse_plane_notes?: string | null;
 }
 
 export interface Client {

@@ -32,6 +32,7 @@ const AppointmentDetailPage = () => {
   const [appointment, setAppointment] = useState<AppointmentWithClient | null>(null);
   const [loading, setLoading] = useState(true);
   const [editOpen, setEditOpen] = useState(false);
+  const [boltEnabled, setBoltEnabled] = useState(false);
 
   const fetchAppointmentData = async () => {
     if (!id) return;
@@ -55,6 +56,19 @@ const AppointmentDetailPage = () => {
         ...data,
         date: new Date(data.date),
       } as unknown as AppointmentWithClient);
+
+      // Check if BOLT procedure is enabled
+      const { data: { user } } = await supabase.auth.getUser();
+      if (user) {
+        const { data: procedures } = await supabase
+          .from('procedures')
+          .select('enabled')
+          .eq('user_id', user.id)
+          .ilike('name', '%bolt%')
+          .single();
+        
+        setBoltEnabled(procedures?.enabled ?? false);
+      }
 
     } catch (err) {
       console.error("Error fetching appointment details:", err);
@@ -245,11 +259,13 @@ const AppointmentDetailPage = () => {
         </CardContent>
       </Card>
 
-      <BoltTestSection
-        appointmentId={appointment.id}
-        initialBoltScore={appointment.bolt_score}
-        onUpdate={fetchAppointmentData}
-      />
+      {boltEnabled && (
+        <BoltTestSection
+          appointmentId={appointment.id}
+          initialBoltScore={appointment.bolt_score}
+          onUpdate={fetchAppointmentData}
+        />
+      )}
     </div>
   );
 };

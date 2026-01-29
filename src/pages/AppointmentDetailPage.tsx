@@ -40,6 +40,7 @@ const AppointmentDetailPage = () => {
   const [savedField, setSavedField] = useState<string | null>(null);
   
   const saveTimeoutRef = useRef<Record<string, NodeJS.Timeout>>({});
+  const savingFieldsRef = useRef<Set<string>>(new Set());
 
   const fetchAppointmentData = async () => {
     if (!id) return;
@@ -94,6 +95,7 @@ const AppointmentDetailPage = () => {
     console.log(`[AppointmentDetail] saveField called - field: ${field}, value:`, value);
     console.log(`[AppointmentDetail] Current appointment state before save:`, appointment?.[field as keyof AppointmentWithClient]);
     
+    savingFieldsRef.current.add(field);
     setSavingField(field);
 
     try {
@@ -139,6 +141,7 @@ const AppointmentDetailPage = () => {
       showError(err.message || "Failed to save");
     } finally {
       console.log(`[AppointmentDetail] Clearing saving indicator for field: ${field}`);
+      savingFieldsRef.current.delete(field);
       setSavingField(null);
     }
   };
@@ -185,20 +188,21 @@ const AppointmentDetailPage = () => {
   }) => {
     const [localValue, setLocalValue] = useState(value || '');
     const [isFocused, setIsFocused] = useState(false);
-    const [isSaving, setIsSaving] = useState(false);
     const inputRef = useRef<HTMLInputElement | HTMLTextAreaElement>(null);
+    const pendingSaveValueRef = useRef<string | null>(null);
 
-    console.log(`[EditableField:${field}] Render - localValue: "${localValue}", propValue: "${value}", isFocused: ${isFocused}, isSaving: ${isSaving}`);
+    console.log(`[EditableField:${field}] Render - localValue: "${localValue}", propValue: "${value}", isFocused: ${isFocused}, pendingSave: ${pendingSaveValueRef.current !== null}`);
 
-    // Sync with prop value ONLY when not focused and not saving
+    // Sync with prop value ONLY when not focused and no pending save
     useEffect(() => {
-      if (!isFocused && !isSaving) {
+      const isSaving = savingFieldsRef.current.has(field);
+      if (!isFocused && !isSaving && pendingSaveValueRef.current === null) {
         console.log(`[EditableField:${field}] Syncing prop value from "${localValue}" to "${value || ''}"`);
         setLocalValue(value || '');
       } else {
-        console.log(`[EditableField:${field}] Skipping prop sync - isFocused: ${isFocused}, isSaving: ${isSaving}`);
+        console.log(`[EditableField:${field}] Skipping prop sync - isFocused: ${isFocused}, isSaving: ${isSaving}, pendingSave: ${pendingSaveValueRef.current !== null}`);
       }
-    }, [value, isFocused, isSaving]);
+    }, [value, isFocused]);
 
     // Debounce logic for auto-save while typing
     useEffect(() => {
@@ -221,9 +225,9 @@ const AppointmentDetailPage = () => {
         // Only save if the local value differs from the prop value
         if (localValue !== (value || '')) {
           console.log(`[EditableField:${field}] Values differ, triggering save`);
-          setIsSaving(true);
+          pendingSaveValueRef.current = localValue;
           await saveField(field, localValue);
-          setIsSaving(false);
+          pendingSaveValueRef.current = null;
           console.log(`[EditableField:${field}] Auto-save completed`);
         } else {
           console.log(`[EditableField:${field}] Values match, skipping save`);
@@ -249,11 +253,11 @@ const AppointmentDetailPage = () => {
       
       // Save immediately on blur if value changed
       if (localValue !== (value || '')) {
-        console.log(`[EditableField:${field}] Saving on blur - setting isSaving BEFORE blur completes`);
-        setIsSaving(true);
+        console.log(`[EditableField:${field}] Saving on blur - storing pending value`);
+        pendingSaveValueRef.current = localValue;
         await saveField(field, localValue);
+        pendingSaveValueRef.current = null;
         console.log(`[EditableField:${field}] Blur save completed`);
-        setIsSaving(false);
       } else {
         console.log(`[EditableField:${field}] No changes on blur, skipping save`);
       }

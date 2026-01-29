@@ -33,6 +33,11 @@ export interface Appointment {
   // Hydration tracking fields
   hydrated?: boolean | null;
   hydration_notes?: string | null;
+  // Emotion Assessment fields
+  emotion_mode?: string | null;
+  emotion_primary_selection?: string | null;
+  emotion_secondary_selection?: string | null;
+  emotion_notes?: string | null;
 }
 
 export interface Client {

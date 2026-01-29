@@ -21,6 +21,7 @@ import CoherenceAssessment from "@/components/crm/CoherenceAssessment";
 import CogsAssessment from "@/components/crm/CogsAssessment";
 import EditableField from "@/components/crm/EditableField";
 import SessionTimer from "@/components/crm/SessionTimer"; // Import SessionTimer
+import EmotionAssessment from "@/components/crm/EmotionAssessment";
 
 interface AppointmentWithClient extends Appointment {
   clients: { name: string; id: string };
@@ -29,6 +30,10 @@ interface AppointmentWithClient extends Appointment {
   transverse_plane_notes?: string | null;
   hydrated?: boolean | null;
   hydration_notes?: string | null;
+  emotion_mode?: string | null;
+  emotion_primary_selection?: string | null;
+  emotion_secondary_selection?: string | null;
+  emotion_notes?: string | null;
 }
 
 const AppointmentDetailPage = () => {
@@ -159,7 +164,7 @@ const AppointmentDetailPage = () => {
         status={appointment.status} 
       />
       
-      <div className="p-4 md:p-8 max-w-6xl mx-auto space-y-8 pt-[80px]"> {/* Increased padding to pt-[80px] */}
+      <div className="p-4 md:p-8 max-w-6xl mx-auto space-y-8 pt-[80px]">
         <div className="flex items-center justify-between gap-4">
           <Link to="/appointments">
             <Button variant="ghost" size="sm">
@@ -413,6 +418,16 @@ const AppointmentDetailPage = () => {
           initialSagittalNotes={appointment.sagittal_plane_notes}
           initialFrontalNotes={appointment.frontal_plane_notes}
           initialTransverseNotes={appointment.transverse_plane_notes}
+          onUpdate={fetchAppointmentData}
+        />
+        
+        <EmotionAssessment
+          appointmentId={appointment.id}
+          initialMode={appointment.emotion_mode}
+          initialPrimary={appointment.emotion_primary_selection}
+          initialSecondary={appointment.emotion_secondary_selection}
+          initialNotes={appointment.emotion_notes}
+          onSaveField={saveField}
           onUpdate={fetchAppointmentData}
         />
       </div>

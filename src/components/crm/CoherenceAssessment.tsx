@@ -215,6 +215,35 @@ const CoherenceAssessment = ({
     }
   };
 
+  const handleReset = async () => {
+    if (!confirm("Are you sure you want to reset the Heart/Brain Coherence assessment for this session?")) return;
+    setLoading(true);
+    try {
+      const { error } = await supabase
+        .from("appointments")
+        .update({ 
+          heart_rate: null,
+          breath_rate: null,
+          coherence_score: null,
+        })
+        .eq("id", appointmentId);
+
+      if (error) throw error;
+      showSuccess("Coherence assessment reset successfully.");
+      
+      // Reset local state immediately for better UX
+      setHeartRateRaw('');
+      setBreathRateRaw('');
+      setCalculatedScore(null);
+      
+      onUpdate();
+    } catch (error: any) {
+      showError(error.message || "Failed to reset coherence assessment.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const isWholeNumber = calculatedScore !== null && Number.isInteger(calculatedScore);
   const getScoreInterpretation = () => {
     if (calculatedScore === null) return null;
@@ -226,7 +255,7 @@ const CoherenceAssessment = ({
       };
     } else {
       return {
-        status: "Discordant",
+      status: "Discordant",
         color: "amber",
         message: "Indicates potential heart-brain disintegration and/or autonomic dysregulation"
       };
@@ -234,6 +263,8 @@ const CoherenceAssessment = ({
   };
 
   const interpretation = getScoreInterpretation();
+  const hasSavedData = initialCoherenceScore !== null || initialHeartRate !== null || initialBreathRate !== null;
+
 
   return (
     <Collapsible open={isOpen} onOpenChange={setIsOpen}>
@@ -496,6 +527,18 @@ const CoherenceAssessment = ({
                   {loading ? "Saving..." : "Save Assessment"}
                 </Button>
               </div>
+            )}
+
+            {hasSavedData && (
+              <Button 
+                variant="outline" 
+                onClick={handleReset}
+                disabled={loading}
+                className="w-full border-red-200 text-red-600 hover:bg-red-50 rounded-xl h-12 text-base font-semibold"
+              >
+                <RotateCcw size={20} className="mr-2" />
+                Reset Assessment Data
+              </Button>
             )}
 
             <Collapsible open={detailsOpen} onOpenChange={setDetailsOpen}>

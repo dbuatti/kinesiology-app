@@ -2,7 +2,7 @@
 
 import React, { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
-import { FlaskConical, ChevronDown, AlertCircle, BookOpen } from "lucide-react";
+import { FlaskConical, ChevronDown, AlertCircle, BookOpen, RotateCcw } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { showSuccess, showError } from "@/utils/toast";
 import { Badge } from "@/components/ui/badge";
@@ -94,6 +94,25 @@ const BoltTestSection = ({ appointmentId, initialBoltScore, onUpdate }: BoltTest
     }
   };
 
+  const handleReset = async () => {
+    if (!confirm("Are you sure you want to reset the BOLT score for this session?")) return;
+    setLoading(true);
+    try {
+      const { error } = await supabase
+        .from("appointments")
+        .update({ bolt_score: null })
+        .eq("id", appointmentId);
+
+      if (error) throw error;
+      showSuccess("BOLT score reset successfully.");
+      onUpdate();
+    } catch (error: any) {
+      showError(error.message || "Failed to reset BOLT score.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const needsImprovement = initialBoltScore !== null && initialBoltScore !== undefined && initialBoltScore < 25;
 
   return (
@@ -172,6 +191,17 @@ const BoltTestSection = ({ appointmentId, initialBoltScore, onUpdate }: BoltTest
                   <BookOpen size={18} className="mr-2" />
                   Client Resources & Exercises
                 </Button>
+                {initialBoltScore !== null && initialBoltScore !== undefined && (
+                  <Button 
+                    variant="outline"
+                    onClick={handleReset}
+                    disabled={loading}
+                    className="border-red-200 text-red-600 hover:bg-red-50"
+                  >
+                    <RotateCcw size={18} className="mr-2" />
+                    Reset Score
+                  </Button>
+                )}
               </div>
 
               <Collapsible open={detailsOpen} onOpenChange={setDetailsOpen}>

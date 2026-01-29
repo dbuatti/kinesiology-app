@@ -8,7 +8,7 @@ import {
 } from "@/components/ui/collapsible";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
-import { ChevronDown, Heart, Zap, List, Layers, Info } from "lucide-react";
+import { ChevronDown, Heart, Zap, List, Layers, Info, RotateCcw } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Badge } from "@/components/ui/badge";
 import { Alert, AlertDescription } from "@/components/ui/alert";
@@ -88,11 +88,31 @@ const EmotionAssessment = ({
     }
   };
 
-  const handleClear = () => {
-    setMode('channel');
-    setPrimarySelection('');
-    setSecondarySelection('');
-    handleSave('channel', '', '');
+  const handleReset = async () => {
+    if (!confirm("Are you sure you want to reset the Emotional Assessment data for this session?")) return;
+    
+    setIsSaving(true);
+    try {
+      // 1. Clear database fields to null
+      await Promise.all([
+        onSaveField('emotion_mode', null),
+        onSaveField('emotion_primary_selection', null),
+        onSaveField('emotion_secondary_selection', null),
+        onSaveField('emotion_notes', null),
+      ]);
+      
+      // 2. Reset local state
+      setMode('channel');
+      setPrimarySelection('');
+      setSecondarySelection('');
+      
+      showSuccess("Emotional assessment reset successfully.");
+      onUpdate();
+    } catch (error: any) {
+      showError(error.message || "Failed to reset emotional assessment.");
+    } finally {
+      setIsSaving(false);
+    }
   };
 
   const getPrimaryColor = (key: string) => {
@@ -110,6 +130,7 @@ const EmotionAssessment = ({
   };
 
   const isComplete = primarySelection && secondarySelection;
+  const shouldShowReset = initialMode || initialPrimary || initialSecondary || initialNotes;
 
   return (
     <Collapsible open={isOpen} onOpenChange={setIsOpen}>
@@ -257,14 +278,17 @@ const EmotionAssessment = ({
                 onSave={onSaveField}
               />
 
-              <Button 
-                variant="outline" 
-                onClick={handleClear}
-                className="w-full border-slate-200 hover:bg-slate-100"
-                disabled={isSaving}
-              >
-                Clear Assessment
-              </Button>
+              {shouldShowReset && (
+                <Button 
+                  variant="outline" 
+                  onClick={handleReset}
+                  className="w-full border-red-200 text-red-600 hover:bg-red-50"
+                  disabled={isSaving}
+                >
+                  <RotateCcw size={18} className="mr-2" />
+                  Reset Assessment Data
+                </Button>
+              )}
             </div>
           </CardContent>
         </CollapsibleContent>

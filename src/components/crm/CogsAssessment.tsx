@@ -8,7 +8,7 @@ import {
 } from "@/components/ui/collapsible";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
-import { ChevronDown, Move, Info, Save, Loader2, ImageOff } from "lucide-react";
+import { ChevronDown, Move, Info, Save, Loader2, ImageOff, RotateCcw } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { supabase } from "@/integrations/supabase/client";
 import { showSuccess, showError } from "@/utils/toast";
@@ -102,7 +102,36 @@ const CogsAssessment = ({
     }
   };
 
-  const hasNotes = sagittalNotes || frontalNotes || transverseNotes;
+  const handleReset = async () => {
+    if (!confirm("Are you sure you want to reset the Range of Motion assessment notes for this session?")) return;
+    setLoading(true);
+    try {
+      const { error } = await supabase
+        .from("appointments")
+        .update({ 
+          sagittal_plane_notes: null,
+          frontal_plane_notes: null,
+          transverse_plane_notes: null,
+        })
+        .eq("id", appointmentId);
+
+      if (error) throw error;
+      showSuccess("Range of Motion assessment notes reset successfully.");
+      
+      // Reset local state immediately
+      setSagittalNotes('');
+      setFrontalNotes('');
+      setTransverseNotes('');
+      
+      onUpdate();
+    } catch (error: any) {
+      showError(error.message || "Failed to reset Cogs assessment.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const hasSavedNotes = initialSagittalNotes || initialFrontalNotes || initialTransverseNotes;
 
   return (
     <Collapsible open={isOpen} onOpenChange={setIsOpen}>
@@ -120,7 +149,7 @@ const CogsAssessment = ({
                 </div>
               </div>
               <div className="flex items-center gap-3">
-                {hasNotes && (
+                {hasSavedNotes && (
                   <span className="text-xs font-bold text-purple-600 bg-purple-100 px-3 py-1 rounded-full">
                     Notes Recorded
                   </span>
@@ -328,6 +357,18 @@ const CogsAssessment = ({
                   </>
                 )}
               </Button>
+
+              {hasSavedNotes && (
+                <Button 
+                  variant="outline" 
+                  onClick={handleReset}
+                  disabled={loading}
+                  className="h-12 px-6 rounded-xl border-red-200 text-red-600 hover:bg-red-50"
+                >
+                  <RotateCcw size={18} className="mr-2" />
+                  Reset Notes
+                </Button>
+              )}
 
               <Collapsible open={detailsOpen} onOpenChange={setDetailsOpen}>
                 <CollapsibleTrigger asChild>

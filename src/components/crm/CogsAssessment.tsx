@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   Collapsible,
   CollapsibleContent,
@@ -43,6 +43,14 @@ const CogsAssessment = ({
   const [sagittalImageError, setSagittalImageError] = useState(false);
   const [frontalImageError, setFrontalImageError] = useState(false);
   const [transverseImageError, setTransverseImageError] = useState(false);
+
+  useEffect(() => {
+    // Log the paths we're trying to load
+    console.log("[CogsAssessment] Image paths:");
+    console.log("  Sagittal:", window.location.origin + "/images/cogs/sagittal-plane.png");
+    console.log("  Frontal:", window.location.origin + "/images/cogs/frontal-plane.png");
+    console.log("  Transverse:", window.location.origin + "/images/cogs/transverse-plane.png");
+  }, []);
 
   const handleSave = async () => {
     setLoading(true);
@@ -184,16 +192,19 @@ const CogsAssessment = ({
                         src="/images/cogs/sagittal-plane.png" 
                         alt="Sagittal Plane Cogs Reference"
                         className="w-full h-auto rounded-lg"
+                        onLoad={() => console.log("[CogsAssessment] Sagittal image loaded successfully")}
                         onError={(e) => {
-                          console.error("Failed to load sagittal plane image");
+                          console.error("[CogsAssessment] Failed to load sagittal plane image");
+                          console.error("[CogsAssessment] Attempted URL:", e.currentTarget.src);
                           setSagittalImageError(true);
                         }}
                       />
                     ) : (
                       <div className="flex flex-col items-center justify-center py-8 text-slate-400">
                         <ImageOff size={48} className="mb-2" />
-                        <p className="text-sm">Reference diagram not available</p>
-                        <p className="text-xs mt-1">Place image at: public/images/cogs/sagittal-plane.png</p>
+                        <p className="text-sm font-semibold">Reference diagram not available</p>
+                        <p className="text-xs mt-2 text-center">Expected location:<br/><code className="bg-slate-100 px-2 py-1 rounded">public/images/cogs/sagittal-plane.png</code></p>
+                        <p className="text-xs mt-2 text-amber-600">Try restarting the dev server after adding images</p>
                       </div>
                     )}
                   </div>
@@ -242,16 +253,19 @@ const CogsAssessment = ({
                         src="/images/cogs/frontal-plane.png" 
                         alt="Frontal Plane Cogs Reference"
                         className="w-full h-auto rounded-lg"
+                        onLoad={() => console.log("[CogsAssessment] Frontal image loaded successfully")}
                         onError={(e) => {
-                          console.error("Failed to load frontal plane image");
+                          console.error("[CogsAssessment] Failed to load frontal plane image");
+                          console.error("[CogsAssessment] Attempted URL:", e.currentTarget.src);
                           setFrontalImageError(true);
                         }}
                       />
                     ) : (
                       <div className="flex flex-col items-center justify-center py-8 text-slate-400">
                         <ImageOff size={48} className="mb-2" />
-                        <p className="text-sm">Reference diagram not available</p>
-                        <p className="text-xs mt-1">Place image at: public/images/cogs/frontal-plane.png</p>
+                        <p className="text-sm font-semibold">Reference diagram not available</p>
+                        <p className="text-xs mt-2 text-center">Expected location:<br/><code className="bg-slate-100 px-2 py-1 rounded">public/images/cogs/frontal-plane.png</code></p>
+                        <p className="text-xs mt-2 text-amber-600">Try restarting the dev server after adding images</p>
                       </div>
                     )}
                   </div>
@@ -300,16 +314,19 @@ const CogsAssessment = ({
                         src="/images/cogs/transverse-plane.png" 
                         alt="Transverse Plane Cogs Reference"
                         className="w-full h-auto rounded-lg"
+                        onLoad={() => console.log("[CogsAssessment] Transverse image loaded successfully")}
                         onError={(e) => {
-                          console.error("Failed to load transverse plane image");
+                          console.error("[CogsAssessment] Failed to load transverse plane image");
+                          console.error("[CogsAssessment] Attempted URL:", e.currentTarget.src);
                           setTransverseImageError(true);
                         }}
                       />
                     ) : (
                       <div className="flex flex-col items-center justify-center py-8 text-slate-400">
                         <ImageOff size={48} className="mb-2" />
-                        <p className="text-sm">Reference diagram not available</p>
-                        <p className="text-xs mt-1">Place image at: public/images/cogs/transverse-plane.png</p>
+                        <p className="text-sm font-semibold">Reference diagram not available</p>
+                        <p className="text-xs mt-2 text-center">Expected location:<br/><code className="bg-slate-100 px-2 py-1 rounded">public/images/cogs/transverse-plane.png</code></p>
+                        <p className="text-xs mt-2 text-amber-600">Try restarting the dev server after adding images</p>
                       </div>
                     )}
                   </div>

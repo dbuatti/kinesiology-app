@@ -8,7 +8,7 @@ import { Button } from "@/components/ui/button";
 import { 
   ArrowLeft, Plus, Mail, Phone, MapPin, Calendar, 
   Star, Loader2, Briefcase, Heart, Baby, ExternalLink,
-  Activity, Edit3, Trash2, MoreHorizontal, FlaskConical, TrendingUp
+  Activity, Edit3, Trash2, MoreHorizontal, FlaskConical, TrendingUp, Clock // Added Clock here
 } from "lucide-react";
 import { format } from "date-fns";
 import { Client, Appointment } from "@/types/crm";

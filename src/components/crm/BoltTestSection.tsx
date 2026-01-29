@@ -30,31 +30,66 @@ const BoltTestSection = ({ appointmentId, initialBoltScore, onUpdate }: BoltTest
     setLoading(true);
 
     try {
-      // First, check if this is a new BOLT score or an update
-      const { data: existingAppointment } = await supabase
+      console.log("[BoltTestSection] Starting to save BOLT score:", score);
+      
+      // Get current user
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) {
+        throw new Error("User not authenticated");
+      }
+      console.log("[BoltTestSection] User ID:", user.id);
+
+      // Check if this is a new BOLT score or an update
+      const { data: existingAppointment, error: fetchError } = await supabase
         .from("appointments")
-        .select("bolt_score")
+        .select("bolt_score, user_id")
         .eq("id", appointmentId)
         .single();
 
+      if (fetchError) {
+        console.error("[BoltTestSection] Error fetching appointment:", fetchError);
+        throw fetchError;
+      }
+
       const isNewScore = !existingAppointment?.bolt_score;
+      console.log("[BoltTestSection] Is new score:", isNewScore);
+      console.log("[BoltTestSection] Existing score:", existingAppointment?.bolt_score);
 
       // Update the appointment with the new BOLT score
-      const { error } = await supabase
+      const { error: updateError } = await supabase
         .from("appointments")
         .update({ bolt_score: score })
         .eq("id", appointmentId);
 
-      if (error) throw error;
+      if (updateError) {
+        console.error("[BoltTestSection] Error updating appointment:", updateError);
+        throw updateError;
+      }
+
+      console.log("[BoltTestSection] BOLT score saved successfully");
+
+      // Check if procedures were updated
+      const { data: procedures, error: procError } = await supabase
+        .from("procedures")
+        .select("*")
+        .eq("user_id", user.id)
+        .ilike("name", "%bolt%");
+
+      if (procError) {
+        console.error("[BoltTestSection] Error fetching procedures:", procError);
+      } else {
+        console.log("[BoltTestSection] BOLT procedures found:", procedures);
+      }
 
       showSuccess(
         isNewScore 
-          ? "BOLT score saved! Procedure count updated." 
+          ? "BOLT score saved! Check Procedures page to see your progress." 
           : "BOLT score updated successfully!"
       );
       
       onUpdate();
     } catch (error: any) {
+      console.error("[BoltTestSection] Error in handleSaveScore:", error);
       showError(error.message || "Failed to update BOLT score.");
     } finally {
       setLoading(false);

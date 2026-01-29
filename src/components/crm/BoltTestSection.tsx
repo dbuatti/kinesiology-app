@@ -15,43 +15,101 @@ import {
   CollapsibleTrigger,
 } from "@/components/ui/collapsible";
 import { Button } from "@/components/ui/button";
-import { useAppointmentMutation } from "@/hooks/use-crm-data";
 
 interface BoltTestSectionProps {
   appointmentId: string;
   initialBoltScore: number | null | undefined;
-  onUpdate: () => void; // Kept for consistency, but now triggers cache invalidation
+  onUpdate: () => void;
 }
 
 const BoltTestSection = ({ appointmentId, initialBoltScore, onUpdate }: BoltTestSectionProps) => {
+  const [loading, setLoading] = useState(false);
   const [isOpen, setIsOpen] = useState(false);
   const [detailsOpen, setDetailsOpen] = useState(false);
   const [resourcesOpen, setResourcesOpen] = useState(false);
-  
-  const { mutateAsync: updateAppointment, isLoading: isSaving } = useAppointmentMutation();
 
   const handleSaveScore = async (score: number) => {
+    setLoading(true);
+
     try {
-      await updateAppointment({
-        id: appointmentId,
-        bolt_score: score,
-      });
-      showSuccess("BOLT score saved successfully!");
+      console.log("[BoltTestSection] Starting to save BOLT score:", score);
+      
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) {
+        throw new Error("User not authenticated");
+      }
+      console.log("[BoltTestSection] User ID:", user.id);
+
+      const { data: existingAppointment, error: fetchError } = await supabase
+        .from("appointments")
+        .select("bolt_score, user_id")
+        .eq("id", appointmentId)
+        .single();
+
+      if (fetchError) {
+        console.error("[BoltTestSection] Error fetching appointment:", fetchError);
+        throw fetchError;
+      }
+
+      const isNewScore = !existingAppointment?.bolt_score;
+      console.log("[BoltTestSection] Is new score:", isNewScore);
+      console.log("[BoltTestSection] Existing score:", existingAppointment?.bolt_score);
+
+      const { error: updateError } = await supabase
+        .from("appointments")
+        .update({ bolt_score: score })
+        .eq("id", appointmentId);
+
+      if (updateError) {
+        console.error("[BoltTestSection] Error updating appointment:", updateError);
+        throw updateError;
+      }
+
+      console.log("[BoltTestSection] BOLT score saved successfully");
+
+      const { data: procedures, error: procError } = await supabase
+        .from("procedures")
+        .select("*")
+        .eq("user_id", user.id)
+        .ilike("name", "%bolt%");
+
+      if (procError) {
+        console.error("[BoltTestSection] Error fetching procedures:", procError);
+      } else {
+        console.log("[BoltTestSection] BOLT procedures found:", procedures);
+      }
+
+      showSuccess(
+        isNewScore 
+          ? "BOLT score saved! Check Procedures page to see your progress." 
+          : "BOLT score updated successfully!"
+      );
+      
+      onUpdate();
     } catch (error: any) {
+      console.error("[BoltTestSection] Error in handleSaveScore:", error);
       showError(error.message || "Failed to update BOLT score.");
+    } finally {
+      setLoading(false);
     }
   };
 
   const handleReset = async () => {
     if (!confirm("Are you sure you want to reset the BOLT score for this session?")) return;
+    setLoading(true);
     try {
-      await updateAppointment({
-        id: appointmentId,
-        bolt_score: null,
-      });
+      const { error } = await supabase
+        .from("appointments")
+        .update({ bolt_score: null })
+        .eq("id", appointmentId);
+
+      if (error) throw error;
       showSuccess("BOLT score reset successfully.");
+      onUpdate();
     } catch (error: any) {
       showError(error.message || "Failed to reset BOLT score.");
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -81,7 +139,7 @@ const BoltTestSection = ({ appointmentId, initialBoltScore, onUpdate }: BoltTest
                         e.stopPropagation();
                         handleReset();
                       }}
-                      disabled={isSaving}
+                      disabled={loading}
                       className="border-red-200 text-red-600 hover:bg-red-50 h-8 px-3"
                     >
                       <RotateCcw size={16} className="mr-1" />
@@ -135,7 +193,7 @@ const BoltTestSection = ({ appointmentId, initialBoltScore, onUpdate }: BoltTest
               <BoltTimer 
                 initialScore={initialBoltScore}
                 onScoreRecorded={handleSaveScore}
-                isSaving={isSaving}
+                isSaving={loading}
               />
 
               <div className="flex gap-3">

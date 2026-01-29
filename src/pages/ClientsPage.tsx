@@ -1,10 +1,11 @@
-import { useState, useEffect, useMemo } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { useState, useEffect } from "react";
+import { Link } from "react-router-dom";
+import { supabase } from "@/integrations/supabase/client";
 import { calculateAge, getStarSign } from "@/utils/crm-utils";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Plus, Search, Loader2, UserPlus, Sparkles, Trash2 } from "lucide-react";
+import { Plus, Search, Loader2, UserPlus, Sparkles } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import {
   Dialog,
@@ -15,23 +16,39 @@ import {
 } from "@/components/ui/dialog";
 import ClientForm from "@/components/crm/ClientForm";
 import { Client } from "@/types/crm";
-import { useClients, useDeleteClient } from "@/hooks/use-crm-data";
-import { useDebounce } from "@/hooks/use-debounce";
-import { showSuccess, showError } from "@/utils/toast";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
 
 const ClientsPage = () => {
   const [search, setSearch] = useState("");
+  const [clients, setClients] = useState<Client[]>([]);
+  const [loading, setLoading] = useState(true);
   const [open, setOpen] = useState(false);
   
-  const { data: clients, isLoading, error } = useClients();
-  const { mutate: deleteClient, isLoading: isDeleting } = useDeleteClient();
-  const navigate = useNavigate();
+  const fetchClients = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('clients')
+        .select('*')
+        .order('name', { ascending: true });
+      
+      if (error) throw error;
+      
+      const mapped = (data || []).map(c => ({
+        ...c,
+        born: c.born ? new Date(c.born) : null,
+        suburb: c.suburbs || []
+      })) as unknown as Client[];
+      
+      setClients(mapped);
+    } catch (err) {
+      console.error("Error fetching clients:", err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchClients();
+  }, []);
 
   useEffect(() => {
     const down = (e: KeyboardEvent) => {
@@ -45,28 +62,11 @@ const ClientsPage = () => {
     return () => document.removeEventListener("keydown", down);
   }, []);
 
-  const debouncedSearch = useDebounce(search, 300);
-
-  const filteredClients = useMemo(() => {
-    return (clients || []).filter(c => 
-      c.name.toLowerCase().includes(debouncedSearch.toLowerCase()) ||
-      c.email?.toLowerCase().includes(debouncedSearch.toLowerCase()) ||
-      c.suburb.some(s => s.toLowerCase().includes(debouncedSearch.toLowerCase()))
-    );
-  }, [clients, debouncedSearch]);
-
-  const handleDelete = (clientId: string) => {
-    if (!confirm("Are you sure you want to delete this client? This action cannot be undone.")) return;
-    
-    deleteClient(clientId, {
-      onSuccess: () => {
-        showSuccess("Client deleted successfully");
-      },
-      onError: (err: any) => {
-        showError(err.message || "Failed to delete client");
-      }
-    });
-  };
+  const filteredClients = clients.filter(c => 
+    c.name.toLowerCase().includes(search.toLowerCase()) ||
+    c.email?.toLowerCase().includes(search.toLowerCase()) ||
+    c.suburb.some(s => s.toLowerCase().includes(search.toLowerCase()))
+  );
 
   return (
     <div className="p-8 max-w-7xl mx-auto space-y-6">
@@ -91,6 +91,7 @@ const ClientsPage = () => {
             <ClientForm 
               onSuccess={() => {
                 setOpen(false);
+                fetchClients();
               }} 
             />
           </DialogContent>
@@ -113,13 +114,11 @@ const ClientsPage = () => {
       </div>
 
       <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
-        {isLoading ? (
+        {loading ? (
           <div className="p-12 flex flex-col items-center justify-center gap-4">
             <Loader2 className="animate-spin text-indigo-500" size={32} />
             <p className="text-slate-400 animate-pulse">Loading clients...</p>
           </div>
-        ) : error ? (
-          <div className="p-12 text-center text-red-600">Error loading clients.</div>
         ) : filteredClients.length > 0 ? (
           <Table>
             <TableHeader className="bg-slate-50/50">
@@ -165,25 +164,11 @@ const ClientsPage = () => {
                     </div>
                   </TableCell>
                   <TableCell className="text-right">
-                    <DropdownMenu>
-                      <DropdownMenuTrigger asChild>
-                        <Button variant="ghost" size="icon" className="h-8 w-8 opacity-0 group-hover:opacity-100 transition-opacity">
-                          <MoreHorizontal size={16} />
-                        </Button>
-                      </DropdownMenuTrigger>
-                      <DropdownMenuContent align="end">
-                        <DropdownMenuItem onClick={() => navigate(`/clients/${client.id}`)}>
-                          View Profile
-                        </DropdownMenuItem>
-                        <DropdownMenuItem 
-                          className="text-destructive focus:text-destructive flex items-center gap-2"
-                          onClick={() => handleDelete(client.id)}
-                          disabled={isDeleting}
-                        >
-                          <Trash2 size={14} /> Delete
-                        </DropdownMenuItem>
-                      </DropdownMenuContent>
-                    </DropdownMenu>
+                    <Link to={`/clients/${client.id}`}>
+                      <Button variant="ghost" size="sm" className="opacity-0 group-hover:opacity-100 transition-opacity text-indigo-600">
+                        View Profile
+                      </Button>
+                    </Link>
                   </TableCell>
                 </TableRow>
               ))}

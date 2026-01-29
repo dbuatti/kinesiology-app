@@ -1,18 +1,68 @@
 "use client";
 
-import React from "react";
+import React, { useState, useEffect } from "react";
+import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Calendar, Clock, Loader2, ArrowRight } from "lucide-react";
 import { Link } from "react-router-dom";
-import { format, isToday, isTomorrow } from "date-fns";
+import { format, isToday, isTomorrow, isFuture } from "date-fns";
 import { cn } from "@/lib/utils";
-import { useUpcomingAppointments } from "@/hooks/use-crm-data";
-import { Skeleton } from "@/components/ui/skeleton";
+
+interface UpcomingAppointment {
+  id: string;
+  name: string;
+  display_id: string;
+  date: Date;
+  tag: string;
+  clients: {
+    id: string;
+    name: string;
+  };
+}
 
 const UpcomingAppointments = () => {
-  const { data: appointments, isLoading, error } = useUpcomingAppointments();
+  const [appointments, setAppointments] = useState<UpcomingAppointment[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchUpcoming = async () => {
+      try {
+        const { data, error } = await supabase
+          .from("appointments")
+          .select(`
+            id,
+            name,
+            display_id,
+            date,
+            tag,
+            clients (
+              id,
+              name
+            )
+          `)
+          .gte("date", new Date().toISOString())
+          .order("date", { ascending: true })
+          .limit(5);
+
+        if (error) throw error;
+
+        setAppointments(
+          (data || []).map((app: any) => ({
+            ...app,
+            date: new Date(app.date),
+          }))
+        );
+      } catch (error) {
+        console.error("Error fetching upcoming appointments:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchUpcoming();
+  }, []);
 
   const getDateLabel = (date: Date) => {
     if (isToday(date)) return "Today";
@@ -20,7 +70,7 @@ const UpcomingAppointments = () => {
     return format(date, "MMM d");
   };
 
-  if (isLoading) {
+  if (loading) {
     return (
       <Card className="border-none shadow-sm rounded-2xl bg-white">
         <CardHeader>
@@ -29,32 +79,8 @@ const UpcomingAppointments = () => {
             Upcoming Sessions
           </CardTitle>
         </CardHeader>
-        <CardContent className="space-y-3">
-          {[1, 2, 3].map((i) => (
-            <div key={i} className="flex items-center gap-3 p-3 rounded-xl border border-slate-100">
-              <div className="flex-1 min-w-0 space-y-1">
-                <Skeleton className="h-4 w-24" />
-                <Skeleton className="h-3 w-32" />
-              </div>
-              <Skeleton className="h-8 w-8 rounded-full" />
-            </div>
-          ))}
-        </CardContent>
-      </Card>
-    );
-  }
-
-  if (error) {
-    return (
-      <Card className="border-none shadow-sm rounded-2xl bg-white">
-        <CardHeader>
-          <CardTitle className="text-lg font-bold flex items-center gap-2">
-            <Calendar size={20} className="text-indigo-500" />
-            Upcoming Sessions
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <p className="text-center text-red-500 text-sm py-8">Error loading appointments.</p>
+        <CardContent className="flex items-center justify-center py-8">
+          <Loader2 className="animate-spin text-indigo-500" size={24} />
         </CardContent>
       </Card>
     );
@@ -70,7 +96,7 @@ const UpcomingAppointments = () => {
       </CardHeader>
       <CardContent>
         <div className="space-y-3">
-          {appointments?.map((appointment) => {
+          {appointments.map((appointment) => {
             const dateLabel = getDateLabel(appointment.date);
             const isUrgent = isToday(appointment.date) || isTomorrow(appointment.date);
 
@@ -119,7 +145,7 @@ const UpcomingAppointments = () => {
               </Link>
             );
           })}
-          {appointments?.length === 0 && (
+          {appointments.length === 0 && (
             <div className="text-center py-8">
               <p className="text-slate-400 text-sm mb-2">No upcoming sessions</p>
               <Link to="/appointments">
@@ -130,7 +156,7 @@ const UpcomingAppointments = () => {
             </div>
           )}
         </div>
-        {appointments && appointments.length > 0 && (
+        {appointments.length > 0 && (
           <Link to="/appointments" className="block mt-4">
             <Button
               variant="ghost"

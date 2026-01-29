@@ -8,7 +8,7 @@ import { Button } from "@/components/ui/button";
 import { 
   ArrowLeft, Plus, Mail, Phone, MapPin, Calendar, 
   Star, Loader2, Briefcase, Heart, Baby, ExternalLink,
-  Activity, Edit3, Trash2, MoreHorizontal, FlaskConical, TrendingUp, Clock
+  Activity, Edit3, Trash2, MoreHorizontal, FlaskConical, TrendingUp, Clock // Added Clock here
 } from "lucide-react";
 import { format } from "date-fns";
 import { Client, Appointment } from "@/types/crm";
@@ -29,76 +29,81 @@ import AppointmentForm from "@/components/crm/AppointmentForm";
 import ClientForm from "@/components/crm/ClientForm";
 import { showSuccess, showError } from "@/utils/toast";
 import { cn } from "@/lib/utils";
-import { useClient, useAppointments, useDeleteClient } from "@/hooks/use-crm-data";
 
 const ClientDetailPage = () => {
-  const { id } = useParams<{ id: string }>();
+  const { id } = useParams();
   const navigate = useNavigate();
+  const [client, setClient] = useState<Client | null>(null);
+  const [appointments, setAppointments] = useState<Appointment[]>([]);
+  const [loading, setLoading] = useState(true);
   const [appOpen, setAppOpen] = useState(false);
   const [editOpen, setEditOpen] = useState(false);
 
-  const { data: client, isLoading: isClientLoading, error: clientError } = useClient(id);
-  const { data: appointments, isLoading: isAppointmentsLoading, error: appointmentsError } = useAppointments();
-  const { mutate: deleteClient, isLoading: isDeleting } = useDeleteClient();
+  const fetchClientData = async () => {
+    try {
+      const { data: clientData, error: clientError } = await supabase
+        .from('clients')
+        .select('*')
+        .eq('id', id)
+        .single();
 
-  // Filter appointments relevant to this client
-  const clientAppointments = (appointments || []).filter(app => app.clientId === id);
+      if (clientError) throw clientError;
 
-  // Setup real-time subscription for client data updates
-  useEffect(() => {
-    if (!id) return;
+      const { data: appData, error: appError } = await supabase
+        .from('appointments')
+        .select('*')
+        .eq('client_id', id)
+        .order('date', { ascending: false });
 
-    const channel = supabase
-      .channel(`client-${id}`)
-      .on(
-        'postgres_changes',
-        {
-          event: 'UPDATE',
-          schema: 'public',
-          table: 'clients',
-          filter: `id=eq.${id}`
-        },
-        (payload) => {
-          // Invalidate the query cache to trigger a refresh
-          // This is a more robust way to handle real-time updates with React Query
-          // than manually setting state.
-          // We don't need to manually set state here, React Query handles it.
-        }
-      )
-      .subscribe();
+      if (appError) throw appError;
 
-    return () => {
-      supabase.removeChannel(channel);
-    };
-  }, [id]);
+      setClient({
+        ...clientData,
+        born: clientData.born ? new Date(clientData.born) : null,
+        suburb: clientData.suburbs || []
+      } as unknown as Client);
 
-  const handleDeleteClient = () => {
-    if (!confirm("Are you sure you want to delete this client? This will remove all their appointments too.")) return;
-    
-    deleteClient(id!, {
-      onSuccess: () => {
-        showSuccess("Client deleted successfully");
-        navigate('/clients');
-      },
-      onError: (err: any) => {
-        showError(err.message || "Failed to delete client");
-      }
-    });
+      setAppointments((appData || []).map(a => ({
+        ...a,
+        date: new Date(a.date)
+      })) as unknown as Appointment[]);
+
+    } catch (err) {
+      console.error("Error fetching client details:", err);
+    } finally {
+      setLoading(false);
+    }
   };
 
-  if (isClientLoading || isAppointmentsLoading) return (
+  const handleDeleteClient = async () => {
+    if (!confirm("Are you sure you want to delete this client? This will remove all their appointments too.")) return;
+    
+    try {
+      const { error } = await supabase.from('clients').delete().eq('id', id);
+      if (error) throw error;
+      showSuccess("Client deleted successfully");
+      navigate('/clients');
+    } catch (err: any) {
+      showError(err.message || "Failed to delete client");
+    }
+  };
+
+  useEffect(() => {
+    fetchClientData();
+  }, [id]);
+
+  if (loading) return (
     <div className="flex min-h-screen items-center justify-center">
       <Loader2 className="animate-spin text-indigo-500" size={48} />
     </div>
   );
 
-  if (clientError || appointmentsError) return <div className="p-12 text-center text-red-600">Error loading client data.</div>;
   if (!client) return <div className="p-12 text-center">Client not found</div>;
 
-  const rollups = getClientRollups(clientAppointments);
+  const rollups = getClientRollups(appointments);
   
   // Calculate BOLT metrics
-  const boltScores = clientAppointments
+  const boltScores = appointments
     .filter(app => app.bolt_score !== null && app.bolt_score !== undefined)
     .map(app => app.bolt_score as number);
 
@@ -108,7 +113,7 @@ const ClientDetailPage = () => {
     : null;
   
   // Appointments are already sorted descending by date, so the first one with a score is the latest.
-  const lastBoltScore = clientAppointments.find(app => app.bolt_score !== null && app.bolt_score !== undefined)?.bolt_score || null;
+  const lastBoltScore = appointments.find(app => app.bolt_score !== null && app.bolt_score !== undefined)?.bolt_score || null;
 
 
   return (
@@ -134,6 +139,7 @@ const ClientDetailPage = () => {
                   initialData={client}
                   onSuccess={() => {
                     setEditOpen(false);
+                    fetchClientData();
                   }} 
                 />
               </DialogContent>
@@ -147,9 +153,8 @@ const ClientDetailPage = () => {
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end">
                     <DropdownMenuItem 
-                        className="text-destructive focus:text-destructive flex items-center gap-2"
+                        className="text-destructive focus:text-destructive"
                         onClick={handleDeleteClient}
-                        disabled={isDeleting}
                     >
                         <Trash2 size={16} className="mr-2" /> Delete Client
                     </DropdownMenuItem>
@@ -337,6 +342,7 @@ const ClientDetailPage = () => {
                   initialClientId={id}
                   onSuccess={() => {
                     setAppOpen(false);
+                    fetchClientData();
                   }} 
                 />
               </DialogContent>
@@ -344,14 +350,14 @@ const ClientDetailPage = () => {
           </div>
 
           <div className="grid gap-4">
-            {clientAppointments.map(app => (
+            {appointments.map(app => (
               <Link key={app.id} to={`/appointments/${app.id}`}>
                 <Card className="hover:shadow-md transition-all border-slate-200 bg-white group rounded-2xl overflow-hidden cursor-pointer">
                   <CardContent className="p-6">
                     <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
                       <div className="space-y-3">
                         <div className="flex items-center gap-3">
-                          <Badge variant="secondary" className="font-bold bg-slate-100 text-slate-600">{app.display_id || app.id.slice(0,8)}</Badge>
+                          <Badge variant="secondary" className="font-bold bg-slate-100 text-slate-600">{(app as any).display_id || app.id.slice(0,8)}</Badge>
                           <span className="font-bold text-lg text-slate-900 group-hover:text-indigo-600 transition-colors">{app.name || format(app.date, "MMM d, yyyy")}</span>
                           <Badge className="bg-indigo-50 text-indigo-700 hover:bg-indigo-100 border-none">{app.tag}</Badge>
                           {app.notion_link && (
@@ -376,7 +382,7 @@ const ClientDetailPage = () => {
                 </Card>
               </Link>
             ))}
-            {clientAppointments.length === 0 && (
+            {appointments.length === 0 && (
               <div className="text-center py-16 bg-white rounded-3xl border-2 border-dashed border-slate-100">
                 <div className="w-16 h-16 bg-indigo-50 rounded-full flex items-center justify-center mx-auto mb-4">
                     <Calendar size={32} className="text-indigo-300" />

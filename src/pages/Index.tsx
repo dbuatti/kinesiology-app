@@ -19,16 +19,30 @@ import UpcomingAppointments from "@/components/crm/UpcomingAppointments";
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 import { format, subMonths } from "date-fns";
 import { Skeleton } from "@/components/ui/skeleton";
-import { useDashboardStats } from "@/hooks/use-crm-data";
 
 const Index = () => {
-  const { data, isLoading, error } = useDashboardStats();
+  const [stats, setStats] = useState({ clients: 0, appointments: 0 });
+  const [recentClients, setRecentClients] = useState<Client[]>([]);
+  const [loading, setLoading] = useState(true);
   const [clientDialogOpen, setClientDialogOpen] = useState(false);
   const [appDialogOpen, setAppDialogOpen] = useState(false);
   const [chartData, setChartData] = useState<any[]>([]);
 
-  useEffect(() => {
-    if (data?.allAppointmentsDates) {
+  const fetchDashboardData = async () => {
+    try {
+      const [{ count: clientCount }, { count: appCount }, { data: recent }, { data: allApps }] = await Promise.all([
+        supabase.from('clients').select('*', { count: 'exact', head: true }),
+        supabase.from('appointments').select('*', { count: 'exact', head: true }),
+        supabase.from('clients').select('*').order('created_at', { ascending: false }).limit(4),
+        supabase.from('appointments').select('date').order('date', { ascending: true })
+      ]);
+
+      setStats({ 
+        clients: clientCount || 0, 
+        appointments: appCount || 0 
+      });
+      setRecentClients(recent as unknown as Client[] || []);
+
       // Process chart data for last 6 months
       const months = Array.from({ length: 6 }).map((_, i) => {
         const d = subMonths(new Date(), 5 - i);
@@ -39,8 +53,8 @@ const Index = () => {
         };
       });
 
-      data.allAppointmentsDates.forEach(dateString => {
-        const appDate = new Date(dateString);
+      allApps?.forEach(app => {
+        const appDate = new Date(app.date);
         const monthIndex = months.findIndex(m => 
           appDate.getMonth() === m.date.getMonth() && 
           appDate.getFullYear() === m.date.getFullYear()
@@ -51,10 +65,18 @@ const Index = () => {
       });
 
       setChartData(months);
+    } catch (err) {
+      console.error("Error fetching dashboard data:", err);
+    } finally {
+      setLoading(false);
     }
-  }, [data?.allAppointmentsDates]);
+  };
 
-  if (isLoading) return (
+  useEffect(() => {
+    fetchDashboardData();
+  }, []);
+
+  if (loading) return (
     <div className="p-4 md:p-8 max-w-7xl mx-auto space-y-8">
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div className="space-y-2">
@@ -95,9 +117,6 @@ const Index = () => {
     </div>
   );
 
-  if (error) return <div className="p-12 text-center text-red-600">Error loading dashboard data.</div>;
-
-  const stats = data?.stats || { clients: 0, appointments: 0 };
   const hasData = stats.clients > 0 || stats.appointments > 0;
 
   return (
@@ -233,6 +252,7 @@ const Index = () => {
           <ClientForm 
             onSuccess={() => {
               setClientDialogOpen(false);
+              fetchDashboardData();
             }} 
           />
         </DialogContent>
@@ -246,6 +266,7 @@ const Index = () => {
           <AppointmentForm 
             onSuccess={() => {
               setAppDialogOpen(false);
+              fetchDashboardData();
             }} 
           />
         </DialogContent>

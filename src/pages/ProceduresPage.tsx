@@ -7,7 +7,7 @@ import { Badge } from "@/components/ui/badge";
 import { Switch } from "@/components/ui/switch";
 import { 
   Target, Plus, TrendingUp, CheckCircle2, Loader2, 
-  FlaskConical, Brain, Activity, Zap, Edit3, Trash2, Power, PowerOff, MoreHorizontal
+  FlaskConical, Brain, Activity, Zap, Edit3, Trash2, Power, PowerOff
 } from "lucide-react";
 import {
   Dialog,
@@ -16,19 +16,11 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { showSuccess, showError } from "@/utils/toast";
 import { cn } from "@/lib/utils";
-import { useProcedures, useProcedureMutation } from "@/hooks/use-crm-data";
-import { useAuth } from "@/components/AuthProvider";
 
 interface Procedure {
   id: string;
@@ -55,10 +47,8 @@ const getIconComponent = (iconName: string) => {
 };
 
 const ProceduresPage = () => {
-  const { data: procedures, isLoading, error } = useProcedures();
-  const { mutateAsync: saveProcedure, isLoading: isSaving } = useProcedureMutation();
-  const { session } = useAuth();
-
+  const [procedures, setProcedures] = useState<Procedure[]>([]);
+  const [loading, setLoading] = useState(true);
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editingProcedure, setEditingProcedure] = useState<Procedure | null>(null);
   const [formData, setFormData] = useState({
@@ -68,26 +58,34 @@ const ProceduresPage = () => {
     icon: 'target'
   });
 
-  useEffect(() => {
-    if (editingProcedure) {
-      setFormData({
-        name: editingProcedure.name,
-        description: editingProcedure.description,
-        target_count: editingProcedure.target_count,
-        icon: editingProcedure.icon,
-      });
-    } else {
-      setFormData({ name: '', description: '', target_count: 5, icon: 'target' });
-    }
-  }, [editingProcedure]);
-
-  const handleToggleEnabled = async (procedure: Procedure) => {
+  const fetchProcedures = async () => {
     try {
-      await saveProcedure({
-        id: procedure.id,
-        enabled: !procedure.enabled,
-      });
-      showSuccess(procedure.enabled ? "Procedure disabled" : "Procedure enabled");
+      const { data, error } = await supabase
+        .from('procedures')
+        .select('*')
+        .order('created_at', { ascending: false });
+
+      if (error) throw error;
+      setProcedures(data || []);
+    } catch (err) {
+      console.error("Error fetching procedures:", err);
+      showError("Failed to load procedures");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleToggleEnabled = async (id: string, currentEnabled: boolean) => {
+    try {
+      const { error } = await supabase
+        .from('procedures')
+        .update({ enabled: !currentEnabled })
+        .eq('id', id);
+
+      if (error) throw error;
+      
+      showSuccess(currentEnabled ? "Procedure disabled" : "Procedure enabled");
+      fetchProcedures();
     } catch (err: any) {
       showError(err.message || "Failed to update procedure");
     }
@@ -96,28 +94,44 @@ const ProceduresPage = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (!session?.user?.id) {
-      showError("Not authenticated");
-      return;
-    }
-
     try {
-      const payload = {
-        id: editingProcedure?.id,
-        user_id: session.user.id,
-        name: formData.name,
-        description: formData.description,
-        target_count: formData.target_count,
-        icon: formData.icon,
-        current_count: editingProcedure?.current_count || 0,
-        enabled: editingProcedure?.enabled ?? true,
-      };
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) throw new Error("Not authenticated");
 
-      await saveProcedure(payload);
+      if (editingProcedure) {
+        const { error } = await supabase
+          .from('procedures')
+          .update({
+            name: formData.name,
+            description: formData.description,
+            target_count: formData.target_count,
+            icon: formData.icon,
+          })
+          .eq('id', editingProcedure.id);
 
-      showSuccess(editingProcedure ? "Procedure updated successfully" : "Procedure added successfully");
+        if (error) throw error;
+        showSuccess("Procedure updated successfully");
+      } else {
+        const { error } = await supabase
+          .from('procedures')
+          .insert({
+            user_id: user.id,
+            name: formData.name,
+            description: formData.description,
+            target_count: formData.target_count,
+            current_count: 0,
+            icon: formData.icon,
+            enabled: true,
+          });
+
+        if (error) throw error;
+        showSuccess("Procedure added successfully");
+      }
+
       setDialogOpen(false);
       setEditingProcedure(null);
+      setFormData({ name: '', description: '', target_count: 5, icon: 'target' });
+      fetchProcedures();
     } catch (err: any) {
       showError(err.message || "Failed to save procedure");
     }
@@ -134,11 +148,7 @@ const ProceduresPage = () => {
 
       if (error) throw error;
       showSuccess("Procedure deleted");
-      // Manually invalidate query since we used direct supabase delete here
-      // In a real app, we'd use a dedicated useDeleteProcedure hook
-      // For now, we'll rely on the mutation success to trigger a refresh.
-      // Since we don't have a dedicated delete hook, we'll just rely on the user seeing the change.
-      // For now, we'll just rely on the user seeing the change.
+      fetchProcedures();
     } catch (err: any) {
       showError(err.message || "Failed to delete procedure");
     }
@@ -146,6 +156,12 @@ const ProceduresPage = () => {
 
   const handleEdit = (procedure: Procedure) => {
     setEditingProcedure(procedure);
+    setFormData({
+      name: procedure.name,
+      description: procedure.description,
+      target_count: procedure.target_count,
+      icon: procedure.icon,
+    });
     setDialogOpen(true);
   };
 
@@ -157,20 +173,22 @@ const ProceduresPage = () => {
     }
   };
 
-  const enabledProcedures = (procedures || []).filter(p => p.enabled);
+  useEffect(() => {
+    fetchProcedures();
+  }, []);
+
+  const enabledProcedures = procedures.filter(p => p.enabled);
   const completedCount = enabledProcedures.filter(p => p.current_count >= p.target_count).length;
   const totalProgress = enabledProcedures.length > 0 
     ? Math.round((enabledProcedures.reduce((sum, p) => sum + Math.min(p.current_count, p.target_count), 0) / 
         enabledProcedures.reduce((sum, p) => sum + p.target_count, 0)) * 100)
     : 0;
 
-  if (isLoading) return (
+  if (loading) return (
     <div className="flex min-h-screen items-center justify-center">
       <Loader2 className="animate-spin text-indigo-500" size={48} />
     </div>
   );
-
-  if (error) return <div className="p-12 text-center text-red-600">Error loading procedures.</div>;
 
   return (
     <div className="p-4 md:p-8 max-w-7xl mx-auto space-y-8">
@@ -244,8 +262,7 @@ const ProceduresPage = () => {
                   })}
                 </div>
               </div>
-              <Button type="submit" className="w-full bg-indigo-600 hover:bg-indigo-700" disabled={isSaving}>
-                {isSaving && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+              <Button type="submit" className="w-full bg-indigo-600 hover:bg-indigo-700">
                 {editingProcedure ? 'Update Procedure' : 'Add Procedure'}
               </Button>
             </form>
@@ -262,7 +279,7 @@ const ProceduresPage = () => {
           </CardHeader>
           <CardContent>
             <p className="text-3xl font-extrabold text-slate-900">{enabledProcedures.length}</p>
-            <p className="text-xs text-slate-400 mt-1">{(procedures || []).length - enabledProcedures.length} disabled</p>
+            <p className="text-xs text-slate-400 mt-1">{procedures.length - enabledProcedures.length} disabled</p>
           </CardContent>
         </Card>
 
@@ -292,7 +309,7 @@ const ProceduresPage = () => {
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {(procedures || []).map((procedure) => {
+        {procedures.map((procedure) => {
           const IconComponent = getIconComponent(procedure.icon);
           const progress = Math.min((procedure.current_count / procedure.target_count) * 100, 100);
           const isComplete = procedure.current_count >= procedure.target_count;
@@ -358,8 +375,7 @@ const ProceduresPage = () => {
                   <span className="text-sm font-medium text-slate-700">Track in appointments</span>
                   <Switch
                     checked={procedure.enabled}
-                    onCheckedChange={() => handleToggleEnabled(procedure)}
-                    disabled={isSaving}
+                    onCheckedChange={() => handleToggleEnabled(procedure.id, procedure.enabled)}
                   />
                 </div>
 
@@ -395,7 +411,7 @@ const ProceduresPage = () => {
         })}
       </div>
 
-      {(procedures || []).length === 0 && (
+      {procedures.length === 0 && (
         <div className="text-center py-20 bg-white rounded-3xl border-2 border-dashed border-slate-200">
           <div className="w-16 h-16 bg-indigo-50 rounded-2xl flex items-center justify-center mx-auto mb-4">
             <Target className="text-indigo-300" size={32} />

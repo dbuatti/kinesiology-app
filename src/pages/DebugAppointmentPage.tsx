@@ -6,12 +6,9 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { showSuccess, showError } from "@/utils/toast";
-import { Loader2, FlaskConical, Activity, RefreshCw, MoreHorizontal } from "lucide-react";
-import { useAppointmentMutation, useProcedures } from "@/hooks/use-crm-data";
-import { useAuth } from "@/components/AuthProvider";
+import { Loader2, FlaskConical, Activity, RefreshCw } from "lucide-react";
 
 const DebugAppointmentPage = () => {
-  const { session } = useAuth();
   const [loading, setLoading] = useState(false);
   const [testAppointmentId, setTestAppointmentId] = useState<string>("");
   const [boltScore, setBoltScore] = useState<string>("30");
@@ -19,28 +16,25 @@ const DebugAppointmentPage = () => {
   const [breathRate, setBreathRate] = useState<string>("12");
   const [debugInfo, setDebugInfo] = useState<any>(null);
 
-  const { mutateAsync: updateAppointment, isLoading: isUpdating } = useAppointmentMutation();
-  const { data: procedures, refetch: refetchProcedures, isLoading: isProceduresLoading } = useProcedures();
-
   const createTestAppointment = async () => {
     setLoading(true);
     setDebugInfo(null);
 
     try {
-      if (!session?.user?.id) {
+      console.log("[DEBUG] Getting user...");
+      const { data: { user }, error: userError } = await supabase.auth.getUser();
+      
+      if (userError || !user) {
         throw new Error("User not authenticated");
       }
 
-      console.log("[DEBUG] Getting user...");
-      const user_id = session.user.id;
-      console.log("[DEBUG] User ID:", user_id);
+      console.log("[DEBUG] User ID:", user.id);
 
       // Get first client
       console.log("[DEBUG] Fetching clients...");
       const { data: clients, error: clientError } = await supabase
         .from('clients')
         .select('id')
-        .eq('user_id', user_id)
         .limit(1);
 
       if (clientError || !clients || clients.length === 0) {
@@ -55,7 +49,7 @@ const DebugAppointmentPage = () => {
       const { data: appointment, error: appointmentError } = await supabase
         .from('appointments')
         .insert({
-          user_id: user_id,
+          user_id: user.id,
           client_id: clientId,
           date: new Date().toISOString(),
           name: "DEBUG TEST APPOINTMENT",
@@ -78,7 +72,7 @@ const DebugAppointmentPage = () => {
       setDebugInfo({
         step: "created",
         appointmentId: appointment.id,
-        userId: user_id,
+        userId: user.id,
         clientId: clientId
       });
 
@@ -100,25 +94,47 @@ const DebugAppointmentPage = () => {
     setLoading(true);
 
     try {
-      const score = parseInt(boltScore);
-      console.log("[DEBUG] Updating BOLT score to:", score);
+      console.log("[DEBUG] Updating BOLT score to:", boltScore);
       
-      await updateAppointment({
-        id: testAppointmentId,
-        bolt_score: score,
-      });
+      const { data: before, error: beforeError } = await supabase
+        .from('appointments')
+        .select('bolt_score, user_id')
+        .eq('id', testAppointmentId)
+        .single();
 
-      // Wait a bit for trigger to fire and React Query to refetch
-      await new Promise(resolve => setTimeout(resolve, 1500));
-      await refetchProcedures();
+      console.log("[DEBUG] Before update:", before);
 
-      const boltProcedures = procedures?.filter(p => p.name.toLowerCase().includes('bolt'));
+      const { data, error } = await supabase
+        .from('appointments')
+        .update({ bolt_score: parseInt(boltScore) })
+        .eq('id', testAppointmentId)
+        .select();
+
+      if (error) {
+        console.error("[DEBUG] Error updating BOLT score:", error);
+        throw error;
+      }
+
+      console.log("[DEBUG] Update result:", data);
+
+      // Wait a bit for trigger to fire
+      await new Promise(resolve => setTimeout(resolve, 1000));
+
+      // Check if procedure was created
+      const { data: { user } } = await supabase.auth.getUser();
+      const { data: procedures, error: procError } = await supabase
+        .from('procedures')
+        .select('*')
+        .eq('user_id', user!.id)
+        .ilike('name', '%bolt%');
+
+      console.log("[DEBUG] BOLT procedures found:", procedures);
 
       setDebugInfo({
         step: "bolt_updated",
-        boltScore: score,
-        proceduresFound: boltProcedures?.length || 0,
-        procedures: boltProcedures
+        boltScore: parseInt(boltScore),
+        proceduresFound: procedures?.length || 0,
+        procedures: procedures
       });
 
       showSuccess("BOLT score updated! Check console and procedures.");
@@ -145,26 +161,51 @@ const DebugAppointmentPage = () => {
 
       console.log("[DEBUG] Updating coherence - HR:", hr, "BR:", br, "Score:", coherenceScore);
 
-      await updateAppointment({
-        id: testAppointmentId,
-        heart_rate: hr,
-        breath_rate: br,
-        coherence_score: coherenceScore,
-      });
+      const { data: before, error: beforeError } = await supabase
+        .from('appointments')
+        .select('coherence_score, heart_rate, breath_rate, user_id')
+        .eq('id', testAppointmentId)
+        .single();
 
-      // Wait a bit for trigger to fire and React Query to refetch
-      await new Promise(resolve => setTimeout(resolve, 1500));
-      await refetchProcedures();
+      console.log("[DEBUG] Before update:", before);
 
-      const coherenceProcedures = procedures?.filter(p => p.name.toLowerCase().includes('coherence'));
+      const { data, error } = await supabase
+        .from('appointments')
+        .update({ 
+          heart_rate: hr,
+          breath_rate: br,
+          coherence_score: coherenceScore 
+        })
+        .eq('id', testAppointmentId)
+        .select();
+
+      if (error) {
+        console.error("[DEBUG] Error updating coherence:", error);
+        throw error;
+      }
+
+      console.log("[DEBUG] Update result:", data);
+
+      // Wait a bit for trigger to fire
+      await new Promise(resolve => setTimeout(resolve, 1000));
+
+      // Check if procedure was created
+      const { data: { user } } = await supabase.auth.getUser();
+      const { data: procedures, error: procError } = await supabase
+        .from('procedures')
+        .select('*')
+        .eq('user_id', user!.id)
+        .ilike('name', '%coherence%');
+
+      console.log("[DEBUG] Coherence procedures found:", procedures);
 
       setDebugInfo({
         step: "coherence_updated",
         heartRate: hr,
         breathRate: br,
         coherenceScore: coherenceScore,
-        proceduresFound: coherenceProcedures?.length || 0,
-        procedures: coherenceProcedures
+        proceduresFound: procedures?.length || 0,
+        procedures: procedures
       });
 
       showSuccess("Coherence score updated! Check console and procedures.");
@@ -180,17 +221,24 @@ const DebugAppointmentPage = () => {
     setLoading(true);
 
     try {
-      const { data: allProcedures } = await refetchProcedures();
+      const { data: { user } } = await supabase.auth.getUser();
+      
+      const { data: allProcedures, error } = await supabase
+        .from('procedures')
+        .select('*')
+        .eq('user_id', user!.id);
 
-      console.log("[DEBUG] All procedures:", allProcedures?.data);
+      if (error) throw error;
+
+      console.log("[DEBUG] All procedures:", allProcedures);
 
       setDebugInfo({
         step: "procedures_check",
-        totalProcedures: allProcedures?.data?.length || 0,
-        procedures: allProcedures?.data
+        totalProcedures: allProcedures?.length || 0,
+        procedures: allProcedures
       });
 
-      showSuccess(`Found ${allProcedures?.data?.length || 0} procedures`);
+      showSuccess(`Found ${allProcedures?.length || 0} procedures`);
     } catch (error: any) {
       console.error("[DEBUG] Error:", error);
       showError(error.message || "Failed to check procedures");
@@ -227,8 +275,6 @@ const DebugAppointmentPage = () => {
     }
   };
 
-  const isAnyLoading = loading || isUpdating || isProceduresLoading;
-
   return (
     <div className="p-8 max-w-4xl mx-auto space-y-8">
       <div>
@@ -257,10 +303,10 @@ const DebugAppointmentPage = () => {
           <CardContent className="space-y-4">
             <Button 
               onClick={createTestAppointment}
-              disabled={isAnyLoading || !!testAppointmentId}
+              disabled={loading || !!testAppointmentId}
               className="w-full bg-indigo-600 hover:bg-indigo-700"
             >
-              {isAnyLoading && !testAppointmentId ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
+              {loading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
               Create Test Appointment
             </Button>
             {testAppointmentId && (
@@ -292,10 +338,10 @@ const DebugAppointmentPage = () => {
             </div>
             <Button 
               onClick={testBoltScore}
-              disabled={isAnyLoading || !testAppointmentId}
+              disabled={loading || !testAppointmentId}
               className="w-full bg-indigo-600 hover:bg-indigo-700"
             >
-              {isAnyLoading && !testAppointmentId ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
+              {loading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
               Update BOLT Score
             </Button>
           </CardContent>
@@ -333,10 +379,10 @@ const DebugAppointmentPage = () => {
             </div>
             <Button 
               onClick={testCoherenceScore}
-              disabled={isAnyLoading || !testAppointmentId}
+              disabled={loading || !testAppointmentId}
               className="w-full bg-rose-600 hover:bg-rose-700"
             >
-              {isAnyLoading && !testAppointmentId ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
+              {loading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
               Update Coherence Score
             </Button>
           </CardContent>
@@ -349,16 +395,16 @@ const DebugAppointmentPage = () => {
           <CardContent className="space-y-4">
             <Button 
               onClick={checkProcedures}
-              disabled={isAnyLoading}
+              disabled={loading}
               className="w-full bg-emerald-600 hover:bg-emerald-700"
             >
-              {isAnyLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <RefreshCw className="mr-2 h-4 w-4" />}
+              {loading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <RefreshCw className="mr-2 h-4 w-4" />}
               Check All Procedures
             </Button>
             {testAppointmentId && (
               <Button 
                 onClick={deleteTestAppointment}
-                disabled={isAnyLoading}
+                disabled={loading}
                 variant="destructive"
                 className="w-full"
               >

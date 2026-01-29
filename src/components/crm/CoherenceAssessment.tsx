@@ -16,14 +16,13 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { useAppointmentMutation } from "@/hooks/use-crm-data";
 
 interface CoherenceAssessmentProps {
   appointmentId: string;
   initialHeartRate: number | null | undefined;
   initialBreathRate: number | null | undefined;
   initialCoherenceScore: number | null | undefined;
-  onUpdate: () => void; // Kept for consistency, but now triggers cache invalidation
+  onUpdate: () => void;
 }
 
 const CoherenceAssessment = ({ 
@@ -33,6 +32,7 @@ const CoherenceAssessment = ({
   initialCoherenceScore,
   onUpdate 
 }: CoherenceAssessmentProps) => {
+  const [loading, setLoading] = useState(false);
   const [isOpen, setIsOpen] = useState(false);
   const [detailsOpen, setDetailsOpen] = useState(false);
   
@@ -45,21 +45,6 @@ const CoherenceAssessment = ({
   const breathRate = breathRateRaw ? parseInt(breathRateRaw) * 2 : 0;
   
   const [calculatedScore, setCalculatedScore] = useState<number | null>(initialCoherenceScore || null);
-
-  // Mutation hook
-  const { mutateAsync: updateAppointment, isLoading: isSaving } = useAppointmentMutation();
-
-  // Sync local state with initial props on load
-  useEffect(() => {
-    if (initialHeartRate !== null && initialHeartRate !== undefined) {
-      setHeartRateRaw((initialHeartRate / 2).toString());
-    }
-    if (initialBreathRate !== null && initialBreathRate !== undefined) {
-      setBreathRateRaw((initialBreathRate / 2).toString());
-    }
-    setCalculatedScore(initialCoherenceScore || null);
-  }, [initialHeartRate, initialBreathRate, initialCoherenceScore]);
-
 
   // Timer states
   const [heartTimer, setHeartTimer] = useState(30);
@@ -159,39 +144,103 @@ const CoherenceAssessment = ({
       return;
     }
 
-    try {
-      await updateAppointment({
-        id: appointmentId,
-        heart_rate: heartRate,
-        breath_rate: breathRate,
-        coherence_score: calculatedScore,
-      });
+    setLoading(true);
 
-      showSuccess("Coherence assessment saved successfully!");
+    try {
+      console.log("[CoherenceAssessment] Starting to save coherence score:", calculatedScore);
+      
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) {
+        throw new Error("User not authenticated");
+      }
+      console.log("[CoherenceAssessment] User ID:", user.id);
+
+      // Check existing data
+      const { data: existingAppointment, error: fetchError } = await supabase
+        .from("appointments")
+        .select("coherence_score, user_id")
+        .eq("id", appointmentId)
+        .single();
+
+      if (fetchError) {
+        console.error("[CoherenceAssessment] Error fetching appointment:", fetchError);
+        throw fetchError;
+      }
+
+      const isNewScore = !existingAppointment?.coherence_score;
+      console.log("[CoherenceAssessment] Is new score:", isNewScore);
+      console.log("[CoherenceAssessment] Existing score:", existingAppointment?.coherence_score);
+
+      const { error } = await supabase
+        .from("appointments")
+        .update({ 
+          heart_rate: heartRate,
+          breath_rate: breathRate,
+          coherence_score: calculatedScore 
+        })
+        .eq("id", appointmentId);
+
+      if (error) {
+        console.error("[CoherenceAssessment] Error updating appointment:", error);
+        throw error;
+      }
+
+      console.log("[CoherenceAssessment] Coherence score saved successfully");
+
+      // Check if procedure was created
+      const { data: procedures, error: procError } = await supabase
+        .from("procedures")
+        .select("*")
+        .eq("user_id", user.id)
+        .ilike("name", "%coherence%");
+
+      if (procError) {
+        console.error("[CoherenceAssessment] Error fetching procedures:", procError);
+      } else {
+        console.log("[CoherenceAssessment] Coherence procedures found:", procedures);
+      }
+
+      showSuccess(
+        isNewScore 
+          ? "Coherence assessment saved! Check Procedures page to see your progress." 
+          : "Coherence assessment updated successfully!"
+      );
+      
+      onUpdate();
     } catch (error: any) {
+      console.error("[CoherenceAssessment] Error in handleSave:", error);
       showError(error.message || "Failed to save coherence assessment.");
+    } finally {
+      setLoading(false);
     }
   };
 
   const handleReset = async () => {
     if (!confirm("Are you sure you want to reset the Heart/Brain Coherence assessment for this session?")) return;
-    
+    setLoading(true);
     try {
-      await updateAppointment({
-        id: appointmentId,
-        heart_rate: null,
-        breath_rate: null,
-        coherence_score: null,
-      });
+      const { error } = await supabase
+        .from("appointments")
+        .update({ 
+          heart_rate: null,
+          breath_rate: null,
+          coherence_score: null,
+        })
+        .eq("id", appointmentId);
+
+      if (error) throw error;
+      showSuccess("Coherence assessment reset successfully.");
       
       // Reset local state immediately for better UX
       setHeartRateRaw('');
       setBreathRateRaw('');
       setCalculatedScore(null);
       
-      showSuccess("Coherence assessment reset successfully.");
+      onUpdate();
     } catch (error: any) {
       showError(error.message || "Failed to reset coherence assessment.");
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -240,7 +289,7 @@ const CoherenceAssessment = ({
                       e.stopPropagation();
                       handleReset();
                     }}
-                    disabled={isSaving}
+                    disabled={loading}
                     className="border-red-200 text-red-600 hover:bg-red-50 h-8 px-3"
                   >
                     <RotateCcw size={16} className="mr-1" />
@@ -427,7 +476,7 @@ const CoherenceAssessment = ({
               <Button 
                 onClick={calculateCoherence}
                 className="flex-1 bg-rose-600 hover:bg-rose-700 h-12 text-base font-semibold rounded-xl"
-                disabled={!heartRateRaw || !breathRateRaw || isSaving}
+                disabled={!heartRateRaw || !breathRateRaw}
               >
                 Calculate Coherence Score
               </Button>
@@ -486,10 +535,10 @@ const CoherenceAssessment = ({
 
                 <Button 
                   onClick={handleSave}
-                  disabled={isSaving}
+                  disabled={loading}
                   className="w-full mt-4 bg-slate-900 hover:bg-slate-800 h-11 font-semibold rounded-xl"
                 >
-                  {isSaving ? "Saving..." : "Save Assessment"}
+                  {loading ? "Saving..." : "Save Assessment"}
                 </Button>
               </div>
             )}
@@ -604,7 +653,7 @@ const CoherenceAssessment = ({
                         <span className="w-1.5 h-1.5 bg-blue-500 rounded-full mt-2 flex-shrink-0"></span>
                         <span>Track progress over multiple sessions to monitor autonomic regulation improvements</span>
                       </li>
-                    </ol>
+                    </ul>
                   </div>
                 </div>
               </CollapsibleContent>

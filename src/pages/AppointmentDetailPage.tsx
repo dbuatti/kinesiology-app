@@ -35,14 +35,8 @@ const AppointmentDetailPage = () => {
   const [appointment, setAppointment] = useState<AppointmentWithClient | null>(null);
   const [loading, setLoading] = useState(true);
   
-  // State for visual feedback
-  const [savingField, setSavingField] = useState<string | null>(null);
-  const [savedField, setSavedField] = useState<string | null>(null);
-  
+  // Removed global saving/saved state and refs to fix tabbing issue
   const saveTimeoutRef = useRef<Record<string, NodeJS.Timeout>>({});
-  const savingFieldsRef = useRef<Set<string>>(new Set());
-  
-  // Removed currentlyEditingFieldRef
 
   const fetchAppointmentData = async () => {
     if (!id) return;
@@ -90,23 +84,16 @@ const AppointmentDetailPage = () => {
     }
   };
 
+  // Simplified saveField: only handles API call and local appointment state update
   const saveField = async (field: string, value: string | boolean) => {
     if (!id) return;
     
-    console.log(`[saveField:${field}] ========== SAVE INITIATED ==========`);
-    console.log(`[saveField:${field}] Value to save:`, value);
-    console.log(`[saveField:${field}] Currently saving fields:`, Array.from(savingFieldsRef.current));
-    
-    savingFieldsRef.current.add(field);
-    setSavingField(field);
-
     try {
       const updateData: Record<string, any> = {
         [field]: value === '' ? null : value
       };
 
-      console.log(`[saveField:${field}] Sending update to Supabase:`, updateData);
-      const { error, data: updatedData } = await supabase
+      const { error } = await supabase
         .from('appointments')
         .update(updateData)
         .eq('id', id)
@@ -114,36 +101,19 @@ const AppointmentDetailPage = () => {
 
       if (error) throw error;
 
-      console.log(`[saveField:${field}] ✅ Save successful. Response:`, updatedData);
-
       // Update local state immediately after successful save
       setAppointment(prev => {
-        if (!prev) {
-          console.log(`[saveField:${field}] ⚠️ No previous appointment state to update`);
-          return prev;
-        }
-        console.log(`[saveField:${field}] Updating local state. Old value:`, prev[field as keyof AppointmentWithClient]);
-        console.log(`[saveField:${field}] Updating local state. New value:`, value === '' ? null : value);
+        if (!prev) return prev;
         return {
           ...prev,
           [field]: value === '' ? null : value
         };
       });
-
-      // Show saved indicator
-      setSavedField(field);
-      setTimeout(() => {
-        setSavedField(null);
-      }, 2000);
       
     } catch (err: any) {
       console.error(`[saveField:${field}] ❌ Error saving field:`, err);
       showError(err.message || "Failed to save");
-    } finally {
-      savingFieldsRef.current.delete(field);
-      setSavingField(null);
-      console.log(`[saveField:${field}] ========== SAVE COMPLETED ==========`);
-      console.log(`[saveField:${field}] Remaining saving fields:`, Array.from(savingFieldsRef.current));
+      throw err; // Re-throw so EditableField can handle its local state
     }
   };
 
@@ -185,143 +155,111 @@ const AppointmentDetailPage = () => {
     className?: string;
     placeholder?: string;
   }) => {
-    // Use a ref to track if this is the initial mount
     const isInitialMount = useRef(true);
     const lastPropValue = useRef(value);
     
-    // Initialize with prop value, but this will be controlled by the sync logic below
     const [localValue, setLocalValue] = useState(value || '');
     const [isFocused, setIsFocused] = useState(false);
     const inputRef = useRef<HTMLInputElement | HTMLTextAreaElement>(null);
-    const pendingSaveValueRef = useRef<string | null>(null);
+    
+    // NEW LOCAL STATE FOR SAVING FEEDBACK
+    const [isSaving, setIsSaving] = useState(false);
+    const [isSaved, setIsSaved] = useState(false);
+    
+    const localSaveTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+    const savedIndicatorTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
-    // Sync with prop value ONLY when:
-    // 1. Not focused
-    // 2. Not saving
-    // 3. No pending save
-    // 4. The prop value has actually changed (not just a re-render)
+    // Function to handle the actual save logic, including local state updates
+    const performSave = async (newValue: string) => {
+      if (newValue === (value || '')) return; // Skip if value hasn't changed from prop
+
+      setIsSaving(true);
+      setIsSaved(false);
+      
+      // Clear any existing saved indicator timeout
+      if (savedIndicatorTimeoutRef.current) clearTimeout(savedIndicatorTimeoutRef.current);
+
+      try {
+        await saveField(field, newValue); // Use the parent's saveField function
+        
+        setIsSaved(true);
+        savedIndicatorTimeoutRef.current = setTimeout(() => {
+          setIsSaved(false);
+        }, 2000);
+        
+      } catch (error) {
+        // Error handled by parent's saveField (showError toast)
+      } finally {
+        setIsSaving(false);
+      }
+    };
+
+    // Sync with prop value ONLY when not focused and not saving
     useEffect(() => {
-      const isSaving = savingFieldsRef.current.has(field);
-      const hasPendingSave = pendingSaveValueRef.current !== null;
       const propValueChanged = lastPropValue.current !== value;
-      
-      console.log(`[EditableField:${field}] 🔄 Effect triggered. Checking if should sync...`);
-      console.log(`[EditableField:${field}]   - Prop value:`, value);
-      console.log(`[EditableField:${field}]   - Last prop value:`, lastPropValue.current);
-      console.log(`[EditableField:${field}]   - Local value:`, localValue);
-      console.log(`[EditableField:${field}]   - isFocused:`, isFocused);
-      console.log(`[EditableField:${field}]   - isSaving:`, isSaving);
-      console.log(`[EditableField:${field}]   - hasPendingSave:`, hasPendingSave);
-      console.log(`[EditableField:${field}]   - propValueChanged:`, propValueChanged);
-      console.log(`[EditableField:${field}]   - isInitialMount:`, isInitialMount.current);
-      
-      // Update the last prop value tracker
       lastPropValue.current = value;
       
-      // On initial mount, always sync
       if (isInitialMount.current) {
         isInitialMount.current = false;
-        const newValue = value || '';
-        console.log(`[EditableField:${field}] ✅ Initial mount - syncing to:`, newValue);
-        setLocalValue(newValue);
+        setLocalValue(value || '');
         return;
       }
       
-      // For subsequent updates, only sync if conditions are met AND prop actually changed
-      if (!isFocused && !isSaving && !hasPendingSave && propValueChanged) {
+      // Only sync if the prop value changed AND we are not currently focused or saving
+      if (!isFocused && !isSaving && propValueChanged) {
         const newValue = value || '';
         if (localValue !== newValue) {
-          console.log(`[EditableField:${field}] ✅ Syncing prop value to local state. New value:`, newValue);
           setLocalValue(newValue);
-        } else {
-          console.log(`[EditableField:${field}] ⏭️ Skipping sync - values already match`);
         }
-      } else {
-        console.log(`[EditableField:${field}] ⛔ Skipping sync - conditions not met`);
       }
-    }, [value, isFocused, field, localValue]);
+    }, [value, isFocused, isSaving, localValue]);
 
     // Debounce logic for auto-save while typing
     useEffect(() => {
       if (!isFocused) return;
 
-      console.log(`[EditableField:${field}] ⌨️ Typing detected. Local value:`, localValue);
-      console.log(`[EditableField:${field}] Clearing previous debounce timer.`);
-      
-      // Clear existing timeout for this field
-      if (saveTimeoutRef.current[field]) {
-        clearTimeout(saveTimeoutRef.current[field]);
+      // Clear existing debounce timeout
+      if (localSaveTimeoutRef.current) {
+        clearTimeout(localSaveTimeoutRef.current);
       }
       
       // Set new timeout to auto-save after 1 second of no typing
-      saveTimeoutRef.current[field] = setTimeout(() => {
-        // Only save if the local value differs from the prop value
-        if (localValue !== (value || '')) {
-          console.log(`[EditableField:${field}] ⏰ Debounce timer fired. Initiating auto-save.`);
-          console.log(`[EditableField:${field}]   - Local value:`, localValue);
-          console.log(`[EditableField:${field}]   - Prop value:`, value);
-          pendingSaveValueRef.current = localValue;
-          saveField(field, localValue).finally(() => {
-            console.log(`[EditableField:${field}] Auto-save completed. Clearing pending save.`);
-            pendingSaveValueRef.current = null;
-          });
-        } else {
-          console.log(`[EditableField:${field}] ⏰ Debounce timer fired, but value unchanged. Skipping save.`);
+      const currentLocalValue = localValue;
+      localSaveTimeoutRef.current = setTimeout(() => {
+        if (currentLocalValue !== (value || '')) {
+          performSave(currentLocalValue);
         }
       }, 1000);
 
       return () => {
-        if (saveTimeoutRef.current[field]) {
-          console.log(`[EditableField:${field}] 🧹 Cleanup: Clearing debounce timer.`);
-          clearTimeout(saveTimeoutRef.current[field]);
+        if (localSaveTimeoutRef.current) {
+          clearTimeout(localSaveTimeoutRef.current);
         }
       };
     }, [localValue, isFocused, field, value]);
 
     const handleBlur = () => {
-      console.log(`[EditableField:${field}] 👋 Blur event triggered.`);
-      console.log(`[EditableField:${field}]   - Local value at blur:`, localValue);
-      console.log(`[EditableField:${field}]   - Prop value at blur:`, value);
-      
       // Clear debounce timeout
-      if (saveTimeoutRef.current[field]) {
-        console.log(`[EditableField:${field}] Clearing debounce timeout on blur.`);
-        clearTimeout(saveTimeoutRef.current[field]);
+      if (localSaveTimeoutRef.current) {
+        clearTimeout(localSaveTimeoutRef.current);
       }
       
-      // Fire off save in background (non-blocking)
+      // Fire off save immediately on blur if value changed
       if (localValue !== (value || '')) {
-        console.log(`[EditableField:${field}] 💾 Blur save initiated. Value:`, localValue);
-        pendingSaveValueRef.current = localValue;
-        saveField(field, localValue).finally(() => {
-          console.log(`[EditableField:${field}] Blur save completed. Clearing pending save.`);
-          pendingSaveValueRef.current = null;
-        });
-      } else {
-        console.log(`[EditableField:${field}] ⏭️ Blur save skipped: value unchanged.`);
+        performSave(localValue);
       }
       
-      // Immediately unfocus so user can click into next field
-      console.log(`[EditableField:${field}] Setting isFocused to false.`);
       setIsFocused(false);
     };
 
     const handleFocus = () => {
-      console.log(`[EditableField:${field}] 👆 Focus event triggered.`);
-      console.log(`[EditableField:${field}]   - Local value at focus:`, localValue);
-      console.log(`[EditableField:${field}]   - Prop value at focus:`, value);
       setIsFocused(true);
     };
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
-      const newValue = e.target.value;
-      console.log(`[EditableField:${field}] ✏️ Change event. New value length: ${newValue.length}`);
-      console.log(`[EditableField:${field}]   - New value:`, newValue);
-      setLocalValue(newValue);
+      setLocalValue(e.target.value);
     };
 
-    const isFieldSaving = savingField === field;
-    const isFieldSaved = savedField === field;
     const isEmpty = !localValue && !isFocused;
 
     const InputComponent = multiline ? Textarea : Input;
@@ -330,13 +268,13 @@ const AppointmentDetailPage = () => {
       <div className={cn("group relative", className)}>
         <div className="flex items-center justify-between mb-1.5">
           <p className="font-bold text-slate-400 uppercase text-[10px] tracking-widest">{label}</p>
-          {isFieldSaving && (
+          {isSaving && (
             <span className="text-[10px] text-slate-400 flex items-center gap-1">
               <Loader2 size={10} className="animate-spin" />
               Saving...
             </span>
           )}
-          {isFieldSaved && (
+          {isSaved && (
             <span className="text-[10px] text-emerald-600 flex items-center gap-1 animate-in fade-in duration-200">
               <Check size={10} />
               Saved

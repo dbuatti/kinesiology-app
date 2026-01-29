@@ -137,7 +137,7 @@ const EmotionAssessment = ({
       <Card className="border-none shadow-lg rounded-2xl bg-white overflow-hidden">
         <CollapsibleTrigger asChild>
           <CardHeader className="bg-gradient-to-r from-red-50 to-pink-50 border-b border-red-100 cursor-pointer hover:from-red-100 hover:to-pink-100 transition-colors">
-            <div className="flex items-center justify-between">
+            <div className="flex items-center justify-between w-full">
               <div className="flex items-center gap-3">
                 <div className="w-12 h-12 bg-red-600 rounded-xl flex items-center justify-center shadow-lg shadow-red-200">
                   <Heart size={24} className="text-white" />
@@ -148,6 +148,20 @@ const EmotionAssessment = ({
                 </div>
               </div>
               <div className="flex items-center gap-3">
+                {shouldShowReset && (
+                  <Button 
+                    variant="outline" 
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleReset();
+                    }}
+                    disabled={isSaving}
+                    className="border-red-200 text-red-600 hover:bg-red-50 h-8 px-3"
+                  >
+                    <RotateCcw size={16} className="mr-1" />
+                    Reset
+                  </Button>
+                )}
                 {isComplete && (
                   <Badge className="px-4 py-2 text-sm font-bold shadow-sm bg-emerald-500 text-white hover:bg-emerald-600">
                     Balanced
@@ -277,18 +291,6 @@ const EmotionAssessment = ({
                 placeholder="Document client discussion, ESR points held, and balancing techniques used..."
                 onSave={onSaveField}
               />
-
-              {shouldShowReset && (
-                <Button 
-                  variant="outline" 
-                  onClick={handleReset}
-                  className="w-full border-red-200 text-red-600 hover:bg-red-50"
-                  disabled={isSaving}
-                >
-                  <RotateCcw size={18} className="mr-2" />
-                  Reset Assessment Data
-                </Button>
-              )}
             </div>
           </CardContent>
         </CollapsibleContent>

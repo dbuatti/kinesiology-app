@@ -121,7 +121,7 @@ const BoltTestSection = ({ appointmentId, initialBoltScore, onUpdate }: BoltTest
         <Card className="border-none shadow-lg rounded-2xl bg-white overflow-hidden">
           <CollapsibleTrigger asChild>
             <CardHeader className="bg-gradient-to-r from-indigo-50 to-blue-50 border-b border-indigo-100 cursor-pointer hover:from-indigo-100 hover:to-blue-100 transition-colors">
-              <div className="flex items-center justify-between">
+              <div className="flex items-center justify-between w-full">
                 <div className="flex items-center gap-3">
                   <div className="w-12 h-12 bg-indigo-600 rounded-xl flex items-center justify-center shadow-lg shadow-indigo-200">
                     <FlaskConical size={24} className="text-white" />
@@ -132,6 +132,20 @@ const BoltTestSection = ({ appointmentId, initialBoltScore, onUpdate }: BoltTest
                   </div>
                 </div>
                 <div className="flex items-center gap-3">
+                  {initialBoltScore !== null && initialBoltScore !== undefined && (
+                    <Button 
+                      variant="outline"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleReset();
+                      }}
+                      disabled={loading}
+                      className="border-red-200 text-red-600 hover:bg-red-50 h-8 px-3"
+                    >
+                      <RotateCcw size={16} className="mr-1" />
+                      Reset
+                    </Button>
+                  )}
                   {initialBoltScore !== null && initialBoltScore !== undefined && (
                     <Badge className={cn(
                       "px-4 py-2 text-sm font-bold shadow-sm",
@@ -191,17 +205,6 @@ const BoltTestSection = ({ appointmentId, initialBoltScore, onUpdate }: BoltTest
                   <BookOpen size={18} className="mr-2" />
                   Client Resources & Exercises
                 </Button>
-                {initialBoltScore !== null && initialBoltScore !== undefined && (
-                  <Button 
-                    variant="outline"
-                    onClick={handleReset}
-                    disabled={loading}
-                    className="border-red-200 text-red-600 hover:bg-red-50"
-                  >
-                    <RotateCcw size={18} className="mr-2" />
-                    Reset Score
-                  </Button>
-                )}
               </div>
 
               <Collapsible open={detailsOpen} onOpenChange={setDetailsOpen}>

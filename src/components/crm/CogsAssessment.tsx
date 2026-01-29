@@ -138,7 +138,7 @@ const CogsAssessment = ({
       <Card className="border-none shadow-lg rounded-2xl bg-white overflow-hidden">
         <CollapsibleTrigger asChild>
           <CardHeader className="bg-gradient-to-r from-purple-50 to-violet-50 border-b border-purple-100 cursor-pointer hover:from-purple-100 hover:to-violet-100 transition-colors">
-            <div className="flex items-center justify-between">
+            <div className="flex items-center justify-between w-full">
               <div className="flex items-center gap-3">
                 <div className="w-12 h-12 bg-purple-600 rounded-xl flex items-center justify-center shadow-lg shadow-purple-200">
                   <Move size={24} className="text-white" />
@@ -149,6 +149,20 @@ const CogsAssessment = ({
                 </div>
               </div>
               <div className="flex items-center gap-3">
+                {hasSavedNotes && (
+                  <Button 
+                    variant="outline" 
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleReset();
+                    }}
+                    disabled={loading}
+                    className="border-red-200 text-red-600 hover:bg-red-50 h-8 px-3"
+                  >
+                    <RotateCcw size={16} className="mr-1" />
+                    Reset
+                  </Button>
+                )}
                 {hasSavedNotes && (
                   <span className="text-xs font-bold text-purple-600 bg-purple-100 px-3 py-1 rounded-full">
                     Notes Recorded
@@ -357,18 +371,6 @@ const CogsAssessment = ({
                   </>
                 )}
               </Button>
-
-              {hasSavedNotes && (
-                <Button 
-                  variant="outline" 
-                  onClick={handleReset}
-                  disabled={loading}
-                  className="h-12 px-6 rounded-xl border-red-200 text-red-600 hover:bg-red-50"
-                >
-                  <RotateCcw size={18} className="mr-2" />
-                  Reset Notes
-                </Button>
-              )}
 
               <Collapsible open={detailsOpen} onOpenChange={setDetailsOpen}>
                 <CollapsibleTrigger asChild>

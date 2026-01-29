@@ -62,8 +62,32 @@ const CoherenceAssessment = ({
     setLoading(true);
 
     try {
+      console.log("[CoherenceAssessment] Starting to save coherence score:", calculatedScore);
+      
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) {
+        throw new Error("User not authenticated");
+      }
+      console.log("[CoherenceAssessment] User ID:", user.id);
+
       const hr = parseInt(heartRate);
       const br = parseInt(breathRate);
+
+      // Check existing data
+      const { data: existingAppointment, error: fetchError } = await supabase
+        .from("appointments")
+        .select("coherence_score, user_id")
+        .eq("id", appointmentId)
+        .single();
+
+      if (fetchError) {
+        console.error("[CoherenceAssessment] Error fetching appointment:", fetchError);
+        throw fetchError;
+      }
+
+      const isNewScore = !existingAppointment?.coherence_score;
+      console.log("[CoherenceAssessment] Is new score:", isNewScore);
+      console.log("[CoherenceAssessment] Existing score:", existingAppointment?.coherence_score);
 
       const { error } = await supabase
         .from("appointments")
@@ -74,12 +98,36 @@ const CoherenceAssessment = ({
         })
         .eq("id", appointmentId);
 
-      if (error) throw error;
+      if (error) {
+        console.error("[CoherenceAssessment] Error updating appointment:", error);
+        throw error;
+      }
 
-      showSuccess("Heart/Brain Coherence assessment saved!");
+      console.log("[CoherenceAssessment] Coherence score saved successfully");
+
+      // Check if procedure was created
+      const { data: procedures, error: procError } = await supabase
+        .from("procedures")
+        .select("*")
+        .eq("user_id", user.id)
+        .ilike("name", "%coherence%");
+
+      if (procError) {
+        console.error("[CoherenceAssessment] Error fetching procedures:", procError);
+      } else {
+        console.log("[CoherenceAssessment] Coherence procedures found:", procedures);
+      }
+
+      showSuccess(
+        isNewScore 
+          ? "Coherence assessment saved! Check Procedures page to see your progress." 
+          : "Coherence assessment updated successfully!"
+      );
+      
       onUpdate();
     } catch (error: any) {
-      showError(error.message || "Failed to save assessment.");
+      console.error("[CoherenceAssessment] Error in handleSave:", error);
+      showError(error.message || "Failed to save coherence assessment.");
     } finally {
       setLoading(false);
     }

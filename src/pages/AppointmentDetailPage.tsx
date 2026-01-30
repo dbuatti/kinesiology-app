@@ -32,7 +32,7 @@ interface AppointmentWithClient extends Appointment {
   hydration_notes?: string | null;
   emotion_mode?: string | null;
   emotion_primary_selection?: string | null;
-  emotion_secondary_selection?: string | null;
+  emotion_secondary_selection?: string[] | null;
   emotion_notes?: string | null;
 }
 
@@ -164,6 +164,7 @@ const AppointmentDetailPage = () => {
         status={appointment.status} 
       />
       
+      {/* Adjusted pt-[80px] to account for the fixed SessionTimer height */}
       <div className="p-4 md:p-8 max-w-6xl mx-auto space-y-8 pt-[80px]">
         <div className="flex items-center justify-between gap-4">
           <Link to="/appointments">

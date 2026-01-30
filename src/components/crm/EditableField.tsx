@@ -4,7 +4,7 @@ import React, { useState, useEffect, useRef, useLayoutEffect, useCallback } from
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { cn } from "@/lib/utils";
-import { Loader2 } from "lucide-react";
+import { Loader2, Edit3 } from "lucide-react";
 
 // Define the union type for the ref element
 type InputElement = HTMLInputElement | HTMLTextAreaElement;
@@ -111,6 +111,30 @@ const EditableField = ({
   // Cast InputComponent to accept the generic InputElement ref
   const InputComponent = multiline ? Textarea : Input as React.ElementType<any>;
 
+  if (!isFocused) {
+    return (
+      <div 
+        className={cn("group relative cursor-pointer", className)}
+        onClick={() => {
+          setIsFocused(true);
+          // Use setTimeout to ensure focus happens after the state update triggers re-render
+          setTimeout(() => inputRef.current?.focus(), 0);
+        }}
+      >
+        <p className="font-bold text-slate-400 uppercase text-[10px] tracking-widest mb-1.5">{label}</p>
+        <div className="flex items-center justify-between min-h-[38px]">
+          <p className={cn(
+            "text-sm leading-relaxed whitespace-pre-wrap",
+            isEmpty ? "text-slate-400 italic" : "text-slate-700"
+          )}>
+            {isEmpty ? placeholder : localValue}
+          </p>
+          <Edit3 size={14} className="text-slate-400 opacity-0 group-hover:opacity-100 transition-opacity flex-shrink-0 ml-2" />
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className={cn("group relative", className)}>
       <p className="font-bold text-slate-400 uppercase text-[10px] tracking-widest mb-1.5">{label}</p>
@@ -125,7 +149,6 @@ const EditableField = ({
           className={cn(
             multiline ? "min-h-[100px] resize-none" : "",
             "transition-all duration-150 pr-10", // Added pr-10 for saving indicator
-            isEmpty && !isFocused && "text-slate-400 italic",
             isFocused && "ring-2 ring-indigo-500/70 border-indigo-400 shadow-sm"
           )}
         />

@@ -11,13 +11,13 @@ interface SessionTimerProps {
 }
 
 const SESSION_STAGES = [
-  { name: "Goal Setting", duration: 30, color: "bg-indigo-600", Icon: Target },
-  { name: "Activation", duration: 30, color: "bg-blue-600", Icon: Zap },
-  { name: "Correction", duration: 48, color: "bg-emerald-600", Icon: CheckCircle2 },
-  { name: "Challenge", duration: 6, color: "bg-amber-600", Icon: AlertTriangle },
-  { name: "Home Reinforcement", duration: 6, color: "bg-rose-600", Icon: Home },
+  { name: "Goal Setting", duration: 22, color: "bg-indigo-600", Icon: Target },
+  { name: "Activation", duration: 23, color: "bg-blue-600", Icon: Zap },
+  { name: "Correction", duration: 35, color: "bg-emerald-600", Icon: CheckCircle2 },
+  { name: "Challenge", duration: 5, color: "bg-amber-600", Icon: AlertTriangle },
+  { name: "Home Reinforcement", duration: 5, color: "bg-rose-600", Icon: Home },
 ];
-const TOTAL_DURATION_MINUTES = SESSION_STAGES.reduce((sum, stage) => sum + stage.duration, 0); // 120 minutes
+const TOTAL_DURATION_MINUTES = SESSION_STAGES.reduce((sum, stage) => sum + stage.duration, 0); // 90 minutes
 
 const SessionTimer = ({ appointmentDate, status }: SessionTimerProps) => {
   const [currentTime, setCurrentTime] = useState(new Date());

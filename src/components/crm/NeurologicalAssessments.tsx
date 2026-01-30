@@ -8,6 +8,7 @@ import FakudaStepTest from "./FakudaStepTest";
 import SharpenedRhombergsTest from "./SharpenedRhombergsTest";
 import { Button } from "@/components/ui/button";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 interface NeurologicalAssessmentsProps {
   appointmentId: string;
@@ -59,39 +60,52 @@ const NeurologicalAssessments = ({
 
         <CollapsibleContent>
           <div className="p-6 space-y-6">
-            {/* Fakuda Step Test Card */}
-            <Card className="border-2 border-green-200 shadow-none rounded-2xl bg-white">
-              <CardHeader className="pb-3">
-                <CardTitle className="text-lg flex items-center gap-2 text-green-700">
-                  <Footprints size={20} className="text-green-600" /> Fakuda Step Test
-                </CardTitle>
-                <CardDescription>Assess midline/vestibule cerebellum imbalances</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <FakudaStepTest
-                  appointmentId={appointmentId}
-                  initialFakudaNotes={initialFakudaNotes}
-                  onUpdate={onUpdate}
-                />
-              </CardContent>
-            </Card>
-
-            {/* Sharpened Rhombergs Test Card */}
-            <Card className="border-2 border-purple-200 shadow-none rounded-2xl bg-white">
-              <CardHeader className="pb-3">
-                <CardTitle className="text-lg flex items-center gap-2 text-purple-700">
-                  <Scale size={20} className="text-purple-600" /> Sharpened Rhombergs Test
-                </CardTitle>
-                <CardDescription>Assess midline cerebellum and proprioception</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <SharpenedRhombergsTest
-                  appointmentId={appointmentId}
-                  initialNotes={initialRhombergsNotes}
-                  onUpdate={onUpdate}
-                />
-              </CardContent>
-            </Card>
+            <Tabs defaultValue="fakuda" className="w-full">
+              <TabsList className="grid w-full grid-cols-2 h-12 bg-slate-100 p-1 rounded-xl">
+                <TabsTrigger value="fakuda" className="flex items-center gap-2 data-[state=active]:bg-green-600 data-[state=active]:text-white data-[state=active]:shadow-md rounded-lg h-10">
+                  <Footprints size={18} /> Fakuda Step Test
+                </TabsTrigger>
+                <TabsTrigger value="rhombergs" className="flex items-center gap-2 data-[state=active]:bg-purple-600 data-[state=active]:text-white data-[state=active]:shadow-md rounded-lg h-10">
+                  <Scale size={18} /> Sharpened Rhombergs
+                </TabsTrigger>
+              </TabsList>
+              
+              <TabsContent value="fakuda" className="mt-6">
+                <Card className="border-2 border-green-200 shadow-none rounded-2xl bg-white">
+                  <CardHeader className="pb-3">
+                    <CardTitle className="text-lg flex items-center gap-2 text-green-700">
+                      <Footprints size={20} className="text-green-600" /> Fakuda Step Test
+                    </CardTitle>
+                    <CardDescription>Assess midline/vestibule cerebellum imbalances</CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <FakudaStepTest
+                      appointmentId={appointmentId}
+                      initialFakudaNotes={initialFakudaNotes}
+                      onUpdate={onUpdate}
+                    />
+                  </CardContent>
+                </Card>
+              </TabsContent>
+              
+              <TabsContent value="rhombergs" className="mt-6">
+                <Card className="border-2 border-purple-200 shadow-none rounded-2xl bg-white">
+                  <CardHeader className="pb-3">
+                    <CardTitle className="text-lg flex items-center gap-2 text-purple-700">
+                      <Scale size={20} className="text-purple-600" /> Sharpened Rhombergs Test
+                    </CardTitle>
+                    <CardDescription>Assess midline cerebellum and proprioception</CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <SharpenedRhombergsTest
+                      appointmentId={appointmentId}
+                      initialNotes={initialRhombergsNotes}
+                      onUpdate={onUpdate}
+                    />
+                  </CardContent>
+                </Card>
+              </TabsContent>
+            </Tabs>
           </div>
         </CollapsibleContent>
       </Card>

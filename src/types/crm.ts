@@ -38,6 +38,8 @@ export interface Appointment {
   emotion_primary_selection?: string | null;
   emotion_secondary_selection?: string[] | null; // Updated to string array
   emotion_notes?: string | null;
+  // Fakuda Step Test field
+  fakuda_notes?: string | null;
 }
 
 export interface Client {

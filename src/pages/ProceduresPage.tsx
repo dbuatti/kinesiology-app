@@ -7,7 +7,7 @@ import { Badge } from "@/components/ui/badge";
 import { Switch } from "@/components/ui/switch";
 import { 
   Target, Plus, TrendingUp, CheckCircle2, Loader2, 
-  FlaskConical, Brain, Activity, Zap, Edit3, Trash2, Power, PowerOff
+  FlaskConical, Brain, Activity, Zap, Edit3, Trash2, Power, PowerOff, Footprints
 } from "lucide-react";
 import {
   Dialog,
@@ -39,6 +39,7 @@ const ICON_OPTIONS = [
   { value: 'activity', label: 'Activity', icon: Activity },
   { value: 'zap', label: 'Zap', icon: Zap },
   { value: 'target', label: 'Target', icon: Target },
+  { value: 'footprints', label: 'Footprints', icon: Footprints }, // New icon option
 ];
 
 const getIconComponent = (iconName: string) => {

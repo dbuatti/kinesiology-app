@@ -10,7 +10,7 @@ import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import { 
   ArrowLeft, Calendar, Clock, Target, Zap, 
-  ExternalLink, Loader2, Trash2, User, Droplets
+  ExternalLink, Loader2, Trash2, User, Droplets, Footprints
 } from "lucide-react";
 import { format } from "date-fns";
 import { Appointment } from "@/types/crm";
@@ -22,6 +22,7 @@ import CogsAssessment from "@/components/crm/CogsAssessment";
 import EditableField from "@/components/crm/EditableField";
 import SessionTimer from "@/components/crm/SessionTimer"; // Import SessionTimer
 import EmotionAssessment from "@/components/crm/EmotionAssessment";
+import FakudaStepTest from "@/components/crm/FakudaStepTest"; // Import new component
 
 interface AppointmentWithClient extends Appointment {
   clients: { name: string; id: string };
@@ -34,6 +35,7 @@ interface AppointmentWithClient extends Appointment {
   emotion_primary_selection?: string | null;
   emotion_secondary_selection?: string[] | null;
   emotion_notes?: string | null;
+  fakuda_notes?: string | null; // New field
 }
 
 const AppointmentDetailPage = () => {
@@ -207,6 +209,12 @@ const AppointmentDetailPage = () => {
                     )}>
                       <Droplets size={12} />
                       {isHydrated ? "Hydrated" : "Dehydrated"}
+                    </Badge>
+                  )}
+                  {appointment.fakuda_notes && (
+                    <Badge className="px-3 py-1 rounded-full text-xs font-bold flex items-center gap-1 bg-green-600 text-white">
+                      <Footprints size={12} />
+                      Fakuda Assessed
                     </Badge>
                   )}
                 </div>
@@ -425,6 +433,12 @@ const AppointmentDetailPage = () => {
           onUpdate={fetchAppointmentData}
         />
         
+        <FakudaStepTest
+          appointmentId={appointment.id}
+          initialFakudaNotes={appointment.fakuda_notes}
+          onUpdate={fetchAppointmentData}
+        />
+
         <EmotionAssessment
           appointmentId={appointment.id}
           initialMode={appointment.emotion_mode}

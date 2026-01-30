@@ -7,7 +7,7 @@ import { Badge } from "@/components/ui/badge";
 import { Switch } from "@/components/ui/switch";
 import { 
   Target, Plus, TrendingUp, CheckCircle2, Loader2, 
-  FlaskConical, Brain, Activity, Zap, Edit3, Trash2, Power, PowerOff, Footprints, Scale
+  FlaskConical, Brain, Activity, Zap, Edit3, Trash2, Power, PowerOff, Footprints, Scale, Hand
 } from "lucide-react";
 import {
   Dialog,
@@ -40,7 +40,8 @@ const ICON_OPTIONS = [
   { value: 'zap', label: 'Zap', icon: Zap },
   { value: 'target', label: 'Target', icon: Target },
   { value: 'footprints', label: 'Footprints', icon: Footprints },
-  { value: 'scale', label: 'Scale', icon: Scale }, // New icon option
+  { value: 'scale', label: 'Scale', icon: Scale },
+  { value: 'hand', label: 'Hand', icon: Hand }, // Added new icon
 ];
 
 const getIconComponent = (iconName: string) => {
@@ -270,44 +271,6 @@ const ProceduresPage = () => {
             </form>
           </DialogContent>
         </Dialog>
-      </div>
-
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <Card className="border-none shadow-sm rounded-2xl bg-white">
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm flex items-center gap-2 text-slate-700">
-              <Target size={16} className="text-indigo-500" /> Active Procedures
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <p className="text-3xl font-extrabold text-slate-900">{enabledProcedures.length}</p>
-            <p className="text-xs text-slate-400 mt-1">{procedures.length - enabledProcedures.length} disabled</p>
-          </CardContent>
-        </Card>
-
-        <Card className="border-none shadow-sm rounded-2xl bg-white">
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm flex items-center gap-2 text-slate-700">
-              <CheckCircle2 size={16} className="text-emerald-500" /> Completed
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <p className="text-3xl font-extrabold text-emerald-600">{completedCount}</p>
-            <p className="text-xs text-slate-400 mt-1">Reached target</p>
-          </CardContent>
-        </Card>
-
-        <Card className="border-none shadow-sm rounded-2xl bg-white">
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm flex items-center gap-2 text-slate-700">
-              <TrendingUp size={16} className="text-blue-500" /> Overall Progress
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <p className="text-3xl font-extrabold text-blue-600">{totalProgress}%</p>
-            <p className="text-xs text-slate-400 mt-1">Across active procedures</p>
-          </CardContent>
-        </Card>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">

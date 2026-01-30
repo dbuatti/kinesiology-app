@@ -10,7 +10,7 @@ import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import { 
   ArrowLeft, Calendar, Clock, Target, Zap, 
-  ExternalLink, Loader2, Trash2, User, Droplets, Footprints
+  ExternalLink, Loader2, Trash2, User, Droplets, Footprints, Hand
 } from "lucide-react";
 import { format } from "date-fns";
 import { Appointment } from "@/types/crm";
@@ -36,7 +36,8 @@ interface AppointmentWithClient extends Appointment {
   emotion_secondary_selection?: string[] | null;
   emotion_notes?: string | null;
   fakuda_notes?: string | null;
-  sharpened_rhombergs_notes?: string | null; // New field
+  sharpened_rhombergs_notes?: string | null;
+  frontal_lobe_notes?: string | null; // New field
 }
 
 const AppointmentDetailPage = () => {
@@ -161,6 +162,7 @@ const AppointmentDetailPage = () => {
 
   const clientLink = `/clients/${appointment.clients.id}`;
   const isHydrated = appointment.hydrated === true;
+  const hasNeuroNotes = appointment.fakuda_notes || appointment.sharpened_rhombergs_notes || appointment.frontal_lobe_notes;
 
   return (
     <>
@@ -212,7 +214,7 @@ const AppointmentDetailPage = () => {
                       {isHydrated ? "Hydrated" : "Dehydrated"}
                     </Badge>
                   )}
-                  {(appointment.fakuda_notes || appointment.sharpened_rhombergs_notes) && (
+                  {hasNeuroNotes && (
                     <Badge className="px-3 py-1 rounded-full text-xs font-bold flex items-center gap-1 bg-green-600 text-white">
                       <Footprints size={12} />
                       Neuro Assessed
@@ -438,6 +440,7 @@ const AppointmentDetailPage = () => {
           appointmentId={appointment.id}
           initialFakudaNotes={appointment.fakuda_notes}
           initialRhombergsNotes={appointment.sharpened_rhombergs_notes}
+          initialFrontalLobeNotes={appointment.frontal_lobe_notes}
           onUpdate={fetchAppointmentData}
         />
 

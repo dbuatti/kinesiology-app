@@ -2,10 +2,11 @@
 
 import React, { useState } from "react";
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/card";
-import { Footprints, Scale, Brain, ChevronDown } from "lucide-react";
+import { Footprints, Scale, Brain, ChevronDown, Hand } from "lucide-react";
 import { cn } from "@/lib/utils";
 import FakudaStepTest from "./FakudaStepTest";
 import SharpenedRhombergsTest from "./SharpenedRhombergsTest";
+import FrontalLobeAssessment from "./FrontalLobeAssessment";
 import { Button } from "@/components/ui/button";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -14,6 +15,7 @@ interface NeurologicalAssessmentsProps {
   appointmentId: string;
   initialFakudaNotes: string | null | undefined;
   initialRhombergsNotes: string | null | undefined;
+  initialFrontalLobeNotes: string | null | undefined;
   onUpdate: () => void;
 }
 
@@ -21,13 +23,15 @@ const NeurologicalAssessments = ({
   appointmentId,
   initialFakudaNotes,
   initialRhombergsNotes,
+  initialFrontalLobeNotes,
   onUpdate,
 }: NeurologicalAssessmentsProps) => {
   const [isOpen, setIsOpen] = useState(false);
 
   const hasFakudaNotes = !!initialFakudaNotes;
   const hasRhombergsNotes = !!initialRhombergsNotes;
-  const hasAnyNotes = hasFakudaNotes || hasRhombergsNotes;
+  const hasFrontalLobeNotes = !!initialFrontalLobeNotes;
+  const hasAnyNotes = hasFakudaNotes || hasRhombergsNotes || hasFrontalLobeNotes;
 
   return (
     <Collapsible open={isOpen} onOpenChange={setIsOpen}>
@@ -61,12 +65,15 @@ const NeurologicalAssessments = ({
         <CollapsibleContent>
           <div className="p-6 space-y-6">
             <Tabs defaultValue="fakuda" className="w-full">
-              <TabsList className="grid w-full grid-cols-2 h-12 bg-slate-100 p-1 rounded-xl">
+              <TabsList className="grid w-full grid-cols-3 h-12 bg-slate-100 p-1 rounded-xl">
                 <TabsTrigger value="fakuda" className="flex items-center gap-2 data-[state=active]:bg-green-600 data-[state=active]:text-white data-[state=active]:shadow-md rounded-lg h-10">
-                  <Footprints size={18} /> Fakuda Step Test
+                  <Footprints size={18} /> Fakuda
                 </TabsTrigger>
                 <TabsTrigger value="rhombergs" className="flex items-center gap-2 data-[state=active]:bg-purple-600 data-[state=active]:text-white data-[state=active]:shadow-md rounded-lg h-10">
-                  <Scale size={18} /> Sharpened Rhombergs
+                  <Scale size={18} /> Rhombergs
+                </TabsTrigger>
+                <TabsTrigger value="frontal-lobe" className="flex items-center gap-2 data-[state=active]:bg-indigo-600 data-[state=active]:text-white data-[state=active]:shadow-md rounded-lg h-10">
+                  <Hand size={18} /> Frontal Lobe
                 </TabsTrigger>
               </TabsList>
               
@@ -100,6 +107,24 @@ const NeurologicalAssessments = ({
                     <SharpenedRhombergsTest
                       appointmentId={appointmentId}
                       initialNotes={initialRhombergsNotes}
+                      onUpdate={onUpdate}
+                    />
+                  </CardContent>
+                </Card>
+              </TabsContent>
+
+              <TabsContent value="frontal-lobe" className="mt-6">
+                <Card className="border-2 border-indigo-200 shadow-none rounded-2xl bg-white">
+                  <CardHeader className="pb-3">
+                    <CardTitle className="text-lg flex items-center gap-2 text-indigo-700">
+                      <Hand size={20} className="text-indigo-600" /> Frontal Lobe Assessment
+                    </CardTitle>
+                    <CardDescription>Rapid open/closed hand drill for frontal cortex asymmetry</CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <FrontalLobeAssessment
+                      appointmentId={appointmentId}
+                      initialNotes={initialFrontalLobeNotes}
                       onUpdate={onUpdate}
                     />
                   </CardContent>

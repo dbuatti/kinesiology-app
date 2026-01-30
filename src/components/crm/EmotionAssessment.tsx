@@ -14,17 +14,15 @@ import { Badge } from "@/components/ui/badge";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import EditableField from "./EditableField";
 import { CHANNEL_EMOTIONS, ELEMENT_EMOTIONS } from "@/data/emotion-data";
-import { showSuccess, showError } from "@/utils/toast"; // <-- Added imports
-
-// --- Data Definitions are now imported ---
+import { showSuccess, showError } from "@/utils/toast";
 
 interface EmotionAssessmentProps {
   appointmentId: string;
   initialMode: string | null | undefined;
   initialPrimary: string | null | undefined;
-  initialSecondary: string | null | undefined;
+  initialSecondary: string[] | null | undefined; // Updated type
   initialNotes: string | null | undefined;
-  onSaveField: (field: string, value: string | null) => Promise<void>;
+  onSaveField: (field: string, value: string | string[] | null) => Promise<void>; // Updated signature
   onUpdate: () => void;
 }
 
@@ -39,14 +37,14 @@ const EmotionAssessment = ({
   const [isOpen, setIsOpen] = useState(false);
   const [mode, setMode] = useState<string>(initialMode || 'channel');
   const [primarySelection, setPrimarySelection] = useState<string>(initialPrimary || '');
-  const [secondarySelection, setSecondarySelection] = useState<string>(initialSecondary || '');
+  const [secondarySelections, setSecondarySelections] = useState<string[]>(initialSecondary || []); // Updated state
   const [isSaving, setIsSaving] = useState(false);
 
   // Sync internal state when external props change (e.g., from real-time update)
   useEffect(() => {
     setMode(initialMode || 'channel');
     setPrimarySelection(initialPrimary || '');
-    setSecondarySelection(initialSecondary || '');
+    setSecondarySelections(initialSecondary || []);
   }, [initialMode, initialPrimary, initialSecondary]);
 
   const currentData = mode === 'channel' ? CHANNEL_EMOTIONS : ELEMENT_EMOTIONS;
@@ -55,38 +53,41 @@ const EmotionAssessment = ({
   // Ensure secondaryOptions defaults to an empty array if primarySelection is invalid or missing
   const secondaryOptions = primarySelection ? currentData[primarySelection] || [] : [];
 
-  const handleModeChange = (newMode: string) => {
-    setMode(newMode);
-    setPrimarySelection('');
-    setSecondarySelection('');
-    handleSave(newMode, '', '');
-  };
-
-  const handlePrimarySelect = (selection: string) => {
-    setPrimarySelection(selection);
-    setSecondarySelection('');
-    handleSave(mode, selection, '');
-  };
-
-  const handleSecondarySelect = (selection: string) => {
-    setSecondarySelection(selection);
-    handleSave(mode, primarySelection, selection);
-  };
-
-  const handleSave = async (newMode: string, newPrimary: string, newSecondary: string) => {
+  const handleSave = async (newMode: string, newPrimary: string, newSecondaries: string[]) => {
     setIsSaving(true);
     try {
       await Promise.all([
         onSaveField('emotion_mode', newMode),
         onSaveField('emotion_primary_selection', newPrimary || null),
-        onSaveField('emotion_secondary_selection', newSecondary || null),
+        onSaveField('emotion_secondary_selection', newSecondaries.length > 0 ? newSecondaries : null),
       ]);
-      // Removed onUpdate() call here to prevent full page refresh
     } catch (error) {
       console.error("Failed to save emotion assessment:", error);
     } finally {
       setIsSaving(false);
     }
+  };
+
+  const handleModeChange = (newMode: string) => {
+    setMode(newMode);
+    setPrimarySelection('');
+    setSecondarySelections([]);
+    handleSave(newMode, '', []);
+  };
+
+  const handlePrimarySelect = (selection: string) => {
+    setPrimarySelection(selection);
+    setSecondarySelections([]);
+    handleSave(mode, selection, []);
+  };
+
+  const handleSecondaryToggle = (emotion: string) => {
+    const newSelections = secondarySelections.includes(emotion)
+      ? secondarySelections.filter(s => s !== emotion)
+      : [...secondarySelections, emotion];
+      
+    setSecondarySelections(newSelections);
+    handleSave(mode, primarySelection, newSelections);
   };
 
   const handleReset = async () => {
@@ -105,7 +106,7 @@ const EmotionAssessment = ({
       // 2. Reset local state
       setMode('channel');
       setPrimarySelection('');
-      setSecondarySelection('');
+      setSecondarySelections([]);
       
       showSuccess("Emotional assessment reset successfully.");
       onUpdate();
@@ -123,15 +124,15 @@ const EmotionAssessment = ({
         case 'EARTH': return 'bg-yellow-500 hover:bg-yellow-600';
         case 'METAL': return 'bg-gray-500 hover:bg-gray-600';
         case 'WATER': return 'bg-blue-500 hover:bg-blue-600';
-        case 'WOOD': return 'bg-green-500 hover:bg-green-600';
+        case 'WOOD': return 'bg-green-500 hover:bg-green-700';
         default: return 'bg-slate-500 hover:bg-slate-600';
       }
     }
     return 'bg-indigo-500 hover:bg-indigo-600';
   };
 
-  const isComplete = primarySelection && secondarySelection;
-  const shouldShowReset = initialMode || initialPrimary || initialSecondary || initialNotes;
+  const isComplete = secondarySelections.length > 0;
+  const shouldShowReset = initialMode || initialPrimary || (initialSecondary && initialSecondary.length > 0) || initialNotes;
 
   return (
     <Collapsible open={isOpen} onOpenChange={setIsOpen}>
@@ -181,7 +182,7 @@ const EmotionAssessment = ({
             <Alert className="bg-blue-50 border-blue-200">
               <Info className="h-4 w-4 text-blue-600" />
               <AlertDescription className="text-sm text-blue-900">
-                <strong>Protocol:</strong> Use PS12 mode (thumb to ring finger pad) to challenge the body for the relevant mode, primary selection (Channel/Element), and secondary selection (Specific Emotion).
+                <strong>Protocol:</strong> Use PS12 mode (thumb to ring finger pad) to challenge the body for the relevant mode, primary selection (Channel/Element), and secondary selection (Specific Emotion). You can now select <strong>multiple</strong> specific emotions.
               </AlertDescription>
             </Alert>
 
@@ -238,18 +239,18 @@ const EmotionAssessment = ({
             {/* Step 3: Secondary Selection (Specific Emotion) */}
             <div className="space-y-3 p-4 border border-slate-200 rounded-xl bg-slate-50">
               <h3 className="text-base font-bold text-slate-900 flex items-center gap-2">
-                <Zap size={16} className="text-emerald-600" /> 3. Select Specific Emotion/Feeling
+                <Zap size={16} className="text-emerald-600" /> 3. Select Specific Emotion/Feeling (Multiple allowed)
               </h3>
               {primarySelection ? (
                 <div className="flex flex-wrap gap-2 max-h-60 overflow-y-auto p-2 border border-slate-100 rounded-lg bg-white">
                   {secondaryOptions.map((emotion) => (
                     <Button
                       key={emotion}
-                      variant={secondarySelection === emotion ? 'default' : 'outline'}
-                      onClick={() => handleSecondarySelect(emotion)}
+                      variant={secondarySelections.includes(emotion) ? 'default' : 'outline'}
+                      onClick={() => handleSecondaryToggle(emotion)}
                       className={cn(
                         "h-8 text-xs font-semibold",
-                        secondarySelection === emotion 
+                        secondarySelections.includes(emotion)
                           ? "bg-emerald-600 hover:bg-emerald-700 text-white" 
                           : "border-slate-200 bg-slate-50 hover:bg-slate-100 text-slate-700"
                       )}
@@ -273,9 +274,17 @@ const EmotionAssessment = ({
               <Card className="border-2 border-red-200 bg-red-50/50 shadow-none rounded-2xl">
                 <CardContent className="pt-4 space-y-2">
                   <h4 className="text-sm font-bold text-red-900 uppercase tracking-widest">Current Emotional Focus</h4>
-                  <p className="text-xl font-extrabold text-red-800">
-                    {secondarySelection || 'No Emotion Selected'}
-                  </p>
+                  <div className="flex flex-wrap gap-2">
+                    {secondarySelections.length > 0 ? (
+                      secondarySelections.map(emotion => (
+                        <Badge key={emotion} className="bg-red-600 hover:bg-red-700 text-white text-base font-extrabold">
+                          {emotion}
+                        </Badge>
+                      ))
+                    ) : (
+                      <p className="text-xl font-extrabold text-red-800">No Emotion Selected</p>
+                    )}
+                  </div>
                   {primarySelection && (
                     <p className="text-sm text-red-700">
                       Mode: {mode === 'channel' ? 'Channel' : 'Element'} / Primary: {primarySelection}
@@ -290,7 +299,7 @@ const EmotionAssessment = ({
                 value={initialNotes}
                 multiline
                 placeholder="Document client discussion, ESR points held, and balancing techniques used..."
-                onSave={onSaveField}
+                onSave={onSaveField as (field: string, value: string | null) => Promise<void>}
               />
             </div>
           </CardContent>

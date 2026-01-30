@@ -36,7 +36,7 @@ export interface Appointment {
   // Emotion Assessment fields
   emotion_mode?: string | null;
   emotion_primary_selection?: string | null;
-  emotion_secondary_selection?: string | null;
+  emotion_secondary_selection?: string[] | null; // Updated to string array
   emotion_notes?: string | null;
 }
 

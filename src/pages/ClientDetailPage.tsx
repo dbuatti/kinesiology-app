@@ -8,7 +8,7 @@ import { Button } from "@/components/ui/button";
 import { 
   ArrowLeft, Plus, Mail, Phone, MapPin, Calendar, 
   Star, Loader2, Briefcase, Heart, Baby, ExternalLink,
-  Activity, Edit3, Trash2, MoreHorizontal, FlaskConical, TrendingUp, Clock // Added Clock here
+  Activity, Edit3, Trash2, MoreHorizontal, FlaskConical, TrendingUp, Clock, Brain
 } from "lucide-react";
 import { format } from "date-fns";
 import { Client, Appointment } from "@/types/crm";
@@ -115,6 +115,24 @@ const ClientDetailPage = () => {
   // Appointments are already sorted descending by date, so the first one with a score is the latest.
   const lastBoltScore = appointments.find(app => app.bolt_score !== null && app.bolt_score !== undefined)?.bolt_score || null;
 
+  // Calculate Coherence metrics
+  const coherenceScores = appointments
+    .filter(app => app.coherence_score !== null && app.coherence_score !== undefined)
+    .map(app => app.coherence_score as number);
+
+  const totalCoherenceScores = coherenceScores.length;
+  const averageCoherenceScore = totalCoherenceScores > 0 
+    ? (coherenceScores.reduce((sum, score) => sum + score, 0) / totalCoherenceScores) 
+    : null;
+  
+  const lastCoherenceScore = appointments.find(app => app.coherence_score !== null && app.coherence_score !== undefined)?.coherence_score || null;
+
+  const getCoherenceColor = (score: number | null) => {
+    if (score === null) return "text-slate-400";
+    // Check if score is a whole number (or very close)
+    const isCoherent = Math.abs(score - Math.round(score)) < 0.01;
+    return isCoherent ? "text-emerald-600" : "text-amber-600";
+  };
 
   return (
     <div className="p-4 md:p-8 max-w-7xl mx-auto space-y-8">
@@ -278,7 +296,7 @@ const ClientDetailPage = () => {
         </div>
 
         <div className="lg:col-span-2 space-y-6">
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-6">
             <Card className="border-none shadow-sm rounded-2xl bg-white">
               <CardHeader className="pb-2">
                 <CardTitle className="text-sm flex items-center gap-2 text-slate-700">
@@ -311,15 +329,46 @@ const ClientDetailPage = () => {
             <Card className="border-none shadow-sm rounded-2xl bg-white">
               <CardHeader className="pb-2">
                 <CardTitle className="text-sm flex items-center gap-2 text-slate-700">
-                  <TrendingUp size={16} className="text-indigo-500" /> Last BOLT Score
+                  <Brain size={16} className="text-rose-500" /> Avg. Coherence
                 </CardTitle>
               </CardHeader>
               <CardContent>
                 <p className={cn(
                   "text-3xl font-extrabold",
-                  lastBoltScore === null ? "text-slate-400" : lastBoltScore >= 25 ? "text-emerald-600" : "text-amber-600"
+                  getCoherenceColor(averageCoherenceScore)
                 )}>
-                  {lastBoltScore !== null ? `${lastBoltScore}s` : 'N/A'}
+                  {averageCoherenceScore !== null ? averageCoherenceScore.toFixed(2) : 'N/A'}
+                </p>
+                <p className="text-xs text-slate-400 mt-1">{totalCoherenceScores} recorded tests</p>
+              </CardContent>
+            </Card>
+
+            <Card className="border-none shadow-sm rounded-2xl bg-white">
+              <CardHeader className="pb-2">
+                <CardTitle className="text-sm flex items-center gap-2 text-slate-700">
+                  <TrendingUp size={16} className="text-indigo-500" /> Last BOLT/Coherence
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <p className={cn(
+                  "text-xl font-extrabold",
+                  lastBoltScore === null && lastCoherenceScore === null ? "text-slate-400" : "text-slate-900"
+                )}>
+                  {lastBoltScore !== null ? (
+                    <span className={cn(lastBoltScore >= 25 ? "text-emerald-600" : "text-amber-600")}>
+                      BOLT: {lastBoltScore}s
+                    </span>
+                  ) : 'N/A'}
+                </p>
+                <p className={cn(
+                  "text-xl font-extrabold mt-1",
+                  lastBoltScore === null && lastCoherenceScore === null ? "text-slate-400" : "text-slate-900"
+                )}>
+                  {lastCoherenceScore !== null ? (
+                    <span className={getCoherenceColor(lastCoherenceScore)}>
+                      Coh: {lastCoherenceScore.toFixed(2)}
+                    </span>
+                  ) : 'N/A'}
                 </p>
                 <p className="text-xs text-slate-400 mt-1">Latest recorded session</p>
               </CardContent>

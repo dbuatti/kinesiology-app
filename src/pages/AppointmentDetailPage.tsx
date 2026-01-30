@@ -101,12 +101,14 @@ const AppointmentDetailPage = () => {
     };
   }, [id]);
 
-  const saveField = async (field: string, value: string | boolean | null) => {
+  const saveField = async (field: string, value: string | boolean | null | string[]) => {
     if (!id || !appointment) return;
 
-    const normalized = typeof value === 'string' 
-      ? (value.trim() === '' ? null : value.trim()) 
-      : value;
+    const normalized = Array.isArray(value) 
+      ? value 
+      : (typeof value === 'string' 
+        ? (value.trim() === '' ? null : value.trim()) 
+        : value);
 
     // Silent save - no UI feedback
     try {
@@ -213,8 +215,9 @@ const AppointmentDetailPage = () => {
                 </CardTitle>
               </div>
               <div className="text-right">
-                <Link to={clientLink} className="text-sm font-medium text-indigo-600 hover:text-indigo-800 flex items-center gap-1">
-                  <User size={16} /> {appointment.clients.name}
+                <Link to={clientLink} className="text-sm font-medium text-indigo-600 hover:text-indigo-800 flex items-center gap-1 group">
+                  <User size={16} /> 
+                  <span className="group-hover:underline">{appointment.clients.name}</span>
                 </Link>
                 <p className="text-xs text-slate-400 mt-1">Client Profile</p>
               </div>

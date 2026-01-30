@@ -1,9 +1,8 @@
 "use client";
 
 import React, { useState } from "react";
-import { Card, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Footprints, Scale, Brain, ChevronDown, RotateCcw } from "lucide-react";
+import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/card";
+import { Footprints, Scale, Brain, ChevronDown } from "lucide-react";
 import { cn } from "@/lib/utils";
 import FakudaStepTest from "./FakudaStepTest";
 import SharpenedRhombergsTest from "./SharpenedRhombergsTest";
@@ -24,7 +23,6 @@ const NeurologicalAssessments = ({
   onUpdate,
 }: NeurologicalAssessmentsProps) => {
   const [isOpen, setIsOpen] = useState(false);
-  const [activeTab, setActiveTab] = useState("fakuda");
 
   const hasFakudaNotes = !!initialFakudaNotes;
   const hasRhombergsNotes = !!initialRhombergsNotes;
@@ -60,40 +58,40 @@ const NeurologicalAssessments = ({
         </CollapsibleTrigger>
 
         <CollapsibleContent>
-          <div className="p-6">
-            <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-              <TabsList className="grid w-full grid-cols-2 h-12 bg-slate-100 rounded-xl p-1">
-                <TabsTrigger 
-                  value="fakuda" 
-                  className="flex items-center gap-2 data-[state=active]:bg-white data-[state=active]:shadow-md data-[state=active]:text-green-700 text-slate-600 font-semibold rounded-lg"
-                >
-                  <Footprints size={18} /> Fakuda Step Test
-                </TabsTrigger>
-                <TabsTrigger 
-                  value="rhombergs" 
-                  className="flex items-center gap-2 data-[state=active]:bg-white data-[state=active]:shadow-md data-[state=active]:text-purple-700 text-slate-600 font-semibold rounded-lg"
-                >
-                  <Scale size={18} /> Sharpened Rhombergs
-                </TabsTrigger>
-              </TabsList>
-              
-              <div className="mt-6">
-                <TabsContent value="fakuda">
-                  <FakudaStepTest
-                    appointmentId={appointmentId}
-                    initialFakudaNotes={initialFakudaNotes}
-                    onUpdate={onUpdate}
-                  />
-                </TabsContent>
-                <TabsContent value="rhombergs">
-                  <SharpenedRhombergsTest
-                    appointmentId={appointmentId}
-                    initialNotes={initialRhombergsNotes}
-                    onUpdate={onUpdate}
-                  />
-                </TabsContent>
-              </div>
-            </Tabs>
+          <div className="p-6 space-y-6">
+            {/* Fakuda Step Test Card */}
+            <Card className="border-2 border-green-200 shadow-none rounded-2xl bg-white">
+              <CardHeader className="pb-3">
+                <CardTitle className="text-lg flex items-center gap-2 text-green-700">
+                  <Footprints size={20} className="text-green-600" /> Fakuda Step Test
+                </CardTitle>
+                <CardDescription>Assess midline/vestibule cerebellum imbalances</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <FakudaStepTest
+                  appointmentId={appointmentId}
+                  initialFakudaNotes={initialFakudaNotes}
+                  onUpdate={onUpdate}
+                />
+              </CardContent>
+            </Card>
+
+            {/* Sharpened Rhombergs Test Card */}
+            <Card className="border-2 border-purple-200 shadow-none rounded-2xl bg-white">
+              <CardHeader className="pb-3">
+                <CardTitle className="text-lg flex items-center gap-2 text-purple-700">
+                  <Scale size={20} className="text-purple-600" /> Sharpened Rhombergs Test
+                </CardTitle>
+                <CardDescription>Assess midline cerebellum and proprioception</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <SharpenedRhombergsTest
+                  appointmentId={appointmentId}
+                  initialNotes={initialRhombergsNotes}
+                  onUpdate={onUpdate}
+                />
+              </CardContent>
+            </Card>
           </div>
         </CollapsibleContent>
       </Card>

@@ -1,15 +1,8 @@
 "use client";
 
 import React, { useState } from "react";
-import {
-  Collapsible,
-  CollapsibleContent,
-  CollapsibleTrigger,
-} from "@/components/ui/collapsible";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
-import { ChevronDown, Footprints, Info, Save, Loader2, RotateCcw, ImageOff } from "lucide-react";
-import { cn } from "@/lib/utils";
+import { Footprints, Info, Save, Loader2, RotateCcw, ImageOff } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { showSuccess, showError } from "@/utils/toast";
 import { Textarea } from "@/components/ui/textarea";
@@ -28,8 +21,6 @@ const FakudaStepTest = ({
   onUpdate 
 }: FakudaStepTestProps) => {
   const [loading, setLoading] = useState(false);
-  const [isOpen, setIsOpen] = useState(false);
-  const [detailsOpen, setDetailsOpen] = useState(false);
   const [fakudaNotes, setFakudaNotes] = useState(initialFakudaNotes || '');
   const [imageError, setImageError] = useState(false);
 
@@ -114,133 +105,99 @@ const FakudaStepTest = ({
   const hasSavedNotes = initialFakudaNotes;
 
   return (
-    <Collapsible open={isOpen} onOpenChange={setIsOpen}>
-      <Card className="border-none shadow-lg rounded-2xl bg-white overflow-hidden">
-        <CollapsibleTrigger asChild>
-          <CardHeader className="bg-gradient-to-r from-green-50 to-emerald-50 border-b border-green-100 cursor-pointer hover:from-green-100 hover:to-emerald-100 transition-colors">
-            <div className="flex items-center justify-between w-full">
-              <div className="flex items-center gap-3">
-                <div className="w-12 h-12 bg-green-600 rounded-xl flex items-center justify-center shadow-lg shadow-green-200">
-                  <Footprints size={24} className="text-white" />
-                </div>
-                <div>
-                  <CardTitle className="text-xl font-bold text-slate-900">Fakuda Step Test</CardTitle>
-                  <CardDescription className="text-slate-600">Assess midline/vestibule cerebellum imbalances</CardDescription>
-                </div>
-              </div>
-              <div className="flex items-center gap-3">
-                {hasSavedNotes && (
-                  <Button 
-                    variant="outline" 
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      handleReset();
-                    }}
-                    disabled={loading}
-                    className="border-red-200 text-red-600 hover:bg-red-50 h-8 px-3"
-                  >
-                    <RotateCcw size={16} className="mr-1" />
-                    Reset
-                  </Button>
-                )}
-                {hasSavedNotes && (
-                  <span className="text-xs font-bold text-green-600 bg-green-100 px-3 py-1 rounded-full">
-                    Notes Recorded
-                  </span>
-                )}
-                <Button variant="ghost" size="icon" className="h-8 w-8">
-                  <ChevronDown className={cn("h-5 w-5 transition-transform text-slate-600", isOpen && "rotate-180")} />
-                </Button>
-              </div>
-            </div>
-          </CardHeader>
-        </CollapsibleTrigger>
+    <div className="space-y-6">
+      <Alert className="bg-blue-50 border-blue-200">
+        <Info className="h-4 w-4 text-blue-600" />
+        <AlertDescription className="text-sm text-blue-900">
+          <strong>Assessment Guide:</strong> This test assesses for imbalances in the midline or vestibule cerebellum. Observe rotation and movement patterns.
+        </AlertDescription>
+      </Alert>
 
-        <CollapsibleContent>
-          <CardContent className="p-6 space-y-6">
-            <Alert className="bg-blue-50 border-blue-200">
-              <Info className="h-4 w-4 text-blue-600" />
-              <AlertDescription className="text-sm text-blue-900">
-                <strong>Assessment Guide:</strong> This test assesses for imbalances in the midline or vestibule cerebellum. Observe rotation and movement patterns.
-              </AlertDescription>
-            </Alert>
-
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-              {/* Instructions/Diagram */}
-              <div className="space-y-4">
-                <div className="bg-green-50 border-2 border-green-200 rounded-xl p-4">
-                  <h3 className="text-lg font-bold text-green-900 mb-3 flex items-center gap-2">
-                    <Footprints size={20} className="text-green-600" />
-                    Test Protocol
-                  </h3>
-                  <div className="bg-white rounded-lg p-4 mb-4">
-                    {!imageError ? (
-                      <img 
-                        src={imagePath} 
-                        alt="Fakuda Step Test Reference"
-                        className="w-full h-auto rounded-lg object-cover"
-                        onError={() => setImageError(true)}
-                      />
-                    ) : (
-                      <div className="flex flex-col items-center justify-center py-12 text-slate-400">
-                        <ImageOff size={40} className="mb-2" />
-                        <p className="text-xs">Diagram not available</p>
-                      </div>
-                    )}
-                  </div>
-                  <ol className="space-y-2 text-sm text-green-900 list-decimal list-inside">
-                    <li>Client stands with eyes closed and shoulders flexed to 90 degrees (arms straight out).</li>
-                    <li>Instruct the client to march on the spot for 30-60 seconds.</li>
-                    <li>Observe the client's final position relative to their start position.</li>
-                  </ol>
-                </div>
-                
-                <div className="bg-amber-50 border-2 border-amber-200 p-4 rounded-xl">
-                  <h4 className="font-bold text-amber-900 mb-2">Interpretation</h4>
-                  <ul className="space-y-1.5 text-sm text-amber-800 list-disc list-inside">
-                    <li><strong>Central:</strong> No imbalances.</li>
-                    <li><strong>Rotation Right:</strong> Indicates weakness/dysfunction on the right side.</li>
-                    <li><strong>Rotation Left:</strong> Indicates weakness/dysfunction on the left side.</li>
-                    <li><strong>Move Forward:</strong> May indicate flexor dominance and extensor weakness.</li>
-                  </ul>
-                </div>
-              </div>
-
-              {/* Notes */}
-              <div>
-                <Label htmlFor="fakudaNotes" className="text-base font-bold text-slate-900 mb-2 block">
-                  Fakuda Step Test Notes:
-                </Label>
-                <Textarea
-                  id="fakudaNotes"
-                  placeholder="Document observations: e.g., Rotated 45 degrees to the left, indicating left cerebellar weakness. Also moved slightly forward."
-                  value={fakudaNotes}
-                  onChange={(e) => setFakudaNotes(e.target.value)}
-                  className="min-h-[400px] resize-none"
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        {/* Instructions/Diagram */}
+        <div className="space-y-4">
+          <div className="bg-green-50 border-2 border-green-200 rounded-xl p-4">
+            <h3 className="text-lg font-bold text-green-900 mb-3 flex items-center gap-2">
+              <Footprints size={20} className="text-green-600" />
+              Test Protocol
+            </h3>
+            <div className="bg-white rounded-lg p-4 mb-4">
+              {!imageError ? (
+                <img 
+                  src={imagePath} 
+                  alt="Fakuda Step Test Reference"
+                  className="w-full h-auto rounded-lg object-cover"
+                  onError={() => setImageError(true)}
                 />
-                <Button 
-                  onClick={handleSave}
-                  disabled={loading}
-                  className="w-full mt-4 bg-green-600 hover:bg-green-700 h-12 text-base font-semibold rounded-xl shadow-lg shadow-green-200"
-                >
-                  {loading ? (
-                    <>
-                      <Loader2 className="mr-2 h-5 w-5 animate-spin" />
-                      Saving Notes...
-                    </>
-                  ) : (
-                    <>
-                      <Save size={20} className="mr-2" />
-                      Save Fakuda Step Test Notes
-                    </>
-                  )}
-                </Button>
-              </div>
+              ) : (
+                <div className="flex flex-col items-center justify-center py-12 text-slate-400">
+                  <ImageOff size={40} className="mb-2" />
+                  <p className="text-xs">Diagram not available</p>
+                </div>
+              )}
             </div>
-          </CardContent>
-        </CollapsibleContent>
-      </Card>
-    </Collapsible>
+            <ol className="space-y-2 text-sm text-green-900 list-decimal list-inside">
+              <li>Client stands with eyes closed and shoulders flexed to 90 degrees (arms straight out).</li>
+              <li>Instruct the client to march on the spot for 30-60 seconds.</li>
+              <li>Observe the client's final position relative to their start position.</li>
+            </ol>
+          </div>
+          
+          <div className="bg-amber-50 border-2 border-amber-200 p-4 rounded-xl">
+            <h4 className="font-bold text-amber-900 mb-2">Interpretation</h4>
+            <ul className="space-y-1.5 text-sm text-amber-800 list-disc list-inside">
+              <li><strong>Central:</strong> No imbalances.</li>
+              <li><strong>Rotation Right:</strong> Indicates weakness/dysfunction on the right side.</li>
+              <li><strong>Rotation Left:</strong> Indicates weakness/dysfunction on the left side.</li>
+              <li><strong>Move Forward:</strong> May indicate flexor dominance and extensor weakness.</li>
+            </ul>
+          </div>
+        </div>
+
+        {/* Notes */}
+        <div>
+          <Label htmlFor="fakudaNotes" className="text-base font-bold text-slate-900 mb-2 block">
+            Fakuda Step Test Notes:
+          </Label>
+          <Textarea
+            id="fakudaNotes"
+            placeholder="Document observations: e.g., Rotated 45 degrees to the left, indicating left cerebellar weakness. Also moved slightly forward."
+            value={fakudaNotes}
+            onChange={(e) => setFakudaNotes(e.target.value)}
+            className="min-h-[400px] resize-none"
+          />
+          <div className="flex gap-3 mt-4">
+            <Button 
+              onClick={handleSave}
+              disabled={loading}
+              className="flex-1 bg-green-600 hover:bg-green-700 h-12 text-base font-semibold rounded-xl shadow-lg shadow-green-200"
+            >
+              {loading ? (
+                <>
+                  <Loader2 className="mr-2 h-5 w-5 animate-spin" />
+                  Saving Notes...
+                </>
+              ) : (
+                <>
+                  <Save size={20} className="mr-2" />
+                  Save Fakuda Step Test Notes
+                </>
+              )}
+            </Button>
+            {hasSavedNotes && (
+              <Button 
+                variant="outline" 
+                onClick={handleReset}
+                disabled={loading}
+                className="h-12 px-6 rounded-xl border-red-200 text-red-600 hover:bg-red-50"
+              >
+                <RotateCcw size={16} />
+              </Button>
+            )}
+          </div>
+        </div>
+      </div>
+    </div>
   );
 };
 

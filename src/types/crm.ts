@@ -42,6 +42,8 @@ export interface Appointment {
   fakuda_notes?: string | null;
   // Sharpened Rhombergs Test field
   sharpened_rhombergs_notes?: string | null;
+  // Frontal Lobe Assessment field
+  frontal_lobe_notes?: string | null;
 }
 
 export interface Client {

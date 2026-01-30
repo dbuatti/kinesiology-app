@@ -40,6 +40,8 @@ export interface Appointment {
   emotion_notes?: string | null;
   // Fakuda Step Test field
   fakuda_notes?: string | null;
+  // Sharpened Rhombergs Test field
+  sharpened_rhombergs_notes?: string | null;
 }
 
 export interface Client {

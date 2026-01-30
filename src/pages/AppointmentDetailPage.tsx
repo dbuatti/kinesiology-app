@@ -22,7 +22,7 @@ import CogsAssessment from "@/components/crm/CogsAssessment";
 import EditableField from "@/components/crm/EditableField";
 import SessionTimer from "@/components/crm/SessionTimer"; // Import SessionTimer
 import EmotionAssessment from "@/components/crm/EmotionAssessment";
-import FakudaStepTest from "@/components/crm/FakudaStepTest"; // Import new component
+import NeurologicalAssessments from "@/components/crm/NeurologicalAssessments"; // Import new component
 
 interface AppointmentWithClient extends Appointment {
   clients: { name: string; id: string };
@@ -35,7 +35,8 @@ interface AppointmentWithClient extends Appointment {
   emotion_primary_selection?: string | null;
   emotion_secondary_selection?: string[] | null;
   emotion_notes?: string | null;
-  fakuda_notes?: string | null; // New field
+  fakuda_notes?: string | null;
+  sharpened_rhombergs_notes?: string | null; // New field
 }
 
 const AppointmentDetailPage = () => {
@@ -211,10 +212,10 @@ const AppointmentDetailPage = () => {
                       {isHydrated ? "Hydrated" : "Dehydrated"}
                     </Badge>
                   )}
-                  {appointment.fakuda_notes && (
+                  {(appointment.fakuda_notes || appointment.sharpened_rhombergs_notes) && (
                     <Badge className="px-3 py-1 rounded-full text-xs font-bold flex items-center gap-1 bg-green-600 text-white">
                       <Footprints size={12} />
-                      Fakuda Assessed
+                      Neuro Assessed
                     </Badge>
                   )}
                 </div>
@@ -433,9 +434,10 @@ const AppointmentDetailPage = () => {
           onUpdate={fetchAppointmentData}
         />
         
-        <FakudaStepTest
+        <NeurologicalAssessments
           appointmentId={appointment.id}
           initialFakudaNotes={appointment.fakuda_notes}
+          initialRhombergsNotes={appointment.sharpened_rhombergs_notes}
           onUpdate={fetchAppointmentData}
         />
 

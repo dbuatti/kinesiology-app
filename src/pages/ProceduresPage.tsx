@@ -7,7 +7,7 @@ import { Badge } from "@/components/ui/badge";
 import { Switch } from "@/components/ui/switch";
 import { 
   Target, Plus, TrendingUp, CheckCircle2, Loader2, 
-  FlaskConical, Brain, Activity, Zap, Edit3, Trash2, Power, PowerOff, Footprints, Scale, Hand
+  FlaskConical, Brain, Activity, Zap, Edit3, Trash2, PowerOff, Footprints, Scale, Hand, Dumbbell
 } from "lucide-react";
 import {
   Dialog,
@@ -21,6 +21,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { showSuccess, showError } from "@/utils/toast";
 import { cn } from "@/lib/utils";
+import MusclePracticeStats from "@/components/crm/MusclePracticeStats";
 
 interface Procedure {
   id: string;
@@ -273,108 +274,150 @@ const ProceduresPage = () => {
         </Dialog>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {procedures.map((procedure) => {
-          const IconComponent = getIconComponent(procedure.icon);
-          const progress = Math.min((procedure.current_count / procedure.target_count) * 100, 100);
-          const isComplete = procedure.current_count >= procedure.target_count;
+      {/* New: Muscle Practice Stats and Overall Progress */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <div className="lg:col-span-2">
+          <MusclePracticeStats />
+        </div>
+        
+        {/* Overall Progress Card */}
+        <Card className="border-none shadow-lg rounded-2xl bg-white">
+          <CardHeader className="pb-3">
+            <CardTitle className="text-xl font-bold flex items-center gap-2 text-slate-900">
+              <TrendingUp size={24} className="text-emerald-600" /> Overall Progress
+            </CardTitle>
+            <CardDescription>
+              Tracking completion across all enabled procedures.
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="space-y-2">
+              <div className="flex items-center justify-between text-sm">
+                <span className="font-bold text-slate-700">Total Completion</span>
+                <span className="font-bold text-indigo-600">{totalProgress}%</span>
+              </div>
+              <Progress 
+                value={totalProgress} 
+                className="h-3 [&>div]:bg-indigo-600"
+              />
+            </div>
+            <div className="flex justify-between text-sm text-slate-600">
+              <span>Completed Procedures:</span>
+              <span className="font-bold text-slate-800">{completedCount} / {enabledProcedures.length}</span>
+            </div>
+            <div className="flex justify-between text-sm text-slate-600">
+              <span>Total Procedures Tracked:</span>
+              <span className="font-bold text-slate-800">{procedures.length}</span>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+      {/* End New Section */}
 
-          return (
-            <Card key={procedure.id} className={cn(
-              "border-none shadow-md rounded-2xl overflow-hidden transition-all hover:shadow-lg",
-              !procedure.enabled && "opacity-60",
-              isComplete && procedure.enabled ? "bg-gradient-to-br from-emerald-50 to-emerald-100" : "bg-white"
-            )}>
-              <CardHeader className="pb-3">
-                <div className="flex items-start justify-between">
-                  <div className="flex items-center gap-3 flex-1">
-                    <div className={cn(
-                      "w-12 h-12 rounded-xl flex items-center justify-center shadow-sm",
-                      !procedure.enabled ? "bg-slate-300" :
-                      isComplete ? "bg-emerald-500" : "bg-indigo-600"
-                    )}>
-                      <IconComponent size={24} className="text-white" />
-                    </div>
-                    <div className="flex-1">
-                      <CardTitle className="text-lg font-bold text-slate-900">{procedure.name}</CardTitle>
-                      <div className="flex items-center gap-2 mt-1">
-                        {isComplete && procedure.enabled && (
-                          <Badge className="bg-emerald-600 hover:bg-emerald-700 text-white border-none text-xs">
-                            <CheckCircle2 size={12} className="mr-1" /> Complete
-                          </Badge>
-                        )}
-                        {!procedure.enabled && (
-                          <Badge variant="outline" className="border-slate-300 text-slate-500 text-xs">
-                            <PowerOff size={12} className="mr-1" /> Disabled
-                          </Badge>
-                        )}
+      {procedures.length > 0 && (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {procedures.map((procedure) => {
+            const IconComponent = getIconComponent(procedure.icon);
+            const progress = Math.min((procedure.current_count / procedure.target_count) * 100, 100);
+            const isComplete = procedure.current_count >= procedure.target_count;
+
+            return (
+              <Card key={procedure.id} className={cn(
+                "border-none shadow-md rounded-2xl overflow-hidden transition-all hover:shadow-lg",
+                !procedure.enabled && "opacity-60",
+                isComplete && procedure.enabled ? "bg-gradient-to-br from-emerald-50 to-emerald-100" : "bg-white"
+              )}>
+                <CardHeader className="pb-3">
+                  <div className="flex items-start justify-between">
+                    <div className="flex items-center gap-3 flex-1">
+                      <div className={cn(
+                        "w-12 h-12 rounded-xl flex items-center justify-center shadow-sm",
+                        !procedure.enabled ? "bg-slate-300" :
+                        isComplete ? "bg-emerald-500" : "bg-indigo-600"
+                      )}>
+                        <IconComponent size={24} className="text-white" />
+                      </div>
+                      <div className="flex-1">
+                        <CardTitle className="text-lg font-bold text-slate-900">{procedure.name}</CardTitle>
+                        <div className="flex items-center gap-2 mt-1">
+                          {isComplete && procedure.enabled && (
+                            <Badge className="bg-emerald-600 hover:bg-emerald-700 text-white border-none text-xs">
+                              <CheckCircle2 size={12} className="mr-1" /> Complete
+                            </Badge>
+                          )}
+                          {!procedure.enabled && (
+                            <Badge variant="outline" className="border-slate-300 text-slate-500 text-xs">
+                              <PowerOff size={12} className="mr-1" /> Disabled
+                            </Badge>
+                          )}
+                        </div>
                       </div>
                     </div>
-                  </div>
-                  <div className="flex gap-1">
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      className="h-8 w-8"
-                      onClick={() => handleEdit(procedure)}
-                    >
-                      <Edit3 size={14} />
-                    </Button>
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      className="h-8 w-8 text-red-500 hover:text-red-700"
-                      onClick={() => handleDelete(procedure.id)}
-                    >
-                      <Trash2 size={14} />
-                    </Button>
-                  </div>
-                </div>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                {procedure.description && (
-                  <p className="text-sm text-slate-600 leading-relaxed">{procedure.description}</p>
-                )}
-                
-                <div className="flex items-center justify-between">
-                  <span className="text-sm font-medium text-slate-700">Track in appointments</span>
-                  <Switch
-                    checked={procedure.enabled}
-                    onCheckedChange={() => handleToggleEnabled(procedure.id, procedure.enabled)}
-                  />
-                </div>
-
-                {procedure.enabled && (
-                  <div className="space-y-2">
-                    <div className="flex items-center justify-between text-sm">
-                      <span className="font-bold text-slate-700">Progress</span>
-                      <span className={cn(
-                        "font-bold",
-                        isComplete ? "text-emerald-600" : "text-indigo-600"
-                      )}>
-                        {procedure.current_count} / {procedure.target_count}
-                      </span>
+                    <div className="flex gap-1">
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="h-8 w-8"
+                        onClick={() => handleEdit(procedure)}
+                      >
+                        <Edit3 size={14} />
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="h-8 w-8 text-red-500 hover:text-red-700"
+                        onClick={() => handleDelete(procedure.id)}
+                      >
+                        <Trash2 size={14} />
+                      </Button>
                     </div>
-                    <Progress 
-                      value={progress} 
-                      className={cn(
-                        "h-3",
-                        isComplete ? "[&>div]:bg-emerald-500" : "[&>div]:bg-indigo-600"
-                      )}
-                    />
-                    <p className="text-xs text-slate-500 text-center">
-                      {isComplete 
-                        ? "🎉 Target reached!" 
-                        : `${procedure.target_count - procedure.current_count} more to go`
-                      }
-                    </p>
                   </div>
-                )}
-              </CardContent>
-            </Card>
-          );
-        })}
-      </div>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  {procedure.description && (
+                    <p className="text-sm text-slate-600 leading-relaxed">{procedure.description}</p>
+                  )}
+                  
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm font-medium text-slate-700">Track in appointments</span>
+                    <Switch
+                      checked={procedure.enabled}
+                      onCheckedChange={() => handleToggleEnabled(procedure.id, procedure.enabled)}
+                    />
+                  </div>
+
+                  {procedure.enabled && (
+                    <div className="space-y-2">
+                      <div className="flex items-center justify-between text-sm">
+                        <span className="font-bold text-slate-700">Progress</span>
+                        <span className={cn(
+                          "font-bold",
+                          isComplete ? "text-emerald-600" : "text-indigo-600"
+                        )}>
+                          {procedure.current_count} / {procedure.target_count}
+                        </span>
+                      </div>
+                      <Progress 
+                        value={progress} 
+                        className={cn(
+                          "h-3",
+                          isComplete ? "[&>div]:bg-emerald-500" : "[&>div]:bg-indigo-600"
+                        )}
+                      />
+                      <p className="text-xs text-slate-500 text-center">
+                        {isComplete 
+                          ? "🎉 Target reached!" 
+                          : `${procedure.target_count - procedure.current_count} more to go`
+                        }
+                      </p>
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+            );
+          })}
+        </div>
+      )}
 
       {procedures.length === 0 && (
         <div className="text-center py-20 bg-white rounded-3xl border-2 border-dashed border-slate-200">

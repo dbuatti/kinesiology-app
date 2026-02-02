@@ -41,7 +41,7 @@ const ICON_OPTIONS = [
   { value: 'target', label: 'Target', icon: Target },
   { value: 'footprints', label: 'Footprints', icon: Footprints },
   { value: 'scale', label: 'Scale', icon: Scale },
-  { value: 'hand', label: 'Hand', icon: Hand }, // Added new icon
+  { value: 'hand', label: 'Hand', icon: Hand },
 ];
 
 const getIconComponent = (iconName: string) => {

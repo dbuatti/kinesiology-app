@@ -2,6 +2,14 @@ export type Pronoun = string;
 export type AppointmentTag = "Kinesiology" | "Community Kinesiology" | string;
 export type AppointmentStatus = "Scheduled" | "Completed" | "Cancelled" | "No Show" | "AP" | "OPEN" | string;
 
+export interface MuscleTestResult {
+  id: string;
+  appointment_id: string;
+  muscle_name: string;
+  status: 'Normotonic' | 'Inhibition' | 'Hypertonic' | 'Switching' | 'Dysfunctional';
+  created_at: string;
+}
+
 export interface Appointment {
   id: string; 
   display_id?: string;

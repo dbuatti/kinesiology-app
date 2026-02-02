@@ -10,7 +10,8 @@ import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import { 
   ArrowLeft, Calendar, Clock, Target, Zap, 
-  ExternalLink, Loader2, Trash2, User, Droplets, Footprints, Hand
+  ExternalLink, Loader2, Trash2, User, Droplets, Footprints, Hand,
+  Activity, Move, Heart, Scale, Brain, FlaskConical, ListChecks
 } from "lucide-react";
 import { format, isToday } from "date-fns";
 import { Appointment } from "@/types/crm";
@@ -23,7 +24,8 @@ import EditableField from "@/components/crm/EditableField";
 import SessionTimer from "@/components/crm/SessionTimer";
 import EmotionAssessment from "@/components/crm/EmotionAssessment";
 import NeurologicalAssessments from "@/components/crm/NeurologicalAssessments";
-import AppLayout from "@/components/crm/AppLayout"; // Import AppLayout
+import AppLayout from "@/components/crm/AppLayout";
+import MuscleTestingTab from "@/components/crm/MuscleTestingTab";
 import {
   Select,
   SelectContent,
@@ -31,6 +33,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { APPOINTMENT_STATUSES } from "@/data/appointment-data";
 
 interface AppointmentWithClient extends Appointment {
@@ -359,139 +362,168 @@ const AppointmentDetailPage = () => {
               </CardContent>
             </Card>
 
-            <div className="space-y-6">
-              <Card className="border-slate-200 shadow-none rounded-2xl bg-slate-50">
-                <CardHeader className="pb-2">
-                  <CardTitle className="text-sm flex items-center gap-2 text-slate-700">
-                    <Target size={16} className="text-indigo-500" /> Session Focus
-                  </CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-4 text-sm">
-                  <EditableField
-                    key={`session_north_star-${appointment.id}`}
-                    field="session_north_star"
-                    label="Session North Star"
-                    value={appointment.session_north_star}
-                    multiline
-                    placeholder="What's the guiding focus for this session?"
-                    onSave={saveField}
-                  />
-                  <EditableField
-                    key={`priority_pattern-${appointment.id}`}
-                    field="priority_pattern"
-                    label="Priority Pattern"
-                    value={appointment.priority_pattern}
-                    multiline
-                    placeholder="What patterns are we addressing?"
-                    onSave={saveField}
-                  />
-                  <EditableField
-                    key={`modes_balances-${appointment.id}`}
-                    field="modes_balances"
-                    label="Modes & Balances"
-                    value={appointment.modes_balances}
-                    multiline
-                    placeholder="Which modes and balances were used?"
-                    onSave={saveField}
-                  />
-                </CardContent>
-              </Card>
+            {/* Tabs for Assessments and Notes */}
+            <Tabs defaultValue="assessments" className="w-full">
+              <TabsList className="grid w-full grid-cols-2 md:grid-cols-3 lg:grid-cols-4 h-12 bg-slate-100 p-1 rounded-xl">
+                <TabsTrigger value="assessments" className="flex items-center gap-2 data-[state=active]:bg-indigo-600 data-[state=active]:text-white data-[state=active]:shadow-md rounded-lg h-10">
+                  <FlaskConical size={18} /> Assessments
+                </TabsTrigger>
+                <TabsTrigger value="muscle-tests" className="flex items-center gap-2 data-[state=active]:bg-indigo-600 data-[state=active]:text-white data-[state=active]:shadow-md rounded-lg h-10">
+                  <ListChecks size={18} /> Muscle Tests
+                </TabsTrigger>
+                <TabsTrigger value="emotion" className="flex items-center gap-2 data-[state=active]:bg-indigo-600 data-[state=active]:text-white data-[state=active]:shadow-md rounded-lg h-10">
+                  <Heart size={18} /> Emotion
+                </TabsTrigger>
+                <TabsTrigger value="notes" className="flex items-center gap-2 data-[state=active]:bg-indigo-600 data-[state=active]:text-white data-[state=active]:shadow-md rounded-lg h-10">
+                  <Zap size={18} /> Notes
+                </TabsTrigger>
+              </TabsList>
 
-              <Card className="border-slate-200 shadow-none rounded-2xl bg-slate-50">
-                <CardHeader className="pb-2">
-                  <CardTitle className="text-sm flex items-center gap-2 text-slate-700">
-                    <Zap size={16} className="text-indigo-500" /> Acupoints & Notes
-                  </CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-4 text-sm">
-                  <EditableField
-                    key={`acupoints-${appointment.id}`}
-                    field="acupoints"
-                    label="Acupoints"
-                    value={appointment.acupoints}
-                    placeholder="Which acupoints were used?"
-                    onSave={saveField}
-                  />
-                  <EditableField
-                    key={`notes-${appointment.id}`}
-                    field="notes"
-                    label="Session Notes"
-                    value={appointment.notes}
-                    multiline
-                    placeholder="Session observations and notes..."
-                    onSave={saveField}
-                  />
-                  <EditableField
-                    key={`additional_notes-${appointment.id}`}
-                    field="additional_notes"
-                    label="Additional Notes"
-                    value={appointment.additional_notes}
-                    multiline
-                    placeholder="Any additional observations..."
-                    onSave={saveField}
-                  />
-                  <EditableField
-                    key={`journal-${appointment.id}`}
-                    field="journal"
-                    label="Journal Entry"
-                    value={appointment.journal}
-                    multiline
-                    className="bg-amber-50/50 p-3 rounded-xl border border-amber-100"
-                    placeholder="Personal reflections and insights..."
-                    onSave={saveField}
-                  />
-                  {appointment.notion_link && (
-                    <Button variant="outline" size="sm" className="w-full text-xs rounded-xl" asChild>
-                      <a href={appointment.notion_link} target="_blank" rel="noopener noreferrer">
-                        <ExternalLink size={14} className="mr-2" /> View Notion Link
-                      </a>
-                    </Button>
-                  )}
-                </CardContent>
-              </Card>
-            </div>
+              <TabsContent value="assessments" className="mt-6 space-y-6">
+                <BoltTestSection
+                  appointmentId={appointment.id}
+                  initialBoltScore={appointment.bolt_score}
+                  onUpdate={fetchAppointmentData}
+                />
+
+                <CoherenceAssessment
+                  appointmentId={appointment.id}
+                  initialHeartRate={appointment.heart_rate}
+                  initialBreathRate={appointment.breath_rate}
+                  initialCoherenceScore={appointment.coherence_score}
+                  onUpdate={fetchAppointmentData}
+                />
+
+                <CogsAssessment
+                  appointmentId={appointment.id}
+                  initialSagittalNotes={appointment.sagittal_plane_notes}
+                  initialFrontalNotes={appointment.frontal_plane_notes}
+                  initialTransverseNotes={appointment.transverse_plane_notes}
+                  onUpdate={fetchAppointmentData}
+                />
+                
+                <NeurologicalAssessments
+                  appointmentId={appointment.id}
+                  initialFakudaNotes={appointment.fakuda_notes}
+                  initialRhombergsNotes={appointment.sharpened_rhombergs_notes}
+                  initialFrontalLobeNotes={appointment.frontal_lobe_notes}
+                  onUpdate={fetchAppointmentData}
+                />
+              </TabsContent>
+
+              <TabsContent value="muscle-tests" className="mt-6">
+                <MuscleTestingTab
+                  appointmentId={appointment.id}
+                  onUpdate={fetchAppointmentData}
+                />
+              </TabsContent>
+
+              <TabsContent value="emotion" className="mt-6">
+                <EmotionAssessment
+                  appointmentId={appointment.id}
+                  initialMode={appointment.emotion_mode}
+                  initialPrimary={appointment.emotion_primary_selection}
+                  initialSecondary={appointment.emotion_secondary_selection}
+                  initialNotes={appointment.emotion_notes}
+                  onSaveField={saveField}
+                  onUpdate={fetchAppointmentData}
+                />
+              </TabsContent>
+
+              <TabsContent value="notes" className="mt-6 space-y-6">
+                <Card className="border-slate-200 shadow-none rounded-2xl bg-slate-50">
+                  <CardHeader className="pb-2">
+                    <CardTitle className="text-sm flex items-center gap-2 text-slate-700">
+                      <Target size={16} className="text-indigo-500" /> Session Focus
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent className="space-y-4 text-sm">
+                    <EditableField
+                      key={`session_north_star-${appointment.id}`}
+                      field="session_north_star"
+                      label="Session North Star"
+                      value={appointment.session_north_star}
+                      multiline
+                      placeholder="What's the guiding focus for this session?"
+                      onSave={saveField}
+                    />
+                    <EditableField
+                      key={`priority_pattern-${appointment.id}`}
+                      field="priority_pattern"
+                      label="Priority Pattern"
+                      value={appointment.priority_pattern}
+                      multiline
+                      placeholder="What patterns are we addressing?"
+                      onSave={saveField}
+                    />
+                    <EditableField
+                      key={`modes_balances-${appointment.id}`}
+                      field="modes_balances"
+                      label="Modes & Balances"
+                      value={appointment.modes_balances}
+                      multiline
+                      placeholder="Which modes and balances were used?"
+                      onSave={saveField}
+                    />
+                  </CardContent>
+                </Card>
+
+                <Card className="border-slate-200 shadow-none rounded-2xl bg-slate-50">
+                  <CardHeader className="pb-2">
+                    <CardTitle className="text-sm flex items-center gap-2 text-slate-700">
+                      <Zap size={16} className="text-indigo-500" /> Acupoints & Notes
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent className="space-y-4 text-sm">
+                    <EditableField
+                      key={`acupoints-${appointment.id}`}
+                      field="acupoints"
+                      label="Acupoints"
+                      value={appointment.acupoints}
+                      placeholder="Which acupoints were used?"
+                      onSave={saveField}
+                    />
+                    <EditableField
+                      key={`notes-${appointment.id}`}
+                      field="notes"
+                      label="Session Notes"
+                      value={appointment.notes}
+                      multiline
+                      placeholder="Session observations and notes..."
+                      onSave={saveField}
+                    />
+                    <EditableField
+                      key={`additional_notes-${appointment.id}`}
+                      field="additional_notes"
+                      label="Additional Notes"
+                      value={appointment.additional_notes}
+                      multiline
+                      placeholder="Any additional observations..."
+                      onSave={saveField}
+                    />
+                    <EditableField
+                      key={`journal-${appointment.id}`}
+                      field="journal"
+                      label="Journal Entry"
+                      value={appointment.journal}
+                      multiline
+                      className="bg-amber-50/50 p-3 rounded-xl border border-amber-100"
+                      placeholder="Personal reflections and insights..."
+                      onSave={saveField}
+                    />
+                    {appointment.notion_link && (
+                      <Button variant="outline" size="sm" className="w-full text-xs rounded-xl" asChild>
+                        <a href={appointment.notion_link} target="_blank" rel="noopener noreferrer">
+                          <ExternalLink size={14} className="mr-2" /> View Notion Link
+                        </a>
+                      </Button>
+                    )}
+                  </CardContent>
+                </Card>
+              </TabsContent>
+            </Tabs>
           </CardContent>
         </Card>
-
-        <BoltTestSection
-          appointmentId={appointment.id}
-          initialBoltScore={appointment.bolt_score}
-          onUpdate={fetchAppointmentData}
-        />
-
-        <CoherenceAssessment
-          appointmentId={appointment.id}
-          initialHeartRate={appointment.heart_rate}
-          initialBreathRate={appointment.breath_rate}
-          initialCoherenceScore={appointment.coherence_score}
-          onUpdate={fetchAppointmentData}
-        />
-
-        <CogsAssessment
-          appointmentId={appointment.id}
-          initialSagittalNotes={appointment.sagittal_plane_notes}
-          initialFrontalNotes={appointment.frontal_plane_notes}
-          initialTransverseNotes={appointment.transverse_plane_notes}
-          onUpdate={fetchAppointmentData}
-        />
-        
-        <NeurologicalAssessments
-          appointmentId={appointment.id}
-          initialFakudaNotes={appointment.fakuda_notes}
-          initialRhombergsNotes={appointment.sharpened_rhombergs_notes}
-          initialFrontalLobeNotes={appointment.frontal_lobe_notes}
-          onUpdate={fetchAppointmentData}
-        />
-
-        <EmotionAssessment
-          appointmentId={appointment.id}
-          initialMode={appointment.emotion_mode}
-          initialPrimary={appointment.emotion_primary_selection}
-          initialSecondary={appointment.emotion_secondary_selection}
-          initialNotes={appointment.emotion_notes}
-          onSaveField={saveField}
-          onUpdate={fetchAppointmentData}
-        />
       </AppLayout>
     </>
   );

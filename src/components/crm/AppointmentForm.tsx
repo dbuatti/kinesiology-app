@@ -138,8 +138,9 @@ const AppointmentForm = ({ onSuccess, initialClientId }: AppointmentFormProps) =
                 disabled={!!initialClientId || loadingClients}
               >
                 <FormControl>
-                  <SelectValue placeholder={loadingClients ? "Loading clients..." : "Select a client"} />
-                </SelectTrigger>
+                  <SelectTrigger>
+                    <SelectValue placeholder={loadingClients ? "Loading clients..." : "Select a client"} />
+                  </SelectTrigger>
                 </FormControl>
                 <SelectContent>
                   {clients.map((client) => (

@@ -36,7 +36,7 @@ const formSchema = z.object({
     required_error: "Date is required",
   }),
   time: z.string().min(1, "Time is required"),
-  name: z.string().min(1, "Appointment name is required"),
+  name: z.string().optional(),
   tag: z.string().optional(),
   status: z.string().default("Scheduled"),
   goal: z.string().optional(),
@@ -91,10 +91,20 @@ const AppointmentForm = ({ onSuccess, initialClientId }: AppointmentFormProps) =
       const appointmentDate = new Date(values.date);
       appointmentDate.setHours(parseInt(hours), parseInt(minutes));
 
+      // --- Logic to handle optional name ---
+      let appointmentName = values.name?.trim() || '';
+      if (!appointmentName) {
+          const client = clients.find(c => c.id === values.clientId);
+          const clientName = client?.name || "Unknown Client";
+          const formattedDate = format(appointmentDate, "MMM d, yyyy");
+          appointmentName = `${clientName} - ${values.tag || 'Session'} (${formattedDate})`;
+      }
+      // ------------------------------------
+
       const { error } = await supabase.from("appointments").insert({
         user_id: session.user.id,
         client_id: values.clientId,
-        name: values.name,
+        name: appointmentName,
         date: appointmentDate.toISOString(),
         tag: values.tag,
         status: values.status,
@@ -128,9 +138,8 @@ const AppointmentForm = ({ onSuccess, initialClientId }: AppointmentFormProps) =
                 disabled={!!initialClientId || loadingClients}
               >
                 <FormControl>
-                  <SelectTrigger>
-                    <SelectValue placeholder={loadingClients ? "Loading clients..." : "Select a client"} />
-                  </SelectTrigger>
+                  <SelectValue placeholder={loadingClients ? "Loading clients..." : "Select a client"} />
+                </SelectTrigger>
                 </FormControl>
                 <SelectContent>
                   {clients.map((client) => (
@@ -150,9 +159,9 @@ const AppointmentForm = ({ onSuccess, initialClientId }: AppointmentFormProps) =
           name="name"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Appointment Title</FormLabel>
+              <FormLabel>Appointment Title (Optional)</FormLabel>
               <FormControl>
-                <Input placeholder="e.g. Initial Session" {...field} />
+                <Input placeholder="e.g. Initial Session (Default title will be generated if left blank)" {...field} />
               </FormControl>
               <FormMessage />
             </FormItem>

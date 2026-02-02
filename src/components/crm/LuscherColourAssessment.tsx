@@ -99,11 +99,12 @@ const LuscherColourAssessment = ({
       if (newC2 === newC1) newC1 = '';
     }
 
+    // Update local state immediately
     setColor1(newC1);
     setColor2(newC2);
     
-    // Only save if both colors are selected or if we are clearing both
-    if ((newC1 && newC2) || (!newC1 && !newC2)) {
+    // Only save if both colors are selected
+    if (newC1 && newC2) {
       handleSave(newC1, newC2);
     }
   };

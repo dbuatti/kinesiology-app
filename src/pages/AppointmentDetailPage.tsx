@@ -24,6 +24,14 @@ import SessionTimer from "@/components/crm/SessionTimer";
 import EmotionAssessment from "@/components/crm/EmotionAssessment";
 import NeurologicalAssessments from "@/components/crm/NeurologicalAssessments";
 import AppLayout from "@/components/crm/AppLayout"; // Import AppLayout
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { APPOINTMENT_STATUSES } from "@/data/appointment-data";
 
 interface AppointmentWithClient extends Appointment {
   clients: { name: string; id: string };
@@ -167,6 +175,19 @@ const AppointmentDetailPage = () => {
   
   const isSessionRelevant = isToday(appointment.date) && appointment.status !== 'Completed' && appointment.status !== 'Cancelled';
 
+  const getStatusColorClass = (status: string) => {
+    switch (status) {
+      case 'Completed':
+        return "bg-emerald-500 text-white hover:bg-emerald-600";
+      case 'Cancelled':
+      case 'No Show':
+        return "bg-red-500 text-white hover:bg-red-600";
+      case 'Scheduled':
+      default:
+        return "bg-indigo-500 text-white hover:bg-indigo-600";
+    }
+  };
+
   return (
     <>
       <SessionTimer 
@@ -201,12 +222,28 @@ const AppointmentDetailPage = () => {
                     {appointment.display_id || appointment.id.slice(0, 8)}
                   </Badge>
                   <Badge className="bg-indigo-50 text-indigo-700 hover:bg-indigo-100 border-none">{appointment.tag}</Badge>
-                  <span className={cn(
-                    "px-3 py-1 rounded-full text-xs font-bold",
-                    appointment.status === 'Completed' ? "bg-emerald-500 text-white" : "bg-slate-200 text-slate-700"
-                  )}>
-                    {appointment.status}
-                  </span>
+                  
+                  {/* Status Selector */}
+                  <Select
+                    value={appointment.status}
+                    onValueChange={(newStatus) => saveField('status', newStatus)}
+                  >
+                    <SelectTrigger className={cn(
+                      "h-8 w-[120px] text-xs font-bold border-none shadow-sm",
+                      getStatusColorClass(appointment.status)
+                    )}>
+                      <SelectValue placeholder="Status" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {APPOINTMENT_STATUSES.map(status => (
+                        <SelectItem key={status} value={status}>
+                          {status}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  {/* End Status Selector */}
+
                   {appointment.hydrated !== null && (
                     <Badge className={cn(
                       "px-3 py-1 rounded-full text-xs font-bold flex items-center gap-1",

@@ -28,6 +28,7 @@ import { format } from "date-fns";
 import { CalendarIcon, Loader2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { showSuccess, showError } from "@/utils/toast";
+import { APPOINTMENT_TAGS, APPOINTMENT_STATUSES } from "@/data/appointment-data";
 
 const formSchema = z.object({
   clientId: z.string().min(1, "Client is required"),
@@ -58,8 +59,8 @@ const AppointmentForm = ({ onSuccess, initialClientId }: AppointmentFormProps) =
     defaultValues: {
       clientId: initialClientId || "",
       name: "",
-      tag: "Kinesiology",
-      status: "Scheduled",
+      tag: APPOINTMENT_TAGS[0], // Default to first tag
+      status: APPOINTMENT_STATUSES[0], // Default to first status
       time: "10:00",
       date: new Date(),
     },
@@ -227,9 +228,9 @@ const AppointmentForm = ({ onSuccess, initialClientId }: AppointmentFormProps) =
                     </SelectTrigger>
                   </FormControl>
                   <SelectContent>
-                    <SelectItem value="Kinesiology">Kinesiology</SelectItem>
-                    <SelectItem value="Community Kinesiology">Community Kinesiology</SelectItem>
-                    <SelectItem value="Consultation">Consultation</SelectItem>
+                    {APPOINTMENT_TAGS.map(tag => (
+                      <SelectItem key={tag} value={tag}>{tag}</SelectItem>
+                    ))}
                   </SelectContent>
                 </Select>
                 <FormMessage />
@@ -250,9 +251,9 @@ const AppointmentForm = ({ onSuccess, initialClientId }: AppointmentFormProps) =
                     </SelectTrigger>
                   </FormControl>
                   <SelectContent>
-                    <SelectItem value="Scheduled">Scheduled</SelectItem>
-                    <SelectItem value="Completed">Completed</SelectItem>
-                    <SelectItem value="Cancelled">Cancelled</SelectItem>
+                    {APPOINTMENT_STATUSES.map(status => (
+                      <SelectItem key={status} value={status}>{status}</SelectItem>
+                    ))}
                   </SelectContent>
                 </Select>
                 <FormMessage />

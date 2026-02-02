@@ -12,7 +12,7 @@ import {
   ArrowLeft, Calendar, Clock, Target, Zap, 
   ExternalLink, Loader2, Trash2, User, Droplets, Footprints, Hand
 } from "lucide-react";
-import { format } from "date-fns";
+import { format, isToday } from "date-fns";
 import { Appointment } from "@/types/crm";
 import { showSuccess, showError } from "@/utils/toast";
 import { cn } from "@/lib/utils";
@@ -20,9 +20,10 @@ import BoltTestSection from "@/components/crm/BoltTestSection";
 import CoherenceAssessment from "@/components/crm/CoherenceAssessment";
 import CogsAssessment from "@/components/crm/CogsAssessment";
 import EditableField from "@/components/crm/EditableField";
-import SessionTimer from "@/components/crm/SessionTimer"; // Import SessionTimer
+import SessionTimer from "@/components/crm/SessionTimer";
 import EmotionAssessment from "@/components/crm/EmotionAssessment";
-import NeurologicalAssessments from "@/components/crm/NeurologicalAssessments"; // Import new component
+import NeurologicalAssessments from "@/components/crm/NeurologicalAssessments";
+import AppLayout from "@/components/crm/AppLayout"; // Import AppLayout
 
 interface AppointmentWithClient extends Appointment {
   clients: { name: string; id: string };
@@ -37,7 +38,7 @@ interface AppointmentWithClient extends Appointment {
   emotion_notes?: string | null;
   fakuda_notes?: string | null;
   sharpened_rhombergs_notes?: string | null;
-  frontal_lobe_notes?: string | null; // New field
+  frontal_lobe_notes?: string | null;
 }
 
 const AppointmentDetailPage = () => {
@@ -163,6 +164,8 @@ const AppointmentDetailPage = () => {
   const clientLink = `/clients/${appointment.clients.id}`;
   const isHydrated = appointment.hydrated === true;
   const hasNeuroNotes = appointment.fakuda_notes || appointment.sharpened_rhombergs_notes || appointment.frontal_lobe_notes;
+  
+  const isSessionRelevant = isToday(appointment.date) && appointment.status !== 'Completed' && appointment.status !== 'Cancelled';
 
   return (
     <>
@@ -171,8 +174,7 @@ const AppointmentDetailPage = () => {
         status={appointment.status} 
       />
       
-      {/* Adjusted pt-[80px] to account for the fixed SessionTimer height */}
-      <div className="p-4 md:p-8 max-w-6xl mx-auto space-y-8 pt-[80px]">
+      <AppLayout hasFixedHeader={isSessionRelevant}>
         <div className="flex items-center justify-between gap-4">
           <Link to="/appointments">
             <Button variant="ghost" size="sm">
@@ -453,7 +455,7 @@ const AppointmentDetailPage = () => {
           onSaveField={saveField}
           onUpdate={fetchAppointmentData}
         />
-      </div>
+      </AppLayout>
     </>
   );
 };

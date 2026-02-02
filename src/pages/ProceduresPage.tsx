@@ -22,6 +22,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { showSuccess, showError } from "@/utils/toast";
 import { cn } from "@/lib/utils";
 import MusclePracticeStats from "@/components/crm/MusclePracticeStats";
+import { fetchLatestProcedureScores, LatestProcedureScores } from "@/utils/procedure-stats";
 
 interface Procedure {
   id: string;
@@ -52,6 +53,7 @@ const getIconComponent = (iconName: string) => {
 
 const ProceduresPage = () => {
   const [procedures, setProcedures] = useState<Procedure[]>([]);
+  const [latestScores, setLatestScores] = useState<LatestProcedureScores>({ bolt_score: null, coherence_score: null });
   const [loading, setLoading] = useState(true);
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editingProcedure, setEditingProcedure] = useState<Procedure | null>(null);
@@ -64,13 +66,18 @@ const ProceduresPage = () => {
 
   const fetchProcedures = async () => {
     try {
-      const { data, error } = await supabase
-        .from('procedures')
-        .select('*')
-        .order('created_at', { ascending: false });
+      const [procedureData, scoreData] = await Promise.all([
+        supabase
+          .from('procedures')
+          .select('*')
+          .order('created_at', { ascending: false }),
+        fetchLatestProcedureScores()
+      ]);
 
-      if (error) throw error;
-      setProcedures(data || []);
+      if (procedureData.error) throw procedureData.error;
+      
+      setProcedures(procedureData.data || []);
+      setLatestScores(scoreData);
     } catch (err) {
       console.error("Error fetching procedures:", err);
       showError("Failed to load procedures");
@@ -320,6 +327,30 @@ const ProceduresPage = () => {
             const IconComponent = getIconComponent(procedure.icon);
             const progress = Math.min((procedure.current_count / procedure.target_count) * 100, 100);
             const isComplete = procedure.current_count >= procedure.target_count;
+            
+            // Determine specific status/score display
+            let specificStatus = null;
+            let statusColor = "text-slate-500";
+
+            if (procedure.name.includes("BOLT Test")) {
+              const score = latestScores.bolt_score;
+              if (score !== null) {
+                specificStatus = `Current: ${score}s`;
+                statusColor = score >= 25 ? "text-emerald-600" : "text-amber-600";
+              }
+            } else if (procedure.name.includes("Coherence")) {
+              const score = latestScores.coherence_score;
+              if (score !== null) {
+                specificStatus = `Score: ${score.toFixed(2)}`;
+                const isCoherent = Math.abs(score - Math.round(score)) < 0.01;
+                statusColor = isCoherent ? "text-emerald-600" : "text-amber-600";
+              }
+            } else if (procedure.name.includes("Range of Motion") || procedure.name.includes("Neurological Global")) {
+                if (procedure.current_count > 0) {
+                    specificStatus = "Assessed";
+                    statusColor = "text-indigo-600";
+                }
+            }
 
             return (
               <Card key={procedure.id} className={cn(
@@ -349,6 +380,12 @@ const ProceduresPage = () => {
                             <Badge variant="outline" className="border-slate-300 text-slate-500 text-xs">
                               <PowerOff size={12} className="mr-1" /> Disabled
                             </Badge>
+                          )}
+                          {/* Display Specific Status/Score */}
+                          {specificStatus && (
+                            <span className={cn("text-xs font-bold", statusColor)}>
+                                {specificStatus}
+                            </span>
                           )}
                         </div>
                       </div>

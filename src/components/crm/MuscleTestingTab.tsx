@@ -13,10 +13,10 @@ import { Alert, AlertDescription } from "@/components/ui/alert";
 
 interface MuscleTestingTabProps {
   appointmentId: string;
-  onUpdate: () => void;
+  // Removed onUpdate: () => void;
 }
 
-const MuscleTestingTab = ({ appointmentId, onUpdate }: MuscleTestingTabProps) => {
+const MuscleTestingTab = ({ appointmentId }: MuscleTestingTabProps) => {
   const [results, setResults] = useState<Record<string, MuscleTestResult>>({});
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -68,6 +68,8 @@ const MuscleTestingTab = ({ appointmentId, onUpdate }: MuscleTestingTabProps) =>
     };
 
     try {
+      let newResult: MuscleTestResult;
+
       if (existingResult) {
         // Update existing record
         const { error } = await supabase
@@ -75,6 +77,7 @@ const MuscleTestingTab = ({ appointmentId, onUpdate }: MuscleTestingTabProps) =>
           .update(payload)
           .eq('id', existingResult.id);
         if (error) throw error;
+        newResult = { ...existingResult, ...payload };
       } else {
         // Insert new record
         const { data, error } = await supabase
@@ -83,22 +86,16 @@ const MuscleTestingTab = ({ appointmentId, onUpdate }: MuscleTestingTabProps) =>
           .select()
           .single();
         if (error) throw error;
-        
-        // Update local state with the new ID
-        setResults(prev => ({
-          ...prev,
-          [muscleName]: data as MuscleTestResult
-        }));
+        newResult = data as MuscleTestResult;
       }
       
       // Optimistically update local state
       setResults(prev => ({
         ...prev,
-        [muscleName]: { ...existingResult, ...payload, id: existingResult?.id || 'temp' } as MuscleTestResult
+        [muscleName]: newResult
       }));
 
-      // showSuccess(`${muscleName} status updated to ${status}`);
-      onUpdate(); // Notify parent component (AppointmentDetailPage)
+      showSuccess(`${muscleName} status updated to ${status}`);
     } catch (error: any) {
       showError(error.message || `Failed to update ${muscleName} status.`);
     } finally {
@@ -127,7 +124,6 @@ const MuscleTestingTab = ({ appointmentId, onUpdate }: MuscleTestingTabProps) =>
         return newResults;
       });
       showSuccess(`${muscleName} test cleared.`);
-      onUpdate();
     } catch (error: any) {
       showError(error.message || `Failed to clear ${muscleName} test.`);
     } finally {

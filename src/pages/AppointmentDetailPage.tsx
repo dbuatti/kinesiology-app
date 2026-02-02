@@ -57,6 +57,7 @@ const AppointmentDetailPage = () => {
   const navigate = useNavigate();
   const [appointment, setAppointment] = useState<AppointmentWithClient | null>(null);
   const [loading, setLoading] = useState(true);
+  const [activeTab, setActiveTab] = useState<string>("assessments"); // State to manage active tab
 
   const fetchAppointmentData = async () => {
     if (!id) return;
@@ -363,7 +364,7 @@ const AppointmentDetailPage = () => {
             </Card>
 
             {/* Tabs for Assessments and Notes */}
-            <Tabs defaultValue="assessments" className="w-full">
+            <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
               <TabsList className="grid w-full grid-cols-2 md:grid-cols-3 lg:grid-cols-4 h-12 bg-slate-100 p-1 rounded-xl">
                 <TabsTrigger value="assessments" className="flex items-center gap-2 data-[state=active]:bg-indigo-600 data-[state=active]:text-white data-[state=active]:shadow-md rounded-lg h-10">
                   <FlaskConical size={18} /> Assessments
@@ -414,7 +415,7 @@ const AppointmentDetailPage = () => {
               <TabsContent value="muscle-tests" className="mt-6">
                 <MuscleTestingTab
                   appointmentId={appointment.id}
-                  onUpdate={fetchAppointmentData}
+                  // Removed onUpdate prop here
                 />
               </TabsContent>
 

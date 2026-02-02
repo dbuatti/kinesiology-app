@@ -11,7 +11,7 @@ import { Label } from "@/components/ui/label";
 import { 
   ArrowLeft, Calendar, Clock, Target, Zap, 
   ExternalLink, Loader2, Trash2, User, Droplets, Footprints, Hand,
-  Activity, Move, Heart, Scale, Brain, FlaskConical, ListChecks
+  Activity, Move, Heart, Scale, Brain, FlaskConical, ListChecks, Palette
 } from "lucide-react";
 import { format, isToday } from "date-fns";
 import { Appointment } from "@/types/crm";
@@ -26,6 +26,7 @@ import EmotionAssessment from "@/components/crm/EmotionAssessment";
 import NeurologicalAssessments from "@/components/crm/NeurologicalAssessments";
 import AppLayout from "@/components/crm/AppLayout";
 import MuscleTestingTab from "@/components/crm/MuscleTestingTab";
+import LuscherColourAssessment from "@/components/crm/LuscherColourAssessment";
 import {
   Select,
   SelectContent,
@@ -50,6 +51,8 @@ interface AppointmentWithClient extends Appointment {
   fakuda_notes?: string | null;
   sharpened_rhombergs_notes?: string | null;
   frontal_lobe_notes?: string | null;
+  luscher_color_1?: string | null;
+  luscher_color_2?: string | null;
 }
 
 const AppointmentDetailPage = () => {
@@ -263,6 +266,12 @@ const AppointmentDetailPage = () => {
                       Neuro Assessed
                     </Badge>
                   )}
+                  {(appointment.luscher_color_1 && appointment.luscher_color_2) && (
+                    <Badge className="px-3 py-1 rounded-full text-xs font-bold flex items-center gap-1 bg-violet-600 text-white">
+                      <Palette size={12} />
+                      Luscher Assessed
+                    </Badge>
+                  )}
                 </div>
                 <CardTitle className="text-3xl font-extrabold text-slate-900 pt-2">
                   {appointment.name || "Kinesiology Session"}
@@ -373,7 +382,7 @@ const AppointmentDetailPage = () => {
                   <ListChecks size={18} /> Muscle Tests
                 </TabsTrigger>
                 <TabsTrigger value="emotion" className="flex items-center gap-2 data-[state=active]:bg-indigo-600 data-[state=active]:text-white data-[state=active]:shadow-md rounded-lg h-10">
-                  <Heart size={18} /> Emotion
+                  <Heart size={18} /> Energetic/Emotion
                 </TabsTrigger>
                 <TabsTrigger value="notes" className="flex items-center gap-2 data-[state=active]:bg-indigo-600 data-[state=active]:text-white data-[state=active]:shadow-md rounded-lg h-10">
                   <Zap size={18} /> Notes
@@ -419,7 +428,13 @@ const AppointmentDetailPage = () => {
                 />
               </TabsContent>
 
-              <TabsContent value="emotion" className="mt-6">
+              <TabsContent value="emotion" className="mt-6 space-y-6">
+                <LuscherColourAssessment
+                  appointmentId={appointment.id}
+                  initialColor1={appointment.luscher_color_1}
+                  initialColor2={appointment.luscher_color_2}
+                  onUpdate={fetchAppointmentData}
+                />
                 <EmotionAssessment
                   appointmentId={appointment.id}
                   initialMode={appointment.emotion_mode}

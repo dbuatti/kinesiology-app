@@ -20,14 +20,14 @@ interface LuscherColourAssessmentProps {
   appointmentId: string;
   initialColor1: string | null | undefined;
   initialColor2: string | null | undefined;
-  onUpdate: () => void;
+  onSaveColors: (color1: string | null, color2: string | null) => Promise<void>;
 }
 
 const LuscherColourAssessment = ({ 
   appointmentId, 
   initialColor1, 
   initialColor2, 
-  onUpdate 
+  onSaveColors 
 }: LuscherColourAssessmentProps) => {
   const [isOpen, setIsOpen] = useState(false);
   const [color1, setColor1] = useState<string>(initialColor1 || '');
@@ -63,20 +63,10 @@ const LuscherColourAssessment = ({
   const handleSave = async (c1: string, c2: string) => {
     setIsSaving(true);
     try {
-      const payload = {
-        luscher_color_1: c1 || null,
-        luscher_color_2: c2 || null,
-      };
-
-      const { error } = await supabase
-        .from("appointments")
-        .update(payload)
-        .eq("id", appointmentId);
-
-      if (error) throw error;
+      // Use the passed silent save function
+      await onSaveColors(c1 || null, c2 || null);
 
       showSuccess("Luscher Colour selection saved.");
-      onUpdate();
     } catch (error: any) {
       console.error("[LuscherColourAssessment] Error saving colors:", error);
       showError(error.message || "Failed to save Luscher Colour selection.");

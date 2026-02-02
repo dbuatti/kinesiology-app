@@ -110,7 +110,12 @@ const AppointmentDetailPage = () => {
         (payload) => {
           setAppointment((prev) => {
             if (!prev) return prev;
-            return { ...prev, ...payload.new };
+            // Only update fields that changed, but ensure date is still a Date object if needed
+            const updatedData = { ...payload.new };
+            if (updatedData.date && typeof updatedData.date === 'string') {
+              updatedData.date = new Date(updatedData.date);
+            }
+            return { ...prev, ...updatedData };
           });
         }
       )
@@ -433,7 +438,7 @@ const AppointmentDetailPage = () => {
                   appointmentId={appointment.id}
                   initialColor1={appointment.luscher_color_1}
                   initialColor2={appointment.luscher_color_2}
-                  onUpdate={fetchAppointmentData}
+                  onSaveColors={(c1, c2) => saveField('luscher_color_1', c1).then(() => saveField('luscher_color_2', c2))}
                 />
                 <EmotionAssessment
                   appointmentId={appointment.id}

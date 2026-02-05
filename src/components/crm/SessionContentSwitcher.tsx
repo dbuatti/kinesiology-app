@@ -4,7 +4,7 @@ import React, { useState, useMemo } from 'react';
 import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card';
-import { Home, Heart, Dumbbell, FlaskConical, Activity, Move, Zap, CheckCircle2, Palette, Footprints, Scale, Hand } from 'lucide-react';
+import { Home, Heart, Dumbbell, FlaskConical, Activity, Move, Zap, CheckCircle2, Palette, Footprints, Scale, Hand, ExternalLink, TrendingUp } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { AppointmentWithClient } from '@/pages/AppointmentDetailPage'; // Assuming this type is available globally or imported
 import BoltTestSection from './BoltTestSection';
@@ -17,6 +17,7 @@ import EditableField from './EditableField';
 import LuscherColourAssessment from './LuscherColourAssessment';
 import MuscleTestingTab from './MuscleTestingTab';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import EmotionAssessment from './EmotionAssessment';
 
 // Define the views
 type ActiveView = 'home' | 'kinesiology' | 'muscles';

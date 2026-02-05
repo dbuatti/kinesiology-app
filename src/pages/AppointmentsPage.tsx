@@ -3,7 +3,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { groupAppointmentsByMonth } from "@/utils/crm-utils";
 import { format } from "date-fns";
 import { Badge } from "@/components/ui/badge";
-import { Calendar as CalendarIcon, Clock, Loader2, Plus, Trash2, MoreVertical, ExternalLink, FlaskConical, Activity, Move } from "lucide-react";
+import { Calendar as CalendarIcon, Clock, Loader2, Plus, Trash2, MoreVertical, ExternalLink, FlaskConical, Activity, Move, TrendingUp, Brain, Palette, Heart } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import {
@@ -87,15 +87,15 @@ const AppointmentsPage = () => {
   const grouped = groupAppointmentsByMonth(appointments);
 
   return (
-    <div className="p-8 max-w-5xl mx-auto space-y-8">
-      <div className="flex justify-between items-center">
+    <div className="p-4 md:p-8 max-w-5xl mx-auto space-y-8">
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center">
         <div>
           <h1 className="text-3xl font-bold tracking-tight text-slate-900">Appointments</h1>
           <p className="text-slate-500">View and manage upcoming and past sessions</p>
         </div>
         <Dialog open={open} onOpenChange={setOpen}>
           <DialogTrigger asChild>
-            <Button className="bg-indigo-600 hover:bg-indigo-700 shadow-lg shadow-indigo-100">
+            <Button className="bg-indigo-600 hover:bg-indigo-700 shadow-lg shadow-indigo-100 rounded-xl">
               <Plus size={18} className="mr-2" /> New Appointment
             </Button>
           </DialogTrigger>
@@ -122,21 +122,37 @@ const AppointmentsPage = () => {
         <div className="space-y-10">
           {grouped.map(([month, apps]) => (
             <div key={month} className="space-y-4">
-              <div className="flex items-center gap-3 px-2">
-                <div className="w-8 h-8 rounded-lg bg-indigo-50 flex items-center justify-center text-indigo-600">
-                  <CalendarIcon size={18} />
+              {/* Enhanced Monthly Header */}
+              <div className="flex items-center gap-4 px-2">
+                <div className="w-10 h-10 rounded-xl bg-indigo-100 flex items-center justify-center text-indigo-600 flex-shrink-0">
+                  <CalendarIcon size={20} />
                 </div>
-                <h2 className="text-lg font-bold text-slate-900 uppercase tracking-tight">{month}</h2>
-                <div className="flex-1 h-[1px] bg-slate-100" />
+                <h2 className="text-xl font-extrabold text-slate-900 tracking-tight">{month}</h2>
+                <div className="flex-1 h-[2px] bg-slate-200 rounded-full" />
               </div>
+              
               <div className="grid gap-4">
                 {apps.map(app => {
                   const hasBolt = app.bolt_score !== null && app.bolt_score !== undefined;
                   const hasCoherence = app.coherence_score !== null && app.coherence_score !== undefined;
                   const hasCogs = app.sagittal_plane_notes || app.frontal_plane_notes || app.transverse_plane_notes;
+                  const hasFakuda = !!app.fakuda_notes;
+                  const hasRhombergs = !!app.sharpened_rhombergs_notes;
+                  const hasFrontalLobe = !!app.frontal_lobe_notes;
+                  const hasLuscher = !!app.luscher_color_1 && !!app.luscher_color_2;
+                  const hasSNSDownReg = !!app.harmonic_rocking_notes || !!app.t1_reset_notes;
+                  const hasAnyAssessment = hasBolt || hasCoherence || hasCogs || hasFakuda || hasRhombergs || hasFrontalLobe || hasLuscher || hasSNSDownReg;
                   
+                  const isCompleted = app.status === 'Completed';
+
                   return (
-                    <Card key={app.id} className="border-slate-200 hover:border-indigo-200 transition-all group overflow-hidden relative">
+                    <Card 
+                      key={app.id} 
+                      className={cn(
+                        "border-slate-200 transition-all group overflow-hidden relative rounded-2xl",
+                        isCompleted ? "bg-white hover:shadow-lg" : "bg-white hover:shadow-lg hover:border-indigo-300"
+                      )}
+                    >
                       <CardContent className="p-0">
                         <Link to={`/appointments/${app.id}`} className="block">
                           <div className="flex flex-col sm:flex-row sm:items-stretch">
@@ -147,8 +163,8 @@ const AppointmentsPage = () => {
                                     {(app as any).clients?.name}
                                     <ExternalLink size={14} className="opacity-0 group-hover:opacity-100 transition-opacity" />
                                   </div>
-                                  <div className="flex flex-wrap items-center gap-4 text-sm text-slate-500">
-                                    <span className="flex items-center gap-1.5 font-medium">
+                                  <div className="flex flex-wrap items-center gap-4 text-sm text-slate-50">
+                                    <span className="flex items-center gap-1.5 font-medium text-slate-600">
                                       <Clock size={14} className="text-indigo-500" />
                                       {format(app.date, "EEEE, d MMM • h:mm a")}
                                     </span>
@@ -157,10 +173,13 @@ const AppointmentsPage = () => {
                                     </Badge>
                                   </div>
                                 </div>
-                                <div className="flex items-center gap-2">
+                                <div className="flex items-center gap-2 flex-shrink-0">
                                   <Badge 
-                                    variant={app.status === 'Completed' ? 'default' : 'outline'} 
-                                    className={app.status === 'Completed' ? 'bg-emerald-500 hover:bg-emerald-600 border-none' : 'border-slate-200 text-slate-500'}
+                                    variant={isCompleted ? 'default' : 'outline'} 
+                                    className={cn(
+                                      "font-bold",
+                                      isCompleted ? 'bg-emerald-600 hover:bg-emerald-700 border-none text-white' : 'border-slate-300 text-slate-600 bg-slate-50'
+                                    )}
                                   >
                                     {app.status}
                                   </Badge>
@@ -193,25 +212,45 @@ const AppointmentsPage = () => {
                               )}
 
                               {/* Assessment Indicators */}
-                              {(hasBolt || hasCoherence || hasCogs) && (
+                              {hasAnyAssessment && (
                                 <div className="flex flex-wrap gap-2 pt-2 border-t border-slate-100">
-                                  <span className="text-xs font-bold text-slate-400 uppercase tracking-widest">Assessments:</span>
+                                  <span className="text-xs font-bold text-slate-400 uppercase tracking-widest flex items-center gap-1">
+                                    <TrendingUp size={12} /> ASSESSMENTS:
+                                  </span>
                                   {hasBolt && (
-                                    <Badge className="bg-indigo-100 text-indigo-700 hover:bg-indigo-200 border-none flex items-center gap-1">
+                                    <Badge className="bg-indigo-100 text-indigo-700 hover:bg-indigo-200 border-none flex items-center gap-1 text-xs">
                                       <FlaskConical size={12} />
                                       BOLT: {app.bolt_score}s
                                     </Badge>
                                   )}
                                   {hasCoherence && (
-                                    <Badge className="bg-rose-100 text-rose-700 hover:bg-rose-200 border-none flex items-center gap-1">
+                                    <Badge className="bg-rose-100 text-rose-700 hover:bg-rose-200 border-none flex items-center gap-1 text-xs">
                                       <Activity size={12} />
-                                      Coherence: {app.coherence_score?.toFixed(2)}
+                                      Coh: {app.coherence_score?.toFixed(2)}
                                     </Badge>
                                   )}
                                   {hasCogs && (
-                                    <Badge className="bg-purple-100 text-purple-700 hover:bg-purple-200 border-none flex items-center gap-1">
+                                    <Badge className="bg-purple-100 text-purple-700 hover:bg-purple-200 border-none flex items-center gap-1 text-xs">
                                       <Move size={12} />
-                                      Cogs Assessed
+                                      Cogs
+                                    </Badge>
+                                  )}
+                                  {(hasFakuda || hasRhombergs || hasFrontalLobe) && (
+                                    <Badge className="bg-green-100 text-green-700 hover:bg-green-200 border-none flex items-center gap-1 text-xs">
+                                      <Brain size={12} />
+                                      Neuro
+                                    </Badge>
+                                  )}
+                                  {hasLuscher && (
+                                    <Badge className="bg-violet-100 text-violet-700 hover:bg-violet-200 border-none flex items-center gap-1 text-xs">
+                                      <Palette size={12} />
+                                      Luscher
+                                    </Badge>
+                                  )}
+                                  {hasSNSDownReg && (
+                                    <Badge className="bg-red-100 text-red-700 hover:bg-red-200 border-none flex items-center gap-1 text-xs">
+                                      <Heart size={12} />
+                                      SNS Reg
                                     </Badge>
                                   )}
                                 </div>
@@ -235,7 +274,7 @@ const AppointmentsPage = () => {
               <p className="text-slate-500 mt-1 max-w-xs mx-auto">Once you schedule sessions with your clients, they will appear here grouped by month.</p>
               <Button 
                 variant="outline" 
-                className="mt-6 border-slate-200 hover:bg-white"
+                className="mt-6 border-slate-200 hover:bg-white rounded-xl"
                 onClick={() => setOpen(true)}
               >
                 Schedule First Session

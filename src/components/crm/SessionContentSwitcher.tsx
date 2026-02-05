@@ -18,6 +18,7 @@ import LuscherColourAssessment from './LuscherColourAssessment';
 import MuscleTestingTab from './MuscleTestingTab';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import EmotionAssessment from './EmotionAssessment';
+import DiaphragmReset from './DiaphragmReset';
 
 // Define the views
 type ActiveView = 'home' | 'kinesiology' | 'muscles';
@@ -159,6 +160,11 @@ const SessionContentSwitcher = ({ appointment, onUpdate, saveField }: SessionCon
           <T1SympatheticReset
             appointmentId={appointmentId}
             initialNotes={appointment.t1_reset_notes}
+            onSaveField={saveField}
+          />
+          <DiaphragmReset
+            appointmentId={appointmentId}
+            initialNotes={appointment.diaphragm_reset_notes}
             onSaveField={saveField}
           />
           <EditableField

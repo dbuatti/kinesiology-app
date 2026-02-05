@@ -7,7 +7,7 @@ import { Badge } from "@/components/ui/badge";
 import { Switch } from "@/components/ui/switch";
 import { 
   Target, Plus, TrendingUp, CheckCircle2, Loader2, 
-  FlaskConical, Brain, Activity, Zap, Edit3, Trash2, PowerOff, Footprints, Scale, Hand, Dumbbell, Heart, Move
+  FlaskConical, Brain, Activity, Zap, Edit3, Trash2, PowerOff, Footprints, Scale, Hand, Dumbbell, Heart, Move, Wind
 } from "lucide-react";
 import {
   Dialog,
@@ -46,6 +46,7 @@ const ICON_OPTIONS = [
   { value: 'hand', label: 'Hand', icon: Hand },
   { value: 'heart', label: 'Heart', icon: Heart },
   { value: 'move', label: 'Move', icon: Move },
+  { value: 'wind', label: 'Wind', icon: Wind },
 ];
 
 const getIconComponent = (iconName: string) => {
@@ -351,7 +352,8 @@ const ProceduresPage = () => {
                 procedure.name.includes("Range of Motion") || 
                 procedure.name.includes("Neurological Global") || 
                 procedure.name.includes("Sympathetic Down Regulation") ||
-                procedure.name.includes("T1 Sympathetic Chain Reset") // Check for new procedure name
+                procedure.name.includes("T1 Sympathetic Chain Reset") ||
+                procedure.name.includes("Diaphragm (Phrenic Nerve)")
             ) {
                 if (procedure.current_count > 0) {
                     specificStatus = "Assessed";

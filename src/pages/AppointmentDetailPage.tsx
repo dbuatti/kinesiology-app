@@ -54,6 +54,7 @@ export interface AppointmentWithClient extends Appointment {
   luscher_color_2?: string | null;
   harmonic_rocking_notes?: string | null;
   t1_reset_notes?: string | null;
+  diaphragm_reset_notes?: string | null;
 }
 
 const AppointmentDetailPage = () => {
@@ -190,6 +191,7 @@ const AppointmentDetailPage = () => {
   const hasNeuroNotes = appointment.fakuda_notes || appointment.sharpened_rhombergs_notes || appointment.frontal_lobe_notes;
   const hasHarmonicRockingNotes = !!appointment.harmonic_rocking_notes;
   const hasT1ResetNotes = !!appointment.t1_reset_notes;
+  const hasDiaphragmResetNotes = !!appointment.diaphragm_reset_notes;
   
   const getStatusColorClass = (status: string) => {
     switch (status) {
@@ -290,10 +292,10 @@ const AppointmentDetailPage = () => {
                       Luscher Assessed
                     </Badge>
                   )}
-                  {(hasHarmonicRockingNotes || hasT1ResetNotes) && (
+                  {(hasHarmonicRockingNotes || hasT1ResetNotes || hasDiaphragmResetNotes) && (
                     <Badge className="px-3 py-1 rounded-full text-xs font-bold flex items-center gap-1 bg-red-600 text-white">
                       <Heart size={12} />
-                      NS Down Reg
+                      SNS Down Reg
                     </Badge>
                   )}
                 </div>

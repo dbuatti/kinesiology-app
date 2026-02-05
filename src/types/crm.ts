@@ -58,6 +58,7 @@ export interface Appointment {
   // Sympathetic Down Regulation fields
   harmonic_rocking_notes?: string | null;
   t1_reset_notes?: string | null;
+  diaphragm_reset_notes?: string | null;
 }
 
 export interface Client {

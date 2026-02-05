@@ -11,7 +11,7 @@ import { Label } from "@/components/ui/label";
 import { 
   ArrowLeft, Calendar, Clock, Target, Zap, 
   ExternalLink, Loader2, Trash2, User, Droplets, Footprints, Hand,
-  Activity, Move, Heart, Scale, Brain, FlaskConical, ListChecks, Palette, CheckCircle2, TrendingUp
+  Activity, Move, Heart, Scale, Brain, FlaskConical, ListChecks, Palette, CheckCircle2, TrendingUp, Home, Dumbbell
 } from "lucide-react";
 import { format, isToday } from "date-fns";
 import { Appointment } from "@/types/crm";
@@ -27,9 +27,9 @@ import NeurologicalAssessments from "@/components/crm/NeurologicalAssessments";
 import AppLayout from "@/components/crm/AppLayout";
 import MuscleTestingTab from "@/components/crm/MuscleTestingTab";
 import LuscherColourAssessment from "@/components/crm/LuscherColourAssessment";
-import SessionHeaderActions from "@/components/crm/SessionHeaderActions";
 import SympatheticDownRegulation from "@/components/crm/SympatheticDownRegulation";
-import T1SympatheticReset from "@/components/crm/T1SympatheticReset"; // Import new component
+import T1SympatheticReset from "@/components/crm/T1SympatheticReset";
+import KinesiologyToolsTab from "@/components/crm/KinesiologyToolsTab";
 import {
   Select,
   SelectContent,
@@ -57,7 +57,7 @@ interface AppointmentWithClient extends Appointment {
   luscher_color_1?: string | null;
   luscher_color_2?: string | null;
   harmonic_rocking_notes?: string | null;
-  t1_reset_notes?: string | null; // Added new field
+  t1_reset_notes?: string | null;
 }
 
 const AppointmentDetailPage = () => {
@@ -124,7 +124,7 @@ const AppointmentDetailPage = () => {
             return { 
               ...prev, 
               ...updatedData,
-              t1_reset_notes: payload.new.t1_reset_notes, // Handle new field
+              t1_reset_notes: payload.new.t1_reset_notes,
             };
           });
         }
@@ -195,7 +195,7 @@ const AppointmentDetailPage = () => {
   const isHydrated = appointment.hydrated === true;
   const hasNeuroNotes = appointment.fakuda_notes || appointment.sharpened_rhombergs_notes || appointment.frontal_lobe_notes;
   const hasHarmonicRockingNotes = !!appointment.harmonic_rocking_notes;
-  const hasT1ResetNotes = !!appointment.t1_reset_notes; // Check for new notes
+  const hasT1ResetNotes = !!appointment.t1_reset_notes;
   
   const getStatusColorClass = (status: string) => {
     switch (status) {
@@ -220,13 +220,19 @@ const AppointmentDetailPage = () => {
       
       <AppLayout hasFixedHeader={isFixedHeaderActive}>
         <div className="flex items-center justify-between gap-4">
-          <Link to="/appointments">
-            <Button variant="ghost" size="sm">
-              <ArrowLeft size={18} className="mr-2" /> Back to Schedule
-            </Button>
-          </Link>
+          <div className="flex items-center gap-2">
+            <Link to="/">
+              <Button variant="ghost" size="icon" className="h-10 w-10 rounded-xl text-slate-600 hover:bg-slate-100">
+                <Home size={20} />
+              </Button>
+            </Link>
+            <Link to="/appointments">
+              <Button variant="ghost" size="sm">
+                <ArrowLeft size={18} className="mr-2" /> Back to Schedule
+              </Button>
+            </Link>
+          </div>
           <div className="flex gap-2">
-            <SessionHeaderActions appointmentId={id!} />
             <Button 
               variant="destructive" 
               size="sm" 
@@ -289,7 +295,7 @@ const AppointmentDetailPage = () => {
                       Luscher Assessed
                     </Badge>
                   )}
-                  {(hasHarmonicRockingNotes || hasT1ResetNotes) && ( // Check for either down-regulation note
+                  {(hasHarmonicRockingNotes || hasT1ResetNotes) && (
                     <Badge className="px-3 py-1 rounded-full text-xs font-bold flex items-center gap-1 bg-red-600 text-white">
                       <Heart size={12} />
                       NS Down Reg
@@ -443,21 +449,27 @@ const AppointmentDetailPage = () => {
 
             {/* Tabs for Assessments and Notes */}
             <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-              <TabsList className="grid w-full grid-cols-5 h-12 bg-slate-100 p-1 rounded-xl">
+              <TabsList className="grid w-full grid-cols-7 h-12 bg-slate-100 p-1 rounded-xl">
                 <TabsTrigger value="baseline" className="flex items-center gap-2 data-[state=active]:bg-indigo-600 data-[state=active]:text-white data-[state=active]:shadow-md rounded-lg h-10 text-xs">
-                  <FlaskConical size={16} /> 1 - BASELINE ASSESSMENTS
+                  <FlaskConical size={16} /> BASELINE
                 </TabsTrigger>
                 <TabsTrigger value="sympathetic" className="flex items-center gap-2 data-[state=active]:bg-indigo-600 data-[state=active]:text-white data-[state=active]:shadow-md rounded-lg h-10 text-xs">
-                  <Heart size={16} /> 2 - SYMPATHETIC DOWN-REGULATION
+                  <Heart size={16} /> SNS DOWN-REG
+                </TabsTrigger>
+                <TabsTrigger value="kinesiology" className="flex items-center gap-2 data-[state=active]:bg-indigo-600 data-[state=active]:text-white data-[state=active]:shadow-md rounded-lg h-10 text-xs">
+                  <Palette size={16} /> KINESIOLOGY TOOLS
+                </TabsTrigger>
+                <TabsTrigger value="muscle-testing" className="flex items-center gap-2 data-[state=active]:bg-indigo-600 data-[state=active]:text-white data-[state=active]:shadow-md rounded-lg h-10 text-xs">
+                  <Dumbbell size={16} /> MUSCLE TESTING
                 </TabsTrigger>
                 <TabsTrigger value="pathway" className="flex items-center gap-2 data-[state=active]:bg-indigo-600 data-[state=active]:text-white data-[state=active]:shadow-md rounded-lg h-10 text-xs">
-                  <TrendingUp size={16} /> 3 - PATHWAY ASSESSMENT(S)
+                  <TrendingUp size={16} /> PATHWAY
                 </TabsTrigger>
                 <TabsTrigger value="calibration" className="flex items-center gap-2 data-[state=active]:bg-indigo-600 data-[state=active]:text-white data-[state=active]:shadow-md rounded-lg h-10 text-xs">
-                  <CheckCircle2 size={16} /> 4 - CALIBRATION/ CORRECTION
+                  <CheckCircle2 size={16} /> CORRECTION
                 </TabsTrigger>
                 <TabsTrigger value="reassessment" className="flex items-center gap-2 data-[state=active]:bg-indigo-600 data-[state=active]:text-white data-[state=active]:shadow-md rounded-lg h-10 text-xs">
-                  <Zap size={16} /> 5 - RE-ASSESSMENT
+                  <Zap size={16} /> RE-ASSESS
                 </TabsTrigger>
               </TabsList>
 
@@ -516,6 +528,36 @@ const AppointmentDetailPage = () => {
                   placeholder="Document other techniques used (e.g., ESR, Nociceptive Threat Assessment, Vagus Nerve stimulation)..."
                   onSave={saveField}
                 />
+              </TabsContent>
+
+              <TabsContent value="kinesiology" className="mt-6 space-y-6">
+                <KinesiologyToolsTab
+                  appointmentId={appointment.id}
+                  emotion_mode={appointment.emotion_mode}
+                  emotion_primary_selection={appointment.emotion_primary_selection}
+                  emotion_secondary_selection={appointment.emotion_secondary_selection}
+                  emotion_notes={appointment.emotion_notes}
+                  luscher_color_1={appointment.luscher_color_1}
+                  luscher_color_2={appointment.luscher_color_2}
+                  onSaveField={saveField}
+                  onUpdate={fetchAppointmentData}
+                />
+              </TabsContent>
+
+              <TabsContent value="muscle-testing" className="mt-6 space-y-6">
+                <Card className="border-none shadow-lg rounded-2xl bg-white">
+                  <CardHeader className="bg-slate-50/50 border-b border-slate-100 rounded-t-2xl">
+                    <CardTitle className="text-2xl font-bold flex items-center gap-3 text-slate-900">
+                      <Dumbbell size={24} className="text-indigo-600" /> Muscle Testing Log
+                    </CardTitle>
+                    <CardDescription>
+                      Log the status of all muscles tested during this session.
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent className="p-6">
+                    <MuscleTestingTab appointmentId={appointment.id} />
+                  </CardContent>
+                </Card>
               </TabsContent>
 
               <TabsContent value="pathway" className="mt-6 space-y-6">

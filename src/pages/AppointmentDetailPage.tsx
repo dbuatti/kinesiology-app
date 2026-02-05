@@ -11,7 +11,7 @@ import { Label } from "@/components/ui/label";
 import { 
   ArrowLeft, Calendar, Clock, Target, Zap, 
   ExternalLink, Loader2, Trash2, User, Droplets, Footprints, Hand,
-  Activity, Move, Heart, Scale, Brain, FlaskConical, ListChecks, Palette
+  Activity, Move, Heart, Scale, Brain, FlaskConical, ListChecks, Palette, CheckCircle2, TrendingUp
 } from "lucide-react";
 import { format, isToday } from "date-fns";
 import { Appointment } from "@/types/crm";
@@ -27,6 +27,7 @@ import NeurologicalAssessments from "@/components/crm/NeurologicalAssessments";
 import AppLayout from "@/components/crm/AppLayout";
 import MuscleTestingTab from "@/components/crm/MuscleTestingTab";
 import LuscherColourAssessment from "@/components/crm/LuscherColourAssessment";
+import SessionHeaderActions from "@/components/crm/SessionHeaderActions";
 import {
   Select,
   SelectContent,
@@ -60,7 +61,7 @@ const AppointmentDetailPage = () => {
   const navigate = useNavigate();
   const [appointment, setAppointment] = useState<AppointmentWithClient | null>(null);
   const [loading, setLoading] = useState(true);
-  const [activeTab, setActiveTab] = useState<string>("assessments"); // State to manage active tab
+  const [activeTab, setActiveTab] = useState<string>("baseline"); // Default to the first new tab
 
   const fetchAppointmentData = async () => {
     if (!id) return;
@@ -215,6 +216,7 @@ const AppointmentDetailPage = () => {
             </Button>
           </Link>
           <div className="flex gap-2">
+            <SessionHeaderActions appointmentId={id!} />
             <Button 
               variant="destructive" 
               size="sm" 
@@ -379,22 +381,25 @@ const AppointmentDetailPage = () => {
 
             {/* Tabs for Assessments and Notes */}
             <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-              <TabsList className="grid w-full grid-cols-2 md:grid-cols-3 lg:grid-cols-4 h-12 bg-slate-100 p-1 rounded-xl">
-                <TabsTrigger value="assessments" className="flex items-center gap-2 data-[state=active]:bg-indigo-600 data-[state=active]:text-white data-[state=active]:shadow-md rounded-lg h-10">
-                  <FlaskConical size={18} /> Assessments
+              <TabsList className="grid w-full grid-cols-5 h-12 bg-slate-100 p-1 rounded-xl">
+                <TabsTrigger value="baseline" className="flex items-center gap-2 data-[state=active]:bg-indigo-600 data-[state=active]:text-white data-[state=active]:shadow-md rounded-lg h-10 text-xs">
+                  <FlaskConical size={16} /> 1 - BASELINE ASSESSMENTS
                 </TabsTrigger>
-                <TabsTrigger value="muscle-tests" className="flex items-center gap-2 data-[state=active]:bg-indigo-600 data-[state=active]:text-white data-[state=active]:shadow-md rounded-lg h-10">
-                  <ListChecks size={18} /> Muscle Tests
+                <TabsTrigger value="sympathetic" className="flex items-center gap-2 data-[state=active]:bg-indigo-600 data-[state=active]:text-white data-[state=active]:shadow-md rounded-lg h-10 text-xs">
+                  <Heart size={16} /> 2 - SYMPATHETIC DOWN-REGULATION
                 </TabsTrigger>
-                <TabsTrigger value="emotion" className="flex items-center gap-2 data-[state=active]:bg-indigo-600 data-[state=active]:text-white data-[state=active]:shadow-md rounded-lg h-10">
-                  <Heart size={18} /> Energetic/Emotion
+                <TabsTrigger value="pathway" className="flex items-center gap-2 data-[state=active]:bg-indigo-600 data-[state=active]:text-white data-[state=active]:shadow-md rounded-lg h-10 text-xs">
+                  <TrendingUp size={16} /> 3 - PATHWAY ASSESSMENT(S)
                 </TabsTrigger>
-                <TabsTrigger value="notes" className="flex items-center gap-2 data-[state=active]:bg-indigo-600 data-[state=active]:text-white data-[state=active]:shadow-md rounded-lg h-10">
-                  <Zap size={18} /> Notes
+                <TabsTrigger value="calibration" className="flex items-center gap-2 data-[state=active]:bg-indigo-600 data-[state=active]:text-white data-[state=active]:shadow-md rounded-lg h-10 text-xs">
+                  <CheckCircle2 size={16} /> 4 - CALIBRATION/ CORRECTION
+                </TabsTrigger>
+                <TabsTrigger value="reassessment" className="flex items-center gap-2 data-[state=active]:bg-indigo-600 data-[state=active]:text-white data-[state=active]:shadow-md rounded-lg h-10 text-xs">
+                  <Zap size={16} /> 5 - RE-ASSESSMENT
                 </TabsTrigger>
               </TabsList>
 
-              <TabsContent value="assessments" className="mt-6 space-y-6">
+              <TabsContent value="baseline" className="mt-6 space-y-6">
                 <BoltTestSection
                   appointmentId={appointment.id}
                   initialBoltScore={appointment.bolt_score}
@@ -426,123 +431,115 @@ const AppointmentDetailPage = () => {
                 />
               </TabsContent>
 
-              <TabsContent value="muscle-tests" className="mt-6">
-                <MuscleTestingTab
-                  appointmentId={appointment.id}
-                  // Removed onUpdate prop here
+              <TabsContent value="sympathetic" className="mt-6 space-y-6">
+                <Card className="border-2 border-red-200 shadow-none rounded-2xl bg-red-50/50 p-6">
+                  <h3 className="text-xl font-bold text-red-900 mb-2">Sympathetic Down-Regulation</h3>
+                  <p className="text-red-800">Content for Sympathetic Down-Regulation goes here. This tab focuses on techniques to calm the nervous system.</p>
+                </Card>
+                <EditableField
+                  key={`notes-sympathetic-${appointment.id}`}
+                  field="additional_notes" // Reusing a generic field for now
+                  label="Down-Regulation Notes"
+                  value={appointment.additional_notes}
+                  multiline
+                  placeholder="Document techniques used (e.g., ESR, Nociceptive Threat Assessment, Vagus Nerve stimulation)..."
+                  onSave={saveField}
                 />
               </TabsContent>
 
-              <TabsContent value="emotion" className="mt-6 space-y-6">
-                <LuscherColourAssessment
-                  appointmentId={appointment.id}
-                  initialColor1={appointment.luscher_color_1}
-                  initialColor2={appointment.luscher_color_2}
-                  onSaveColors={(c1, c2) => saveField('luscher_color_1', c1).then(() => saveField('luscher_color_2', c2))}
-                />
-                <EmotionAssessment
-                  appointmentId={appointment.id}
-                  initialMode={appointment.emotion_mode}
-                  initialPrimary={appointment.emotion_primary_selection}
-                  initialSecondary={appointment.emotion_secondary_selection}
-                  initialNotes={appointment.emotion_notes}
-                  onSaveField={saveField}
-                  onUpdate={fetchAppointmentData}
+              <TabsContent value="pathway" className="mt-6 space-y-6">
+                <Card className="border-2 border-amber-200 shadow-none rounded-2xl bg-amber-50/50 p-6">
+                  <h3 className="text-xl font-bold text-amber-900 mb-2">Pathway Assessment(s)</h3>
+                  <p className="text-amber-800">Content for Pathway Assessment(s) goes here. This tab is for detailed pathway testing and analysis.</p>
+                </Card>
+                <EditableField
+                  key={`notes-pathway-${appointment.id}`}
+                  field="priority_pattern" // Reusing a generic field for now
+                  label="Pathway Assessment Notes"
+                  value={appointment.priority_pattern}
+                  multiline
+                  placeholder="Document specific pathways tested and findings..."
+                  onSave={saveField}
                 />
               </TabsContent>
 
-              <TabsContent value="notes" className="mt-6 space-y-6">
-                <Card className="border-slate-200 shadow-none rounded-2xl bg-slate-50">
-                  <CardHeader className="pb-2">
-                    <CardTitle className="text-sm flex items-center gap-2 text-slate-700">
-                      <Target size={16} className="text-indigo-500" /> Session Focus
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent className="space-y-4 text-sm">
-                    <EditableField
-                      key={`session_north_star-${appointment.id}`}
-                      field="session_north_star"
-                      label="Session North Star"
-                      value={appointment.session_north_star}
-                      multiline
-                      placeholder="What's the guiding focus for this session?"
-                      onSave={saveField}
-                    />
-                    <EditableField
-                      key={`priority_pattern-${appointment.id}`}
-                      field="priority_pattern"
-                      label="Priority Pattern"
-                      value={appointment.priority_pattern}
-                      multiline
-                      placeholder="What patterns are we addressing?"
-                      onSave={saveField}
-                    />
-                    <EditableField
-                      key={`modes_balances-${appointment.id}`}
-                      field="modes_balances"
-                      label="Modes & Balances"
-                      value={appointment.modes_balances}
-                      multiline
-                      placeholder="Which modes and balances were used?"
-                      onSave={saveField}
-                    />
-                  </CardContent>
+              <TabsContent value="calibration" className="mt-6 space-y-6">
+                <Card className="border-2 border-emerald-200 shadow-none rounded-2xl bg-emerald-50/50 p-6">
+                  <h3 className="text-xl font-bold text-emerald-900 mb-2">Calibration/Correction</h3>
+                  <p className="text-emerald-800">Content for Calibration/Correction goes here. This tab is for logging primary corrections and balancing techniques.</p>
                 </Card>
+                <EditableField
+                  key={`notes-calibration-${appointment.id}`}
+                  field="modes_balances" // Reusing a generic field for now
+                  label="Calibration & Correction Notes"
+                  value={appointment.modes_balances}
+                  multiline
+                  placeholder="Document specific corrections, modes, and balances used..."
+                  onSave={saveField}
+                />
+              </TabsContent>
 
-                <Card className="border-slate-200 shadow-none rounded-2xl bg-slate-50">
-                  <CardHeader className="pb-2">
-                    <CardTitle className="text-sm flex items-center gap-2 text-slate-700">
-                      <Zap size={16} className="text-indigo-500" /> Acupoints & Notes
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent className="space-y-4 text-sm">
-                    <EditableField
-                      key={`acupoints-${appointment.id}`}
-                      field="acupoints"
-                      label="Acupoints"
-                      value={appointment.acupoints}
-                      placeholder="Which acupoints were used?"
-                      onSave={saveField}
-                    />
-                    <EditableField
-                      key={`notes-${appointment.id}`}
-                      field="notes"
-                      label="Session Notes"
-                      value={appointment.notes}
-                      multiline
-                      placeholder="Session observations and notes..."
-                      onSave={saveField}
-                    />
-                    <EditableField
-                      key={`additional_notes-${appointment.id}`}
-                      field="additional_notes"
-                      label="Additional Notes"
-                      value={appointment.additional_notes}
-                      multiline
-                      placeholder="Any additional observations..."
-                      onSave={saveField}
-                    />
-                    <EditableField
-                      key={`journal-${appointment.id}`}
-                      field="journal"
-                      label="Journal Entry"
-                      value={appointment.journal}
-                      multiline
-                      className="bg-amber-50/50 p-3 rounded-xl border border-amber-100"
-                      placeholder="Personal reflections and insights..."
-                      onSave={saveField}
-                    />
-                    {appointment.notion_link && (
-                      <Button variant="outline" size="sm" className="w-full text-xs rounded-xl" asChild>
-                        <a href={appointment.notion_link} target="_blank" rel="noopener noreferrer">
-                          <ExternalLink size={14} className="mr-2" /> View Notion Link
-                        </a>
-                      </Button>
-                    )}
-                  </CardContent>
+              <TabsContent value="reassessment" className="mt-6 space-y-6">
+                <Card className="border-2 border-indigo-200 shadow-none rounded-2xl bg-indigo-50/50 p-6">
+                  <h3 className="text-xl font-bold text-indigo-900 mb-2">Re-Assessment & Home Reinforcement</h3>
+                  <p className="text-indigo-800">Content for Re-Assessment goes here. This tab is for final checks and prescribing home reinforcement.</p>
                 </Card>
+                <EditableField
+                  key={`notes-reassessment-${appointment.id}`}
+                  field="session_north_star" // Reusing a generic field for now
+                  label="Re-Assessment & Home Reinforcement Notes"
+                  value={appointment.session_north_star}
+                  multiline
+                  placeholder="Document re-test results and client homework/reinforcement exercises..."
+                  onSave={saveField}
+                />
               </TabsContent>
             </Tabs>
+            
+            {/* Old Notes Section (Moved to the bottom of the page for general notes) */}
+            <Card className="border-slate-200 shadow-none rounded-2xl bg-slate-50">
+              <CardHeader className="pb-2">
+                <CardTitle className="text-sm flex items-center gap-2 text-slate-700">
+                  <Zap size={16} className="text-indigo-500" /> General Session Notes
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4 text-sm">
+                <EditableField
+                  key={`acupoints-${appointment.id}`}
+                  field="acupoints"
+                  label="Acupoints"
+                  value={appointment.acupoints}
+                  placeholder="Which acupoints were used?"
+                  onSave={saveField}
+                />
+                <EditableField
+                  key={`notes-${appointment.id}`}
+                  field="notes"
+                  label="Session Notes (General)"
+                  value={appointment.notes}
+                  multiline
+                  placeholder="Session observations and notes..."
+                  onSave={saveField}
+                />
+                <EditableField
+                  key={`journal-${appointment.id}`}
+                  field="journal"
+                  label="Journal Entry (Practitioner Reflection)"
+                  value={appointment.journal}
+                  multiline
+                  className="bg-amber-50/50 p-3 rounded-xl border border-amber-100"
+                  placeholder="Personal reflections and insights..."
+                  onSave={saveField}
+                />
+                {appointment.notion_link && (
+                  <Button variant="outline" size="sm" className="w-full text-xs rounded-xl" asChild>
+                    <a href={appointment.notion_link} target="_blank" rel="noopener noreferrer">
+                      <ExternalLink size={14} className="mr-2" /> View Notion Link
+                    </a>
+                  </Button>
+                )}
+              </CardContent>
+            </Card>
           </CardContent>
         </Card>
       </AppLayout>

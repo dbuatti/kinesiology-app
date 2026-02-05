@@ -379,6 +379,52 @@ const AppointmentDetailPage = () => {
               </CardContent>
             </Card>
 
+            {/* General Session Notes (Moved above tabs) */}
+            <Card className="border-slate-200 shadow-none rounded-2xl bg-slate-50">
+              <CardHeader className="pb-2">
+                <CardTitle className="text-sm flex items-center gap-2 text-slate-700">
+                  <Zap size={16} className="text-indigo-500" /> General Session Notes
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4 text-sm">
+                <EditableField
+                  key={`acupoints-${appointment.id}`}
+                  field="acupoints"
+                  label="Acupoints"
+                  value={appointment.acupoints}
+                  placeholder="Which acupoints were used?"
+                  onSave={saveField}
+                />
+                <EditableField
+                  key={`notes-${appointment.id}`}
+                  field="notes"
+                  label="Session Notes (General)"
+                  value={appointment.notes}
+                  multiline
+                  placeholder="Session observations and notes..."
+                  onSave={saveField}
+                />
+                <EditableField
+                  key={`journal-${appointment.id}`}
+                  field="journal"
+                  label="Journal Entry (Practitioner Reflection)"
+                  value={appointment.journal}
+                  multiline
+                  className="bg-amber-50/50 p-3 rounded-xl border border-amber-100"
+                  placeholder="Personal reflections and insights..."
+                  onSave={saveField}
+                />
+                {appointment.notion_link && (
+                  <Button variant="outline" size="sm" className="w-full text-xs rounded-xl" asChild>
+                    <a href={appointment.notion_link} target="_blank" rel="noopener noreferrer">
+                      <ExternalLink size={14} className="mr-2" /> View Notion Link
+                    </a>
+                  </Button>
+                )}
+              </CardContent>
+            </Card>
+            {/* End General Session Notes */}
+
             {/* Tabs for Assessments and Notes */}
             <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
               <TabsList className="grid w-full grid-cols-5 h-12 bg-slate-100 p-1 rounded-xl">
@@ -483,7 +529,7 @@ const AppointmentDetailPage = () => {
                 <Card className="border-2 border-indigo-200 shadow-none rounded-2xl bg-indigo-50/50 p-6">
                   <h3 className="text-xl font-bold text-indigo-900 mb-2">Re-Assessment & Home Reinforcement</h3>
                   <p className="text-indigo-800">Content for Re-Assessment goes here. This tab is for final checks and prescribing home reinforcement.</p>
-                </Card>
+                </p>
                 <EditableField
                   key={`notes-reassessment-${appointment.id}`}
                   field="session_north_star" // Reusing a generic field for now
@@ -495,51 +541,6 @@ const AppointmentDetailPage = () => {
                 />
               </TabsContent>
             </Tabs>
-            
-            {/* Old Notes Section (Moved to the bottom of the page for general notes) */}
-            <Card className="border-slate-200 shadow-none rounded-2xl bg-slate-50">
-              <CardHeader className="pb-2">
-                <CardTitle className="text-sm flex items-center gap-2 text-slate-700">
-                  <Zap size={16} className="text-indigo-500" /> General Session Notes
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4 text-sm">
-                <EditableField
-                  key={`acupoints-${appointment.id}`}
-                  field="acupoints"
-                  label="Acupoints"
-                  value={appointment.acupoints}
-                  placeholder="Which acupoints were used?"
-                  onSave={saveField}
-                />
-                <EditableField
-                  key={`notes-${appointment.id}`}
-                  field="notes"
-                  label="Session Notes (General)"
-                  value={appointment.notes}
-                  multiline
-                  placeholder="Session observations and notes..."
-                  onSave={saveField}
-                />
-                <EditableField
-                  key={`journal-${appointment.id}`}
-                  field="journal"
-                  label="Journal Entry (Practitioner Reflection)"
-                  value={appointment.journal}
-                  multiline
-                  className="bg-amber-50/50 p-3 rounded-xl border border-amber-100"
-                  placeholder="Personal reflections and insights..."
-                  onSave={saveField}
-                />
-                {appointment.notion_link && (
-                  <Button variant="outline" size="sm" className="w-full text-xs rounded-xl" asChild>
-                    <a href={appointment.notion_link} target="_blank" rel="noopener noreferrer">
-                      <ExternalLink size={14} className="mr-2" /> View Notion Link
-                    </a>
-                  </Button>
-                )}
-              </CardContent>
-            </Card>
           </CardContent>
         </Card>
       </AppLayout>

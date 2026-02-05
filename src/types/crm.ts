@@ -55,8 +55,9 @@ export interface Appointment {
   // Luscher Colour Assessment fields
   luscher_color_1?: string | null;
   luscher_color_2?: string | null;
-  // Sympathetic Down Regulation field
+  // Sympathetic Down Regulation fields
   harmonic_rocking_notes?: string | null;
+  t1_reset_notes?: string | null;
 }
 
 export interface Client {

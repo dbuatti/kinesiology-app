@@ -7,7 +7,7 @@ import { Badge } from "@/components/ui/badge";
 import { Switch } from "@/components/ui/switch";
 import { 
   Target, Plus, TrendingUp, CheckCircle2, Loader2, 
-  FlaskConical, Brain, Activity, Zap, Edit3, Trash2, PowerOff, Footprints, Scale, Hand, Dumbbell, Heart
+  FlaskConical, Brain, Activity, Zap, Edit3, Trash2, PowerOff, Footprints, Scale, Hand, Dumbbell, Heart, Move
 } from "lucide-react";
 import {
   Dialog,
@@ -44,7 +44,8 @@ const ICON_OPTIONS = [
   { value: 'footprints', label: 'Footprints', icon: Footprints },
   { value: 'scale', label: 'Scale', icon: Scale },
   { value: 'hand', label: 'Hand', icon: Hand },
-  { value: 'heart', label: 'Heart', icon: Heart }, // Added Heart icon
+  { value: 'heart', label: 'Heart', icon: Heart },
+  { value: 'move', label: 'Move', icon: Move },
 ];
 
 const getIconComponent = (iconName: string) => {
@@ -346,7 +347,12 @@ const ProceduresPage = () => {
                 const isCoherent = Math.abs(score - Math.round(score)) < 0.01;
                 statusColor = isCoherent ? "text-emerald-600" : "text-amber-600";
               }
-            } else if (procedure.name.includes("Range of Motion") || procedure.name.includes("Neurological Global") || procedure.name.includes("Sympathetic Down Regulation")) {
+            } else if (
+                procedure.name.includes("Range of Motion") || 
+                procedure.name.includes("Neurological Global") || 
+                procedure.name.includes("Sympathetic Down Regulation") ||
+                procedure.name.includes("T1 Sympathetic Chain Reset") // Check for new procedure name
+            ) {
                 if (procedure.current_count > 0) {
                     specificStatus = "Assessed";
                     statusColor = "text-indigo-600";

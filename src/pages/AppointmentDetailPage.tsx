@@ -28,7 +28,8 @@ import AppLayout from "@/components/crm/AppLayout";
 import MuscleTestingTab from "@/components/crm/MuscleTestingTab";
 import LuscherColourAssessment from "@/components/crm/LuscherColourAssessment";
 import SessionHeaderActions from "@/components/crm/SessionHeaderActions";
-import SympatheticDownRegulation from "@/components/crm/SympatheticDownRegulation"; // Import new component
+import SympatheticDownRegulation from "@/components/crm/SympatheticDownRegulation";
+import T1SympatheticReset from "@/components/crm/T1SympatheticReset"; // Import new component
 import {
   Select,
   SelectContent,
@@ -55,7 +56,8 @@ interface AppointmentWithClient extends Appointment {
   frontal_lobe_notes?: string | null;
   luscher_color_1?: string | null;
   luscher_color_2?: string | null;
-  harmonic_rocking_notes?: string | null; // Added new field
+  harmonic_rocking_notes?: string | null;
+  t1_reset_notes?: string | null; // Added new field
 }
 
 const AppointmentDetailPage = () => {
@@ -64,7 +66,7 @@ const AppointmentDetailPage = () => {
   const [appointment, setAppointment] = useState<AppointmentWithClient | null>(null);
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState<string>("baseline");
-  const [isFixedHeaderActive, setIsFixedHeaderActive] = useState(false); // New state
+  const [isFixedHeaderActive, setIsFixedHeaderActive] = useState(false);
 
   const fetchAppointmentData = async () => {
     if (!id) return;
@@ -119,7 +121,11 @@ const AppointmentDetailPage = () => {
             if (updatedData.date && typeof updatedData.date === 'string') {
               updatedData.date = new Date(updatedData.date);
             }
-            return { ...prev, ...updatedData };
+            return { 
+              ...prev, 
+              ...updatedData,
+              t1_reset_notes: payload.new.t1_reset_notes, // Handle new field
+            };
           });
         }
       )
@@ -189,6 +195,7 @@ const AppointmentDetailPage = () => {
   const isHydrated = appointment.hydrated === true;
   const hasNeuroNotes = appointment.fakuda_notes || appointment.sharpened_rhombergs_notes || appointment.frontal_lobe_notes;
   const hasHarmonicRockingNotes = !!appointment.harmonic_rocking_notes;
+  const hasT1ResetNotes = !!appointment.t1_reset_notes; // Check for new notes
   
   const getStatusColorClass = (status: string) => {
     switch (status) {
@@ -208,7 +215,7 @@ const AppointmentDetailPage = () => {
       <SessionTimer 
         appointmentDate={appointment.date} 
         status={appointment.status} 
-        onFixedHeaderChange={setIsFixedHeaderActive} // Pass setter function
+        onFixedHeaderChange={setIsFixedHeaderActive}
       />
       
       <AppLayout hasFixedHeader={isFixedHeaderActive}>
@@ -282,7 +289,7 @@ const AppointmentDetailPage = () => {
                       Luscher Assessed
                     </Badge>
                   )}
-                  {hasHarmonicRockingNotes && (
+                  {(hasHarmonicRockingNotes || hasT1ResetNotes) && ( // Check for either down-regulation note
                     <Badge className="px-3 py-1 rounded-full text-xs font-bold flex items-center gap-1 bg-red-600 text-white">
                       <Heart size={12} />
                       NS Down Reg
@@ -493,6 +500,12 @@ const AppointmentDetailPage = () => {
                   onSaveField={saveField}
                 />
                 
+                <T1SympatheticReset
+                  appointmentId={appointment.id}
+                  initialNotes={appointment.t1_reset_notes}
+                  onSaveField={saveField}
+                />
+
                 {/* Keeping the generic notes field for other sympathetic techniques */}
                 <EditableField
                   key={`notes-sympathetic-general-${appointment.id}`}

@@ -3,7 +3,7 @@ import { useParams, Link, useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { calculateAge, getStarSign, getClientRollups } from "@/utils/crm-utils";
 import { Badge } from "@/components/ui/badge";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { 
   ArrowLeft, Plus, Mail, Phone, MapPin, Calendar, 
@@ -145,7 +145,7 @@ const ClientDetailPage = () => {
         <div className="flex gap-2">
             <Dialog open={editOpen} onOpenChange={setEditOpen}>
               <DialogTrigger asChild>
-                <Button variant="outline" size="sm" className="bg-white">
+                <Button variant="outline" size="sm" className="bg-white rounded-xl">
                   <Edit3 size={16} className="mr-2" /> Edit Profile
                 </Button>
               </DialogTrigger>
@@ -165,7 +165,7 @@ const ClientDetailPage = () => {
 
             <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                    <Button variant="ghost" size="icon">
+                    <Button variant="ghost" size="icon" className="rounded-xl">
                         <MoreHorizontal size={20} />
                     </Button>
                 </DropdownMenuTrigger>
@@ -183,25 +183,27 @@ const ClientDetailPage = () => {
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
         <div className="lg:col-span-1 space-y-6">
-          <Card className="overflow-hidden border-none shadow-lg bg-white">
-            <div className="h-24 bg-gradient-to-r from-indigo-600 to-indigo-500" />
-            <CardContent className="pt-0 -mt-12 text-center space-y-4">
-              <div className="inline-block p-1 bg-white rounded-full shadow-md">
-                <div className="w-24 h-24 bg-indigo-50 rounded-full flex items-center justify-center text-3xl font-bold text-indigo-600 border-2 border-indigo-100">
-                  {client.name.charAt(0)}
+          {/* Profile Card - Updated Design */}
+          <Card className="overflow-hidden border-none shadow-lg bg-white rounded-2xl">
+            <div className="h-24 bg-gradient-to-r from-indigo-600 to-indigo-500 relative">
+                <div className="absolute bottom-0 left-6 translate-y-1/2 p-1 bg-white rounded-full shadow-md">
+                    <div className="w-20 h-20 bg-indigo-50 rounded-full flex items-center justify-center text-3xl font-bold text-indigo-600 border-2 border-indigo-100">
+                      {client.name.charAt(0)}
+                    </div>
                 </div>
-              </div>
+            </div>
+            <CardContent className="pt-14 px-6 pb-6 space-y-4">
               <div>
                 <h2 className="text-2xl font-bold text-slate-900">{client.name}</h2>
                 <p className="text-slate-500 font-medium">{client.pronouns || 'No pronouns set'}</p>
               </div>
-              <div className="flex justify-center gap-2">
+              <div className="flex flex-wrap gap-2">
                 {client.born && (
                   <>
-                    <Badge className="bg-indigo-50 text-indigo-600 hover:bg-indigo-100 border-none px-3 py-1">
+                    <Badge className="bg-indigo-50 text-indigo-600 hover:bg-indigo-100 border-none px-3 py-1 rounded-full">
                       {calculateAge(client.born)} years old
                     </Badge>
-                    <Badge variant="outline" className="flex gap-1 items-center px-3 py-1 border-slate-200">
+                    <Badge variant="outline" className="flex gap-1 items-center px-3 py-1 border-slate-200 rounded-full">
                       <Star size={12} className="fill-amber-400 text-amber-400" />
                       {getStarSign(client.born)}
                     </Badge>
@@ -211,50 +213,51 @@ const ClientDetailPage = () => {
             </CardContent>
           </Card>
 
-          <Card className="border-none shadow-sm bg-white">
-            <CardHeader>
-              <CardTitle className="text-lg font-bold">Personal Details</CardTitle>
+          {/* Personal Details Card */}
+          <Card className="border-none shadow-sm bg-white rounded-2xl">
+            <CardHeader className="pb-3">
+              <CardTitle className="text-lg font-bold text-slate-900">Contact & Background</CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
               {client.occupation && (
-                <div className="flex items-center gap-3 text-sm">
-                  <div className="w-8 h-8 rounded-lg bg-slate-50 flex items-center justify-center text-slate-400">
+                <div className="flex items-center gap-3 text-sm p-2 rounded-lg hover:bg-slate-50 transition-colors">
+                  <div className="w-8 h-8 rounded-lg bg-slate-100 flex items-center justify-center text-slate-500">
                     <Briefcase size={16} />
                   </div>
                   <span className="text-slate-700">{client.occupation}</span>
                 </div>
               )}
               {client.marital_status && (
-                <div className="flex items-center gap-3 text-sm">
-                  <div className="w-8 h-8 rounded-lg bg-slate-50 flex items-center justify-center text-slate-400">
+                <div className="flex items-center gap-3 text-sm p-2 rounded-lg hover:bg-slate-50 transition-colors">
+                  <div className="w-8 h-8 rounded-lg bg-slate-100 flex items-center justify-center text-slate-500">
                     <Heart size={16} />
                   </div>
                   <span className="text-slate-700">{client.marital_status}</span>
                 </div>
               )}
               {client.children && (
-                <div className="flex items-center gap-3 text-sm">
-                  <div className="w-8 h-8 rounded-lg bg-slate-50 flex items-center justify-center text-slate-400">
+                <div className="flex items-center gap-3 text-sm p-2 rounded-lg hover:bg-slate-50 transition-colors">
+                  <div className="w-8 h-8 rounded-lg bg-slate-100 flex items-center justify-center text-slate-500">
                     <Baby size={16} />
                   </div>
                   <span className="text-slate-700">Children: {client.children}</span>
                 </div>
               )}
               <hr className="border-slate-100" />
-              <div className="flex items-center gap-3 text-sm">
-                <div className="w-8 h-8 rounded-lg bg-slate-50 flex items-center justify-center text-slate-400">
+              <div className="flex items-center gap-3 text-sm p-2 rounded-lg hover:bg-slate-50 transition-colors">
+                <div className="w-8 h-8 rounded-lg bg-slate-100 flex items-center justify-center text-slate-500">
                     <Mail size={16} />
                 </div>
                 <span className="text-slate-700">{client.email || 'No email'}</span>
               </div>
-              <div className="flex items-center gap-3 text-sm">
-                <div className="w-8 h-8 rounded-lg bg-slate-50 flex items-center justify-center text-slate-400">
+              <div className="flex items-center gap-3 text-sm p-2 rounded-lg hover:bg-slate-50 transition-colors">
+                <div className="w-8 h-8 rounded-lg bg-slate-100 flex items-center justify-center text-slate-500">
                     <Phone size={16} />
                 </div>
                 <span className="text-slate-700">{client.phone || 'No phone'}</span>
               </div>
-              <div className="flex items-center gap-3 text-sm">
-                <div className="w-8 h-8 rounded-lg bg-slate-50 flex items-center justify-center text-slate-400">
+              <div className="flex items-center gap-3 text-sm p-2 rounded-lg hover:bg-slate-50 transition-colors">
+                <div className="w-8 h-8 rounded-lg bg-slate-100 flex items-center justify-center text-slate-500">
                     <MapPin size={16} />
                 </div>
                 <div className="flex gap-1 flex-wrap text-slate-700">
@@ -262,8 +265,8 @@ const ClientDetailPage = () => {
                 </div>
               </div>
               {client.born && (
-                <div className="flex items-center gap-3 text-sm">
-                  <div className="w-8 h-8 rounded-lg bg-slate-50 flex items-center justify-center text-slate-400">
+                <div className="flex items-center gap-3 text-sm p-2 rounded-lg hover:bg-slate-50 transition-colors">
+                  <div className="w-8 h-8 rounded-lg bg-slate-100 flex items-center justify-center text-slate-500">
                     <Calendar size={16} />
                   </div>
                   <span className="text-slate-700">Born: {format(client.born, "MMMM d, yyyy")}</span>
@@ -271,7 +274,7 @@ const ClientDetailPage = () => {
               )}
               {client.chatgpt_url && (
                 <div className="pt-2">
-                  <Button variant="outline" size="sm" className="w-full text-xs rounded-xl" asChild>
+                  <Button variant="outline" size="sm" className="w-full text-xs rounded-xl border-indigo-200 text-indigo-600 hover:bg-indigo-50" asChild>
                     <a href={client.chatgpt_url} target="_blank" rel="noopener noreferrer">
                       <ExternalLink size={14} className="mr-2" /> View ChatGPT Insights
                     </a>
@@ -296,8 +299,9 @@ const ClientDetailPage = () => {
         </div>
 
         <div className="lg:col-span-2 space-y-6">
+          {/* Stats Cards - Updated Design */}
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-6">
-            <Card className="border-none shadow-sm rounded-2xl bg-white">
+            <Card className="border-none shadow-sm rounded-2xl bg-white border-t-4 border-indigo-500">
               <CardHeader className="pb-2">
                 <CardTitle className="text-sm flex items-center gap-2 text-slate-700">
                   <Activity size={16} className="text-indigo-500" /> Total Sessions
@@ -309,10 +313,10 @@ const ClientDetailPage = () => {
               </CardContent>
             </Card>
             
-            <Card className="border-none shadow-sm rounded-2xl bg-white">
+            <Card className="border-none shadow-sm rounded-2xl bg-white border-t-4 border-emerald-500">
               <CardHeader className="pb-2">
                 <CardTitle className="text-sm flex items-center gap-2 text-slate-700">
-                  <FlaskConical size={16} className="text-indigo-500" /> Avg. BOLT Score
+                  <FlaskConical size={16} className="text-emerald-500" /> Avg. BOLT Score
                 </CardTitle>
               </CardHeader>
               <CardContent>
@@ -326,7 +330,7 @@ const ClientDetailPage = () => {
               </CardContent>
             </Card>
 
-            <Card className="border-none shadow-sm rounded-2xl bg-white">
+            <Card className="border-none shadow-sm rounded-2xl bg-white border-t-4 border-rose-500">
               <CardHeader className="pb-2">
                 <CardTitle className="text-sm flex items-center gap-2 text-slate-700">
                   <Brain size={16} className="text-rose-500" /> Avg. Coherence
@@ -343,32 +347,24 @@ const ClientDetailPage = () => {
               </CardContent>
             </Card>
 
-            <Card className="border-none shadow-sm rounded-2xl bg-white">
+            <Card className="border-none shadow-sm rounded-2xl bg-white border-t-4 border-violet-500">
               <CardHeader className="pb-2">
                 <CardTitle className="text-sm flex items-center gap-2 text-slate-700">
-                  <TrendingUp size={16} className="text-indigo-500" /> Last BOLT/Coherence
+                  <TrendingUp size={16} className="text-violet-500" /> Last BOLT/Coh
                 </CardTitle>
               </CardHeader>
               <CardContent>
                 <p className={cn(
                   "text-xl font-extrabold",
-                  lastBoltScore === null && lastCoherenceScore === null ? "text-slate-400" : "text-slate-900"
+                  lastBoltScore === null ? "text-slate-400" : (lastBoltScore >= 25 ? "text-emerald-600" : "text-amber-600")
                 )}>
-                  {lastBoltScore !== null ? (
-                    <span className={cn(lastBoltScore >= 25 ? "text-emerald-600" : "text-amber-600")}>
-                      BOLT: {lastBoltScore}s
-                    </span>
-                  ) : 'N/A'}
+                  {lastBoltScore !== null ? `BOLT: ${lastBoltScore}s` : 'N/A'}
                 </p>
                 <p className={cn(
                   "text-xl font-extrabold mt-1",
-                  lastBoltScore === null && lastCoherenceScore === null ? "text-slate-400" : "text-slate-900"
+                  lastCoherenceScore === null ? "text-slate-400" : getCoherenceColor(lastCoherenceScore)
                 )}>
-                  {lastCoherenceScore !== null ? (
-                    <span className={getCoherenceColor(lastCoherenceScore)}>
-                      Coh: {lastCoherenceScore.toFixed(2)}
-                    </span>
-                  ) : 'N/A'}
+                  {lastCoherenceScore !== null ? `Coh: ${lastCoherenceScore.toFixed(2)}` : 'N/A'}
                 </p>
                 <p className="text-xs text-slate-400 mt-1">Latest recorded session</p>
               </CardContent>
@@ -376,10 +372,10 @@ const ClientDetailPage = () => {
           </div>
 
           <div className="flex justify-between items-center pt-4">
-            <h3 className="text-xl font-bold text-slate-900">Appointments</h3>
+            <h3 className="text-xl font-bold text-slate-900">Appointments ({rollups.totalSessions})</h3>
             <Dialog open={appOpen} onOpenChange={setAppOpen}>
               <DialogTrigger asChild>
-                <Button size="sm" className="bg-indigo-600 hover:bg-indigo-700 shadow-lg shadow-indigo-200">
+                <Button size="sm" className="bg-indigo-600 hover:bg-indigo-700 shadow-lg shadow-indigo-200 rounded-xl">
                   <Plus size={16} className="mr-2" /> Book Session
                 </Button>
               </DialogTrigger>

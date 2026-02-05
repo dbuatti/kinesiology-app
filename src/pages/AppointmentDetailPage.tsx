@@ -61,7 +61,8 @@ const AppointmentDetailPage = () => {
   const navigate = useNavigate();
   const [appointment, setAppointment] = useState<AppointmentWithClient | null>(null);
   const [loading, setLoading] = useState(true);
-  const [activeTab, setActiveTab] = useState<string>("baseline"); // Default to the first new tab
+  const [activeTab, setActiveTab] = useState<string>("baseline");
+  const [isFixedHeaderActive, setIsFixedHeaderActive] = useState(false); // New state
 
   const fetchAppointmentData = async () => {
     if (!id) return;
@@ -186,8 +187,6 @@ const AppointmentDetailPage = () => {
   const isHydrated = appointment.hydrated === true;
   const hasNeuroNotes = appointment.fakuda_notes || appointment.sharpened_rhombergs_notes || appointment.frontal_lobe_notes;
   
-  const isSessionRelevant = isToday(appointment.date) && appointment.status !== 'Completed' && appointment.status !== 'Cancelled';
-
   const getStatusColorClass = (status: string) => {
     switch (status) {
       case 'Completed':
@@ -206,9 +205,10 @@ const AppointmentDetailPage = () => {
       <SessionTimer 
         appointmentDate={appointment.date} 
         status={appointment.status} 
+        onFixedHeaderChange={setIsFixedHeaderActive} // Pass setter function
       />
       
-      <AppLayout hasFixedHeader={isSessionRelevant}>
+      <AppLayout hasFixedHeader={isFixedHeaderActive}>
         <div className="flex items-center justify-between gap-4">
           <Link to="/appointments">
             <Button variant="ghost" size="sm">

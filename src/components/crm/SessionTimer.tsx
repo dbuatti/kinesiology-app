@@ -8,6 +8,8 @@ import { format, differenceInSeconds, isToday, formatDistanceToNow } from 'date-
 interface SessionTimerProps {
   appointmentDate: Date;
   status: string;
+  // New prop to communicate if the timer is active and fixed
+  onFixedHeaderChange: (isFixed: boolean) => void;
 }
 
 const SESSION_STAGES = [
@@ -19,7 +21,7 @@ const SESSION_STAGES = [
 ];
 const TOTAL_DURATION_MINUTES = SESSION_STAGES.reduce((sum, stage) => sum + stage.duration, 0); // 90 minutes
 
-const SessionTimer = ({ appointmentDate, status }: SessionTimerProps) => {
+const SessionTimer = ({ appointmentDate, status, onFixedHeaderChange }: SessionTimerProps) => {
   const [currentTime, setCurrentTime] = useState(new Date());
 
   useEffect(() => {
@@ -88,6 +90,16 @@ const SessionTimer = ({ appointmentDate, status }: SessionTimerProps) => {
   // Only show the timer if the appointment is today and not completed/cancelled
   const isRelevant = isToday(appointmentDate) && status !== 'Completed' && status !== 'Cancelled';
   
+  // Determine if the session is ongoing (needs the fixed header)
+  const isOngoing = isRelevant && elapsedSeconds >= 0 && !isComplete;
+  
+  // Determine if the session is upcoming (needs the floating badge)
+  const isUpcoming = isRelevant && elapsedSeconds < 0;
+
+  useEffect(() => {
+    onFixedHeaderChange(isOngoing);
+  }, [isOngoing, onFixedHeaderChange]);
+
   if (!isRelevant) return null;
 
   const timeInSessionFormatted = format(new Date(0, 0, 0, 0, 0, elapsedSeconds), 'H:mm:ss');
@@ -103,15 +115,32 @@ const SessionTimer = ({ appointmentDate, status }: SessionTimerProps) => {
     statusText = 'Session Complete';
     statusColor = 'bg-emerald-600';
     statusIcon = <CheckCircle2 size={16} className="text-white" />;
-  } else if (elapsedSeconds < 0) {
+  } else if (isUpcoming) {
     statusText = `Starts in ${formatDistanceToNow(appointmentDate, { addSuffix: true })}`;
     statusColor = 'bg-indigo-600';
-  } else {
+  } else if (isOngoing) {
     statusText = `Stage: ${currentStage.name}`;
     statusColor = currentStage.color;
     statusIcon = <StageIcon size={16} className="text-white" />;
   }
 
+  // --- Render Floating Badge for Upcoming Session ---
+  if (isUpcoming) {
+    return (
+      <div className="fixed top-20 left-1/2 -translate-x-1/2 z-50">
+        <div className={cn(
+          "px-6 py-3 rounded-full text-sm font-bold flex items-center gap-2 shadow-xl transition-all duration-300", 
+          statusColor
+        )}>
+          <Clock size={18} className="text-white" />
+          <span className="text-white">{statusText}</span>
+        </div>
+      </div>
+    );
+  }
+  // --- End Floating Badge ---
+
+  // --- Render Fixed Header Bar for Ongoing/Complete Session ---
   return (
     <div className="fixed top-0 left-0 right-0 z-50 shadow-xl">
       <div className="bg-white border-b border-slate-100 p-3 flex items-center justify-between">

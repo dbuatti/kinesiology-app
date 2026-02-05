@@ -11,7 +11,7 @@ const AppLayout = ({ children, hasFixedHeader = false }: AppLayoutProps) => {
     <div className={cn(
       "p-4 md:p-8 max-w-6xl mx-auto space-y-8",
       // If SessionTimer is active, add top padding to prevent content overlap
-      hasFixedHeader ? "pt-[80px]" : "pt-4 md:pt-8"
+      hasFixedHeader ? "pt-[100px]" : "pt-4 md:pt-8"
     )}>
       {children}
     </div>

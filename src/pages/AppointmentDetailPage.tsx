@@ -1,35 +1,24 @@
-import { useState, useEffect, useRef, useLayoutEffect } from "react";
+import { useState, useEffect } from "react";
 import { useParams, Link, useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import { 
-  ArrowLeft, Calendar, Clock, Target, Zap, 
-  ExternalLink, Loader2, Trash2, User, Droplets, Footprints, Hand,
-  Activity, Move, Heart, Scale, Brain, FlaskConical, ListChecks, Palette, CheckCircle2, TrendingUp
+  ArrowLeft, Calendar, Clock, 
+  Loader2, Trash2, User, Droplets, Footprints, Hand,
+  Activity, Move, Heart, Scale, Brain, FlaskConical, Palette
 } from "lucide-react";
-import { format, isToday } from "date-fns";
+import { format } from "date-fns";
 import { Appointment } from "@/types/crm";
 import { showSuccess, showError } from "@/utils/toast";
 import { cn } from "@/lib/utils";
-import BoltTestSection from "@/components/crm/BoltTestSection";
-import CoherenceAssessment from "@/components/crm/CoherenceAssessment";
-import CogsAssessment from "@/components/crm/CogsAssessment";
 import EditableField from "@/components/crm/EditableField";
 import SessionTimer from "@/components/crm/SessionTimer";
-import EmotionAssessment from "@/components/crm/EmotionAssessment";
-import NeurologicalAssessments from "@/components/crm/NeurologicalAssessments";
 import AppLayout from "@/components/crm/AppLayout";
-import MuscleTestingTab from "@/components/crm/MuscleTestingTab";
-import LuscherColourAssessment from "@/components/crm/LuscherColourAssessment";
-import SessionHeaderActions from "@/components/crm/SessionHeaderActions";
-import SympatheticDownRegulation from "@/components/crm/SympatheticDownRegulation";
-import T1SympatheticReset from "@/components/crm/T1SympatheticReset"; // Import new component
+import SessionContentSwitcher from "@/components/crm/SessionContentSwitcher";
 import {
   Select,
   SelectContent,
@@ -37,10 +26,17 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { APPOINTMENT_STATUSES } from "@/data/appointment-data";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { MoreHorizontal } from "lucide-react";
 
-interface AppointmentWithClient extends Appointment {
+// Export the extended type for use in SessionContentSwitcher
+export interface AppointmentWithClient extends Appointment {
   clients: { name: string; id: string };
   sagittal_plane_notes?: string | null;
   frontal_plane_notes?: string | null;
@@ -57,7 +53,7 @@ interface AppointmentWithClient extends Appointment {
   luscher_color_1?: string | null;
   luscher_color_2?: string | null;
   harmonic_rocking_notes?: string | null;
-  t1_reset_notes?: string | null; // Added new field
+  t1_reset_notes?: string | null;
 }
 
 const AppointmentDetailPage = () => {
@@ -65,7 +61,6 @@ const AppointmentDetailPage = () => {
   const navigate = useNavigate();
   const [appointment, setAppointment] = useState<AppointmentWithClient | null>(null);
   const [loading, setLoading] = useState(true);
-  const [activeTab, setActiveTab] = useState<string>("baseline");
   const [isFixedHeaderActive, setIsFixedHeaderActive] = useState(false);
 
   const fetchAppointmentData = async () => {
@@ -124,7 +119,6 @@ const AppointmentDetailPage = () => {
             return { 
               ...prev, 
               ...updatedData,
-              t1_reset_notes: payload.new.t1_reset_notes, // Handle new field
             };
           });
         }
@@ -195,7 +189,7 @@ const AppointmentDetailPage = () => {
   const isHydrated = appointment.hydrated === true;
   const hasNeuroNotes = appointment.fakuda_notes || appointment.sharpened_rhombergs_notes || appointment.frontal_lobe_notes;
   const hasHarmonicRockingNotes = !!appointment.harmonic_rocking_notes;
-  const hasT1ResetNotes = !!appointment.t1_reset_notes; // Check for new notes
+  const hasT1ResetNotes = !!appointment.t1_reset_notes;
   
   const getStatusColorClass = (status: string) => {
     switch (status) {
@@ -226,14 +220,21 @@ const AppointmentDetailPage = () => {
             </Button>
           </Link>
           <div className="flex gap-2">
-            <SessionHeaderActions appointmentId={id!} />
-            <Button 
-              variant="destructive" 
-              size="sm" 
-              onClick={handleDeleteAppointment}
-            >
-              <Trash2 size={16} className="mr-2" /> Delete
-            </Button>
+            <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                    <Button variant="ghost" size="icon">
+                        <MoreHorizontal size={20} />
+                    </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end">
+                    <DropdownMenuItem 
+                        className="text-destructive focus:text-destructive"
+                        onClick={handleDeleteAppointment}
+                    >
+                        <Trash2 size={16} className="mr-2" /> Delete Appointment
+                    </DropdownMenuItem>
+                </DropdownMenuContent>
+            </DropdownMenu>
           </div>
         </div>
 
@@ -289,7 +290,7 @@ const AppointmentDetailPage = () => {
                       Luscher Assessed
                     </Badge>
                   )}
-                  {(hasHarmonicRockingNotes || hasT1ResetNotes) && ( // Check for either down-regulation note
+                  {(hasHarmonicRockingNotes || hasT1ResetNotes) && (
                     <Badge className="px-3 py-1 rounded-full text-xs font-bold flex items-center gap-1 bg-red-600 text-white">
                       <Heart size={12} />
                       NS Down Reg
@@ -395,177 +396,12 @@ const AppointmentDetailPage = () => {
               </CardContent>
             </Card>
 
-            {/* General Session Notes (Moved above tabs) */}
-            <Card className="border-slate-200 shadow-none rounded-2xl bg-slate-50">
-              <CardHeader className="pb-2">
-                <CardTitle className="text-sm flex items-center gap-2 text-slate-700">
-                  <Zap size={16} className="text-indigo-500" /> General Session Notes
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4 text-sm">
-                <EditableField
-                  key={`acupoints-${appointment.id}`}
-                  field="acupoints"
-                  label="Acupoints"
-                  value={appointment.acupoints}
-                  placeholder="Which acupoints were used?"
-                  onSave={saveField}
-                />
-                <EditableField
-                  key={`notes-${appointment.id}`}
-                  field="notes"
-                  label="Session Notes (General)"
-                  value={appointment.notes}
-                  multiline
-                  placeholder="Session observations and notes..."
-                  onSave={saveField}
-                />
-                <EditableField
-                  key={`journal-${appointment.id}`}
-                  field="journal"
-                  label="Journal Entry (Practitioner Reflection)"
-                  value={appointment.journal}
-                  multiline
-                  className="bg-amber-50/50 p-3 rounded-xl border border-amber-100"
-                  placeholder="Personal reflections and insights..."
-                  onSave={saveField}
-                />
-                {appointment.notion_link && (
-                  <Button variant="outline" size="sm" className="w-full text-xs rounded-xl" asChild>
-                    <a href={appointment.notion_link} target="_blank" rel="noopener noreferrer">
-                      <ExternalLink size={14} className="mr-2" /> View Notion Link
-                    </a>
-                  </Button>
-                )}
-              </CardContent>
-            </Card>
-            {/* End General Session Notes */}
-
-            {/* Tabs for Assessments and Notes */}
-            <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-              <TabsList className="grid w-full grid-cols-5 h-12 bg-slate-100 p-1 rounded-xl">
-                <TabsTrigger value="baseline" className="flex items-center gap-2 data-[state=active]:bg-indigo-600 data-[state=active]:text-white data-[state=active]:shadow-md rounded-lg h-10 text-xs">
-                  <FlaskConical size={16} /> 1 - BASELINE ASSESSMENTS
-                </TabsTrigger>
-                <TabsTrigger value="sympathetic" className="flex items-center gap-2 data-[state=active]:bg-indigo-600 data-[state=active]:text-white data-[state=active]:shadow-md rounded-lg h-10 text-xs">
-                  <Heart size={16} /> 2 - SYMPATHETIC DOWN-REGULATION
-                </TabsTrigger>
-                <TabsTrigger value="pathway" className="flex items-center gap-2 data-[state=active]:bg-indigo-600 data-[state=active]:text-white data-[state=active]:shadow-md rounded-lg h-10 text-xs">
-                  <TrendingUp size={16} /> 3 - PATHWAY ASSESSMENT(S)
-                </TabsTrigger>
-                <TabsTrigger value="calibration" className="flex items-center gap-2 data-[state=active]:bg-indigo-600 data-[state=active]:text-white data-[state=active]:shadow-md rounded-lg h-10 text-xs">
-                  <CheckCircle2 size={16} /> 4 - CALIBRATION/ CORRECTION
-                </TabsTrigger>
-                <TabsTrigger value="reassessment" className="flex items-center gap-2 data-[state=active]:bg-indigo-600 data-[state=active]:text-white data-[state=active]:shadow-md rounded-lg h-10 text-xs">
-                  <Zap size={16} /> 5 - RE-ASSESSMENT
-                </TabsTrigger>
-              </TabsList>
-
-              <TabsContent value="baseline" className="mt-6 space-y-6">
-                <BoltTestSection
-                  appointmentId={appointment.id}
-                  initialBoltScore={appointment.bolt_score}
-                  onUpdate={fetchAppointmentData}
-                />
-
-                <CoherenceAssessment
-                  appointmentId={appointment.id}
-                  initialHeartRate={appointment.heart_rate}
-                  initialBreathRate={appointment.breath_rate}
-                  initialCoherenceScore={appointment.coherence_score}
-                  onUpdate={fetchAppointmentData}
-                />
-
-                <CogsAssessment
-                  appointmentId={appointment.id}
-                  initialSagittalNotes={appointment.sagittal_plane_notes}
-                  initialFrontalNotes={appointment.frontal_plane_notes}
-                  initialTransverseNotes={appointment.transverse_plane_notes}
-                  onUpdate={fetchAppointmentData}
-                />
-                
-                <NeurologicalAssessments
-                  appointmentId={appointment.id}
-                  initialFakudaNotes={appointment.fakuda_notes}
-                  initialRhombergsNotes={appointment.sharpened_rhombergs_notes}
-                  initialFrontalLobeNotes={appointment.frontal_lobe_notes}
-                  onUpdate={fetchAppointmentData}
-                />
-              </TabsContent>
-
-              <TabsContent value="sympathetic" className="mt-6 space-y-6">
-                <SympatheticDownRegulation
-                  appointmentId={appointment.id}
-                  initialNotes={appointment.harmonic_rocking_notes}
-                  onSaveField={saveField}
-                />
-                
-                <T1SympatheticReset
-                  appointmentId={appointment.id}
-                  initialNotes={appointment.t1_reset_notes}
-                  onSaveField={saveField}
-                />
-
-                {/* Keeping the generic notes field for other sympathetic techniques */}
-                <EditableField
-                  key={`notes-sympathetic-general-${appointment.id}`}
-                  field="additional_notes"
-                  label="General Sympathetic Down-Regulation Notes (Other Techniques)"
-                  value={appointment.additional_notes}
-                  multiline
-                  placeholder="Document other techniques used (e.g., ESR, Nociceptive Threat Assessment, Vagus Nerve stimulation)..."
-                  onSave={saveField}
-                />
-              </TabsContent>
-
-              <TabsContent value="pathway" className="mt-6 space-y-6">
-                <Card className="border-2 border-amber-200 shadow-none rounded-2xl bg-amber-50/50 p-6">
-                  <h3 className="text-xl font-bold text-amber-900 mb-2">Pathway Assessment(s)</h3>
-                  <p className="text-amber-800">Content for Pathway Assessment(s) goes here. This tab is for detailed pathway testing and analysis.</p>
-                </Card>
-                <EditableField
-                  key={`notes-pathway-${appointment.id}`}
-                  field="priority_pattern" // Reusing a generic field for now
-                  label="Pathway Assessment Notes"
-                  value={appointment.priority_pattern}
-                  multiline
-                  placeholder="Document specific pathways tested and findings..."
-                  onSave={saveField}
-                />
-              </TabsContent>
-
-              <TabsContent value="calibration" className="mt-6 space-y-6">
-                <Card className="border-2 border-emerald-200 shadow-none rounded-2xl bg-emerald-50/50 p-6">
-                  <h3 className="text-xl font-bold text-emerald-900 mb-2">Calibration/Correction</h3>
-                  <p className="text-emerald-800">Content for Calibration/Correction goes here. This tab is for logging primary corrections and balancing techniques.</p>
-                </Card>
-                <EditableField
-                  key={`notes-calibration-${appointment.id}`}
-                  field="modes_balances" // Reusing a generic field for now
-                  label="Calibration & Correction Notes"
-                  value={appointment.modes_balances}
-                  multiline
-                  placeholder="Document specific corrections, modes, and balances used..."
-                  onSave={saveField}
-                />
-              </TabsContent>
-
-              <TabsContent value="reassessment" className="mt-6 space-y-6">
-                <Card className="border-2 border-indigo-200 shadow-none rounded-2xl bg-indigo-50/50 p-6">
-                  <h3 className="text-xl font-bold text-indigo-900 mb-2">Re-Assessment & Home Reinforcement</h3>
-                  <p className="text-indigo-800">Content for Re-Assessment goes here. This tab is for final checks and prescribing home reinforcement.</p>
-                </Card>
-                <EditableField
-                  key={`notes-reassessment-${appointment.id}`}
-                  field="session_north_star" // Reusing a generic field for now
-                  label="Re-Assessment & Home Reinforcement Notes"
-                  value={appointment.session_north_star}
-                  multiline
-                  placeholder="Document re-test results and client homework/reinforcement exercises..."
-                  onSave={saveField}
-                />
-              </TabsContent>
-            </Tabs>
+            {/* Inject the new Content Switcher */}
+            <SessionContentSwitcher
+              appointment={appointment}
+              onUpdate={fetchAppointmentData}
+              saveField={saveField}
+            />
           </CardContent>
         </Card>
       </AppLayout>

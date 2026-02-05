@@ -40,18 +40,18 @@ const SympatheticDownRegulation = ({
           <div className="space-y-3">
             <h4 className="font-bold text-red-900 flex items-center gap-2">
               <Zap size={16} className="text-red-600" />
-              NS Down Regulation Process:
+              Nervous System Down Regulation Process:
             </h4>
             <ol className="space-y-3 text-sm text-red-800 list-decimal list-inside ml-4">
               <li className="font-semibold">State: Permission to correct</li>
               <li>
-                If No: perform gentle rocking motion with one hand on the belly button and the other hands/fingers on Kidney 27 Acupoint at the Sternocostal Joint below the neck.
+                If permission is denied: perform gentle rocking motion with one hand on the belly button and the other hands/fingers on Kidney 27 Acupoint at the Sternocostal Joint below the neck.
               </li>
               <li>
-                Can ask how many minutes to perform (usually 3 x mins) or look/feel/observe client dropping into a Safe physiological state.
+                Ask how many minutes to perform (usually 3 minutes) or observe client dropping into a safe physiological state.
               </li>
               <li>
-                <span className="font-semibold">Signs of Shift:</span> Diaphragmatic breathing may improve, they may sigh, yawn or you just feel them relax and drop in.
+                <span className="font-semibold">Signs of Shift:</span> Diaphragmatic breathing may improve, they may sigh, yawn, or you just feel them relax and drop in.
               </li>
             </ol>
           </div>

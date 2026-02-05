@@ -2,7 +2,7 @@
 
 import React from "react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
-import { Info, Zap, Heart, Move, ListChecks } from "lucide-react";
+import { Info, Zap, ListChecks } from "lucide-react";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import EditableField from "./EditableField";
 
@@ -43,12 +43,12 @@ const T1SympatheticReset = ({
               General Steps:
             </h4>
             <ol className="space-y-3 text-sm text-indigo-800 list-decimal list-inside ml-4">
-              <li className="font-semibold">IM Shows as Priority</li>
-              <li>PALPATE BILATERAL ANTERIOR FIRST RIB (T1)</li>
-              <li>IDENTIFY RESTRICTED OR TENDER SIDE</li>
-              <li>MUSCLE TEST CONTRALATERAL PSOAS MUSCLE</li>
-              <li>MONITOR TENDER SPOT AND MOVE IPSILATERAL SHOULDER INTO EXTERNAL ROTATION UNTIL TENDERNESS DISSOLVES OR PULSE IS FELT. (45-90 SECS)</li>
-              <li>RE-ASSESS TENDERNESS, PSOAS MUSCLE, CLIENT'S PERCEPTION OF THEIR BODY</li>
+              <li className="font-semibold">Indicator Muscle (IM) shows as priority.</li>
+              <li>Palpate bilateral anterior first rib (T1).</li>
+              <li>Identify the restricted or tender side.</li>
+              <li>Muscle test the contralateral Psoas muscle.</li>
+              <li>Monitor the tender spot and move the ipsilateral shoulder into external rotation until tenderness dissolves or a pulse is felt (45-90 seconds).</li>
+              <li>Re-assess tenderness, Psoas muscle, and the client's perception of their body.</li>
             </ol>
           </div>
           

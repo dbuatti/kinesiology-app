@@ -28,6 +28,7 @@ import AppLayout from "@/components/crm/AppLayout";
 import MuscleTestingTab from "@/components/crm/MuscleTestingTab";
 import LuscherColourAssessment from "@/components/crm/LuscherColourAssessment";
 import SessionHeaderActions from "@/components/crm/SessionHeaderActions";
+import SympatheticDownRegulation from "@/components/crm/SympatheticDownRegulation"; // Import new component
 import {
   Select,
   SelectContent,
@@ -54,6 +55,7 @@ interface AppointmentWithClient extends Appointment {
   frontal_lobe_notes?: string | null;
   luscher_color_1?: string | null;
   luscher_color_2?: string | null;
+  harmonic_rocking_notes?: string | null; // Added new field
 }
 
 const AppointmentDetailPage = () => {
@@ -186,6 +188,7 @@ const AppointmentDetailPage = () => {
   const clientLink = `/clients/${appointment.clients.id}`;
   const isHydrated = appointment.hydrated === true;
   const hasNeuroNotes = appointment.fakuda_notes || appointment.sharpened_rhombergs_notes || appointment.frontal_lobe_notes;
+  const hasHarmonicRockingNotes = !!appointment.harmonic_rocking_notes;
   
   const getStatusColorClass = (status: string) => {
     switch (status) {
@@ -277,6 +280,12 @@ const AppointmentDetailPage = () => {
                     <Badge className="px-3 py-1 rounded-full text-xs font-bold flex items-center gap-1 bg-violet-600 text-white">
                       <Palette size={12} />
                       Luscher Assessed
+                    </Badge>
+                  )}
+                  {hasHarmonicRockingNotes && (
+                    <Badge className="px-3 py-1 rounded-full text-xs font-bold flex items-center gap-1 bg-red-600 text-white">
+                      <Heart size={12} />
+                      NS Down Reg
                     </Badge>
                   )}
                 </div>
@@ -478,17 +487,20 @@ const AppointmentDetailPage = () => {
               </TabsContent>
 
               <TabsContent value="sympathetic" className="mt-6 space-y-6">
-                <Card className="border-2 border-red-200 shadow-none rounded-2xl bg-red-50/50 p-6">
-                  <h3 className="text-xl font-bold text-red-900 mb-2">Sympathetic Down-Regulation</h3>
-                  <p className="text-red-800">Content for Sympathetic Down-Regulation goes here. This tab focuses on techniques to calm the nervous system.</p>
-                </Card>
+                <SympatheticDownRegulation
+                  appointmentId={appointment.id}
+                  initialNotes={appointment.harmonic_rocking_notes}
+                  onSaveField={saveField}
+                />
+                
+                {/* Keeping the generic notes field for other sympathetic techniques */}
                 <EditableField
-                  key={`notes-sympathetic-${appointment.id}`}
-                  field="additional_notes" // Reusing a generic field for now
-                  label="Down-Regulation Notes"
+                  key={`notes-sympathetic-general-${appointment.id}`}
+                  field="additional_notes"
+                  label="General Sympathetic Down-Regulation Notes (Other Techniques)"
                   value={appointment.additional_notes}
                   multiline
-                  placeholder="Document techniques used (e.g., ESR, Nociceptive Threat Assessment, Vagus Nerve stimulation)..."
+                  placeholder="Document other techniques used (e.g., ESR, Nociceptive Threat Assessment, Vagus Nerve stimulation)..."
                   onSave={saveField}
                 />
               </TabsContent>

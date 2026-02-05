@@ -7,7 +7,7 @@ import { Badge } from "@/components/ui/badge";
 import { Switch } from "@/components/ui/switch";
 import { 
   Target, Plus, TrendingUp, CheckCircle2, Loader2, 
-  FlaskConical, Brain, Activity, Zap, Edit3, Trash2, PowerOff, Footprints, Scale, Hand, Dumbbell
+  FlaskConical, Brain, Activity, Zap, Edit3, Trash2, PowerOff, Footprints, Scale, Hand, Dumbbell, Heart
 } from "lucide-react";
 import {
   Dialog,
@@ -44,6 +44,7 @@ const ICON_OPTIONS = [
   { value: 'footprints', label: 'Footprints', icon: Footprints },
   { value: 'scale', label: 'Scale', icon: Scale },
   { value: 'hand', label: 'Hand', icon: Hand },
+  { value: 'heart', label: 'Heart', icon: Heart }, // Added Heart icon
 ];
 
 const getIconComponent = (iconName: string) => {
@@ -290,7 +291,7 @@ const ProceduresPage = () => {
         {/* Overall Progress Card */}
         <Card className="border-none shadow-lg rounded-2xl bg-white">
           <CardHeader className="pb-3">
-            <CardTitle className="text-xl font-bold flex items-center gap-2 text-slate-900">
+            <CardTitle className="text-xl font-bold flex items-center gap-2 text-emerald-600">
               <TrendingUp size={24} className="text-emerald-600" /> Overall Progress
             </CardTitle>
             <CardDescription>
@@ -345,7 +346,7 @@ const ProceduresPage = () => {
                 const isCoherent = Math.abs(score - Math.round(score)) < 0.01;
                 statusColor = isCoherent ? "text-emerald-600" : "text-amber-600";
               }
-            } else if (procedure.name.includes("Range of Motion") || procedure.name.includes("Neurological Global")) {
+            } else if (procedure.name.includes("Range of Motion") || procedure.name.includes("Neurological Global") || procedure.name.includes("Sympathetic Down Regulation")) {
                 if (procedure.current_count > 0) {
                     specificStatus = "Assessed";
                     statusColor = "text-indigo-600";

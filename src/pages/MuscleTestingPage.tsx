@@ -24,7 +24,7 @@ const MuscleTestingPage = () => {
           .single();
         
         if (error) throw error;
-        setClientName(data.clients?.name || 'Unknown Client');
+        setClientName(data.clients?.[0]?.name || 'Unknown Client');
       } catch (err) {
         console.error("Error fetching client name:", err);
         showError("Failed to load appointment context.");

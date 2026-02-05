@@ -45,7 +45,7 @@ const KinesiologyPage = () => {
       if (error) throw error;
       
       setData({
-        clientName: appData.clients?.name || 'Unknown Client',
+        clientName: appData.clients?.[0]?.name || 'Unknown Client',
         emotion_mode: appData.emotion_mode,
         emotion_primary_selection: appData.emotion_primary_selection,
         emotion_secondary_selection: appData.emotion_secondary_selection || [],

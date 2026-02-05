@@ -529,6 +529,7 @@ const AppointmentDetailPage = () => {
                 <Card className="border-2 border-indigo-200 shadow-none rounded-2xl bg-indigo-50/50 p-6">
                   <h3 className="text-xl font-bold text-indigo-900 mb-2">Re-Assessment & Home Reinforcement</h3>
                   <p className="text-indigo-800">Content for Re-Assessment goes here. This tab is for final checks and prescribing home reinforcement.</p>
+                </Card>
                 <EditableField
                   key={`notes-reassessment-${appointment.id}`}
                   field="session_north_star" // Reusing a generic field for now

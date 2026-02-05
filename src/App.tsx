@@ -17,6 +17,8 @@ import DebugAppointmentPage from "./pages/DebugAppointmentPage";
 import SettingsPage from "./pages/SettingsPage";
 import Login from "./pages/Login";
 import NotFound from "./pages/NotFound";
+import KinesiologyPage from "./pages/KinesiologyPage";
+import MuscleTestingPage from "./pages/MuscleTestingPage";
 import { AuthProvider, useAuth } from "./components/AuthProvider";
 
 const queryClient = new QueryClient();
@@ -57,6 +59,10 @@ const App = () => (
             <Route path="/procedures" element={<ProtectedLayout><ProceduresPage /></ProtectedLayout>} />
             <Route path="/debug" element={<ProtectedLayout><DebugAppointmentPage /></ProtectedLayout>} />
             <Route path="/settings" element={<ProtectedLayout><SettingsPage /></ProtectedLayout>} />
+            {/* New Routes */}
+            <Route path="/kinesiology/:id" element={<ProtectedLayout><KinesiologyPage /></ProtectedLayout>} />
+            <Route path="/muscle-tests/:id" element={<ProtectedLayout><MuscleTestingPage /></ProtectedLayout>} />
+            {/* End New Routes */}
             <Route path="*" element={<NotFound />} />
           </Routes>
         </BrowserRouter>

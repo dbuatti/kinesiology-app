@@ -237,26 +237,40 @@ const BoltTestSection = ({ appointmentId, initialBoltScore, onUpdate }: BoltTest
                         <span className="w-6 h-6 bg-indigo-100 text-indigo-600 rounded-full flex items-center justify-center text-xs font-bold">1</span>
                         Test Instructions
                       </h4>
-                      <ul className="space-y-2 ml-8">
-                        <li className="flex items-start gap-2">
+                      <ul className="space-y-3 ml-8">
+                        <li className="flex items-start gap-3">
                           <span className="w-1.5 h-1.5 bg-indigo-500 rounded-full mt-2 flex-shrink-0"></span>
-                          <span className="text-slate-700">Ensure the client is in a relaxed state before beginning</span>
+                          <span className="text-slate-700">Take a normal breath in through your nose and allow a normal breath out through your nose.</span>
                         </li>
-                        <li className="flex items-start gap-2">
+                        <li className="flex items-start gap-3">
                           <span className="w-1.5 h-1.5 bg-indigo-500 rounded-full mt-2 flex-shrink-0"></span>
-                          <span className="text-slate-700">Perform during the initial session to establish a baseline</span>
+                          <span className="text-slate-700">Hold your nose with your fingers to prevent air from entering your lungs.</span>
                         </li>
-                        <li className="flex items-start gap-2">
+                        <li className="flex items-start gap-3">
                           <span className="w-1.5 h-1.5 bg-indigo-500 rounded-full mt-2 flex-shrink-0"></span>
-                          <span className="text-slate-700">Have client breathe normally, then hold breath after a normal exhalation</span>
+                          <span className="text-slate-700">Start your timer.</span>
                         </li>
-                        <li className="flex items-start gap-2">
+                        <li className="flex items-start gap-3">
                           <span className="w-1.5 h-1.5 bg-indigo-500 rounded-full mt-2 flex-shrink-0"></span>
-                          <span className="text-slate-700">Stop timing at the first definite desire to breathe (not maximum hold)</span>
+                          <span className="text-slate-700">
+                            Time the number of seconds until you feel the first definite desire to breathe, or the first stresses of your body urging you to breathe.
+                            These sensations may include the need to swallow, or a constriction of the airways. You may also feel the first involuntary contractions
+                            of your breathing muscles in your abdomen or throat, as your body gives the message to resume breathing.
+                          </span>
                         </li>
-                        <li className="flex items-start gap-2">
+                        <li className="flex items-start gap-3">
                           <span className="w-1.5 h-1.5 bg-indigo-500 rounded-full mt-2 flex-shrink-0"></span>
-                          <span className="text-slate-700">Re-assess session-by-session to track progress</span>
+                          <span className="text-slate-700">
+                            Release your nose, stop the timer, and breathe in through your nose. Your inhalation at the end of the breath hold should be calm.
+                          </span>
+                        </li>
+                        <li className="flex items-start gap-3">
+                          <span className="w-1.5 h-1.5 bg-indigo-500 rounded-full mt-2 flex-shrink-0"></span>
+                          <span className="text-slate-700 font-medium">Resume normal breathing.</span>
+                        </li>
+                        <li className="flex items-start gap-3">
+                          <span className="w-1.5 h-1.5 bg-indigo-500 rounded-full mt-2 flex-shrink-0"></span>
+                          <span className="text-slate-900 font-bold">BOLT Score = Amount of Seconds</span>
                         </li>
                       </ul>
                     </div>

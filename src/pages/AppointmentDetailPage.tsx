@@ -19,6 +19,7 @@ import EditableField from "@/components/crm/EditableField";
 import SessionTimer from "@/components/crm/SessionTimer";
 import AppLayout from "@/components/crm/AppLayout";
 import SessionContentSwitcher from "@/components/crm/SessionContentSwitcher";
+import PreviousSessionInsightsBar from "@/components/crm/PreviousSessionInsightsBar";
 import {
   Select,
   SelectContent,
@@ -260,6 +261,12 @@ ${appointment.notes || 'No general notes recorded.'}
             </DropdownMenu>
           </div>
         </div>
+
+        {/* Previous Session Insights Bar */}
+        <PreviousSessionInsightsBar 
+          clientId={appointment.clients.id} 
+          currentAppointmentId={appointment.id} 
+        />
 
         <Card className="border-none shadow-lg rounded-2xl bg-white">
           <CardHeader className="pb-4 border-b border-slate-100">

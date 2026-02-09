@@ -4,7 +4,7 @@ import React, { useState, useMemo } from 'react';
 import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card';
-import { Home, Heart, Dumbbell, FlaskConical, Activity, Move, Zap, CheckCircle2, Palette, Footprints, Scale, Hand, ExternalLink, TrendingUp } from 'lucide-react';
+import { Home, Heart, Dumbbell, FlaskConical, Activity, Move, Zap, CheckCircle2, Palette, Footprints, Scale, Hand, ExternalLink, TrendingUp, History } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { AppointmentWithClient } from '@/pages/AppointmentDetailPage';
 import BoltTestSection from './BoltTestSection';
@@ -19,8 +19,9 @@ import MuscleTestingTab from './MuscleTestingTab';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import EmotionAssessment from './EmotionAssessment';
 import DiaphragmReset from './DiaphragmReset';
+import PreviousSessionSummary from './PreviousSessionSummary';
 
-type ActiveView = 'home' | 'kinesiology' | 'muscles';
+type ActiveView = 'home' | 'kinesiology' | 'muscles' | 'previous';
 
 interface SessionContentSwitcherProps {
   appointment: AppointmentWithClient;
@@ -134,8 +135,8 @@ const SessionContentSwitcher = ({ appointment, onUpdate, saveField }: SessionCon
           <CogsAssessment
             appointmentId={appointmentId}
             initialSagittalNotes={appointment.sagittal_plane_notes}
-            initialFrontalNotes={appointment.frontal_plane_notes}
-            initialTransverseNotes={appointment.transverse_plane_notes}
+            initialFrontalNotes={appointment.frontal_notes}
+            initialTransverseNotes={appointment.transverse_notes}
             onUpdate={onUpdate}
           />
           <NeurologicalAssessments
@@ -276,13 +277,21 @@ const SessionContentSwitcher = ({ appointment, onUpdate, saveField }: SessionCon
     </div>
   );
 
+  const renderPreviousView = () => (
+    <PreviousSessionSummary 
+      clientId={appointment.clients.id} 
+      currentAppointmentId={appointment.id} 
+    />
+  );
+
   return (
     <Card className="border-none shadow-lg rounded-2xl bg-white overflow-hidden">
       <CardHeader className="p-4 border-b border-slate-100">
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 overflow-x-auto pb-2 sm:pb-0">
           <NavItem view="home" label="Home" Icon={Home} />
           <NavItem view="kinesiology" label="Kinesiology Tools" Icon={Heart} />
           <NavItem view="muscles" label="Muscle Testing Log" Icon={Dumbbell} />
+          <NavItem view="previous" label="Previous Session" Icon={History} />
         </div>
       </CardHeader>
       
@@ -290,6 +299,7 @@ const SessionContentSwitcher = ({ appointment, onUpdate, saveField }: SessionCon
         {activeView === 'home' && renderHomeView()}
         {activeView === 'kinesiology' && renderKinesiologyView()}
         {activeView === 'muscles' && renderMuscleView()}
+        {activeView === 'previous' && renderPreviousView()}
       </CardContent>
     </Card>
   );

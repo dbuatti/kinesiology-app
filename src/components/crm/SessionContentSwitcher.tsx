@@ -20,8 +20,9 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import EmotionAssessment from './EmotionAssessment';
 import DiaphragmReset from './DiaphragmReset';
 import PreviousSessionSummary from './PreviousSessionSummary';
+import GaitReflexAssessment from './GaitReflexAssessment';
 
-type ActiveView = 'home' | 'kinesiology' | 'muscles' | 'previous';
+type ActiveView = 'home' | 'kinesiology' | 'muscles' | 'gait' | 'previous';
 
 interface SessionContentSwitcherProps {
   appointment: AppointmentWithClient;
@@ -263,7 +264,7 @@ const SessionContentSwitcher = ({ appointment, onUpdate, saveField }: SessionCon
     <div className="space-y-6">
       <Card className="border-none shadow-lg rounded-2xl bg-white">
         <CardHeader className="bg-slate-50/50 border-b border-slate-100 rounded-t-2xl">
-          <CardTitle className="text-2xl font-bold flex items-center gap-3 text-slate-900">
+          <CardTitle className="text-2xl font-bold items-center gap-3 text-slate-900">
             <Dumbbell size={24} className="text-indigo-600" /> Muscle Testing Log
           </CardTitle>
           <CardDescription>
@@ -275,6 +276,14 @@ const SessionContentSwitcher = ({ appointment, onUpdate, saveField }: SessionCon
         </CardContent>
       </Card>
     </div>
+  );
+
+  const renderGaitView = () => (
+    <GaitReflexAssessment 
+      appointmentId={appointmentId}
+      initialNotes={appointment.gait_notes}
+      onSaveField={saveField as (field: string, value: string | null) => Promise<void>}
+    />
   );
 
   const renderPreviousView = () => (
@@ -291,6 +300,7 @@ const SessionContentSwitcher = ({ appointment, onUpdate, saveField }: SessionCon
           <NavItem view="home" label="Home" Icon={Home} />
           <NavItem view="kinesiology" label="Kinesiology Tools" Icon={Heart} />
           <NavItem view="muscles" label="Muscle Testing Log" Icon={Dumbbell} />
+          <NavItem view="gait" label="Gait Integration" Icon={Footprints} />
           <NavItem view="previous" label="Previous Session" Icon={History} />
         </div>
       </CardHeader>
@@ -299,6 +309,7 @@ const SessionContentSwitcher = ({ appointment, onUpdate, saveField }: SessionCon
         {activeView === 'home' && renderHomeView()}
         {activeView === 'kinesiology' && renderKinesiologyView()}
         {activeView === 'muscles' && renderMuscleView()}
+        {activeView === 'gait' && renderGaitView()}
         {activeView === 'previous' && renderPreviousView()}
       </CardContent>
     </Card>

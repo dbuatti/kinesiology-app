@@ -59,6 +59,8 @@ export interface Appointment {
   harmonic_rocking_notes?: string | null;
   t1_reset_notes?: string | null;
   diaphragm_reset_notes?: string | null;
+  // Gait Reflex Integration
+  gait_notes?: string | null;
 }
 
 export interface Client {

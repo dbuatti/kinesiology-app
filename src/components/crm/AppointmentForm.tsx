@@ -29,6 +29,7 @@ import { CalendarIcon, Loader2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { showSuccess, showError } from "@/utils/toast";
 import { APPOINTMENT_TAGS, APPOINTMENT_STATUSES } from "@/data/appointment-data";
+import SearchableClientSelect from "./SearchableClientSelect";
 
 const formSchema = z.object({
   clientId: z.string().min(1, "Client is required"),
@@ -59,8 +60,8 @@ const AppointmentForm = ({ onSuccess, initialClientId }: AppointmentFormProps) =
     defaultValues: {
       clientId: initialClientId || "",
       name: "",
-      tag: APPOINTMENT_TAGS[0], // Default to first tag
-      status: APPOINTMENT_STATUSES[0], // Default to first status
+      tag: APPOINTMENT_TAGS[0],
+      status: APPOINTMENT_STATUSES[0],
       time: "10:00",
       date: new Date(),
     },
@@ -91,7 +92,6 @@ const AppointmentForm = ({ onSuccess, initialClientId }: AppointmentFormProps) =
       const appointmentDate = new Date(values.date);
       appointmentDate.setHours(parseInt(hours), parseInt(minutes));
 
-      // --- Logic to handle optional name ---
       let appointmentName = values.name?.trim() || '';
       if (!appointmentName) {
           const client = clients.find(c => c.id === values.clientId);
@@ -99,7 +99,6 @@ const AppointmentForm = ({ onSuccess, initialClientId }: AppointmentFormProps) =
           const formattedDate = format(appointmentDate, "MMM d, yyyy");
           appointmentName = `${clientName} - ${values.tag || 'Session'} (${formattedDate})`;
       }
-      // ------------------------------------
 
       const { error } = await supabase.from("appointments").insert({
         user_id: session.user.id,
@@ -130,26 +129,17 @@ const AppointmentForm = ({ onSuccess, initialClientId }: AppointmentFormProps) =
           control={form.control}
           name="clientId"
           render={({ field }) => (
-            <FormItem>
+            <FormItem className="flex flex-col">
               <FormLabel>Client</FormLabel>
-              <Select
-                onValueChange={field.onChange}
-                defaultValue={field.value}
-                disabled={!!initialClientId || loadingClients}
-              >
-                <FormControl>
-                  <SelectTrigger>
-                    <SelectValue placeholder={loadingClients ? "Loading clients..." : "Select a client"} />
-                  </SelectTrigger>
-                </FormControl>
-                <SelectContent>
-                  {clients.map((client) => (
-                    <SelectItem key={client.id} value={client.id}>
-                      {client.name}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+              <FormControl>
+                <SearchableClientSelect
+                  clients={clients}
+                  value={field.value}
+                  onSelect={field.onChange}
+                  disabled={!!initialClientId || loadingClients}
+                  placeholder={loadingClients ? "Loading clients..." : "Search and select client"}
+                />
+              </FormControl>
               <FormMessage />
             </FormItem>
           )}
@@ -162,7 +152,7 @@ const AppointmentForm = ({ onSuccess, initialClientId }: AppointmentFormProps) =
             <FormItem>
               <FormLabel>Appointment Title (Optional)</FormLabel>
               <FormControl>
-                <Input placeholder="e.g. Initial Session (Default title will be generated if left blank)" {...field} />
+                <Input placeholder="e.g. Initial Session" {...field} />
               </FormControl>
               <FormMessage />
             </FormItem>
@@ -304,7 +294,7 @@ const AppointmentForm = ({ onSuccess, initialClientId }: AppointmentFormProps) =
           )}
         />
 
-        <Button type="submit" className="w-full bg-indigo-600 hover:bg-indigo-700" disabled={submitting}>
+        <Button type="submit" className="w-full bg-indigo-600 hover:bg-indigo-700 h-11 rounded-xl shadow-lg shadow-indigo-100" disabled={submitting}>
           {submitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
           Schedule Appointment
         </Button>

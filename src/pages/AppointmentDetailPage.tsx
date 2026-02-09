@@ -34,6 +34,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { MoreHorizontal } from "lucide-react";
+import Breadcrumbs from "@/components/crm/Breadcrumbs";
 
 export interface AppointmentWithClient extends Appointment {
   clients: { name: string; id: string };
@@ -175,6 +176,13 @@ ${appointment.notes || 'No general notes recorded.'}
     <>
       <SessionTimer appointmentDate={appointment.date} status={appointment.status} onFixedHeaderChange={setIsFixedHeaderActive} />
       <AppLayout hasFixedHeader={isFixedHeaderActive}>
+        <Breadcrumbs 
+          items={[
+            { label: "Appointments", path: "/appointments" },
+            { label: appointment.name || "Session Details" }
+          ]} 
+        />
+
         <div className="flex items-center justify-between gap-4">
           <Link to="/appointments">
             <Button variant="ghost" size="sm"><ArrowLeft size={18} className="mr-2" /> Back to Schedule</Button>
@@ -236,11 +244,11 @@ ${appointment.notes || 'No general notes recorded.'}
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4 border-b border-slate-100 pb-6">
               <div className="space-y-1">
                 <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Date</p>
-                <div className="flex items-center gap-2 text-slate-700 font-medium"><Calendar size={16} className="text-indigo-500" /> {format(appointment.date, "EEEE, MMM d, yyyy")}</div>
+                <div className="flex items-center gap-2 text-slate-700 font-medium"><Calendar size={16} className="text-indigo-50" /> {format(appointment.date, "EEEE, MMM d, yyyy")}</div>
               </div>
               <div className="space-y-1">
                 <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Time</p>
-                <div className="flex items-center gap-2 text-slate-700 font-medium"><Clock size={16} className="text-indigo-500" /> {format(appointment.date, "h:mm a")}</div>
+                <div className="flex items-center gap-2 text-slate-700 font-medium"><Clock size={16} className="text-indigo-50" /> {format(appointment.date, "h:mm a")}</div>
               </div>
               <div className="space-y-1">
                 <EditableField key={`goal-${appointment.id}`} field="goal" label="Goal" value={appointment.goal} placeholder="What's the goal?" onSave={saveField} />

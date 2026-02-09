@@ -29,6 +29,7 @@ import AppointmentForm from "@/components/crm/AppointmentForm";
 import ClientForm from "@/components/crm/ClientForm";
 import { showSuccess, showError } from "@/utils/toast";
 import { cn } from "@/lib/utils";
+import Breadcrumbs from "@/components/crm/Breadcrumbs";
 
 const ClientDetailPage = () => {
   const { id } = useParams();
@@ -102,7 +103,6 @@ const ClientDetailPage = () => {
 
   const rollups = getClientRollups(appointments);
   
-  // Calculate BOLT metrics
   const boltScores = appointments
     .filter(app => app.bolt_score !== null && app.bolt_score !== undefined)
     .map(app => app.bolt_score as number);
@@ -112,10 +112,8 @@ const ClientDetailPage = () => {
     ? Math.round(boltScores.reduce((sum, score) => sum + score, 0) / totalBoltScores) 
     : null;
   
-  // Appointments are already sorted descending by date, so the first one with a score is the latest.
   const lastBoltScore = appointments.find(app => app.bolt_score !== null && app.bolt_score !== undefined)?.bolt_score || null;
 
-  // Calculate Coherence metrics
   const coherenceScores = appointments
     .filter(app => app.coherence_score !== null && app.coherence_score !== undefined)
     .map(app => app.coherence_score as number);
@@ -129,13 +127,19 @@ const ClientDetailPage = () => {
 
   const getCoherenceColor = (score: number | null) => {
     if (score === null) return "text-slate-400";
-    // Check if score is a whole number (or very close)
     const isCoherent = Math.abs(score - Math.round(score)) < 0.01;
     return isCoherent ? "text-emerald-600" : "text-amber-600";
   };
 
   return (
-    <div className="p-4 md:p-8 max-w-7xl mx-auto space-y-8">
+    <div className="p-4 md:p-8 max-w-7xl mx-auto space-y-6">
+      <Breadcrumbs 
+        items={[
+          { label: "Clients", path: "/clients" },
+          { label: client.name }
+        ]} 
+      />
+
       <div className="flex items-center justify-between gap-4">
         <Link to="/clients">
           <Button variant="ghost" size="sm">
@@ -145,7 +149,7 @@ const ClientDetailPage = () => {
         <div className="flex gap-2">
             <Dialog open={editOpen} onOpenChange={setEditOpen}>
               <DialogTrigger asChild>
-                <Button variant="outline" size="sm" className="bg-white rounded-xl">
+                <Button variant="outline" size="sm" className="bg-white rounded-xl border-slate-200">
                   <Edit3 size={16} className="mr-2" /> Edit Profile
                 </Button>
               </DialogTrigger>
@@ -183,7 +187,6 @@ const ClientDetailPage = () => {
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
         <div className="lg:col-span-1 space-y-6">
-          {/* Profile Card - Updated Design */}
           <Card className="overflow-hidden border-none shadow-lg bg-white rounded-2xl">
             <div className="h-24 bg-gradient-to-r from-indigo-600 to-indigo-500 relative">
                 <div className="absolute bottom-0 left-6 translate-y-1/2 p-1 bg-white rounded-full shadow-md">
@@ -213,7 +216,6 @@ const ClientDetailPage = () => {
             </CardContent>
           </Card>
 
-          {/* Personal Details Card */}
           <Card className="border-none shadow-sm bg-white rounded-2xl">
             <CardHeader className="pb-3">
               <CardTitle className="text-lg font-bold text-slate-900">Contact & Background</CardTitle>
@@ -299,7 +301,6 @@ const ClientDetailPage = () => {
         </div>
 
         <div className="lg:col-span-2 space-y-6">
-          {/* Stats Cards - Updated Design */}
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-6">
             <Card className="border-none shadow-sm rounded-2xl bg-white border-t-4 border-indigo-500">
               <CardHeader className="pb-2">
@@ -375,7 +376,7 @@ const ClientDetailPage = () => {
             <h3 className="text-xl font-bold text-slate-900">Appointments ({rollups.totalSessions})</h3>
             <Dialog open={appOpen} onOpenChange={setAppOpen}>
               <DialogTrigger asChild>
-                <Button size="sm" className="bg-indigo-600 hover:bg-indigo-700 shadow-lg shadow-indigo-200 rounded-xl">
+                <Button size="sm" className="bg-indigo-600 hover:bg-indigo-700 shadow-lg shadow-indigo-200 rounded-xl h-10 px-4">
                   <Plus size={16} className="mr-2" /> Book Session
                 </Button>
               </DialogTrigger>

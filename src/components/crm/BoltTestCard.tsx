@@ -83,10 +83,12 @@ const BoltTestCard = ({ appointmentId, initialBoltScore, onUpdate }: BoltTestCar
             <div className="space-y-2">
               <h4 className="font-semibold text-slate-800">Instructions:</h4>
               <ul className="list-disc list-inside space-y-1 text-slate-600">
-                <li>Ensure the client is in a relaxed state.</li>
-                <li>Perform during the initial session to establish a baseline, and re-assess session-by-session.</li>
-                <li>Measure how long a person can comfortably hold their breath after a normal exhalation until the first definite desire to breathe.</li>
-                <li>If a client has a low score, prescribe the Breathing Recovery exercise and encourage Nasal breathing.</li>
+                <li>Take a normal breath in through your nose and allow a normal breath out through your nose.</li>
+                <li>Hold your nose with your fingers to prevent air from entering your lungs.</li>
+                <li>Start your timer.</li>
+                <li>Time the number of seconds until you feel the first definite desire to breathe.</li>
+                <li>Release your nose, stop the timer, and breathe in through your nose (calmly).</li>
+                <li>Resume normal breathing.</li>
               </ul>
             </div>
 

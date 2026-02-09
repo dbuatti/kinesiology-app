@@ -149,7 +149,7 @@ const BoltTestSection = ({ appointmentId, initialBoltScore, onUpdate }: BoltTest
                   {initialBoltScore !== null && initialBoltScore !== undefined && (
                     <Badge className={cn(
                       "px-4 py-2 text-sm font-bold shadow-sm",
-                      initialBoltScore >= 40 ? "bg-emerald-500 text-white hover:bg-emerald-600" :
+                      initialBoltScore >= 40 ? "bg-emerald-50 text-white hover:bg-emerald-600" :
                       initialBoltScore >= 25 ? "bg-blue-500 text-white hover:bg-blue-600" :
                       "bg-amber-500 text-white hover:bg-amber-600"
                     )}>

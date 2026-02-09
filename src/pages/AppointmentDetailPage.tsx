@@ -9,7 +9,7 @@ import { Label } from "@/components/ui/label";
 import { 
   ArrowLeft, Calendar, Clock, 
   Loader2, Trash2, User, Droplets, Footprints, Hand,
-  Activity, Move, Heart, Scale, Brain, FlaskConical, Palette, Copy, Check
+  Activity, Move, Heart, Scale, Brain, FlaskConical, Palette, Copy, Check, History
 } from "lucide-react";
 import { format } from "date-fns";
 import { Appointment } from "@/types/crm";
@@ -64,6 +64,7 @@ const AppointmentDetailPage = () => {
   const [loading, setLoading] = useState(true);
   const [isFixedHeaderActive, setIsFixedHeaderActive] = useState(false);
   const [copied, setCopied] = useState(false);
+  const [cloning, setCloning] = useState(false);
 
   const fetchAppointmentData = async () => {
     if (!id) return;
@@ -121,6 +122,46 @@ const AppointmentDetailPage = () => {
       setAppointment(prev => prev ? { ...prev, [field]: normalized } : null);
     } catch (err: any) {
       console.error(`Silent save failed for ${field}:`, err);
+    }
+  };
+
+  const handleClonePrevious = async () => {
+    if (!appointment || !id) return;
+    setCloning(true);
+    try {
+      // Find the most recent appointment for this client that is NOT this one
+      const { data: previous, error } = await supabase
+        .from('appointments')
+        .select('goal, issue, acupoints')
+        .eq('client_id', appointment.clientId)
+        .neq('id', id)
+        .order('date', { ascending: false })
+        .limit(1)
+        .single();
+
+      if (error) {
+        if (error.code === 'PGRST116') {
+          showError("No previous sessions found for this client.");
+        } else {
+          throw error;
+        }
+        return;
+      }
+
+      if (previous) {
+        await supabase.from('appointments').update({
+          goal: previous.goal,
+          issue: previous.issue,
+          acupoints: previous.acupoints
+        }).eq('id', id);
+        
+        showSuccess("Cloned Goal, Issue, and Acupoints from previous session.");
+        fetchAppointmentData();
+      }
+    } catch (err: any) {
+      showError("Failed to clone previous session data.");
+    } finally {
+      setCloning(false);
     }
   };
 
@@ -188,6 +229,16 @@ ${appointment.notes || 'No general notes recorded.'}
             <Button variant="ghost" size="sm"><ArrowLeft size={18} className="mr-2" /> Back to Schedule</Button>
           </Link>
           <div className="flex gap-2">
+            <Button 
+              variant="outline" 
+              size="sm" 
+              className="bg-white rounded-xl border-slate-200 text-slate-600 hover:bg-slate-50"
+              onClick={handleClonePrevious}
+              disabled={cloning}
+            >
+              {cloning ? <Loader2 size={16} className="mr-2 animate-spin" /> : <History size={16} className="mr-2" />}
+              Clone Previous Info
+            </Button>
             <Button 
               variant="outline" 
               size="sm" 

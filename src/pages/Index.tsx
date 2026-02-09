@@ -17,12 +17,17 @@ import AppointmentForm from "@/components/crm/AppointmentForm";
 import RecentActivity from "@/components/crm/RecentActivity";
 import UpcomingAppointments from "@/components/crm/UpcomingAppointments";
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
-import { format, subMonths, isToday } from "date-fns";
+import { format, subMonths, isToday, subDays, isAfter } from "date-fns";
 import { Skeleton } from "@/components/ui/skeleton";
 import { cn } from "@/lib/utils";
 
 const Index = () => {
-  const [stats, setStats] = useState({ clients: 0, appointments: 0 });
+  const [stats, setStats] = useState({ 
+    clients: 0, 
+    appointments: 0,
+    newClients30d: 0,
+    sessions30d: 0
+  });
   const [todaySessions, setTodaySessions] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [clientDialogOpen, setClientDialogOpen] = useState(false);
@@ -31,15 +36,27 @@ const Index = () => {
 
   const fetchDashboardData = async () => {
     try {
-      const [{ count: clientCount }, { count: appCount }, { data: allApps }] = await Promise.all([
+      const thirtyDaysAgo = subDays(new Date(), 30).toISOString();
+
+      const [
+        { count: clientCount }, 
+        { count: appCount }, 
+        { data: allApps },
+        { count: newClientsCount },
+        { count: recentAppsCount }
+      ] = await Promise.all([
         supabase.from('clients').select('*', { count: 'exact', head: true }),
         supabase.from('appointments').select('*', { count: 'exact', head: true }),
-        supabase.from('appointments').select('*, clients(name)').order('date', { ascending: true })
+        supabase.from('appointments').select('*, clients(name)').order('date', { ascending: true }),
+        supabase.from('clients').select('*', { count: 'exact', head: true }).gte('created_at', thirtyDaysAgo),
+        supabase.from('appointments').select('*', { count: 'exact', head: true }).gte('date', thirtyDaysAgo)
       ]);
 
       setStats({ 
         clients: clientCount || 0, 
-        appointments: appCount || 0 
+        appointments: appCount || 0,
+        newClients30d: newClientsCount || 0,
+        sessions30d: recentAppsCount || 0
       });
 
       // Filter today's sessions
@@ -190,23 +207,17 @@ const Index = () => {
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
-                <div className="flex items-center justify-between p-3 bg-slate-50 rounded-2xl">
-                  <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 bg-indigo-100 rounded-xl flex items-center justify-center text-indigo-600">
-                      <Users size={20} />
-                    </div>
-                    <span className="text-sm font-bold text-slate-600">Total Clients</span>
+                <div className="grid grid-cols-2 gap-3">
+                  <div className="p-3 bg-slate-50 rounded-2xl">
+                    <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">Total Clients</p>
+                    <p className="text-2xl font-black text-slate-900">{stats.clients}</p>
+                    <p className="text-[10px] text-emerald-600 font-bold mt-1">+{stats.newClients30d} last 30d</p>
                   </div>
-                  <span className="text-xl font-black text-slate-900">{stats.clients}</span>
-                </div>
-                <div className="flex items-center justify-between p-3 bg-slate-50 rounded-2xl">
-                  <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 bg-emerald-100 rounded-xl flex items-center justify-center text-emerald-600">
-                      <Activity size={20} />
-                    </div>
-                    <span className="text-sm font-bold text-slate-600">Total Sessions</span>
+                  <div className="p-3 bg-slate-50 rounded-2xl">
+                    <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">Total Sessions</p>
+                    <p className="text-2xl font-black text-slate-900">{stats.appointments}</p>
+                    <p className="text-[10px] text-indigo-600 font-bold mt-1">{stats.sessions30d} last 30d</p>
                   </div>
-                  <span className="text-xl font-black text-slate-900">{stats.appointments}</span>
                 </div>
                 <Button variant="outline" className="w-full rounded-xl border-slate-200 text-slate-600" asChild>
                   <Link to="/procedures">View Procedure Progress</Link>

@@ -1,5 +1,5 @@
 import { Link, useLocation, useNavigate } from "react-router-dom";
-import { Users, Calendar, LayoutDashboard, Settings, Target, Keyboard, LogOut, HelpCircle } from "lucide-react";
+import { Users, Calendar, LayoutDashboard, Settings, Target, Keyboard, LogOut, HelpCircle, Clock } from "lucide-react";
 import { cn } from "@/lib/utils";
 import SearchBar from "./SearchBar";
 import { Badge } from "@/components/ui/badge";
@@ -7,11 +7,13 @@ import { supabase } from "@/integrations/supabase/client";
 import { showSuccess } from "@/utils/toast";
 import { useEffect, useState } from "react";
 import HelpModal from "./HelpModal";
+import { useRecentClients } from "@/hooks/use-recent-clients";
 
 const Sidebar = () => {
   const location = useLocation();
   const navigate = useNavigate();
   const [helpOpen, setHelpOpen] = useState(false);
+  const { recentClients } = useRecentClients();
   
   const navItems = [
     { label: "Dashboard", icon: LayoutDashboard, path: "/", shortcut: "⌘D" },
@@ -76,36 +78,57 @@ const Sidebar = () => {
         <SearchBar />
       </div>
       
-      <nav className="flex flex-col gap-1.5">
-        {navItems.map((item) => {
-          const isActive = location.pathname === item.path || (item.path !== "/" && location.pathname.startsWith(item.path));
-          return (
-            <Link
-              key={item.path}
-              to={item.path}
-              className={cn(
-                "flex items-center justify-between gap-3 px-4 py-2.5 rounded-xl transition-all duration-200 group",
-                isActive 
-                  ? "bg-indigo-600 text-white shadow-md shadow-indigo-600/10" 
-                  : "text-slate-400 hover:text-white hover:bg-slate-900"
-              )}
-            >
-              <div className="flex items-center gap-3">
-                <item.icon size={20} className={cn("transition-transform group-hover:scale-110", isActive ? "text-white" : "text-slate-500")} />
-                <span className="font-medium">{item.label}</span>
-              </div>
-              {item.shortcut && (
-                <kbd className={cn(
-                  "hidden xl:inline-flex h-5 select-none items-center gap-1 rounded border px-1.5 font-mono text-[10px] font-medium opacity-0 group-hover:opacity-100 transition-opacity",
-                  isActive ? "border-indigo-400 bg-indigo-700 text-indigo-100" : "border-slate-700 bg-slate-800 text-slate-400"
-                )}>
-                  {item.shortcut}
-                </kbd>
-              )}
-            </Link>
-          );
-        })}
-      </nav>
+      <div className="space-y-6">
+        <nav className="flex flex-col gap-1.5">
+          {navItems.map((item) => {
+            const isActive = location.pathname === item.path || (item.path !== "/" && location.pathname.startsWith(item.path));
+            return (
+              <Link
+                key={item.path}
+                to={item.path}
+                className={cn(
+                  "flex items-center justify-between gap-3 px-4 py-2.5 rounded-xl transition-all duration-200 group",
+                  isActive 
+                    ? "bg-indigo-600 text-white shadow-md shadow-indigo-600/10" 
+                    : "text-slate-400 hover:text-white hover:bg-slate-900"
+                )}
+              >
+                <div className="flex items-center gap-3">
+                  <item.icon size={20} className={cn("transition-transform group-hover:scale-110", isActive ? "text-white" : "text-slate-500")} />
+                  <span className="font-medium">{item.label}</span>
+                </div>
+                {item.shortcut && (
+                  <kbd className={cn(
+                    "hidden xl:inline-flex h-5 select-none items-center gap-1 rounded border px-1.5 font-mono text-[10px] font-medium opacity-0 group-hover:opacity-100 transition-opacity",
+                    isActive ? "border-indigo-400 bg-indigo-700 text-indigo-100" : "border-slate-700 bg-slate-800 text-slate-400"
+                  )}>
+                    {item.shortcut}
+                  </kbd>
+                )}
+              </Link>
+            );
+          })}
+        </nav>
+
+        {recentClients.length > 0 && (
+          <div className="px-2 space-y-3">
+            <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest flex items-center gap-2">
+              <Clock size={12} /> Recent Clients
+            </p>
+            <div className="flex flex-col gap-1">
+              {recentClients.map(client => (
+                <Link 
+                  key={client.id} 
+                  to={`/clients/${client.id}`}
+                  className="text-sm text-slate-400 hover:text-indigo-400 transition-colors py-1 px-2 rounded-lg hover:bg-slate-900 truncate"
+                >
+                  {client.name}
+                </Link>
+              ))}
+            </div>
+          </div>
+        )}
+      </div>
       
       <div className="mt-auto pt-6 border-t border-slate-900 space-y-3">
         <button 

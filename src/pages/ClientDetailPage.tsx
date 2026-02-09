@@ -8,7 +8,7 @@ import { Button } from "@/components/ui/button";
 import { 
   ArrowLeft, Plus, Mail, Phone, MapPin, Calendar, 
   Star, Loader2, Briefcase, Heart, Baby, ExternalLink,
-  Activity, Edit3, Trash2, MoreHorizontal, FlaskConical, TrendingUp, Clock, Brain
+  Activity, Edit3, Trash2, MoreHorizontal, FlaskConical, TrendingUp, Clock, Brain, ArrowUpRight, ArrowDownRight
 } from "lucide-react";
 import { format } from "date-fns";
 import { Client, Appointment } from "@/types/crm";
@@ -30,6 +30,7 @@ import ClientForm from "@/components/crm/ClientForm";
 import { showSuccess, showError } from "@/utils/toast";
 import { cn } from "@/lib/utils";
 import Breadcrumbs from "@/components/crm/Breadcrumbs";
+import { useRecentClients } from "@/hooks/use-recent-clients";
 
 const ClientDetailPage = () => {
   const { id } = useParams();
@@ -39,6 +40,7 @@ const ClientDetailPage = () => {
   const [loading, setLoading] = useState(true);
   const [appOpen, setAppOpen] = useState(false);
   const [editOpen, setEditOpen] = useState(false);
+  const { addRecentClient } = useRecentClients();
 
   const fetchClientData = async () => {
     try {
@@ -58,11 +60,14 @@ const ClientDetailPage = () => {
 
       if (appError) throw appError;
 
-      setClient({
+      const mappedClient = {
         ...clientData,
         born: clientData.born ? new Date(clientData.born) : null,
         suburb: clientData.suburbs || []
-      } as unknown as Client);
+      } as unknown as Client;
+
+      setClient(mappedClient);
+      addRecentClient({ id: mappedClient.id, name: mappedClient.name });
 
       setAppointments((appData || []).map(a => ({
         ...a,
@@ -113,6 +118,7 @@ const ClientDetailPage = () => {
     : null;
   
   const lastBoltScore = appointments.find(app => app.bolt_score !== null && app.bolt_score !== undefined)?.bolt_score || null;
+  const previousBoltScore = appointments.filter(app => app.bolt_score !== null && app.bolt_score !== undefined)[1]?.bolt_score || null;
 
   const coherenceScores = appointments
     .filter(app => app.coherence_score !== null && app.coherence_score !== undefined)
@@ -124,11 +130,18 @@ const ClientDetailPage = () => {
     : null;
   
   const lastCoherenceScore = appointments.find(app => app.coherence_score !== null && app.coherence_score !== undefined)?.coherence_score || null;
+  const previousCoherenceScore = appointments.filter(app => app.coherence_score !== null && app.coherence_score !== undefined)[1]?.coherence_score || null;
 
   const getCoherenceColor = (score: number | null) => {
     if (score === null) return "text-slate-400";
     const isCoherent = Math.abs(score - Math.round(score)) < 0.01;
     return isCoherent ? "text-emerald-600" : "text-amber-600";
+  };
+
+  const getTrendIcon = (current: number | null, previous: number | null, higherIsBetter: boolean = true) => {
+    if (current === null || previous === null || current === previous) return null;
+    const improved = higherIsBetter ? current > previous : current < previous;
+    return improved ? <ArrowUpRight size={14} className="text-emerald-500" /> : <ArrowDownRight size={14} className="text-rose-500" />;
   };
 
   return (
@@ -321,12 +334,15 @@ const ClientDetailPage = () => {
                 </CardTitle>
               </CardHeader>
               <CardContent>
-                <p className={cn(
-                  "text-3xl font-extrabold",
-                  averageBoltScore === null ? "text-slate-400" : averageBoltScore >= 25 ? "text-emerald-600" : "text-amber-600"
-                )}>
-                  {averageBoltScore !== null ? `${averageBoltScore}s` : 'N/A'}
-                </p>
+                <div className="flex items-center gap-2">
+                  <p className={cn(
+                    "text-3xl font-extrabold",
+                    averageBoltScore === null ? "text-slate-400" : averageBoltScore >= 25 ? "text-emerald-600" : "text-amber-600"
+                  )}>
+                    {averageBoltScore !== null ? `${averageBoltScore}s` : 'N/A'}
+                  </p>
+                  {getTrendIcon(lastBoltScore, previousBoltScore)}
+                </div>
                 <p className="text-xs text-slate-400 mt-1">{totalBoltScores} recorded tests</p>
               </CardContent>
             </Card>
@@ -338,12 +354,15 @@ const ClientDetailPage = () => {
                 </CardTitle>
               </CardHeader>
               <CardContent>
-                <p className={cn(
-                  "text-3xl font-extrabold",
-                  getCoherenceColor(averageCoherenceScore)
-                )}>
-                  {averageCoherenceScore !== null ? averageCoherenceScore.toFixed(2) : 'N/A'}
-                </p>
+                <div className="flex items-center gap-2">
+                  <p className={cn(
+                    "text-3xl font-extrabold",
+                    getCoherenceColor(averageCoherenceScore)
+                  )}>
+                    {averageCoherenceScore !== null ? averageCoherenceScore.toFixed(2) : 'N/A'}
+                  </p>
+                  {getTrendIcon(lastCoherenceScore, previousCoherenceScore)}
+                </div>
                 <p className="text-xs text-slate-400 mt-1">{totalCoherenceScores} recorded tests</p>
               </CardContent>
             </Card>

@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card';
 import { Home, Heart, Dumbbell, FlaskConical, Activity, Move, Zap, CheckCircle2, Palette, Footprints, Scale, Hand, ExternalLink, TrendingUp } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { AppointmentWithClient } from '@/pages/AppointmentDetailPage'; // Assuming this type is available globally or imported
+import { AppointmentWithClient } from '@/pages/AppointmentDetailPage';
 import BoltTestSection from './BoltTestSection';
 import CoherenceAssessment from './CoherenceAssessment';
 import CogsAssessment from './CogsAssessment';
@@ -20,7 +20,6 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import EmotionAssessment from './EmotionAssessment';
 import DiaphragmReset from './DiaphragmReset';
 
-// Define the views
 type ActiveView = 'home' | 'kinesiology' | 'muscles';
 
 interface SessionContentSwitcherProps {
@@ -56,7 +55,6 @@ const SessionContentSwitcher = ({ appointment, onUpdate, saveField }: SessionCon
 
   const renderHomeView = () => (
     <div className="space-y-6">
-      {/* General Session Notes (Moved here from AppointmentDetailPage) */}
       <Card className="border-slate-200 shadow-none rounded-2xl bg-slate-50">
         <CardHeader className="pb-2">
           <CardTitle className="text-sm flex items-center gap-2 text-slate-700">
@@ -100,9 +98,7 @@ const SessionContentSwitcher = ({ appointment, onUpdate, saveField }: SessionCon
           )}
         </CardContent>
       </Card>
-      {/* End General Session Notes */}
 
-      {/* 5 Phase Tabs */}
       <Tabs defaultValue="baseline" className="w-full">
         <TabsList className="grid w-full grid-cols-5 h-12 bg-slate-100 p-1 rounded-xl">
           <TabsTrigger value="baseline" className="flex items-center gap-2 data-[state=active]:bg-indigo-600 data-[state=active]:text-white data-[state=active]:shadow-md rounded-lg h-10 text-xs">
@@ -156,16 +152,19 @@ const SessionContentSwitcher = ({ appointment, onUpdate, saveField }: SessionCon
             appointmentId={appointmentId}
             initialNotes={appointment.harmonic_rocking_notes}
             onSaveField={saveField}
+            onUpdate={onUpdate}
           />
           <T1SympatheticReset
             appointmentId={appointmentId}
             initialNotes={appointment.t1_reset_notes}
             onSaveField={saveField}
+            onUpdate={onUpdate}
           />
           <DiaphragmReset
             appointmentId={appointmentId}
             initialNotes={appointment.diaphragm_reset_notes}
             onSaveField={saveField}
+            onUpdate={onUpdate}
           />
           <EditableField
             key={`notes-sympathetic-general-${appointmentId}`}
@@ -270,14 +269,15 @@ const SessionContentSwitcher = ({ appointment, onUpdate, saveField }: SessionCon
             Logging muscle test results for {appointment.clients.name} (Session ID: {appointmentId.slice(0, 8)}...)
           </CardDescription>
         </CardHeader>
+        <CardContent className="p-6">
+          <MuscleTestingTab appointmentId={appointmentId} />
+        </CardContent>
       </Card>
-      <MuscleTestingTab appointmentId={appointmentId} />
     </div>
   );
 
   return (
     <Card className="border-none shadow-lg rounded-2xl bg-white overflow-hidden">
-      {/* Top Navigation Bar */}
       <CardHeader className="p-4 border-b border-slate-100">
         <div className="flex items-center gap-2">
           <NavItem view="home" label="Home" Icon={Home} />
@@ -286,7 +286,6 @@ const SessionContentSwitcher = ({ appointment, onUpdate, saveField }: SessionCon
         </div>
       </CardHeader>
       
-      {/* Dynamic Content Area */}
       <CardContent className="p-6">
         {activeView === 'home' && renderHomeView()}
         {activeView === 'kinesiology' && renderKinesiologyView()}

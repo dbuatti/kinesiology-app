@@ -3,7 +3,7 @@ import { Link } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Users, Calendar, Activity, TrendingUp, Loader2, Plus, ArrowRight, UserPlus, Sparkles, Clock, CheckCircle2 } from "lucide-react";
+import { Users, Calendar, Activity, TrendingUp, Loader2, Plus, ArrowRight, UserPlus, Sparkles, Clock, CheckCircle2, Zap } from "lucide-react";
 import { MadeWithDyad } from "@/components/made-with-dyad";
 import { Client, Appointment } from "@/types/crm";
 import {

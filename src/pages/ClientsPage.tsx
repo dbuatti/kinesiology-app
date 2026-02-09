@@ -5,7 +5,7 @@ import { calculateAge, getStarSign } from "@/utils/crm-utils";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Plus, Search, Loader2, UserPlus, Sparkles } from "lucide-react";
+import { Plus, Search, Loader2, UserPlus, Sparkles, Activity } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import {
   Dialog,
@@ -17,17 +17,22 @@ import {
 import ClientForm from "@/components/crm/ClientForm";
 import { Client } from "@/types/crm";
 
+interface ClientWithStats extends Client {
+  session_count: number;
+}
+
 const ClientsPage = () => {
   const [search, setSearch] = useState("");
-  const [clients, setClients] = useState<Client[]>([]);
+  const [clients, setClients] = useState<ClientWithStats[]>([]);
   const [loading, setLoading] = useState(true);
   const [open, setOpen] = useState(false);
   
   const fetchClients = async () => {
     try {
+      // Fetch clients and their appointment counts
       const { data, error } = await supabase
         .from('clients')
-        .select('*')
+        .select('*, appointments(count)')
         .order('name', { ascending: true });
       
       if (error) throw error;
@@ -35,8 +40,9 @@ const ClientsPage = () => {
       const mapped = (data || []).map(c => ({
         ...c,
         born: c.born ? new Date(c.born) : null,
-        suburb: c.suburbs || []
-      })) as unknown as Client[];
+        suburb: c.suburbs || [],
+        session_count: c.appointments?.[0]?.count || 0
+      })) as unknown as ClientWithStats[];
       
       setClients(mapped);
     } catch (err) {
@@ -124,10 +130,9 @@ const ClientsPage = () => {
             <TableHeader className="bg-slate-50/50">
               <TableRow>
                 <TableHead className="font-semibold text-slate-900">Name</TableHead>
-                <TableHead className="text-slate-600">Pronouns</TableHead>
-                <TableHead className="text-slate-600">Age</TableHead>
-                <TableHead className="text-slate-600">Star Sign</TableHead>
+                <TableHead className="text-slate-600">Age / Sign</TableHead>
                 <TableHead className="text-slate-600">Suburb</TableHead>
+                <TableHead className="text-slate-600 text-center">Sessions</TableHead>
                 <TableHead className="text-slate-600 text-right">Action</TableHead>
               </TableRow>
             </TableHeader>
@@ -142,25 +147,27 @@ const ClientsPage = () => {
                       {client.name}
                     </Link>
                   </TableCell>
-                  <TableCell className="text-slate-500">{client.pronouns || "-"}</TableCell>
-                  <TableCell className="text-slate-500">{client.born ? calculateAge(client.born) : "-"}</TableCell>
                   <TableCell>
-                    {client.born ? (
-                      <Badge variant="outline" className="font-normal border-slate-200 text-slate-600">
-                        {getStarSign(client.born)}
-                      </Badge>
-                    ) : "-"}
+                    <div className="flex flex-col">
+                      <span className="text-sm text-slate-700">{client.born ? `${calculateAge(client.born)} yrs` : "-"}</span>
+                      {client.born && (
+                        <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">{getStarSign(client.born)}</span>
+                      )}
+                    </div>
                   </TableCell>
                   <TableCell>
                     <div className="flex gap-1 flex-wrap">
                       {client.suburb.slice(0, 2).map(s => (
-                        <Badge key={s} variant="secondary" className="bg-slate-100 text-slate-600 hover:bg-slate-200 border-none">
+                        <Badge key={s} variant="secondary" className="bg-slate-100 text-slate-600 hover:bg-slate-200 border-none text-[10px]">
                           {s}
                         </Badge>
                       ))}
-                      {client.suburb.length > 2 && (
-                        <span className="text-xs text-slate-400">+{client.suburb.length - 2} more</span>
-                      )}
+                    </div>
+                  </TableCell>
+                  <TableCell className="text-center">
+                    <div className="flex flex-col items-center">
+                      <span className="font-black text-slate-900">{client.session_count}</span>
+                      <Activity size={12} className="text-indigo-400" />
                     </div>
                   </TableCell>
                   <TableCell className="text-right">
@@ -174,34 +181,13 @@ const ClientsPage = () => {
               ))}
             </TableBody>
           </Table>
-        ) : search ? (
+        ) : (
           <div className="text-center py-20 bg-slate-50/50">
             <div className="mx-auto w-12 h-12 bg-slate-100 rounded-full flex items-center justify-center mb-4">
                <Search className="text-slate-400" size={24} />
             </div>
-            <p className="text-slate-900 font-medium">No clients match "{search}"</p>
-            <p className="text-slate-500 text-sm mt-1">Try a different search term or add a new client.</p>
-            <Button 
-              variant="outline" 
-              className="mt-4"
-              onClick={() => setSearch("")}
-            >
-              Clear Search
-            </Button>
-          </div>
-        ) : (
-          <div className="text-center py-20 bg-gradient-to-br from-indigo-50 to-blue-50">
-            <div className="mx-auto w-16 h-16 bg-white rounded-2xl flex items-center justify-center mb-4 shadow-lg">
-               <Sparkles className="text-indigo-500" size={32} />
-            </div>
-            <p className="text-slate-900 font-bold text-lg">Welcome to Antigravity!</p>
-            <p className="text-slate-500 text-sm mt-1 max-w-xs mx-auto">Start building your practice by adding your first client.</p>
-            <Button 
-              className="mt-6 bg-indigo-600 hover:bg-indigo-700"
-              onClick={() => setOpen(true)}
-            >
-              <UserPlus size={18} className="mr-2" /> Add Your First Client
-            </Button>
+            <p className="text-slate-900 font-medium">No clients found</p>
+            <Button variant="outline" className="mt-4" onClick={() => setSearch("")}>Clear Search</Button>
           </div>
         )}
       </div>

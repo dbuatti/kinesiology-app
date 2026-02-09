@@ -1,15 +1,17 @@
 import { Link, useLocation, useNavigate } from "react-router-dom";
-import { Users, Calendar, LayoutDashboard, Settings, Target, Keyboard, LogOut } from "lucide-react";
+import { Users, Calendar, LayoutDashboard, Settings, Target, Keyboard, LogOut, HelpCircle } from "lucide-react";
 import { cn } from "@/lib/utils";
 import SearchBar from "./SearchBar";
 import { Badge } from "@/components/ui/badge";
 import { supabase } from "@/integrations/supabase/client";
 import { showSuccess } from "@/utils/toast";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
+import HelpModal from "./HelpModal";
 
 const Sidebar = () => {
   const location = useLocation();
   const navigate = useNavigate();
+  const [helpOpen, setHelpOpen] = useState(false);
   
   const navItems = [
     { label: "Dashboard", icon: LayoutDashboard, path: "/", shortcut: "⌘D" },
@@ -33,6 +35,14 @@ const Sidebar = () => {
           case '2':
             e.preventDefault();
             navigate('/appointments');
+            break;
+          case 'p':
+            e.preventDefault();
+            navigate('/procedures');
+            break;
+          case '/':
+            e.preventDefault();
+            setHelpOpen(true);
             break;
         }
       }
@@ -98,6 +108,14 @@ const Sidebar = () => {
       </nav>
       
       <div className="mt-auto pt-6 border-t border-slate-900 space-y-3">
+        <button 
+          onClick={() => setHelpOpen(true)}
+          className="flex items-center gap-3 px-4 py-2.5 rounded-xl text-slate-400 hover:text-white hover:bg-slate-900 transition-all w-full text-left group"
+        >
+          <HelpCircle size={20} className="group-hover:scale-110 transition-transform" />
+          <span className="font-medium">Help & Shortcuts</span>
+        </button>
+
         <Link 
           to="/settings"
           className="flex items-center gap-3 px-4 py-2.5 rounded-xl text-slate-400 hover:text-white hover:bg-slate-900 transition-all cursor-pointer group"
@@ -135,6 +153,8 @@ const Sidebar = () => {
           </div>
         </div>
       </div>
+
+      <HelpModal open={helpOpen} onOpenChange={setHelpOpen} />
     </div>
   );
 };

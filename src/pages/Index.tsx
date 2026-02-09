@@ -3,7 +3,7 @@ import { Link } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Users, Calendar, Activity, TrendingUp, Loader2, Plus, ArrowRight, UserPlus, Sparkles } from "lucide-react";
+import { Users, Calendar, Activity, TrendingUp, Loader2, Plus, ArrowRight, UserPlus, Sparkles, Clock, CheckCircle2 } from "lucide-react";
 import { MadeWithDyad } from "@/components/made-with-dyad";
 import { Client, Appointment } from "@/types/crm";
 import {
@@ -17,12 +17,13 @@ import AppointmentForm from "@/components/crm/AppointmentForm";
 import RecentActivity from "@/components/crm/RecentActivity";
 import UpcomingAppointments from "@/components/crm/UpcomingAppointments";
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
-import { format, subMonths } from "date-fns";
+import { format, subMonths, isToday } from "date-fns";
 import { Skeleton } from "@/components/ui/skeleton";
+import { cn } from "@/lib/utils";
 
 const Index = () => {
   const [stats, setStats] = useState({ clients: 0, appointments: 0 });
-  const [recentClients, setRecentClients] = useState<Client[]>([]);
+  const [todaySessions, setTodaySessions] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [clientDialogOpen, setClientDialogOpen] = useState(false);
   const [appDialogOpen, setAppDialogOpen] = useState(false);
@@ -30,18 +31,20 @@ const Index = () => {
 
   const fetchDashboardData = async () => {
     try {
-      const [{ count: clientCount }, { count: appCount }, { data: recent }, { data: allApps }] = await Promise.all([
+      const [{ count: clientCount }, { count: appCount }, { data: allApps }] = await Promise.all([
         supabase.from('clients').select('*', { count: 'exact', head: true }),
         supabase.from('appointments').select('*', { count: 'exact', head: true }),
-        supabase.from('clients').select('*').order('created_at', { ascending: false }).limit(4),
-        supabase.from('appointments').select('date').order('date', { ascending: true })
+        supabase.from('appointments').select('*, clients(name)').order('date', { ascending: true })
       ]);
 
       setStats({ 
         clients: clientCount || 0, 
         appointments: appCount || 0 
       });
-      setRecentClients(recent as unknown as Client[] || []);
+
+      // Filter today's sessions
+      const today = allApps?.filter(app => isToday(new Date(app.date))) || [];
+      setTodaySessions(today);
 
       // Process chart data for last 6 months
       const months = Array.from({ length: 6 }).map((_, i) => {
@@ -88,31 +91,8 @@ const Index = () => {
           <Skeleton className="h-10 w-32" />
         </div>
       </div>
-
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-        {[1, 2, 3, 4].map((i) => (
-          <Card key={i} className="border-none shadow-sm">
-            <CardContent className="pt-6">
-              <Skeleton className="h-4 w-24 mb-2" />
-              <Skeleton className="h-8 w-16" />
-            </CardContent>
-          </Card>
-        ))}
-      </div>
-
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-        <Card className="lg:col-span-2 border-none shadow-sm">
-          <CardHeader>
-            <Skeleton className="h-6 w-32" />
-          </CardHeader>
-          <CardContent className="h-[300px]">
-            <Skeleton className="h-full w-full" />
-          </CardContent>
-        </Card>
-        <div className="space-y-6">
-          <Skeleton className="h-48 w-full rounded-2xl" />
-          <Skeleton className="h-64 w-full rounded-2xl" />
-        </div>
+        {[1, 2, 3, 4].map((i) => <Skeleton key={i} className="h-32 w-full rounded-2xl" />)}
       </div>
     </div>
   );
@@ -153,44 +133,86 @@ const Index = () => {
             Start building your kinesiology practice by adding your first client and scheduling sessions.
           </p>
           <div className="flex gap-4 justify-center">
-            <Button 
-              className="bg-indigo-600 hover:bg-indigo-700"
-              onClick={() => setClientDialogOpen(true)}
-            >
+            <Button className="bg-indigo-600 hover:bg-indigo-700" onClick={() => setClientDialogOpen(true)}>
               <UserPlus size={18} className="mr-2" /> Add First Client
             </Button>
-            <Button 
-              variant="outline"
-              onClick={() => setAppDialogOpen(true)}
-            >
+            <Button variant="outline" onClick={() => setAppDialogOpen(true)}>
               <Calendar size={18} className="mr-2" /> Schedule Session
             </Button>
           </div>
         </div>
       ) : (
         <>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-            {[
-              { label: "Active Clients", val: stats.clients, icon: Users, color: "bg-indigo-50 text-indigo-600", border: "bg-indigo-500" },
-              { label: "Total Sessions", val: stats.appointments, icon: Activity, color: "bg-emerald-50 text-emerald-600", border: "bg-emerald-500" },
-              { label: "This Month", val: chartData[chartData.length - 1]?.sessions || 0, icon: Calendar, color: "bg-amber-50 text-amber-600", border: "bg-amber-500" },
-              { label: "Retention Rate", val: "92%", icon: TrendingUp, color: "bg-rose-50 text-rose-600", border: "bg-rose-500" }
-            ].map((stat, i) => (
-              <Card key={i} className={`border-none shadow-sm overflow-hidden relative group rounded-2xl hover:shadow-md transition-shadow`}>
-                <div className={`absolute top-0 left-0 w-1.5 h-full ${stat.border}`} />
-                <CardContent className="pt-6">
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">{stat.label}</p>
-                      <h4 className="text-3xl font-black mt-1 text-slate-900">{stat.val}</h4>
+          {/* Daily Briefing Section */}
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            <Card className="lg:col-span-2 border-none shadow-lg bg-gradient-to-br from-indigo-600 to-indigo-800 text-white rounded-3xl overflow-hidden relative">
+              <div className="absolute top-0 right-0 p-8 opacity-10">
+                <Sparkles size={120} />
+              </div>
+              <CardHeader className="pb-2">
+                <CardTitle className="text-2xl font-bold flex items-center gap-2">
+                  <Zap size={24} className="text-amber-400 fill-amber-400" /> Daily Briefing
+                </CardTitle>
+                <CardDescription className="text-indigo-100 text-base">
+                  {todaySessions.length > 0 
+                    ? `You have ${todaySessions.length} session${todaySessions.length === 1 ? '' : 's'} scheduled for today.`
+                    : "No sessions scheduled for today. Time for some research or admin!"}
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="pt-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  {todaySessions.length > 0 ? (
+                    todaySessions.map(session => (
+                      <Link key={session.id} to={`/appointments/${session.id}`}>
+                        <div className="bg-white/10 hover:bg-white/20 transition-colors p-4 rounded-2xl border border-white/10 flex items-center justify-between group">
+                          <div className="min-w-0">
+                            <p className="text-xs font-bold text-indigo-200 uppercase tracking-widest">{format(new Date(session.date), "h:mm a")}</p>
+                            <p className="font-bold text-lg truncate">{session.clients?.name}</p>
+                          </div>
+                          <ArrowRight size={20} className="text-indigo-300 group-hover:translate-x-1 transition-transform" />
+                        </div>
+                      </Link>
+                    ))
+                  ) : (
+                    <div className="sm:col-span-2 flex items-center gap-3 p-4 bg-white/10 rounded-2xl border border-white/10">
+                      <CheckCircle2 size={24} className="text-emerald-400" />
+                      <p className="font-medium">Your schedule is clear. Enjoy the space!</p>
                     </div>
-                    <div className={`p-3 ${stat.color} rounded-2xl transition-all group-hover:scale-110 shadow-sm`}>
-                      <stat.icon size={22} />
+                  )}
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card className="border-none shadow-lg rounded-3xl bg-white">
+              <CardHeader className="pb-2">
+                <CardTitle className="text-lg font-bold flex items-center gap-2 text-slate-900">
+                  <TrendingUp size={20} className="text-indigo-600" /> Practice Pulse
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="flex items-center justify-between p-3 bg-slate-50 rounded-2xl">
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 bg-indigo-100 rounded-xl flex items-center justify-center text-indigo-600">
+                      <Users size={20} />
                     </div>
+                    <span className="text-sm font-bold text-slate-600">Total Clients</span>
                   </div>
-                </CardContent>
-              </Card>
-            ))}
+                  <span className="text-xl font-black text-slate-900">{stats.clients}</span>
+                </div>
+                <div className="flex items-center justify-between p-3 bg-slate-50 rounded-2xl">
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 bg-emerald-100 rounded-xl flex items-center justify-center text-emerald-600">
+                      <Activity size={20} />
+                    </div>
+                    <span className="text-sm font-bold text-slate-600">Total Sessions</span>
+                  </div>
+                  <span className="text-xl font-black text-slate-900">{stats.appointments}</span>
+                </div>
+                <Button variant="outline" className="w-full rounded-xl border-slate-200 text-slate-600" asChild>
+                  <Link to="/procedures">View Procedure Progress</Link>
+                </Button>
+              </CardContent>
+            </Card>
           </div>
 
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
@@ -209,28 +231,10 @@ const Index = () => {
                       </linearGradient>
                     </defs>
                     <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
-                    <XAxis 
-                      dataKey="name" 
-                      axisLine={false} 
-                      tickLine={false} 
-                      tick={{fontSize: 12, fill: '#94a3b8'}}
-                    />
-                    <YAxis 
-                      axisLine={false} 
-                      tickLine={false} 
-                      tick={{fontSize: 12, fill: '#94a3b8'}}
-                    />
-                    <Tooltip 
-                      contentStyle={{borderRadius: '12px', border: 'none', boxShadow: '0 10px 15px -3px rgb(0 0 0 / 0.1)'}}
-                    />
-                    <Area 
-                      type="monotone" 
-                      dataKey="sessions" 
-                      stroke="#4f46e5" 
-                      strokeWidth={3}
-                      fillOpacity={1} 
-                      fill="url(#colorSessions)" 
-                    />
+                    <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{fontSize: 12, fill: '#94a3b8'}} />
+                    <YAxis axisLine={false} tickLine={false} tick={{fontSize: 12, fill: '#94a3b8'}} />
+                    <Tooltip contentStyle={{borderRadius: '12px', border: 'none', boxShadow: '0 10px 15px -3px rgb(0 0 0 / 0.1)'}} />
+                    <Area type="monotone" dataKey="sessions" stroke="#4f46e5" strokeWidth={3} fillOpacity={1} fill="url(#colorSessions)" />
                   </AreaChart>
                 </ResponsiveContainer>
               </CardContent>
@@ -246,29 +250,15 @@ const Index = () => {
 
       <Dialog open={clientDialogOpen} onOpenChange={setClientDialogOpen}>
         <DialogContent className="sm:max-w-[550px]">
-          <DialogHeader>
-            <DialogTitle>Add New Client</DialogTitle>
-          </DialogHeader>
-          <ClientForm 
-            onSuccess={() => {
-              setClientDialogOpen(false);
-              fetchDashboardData();
-            }} 
-          />
+          <DialogHeader><DialogTitle>Add New Client</DialogTitle></DialogHeader>
+          <ClientForm onSuccess={() => { setClientDialogOpen(false); fetchDashboardData(); }} />
         </DialogContent>
       </Dialog>
 
       <Dialog open={appDialogOpen} onOpenChange={setAppDialogOpen}>
         <DialogContent className="sm:max-w-[500px]">
-          <DialogHeader>
-            <DialogTitle>Schedule New Session</DialogTitle>
-          </DialogHeader>
-          <AppointmentForm 
-            onSuccess={() => {
-              setAppDialogOpen(false);
-              fetchDashboardData();
-            }} 
-          />
+          <DialogHeader><DialogTitle>Schedule New Session</DialogTitle></DialogHeader>
+          <AppointmentForm onSuccess={() => { setAppDialogOpen(false); fetchDashboardData(); }} />
         </DialogContent>
       </Dialog>
       

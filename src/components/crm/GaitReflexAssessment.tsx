@@ -1,13 +1,12 @@
 "use client";
 
-import React, { useState } from "react";
+import React from "react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
-import { Footprints, Info, Zap, Eye, Move, RotateCcw, CheckCircle2 } from "lucide-react";
+import { Footprints, Info, Zap, Eye, Move, CheckCircle2, ArrowRight } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import EditableField from "./EditableField";
 import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
 
 interface GaitReflexAssessmentProps {
   appointmentId: string;
@@ -20,13 +19,12 @@ const GaitReflexAssessment = ({
   initialNotes, 
   onSaveField 
 }: GaitReflexAssessmentProps) => {
-  const [showCorrection, setShowCorrection] = useState(false);
 
   const correctionMatrix = [
-    { diagnosis: "Eyes UP", fix: "Head DOWN", detail: "Close eyes, chin to chest, nasal breathing" },
-    { diagnosis: "Eyes DOWN", fix: "Head UP/BACK", detail: "Close eyes, tilt head back, nasal breathing" },
-    { diagnosis: "Eyes RIGHT", fix: "Rotate LEFT + Tilt RIGHT", detail: "Rotate head left, then lateral tilt right" },
-    { diagnosis: "Eyes LEFT", fix: "Rotate RIGHT + Tilt LEFT", detail: "Rotate head right, then lateral tilt left" },
+    { diagnosis: "Eyes UP", fix: "Head DOWN" },
+    { diagnosis: "Eyes DOWN", fix: "Head UP/BACK" },
+    { diagnosis: "Eyes RIGHT", fix: "Rotate LEFT + Tilt RIGHT" },
+    { diagnosis: "Eyes LEFT", fix: "Rotate RIGHT + Tilt LEFT" },
   ];
 
   return (
@@ -40,7 +38,7 @@ const GaitReflexAssessment = ({
               </div>
               <div>
                 <CardTitle className="text-xl font-bold text-slate-900">Gait Reflex Integration</CardTitle>
-                <CardDescription className="text-slate-600">Central Pattern Generator (CPG) Calibration</CardDescription>
+                <CardDescription className="text-slate-600">Locomotion System Calibration</CardDescription>
               </div>
             </div>
             {initialNotes && (
@@ -50,64 +48,102 @@ const GaitReflexAssessment = ({
         </CardHeader>
 
         <CardContent className="p-6 space-y-8">
-          <Alert className="bg-blue-50 border-blue-200">
-            <Info className="h-4 w-4 text-blue-600" />
-            <AlertDescription className="text-sm text-blue-900">
-              <strong>Clinical Timing:</strong> Perform at the end of the session to integrate all previous corrections into the client's most complex movement pattern: walking.
-            </AlertDescription>
-          </Alert>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <Alert className="bg-blue-50 border-blue-200">
+              <Info className="h-4 w-4 text-blue-600" />
+              <AlertDescription className="text-xs text-blue-900">
+                <strong>Clinical Timing:</strong> Perform at the end of session. Lying/seated corrections can be disorienting once standing; this re-integrates the nervous system with the floor.
+              </AlertDescription>
+            </Alert>
+            <div className="bg-slate-900 rounded-xl p-4 text-white flex items-center gap-3">
+              <CheckCircle2 className="text-emerald-400 shrink-0" size={20} />
+              <p className="text-[11px] text-slate-300 leading-relaxed">
+                Gait is managed by <strong>Central Pattern Generators</strong> in the spinal cord. This process integrates visual, vestibular, and mechanoreceptive systems.
+              </p>
+            </div>
+          </div>
 
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-            {/* Diagnosis Section */}
-            <div className="space-y-4">
-              <h3 className="text-lg font-bold text-slate-900 flex items-center gap-2">
-                <Eye size={20} className="text-emerald-600" />
-                1. Diagnosis (Testing)
-              </h3>
-              <div className="bg-slate-50 rounded-2xl p-5 border border-slate-200 space-y-4">
-                <p className="text-sm font-semibold text-slate-700">Reciprocal Inhibition Check:</p>
-                <ul className="space-y-3">
-                  <li className="flex items-start gap-3 text-sm">
-                    <div className="w-5 h-5 rounded-full bg-emerald-100 text-emerald-600 flex items-center justify-center text-xs font-bold flex-shrink-0 mt-0.5">1</div>
-                    <span>Step <strong>Left Foot Forward</strong>.</span>
-                  </li>
-                  <li className="flex items-start gap-3 text-sm">
-                    <div className="w-5 h-5 rounded-full bg-emerald-100 text-emerald-600 flex items-center justify-center text-xs font-bold flex-shrink-0 mt-0.5">2</div>
-                    <span>Test <strong>Right Arm Flexors</strong> (Should Lock/Facilitate).</span>
-                  </li>
-                  <li className="flex items-start gap-3 text-sm">
-                    <div className="w-5 h-5 rounded-full bg-emerald-100 text-emerald-600 flex items-center justify-center text-xs font-bold flex-shrink-0 mt-0.5">3</div>
-                    <span>Test <strong>Left Arm Flexors</strong> (Should Unlock/Inhibit).</span>
-                  </li>
-                  <li className="flex items-start gap-3 text-sm">
-                    <div className="w-5 h-5 rounded-full bg-amber-100 text-amber-600 flex items-center justify-center text-xs font-bold flex-shrink-0 mt-0.5">!</div>
-                    <span className="text-slate-600 italic">If a muscle fails to inhibit or facilitate correctly, use eye positions to find the threatened pathway.</span>
-                  </li>
-                </ul>
+          {/* 1. Testing Patterns */}
+          <div className="space-y-4">
+            <h3 className="text-lg font-bold text-slate-900 flex items-center gap-2">
+              <Eye size={20} className="text-emerald-600" />
+              1. Diagnosis (Reciprocal Inhibition)
+            </h3>
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+              {/* Left Foot Forward */}
+              <div className="bg-slate-50 rounded-2xl p-5 border border-slate-200">
+                <p className="text-xs font-black text-indigo-600 uppercase tracking-widest mb-3">Left Foot Forward</p>
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-1">
+                    <p className="text-[10px] font-bold text-emerald-600 uppercase">Facilitate</p>
+                    <p className="text-xs font-medium text-slate-700">R Arm Flexors</p>
+                    <p className="text-xs font-medium text-slate-700">L Arm Extensors</p>
+                  </div>
+                  <div className="space-y-1">
+                    <p className="text-[10px] font-bold text-rose-500 uppercase">Inhibit</p>
+                    <p className="text-xs font-medium text-slate-700">L Arm Flexors</p>
+                    <p className="text-xs font-medium text-slate-700">R Arm Extensors</p>
+                  </div>
+                </div>
+              </div>
+
+              {/* Right Foot Forward */}
+              <div className="bg-slate-50 rounded-2xl p-5 border border-slate-200">
+                <p className="text-xs font-black text-indigo-600 uppercase tracking-widest mb-3">Right Foot Forward</p>
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-1">
+                    <p className="text-[10px] font-bold text-emerald-600 uppercase">Facilitate</p>
+                    <p className="text-xs font-medium text-slate-700">L Arm Flexors</p>
+                    <p className="text-xs font-medium text-slate-700">R Arm Extensors</p>
+                  </div>
+                  <div className="space-y-1">
+                    <p className="text-[10px] font-bold text-rose-500 uppercase">Inhibit</p>
+                    <p className="text-xs font-medium text-slate-700">R Arm Flexors</p>
+                    <p className="text-xs font-medium text-slate-700">L Arm Extensors</p>
+                  </div>
+                </div>
               </div>
             </div>
+          </div>
 
-            {/* Correction Section */}
-            <div className="space-y-4">
-              <h3 className="text-lg font-bold text-slate-900 flex items-center gap-2">
-                <Zap size={20} className="text-amber-500" />
-                2. Correction (The Fix)
-              </h3>
-              <div className="bg-amber-50 rounded-2xl p-5 border border-amber-200 space-y-4">
-                <p className="text-sm font-bold text-amber-900">The VOR Correction Matrix:</p>
-                <div className="grid gap-2">
+          {/* 2. Correction Options */}
+          <div className="space-y-4">
+            <h3 className="text-lg font-bold text-slate-900 flex items-center gap-2">
+              <Zap size={20} className="text-amber-500" />
+              2. Correction (If Out of Sync)
+            </h3>
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              {/* Quick VOR Fix */}
+              <div className="bg-amber-50 rounded-2xl p-5 border border-amber-200 space-y-3">
+                <p className="text-sm font-bold text-amber-900">Option A: Quick VOR Fix</p>
+                <div className="grid gap-1.5">
                   {correctionMatrix.map((item, i) => (
-                    <div key={i} className="flex items-center justify-between p-2 bg-white rounded-lg border border-amber-100 text-xs">
-                      <span className="font-bold text-slate-500 w-24">{item.diagnosis}</span>
-                      <Move size={12} className="text-amber-400" />
-                      <span className="font-bold text-emerald-700 flex-1 text-right">{item.fix}</span>
+                    <div key={i} className="flex items-center justify-between p-2 bg-white/60 rounded-lg text-[11px]">
+                      <span className="font-bold text-slate-500">{item.diagnosis}</span>
+                      <Move size={10} className="text-amber-400" />
+                      <span className="font-bold text-emerald-700">{item.fix}</span>
                     </div>
                   ))}
                 </div>
-                <div className="pt-2">
-                  <p className="text-[11px] text-amber-800 leading-relaxed">
-                    <strong>Protocol:</strong> Hold the failing gait position → Move head to corrective position → Nasal breathing for 30s → Finish with 30s of <strong>Cross Crawls</strong>.
-                  </p>
+                <p className="text-[10px] text-amber-800 italic pt-1">Hold failing gait position + Head fix + Nasal breathing (30s) + Cross Crawls.</p>
+              </div>
+
+              {/* Standard Pathway Fix */}
+              <div className="bg-indigo-50 rounded-2xl p-5 border border-indigo-200 space-y-3">
+                <p className="text-sm font-bold text-indigo-900">Option B: Standard Pathway</p>
+                <div className="flex flex-col gap-2">
+                  {[
+                    "Move back to neutral standing",
+                    "Follow normal pathway assessment",
+                    "Identify: Brain, Vestibular, or Body",
+                    "Correct (Afferent/Efferent etc)",
+                    "Re-assess Gait Reflex"
+                  ].map((step, i) => (
+                    <div key={i} className="flex items-center gap-2 text-[11px] text-indigo-800">
+                      <div className="w-4 h-4 rounded-full bg-indigo-200 flex items-center justify-center text-[9px] font-bold shrink-0">{i+1}</div>
+                      <span>{step}</span>
+                    </div>
+                  ))}
                 </div>
               </div>
             </div>
@@ -119,19 +155,9 @@ const GaitReflexAssessment = ({
               label="Gait Integration Notes"
               value={initialNotes}
               multiline
-              placeholder="Document failing pathways (e.g., Right leg forward, Eyes Down) and client response after cross-crawls..."
+              placeholder="Document failing pathways and client response..."
               onSave={onSaveField}
             />
-          </div>
-
-          <div className="bg-slate-900 rounded-2xl p-6 text-white">
-            <div className="flex items-center gap-3 mb-4">
-              <CheckCircle2 className="text-emerald-400" />
-              <h4 className="font-bold">Why this works</h4>
-            </div>
-            <p className="text-sm text-slate-300 leading-relaxed">
-              Gait is managed by <strong>Central Pattern Generators</strong> in the spinal cord. By placing the head in a position previously tagged as a "threat" while performing calm nasal breathing, we re-wire the nervous system to see the movement as safe, integrating the vestibular and visual systems with the physical gait cycle.
-            </p>
           </div>
         </CardContent>
       </Card>

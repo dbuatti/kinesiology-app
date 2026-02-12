@@ -30,64 +30,16 @@ const BoltTestSection = ({ appointmentId, initialBoltScore, onUpdate }: BoltTest
 
   const handleSaveScore = async (score: number) => {
     setLoading(true);
-
     try {
-      console.log("[BoltTestSection] Starting to save BOLT score:", score);
-      
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) {
-        throw new Error("User not authenticated");
-      }
-      console.log("[BoltTestSection] User ID:", user.id);
-
-      const { data: existingAppointment, error: fetchError } = await supabase
-        .from("appointments")
-        .select("bolt_score, user_id")
-        .eq("id", appointmentId)
-        .single();
-
-      if (fetchError) {
-        console.error("[BoltTestSection] Error fetching appointment:", fetchError);
-        throw fetchError;
-      }
-
-      const isNewScore = !existingAppointment?.bolt_score;
-      console.log("[BoltTestSection] Is new score:", isNewScore);
-      console.log("[BoltTestSection] Existing score:", existingAppointment?.bolt_score);
-
       const { error: updateError } = await supabase
         .from("appointments")
         .update({ bolt_score: score })
         .eq("id", appointmentId);
 
-      if (updateError) {
-        console.error("[BoltTestSection] Error updating appointment:", updateError);
-        throw updateError;
-      }
-
-      console.log("[BoltTestSection] BOLT score saved successfully");
-
-      const { data: procedures, error: procError } = await supabase
-        .from("procedures")
-        .select("*")
-        .eq("user_id", user.id)
-        .ilike("name", "%bolt%");
-
-      if (procError) {
-        console.error("[BoltTestSection] Error fetching procedures:", procError);
-      } else {
-        console.log("[BoltTestSection] BOLT procedures found:", procedures);
-      }
-
-      showSuccess(
-        isNewScore 
-          ? "BOLT score saved! Check Procedures page to see your progress." 
-          : "BOLT score updated successfully!"
-      );
-      
+      if (updateError) throw updateError;
+      showSuccess("BOLT score updated successfully!");
       onUpdate();
     } catch (error: any) {
-      console.error("[BoltTestSection] Error in handleSaveScore:", error);
       showError(error.message || "Failed to update BOLT score.");
     } finally {
       setLoading(false);
@@ -95,7 +47,7 @@ const BoltTestSection = ({ appointmentId, initialBoltScore, onUpdate }: BoltTest
   };
 
   const handleReset = async () => {
-    if (!confirm("Are you sure you want to reset the BOLT score for this session?")) return;
+    if (!confirm("Are you sure you want to reset the BOLT score?")) return;
     setLoading(true);
     try {
       const { error } = await supabase
@@ -104,7 +56,7 @@ const BoltTestSection = ({ appointmentId, initialBoltScore, onUpdate }: BoltTest
         .eq("id", appointmentId);
 
       if (error) throw error;
-      showSuccess("BOLT score reset successfully.");
+      showSuccess("BOLT score reset.");
       onUpdate();
     } catch (error: any) {
       showError(error.message || "Failed to reset BOLT score.");
@@ -116,235 +68,67 @@ const BoltTestSection = ({ appointmentId, initialBoltScore, onUpdate }: BoltTest
   const needsImprovement = initialBoltScore !== null && initialBoltScore !== undefined && initialBoltScore < 25;
 
   return (
-    <>
+    <div className="bg-white rounded-2xl border border-slate-100 shadow-sm overflow-hidden">
       <Collapsible open={isOpen} onOpenChange={setIsOpen}>
-        <Card className="border-none shadow-lg rounded-2xl bg-white overflow-hidden">
-          <CollapsibleTrigger asChild>
-            <CardHeader className="bg-gradient-to-r from-indigo-50 to-blue-50 border-b border-indigo-100 cursor-pointer hover:from-indigo-100 hover:to-blue-100 transition-colors">
-              <div className="flex items-center justify-between w-full">
-                <div className="flex items-center gap-3">
-                  <div className="w-12 h-12 bg-indigo-600 rounded-xl flex items-center justify-center shadow-lg shadow-indigo-200">
-                    <FlaskConical size={24} className="text-white" />
-                  </div>
-                  <div>
-                    <CardTitle className="text-xl font-bold text-slate-900">BOLT Test</CardTitle>
-                    <CardDescription className="text-slate-600">Body Oxygen Level Test</CardDescription>
-                  </div>
-                </div>
-                <div className="flex items-center gap-3">
-                  {initialBoltScore !== null && initialBoltScore !== undefined && (
-                    <Button 
-                      variant="outline"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        handleReset();
-                      }}
-                      disabled={loading}
-                      className="border-red-200 text-red-600 hover:bg-red-50 h-8 px-3"
-                    >
-                      <RotateCcw size={16} className="mr-1" />
-                      Reset
-                    </Button>
-                  )}
-                  {initialBoltScore !== null && initialBoltScore !== undefined && (
-                    <Badge className={cn(
-                      "px-4 py-2 text-sm font-bold shadow-sm",
-                      initialBoltScore >= 40 ? "bg-emerald-50 text-white hover:bg-emerald-600" :
-                      initialBoltScore >= 25 ? "bg-blue-500 text-white hover:bg-blue-600" :
-                      "bg-amber-500 text-white hover:bg-amber-600"
-                    )}>
-                      Current: {initialBoltScore}s
-                    </Badge>
-                  )}
-                  <Button variant="ghost" size="icon" className="h-8 w-8">
-                    <ChevronDown className={cn("h-5 w-5 transition-transform text-slate-600", isOpen && "rotate-180")} />
-                  </Button>
-                </div>
+        <CollapsibleTrigger asChild>
+          <div className="p-4 flex items-center justify-between cursor-pointer hover:bg-slate-50 transition-colors">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 bg-indigo-600 rounded-xl flex items-center justify-center shadow-sm">
+                <FlaskConical size={20} className="text-white" />
               </div>
-            </CardHeader>
-          </CollapsibleTrigger>
-
-          <CollapsibleContent>
-            <CardContent className="p-6 space-y-6">
-              {needsImprovement && (
-                <div className="bg-amber-50 border-2 border-amber-200 p-4 rounded-xl">
-                  <div className="flex items-start justify-between gap-4">
-                    <div className="flex items-start gap-3">
-                      <AlertCircle size={20} className="text-amber-600 flex-shrink-0 mt-0.5" />
-                      <div>
-                        <p className="font-bold text-amber-900 mb-1">Score Below Target</p>
-                        <p className="text-sm text-amber-800 leading-relaxed">
-                          This client would benefit from breathing exercises to improve their BOLT score to 25s or higher.
-                        </p>
-                      </div>
-                    </div>
-                    <Button 
-                      onClick={() => setResourcesOpen(true)}
-                      className="bg-amber-600 hover:bg-amber-700 text-white flex-shrink-0"
-                      size="sm"
-                    >
-                      <BookOpen size={16} className="mr-2" />
-                      View Resources
-                    </Button>
-                  </div>
-                </div>
+              <div>
+                <h3 className="font-bold text-slate-900">BOLT Test</h3>
+                <p className="text-xs text-slate-500">Body Oxygen Level Test</p>
+              </div>
+            </div>
+            <div className="flex items-center gap-3">
+              {initialBoltScore !== null && initialBoltScore !== undefined && (
+                <Badge className={cn(
+                  "px-3 py-1 text-xs font-bold",
+                  initialBoltScore >= 40 ? "bg-emerald-500 text-white" :
+                  initialBoltScore >= 25 ? "bg-blue-500 text-white" :
+                  "bg-amber-500 text-white"
+                )}>
+                  {initialBoltScore}s
+                </Badge>
               )}
+              <ChevronDown className={cn("h-5 w-5 transition-transform text-slate-400", isOpen && "rotate-180")} />
+            </div>
+          </div>
+        </CollapsibleTrigger>
 
-              <BoltTimer 
-                initialScore={initialBoltScore}
-                onScoreRecorded={handleSaveScore}
-                isSaving={loading}
-              />
-
-              <div className="flex gap-3">
-                <Button 
-                  variant="outline"
-                  onClick={() => setResourcesOpen(true)}
-                  className="flex-1 border-indigo-200 text-indigo-600 hover:bg-indigo-50"
-                >
-                  <BookOpen size={18} className="mr-2" />
-                  Client Resources & Exercises
+        <CollapsibleContent>
+          <div className="p-6 border-t border-slate-50 space-y-6">
+            {needsImprovement && (
+              <div className="bg-amber-50 border border-amber-100 p-4 rounded-xl flex items-start justify-between gap-4">
+                <div className="flex items-start gap-3">
+                  <AlertCircle size={18} className="text-amber-600 mt-0.5" />
+                  <p className="text-sm text-amber-800">Score below target (25s). Breathing exercises recommended.</p>
+                </div>
+                <Button onClick={() => setResourcesOpen(true)} variant="ghost" size="sm" className="text-amber-700 hover:bg-amber-100 h-8">
+                  Resources
                 </Button>
               </div>
+            )}
 
-              <Collapsible open={detailsOpen} onOpenChange={setDetailsOpen}>
-                <CollapsibleTrigger asChild>
-                  <Button 
-                    variant="ghost" 
-                    className="w-full justify-between hover:bg-slate-50 rounded-xl h-12"
-                  >
-                    <span className="font-semibold text-slate-700">View Full Test Instructions</span>
-                    <ChevronDown className={cn("h-5 w-5 transition-transform", detailsOpen && "rotate-180")} />
-                  </Button>
-                </CollapsibleTrigger>
-                
-                <CollapsibleContent className="space-y-6 pt-4">
-                  <div className="space-y-4 text-sm">
-                    <div className="bg-slate-50 p-4 rounded-xl border border-slate-200">
-                      <h4 className="font-bold text-slate-900 mb-2 flex items-center gap-2">
-                        <FlaskConical size={16} className="text-indigo-500" />
-                        What is the BOLT Test?
-                      </h4>
-                      <p className="text-slate-700 leading-relaxed">
-                        The BOLT test measures a client's CO2 tolerance and their ability to cope without oxygen.
-                        Poor breathing can constantly trigger the sympathetic nervous system (fight/flight response)
-                        and affect the body's acid-alkaline balance.
-                      </p>
-                    </div>
+            <BoltTimer initialScore={initialBoltScore} onScoreRecorded={handleSaveScore} isSaving={loading} />
 
-                    <div className="space-y-3">
-                      <h4 className="font-bold text-slate-900 flex items-center gap-2">
-                        <span className="w-6 h-6 bg-indigo-100 text-indigo-600 rounded-full flex items-center justify-center text-xs font-bold">1</span>
-                        Test Instructions
-                      </h4>
-                      <ul className="space-y-3 ml-8">
-                        <li className="flex items-start gap-3">
-                          <span className="w-1.5 h-1.5 bg-indigo-500 rounded-full mt-2 flex-shrink-0"></span>
-                          <span className="text-slate-700">Take a normal breath in through your nose and allow a normal breath out through your nose.</span>
-                        </li>
-                        <li className="flex items-start gap-3">
-                          <span className="w-1.5 h-1.5 bg-indigo-500 rounded-full mt-2 flex-shrink-0"></span>
-                          <span className="text-slate-700">Hold your nose with your fingers to prevent air from entering your lungs.</span>
-                        </li>
-                        <li className="flex items-start gap-3">
-                          <span className="w-1.5 h-1.5 bg-indigo-500 rounded-full mt-2 flex-shrink-0"></span>
-                          <span className="text-slate-700">Start your timer.</span>
-                        </li>
-                        <li className="flex items-start gap-3">
-                          <span className="w-1.5 h-1.5 bg-indigo-500 rounded-full mt-2 flex-shrink-0"></span>
-                          <span className="text-slate-700">
-                            Time the number of seconds until you feel the first definite desire to breathe, or the first stresses of your body urging you to breathe.
-                            These sensations may include the need to swallow, or a constriction of the airways. You may also feel the first involuntary contractions
-                            of your breathing muscles in your abdomen or throat, as your body gives the message to resume breathing.
-                          </span>
-                        </li>
-                        <li className="flex items-start gap-3">
-                          <span className="w-1.5 h-1.5 bg-indigo-500 rounded-full mt-2 flex-shrink-0"></span>
-                          <span className="text-slate-700">
-                            Release your nose, stop the timer, and breathe in through your nose. Your inhalation at the end of the breath hold should be calm.
-                          </span>
-                        </li>
-                        <li className="flex items-start gap-3">
-                          <span className="w-1.5 h-1.5 bg-indigo-500 rounded-full mt-2 flex-shrink-0"></span>
-                          <span className="text-slate-700 font-medium">Resume normal breathing.</span>
-                        </li>
-                        <li className="flex items-start gap-3">
-                          <span className="w-1.5 h-1.5 bg-indigo-500 rounded-full mt-2 flex-shrink-0"></span>
-                          <span className="text-slate-900 font-bold">BOLT Score = Amount of Seconds</span>
-                        </li>
-                      </ul>
-                    </div>
-
-                    <div className="space-y-3">
-                      <h4 className="font-bold text-slate-900 flex items-center gap-2">
-                        <span className="w-6 h-6 bg-indigo-100 text-indigo-600 rounded-full flex items-center justify-center text-xs font-bold">2</span>
-                        Scoring Guidelines
-                      </h4>
-                      <div className="grid gap-3 ml-8">
-                        <div className="flex items-center gap-3 p-3 bg-emerald-50 border border-emerald-200 rounded-lg">
-                          <div className="w-12 h-12 bg-emerald-500 rounded-lg flex items-center justify-center text-white font-bold text-lg flex-shrink-0">
-                            40+
-                          </div>
-                          <div>
-                            <p className="font-bold text-emerald-900">Optimal Score</p>
-                            <p className="text-xs text-emerald-700">Excellent CO2 tolerance and breathing efficiency</p>
-                          </div>
-                        </div>
-                        <div className="flex items-center gap-3 p-3 bg-blue-50 border border-blue-200 rounded-lg">
-                          <div className="w-12 h-12 bg-blue-500 rounded-lg flex items-center justify-center text-white font-bold text-lg flex-shrink-0">
-                            25+
-                          </div>
-                          <div>
-                            <p className="font-bold text-blue-900">Functional Score</p>
-                            <p className="text-xs text-blue-700">Acceptable breathing patterns, room for improvement</p>
-                          </div>
-                        </div>
-                        <div className="flex items-center gap-3 p-3 bg-amber-50 border border-amber-200 rounded-lg">
-                          <div className="w-12 h-12 bg-amber-500 rounded-lg flex items-center justify-center text-white font-bold text-lg flex-shrink-0">
-                            {'<25'}
-                          </div>
-                          <div>
-                            <p className="font-bold text-amber-900">Below Target</p>
-                            <p className="text-xs text-amber-700">Recommend breathing exercises and nasal breathing practice</p>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-
-                    <div className="bg-red-50 border-2 border-red-200 p-4 rounded-xl">
-                      <h4 className="font-bold text-red-900 mb-2 flex items-center gap-2">
-                        <AlertCircle size={18} className="text-red-600" />
-                        Clinical Precautions
-                      </h4>
-                      <ul className="space-y-2 text-sm text-red-800">
-                        <li className="flex items-start gap-2">
-                          <span className="w-1.5 h-1.5 bg-red-500 rounded-full mt-2 flex-shrink-0"></span>
-                          <span>Breathing exercises can be stressful or triggering for a client's nervous system</span>
-                        </li>
-                        <li className="flex items-start gap-2">
-                          <span className="w-1.5 h-1.5 bg-red-500 rounded-full mt-2 flex-shrink-0"></span>
-                          <span>If stress occurs, use the Nociceptive Threat Assessment to clear the nervous system's negative response before continuing</span>
-                        </li>
-                        <li className="flex items-start gap-2">
-                          <span className="w-1.5 h-1.5 bg-red-500 rounded-full mt-2 flex-shrink-0"></span>
-                          <span>Never force a client to continue if they show signs of distress</span>
-                        </li>
-                      </ul>
-                    </div>
-                  </div>
-                </CollapsibleContent>
-              </Collapsible>
-            </CardContent>
-          </CollapsibleContent>
-        </Card>
+            <div className="flex gap-2">
+              <Button variant="outline" onClick={() => setResourcesOpen(true)} className="flex-1 rounded-xl border-slate-200 text-slate-600 h-10 text-xs">
+                <BookOpen size={14} className="mr-2" /> Client Resources
+              </Button>
+              {initialBoltScore !== null && (
+                <Button variant="ghost" onClick={handleReset} className="text-rose-600 hover:bg-rose-50 h-10 px-3 rounded-xl">
+                  <RotateCcw size={16} />
+                </Button>
+              )}
+            </div>
+          </div>
+        </CollapsibleContent>
       </Collapsible>
 
-      <BoltResourcesModal 
-        open={resourcesOpen}
-        onOpenChange={setResourcesOpen}
-        currentScore={initialBoltScore}
-      />
-    </>
+      <BoltResourcesModal open={resourcesOpen} onOpenChange={setResourcesOpen} currentScore={initialBoltScore} />
+    </div>
   );
 };
 

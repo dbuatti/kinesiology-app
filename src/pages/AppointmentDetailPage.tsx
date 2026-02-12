@@ -1,15 +1,16 @@
+"use client";
+
 import { useState, useEffect } from "react";
 import { useParams, Link, useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import { 
   ArrowLeft, Calendar, Clock, 
-  Loader2, Trash2, User, Droplets, Footprints, Hand,
-  Activity, Move, Heart, Scale, Brain, FlaskConical, Palette, Copy, Check, History
+  Loader2, Trash2, User, Droplets,
+  Copy, Check, History, MoreHorizontal, ChevronDown
 } from "lucide-react";
 import { format } from "date-fns";
 import { Appointment } from "@/types/crm";
@@ -34,7 +35,6 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { MoreHorizontal } from "lucide-react";
 import Breadcrumbs from "@/components/crm/Breadcrumbs";
 
 export interface AppointmentWithClient extends Appointment {
@@ -130,7 +130,6 @@ const AppointmentDetailPage = () => {
     if (!appointment || !id) return;
     setCloning(true);
     try {
-      // Find the most recent appointment for this client that is NOT this one
       const { data: previous, error } = await supabase
         .from('appointments')
         .select('goal, issue, acupoints')
@@ -179,11 +178,6 @@ KEY FINDINGS:
 - Coherence: ${appointment.coherence_score ? appointment.coherence_score.toFixed(2) : 'Not recorded'}
 - Hydration: ${appointment.hydrated ? 'Passed' : 'Needs attention'}
 
-NEUROLOGICAL NOTES:
-${appointment.fakuda_notes ? `- Fakuda: ${appointment.fakuda_notes}` : ''}
-${appointment.sharpened_rhombergs_notes ? `- Rhombergs: ${appointment.sharpened_rhombergs_notes}` : ''}
-${appointment.frontal_lobe_notes ? `- Frontal Lobe: ${appointment.frontal_lobe_notes}` : ''}
-
 SESSION NOTES:
 ${appointment.notes || 'No general notes recorded.'}
     `.trim();
@@ -218,121 +212,106 @@ ${appointment.notes || 'No general notes recorded.'}
     <>
       <SessionTimer appointmentDate={appointment.date} status={appointment.status} onFixedHeaderChange={setIsFixedHeaderActive} />
       <AppLayout hasFixedHeader={isFixedHeaderActive}>
-        <Breadcrumbs 
-          items={[
-            { label: "Appointments", path: "/appointments" },
-            { label: appointment.name || "Session Details" }
-          ]} 
-        />
-
-        <div className="flex items-center justify-between gap-4">
-          <Link to="/appointments">
-            <Button variant="ghost" size="sm"><ArrowLeft size={18} className="mr-2" /> Back to Schedule</Button>
-          </Link>
-          <div className="flex gap-2">
-            <Button 
-              variant="outline" 
-              size="sm" 
-              className="bg-white rounded-xl border-slate-200 text-slate-600 hover:bg-slate-50"
-              onClick={handleClonePrevious}
-              disabled={cloning}
-            >
-              {cloning ? <Loader2 size={16} className="mr-2 animate-spin" /> : <History size={16} className="mr-2" />}
-              Clone Previous Info
-            </Button>
-            <Button 
-              variant="outline" 
-              size="sm" 
-              className="bg-white rounded-xl border-indigo-200 text-indigo-600 hover:bg-indigo-50"
-              onClick={handleCopySummary}
-            >
-              {copied ? <Check size={16} className="mr-2 text-emerald-500" /> : <Copy size={16} className="mr-2" />}
-              {copied ? "Copied!" : "Copy Summary"}
-            </Button>
-            <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                    <Button variant="ghost" size="icon"><MoreHorizontal size={20} /></Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent align="end">
-                    <DropdownMenuItem className="text-destructive focus:text-destructive" onClick={handleDeleteAppointment}>
-                        <Trash2 size={16} className="mr-2" /> Delete Appointment
-                    </DropdownMenuItem>
-                </DropdownMenuContent>
-            </DropdownMenu>
+        <div className="flex flex-col gap-6">
+          {/* Top Navigation & Actions */}
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+            <Breadcrumbs 
+              items={[
+                { label: "Appointments", path: "/appointments" },
+                { label: appointment.name || "Session Details" }
+              ]} 
+              className="mb-0"
+            />
+            <div className="flex items-center gap-2">
+              <Button 
+                variant="outline" 
+                size="sm" 
+                className="bg-white rounded-xl border-slate-200 text-slate-600 hover:bg-slate-50"
+                onClick={handleClonePrevious}
+                disabled={cloning}
+              >
+                {cloning ? <Loader2 size={16} className="mr-2 animate-spin" /> : <History size={16} className="mr-2" />}
+                Clone Previous
+              </Button>
+              <Button 
+                variant="outline" 
+                size="sm" 
+                className="bg-white rounded-xl border-indigo-200 text-indigo-600 hover:bg-indigo-50"
+                onClick={handleCopySummary}
+              >
+                {copied ? <Check size={16} className="mr-2 text-emerald-500" /> : <Copy size={16} className="mr-2" />}
+                {copied ? "Copied!" : "Copy Summary"}
+              </Button>
+              <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                      <Button variant="ghost" size="icon" className="rounded-xl"><MoreHorizontal size={20} /></Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end">
+                      <DropdownMenuItem className="text-destructive focus:text-destructive" onClick={handleDeleteAppointment}>
+                          <Trash2 size={16} className="mr-2" /> Delete Appointment
+                      </DropdownMenuItem>
+                  </DropdownMenuContent>
+              </DropdownMenu>
+            </div>
           </div>
-        </div>
 
-        {/* Previous Session Insights Bar */}
-        <PreviousSessionInsightsBar 
-          clientId={appointment.clients.id} 
-          currentAppointmentId={appointment.id} 
-        />
+          {/* Previous Session Insights Bar */}
+          <PreviousSessionInsightsBar 
+            clientId={appointment.clients.id} 
+            currentAppointmentId={appointment.id} 
+          />
 
-        <Card className="border-none shadow-lg rounded-2xl bg-white">
-          <CardHeader className="pb-4 border-b border-slate-100">
-            <div className="flex items-center justify-between">
-              <div className="space-y-1">
-                <div className="flex items-center gap-3">
-                  <Badge variant="secondary" className="font-bold bg-slate-100 text-slate-600">{appointment.display_id || appointment.id.slice(0, 8)}</Badge>
-                  <Badge className="bg-indigo-50 text-indigo-700 hover:bg-indigo-100 border-none">{appointment.tag}</Badge>
-                  <Select value={appointment.status} onValueChange={(newStatus) => saveField('status', newStatus)}>
-                    <SelectTrigger className={cn("h-8 w-[120px] text-xs font-bold border-none shadow-sm", appointment.status === 'Completed' ? "bg-emerald-500 text-white" : "bg-indigo-500 text-white")}>
-                      <SelectValue placeholder="Status" />
-                    </SelectTrigger>
-                    <SelectContent>{APPOINTMENT_STATUSES.map(status => <SelectItem key={status} value={status}>{status}</SelectItem>)}</SelectContent>
-                  </Select>
-                  {appointment.hydrated !== null && (
-                    <Badge className={cn("px-3 py-1 rounded-full text-xs font-bold flex items-center gap-1", isHydrated ? "bg-blue-600 text-white" : "bg-red-500 text-white")}>
-                      <Droplets size={12} /> {isHydrated ? "Hydrated" : "Dehydrated"}
-                    </Badge>
-                  )}
-                </div>
-                <CardTitle className="text-3xl font-extrabold text-slate-900 pt-2">{appointment.name || "Kinesiology Session"}</CardTitle>
-              </div>
-              <div className="text-right">
-                <Link to={clientLink} className="text-sm font-medium text-indigo-600 hover:text-indigo-800 flex items-center gap-1 group">
-                  <User size={16} /> <span className="group-hover:underline">{appointment.clients.name}</span>
-                </Link>
-                <p className="text-xs text-slate-400 mt-1">Client Profile</p>
-              </div>
-            </div>
-          </CardHeader>
-
-          <CardContent className="p-6 space-y-6">
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 border-b border-slate-100 pb-6">
-              <div className="space-y-1">
-                <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Date</p>
-                <div className="flex items-center gap-2 text-slate-700 font-medium"><Calendar size={16} className="text-indigo-50" /> {format(appointment.date, "EEEE, MMM d, yyyy")}</div>
-              </div>
-              <div className="space-y-1">
-                <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Time</p>
-                <div className="flex items-center gap-2 text-slate-700 font-medium"><Clock size={16} className="text-indigo-50" /> {format(appointment.date, "h:mm a")}</div>
-              </div>
-              <div className="space-y-1">
-                <EditableField key={`goal-${appointment.id}`} field="goal" label="Goal" value={appointment.goal} placeholder="What's the goal?" onSave={saveField} />
-              </div>
-              <div className="space-y-1">
-                <EditableField key={`issue-${appointment.id}`} field="issue" label="Issue" value={appointment.issue} placeholder="Main concern?" onSave={saveField} />
-              </div>
-            </div>
-
-            <Card className="border-2 border-blue-200 bg-blue-50/50 shadow-none rounded-2xl">
-              <CardHeader className="pb-3"><CardTitle className="text-sm flex items-center gap-2 text-blue-900"><Droplets size={18} className="text-blue-600" /> Hydration Assessment</CardTitle></CardHeader>
-              <CardContent className="space-y-4">
-                <div className="flex items-center justify-between p-4 bg-white rounded-xl border border-blue-200">
-                  <div className="flex items-center gap-3">
-                    <div className={cn("w-10 h-10 rounded-full flex items-center justify-center transition-colors", appointment.hydrated ? "bg-emerald-100 text-emerald-600" : "bg-slate-100 text-slate-400")}><Droplets size={20} /></div>
-                    <div><Label htmlFor="hydration-toggle" className="text-base font-bold text-slate-900 cursor-pointer">Client Hydrated</Label><p className="text-xs text-slate-500">{appointment.hydrated ? "Hydration test passed" : "Hydration test not passed"}</p></div>
+          {/* Session Header Card */}
+          <Card className="border-none shadow-sm rounded-2xl bg-white overflow-hidden">
+            <div className="p-6 border-b border-slate-100 bg-slate-50/30">
+              <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
+                <div className="space-y-3">
+                  <div className="flex flex-wrap items-center gap-3">
+                    <Badge variant="secondary" className="font-bold bg-white border-slate-200 text-slate-600">{appointment.display_id || appointment.id.slice(0, 8)}</Badge>
+                    <Badge className="bg-indigo-600 text-white border-none">{appointment.tag}</Badge>
+                    <Select value={appointment.status} onValueChange={(newStatus) => saveField('status', newStatus)}>
+                      <SelectTrigger className={cn("h-8 w-[130px] text-xs font-bold border-slate-200 shadow-sm bg-white", appointment.status === 'Completed' ? "text-emerald-600" : "text-indigo-600")}>
+                        <SelectValue placeholder="Status" />
+                      </SelectTrigger>
+                      <SelectContent>{APPOINTMENT_STATUSES.map(status => <SelectItem key={status} value={status}>{status}</SelectItem>)}</SelectContent>
+                    </Select>
                   </div>
-                  <Switch id="hydration-toggle" checked={appointment.hydrated || false} onCheckedChange={(checked) => saveField('hydrated', checked)} className="data-[state=checked]:bg-emerald-500" />
+                  <h1 className="text-3xl font-black text-slate-900 tracking-tight">{appointment.name || "Kinesiology Session"}</h1>
+                  <div className="flex flex-wrap items-center gap-4 text-sm font-medium text-slate-500">
+                    <div className="flex items-center gap-1.5"><Calendar size={16} className="text-indigo-400" /> {format(appointment.date, "EEEE, MMM d, yyyy")}</div>
+                    <div className="flex items-center gap-1.5"><Clock size={16} className="text-indigo-400" /> {format(appointment.date, "h:mm a")}</div>
+                    <Link to={clientLink} className="flex items-center gap-1.5 text-indigo-600 hover:underline">
+                      <User size={16} /> {appointment.clients.name}
+                    </Link>
+                  </div>
                 </div>
-                <EditableField key={`hydration_notes-${appointment.id}`} field="hydration_notes" label="Hydration Recommendations" value={appointment.hydration_notes} multiline placeholder="e.g., Drink 500ml water before next session..." onSave={saveField} />
-              </CardContent>
-            </Card>
 
-            <SessionContentSwitcher appointment={appointment} onUpdate={fetchAppointmentData} saveField={saveField} />
-          </CardContent>
-        </Card>
+                <div className="flex flex-col items-end gap-3">
+                  <div className="flex items-center gap-3 p-3 bg-white rounded-2xl border border-slate-100 shadow-sm">
+                    <div className={cn("w-10 h-10 rounded-full flex items-center justify-center transition-colors", appointment.hydrated ? "bg-emerald-100 text-emerald-600" : "bg-rose-100 text-rose-600")}>
+                      <Droplets size={20} />
+                    </div>
+                    <div className="pr-2">
+                      <Label htmlFor="hydration-toggle" className="text-xs font-bold text-slate-400 uppercase tracking-widest block mb-1">Hydration</Label>
+                      <div className="flex items-center gap-2">
+                        <span className="text-sm font-bold text-slate-700">{appointment.hydrated ? "Passed" : "Needs Attention"}</span>
+                        <Switch id="hydration-toggle" checked={appointment.hydrated || false} onCheckedChange={(checked) => saveField('hydrated', checked)} className="data-[state=checked]:bg-emerald-500" />
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div className="p-6 grid grid-cols-1 md:grid-cols-2 gap-8">
+              <EditableField key={`goal-${appointment.id}`} field="goal" label="Session Goal" value={appointment.goal} placeholder="What is the primary goal for this balance?" onSave={saveField} className="bg-slate-50/50 p-4 rounded-2xl border border-slate-100" />
+              <EditableField key={`issue-${appointment.id}`} field="issue" label="Main Concern / Issue" value={appointment.issue} placeholder="Describe the client's main concern..." onSave={saveField} className="bg-slate-50/50 p-4 rounded-2xl border border-slate-100" />
+            </div>
+          </Card>
+
+          {/* Main Content Switcher - Now sits directly on the page background */}
+          <SessionContentSwitcher appointment={appointment} onUpdate={fetchAppointmentData} saveField={saveField} />
+        </div>
       </AppLayout>
     </>
   );

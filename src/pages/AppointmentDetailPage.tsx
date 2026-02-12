@@ -10,7 +10,7 @@ import { Label } from "@/components/ui/label";
 import { 
   ArrowLeft, Calendar, Clock, 
   Loader2, Trash2, User, Droplets,
-  Copy, Check, History, MoreHorizontal, ChevronDown
+  Copy, Check, History, MoreHorizontal, ChevronDown, Star
 } from "lucide-react";
 import { format } from "date-fns";
 import { Appointment } from "@/types/crm";
@@ -21,6 +21,7 @@ import SessionTimer from "@/components/crm/SessionTimer";
 import AppLayout from "@/components/crm/AppLayout";
 import SessionContentSwitcher from "@/components/crm/SessionContentSwitcher";
 import PreviousSessionInsightsBar from "@/components/crm/PreviousSessionInsightsBar";
+import { calculateAge, getStarSign } from "@/utils/crm-utils";
 import {
   Select,
   SelectContent,
@@ -39,7 +40,7 @@ import Breadcrumbs from "@/components/crm/Breadcrumbs";
 import { Button } from "@/components/ui/button";
 
 export interface AppointmentWithClient extends Appointment {
-  clients: { name: string; id: string };
+  clients: { name: string; id: string; born?: string };
   sagittal_plane_notes?: string | null;
   frontal_plane_notes?: string | null;
   transverse_plane_notes?: string | null;
@@ -78,7 +79,8 @@ const AppointmentDetailPage = () => {
           *,
           clients (
             id,
-            name
+            name,
+            born
           )
         `)
         .eq('id', id)
@@ -207,7 +209,7 @@ ${appointment.notes || 'No general notes recorded.'}
   if (!appointment) return <div className="p-12 text-center">Appointment not found</div>;
 
   const clientLink = `/clients/${appointment.clients.id}`;
-  const isHydrated = appointment.hydrated === true;
+  const clientBorn = appointment.clients.born ? new Date(appointment.clients.born) : null;
 
   return (
     <>
@@ -281,9 +283,17 @@ ${appointment.notes || 'No general notes recorded.'}
                   <div className="flex flex-wrap items-center gap-4 text-sm font-medium text-slate-500">
                     <div className="flex items-center gap-1.5"><Calendar size={16} className="text-indigo-400" /> {format(appointment.date, "EEEE, MMM d, yyyy")}</div>
                     <div className="flex items-center gap-1.5"><Clock size={16} className="text-indigo-400" /> {format(appointment.date, "h:mm a")}</div>
-                    <Link to={clientLink} className="flex items-center gap-1.5 text-indigo-600 hover:underline">
+                    <Link to={clientLink} className="flex items-center gap-1.5 text-indigo-600 hover:underline font-bold">
                       <User size={16} /> {appointment.clients.name}
                     </Link>
+                    {clientBorn && (
+                      <div className="flex items-center gap-3 border-l border-slate-200 pl-4">
+                        <span className="bg-indigo-50 text-indigo-700 px-2 py-0.5 rounded-md text-[10px] font-black uppercase">{calculateAge(clientBorn)} yrs</span>
+                        <span className="flex items-center gap-1 text-amber-600 font-bold text-[10px] uppercase tracking-wider">
+                          <Star size={12} className="fill-amber-500" /> {getStarSign(clientBorn)}
+                        </span>
+                      </div>
+                    )}
                   </div>
                 </div>
 
@@ -310,7 +320,7 @@ ${appointment.notes || 'No general notes recorded.'}
             </div>
           </Card>
 
-          {/* Main Content Switcher - Now sits directly on the page background */}
+          {/* Main Content Switcher */}
           <SessionContentSwitcher appointment={appointment} onUpdate={fetchAppointmentData} saveField={saveField} />
         </div>
       </AppLayout>

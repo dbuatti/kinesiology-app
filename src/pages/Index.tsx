@@ -17,7 +17,7 @@ import AppointmentForm from "@/components/crm/AppointmentForm";
 import RecentActivity from "@/components/crm/RecentActivity";
 import UpcomingAppointments from "@/components/crm/UpcomingAppointments";
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
-import { format, subMonths, isToday, subDays, isAfter } from "date-fns";
+import { format, subMonths, isToday, subDays, differenceInMinutes } from "date-fns";
 import { Skeleton } from "@/components/ui/skeleton";
 import { cn } from "@/lib/utils";
 
@@ -29,6 +29,7 @@ const Index = () => {
     sessions30d: 0
   });
   const [todaySessions, setTodaySessions] = useState<any[]>([]);
+  const [activeSession, setActiveSession] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [clientDialogOpen, setClientDialogOpen] = useState(false);
   const [appDialogOpen, setAppDialogOpen] = useState(false);
@@ -62,6 +63,13 @@ const Index = () => {
       // Filter today's sessions
       const today = allApps?.filter(app => isToday(new Date(app.date))) || [];
       setTodaySessions(today);
+
+      // Find active session (started within last 90 mins)
+      const active = today.find(app => {
+        const diff = differenceInMinutes(new Date(), new Date(app.date));
+        return diff >= 0 && diff < 90 && app.status !== 'Completed';
+      });
+      setActiveSession(active);
 
       // Process chart data for last 6 months
       const months = Array.from({ length: 6 }).map((_, i) => {
@@ -167,9 +175,18 @@ const Index = () => {
                 <Sparkles size={120} />
               </div>
               <CardHeader className="pb-2">
-                <CardTitle className="text-2xl font-bold flex items-center gap-2">
-                  <Zap size={24} className="text-amber-400 fill-amber-400" /> Daily Briefing
-                </CardTitle>
+                <div className="flex items-center justify-between">
+                  <CardTitle className="text-2xl font-bold flex items-center gap-2">
+                    <Zap size={24} className="text-amber-400 fill-amber-400" /> Daily Briefing
+                  </CardTitle>
+                  {activeSession && (
+                    <Link to={`/appointments/${activeSession.id}`}>
+                      <Badge className="bg-rose-500 hover:bg-rose-600 text-white border-none px-3 py-1 animate-pulse cursor-pointer">
+                        LIVE SESSION: {activeSession.clients?.name}
+                      </Badge>
+                    </Link>
+                  )}
+                </div>
                 <CardDescription className="text-indigo-100 text-base">
                   {todaySessions.length > 0 
                     ? `You have ${todaySessions.length} session${todaySessions.length === 1 ? '' : 's'} scheduled for today.`
@@ -181,12 +198,25 @@ const Index = () => {
                   {todaySessions.length > 0 ? (
                     todaySessions.map(session => (
                       <Link key={session.id} to={`/appointments/${session.id}`}>
-                        <div className="bg-white/10 hover:bg-white/20 transition-colors p-4 rounded-2xl border border-white/10 flex items-center justify-between group">
+                        <div className={cn(
+                          "p-4 rounded-2xl border transition-all flex items-center justify-between group",
+                          activeSession?.id === session.id 
+                            ? "bg-white text-indigo-900 border-white shadow-xl scale-[1.02]" 
+                            : "bg-white/10 hover:bg-white/20 border-white/10 text-white"
+                        )}>
                           <div className="min-w-0">
-                            <p className="text-xs font-bold text-indigo-200 uppercase tracking-widest">{format(new Date(session.date), "h:mm a")}</p>
+                            <p className={cn(
+                              "text-xs font-bold uppercase tracking-widest",
+                              activeSession?.id === session.id ? "text-rose-500" : "text-indigo-200"
+                            )}>
+                              {activeSession?.id === session.id ? "ONGOING" : format(new Date(session.date), "h:mm a")}
+                            </p>
                             <p className="font-bold text-lg truncate">{session.clients?.name}</p>
                           </div>
-                          <ArrowRight size={20} className="text-indigo-300 group-hover:translate-x-1 transition-transform" />
+                          <ArrowRight size={20} className={cn(
+                            "group-hover:translate-x-1 transition-transform",
+                            activeSession?.id === session.id ? "text-indigo-600" : "text-indigo-300"
+                          )} />
                         </div>
                       </Link>
                     ))

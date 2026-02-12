@@ -11,11 +11,11 @@ import {
   CommandItem,
   CommandList,
 } from "@/components/ui/command";
-import { Search, User, Calendar } from "lucide-react";
+import { Search, User, Calendar, Target, Zap } from "lucide-react";
 import { format } from "date-fns";
 
 interface SearchResult {
-  type: "client" | "appointment";
+  type: "client" | "appointment" | "procedure";
   id: string;
   title: string;
   subtitle?: string;
@@ -49,7 +49,7 @@ const SearchBar = () => {
     setLoading(true);
 
     try {
-      const [clientsData, appointmentsData] = await Promise.all([
+      const [clientsData, appointmentsData, proceduresData] = await Promise.all([
         supabase
           .from("clients")
           .select("id, name, email")
@@ -68,6 +68,11 @@ const SearchBar = () => {
           `)
           .or(`name.ilike.%${query}%,display_id.ilike.%${query}%`)
           .limit(5),
+        supabase
+          .from("procedures")
+          .select("id, name, description")
+          .ilike("name", `%${query}%`)
+          .limit(3)
       ]);
 
       const searchResults: SearchResult[] = [];
@@ -96,6 +101,18 @@ const SearchBar = () => {
         });
       }
 
+      if (proceduresData.data) {
+        proceduresData.data.forEach((proc) => {
+          searchResults.push({
+            type: "procedure",
+            id: proc.id,
+            title: proc.name,
+            subtitle: "Protocol / Procedure",
+            path: `/procedures`,
+          });
+        });
+      }
+
       setResults(searchResults);
     } catch (error) {
       console.error("Search error:", error);
@@ -113,7 +130,7 @@ const SearchBar = () => {
     <>
       <button
         onClick={() => setOpen(true)}
-        className="hidden lg:flex items-center gap-2 px-4 py-2 text-sm text-slate-500 bg-slate-100 rounded-lg hover:bg-slate-200 transition-colors"
+        className="hidden lg:flex items-center gap-2 px-4 py-2 text-sm text-slate-500 bg-slate-100 rounded-lg hover:bg-slate-200 transition-colors w-full"
       >
         <Search size={16} />
         <span>Search...</span>
@@ -124,7 +141,7 @@ const SearchBar = () => {
 
       <CommandDialog open={open} onOpenChange={setOpen}>
         <CommandInput
-          placeholder="Search clients and appointments..."
+          placeholder="Search clients, sessions, or protocols..."
           onValueChange={handleSearch}
         />
         <CommandList>
@@ -153,7 +170,7 @@ const SearchBar = () => {
                     </CommandItem>
                   ))}
               </CommandGroup>
-              <CommandGroup heading="Appointments">
+              <CommandGroup heading="Sessions">
                 {results
                   .filter((r) => r.type === "appointment")
                   .map((result) => (
@@ -169,6 +186,24 @@ const SearchBar = () => {
                             {result.subtitle}
                           </span>
                         )}
+                      </div>
+                    </CommandItem>
+                  ))}
+              </CommandGroup>
+              <CommandGroup heading="Protocols">
+                {results
+                  .filter((r) => r.type === "procedure")
+                  .map((result) => (
+                    <CommandItem
+                      key={result.id}
+                      onSelect={() => handleSelect(result.path)}
+                    >
+                      <Target size={16} className="mr-2 text-emerald-500" />
+                      <div className="flex flex-col">
+                        <span className="font-medium">{result.title}</span>
+                        <span className="text-xs text-slate-500">
+                          {result.subtitle}
+                        </span>
                       </div>
                     </CommandItem>
                   ))}

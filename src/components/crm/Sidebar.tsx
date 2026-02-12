@@ -1,5 +1,5 @@
 import { Link, useLocation, useNavigate } from "react-router-dom";
-import { Users, Calendar, LayoutDashboard, Settings, Target, Keyboard, LogOut, HelpCircle, Clock } from "lucide-react";
+import { Users, Calendar, LayoutDashboard, Settings, Target, Keyboard, LogOut, HelpCircle, Clock, Zap, PlusCircle } from "lucide-react";
 import { cn } from "@/lib/utils";
 import SearchBar from "./SearchBar";
 import { Badge } from "@/components/ui/badge";
@@ -8,11 +8,13 @@ import { showSuccess } from "@/utils/toast";
 import { useEffect, useState } from "react";
 import HelpModal from "./HelpModal";
 import { useRecentClients } from "@/hooks/use-recent-clients";
+import { isToday, differenceInMinutes } from "date-fns";
 
 const Sidebar = () => {
   const location = useLocation();
   const navigate = useNavigate();
   const [helpOpen, setHelpOpen] = useState(false);
+  const [activeSessionId, setActiveSessionId] = useState<string | null>(null);
   const { recentClients } = useRecentClients();
   
   const navItems = [
@@ -21,6 +23,29 @@ const Sidebar = () => {
     { label: "Appointments", icon: Calendar, path: "/appointments", shortcut: "⌘2" },
     { label: "Procedures", icon: Target, path: "/procedures", shortcut: "⌘P" },
   ];
+
+  useEffect(() => {
+    const checkActiveSession = async () => {
+      const { data } = await supabase
+        .from('appointments')
+        .select('id, date, status')
+        .eq('status', 'Scheduled')
+        .order('date', { ascending: false });
+
+      if (data) {
+        const active = data.find(app => {
+          const appDate = new Date(app.date);
+          const diff = differenceInMinutes(new Date(), appDate);
+          return isToday(appDate) && diff >= 0 && diff < 90;
+        });
+        setActiveSessionId(active?.id || null);
+      }
+    };
+
+    checkActiveSession();
+    const interval = setInterval(checkActiveSession, 60000);
+    return () => clearInterval(interval);
+  }, []);
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -110,6 +135,24 @@ const Sidebar = () => {
           })}
         </nav>
 
+        {activeSessionId && (
+          <div className="px-2">
+            <Link 
+              to={`/appointments/${activeSessionId}`}
+              className="flex items-center gap-3 px-4 py-3 bg-rose-500/10 border border-rose-500/20 rounded-xl text-rose-400 hover:bg-rose-500/20 transition-all group"
+            >
+              <div className="relative">
+                <Zap size={18} className="fill-rose-400" />
+                <span className="absolute -top-1 -right-1 w-2 h-2 bg-rose-500 rounded-full animate-ping" />
+              </div>
+              <div className="flex flex-col">
+                <span className="text-xs font-black uppercase tracking-wider">Live Session</span>
+                <span className="text-[10px] opacity-70">Resume now</span>
+              </div>
+            </Link>
+          </div>
+        )}
+
         {recentClients.length > 0 && (
           <div className="px-2 space-y-3">
             <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest flex items-center gap-2">
@@ -153,27 +196,6 @@ const Sidebar = () => {
         >
           <LogOut size={20} />
           <span className="font-medium">Sign Out</span>
-        </div>
-        
-        <div className="px-4 py-3 bg-slate-900 rounded-xl">
-          <div className="flex items-center gap-2 mb-2">
-            <Keyboard size={14} className="text-slate-500" />
-            <p className="text-xs font-bold text-slate-400 uppercase tracking-wider">Shortcuts</p>
-          </div>
-          <div className="space-y-1 text-xs text-slate-500">
-            <div className="flex justify-between">
-              <span>Search</span>
-              <kbd className="font-mono">⌘K</kbd>
-            </div>
-            <div className="flex justify-between">
-              <span>New Client</span>
-              <kbd className="font-mono">⌘N</kbd>
-            </div>
-            <div className="flex justify-between">
-              <span>Book Session</span>
-              <kbd className="font-mono">⌘B</kbd>
-            </div>
-          </div>
         </div>
       </div>
 

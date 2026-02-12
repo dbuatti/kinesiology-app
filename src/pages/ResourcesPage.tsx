@@ -158,15 +158,15 @@ const ResourcesPage = () => {
                       <div className="p-4 bg-white rounded-2xl border border-emerald-100">
                         <p className="text-xs font-bold text-emerald-600 uppercase tracking-widest mb-2">50 Steps (High Sensitivity)</p>
                         <div className="space-y-1">
-                          <p className="text-lg font-bold text-slate-900">Angle > 30°</p>
-                          <p className="text-lg font-bold text-slate-900">Displacement > 0.5m</p>
+                          <p className="text-lg font-bold text-slate-900">Angle {">"} 30°</p>
+                          <p className="text-lg font-bold text-slate-900">Displacement {">"} 0.5m</p>
                         </div>
                       </div>
                       <div className="p-4 bg-white rounded-2xl border border-emerald-100">
                         <p className="text-xs font-bold text-emerald-600 uppercase tracking-widest mb-2">100 Steps (Delayed Onset)</p>
                         <div className="space-y-1">
-                          <p className="text-lg font-bold text-slate-900">Angle > 45°</p>
-                          <p className="text-lg font-bold text-slate-900">Displacement > 1.0m</p>
+                          <p className="text-lg font-bold text-slate-900">Angle {">"} 45°</p>
+                          <p className="text-lg font-bold text-slate-900">Displacement {">"} 1.0m</p>
                         </div>
                       </div>
                     </CardContent>

@@ -190,7 +190,7 @@ const Index = () => {
           {/* Quick Actions Grid */}
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
             <QuickAction icon={UserPlus} label="New Client" onClick={() => setClientDialogOpen(true)} color="bg-indigo-600" />
-            <QuickAction icon={Calendar} label="Book Session" onClick={() => setAppDialogOpen(true)} color="bg-rose-500" />
+            <QuickAction icon={Calendar} label="Book Session" onClick={() => setAppDialogOpen(true)} color="bg-rose-50" />
             <QuickAction icon={Target} label="Procedures" onClick={() => window.location.href='/procedures'} color="bg-emerald-500" />
             <QuickAction icon={Upload} label="Import Data" onClick={() => window.location.href='/import'} color="bg-amber-500" />
           </div>
@@ -296,7 +296,7 @@ const Index = () => {
                       <ul className="text-xs space-y-1">
                         <li>• <span className="font-bold">25s+</span>: Functional</li>
                         <li>• <span className="font-bold">40s+</span>: Optimal</li>
-                        <li>• <span className="font-bold">< 10s</span>: High Stress</li>
+                        <li>• <span className="font-bold">{"<"} 10s</span>: High Stress</li>
                       </ul>
                     </TooltipContent>
                   </Tooltip>

@@ -25,6 +25,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import Breadcrumbs from "@/components/crm/Breadcrumbs";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { cn } from "@/lib/utils";
 
 const ResourcesPage = () => {
   return (
@@ -212,7 +213,90 @@ const ResourcesPage = () => {
           </div>
         </TabsContent>
 
-        <TabsContent value="neurological" className="mt-8">
+        <TabsContent value="neurological" className="mt-8 space-y-8">
+          {/* Romberg Test Resource */}
+          <Card className="border-none shadow-lg rounded-3xl overflow-hidden bg-white">
+            <div className="bg-gradient-to-r from-purple-600 to-indigo-600 p-8 text-white">
+              <div className="flex items-center gap-4 mb-4">
+                <div className="w-14 h-14 bg-white/20 backdrop-blur-md rounded-2xl flex items-center justify-center">
+                  <Scale size={32} />
+                </div>
+                <div>
+                  <div className="flex gap-2 mb-1">
+                    <Badge className="bg-purple-400/30 text-white border-none">Neurological Exam</Badge>
+                    <Badge className="bg-white/20 text-white border-none">Proprioception</Badge>
+                  </div>
+                  <CardTitle className="text-3xl font-black">Romberg Test</CardTitle>
+                </div>
+              </div>
+              <p className="text-purple-50 text-lg max-w-2xl leading-relaxed">
+                A foundational clinical tool to differentiate between sensory ataxia and cerebellar ataxia by removing visual compensation for balance.
+              </p>
+            </div>
+            <CardContent className="p-8">
+              <div className="grid grid-cols-1 lg:grid-cols-3 gap-12">
+                <div className="lg:col-span-2 space-y-10">
+                  <section className="space-y-4">
+                    <h3 className="text-xl font-bold text-slate-900 flex items-center gap-2">
+                      <Info size={20} className="text-purple-600" /> Purpose & Mechanism
+                    </h3>
+                    <p className="text-slate-600 leading-relaxed">
+                      The Romberg test assesses the <strong>Dorsal Column-Medial Lemniscal Pathway</strong>. Balance requires 2 out of 3 systems: Vision, Proprioception, and Vestibular function. By closing the eyes, the patient is forced to rely solely on proprioception and vestibular input.
+                    </p>
+                  </section>
+
+                  <section className="space-y-4">
+                    <h3 className="text-xl font-bold text-slate-900 flex items-center gap-2">
+                      <CheckCircle2 size={20} className="text-purple-600" /> Standard Protocol
+                    </h3>
+                    <div className="grid gap-4">
+                      {[
+                        { step: 1, text: "Patient stands barefoot with feet together (touching) and arms at sides or crossed over chest." },
+                        { step: 2, text: "Observe for 30 seconds with eyes open. Note any significant sway or instability." },
+                        { step: 3, text: "Instruct patient to close eyes and maintain position for another 30 seconds." },
+                        { step: 4, text: "Stand close to the patient for safety to prevent falls during the 'eyes closed' phase." }
+                      ].map((item) => (
+                        <div key={item.step} className="flex gap-4 p-4 bg-slate-50 rounded-2xl border border-slate-100">
+                          <span className="w-8 h-8 bg-purple-600 text-white rounded-full flex items-center justify-center font-bold shrink-0">{item.step}</span>
+                          <p className="text-slate-700 font-medium">{item.text}</p>
+                        </div>
+                      ))}
+                    </div>
+                  </section>
+
+                  <section className="space-y-4">
+                    <h3 className="text-xl font-bold text-slate-900 flex items-center gap-2">
+                      <Zap size={20} className="text-amber-500" /> Sharpened (Tandem) Romberg
+                    </h3>
+                    <p className="text-slate-600 leading-relaxed">
+                      A more challenging variation where the patient stands in a <strong>heel-to-toe (tandem)</strong> position. This narrows the base of support and is more sensitive to subtle vestibular or proprioceptive impairments.
+                    </p>
+                  </section>
+                </div>
+
+                <div className="space-y-6">
+                  <Card className="border-2 border-purple-100 bg-purple-50/50 rounded-3xl shadow-none">
+                    <CardHeader>
+                      <CardTitle className="text-lg font-bold text-purple-900">Interpretation</CardTitle>
+                    </CardHeader>
+                    <CardContent className="space-y-4">
+                      <div className="p-4 bg-white rounded-2xl border border-purple-100">
+                        <p className="text-xs font-bold text-purple-600 uppercase tracking-widest mb-2">Positive Romberg Sign</p>
+                        <p className="text-sm text-slate-700">Stable with eyes open, but loses balance/sways significantly with eyes closed.</p>
+                        <p className="text-xs font-bold text-indigo-600 mt-2">Indicates: Sensory Ataxia (Dorsal Column lesion, Peripheral Neuropathy)</p>
+                      </div>
+                      <div className="p-4 bg-white rounded-2xl border border-purple-100">
+                        <p className="text-xs font-bold text-rose-600 uppercase tracking-widest mb-2">Negative Result</p>
+                        <p className="text-sm text-slate-700">Unstable with both eyes open and closed.</p>
+                        <p className="text-xs font-bold text-rose-600 mt-2">Indicates: Cerebellar Ataxia or Vestibular Dysfunction</p>
+                      </div>
+                    </CardContent>
+                  </Card>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
              <Card className="rounded-3xl border-none shadow-sm bg-white">
               <CardHeader>

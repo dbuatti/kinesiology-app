@@ -36,6 +36,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import Breadcrumbs from "@/components/crm/Breadcrumbs";
+import { Button } from "@/components/ui/button";
 
 export interface AppointmentWithClient extends Appointment {
   clients: { name: string; id: string };

@@ -103,7 +103,7 @@ const CoherenceAssessment = ({
       showSuccess("Reset complete.");
       onUpdate();
     } catch (error: any) {
-      showError("Failed to reset.");
+      showError(failedToReset);
     } finally {
       setLoading(false);
     }
@@ -111,6 +111,24 @@ const CoherenceAssessment = ({
 
   const isWholeNumber = calculatedScore !== null && Number.isInteger(calculatedScore);
   const hasSavedData = initialCoherenceScore !== null || initialHeartRate !== null || initialBreathRate !== null;
+
+  const toggleHeartTimer = () => {
+    if (heartTimerRunning) {
+      setHeartTimerRunning(false);
+    } else {
+      setHeartTimer(30);
+      setHeartTimerRunning(true);
+    }
+  };
+
+  const toggleBreathTimer = () => {
+    if (breathTimerRunning) {
+      setBreathTimerRunning(false);
+    } else {
+      setBreathTimer(30);
+      setBreathTimerRunning(true);
+    }
+  };
 
   return (
     <div className="bg-white rounded-2xl border border-slate-100 shadow-sm overflow-hidden">
@@ -149,7 +167,7 @@ const CoherenceAssessment = ({
                   <span className={cn("text-3xl font-black tabular-nums", heartTimerRunning ? "text-rose-600" : "text-slate-400")}>{heartTimer}s</span>
                 </div>
                 <div className="flex gap-2">
-                  <Button onClick={() => heartTimerRunning ? setHeartTimerRunning(false) : setHeartTimer(30) || setHeartTimerRunning(true)} variant="outline" size="sm" className="flex-1 h-8 text-[10px] font-bold uppercase">
+                  <Button onClick={toggleHeartTimer} variant="outline" size="sm" className="flex-1 h-8 text-[10px] font-bold uppercase">
                     {heartTimerRunning ? "Stop" : "Start 30s"}
                   </Button>
                 </div>
@@ -165,7 +183,7 @@ const CoherenceAssessment = ({
                   <span className={cn("text-3xl font-black tabular-nums", breathTimerRunning ? "text-blue-600" : "text-slate-400")}>{breathTimer}s</span>
                 </div>
                 <div className="flex gap-2">
-                  <Button onClick={() => breathTimerRunning ? setBreathTimerRunning(false) : setBreathTimer(30) || setBreathTimerRunning(true)} variant="outline" size="sm" className="flex-1 h-8 text-[10px] font-bold uppercase">
+                  <Button onClick={toggleBreathTimer} variant="outline" size="sm" className="flex-1 h-8 text-[10px] font-bold uppercase">
                     {breathTimerRunning ? "Stop" : "Start 30s"}
                   </Button>
                 </div>
@@ -184,5 +202,7 @@ const CoherenceAssessment = ({
     </div>
   );
 };
+
+const failedToReset = "Failed to reset coherence data.";
 
 export default CoherenceAssessment;

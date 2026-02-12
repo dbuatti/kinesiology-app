@@ -15,7 +15,7 @@ interface GaitReflexAssessmentProps {
   onSaveField: (field: string, value: string | null) => Promise<void>;
 }
 
-type TestStatus = 'normal' | 'abnormal' | null;
+type TestStatus = 'normal' | 'abnormal';
 
 const GaitReflexAssessment = ({ 
   appointmentId, 
@@ -50,7 +50,7 @@ const GaitReflexAssessment = ({
   const toggleResult = (id: string) => {
     setResults(prev => ({
       ...prev,
-      [id]: prev[id] === 'normal' ? 'abnormal' : prev[id] === 'abnormal' ? null : 'normal'
+      [id]: (prev[id] || 'normal') === 'normal' ? 'abnormal' : 'normal'
     }));
   };
 
@@ -83,33 +83,29 @@ const GaitReflexAssessment = ({
   };
 
   const TestButton = ({ id, label, expected }: { id: string, label: string, expected: string }) => {
-    const status = results[id];
+    const status = results[id] || 'normal';
     return (
       <button
         onClick={() => toggleResult(id)}
         className={cn(
           "flex flex-col items-start p-3 rounded-xl border-2 transition-all text-left group",
-          status === 'normal' ? "bg-emerald-50 border-emerald-200" :
-          status === 'abnormal' ? "bg-rose-50 border-rose-200" :
-          "bg-white border-slate-100 hover:border-slate-200"
+          status === 'normal' ? "bg-emerald-50 border-emerald-200" : "bg-rose-50 border-rose-200"
         )}
       >
         <div className="flex items-center justify-between w-full mb-1">
           <span className={cn(
             "text-[10px] font-black uppercase tracking-widest",
-            status === 'normal' ? "text-emerald-600" :
-            status === 'abnormal' ? "text-rose-600" :
-            "text-slate-400"
+            status === 'normal' ? "text-emerald-600" : "text-rose-600"
           )}>
             Should {expected}
           </span>
-          {status === 'normal' && <CheckCircle2 size={14} className="text-emerald-500" />}
-          {status === 'abnormal' && <XCircle size={14} className="text-rose-500" />}
+          {status === 'normal' ? (
+            <CheckCircle2 size={14} className="text-emerald-500" />
+          ) : (
+            <XCircle size={14} className="text-rose-500" />
+          )}
         </div>
-        <span className={cn(
-          "text-xs font-bold",
-          status ? "text-slate-900" : "text-slate-600"
-        )}>
+        <span className="text-xs font-bold text-slate-900">
           {label}
         </span>
       </button>
@@ -151,7 +147,7 @@ const GaitReflexAssessment = ({
                 1. Diagnosis (Reciprocal Inhibition)
               </h3>
               <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest flex items-center gap-1">
-                <MousePointer2 size={10} /> Click to log result
+                <MousePointer2 size={10} /> Click to toggle abnormal (X)
               </p>
             </div>
             

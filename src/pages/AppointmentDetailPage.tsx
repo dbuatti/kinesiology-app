@@ -10,9 +10,9 @@ import { Label } from "@/components/ui/label";
 import { 
   ArrowLeft, Calendar, Clock, 
   Loader2, Trash2, User, Droplets,
-  Copy, Check, History, MoreHorizontal, ChevronDown, Star
+  Copy, Check, History, MoreHorizontal, ChevronDown, Star, Play
 } from "lucide-react";
-import { format } from "date-fns";
+import { format, isToday } from "date-fns";
 import { Appointment } from "@/types/crm";
 import { showSuccess, showError } from "@/utils/toast";
 import { cn } from "@/lib/utils";
@@ -129,6 +129,13 @@ const AppointmentDetailPage = () => {
     }
   };
 
+  const handleStartSession = async () => {
+    if (!appointment) return;
+    const now = new Date();
+    await saveField('date', now.toISOString());
+    showSuccess("Session started! Timer is now active.");
+  };
+
   const handleClonePrevious = async () => {
     if (!appointment || !id) return;
     setCloning(true);
@@ -210,6 +217,8 @@ ${appointment.notes || 'No general notes recorded.'}
 
   const clientLink = `/clients/${appointment.clients.id}`;
   const clientBorn = appointment.clients.born ? new Date(appointment.clients.born) : null;
+  const isSessionToday = isToday(appointment.date);
+  const isOngoing = isSessionToday && appointment.status !== 'Completed' && appointment.status !== 'Cancelled';
 
   return (
     <>
@@ -226,6 +235,17 @@ ${appointment.notes || 'No general notes recorded.'}
               className="mb-0"
             />
             <div className="flex items-center gap-2">
+              {isSessionToday && !isFixedHeaderActive && appointment.status === 'Scheduled' && (
+                <Button 
+                  variant="default" 
+                  size="sm" 
+                  className="bg-rose-600 hover:bg-rose-700 text-white rounded-xl shadow-lg shadow-rose-100"
+                  onClick={handleStartSession}
+                >
+                  <Play size={16} className="mr-2 fill-current" />
+                  Start Session Now
+                </Button>
+              )}
               <Button 
                 variant="outline" 
                 size="sm" 

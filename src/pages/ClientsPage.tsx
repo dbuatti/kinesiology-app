@@ -5,7 +5,7 @@ import { calculateAge, getStarSign } from "@/utils/crm-utils";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Plus, Search, Loader2, UserPlus, Sparkles, Activity } from "lucide-react";
+import { Plus, Search, Loader2, UserPlus, Sparkles, Activity, CalendarPlus } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import {
   Dialog,
@@ -15,7 +15,13 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import ClientForm from "@/components/crm/ClientForm";
+import AppointmentForm from "@/components/crm/AppointmentForm";
 import { Client } from "@/types/crm";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 
 interface ClientWithStats extends Client {
   session_count: number;
@@ -26,10 +32,11 @@ const ClientsPage = () => {
   const [clients, setClients] = useState<ClientWithStats[]>([]);
   const [loading, setLoading] = useState(true);
   const [open, setOpen] = useState(false);
+  const [bookOpen, setBookOpen] = useState(false);
+  const [selectedClientId, setSelectedClientId] = useState<string | null>(null);
   
   const fetchClients = async () => {
     try {
-      // Fetch clients and their appointment counts
       const { data, error } = await supabase
         .from('clients')
         .select('*, appointments(count)')
@@ -67,6 +74,11 @@ const ClientsPage = () => {
     document.addEventListener("keydown", down);
     return () => document.removeEventListener("keydown", down);
   }, []);
+
+  const handleQuickBook = (clientId: string) => {
+    setSelectedClientId(clientId);
+    setBookOpen(true);
+  };
 
   const filteredClients = clients.filter(c => 
     c.name.toLowerCase().includes(search.toLowerCase()) ||
@@ -171,11 +183,30 @@ const ClientsPage = () => {
                     </div>
                   </TableCell>
                   <TableCell className="text-right">
-                    <Link to={`/clients/${client.id}`}>
-                      <Button variant="ghost" size="sm" className="opacity-0 group-hover:opacity-100 transition-opacity text-indigo-600">
-                        View Profile
-                      </Button>
-                    </Link>
+                    <div className="flex items-center justify-end gap-2">
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <Button 
+                            variant="ghost" 
+                            size="icon" 
+                            className="h-8 w-8 text-indigo-600 hover:bg-indigo-50 opacity-0 group-hover:opacity-100 transition-opacity"
+                            onClick={(e) => {
+                              e.preventDefault();
+                              e.stopPropagation();
+                              handleQuickBook(client.id);
+                            }}
+                          >
+                            <CalendarPlus size={18} />
+                          </Button>
+                        </TooltipTrigger>
+                        <TooltipContent>Quick Book Session</TooltipContent>
+                      </Tooltip>
+                      <Link to={`/clients/${client.id}`}>
+                        <Button variant="ghost" size="sm" className="opacity-0 group-hover:opacity-100 transition-opacity text-indigo-600">
+                          View Profile
+                        </Button>
+                      </Link>
+                    </div>
                   </TableCell>
                 </TableRow>
               ))}
@@ -191,6 +222,23 @@ const ClientsPage = () => {
           </div>
         )}
       </div>
+
+      <Dialog open={bookOpen} onOpenChange={setBookOpen}>
+        <DialogContent className="sm:max-w-[500px]">
+          <DialogHeader>
+            <DialogTitle>Quick Book Session</DialogTitle>
+          </DialogHeader>
+          {selectedClientId && (
+            <AppointmentForm 
+              initialClientId={selectedClientId}
+              onSuccess={() => {
+                setBookOpen(false);
+                fetchClients();
+              }} 
+            />
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };

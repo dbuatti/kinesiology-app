@@ -10,8 +10,9 @@ import {
   CommandInput,
   CommandItem,
   CommandList,
+  CommandSeparator,
 } from "@/components/ui/command";
-import { Search, User, Calendar, Target, Zap } from "lucide-react";
+import { Search, User, Calendar, Target, Zap, Clock, Trash2 } from "lucide-react";
 import { format } from "date-fns";
 
 interface SearchResult {
@@ -22,13 +23,25 @@ interface SearchResult {
   path: string;
 }
 
+const RECENT_SEARCHES_KEY = "antigravity_recent_searches";
+
 const SearchBar = () => {
   const [open, setOpen] = useState(false);
   const [results, setResults] = useState<SearchResult[]>([]);
+  const [recentSearches, setRecentSearches] = useState<SearchResult[]>([]);
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
 
   useEffect(() => {
+    const stored = localStorage.getItem(RECENT_SEARCHES_KEY);
+    if (stored) {
+      try {
+        setRecentSearches(JSON.parse(stored));
+      } catch (e) {
+        console.error("Failed to parse recent searches", e);
+      }
+    }
+
     const down = (e: KeyboardEvent) => {
       if (e.key === "k" && (e.metaKey || e.ctrlKey)) {
         e.preventDefault();
@@ -39,6 +52,21 @@ const SearchBar = () => {
     document.addEventListener("keydown", down);
     return () => document.removeEventListener("keydown", down);
   }, []);
+
+  const saveRecentSearch = (result: SearchResult) => {
+    const updated = [
+      result,
+      ...recentSearches.filter((r) => r.id !== result.id || r.type !== result.type),
+    ].slice(0, 5);
+    setRecentSearches(updated);
+    localStorage.setItem(RECENT_SEARCHES_KEY, JSON.stringify(updated));
+  };
+
+  const clearRecentSearches = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    setRecentSearches([]);
+    localStorage.removeItem(RECENT_SEARCHES_KEY);
+  };
 
   const handleSearch = async (query: string) => {
     if (!query || query.length < 2) {
@@ -121,9 +149,10 @@ const SearchBar = () => {
     }
   };
 
-  const handleSelect = (path: string) => {
+  const handleSelect = (result: SearchResult) => {
+    saveRecentSearch(result);
     setOpen(false);
-    navigate(path);
+    navigate(result.path);
   };
 
   return (
@@ -148,6 +177,40 @@ const SearchBar = () => {
           <CommandEmpty>
             {loading ? "Searching..." : "No results found."}
           </CommandEmpty>
+          
+          {results.length === 0 && recentSearches.length > 0 && (
+            <CommandGroup 
+              heading={
+                <div className="flex items-center justify-between w-full">
+                  <span>Recent Searches</span>
+                  <button 
+                    onClick={clearRecentSearches}
+                    className="text-[10px] font-bold text-slate-400 hover:text-rose-500 transition-colors flex items-center gap-1"
+                  >
+                    <Trash2 size={10} /> Clear
+                  </button>
+                </div>
+              }
+            >
+              {recentSearches.map((result) => (
+                <CommandItem
+                  key={`${result.type}-${result.id}`}
+                  onSelect={() => handleSelect(result)}
+                >
+                  <Clock size={16} className="mr-2 text-slate-400" />
+                  <div className="flex flex-col">
+                    <span className="font-medium">{result.title}</span>
+                    {result.subtitle && (
+                      <span className="text-xs text-slate-500">
+                        {result.subtitle}
+                      </span>
+                    )}
+                  </div>
+                </CommandItem>
+              ))}
+            </CommandGroup>
+          )}
+
           {results.length > 0 && (
             <>
               <CommandGroup heading="Clients">
@@ -156,7 +219,7 @@ const SearchBar = () => {
                   .map((result) => (
                     <CommandItem
                       key={result.id}
-                      onSelect={() => handleSelect(result.path)}
+                      onSelect={() => handleSelect(result)}
                     >
                       <User size={16} className="mr-2 text-indigo-500" />
                       <div className="flex flex-col">
@@ -176,7 +239,7 @@ const SearchBar = () => {
                   .map((result) => (
                     <CommandItem
                       key={result.id}
-                      onSelect={() => handleSelect(result.path)}
+                      onSelect={() => handleSelect(result)}
                     >
                       <Calendar size={16} className="mr-2 text-rose-500" />
                       <div className="flex flex-col">
@@ -196,7 +259,7 @@ const SearchBar = () => {
                   .map((result) => (
                     <CommandItem
                       key={result.id}
-                      onSelect={() => handleSelect(result.path)}
+                      onSelect={() => handleSelect(result)}
                     >
                       <Target size={16} className="mr-2 text-emerald-500" />
                       <div className="flex flex-col">

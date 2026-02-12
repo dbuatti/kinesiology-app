@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { 
   Users, Calendar, Activity, TrendingUp, Loader2, 
   Plus, ArrowRight, UserPlus, Sparkles, Clock, 
-  CheckCircle2, Zap, Upload, Target, FlaskConical, Brain
+  CheckCircle2, Zap, Upload, Target, FlaskConical, Brain, Info
 } from "lucide-react";
 import { MadeWithDyad } from "@/components/made-with-dyad";
 import {
@@ -19,10 +19,15 @@ import ClientForm from "@/components/crm/ClientForm";
 import AppointmentForm from "@/components/crm/AppointmentForm";
 import RecentActivity from "@/components/crm/RecentActivity";
 import UpcomingAppointments from "@/components/crm/UpcomingAppointments";
-import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
+import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip as ChartTooltip, ResponsiveContainer } from 'recharts';
 import { format, subMonths, isToday, subDays, differenceInMinutes } from "date-fns";
 import { Skeleton } from "@/components/ui/skeleton";
 import { cn } from "@/lib/utils";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 
 const Index = () => {
   const [stats, setStats] = useState({ 
@@ -272,20 +277,47 @@ const Index = () => {
                 
                 <div className="space-y-3">
                   <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Clinical Averages</p>
-                  <div className="flex items-center justify-between p-3 bg-indigo-50 rounded-xl border border-indigo-100">
-                    <div className="flex items-center gap-2">
-                      <FlaskConical size={16} className="text-indigo-600" />
-                      <span className="text-sm font-bold text-indigo-900">Avg BOLT Score</span>
-                    </div>
-                    <span className="text-lg font-black text-indigo-600">{stats.avgBolt}s</span>
-                  </div>
-                  <div className="flex items-center justify-between p-3 bg-rose-50 rounded-xl border border-rose-100">
-                    <div className="flex items-center gap-2">
-                      <Brain size={16} className="text-rose-600" />
-                      <span className="text-sm font-bold text-rose-900">Avg Coherence</span>
-                    </div>
-                    <span className="text-lg font-black text-rose-600">{stats.avgCoherence.toFixed(2)}</span>
-                  </div>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <div className="flex items-center justify-between p-3 bg-indigo-50 rounded-xl border border-indigo-100 cursor-help">
+                        <div className="flex items-center gap-2">
+                          <FlaskConical size={16} className="text-indigo-600" />
+                          <span className="text-sm font-bold text-indigo-900">Avg BOLT Score</span>
+                        </div>
+                        <div className="flex items-center gap-1.5">
+                          <span className="text-lg font-black text-indigo-600">{stats.avgBolt}s</span>
+                          <Info size={12} className="text-indigo-400" />
+                        </div>
+                      </div>
+                    </TooltipTrigger>
+                    <TooltipContent side="left" className="max-w-[200px]">
+                      <p className="font-bold mb-1">BOLT Score Targets:</p>
+                      <ul className="text-xs space-y-1">
+                        <li>• <span className="font-bold">25s+</span>: Functional</li>
+                        <li>• <span className="font-bold">40s+</span>: Optimal</li>
+                        <li>• <span className="font-bold">< 10s</span>: High Stress</li>
+                      </ul>
+                    </TooltipContent>
+                  </Tooltip>
+
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <div className="flex items-center justify-between p-3 bg-rose-50 rounded-xl border border-rose-100 cursor-help">
+                        <div className="flex items-center gap-2">
+                          <Brain size={16} className="text-rose-600" />
+                          <span className="text-sm font-bold text-rose-900">Avg Coherence</span>
+                        </div>
+                        <div className="flex items-center gap-1.5">
+                          <span className="text-lg font-black text-rose-600">{stats.avgCoherence.toFixed(2)}</span>
+                          <Info size={12} className="text-rose-400" />
+                        </div>
+                      </div>
+                    </TooltipTrigger>
+                    <TooltipContent side="left" className="max-w-[200px]">
+                      <p className="font-bold mb-1">Coherence Score:</p>
+                      <p className="text-xs">Ratio of Heart Rate to Breath Rate. Whole numbers (e.g., 6.0) indicate high autonomic synchronization.</p>
+                    </TooltipContent>
+                  </Tooltip>
                 </div>
               </CardContent>
             </Card>
@@ -309,7 +341,7 @@ const Index = () => {
                     <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
                     <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{fontSize: 12, fill: '#94a3b8'}} />
                     <YAxis axisLine={false} tickLine={false} tick={{fontSize: 12, fill: '#94a3b8'}} />
-                    <Tooltip contentStyle={{borderRadius: '12px', border: 'none', boxShadow: '0 10px 15px -3px rgb(0 0 0 / 0.1)'}} />
+                    <ChartTooltip contentStyle={{borderRadius: '12px', border: 'none', boxShadow: '0 10px 15px -3px rgb(0 0 0 / 0.1)'}} />
                     <Area type="monotone" dataKey="sessions" stroke="#4f46e5" strokeWidth={3} fillOpacity={1} fill="url(#colorSessions)" />
                   </AreaChart>
                 </ResponsiveContainer>

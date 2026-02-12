@@ -3,9 +3,12 @@ import { Link } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Users, Calendar, Activity, TrendingUp, Loader2, Plus, ArrowRight, UserPlus, Sparkles, Clock, CheckCircle2, Zap } from "lucide-react";
+import { 
+  Users, Calendar, Activity, TrendingUp, Loader2, 
+  Plus, ArrowRight, UserPlus, Sparkles, Clock, 
+  CheckCircle2, Zap, Upload, Target, FlaskConical, Brain
+} from "lucide-react";
 import { MadeWithDyad } from "@/components/made-with-dyad";
-import { Client, Appointment } from "@/types/crm";
 import {
   Dialog,
   DialogContent,
@@ -26,7 +29,9 @@ const Index = () => {
     clients: 0, 
     appointments: 0,
     newClients30d: 0,
-    sessions30d: 0
+    sessions30d: 0,
+    avgBolt: 0,
+    avgCoherence: 0
   });
   const [todaySessions, setTodaySessions] = useState<any[]>([]);
   const [activeSession, setActiveSession] = useState<any>(null);
@@ -53,11 +58,20 @@ const Index = () => {
         supabase.from('appointments').select('*', { count: 'exact', head: true }).gte('date', thirtyDaysAgo)
       ]);
 
+      // Calculate averages
+      const boltScores = allApps?.filter(a => a.bolt_score).map(a => a.bolt_score) || [];
+      const cohScores = allApps?.filter(a => a.coherence_score).map(a => a.coherence_score) || [];
+      
+      const avgBolt = boltScores.length > 0 ? Math.round(boltScores.reduce((a, b) => a + b, 0) / boltScores.length) : 0;
+      const avgCoh = cohScores.length > 0 ? cohScores.reduce((a, b) => a + b, 0) / cohScores.length : 0;
+
       setStats({ 
         clients: clientCount || 0, 
         appointments: appCount || 0,
         newClients30d: newClientsCount || 0,
-        sessions30d: recentAppsCount || 0
+        sessions30d: recentAppsCount || 0,
+        avgBolt,
+        avgCoherence: avgCoh
       });
 
       // Filter today's sessions
@@ -111,10 +125,6 @@ const Index = () => {
           <Skeleton className="h-8 w-48" />
           <Skeleton className="h-4 w-96" />
         </div>
-        <div className="flex gap-3">
-          <Skeleton className="h-10 w-32" />
-          <Skeleton className="h-10 w-32" />
-        </div>
       </div>
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
         {[1, 2, 3, 4].map((i) => <Skeleton key={i} className="h-32 w-full rounded-2xl" />)}
@@ -124,27 +134,30 @@ const Index = () => {
 
   const hasData = stats.clients > 0 || stats.appointments > 0;
 
+  const QuickAction = ({ icon: Icon, label, onClick, color }: any) => (
+    <button 
+      onClick={onClick}
+      className="flex flex-col items-center justify-center p-4 bg-white rounded-2xl border border-slate-100 shadow-sm hover:shadow-md hover:border-indigo-200 transition-all group"
+    >
+      <div className={cn("w-12 h-12 rounded-xl flex items-center justify-center mb-3 transition-transform group-hover:scale-110", color)}>
+        <Icon size={24} className="text-white" />
+      </div>
+      <span className="text-xs font-bold text-slate-600 uppercase tracking-wider">{label}</span>
+    </button>
+  );
+
   return (
     <div className="p-4 md:p-8 max-w-full mx-auto space-y-8">
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
           <h1 className="text-3xl font-bold tracking-tight text-slate-900">Practice Hub</h1>
-          <p className="text-slate-500 font-medium">Insights and activity for your kinesiology practice.</p>
+          <p className="text-slate-500 font-medium">Welcome back! Here's what's happening in your practice.</p>
         </div>
-        <div className="flex gap-3">
-          <Button 
-            className="bg-indigo-600 hover:bg-indigo-700 shadow-lg shadow-indigo-100 rounded-xl"
-            onClick={() => setClientDialogOpen(true)}
-          >
-            <UserPlus size={18} className="mr-2" /> New Client
-          </Button>
-          <Button 
-            variant="outline" 
-            className="border-slate-200 bg-white rounded-xl hover:bg-slate-50"
-            onClick={() => setAppDialogOpen(true)}
-          >
-            <Plus size={18} className="mr-2" /> Book Session
-          </Button>
+        <div className="flex items-center gap-3 bg-white p-1.5 rounded-2xl border border-slate-100 shadow-sm">
+          <div className="px-4 py-2">
+            <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Today's Date</p>
+            <p className="text-sm font-bold text-slate-900">{format(new Date(), "EEEE, MMMM d")}</p>
+          </div>
         </div>
       </div>
 
@@ -168,9 +181,16 @@ const Index = () => {
         </div>
       ) : (
         <>
-          {/* Daily Briefing Section */}
+          {/* Quick Actions Grid */}
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+            <QuickAction icon={UserPlus} label="New Client" onClick={() => setClientDialogOpen(true)} color="bg-indigo-600" />
+            <QuickAction icon={Calendar} label="Book Session" onClick={() => setAppDialogOpen(true)} color="bg-rose-500" />
+            <QuickAction icon={Target} label="Procedures" onClick={() => window.location.href='/procedures'} color="bg-emerald-500" />
+            <QuickAction icon={Upload} label="Import Data" onClick={() => window.location.href='/import'} color="bg-amber-500" />
+          </div>
+
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-            <Card className="lg:col-span-2 border-none shadow-lg bg-gradient-to-br from-indigo-600 to-indigo-800 text-white rounded-3xl overflow-hidden relative">
+            <Card className="lg:col-span-2 border-none shadow-lg bg-gradient-to-br from-slate-900 to-slate-800 text-white rounded-3xl overflow-hidden relative">
               <div className="absolute top-0 right-0 p-8 opacity-10">
                 <Sparkles size={120} />
               </div>
@@ -187,7 +207,7 @@ const Index = () => {
                     </Link>
                   )}
                 </div>
-                <CardDescription className="text-indigo-100 text-base">
+                <CardDescription className="text-slate-400 text-base">
                   {todaySessions.length > 0 
                     ? `You have ${todaySessions.length} session${todaySessions.length === 1 ? '' : 's'} scheduled for today.`
                     : "No sessions scheduled for today. Time for some research or admin!"}
@@ -201,13 +221,13 @@ const Index = () => {
                         <div className={cn(
                           "p-4 rounded-2xl border transition-all flex items-center justify-between group",
                           activeSession?.id === session.id 
-                            ? "bg-white text-indigo-900 border-white shadow-xl scale-[1.02]" 
-                            : "bg-white/10 hover:bg-white/20 border-white/10 text-white"
+                            ? "bg-white text-slate-900 border-white shadow-xl scale-[1.02]" 
+                            : "bg-white/5 hover:bg-white/10 border-white/10 text-white"
                         )}>
                           <div className="min-w-0">
                             <p className={cn(
-                              "text-xs font-bold uppercase tracking-widest",
-                              activeSession?.id === session.id ? "text-rose-500" : "text-indigo-200"
+                              "text-[10px] font-black uppercase tracking-widest",
+                              activeSession?.id === session.id ? "text-rose-500" : "text-slate-400"
                             )}>
                               {activeSession?.id === session.id ? "ONGOING" : format(new Date(session.date), "h:mm a")}
                             </p>
@@ -215,15 +235,15 @@ const Index = () => {
                           </div>
                           <ArrowRight size={20} className={cn(
                             "group-hover:translate-x-1 transition-transform",
-                            activeSession?.id === session.id ? "text-indigo-600" : "text-indigo-300"
+                            activeSession?.id === session.id ? "text-indigo-600" : "text-slate-500"
                           )} />
                         </div>
                       </Link>
                     ))
                   ) : (
-                    <div className="sm:col-span-2 flex items-center gap-3 p-4 bg-white/10 rounded-2xl border border-white/10">
+                    <div className="sm:col-span-2 flex items-center gap-3 p-4 bg-white/5 rounded-2xl border border-white/10">
                       <CheckCircle2 size={24} className="text-emerald-400" />
-                      <p className="font-medium">Your schedule is clear. Enjoy the space!</p>
+                      <p className="font-medium text-slate-300">Your schedule is clear. Enjoy the space!</p>
                     </div>
                   )}
                 </div>
@@ -236,22 +256,37 @@ const Index = () => {
                   <TrendingUp size={20} className="text-indigo-600" /> Practice Pulse
                 </CardTitle>
               </CardHeader>
-              <CardContent className="space-y-4">
+              <CardContent className="space-y-6">
                 <div className="grid grid-cols-2 gap-3">
-                  <div className="p-3 bg-slate-50 rounded-2xl">
+                  <div className="p-4 bg-slate-50 rounded-2xl border border-slate-100">
                     <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">Total Clients</p>
-                    <p className="text-2xl font-black text-slate-900">{stats.clients}</p>
+                    <p className="text-3xl font-black text-slate-900">{stats.clients}</p>
                     <p className="text-[10px] text-emerald-600 font-bold mt-1">+{stats.newClients30d} last 30d</p>
                   </div>
-                  <div className="p-3 bg-slate-50 rounded-2xl">
+                  <div className="p-4 bg-slate-50 rounded-2xl border border-slate-100">
                     <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">Total Sessions</p>
-                    <p className="text-2xl font-black text-slate-900">{stats.appointments}</p>
+                    <p className="text-3xl font-black text-slate-900">{stats.appointments}</p>
                     <p className="text-[10px] text-indigo-600 font-bold mt-1">{stats.sessions30d} last 30d</p>
                   </div>
                 </div>
-                <Button variant="outline" className="w-full rounded-xl border-slate-200 text-slate-600" asChild>
-                  <Link to="/procedures">View Procedure Progress</Link>
-                </Button>
+                
+                <div className="space-y-3">
+                  <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Clinical Averages</p>
+                  <div className="flex items-center justify-between p-3 bg-indigo-50 rounded-xl border border-indigo-100">
+                    <div className="flex items-center gap-2">
+                      <FlaskConical size={16} className="text-indigo-600" />
+                      <span className="text-sm font-bold text-indigo-900">Avg BOLT Score</span>
+                    </div>
+                    <span className="text-lg font-black text-indigo-600">{stats.avgBolt}s</span>
+                  </div>
+                  <div className="flex items-center justify-between p-3 bg-rose-50 rounded-xl border border-rose-100">
+                    <div className="flex items-center gap-2">
+                      <Brain size={16} className="text-rose-600" />
+                      <span className="text-sm font-bold text-rose-900">Avg Coherence</span>
+                    </div>
+                    <span className="text-lg font-black text-rose-600">{stats.avgCoherence.toFixed(2)}</span>
+                  </div>
+                </div>
               </CardContent>
             </Card>
           </div>

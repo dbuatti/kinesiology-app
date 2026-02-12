@@ -145,7 +145,7 @@ const ClientDetailPage = () => {
   };
 
   return (
-    <div className="p-4 md:p-8 max-w-7xl mx-auto space-y-6">
+    <div className="p-4 md:p-8 max-w-full mx-auto space-y-6">
       <Breadcrumbs 
         items={[
           { label: "Clients", path: "/clients" },

@@ -19,7 +19,7 @@ const SettingsPage = () => {
   };
 
   return (
-    <div className="p-4 md:p-8 max-w-4xl mx-auto space-y-8">
+    <div className="p-4 md:p-8 max-w-full mx-auto space-y-8">
       <div className="flex items-center gap-4">
         <div className="w-12 h-12 bg-indigo-100 rounded-xl flex items-center justify-center text-indigo-600">
           <Settings size={24} />

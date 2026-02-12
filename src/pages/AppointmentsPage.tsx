@@ -3,7 +3,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { groupAppointmentsByMonth } from "@/utils/crm-utils";
 import { format } from "date-fns";
 import { Badge } from "@/components/ui/badge";
-import { Calendar as CalendarIcon, Clock, Loader2, Plus, Trash2, MoreVertical, ExternalLink, FlaskConical, Activity, Move, TrendingUp, Brain, Palette, Heart, CheckCircle2 } from "lucide-react";
+import { Calendar as CalendarIcon, Clock, Loader2, Plus, Trash2, MoreVertical, ExternalLink, FlaskConical, Activity, Move, TrendingUp, Brain, Palette, Heart, CheckCircle2, ChevronDown } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import {
@@ -106,7 +106,7 @@ const AppointmentsPage = () => {
   const grouped = groupAppointmentsByMonth(appointments);
 
   return (
-    <div className="p-4 md:p-8 max-w-5xl mx-auto space-y-6">
+    <div className="p-4 md:p-8 max-w-full mx-auto space-y-6">
       <Breadcrumbs items={[{ label: "Appointments" }]} />
       
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
@@ -315,5 +315,4 @@ const AppointmentsPage = () => {
   );
 };
 
-import { ChevronDown } from "lucide-react";
 export default AppointmentsPage;

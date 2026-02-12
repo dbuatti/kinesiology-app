@@ -52,7 +52,7 @@ const ImportPage = () => {
   };
 
   return (
-    <div className="p-8 max-w-4xl mx-auto space-y-6">
+    <div className="p-4 md:p-8 max-w-full mx-auto space-y-6">
       <div>
         <h1 className="text-3xl font-bold tracking-tight text-slate-900">Appointment Data Importer</h1>
         <p className="text-slate-500 mt-2">Upload your CSV file to bulk import appointments. The system will automatically match client names and skip duplicates.</p>

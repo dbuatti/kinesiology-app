@@ -105,7 +105,7 @@ const Index = () => {
   }, []);
 
   if (loading) return (
-    <div className="p-4 md:p-8 max-w-7xl mx-auto space-y-8">
+    <div className="p-4 md:p-8 max-w-full mx-auto space-y-8">
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div className="space-y-2">
           <Skeleton className="h-8 w-48" />
@@ -125,7 +125,7 @@ const Index = () => {
   const hasData = stats.clients > 0 || stats.appointments > 0;
 
   return (
-    <div className="p-4 md:p-8 max-w-7xl mx-auto space-y-8">
+    <div className="p-4 md:p-8 max-w-full mx-auto space-y-8">
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
           <h1 className="text-3xl font-bold tracking-tight text-slate-900">Practice Hub</h1>

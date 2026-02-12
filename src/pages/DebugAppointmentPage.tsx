@@ -276,7 +276,7 @@ const DebugAppointmentPage = () => {
   };
 
   return (
-    <div className="p-8 max-w-4xl mx-auto space-y-8">
+    <div className="p-4 md:p-8 max-w-full mx-auto space-y-8">
       <div>
         <h1 className="text-3xl font-bold tracking-tight text-slate-900">🔧 Debug Procedures</h1>
         <p className="text-slate-500 mt-2">Test procedure auto-tracking functionality</p>

@@ -2,7 +2,7 @@
 
 import React, { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
-import { FlaskConical, ChevronDown, AlertCircle, BookOpen, RotateCcw } from "lucide-react";
+import { FlaskConical, ChevronDown, AlertCircle, BookOpen, RotateCcw, Info, Target } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { showSuccess, showError } from "@/utils/toast";
 import { Badge } from "@/components/ui/badge";
@@ -25,7 +25,6 @@ interface BoltTestSectionProps {
 const BoltTestSection = ({ appointmentId, initialBoltScore, onUpdate }: BoltTestSectionProps) => {
   const [loading, setLoading] = useState(false);
   const [isOpen, setIsOpen] = useState(false);
-  const [detailsOpen, setDetailsOpen] = useState(false);
   const [resourcesOpen, setResourcesOpen] = useState(false);
 
   const handleSaveScore = async (score: number) => {
@@ -98,7 +97,7 @@ const BoltTestSection = ({ appointmentId, initialBoltScore, onUpdate }: BoltTest
         </CollapsibleTrigger>
 
         <CollapsibleContent>
-          <div className="p-6 border-t border-slate-50 space-y-6">
+          <div className="p-6 border-t border-slate-50 space-y-8">
             {needsImprovement && (
               <div className="bg-amber-50 border border-amber-100 p-4 rounded-xl flex items-start justify-between gap-4">
                 <div className="flex items-start gap-3">
@@ -112,6 +111,50 @@ const BoltTestSection = ({ appointmentId, initialBoltScore, onUpdate }: BoltTest
             )}
 
             <BoltTimer initialScore={initialBoltScore} onScoreRecorded={handleSaveScore} isSaving={loading} />
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-8 pt-4 border-t border-slate-100">
+              <div className="space-y-4">
+                <h4 className="text-sm font-bold text-slate-900 flex items-center gap-2">
+                  <Info size={16} className="text-indigo-600" />
+                  Instructions
+                </h4>
+                <ol className="space-y-3 text-sm text-slate-600 list-decimal list-inside">
+                  <li>Take a normal breath in and allow a normal breath out through the nose.</li>
+                  <li>Hold the nose with fingers to prevent air from entering the lungs.</li>
+                  <li>Start the timer.</li>
+                  <li className="leading-relaxed">
+                    Time the seconds until you feel the <strong>first definite desire to breathe</strong> (e.g., need to swallow, airway constriction, or involuntary abdominal/throat contractions).
+                  </li>
+                  <li>Release the nose, stop the timer, and breathe in calmly through the nose.</li>
+                  <li>Resume normal breathing.</li>
+                </ol>
+              </div>
+
+              <div className="space-y-4">
+                <h4 className="text-sm font-bold text-slate-900 flex items-center gap-2">
+                  <Target size={16} className="text-emerald-600" />
+                  What to Expect
+                </h4>
+                <div className="space-y-2">
+                  <div className="flex items-center justify-between p-2 rounded-lg bg-slate-50 border border-slate-100">
+                    <span className="text-xs font-bold text-slate-500">Below 10s</span>
+                    <span className="text-xs font-medium text-rose-600">Labored / Noisy breathing</span>
+                  </div>
+                  <div className="flex items-center justify-between p-2 rounded-lg bg-slate-50 border border-slate-100">
+                    <span className="text-xs font-bold text-slate-500">10-20s</span>
+                    <span className="text-xs font-medium text-amber-600">Compromised / Poor energy</span>
+                  </div>
+                  <div className="flex items-center justify-between p-2 rounded-lg bg-slate-50 border border-slate-100">
+                    <span className="text-xs font-bold text-slate-500">20-30s</span>
+                    <span className="text-xs font-medium text-blue-600">Quiet / Effortless breathing</span>
+                  </div>
+                  <div className="flex items-center justify-between p-2 rounded-lg bg-emerald-50 border border-emerald-100">
+                    <span className="text-xs font-bold text-emerald-700">40s+</span>
+                    <span className="text-xs font-bold text-emerald-700">Optimal Health Goal</span>
+                  </div>
+                </div>
+              </div>
+            </div>
 
             <div className="flex gap-2">
               <Button variant="outline" onClick={() => setResourcesOpen(true)} className="flex-1 rounded-xl border-slate-200 text-slate-600 h-10 text-xs">

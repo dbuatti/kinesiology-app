@@ -1,5 +1,5 @@
 import { Link, useLocation, useNavigate } from "react-router-dom";
-import { Users, Calendar, LayoutDashboard, Settings, Target, Keyboard, LogOut, HelpCircle, Clock, Zap, PlusCircle } from "lucide-react";
+import { Users, Calendar, LayoutDashboard, Settings, Target, Keyboard, LogOut, HelpCircle, Clock, Zap, PlusCircle, BookOpen } from "lucide-react";
 import { cn } from "@/lib/utils";
 import SearchBar from "./SearchBar";
 import { Badge } from "@/components/ui/badge";
@@ -22,6 +22,7 @@ const Sidebar = () => {
     { label: "Clients", icon: Users, path: "/clients", shortcut: "⌘1" },
     { label: "Appointments", icon: Calendar, path: "/appointments", shortcut: "⌘2" },
     { label: "Procedures", icon: Target, path: "/procedures", shortcut: "⌘P" },
+    { label: "Resources", icon: BookOpen, path: "/resources", shortcut: "⌘R" },
   ];
 
   useEffect(() => {
@@ -66,6 +67,10 @@ const Sidebar = () => {
           case 'p':
             e.preventDefault();
             navigate('/procedures');
+            break;
+          case 'r':
+            e.preventDefault();
+            navigate('/resources');
             break;
           case '/':
             e.preventDefault();

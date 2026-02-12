@@ -1,6 +1,6 @@
 import { Sheet, SheetContent, SheetTrigger, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
-import { Menu, LayoutDashboard, Users, Calendar, Settings, Target, LogOut } from "lucide-react";
+import { Menu, LayoutDashboard, Users, Calendar, Settings, Target, LogOut, BookOpen } from "lucide-react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { cn } from "@/lib/utils";
 import { useState } from "react";
@@ -17,6 +17,7 @@ const MobileNav = () => {
     { label: "Clients", icon: Users, path: "/clients" },
     { label: "Appointments", icon: Calendar, path: "/appointments" },
     { label: "Procedures", icon: Target, path: "/procedures" },
+    { label: "Resources", icon: BookOpen, path: "/resources" },
   ];
 
   const handleSignOut = async () => {

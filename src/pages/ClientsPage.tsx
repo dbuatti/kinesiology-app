@@ -5,7 +5,7 @@ import { calculateAge, getStarSign } from "@/utils/crm-utils";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Plus, Search, Loader2, UserPlus, Sparkles, Activity, CalendarPlus } from "lucide-react";
+import { Plus, Search, Loader2, UserPlus, Sparkles, Activity, CalendarPlus, Clock } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import {
   Dialog,
@@ -22,9 +22,11 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
+import { format } from "date-fns";
 
 interface ClientWithStats extends Client {
   session_count: number;
+  last_session_at: string | null;
 }
 
 const ClientsPage = () => {
@@ -39,18 +41,24 @@ const ClientsPage = () => {
     try {
       const { data, error } = await supabase
         .from('clients')
-        .select('*, appointments(count)')
-        .or('is_practitioner.eq.false,is_practitioner.is.null') // Show both false and NULL values
+        .select('*, appointments(date)')
+        .or('is_practitioner.eq.false,is_practitioner.is.null')
         .order('name', { ascending: true });
       
       if (error) throw error;
       
-      const mapped = (data || []).map(c => ({
-        ...c,
-        born: c.born ? new Date(c.born) : null,
-        suburb: c.suburbs || [],
-        session_count: c.appointments?.[0]?.count || 0
-      })) as unknown as ClientWithStats[];
+      const mapped = (data || []).map(c => {
+        const sortedApps = (c.appointments || [])
+          .sort((a: any, b: any) => new Date(b.date).getTime() - new Date(a.date).getTime());
+        
+        return {
+          ...c,
+          born: c.born ? new Date(c.born) : null,
+          suburb: c.suburbs || [],
+          session_count: c.appointments?.length || 0,
+          last_session_at: sortedApps.length > 0 ? sortedApps[0].date : null
+        };
+      }) as unknown as ClientWithStats[];
       
       setClients(mapped);
     } catch (err) {
@@ -62,18 +70,6 @@ const ClientsPage = () => {
 
   useEffect(() => {
     fetchClients();
-  }, []);
-
-  useEffect(() => {
-    const down = (e: KeyboardEvent) => {
-      if (e.key === "n" && (e.metaKey || e.ctrlKey)) {
-        e.preventDefault();
-        setOpen(true);
-      }
-    };
-
-    document.addEventListener("keydown", down);
-    return () => document.removeEventListener("keydown", down);
   }, []);
 
   const handleQuickBook = (clientId: string) => {
@@ -98,21 +94,11 @@ const ClientsPage = () => {
           <DialogTrigger asChild>
             <Button className="bg-indigo-600 hover:bg-indigo-700 shadow-lg shadow-indigo-100">
               <Plus size={18} className="mr-2" /> New Client
-              <kbd className="ml-2 hidden sm:inline-flex h-5 select-none items-center gap-1 rounded border bg-indigo-700 px-1.5 font-mono text-[10px] font-medium text-white opacity-80">
-                ⌘N
-              </kbd>
             </Button>
           </DialogTrigger>
           <DialogContent className="sm:max-w-[550px]">
-            <DialogHeader>
-              <DialogTitle>Add New Client</DialogTitle>
-            </DialogHeader>
-            <ClientForm 
-              onSuccess={() => {
-                setOpen(false);
-                fetchClients();
-              }} 
-            />
+            <DialogHeader><DialogTitle>Add New Client</DialogTitle></DialogHeader>
+            <ClientForm onSuccess={() => { setOpen(false); fetchClients(); }} />
           </DialogContent>
         </Dialog>
       </div>
@@ -136,7 +122,7 @@ const ClientsPage = () => {
         {loading ? (
           <div className="p-12 flex flex-col items-center justify-center gap-4">
             <Loader2 className="animate-spin text-indigo-500" size={32} />
-            <p className="text-slate-400 animate-pulse">Loading clients...</p>
+            <p className="text-slate-400">Loading clients...</p>
           </div>
         ) : filteredClients.length > 0 ? (
           <Table>
@@ -144,7 +130,7 @@ const ClientsPage = () => {
               <TableRow>
                 <TableHead className="font-semibold text-slate-900">Name</TableHead>
                 <TableHead className="text-slate-600">Age / Sign</TableHead>
-                <TableHead className="text-slate-600">Suburb</TableHead>
+                <TableHead className="text-slate-600">Last Seen</TableHead>
                 <TableHead className="text-slate-600 text-center">Sessions</TableHead>
                 <TableHead className="text-slate-600 text-right">Action</TableHead>
               </TableRow>
@@ -169,12 +155,9 @@ const ClientsPage = () => {
                     </div>
                   </TableCell>
                   <TableCell>
-                    <div className="flex gap-1 flex-wrap">
-                      {client.suburb.slice(0, 2).map(s => (
-                        <Badge key={s} variant="secondary" className="bg-slate-100 text-slate-600 hover:bg-slate-200 border-none text-[10px]">
-                          {s}
-                        </Badge>
-                      ))}
+                    <div className="flex items-center gap-2 text-sm text-slate-600">
+                      <Clock size={14} className="text-slate-400" />
+                      {client.last_session_at ? format(new Date(client.last_session_at), "MMM d, yyyy") : "Never"}
                     </div>
                   </TableCell>
                   <TableCell className="text-center">
@@ -190,12 +173,8 @@ const ClientsPage = () => {
                           <Button 
                             variant="ghost" 
                             size="icon" 
-                            className="h-8 w-8 text-indigo-600 hover:bg-indigo-50 opacity-0 group-hover:opacity-100 transition-opacity"
-                            onClick={(e) => {
-                              e.preventDefault();
-                              e.stopPropagation();
-                              handleQuickBook(client.id);
-                            }}
+                            className="h-8 w-8 text-indigo-600 hover:bg-indigo-50"
+                            onClick={(e) => { e.preventDefault(); e.stopPropagation(); handleQuickBook(client.id); }}
                           >
                             <CalendarPlus size={18} />
                           </Button>
@@ -203,9 +182,7 @@ const ClientsPage = () => {
                         <TooltipContent>Quick Book Session</TooltipContent>
                       </Tooltip>
                       <Link to={`/clients/${client.id}`}>
-                        <Button variant="ghost" size="sm" className="opacity-0 group-hover:opacity-100 transition-opacity text-indigo-600">
-                          View Profile
-                        </Button>
+                        <Button variant="ghost" size="sm" className="text-indigo-600">View Profile</Button>
                       </Link>
                     </div>
                   </TableCell>
@@ -226,18 +203,8 @@ const ClientsPage = () => {
 
       <Dialog open={bookOpen} onOpenChange={setBookOpen}>
         <DialogContent className="sm:max-w-[500px]">
-          <DialogHeader>
-            <DialogTitle>Quick Book Session</DialogTitle>
-          </DialogHeader>
-          {selectedClientId && (
-            <AppointmentForm 
-              initialClientId={selectedClientId}
-              onSuccess={() => {
-                setBookOpen(false);
-                fetchClients();
-              }} 
-            />
-          )}
+          <DialogHeader><DialogTitle>Quick Book Session</DialogTitle></DialogHeader>
+          {selectedClientId && <AppointmentForm initialClientId={selectedClientId} onSuccess={() => { setBookOpen(false); fetchClients(); }} />}
         </DialogContent>
       </Dialog>
     </div>

@@ -12,11 +12,11 @@ import {
   CommandList,
   CommandSeparator,
 } from "@/components/ui/command";
-import { Search, User, Calendar, Target, Zap, Clock, Trash2 } from "lucide-react";
+import { Search, User, Calendar, Target, Zap, Clock, Trash2, UserPlus, CalendarPlus, Upload, Settings } from "lucide-react";
 import { format } from "date-fns";
 
 interface SearchResult {
-  type: "client" | "appointment" | "procedure";
+  type: "client" | "appointment" | "procedure" | "action";
   id: string;
   title: string;
   subtitle?: string;
@@ -54,6 +54,7 @@ const SearchBar = () => {
   }, []);
 
   const saveRecentSearch = (result: SearchResult) => {
+    if (result.type === 'action') return; // Don't save generic actions to recent
     const updated = [
       result,
       ...recentSearches.filter((r) => r.id !== result.id || r.type !== result.type),
@@ -155,6 +156,13 @@ const SearchBar = () => {
     navigate(result.path);
   };
 
+  const quickActions: SearchResult[] = [
+    { type: "action", id: "new-client", title: "Add New Client", subtitle: "Create a new client profile", path: "/clients" },
+    { type: "action", id: "book-session", title: "Book New Session", subtitle: "Schedule an appointment", path: "/appointments" },
+    { type: "action", id: "import-data", title: "Import CSV Data", subtitle: "Bulk upload appointments", path: "/import" },
+    { type: "action", id: "settings", title: "Settings", subtitle: "Manage account and preferences", path: "/settings" },
+  ];
+
   return (
     <>
       <button
@@ -178,37 +186,60 @@ const SearchBar = () => {
             {loading ? "Searching..." : "No results found."}
           </CommandEmpty>
           
-          {results.length === 0 && recentSearches.length > 0 && (
-            <CommandGroup 
-              heading={
-                <div className="flex items-center justify-between w-full">
-                  <span>Recent Searches</span>
-                  <button 
-                    onClick={clearRecentSearches}
-                    className="text-[10px] font-bold text-slate-400 hover:text-rose-500 transition-colors flex items-center gap-1"
-                  >
-                    <Trash2 size={10} /> Clear
-                  </button>
-                </div>
-              }
-            >
-              {recentSearches.map((result) => (
+          {results.length === 0 && (
+            <CommandGroup heading="Quick Actions">
+              {quickActions.map((action) => (
                 <CommandItem
-                  key={`${result.type}-${result.id}`}
-                  onSelect={() => handleSelect(result)}
+                  key={action.id}
+                  onSelect={() => handleSelect(action)}
                 >
-                  <Clock size={16} className="mr-2 text-slate-400" />
+                  {action.id === 'new-client' && <UserPlus size={16} className="mr-2 text-indigo-500" />}
+                  {action.id === 'book-session' && <CalendarPlus size={16} className="mr-2 text-rose-500" />}
+                  {action.id === 'import-data' && <Upload size={16} className="mr-2 text-emerald-500" />}
+                  {action.id === 'settings' && <Settings size={16} className="mr-2 text-slate-500" />}
                   <div className="flex flex-col">
-                    <span className="font-medium">{result.title}</span>
-                    {result.subtitle && (
-                      <span className="text-xs text-slate-500">
-                        {result.subtitle}
-                      </span>
-                    )}
+                    <span className="font-medium">{action.title}</span>
+                    <span className="text-xs text-slate-500">{action.subtitle}</span>
                   </div>
                 </CommandItem>
               ))}
             </CommandGroup>
+          )}
+
+          {results.length === 0 && recentSearches.length > 0 && (
+            <>
+              <CommandSeparator />
+              <CommandGroup 
+                heading={
+                  <div className="flex items-center justify-between w-full">
+                    <span>Recent Searches</span>
+                    <button 
+                      onClick={clearRecentSearches}
+                      className="text-[10px] font-bold text-slate-400 hover:text-rose-500 transition-colors flex items-center gap-1"
+                    >
+                      <Trash2 size={10} /> Clear
+                    </button>
+                  </div>
+                }
+              >
+                {recentSearches.map((result) => (
+                  <CommandItem
+                    key={`${result.type}-${result.id}`}
+                    onSelect={() => handleSelect(result)}
+                  >
+                    <Clock size={16} className="mr-2 text-slate-400" />
+                    <div className="flex flex-col">
+                      <span className="font-medium">{result.title}</span>
+                      {result.subtitle && (
+                        <span className="text-xs text-slate-500">
+                          {result.subtitle}
+                        </span>
+                      )}
+                    </div>
+                  </CommandItem>
+                ))}
+              </CommandGroup>
+            </>
           )}
 
           {results.length > 0 && (

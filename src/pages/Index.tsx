@@ -7,7 +7,7 @@ import { Badge } from "@/components/ui/badge";
 import { 
   Users, Calendar, Activity, TrendingUp, Loader2, 
   Plus, ArrowRight, UserPlus, Sparkles, Clock, 
-  CheckCircle2, Zap, Upload, Target, FlaskConical, Brain, Info, Heart
+  CheckCircle2, Zap, Upload, Target, FlaskConical, Brain, Info, Heart, AlertCircle, Edit3
 } from "lucide-react";
 import { MadeWithDyad } from "@/components/made-with-dyad";
 import {
@@ -29,6 +29,9 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
+import { Textarea } from "@/components/ui/textarea";
+
+const SCRATCHPAD_KEY = "antigravity_practitioner_scratchpad";
 
 const Index = () => {
   const [stats, setStats] = useState({ 
@@ -37,7 +40,8 @@ const Index = () => {
     newClients30d: 0,
     sessions30d: 0,
     avgBolt: 0,
-    avgCoherence: 0
+    avgCoherence: 0,
+    imperativeAlerts: 0
   });
   const [todaySessions, setTodaySessions] = useState<any[]>([]);
   const [activeSession, setActiveSession] = useState<any>(null);
@@ -45,32 +49,56 @@ const Index = () => {
   const [clientDialogOpen, setClientDialogOpen] = useState(false);
   const [appDialogOpen, setAppDialogOpen] = useState(false);
   const [chartData, setChartData] = useState<any[]>([]);
+  const [scratchpad, setScratchpad] = useState("");
+
+  useEffect(() => {
+    const saved = localStorage.getItem(SCRATCHPAD_KEY);
+    if (saved) setScratchpad(saved);
+  }, []);
+
+  const handleScratchpadChange = (val: string) => {
+    setScratchpad(val);
+    localStorage.setItem(SCRATCHPAD_KEY, val);
+  };
 
   const fetchDashboardData = async () => {
     try {
       const thirtyDaysAgo = subDays(new Date(), 30).toISOString();
 
-      // Fetch data while filtering out practitioner self-monitoring records (handling NULL values)
       const [
         { count: clientCount }, 
         { count: appCount }, 
         { data: allApps },
         { count: newClientsCount },
-        { count: recentAppsCount }
+        { count: recentAppsCount },
+        { data: clinicalClients }
       ] = await Promise.all([
         supabase.from('clients').select('*', { count: 'exact', head: true }).or('is_practitioner.eq.false,is_practitioner.is.null'),
         supabase.from('appointments').select('*, clients!inner(is_practitioner)', { count: 'exact', head: true }).or('is_practitioner.eq.false,is_practitioner.is.null', { foreignTable: 'clients' }),
         supabase.from('appointments').select('*, clients!inner(name, is_practitioner)').or('is_practitioner.eq.false,is_practitioner.is.null', { foreignTable: 'clients' }).order('date', { ascending: true }),
         supabase.from('clients').select('*', { count: 'exact', head: true }).or('is_practitioner.eq.false,is_practitioner.is.null').gte('created_at', thirtyDaysAgo),
-        supabase.from('appointments').select('*, clients!inner(is_practitioner)', { count: 'exact', head: true }).or('is_practitioner.eq.false,is_practitioner.is.null', { foreignTable: 'clients' }).gte('date', thirtyDaysAgo)
+        supabase.from('appointments').select('*, clients!inner(is_practitioner)', { count: 'exact', head: true }).or('is_practitioner.eq.false,is_practitioner.is.null', { foreignTable: 'clients' }).gte('date', thirtyDaysAgo),
+        supabase.from('clients').select('id, appointments(bolt_score, date)').or('is_practitioner.eq.false,is_practitioner.is.null')
       ]);
 
-      // Calculate averages for clinical clients only
+      // Calculate averages and alerts
       const boltScores = allApps?.filter(a => a.bolt_score).map(a => a.bolt_score) || [];
       const cohScores = allApps?.filter(a => a.coherence_score).map(a => a.coherence_score) || [];
       
       const avgBolt = boltScores.length > 0 ? Math.round(boltScores.reduce((a, b) => a + b, 0) / boltScores.length) : 0;
       const avgCoh = cohScores.length > 0 ? cohScores.reduce((a, b) => a + b, 0) / cohScores.length : 0;
+
+      // Calculate imperative alerts (clients whose LATEST bolt score is < 25)
+      let imperativeAlerts = 0;
+      clinicalClients?.forEach(client => {
+        const sortedApps = (client.appointments || [])
+          .filter((a: any) => a.bolt_score !== null)
+          .sort((a: any, b: any) => new Date(b.date).getTime() - new Date(a.date).getTime());
+        
+        if (sortedApps.length > 0 && (sortedApps[0] as any).bolt_score < 25) {
+          imperativeAlerts++;
+        }
+      });
 
       setStats({ 
         clients: clientCount || 0, 
@@ -78,28 +106,22 @@ const Index = () => {
         newClients30d: newClientsCount || 0,
         sessions30d: recentAppsCount || 0,
         avgBolt,
-        avgCoherence: avgCoh
+        avgCoherence: avgCoh,
+        imperativeAlerts
       });
 
-      // Filter today's sessions
       const today = allApps?.filter(app => isToday(new Date(app.date))) || [];
       setTodaySessions(today);
 
-      // Find active session (started within last 90 mins)
       const active = today.find(app => {
         const diff = differenceInMinutes(new Date(), new Date(app.date));
         return diff >= 0 && diff < 90 && app.status !== 'Completed';
       });
       setActiveSession(active);
 
-      // Process chart data for last 6 months
       const months = Array.from({ length: 6 }).map((_, i) => {
         const d = subMonths(new Date(), 5 - i);
-        return {
-          name: format(d, "MMM"),
-          sessions: 0,
-          date: d
-        };
+        return { name: format(d, "MMM"), sessions: 0, date: d };
       });
 
       allApps?.forEach(app => {
@@ -108,9 +130,7 @@ const Index = () => {
           appDate.getMonth() === m.date.getMonth() && 
           appDate.getFullYear() === m.date.getFullYear()
         );
-        if (monthIndex !== -1) {
-          months[monthIndex].sessions += 1;
-        }
+        if (monthIndex !== -1) months[monthIndex].sessions += 1;
       });
 
       setChartData(months);
@@ -128,10 +148,7 @@ const Index = () => {
   if (loading) return (
     <div className="p-4 md:p-8 max-w-full mx-auto space-y-8">
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-        <div className="space-y-2">
-          <Skeleton className="h-8 w-48" />
-          <Skeleton className="h-4 w-96" />
-        </div>
+        <div className="space-y-2"><Skeleton className="h-8 w-48" /><Skeleton className="h-4 w-96" /></div>
       </div>
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
         {[1, 2, 3, 4].map((i) => <Skeleton key={i} className="h-32 w-full rounded-2xl" />)}
@@ -174,9 +191,7 @@ const Index = () => {
             <Sparkles className="text-indigo-500" size={40} />
           </div>
           <h2 className="text-2xl font-bold text-slate-900 mb-2">Welcome to Antigravity CRM!</h2>
-          <p className="text-slate-600 max-w-md mx-auto mb-8">
-            Start building your kinesiology practice by adding your first client and scheduling sessions.
-          </p>
+          <p className="text-slate-600 max-w-md mx-auto mb-8">Start building your kinesiology practice by adding your first client and scheduling sessions.</p>
           <div className="flex gap-4 justify-center">
             <Button className="bg-indigo-600 hover:bg-indigo-700" onClick={() => setClientDialogOpen(true)}>
               <UserPlus size={18} className="mr-2" /> Add First Client
@@ -188,19 +203,36 @@ const Index = () => {
         </div>
       ) : (
         <>
-          {/* Quick Actions Grid */}
+          {/* Clinical Alerts Bar */}
+          {stats.imperativeAlerts > 0 && (
+            <Link to="/oversight">
+              <div className="bg-rose-600 text-white p-4 rounded-2xl shadow-lg shadow-rose-100 flex items-center justify-between group hover:bg-rose-700 transition-all">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 bg-white/20 rounded-xl flex items-center justify-center">
+                    <AlertCircle size={24} />
+                  </div>
+                  <div>
+                    <p className="font-black text-lg">Clinical Attention Required</p>
+                    <p className="text-rose-100 text-sm font-medium">{stats.imperativeAlerts} clients have imperative BOLT scores under 25s.</p>
+                  </div>
+                </div>
+                <div className="flex items-center gap-2 font-bold text-sm bg-white/10 px-4 py-2 rounded-xl group-hover:bg-white/20 transition-all">
+                  Review Cases <ArrowRight size={16} />
+                </div>
+              </div>
+            </Link>
+          )}
+
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
             <QuickAction icon={UserPlus} label="New Client" onClick={() => setClientDialogOpen(true)} color="bg-indigo-600" />
-            <QuickAction icon={Calendar} label="Book Session" onClick={() => setAppDialogOpen(true)} color="bg-rose-50" />
+            <QuickAction icon={Calendar} label="Book Session" onClick={() => setAppDialogOpen(true)} color="bg-rose-500" />
             <QuickAction icon={Heart} label="Self Practice" onClick={() => window.location.href='/self-practice'} color="bg-rose-500" />
             <QuickAction icon={Target} label="Procedures" onClick={() => window.location.href='/procedures'} color="bg-emerald-500" />
           </div>
 
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
             <Card className="lg:col-span-2 border-none shadow-lg bg-gradient-to-br from-slate-900 to-slate-800 text-white rounded-3xl overflow-hidden relative">
-              <div className="absolute top-0 right-0 p-8 opacity-10">
-                <Sparkles size={120} />
-              </div>
+              <div className="absolute top-0 right-0 p-8 opacity-10"><Sparkles size={120} /></div>
               <CardHeader className="pb-2">
                 <div className="flex items-center justify-between">
                   <CardTitle className="text-2xl font-bold flex items-center gap-2">
@@ -297,7 +329,6 @@ const Index = () => {
                       <ul className="text-xs space-y-1">
                         <li>• <span className="font-bold">25s+</span>: Functional</li>
                         <li>• <span className="font-bold">40s+</span>: Optimal</li>
-                        <li>• <span className="font-bold">{"<"} 10s</span>: High Stress</li>
                       </ul>
                     </TooltipContent>
                   </Tooltip>
@@ -317,7 +348,7 @@ const Index = () => {
                     </TooltipTrigger>
                     <TooltipContent side="left" className="max-w-[200px]">
                       <p className="font-bold mb-1">Coherence Score:</p>
-                      <p className="text-xs">Ratio of Heart Rate to Breath Rate. Whole numbers (e.g., 6.0) indicate high autonomic synchronization.</p>
+                      <p className="text-xs">Ratio of Heart Rate to Breath Rate. Whole numbers indicate high autonomic synchronization.</p>
                     </TooltipContent>
                   </Tooltip>
                 </div>
@@ -326,29 +357,52 @@ const Index = () => {
           </div>
 
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-            <Card className="lg:col-span-2 border-none shadow-sm rounded-2xl overflow-hidden bg-white">
-              <CardHeader>
-                <CardTitle className="text-lg font-bold">Session Activity</CardTitle>
-                <CardDescription>Volume of appointments over the last 6 months</CardDescription>
-              </CardHeader>
-              <CardContent className="h-[300px] mt-4">
-                <ResponsiveContainer width="100%" height="100%">
-                  <AreaChart data={chartData}>
-                    <defs>
-                      <linearGradient id="colorSessions" x1="0" y1="0" x2="0" y2="1">
-                        <stop offset="5%" stopColor="#4f46e5" stopOpacity={0.1}/>
-                        <stop offset="95%" stopColor="#4f46e5" stopOpacity={0}/>
-                      </linearGradient>
-                    </defs>
-                    <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
-                    <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{fontSize: 12, fill: '#94a3b8'}} />
-                    <YAxis axisLine={false} tickLine={false} tick={{fontSize: 12, fill: '#94a3b8'}} />
-                    <ChartTooltip contentStyle={{borderRadius: '12px', border: 'none', boxShadow: '0 10px 15px -3px rgb(0 0 0 / 0.1)'}} />
-                    <Area type="monotone" dataKey="sessions" stroke="#4f46e5" strokeWidth={3} fillOpacity={1} fill="url(#colorSessions)" />
-                  </AreaChart>
-                </ResponsiveContainer>
-              </CardContent>
-            </Card>
+            <div className="lg:col-span-2 space-y-8">
+              <Card className="border-none shadow-sm rounded-2xl overflow-hidden bg-white">
+                <CardHeader>
+                  <CardTitle className="text-lg font-bold">Session Activity</CardTitle>
+                  <CardDescription>Volume of appointments over the last 6 months</CardDescription>
+                </CardHeader>
+                <CardContent className="h-[300px] mt-4">
+                  <ResponsiveContainer width="100%" height="100%">
+                    <AreaChart data={chartData}>
+                      <defs>
+                        <linearGradient id="colorSessions" x1="0" y1="0" x2="0" y2="1">
+                          <stop offset="5%" stopColor="#4f46e5" stopOpacity={0.1}/>
+                          <stop offset="95%" stopColor="#4f46e5" stopOpacity={0}/>
+                        </linearGradient>
+                      </defs>
+                      <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
+                      <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{fontSize: 12, fill: '#94a3b8'}} />
+                      <YAxis axisLine={false} tickLine={false} tick={{fontSize: 12, fill: '#94a3b8'}} />
+                      <ChartTooltip contentStyle={{borderRadius: '12px', border: 'none', boxShadow: '0 10px 15px -3px rgb(0 0 0 / 0.1)'}} />
+                      <Area type="monotone" dataKey="sessions" stroke="#4f46e5" strokeWidth={3} fillOpacity={1} fill="url(#colorSessions)" />
+                    </AreaChart>
+                  </ResponsiveContainer>
+                </CardContent>
+              </Card>
+
+              {/* Practitioner Scratchpad */}
+              <Card className="border-none shadow-lg rounded-3xl bg-amber-50 border border-amber-100 overflow-hidden">
+                <CardHeader className="pb-2">
+                  <CardTitle className="text-lg font-bold flex items-center gap-2 text-amber-900">
+                    <Edit3 size={20} className="text-amber-600" /> Practitioner Scratchpad
+                  </CardTitle>
+                  <CardDescription className="text-amber-700">Quick notes, reminders, or research ideas. Saves automatically.</CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <Textarea 
+                    value={scratchpad}
+                    onChange={(e) => handleScratchpadChange(e.target.value)}
+                    placeholder="Type something here..."
+                    className="min-h-[150px] bg-white/50 border-amber-200 focus:ring-amber-500 focus:border-amber-500 resize-none text-amber-900 placeholder:text-amber-300"
+                  />
+                  <div className="flex items-center justify-end gap-2 mt-2 text-[10px] font-bold text-amber-600 uppercase tracking-widest">
+                    <CheckCircle2 size={10} /> Auto-saved to browser
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
 
             <div className="space-y-6">
               <UpcomingAppointments />

@@ -1,11 +1,11 @@
 "use client";
 
-import React, { useMemo } from "react";
+import React, { useMemo, useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { 
   TrendingUp, Activity, FlaskConical, Brain, 
   AlertCircle, CheckCircle2, History, Zap, Info,
-  ArrowUpRight, ArrowDownRight, LineChart
+  ArrowUpRight, ArrowDownRight, LineChart, Plus
 } from "lucide-react";
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip as ChartTooltip, ResponsiveContainer } from 'recharts';
 import { format } from "date-fns";
@@ -13,13 +13,19 @@ import { cn } from "@/lib/utils";
 import BreathingRecoveryProtocol from "./BreathingRecoveryProtocol";
 import { Appointment } from "@/types/crm";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import QuickAssessmentModal from "./QuickAssessmentModal";
 
 interface ClientProgressTabProps {
   client: any;
   appointments: Appointment[];
+  onRefresh?: () => void;
 }
 
-const ClientProgressTab = ({ client, appointments }: ClientProgressTabProps) => {
+const ClientProgressTab = ({ client, appointments, onRefresh }: ClientProgressTabProps) => {
+  const [assessmentType, setAssessmentType] = useState<'bolt' | 'coherence' | null>(null);
+  const [modalOpen, setModalOpen] = useState(false);
+
   const boltData = useMemo(() => {
     return [...appointments]
       .filter(app => app.bolt_score !== null && app.bolt_score !== undefined)
@@ -53,8 +59,35 @@ const ClientProgressTab = ({ client, appointments }: ClientProgressTabProps) => 
 
   const boltTrend = getTrend(latestBolt, previousBolt);
 
+  const openAssessment = (type: 'bolt' | 'coherence') => {
+    setAssessmentType(type);
+    setModalOpen(true);
+  };
+
   return (
     <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
+      {/* Quick Assessment Bar */}
+      <div className="flex flex-wrap items-center gap-4 p-4 bg-white rounded-[2rem] border border-slate-100 shadow-sm">
+        <div className="flex items-center gap-2 px-4 border-r border-slate-100 mr-2">
+          <Zap size={18} className="text-amber-500 fill-amber-500" />
+          <span className="text-xs font-black uppercase tracking-widest text-slate-500">Quick Assessment</span>
+        </div>
+        <Button 
+          onClick={() => openAssessment('bolt')}
+          variant="outline" 
+          className="rounded-xl border-indigo-100 bg-indigo-50/50 text-indigo-600 hover:bg-indigo-100 font-bold h-10"
+        >
+          <FlaskConical size={16} className="mr-2" /> Log BOLT
+        </Button>
+        <Button 
+          onClick={() => openAssessment('coherence')}
+          variant="outline" 
+          className="rounded-xl border-rose-100 bg-rose-50/50 text-rose-600 hover:bg-rose-100 font-bold h-10"
+        >
+          <Activity size={16} className="mr-2" /> Log Coherence
+        </Button>
+      </div>
+
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
         {/* Clinical Status Card */}
         <Card className="lg:col-span-1 border-none shadow-lg rounded-3xl bg-white overflow-hidden">
@@ -76,7 +109,7 @@ const ClientProgressTab = ({ client, appointments }: ClientProgressTabProps) => 
                     "text-4xl font-black",
                     latestBolt === null ? "text-slate-300" : (latestBolt >= 25 ? "text-emerald-600" : "text-rose-600")
                   )}>
-                    {latestBolt !== null ? `${latestBolt}s` : "N/A"}
+                    {latestBolt !== null ? `${latestBolt}s` : "—"}
                   </p>
                   <span className="text-slate-400 text-sm font-bold">/ 40s target</span>
                 </div>
@@ -89,7 +122,7 @@ const ClientProgressTab = ({ client, appointments }: ClientProgressTabProps) => 
                     "text-4xl font-black",
                     latestCoh === null ? "text-slate-300" : "text-rose-600"
                   )}>
-                    {latestCoh !== null ? latestCoh.toFixed(2) : "N/A"}
+                    {latestCoh !== null ? latestCoh.toFixed(2) : "—"}
                   </p>
                   <span className="text-slate-400 text-sm font-bold">Ratio</span>
                 </div>
@@ -239,6 +272,17 @@ const ClientProgressTab = ({ client, appointments }: ClientProgressTabProps) => 
           </Card>
         </div>
       </div>
+
+      {assessmentType && (
+        <QuickAssessmentModal 
+          open={modalOpen}
+          onOpenChange={setModalOpen}
+          clientId={client.id}
+          clientName={client.name}
+          type={assessmentType}
+          onComplete={() => onRefresh?.()}
+        />
+      )}
     </div>
   );
 };

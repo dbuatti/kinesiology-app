@@ -420,7 +420,11 @@ const ClientDetailPage = () => {
         </TabsContent>
 
         <TabsContent value="progress">
-          <ClientProgressTab client={client} appointments={appointments} />
+          <ClientProgressTab 
+            client={client} 
+            appointments={appointments} 
+            onRefresh={fetchClientData}
+          />
         </TabsContent>
       </Tabs>
     </div>

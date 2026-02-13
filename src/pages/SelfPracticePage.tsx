@@ -404,7 +404,11 @@ const SelfPracticePage = () => {
         </TabsContent>
 
         <TabsContent value="progress">
-          <ClientProgressTab client={selfClient} appointments={sessions} />
+          <ClientProgressTab 
+            client={selfClient} 
+            appointments={sessions} 
+            onRefresh={fetchSelfData}
+          />
         </TabsContent>
       </Tabs>
     </div>

@@ -9,7 +9,7 @@ import {
   ArrowLeft, Plus, Mail, Phone, MapPin, Calendar, 
   Star, Loader2, Briefcase, Heart, Baby, ExternalLink,
   Activity, Edit3, Trash2, MoreHorizontal, FlaskConical, TrendingUp, Clock, Brain, ArrowUpRight, ArrowDownRight,
-  LayoutDashboard, History
+  LayoutDashboard, History, ArrowRight
 } from "lucide-react";
 import { format } from "date-fns";
 import { Client, Appointment } from "@/types/crm";

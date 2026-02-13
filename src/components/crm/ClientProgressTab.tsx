@@ -12,6 +12,7 @@ import { format } from "date-fns";
 import { cn } from "@/lib/utils";
 import BreathingRecoveryProtocol from "./BreathingRecoveryProtocol";
 import { Appointment } from "@/types/crm";
+import { Badge } from "@/components/ui/badge";
 
 interface ClientProgressTabProps {
   client: any;

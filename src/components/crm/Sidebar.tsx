@@ -1,5 +1,5 @@
 import { Link, useLocation, useNavigate } from "react-router-dom";
-import { Users, Calendar, LayoutDashboard, Settings, Target, Keyboard, LogOut, HelpCircle, Clock, Zap, PlusCircle, BookOpen, Heart } from "lucide-react";
+import { Users, Calendar, LayoutDashboard, Settings, Target, Keyboard, LogOut, HelpCircle, Clock, Zap, PlusCircle, BookOpen, Heart, TrendingUp } from "lucide-react";
 import { cn } from "@/lib/utils";
 import SearchBar from "./SearchBar";
 import { Badge } from "@/components/ui/badge";
@@ -21,6 +21,7 @@ const Sidebar = () => {
     { label: "Dashboard", icon: LayoutDashboard, path: "/", shortcut: "⌘D" },
     { label: "Clients", icon: Users, path: "/clients", shortcut: "⌘1" },
     { label: "Appointments", icon: Calendar, path: "/appointments", shortcut: "⌘2" },
+    { label: "Clinical Oversight", icon: TrendingUp, path: "/oversight", shortcut: "⌘O" },
     { label: "Self Practice", icon: Heart, path: "/self-practice", shortcut: "⌘S" },
     { label: "Procedures", icon: Target, path: "/procedures", shortcut: "⌘P" },
     { label: "Resources", icon: BookOpen, path: "/resources", shortcut: "⌘R" },
@@ -84,6 +85,10 @@ const Sidebar = () => {
           case '2':
             e.preventDefault();
             navigate('/appointments');
+            break;
+          case 'o':
+            e.preventDefault();
+            navigate('/oversight');
             break;
           case 's':
             e.preventDefault();

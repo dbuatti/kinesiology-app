@@ -15,6 +15,7 @@ import ImportPage from "./pages/ImportPage";
 import ProceduresPage from "./pages/ProceduresPage";
 import ResourcesPage from "./pages/ResourcesPage";
 import SelfPracticePage from "./pages/SelfPracticePage";
+import ClinicalOversightPage from "./pages/ClinicalOversightPage";
 import DebugAppointmentPage from "./pages/DebugAppointmentPage";
 import SettingsPage from "./pages/SettingsPage";
 import Login from "./pages/Login";
@@ -55,6 +56,7 @@ const App = () => (
             <Route path="/clients/:id" element={<ProtectedLayout><ClientDetailPage /></ProtectedLayout>} />
             <Route path="/appointments" element={<ProtectedLayout><AppointmentsPage /></ProtectedLayout>} />
             <Route path="/appointments/:id" element={<ProtectedLayout><AppointmentDetailPage /></ProtectedLayout>} />
+            <Route path="/oversight" element={<ProtectedLayout><ClinicalOversightPage /></ProtectedLayout>} />
             <Route path="/import" element={<ProtectedLayout><ImportPage /></ProtectedLayout>} />
             <Route path="/procedures" element={<ProtectedLayout><ProceduresPage /></ProtectedLayout>} />
             <Route path="/resources" element={<ProtectedLayout><ResourcesPage /></ProtectedLayout>} />

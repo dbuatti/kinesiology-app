@@ -1,8 +1,21 @@
 import { Link, useLocation, useNavigate } from "react-router-dom";
-import { Users, Calendar, LayoutDashboard, Settings, Target, Keyboard, LogOut, HelpCircle, Clock, Zap, PlusCircle, BookOpen, Heart, TrendingUp } from "lucide-react";
+import { 
+  Users, 
+  Calendar, 
+  LayoutDashboard, 
+  Settings, 
+  Target, 
+  Keyboard, 
+  LogOut, 
+  HelpCircle, 
+  Clock, 
+  Zap, 
+  BookOpen, 
+  Heart, 
+  TrendingUp 
+} from "lucide-react";
 import { cn } from "@/lib/utils";
 import SearchBar from "./SearchBar";
-import { Badge } from "@/components/ui/badge";
 import { supabase } from "@/integrations/supabase/client";
 import { showSuccess } from "@/utils/toast";
 import { useEffect, useState, useCallback } from "react";
@@ -38,7 +51,6 @@ const Sidebar = () => {
       const active = data.find(app => {
         const appDate = new Date(app.date);
         const diff = differenceInMinutes(new Date(), appDate);
-        // Session is "live" if it started within the last 90 minutes and is today
         return isToday(appDate) && diff >= 0 && diff < 90;
       });
       setActiveSessionId(active?.id || null);
@@ -50,7 +62,6 @@ const Sidebar = () => {
   useEffect(() => {
     checkActiveSession();
     
-    // Set up real-time subscription to handle immediate updates/deletions
     const channel = supabase
       .channel('sidebar-sessions')
       .on('postgres_changes', { 
@@ -227,7 +238,7 @@ const Sidebar = () => {
           to="/settings"
           className="flex items-center gap-3 px-4 py-2.5 rounded-xl text-slate-400 hover:text-white hover:bg-slate-900 transition-all cursor-pointer group"
         >
-          <Settings size={20} group-hover:rotate-45 transition-transform />
+          <Settings size={20} />
           <span className="font-medium">Settings</span>
         </Link>
 

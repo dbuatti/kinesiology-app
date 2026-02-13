@@ -77,4 +77,5 @@ export interface Client {
   chatgpt_url?: string;
   journal?: string;
   created_at?: string;
+  is_practitioner?: boolean; // New flag for self-monitoring
 }

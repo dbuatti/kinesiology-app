@@ -8,10 +8,19 @@ export interface MuscleStat {
 }
 
 export async function fetchMusclePracticeStats(): Promise<MuscleStat[]> {
-  // Fetch all muscle tests for the current user
+  // Fetch all muscle tests for the current user, joining with clients to filter out self-practice
   const { data, error } = await supabase
     .from('muscle_tests')
-    .select('muscle_name, status');
+    .select(`
+      muscle_name, 
+      status,
+      appointments!inner (
+        clients!inner (
+          is_practitioner
+        )
+      )
+    `)
+    .eq('appointments.clients.is_practitioner', false);
 
   if (error) {
     console.error("Error fetching muscle test data for stats:", error);

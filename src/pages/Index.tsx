@@ -7,7 +7,7 @@ import { Badge } from "@/components/ui/badge";
 import { 
   Users, Calendar, Activity, TrendingUp, Loader2, 
   Plus, ArrowRight, UserPlus, Sparkles, Clock, 
-  CheckCircle2, Zap, Upload, Target, FlaskConical, Brain, Info
+  CheckCircle2, Zap, Upload, Target, FlaskConical, Brain, Info, Heart
 } from "lucide-react";
 import { MadeWithDyad } from "@/components/made-with-dyad";
 import {
@@ -50,6 +50,7 @@ const Index = () => {
     try {
       const thirtyDaysAgo = subDays(new Date(), 30).toISOString();
 
+      // Fetch data while filtering out practitioner self-monitoring records
       const [
         { count: clientCount }, 
         { count: appCount }, 
@@ -57,14 +58,14 @@ const Index = () => {
         { count: newClientsCount },
         { count: recentAppsCount }
       ] = await Promise.all([
-        supabase.from('clients').select('*', { count: 'exact', head: true }),
-        supabase.from('appointments').select('*', { count: 'exact', head: true }),
-        supabase.from('appointments').select('*, clients(name)').order('date', { ascending: true }),
-        supabase.from('clients').select('*', { count: 'exact', head: true }).gte('created_at', thirtyDaysAgo),
-        supabase.from('appointments').select('*', { count: 'exact', head: true }).gte('date', thirtyDaysAgo)
+        supabase.from('clients').select('*', { count: 'exact', head: true }).eq('is_practitioner', false),
+        supabase.from('appointments').select('*, clients!inner(is_practitioner)', { count: 'exact', head: true }).eq('clients.is_practitioner', false),
+        supabase.from('appointments').select('*, clients!inner(name, is_practitioner)').eq('clients.is_practitioner', false).order('date', { ascending: true }),
+        supabase.from('clients').select('*', { count: 'exact', head: true }).eq('is_practitioner', false).gte('created_at', thirtyDaysAgo),
+        supabase.from('appointments').select('*, clients!inner(is_practitioner)', { count: 'exact', head: true }).eq('clients.is_practitioner', false).gte('date', thirtyDaysAgo)
       ]);
 
-      // Calculate averages
+      // Calculate averages for clinical clients only
       const boltScores = allApps?.filter(a => a.bolt_score).map(a => a.bolt_score) || [];
       const cohScores = allApps?.filter(a => a.coherence_score).map(a => a.coherence_score) || [];
       
@@ -191,8 +192,8 @@ const Index = () => {
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
             <QuickAction icon={UserPlus} label="New Client" onClick={() => setClientDialogOpen(true)} color="bg-indigo-600" />
             <QuickAction icon={Calendar} label="Book Session" onClick={() => setAppDialogOpen(true)} color="bg-rose-50" />
+            <QuickAction icon={Heart} label="Self Practice" onClick={() => window.location.href='/self-practice'} color="bg-rose-500" />
             <QuickAction icon={Target} label="Procedures" onClick={() => window.location.href='/procedures'} color="bg-emerald-500" />
-            <QuickAction icon={Upload} label="Import Data" onClick={() => window.location.href='/import'} color="bg-amber-500" />
           </div>
 
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">

@@ -8,9 +8,9 @@ import { Badge } from "@/components/ui/badge";
 import { 
   Heart, Activity, FlaskConical, Brain, Plus, 
   Calendar, Clock, Loader2, TrendingUp, ArrowRight, 
-  Zap, Info, History, ExternalLink, Sparkles, CheckCircle2
+  Zap, Info, History, Sparkles, CheckCircle2, Target, Move, Footprints
 } from "lucide-react";
-import { format, isToday } from "date-fns";
+import { format, isToday, startOfToday, differenceInDays } from "date-fns";
 import { Link } from "react-router-dom";
 import { cn } from "@/lib/utils";
 import { showSuccess, showError } from "@/utils/toast";
@@ -37,7 +37,6 @@ const SelfPracticePage = () => {
         .single();
 
       if (clientError && clientError.code === 'PGRST116') {
-        // Create the self record if it doesn't exist
         const { data: newClient, error: createError } = await supabase
           .from('clients')
           .insert({
@@ -76,7 +75,7 @@ const SelfPracticePage = () => {
     }
   };
 
-  const handleNewSelfSession = async () => {
+  const handleNewSelfSession = async (goal?: string) => {
     if (!selfClient) return;
     setCreating(true);
     try {
@@ -92,7 +91,7 @@ const SelfPracticePage = () => {
           date: now.toISOString(),
           tag: "Self Practice",
           status: "Scheduled",
-          goal: "Personal health monitoring & protocol practice"
+          goal: goal || "Personal health monitoring & protocol practice"
         })
         .select()
         .single();
@@ -111,13 +110,43 @@ const SelfPracticePage = () => {
     fetchSelfData();
   }, []);
 
+  // Calculate Streak
+  const calculateStreak = () => {
+    if (sessions.length === 0) return 0;
+    let streak = 0;
+    let currentDate = startOfToday();
+    
+    const sessionDates = sessions.map(s => startOfToday().getTime() - startOfToday().getTime()); // Placeholder logic
+    // Real logic: sort unique dates and count backwards
+    const uniqueDates = Array.from(new Set(sessions.map(s => format(new Date(s.date), 'yyyy-MM-dd'))))
+      .map(d => new Date(d))
+      .sort((a, b) => b.getTime() - a.getTime());
+
+    if (uniqueDates.length === 0) return 0;
+    
+    let checkDate = startOfToday();
+    if (differenceInDays(checkDate, uniqueDates[0]) > 1) return 0;
+
+    for (let i = 0; i < uniqueDates.length; i++) {
+      if (i === 0 && differenceInDays(checkDate, uniqueDates[i]) <= 1) {
+        streak++;
+        checkDate = uniqueDates[i];
+      } else if (differenceInDays(checkDate, uniqueDates[i]) === 1) {
+        streak++;
+        checkDate = uniqueDates[i];
+      } else {
+        break;
+      }
+    }
+    return streak;
+  };
+
   if (loading) return (
     <div className="flex min-h-screen items-center justify-center">
       <Loader2 className="animate-spin text-indigo-500" size={48} />
     </div>
   );
 
-  // Prepare chart data for BOLT trends
   const boltTrendData = [...sessions]
     .filter(s => s.bolt_score)
     .reverse()
@@ -128,6 +157,14 @@ const SelfPracticePage = () => {
 
   const lastBolt = sessions.find(s => s.bolt_score)?.bolt_score || null;
   const lastCoh = sessions.find(s => s.coherence_score)?.coherence_score || null;
+  const streak = calculateStreak();
+
+  const protocols = [
+    { name: "BOLT Test", icon: FlaskConical, color: "bg-indigo-500", goal: "Practice BOLT timing and recovery breathing" },
+    { name: "Coherence", icon: Activity, color: "bg-rose-500", goal: "Practice heart-brain synchronization" },
+    { name: "Neuro Drills", icon: Brain, color: "bg-emerald-500", goal: "Practice Fakuda and Rhombergs assessments" },
+    { name: "Cogs/ROM", icon: Move, color: "bg-purple-500", goal: "Practice 3-plane mobility assessment" },
+  ];
 
   return (
     <div className="p-4 md:p-8 max-w-full mx-auto space-y-8">
@@ -143,18 +180,25 @@ const SelfPracticePage = () => {
             <p className="text-slate-500 font-medium">Your private space for personal health tracking and protocol practice.</p>
           </div>
         </div>
-        <Button 
-          onClick={handleNewSelfSession} 
-          disabled={creating}
-          className="bg-rose-600 hover:bg-rose-700 shadow-lg shadow-rose-100 h-12 px-8 rounded-xl font-bold"
-        >
-          {creating ? <Loader2 className="mr-2 animate-spin" /> : <Plus size={20} className="mr-2" />}
-          Start Self-Session
-        </Button>
+        <div className="flex items-center gap-3">
+          <div className="hidden sm:flex flex-col items-end mr-4">
+            <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Practice Streak</p>
+            <p className="text-xl font-black text-orange-500 flex items-center gap-1">
+              <Zap size={18} className="fill-current" /> {streak} Days
+            </p>
+          </div>
+          <Button 
+            onClick={() => handleNewSelfSession()} 
+            disabled={creating}
+            className="bg-rose-600 hover:bg-rose-700 shadow-lg shadow-rose-100 h-12 px-8 rounded-xl font-bold"
+          >
+            {creating ? <Loader2 className="mr-2 animate-spin" /> : <Plus size={20} className="mr-2" />}
+            Start Self-Session
+          </Button>
+        </div>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-        {/* Personal Vitals Card */}
         <Card className="lg:col-span-2 border-none shadow-lg bg-white rounded-3xl overflow-hidden">
           <CardHeader className="bg-slate-50/50 border-b border-slate-100">
             <div className="flex items-center justify-between">
@@ -209,58 +253,67 @@ const SelfPracticePage = () => {
           </CardContent>
         </Card>
 
-        {/* Practice Info Card */}
-        <Card className="border-none shadow-lg bg-gradient-to-br from-slate-900 to-slate-800 text-white rounded-3xl overflow-hidden relative">
-          <div className="absolute top-0 right-0 p-8 opacity-10">
-            <Sparkles size={120} />
-          </div>
-          <CardHeader>
-            <CardTitle className="text-xl font-bold flex items-center gap-2">
-              <Zap size={20} className="text-amber-400 fill-amber-400" /> Practice Mode
-            </CardTitle>
-            <CardDescription className="text-slate-400">Why use the Self-Monitoring Zone?</CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-6 relative z-10">
-            <div className="space-y-4">
-              <div className="flex gap-3">
-                <div className="w-8 h-8 rounded-lg bg-white/10 flex items-center justify-center shrink-0">
-                  <CheckCircle2 size={16} className="text-emerald-400" />
-                </div>
-                <p className="text-sm text-slate-300 leading-relaxed">
-                  <strong>Clean Analytics:</strong> Self-sessions are automatically excluded from your professional practice statistics.
-                </p>
-              </div>
-              <div className="flex gap-3">
-                <div className="w-8 h-8 rounded-lg bg-white/10 flex items-center justify-center shrink-0">
-                  <CheckCircle2 size={16} className="text-emerald-400" />
-                </div>
-                <p className="text-sm text-slate-300 leading-relaxed">
-                  <strong>Protocol Mastery:</strong> Use this space to practice new neurological drills or muscle tests without creating "fake" client data.
-                </p>
-              </div>
-              <div className="flex gap-3">
-                <div className="w-8 h-8 rounded-lg bg-white/10 flex items-center justify-center shrink-0">
-                  <CheckCircle2 size={16} className="text-emerald-400" />
-                </div>
-                <p className="text-sm text-slate-300 leading-relaxed">
-                  <strong>Personal Health:</strong> Track your own autonomic regulation, BOLT scores, and emotional context over time.
-                </p>
-              </div>
+        <div className="space-y-6">
+          <Card className="border-none shadow-lg bg-gradient-to-br from-slate-900 to-slate-800 text-white rounded-3xl overflow-hidden relative">
+            <div className="absolute top-0 right-0 p-8 opacity-10">
+              <Sparkles size={120} />
             </div>
-            
-            <div className="p-4 bg-white/5 rounded-2xl border border-white/10">
-              <p className="text-xs font-bold text-amber-400 uppercase tracking-widest mb-2 flex items-center gap-2">
-                <Info size={14} /> Pro Tip
-              </p>
-              <p className="text-xs text-slate-400 leading-relaxed">
-                Self-practice sessions still count towards your <strong>Procedure Tracker</strong> progress, helping you reach your learning targets!
-              </p>
-            </div>
-          </CardContent>
-        </Card>
+            <CardHeader>
+              <CardTitle className="text-xl font-bold flex items-center gap-2">
+                <Target size={20} className="text-amber-400" /> Protocol Mastery
+              </CardTitle>
+              <CardDescription className="text-slate-400">Quick start specific practice goals</CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-3 relative z-10">
+              {protocols.map((p) => (
+                <button
+                  key={p.name}
+                  onClick={() => handleNewSelfSession(p.goal)}
+                  className="w-full flex items-center justify-between p-3 bg-white/5 hover:bg-white/10 border border-white/10 rounded-2xl transition-all group"
+                >
+                  <div className="flex items-center gap-3">
+                    <div className={cn("w-10 h-10 rounded-xl flex items-center justify-center text-white shadow-lg", p.color)}>
+                      <p.icon size={20} />
+                    </div>
+                    <div className="text-left">
+                      <p className="text-sm font-bold">{p.name}</p>
+                      <p className="text-[10px] text-slate-400">Practice Drill</p>
+                    </div>
+                  </div>
+                  <ArrowRight size={16} className="text-slate-500 group-hover:text-white group-hover:translate-x-1 transition-all" />
+                </button>
+              ))}
+            </CardContent>
+          </Card>
+
+          <Card className="border-none shadow-lg bg-white rounded-3xl">
+            <CardHeader>
+              <CardTitle className="text-lg font-bold flex items-center gap-2">
+                <Info size={18} className="text-indigo-500" /> Practice Tips
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="flex gap-3">
+                <div className="w-6 h-6 rounded-full bg-emerald-100 flex items-center justify-center shrink-0">
+                  <CheckCircle2 size={14} className="text-emerald-600" />
+                </div>
+                <p className="text-xs text-slate-600 leading-relaxed">
+                  Use the <strong>Session Timer</strong> to pace your practice. Aim for 20 mins of focused drill work.
+                </p>
+              </div>
+              <div className="flex gap-3">
+                <div className="w-6 h-6 rounded-full bg-emerald-100 flex items-center justify-center shrink-0">
+                  <CheckCircle2 size={14} className="text-emerald-600" />
+                </div>
+                <p className="text-xs text-slate-600 leading-relaxed">
+                  Self-sessions count towards your <strong>Procedure Tracker</strong> progress!
+                </p>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
       </div>
 
-      {/* Self-Session History */}
       <div className="space-y-4">
         <div className="flex items-center justify-between px-2">
           <h2 className="text-2xl font-bold text-slate-900 flex items-center gap-2">
@@ -325,7 +378,7 @@ const SelfPracticePage = () => {
               <p className="text-slate-500 mt-1 max-w-xs mx-auto">Start your first self-monitoring session to track your personal health and practice protocols.</p>
               <Button 
                 className="mt-6 bg-rose-600 hover:bg-rose-700 rounded-xl"
-                onClick={handleNewSelfSession}
+                onClick={() => handleNewSelfSession()}
               >
                 Start First Self-Session
               </Button>

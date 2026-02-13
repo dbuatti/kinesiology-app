@@ -105,11 +105,19 @@ const AppointmentDetailPage = () => {
     if (!id) return;
     const channel = supabase
       .channel(`appointment-${id}`)
-      .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'appointments', filter: `id=eq.${id}` }, (payload) => {
+      .on('postgres_changes', { 
+        event: 'UPDATE', 
+        schema: 'public', 
+        table: 'appointments', 
+        filter: `id=eq.${id}` 
+      }, (payload) => {
+        console.log("[Realtime] Appointment updated:", payload.new);
         setAppointment((prev) => {
           if (!prev) return prev;
           const updatedData = { ...payload.new };
-          if (updatedData.date && typeof updatedData.date === 'string') updatedData.date = new Date(updatedData.date);
+          if (updatedData.date && typeof updatedData.date === 'string') {
+            updatedData.date = new Date(updatedData.date);
+          }
           return { ...prev, ...updatedData };
         });
       })
@@ -119,13 +127,25 @@ const AppointmentDetailPage = () => {
 
   const saveField = async (field: string, value: string | boolean | null | string[]) => {
     if (!id || !appointment) return;
-    const normalized = Array.isArray(value) ? value : (typeof value === 'string' ? (value.trim() === '' ? null : value.trim()) : value);
+    
+    // Handle array types (like emotion_secondary_selection) correctly for Supabase
+    const normalized = Array.isArray(value) 
+      ? value 
+      : (typeof value === 'string' ? (value.trim() === '' ? null : value.trim()) : value);
+
     try {
-      const { error } = await supabase.from('appointments').update({ [field]: normalized }).eq('id', id);
+      const { error } = await supabase
+        .from('appointments')
+        .update({ [field]: normalized })
+        .eq('id', id);
+
       if (error) throw error;
+      
+      // Optimistic update
       setAppointment(prev => prev ? { ...prev, [field]: normalized } : null);
     } catch (err: any) {
       console.error(`Silent save failed for ${field}:`, err);
+      showError(`Failed to save ${field}`);
     }
   };
 
@@ -240,14 +260,12 @@ KEY ASSESSMENTS:
   const clientLink = `/clients/${appointment.clients.id}`;
   const clientBorn = appointment.clients.born ? new Date(appointment.clients.born) : null;
   const isSessionToday = isToday(appointment.date);
-  const isOngoing = isSessionToday && appointment.status !== 'Completed' && appointment.status !== 'Cancelled';
 
   return (
     <>
       <SessionTimer appointmentDate={appointment.date} status={appointment.status} onFixedHeaderChange={setIsFixedHeaderActive} />
       <AppLayout hasFixedHeader={isFixedHeaderActive}>
         <div className="flex flex-col gap-6">
-          {/* Top Navigation & Actions */}
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
             <Breadcrumbs 
               items={[
@@ -300,13 +318,11 @@ KEY ASSESSMENTS:
             </div>
           </div>
 
-          {/* Previous Session Insights Bar */}
           <PreviousSessionInsightsBar 
             clientId={appointment.clients.id} 
             currentAppointmentId={appointment.id} 
           />
 
-          {/* Session Header Card */}
           <Card className="border-none shadow-sm rounded-2xl bg-white overflow-hidden">
             <div className="p-6 border-b border-slate-100 bg-slate-50/30">
               <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
@@ -362,7 +378,6 @@ KEY ASSESSMENTS:
             </div>
           </Card>
 
-          {/* Main Content Switcher */}
           <SessionContentSwitcher appointment={appointment} onUpdate={fetchAppointmentData} saveField={saveField} />
         </div>
       </AppLayout>

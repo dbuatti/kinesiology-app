@@ -22,11 +22,19 @@ import HelpModal from "./HelpModal";
 import { useRecentClients } from "@/hooks/use-recent-clients";
 import { isToday, differenceInMinutes } from "date-fns";
 
+const SESSION_STAGES = [
+  { name: "Goal Setting", duration: 22 },
+  { name: "Activation", duration: 23 },
+  { name: "Correction", duration: 35 },
+  { name: "Challenge", duration: 5 },
+  { name: "Home Reinforcement", duration: 5 },
+];
+
 const Sidebar = () => {
   const location = useLocation();
   const navigate = useNavigate();
   const [helpOpen, setHelpOpen] = useState(false);
-  const [activeSessionId, setActiveSessionId] = useState<string | null>(null);
+  const [activeSession, setActiveSession] = useState<{ id: string, stage: string } | null>(null);
   const { recentClients } = useRecentClients();
   
   const navItems = [
@@ -52,9 +60,24 @@ const Sidebar = () => {
         const diff = differenceInMinutes(new Date(), appDate);
         return isToday(appDate) && diff >= 0 && diff < 90;
       });
-      setActiveSessionId(active?.id || null);
+
+      if (active) {
+        const elapsedMinutes = differenceInMinutes(new Date(), new Date(active.date));
+        let currentStageName = SESSION_STAGES[0].name;
+        let cumulative = 0;
+        for (const stage of SESSION_STAGES) {
+          cumulative += stage.duration;
+          if (elapsedMinutes < cumulative) {
+            currentStageName = stage.name;
+            break;
+          }
+        }
+        setActiveSession({ id: active.id, stage: currentStageName });
+      } else {
+        setActiveSession(null);
+      }
     } else {
-      setActiveSessionId(null);
+      setActiveSession(null);
     }
   }, []);
 
@@ -180,10 +203,10 @@ const Sidebar = () => {
           })}
         </nav>
 
-        {activeSessionId && (
+        {activeSession && (
           <div className="px-2">
             <Link 
-              to={`/appointments/${activeSessionId}`}
+              to={`/appointments/${activeSession.id}`}
               className="flex items-center gap-4 px-5 py-4 bg-rose-600 rounded-[1.5rem] text-white shadow-2xl shadow-rose-600/40 hover:bg-rose-700 transition-all duration-500 group relative overflow-hidden"
             >
               <div className="absolute inset-0 bg-white/10 animate-pulse" />
@@ -194,7 +217,7 @@ const Sidebar = () => {
                 </div>
                 <div className="flex flex-col">
                   <span className="text-[10px] font-black uppercase tracking-[0.2em]">Live Session</span>
-                  <span className="text-xs font-bold opacity-90">Resume now</span>
+                  <span className="text-xs font-bold opacity-90">{activeSession.stage}</span>
                 </div>
               </div>
               <ArrowRight size={18} className="ml-auto group-hover:translate-x-1 transition-transform" />

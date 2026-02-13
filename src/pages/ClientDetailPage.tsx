@@ -9,7 +9,7 @@ import {
   ArrowLeft, Plus, Mail, Phone, MapPin, Calendar, 
   Star, Loader2, Briefcase, Heart, Baby, ExternalLink,
   Activity, Edit3, Trash2, MoreHorizontal, FlaskConical, TrendingUp, Clock, Brain, ArrowUpRight, ArrowDownRight,
-  LayoutDashboard, History, ArrowRight
+  LayoutDashboard, History, ArrowRight, Copy, Check
 } from "lucide-react";
 import { format } from "date-fns";
 import { Client, Appointment } from "@/types/crm";
@@ -46,6 +46,7 @@ const ClientDetailPage = () => {
   const [loading, setLoading] = useState(true);
   const [appOpen, setAppOpen] = useState(false);
   const [editOpen, setEditOpen] = useState(false);
+  const [copiedField, setCopiedField] = useState<string | null>(null);
   const { addRecentClient } = useRecentClients();
 
   const fetchClientData = async () => {
@@ -85,6 +86,12 @@ const ClientDetailPage = () => {
     } finally {
       setLoading(false);
     }
+  };
+
+  const handleCopy = (text: string, field: string) => {
+    navigator.clipboard.writeText(text);
+    setCopiedField(field);
+    setTimeout(() => setCopiedField(null), 2000);
   };
 
   const handleDeleteClient = async () => {
@@ -243,17 +250,31 @@ const ClientDetailPage = () => {
                     </div>
                   )}
                   <hr className="border-slate-100" />
-                  <div className="flex items-center gap-3 text-sm p-2 rounded-lg hover:bg-slate-50 transition-colors">
-                    <div className="w-8 h-8 rounded-lg bg-slate-100 flex items-center justify-center text-slate-500">
-                        <Mail size={16} />
+                  <div className="flex items-center justify-between group/contact p-2 rounded-lg hover:bg-slate-50 transition-colors">
+                    <div className="flex items-center gap-3 text-sm">
+                      <div className="w-8 h-8 rounded-lg bg-slate-100 flex items-center justify-center text-slate-500">
+                          <Mail size={16} />
+                      </div>
+                      <span className="text-slate-700">{client.email || 'No email'}</span>
                     </div>
-                    <span className="text-slate-700">{client.email || 'No email'}</span>
+                    {client.email && (
+                      <Button variant="ghost" size="icon" className="h-8 w-8 rounded-lg opacity-0 group-hover/contact:opacity-100 transition-opacity" onClick={() => handleCopy(client.email, 'email')}>
+                        {copiedField === 'email' ? <Check size={14} className="text-emerald-500" /> : <Copy size={14} className="text-slate-400" />}
+                      </Button>
+                    )}
                   </div>
-                  <div className="flex items-center gap-3 text-sm p-2 rounded-lg hover:bg-slate-50 transition-colors">
-                    <div className="w-8 h-8 rounded-lg bg-slate-100 flex items-center justify-center text-slate-500">
-                        <Phone size={16} />
+                  <div className="flex items-center justify-between group/contact p-2 rounded-lg hover:bg-slate-50 transition-colors">
+                    <div className="flex items-center gap-3 text-sm">
+                      <div className="w-8 h-8 rounded-lg bg-slate-100 flex items-center justify-center text-slate-500">
+                          <Phone size={16} />
+                      </div>
+                      <span className="text-slate-700">{client.phone || 'No phone'}</span>
                     </div>
-                    <span className="text-slate-700">{client.phone || 'No phone'}</span>
+                    {client.phone && (
+                      <Button variant="ghost" size="icon" className="h-8 w-8 rounded-lg opacity-0 group-hover/contact:opacity-100 transition-opacity" onClick={() => handleCopy(client.phone, 'phone')}>
+                        {copiedField === 'phone' ? <Check size={14} className="text-emerald-500" /> : <Copy size={14} className="text-slate-400" />}
+                      </Button>
+                    )}
                   </div>
                   <div className="flex items-center gap-3 text-sm p-2 rounded-lg hover:bg-slate-50 transition-colors">
                     <div className="w-8 h-8 rounded-lg bg-slate-100 flex items-center justify-center text-slate-500">

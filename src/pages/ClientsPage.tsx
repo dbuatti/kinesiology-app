@@ -6,7 +6,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { Plus, Search, Loader2, UserPlus, Activity, CalendarPlus, Clock, LayoutGrid, List, Mail, Phone, MapPin, ArrowRight } from "lucide-react";
+import { Plus, Search, Loader2, UserPlus, Activity, CalendarPlus, Clock, LayoutGrid, List, Mail, Phone, MapPin, ArrowRight, ExternalLink } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import {
   Dialog,
@@ -194,22 +194,42 @@ const ClientsPage = () => {
                         </div>
                       </TableCell>
                       <TableCell className="text-right px-8">
-                        <div className="flex items-center justify-end gap-3">
+                        <div className="flex items-center justify-end gap-2">
+                          {client.email && (
+                            <Tooltip>
+                              <TooltipTrigger asChild>
+                                <Button variant="ghost" size="icon" className="h-9 w-9 rounded-xl text-slate-400 hover:text-indigo-600 hover:bg-indigo-50" asChild>
+                                  <a href={`mailto:${client.email}`}><Mail size={18} /></a>
+                                </Button>
+                              </TooltipTrigger>
+                              <TooltipContent className="rounded-xl font-bold text-xs">Email Client</TooltipContent>
+                            </Tooltip>
+                          )}
+                          {client.phone && (
+                            <Tooltip>
+                              <TooltipTrigger asChild>
+                                <Button variant="ghost" size="icon" className="h-9 w-9 rounded-xl text-slate-400 hover:text-emerald-600 hover:bg-emerald-50" asChild>
+                                  <a href={`tel:${client.phone}`}><Phone size={18} /></a>
+                                </Button>
+                              </TooltipTrigger>
+                              <TooltipContent className="rounded-xl font-bold text-xs">Call Client</TooltipContent>
+                            </Tooltip>
+                          )}
                           <Tooltip>
                             <TooltipTrigger asChild>
                               <Button 
                                 variant="ghost" 
                                 size="icon" 
-                                className="h-10 w-10 rounded-xl text-indigo-600 hover:bg-white hover:shadow-md transition-all"
+                                className="h-9 w-9 rounded-xl text-slate-400 hover:text-rose-600 hover:bg-rose-50"
                                 onClick={(e) => { e.preventDefault(); e.stopPropagation(); handleQuickBook(client.id); }}
                               >
-                                <CalendarPlus size={20} />
+                                <CalendarPlus size={18} />
                               </Button>
                             </TooltipTrigger>
                             <TooltipContent className="rounded-xl font-bold text-xs">Quick Book Session</TooltipContent>
                           </Tooltip>
                           <Link to={`/clients/${client.id}`}>
-                            <Button variant="outline" size="sm" className="rounded-xl font-black text-[10px] uppercase tracking-widest border-slate-200 hover:bg-white hover:shadow-md">View Profile</Button>
+                            <Button variant="outline" size="sm" className="rounded-xl font-black text-[10px] uppercase tracking-widest border-slate-200 hover:bg-white hover:shadow-md ml-2">View Profile</Button>
                           </Link>
                         </div>
                       </TableCell>
@@ -247,13 +267,23 @@ const ClientsPage = () => {
 
                       <div className="space-y-3 pt-4 border-t border-slate-50">
                         {client.email && (
-                          <div className="flex items-center gap-3 text-xs font-bold text-slate-600">
-                            <Mail size={14} className="text-indigo-400" /> {client.email}
+                          <div className="flex items-center justify-between group/contact">
+                            <div className="flex items-center gap-3 text-xs font-bold text-slate-600">
+                              <Mail size={14} className="text-indigo-400" /> {client.email}
+                            </div>
+                            <Button variant="ghost" size="icon" className="h-7 w-7 rounded-lg opacity-0 group-hover/contact:opacity-100 transition-opacity" asChild onClick={(e) => e.stopPropagation()}>
+                              <a href={`mailto:${client.email}`}><ExternalLink size={12} /></a>
+                            </Button>
                           </div>
                         )}
                         {client.phone && (
-                          <div className="flex items-center gap-3 text-xs font-bold text-slate-600">
-                            <Phone size={14} className="text-indigo-400" /> {client.phone}
+                          <div className="flex items-center justify-between group/contact">
+                            <div className="flex items-center gap-3 text-xs font-bold text-slate-600">
+                              <Phone size={14} className="text-indigo-400" /> {client.phone}
+                            </div>
+                            <Button variant="ghost" size="icon" className="h-7 w-7 rounded-lg opacity-0 group-hover/contact:opacity-100 transition-opacity" asChild onClick={(e) => e.stopPropagation()}>
+                              <a href={`tel:${client.phone}`}><ExternalLink size={12} /></a>
+                            </Button>
                           </div>
                         )}
                         {client.suburb.length > 0 && (

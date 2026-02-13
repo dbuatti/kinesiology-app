@@ -2,14 +2,15 @@
 
 import React, { useState, useEffect, useMemo } from 'react';
 import { cn } from '@/lib/utils';
-import { Clock, CheckCircle2, Target, Zap, AlertTriangle, Home } from 'lucide-react';
+import { Clock, CheckCircle2, Target, Zap, AlertTriangle, Home, Check } from 'lucide-react';
 import { format, differenceInSeconds, isToday, formatDistanceToNow } from 'date-fns';
+import { Button } from '@/components/ui/button';
 
 interface SessionTimerProps {
   appointmentDate: Date;
   status: string;
-  // New prop to communicate if the timer is active and fixed
   onFixedHeaderChange: (isFixed: boolean) => void;
+  onCompleteSession?: () => void;
 }
 
 const SESSION_STAGES = [
@@ -21,7 +22,7 @@ const SESSION_STAGES = [
 ];
 const TOTAL_DURATION_MINUTES = SESSION_STAGES.reduce((sum, stage) => sum + stage.duration, 0); // 90 minutes
 
-const SessionTimer = ({ appointmentDate, status, onFixedHeaderChange }: SessionTimerProps) => {
+const SessionTimer = ({ appointmentDate, status, onFixedHeaderChange, onCompleteSession }: SessionTimerProps) => {
   const [currentTime, setCurrentTime] = useState(new Date());
 
   useEffect(() => {
@@ -171,6 +172,15 @@ const SessionTimer = ({ appointmentDate, status, onFixedHeaderChange }: SessionT
               style={{ width: `${overallProgressPercent}%` }}
             />
           </div>
+          {isOngoing && onCompleteSession && (
+            <Button 
+              size="sm" 
+              className="bg-emerald-600 hover:bg-emerald-700 text-white font-black text-[10px] uppercase tracking-widest rounded-xl h-9 px-4 shadow-lg shadow-emerald-100"
+              onClick={onCompleteSession}
+            >
+              <Check size={14} className="mr-2" /> Complete Session
+            </Button>
+          )}
         </div>
       </div>
       

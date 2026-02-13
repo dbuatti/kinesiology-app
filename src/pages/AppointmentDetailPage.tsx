@@ -159,6 +159,12 @@ const AppointmentDetailPage = () => {
     showSuccess("Session started! Timer is now active.");
   };
 
+  const handleCompleteSession = async () => {
+    if (!appointment) return;
+    await saveField('status', 'Completed');
+    showSuccess("Session marked as Completed!");
+  };
+
   const handleClonePrevious = async () => {
     if (!appointment || !id) return;
     setCloning(true);
@@ -266,7 +272,12 @@ KEY ASSESSMENTS:
 
   return (
     <>
-      <SessionTimer appointmentDate={appointment.date} status={appointment.status} onFixedHeaderChange={setIsFixedHeaderActive} />
+      <SessionTimer 
+        appointmentDate={appointment.date} 
+        status={appointment.status} 
+        onFixedHeaderChange={setIsFixedHeaderActive} 
+        onCompleteSession={handleCompleteSession}
+      />
       <AppLayout hasFixedHeader={isFixedHeaderActive}>
         <div className="flex flex-col gap-6">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">

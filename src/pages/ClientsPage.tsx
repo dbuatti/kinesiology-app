@@ -5,7 +5,7 @@ import { calculateAge, getStarSign } from "@/utils/crm-utils";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Plus, Search, Loader2, UserPlus, Sparkles, Activity, CalendarPlus, Clock } from "lucide-react";
+import { Plus, Search, Loader2, UserPlus, Activity, CalendarPlus, Clock, LayoutGrid, List, Mail, Phone, MapPin, ArrowRight } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import {
   Dialog,
@@ -23,6 +23,8 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import { format } from "date-fns";
+import AppLayout from "@/components/crm/AppLayout";
+import { cn } from "@/lib/utils";
 
 interface ClientWithStats extends Client {
   session_count: number;
@@ -31,6 +33,7 @@ interface ClientWithStats extends Client {
 
 const ClientsPage = () => {
   const [search, setSearch] = useState("");
+  const [view, setView] = useState<'table' | 'grid'>('table');
   const [clients, setClients] = useState<ClientWithStats[]>([]);
   const [loading, setLoading] = useState(true);
   const [open, setOpen] = useState(false);
@@ -84,130 +87,219 @@ const ClientsPage = () => {
   );
 
   return (
-    <div className="p-4 md:p-8 max-w-full mx-auto space-y-6">
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-        <div>
-          <h1 className="text-3xl font-bold tracking-tight text-slate-900">Clients</h1>
-          <p className="text-slate-500">Manage your kinesiology client database</p>
+    <AppLayout>
+      <div className="flex flex-col gap-8">
+        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-6">
+          <div>
+            <h1 className="text-4xl font-black tracking-tight text-slate-900">Clients</h1>
+            <p className="text-slate-500 font-medium mt-1">Manage your kinesiology client database and history.</p>
+          </div>
+          <Dialog open={open} onOpenChange={setOpen}>
+            <DialogTrigger asChild>
+              <Button className="bg-indigo-600 hover:bg-indigo-700 shadow-xl shadow-indigo-100 rounded-2xl h-12 px-8 font-black text-xs uppercase tracking-widest">
+                <Plus size={20} className="mr-2" /> New Client
+              </Button>
+            </DialogTrigger>
+            <DialogContent className="sm:max-w-[550px] rounded-[2rem]">
+              <DialogHeader><DialogTitle className="text-2xl font-black">Add New Client</DialogTitle></DialogHeader>
+              <ClientForm onSuccess={() => { setOpen(false); fetchClients(); }} />
+            </DialogContent>
+          </Dialog>
         </div>
-        <Dialog open={open} onOpenChange={setOpen}>
-          <DialogTrigger asChild>
-            <Button className="bg-indigo-600 hover:bg-indigo-700 shadow-lg shadow-indigo-100">
-              <Plus size={18} className="mr-2" /> New Client
+
+        <div className="flex flex-col md:flex-row items-center justify-between gap-4 bg-white p-4 rounded-[2rem] border border-slate-100 shadow-sm">
+          <div className="relative flex-1 w-full max-w-md">
+            <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
+            <Input 
+              placeholder="Search by name, email, or suburb..." 
+              className="pl-12 bg-slate-50 border-none focus:ring-2 focus:ring-indigo-500 h-12 rounded-xl font-medium"
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+            />
+          </div>
+          
+          <div className="flex items-center gap-2 bg-slate-100 p-1.5 rounded-xl">
+            <Button 
+              variant={view === 'table' ? 'default' : 'ghost'} 
+              size="sm" 
+              onClick={() => setView('table')}
+              className={cn("rounded-lg h-9 px-4 font-bold text-xs uppercase tracking-widest", view === 'table' ? "bg-white text-indigo-600 shadow-sm hover:bg-white" : "text-slate-500")}
+            >
+              <List size={16} className="mr-2" /> Table
             </Button>
-          </DialogTrigger>
-          <DialogContent className="sm:max-w-[550px]">
-            <DialogHeader><DialogTitle>Add New Client</DialogTitle></DialogHeader>
-            <ClientForm onSuccess={() => { setOpen(false); fetchClients(); }} />
-          </DialogContent>
-        </Dialog>
-      </div>
-
-      <div className="flex items-center gap-4">
-        <div className="relative flex-1 max-w-sm">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
-          <Input 
-            placeholder="Search by name, email, or suburb..." 
-            className="pl-10 bg-white border-slate-200 focus:ring-indigo-500"
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-          />
+            <Button 
+              variant={view === 'grid' ? 'default' : 'ghost'} 
+              size="sm" 
+              onClick={() => setView('grid')}
+              className={cn("rounded-lg h-9 px-4 font-bold text-xs uppercase tracking-widest", view === 'grid' ? "bg-white text-indigo-600 shadow-sm hover:bg-white" : "text-slate-500")}
+            >
+              <LayoutGrid size={16} className="mr-2" /> Grid
+            </Button>
+          </div>
         </div>
-        <div className="text-sm text-slate-500 font-medium">
-          {filteredClients.length} {filteredClients.length === 1 ? 'client' : 'clients'} found
-        </div>
-      </div>
 
-      <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
         {loading ? (
-          <div className="p-12 flex flex-col items-center justify-center gap-4">
-            <Loader2 className="animate-spin text-indigo-500" size={32} />
-            <p className="text-slate-400">Loading clients...</p>
+          <div className="p-24 flex flex-col items-center justify-center gap-6">
+            <Loader2 className="animate-spin text-indigo-500" size={48} />
+            <p className="text-slate-400 font-black text-xs uppercase tracking-widest">Loading clients...</p>
           </div>
         ) : filteredClients.length > 0 ? (
-          <Table>
-            <TableHeader className="bg-slate-50/50">
-              <TableRow>
-                <TableHead className="font-semibold text-slate-900">Name</TableHead>
-                <TableHead className="text-slate-600">Age / Sign</TableHead>
-                <TableHead className="text-slate-600">Last Seen</TableHead>
-                <TableHead className="text-slate-600 text-center">Sessions</TableHead>
-                <TableHead className="text-slate-600 text-right">Action</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {filteredClients.map((client) => (
-                <TableRow key={client.id} className="hover:bg-slate-50/50 transition-colors group cursor-pointer">
-                  <TableCell className="font-medium">
-                    <Link to={`/clients/${client.id}`} className="text-indigo-600 hover:text-indigo-800 flex items-center gap-2">
-                      <div className="w-8 h-8 rounded-full bg-indigo-50 text-indigo-600 flex items-center justify-center text-xs font-bold uppercase">
-                        {client.name.charAt(0)}
-                      </div>
-                      {client.name}
-                    </Link>
-                  </TableCell>
-                  <TableCell>
-                    <div className="flex flex-col">
-                      <span className="text-sm text-slate-700">{client.born ? `${calculateAge(client.born)} yrs` : "-"}</span>
-                      {client.born && (
-                        <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">{getStarSign(client.born)}</span>
-                      )}
-                    </div>
-                  </TableCell>
-                  <TableCell>
-                    <div className="flex items-center gap-2 text-sm text-slate-600">
-                      <Clock size={14} className="text-slate-400" />
-                      {client.last_session_at ? format(new Date(client.last_session_at), "MMM d, yyyy") : "Never"}
-                    </div>
-                  </TableCell>
-                  <TableCell className="text-center">
-                    <div className="flex flex-col items-center">
-                      <span className="font-black text-slate-900">{client.session_count}</span>
-                      <Activity size={12} className="text-indigo-400" />
-                    </div>
-                  </TableCell>
-                  <TableCell className="text-right">
-                    <div className="flex items-center justify-end gap-2">
-                      <Tooltip>
-                        <TooltipTrigger asChild>
-                          <Button 
-                            variant="ghost" 
-                            size="icon" 
-                            className="h-8 w-8 text-indigo-600 hover:bg-indigo-50"
-                            onClick={(e) => { e.preventDefault(); e.stopPropagation(); handleQuickBook(client.id); }}
-                          >
-                            <CalendarPlus size={18} />
-                          </Button>
-                        </TooltipTrigger>
-                        <TooltipContent>Quick Book Session</TooltipContent>
-                      </Tooltip>
-                      <Link to={`/clients/${client.id}`}>
-                        <Button variant="ghost" size="sm" className="text-indigo-600">View Profile</Button>
-                      </Link>
-                    </div>
-                  </TableCell>
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
-        ) : (
-          <div className="text-center py-20 bg-slate-50/50">
-            <div className="mx-auto w-12 h-12 bg-slate-100 rounded-full flex items-center justify-center mb-4">
-               <Search className="text-slate-400" size={24} />
+          view === 'table' ? (
+            <div className="bg-white rounded-[2.5rem] border border-slate-100 shadow-xl overflow-hidden">
+              <Table>
+                <TableHeader className="bg-slate-50/50">
+                  <TableRow className="hover:bg-transparent border-slate-100">
+                    <TableHead className="font-black text-[10px] uppercase tracking-widest text-slate-400 h-14 px-8">Client Name</TableHead>
+                    <TableHead className="font-black text-[10px] uppercase tracking-widest text-slate-400 h-14">Age / Sign</TableHead>
+                    <TableHead className="font-black text-[10px] uppercase tracking-widest text-slate-400 h-14">Last Session</TableHead>
+                    <TableHead className="font-black text-[10px] uppercase tracking-widest text-slate-400 h-14 text-center">Total</TableHead>
+                    <TableHead className="font-black text-[10px] uppercase tracking-widest text-slate-400 h-14 text-right px-8">Actions</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {filteredClients.map((client) => (
+                    <TableRow key={client.id} className="hover:bg-indigo-50/30 transition-colors group border-slate-50">
+                      <TableCell className="px-8 py-5">
+                        <Link to={`/clients/${client.id}`} className="flex items-center gap-4">
+                          <div className="w-12 h-12 rounded-2xl bg-indigo-50 text-indigo-600 flex items-center justify-center text-lg font-black uppercase shadow-sm group-hover:bg-white transition-colors">
+                            {client.name.charAt(0)}
+                          </div>
+                          <div className="flex flex-col">
+                            <span className="font-black text-slate-900 text-lg group-hover:text-indigo-600 transition-colors">{client.name}</span>
+                            <span className="text-xs text-slate-400 font-medium">{client.email || 'No email recorded'}</span>
+                          </div>
+                        </Link>
+                      </TableCell>
+                      <TableCell>
+                        <div className="flex flex-col">
+                          <span className="text-sm font-bold text-slate-700">{client.born ? `${calculateAge(client.born)} yrs` : "-"}</span>
+                          {client.born && (
+                            <span className="text-[10px] font-black text-amber-600 uppercase tracking-wider flex items-center gap-1">
+                              <Clock size={10} /> {getStarSign(client.born)}
+                            </span>
+                          )}
+                        </div>
+                      </TableCell>
+                      <TableCell>
+                        <div className="flex items-center gap-2 text-sm font-bold text-slate-600">
+                          <CalendarPlus size={14} className="text-indigo-400" />
+                          {client.last_session_at ? format(new Date(client.last_session_at), "MMM d, yyyy") : "Never"}
+                        </div>
+                      </TableCell>
+                      <TableCell className="text-center">
+                        <div className="inline-flex flex-col items-center px-3 py-1 bg-slate-50 rounded-xl border border-slate-100">
+                          <span className="font-black text-slate-900">{client.session_count}</span>
+                          <span className="text-[8px] font-black text-slate-400 uppercase tracking-widest">Sessions</span>
+                        </div>
+                      </TableCell>
+                      <TableCell className="text-right px-8">
+                        <div className="flex items-center justify-end gap-3">
+                          <Tooltip>
+                            <TooltipTrigger asChild>
+                              <Button 
+                                variant="ghost" 
+                                size="icon" 
+                                className="h-10 w-10 rounded-xl text-indigo-600 hover:bg-white hover:shadow-md transition-all"
+                                onClick={(e) => { e.preventDefault(); e.stopPropagation(); handleQuickBook(client.id); }}
+                              >
+                                <CalendarPlus size={20} />
+                              </Button>
+                            </TooltipTrigger>
+                            <TooltipContent className="rounded-xl font-bold text-xs">Quick Book Session</TooltipContent>
+                          </Tooltip>
+                          <Link to={`/clients/${client.id}`}>
+                            <Button variant="outline" size="sm" className="rounded-xl font-black text-[10px] uppercase tracking-widest border-slate-200 hover:bg-white hover:shadow-md">View Profile</Button>
+                          </Link>
+                        </div>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
             </div>
-            <p className="text-slate-900 font-medium">No clients found</p>
-            <Button variant="outline" className="mt-4" onClick={() => setSearch("")}>Clear Search</Button>
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {filteredClients.map((client) => (
+                <Link key={client.id} to={`/clients/${client.id}`}>
+                  <Card className="hover:shadow-2xl hover:-translate-y-1 transition-all duration-300 border-none shadow-lg rounded-[2rem] overflow-hidden group cursor-pointer bg-white h-full">
+                    <CardContent className="p-8 space-y-6">
+                      <div className="flex items-start justify-between">
+                        <div className="w-16 h-16 rounded-[1.5rem] bg-indigo-600 text-white flex items-center justify-center text-2xl font-black uppercase shadow-xl shadow-indigo-100 group-hover:scale-110 transition-transform">
+                          {client.name.charAt(0)}
+                        </div>
+                        <div className="flex flex-col items-end">
+                          <Badge className="bg-emerald-50 text-emerald-700 border-none font-black text-[10px] uppercase tracking-widest mb-2">
+                            {client.session_count} Sessions
+                          </Badge>
+                          <div className="flex items-center gap-1 text-[10px] font-black text-slate-400 uppercase tracking-widest">
+                            <Clock size={12} /> {client.last_session_at ? format(new Date(client.last_session_at), "MMM d") : "Never"}
+                          </div>
+                        </div>
+                      </div>
+
+                      <div className="space-y-1">
+                        <h3 className="text-2xl font-black text-slate-900 group-hover:text-indigo-600 transition-colors truncate">{client.name}</h3>
+                        <div className="flex items-center gap-2 text-sm font-bold text-slate-500">
+                          {client.born && <span>{calculateAge(client.born)} yrs • {getStarSign(client.born)}</span>}
+                        </div>
+                      </div>
+
+                      <div className="space-y-3 pt-4 border-t border-slate-50">
+                        {client.email && (
+                          <div className="flex items-center gap-3 text-xs font-bold text-slate-600">
+                            <Mail size={14} className="text-indigo-400" /> {client.email}
+                          </div>
+                        )}
+                        {client.phone && (
+                          <div className="flex items-center gap-3 text-xs font-bold text-slate-600">
+                            <Phone size={14} className="text-indigo-400" /> {client.phone}
+                          </div>
+                        )}
+                        {client.suburb.length > 0 && (
+                          <div className="flex items-center gap-3 text-xs font-bold text-slate-600">
+                            <MapPin size={14} className="text-indigo-400" /> {client.suburb.join(", ")}
+                          </div>
+                        )}
+                      </div>
+
+                      <div className="pt-4 flex items-center justify-between">
+                        <Button 
+                          variant="ghost" 
+                          size="sm" 
+                          className="p-0 text-indigo-600 font-black text-[10px] uppercase tracking-widest hover:bg-transparent"
+                          onClick={(e) => { e.preventDefault(); e.stopPropagation(); handleQuickBook(client.id); }}
+                        >
+                          <CalendarPlus size={14} className="mr-2" /> Quick Book
+                        </Button>
+                        <div className="w-8 h-8 rounded-full bg-slate-50 flex items-center justify-center text-slate-400 group-hover:bg-indigo-600 group-hover:text-white transition-all">
+                          <ArrowRight size={16} />
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+                </Link>
+              ))}
+            </div>
+          )
+        ) : (
+          <div className="text-center py-32 bg-slate-50 rounded-[3rem] border-2 border-dashed border-slate-200">
+            <div className="mx-auto w-20 h-20 bg-white rounded-3xl flex items-center justify-center mb-6 shadow-xl">
+               <Search className="text-slate-300" size={32} />
+            </div>
+            <p className="text-slate-900 font-black text-xl">No clients found</p>
+            <p className="text-slate-500 mt-2 mb-8">Try adjusting your search or add a new client.</p>
+            <Button variant="outline" className="h-12 px-8 border-slate-200 hover:bg-white rounded-2xl font-bold" onClick={() => setSearch("")}>Clear Search</Button>
           </div>
         )}
       </div>
 
       <Dialog open={bookOpen} onOpenChange={setBookOpen}>
-        <DialogContent className="sm:max-w-[500px]">
-          <DialogHeader><DialogTitle>Quick Book Session</DialogTitle></DialogHeader>
+        <DialogContent className="sm:max-w-[500px] rounded-[2rem]">
+          <DialogHeader><DialogTitle className="text-2xl font-black">Quick Book Session</DialogTitle></DialogHeader>
           {selectedClientId && <AppointmentForm initialClientId={selectedClientId} onSuccess={() => { setBookOpen(false); fetchClients(); }} />}
         </DialogContent>
       </Dialog>
-    </div>
+    </AppLayout>
   );
 };
 

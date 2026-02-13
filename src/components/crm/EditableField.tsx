@@ -4,7 +4,7 @@ import React, { useState, useEffect, useRef, useLayoutEffect, useCallback } from
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { cn } from "@/lib/utils";
-import { Loader2, Edit3, CheckCircle2, Sparkles } from "lucide-react";
+import { Loader2, Edit3, CheckCircle2 } from "lucide-react";
 
 type InputElement = HTMLInputElement | HTMLTextAreaElement;
 
@@ -61,7 +61,7 @@ const EditableField = ({
         lastCommittedRef.current = trimmed;
         setIsSaving(false);
         setShowSaved(true);
-        setTimeout(() => setShowSaved(false), 2000);
+        setTimeout(() => setShowSaved(false), 3000);
       } catch (error) {
         console.error("Debounced save failed:", error);
         setIsSaving(false);
@@ -90,7 +90,7 @@ const EditableField = ({
           .then(() => {
             setIsSaving(false);
             setShowSaved(true);
-            setTimeout(() => setShowSaved(false), 2000);
+            setTimeout(() => setShowSaved(false), 3000);
           })
           .catch(() => setIsSaving(false));
         lastCommittedRef.current = trimmed;
@@ -110,69 +110,68 @@ const EditableField = ({
   const isEmpty = !localValue && !isFocused;
   const InputComponent = multiline ? Textarea : Input as React.ElementType<any>;
 
-  if (!isFocused) {
-    return (
-      <div 
-        className={cn(
-          "group relative cursor-pointer p-3 rounded-xl transition-all duration-200 border border-transparent hover:bg-slate-50 hover:border-slate-200", 
-          className
-        )}
-        onClick={() => {
+  return (
+    <div 
+      className={cn(
+        "group relative p-4 rounded-2xl transition-all duration-300 border-2",
+        isFocused 
+          ? "bg-white border-indigo-500 shadow-xl shadow-indigo-100" 
+          : "bg-slate-50/50 border-transparent hover:bg-white hover:border-slate-200 hover:shadow-md",
+        className
+      )}
+      onClick={() => {
+        if (!isFocused) {
           setIsFocused(true);
           setTimeout(() => inputRef.current?.focus(), 0);
-        }}
-      >
-        <div className="flex items-center justify-between mb-1.5">
-          <p className="font-black text-slate-400 uppercase text-[9px] tracking-[0.15em]">{label}</p>
-          {showSaved && (
-            <div className="flex items-center gap-1 text-[9px] font-black text-emerald-500 animate-in fade-in slide-in-from-right-2 duration-300">
-              <CheckCircle2 size={10} /> SAVED
-            </div>
-          )}
-        </div>
-        <div className="flex items-start justify-between min-h-[24px]">
-          <p className={cn(
-            "text-sm leading-relaxed whitespace-pre-wrap",
-            isEmpty ? "text-slate-400 italic" : "text-slate-700 font-medium"
-          )}>
-            {isEmpty ? placeholder : localValue}
-          </p>
-          <Edit3 size={14} className="text-slate-300 opacity-0 group-hover:opacity-100 transition-all duration-200 flex-shrink-0 ml-2 mt-0.5" />
-        </div>
-      </div>
-    );
-  }
-
-  return (
-    <div className={cn("group relative p-3 rounded-xl bg-white border border-indigo-100 shadow-sm", className)}>
-      <div className="flex items-center justify-between mb-1.5">
-        <p className="font-black text-indigo-400 uppercase text-[9px] tracking-[0.15em]">{label}</p>
-        <div className="flex items-center gap-2">
+        }
+      }}
+    >
+      <div className="flex items-center justify-between mb-2">
+        <p className={cn(
+          "font-black uppercase text-[10px] tracking-[0.2em] transition-colors",
+          isFocused ? "text-indigo-500" : "text-slate-400"
+        )}>
+          {label}
+        </p>
+        <div className="flex items-center gap-2 h-4">
           {isSaving && (
-            <div className="flex items-center gap-1 text-[9px] font-black text-indigo-500">
-              <Loader2 size={10} className="animate-spin" /> SAVING...
+            <div className="flex items-center gap-1 text-[10px] font-black text-indigo-500 animate-pulse">
+              <Loader2 size={10} className="animate-spin" /> SAVING
             </div>
           )}
           {showSaved && !isSaving && (
-            <div className="flex items-center gap-1 text-[9px] font-black text-emerald-500">
+            <div className="flex items-center gap-1 text-[10px] font-black text-emerald-500 animate-in fade-in slide-in-from-right-2">
               <CheckCircle2 size={10} /> SAVED
             </div>
           )}
+          {!isFocused && !isSaving && !showSaved && (
+            <Edit3 size={12} className="text-slate-300 opacity-0 group-hover:opacity-100 transition-opacity" />
+          )}
         </div>
       </div>
+      
       <div className="relative">
-        <InputComponent
-          ref={inputRef}
-          value={localValue}
-          onChange={handleChange}
-          onFocus={handleFocus}
-          onBlur={handleBlur}
-          placeholder={placeholder}
-          className={cn(
-            multiline ? "min-h-[120px] resize-none" : "h-9",
-            "transition-all duration-200 border-none focus-visible:ring-0 p-0 text-sm font-medium text-slate-800 placeholder:text-slate-300",
-          )}
-        />
+        {isFocused ? (
+          <InputComponent
+            ref={inputRef}
+            value={localValue}
+            onChange={handleChange}
+            onFocus={handleFocus}
+            onBlur={handleBlur}
+            placeholder={placeholder}
+            className={cn(
+              multiline ? "min-h-[120px] resize-none" : "h-9",
+              "transition-all duration-200 border-none focus-visible:ring-0 p-0 text-sm font-bold text-slate-900 placeholder:text-slate-300 bg-transparent",
+            )}
+          />
+        ) : (
+          <p className={cn(
+            "text-sm leading-relaxed whitespace-pre-wrap min-h-[20px]",
+            isEmpty ? "text-slate-400 italic font-medium" : "text-slate-700 font-bold"
+          )}>
+            {isEmpty ? placeholder : localValue}
+          </p>
+        )}
       </div>
     </div>
   );

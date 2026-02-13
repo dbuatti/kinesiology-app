@@ -9,7 +9,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { Plus, UserPlus, Calendar, Target, Upload, Keyboard } from "lucide-react";
+import { Plus, UserPlus, Calendar, Target, Upload, Keyboard, HelpCircle } from "lucide-react";
 import {
   Dialog,
   DialogContent,
@@ -24,10 +24,12 @@ import {
 import ClientForm from "./ClientForm";
 import AppointmentForm from "./AppointmentForm";
 import { useNavigate } from "react-router-dom";
+import HelpModal from "./HelpModal";
 
 const QuickActions = () => {
   const [clientDialogOpen, setClientDialogOpen] = useState(false);
   const [appointmentDialogOpen, setAppointmentDialogOpen] = useState(false);
+  const [helpOpen, setHelpOpen] = useState(false);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -55,63 +57,66 @@ const QuickActions = () => {
 
   return (
     <>
-      <div className="fixed bottom-6 right-6 z-50">
+      <div className="fixed bottom-8 right-8 z-50">
         <Tooltip>
           <TooltipTrigger asChild>
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <Button
                   size="lg"
-                  className="h-14 w-14 rounded-full shadow-2xl bg-indigo-600 hover:bg-indigo-700 transition-all hover:scale-110"
+                  className="h-16 w-16 rounded-[1.5rem] shadow-2xl bg-indigo-600 hover:bg-indigo-700 transition-all hover:scale-110 hover:rotate-90 duration-500"
                 >
-                  <Plus size={24} />
+                  <Plus size={32} />
                 </Button>
               </DropdownMenuTrigger>
-              <DropdownMenuContent align="end" className="w-64">
-                <DropdownMenuItem onClick={() => setClientDialogOpen(true)}>
-                  <UserPlus size={18} className="mr-2" />
-                  <span className="flex-1">New Client</span>
-                  <kbd className="ml-auto pointer-events-none inline-flex h-5 select-none items-center gap-1 rounded border bg-slate-100 px-1.5 font-mono text-[10px] font-medium text-slate-600">
+              <DropdownMenuContent align="end" className="w-72 p-2 rounded-[1.5rem] shadow-2xl border-none mb-4">
+                <DropdownMenuItem onClick={() => setClientDialogOpen(true)} className="rounded-xl py-3 px-4 cursor-pointer">
+                  <UserPlus size={20} className="mr-3 text-indigo-500" />
+                  <span className="flex-1 font-bold">New Client</span>
+                  <kbd className="ml-auto pointer-events-none inline-flex h-5 select-none items-center gap-1 rounded border bg-slate-100 px-1.5 font-mono text-[10px] font-black text-slate-600">
                     ⌘N
                   </kbd>
                 </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => setAppointmentDialogOpen(true)}>
-                  <Calendar size={18} className="mr-2" />
-                  <span className="flex-1">Book Appointment</span>
-                  <kbd className="ml-auto pointer-events-none inline-flex h-5 select-none items-center gap-1 rounded border bg-slate-100 px-1.5 font-mono text-[10px] font-medium text-slate-600">
+                <DropdownMenuItem onClick={() => setAppointmentDialogOpen(true)} className="rounded-xl py-3 px-4 cursor-pointer">
+                  <Calendar size={20} className="mr-3 text-rose-500" />
+                  <span className="flex-1 font-bold">Book Session</span>
+                  <kbd className="ml-auto pointer-events-none inline-flex h-5 select-none items-center gap-1 rounded border bg-slate-100 px-1.5 font-mono text-[10px] font-black text-slate-600">
                     ⌘B
                   </kbd>
                 </DropdownMenuItem>
-                <DropdownMenuSeparator />
-                <DropdownMenuItem onClick={() => navigate("/procedures")}>
-                  <Target size={18} className="mr-2" />
-                  <span className="flex-1">View Procedures</span>
-                  <kbd className="ml-auto pointer-events-none inline-flex h-5 select-none items-center gap-1 rounded border bg-slate-100 px-1.5 font-mono text-[10px] font-medium text-slate-600">
+                <DropdownMenuSeparator className="my-2" />
+                <DropdownMenuItem onClick={() => navigate("/procedures")} className="rounded-xl py-3 px-4 cursor-pointer">
+                  <Target size={20} className="mr-3 text-emerald-500" />
+                  <span className="flex-1 font-bold">Procedures</span>
+                  <kbd className="ml-auto pointer-events-none inline-flex h-5 select-none items-center gap-1 rounded border bg-slate-100 px-1.5 font-mono text-[10px] font-black text-slate-600">
                     ⌘P
                   </kbd>
                 </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => navigate("/import")}>
-                  <Upload size={18} className="mr-2" />
-                  Import Data
+                <DropdownMenuItem onClick={() => navigate("/import")} className="rounded-xl py-3 px-4 cursor-pointer">
+                  <Upload size={20} className="mr-3 text-slate-500" />
+                  <span className="font-bold">Import Data</span>
                 </DropdownMenuItem>
-                <DropdownMenuSeparator />
-                <DropdownMenuItem className="text-xs text-slate-500" disabled>
-                  <Keyboard size={14} className="mr-2" />
-                  Keyboard shortcuts enabled
+                <DropdownMenuSeparator className="my-2" />
+                <DropdownMenuItem onClick={() => setHelpOpen(true)} className="rounded-xl py-3 px-4 cursor-pointer">
+                  <HelpCircle size={20} className="mr-3 text-amber-500" />
+                  <span className="flex-1 font-bold">Help & Shortcuts</span>
+                  <kbd className="ml-auto pointer-events-none inline-flex h-5 select-none items-center gap-1 rounded border bg-slate-100 px-1.5 font-mono text-[10px] font-black text-slate-600">
+                    ⌘/
+                  </kbd>
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
           </TooltipTrigger>
-          <TooltipContent side="left">
+          <TooltipContent side="left" className="rounded-xl font-bold text-xs">
             <p>Quick Actions</p>
           </TooltipContent>
         </Tooltip>
       </div>
 
       <Dialog open={clientDialogOpen} onOpenChange={setClientDialogOpen}>
-        <DialogContent className="sm:max-w-[550px]">
+        <DialogContent className="sm:max-w-[550px] rounded-[2rem]">
           <DialogHeader>
-            <DialogTitle>Add New Client</DialogTitle>
+            <DialogTitle className="text-2xl font-black">Add New Client</DialogTitle>
           </DialogHeader>
           <ClientForm
             onSuccess={() => {
@@ -122,9 +127,9 @@ const QuickActions = () => {
       </Dialog>
 
       <Dialog open={appointmentDialogOpen} onOpenChange={setAppointmentDialogOpen}>
-        <DialogContent className="sm:max-w-[500px]">
+        <DialogContent className="sm:max-w-[500px] rounded-[2rem]">
           <DialogHeader>
-            <DialogTitle>Schedule New Appointment</DialogTitle>
+            <DialogTitle className="text-2xl font-black">Schedule New Session</DialogTitle>
           </DialogHeader>
           <AppointmentForm
             onSuccess={() => {
@@ -133,6 +138,8 @@ const QuickActions = () => {
           />
         </DialogContent>
       </Dialog>
+
+      <HelpModal open={helpOpen} onOpenChange={setHelpOpen} />
     </>
   );
 };

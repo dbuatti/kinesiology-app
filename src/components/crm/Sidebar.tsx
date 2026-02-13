@@ -48,17 +48,29 @@ const Sidebar = () => {
   ];
 
   const checkActiveSession = useCallback(async () => {
+    // Fetch recent appointments to check for an active one
     const { data } = await supabase
       .from('appointments')
       .select('id, date, status')
-      .eq('status', 'Scheduled')
-      .order('date', { ascending: false });
+      .order('date', { ascending: false })
+      .limit(10);
 
     if (data) {
       const active = data.find(app => {
         const appDate = new Date(app.date);
         const diff = differenceInMinutes(new Date(), appDate);
-        return isToday(appDate) && diff >= 0 && diff < 90;
+        
+        // A session is "Live" if:
+        // 1. It is scheduled for today
+        // 2. We are currently within the 90-minute window from the start time
+        // 3. The status is NOT Completed, Cancelled, or No Show
+        return isToday(appDate) && 
+               diff >= 0 && 
+               diff < 90 && 
+               app.status !== 'Completed' && 
+               app.status !== 'Cancelled' &&
+               app.status !== 'No Show' &&
+               app.status !== 'AP'; // 'AP' is often used as shorthand for Completed in some imports
       });
 
       if (active) {
@@ -84,6 +96,7 @@ const Sidebar = () => {
   useEffect(() => {
     checkActiveSession();
     
+    // Listen for any changes to appointments to update the sidebar in real-time
     const channel = supabase
       .channel('sidebar-sessions')
       .on('postgres_changes', { 

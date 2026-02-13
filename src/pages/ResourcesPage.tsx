@@ -1,7 +1,9 @@
 "use client";
 
-import React from "react";
+import React, { useEffect, useState } from "react";
+import { useSearchParams } from "react-router-dom";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+
 import { 
   BookOpen, 
   Footprints, 
@@ -28,6 +30,16 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { cn } from "@/lib/utils";
 
 const ResourcesPage = () => {
+  const [searchParams] = useSearchParams();
+  const [activeTab, setActiveTab] = useState("vestibular");
+
+  useEffect(() => {
+    const tab = searchParams.get("tab");
+    if (tab) {
+      setActiveTab(tab);
+    }
+  }, [searchParams]);
+
   return (
     <div className="p-4 md:p-8 max-w-full mx-auto space-y-8">
       <Breadcrumbs items={[{ label: "Resources" }]} />
@@ -43,7 +55,8 @@ const ResourcesPage = () => {
         </div>
       </div>
 
-      <Tabs defaultValue="vestibular" className="w-full">
+      <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+
         <TabsList className="grid w-full grid-cols-2 md:grid-cols-4 h-auto p-1 bg-slate-100 rounded-2xl">
           <TabsTrigger value="vestibular" className="rounded-xl py-2.5 data-[state=active]:bg-white data-[state=active]:shadow-sm">
             <Footprints size={16} className="mr-2" /> Vestibular

@@ -68,8 +68,8 @@ const ClinicalOversightPage = () => {
     c.name.toLowerCase().includes(search.toLowerCase())
   );
 
-  const imperativeCount = clients.filter(c => c.latestData?.bolt_score !== null && c.latestData?.bolt_score < 25).length;
-  const functionalCount = clients.filter(c => c.latestData?.bolt_score >= 25).length;
+  const imperativeCount = clients.filter(c => c.latestData?.bolt_score !== null && c.latestData?.bolt_score !== undefined && c.latestData?.bolt_score < 25).length;
+  const functionalCount = clients.filter(c => c.latestData?.bolt_score !== null && c.latestData?.bolt_score !== undefined && c.latestData?.bolt_score >= 25).length;
 
   if (loading) return (
     <div className="flex min-h-screen items-center justify-center">
@@ -145,9 +145,9 @@ const ClinicalOversightPage = () => {
         
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {filteredClients.map(client => {
-            const bolt = client.latestData?.bolt_score;
-            const coh = client.latestData?.coherence_score;
-            const isImperative = bolt !== null && bolt !== undefined && bolt < 25;
+            const bolt = client.latestData?.bolt_score ?? null;
+            const coh = client.latestData?.coherence_score ?? null;
+            const isImperative = bolt !== null && bolt < 25;
 
             return (
               <Link key={client.id} to={`/clients/${client.id}?tab=progress`}>

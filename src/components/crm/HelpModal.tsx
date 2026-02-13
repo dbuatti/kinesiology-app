@@ -10,6 +10,7 @@ import {
 } from "@/components/ui/dialog";
 import { Keyboard, MousePointer2, Zap, Info, Command, Clock, Target, CheckCircle2, AlertTriangle, Home } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
+import { cn } from "@/lib/utils";
 
 interface HelpModalProps {
   open: boolean;
@@ -118,5 +119,4 @@ const HelpModal = ({ open, onOpenChange }: HelpModalProps) => {
   );
 };
 
-import { cn } from "@/lib/utils";
 export default HelpModal;

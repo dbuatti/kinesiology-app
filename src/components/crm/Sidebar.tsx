@@ -227,7 +227,7 @@ const Sidebar = () => {
           to="/settings"
           className="flex items-center gap-3 px-4 py-2.5 rounded-xl text-slate-400 hover:text-white hover:bg-slate-900 transition-all cursor-pointer group"
         >
-          <Settings size={20} className="group-hover:rotate-45 transition-transform" />
+          <Settings size={20} group-hover:rotate-45 transition-transform />
           <span className="font-medium">Settings</span>
         </Link>
 

@@ -8,7 +8,7 @@ import { Badge } from "@/components/ui/badge";
 import { 
   Heart, Activity, FlaskConical, Brain, Plus, 
   Calendar, Clock, Loader2, TrendingUp, ArrowRight, 
-  Zap, Info, History, ExternalLink, Sparkles
+  Zap, Info, History, ExternalLink, Sparkles, CheckCircle2
 } from "lucide-react";
 import { format, isToday } from "date-fns";
 import { Link } from "react-router-dom";

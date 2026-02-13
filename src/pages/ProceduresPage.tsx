@@ -5,10 +5,12 @@ import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import { Badge } from "@/components/ui/badge";
 import { Switch } from "@/components/ui/switch";
-import { 
-  Target, Plus, TrendingUp, CheckCircle2, Loader2, 
-  FlaskConical, Brain, Activity, Zap, Edit3, Trash2, PowerOff, Footprints, Scale, Hand, Dumbbell, Heart, Move, Wind
+import {
+  Target, Plus, TrendingUp, CheckCircle2, Loader2,
+  FlaskConical, Brain, Activity, Zap, Edit3, Trash2, PowerOff, Footprints, Scale, Hand, Dumbbell, Heart, Move, Wind, Droplets, ExternalLink
 } from "lucide-react";
+import { Link } from "react-router-dom";
+
 import {
   Dialog,
   DialogContent,
@@ -47,6 +49,7 @@ const ICON_OPTIONS = [
   { value: 'heart', label: 'Heart', icon: Heart },
   { value: 'move', label: 'Move', icon: Move },
   { value: 'wind', label: 'Wind', icon: Wind },
+  { value: 'droplets', label: 'Droplets', icon: Droplets },
 ];
 
 const getIconComponent = (iconName: string) => {
@@ -349,11 +352,12 @@ const ProceduresPage = () => {
                 statusColor = isCoherent ? "text-emerald-600" : "text-amber-600";
               }
             } else if (
-                procedure.name.includes("Range of Motion") || 
-                procedure.name.includes("Neurological Global") || 
+                procedure.name.includes("Range of Motion") ||
+                procedure.name.includes("Neurological Global") ||
                 procedure.name.includes("Sympathetic Down Regulation") ||
                 procedure.name.includes("T1 Sympathetic Chain Reset") ||
-                procedure.name.includes("Diaphragm (Phrenic Nerve)")
+                procedure.name.includes("Diaphragm (Phrenic Nerve)") ||
+                procedure.name.includes("Lymphatic System")
             ) {
                 if (procedure.current_count > 0) {
                     specificStatus = "Assessed";
@@ -443,22 +447,31 @@ const ProceduresPage = () => {
                           {procedure.current_count} / {procedure.target_count}
                         </span>
                       </div>
-                      <Progress 
-                        value={progress} 
+                      <Progress
+                        value={progress}
                         className={cn(
                           "h-3",
                           isComplete ? "[&>div]:bg-emerald-500" : "[&>div]:bg-indigo-600"
                         )}
                       />
                       <p className="text-xs text-slate-500 text-center">
-                        {isComplete 
-                          ? "🎉 Target reached!" 
+                        {isComplete
+                          ? "🎉 Target reached!"
                           : `${procedure.target_count - procedure.current_count} more to go`
                         }
                       </p>
                     </div>
                   )}
+
+                  {procedure.name.includes("Lymphatic System") && (
+                    <Button variant="outline" size="sm" className="w-full rounded-xl border-blue-100 text-blue-600 hover:bg-blue-50" asChild>
+                      <Link to="/resources?tab=lymphatic">
+                        <ExternalLink size={14} className="mr-2" /> View Protocol
+                      </Link>
+                    </Button>
+                  )}
                 </CardContent>
+
               </Card>
             );
           })}

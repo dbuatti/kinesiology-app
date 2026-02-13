@@ -5,7 +5,7 @@ import SearchBar from "./SearchBar";
 import { Badge } from "@/components/ui/badge";
 import { supabase } from "@/integrations/supabase/client";
 import { showSuccess } from "@/utils/toast";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import HelpModal from "./HelpModal";
 import { useRecentClients } from "@/hooks/use-recent-clients";
 import { isToday, differenceInMinutes } from "date-fns";
@@ -26,28 +26,48 @@ const Sidebar = () => {
     { label: "Resources", icon: BookOpen, path: "/resources", shortcut: "⌘R" },
   ];
 
-  useEffect(() => {
-    const checkActiveSession = async () => {
-      const { data } = await supabase
-        .from('appointments')
-        .select('id, date, status')
-        .eq('status', 'Scheduled')
-        .order('date', { ascending: false });
+  const checkActiveSession = useCallback(async () => {
+    const { data } = await supabase
+      .from('appointments')
+      .select('id, date, status')
+      .eq('status', 'Scheduled')
+      .order('date', { ascending: false });
 
-      if (data) {
-        const active = data.find(app => {
-          const appDate = new Date(app.date);
-          const diff = differenceInMinutes(new Date(), appDate);
-          return isToday(appDate) && diff >= 0 && diff < 90;
-        });
-        setActiveSessionId(active?.id || null);
-      }
-    };
-
-    checkActiveSession();
-    const interval = setInterval(checkActiveSession, 60000);
-    return () => clearInterval(interval);
+    if (data) {
+      const active = data.find(app => {
+        const appDate = new Date(app.date);
+        const diff = differenceInMinutes(new Date(), appDate);
+        // Session is "live" if it started within the last 90 minutes and is today
+        return isToday(appDate) && diff >= 0 && diff < 90;
+      });
+      setActiveSessionId(active?.id || null);
+    } else {
+      setActiveSessionId(null);
+    }
   }, []);
+
+  useEffect(() => {
+    checkActiveSession();
+    
+    // Set up real-time subscription to handle immediate updates/deletions
+    const channel = supabase
+      .channel('sidebar-sessions')
+      .on('postgres_changes', { 
+        event: '*', 
+        schema: 'public', 
+        table: 'appointments' 
+      }, () => {
+        checkActiveSession();
+      })
+      .subscribe();
+
+    const interval = setInterval(checkActiveSession, 60000);
+    
+    return () => {
+      clearInterval(interval);
+      supabase.removeChannel(channel);
+    };
+  }, [checkActiveSession]);
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {

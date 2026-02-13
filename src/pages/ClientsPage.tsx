@@ -40,7 +40,7 @@ const ClientsPage = () => {
       const { data, error } = await supabase
         .from('clients')
         .select('*, appointments(count)')
-        .eq('is_practitioner', false) // Hide self-monitoring record
+        .or('is_practitioner.eq.false,is_practitioner.is.null') // Show both false and NULL values
         .order('name', { ascending: true });
       
       if (error) throw error;

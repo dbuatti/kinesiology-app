@@ -50,7 +50,7 @@ const Index = () => {
     try {
       const thirtyDaysAgo = subDays(new Date(), 30).toISOString();
 
-      // Fetch data while filtering out practitioner self-monitoring records
+      // Fetch data while filtering out practitioner self-monitoring records (handling NULL values)
       const [
         { count: clientCount }, 
         { count: appCount }, 
@@ -58,11 +58,11 @@ const Index = () => {
         { count: newClientsCount },
         { count: recentAppsCount }
       ] = await Promise.all([
-        supabase.from('clients').select('*', { count: 'exact', head: true }).eq('is_practitioner', false),
-        supabase.from('appointments').select('*, clients!inner(is_practitioner)', { count: 'exact', head: true }).eq('clients.is_practitioner', false),
-        supabase.from('appointments').select('*, clients!inner(name, is_practitioner)').eq('clients.is_practitioner', false).order('date', { ascending: true }),
-        supabase.from('clients').select('*', { count: 'exact', head: true }).eq('is_practitioner', false).gte('created_at', thirtyDaysAgo),
-        supabase.from('appointments').select('*, clients!inner(is_practitioner)', { count: 'exact', head: true }).eq('clients.is_practitioner', false).gte('date', thirtyDaysAgo)
+        supabase.from('clients').select('*', { count: 'exact', head: true }).or('is_practitioner.eq.false,is_practitioner.is.null'),
+        supabase.from('appointments').select('*, clients!inner(is_practitioner)', { count: 'exact', head: true }).or('is_practitioner.eq.false,is_practitioner.is.null', { foreignTable: 'clients' }),
+        supabase.from('appointments').select('*, clients!inner(name, is_practitioner)').or('is_practitioner.eq.false,is_practitioner.is.null', { foreignTable: 'clients' }).order('date', { ascending: true }),
+        supabase.from('clients').select('*', { count: 'exact', head: true }).or('is_practitioner.eq.false,is_practitioner.is.null').gte('created_at', thirtyDaysAgo),
+        supabase.from('appointments').select('*, clients!inner(is_practitioner)', { count: 'exact', head: true }).or('is_practitioner.eq.false,is_practitioner.is.null', { foreignTable: 'clients' }).gte('date', thirtyDaysAgo)
       ]);
 
       // Calculate averages for clinical clients only

@@ -3,7 +3,7 @@
 import React, { useState, useEffect, useCallback } from "react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Loader2, CheckCircle2, AlertTriangle, Info, RotateCcw, Save } from "lucide-react";
+import { Loader2, CheckCircle2, AlertTriangle, Info, RotateCcw, Save, Dumbbell } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { supabase } from "@/integrations/supabase/client";
 import { showSuccess, showError } from "@/utils/toast";
@@ -13,7 +13,6 @@ import { Alert, AlertDescription } from "@/components/ui/alert";
 
 interface MuscleTestingTabProps {
   appointmentId: string;
-  // Removed onUpdate: () => void;
 }
 
 const MuscleTestingTab = ({ appointmentId }: MuscleTestingTabProps) => {
@@ -71,17 +70,15 @@ const MuscleTestingTab = ({ appointmentId }: MuscleTestingTabProps) => {
       let newResult: MuscleTestResult;
 
       if (existingResult) {
-        // Update existing record
         const { error } = await supabase
-          .from('muscle_tests')
+          .from("muscle_tests")
           .update(payload)
           .eq('id', existingResult.id);
         if (error) throw error;
         newResult = { ...existingResult, ...payload };
       } else {
-        // Insert new record
         const { data, error } = await supabase
-          .from('muscle_tests')
+          .from("muscle_tests")
           .insert(payload)
           .select()
           .single();
@@ -89,7 +86,6 @@ const MuscleTestingTab = ({ appointmentId }: MuscleTestingTabProps) => {
         newResult = data as MuscleTestResult;
       }
       
-      // Optimistically update local state
       setResults(prev => ({
         ...prev,
         [muscleName]: newResult
@@ -112,7 +108,7 @@ const MuscleTestingTab = ({ appointmentId }: MuscleTestingTabProps) => {
     setSaving(true);
     try {
       const { error } = await supabase
-        .from('muscle_tests')
+        .from("muscle_tests")
         .delete()
         .eq('id', result.id);
 
@@ -137,38 +133,38 @@ const MuscleTestingTab = ({ appointmentId }: MuscleTestingTabProps) => {
 
   if (loading) {
     return (
-      <div className="p-8 flex justify-center">
-        <Loader2 className="animate-spin text-indigo-500" size={32} />
+      <div className="p-12 flex flex-col items-center justify-center gap-4">
+        <Loader2 className="animate-spin text-indigo-500" size={48} />
+        <p className="text-slate-400 font-black text-[10px] uppercase tracking-widest">Loading muscle log...</p>
       </div>
     );
   }
 
   return (
-    <div className="space-y-8">
-      <Alert className="bg-indigo-50 border-indigo-200">
-        <Info className="h-4 w-4 text-indigo-600" />
-        <AlertDescription className="text-sm text-indigo-900">
+    <div className="space-y-10">
+      <Alert className="bg-indigo-50 border-indigo-100 rounded-2xl">
+        <Info className="h-5 w-5 text-indigo-600" />
+        <AlertDescription className="text-sm text-indigo-900 font-medium">
           <strong>Muscle Testing Protocol:</strong> Log the status of each muscle tested during the session. Changes are saved automatically.
         </AlertDescription>
       </Alert>
 
-      {/* Muscle Status Legend */}
-      <Card className="border-none shadow-sm rounded-2xl bg-white">
-        <CardHeader>
-          <CardTitle className="text-lg">Muscle Status Legend</CardTitle>
-          <CardDescription>Click a status to log the result for a muscle.</CardDescription>
+      <Card className="border-none shadow-sm rounded-[2rem] bg-white overflow-hidden">
+        <CardHeader className="bg-slate-50/50 border-b border-slate-100 p-8">
+          <CardTitle className="text-xl font-black">Muscle Status Legend</CardTitle>
+          <CardDescription className="font-medium">Click a status to log the result for a muscle.</CardDescription>
         </CardHeader>
-        <CardContent>
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3">
+        <CardContent className="p-8">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
             {MUSCLE_STATUSES.map(status => {
               const Icon = status.icon;
               return (
-                <div key={status.value} className={cn("p-3 rounded-xl border-2", status.color)}>
-                  <div className="flex items-center gap-2 mb-1">
-                    <Icon size={16} className={status.color.split(' ')[0]} />
-                    <span className="font-bold text-sm text-slate-900">{status.label}</span>
+                <div key={status.value} className={cn("p-4 rounded-2xl border-2 transition-all", status.color)}>
+                  <div className="flex items-center gap-2 mb-2">
+                    <Icon size={18} className={status.color.split(' ')[0]} />
+                    <span className="font-black text-xs text-slate-900 uppercase tracking-wider">{status.label}</span>
                   </div>
-                  <p className="text-xs text-slate-700">{status.description}</p>
+                  <p className="text-[10px] text-slate-700 font-medium leading-relaxed">{status.description}</p>
                 </div>
               );
             })}
@@ -176,24 +172,28 @@ const MuscleTestingTab = ({ appointmentId }: MuscleTestingTabProps) => {
         </CardContent>
       </Card>
 
-      {/* Muscle Groups */}
       {Object.entries(MUSCLE_GROUPS).map(([groupName, muscles]) => (
-        <Card key={groupName} className="border-none shadow-lg rounded-2xl bg-white">
-          <CardHeader className="bg-slate-50/50 border-b border-slate-100 rounded-t-2xl">
-            <CardTitle className="text-xl font-bold text-slate-900">{groupName}</CardTitle>
+        <Card key={groupName} className="border-none shadow-xl rounded-[2.5rem] bg-white overflow-hidden">
+          <CardHeader className="bg-slate-900 text-white p-8">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-xl bg-white/10 flex items-center justify-center">
+                <Dumbbell size={20} />
+              </div>
+              <CardTitle className="text-2xl font-black">{groupName}</CardTitle>
+            </div>
           </CardHeader>
-          <CardContent className="p-6 grid grid-cols-1 md:grid-cols-2 gap-6">
+          <CardContent className="p-8 grid grid-cols-1 md:grid-cols-2 gap-8">
             {muscles.map(muscle => {
               const currentResult = results[muscle];
               const statusDetails = currentResult ? getStatusDetails(currentResult.status) : null;
               const Icon = statusDetails?.icon || CheckCircle2;
 
               return (
-                <div key={muscle} className="p-4 border border-slate-200 rounded-xl space-y-3">
+                <div key={muscle} className="p-6 border border-slate-100 rounded-[2rem] space-y-5 hover:border-indigo-100 hover:shadow-lg transition-all duration-300 group">
                   <div className="flex items-center justify-between">
-                    <h4 className="font-bold text-slate-800">{muscle}</h4>
+                    <h4 className="font-black text-lg text-slate-800">{muscle}</h4>
                     {currentResult && (
-                      <div className={cn("px-3 py-1 rounded-full text-xs font-bold flex items-center gap-1", statusDetails?.color)}>
+                      <div className={cn("px-4 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest flex items-center gap-2 shadow-sm", statusDetails?.color)}>
                         <Icon size={14} />
                         {statusDetails?.label}
                       </div>
@@ -212,14 +212,14 @@ const MuscleTestingTab = ({ appointmentId }: MuscleTestingTabProps) => {
                           size="sm"
                           onClick={() => handleStatusChange(muscle, status.value)}
                           className={cn(
-                            "h-8 text-xs font-semibold transition-all",
+                            "h-9 text-[10px] font-black uppercase tracking-widest transition-all duration-300 rounded-xl",
                             isSelected 
-                              ? statusDetails?.color.replace(/bg-\w+-\d+/g, 'bg-slate-900').replace(/text-\w+-\d+/g, 'text-white') + " hover:bg-slate-800"
-                              : "border-slate-200 bg-white hover:bg-slate-50 text-slate-600"
+                              ? "bg-slate-900 text-white hover:bg-slate-800 shadow-lg"
+                              : "border-slate-200 bg-white hover:bg-slate-50 text-slate-500"
                           )}
                           disabled={saving}
                         >
-                          <StatusIcon size={14} className="mr-1" />
+                          <StatusIcon size={14} className="mr-2" />
                           {status.label.split(' ')[0]}
                         </Button>
                       );
@@ -229,10 +229,10 @@ const MuscleTestingTab = ({ appointmentId }: MuscleTestingTabProps) => {
                         variant="ghost"
                         size="icon"
                         onClick={() => handleClearMuscle(muscle)}
-                        className="h-8 w-8 text-red-500 hover:bg-red-50"
+                        className="h-9 w-9 text-rose-500 hover:bg-rose-50 rounded-xl transition-all"
                         disabled={saving}
                       >
-                        <RotateCcw size={14} />
+                        <RotateCcw size={16} />
                       </Button>
                     )}
                   </div>
@@ -243,29 +243,34 @@ const MuscleTestingTab = ({ appointmentId }: MuscleTestingTabProps) => {
         </Card>
       ))}
 
-      {/* Assistance Section */}
-      <Card className="border-2 border-indigo-200 shadow-none rounded-2xl bg-indigo-50">
-        <CardHeader>
-          <CardTitle className="text-xl font-bold text-indigo-900 flex items-center gap-2">
-            <AlertTriangle size={20} className="text-indigo-600" />
+      <Card className="border-none shadow-xl rounded-[2.5rem] bg-indigo-900 text-white overflow-hidden">
+        <CardHeader className="p-8 pb-4">
+          <CardTitle className="text-2xl font-black flex items-center gap-3">
+            <AlertTriangle size={28} className="text-amber-400" />
             {MUSCLE_TEST_ASSISTANCE.title}
           </CardTitle>
         </CardHeader>
-        <CardContent className="space-y-6">
-          <div className="space-y-4">
+        <CardContent className="p-8 pt-0 space-y-8">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             {MUSCLE_TEST_ASSISTANCE.steps.map((step, index) => (
-              <div key={index} className="p-4 bg-white rounded-xl border border-indigo-100 shadow-sm">
-                <h4 className="font-bold text-slate-900 mb-1">{step.title}</h4>
-                <p className="text-sm text-slate-700">{step.details}</p>
+              <div key={index} className="p-5 bg-white/5 rounded-2xl border border-white/10 hover:bg-white/10 transition-all">
+                <h4 className="font-black text-sm text-indigo-300 mb-2 uppercase tracking-wider">{step.title}</h4>
+                <p className="text-sm text-slate-300 font-medium leading-relaxed">{step.details}</p>
               </div>
             ))}
           </div>
           
-          <div className="bg-indigo-100 p-4 rounded-xl border border-indigo-200">
-            <h4 className="font-bold text-indigo-900 mb-2">Muscle Testing Process:</h4>
-            <ol className="space-y-1 text-sm text-indigo-800 list-decimal list-inside">
+          <div className="bg-white/10 p-6 rounded-3xl border border-white/10">
+            <h4 className="font-black text-lg mb-4 flex items-center gap-2">
+              <CheckCircle2 size={20} className="text-emerald-400" />
+              Muscle Testing Process:
+            </h4>
+            <ol className="space-y-3 text-sm text-slate-200 font-medium">
               {MUSCLE_TEST_ASSISTANCE.process.map((item, index) => (
-                <li key={index}>{item}</li>
+                <li key={index} className="flex items-start gap-3">
+                  <span className="w-6 h-6 rounded-full bg-indigo-600 flex items-center justify-center text-[10px] font-black shrink-0">{index + 1}</span>
+                  {item}
+                </li>
               ))}
             </ol>
           </div>

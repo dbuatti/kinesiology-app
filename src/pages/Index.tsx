@@ -7,7 +7,7 @@ import { Badge } from "@/components/ui/badge";
 import { 
   Users, Calendar, Activity, TrendingUp, Loader2, 
   Plus, ArrowRight, UserPlus, Sparkles, Clock, 
-  CheckCircle2, Zap, Upload, Target, FlaskConical, Brain, Info, Heart, AlertCircle, Edit3
+  CheckCircle2, Zap, Upload, Target, FlaskConical, Brain, Info, Heart, AlertCircle, Edit3, StickyNote
 } from "lucide-react";
 import { MadeWithDyad } from "@/components/made-with-dyad";
 import {
@@ -81,14 +81,12 @@ const Index = () => {
         supabase.from('clients').select('id, appointments(bolt_score, date)').or('is_practitioner.eq.false,is_practitioner.is.null')
       ]);
 
-      // Calculate averages and alerts
       const boltScores = allApps?.filter(a => a.bolt_score).map(a => a.bolt_score) || [];
       const cohScores = allApps?.filter(a => a.coherence_score).map(a => a.coherence_score) || [];
       
       const avgBolt = boltScores.length > 0 ? Math.round(boltScores.reduce((a, b) => a + b, 0) / boltScores.length) : 0;
       const avgCoh = cohScores.length > 0 ? cohScores.reduce((a, b) => a + b, 0) / cohScores.length : 0;
 
-      // Calculate imperative alerts (clients whose LATEST bolt score is < 25)
       let imperativeAlerts = 0;
       clinicalClients?.forEach(client => {
         const sortedApps = (client.appointments || [])
@@ -161,69 +159,68 @@ const Index = () => {
   const QuickAction = ({ icon: Icon, label, onClick, color }: any) => (
     <button 
       onClick={onClick}
-      className="flex flex-col items-center justify-center p-4 bg-white rounded-2xl border border-slate-100 shadow-sm hover:shadow-md hover:border-indigo-200 transition-all group"
+      className="flex flex-col items-center justify-center p-5 bg-white rounded-3xl border border-slate-100 shadow-sm hover:shadow-xl hover:border-indigo-200 hover:-translate-y-1 transition-all duration-300 group"
     >
-      <div className={cn("w-12 h-12 rounded-xl flex items-center justify-center mb-3 transition-transform group-hover:scale-110", color)}>
-        <Icon size={24} className="text-white" />
+      <div className={cn("w-14 h-14 rounded-2xl flex items-center justify-center mb-4 transition-transform group-hover:scale-110 shadow-lg", color)}>
+        <Icon size={28} className="text-white" />
       </div>
-      <span className="text-xs font-bold text-slate-600 uppercase tracking-wider">{label}</span>
+      <span className="text-[10px] font-black text-slate-500 uppercase tracking-[0.2em]">{label}</span>
     </button>
   );
 
   return (
-    <div className="p-4 md:p-8 max-w-full mx-auto space-y-8">
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+    <div className="p-4 md:p-8 max-w-full mx-auto space-y-10">
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
         <div>
-          <h1 className="text-3xl font-bold tracking-tight text-slate-900">Practice Hub</h1>
-          <p className="text-slate-500 font-medium">Welcome back! Here's what's happening in your practice.</p>
+          <h1 className="text-4xl font-black tracking-tight text-slate-900">Practice Hub</h1>
+          <p className="text-slate-500 font-medium mt-1">Welcome back! Here's your clinical overview for today.</p>
         </div>
-        <div className="flex items-center gap-3 bg-white p-1.5 rounded-2xl border border-slate-100 shadow-sm">
+        <div className="flex items-center gap-3 bg-white p-2 rounded-2xl border border-slate-100 shadow-sm">
           <div className="px-4 py-2">
-            <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Today's Date</p>
+            <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Today's Date</p>
             <p className="text-sm font-bold text-slate-900">{format(new Date(), "EEEE, MMMM d")}</p>
           </div>
         </div>
       </div>
 
       {!hasData ? (
-        <div className="text-center py-20 bg-gradient-to-br from-indigo-50 to-blue-50 rounded-3xl border-2 border-dashed border-indigo-200">
-          <div className="mx-auto w-20 h-20 bg-white rounded-2xl flex items-center justify-center mb-6 shadow-lg">
-            <Sparkles className="text-indigo-500" size={40} />
+        <div className="text-center py-24 bg-gradient-to-br from-indigo-50 to-blue-50 rounded-[3rem] border-2 border-dashed border-indigo-200">
+          <div className="mx-auto w-24 h-24 bg-white rounded-3xl flex items-center justify-center mb-8 shadow-xl">
+            <Sparkles className="text-indigo-500" size={48} />
           </div>
-          <h2 className="text-2xl font-bold text-slate-900 mb-2">Welcome to Antigravity CRM!</h2>
-          <p className="text-slate-600 max-w-md mx-auto mb-8">Start building your kinesiology practice by adding your first client and scheduling sessions.</p>
+          <h2 className="text-3xl font-black text-slate-900 mb-3">Welcome to Antigravity CRM!</h2>
+          <p className="text-slate-600 max-w-md mx-auto mb-10 text-lg">Start building your kinesiology practice by adding your first client and scheduling sessions.</p>
           <div className="flex gap-4 justify-center">
-            <Button className="bg-indigo-600 hover:bg-indigo-700" onClick={() => setClientDialogOpen(true)}>
-              <UserPlus size={18} className="mr-2" /> Add First Client
+            <Button className="bg-indigo-600 hover:bg-indigo-700 h-12 px-8 rounded-xl font-bold shadow-lg shadow-indigo-200" onClick={() => setClientDialogOpen(true)}>
+              <UserPlus size={20} className="mr-2" /> Add First Client
             </Button>
-            <Button variant="outline" onClick={() => setAppDialogOpen(true)}>
-              <Calendar size={18} className="mr-2" /> Schedule Session
+            <Button variant="outline" className="h-12 px-8 rounded-xl font-bold border-slate-200" onClick={() => setAppDialogOpen(true)}>
+              <Calendar size={20} className="mr-2" /> Schedule Session
             </Button>
           </div>
         </div>
       ) : (
         <>
-          {/* Clinical Alerts Bar */}
           {stats.imperativeAlerts > 0 && (
             <Link to="/oversight">
-              <div className="bg-rose-600 text-white p-4 rounded-2xl shadow-lg shadow-rose-100 flex items-center justify-between group hover:bg-rose-700 transition-all">
-                <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 bg-white/20 rounded-xl flex items-center justify-center">
-                    <AlertCircle size={24} />
+              <div className="bg-rose-600 text-white p-5 rounded-3xl shadow-xl shadow-rose-100 flex items-center justify-between group hover:bg-rose-700 transition-all duration-300">
+                <div className="flex items-center gap-4">
+                  <div className="w-12 h-12 bg-white/20 rounded-2xl flex items-center justify-center backdrop-blur-md">
+                    <AlertCircle size={28} />
                   </div>
                   <div>
-                    <p className="font-black text-lg">Clinical Attention Required</p>
+                    <p className="font-black text-xl">Clinical Attention Required</p>
                     <p className="text-rose-100 text-sm font-medium">{stats.imperativeAlerts} clients have imperative BOLT scores under 25s.</p>
                   </div>
                 </div>
-                <div className="flex items-center gap-2 font-bold text-sm bg-white/10 px-4 py-2 rounded-xl group-hover:bg-white/20 transition-all">
-                  Review Cases <ArrowRight size={16} />
+                <div className="flex items-center gap-2 font-black text-xs uppercase tracking-widest bg-white/10 px-6 py-3 rounded-2xl group-hover:bg-white/20 transition-all">
+                  Review Cases <ArrowRight size={18} />
                 </div>
               </div>
             </Link>
           )}
 
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
             <QuickAction icon={UserPlus} label="New Client" onClick={() => setClientDialogOpen(true)} color="bg-indigo-600" />
             <QuickAction icon={Calendar} label="Book Session" onClick={() => setAppDialogOpen(true)} color="bg-rose-500" />
             <QuickAction icon={Heart} label="Self Practice" onClick={() => window.location.href='/self-practice'} color="bg-rose-500" />
@@ -231,124 +228,136 @@ const Index = () => {
           </div>
 
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-            <Card className="lg:col-span-2 border-none shadow-lg bg-gradient-to-br from-slate-900 to-slate-800 text-white rounded-3xl overflow-hidden relative">
-              <div className="absolute top-0 right-0 p-8 opacity-10"><Sparkles size={120} /></div>
-              <CardHeader className="pb-2">
+            <Card className="lg:col-span-2 border-none shadow-xl bg-gradient-to-br from-slate-900 to-slate-800 text-white rounded-[2.5rem] overflow-hidden relative">
+              <div className="absolute top-0 right-0 p-12 opacity-10 pointer-events-none"><Sparkles size={160} /></div>
+              <CardHeader className="pb-4 p-8">
                 <div className="flex items-center justify-between">
-                  <CardTitle className="text-2xl font-bold flex items-center gap-2">
-                    <Zap size={24} className="text-amber-400 fill-amber-400" /> Daily Briefing
+                  <CardTitle className="text-3xl font-black flex items-center gap-3">
+                    <Zap size={32} className="text-amber-400 fill-amber-400" /> Daily Briefing
                   </CardTitle>
                   {activeSession && (
                     <Link to={`/appointments/${activeSession.id}`}>
-                      <Badge className="bg-rose-500 hover:bg-rose-600 text-white border-none px-3 py-1 animate-pulse cursor-pointer">
+                      <Badge className="bg-rose-500 hover:bg-rose-600 text-white border-none px-4 py-1.5 animate-pulse cursor-pointer font-black text-[10px] uppercase tracking-widest">
                         LIVE SESSION: {activeSession.clients?.name}
                       </Badge>
                     </Link>
                   )}
                 </div>
-                <CardDescription className="text-slate-400 text-base">
+                <CardDescription className="text-slate-400 text-lg font-medium">
                   {todaySessions.length > 0 
                     ? `You have ${todaySessions.length} session${todaySessions.length === 1 ? '' : 's'} scheduled for today.`
                     : "No sessions scheduled for today. Time for some research or admin!"}
                 </CardDescription>
               </CardHeader>
-              <CardContent className="pt-4">
+              <CardContent className="p-8 pt-0">
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   {todaySessions.length > 0 ? (
                     todaySessions.map(session => (
                       <Link key={session.id} to={`/appointments/${session.id}`}>
                         <div className={cn(
-                          "p-4 rounded-2xl border transition-all flex items-center justify-between group",
+                          "p-5 rounded-[2rem] border transition-all duration-300 flex items-center justify-between group",
                           activeSession?.id === session.id 
-                            ? "bg-white text-slate-900 border-white shadow-xl scale-[1.02]" 
+                            ? "bg-white text-slate-900 border-white shadow-2xl scale-[1.02]" 
                             : "bg-white/5 hover:bg-white/10 border-white/10 text-white"
                         )}>
                           <div className="min-w-0">
                             <p className={cn(
-                              "text-[10px] font-black uppercase tracking-widest",
+                              "text-[10px] font-black uppercase tracking-[0.2em] mb-1",
                               activeSession?.id === session.id ? "text-rose-500" : "text-slate-400"
                             )}>
                               {activeSession?.id === session.id ? "ONGOING" : format(new Date(session.date), "h:mm a")}
                             </p>
-                            <p className="font-bold text-lg truncate">{session.clients?.name}</p>
+                            <p className="font-black text-xl truncate">{session.clients?.name}</p>
                           </div>
-                          <ArrowRight size={20} className={cn(
-                            "group-hover:translate-x-1 transition-transform",
-                            activeSession?.id === session.id ? "text-indigo-600" : "text-slate-500"
-                          )} />
+                          <div className={cn(
+                            "w-10 h-10 rounded-2xl flex items-center justify-center transition-all duration-300",
+                            activeSession?.id === session.id ? "bg-indigo-50 text-indigo-600" : "bg-white/5 text-slate-500 group-hover:text-white"
+                          )}>
+                            <ArrowRight size={20} className="group-hover:translate-x-1 transition-transform" />
+                          </div>
                         </div>
                       </Link>
                     ))
                   ) : (
-                    <div className="sm:col-span-2 flex items-center gap-3 p-4 bg-white/5 rounded-2xl border border-white/10">
-                      <CheckCircle2 size={24} className="text-emerald-400" />
-                      <p className="font-medium text-slate-300">Your schedule is clear. Enjoy the space!</p>
+                    <div className="sm:col-span-2 flex items-center gap-4 p-6 bg-white/5 rounded-[2rem] border border-white/10">
+                      <div className="w-12 h-12 rounded-2xl bg-emerald-500/20 flex items-center justify-center text-emerald-400">
+                        <CheckCircle2 size={28} />
+                      </div>
+                      <p className="font-bold text-slate-300 text-lg">Your schedule is clear. Enjoy the space!</p>
                     </div>
                   )}
                 </div>
               </CardContent>
             </Card>
 
-            <Card className="border-none shadow-lg rounded-3xl bg-white">
-              <CardHeader className="pb-2">
-                <CardTitle className="text-lg font-bold flex items-center gap-2 text-slate-900">
-                  <TrendingUp size={20} className="text-indigo-600" /> Practice Pulse
+            <Card className="border-none shadow-xl rounded-[2.5rem] bg-white overflow-hidden">
+              <CardHeader className="pb-4 p-8">
+                <CardTitle className="text-2xl font-black flex items-center gap-3 text-slate-900">
+                  <TrendingUp size={28} className="text-indigo-600" /> Practice Pulse
                 </CardTitle>
               </CardHeader>
-              <CardContent className="space-y-6">
-                <div className="grid grid-cols-2 gap-3">
-                  <div className="p-4 bg-slate-50 rounded-2xl border border-slate-100">
-                    <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">Total Clients</p>
-                    <p className="text-3xl font-black text-slate-900">{stats.clients}</p>
-                    <p className="text-[10px] text-emerald-600 font-bold mt-1">+{stats.newClients30d} last 30d</p>
+              <CardContent className="p-8 pt-0 space-y-8">
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="p-5 bg-slate-50 rounded-3xl border border-slate-100">
+                    <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2">Total Clients</p>
+                    <p className="text-4xl font-black text-slate-900">{stats.clients}</p>
+                    <p className="text-[10px] text-emerald-600 font-black mt-2 flex items-center gap-1">
+                      <TrendingUp size={10} /> +{stats.newClients30d} last 30d
+                    </p>
                   </div>
-                  <div className="p-4 bg-slate-50 rounded-2xl border border-slate-100">
-                    <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">Total Sessions</p>
-                    <p className="text-3xl font-black text-slate-900">{stats.appointments}</p>
-                    <p className="text-[10px] text-indigo-600 font-bold mt-1">{stats.sessions30d} last 30d</p>
+                  <div className="p-5 bg-slate-50 rounded-3xl border border-slate-100">
+                    <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2">Total Sessions</p>
+                    <p className="text-4xl font-black text-slate-900">{stats.appointments}</p>
+                    <p className="text-[10px] text-indigo-600 font-black mt-2">
+                      {stats.sessions30d} last 30d
+                    </p>
                   </div>
                 </div>
                 
-                <div className="space-y-3">
-                  <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Clinical Averages</p>
+                <div className="space-y-4">
+                  <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest px-1">Clinical Averages</p>
                   <Tooltip>
                     <TooltipTrigger asChild>
-                      <div className="flex items-center justify-between p-3 bg-indigo-50 rounded-xl border border-indigo-100 cursor-help">
-                        <div className="flex items-center gap-2">
-                          <FlaskConical size={16} className="text-indigo-600" />
-                          <span className="text-sm font-bold text-indigo-900">Avg BOLT Score</span>
+                      <div className="flex items-center justify-between p-4 bg-indigo-50 rounded-2xl border border-indigo-100 cursor-help hover:bg-indigo-100 transition-colors">
+                        <div className="flex items-center gap-3">
+                          <div className="w-10 h-10 rounded-xl bg-white flex items-center justify-center text-indigo-600 shadow-sm">
+                            <FlaskConical size={20} />
+                          </div>
+                          <span className="text-sm font-black text-indigo-900">Avg BOLT Score</span>
                         </div>
-                        <div className="flex items-center gap-1.5">
-                          <span className="text-lg font-black text-indigo-600">{stats.avgBolt}s</span>
-                          <Info size={12} className="text-indigo-400" />
+                        <div className="flex items-center gap-2">
+                          <span className="text-2xl font-black text-indigo-600">{stats.avgBolt}s</span>
+                          <Info size={14} className="text-indigo-400" />
                         </div>
                       </div>
                     </TooltipTrigger>
-                    <TooltipContent side="left" className="max-w-[200px]">
-                      <p className="font-bold mb-1">BOLT Score Targets:</p>
-                      <ul className="text-xs space-y-1">
-                        <li>• <span className="font-bold">25s+</span>: Functional</li>
-                        <li>• <span className="font-bold">40s+</span>: Optimal</li>
+                    <TooltipContent side="left" className="max-w-[200px] rounded-xl p-3">
+                      <p className="font-black text-[10px] uppercase tracking-widest mb-2">BOLT Targets</p>
+                      <ul className="text-xs space-y-1 font-medium">
+                        <li className="flex items-center justify-between"><span>Functional:</span> <span className="font-black text-emerald-600">25s+</span></li>
+                        <li className="flex items-center justify-between"><span>Optimal:</span> <span className="font-black text-indigo-600">40s+</span></li>
                       </ul>
                     </TooltipContent>
                   </Tooltip>
 
                   <Tooltip>
                     <TooltipTrigger asChild>
-                      <div className="flex items-center justify-between p-3 bg-rose-50 rounded-xl border border-rose-100 cursor-help">
-                        <div className="flex items-center gap-2">
-                          <Brain size={16} className="text-rose-600" />
-                          <span className="text-sm font-bold text-rose-900">Avg Coherence</span>
+                      <div className="flex items-center justify-between p-4 bg-rose-50 rounded-2xl border border-rose-100 cursor-help hover:bg-rose-100 transition-colors">
+                        <div className="flex items-center gap-3">
+                          <div className="w-10 h-10 rounded-xl bg-white flex items-center justify-center text-rose-600 shadow-sm">
+                            <Brain size={20} />
+                          </div>
+                          <span className="text-sm font-black text-rose-900">Avg Coherence</span>
                         </div>
-                        <div className="flex items-center gap-1.5">
-                          <span className="text-lg font-black text-rose-600">{stats.avgCoherence.toFixed(2)}</span>
-                          <Info size={12} className="text-rose-400" />
+                        <div className="flex items-center gap-2">
+                          <span className="text-2xl font-black text-rose-600">{stats.avgCoherence.toFixed(2)}</span>
+                          <Info size={14} className="text-rose-400" />
                         </div>
                       </div>
                     </TooltipTrigger>
-                    <TooltipContent side="left" className="max-w-[200px]">
-                      <p className="font-bold mb-1">Coherence Score:</p>
-                      <p className="text-xs">Ratio of Heart Rate to Breath Rate. Whole numbers indicate high autonomic synchronization.</p>
+                    <TooltipContent side="left" className="max-w-[200px] rounded-xl p-3">
+                      <p className="font-black text-[10px] uppercase tracking-widest mb-2">Coherence Score</p>
+                      <p className="text-xs font-medium leading-relaxed">Ratio of Heart Rate to Breath Rate. Whole numbers indicate high autonomic synchronization.</p>
                     </TooltipContent>
                   </Tooltip>
                 </div>
@@ -358,12 +367,12 @@ const Index = () => {
 
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
             <div className="lg:col-span-2 space-y-8">
-              <Card className="border-none shadow-sm rounded-2xl overflow-hidden bg-white">
-                <CardHeader>
-                  <CardTitle className="text-lg font-bold">Session Activity</CardTitle>
-                  <CardDescription>Volume of appointments over the last 6 months</CardDescription>
+              <Card className="border-none shadow-xl rounded-[2.5rem] overflow-hidden bg-white">
+                <CardHeader className="p-8 pb-0">
+                  <CardTitle className="text-xl font-black">Session Activity</CardTitle>
+                  <CardDescription className="font-medium">Volume of appointments over the last 6 months</CardDescription>
                 </CardHeader>
-                <CardContent className="h-[300px] mt-4">
+                <CardContent className="h-[320px] p-8 pt-4">
                   <ResponsiveContainer width="100%" height="100%">
                     <AreaChart data={chartData}>
                       <defs>
@@ -373,38 +382,40 @@ const Index = () => {
                         </linearGradient>
                       </defs>
                       <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
-                      <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{fontSize: 12, fill: '#94a3b8'}} />
-                      <YAxis axisLine={false} tickLine={false} tick={{fontSize: 12, fill: '#94a3b8'}} />
-                      <ChartTooltip contentStyle={{borderRadius: '12px', border: 'none', boxShadow: '0 10px 15px -3px rgb(0 0 0 / 0.1)'}} />
-                      <Area type="monotone" dataKey="sessions" stroke="#4f46e5" strokeWidth={3} fillOpacity={1} fill="url(#colorSessions)" />
+                      <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{fontSize: 12, fill: '#94a3b8', fontWeight: 600}} />
+                      <YAxis axisLine={false} tickLine={false} tick={{fontSize: 12, fill: '#94a3b8', fontWeight: 600}} />
+                      <ChartTooltip 
+                        contentStyle={{borderRadius: '20px', border: 'none', boxShadow: '0 20px 25px -5px rgb(0 0 0 / 0.1)', padding: '12px'}}
+                        labelStyle={{fontWeight: 900, color: '#1e293b', marginBottom: '4px'}}
+                      />
+                      <Area type="monotone" dataKey="sessions" stroke="#4f46e5" strokeWidth={4} fillOpacity={1} fill="url(#colorSessions)" />
                     </AreaChart>
                   </ResponsiveContainer>
                 </CardContent>
               </Card>
 
-              {/* Practitioner Scratchpad */}
-              <Card className="border-none shadow-lg rounded-3xl bg-amber-50 border border-amber-100 overflow-hidden">
-                <CardHeader className="pb-2">
-                  <CardTitle className="text-lg font-bold flex items-center gap-2 text-amber-900">
-                    <Edit3 size={20} className="text-amber-600" /> Practitioner Scratchpad
+              <Card className="border-none shadow-xl rounded-[2.5rem] bg-amber-50 border border-amber-100 overflow-hidden">
+                <CardHeader className="p-8 pb-4">
+                  <CardTitle className="text-2xl font-black flex items-center gap-3 text-amber-900">
+                    <StickyNote size={28} className="text-amber-600" /> Practitioner Scratchpad
                   </CardTitle>
-                  <CardDescription className="text-amber-700">Quick notes, reminders, or research ideas. Saves automatically.</CardDescription>
+                  <CardDescription className="text-amber-700 font-medium text-base">Quick notes, reminders, or research ideas. Saves automatically.</CardDescription>
                 </CardHeader>
-                <CardContent>
+                <CardContent className="p-8 pt-0">
                   <Textarea 
                     value={scratchpad}
                     onChange={(e) => handleScratchpadChange(e.target.value)}
                     placeholder="Type something here..."
-                    className="min-h-[150px] bg-white/50 border-amber-200 focus:ring-amber-500 focus:border-amber-500 resize-none text-amber-900 placeholder:text-amber-300"
+                    className="min-h-[180px] bg-white/60 border-amber-200 focus:ring-amber-500 focus:border-amber-500 resize-none text-amber-900 placeholder:text-amber-300 rounded-3xl p-6 text-lg font-medium leading-relaxed shadow-inner"
                   />
-                  <div className="flex items-center justify-end gap-2 mt-2 text-[10px] font-bold text-amber-600 uppercase tracking-widest">
-                    <CheckCircle2 size={10} /> Auto-saved to browser
+                  <div className="flex items-center justify-end gap-2 mt-4 text-[10px] font-black text-amber-600 uppercase tracking-[0.2em]">
+                    <CheckCircle2 size={12} /> Auto-saved to browser
                   </div>
                 </CardContent>
               </Card>
             </div>
 
-            <div className="space-y-6">
+            <div className="space-y-8">
               <UpcomingAppointments />
               <RecentActivity />
             </div>
@@ -413,15 +424,15 @@ const Index = () => {
       )}
 
       <Dialog open={clientDialogOpen} onOpenChange={setClientDialogOpen}>
-        <DialogContent className="sm:max-w-[550px]">
-          <DialogHeader><DialogTitle>Add New Client</DialogTitle></DialogHeader>
+        <DialogContent className="sm:max-w-[550px] rounded-[2rem]">
+          <DialogHeader><DialogTitle className="text-2xl font-black">Add New Client</DialogTitle></DialogHeader>
           <ClientForm onSuccess={() => { setClientDialogOpen(false); fetchDashboardData(); }} />
         </DialogContent>
       </Dialog>
 
       <Dialog open={appDialogOpen} onOpenChange={setAppDialogOpen}>
-        <DialogContent className="sm:max-w-[500px]">
-          <DialogHeader><DialogTitle>Schedule New Session</DialogTitle></DialogHeader>
+        <DialogContent className="sm:max-w-[500px] rounded-[2rem]">
+          <DialogHeader><DialogTitle className="text-2xl font-black">Schedule New Session</DialogTitle></DialogHeader>
           <AppointmentForm onSuccess={() => { setAppDialogOpen(false); fetchDashboardData(); }} />
         </DialogContent>
       </Dialog>

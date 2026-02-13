@@ -4,7 +4,7 @@ import React, { useState, useEffect, useRef, useLayoutEffect, useCallback } from
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { cn } from "@/lib/utils";
-import { Loader2, Edit3, CheckCircle2 } from "lucide-react";
+import { Loader2, Edit3, CheckCircle2, Sparkles } from "lucide-react";
 
 type InputElement = HTMLInputElement | HTMLTextAreaElement;
 
@@ -113,47 +113,52 @@ const EditableField = ({
   if (!isFocused) {
     return (
       <div 
-        className={cn("group relative cursor-pointer", className)}
+        className={cn(
+          "group relative cursor-pointer p-3 rounded-xl transition-all duration-200 border border-transparent hover:bg-slate-50 hover:border-slate-200", 
+          className
+        )}
         onClick={() => {
           setIsFocused(true);
           setTimeout(() => inputRef.current?.focus(), 0);
         }}
       >
         <div className="flex items-center justify-between mb-1.5">
-          <p className="font-bold text-slate-400 uppercase text-[10px] tracking-widest">{label}</p>
+          <p className="font-black text-slate-400 uppercase text-[9px] tracking-[0.15em]">{label}</p>
           {showSaved && (
-            <div className="flex items-center gap-1 text-[10px] font-bold text-emerald-500 animate-in fade-in slide-in-from-right-1">
+            <div className="flex items-center gap-1 text-[9px] font-black text-emerald-500 animate-in fade-in slide-in-from-right-2 duration-300">
               <CheckCircle2 size={10} /> SAVED
             </div>
           )}
         </div>
-        <div className="flex items-center justify-between min-h-[38px]">
+        <div className="flex items-start justify-between min-h-[24px]">
           <p className={cn(
             "text-sm leading-relaxed whitespace-pre-wrap",
-            isEmpty ? "text-slate-400 italic" : "text-slate-700"
+            isEmpty ? "text-slate-400 italic" : "text-slate-700 font-medium"
           )}>
             {isEmpty ? placeholder : localValue}
           </p>
-          <Edit3 size={14} className="text-slate-400 opacity-0 group-hover:opacity-100 transition-opacity flex-shrink-0 ml-2" />
+          <Edit3 size={14} className="text-slate-300 opacity-0 group-hover:opacity-100 transition-all duration-200 flex-shrink-0 ml-2 mt-0.5" />
         </div>
       </div>
     );
   }
 
   return (
-    <div className={cn("group relative", className)}>
+    <div className={cn("group relative p-3 rounded-xl bg-white border border-indigo-100 shadow-sm", className)}>
       <div className="flex items-center justify-between mb-1.5">
-        <p className="font-bold text-slate-400 uppercase text-[10px] tracking-widest">{label}</p>
-        {isSaving && (
-          <div className="flex items-center gap-1 text-[10px] font-bold text-indigo-500">
-            <Loader2 size={10} className="animate-spin" /> SAVING...
-          </div>
-        )}
-        {showSaved && !isSaving && (
-          <div className="flex items-center gap-1 text-[10px] font-bold text-emerald-500">
-            <CheckCircle2 size={10} /> SAVED
-          </div>
-        )}
+        <p className="font-black text-indigo-400 uppercase text-[9px] tracking-[0.15em]">{label}</p>
+        <div className="flex items-center gap-2">
+          {isSaving && (
+            <div className="flex items-center gap-1 text-[9px] font-black text-indigo-500">
+              <Loader2 size={10} className="animate-spin" /> SAVING...
+            </div>
+          )}
+          {showSaved && !isSaving && (
+            <div className="flex items-center gap-1 text-[9px] font-black text-emerald-500">
+              <CheckCircle2 size={10} /> SAVED
+            </div>
+          )}
+        </div>
       </div>
       <div className="relative">
         <InputComponent
@@ -164,9 +169,8 @@ const EditableField = ({
           onBlur={handleBlur}
           placeholder={placeholder}
           className={cn(
-            multiline ? "min-h-[100px] resize-none" : "",
-            "transition-all duration-150 pr-10",
-            isFocused && "ring-2 ring-indigo-500/70 border-indigo-400 shadow-sm"
+            multiline ? "min-h-[120px] resize-none" : "h-9",
+            "transition-all duration-200 border-none focus-visible:ring-0 p-0 text-sm font-medium text-slate-800 placeholder:text-slate-300",
           )}
         />
       </div>

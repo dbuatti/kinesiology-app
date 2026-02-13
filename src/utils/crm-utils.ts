@@ -33,8 +33,8 @@ export const getClientRollups = (appointments: Appointment[]) => {
   };
 };
 
-export const groupAppointmentsByMonth = (appointments: Appointment[]) => {
-  const groups: Record<string, Appointment[]> = {};
+export const groupAppointmentsByMonth = <T extends Appointment>(appointments: T[]) => {
+  const groups: Record<string, T[]> = {};
   
   appointments.forEach(app => {
     const key = format(app.date, "MMMM yyyy");
@@ -44,5 +44,5 @@ export const groupAppointmentsByMonth = (appointments: Appointment[]) => {
   
   return Object.entries(groups).sort((a, b) => {
     return new Date(b[1][0].date).getTime() - new Date(a[1][0].date).getTime();
-  });
+  }) as [string, T[]][];
 };

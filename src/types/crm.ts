@@ -61,6 +61,10 @@ export interface Appointment {
   diaphragm_reset_notes?: string | null;
   // Gait Reflex Integration
   gait_notes?: string | null;
+  // Lymphatic System Assessment
+  lymphatic_suture_side?: string | null;
+  lymphatic_priority_zone?: string | null;
+  lymphatic_notes?: string | null;
 }
 
 export interface Client {

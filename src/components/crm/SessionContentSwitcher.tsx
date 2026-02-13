@@ -20,6 +20,7 @@ import EmotionAssessment from './EmotionAssessment';
 import DiaphragmReset from './DiaphragmReset';
 import PreviousSessionSummary from './PreviousSessionSummary';
 import GaitReflexAssessment from './GaitReflexAssessment';
+import LymphaticAssessment from './LymphaticAssessment';
 
 type ActiveView = 'home' | 'kinesiology' | 'muscles' | 'gait' | 'previous';
 
@@ -82,6 +83,13 @@ const SessionContentSwitcher = ({ appointment, onUpdate, saveField }: SessionCon
               <CoherenceAssessment appointmentId={appointmentId} initialHeartRate={appointment.heart_rate} initialBreathRate={appointment.breath_rate} initialCoherenceScore={appointment.coherence_score} onUpdate={onUpdate} />
               <CogsAssessment appointmentId={appointmentId} initialSagittalNotes={appointment.sagittal_plane_notes} initialFrontalNotes={appointment.frontal_plane_notes} initialTransverseNotes={appointment.transverse_plane_notes} onUpdate={onUpdate} />
               <NeurologicalAssessments appointmentId={appointmentId} initialFakudaNotes={appointment.fakuda_notes} initialRhombergsNotes={appointment.sharpened_rhombergs_notes} initialFrontalLobeNotes={appointment.frontal_lobe_notes} onUpdate={onUpdate} />
+              <LymphaticAssessment
+                appointmentId={appointmentId}
+                initialSutureSide={appointment.lymphatic_suture_side}
+                initialPriorityZone={appointment.lymphatic_priority_zone}
+                initialNotes={appointment.lymphatic_notes}
+                onSaveField={saveField as any}
+              />
             </TabsContent>
 
             <TabsContent value="sympathetic" className="mt-6 space-y-6">

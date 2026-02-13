@@ -57,6 +57,9 @@ const ResourcesPage = () => {
           <TabsTrigger value="kinesiology" className="rounded-xl py-2.5 data-[state=active]:bg-white data-[state=active]:shadow-sm">
             <Activity size={16} className="mr-2" /> Kinesiology
           </TabsTrigger>
+          <TabsTrigger value="lymphatic" className="rounded-xl py-2.5 data-[state=active]:bg-white data-[state=active]:shadow-sm">
+            <Droplets size={16} className="mr-2" /> Lymphatic
+          </TabsTrigger>
         </TabsList>
 
         <TabsContent value="vestibular" className="mt-8 space-y-8">
@@ -334,6 +337,124 @@ const ResourcesPage = () => {
               </CardContent>
             </Card>
           </div>
+        </TabsContent>
+
+        <TabsContent value="lymphatic" className="mt-8 space-y-8">
+          <Card className="border-none shadow-lg rounded-3xl overflow-hidden bg-white">
+            <div className="bg-gradient-to-r from-blue-600 to-cyan-600 p-8 text-white">
+              <div className="flex items-center gap-4 mb-4">
+                <div className="w-14 h-14 bg-white/20 backdrop-blur-md rounded-2xl flex items-center justify-center">
+                  <Droplets size={32} />
+                </div>
+                <div>
+                  <div className="flex gap-2 mb-1">
+                    <Badge className="bg-blue-400/30 text-white border-none">Drainage Protocol</Badge>
+                    <Badge className="bg-white/20 text-white border-none">Counterstrain</Badge>
+                  </div>
+                  <CardTitle className="text-3xl font-black">Lymphatic System Assessment</CardTitle>
+                </div>
+              </div>
+              <p className="text-blue-50 text-lg max-w-2xl leading-relaxed">
+                "Drainage Precedes Supply" — Addressing lymphatic stasis to reduce neural inflammation and systemic toxicity.
+              </p>
+            </div>
+            <CardContent className="p-8">
+              <div className="grid grid-cols-1 lg:grid-cols-3 gap-12">
+                <div className="lg:col-span-2 space-y-10">
+                  <section className="space-y-4">
+                    <h3 className="text-xl font-bold text-slate-900 flex items-center gap-2">
+                      <Info size={20} className="text-blue-600" /> Philosophy & Theory
+                    </h3>
+                    <p className="text-slate-600 leading-relaxed">
+                      The lymphatic system is the body's primary waste removal network. When stagnant, it leads to <strong>Neural Inflammation</strong> and the accumulation of inflammatory cytokines such as <strong>TNF-alpha, IL-6, and IL-1b</strong>.
+                    </p>
+                    <div className="bg-blue-50 border border-blue-100 p-6 rounded-2xl space-y-3">
+                      <h4 className="font-bold text-blue-900">The "Drainage Precedes Supply" Rule</h4>
+                      <p className="text-sm text-blue-800 leading-relaxed">
+                        You cannot bring fresh, oxygenated blood and nutrients into a tissue that is already "clogged" with metabolic waste. Clearing the exit (lymphatics) is the priority before strengthening or nourishing.
+                      </p>
+                    </div>
+                  </section>
+
+                  <section className="space-y-4">
+                    <h3 className="text-xl font-bold text-slate-900 flex items-center gap-2">
+                      <CheckCircle2 size={20} className="text-blue-600" /> Counterstrain Technique
+                    </h3>
+                    <div className="grid gap-4">
+                      {[
+                        { step: 1, title: "Identify Suture Side", text: "Palpate the cranial sutures (usually Lambdoid or Sagittal) to find the side of greatest tenderness or 'stickiness'." },
+                        { step: 2, title: "Test Indicator Muscle", text: "Find a strong indicator muscle (IM) that weakens when the tender suture or priority zone is touched (TL)." },
+                        { step: 3, title: "Position for Comfort", text: "Move the client's body or the specific zone into a position of maximum comfort (shortening the tissue) until tenderness reduces by at least 70%." },
+                        { step: 4, title: "Hold & Breathe", text: "Maintain this position for 45 to 90 seconds. Encourage deep, diaphragmatic breathing to facilitate lymphatic flow." },
+                        { step: 5, title: "Slow Return & Re-test", text: "Slowly return the tissue to neutral and re-test the IM. It should now remain strong under TL." }
+                      ].map((item) => (
+                        <div key={item.step} className="flex gap-4 p-4 bg-slate-50 rounded-2xl border border-slate-100">
+                          <span className="w-8 h-8 bg-blue-600 text-white rounded-full flex items-center justify-center font-bold shrink-0">{item.step}</span>
+                          <div>
+                            <p className="font-bold text-slate-900 mb-1">{item.title}</p>
+                            <p className="text-slate-600 text-sm leading-relaxed">{item.text}</p>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </section>
+
+                  <section className="space-y-4">
+                    <h3 className="text-xl font-bold text-slate-900 flex items-center gap-2">
+                      <Zap size={20} className="text-amber-500" /> Priority Zones
+                    </h3>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div className="p-4 bg-white rounded-2xl border border-slate-100 shadow-sm">
+                        <h4 className="font-bold text-slate-900 mb-2">1. Cervical (Neck)</h4>
+                        <p className="text-xs text-slate-500">Clears the head and brain (Glymphatics). Essential for brain fog and headaches.</p>
+                      </div>
+                      <div className="p-4 bg-white rounded-2xl border border-slate-100 shadow-sm">
+                        <h4 className="font-bold text-slate-900 mb-2">2. Thoracic (Chest)</h4>
+                        <p className="text-xs text-slate-500">The main drainage point for the entire body. Linked to Pec Minor tension.</p>
+                      </div>
+                      <div className="p-4 bg-white rounded-2xl border border-slate-100 shadow-sm">
+                        <h4 className="font-bold text-slate-900 mb-2">3. Cisterna Chyli</h4>
+                        <p className="text-xs text-slate-500">Located behind the navel. The 'well' of the lymphatic system for the lower body.</p>
+                      </div>
+                      <div className="p-4 bg-white rounded-2xl border border-slate-100 shadow-sm">
+                        <h4 className="font-bold text-slate-900 mb-2">4. Inguinal (Groin)</h4>
+                        <p className="text-xs text-slate-500">Clears the legs and pelvic floor. Vital for lower extremity edema.</p>
+                      </div>
+                    </div>
+                  </section>
+                </div>
+
+                <div className="space-y-6">
+                  <Card className="border-2 border-blue-100 bg-blue-50/50 rounded-3xl shadow-none">
+                    <CardHeader>
+                      <CardTitle className="text-lg font-bold text-blue-900">Visual References</CardTitle>
+                      <CardDescription className="text-blue-700">Key anatomical landmarks for drainage:</CardDescription>
+                    </CardHeader>
+                    <CardContent className="space-y-4">
+                      <div className="aspect-video bg-white rounded-2xl border border-blue-100 flex items-center justify-center text-slate-400 text-xs font-bold uppercase tracking-widest text-center p-4">
+                        Cranial Lymphatic Pathways<br/>(Placeholder)
+                      </div>
+                      <div className="aspect-video bg-white rounded-2xl border border-blue-100 flex items-center justify-center text-slate-400 text-xs font-bold uppercase tracking-widest text-center p-4">
+                        Major Body Lymph Nodes<br/>(Placeholder)
+                      </div>
+                      <div className="aspect-video bg-white rounded-2xl border border-blue-100 flex items-center justify-center text-slate-400 text-xs font-bold uppercase tracking-widest text-center p-4">
+                        Popliteal & Inguinal Flow<br/>(Placeholder)
+                      </div>
+                    </CardContent>
+                  </Card>
+
+                  <div className="bg-amber-50 border border-amber-100 p-6 rounded-3xl">
+                    <h4 className="font-bold text-amber-900 flex items-center gap-2 mb-2">
+                      <AlertCircle size={18} /> Clinical Pearl
+                    </h4>
+                    <p className="text-sm text-amber-800 leading-relaxed">
+                      Hypertonic muscles (like the <strong>Pectoralis Minor</strong>) often act as physical "kinks" in the lymphatic hose. Releasing these muscles is often a prerequisite for effective lymphatic drainage.
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
         </TabsContent>
       </Tabs>
     </div>

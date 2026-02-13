@@ -113,18 +113,17 @@ const SelfPracticePage = () => {
   // Calculate Streak
   const calculateStreak = () => {
     if (sessions.length === 0) return 0;
-    let streak = 0;
-    let currentDate = startOfToday();
     
-    const sessionDates = sessions.map(s => startOfToday().getTime() - startOfToday().getTime()); // Placeholder logic
-    // Real logic: sort unique dates and count backwards
     const uniqueDates = Array.from(new Set(sessions.map(s => format(new Date(s.date), 'yyyy-MM-dd'))))
       .map(d => new Date(d))
       .sort((a, b) => b.getTime() - a.getTime());
 
     if (uniqueDates.length === 0) return 0;
     
+    let streak = 0;
     let checkDate = startOfToday();
+    
+    // If the most recent session isn't today or yesterday, streak is 0
     if (differenceInDays(checkDate, uniqueDates[0]) > 1) return 0;
 
     for (let i = 0; i < uniqueDates.length; i++) {

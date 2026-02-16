@@ -7,7 +7,7 @@ import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import { 
   Calendar, Clock, User, Droplets,
-  Copy, Check, History, MoreHorizontal, Star, Play, AlertTriangle
+  Copy, Check, History, MoreHorizontal, Star, Play, AlertTriangle, Trash2
 } from "lucide-react";
 import { format } from "date-fns";
 import { showSuccess } from "@/utils/toast";
@@ -160,7 +160,7 @@ const DemoSessionPage = () => {
                   </div>
                   <h1 className="text-3xl font-black text-slate-900 tracking-tight">Demo Practice Session</h1>
                   <div className="flex flex-wrap items-center gap-4 text-sm font-medium text-slate-500">
-                    <div className="flex items-center gap-1.5"><Calendar size={16} className="text-indigo-400" /> {format(appointment.date, "EEEE, MMM d, yyyy")}</div>
+                    <div className="flex items-center gap-1.5"><Calendar size={16} className="text-indigo-400" /> {format(appointment.date, "EEEE, MMMM d, yyyy")}</div>
                     <div className="flex items-center gap-1.5"><Clock size={16} className="text-indigo-400" /> {format(appointment.date, "h:mm a")}</div>
                     <div className="flex items-center gap-1.5 text-indigo-600 font-bold">
                       <User size={16} /> {appointment.clients.name}

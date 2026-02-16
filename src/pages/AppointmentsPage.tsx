@@ -3,7 +3,21 @@ import { supabase } from "@/integrations/supabase/client";
 import { groupAppointmentsByMonth } from "@/utils/crm-utils";
 import { format, isToday } from "date-fns";
 import { Badge } from "@/components/ui/badge";
-import { Calendar as CalendarIcon, Clock, Loader2, Plus, Trash2, MoreVertical, ExternalLink, FlaskConical, Activity, Move, ChevronDown, Zap } from "lucide-react";
+import { 
+  Calendar as CalendarIcon, 
+  Clock, 
+  Loader2, 
+  Plus, 
+  Trash2, 
+  MoreVertical, 
+  ExternalLink, 
+  FlaskConical, 
+  Activity, 
+  Move, 
+  ChevronDown, 
+  Zap,
+  CheckCircle2
+} from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import {

@@ -6,11 +6,11 @@ import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { 
   ChevronDown, ChevronUp, History, FlaskConical, 
-  Activity, Target, AlertCircle, Calendar 
+  Activity, Target, Calendar 
 } from "lucide-react";
 import { format } from "date-fns";
 import { cn } from "@/lib/utils";
-import { Badge } from "@/components/ui/badge";
+import { Link } from "react-router-dom";
 
 interface PreviousSessionInsightsBarProps {
   clientId: string;
@@ -160,5 +160,4 @@ const PreviousSessionInsightsBar = ({ clientId, currentAppointmentId }: Previous
   );
 };
 
-import { Link } from "react-router-dom";
 export default PreviousSessionInsightsBar;

@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect, useRef } from "react";
-import { Activity, ChevronDown, Info, Heart, Brain, Play, Square, RotateCcw } from "lucide-react";
+import { Activity, ChevronDown, Heart, Brain, RotateCcw } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { showSuccess, showError } from "@/utils/toast";
 import { Badge } from "@/components/ui/badge";
@@ -14,7 +14,8 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Alert, AlertDescription } from "@/components/ui/alert";
+
+const FAILED_TO_RESET_MSG = "Failed to reset coherence data.";
 
 interface CoherenceAssessmentProps {
   appointmentId: string;
@@ -103,7 +104,7 @@ const CoherenceAssessment = ({
       showSuccess("Reset complete.");
       onUpdate();
     } catch (error: any) {
-      showError(failedToReset);
+      showError(FAILED_TO_RESET_MSG);
     } finally {
       setLoading(false);
     }
@@ -202,7 +203,5 @@ const CoherenceAssessment = ({
     </div>
   );
 };
-
-const failedToReset = "Failed to reset coherence data.";
 
 export default CoherenceAssessment;

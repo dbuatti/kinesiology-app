@@ -11,7 +11,8 @@ import {
   Zap, 
   BookOpen, 
   Heart, 
-  TrendingUp 
+  TrendingUp,
+  ArrowRight
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import SearchBar from "./SearchBar";
@@ -292,5 +293,4 @@ const Sidebar = () => {
   );
 };
 
-import { ArrowRight } from "lucide-react";
 export default Sidebar;

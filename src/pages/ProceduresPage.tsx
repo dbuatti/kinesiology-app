@@ -201,12 +201,6 @@ const ProceduresPage = () => {
         enabledProcedures.reduce((sum, p) => sum + p.target_count, 0)) * 100)
     : 0;
 
-  if (loading) return (
-    <div className="flex min-h-screen items-center justify-center">
-      <Loader2 className="animate-spin text-indigo-500" size={48} />
-    </div>
-  );
-
   return (
     <div className="p-4 md:p-8 max-w-full mx-auto space-y-8">
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
@@ -287,13 +281,11 @@ const ProceduresPage = () => {
         </Dialog>
       </div>
 
-      {/* New: Muscle Practice Stats and Overall Progress */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <div className="lg:col-span-2">
           <MusclePracticeStats />
         </div>
         
-        {/* Overall Progress Card */}
         <Card className="border-none shadow-lg rounded-2xl bg-white">
           <CardHeader className="pb-3">
             <CardTitle className="text-xl font-bold flex items-center gap-2 text-emerald-600">
@@ -325,7 +317,6 @@ const ProceduresPage = () => {
           </CardContent>
         </Card>
       </div>
-      {/* End New Section */}
 
       {procedures.length > 0 && (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -334,7 +325,6 @@ const ProceduresPage = () => {
             const progress = Math.min((procedure.current_count / procedure.target_count) * 100, 100);
             const isComplete = procedure.current_count >= procedure.target_count;
             
-            // Determine specific status/score display
             let specificStatus = null;
             let statusColor = "text-slate-500";
 
@@ -394,7 +384,6 @@ const ProceduresPage = () => {
                               <PowerOff size={12} className="mr-1" /> Disabled
                             </Badge>
                           )}
-                          {/* Display Specific Status/Score */}
                           {specificStatus && (
                             <span className={cn("text-xs font-bold", statusColor)}>
                                 {specificStatus}
@@ -471,7 +460,6 @@ const ProceduresPage = () => {
                     </Button>
                   )}
                 </CardContent>
-
               </Card>
             );
           })}

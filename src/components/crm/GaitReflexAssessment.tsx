@@ -2,20 +2,40 @@
 
 import React, { useState, useMemo } from "react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
-import { Footprints, Info, Zap, Eye, Move, CheckCircle2, XCircle, MousePointer2, FileText } from "lucide-react";
+import { Footprints, Zap, Eye, Move, CheckCircle2, XCircle, MousePointer2, FileText } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { Alert, AlertDescription } from "@/components/ui/alert";
 import EditableField from "./EditableField";
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+
+type TestStatus = 'normal' | 'abnormal';
+
+const GAIT_TESTS = {
+  leftForward: [
+    { id: 'lf_rf', label: 'R Arm Flexors', expected: 'Lock' },
+    { id: 'lf_le', label: 'L Arm Extensors', expected: 'Lock' },
+    { id: 'lf_lf', label: 'L Arm Flexors', expected: 'Unlock' },
+    { id: 'lf_re', label: 'R Arm Extensors', expected: 'Unlock' },
+  ],
+  rightForward: [
+    { id: 'rf_lf', label: 'L Arm Flexors', expected: 'Lock' },
+    { id: 'rf_re', label: 'R Arm Extensors', expected: 'Lock' },
+    { id: 'rf_rf', label: 'R Arm Flexors', expected: 'Unlock' },
+    { id: 'rf_le', label: 'L Arm Extensors', expected: 'Unlock' },
+  ]
+};
+
+const CORRECTIONS: Record<string, { fix: string, detail: string }> = {
+  "UP": { fix: "Head DOWN", detail: "Close eyes, chin to chest, nasal breathing for 30s." },
+  "DOWN": { fix: "Head UP/BACK", detail: "Close eyes, tilt head back, nasal breathing for 30s." },
+  "RIGHT": { fix: "Rotate LEFT + Tilt RIGHT", detail: "Rotate head left, then lateral tilt right. Nasal breathing for 30s." },
+  "LEFT": { fix: "Rotate RIGHT + Tilt LEFT", detail: "Rotate head right, then lateral tilt left. Nasal breathing for 30s." },
+};
 
 interface GaitReflexAssessmentProps {
   appointmentId: string;
   initialNotes: string | null | undefined;
   onSaveField: (field: string, value: string | null) => Promise<void>;
 }
-
-type TestStatus = 'normal' | 'abnormal';
 
 const GaitReflexAssessment = ({ 
   appointmentId, 
@@ -24,28 +44,6 @@ const GaitReflexAssessment = ({
 }: GaitReflexAssessmentProps) => {
   const [results, setResults] = useState<Record<string, TestStatus>>({});
   const [eyePriority, setEyePriority] = useState<string | null>(null);
-
-  const GAIT_TESTS = {
-    leftForward: [
-      { id: 'lf_rf', label: 'R Arm Flexors', expected: 'Lock' },
-      { id: 'lf_le', label: 'L Arm Extensors', expected: 'Lock' },
-      { id: 'lf_lf', label: 'L Arm Flexors', expected: 'Unlock' },
-      { id: 'lf_re', label: 'R Arm Extensors', expected: 'Unlock' },
-    ],
-    rightForward: [
-      { id: 'rf_lf', label: 'L Arm Flexors', expected: 'Lock' },
-      { id: 'rf_re', label: 'R Arm Extensors', expected: 'Lock' },
-      { id: 'rf_rf', label: 'R Arm Flexors', expected: 'Unlock' },
-      { id: 'rf_le', label: 'L Arm Extensors', expected: 'Unlock' },
-    ]
-  };
-
-  const CORRECTIONS: Record<string, { fix: string, detail: string }> = {
-    "UP": { fix: "Head DOWN", detail: "Close eyes, chin to chest, nasal breathing for 30s." },
-    "DOWN": { fix: "Head UP/BACK", detail: "Close eyes, tilt head back, nasal breathing for 30s." },
-    "RIGHT": { fix: "Rotate LEFT + Tilt RIGHT", detail: "Rotate head left, then lateral tilt right. Nasal breathing for 30s." },
-    "LEFT": { fix: "Rotate RIGHT + Tilt LEFT", detail: "Rotate head right, then lateral tilt left. Nasal breathing for 30s." },
-  };
 
   const toggleResult = (id: string) => {
     setResults(prev => ({
@@ -139,7 +137,6 @@ const GaitReflexAssessment = ({
         </CardHeader>
 
         <CardContent className="p-6 space-y-8">
-          {/* 1. Testing Patterns */}
           <div className="space-y-4">
             <div className="flex items-center justify-between">
               <h3 className="text-lg font-bold text-slate-900 flex items-center gap-2">
@@ -152,7 +149,6 @@ const GaitReflexAssessment = ({
             </div>
             
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-              {/* Left Foot Forward */}
               <div className="space-y-3">
                 <p className="text-xs font-black text-indigo-600 uppercase tracking-widest px-1">Left Foot Forward</p>
                 <div className="grid grid-cols-2 gap-3">
@@ -162,7 +158,6 @@ const GaitReflexAssessment = ({
                 </div>
               </div>
 
-              {/* Right Foot Forward */}
               <div className="space-y-3">
                 <p className="text-xs font-black text-indigo-600 uppercase tracking-widest px-1">Right Foot Forward</p>
                 <div className="grid grid-cols-2 gap-3">
@@ -174,7 +169,6 @@ const GaitReflexAssessment = ({
             </div>
           </div>
 
-          {/* 2. Eye Priority & Correction */}
           {hasAbnormal && (
             <div className="space-y-4 animate-in fade-in slide-in-from-top-4 duration-500">
               <h3 className="text-lg font-bold text-slate-900 flex items-center gap-2">
@@ -183,7 +177,6 @@ const GaitReflexAssessment = ({
               </h3>
               
               <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                {/* Eye Selectors */}
                 <div className="lg:col-span-1 grid grid-cols-2 gap-2">
                   {Object.keys(CORRECTIONS).map(pos => (
                     <Button
@@ -200,7 +193,6 @@ const GaitReflexAssessment = ({
                   ))}
                 </div>
 
-                {/* Dynamic Fix Display */}
                 <div className="lg:col-span-2">
                   {eyePriority ? (
                     <div className="bg-amber-50 border-2 border-amber-200 rounded-2xl p-5 flex items-start gap-4 h-full">

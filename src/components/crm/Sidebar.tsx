@@ -12,7 +12,8 @@ import {
   BookOpen, 
   Heart, 
   TrendingUp,
-  ArrowRight
+  ArrowRight,
+  FlaskConical
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import SearchBar from "./SearchBar";
@@ -227,6 +228,19 @@ const Sidebar = () => {
             </div>
           </div>
         )}
+
+        <div className="px-2 pt-4">
+          <Link 
+            to="/demo-session"
+            className={cn(
+              "flex items-center gap-3 px-4 py-3 rounded-2xl transition-all duration-300 border border-dashed border-slate-800 text-slate-500 hover:text-amber-400 hover:border-amber-400/50 hover:bg-amber-400/5",
+              location.pathname === "/demo-session" && "bg-amber-400/10 text-amber-400 border-amber-400/50"
+            )}
+          >
+            <FlaskConical size={18} />
+            <span className="font-bold text-[11px] uppercase tracking-widest">Demo Session</span>
+          </Link>
+        </div>
       </div>
       
       <div className="mt-auto pt-6 border-t border-slate-900 space-y-1">

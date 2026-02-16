@@ -17,6 +17,7 @@ import ResourcesPage from "./pages/ResourcesPage";
 import SelfPracticePage from "./pages/SelfPracticePage";
 import ClinicalOversightPage from "./pages/ClinicalOversightPage";
 import DebugAppointmentPage from "./pages/DebugAppointmentPage";
+import DemoSessionPage from "./pages/DemoSessionPage";
 import SettingsPage from "./pages/SettingsPage";
 import Login from "./pages/Login";
 import NotFound from "./pages/NotFound";
@@ -62,6 +63,7 @@ const App = () => (
             <Route path="/resources" element={<ProtectedLayout><ResourcesPage /></ProtectedLayout>} />
             <Route path="/self-practice" element={<ProtectedLayout><SelfPracticePage /></ProtectedLayout>} />
             <Route path="/debug" element={<ProtectedLayout><DebugAppointmentPage /></ProtectedLayout>} />
+            <Route path="/demo-session" element={<ProtectedLayout><DemoSessionPage /></ProtectedLayout>} />
             <Route path="/settings" element={<ProtectedLayout><SettingsPage /></ProtectedLayout>} />
             <Route path="*" element={<NotFound />} />
           </Routes>

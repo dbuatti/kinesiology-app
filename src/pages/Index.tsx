@@ -24,11 +24,6 @@ import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip as ChartTooltip, 
 import { format, subMonths, isToday, subDays, differenceInMinutes } from "date-fns";
 import { Skeleton } from "@/components/ui/skeleton";
 import { cn } from "@/lib/utils";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
 import { Textarea } from "@/components/ui/textarea";
 
 const SCRATCHPAD_KEY = "antigravity_practitioner_scratchpad";
@@ -149,7 +144,7 @@ const Index = () => {
         <div className="space-y-2"><Skeleton className="h-8 w-48" /><Skeleton className="h-4 w-96" /></div>
       </div>
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-        {[1, 2, 3, 4].map((i) => <Skeleton key={i} className="h-32 w-full rounded-2xl" />)}
+        {[1, 2, 3, 4].map((i) => <Skeleton key={i} className="h-32 w-full rounded-3xl" />)}
       </div>
     </div>
   );
@@ -159,10 +154,10 @@ const Index = () => {
   const QuickAction = ({ icon: Icon, label, onClick, color }: any) => (
     <button 
       onClick={onClick}
-      className="flex flex-col items-center justify-center p-6 bg-white rounded-[2.5rem] border border-slate-100 shadow-sm hover:shadow-2xl hover:border-indigo-200 hover:-translate-y-1 transition-all duration-300 group"
+      className="flex flex-col items-center justify-center p-6 bg-white rounded-[2.5rem] border border-slate-100 shadow-sm hover:shadow-2xl hover:border-indigo-200 hover:-translate-y-1 transition-all duration-500 group"
     >
-      <div className={cn("w-16 h-16 rounded-2xl flex items-center justify-center mb-4 transition-transform group-hover:scale-110 shadow-xl", color)}>
-        <Icon size={32} className="text-white" />
+      <div className={cn("w-14 h-14 rounded-2xl flex items-center justify-center mb-4 transition-transform group-hover:scale-110 shadow-xl", color)}>
+        <Icon size={28} className="text-white" />
       </div>
       <span className="text-[10px] font-black text-slate-500 uppercase tracking-[0.2em]">{label}</span>
     </button>
@@ -172,8 +167,8 @@ const Index = () => {
     <div className="p-4 md:p-8 max-w-full mx-auto space-y-10">
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
         <div>
-          <h1 className="text-5xl font-black tracking-tight text-slate-900">Practice Hub</h1>
-          <p className="text-slate-500 font-medium mt-2 text-lg">Welcome back! Here's your clinical overview for today.</p>
+          <h1 className="text-4xl font-black tracking-tight text-slate-900">Practice Hub</h1>
+          <p className="text-slate-500 font-medium mt-1 text-lg">Welcome back! Here's your clinical overview for today.</p>
         </div>
         <div className="flex items-center gap-3 bg-white p-3 rounded-2xl border border-slate-100 shadow-sm">
           <div className="px-4 py-1">
@@ -201,11 +196,10 @@ const Index = () => {
         </div>
       ) : (
         <>
-          {/* Quick Stats Row */}
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
             <Card className="border-none shadow-lg rounded-[2rem] bg-white overflow-hidden group hover:shadow-xl transition-all">
               <CardContent className="p-6 flex items-center gap-4">
-                <div className="w-14 h-14 rounded-2xl bg-indigo-50 text-indigo-600 flex items-center justify-center shrink-0 group-hover:scale-110 transition-transform">
+                <div className="w-14 h-14 rounded-2xl bg-indigo-50 text-indigo-600 flex items-center justify-center shrink-0 group-hover:scale-105 transition-transform">
                   <Users size={28} />
                 </div>
                 <div>
@@ -220,7 +214,7 @@ const Index = () => {
 
             <Card className="border-none shadow-lg rounded-[2rem] bg-white overflow-hidden group hover:shadow-xl transition-all">
               <CardContent className="p-6 flex items-center gap-4">
-                <div className="w-14 h-14 rounded-2xl bg-rose-50 text-rose-600 flex items-center justify-center shrink-0 group-hover:scale-110 transition-transform">
+                <div className="w-14 h-14 rounded-2xl bg-rose-50 text-rose-600 flex items-center justify-center shrink-0 group-hover:scale-105 transition-transform">
                   <Calendar size={28} />
                 </div>
                 <div>
@@ -235,7 +229,7 @@ const Index = () => {
 
             <Card className="border-none shadow-lg rounded-[2rem] bg-white overflow-hidden group hover:shadow-xl transition-all">
               <CardContent className="p-6 flex items-center gap-4">
-                <div className="w-14 h-14 rounded-2xl bg-emerald-50 text-emerald-600 flex items-center justify-center shrink-0 group-hover:scale-110 transition-transform">
+                <div className="w-14 h-14 rounded-2xl bg-emerald-50 text-emerald-600 flex items-center justify-center shrink-0 group-hover:scale-105 transition-transform">
                   <FlaskConical size={28} />
                 </div>
                 <div>
@@ -252,7 +246,7 @@ const Index = () => {
             )}>
               <CardContent className="p-6 flex items-center gap-4">
                 <div className={cn(
-                  "w-14 h-14 rounded-2xl flex items-center justify-center shrink-0 group-hover:scale-110 transition-transform",
+                  "w-14 h-14 rounded-2xl flex items-center justify-center shrink-0 group-hover:scale-105 transition-transform",
                   stats.imperativeAlerts > 0 ? "bg-white/20 backdrop-blur-md" : "bg-amber-50 text-amber-600"
                 )}>
                   <AlertCircle size={28} />
@@ -274,22 +268,22 @@ const Index = () => {
           </div>
 
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-            <Card className="lg:col-span-2 border-none shadow-2xl bg-gradient-to-br from-slate-950 to-slate-900 text-white rounded-[3rem] overflow-hidden relative">
-              <div className="absolute top-0 right-0 p-12 opacity-10 pointer-events-none"><Sparkles size={200} /></div>
+            <Card className="lg:col-span-2 border-none shadow-2xl bg-slate-900 text-white rounded-[3rem] overflow-hidden relative">
+              <div className="absolute top-0 right-0 p-12 opacity-5 pointer-events-none"><Sparkles size={200} /></div>
               <CardHeader className="pb-4 p-10">
                 <div className="flex items-center justify-between">
-                  <CardTitle className="text-4xl font-black flex items-center gap-4">
-                    <Zap size={40} className="text-amber-400 fill-amber-400" /> Daily Briefing
+                  <CardTitle className="text-3xl font-black flex items-center gap-4">
+                    <Zap size={32} className="text-amber-400 fill-amber-400" /> Daily Briefing
                   </CardTitle>
                   {activeSession && (
                     <Link to={`/appointments/${activeSession.id}`}>
-                      <Badge className="bg-rose-500 hover:bg-rose-600 text-white border-none px-6 py-2 animate-pulse cursor-pointer font-black text-xs uppercase tracking-widest rounded-xl">
+                      <Badge className="bg-rose-500 hover:bg-rose-600 text-white border-none px-6 py-2 animate-pulse cursor-pointer font-black text-[10px] uppercase tracking-widest rounded-xl">
                         LIVE SESSION: {activeSession.clients?.name}
                       </Badge>
                     </Link>
                   )}
                 </div>
-                <CardDescription className="text-slate-400 text-xl font-medium mt-2">
+                <CardDescription className="text-slate-400 text-lg font-medium mt-2">
                   {todaySessions.length > 0 
                     ? `You have ${todaySessions.length} session${todaySessions.length === 1 ? '' : 's'} scheduled for today.`
                     : "No sessions scheduled for today. Time for some research or admin!"}
@@ -308,30 +302,30 @@ const Index = () => {
                         )}>
                           <div className="min-w-0">
                             <p className={cn(
-                              "text-[10px] font-black uppercase tracking-[0.3em] mb-2",
+                              "text-[9px] font-black uppercase tracking-[0.3em] mb-2",
                               activeSession?.id === session.id ? "text-rose-500" : "text-slate-400"
                             )}>
                               {activeSession?.id === session.id ? "ONGOING" : format(new Date(session.date), "h:mm a")}
                             </p>
-                            <p className="font-black text-2xl truncate">{session.clients?.name}</p>
+                            <p className="font-black text-xl truncate">{session.clients?.name}</p>
                           </div>
                           <div className={cn(
-                            "w-12 h-12 rounded-2xl flex items-center justify-center transition-all duration-500",
+                            "w-10 h-10 rounded-2xl flex items-center justify-center transition-all duration-500",
                             activeSession?.id === session.id ? "bg-indigo-50 text-indigo-600" : "bg-white/5 text-slate-500 group-hover:text-white"
                           )}>
-                            <ArrowRight size={24} className="group-hover:translate-x-1 transition-transform" />
+                            <ArrowRight size={20} className="group-hover:translate-x-1 transition-transform" />
                           </div>
                         </div>
                       </Link>
                     ))
                   ) : (
                     <div className="sm:col-span-2 flex items-center gap-6 p-8 bg-white/5 rounded-[2.5rem] border border-white/10">
-                      <div className="w-16 h-16 rounded-3xl bg-emerald-500/20 flex items-center justify-center text-emerald-400">
-                        <CheckCircle2 size={32} />
+                      <div className="w-14 h-14 rounded-3xl bg-emerald-500/20 flex items-center justify-center text-emerald-400">
+                        <CheckCircle2 size={28} />
                       </div>
                       <div>
-                        <p className="font-black text-slate-200 text-2xl">Your schedule is clear.</p>
-                        <p className="text-slate-400 font-medium">Enjoy the space for deep work or rest.</p>
+                        <p className="font-black text-slate-200 text-xl">Your schedule is clear.</p>
+                        <p className="text-slate-400 font-medium text-sm">Enjoy the space for deep work or rest.</p>
                       </div>
                     </div>
                   )}
@@ -376,8 +370,8 @@ const Index = () => {
 
               <Card className="border-none shadow-xl rounded-[3rem] bg-amber-50 border border-amber-100 overflow-hidden">
                 <CardHeader className="p-10 pb-4">
-                  <CardTitle className="text-3xl font-black flex items-center gap-4 text-amber-900">
-                    <StickyNote size={32} className="text-amber-600" /> Practitioner Scratchpad
+                  <CardTitle className="text-2xl font-black flex items-center gap-4 text-amber-900">
+                    <StickyNote size={28} className="text-amber-600" /> Practitioner Scratchpad
                   </CardTitle>
                   <CardDescription className="text-amber-700 font-medium text-lg">Quick notes, reminders, or research ideas. Saves automatically.</CardDescription>
                 </CardHeader>
@@ -448,14 +442,14 @@ const Index = () => {
 
       <Dialog open={clientDialogOpen} onOpenChange={setClientDialogOpen}>
         <DialogContent className="sm:max-w-[550px] rounded-[3rem]">
-          <DialogHeader><DialogTitle className="text-3xl font-black">Add New Client</DialogTitle></DialogHeader>
+          <DialogHeader><DialogTitle className="text-2xl font-black">Add New Client</DialogTitle></DialogHeader>
           <ClientForm onSuccess={() => { setClientDialogOpen(false); fetchDashboardData(); }} />
         </DialogContent>
       </Dialog>
 
       <Dialog open={appDialogOpen} onOpenChange={setAppDialogOpen}>
         <DialogContent className="sm:max-w-[500px] rounded-[3rem]">
-          <DialogHeader><DialogTitle className="text-3xl font-black">Schedule New Session</DialogTitle></DialogHeader>
+          <DialogHeader><DialogTitle className="text-2xl font-black">Schedule New Session</DialogTitle></DialogHeader>
           <AppointmentForm onSuccess={() => { setAppDialogOpen(false); fetchDashboardData(); }} />
         </DialogContent>
       </Dialog>

@@ -113,10 +113,10 @@ const EditableField = ({
   return (
     <div 
       className={cn(
-        "group relative p-4 rounded-2xl transition-all duration-300 border-2",
+        "group relative p-5 rounded-[2rem] transition-all duration-300 border-2",
         isFocused 
-          ? "bg-white border-indigo-500 shadow-xl shadow-indigo-100" 
-          : "bg-slate-50/50 border-transparent hover:bg-white hover:border-slate-200 hover:shadow-md",
+          ? "bg-white border-indigo-500 shadow-2xl shadow-indigo-100" 
+          : "bg-slate-50/50 border-transparent hover:bg-white hover:border-slate-200 hover:shadow-lg",
         className
       )}
       onClick={() => {
@@ -126,21 +126,21 @@ const EditableField = ({
         }
       }}
     >
-      <div className="flex items-center justify-between mb-2">
+      <div className="flex items-center justify-between mb-3">
         <p className={cn(
-          "font-black uppercase text-[10px] tracking-[0.2em] transition-colors",
+          "font-black uppercase text-[9px] tracking-[0.2em] transition-colors",
           isFocused ? "text-indigo-500" : "text-slate-400"
         )}>
           {label}
         </p>
         <div className="flex items-center gap-2 h-4">
           {isSaving && (
-            <div className="flex items-center gap-1 text-[10px] font-black text-indigo-500 animate-pulse">
+            <div className="flex items-center gap-1 text-[9px] font-black text-indigo-500 animate-pulse">
               <Loader2 size={10} className="animate-spin" /> SAVING
             </div>
           )}
           {showSaved && !isSaving && (
-            <div className="flex items-center gap-1 text-[10px] font-black text-emerald-500 animate-in fade-in slide-in-from-right-2">
+            <div className="flex items-center gap-1 text-[9px] font-black text-emerald-500 animate-in fade-in slide-in-from-right-2">
               <CheckCircle2 size={10} /> SAVED
             </div>
           )}

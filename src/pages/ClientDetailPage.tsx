@@ -9,7 +9,7 @@ import {
   ArrowLeft, Plus, Mail, Phone, MapPin, Calendar, 
   Star, Loader2, Briefcase, Heart, Baby, ExternalLink,
   Activity, Edit3, Trash2, MoreHorizontal, FlaskConical, TrendingUp, Clock, Brain, ArrowUpRight, ArrowDownRight,
-  LayoutDashboard, History, ArrowRight, Copy, Check
+  LayoutDashboard, History, ArrowRight, Copy, Check, Sparkles
 } from "lucide-react";
 import { format } from "date-fns";
 import { Client, Appointment } from "@/types/crm";
@@ -47,6 +47,7 @@ const ClientDetailPage = () => {
   const [appOpen, setAppOpen] = useState(false);
   const [editOpen, setEditOpen] = useState(false);
   const [copiedField, setCopiedField] = useState<string | null>(null);
+  const [aiCopying, setAiCopying] = useState(false);
   const { addRecentClient } = useRecentClients();
 
   const fetchClientData = async () => {
@@ -94,6 +95,39 @@ const ClientDetailPage = () => {
     setTimeout(() => setCopiedField(null), 2000);
   };
 
+  const handleCopyForAI = () => {
+    if (!client) return;
+    setAiCopying(true);
+
+    const latestApp = appointments[0];
+    const age = client.born ? calculateAge(client.born) : 'N/A';
+    
+    let prompt = `
+I am a Kinesiology practitioner analyzing a client case. Please provide clinical insights based on the following data:
+
+CLIENT PROFILE:
+- Name: ${client.name}
+- Age: ${age}
+- Occupation: ${client.occupation || 'N/A'}
+- History: ${client.journal || 'N/A'}
+
+LATEST SESSION FINDINGS (${latestApp ? format(latestApp.date, "MMM d, yyyy") : 'No sessions'}):
+- Goal: ${latestApp?.goal || 'N/A'}
+- Primary Issue: ${latestApp?.issue || 'N/A'}
+- BOLT Score: ${latestApp?.bolt_score ? `${latestApp.bolt_score}s` : 'N/A'}
+- Coherence: ${latestApp?.coherence_score ? latestApp.coherence_score.toFixed(2) : 'N/A'}
+- Acupoints Used: ${latestApp?.acupoints || 'N/A'}
+- Pathway Notes: ${latestApp?.priority_pattern || 'N/A'}
+- Corrections: ${latestApp?.modes_balances || 'N/A'}
+
+Please analyze the relationship between the respiratory (BOLT), autonomic (Coherence), and emotional findings. Suggest potential priority pathways or neurological drills that might be relevant for the next session.
+`;
+
+    navigator.clipboard.writeText(prompt.trim());
+    showSuccess("Case data formatted and copied for AI analysis!");
+    setTimeout(() => setAiCopying(false), 2000);
+  };
+
   const handleDeleteClient = async () => {
     if (!confirm("Are you sure you want to delete this client? This will remove all their appointments too.")) return;
     
@@ -137,6 +171,15 @@ const ClientDetailPage = () => {
           </Button>
         </Link>
         <div className="flex gap-2">
+            <Button 
+              variant="outline" 
+              size="sm" 
+              className="bg-indigo-50 border-indigo-100 text-indigo-600 hover:bg-indigo-100 rounded-xl font-bold"
+              onClick={handleCopyForAI}
+            >
+              {aiCopying ? <Check size={16} className="mr-2 text-emerald-500" /> : <Sparkles size={16} className="mr-2" />}
+              Copy Case for AI
+            </Button>
             <Dialog open={editOpen} onOpenChange={setEditOpen}>
               <DialogTrigger asChild>
                 <Button variant="outline" size="sm" className="bg-white rounded-xl border-slate-200">

@@ -21,7 +21,8 @@ import {
   Zap,
   XCircle,
   Move,
-  Droplets
+  Droplets,
+  Target
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -29,17 +30,11 @@ import { Input } from "@/components/ui/input";
 import Breadcrumbs from "@/components/crm/Breadcrumbs";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { cn } from "@/lib/utils";
+import AcupointReference from "@/components/crm/AcupointReference";
 
 const ResourcesPage = () => {
-  const [searchParams] = useSearchParams();
-  const [activeTab, setActiveTab] = useState("vestibular");
-
-  useEffect(() => {
-    const tab = searchParams.get("tab");
-    if (tab) {
-      setActiveTab(tab);
-    }
-  }, [searchParams]);
+  const [searchParams, setSearchParams] = useSearchParams();
+  const activeTab = searchParams.get("tab") || "vestibular";
 
   return (
     <div className="p-4 md:p-8 max-w-full mx-auto space-y-8">
@@ -50,15 +45,10 @@ const ResourcesPage = () => {
           <h1 className="text-3xl font-bold tracking-tight text-slate-900">Clinical Resources</h1>
           <p className="text-slate-500 mt-1">Protocols, research, and assessment guides for your practice.</p>
         </div>
-        <div className="relative w-full md:w-72">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
-          <Input placeholder="Search resources..." className="pl-10 bg-white border-slate-200 rounded-xl" />
-        </div>
       </div>
 
-      <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-
-        <TabsList className="grid w-full grid-cols-2 md:grid-cols-4 h-auto p-1 bg-slate-100 rounded-2xl">
+      <Tabs value={activeTab} onValueChange={(v) => setSearchParams({ tab: v })} className="w-full">
+        <TabsList className="grid w-full grid-cols-2 md:grid-cols-5 h-auto p-1 bg-slate-100 rounded-2xl">
           <TabsTrigger value="vestibular" className="rounded-xl py-2.5 data-[state=active]:bg-white data-[state=active]:shadow-sm">
             <Footprints size={16} className="mr-2" /> Vestibular
           </TabsTrigger>
@@ -68,13 +58,17 @@ const ResourcesPage = () => {
           <TabsTrigger value="neurological" className="rounded-xl py-2.5 data-[state=active]:bg-white data-[state=active]:shadow-sm">
             <Brain size={16} className="mr-2" /> Neurological
           </TabsTrigger>
-          <TabsTrigger value="kinesiology" className="rounded-xl py-2.5 data-[state=active]:bg-white data-[state=active]:shadow-sm">
-            <Activity size={16} className="mr-2" /> Kinesiology
+          <TabsTrigger value="acupoints" className="rounded-xl py-2.5 data-[state=active]:bg-white data-[state=active]:shadow-sm">
+            <Target size={16} className="mr-2" /> Acupoints
           </TabsTrigger>
           <TabsTrigger value="lymphatic" className="rounded-xl py-2.5 data-[state=active]:bg-white data-[state=active]:shadow-sm">
             <Droplets size={16} className="mr-2" /> Lymphatic
           </TabsTrigger>
         </TabsList>
+
+        <TabsContent value="acupoints" className="mt-8">
+          <AcupointReference />
+        </TabsContent>
 
         <TabsContent value="vestibular" className="mt-8 space-y-8">
           {/* Fukuda/Unterberger Step Test Resource */}

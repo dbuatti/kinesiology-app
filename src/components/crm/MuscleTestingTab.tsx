@@ -3,13 +3,19 @@
 import React, { useState, useEffect, useCallback } from "react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Loader2, CheckCircle2, AlertTriangle, Info, RotateCcw, Save, Dumbbell } from "lucide-react";
+import { Loader2, CheckCircle2, AlertTriangle, Info, RotateCcw, Save, Dumbbell, Zap, Sparkles } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { supabase } from "@/integrations/supabase/client";
 import { showSuccess, showError } from "@/utils/toast";
 import { MUSCLE_GROUPS, MUSCLE_STATUSES, MUSCLE_TEST_ASSISTANCE, MuscleStatus } from "@/data/muscle-data";
 import { MuscleTestResult } from "@/types/crm";
 import { Alert, AlertDescription } from "@/components/ui/alert";
+
+const PRIMARY_14_MUSCLES = [
+  'Supraspinatus', 'Teres Major', 'Pectoralis Major (Clavicular)', 'Latissimus Dorsi', 
+  'Subscapularis', 'Quadriceps Group', 'Peroneus', 'Psoas', 'Gluteus Medius', 
+  'Teres Minor', 'Anterior Deltoid', 'Pectoralis Major (Sternal)', 'Serratus Anterior', 'Middle Trapezius'
+];
 
 interface MuscleTestingTabProps {
   appointmentId: string;
@@ -99,6 +105,41 @@ const MuscleTestingTab = ({ appointmentId }: MuscleTestingTabProps) => {
     }
   };
 
+  const handleQuickLog14 = async () => {
+    if (!confirm("This will log all 14 Primary Muscles as 'Normotonic'. Existing results for these muscles will be updated. Continue?")) return;
+    
+    setSaving(true);
+    try {
+      const user = (await supabase.auth.getUser()).data.user;
+      if (!user) throw new Error("Not authenticated");
+
+      const inserts = PRIMARY_14_MUSCLES.map(name => ({
+        user_id: user.id,
+        appointment_id: appointmentId,
+        muscle_name: name,
+        status: 'Normotonic' as const
+      }));
+
+      // We use upsert logic here by deleting existing ones first for simplicity in this context
+      await supabase.from('muscle_tests').delete().eq('appointment_id', appointmentId).in('muscle_name', PRIMARY_14_MUSCLES);
+      
+      const { data, error } = await supabase.from('muscle_tests').insert(inserts).select();
+      if (error) throw error;
+
+      const newResults = { ...results };
+      (data || []).forEach(r => {
+        newResults[r.muscle_name] = r as MuscleTestResult;
+      });
+      setResults(newResults);
+      
+      showSuccess("14 Primary Muscles logged as Normotonic!");
+    } catch (err: any) {
+      showError(err.message || "Failed to quick-log muscles.");
+    } finally {
+      setSaving(false);
+    }
+  };
+
   const handleClearMuscle = async (muscleName: string) => {
     const result = results[muscleName];
     if (!result) return;
@@ -142,12 +183,25 @@ const MuscleTestingTab = ({ appointmentId }: MuscleTestingTabProps) => {
 
   return (
     <div className="space-y-10">
-      <Alert className="bg-indigo-50 border-indigo-100 rounded-2xl">
-        <Info className="h-5 w-5 text-indigo-600" />
-        <AlertDescription className="text-sm text-indigo-900 font-medium">
-          <strong>Muscle Testing Protocol:</strong> Log the status of each muscle tested during the session. Changes are saved automatically.
-        </AlertDescription>
-      </Alert>
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 p-6 bg-indigo-600 rounded-[2rem] text-white shadow-xl shadow-indigo-100">
+        <div className="flex items-center gap-4">
+          <div className="w-12 h-12 bg-white/20 backdrop-blur-md rounded-2xl flex items-center justify-center">
+            <Sparkles size={24} />
+          </div>
+          <div>
+            <h3 className="text-xl font-black">14 Muscle Balance</h3>
+            <p className="text-indigo-100 text-xs font-medium">Quick-log the standard Touch for Health primary balance.</p>
+          </div>
+        </div>
+        <Button 
+          onClick={handleQuickLog14}
+          disabled={saving}
+          className="bg-white text-indigo-600 hover:bg-indigo-50 rounded-xl font-black text-xs uppercase tracking-widest h-12 px-8 shadow-lg"
+        >
+          {saving ? <Loader2 className="mr-2 animate-spin" /> : <Zap size={18} className="mr-2 fill-current" />}
+          Log 14 Primary Muscles
+        </Button>
+      </div>
 
       <Card className="border-none shadow-sm rounded-[2rem] bg-white overflow-hidden">
         <CardHeader className="bg-slate-50/50 border-b border-slate-100 p-8">

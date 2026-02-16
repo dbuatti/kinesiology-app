@@ -10,7 +10,7 @@ import { Label } from "@/components/ui/label";
 import { 
   ArrowLeft, Calendar, Clock, 
   Loader2, Trash2, User, Droplets,
-  Copy, Check, History, MoreHorizontal, ChevronDown, Star, Play
+  Copy, Check, History, MoreHorizontal, ChevronDown, Star, Play, Printer
 } from "lucide-react";
 import { format, isToday } from "date-fns";
 import { Appointment } from "@/types/crm";
@@ -131,7 +131,6 @@ const AppointmentDetailPage = () => {
   const saveField = async (field: string, value: string | boolean | null | string[]) => {
     if (!id || !appointment) return;
     
-    // Handle array types (like emotion_secondary_selection) correctly for Supabase
     const normalized = Array.isArray(value) 
       ? value 
       : (typeof value === 'string' ? (value.trim() === '' ? null : value.trim()) : value);
@@ -144,7 +143,6 @@ const AppointmentDetailPage = () => {
 
       if (error) throw error;
       
-      // Optimistic update
       setAppointment(prev => prev ? { ...prev, [field]: normalized } : null);
     } catch (err: any) {
       console.error(`Silent save failed for ${field}:`, err);
@@ -202,6 +200,10 @@ const AppointmentDetailPage = () => {
     } finally {
       setCloning(false);
     }
+  };
+
+  const handlePrint = () => {
+    window.print();
   };
 
   const handleCopySummary = () => {
@@ -279,8 +281,8 @@ KEY ASSESSMENTS:
         onCompleteSession={handleCompleteSession}
       />
       <AppLayout hasFixedHeader={isFixedHeaderActive}>
-        <div className="flex flex-col gap-6">
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div className="flex flex-col gap-6 print:p-0">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 print:hidden">
             <Breadcrumbs 
               items={[
                 { label: "Appointments", path: "/appointments" },
@@ -314,6 +316,15 @@ KEY ASSESSMENTS:
                 variant="outline" 
                 size="sm" 
                 className="bg-white rounded-xl border-indigo-200 text-indigo-600 hover:bg-indigo-50"
+                onClick={handlePrint}
+              >
+                <Printer size={16} className="mr-2" />
+                Print Summary
+              </Button>
+              <Button 
+                variant="outline" 
+                size="sm" 
+                className="bg-white rounded-xl border-indigo-200 text-indigo-600 hover:bg-indigo-50"
                 onClick={handleCopySummary}
               >
                 {copied ? <Check size={16} className="mr-2 text-emerald-500" /> : <Copy size={16} className="mr-2" />}
@@ -332,16 +343,29 @@ KEY ASSESSMENTS:
             </div>
           </div>
 
+          <div className="print:block hidden mb-8">
+            <div className="flex items-center justify-between border-b-2 border-indigo-600 pb-4">
+              <div>
+                <h1 className="text-3xl font-black text-slate-900">Session Summary</h1>
+                <p className="text-slate-500 font-bold">Antigravity Kinesiology Practice</p>
+              </div>
+              <div className="text-right">
+                <p className="text-sm font-black text-indigo-600 uppercase tracking-widest">{format(appointment.date, "MMMM d, yyyy")}</p>
+                <p className="text-xs text-slate-400">ID: {appointment.display_id || appointment.id.slice(0,8)}</p>
+              </div>
+            </div>
+          </div>
+
           <PreviousSessionInsightsBar 
             clientId={appointment.clients.id} 
             currentAppointmentId={appointment.id} 
           />
 
-          <Card className="border-none shadow-sm rounded-2xl bg-white overflow-hidden">
-            <div className="p-6 border-b border-slate-100 bg-slate-50/30">
+          <Card className="border-none shadow-sm rounded-2xl bg-white overflow-hidden print:shadow-none print:border print:border-slate-100">
+            <div className="p-6 border-b border-slate-100 bg-slate-50/30 print:bg-white">
               <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
                 <div className="space-y-3">
-                  <div className="flex flex-wrap items-center gap-3">
+                  <div className="flex flex-wrap items-center gap-3 print:hidden">
                     <Badge variant="secondary" className="font-bold bg-white border-slate-200 text-slate-600">{appointment.display_id || appointment.id.slice(0, 8)}</Badge>
                     <Badge className="bg-indigo-600 text-white border-none">{appointment.tag}</Badge>
                     <Select value={appointment.status} onValueChange={(newStatus) => saveField('status', newStatus)}>
@@ -354,14 +378,14 @@ KEY ASSESSMENTS:
                   <h1 className="text-3xl font-black text-slate-900 tracking-tight">{appointment.name || "Kinesiology Session"}</h1>
                   <div className="flex flex-wrap items-center gap-4 text-sm font-medium text-slate-500">
                     <div className="flex items-center gap-1.5"><Calendar size={16} className="text-indigo-400" /> {format(appointment.date, "EEEE, MMM d, yyyy")}</div>
-                    <div className="flex items-center gap-1.5"><Clock size={16} className="text-indigo-400" /> {format(appointment.date, "h:mm a")}</div>
-                    <Link to={clientLink} className="flex items-center gap-1.5 text-indigo-600 hover:underline font-bold">
+                    <div className="flex items-center gap-1.5 print:hidden"><Clock size={16} className="text-indigo-400" /> {format(appointment.date, "h:mm a")}</div>
+                    <Link to={clientLink} className="flex items-center gap-1.5 text-indigo-600 hover:underline font-bold print:no-underline print:text-slate-900">
                       <User size={16} /> {appointment.clients.name}
                     </Link>
                     {clientBorn && (
-                      <div className="flex items-center gap-3 border-l border-slate-200 pl-4">
-                        <span className="bg-indigo-50 text-indigo-700 px-2 py-0.5 rounded-md text-[10px] font-black uppercase">{calculateAge(clientBorn)} yrs</span>
-                        <span className="flex items-center gap-1 text-amber-600 font-bold text-[10px] uppercase tracking-wider">
+                      <div className="flex items-center gap-3 border-l border-slate-200 pl-4 print:border-none">
+                        <span className="bg-indigo-50 text-indigo-700 px-2 py-0.5 rounded-md text-[10px] font-black uppercase print:bg-white print:text-slate-500">{calculateAge(clientBorn)} yrs</span>
+                        <span className="flex items-center gap-1 text-amber-600 font-bold text-[10px] uppercase tracking-wider print:hidden">
                           <Star size={12} className="fill-amber-500" /> {getStarSign(clientBorn)}
                         </span>
                       </div>
@@ -369,7 +393,7 @@ KEY ASSESSMENTS:
                   </div>
                 </div>
 
-                <div className="flex flex-col items-end gap-3">
+                <div className="flex flex-col items-end gap-3 print:hidden">
                   <div className="flex items-center gap-3 p-3 bg-white rounded-2xl border border-slate-100 shadow-sm">
                     <div className={cn("w-10 h-10 rounded-full flex items-center justify-center transition-colors", appointment.hydrated ? "bg-emerald-100 text-emerald-600" : "bg-rose-100 text-rose-600")}>
                       <Droplets size={20} />
@@ -387,12 +411,65 @@ KEY ASSESSMENTS:
             </div>
 
             <div className="p-6 grid grid-cols-1 md:grid-cols-2 gap-8">
-              <EditableField key={`goal-${appointment.id}`} field="goal" label="Session Goal" value={appointment.goal} placeholder="What is the primary goal for this balance?" onSave={saveField} className="bg-slate-50/50 p-4 rounded-2xl border border-slate-100" />
-              <EditableField key={`issue-${appointment.id}`} field="issue" label="Main Concern / Issue" value={appointment.issue} placeholder="Describe the client's main concern..." onSave={saveField} className="bg-slate-50/50 p-4 rounded-2xl border border-slate-100" />
+              <EditableField key={`goal-${appointment.id}`} field="goal" label="Session Goal" value={appointment.goal} placeholder="What is the primary goal for this balance?" onSave={saveField} className="bg-slate-50/50 p-4 rounded-2xl border border-slate-100 print:bg-white print:border-none print:p-0" />
+              <EditableField key={`issue-${appointment.id}`} field="issue" label="Main Concern / Issue" value={appointment.issue} placeholder="Describe the client's main concern..." onSave={saveField} className="bg-slate-50/50 p-4 rounded-2xl border border-slate-100 print:bg-white print:border-none print:p-0" />
             </div>
           </Card>
 
-          <SessionContentSwitcher appointment={appointment} onUpdate={fetchAppointmentData} saveField={saveField} />
+          <div className="print:hidden">
+            <SessionContentSwitcher appointment={appointment} onUpdate={fetchAppointmentData} saveField={saveField} />
+          </div>
+
+          <div className="hidden print:block space-y-8">
+            <div className="grid grid-cols-2 gap-8">
+              <div className="p-6 bg-slate-50 rounded-2xl border border-slate-100">
+                <h3 className="text-xs font-black text-slate-400 uppercase tracking-widest mb-4">Key Assessments</h3>
+                <div className="space-y-4">
+                  <div className="flex justify-between items-center">
+                    <span className="text-sm font-bold text-slate-600">BOLT Score</span>
+                    <span className="text-lg font-black text-indigo-600">{appointment.bolt_score ? `${appointment.bolt_score}s` : 'N/A'}</span>
+                  </div>
+                  <div className="flex justify-between items-center">
+                    <span className="text-sm font-bold text-slate-600">Coherence Ratio</span>
+                    <span className="text-lg font-black text-rose-600">{appointment.coherence_score ? appointment.coherence_score.toFixed(2) : 'N/A'}</span>
+                  </div>
+                  <div className="flex justify-between items-center">
+                    <span className="text-sm font-bold text-slate-600">Hydration Status</span>
+                    <span className={cn("text-sm font-black", appointment.hydrated ? "text-emerald-600" : "text-rose-600")}>{appointment.hydrated ? 'PASSED' : 'NEEDS ATTENTION'}</span>
+                  </div>
+                </div>
+              </div>
+              <div className="p-6 bg-slate-50 rounded-2xl border border-slate-100">
+                <h3 className="text-xs font-black text-slate-400 uppercase tracking-widest mb-4">Acupoints Used</h3>
+                <p className="text-sm font-bold text-slate-800 leading-relaxed">{appointment.acupoints || 'No specific points recorded.'}</p>
+              </div>
+            </div>
+
+            <div className="space-y-4">
+              <h3 className="text-xs font-black text-slate-400 uppercase tracking-widest">Session Findings & Corrections</h3>
+              <div className="p-6 border-2 border-slate-100 rounded-2xl space-y-6">
+                <div>
+                  <h4 className="text-xs font-black text-indigo-600 uppercase tracking-widest mb-2">Pathway & Patterns</h4>
+                  <p className="text-sm text-slate-700 leading-relaxed">{appointment.priority_pattern || 'No specific pathway notes.'}</p>
+                </div>
+                <div>
+                  <h4 className="text-xs font-black text-indigo-600 uppercase tracking-widest mb-2">Corrections Applied</h4>
+                  <p className="text-sm text-slate-700 leading-relaxed">{appointment.modes_balances || 'No correction notes.'}</p>
+                </div>
+              </div>
+            </div>
+
+            <div className="space-y-4">
+              <h3 className="text-xs font-black text-slate-400 uppercase tracking-widest">Practitioner Notes & Homework</h3>
+              <div className="p-6 bg-indigo-50/30 border-2 border-indigo-100 rounded-2xl">
+                <p className="text-sm text-slate-800 leading-relaxed whitespace-pre-wrap">{appointment.session_north_star || appointment.notes || 'No specific homework recorded.'}</p>
+              </div>
+            </div>
+
+            <div className="pt-12 text-center border-t border-slate-100">
+              <p className="text-[10px] font-black text-slate-400 uppercase tracking-[0.3em]">Thank you for your commitment to your healing journey.</p>
+            </div>
+          </div>
         </div>
       </AppLayout>
     </>

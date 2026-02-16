@@ -3,6 +3,7 @@
 import React, { useState } from "react";
 import { ACUPOINTS, Acupoint } from "@/data/acupoint-data";
 import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Search, MapPin, Zap, Info, Filter } from "lucide-react";
 import { Badge } from "@/components/ui/badge";

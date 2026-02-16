@@ -113,10 +113,10 @@ const EditableField = ({
   return (
     <div 
       className={cn(
-        "group relative p-5 rounded-[2rem] transition-all duration-300 border-2",
+        "group relative p-6 rounded-[2.5rem] transition-all duration-500 border-2",
         isFocused 
-          ? "bg-white border-indigo-500 shadow-2xl shadow-indigo-100" 
-          : "bg-slate-50/50 border-transparent hover:bg-white hover:border-slate-200 hover:shadow-lg",
+          ? "bg-white border-indigo-500 shadow-2xl shadow-indigo-100/50" 
+          : "bg-slate-50/50 border-transparent hover:bg-white hover:border-slate-200 hover:shadow-xl",
         className
       )}
       onClick={() => {
@@ -126,26 +126,26 @@ const EditableField = ({
         }
       }}
     >
-      <div className="flex items-center justify-between mb-3">
+      <div className="flex items-center justify-between mb-4">
         <p className={cn(
-          "font-black uppercase text-[9px] tracking-[0.2em] transition-colors",
-          isFocused ? "text-indigo-500" : "text-slate-400"
+          "font-black uppercase text-[10px] tracking-[0.25em] transition-colors",
+          isFocused ? "text-indigo-600" : "text-slate-400"
         )}>
           {label}
         </p>
         <div className="flex items-center gap-2 h-4">
           {isSaving && (
-            <div className="flex items-center gap-1 text-[9px] font-black text-indigo-500 animate-pulse">
-              <Loader2 size={10} className="animate-spin" /> SAVING
+            <div className="flex items-center gap-1.5 text-[10px] font-black text-indigo-600 animate-pulse">
+              <Loader2 size={12} className="animate-spin" /> SAVING
             </div>
           )}
           {showSaved && !isSaving && (
-            <div className="flex items-center gap-1 text-[9px] font-black text-emerald-500 animate-in fade-in slide-in-from-right-2">
-              <CheckCircle2 size={10} /> SAVED
+            <div className="flex items-center gap-1.5 text-[10px] font-black text-emerald-600 animate-in fade-in slide-in-from-right-2">
+              <CheckCircle2 size={12} /> SAVED
             </div>
           )}
           {!isFocused && !isSaving && !showSaved && (
-            <Edit3 size={12} className="text-slate-300 opacity-0 group-hover:opacity-100 transition-opacity" />
+            <Edit3 size={14} className="text-slate-300 opacity-0 group-hover:opacity-100 transition-opacity" />
           )}
         </div>
       </div>
@@ -160,13 +160,13 @@ const EditableField = ({
             onBlur={handleBlur}
             placeholder={placeholder}
             className={cn(
-              multiline ? "min-h-[120px] resize-none" : "h-9",
-              "transition-all duration-200 border-none focus-visible:ring-0 p-0 text-sm font-bold text-slate-900 placeholder:text-slate-300 bg-transparent",
+              multiline ? "min-h-[140px] resize-none" : "h-10",
+              "transition-all duration-300 border-none focus-visible:ring-0 p-0 text-base font-bold text-slate-900 placeholder:text-slate-300 bg-transparent",
             )}
           />
         ) : (
           <p className={cn(
-            "text-sm leading-relaxed whitespace-pre-wrap min-h-[20px]",
+            "text-base leading-relaxed whitespace-pre-wrap min-h-[24px]",
             isEmpty ? "text-slate-400 italic font-medium" : "text-slate-700 font-bold"
           )}>
             {isEmpty ? placeholder : localValue}

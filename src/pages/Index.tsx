@@ -154,26 +154,29 @@ const Index = () => {
   const QuickAction = ({ icon: Icon, label, onClick, color }: any) => (
     <button 
       onClick={onClick}
-      className="flex flex-col items-center justify-center p-6 bg-white rounded-[2.5rem] border border-slate-100 shadow-sm hover:shadow-2xl hover:border-indigo-200 hover:-translate-y-1 transition-all duration-500 group"
+      className="flex flex-col items-center justify-center p-8 bg-white rounded-[3rem] border border-slate-100 shadow-sm hover:shadow-2xl hover:border-indigo-200 hover:-translate-y-1.5 transition-all duration-500 group"
     >
-      <div className={cn("w-14 h-14 rounded-2xl flex items-center justify-center mb-4 transition-transform group-hover:scale-110 shadow-xl", color)}>
-        <Icon size={28} className="text-white" />
+      <div className={cn("w-16 h-16 rounded-2xl flex items-center justify-center mb-4 transition-transform group-hover:scale-110 shadow-xl", color)}>
+        <Icon size={32} className="text-white" />
       </div>
-      <span className="text-[10px] font-black text-slate-500 uppercase tracking-[0.2em]">{label}</span>
+      <span className="text-[11px] font-black text-slate-500 uppercase tracking-[0.25em]">{label}</span>
     </button>
   );
 
   return (
-    <div className="p-4 md:p-8 max-w-full mx-auto space-y-10">
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
+    <div className="p-4 md:p-10 max-w-full mx-auto space-y-12">
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-8">
         <div>
-          <h1 className="text-4xl font-black tracking-tight text-slate-900">Practice Hub</h1>
-          <p className="text-slate-500 font-medium mt-1 text-lg">Welcome back! Here's your clinical overview for today.</p>
+          <h1 className="text-5xl font-black tracking-tighter text-slate-900">Practice Hub</h1>
+          <p className="text-slate-500 font-medium mt-2 text-xl">Welcome back! Here's your clinical overview for today.</p>
         </div>
-        <div className="flex items-center gap-3 bg-white p-3 rounded-2xl border border-slate-100 shadow-sm">
-          <div className="px-4 py-1">
+        <div className="flex items-center gap-4 bg-white p-4 rounded-3xl border border-slate-100 shadow-sm">
+          <div className="w-12 h-12 bg-indigo-50 rounded-2xl flex items-center justify-center text-indigo-600">
+            <Calendar size={24} />
+          </div>
+          <div className="pr-4">
             <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Today's Date</p>
-            <p className="text-base font-bold text-slate-900">{format(new Date(), "EEEE, MMMM d")}</p>
+            <p className="text-lg font-bold text-slate-900">{format(new Date(), "EEEE, MMMM d")}</p>
           </div>
         </div>
       </div>
@@ -196,15 +199,15 @@ const Index = () => {
         </div>
       ) : (
         <>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-            <Card className="border-none shadow-lg rounded-[2rem] bg-white overflow-hidden group hover:shadow-xl transition-all">
-              <CardContent className="p-6 flex items-center gap-4">
-                <div className="w-14 h-14 rounded-2xl bg-indigo-50 text-indigo-600 flex items-center justify-center shrink-0 group-hover:scale-105 transition-transform">
-                  <Users size={28} />
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
+            <Card className="border-none shadow-lg rounded-[2.5rem] bg-white overflow-hidden group hover:shadow-2xl transition-all duration-500">
+              <CardContent className="p-8 flex items-center gap-6">
+                <div className="w-16 h-16 rounded-2xl bg-indigo-50 text-indigo-600 flex items-center justify-center shrink-0 group-hover:scale-105 transition-transform shadow-sm">
+                  <Users size={32} />
                 </div>
                 <div>
                   <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Total Clients</p>
-                  <p className="text-3xl font-black text-slate-900">{stats.clients}</p>
+                  <p className="text-4xl font-black text-slate-900">{stats.clients}</p>
                   <p className="text-[10px] text-emerald-600 font-black mt-1 flex items-center gap-1">
                     <TrendingUp size={10} /> +{stats.newClients30d} this month
                   </p>
@@ -212,14 +215,14 @@ const Index = () => {
               </CardContent>
             </Card>
 
-            <Card className="border-none shadow-lg rounded-[2rem] bg-white overflow-hidden group hover:shadow-xl transition-all">
-              <CardContent className="p-6 flex items-center gap-4">
-                <div className="w-14 h-14 rounded-2xl bg-rose-50 text-rose-600 flex items-center justify-center shrink-0 group-hover:scale-105 transition-transform">
-                  <Calendar size={28} />
+            <Card className="border-none shadow-lg rounded-[2.5rem] bg-white overflow-hidden group hover:shadow-2xl transition-all duration-500">
+              <CardContent className="p-8 flex items-center gap-6">
+                <div className="w-16 h-16 rounded-2xl bg-rose-50 text-rose-600 flex items-center justify-center shrink-0 group-hover:scale-105 transition-transform shadow-sm">
+                  <Calendar size={32} />
                 </div>
                 <div>
                   <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Total Sessions</p>
-                  <p className="text-3xl font-black text-slate-900">{stats.appointments}</p>
+                  <p className="text-4xl font-black text-slate-900">{stats.appointments}</p>
                   <p className="text-[10px] text-indigo-600 font-black mt-1">
                     {stats.sessions30d} this month
                   </p>
@@ -227,105 +230,105 @@ const Index = () => {
               </CardContent>
             </Card>
 
-            <Card className="border-none shadow-lg rounded-[2rem] bg-white overflow-hidden group hover:shadow-xl transition-all">
-              <CardContent className="p-6 flex items-center gap-4">
-                <div className="w-14 h-14 rounded-2xl bg-emerald-50 text-emerald-600 flex items-center justify-center shrink-0 group-hover:scale-105 transition-transform">
-                  <FlaskConical size={28} />
+            <Card className="border-none shadow-lg rounded-[2.5rem] bg-white overflow-hidden group hover:shadow-2xl transition-all duration-500">
+              <CardContent className="p-8 flex items-center gap-6">
+                <div className="w-16 h-16 rounded-2xl bg-emerald-50 text-emerald-600 flex items-center justify-center shrink-0 group-hover:scale-105 transition-transform shadow-sm">
+                  <FlaskConical size={32} />
                 </div>
                 <div>
                   <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Avg BOLT Score</p>
-                  <p className="text-3xl font-black text-slate-900">{stats.avgBolt}s</p>
+                  <p className="text-4xl font-black text-slate-900">{stats.avgBolt}s</p>
                   <p className="text-[10px] text-slate-400 font-black mt-1">Practice average</p>
                 </div>
               </CardContent>
             </Card>
 
             <Card className={cn(
-              "border-none shadow-lg rounded-[2rem] overflow-hidden group hover:shadow-xl transition-all",
+              "border-none shadow-lg rounded-[2.5rem] overflow-hidden group hover:shadow-2xl transition-all duration-500",
               stats.imperativeAlerts > 0 ? "bg-rose-600 text-white" : "bg-white"
             )}>
-              <CardContent className="p-6 flex items-center gap-4">
+              <CardContent className="p-8 flex items-center gap-6">
                 <div className={cn(
-                  "w-14 h-14 rounded-2xl flex items-center justify-center shrink-0 group-hover:scale-105 transition-transform",
+                  "w-16 h-16 rounded-2xl flex items-center justify-center shrink-0 group-hover:scale-105 transition-transform shadow-xl",
                   stats.imperativeAlerts > 0 ? "bg-white/20 backdrop-blur-md" : "bg-amber-50 text-amber-600"
                 )}>
-                  <AlertCircle size={28} />
+                  <AlertCircle size={32} />
                 </div>
                 <div>
                   <p className={cn("text-[10px] font-black uppercase tracking-widest", stats.imperativeAlerts > 0 ? "text-rose-100" : "text-slate-400")}>Imperative Cases</p>
-                  <p className="text-3xl font-black">{stats.imperativeAlerts}</p>
+                  <p className="text-4xl font-black">{stats.imperativeAlerts}</p>
                   <p className={cn("text-[10px] font-black mt-1", stats.imperativeAlerts > 0 ? "text-rose-100" : "text-slate-400")}>Requires attention</p>
                 </div>
               </CardContent>
             </Card>
           </div>
 
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
             <QuickAction icon={UserPlus} label="New Client" onClick={() => setClientDialogOpen(true)} color="bg-indigo-600" />
             <QuickAction icon={Calendar} label="Book Session" onClick={() => setAppDialogOpen(true)} color="bg-rose-500" />
             <QuickAction icon={Heart} label="Self Practice" onClick={() => window.location.href='/self-practice'} color="bg-rose-500" />
             <QuickAction icon={Target} label="Procedures" onClick={() => window.location.href='/procedures'} color="bg-emerald-500" />
           </div>
 
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-            <Card className="lg:col-span-2 border-none shadow-2xl bg-slate-900 text-white rounded-[3rem] overflow-hidden relative">
-              <div className="absolute top-0 right-0 p-12 opacity-5 pointer-events-none"><Sparkles size={200} /></div>
-              <CardHeader className="pb-4 p-10">
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-10">
+            <Card className="lg:col-span-2 border-none shadow-2xl bg-slate-900 text-white rounded-[3.5rem] overflow-hidden relative">
+              <div className="absolute top-0 right-0 p-12 opacity-5 pointer-events-none"><Sparkles size={250} /></div>
+              <CardHeader className="pb-4 p-12">
                 <div className="flex items-center justify-between">
-                  <CardTitle className="text-3xl font-black flex items-center gap-4">
-                    <Zap size={32} className="text-amber-400 fill-amber-400" /> Daily Briefing
+                  <CardTitle className="text-4xl font-black flex items-center gap-5">
+                    <Zap size={40} className="text-amber-400 fill-amber-400" /> Daily Briefing
                   </CardTitle>
                   {activeSession && (
                     <Link to={`/appointments/${activeSession.id}`}>
-                      <Badge className="bg-rose-500 hover:bg-rose-600 text-white border-none px-6 py-2 animate-pulse cursor-pointer font-black text-[10px] uppercase tracking-widest rounded-xl">
+                      <Badge className="bg-rose-500 hover:bg-rose-600 text-white border-none px-8 py-3 animate-pulse cursor-pointer font-black text-[11px] uppercase tracking-[0.2em] rounded-2xl shadow-xl shadow-rose-500/20">
                         LIVE SESSION: {activeSession.clients?.name}
                       </Badge>
                     </Link>
                   )}
                 </div>
-                <CardDescription className="text-slate-400 text-lg font-medium mt-2">
+                <CardDescription className="text-slate-400 text-xl font-medium mt-4">
                   {todaySessions.length > 0 
                     ? `You have ${todaySessions.length} session${todaySessions.length === 1 ? '' : 's'} scheduled for today.`
                     : "No sessions scheduled for today. Time for some research or admin!"}
                 </CardDescription>
               </CardHeader>
-              <CardContent className="p-10 pt-0">
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+              <CardContent className="p-12 pt-0">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-8">
                   {todaySessions.length > 0 ? (
                     todaySessions.map(session => (
                       <Link key={session.id} to={`/appointments/${session.id}`}>
                         <div className={cn(
-                          "p-6 rounded-[2.5rem] border transition-all duration-500 flex items-center justify-between group",
+                          "p-8 rounded-[3rem] border transition-all duration-500 flex items-center justify-between group",
                           activeSession?.id === session.id 
                             ? "bg-white text-slate-950 border-white shadow-2xl scale-[1.02]" 
                             : "bg-white/5 hover:bg-white/10 border-white/10 text-white"
                         )}>
                           <div className="min-w-0">
                             <p className={cn(
-                              "text-[9px] font-black uppercase tracking-[0.3em] mb-2",
-                              activeSession?.id === session.id ? "text-rose-500" : "text-slate-400"
+                              "text-[10px] font-black uppercase tracking-[0.35em] mb-3",
+                              activeSession?.id === session.id ? "text-rose-500" : "text-slate-500"
                             )}>
                               {activeSession?.id === session.id ? "ONGOING" : format(new Date(session.date), "h:mm a")}
                             </p>
-                            <p className="font-black text-xl truncate">{session.clients?.name}</p>
+                            <p className="font-black text-2xl truncate">{session.clients?.name}</p>
                           </div>
                           <div className={cn(
-                            "w-10 h-10 rounded-2xl flex items-center justify-center transition-all duration-500",
+                            "w-12 h-12 rounded-2xl flex items-center justify-center transition-all duration-500 shadow-sm",
                             activeSession?.id === session.id ? "bg-indigo-50 text-indigo-600" : "bg-white/5 text-slate-500 group-hover:text-white"
                           )}>
-                            <ArrowRight size={20} className="group-hover:translate-x-1 transition-transform" />
+                            <ArrowRight size={24} className="group-hover:translate-x-1.5 transition-transform" />
                           </div>
                         </div>
                       </Link>
                     ))
                   ) : (
-                    <div className="sm:col-span-2 flex items-center gap-6 p-8 bg-white/5 rounded-[2.5rem] border border-white/10">
-                      <div className="w-14 h-14 rounded-3xl bg-emerald-500/20 flex items-center justify-center text-emerald-400">
-                        <CheckCircle2 size={28} />
+                    <div className="sm:col-span-2 flex items-center gap-8 p-10 bg-white/5 rounded-[3rem] border border-white/10">
+                      <div className="w-20 h-20 rounded-[2rem] bg-emerald-500/20 flex items-center justify-center text-emerald-400 shadow-inner">
+                        <CheckCircle2 size={40} />
                       </div>
                       <div>
-                        <p className="font-black text-slate-200 text-xl">Your schedule is clear.</p>
-                        <p className="text-slate-400 font-medium text-sm">Enjoy the space for deep work or rest.</p>
+                        <p className="font-black text-slate-200 text-2xl">Your schedule is clear.</p>
+                        <p className="text-slate-400 font-medium text-lg mt-1">Enjoy the space for deep work or rest.</p>
                       </div>
                     </div>
                   )}
@@ -333,104 +336,104 @@ const Index = () => {
               </CardContent>
             </Card>
 
-            <div className="space-y-8">
+            <div className="space-y-10">
               <UpcomingAppointments />
               <RecentActivity />
             </div>
           </div>
 
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-            <div className="lg:col-span-2 space-y-8">
-              <Card className="border-none shadow-xl rounded-[3rem] overflow-hidden bg-white">
-                <CardHeader className="p-10 pb-0">
-                  <CardTitle className="text-2xl font-black">Session Activity</CardTitle>
-                  <CardDescription className="font-medium text-lg">Volume of appointments over the last 6 months</CardDescription>
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-10">
+            <div className="lg:col-span-2 space-y-10">
+              <Card className="border-none shadow-xl rounded-[3.5rem] overflow-hidden bg-white">
+                <CardHeader className="p-12 pb-0">
+                  <CardTitle className="text-3xl font-black tracking-tight">Session Activity</CardTitle>
+                  <CardDescription className="font-medium text-xl mt-2">Volume of appointments over the last 6 months</CardDescription>
                 </CardHeader>
-                <CardContent className="h-[350px] p-10 pt-6">
+                <CardContent className="h-[400px] p-12 pt-8">
                   <ResponsiveContainer width="100%" height="100%">
                     <AreaChart data={chartData}>
                       <defs>
                         <linearGradient id="colorSessions" x1="0" y1="0" x2="0" y2="1">
-                          <stop offset="5%" stopColor="#4f46e5" stopOpacity={0.1}/>
+                          <stop offset="5%" stopColor="#4f46e5" stopOpacity={0.15}/>
                           <stop offset="95%" stopColor="#4f46e5" stopOpacity={0}/>
                         </linearGradient>
                       </defs>
                       <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
-                      <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{fontSize: 12, fill: '#94a3b8', fontWeight: 700}} />
-                      <YAxis axisLine={false} tickLine={false} tick={{fontSize: 12, fill: '#94a3b8', fontWeight: 700}} />
+                      <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{fontSize: 12, fill: '#94a3b8', fontWeight: 900}} />
+                      <YAxis axisLine={false} tickLine={false} tick={{fontSize: 12, fill: '#94a3b8', fontWeight: 900}} />
                       <ChartTooltip 
-                        contentStyle={{borderRadius: '24px', border: 'none', boxShadow: '0 25px 50px -12px rgb(0 0 0 / 0.25)', padding: '16px'}}
-                        labelStyle={{fontWeight: 900, color: '#1e293b', marginBottom: '8px', fontSize: '14px'}}
+                        contentStyle={{borderRadius: '24px', border: 'none', boxShadow: '0 25px 50px -12px rgb(0 0 0 / 0.25)', padding: '20px'}}
+                        labelStyle={{fontWeight: 900, color: '#1e293b', marginBottom: '10px', fontSize: '16px'}}
                       />
-                      <Area type="monotone" dataKey="sessions" stroke="#4f46e5" strokeWidth={5} fillOpacity={1} fill="url(#colorSessions)" />
+                      <Area type="monotone" dataKey="sessions" stroke="#4f46e5" strokeWidth={6} fillOpacity={1} fill="url(#colorSessions)" />
                     </AreaChart>
                   </ResponsiveContainer>
                 </CardContent>
               </Card>
 
-              <Card className="border-none shadow-xl rounded-[3rem] bg-amber-50 border border-amber-100 overflow-hidden">
-                <CardHeader className="p-10 pb-4">
-                  <CardTitle className="text-2xl font-black flex items-center gap-4 text-amber-900">
-                    <StickyNote size={28} className="text-amber-600" /> Practitioner Scratchpad
+              <Card className="border-none shadow-xl rounded-[3.5rem] bg-amber-50 border border-amber-100 overflow-hidden">
+                <CardHeader className="p-12 pb-6">
+                  <CardTitle className="text-3xl font-black flex items-center gap-5 text-amber-900">
+                    <StickyNote size={32} className="text-amber-600" /> Practitioner Scratchpad
                   </CardTitle>
-                  <CardDescription className="text-amber-700 font-medium text-lg">Quick notes, reminders, or research ideas. Saves automatically.</CardDescription>
+                  <CardDescription className="text-amber-700 font-medium text-xl">Quick notes, reminders, or research ideas. Saves automatically.</CardDescription>
                 </CardHeader>
-                <CardContent className="p-10 pt-0">
+                <CardContent className="p-12 pt-0">
                   <Textarea 
                     value={scratchpad}
                     onChange={(e) => handleScratchpadChange(e.target.value)}
                     placeholder="Type something here..."
-                    className="min-h-[220px] bg-white/60 border-amber-200 focus:ring-amber-500 focus:border-amber-500 resize-none text-amber-900 placeholder:text-amber-300 rounded-[2.5rem] p-8 text-xl font-medium leading-relaxed shadow-inner"
+                    className="min-h-[250px] bg-white/70 border-amber-200 focus:ring-amber-500 focus:border-amber-500 resize-none text-amber-900 placeholder:text-amber-300 rounded-[3rem] p-10 text-2xl font-medium leading-relaxed shadow-inner"
                   />
-                  <div className="flex items-center justify-end gap-2 mt-6 text-[10px] font-black text-amber-600 uppercase tracking-[0.3em]">
-                    <CheckCircle2 size={14} /> Auto-saved to browser
+                  <div className="flex items-center justify-end gap-3 mt-8 text-[11px] font-black text-amber-600 uppercase tracking-[0.35em]">
+                    <CheckCircle2 size={16} /> Auto-saved to browser
                   </div>
                 </CardContent>
               </Card>
             </div>
 
-            <div className="space-y-8">
-              <Card className="border-none shadow-xl rounded-[3rem] bg-indigo-900 text-white overflow-hidden relative">
-                <div className="absolute top-0 right-0 p-10 opacity-10 pointer-events-none"><Wind size={120} /></div>
-                <CardHeader className="p-8">
-                  <CardTitle className="text-2xl font-black flex items-center gap-3">
-                    <Wind size={24} className="text-teal-400" /> Clinical Focus
+            <div className="space-y-10">
+              <Card className="border-none shadow-xl rounded-[3.5rem] bg-indigo-900 text-white overflow-hidden relative">
+                <div className="absolute top-0 right-0 p-12 opacity-10 pointer-events-none"><Wind size={150} /></div>
+                <CardHeader className="p-10">
+                  <CardTitle className="text-3xl font-black flex items-center gap-4">
+                    <Wind size={32} className="text-teal-400" /> Clinical Focus
                   </CardTitle>
                 </CardHeader>
-                <CardContent className="p-8 pt-0 space-y-6">
-                  <div className="p-5 bg-white/10 rounded-2xl border border-white/10">
-                    <p className="text-[10px] font-black text-indigo-300 uppercase tracking-widest mb-2">Practice Goal</p>
-                    <p className="text-lg font-bold leading-snug">Improve practice-wide BOLT scores by 15% this quarter.</p>
+                <CardContent className="p-10 pt-0 space-y-8">
+                  <div className="p-6 bg-white/10 rounded-[2rem] border border-white/10 shadow-inner">
+                    <p className="text-[11px] font-black text-indigo-300 uppercase tracking-widest mb-3">Practice Goal</p>
+                    <p className="text-xl font-bold leading-snug">Improve practice-wide BOLT scores by 15% this quarter.</p>
                   </div>
-                  <div className="space-y-4">
-                    <div className="flex items-center justify-between text-sm font-bold">
-                      <span className="text-indigo-200">Quarterly Progress</span>
-                      <span>68%</span>
+                  <div className="space-y-5">
+                    <div className="flex items-center justify-between text-sm font-black uppercase tracking-widest">
+                      <span className="text-indigo-300">Quarterly Progress</span>
+                      <span className="text-teal-400">68%</span>
                     </div>
-                    <div className="h-2 bg-white/10 rounded-full overflow-hidden">
-                      <div className="h-full bg-teal-400 rounded-full" style={{ width: '68%' }} />
+                    <div className="h-3 bg-white/10 rounded-full overflow-hidden shadow-inner">
+                      <div className="h-full bg-teal-400 rounded-full shadow-lg" style={{ width: '68%' }} />
                     </div>
                   </div>
-                  <Button variant="outline" className="w-full bg-transparent border-white/20 text-white hover:bg-white/10 rounded-xl font-black text-[10px] uppercase tracking-widest h-12" asChild>
+                  <Button variant="outline" className="w-full bg-transparent border-white/20 text-white hover:bg-white/10 rounded-2xl font-black text-[11px] uppercase tracking-[0.2em] h-14 shadow-lg" asChild>
                     <Link to="/oversight">View Clinical Oversight</Link>
                   </Button>
                 </CardContent>
               </Card>
 
-              <Card className="border-none shadow-xl rounded-[3rem] bg-white overflow-hidden">
-                <CardHeader className="p-8">
-                  <CardTitle className="text-2xl font-black flex items-center gap-3 text-slate-900">
-                    <Brain size={24} className="text-purple-600" /> Protocol Mastery
+              <Card className="border-none shadow-xl rounded-[3.5rem] bg-white overflow-hidden">
+                <CardHeader className="p-10">
+                  <CardTitle className="text-3xl font-black flex items-center gap-4 text-slate-900">
+                    <Brain size={32} className="text-purple-600" /> Protocol Mastery
                   </CardTitle>
                 </CardHeader>
-                <CardContent className="p-8 pt-0 space-y-4">
-                  <p className="text-sm text-slate-500 font-medium leading-relaxed">Keep your skills sharp by practicing protocols in the Self-Monitoring Zone.</p>
-                  <div className="grid grid-cols-1 gap-3">
-                    <Button variant="outline" className="justify-start h-12 rounded-xl border-slate-100 hover:bg-slate-50 font-bold text-slate-700" asChild>
-                      <Link to="/self-practice"><FlaskConical size={16} className="mr-3 text-indigo-500" /> Practice BOLT Test</Link>
+                <CardContent className="p-10 pt-0 space-y-6">
+                  <p className="text-lg text-slate-500 font-medium leading-relaxed">Keep your skills sharp by practicing protocols in the Self-Monitoring Zone.</p>
+                  <div className="grid grid-cols-1 gap-4">
+                    <Button variant="outline" className="justify-start h-14 rounded-2xl border-slate-100 hover:bg-slate-50 font-black text-[11px] uppercase tracking-widest text-slate-700 shadow-sm" asChild>
+                      <Link to="/self-practice"><FlaskConical size={18} className="mr-4 text-indigo-500" /> Practice BOLT Test</Link>
                     </Button>
-                    <Button variant="outline" className="justify-start h-12 rounded-xl border-slate-100 hover:bg-slate-50 font-bold text-slate-700" asChild>
-                      <Link to="/self-practice"><Activity size={16} className="mr-3 text-rose-500" /> Practice Coherence</Link>
+                    <Button variant="outline" className="justify-start h-14 rounded-2xl border-slate-100 hover:bg-slate-50 font-black text-[11px] uppercase tracking-widest text-slate-700 shadow-sm" asChild>
+                      <Link to="/self-practice"><Activity size={18} className="mr-4 text-rose-500" /> Practice Coherence</Link>
                     </Button>
                   </div>
                 </CardContent>
@@ -441,15 +444,15 @@ const Index = () => {
       )}
 
       <Dialog open={clientDialogOpen} onOpenChange={setClientDialogOpen}>
-        <DialogContent className="sm:max-w-[550px] rounded-[3rem]">
-          <DialogHeader><DialogTitle className="text-2xl font-black">Add New Client</DialogTitle></DialogHeader>
+        <DialogContent className="sm:max-w-[600px] rounded-[3.5rem] p-10">
+          <DialogHeader className="mb-6"><DialogTitle className="text-3xl font-black tracking-tight">Add New Client</DialogTitle></DialogHeader>
           <ClientForm onSuccess={() => { setClientDialogOpen(false); fetchDashboardData(); }} />
         </DialogContent>
       </Dialog>
 
       <Dialog open={appDialogOpen} onOpenChange={setAppDialogOpen}>
-        <DialogContent className="sm:max-w-[500px] rounded-[3rem]">
-          <DialogHeader><DialogTitle className="text-2xl font-black">Schedule New Session</DialogTitle></DialogHeader>
+        <DialogContent className="sm:max-w-[550px] rounded-[3.5rem] p-10">
+          <DialogHeader className="mb-6"><DialogTitle className="text-3xl font-black tracking-tight">Schedule New Session</DialogTitle></DialogHeader>
           <AppointmentForm onSuccess={() => { setAppDialogOpen(false); fetchDashboardData(); }} />
         </DialogContent>
       </Dialog>

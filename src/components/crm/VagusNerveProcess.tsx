@@ -115,8 +115,10 @@ const VagusNerveProcess = ({ appointmentId, initialNotes, onSaveField, onUpdate 
     const partner = VAGUS_ASSOCIATIONS.find(a => a.spinalSegment === current.reciprocatingSegment);
     return {
       currentMuscle: current.muscle,
+      currentOrgan: current.organ,
       partnerSegment: current.reciprocatingSegment,
-      partnerMuscle: partner?.muscle || "Unknown"
+      partnerMuscle: partner?.muscle || "Unknown",
+      partnerOrgan: partner?.organ || "Unknown"
     };
   }, [selectedAssociation]);
 
@@ -153,7 +155,7 @@ const VagusNerveProcess = ({ appointmentId, initialNotes, onSaveField, onUpdate 
     } else {
       const assoc = VAGUS_ASSOCIATIONS.find(a => a.spinalSegment === selectedAssociation);
       const reflexLabel = reflexPoint === 'Auricular' ? `Auricular (${auricularSide})` : 'Occiput (Both)';
-      summary = `VAGUS SCREEN & RESET:\n- Reflex Point: ${reflexLabel}\n- Dysfunctional Function: ${selectedFunction}\n- Organ Pulse: ${pulseSide} Hand (${pulseDepth})\n- Selected Organ: ${selectedOrgan}\n- Associated Spinal: ${selectedAssociation}\n- Muscle: ${assoc?.muscle}\n- Lovett-Brother: ${assoc?.reciprocatingSegment} (${partnerInfo?.partnerMuscle})\n- Correction: ${breathingPattern} for ${30 - correctionTime}s\n- Status: ${isCleared ? 'Cleared/Balanced' : 'In Progress'}`;
+      summary = `VAGUS SCREEN & RESET:\n- Reflex Point: ${reflexLabel}\n- Dysfunctional Function: ${selectedFunction}\n- Organ Pulse: ${pulseSide} Hand (${pulseDepth})\n- Selected Organ: ${selectedOrgan}\n- Associated Spinal: ${selectedAssociation} (${partnerInfo?.currentOrgan})\n- Muscle: ${assoc?.muscle}\n- Lovett-Brother: ${assoc?.reciprocatingSegment} (${partnerInfo?.partnerOrgan}) - ${partnerInfo?.partnerMuscle}\n- Correction: ${breathingPattern} for ${30 - correctionTime}s\n- Status: ${isCleared ? 'Cleared/Balanced' : 'In Progress'}`;
     }
     
     const currentNotes = initialNotes ? `${initialNotes}\n\n${summary}` : summary;
@@ -344,14 +346,16 @@ const VagusNerveProcess = ({ appointmentId, initialNotes, onSaveField, onUpdate 
                       <p className="text-lg font-black text-indigo-900">
                         {partnerInfo.currentMuscle}
                       </p>
-                      <p className="text-[10px] font-bold text-indigo-400 mt-1">Segment: {selectedAssociation}</p>
+                      <p className="text-[10px] font-bold text-indigo-600 mt-1">Organ: {partnerInfo.currentOrgan}</p>
+                      <p className="text-[10px] font-bold text-indigo-400">Segment: {selectedAssociation}</p>
                     </div>
                     <div className="text-right">
                       <p className="text-[10px] font-black text-rose-400 uppercase tracking-widest mb-1">Lovett-Brother Partner</p>
                       <p className="text-lg font-black text-rose-900">
                         {partnerInfo.partnerMuscle}
                       </p>
-                      <p className="text-[10px] font-bold text-rose-400 mt-1">Segment: {partnerInfo.partnerSegment}</p>
+                      <p className="text-[10px] font-bold text-rose-600 mt-1">Organ: {partnerInfo.partnerOrgan}</p>
+                      <p className="text-[10px] font-bold text-rose-400">Segment: {partnerInfo.partnerSegment}</p>
                     </div>
                   </div>
                 </div>

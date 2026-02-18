@@ -22,7 +22,8 @@ import {
   XCircle,
   Move,
   Droplets,
-  Target
+  Target,
+  Heart
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -503,25 +504,26 @@ const ResourcesPage = () => {
                   <h3 className="text-2xl font-black text-slate-900 flex items-center gap-3">
                     <Move size={24} className="text-indigo-500" /> Spinal Reciprocal Segments
                   </h3>
-                <div className="overflow-hidden rounded-3xl border border-slate-200 shadow-sm">
-                  <table className="w-full text-left text-sm">
-                    <thead className="bg-slate-50 border-b border-slate-200">
-                      <tr>
-                        <th className="px-6 py-4 font-black text-slate-400 uppercase tracking-widest text-[10px]">Spinal Segment</th>
-                        <th className="px-6 py-4 font-black text-slate-400 uppercase tracking-widest text-[10px]">Muscle (Gland/Organ)</th>
-                        <th className="px-6 py-4 font-black text-slate-400 uppercase tracking-widest text-[10px]">Reciprocating Segment</th>
-                      </tr>
-                    </thead>
-                    <tbody className="divide-y divide-slate-100 bg-white">
-                      {VAGUS_ASSOCIATIONS.map((a) => (
-                        <tr key={a.spinalSegment} className="hover:bg-slate-50 transition-colors">
-                          <td className="px-6 py-3 font-bold text-indigo-600">{a.spinalSegment}</td>
-                          <td className="px-6 py-3 font-medium text-slate-700">{a.muscle} <span className="text-slate-400">({a.organ})</span></td>
-                          <td className="px-6 py-3 font-bold text-rose-500">{a.reciprocatingSegment}</td>
+                  <div className="overflow-hidden rounded-3xl border border-slate-200 shadow-sm">
+                    <table className="w-full text-left text-sm">
+                      <thead className="bg-slate-50 border-b border-slate-200">
+                        <tr>
+                          <th className="px-6 py-4 font-black text-slate-400 uppercase tracking-widest text-[10px]">Spinal Segment</th>
+                          <th className="px-6 py-4 font-black text-slate-400 uppercase tracking-widest text-[10px]">Muscle (Gland/Organ)</th>
+                          <th className="px-6 py-4 font-black text-slate-400 uppercase tracking-widest text-[10px]">Reciprocating Segment</th>
                         </tr>
-                      ))}
-                    </tbody>
-                  </table>
+                      </thead>
+                      <tbody className="divide-y divide-slate-100 bg-white">
+                        {VAGUS_ASSOCIATIONS.map((a) => (
+                          <tr key={a.spinalSegment} className="hover:bg-slate-50 transition-colors">
+                            <td className="px-6 py-3 font-bold text-indigo-600">{a.spinalSegment}</td>
+                            <td className="px-6 py-3 font-medium text-slate-700">{a.muscle} <span className="text-slate-400">({a.organ})</span></td>
+                            <td className="px-6 py-3 font-bold text-rose-500">{a.reciprocatingSegment}</td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
                 </div>
               </div>
             </CardContent>

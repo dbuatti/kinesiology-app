@@ -469,8 +469,40 @@ const ResourcesPage = () => {
                 </div>
               </div>
 
-              <div className="mt-12 space-y-6">
-                <h3 className="text-2xl font-black text-slate-900">Spinal Reciprocal Segments</h3>
+              <div className="mt-12 grid grid-cols-1 lg:grid-cols-2 gap-12">
+                <div className="space-y-6">
+                  <h3 className="text-2xl font-black text-slate-900 flex items-center gap-3">
+                    <Heart size={24} className="text-rose-500" /> Organ Pulse Points
+                  </h3>
+                  <div className="overflow-hidden rounded-3xl border border-slate-200 shadow-sm">
+                    <table className="w-full text-left text-sm">
+                      <thead className="bg-slate-50 border-b border-slate-200">
+                        <tr>
+                          <th className="px-6 py-4 font-black text-slate-400 uppercase tracking-widest text-[10px]">Hand / Depth</th>
+                          <th className="px-6 py-4 font-black text-slate-400 uppercase tracking-widest text-[10px]">Organ (Element)</th>
+                        </tr>
+                      </thead>
+                      <tbody className="divide-y divide-slate-100 bg-white">
+                        {[
+                          { pos: "Right Superficial", organ: "Adrenals, Thyroid, Stomach, Large Intestine" },
+                          { pos: "Right Deep", organ: "Sex Organs, Kidney, Spleen, Lung" },
+                          { pos: "Left Superficial", organ: "Bladder, Gall Bladder, Small Intestine" },
+                          { pos: "Left Deep", organ: "Kidney, Liver, Heart" },
+                        ].map((p) => (
+                          <tr key={p.pos} className="hover:bg-slate-50 transition-colors">
+                            <td className="px-6 py-3 font-bold text-slate-900">{p.pos}</td>
+                            <td className="px-6 py-3 font-medium text-slate-600">{p.organ}</td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+
+                <div className="space-y-6">
+                  <h3 className="text-2xl font-black text-slate-900 flex items-center gap-3">
+                    <Move size={24} className="text-indigo-500" /> Spinal Reciprocal Segments
+                  </h3>
                 <div className="overflow-hidden rounded-3xl border border-slate-200 shadow-sm">
                   <table className="w-full text-left text-sm">
                     <thead className="bg-slate-50 border-b border-slate-200">

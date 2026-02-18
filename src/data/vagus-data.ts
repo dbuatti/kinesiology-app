@@ -39,3 +39,32 @@ export const VAGAL_FUNCTIONS = [
   "Clean Mouth with Tongue",
   "Smile with Teeth and Swallow"
 ];
+
+export const HAND_REFLEXOLOGY = {
+  Right: {
+    Light: [
+      { name: "Adrenals/Thyroid", element: "Fire", color: "bg-pink-400" },
+      { name: "Stomach", element: "Earth", color: "bg-yellow-400" },
+      { name: "Large Intestine", element: "Metal", color: "bg-slate-200" },
+      { name: "GV / CV", element: "Central", color: "bg-purple-400" },
+    ],
+    Deep: [
+      { name: "Sex Organs", element: "Fire", color: "bg-pink-400" },
+      { name: "Spleen", element: "Earth", color: "bg-yellow-400" },
+      { name: "Lung", element: "Metal", color: "bg-slate-200" },
+    ]
+  },
+  Left: {
+    Light: [
+      { name: "Bladder", element: "Water", color: "bg-blue-400" },
+      { name: "Gall Bladder", element: "Wood", color: "bg-emerald-400" },
+      { name: "Small Intestine", element: "Fire", color: "bg-pink-400" },
+    ],
+    Deep: [
+      { name: "Kidney", element: "Water", color: "bg-blue-400" },
+      { name: "Liver", element: "Wood", color: "bg-emerald-400" },
+      { name: "Heart", element: "Fire", color: "bg-pink-400" },
+      { name: "GV / CV", element: "Central", color: "bg-purple-400" },
+    ]
+  }
+};

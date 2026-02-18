@@ -473,30 +473,50 @@ const ResourcesPage = () => {
               <div className="mt-12 grid grid-cols-1 lg:grid-cols-2 gap-12">
                 <div className="space-y-6">
                   <h3 className="text-2xl font-black text-slate-900 flex items-center gap-3">
-                    <Heart size={24} className="text-rose-500" /> Organ Pulse Points
+                    <Heart size={24} className="text-rose-500" /> Hand Reflexology Mapping
                   </h3>
-                  <div className="overflow-hidden rounded-3xl border border-slate-200 shadow-sm">
-                    <table className="w-full text-left text-sm">
-                      <thead className="bg-slate-50 border-b border-slate-200">
-                        <tr>
-                          <th className="px-6 py-4 font-black text-slate-400 uppercase tracking-widest text-[10px]">Hand / Depth</th>
-                          <th className="px-6 py-4 font-black text-slate-400 uppercase tracking-widest text-[10px]">Organ (Element)</th>
-                        </tr>
-                      </thead>
-                      <tbody className="divide-y divide-slate-100 bg-white">
-                        {[
-                          { pos: "Right Superficial", organ: "Adrenals, Thyroid, Stomach, Large Intestine" },
-                          { pos: "Right Deep", organ: "Sex Organs, Kidney, Spleen, Lung" },
-                          { pos: "Left Superficial", organ: "Bladder, Gall Bladder, Small Intestine" },
-                          { pos: "Left Deep", organ: "Kidney, Liver, Heart" },
-                        ].map((p) => (
-                          <tr key={p.pos} className="hover:bg-slate-50 transition-colors">
-                            <td className="px-6 py-3 font-bold text-slate-900">{p.pos}</td>
-                            <td className="px-6 py-3 font-medium text-slate-600">{p.organ}</td>
-                          </tr>
-                        ))}
-                      </tbody>
-                    </table>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="p-5 bg-white rounded-3xl border border-slate-200 shadow-sm space-y-4">
+                      <h4 className="font-black text-indigo-600 uppercase tracking-widest text-xs">Right Hand</h4>
+                      <div className="space-y-2">
+                        <p className="text-[10px] font-black text-slate-400 uppercase">Superficial (Light)</p>
+                        <ul className="text-xs font-bold text-slate-700 space-y-1">
+                          <li className="flex items-center gap-2"><span className="w-2 h-2 rounded-full bg-pink-400" /> Adrenals/Thyroid (Fire)</li>
+                          <li className="flex items-center gap-2"><span className="w-2 h-2 rounded-full bg-yellow-400" /> Stomach (Earth)</li>
+                          <li className="flex items-center gap-2"><span className="w-2 h-2 rounded-full bg-slate-200" /> Large Intestine (Metal)</li>
+                          <li className="flex items-center gap-2"><span className="w-2 h-2 rounded-full bg-purple-400" /> GV / CV</li>
+                        </ul>
+                      </div>
+                      <div className="space-y-2">
+                        <p className="text-[10px] font-black text-slate-400 uppercase">Deep</p>
+                        <ul className="text-xs font-bold text-slate-700 space-y-1">
+                          <li className="flex items-center gap-2"><span className="w-2 h-2 rounded-full bg-pink-400" /> Sex Organs (Fire)</li>
+                          <li className="flex items-center gap-2"><span className="w-2 h-2 rounded-full bg-yellow-400" /> Spleen (Earth)</li>
+                          <li className="flex items-center gap-2"><span className="w-2 h-2 rounded-full bg-slate-200" /> Lung (Metal)</li>
+                        </ul>
+                      </div>
+                    </div>
+
+                    <div className="p-5 bg-white rounded-3xl border border-slate-200 shadow-sm space-y-4">
+                      <h4 className="font-black text-rose-600 uppercase tracking-widest text-xs">Left Hand</h4>
+                      <div className="space-y-2">
+                        <p className="text-[10px] font-black text-slate-400 uppercase">Superficial (Light)</p>
+                        <ul className="text-xs font-bold text-slate-700 space-y-1">
+                          <li className="flex items-center gap-2"><span className="w-2 h-2 rounded-full bg-blue-400" /> Bladder (Water)</li>
+                          <li className="flex items-center gap-2"><span className="w-2 h-2 rounded-full bg-emerald-400" /> Gall Bladder (Wood)</li>
+                          <li className="flex items-center gap-2"><span className="w-2 h-2 rounded-full bg-pink-400" /> Small Intestine (Fire)</li>
+                        </ul>
+                      </div>
+                      <div className="space-y-2">
+                        <p className="text-[10px] font-black text-slate-400 uppercase">Deep</p>
+                        <ul className="text-xs font-bold text-slate-700 space-y-1">
+                          <li className="flex items-center gap-2"><span className="w-2 h-2 rounded-full bg-blue-400" /> Kidney (Water)</li>
+                          <li className="flex items-center gap-2"><span className="w-2 h-2 rounded-full bg-emerald-400" /> Liver (Wood)</li>
+                          <li className="flex items-center gap-2"><span className="w-2 h-2 rounded-full bg-pink-400" /> Heart (Fire)</li>
+                          <li className="flex items-center gap-2"><span className="w-2 h-2 rounded-full bg-purple-400" /> GV / CV</li>
+                        </ul>
+                      </div>
+                    </div>
                   </div>
                 </div>
 

@@ -8,7 +8,7 @@ import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
 import { Play, Pause, RotateCcw, CheckCircle2, Activity, Zap, Info, Timer, Search, Brain, Heart, Wind, RefreshCw } from 'lucide-react';
 import EditableField from './EditableField';
 import { cn } from '@/lib/utils';
-import { VAGUS_ASSOCIATIONS, VAGAL_FUNCTIONS } from '@/data/vagus-data';
+import { VAGUS_ASSOCIATIONS, VAGAL_FUNCTIONS, HAND_REFLEXOLOGY } from '@/data/vagus-data';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 interface VagusNerveProcessProps {
@@ -37,10 +37,12 @@ const VagusNerveProcess = ({ appointmentId, initialNotes, onSaveField, onUpdate 
   
   // Screen Mode State
   const [reflexPoint, setReflexPoint] = useState<string>("Occiput");
+  const [auricularSide, setAuricularSide] = useState<string>("Left");
   const [selectedFunction, setSelectedFunction] = useState<string>("");
+  const [pulseSide, setPulseSide] = useState<"Right" | "Left">("Right");
+  const [pulseDepth, setPulseDepth] = useState<"Light" | "Deep">("Light");
+  const [selectedOrgan, setSelectedOrgan] = useState<string>("");
   const [selectedAssociation, setSelectedAssociation] = useState<string>("");
-  const [pulseSide, setPulseSide] = useState<string>("");
-  const [pulseDepth, setPulseDepth] = useState<string>("");
   const [breathingPattern, setBreathingPattern] = useState<string>("");
   const [correctionTime, setCorrectionTime] = useState(30);
   const [isCorrectionActive, setIsCorrectionActive] = useState(false);
@@ -91,13 +93,16 @@ const VagusNerveProcess = ({ appointmentId, initialNotes, onSaveField, onUpdate 
       summary = `VAGUS STIMULATION:\n- Branch: ${branchLabel}\n- Shifts: ${shifts || 'None observed'}\n- Duration: ${60 - timeLeft}s`;
     } else {
       const assoc = VAGUS_ASSOCIATIONS.find(a => a.spinalSegment === selectedAssociation);
-      summary = `VAGUS SCREEN & RESET:\n- Reflex Point: ${reflexPoint}\n- Dysfunctional Function: ${selectedFunction}\n- Organ Pulse: ${pulseSide} (${pulseDepth})\n- Associated Organ: ${assoc?.organ}\n- Muscle: ${assoc?.muscle} (${assoc?.spinalSegment})\n- Correction: ${breathingPattern} for ${30 - correctionTime}s\n- Status: ${isCleared ? 'Cleared/Balanced' : 'In Progress'}`;
+      const reflexLabel = reflexPoint === 'Auricular' ? `Auricular (${auricularSide})` : 'Occiput (Both)';
+      summary = `VAGUS SCREEN & RESET:\n- Reflex Point: ${reflexLabel}\n- Dysfunctional Function: ${selectedFunction}\n- Organ Pulse: ${pulseSide} Hand (${pulseDepth})\n- Selected Organ: ${selectedOrgan}\n- Associated Spinal: ${selectedAssociation}\n- Muscle: ${assoc?.muscle}\n- Correction: ${breathingPattern} for ${30 - correctionTime}s\n- Status: ${isCleared ? 'Cleared/Balanced' : 'In Progress'}`;
     }
     
     const currentNotes = initialNotes ? `${initialNotes}\n\n${summary}` : summary;
     await onSaveField('vagus_nerve_notes', currentNotes);
     onUpdate();
   };
+
+  const currentOrgans = HAND_REFLEXOLOGY[pulseSide][pulseDepth];
 
   return (
     <Card className="border-none shadow-sm rounded-2xl bg-white overflow-hidden">
@@ -176,10 +181,18 @@ const VagusNerveProcess = ({ appointmentId, initialNotes, onSaveField, onUpdate 
                 <label className="text-xs font-black uppercase tracking-widest text-slate-400 flex items-center gap-2">
                   <Zap size={14} className="text-amber-500" /> 1. Reflex Point + IM
                 </label>
-                <ToggleGroup type="single" value={reflexPoint} onValueChange={(v) => v && setReflexPoint(v)} className="justify-start gap-2">
-                  <ToggleGroupItem value="Occiput" className="flex-1 rounded-xl border border-slate-200 data-[state=on]:bg-indigo-600 data-[state=on]:text-white font-bold">Occiput</ToggleGroupItem>
-                  <ToggleGroupItem value="Auricular" className="flex-1 rounded-xl border border-slate-200 data-[state=on]:bg-indigo-600 data-[state=on]:text-white font-bold">Auricular</ToggleGroupItem>
-                </ToggleGroup>
+                <div className="space-y-2">
+                  <ToggleGroup type="single" value={reflexPoint} onValueChange={(v) => v && setReflexPoint(v)} className="justify-start gap-2">
+                    <ToggleGroupItem value="Occiput" className="flex-1 rounded-xl border border-slate-200 data-[state=on]:bg-indigo-600 data-[state=on]:text-white font-bold">Occiput (Both)</ToggleGroupItem>
+                    <ToggleGroupItem value="Auricular" className="flex-1 rounded-xl border border-slate-200 data-[state=on]:bg-indigo-600 data-[state=on]:text-white font-bold">Auricular</ToggleGroupItem>
+                  </ToggleGroup>
+                  {reflexPoint === 'Auricular' && (
+                    <ToggleGroup type="single" value={auricularSide} onValueChange={(v) => v && setAuricularSide(v)} className="justify-start gap-2 animate-in fade-in slide-in-from-top-1">
+                      <ToggleGroupItem value="Left" className="flex-1 rounded-xl border border-slate-200 data-[state=on]:bg-indigo-500 data-[state=on]:text-white font-bold text-xs">Left Vagus</ToggleGroupItem>
+                      <ToggleGroupItem value="Right" className="flex-1 rounded-xl border border-slate-200 data-[state=on]:bg-indigo-500 data-[state=on]:text-white font-bold text-xs">Right Vagus</ToggleGroupItem>
+                    </ToggleGroup>
+                  )}
+                </div>
               </div>
 
               <div className="space-y-3">
@@ -197,25 +210,43 @@ const VagusNerveProcess = ({ appointmentId, initialNotes, onSaveField, onUpdate 
               </div>
             </div>
 
-            <div className="space-y-3">
+            <div className="space-y-4 p-4 bg-slate-50 rounded-2xl border border-slate-100">
               <label className="text-xs font-black uppercase tracking-widest text-slate-400 flex items-center gap-2">
-                <Heart size={14} className="text-rose-500" /> 3. Organ Pulse Points
+                <Heart size={14} className="text-rose-500" /> 3. Organ Pulse (Hand Reflexology)
               </label>
-              <div className="flex gap-2">
-                <ToggleGroup type="single" value={pulseSide} onValueChange={setPulseSide} className="flex-1">
-                  <ToggleGroupItem value="Left" className="flex-1 rounded-xl border border-slate-200 data-[state=on]:bg-rose-600 data-[state=on]:text-white font-bold">Left</ToggleGroupItem>
-                  <ToggleGroupItem value="Right" className="flex-1 rounded-xl border border-slate-200 data-[state=on]:bg-rose-600 data-[state=on]:text-white font-bold">Right</ToggleGroupItem>
-                </ToggleGroup>
-                <ToggleGroup type="single" value={pulseDepth} onValueChange={setPulseDepth} className="flex-1">
-                  <ToggleGroupItem value="Light" className="flex-1 rounded-xl border border-slate-200 data-[state=on]:bg-rose-600 data-[state=on]:text-white font-bold">Light</ToggleGroupItem>
-                  <ToggleGroupItem value="Deep" className="flex-1 rounded-xl border border-slate-200 data-[state=on]:bg-rose-600 data-[state=on]:text-white font-bold">Deep</ToggleGroupItem>
-                </ToggleGroup>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="flex gap-2">
+                  <ToggleGroup type="single" value={pulseSide} onValueChange={(v) => v && setPulseSide(v as any)} className="flex-1">
+                    <ToggleGroupItem value="Left" className="flex-1 rounded-xl border border-slate-200 data-[state=on]:bg-rose-600 data-[state=on]:text-white font-bold">Left Hand</ToggleGroupItem>
+                    <ToggleGroupItem value="Right" className="flex-1 rounded-xl border border-slate-200 data-[state=on]:bg-rose-600 data-[state=on]:text-white font-bold">Right Hand</ToggleGroupItem>
+                  </ToggleGroup>
+                  <ToggleGroup type="single" value={pulseDepth} onValueChange={(v) => v && setPulseDepth(v as any)} className="flex-1">
+                    <ToggleGroupItem value="Light" className="flex-1 rounded-xl border border-slate-200 data-[state=on]:bg-rose-600 data-[state=on]:text-white font-bold">Light</ToggleGroupItem>
+                    <ToggleGroupItem value="Deep" className="flex-1 rounded-xl border border-slate-200 data-[state=on]:bg-rose-600 data-[state=on]:text-white font-bold">Deep</ToggleGroupItem>
+                  </ToggleGroup>
+                </div>
+                <div className="flex flex-wrap gap-2">
+                  {currentOrgans.map((org) => (
+                    <Button
+                      key={org.name}
+                      variant={selectedOrgan === org.name ? "default" : "outline"}
+                      onClick={() => setSelectedOrgan(org.name)}
+                      className={cn(
+                        "h-9 text-[10px] font-black uppercase tracking-widest rounded-xl transition-all",
+                        selectedOrgan === org.name ? "bg-slate-900 text-white" : "bg-white border-slate-200"
+                      )}
+                    >
+                      <span className={cn("w-2 h-2 rounded-full mr-2", org.color)} />
+                      {org.name}
+                    </Button>
+                  ))}
+                </div>
               </div>
             </div>
 
             <div className="space-y-3">
               <label className="text-xs font-black uppercase tracking-widest text-slate-400 flex items-center gap-2">
-                <Search size={14} className="text-indigo-500" /> 4. Associated Organ & Muscle
+                <Search size={14} className="text-indigo-500" /> 4. Associated Spinal Segment
               </label>
               <Select value={selectedAssociation} onValueChange={setSelectedAssociation}>
                 <SelectTrigger className="rounded-xl border-slate-200 h-11 font-bold">

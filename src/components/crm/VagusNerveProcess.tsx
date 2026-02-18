@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useMemo } from 'react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -85,6 +85,27 @@ const VagusNerveProcess = ({ appointmentId, initialNotes, onSaveField, onUpdate 
     return `${mins}:${secs.toString().padStart(2, '0')}`;
   };
 
+  // Filter associations based on selected organ
+  const filteredAssociations = useMemo(() => {
+    if (!selectedOrgan) return VAGUS_ASSOCIATIONS;
+    
+    const searchTerms = selectedOrgan.split('/').map(s => s.trim().toLowerCase());
+    
+    return VAGUS_ASSOCIATIONS.filter(assoc => {
+      const organName = assoc.organ.toLowerCase();
+      return searchTerms.some(term => organName.includes(term));
+    });
+  }, [selectedOrgan]);
+
+  // Auto-select if only one association matches
+  useEffect(() => {
+    if (filteredAssociations.length === 1) {
+      setSelectedAssociation(filteredAssociations[0].spinalSegment);
+    } else if (filteredAssociations.length === 0) {
+      setSelectedAssociation("");
+    }
+  }, [filteredAssociations]);
+
   const handleAutoPopulate = async () => {
     let summary = "";
     if (mode === 'stimulation') {
@@ -94,7 +115,7 @@ const VagusNerveProcess = ({ appointmentId, initialNotes, onSaveField, onUpdate 
     } else {
       const assoc = VAGUS_ASSOCIATIONS.find(a => a.spinalSegment === selectedAssociation);
       const reflexLabel = reflexPoint === 'Auricular' ? `Auricular (${auricularSide})` : 'Occiput (Both)';
-      summary = `VAGUS SCREEN & RESET:\n- Reflex Point: ${reflexLabel}\n- Dysfunctional Function: ${selectedFunction}\n- Organ Pulse: ${pulseSide} Hand (${pulseDepth})\n- Selected Organ: ${selectedOrgan}\n- Associated Spinal: ${selectedAssociation}\n- Muscle: ${assoc?.muscle}\n- Correction: ${breathingPattern} for ${30 - correctionTime}s\n- Status: ${isCleared ? 'Cleared/Balanced' : 'In Progress'}`;
+      summary = `VAGUS SCREEN & RESET:\n- Reflex Point: ${reflexLabel}\n- Dysfunctional Function: ${selectedFunction}\n- Organ Pulse: ${pulseSide} Hand (${pulseDepth})\n- Selected Organ: ${selectedOrgan}\n- Associated Spinal: ${selectedAssociation}\n- Muscle: ${assoc?.muscle}\n- Lovett-Brother: ${assoc?.reciprocatingSegment}\n- Correction: ${breathingPattern} for ${30 - correctionTime}s\n- Status: ${isCleared ? 'Cleared/Balanced' : 'In Progress'}`;
     }
     
     const currentNotes = initialNotes ? `${initialNotes}\n\n${summary}` : summary;
@@ -230,7 +251,10 @@ const VagusNerveProcess = ({ appointmentId, initialNotes, onSaveField, onUpdate 
                     <Button
                       key={org.name}
                       variant={selectedOrgan === org.name ? "default" : "outline"}
-                      onClick={() => setSelectedOrgan(org.name)}
+                      onClick={() => {
+                        setSelectedOrgan(org.name);
+                        setSelectedAssociation(""); // Reset association to trigger auto-select
+                      }}
                       className={cn(
                         "h-9 text-[10px] font-black uppercase tracking-widest rounded-xl transition-all",
                         selectedOrgan === org.name ? "bg-slate-900 text-white" : "bg-white border-slate-200"
@@ -250,29 +274,32 @@ const VagusNerveProcess = ({ appointmentId, initialNotes, onSaveField, onUpdate 
               </label>
               <Select value={selectedAssociation} onValueChange={setSelectedAssociation}>
                 <SelectTrigger className="rounded-xl border-slate-200 h-11 font-bold">
-                  <SelectValue placeholder="Find associated spinal segment..." />
+                  <SelectValue placeholder={selectedOrgan ? `Select segment for ${selectedOrgan}...` : "Find associated spinal segment..."} />
                 </SelectTrigger>
                 <SelectContent className="max-h-[300px]">
-                  {VAGUS_ASSOCIATIONS.map(a => (
+                  {filteredAssociations.map(a => (
                     <SelectItem key={a.spinalSegment} value={a.spinalSegment}>
                       {a.spinalSegment}: {a.muscle} ({a.organ})
                     </SelectItem>
                   ))}
+                  {filteredAssociations.length === 0 && (
+                    <SelectItem value="none" disabled>No direct spinal match found</SelectItem>
+                  )}
                 </SelectContent>
               </Select>
               {selectedAssociation && (
                 <div className="p-4 bg-indigo-50 rounded-2xl border border-indigo-100 animate-in fade-in slide-in-from-top-2">
-                  <div className="flex justify-between items-center">
+                  <div className="grid grid-cols-2 gap-6">
                     <div>
-                      <p className="text-[10px] font-black text-indigo-400 uppercase tracking-widest">Lovett-Brother Partner</p>
+                      <p className="text-[10px] font-black text-indigo-400 uppercase tracking-widest mb-1">Muscle to Test</p>
                       <p className="text-lg font-black text-indigo-900">
-                        {VAGUS_ASSOCIATIONS.find(a => a.spinalSegment === selectedAssociation)?.reciprocatingSegment}
+                        {VAGUS_ASSOCIATIONS.find(a => a.spinalSegment === selectedAssociation)?.muscle}
                       </p>
                     </div>
                     <div className="text-right">
-                      <p className="text-[10px] font-black text-indigo-400 uppercase tracking-widest">Muscle to Test</p>
-                      <p className="text-lg font-black text-indigo-900">
-                        {VAGUS_ASSOCIATIONS.find(a => a.spinalSegment === selectedAssociation)?.muscle}
+                      <p className="text-[10px] font-black text-rose-400 uppercase tracking-widest mb-1">Lovett-Brother Partner</p>
+                      <p className="text-lg font-black text-rose-900">
+                        {VAGUS_ASSOCIATIONS.find(a => a.spinalSegment === selectedAssociation)?.reciprocatingSegment}
                       </p>
                     </div>
                   </div>

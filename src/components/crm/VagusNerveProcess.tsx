@@ -5,16 +5,17 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/com
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
-import { Play, Pause, RotateCcw, CheckCircle2, Activity, Zap, Info, Timer, Search, Brain, Heart, Wind, RefreshCw } from 'lucide-react';
+import { Play, Pause, RotateCcw, CheckCircle2, Activity, Zap, Info, Timer, Search, Brain, Heart, Wind, RefreshCw, Trash2 } from 'lucide-react';
 import EditableField from './EditableField';
 import { cn } from '@/lib/utils';
 import { VAGUS_ASSOCIATIONS, VAGAL_FUNCTIONS, HAND_REFLEXOLOGY } from '@/data/vagus-data';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { showSuccess } from '@/utils/toast';
 
 interface VagusNerveProcessProps {
   appointmentId: string;
   initialNotes: string | null;
-  onSaveField: (field: string, value: string) => Promise<void>;
+  onSaveField: (field: string, value: string | null) => Promise<void>;
   onUpdate: () => void;
 }
 
@@ -106,6 +107,43 @@ const VagusNerveProcess = ({ appointmentId, initialNotes, onSaveField, onUpdate 
     }
   }, [filteredAssociations]);
 
+  const partnerInfo = useMemo(() => {
+    if (!selectedAssociation) return null;
+    const current = VAGUS_ASSOCIATIONS.find(a => a.spinalSegment === selectedAssociation);
+    if (!current) return null;
+    
+    const partner = VAGUS_ASSOCIATIONS.find(a => a.spinalSegment === current.reciprocatingSegment);
+    return {
+      currentMuscle: current.muscle,
+      partnerSegment: current.reciprocatingSegment,
+      partnerMuscle: partner?.muscle || "Unknown"
+    };
+  }, [selectedAssociation]);
+
+  const handleResetProtocol = async () => {
+    if (!confirm("Are you sure you want to reset the entire Vagus Nerve protocol state?")) return;
+    
+    // Reset all local state
+    setMode('stimulation');
+    setBranch('auricular');
+    setTimeLeft(60);
+    setIsActive(false);
+    setSelectedShifts([]);
+    setReflexPoint("Occiput");
+    setAuricularSide("Left");
+    setSelectedFunction("");
+    setPulseSide("Right");
+    setPulseDepth("Light");
+    setSelectedOrgan("");
+    setSelectedAssociation("");
+    setBreathingPattern("");
+    setCorrectionTime(30);
+    setIsCorrectionActive(false);
+    setIsCleared(false);
+    
+    showSuccess("Vagus Nerve protocol reset.");
+  };
+
   const handleAutoPopulate = async () => {
     let summary = "";
     if (mode === 'stimulation') {
@@ -115,7 +153,7 @@ const VagusNerveProcess = ({ appointmentId, initialNotes, onSaveField, onUpdate 
     } else {
       const assoc = VAGUS_ASSOCIATIONS.find(a => a.spinalSegment === selectedAssociation);
       const reflexLabel = reflexPoint === 'Auricular' ? `Auricular (${auricularSide})` : 'Occiput (Both)';
-      summary = `VAGUS SCREEN & RESET:\n- Reflex Point: ${reflexLabel}\n- Dysfunctional Function: ${selectedFunction}\n- Organ Pulse: ${pulseSide} Hand (${pulseDepth})\n- Selected Organ: ${selectedOrgan}\n- Associated Spinal: ${selectedAssociation}\n- Muscle: ${assoc?.muscle}\n- Lovett-Brother: ${assoc?.reciprocatingSegment}\n- Correction: ${breathingPattern} for ${30 - correctionTime}s\n- Status: ${isCleared ? 'Cleared/Balanced' : 'In Progress'}`;
+      summary = `VAGUS SCREEN & RESET:\n- Reflex Point: ${reflexLabel}\n- Dysfunctional Function: ${selectedFunction}\n- Organ Pulse: ${pulseSide} Hand (${pulseDepth})\n- Selected Organ: ${selectedOrgan}\n- Associated Spinal: ${selectedAssociation}\n- Muscle: ${assoc?.muscle}\n- Lovett-Brother: ${assoc?.reciprocatingSegment} (${partnerInfo?.partnerMuscle})\n- Correction: ${breathingPattern} for ${30 - correctionTime}s\n- Status: ${isCleared ? 'Cleared/Balanced' : 'In Progress'}`;
     }
     
     const currentNotes = initialNotes ? `${initialNotes}\n\n${summary}` : summary;
@@ -151,9 +189,14 @@ const VagusNerveProcess = ({ appointmentId, initialNotes, onSaveField, onUpdate 
               </div>
             </div>
           </div>
-          <Badge variant="outline" className="bg-indigo-50 text-indigo-700 border-indigo-100 font-bold">
-            SNS Stage
-          </Badge>
+          <div className="flex items-center gap-2">
+            <Button variant="ghost" size="sm" onClick={handleResetProtocol} className="h-8 text-[10px] font-black uppercase tracking-widest text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded-lg">
+              <Trash2 size={14} className="mr-1" /> Reset
+            </Button>
+            <Badge variant="outline" className="bg-indigo-50 text-indigo-700 border-indigo-100 font-bold">
+              SNS Stage
+            </Badge>
+          </div>
         </div>
       </CardHeader>
 
@@ -252,8 +295,14 @@ const VagusNerveProcess = ({ appointmentId, initialNotes, onSaveField, onUpdate 
                       key={org.name}
                       variant={selectedOrgan === org.name ? "default" : "outline"}
                       onClick={() => {
-                        setSelectedOrgan(org.name);
-                        setSelectedAssociation(""); // Reset association to trigger auto-select
+                        // Toggle selection: if already selected, clear it
+                        if (selectedOrgan === org.name) {
+                          setSelectedOrgan("");
+                          setSelectedAssociation("");
+                        } else {
+                          setSelectedOrgan(org.name);
+                          setSelectedAssociation(""); // Reset association to trigger auto-select
+                        }
                       }}
                       className={cn(
                         "h-9 text-[10px] font-black uppercase tracking-widest rounded-xl transition-all",
@@ -287,20 +336,22 @@ const VagusNerveProcess = ({ appointmentId, initialNotes, onSaveField, onUpdate 
                   )}
                 </SelectContent>
               </Select>
-              {selectedAssociation && (
+              {partnerInfo && (
                 <div className="p-4 bg-indigo-50 rounded-2xl border border-indigo-100 animate-in fade-in slide-in-from-top-2">
                   <div className="grid grid-cols-2 gap-6">
                     <div>
                       <p className="text-[10px] font-black text-indigo-400 uppercase tracking-widest mb-1">Muscle to Test</p>
                       <p className="text-lg font-black text-indigo-900">
-                        {VAGUS_ASSOCIATIONS.find(a => a.spinalSegment === selectedAssociation)?.muscle}
+                        {partnerInfo.currentMuscle}
                       </p>
+                      <p className="text-[10px] font-bold text-indigo-400 mt-1">Segment: {selectedAssociation}</p>
                     </div>
                     <div className="text-right">
                       <p className="text-[10px] font-black text-rose-400 uppercase tracking-widest mb-1">Lovett-Brother Partner</p>
                       <p className="text-lg font-black text-rose-900">
-                        {VAGUS_ASSOCIATIONS.find(a => a.spinalSegment === selectedAssociation)?.reciprocatingSegment}
+                        {partnerInfo.partnerMuscle}
                       </p>
+                      <p className="text-[10px] font-bold text-rose-400 mt-1">Segment: {partnerInfo.partnerSegment}</p>
                     </div>
                   </div>
                 </div>

@@ -18,6 +18,7 @@ import MuscleTestingTab from './MuscleTestingTab';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import EmotionAssessment from './EmotionAssessment';
 import DiaphragmReset from './DiaphragmReset';
+import VagusNerveProcess from './VagusNerveProcess';
 import PreviousSessionSummary from './PreviousSessionSummary';
 import GaitReflexAssessment from './GaitReflexAssessment';
 import LymphaticAssessment from './LymphaticAssessment';
@@ -96,6 +97,7 @@ const SessionContentSwitcher = ({ appointment, onUpdate, saveField }: SessionCon
               <SympatheticDownRegulation appointmentId={appointmentId} initialNotes={appointment.harmonic_rocking_notes} onSaveField={saveField as any} onUpdate={onUpdate} />
               <T1SympatheticReset appointmentId={appointmentId} initialNotes={appointment.t1_reset_notes} onSaveField={saveField as any} onUpdate={onUpdate} />
               <DiaphragmReset appointmentId={appointmentId} initialNotes={appointment.diaphragm_reset_notes} onSaveField={saveField as any} onUpdate={onUpdate} />
+              <VagusNerveProcess appointmentId={appointmentId} initialNotes={appointment.vagus_nerve_notes} onSaveField={saveField as any} onUpdate={onUpdate} />
               <EditableField key={`notes-sympathetic-general-${appointmentId}`} field="additional_notes" label="Other SNS Techniques" value={appointment.additional_notes} multiline placeholder="ESR, Vagus Nerve, etc..." onSave={saveField as any} className="bg-white p-6 rounded-2xl border border-slate-100 shadow-sm" />
             </TabsContent>
 

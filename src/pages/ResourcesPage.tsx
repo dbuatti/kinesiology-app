@@ -64,6 +64,9 @@ const ResourcesPage = () => {
           <TabsTrigger value="lymphatic" className="rounded-xl py-2.5 data-[state=active]:bg-white data-[state=active]:shadow-sm">
             <Droplets size={16} className="mr-2" /> Lymphatic
           </TabsTrigger>
+          <TabsTrigger value="vagus" className="rounded-xl py-2.5 data-[state=active]:bg-white data-[state=active]:shadow-sm">
+            <Activity size={16} className="mr-2" /> Vagus Nerve
+          </TabsTrigger>
         </TabsList>
 
         <TabsContent value="acupoints" className="mt-8">
@@ -345,6 +348,127 @@ const ResourcesPage = () => {
               </CardContent>
             </Card>
           </div>
+        </TabsContent>
+
+        <TabsContent value="vagus" className="mt-8 space-y-8">
+          <Card className="border-none shadow-lg rounded-3xl overflow-hidden bg-white">
+            <div className="bg-gradient-to-r from-indigo-600 to-violet-600 p-8 text-white">
+              <div className="flex items-center gap-4 mb-4">
+                <div className="w-14 h-14 bg-white/20 backdrop-blur-md rounded-2xl flex items-center justify-center">
+                  <Activity size={32} />
+                </div>
+                <div>
+                  <div className="flex gap-2 mb-1">
+                    <Badge className="bg-indigo-400/30 text-white border-none">Polyvagal Theory</Badge>
+                    <Badge className="bg-white/20 text-white border-none">Parasympathetic</Badge>
+                  </div>
+                  <CardTitle className="text-3xl font-black">Vagus Nerve Protocol</CardTitle>
+                </div>
+              </div>
+              <p className="text-indigo-50 text-lg max-w-2xl leading-relaxed">
+                The "Brake Pedal" of the Nervous System. Essential for down-regulating sympathetic arousal and promoting systemic recovery.
+              </p>
+            </div>
+            <CardContent className="p-8">
+              <div className="grid grid-cols-1 lg:grid-cols-3 gap-12">
+                <div className="lg:col-span-2 space-y-10">
+                  <section className="space-y-4">
+                    <h3 className="text-xl font-bold text-slate-900 flex items-center gap-2">
+                      <Info size={20} className="text-indigo-600" /> Theory: The Polyvagal Context
+                    </h3>
+                    <p className="text-slate-600 leading-relaxed">
+                      The Vagus Nerve (CN X) is the longest cranial nerve, connecting the brainstem to the heart, lungs, and digestive tract. In Polyvagal Theory, the <strong>Ventral Vagal</strong> branch is responsible for social engagement and "rest and digest" states.
+                    </p>
+                    <div className="bg-indigo-50 border border-indigo-100 p-6 rounded-2xl space-y-3">
+                      <h4 className="font-bold text-indigo-900">Drainage Precedes Supply</h4>
+                      <p className="text-sm text-indigo-800 leading-relaxed">
+                        Just like the lymphatic system, the Vagus Nerve requires a "clear path." If the cervical tissues are congested or the diaphragm is locked, Vagal tone will be inhibited. Always perform a <strong>Diaphragm Reset</strong> before deep Vagal work.
+                      </p>
+                    </div>
+                  </section>
+
+                  <section className="space-y-4">
+                    <h3 className="text-xl font-bold text-slate-900 flex items-center gap-2">
+                      <Zap size={20} className="text-amber-500" /> Stimulation Branches
+                    </h3>
+                    <div className="grid gap-6">
+                      <div className="flex gap-4 p-5 bg-slate-50 rounded-2xl border border-slate-100">
+                        <div className="w-10 h-10 bg-white rounded-xl shadow-sm flex items-center justify-center shrink-0 text-indigo-600 font-bold">1</div>
+                        <div>
+                          <h4 className="font-bold text-slate-900 mb-1">Auricular Branch (Ear)</h4>
+                          <p className="text-sm text-slate-600 leading-relaxed">Stimulate the Cymba Conchae (the hollow above the ear canal). Use gentle circular massage or light pressure for 60 seconds.</p>
+                        </div>
+                      </div>
+                      <div className="flex gap-4 p-5 bg-slate-50 rounded-2xl border border-slate-100">
+                        <div className="w-10 h-10 bg-white rounded-xl shadow-sm flex items-center justify-center shrink-0 text-indigo-600 font-bold">2</div>
+                        <div>
+                          <h4 className="font-bold text-slate-900 mb-1">Cervical Branch (Neck)</h4>
+                          <p className="text-sm text-slate-600 leading-relaxed">Located along the Carotid Sheath. Use gentle "vibration" or light stroking downward from the jawline toward the clavicle.</p>
+                        </div>
+                      </div>
+                      <div className="flex gap-4 p-5 bg-slate-50 rounded-2xl border border-slate-100">
+                        <div className="w-10 h-10 bg-white rounded-xl shadow-sm flex items-center justify-center shrink-0 text-indigo-600 font-bold">3</div>
+                        <div>
+                          <h4 className="font-bold text-slate-900 mb-1">Abdominal Branch (Gut)</h4>
+                          <p className="text-sm text-slate-600 leading-relaxed">Deep diaphragmatic breathing with a focus on a long, slow exhale. This mechanically stimulates the Vagus as it passes through the esophageal hiatus.</p>
+                        </div>
+                      </div>
+                    </div>
+                  </section>
+
+                  <section className="space-y-4">
+                    <h3 className="text-xl font-bold text-slate-900 flex items-center gap-2">
+                      <CheckCircle2 size={20} className="text-emerald-600" /> Signs of Vagal Shift
+                    </h3>
+                    <p className="text-slate-600 leading-relaxed">
+                      Monitor the client for these physiological indicators that the nervous system is shifting from Sympathetic to Parasympathetic:
+                    </p>
+                    <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                      {['Yawning', 'Sighing', 'Swallowing', 'Gurgling', 'Salivation', 'Tearing', 'Deep Breath', 'Softened Eyes'].map((sign) => (
+                        <div key={sign} className="p-3 bg-emerald-50 rounded-xl text-emerald-900 text-xs font-bold text-center border border-emerald-100">
+                          {sign}
+                        </div>
+                      ))}
+                    </div>
+                  </section>
+                </div>
+
+                <div className="space-y-6">
+                  <Card className="border-2 border-indigo-100 bg-indigo-50/50 rounded-3xl shadow-none">
+                    <CardHeader>
+                      <CardTitle className="text-lg font-bold text-indigo-900">Clinical Pearls</CardTitle>
+                    </CardHeader>
+                    <CardContent className="space-y-4">
+                      <div className="p-4 bg-white rounded-2xl border border-indigo-100">
+                        <p className="text-xs font-bold text-indigo-600 uppercase tracking-widest mb-2">The Brake Pedal</p>
+                        <p className="text-sm text-slate-700">If the SNS is the gas, the Vagus is the brake. You can't heal while the gas is floored.</p>
+                      </div>
+                      <div className="p-4 bg-white rounded-2xl border border-indigo-100">
+                        <p className="text-xs font-bold text-indigo-600 uppercase tracking-widest mb-2">Safety First</p>
+                        <p className="text-sm text-slate-700">Vagal work can trigger a "Vasovagal" response. Always have the client seated or supine.</p>
+                      </div>
+                      <div className="p-4 bg-white rounded-2xl border border-indigo-100">
+                        <p className="text-xs font-bold text-indigo-600 uppercase tracking-widest mb-2">Humming</p>
+                        <p className="text-sm text-slate-700">Vocalizing (humming, chanting) vibrates the laryngeal branch of the Vagus, a powerful self-regulation tool.</p>
+                      </div>
+                    </CardContent>
+                  </Card>
+
+                  <div className="bg-amber-50 border border-amber-100 p-6 rounded-3xl">
+                    <h4 className="font-bold text-amber-900 flex items-center gap-2 mb-2">
+                      <AlertCircle size={18} /> Contraindications
+                    </h4>
+                    <ul className="text-xs text-amber-800 space-y-2 list-disc pl-4">
+                      <li>Acute carotid artery disease</li>
+                      <li>History of severe bradycardia</li>
+                      <li>Uncontrolled epilepsy</li>
+                      <li>Recent neck surgery or trauma</li>
+                    </ul>
+                  </div>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
         </TabsContent>
 
         <TabsContent value="lymphatic" className="mt-8 space-y-8">

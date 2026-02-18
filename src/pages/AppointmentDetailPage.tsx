@@ -58,6 +58,7 @@ export interface AppointmentWithClient extends Appointment {
   harmonic_rocking_notes?: string | null;
   t1_reset_notes?: string | null;
   diaphragm_reset_notes?: string | null;
+  vagus_nerve_notes?: string | null;
   lymphatic_suture_side?: string | null;
   lymphatic_priority_zone?: string | null;
   lymphatic_notes?: string | null;

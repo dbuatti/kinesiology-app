@@ -22,7 +22,8 @@ import {
   Trash2,
   ChevronDown,
   Sparkles,
-  Shield
+  Shield,
+  MousePointer2
 } from 'lucide-react';
 import EditableField from './EditableField';
 import { cn } from '@/lib/utils';
@@ -65,10 +66,14 @@ const VagusNerveProcess = ({ appointmentId, initialNotes, onSaveField, onUpdate 
   const [reflexPoint, setReflexPoint] = useState<string>("Occiput");
   const [auricularSide, setAuricularSide] = useState<string>("Left");
   const [selectedFunction, setSelectedFunction] = useState<string>("");
-  const [selectedGland, setSelectedGland] = useState<string>("");
+  
+  // Step 3: Organ/Gland Level
+  const [challengeType, setChallengeType] = useState<'hand' | 'gland'>('hand');
   const [pulseSide, setPulseSide] = useState<"Right" | "Left">("Right");
   const [pulseDepth, setPulseDepth] = useState<"Light" | "Deep">("Light");
   const [selectedOrgan, setSelectedOrgan] = useState<string>("");
+  const [selectedGland, setSelectedGland] = useState<string>("");
+  
   const [selectedAssociation, setSelectedAssociation] = useState<string>("");
   const [breathingPattern, setBreathingPattern] = useState<string>("");
   const [correctionTime, setCorrectionTime] = useState(30);
@@ -121,17 +126,18 @@ const VagusNerveProcess = ({ appointmentId, initialNotes, onSaveField, onUpdate 
     setInfoModalOpen(true);
   };
 
-  // Filter associations based on selected organ
+  // Filter associations based on selected organ or gland
   const filteredAssociations = useMemo(() => {
-    if (!selectedOrgan) return VAGUS_ASSOCIATIONS;
+    const target = challengeType === 'hand' ? selectedOrgan : selectedGland;
+    if (!target) return VAGUS_ASSOCIATIONS;
     
-    const searchTerms = selectedOrgan.split('/').map(s => s.trim().toLowerCase());
+    const searchTerms = target.split('/').map(s => s.trim().toLowerCase());
     
     return VAGUS_ASSOCIATIONS.filter(assoc => {
       const organName = assoc.organ.toLowerCase();
       return searchTerms.some(term => organName.includes(term));
     });
-  }, [selectedOrgan]);
+  }, [selectedOrgan, selectedGland, challengeType]);
 
   // Auto-select if only one association matches
   useEffect(() => {
@@ -160,7 +166,6 @@ const VagusNerveProcess = ({ appointmentId, initialNotes, onSaveField, onUpdate 
   const handleResetProtocol = async () => {
     if (!confirm("Are you sure you want to reset the entire Vagus Nerve protocol state?")) return;
     
-    // Reset all local state
     setMode('stimulation');
     setBranch('auricular');
     setTimeLeft(60);
@@ -169,10 +174,9 @@ const VagusNerveProcess = ({ appointmentId, initialNotes, onSaveField, onUpdate 
     setReflexPoint("Occiput");
     setAuricularSide("Left");
     setSelectedFunction("");
-    setSelectedGland("");
-    setPulseSide("Right");
-    setPulseDepth("Light");
+    setChallengeType('hand');
     setSelectedOrgan("");
+    setSelectedGland("");
     setSelectedAssociation("");
     setBreathingPattern("");
     setCorrectionTime(30);
@@ -191,9 +195,11 @@ const VagusNerveProcess = ({ appointmentId, initialNotes, onSaveField, onUpdate 
     } else {
       const assoc = VAGUS_ASSOCIATIONS.find(a => a.spinalSegment === selectedAssociation);
       const reflexLabel = reflexPoint === 'Auricular' ? `Auricular (${auricularSide})` : 'Occiput (Both)';
-      const glandInfo = selectedGland ? `\n- Gland Challenge: ${selectedGland} (${VAGAL_GLANDS.find(g => g.name === selectedGland)?.reflex})` : "";
+      const challengeLabel = challengeType === 'hand' 
+        ? `Organ Pulse: ${pulseSide} Hand (${pulseDepth}) - ${selectedOrgan}`
+        : `Gland Challenge: ${selectedGland} (${VAGAL_GLANDS.find(g => g.name === selectedGland)?.reflex})`;
       
-      summary = `VAGUS SCREEN & RESET:\n- Reflex Point: ${reflexLabel}\n- Dysfunctional Function: ${selectedFunction}${glandInfo}\n- Organ Pulse: ${pulseSide} Hand (${pulseDepth})\n- Selected Organ: ${selectedOrgan}\n- Associated Spinal: ${selectedAssociation} (${partnerInfo?.currentOrgan})\n- Muscle: ${assoc?.muscle}\n- Lovett-Brother: ${assoc?.reciprocatingSegment} (${partnerInfo?.partnerOrgan}) - ${partnerInfo?.partnerMuscle}\n- Correction: ${breathingPattern} for ${30 - correctionTime}s\n- Status: ${isCleared ? 'Cleared/Balanced' : 'In Progress'}`;
+      summary = `VAGUS SCREEN & RESET:\n- Reflex Point: ${reflexLabel}\n- Dysfunctional Function: ${selectedFunction}\n- ${challengeLabel}\n- Associated Spinal: ${selectedAssociation} (${partnerInfo?.currentOrgan})\n- Muscle: ${assoc?.muscle}\n- Lovett-Brother: ${assoc?.reciprocatingSegment} (${partnerInfo?.partnerOrgan}) - ${partnerInfo?.partnerMuscle}\n- Correction: ${breathingPattern} for ${30 - correctionTime}s\n- Status: ${isCleared ? 'Cleared/Balanced' : 'In Progress'}`;
     }
     
     const currentNotes = initialNotes ? `${initialNotes}\n\n${summary}` : summary;
@@ -323,69 +329,93 @@ const VagusNerveProcess = ({ appointmentId, initialNotes, onSaveField, onUpdate 
                   </div>
                 </div>
 
-                {/* New Gland Challenge Section */}
-                <div className="space-y-4 p-4 bg-indigo-50/30 rounded-2xl border border-indigo-100">
-                  <label className="text-xs font-black uppercase tracking-widest text-indigo-600 flex items-center gap-2">
-                    <Sparkles size={14} className="text-indigo-500" /> 2b. Gland Challenge (Optional)
-                  </label>
-                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
-                    {VAGAL_GLANDS.map((gland) => (
-                      <Button
-                        key={gland.name}
-                        variant={selectedGland === gland.name ? "default" : "outline"}
-                        onClick={() => setSelectedGland(selectedGland === gland.name ? "" : gland.name)}
-                        className={cn(
-                          "h-auto py-3 flex flex-col items-center gap-1 rounded-xl transition-all",
-                          selectedGland === gland.name ? "bg-indigo-600 text-white shadow-md" : "bg-white border-slate-200 text-slate-600"
-                        )}
-                      >
-                        <span className="text-[10px] font-black uppercase tracking-widest">{gland.name}</span>
-                        <span className="text-[8px] font-bold opacity-70 text-center leading-tight">{gland.reflex}</span>
-                      </Button>
-                    ))}
+                {/* Step 3: Organ / Gland Challenge */}
+                <div className="space-y-4 p-6 bg-slate-50 rounded-[2rem] border border-slate-100">
+                  <div className="flex items-center justify-between mb-2">
+                    <label className="text-xs font-black uppercase tracking-widest text-slate-400 flex items-center gap-2">
+                      <Heart size={14} className="text-rose-500" /> 3. Organ / Gland Challenge
+                    </label>
+                    <ToggleGroup type="single" value={challengeType} onValueChange={(v) => v && setChallengeType(v as any)} className="bg-white p-1 rounded-xl border border-slate-200">
+                      <ToggleGroupItem value="hand" className="rounded-lg px-4 py-1.5 text-[10px] font-black uppercase tracking-widest data-[state=on]:bg-indigo-600 data-[state=on]:text-white">Hand Reflex</ToggleGroupItem>
+                      <ToggleGroupItem value="gland" className="rounded-lg px-4 py-1.5 text-[10px] font-black uppercase tracking-widest data-[state=on]:bg-indigo-600 data-[state=on]:text-white">Gland Reflex</ToggleGroupItem>
+                    </ToggleGroup>
                   </div>
-                </div>
 
-                <div className="space-y-4 p-4 bg-slate-50 rounded-2xl border border-slate-100">
-                  <label className="text-xs font-black uppercase tracking-widest text-slate-400 flex items-center gap-2">
-                    <Heart size={14} className="text-rose-500" /> 3. Organ Pulse (Hand Reflexology)
-                  </label>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div className="flex gap-2">
-                      <ToggleGroup type="single" value={pulseSide} onValueChange={(v) => v && setPulseSide(v as any)} className="flex-1">
-                        <ToggleGroupItem value="Left" className="flex-1 rounded-xl border border-slate-200 data-[state=on]:bg-rose-600 data-[state=on]:text-white font-bold">Left Hand</ToggleGroupItem>
-                        <ToggleGroupItem value="Right" className="flex-1 rounded-xl border border-slate-200 data-[state=on]:bg-rose-600 data-[state=on]:text-white font-bold">Right Hand</ToggleGroupItem>
-                      </ToggleGroup>
-                      <ToggleGroup type="single" value={pulseDepth} onValueChange={(v) => v && setPulseDepth(v as any)} className="flex-1">
-                        <ToggleGroupItem value="Light" className="flex-1 rounded-xl border border-slate-200 data-[state=on]:bg-rose-600 data-[state=on]:text-white font-bold">Light</ToggleGroupItem>
-                        <ToggleGroupItem value="Deep" className="flex-1 rounded-xl border border-slate-200 data-[state=on]:bg-rose-600 data-[state=on]:text-white font-bold">Deep</ToggleGroupItem>
-                      </ToggleGroup>
+                  {challengeType === 'hand' ? (
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6 animate-in fade-in duration-300">
+                      <div className="flex gap-2">
+                        <ToggleGroup type="single" value={pulseSide} onValueChange={(v) => v && setPulseSide(v as any)} className="flex-1">
+                          <ToggleGroupItem value="Left" className="flex-1 rounded-xl border border-slate-200 data-[state=on]:bg-rose-600 data-[state=on]:text-white font-bold">Left Hand</ToggleGroupItem>
+                          <ToggleGroupItem value="Right" className="flex-1 rounded-xl border border-slate-200 data-[state=on]:bg-rose-600 data-[state=on]:text-white font-bold">Right Hand</ToggleGroupItem>
+                        </ToggleGroup>
+                        <ToggleGroup type="single" value={pulseDepth} onValueChange={(v) => v && setPulseDepth(v as any)} className="flex-1">
+                          <ToggleGroupItem value="Light" className="flex-1 rounded-xl border border-slate-200 data-[state=on]:bg-rose-600 data-[state=on]:text-white font-bold">Light</ToggleGroupItem>
+                          <ToggleGroupItem value="Deep" className="flex-1 rounded-xl border border-slate-200 data-[state=on]:bg-rose-600 data-[state=on]:text-white font-bold">Deep</ToggleGroupItem>
+                        </ToggleGroup>
+                      </div>
+                      <div className="flex flex-wrap gap-2">
+                        {currentOrgans.map((org) => (
+                          <Button
+                            key={org.name}
+                            variant={selectedOrgan === org.name ? "default" : "outline"}
+                            onClick={() => {
+                              setSelectedOrgan(selectedOrgan === org.name ? "" : org.name);
+                              setSelectedGland("");
+                            }}
+                            className={cn(
+                              "h-9 text-[10px] font-black uppercase tracking-widest rounded-xl transition-all",
+                              selectedOrgan === org.name ? "bg-slate-900 text-white" : "bg-white border-slate-200"
+                            )}
+                          >
+                            <span className={cn("w-2 h-2 rounded-full mr-2", org.color)} />
+                            {org.name}
+                          </Button>
+                        ))}
+                      </div>
                     </div>
-                    <div className="flex flex-wrap gap-2">
-                      {currentOrgans.map((org) => (
-                        <Button
-                          key={org.name}
-                          variant={selectedOrgan === org.name ? "default" : "outline"}
-                          onClick={() => {
-                            if (selectedOrgan === org.name) {
+                  ) : (
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6 animate-in fade-in duration-300">
+                      <div className="grid grid-cols-2 gap-2">
+                        {VAGAL_GLANDS.map((gland) => (
+                          <Button
+                            key={gland.name}
+                            variant={selectedGland === gland.name ? "default" : "outline"}
+                            onClick={() => {
+                              setSelectedGland(selectedGland === gland.name ? "" : gland.name);
                               setSelectedOrgan("");
-                              setSelectedAssociation("");
-                            } else {
-                              setSelectedOrgan(org.name);
-                              setSelectedAssociation("");
-                            }
-                          }}
-                          className={cn(
-                            "h-9 text-[10px] font-black uppercase tracking-widest rounded-xl transition-all",
-                            selectedOrgan === org.name ? "bg-slate-900 text-white" : "bg-white border-slate-200"
-                          )}
-                        >
-                          <span className={cn("w-2 h-2 rounded-full mr-2", org.color)} />
-                          {org.name}
-                        </Button>
-                      ))}
+                            }}
+                            className={cn(
+                              "h-auto py-3 flex flex-col items-center gap-1 rounded-xl transition-all",
+                              selectedGland === gland.name ? "bg-indigo-600 text-white shadow-md" : "bg-white border-slate-200 text-slate-600"
+                            )}
+                          >
+                            <span className="text-[10px] font-black uppercase tracking-widest">{gland.name}</span>
+                            <span className="text-[8px] font-bold opacity-70 text-center leading-tight">{gland.reflex}</span>
+                          </Button>
+                        ))}
+                      </div>
+                      
+                      {selectedGland ? (
+                        <div className="bg-indigo-50 border-2 border-indigo-100 rounded-2xl p-4 flex items-start gap-4">
+                          <div className="w-10 h-10 bg-indigo-600 rounded-xl flex items-center justify-center text-white shrink-0 shadow-lg">
+                            <Sparkles size={20} />
+                          </div>
+                          <div>
+                            <p className="text-[10px] font-black text-indigo-600 uppercase tracking-widest mb-1">Reflex Challenge</p>
+                            <p className="text-sm font-bold text-indigo-900 leading-tight">
+                              {VAGAL_GLANDS.find(g => g.name === selectedGland)?.reflex}
+                            </p>
+                            <p className="text-[10px] text-indigo-400 mt-2 italic">Challenge this reflex while testing the indicator muscle.</p>
+                          </div>
+                        </div>
+                      ) : (
+                        <div className="border-2 border-dashed border-slate-200 rounded-2xl flex flex-col items-center justify-center text-center p-4 text-slate-400">
+                          <MousePointer2 size={24} className="mb-2 opacity-20" />
+                          <p className="text-xs font-medium">Select a gland to see <br/>its reflex challenge</p>
+                        </div>
+                      )}
                     </div>
-                  </div>
+                  )}
                 </div>
 
                 <div className="space-y-3">
@@ -394,7 +424,7 @@ const VagusNerveProcess = ({ appointmentId, initialNotes, onSaveField, onUpdate 
                   </label>
                   <Select value={selectedAssociation} onValueChange={setSelectedAssociation}>
                     <SelectTrigger className="rounded-xl border-slate-200 h-11 font-bold">
-                      <SelectValue placeholder={selectedOrgan ? `Select segment for ${selectedOrgan}...` : "Find associated spinal segment..."} />
+                      <SelectValue placeholder={(selectedOrgan || selectedGland) ? `Select segment for ${selectedOrgan || selectedGland}...` : "Find associated spinal segment..."} />
                     </SelectTrigger>
                     <SelectContent className="max-h-[300px]">
                       {filteredAssociations.map(a => (
@@ -460,7 +490,7 @@ const VagusNerveProcess = ({ appointmentId, initialNotes, onSaveField, onUpdate 
                     </div>
                     
                     <p className="text-[10px] text-emerald-700 font-medium leading-relaxed italic">
-                      "Hold Vagal Reflex + Stim Function + Hold Organ Reflex + Medulla Breathing Pattern"
+                      "Hold Vagal Reflex + Stim Function + Hold Organ/Gland Reflex + Medulla Breathing Pattern"
                     </p>
                   </div>
                 </div>

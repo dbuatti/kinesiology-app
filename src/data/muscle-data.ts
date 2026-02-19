@@ -50,7 +50,8 @@ export const MUSCLE_GROUPS: Record<string, string[]> = {
   'Intrinsic Stabilisation': [
     'Transverse Abdominals',
     'Diaphragm',
-    'Pelvic Floor',
+    'Pelvic Floor (Anterior)',
+    'Pelvic Floor (Posterior)',
     'Multifidi',
     'Sacrospinalis',
     'Psoas',
@@ -91,6 +92,9 @@ export const MUSCLE_GROUPS: Record<string, string[]> = {
     'External Pterygoid',
     'Orbicularis Oris',
     'Occipitalis',
+    'Neck Extensors',
+    'Scalenes',
+    'Deep Neck Flexors',
   ],
   'Lower Body': [
     'Quadriceps Group',
@@ -112,7 +116,11 @@ export const MUSCLE_GROUPS: Record<string, string[]> = {
     'Tibialis Anterior',
     'Tibialis Posterior',
     'Peroneus Longus',
+    'Fibularis Longus',
     'Flexor Hallucis Longus',
+    'Extensor Hallucis Longus',
+    'Flexor Digitorum Longus',
+    'Extensor Digitorum Longus',
   ],
 };
 

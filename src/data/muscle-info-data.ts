@@ -20,295 +20,357 @@ export interface MuscleInfo {
 }
 
 export const MUSCLE_INFO_DETAILS: Record<string, MuscleInfo> = {
-  // --- INTRINSIC STABILISATION SYSTEM ---
-  'Transverse Abdominals': {
-    name: 'Transverse Abdominals (TVA)',
-    meridian: '',
-    organGland: 'Stomach',
-  },
-  'Diaphragm': {
-    name: 'Diaphragm',
-    meridian: 'Pericardium',
-    organGland: 'Stomach',
-  },
-  'Pelvic Floor': {
-    name: 'Pelvic Floor',
-    meridian: 'Bladder',
-    organGland: 'Bladder',
-  },
-  'Multifidi': {
-    name: 'Multifidi',
-    meridian: 'Bladder',
-    organGland: 'Kidney',
-  },
-  'Sacrospinalis': {
-    name: 'Sacrospinalis',
-    meridian: 'Bladder',
-  },
-  'Psoas': {
-    name: 'Psoas',
-    meridian: 'Kidney, Liver',
-    organGland: 'Kidneys',
-  },
-  'Quadratus Lumborum': {
-    name: 'Quadratus Lumborum',
-    meridian: 'Kidney',
-    organGland: 'Large Intestine',
-  },
-  'Erector Spinae': {
-    name: 'Erector Spinae',
-    meridian: '',
-    organGland: 'Bladder',
-  },
-
-  // --- 14 PRIMARY MUSCLES (TFH) ---
-  'Supraspinatus': {
-    name: 'Supraspinatus',
-    meridian: 'Central',
-    organGland: 'Brain',
-  },
-  'Teres Major': {
-    name: 'Teres Major',
-    meridian: 'Governing',
-    organGland: 'Spine',
-  },
-  'Pectoralis Major (Clavicular)': {
-    name: 'Pectoralis Major (Clavicular)',
-    meridian: 'Lung',
-    organGland: 'Stomach',
-  },
-  'Latissimus Dorsi': {
-    name: 'Latissimus Dorsi',
-    meridian: '',
-    organGland: 'Pancreas / Spleen',
-  },
-  'Subscapularis': {
-    name: 'Subscapularis',
-    meridian: '',
-    organGland: 'Heart',
-  },
-  'Quadriceps Group': {
-    name: 'Quadriceps Group',
+  'Neck Extensors': {
+    name: 'Neck Extensors',
+    brainstemControl: 'Pons, Cerebellum',
+    organGland: 'Stomach, Sinus',
     meridian: 'Stomach',
-    organGland: 'Small Intestine',
-  },
-  'Peroneus Longus': {
-    name: 'Peroneus Longus',
-    meridian: 'Gall Bladder',
-    organGland: 'Bladder',
-  },
-  'Gluteus Medius': {
-    name: 'Gluteus Medius',
-    meridian: 'Pericardium',
-    organGland: 'Reproductive Organs',
-  },
-  'Teres Minor': {
-    name: 'Teres Minor',
-    meridian: '',
-    organGland: 'Thyroid',
-  },
-  'Anterior Deltoid': {
-    name: 'Anterior Deltoid',
-    meridian: 'Lung',
-    organGland: 'Gall Bladder',
-  },
-  'Pectoralis Major (Sternal)': {
-    name: 'Pectoralis Major (Sternal)',
-    meridian: 'Pericardium',
-    organGland: 'Liver',
-  },
-  'Serratus Anterior': {
-    name: 'Serratus Anterior',
-    meridian: 'Pericardium',
-    organGland: 'Lungs',
-  },
-  'Middle Trapezius': {
-    name: 'Middle Trapezius',
-    meridian: '',
-    organGland: 'Spleen',
-  },
-
-  // --- FACIAL & CRANIAL ---
-  'Buccinator': {
-    name: 'Buccinator',
-    meridian: '',
-    organGland: 'Glucagon/Pancreas',
-  },
-  'Masseter': {
-    name: 'Masseter',
-    meridian: '',
-    organGland: 'Thymus',
-  },
-  'External Pterygoid': {
-    name: 'External Pterygoid',
-    meridian: '',
-    organGland: 'Post Pituitary',
-  },
-  'Orbicularis Oris': {
-    name: 'Orbicularis Oris',
-    meridian: '',
-    organGland: 'Exocrine Pancreas',
-  },
-  'Occipitalis': {
-    name: 'Occipitalis',
-    meridian: '',
-    organGland: 'Thalamus',
-  },
-
-  // --- LOWER BODY ---
-  'Vastus Lateralis': {
-    name: 'Vastus Lateralis',
-    meridian: '',
-    organGland: 'Heart',
-  },
-  'Hamstrings': {
-    name: 'Hamstrings',
-    meridian: 'Bladder',
-    organGland: 'Large Intestine',
-  },
-  'Tensor Fasciae Latae (TFL)': {
-    name: 'Tensor Fasciae Latae (TFL)',
-    meridian: 'Gall Bladder',
-    organGland: 'Large Intestine (Sigmoid Colon)',
-  },
-  'Gluteus Maximus': {
-    name: 'Gluteus Maximus',
-    meridian: 'Bladder',
-    organGland: 'Ascending Colon',
-  },
-  'Piriformis': {
-    name: 'Piriformis',
-    meridian: 'Gall Bladder, Pericardium',
-    organGland: 'Adrenal Medulla',
-  },
-  'Flexor Hallucis Longus': {
-    name: 'Flexor Hallucis Longus',
-    meridian: '',
-    organGland: 'Adrenal Cortex',
-  },
-  'Tibialis Anterior': {
-    name: 'Tibialis Anterior',
-    meridian: 'Stomach',
-    organGland: 'Bladder',
-  },
-  'Sartorius': {
-    name: 'Sartorius',
-    meridian: 'Spleen',
-    organGland: 'Adrenals',
-  },
-  'Gracilis': {
-    name: 'Gracilis',
-    meridian: 'Liver',
-    organGland: 'Adrenals',
-  },
-  'Soleus': {
-    name: 'Soleus',
-    meridian: 'Bladder',
-    organGland: 'Adrenals',
-  },
-  'Gastrocnemius': {
-    name: 'Gastrocnemius',
-    meridian: 'Bladder',
-    organGland: 'Adrenals',
-  },
-  'Popliteus': {
-    name: 'Popliteus',
-    meridian: 'Bladder',
-    organGland: 'Gall Bladder',
-  },
-  'Tibialis Posterior': {
-    name: 'Tibialis Posterior',
-    meridian: 'Gall Bladder',
-    organGland: 'Bladder',
-  },
-  'Infraspinatus': {
-    name: 'Infraspinatus',
-    meridian: 'Small Intestine, San Jiao',
-    organGland: 'Thyroid',
-  },
-  'Rhomboids': {
-    name: 'Rhomboids',
-    meridian: '',
-    organGland: 'Liver',
-  },
-  'Levator Scapula': {
-    name: 'Levator Scapula',
-    meridian: 'Small Intestine',
-    organGland: 'Stomach',
-  },
-  'Upper Trapezius': {
-    name: 'Upper Trapezius',
-    meridian: 'Lung',
-    organGland: 'Kidneys',
-  },
-  'Lower Trapezius': {
-    name: 'Lower Trapezius',
-    meridian: '',
-    organGland: 'Spleen',
-  },
-  'Biceps': {
-    name: 'Biceps',
-    meridian: 'Pericardium',
-    organGland: 'Stomach',
-  },
-  'Triceps': {
-    name: 'Triceps',
-    meridian: 'Small Intestine',
-    organGland: 'Spleen/Pancreas',
-  },
-  'Middle Deltoid': {
-    name: 'Middle Deltoid',
-    meridian: 'Large Intestine',
-    organGland: 'Heart',
-  },
-  'SCM': {
-    name: 'Sternocleidomastoid (SCM)',
-    meridian: '',
-    organGland: 'Stomach',
   },
   'Scalenes': {
     name: 'Scalenes',
-    meridian: '',
+    brainstemControl: 'Medulla, Midbrain',
     organGland: 'Stomach',
+    meridian: 'Stomach',
   },
-  'Pec Minor': {
-    name: 'Pec Minor',
-    meridian: 'Lung',
-    organGland: 'Lungs',
+  'Biceps': {
+    name: 'Biceps',
+    brainstemControl: 'Medulla, Midbrain',
+    organGland: 'Stomach',
+    meridian: 'Pericardium',
   },
-  'Rectus Abdominals': {
-    name: 'Rectus Abdominals',
-    meridian: 'Stomach, Kidney',
+  'Supraspinatus': {
+    name: 'Supraspinatus',
+    brainstemControl: 'Pons, Cerebellum',
+    organGland: 'Thyroid, Brain',
+    spinalFixation: 'C7-T11',
+    meridian: 'Central',
+  },
+  'Rhomboids': {
+    name: 'Rhomboids',
+    brainstemControl: 'Pons, Cerebellum',
+    organGland: 'Liver',
+    spinalFixation: 'T3-T8',
+    meridian: 'Liver',
+  },
+  'Triceps': {
+    name: 'Triceps',
+    brainstemControl: 'Pons, Cerebellum',
+    organGland: 'Spleen/Pancreas',
+    meridian: 'Small Intestine',
+  },
+  'Upper Trapezius': {
+    name: 'Upper Trapezius',
+    brainstemControl: 'Pons, Cerebellum',
     organGland: 'Kidneys',
+    meridian: 'Lung',
   },
-  'Neck Extensors': {
-    name: 'Neck Extensors',
-    meridian: '',
+  'Teres Major': {
+    name: 'Teres Major',
+    brainstemControl: 'Pons, Cerebellum',
+    organGland: 'Spine',
+    meridian: 'Governing',
+  },
+  'Sternocleidomastoid (SCM)': {
+    name: 'SCM',
+    brainstemControl: 'Medulla, Midbrain',
     organGland: 'Stomach',
+    meridian: 'Stomach',
   },
-  'Adductors': {
-    name: 'Adductors',
-    meridian: 'Kidney',
-    organGland: 'Adrenals',
+  'Anterior Deltoid': {
+    name: 'Anterior Deltoid',
+    brainstemControl: 'Medulla, Midbrain',
+    organGland: 'Gall Bladder',
+    meridian: 'Lung',
   },
-  'Gluteus Minimus': {
-    name: 'Gluteus Minimus',
+  'Lower Trapezius': {
+    name: 'Lower Trapezius',
+    brainstemControl: 'Pons, Cerebellum',
+    organGland: 'Spleen',
+    meridian: 'Spleen',
+  },
+  'Middle Deltoid': {
+    name: 'Middle Deltoid',
+    brainstemControl: 'Pons, Cerebellum',
+    organGland: 'Heart',
+    meridian: 'Large Intestine',
+  },
+  'Infraspinatus': {
+    name: 'Infraspinatus',
+    brainstemControl: 'Pons, Cerebellum',
+    organGland: 'Thymus',
+    meridian: 'Small Intestine, San Jiao',
+  },
+  'Deep Neck Flexors': {
+    name: 'Deep Neck Flexors',
+    brainstemControl: 'Medulla, Midbrain',
+    organGland: 'Stomach, Sinus',
+    meridian: 'Stomach',
+  },
+  'Pectoralis Major (Sternal)': {
+    name: 'Pec Major Sternal',
+    brainstemControl: 'Medulla, Midbrain',
+    organGland: 'Liver',
+    spinalFixation: 'T8-T3',
+    meridian: 'Pericardium',
+  },
+  'Subscapularis': {
+    name: 'Subscapularis',
+    brainstemControl: 'Pons, Cerebellum',
+    organGland: 'Hypothalamus, Heart',
+    spinalFixation: 'C4-L2',
     meridian: '',
-    organGland: 'Reproductive Organs',
+  },
+  'Pectoralis Major (Clavicular)': {
+    name: 'Pec Major Clavicular',
+    brainstemControl: 'Medulla, Midbrain',
+    organGland: 'Stomach',
+    spinalFixation: 'T6-T5',
+    meridian: 'Lung',
   },
   'Posterior Deltoid': {
     name: 'Posterior Deltoid',
+    brainstemControl: 'Pons, Cerebellum',
+    organGland: 'Lungs',
     meridian: 'San Jiao',
-    organGland: 'Lung',
+  },
+  'Pec Minor': {
+    name: 'Pec Minor',
+    brainstemControl: 'Medulla, Midbrain',
+    organGland: 'Parotid Gland',
+    meridian: 'Lung',
+  },
+  'Levator Scapula': {
+    name: 'Levator Scapula',
+    brainstemControl: 'Pons, Cerebellum',
+    organGland: 'Parathyroid',
+    meridian: 'Small Intestine',
+  },
+  'Teres Minor': {
+    name: 'Teres Minor',
+    brainstemControl: 'Pons, Cerebellum',
+    organGland: 'Thyroid',
+    meridian: '',
+  },
+  'Latissimus Dorsi': {
+    name: 'Latissimus Dorsi',
+    brainstemControl: 'Pons, Cerebellum',
+    organGland: 'Pancreas',
+    spinalFixation: 'T4-T7',
+    meridian: 'Spleen',
+  },
+  'Middle Trapezius': {
+    name: 'Middle Trapezius',
+    brainstemControl: 'Pons, Cerebellum',
+    organGland: 'Spleen',
+    meridian: '',
+  },
+  'Sacrospinalis': {
+    name: 'Sacrospinalis',
+    brainstemControl: 'Pons, Cerebellum',
+    meridian: 'Bladder',
+  },
+  'Multifidi': {
+    name: 'Multifidi',
+    brainstemControl: 'Pons, Cerebellum',
+    organGland: 'Kidney',
+    meridian: 'Bladder',
+  },
+  'Pelvic Floor (Anterior)': {
+    name: 'Anterior PF',
+    organGland: 'Bladder',
+    meridian: 'Bladder',
+  },
+  'Erector Spinae': {
+    name: 'Erector Spinae',
+    brainstemControl: 'Pons, Cerebellum',
+    organGland: 'Bladder',
+    spinalFixation: 'L1-C5',
+    meridian: 'Bladder',
+  },
+  'Diaphragm': {
+    name: 'Diaphragm',
+    brainstemControl: 'Medulla, Pons',
+    organGland: 'Stomach',
+    spinalFixation: 'C3-L3',
+    meridian: 'Pericardium',
+  },
+  'Pelvic Floor (Posterior)': {
+    name: 'Posterior PF',
+    organGland: 'Bladder',
+    meridian: 'Bladder',
+  },
+  'Internal Obs': {
+    name: 'Internal Obliques',
+    brainstemControl: 'Medulla, Midbrain',
+    organGland: 'Stomach',
+    meridian: 'Stomach',
+  },
+  'Serratus Anterior': {
+    name: 'Serratus Anterior',
+    brainstemControl: 'Medulla, Midbrain',
+    meridian: 'Pericardium',
+  },
+  'External Obs': {
+    name: 'External Obliques',
+    brainstemControl: 'Medulla, Midbrain',
+    organGland: 'Stomach',
+    meridian: 'Stomach',
+  },
+  'Transverse Abdominals': {
+    name: 'TVA',
+    brainstemControl: 'Medulla, Midbrain',
+    organGland: 'Stomach',
+    meridian: 'Stomach',
+  },
+  'Rectus Abdominals': {
+    name: 'Rectus Abdominals',
+    brainstemControl: 'Medulla, Midbrain',
+    organGland: 'Stomach',
+    meridian: 'Stomach, Kidney',
+  },
+  'Quadratus Lumborum': {
+    name: 'QL',
+    brainstemControl: 'Pons, Cerebellum',
+    organGland: 'Large Intestine',
+    spinalFixation: 'T12-C6',
+    meridian: 'Kidney',
+  },
+  'Flexor Digitorum Longus': {
+    name: 'FDL',
+    brainstemControl: 'Medulla, Midbrain',
+  },
+  'Hamstrings': {
+    name: 'Hamstrings',
+    brainstemControl: 'Pons, Cerebellum',
+    organGland: 'Large Intestine',
+    spinalFixation: 'L5-C1',
+    meridian: 'Bladder',
+  },
+  'Popliteus': {
+    name: 'Popliteus',
+    brainstemControl: 'Pons, Cerebellum',
+    organGland: 'Gall Bladder',
+    meridian: 'Bladder',
+  },
+  'Adductors': {
+    name: 'Adductors',
+    brainstemControl: 'Medulla, Midbrain',
+    organGland: 'Reproductive',
+    meridian: 'Kidney, Pericardium',
+  },
+  'Soleus': {
+    name: 'Soleus',
+    brainstemControl: 'Medulla, Midbrain',
+    organGland: 'Adrenals',
+    meridian: 'Bladder, San Jiao',
+  },
+  'Gracilis': {
+    name: 'Gracilis',
+    organGland: 'Rectum',
+    meridian: 'Liver',
+  },
+  'Psoas': {
+    name: 'Psoas',
+    brainstemControl: 'Medulla, Midbrain',
+    organGland: 'Kidneys',
+    spinalFixation: 'T10-T1',
+    meridian: 'Kidney, Liver',
+  },
+  'Quadriceps Group': {
+    name: 'Quads',
+    brainstemControl: 'Pons, Cerebellum',
+    organGland: 'Small Intestine',
+    meridian: 'Stomach',
+  },
+  'Tibialis Anterior': {
+    name: 'Tibialis Anterior',
+    brainstemControl: 'Pons, Cerebellum',
+    organGland: 'Bladder',
+    spinalFixation: 'L4-C2',
+    meridian: 'Stomach, Bladder',
+  },
+  'Gastrocnemius': {
+    name: 'Gastrocnemius',
+    brainstemControl: 'Pons, Cerebellum',
+    organGland: 'Adrenals',
+    meridian: 'Bladder, San Jiao',
+  },
+  'Tensor Fasciae Latae (TFL)': {
+    name: 'TFL',
+    brainstemControl: 'Medulla, Midbrain',
+    organGland: 'Large Intestine (Sigmoid Colon)',
+    spinalFixation: 'L2-C4',
+    meridian: 'Gall Bladder',
+  },
+  'Flexor Hallucis Longus': {
+    name: 'FHL',
+    brainstemControl: 'Medulla, Midbrain',
+    organGland: 'Adrenal Cortex',
+    spinalFixation: 'T11-C7',
+    meridian: 'San Jiao',
+  },
+  'Sartorius': {
+    name: 'Sartorius',
+    brainstemControl: 'Medulla, Midbrain',
+    organGland: 'Adrenal Cortex',
+    meridian: 'Spleen, San Jiao',
   },
   'Rec Fem': {
     name: 'Rec Fem',
+    brainstemControl: 'Pons, Cerebellum',
+    organGland: 'Small Intestine',
     meridian: 'Stomach',
+  },
+  'Vastus Lateralis': {
+    name: 'Vastus Lateralis',
+    brainstemControl: 'Medulla, Midbrain',
+    organGland: 'Heart',
+    spinalFixation: 'T2-T9',
+    meridian: 'Heart',
+  },
+  'Piriformis': {
+    name: 'Piriformis',
+    brainstemControl: 'Pons, Cerebellum',
+    organGland: 'Adrenal Medulla',
+    spinalFixation: 'T9-T2',
+    meridian: 'Gall Bladder, Pericardium',
+  },
+  'Gluteus Maximus': {
+    name: 'Glute Max',
+    brainstemControl: 'Pons, Cerebellum',
+    organGland: 'Ascending Colon',
+    spinalFixation: 'L3-C3',
+    meridian: 'Bladder',
+  },
+  'Gluteus Minimus': {
+    name: 'Glute Minimus',
+    brainstemControl: 'Pons, Cerebellum',
+    organGland: 'Adrenal Medulla',
+    meridian: 'Pericardium',
+  },
+  'Tibialis Posterior': {
+    name: 'Tibialis Posterior',
+    brainstemControl: 'Medulla, Midbrain',
+    organGland: 'Adrenals',
+    meridian: 'Gall Bladder, San Jiao',
+  },
+  'Fibularis Longus': {
+    name: 'Fibularis Longus',
+    organGland: 'Bladder',
+    meridian: 'Bladder',
   },
   'VMO': {
     name: 'VMO',
+    brainstemControl: 'Medulla, Midbrain',
+    organGland: 'Small Intestine',
     meridian: 'Stomach',
-  }
+  },
+  'Gluteus Medius': {
+    name: 'Glute Med',
+    brainstemControl: 'Pons, Cerebellum',
+    organGland: 'Reproductive',
+    meridian: 'Pericardium',
+  },
 };
 
 export const getMuscleInfo = (name: string): MuscleInfo => {

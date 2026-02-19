@@ -18,7 +18,7 @@ export interface MuscleInfo {
 }
 
 export const MUSCLE_INFO_DETAILS: Record<string, MuscleInfo> = {
-  // UPPER BODY
+  // --- UPPER BODY ---
   'Supraspinatus': {
     name: 'Supraspinatus',
     brainstemControl: 'Pons, Cerebellum',
@@ -46,7 +46,7 @@ export const MUSCLE_INFO_DETAILS: Record<string, MuscleInfo> = {
     organGland: 'Liver, T3-T8',
     spinalFixation: 'T5',
   },
-  'Triceps (medial and lateral heads)': {
+  'Triceps': {
     name: 'Triceps',
     brainstemControl: 'Pons, Cerebellum',
     clinicalIndications: 'Tennis elbow, golfer’s elbow, Pancreas issues, Radial Nerve compression',
@@ -256,8 +256,24 @@ export const MUSCLE_INFO_DETAILS: Record<string, MuscleInfo> = {
     organGland: 'Spleen',
     spinalFixation: 'T5, 6',
   },
+  'Coracobrachialis': {
+    name: 'Coracobrachialis',
+    meridian: 'Lung',
+    organGland: 'Lung',
+    nutrition: 'Vitamin C',
+    function: 'Flexion and adduction of the humerus',
+    clinicalIndications: 'Shoulder pain, restricted reaching across the body',
+  },
+  'Brachioradialis': {
+    name: 'Brachioradialis',
+    meridian: 'Stomach',
+    organGland: 'Stomach',
+    nutrition: 'B vitamins',
+    function: 'Elbow flexion, especially when forearm is in mid-position',
+    clinicalIndications: 'Forearm pain, weak grip',
+  },
 
-  // TRUNK
+  // --- TRUNK ---
   'Sacrospinalis': {
     name: 'Sacrospinalis',
     brainstemControl: 'Pons, Cerebellum',
@@ -345,8 +361,16 @@ export const MUSCLE_INFO_DETAILS: Record<string, MuscleInfo> = {
     organGland: 'Large Intestine, T12-C6',
     spinalFixation: 'L4, 5',
   },
+  'Rectus Abdominis': {
+    name: 'Rectus Abdominis',
+    meridian: 'Small Intestine',
+    organGland: 'Small Intestine',
+    nutrition: 'Vitamin D',
+    function: 'Trunk flexion, stabilizes pelvis',
+    clinicalIndications: 'Lower back pain, poor posture, digestive issues',
+  },
 
-  // LOWER BODY
+  // --- LOWER BODY ---
   'Hamstrings': {
     name: 'Hamstrings',
     brainstemControl: 'Medulla, Midbrain',
@@ -478,6 +502,62 @@ export const MUSCLE_INFO_DETAILS: Record<string, MuscleInfo> = {
     testingPosition: 'Leg lifted 45° and moved out to the side. Pressure is applied to the ankle, pushing the leg back towards the midline.',
     neurolymphatic: 'Along the outer edge of the pubic bone.',
     neurovascular: 'On the side of the head, above the ear.',
+  },
+  'Sartorius': {
+    name: 'Sartorius',
+    meridian: 'Triple Warmer',
+    organGland: 'Adrenals',
+    nutrition: 'Vitamin C',
+    function: 'Hip flexion, abduction, and lateral rotation; knee flexion',
+    clinicalIndications: 'Knee pain, adrenal fatigue, difficulty crossing legs',
+  },
+  'Gracilis': {
+    name: 'Gracilis',
+    meridian: 'Triple Warmer',
+    organGland: 'Adrenals',
+    nutrition: 'Vitamin C',
+    function: 'Adduction of the hip, flexes and medially rotates the knee',
+    clinicalIndications: 'Medial knee pain, groin strain',
+  },
+  'Gastrocnemius': {
+    name: 'Gastrocnemius',
+    meridian: 'Bladder',
+    organGland: 'Adrenals',
+    nutrition: 'Vitamin C',
+    function: 'Plantar flexion of the ankle, flexes the knee',
+    clinicalIndications: 'Calf cramps, Achilles tendonitis',
+  },
+  'Tibialis Posterior': {
+    name: 'Tibialis Posterior',
+    meridian: 'Bladder',
+    organGland: 'Adrenals',
+    nutrition: 'Vitamin C',
+    function: 'Inversion of the foot, plantar flexion of the ankle',
+    clinicalIndications: 'Flat feet, shin splints',
+  },
+  'Peroneus Longus': {
+    name: 'Peroneus Longus',
+    meridian: 'Bladder',
+    organGland: 'Bladder',
+    nutrition: 'Vitamin A',
+    function: 'Eversion of the foot, plantar flexion of the ankle',
+    clinicalIndications: 'Ankle instability, lateral foot pain',
+  },
+  'Adductors': {
+    name: 'Adductors',
+    meridian: 'Circulation/Sex',
+    organGland: 'Reproductive Organs',
+    nutrition: 'Vitamin E',
+    function: 'Adduction of the hip',
+    clinicalIndications: 'Groin pain, pelvic instability',
+  },
+  'Gluteus Minimus': {
+    name: 'Gluteus Minimus',
+    meridian: 'Circulation/Sex',
+    organGland: 'Reproductive Organs',
+    nutrition: 'Vitamin E',
+    function: 'Abduction and medial rotation of the hip',
+    clinicalIndications: 'Hip pain, radiating pain down the leg',
   },
 };
 

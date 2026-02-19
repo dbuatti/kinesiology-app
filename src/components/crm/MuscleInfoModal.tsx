@@ -65,7 +65,7 @@ const MuscleInfoModal = ({ muscleName, open, onOpenChange }: MuscleInfoModalProp
   if (!muscleName || !info) return null;
 
   const isPeakNow = (peakTimeStr: string) => {
-    if (peakTimeStr === 'None') return false;
+    if (!peakTimeStr || peakTimeStr === 'None') return false;
     const parts = peakTimeStr.toLowerCase().split('-').map(p => p.trim());
     const parseHour = (s: string) => {
       const hour = parseInt(s);
@@ -119,10 +119,10 @@ const MuscleInfoModal = ({ muscleName, open, onOpenChange }: MuscleInfoModalProp
         </div>
 
         <div className="p-8 space-y-10 max-h-[70vh] overflow-y-auto">
-          {/* Lovett-Brother Partner (New Section) */}
+          {/* Lovett-Brother Partner */}
           {lovettPartner && (
             <section className="animate-in fade-in slide-in-from-top-2 duration-500">
-              <SectionHeader icon={ArrowRightLeft} title="Lovett-Brother Relationship" color="text-rose-600" />
+              <SectionHeader icon={ArrowRightLeft} title="Spinal / Lovett-Brother Relationship" color="text-rose-600" />
               <div className="p-5 bg-rose-50 rounded-2xl border-2 border-rose-100 flex items-center justify-between gap-6">
                 <div className="text-center flex-1">
                   <p className="text-[10px] font-black text-rose-400 uppercase mb-1">Current Segment</p>

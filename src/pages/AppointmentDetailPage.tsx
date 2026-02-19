@@ -4,7 +4,7 @@ import { useState, useEffect } from "react";
 import { useParams, Link, useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Badge } from "@/components/ui/badge";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import { 
@@ -141,7 +141,6 @@ const AppointmentDetailPage = () => {
         table: 'appointments', 
         filter: `id=eq.${id}` 
       }, (payload) => {
-        console.log("[Realtime] Appointment updated:", payload.new);
         setAppointment((prev) => {
           if (!prev) return prev;
           const updatedData = { ...payload.new };
@@ -308,7 +307,8 @@ KEY ASSESSMENTS:
         onCompleteSession={handleCompleteSession}
       />
       <AppLayout hasFixedHeader={isFixedHeaderActive}>
-        <div className="flex flex-col gap-6 print:p-0">
+        <div className="flex flex-col gap-8 print:p-0">
+          {/* Top Action Bar */}
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 print:hidden">
             <Breadcrumbs 
               items={[
@@ -322,17 +322,17 @@ KEY ASSESSMENTS:
                 <Button 
                   variant="default" 
                   size="sm" 
-                  className="bg-rose-600 hover:bg-rose-700 text-white rounded-xl shadow-lg shadow-rose-100"
+                  className="bg-rose-600 hover:bg-rose-700 text-white rounded-xl shadow-lg shadow-rose-100 h-10 px-6 font-black text-[10px] uppercase tracking-widest"
                   onClick={handleStartSession}
                 >
                   <Play size={16} className="mr-2 fill-current" />
-                  Start Session Now
+                  Start Session
                 </Button>
               )}
               <Button 
                 variant="outline" 
                 size="sm" 
-                className="bg-white rounded-xl border-slate-200 text-slate-600 hover:bg-slate-50"
+                className="bg-white rounded-xl border-slate-200 text-slate-600 hover:bg-slate-50 h-10 px-4 font-bold text-xs"
                 onClick={handleClonePrevious}
                 disabled={cloning}
               >
@@ -342,16 +342,16 @@ KEY ASSESSMENTS:
               <Button 
                 variant="outline" 
                 size="sm" 
-                className="bg-white rounded-xl border-indigo-200 text-indigo-600 hover:bg-indigo-50"
+                className="bg-white rounded-xl border-indigo-200 text-indigo-600 hover:bg-indigo-50 h-10 px-4 font-bold text-xs"
                 onClick={handlePrint}
               >
                 <Printer size={16} className="mr-2" />
-                Print Summary
+                Print
               </Button>
               <Button 
                 variant="outline" 
                 size="sm" 
-                className="bg-white rounded-xl border-indigo-200 text-indigo-600 hover:bg-indigo-50"
+                className="bg-white rounded-xl border-indigo-200 text-indigo-600 hover:bg-indigo-50 h-10 px-4 font-bold text-xs"
                 onClick={handleCopySummary}
               >
                 {copied ? <Check size={16} className="mr-2 text-emerald-500" /> : <Copy size={16} className="mr-2" />}
@@ -359,10 +359,10 @@ KEY ASSESSMENTS:
               </Button>
               <DropdownMenu>
                   <DropdownMenuTrigger asChild>
-                      <Button variant="ghost" size="icon" className="rounded-xl"><MoreHorizontal size={20} /></Button>
+                      <Button variant="ghost" size="icon" className="rounded-xl h-10 w-10"><MoreHorizontal size={20} /></Button>
                   </DropdownMenuTrigger>
-                  <DropdownMenuContent align="end">
-                      <DropdownMenuItem className="text-destructive focus:text-destructive" onClick={handleDeleteAppointment}>
+                  <DropdownMenuContent align="end" className="rounded-2xl p-2 shadow-2xl border-none">
+                      <DropdownMenuItem className="text-destructive focus:text-destructive rounded-xl py-2.5 px-4 cursor-pointer" onClick={handleDeleteAppointment}>
                           <Trash2 size={16} className="mr-2" /> Delete Appointment
                       </DropdownMenuItem>
                   </DropdownMenuContent>
@@ -370,6 +370,7 @@ KEY ASSESSMENTS:
             </div>
           </div>
 
+          {/* Print Header */}
           <div className="print:block hidden mb-8">
             <div className="flex items-center justify-between border-b-2 border-indigo-600 pb-4">
               <div>
@@ -388,84 +389,97 @@ KEY ASSESSMENTS:
             currentAppointmentId={appointment.id} 
           />
 
-          <Card className="border-none shadow-sm rounded-2xl bg-white overflow-hidden print:shadow-none print:border print:border-slate-100">
-            <div className="p-6 border-b border-slate-100 bg-slate-50/30 print:bg-white">
-              <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
-                <div className="space-y-3">
-                  <div className="flex flex-wrap items-center gap-3 print:hidden">
-                    <Badge variant="secondary" className="font-bold bg-white border-slate-200 text-slate-600">{appointment.display_id || appointment.id.slice(0, 8)}</Badge>
-                    <Badge className="bg-indigo-600 text-white border-none">{appointment.tag}</Badge>
-                    <Select value={appointment.status} onValueChange={(newStatus) => saveField('status', newStatus)}>
-                      <SelectTrigger className={cn("h-8 w-[130px] text-xs font-bold border-slate-200 shadow-sm bg-white", appointment.status === 'Completed' ? "text-emerald-600" : "text-indigo-600")}>
-                        <SelectValue placeholder="Status" />
-                      </SelectTrigger>
-                      <SelectContent>{APPOINTMENT_STATUSES.map(status => <SelectItem key={status} value={status}>{status}</SelectItem>)}</SelectContent>
-                    </Select>
-                    {currentPeakMeridian && (
-                      <Badge className={cn("border-none text-white font-black text-[9px] uppercase tracking-widest px-3 py-1 rounded-full animate-in fade-in zoom-in duration-500", currentPeakMeridian.color.split(' ')[0])}>
-                        <Zap size={10} className="mr-1.5 fill-white" /> Peak: {currentPeakMeridian.name}
-                      </Badge>
-                    )}
-                  </div>
-                  <h1 className="text-3xl font-black text-slate-900 tracking-tight">{appointment.name || "Kinesiology Session"}</h1>
-                  <div className="flex flex-wrap items-center gap-4 text-sm font-medium text-slate-500">
-                    <div className="flex items-center gap-1.5"><Calendar size={16} className="text-indigo-400" /> {format(appointment.date, "EEEE, MMM d, yyyy")}</div>
-                    <div className="flex items-center gap-1.5 print:hidden"><Clock size={16} className="text-indigo-400" /> {format(appointment.date, "h:mm a")}</div>
-                    <Link to={clientLink} className="flex items-center gap-1.5 text-indigo-600 hover:underline font-bold print:no-underline print:text-slate-900">
-                      <User size={16} /> {appointment.clients.name}
-                    </Link>
-                    {clientBorn && (
-                      <div className="flex items-center gap-3 border-l border-slate-200 pl-4 print:border-none">
-                        <span className="bg-indigo-50 text-indigo-700 px-2 py-0.5 rounded-md text-[10px] font-black uppercase print:bg-white print:text-slate-500">{calculateAge(clientBorn)} yrs</span>
-                        <span className="flex items-center gap-1 text-amber-600 font-bold text-[10px] uppercase tracking-wider print:hidden">
-                          <Star size={12} className="fill-amber-500" /> {getStarSign(clientBorn)}
-                        </span>
-                      </div>
-                    )}
-                  </div>
-                </div>
-
-                <div className="flex flex-col items-end gap-3 print:hidden">
-                  <div className="flex items-center gap-3 p-3 bg-white rounded-2xl border border-slate-100 shadow-sm">
-                    <div className={cn("w-10 h-10 rounded-full flex items-center justify-center transition-colors", appointment.hydrated ? "bg-emerald-100 text-emerald-600" : "bg-rose-100 text-rose-600")}>
-                      <Droplets size={20} />
+          {/* Hero Command Center */}
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            <Card className="lg:col-span-2 border-none shadow-xl rounded-[2.5rem] bg-white overflow-hidden">
+              <div className="p-8 border-b border-slate-100 bg-slate-50/30">
+                <div className="flex flex-col md:flex-row md:items-center justify-between gap-8">
+                  <div className="flex items-center gap-6">
+                    <div className="w-20 h-20 rounded-[2rem] bg-indigo-600 text-white flex items-center justify-center text-3xl font-black shadow-2xl shadow-indigo-200">
+                      {appointment.clients.name.charAt(0)}
                     </div>
-                    <div className="pr-2">
-                      <Label htmlFor="hydration-toggle" className="text-xs font-bold text-slate-400 uppercase tracking-widest block mb-1">Hydration</Label>
-                      <div className="flex items-center gap-2">
-                        <span className="text-sm font-bold text-slate-700">{appointment.hydrated ? "Passed" : "Needs Attention"}</span>
-                        <Switch id="hydration-toggle" checked={appointment.hydrated || false} onCheckedChange={(checked) => saveField('hydrated', checked)} className="data-[state=checked]:bg-emerald-500" />
+                    <div className="space-y-2">
+                      <div className="flex flex-wrap items-center gap-3">
+                        <Badge variant="secondary" className="font-black bg-white border-slate-200 text-slate-600 text-[10px] uppercase tracking-widest">{appointment.display_id || appointment.id.slice(0, 8)}</Badge>
+                        <Badge className="bg-indigo-600 text-white border-none font-black text-[10px] uppercase tracking-widest">{appointment.tag}</Badge>
+                        <Select value={appointment.status} onValueChange={(newStatus) => saveField('status', newStatus)}>
+                          <SelectTrigger className={cn("h-8 w-[130px] text-[10px] font-black uppercase tracking-widest border-slate-200 shadow-sm bg-white rounded-xl", appointment.status === 'Completed' ? "text-emerald-600" : "text-indigo-600")}>
+                            <SelectValue placeholder="Status" />
+                          </SelectTrigger>
+                          <SelectContent className="rounded-2xl border-none shadow-2xl p-2">{APPOINTMENT_STATUSES.map(status => <SelectItem key={status} value={status} className="rounded-xl">{status}</SelectItem>)}</SelectContent>
+                        </Select>
+                      </div>
+                      <h1 className="text-4xl font-black text-slate-900 tracking-tight">{appointment.clients.name}</h1>
+                      <div className="flex flex-wrap items-center gap-4 text-sm font-bold text-slate-500">
+                        <div className="flex items-center gap-1.5"><Calendar size={16} className="text-indigo-400" /> {format(appointment.date, "EEEE, MMM d")}</div>
+                        <div className="flex items-center gap-1.5"><Clock size={16} className="text-indigo-400" /> {format(appointment.date, "h:mm a")}</div>
+                        {clientBorn && (
+                          <div className="flex items-center gap-3 border-l border-slate-200 pl-4">
+                            <span className="bg-indigo-50 text-indigo-700 px-2 py-0.5 rounded-md text-[10px] font-black uppercase">{calculateAge(clientBorn)} yrs</span>
+                            <span className="flex items-center gap-1 text-amber-600 font-black text-[10px] uppercase tracking-widest">
+                              <Star size={12} className="fill-amber-500" /> {getStarSign(clientBorn)}
+                            </span>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="flex flex-col items-end gap-4">
+                    <div className="flex items-center gap-4 p-4 bg-white rounded-[2rem] border border-slate-100 shadow-sm">
+                      <div className={cn("w-12 h-12 rounded-2xl flex items-center justify-center transition-all duration-500 shadow-inner", appointment.hydrated ? "bg-emerald-100 text-emerald-600" : "bg-rose-100 text-rose-600")}>
+                        <Droplets size={24} />
+                      </div>
+                      <div className="pr-2">
+                        <Label htmlFor="hydration-toggle" className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] block mb-1">Hydration</Label>
+                        <div className="flex items-center gap-3">
+                          <span className="text-sm font-black text-slate-700">{appointment.hydrated ? "PASSED" : "ATTENTION"}</span>
+                          <Switch id="hydration-toggle" checked={appointment.hydrated || false} onCheckedChange={(checked) => saveField('hydrated', checked)} className="data-[state=checked]:bg-emerald-500" />
+                        </div>
                       </div>
                     </div>
                   </div>
                 </div>
               </div>
-            </div>
 
-            <div className="p-6">
-              <Tabs defaultValue="goal" className="w-full">
-                <TabsList className="grid w-full grid-cols-3 h-12 bg-slate-100 p-1 rounded-xl mb-6">
-                  <TabsTrigger value="goal" className="flex items-center gap-2 data-[state=active]:bg-white data-[state=active]:text-indigo-600 data-[state=active]:shadow-sm rounded-lg h-10 text-[10px] font-black uppercase tracking-wider">
-                    <Target size={14} /> Session Goal
-                  </TabsTrigger>
-                  <TabsTrigger value="issue" className="flex items-center gap-2 data-[state=active]:bg-white data-[state=active]:text-indigo-600 data-[state=active]:shadow-sm rounded-lg h-10 text-[10px] font-black uppercase tracking-wider">
-                    <AlertCircle size={14} /> Main Concern
-                  </TabsTrigger>
-                  <TabsTrigger value="context" className="flex items-center gap-2 data-[state=active]:bg-white data-[state=active]:text-indigo-600 data-[state=active]:shadow-sm rounded-lg h-10 text-[10px] font-black uppercase tracking-wider">
-                    <Zap size={14} /> Session Context
-                  </TabsTrigger>
-                </TabsList>
+              <div className="p-8 grid grid-cols-1 md:grid-cols-2 gap-8">
+                <EditableField key={`goal-${appointment.id}`} field="goal" label="Session Goal" value={appointment.goal} placeholder="What is the primary goal for this balance?" onSave={saveField} className="bg-slate-50/50 p-6 rounded-[2rem] border border-slate-100" />
+                <EditableField key={`issue-${appointment.id}`} field="issue" label="Main Concern / Issue" value={appointment.issue} placeholder="Describe the client's main concern..." onSave={saveField} className="bg-slate-50/50 p-6 rounded-[2rem] border border-slate-100" />
+              </div>
+            </Card>
 
-                <TabsContent value="goal" className="animate-in fade-in slide-in-from-bottom-2 duration-300">
-                  <EditableField key={`goal-${appointment.id}`} field="goal" label="Session Goal" value={appointment.goal} placeholder="What is the primary goal for this balance?" onSave={saveField} className="bg-slate-50/50 p-4 rounded-2xl border border-slate-100" />
-                </TabsContent>
+            <div className="space-y-8">
+              {currentPeakMeridian && (
+                <Card className={cn("border-none shadow-xl rounded-[2.5rem] text-white overflow-hidden relative group", currentPeakMeridian.color.split(' ')[0])}>
+                  <div className="absolute top-0 right-0 p-8 opacity-10 group-hover:scale-110 transition-transform duration-700"><Zap size={120} /></div>
+                  <CardContent className="p-8 space-y-4 relative z-10">
+                    <div className="flex items-center justify-between">
+                      <p className="text-[10px] font-black uppercase tracking-[0.3em] opacity-80">Current Peak Meridian</p>
+                      <Badge className="bg-white/20 text-white border-none font-black text-[9px] uppercase tracking-widest">TCM Clock</Badge>
+                    </div>
+                    <div>
+                      <h3 className="text-3xl font-black tracking-tight">{currentPeakMeridian.name}</h3>
+                      <p className="text-xs font-bold opacity-90 mt-1">{currentPeakMeridian.peakTime}</p>
+                    </div>
+                    <div className="pt-4 border-t border-white/10">
+                      <p className="text-[10px] font-black uppercase tracking-widest opacity-70 mb-2">Core Emotions</p>
+                      <div className="flex flex-wrap gap-1.5">
+                        {currentPeakMeridian.emotions.slice(0, 3).map(e => (
+                          <Badge key={e} variant="outline" className="bg-white/10 border-white/20 text-white text-[9px] font-bold">{e}</Badge>
+                        ))}
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              )}
 
-                <TabsContent value="issue" className="animate-in fade-in slide-in-from-bottom-2 duration-300">
-                  <EditableField key={`issue-${appointment.id}`} field="issue" label="Main Concern / Issue" value={appointment.issue} placeholder="Describe the client's main concern..." onSave={saveField} className="bg-slate-50/50 p-4 rounded-2xl border border-slate-100" />
-                </TabsContent>
-
-                <TabsContent value="context" className="animate-in fade-in slide-in-from-bottom-2 duration-300">
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              <Card className="border-none shadow-lg rounded-[2.5rem] bg-slate-900 text-white overflow-hidden">
+                <CardContent className="p-8 space-y-6">
+                  <div className="flex items-center justify-between">
+                    <p className="text-[10px] font-black text-slate-500 uppercase tracking-[0.3em]">Session Context</p>
+                    <ExternalLink size={16} className="text-slate-700" />
+                  </div>
+                  <div className="space-y-4">
                     <EditableField 
                       key={`acupoints-${appointment.id}`} 
                       field="acupoints" 
@@ -473,17 +487,7 @@ KEY ASSESSMENTS:
                       value={appointment.acupoints} 
                       placeholder="Points used..." 
                       onSave={saveField as any} 
-                      className="bg-white"
-                    />
-                    <EditableField 
-                      key={`notes-${appointment.id}`} 
-                      field="notes" 
-                      label="General Notes" 
-                      value={appointment.notes} 
-                      multiline 
-                      placeholder="Observations..." 
-                      onSave={saveField as any} 
-                      className="bg-white"
+                      className="bg-white/5 border-white/10 p-4 rounded-2xl"
                     />
                     <div className="space-y-4">
                       <EditableField 
@@ -492,12 +496,12 @@ KEY ASSESSMENTS:
                         label="Practitioner Reflection" 
                         value={appointment.journal} 
                         multiline 
-                        className="bg-amber-50/50 border-amber-100" 
+                        className="bg-amber-500/10 border-amber-500/20 p-4 rounded-2xl" 
                         placeholder="Personal insights..." 
                         onSave={saveField as any} 
                       />
                       {appointment.notion_link && (
-                        <Button variant="outline" size="sm" className="w-full h-12 rounded-2xl border-slate-200 font-bold text-slate-600 hover:bg-slate-50" asChild>
+                        <Button variant="outline" size="sm" className="w-full h-12 rounded-2xl border-white/10 bg-white/5 text-white hover:bg-white/10 font-bold text-xs" asChild>
                           <a href={appointment.notion_link} target="_blank" rel="noopener noreferrer">
                             <ExternalLink size={16} className="mr-2" /> View Notion Link
                           </a>
@@ -505,15 +509,17 @@ KEY ASSESSMENTS:
                       )}
                     </div>
                   </div>
-                </TabsContent>
-              </Tabs>
+                </CardContent>
+              </Card>
             </div>
-          </Card>
+          </div>
 
+          {/* Main Session Flow */}
           <div className="print:hidden">
             <SessionContentSwitcher appointment={appointment} onUpdate={fetchAppointmentData} saveField={saveField} />
           </div>
 
+          {/* Print Layout */}
           <div className="hidden print:block space-y-8">
             <div className="grid grid-cols-2 gap-8">
               <div className="p-6 bg-slate-50 rounded-2xl border border-slate-100">

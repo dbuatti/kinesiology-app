@@ -1,12 +1,19 @@
+"use client";
+
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import { Textarea } from "@/components/ui/textarea";
-import { Info, Timer, Play, Pause, RotateCcw, Droplets, ChevronDown } from "lucide-react";
+import { 
+  Info, Timer, Play, Pause, RotateCcw, 
+  Droplets, ChevronDown, Zap, Search, 
+  AlertCircle, HelpCircle, BookOpen 
+} from "lucide-react";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { cn } from "@/lib/utils";
+import { Badge } from "@/components/ui/badge";
 
 interface LymphaticAssessmentProps {
   appointmentId: string;
@@ -24,6 +31,7 @@ const LymphaticAssessment = ({
   onSaveField
 }: LymphaticAssessmentProps) => {
   const [isOpen, setIsOpen] = useState(false);
+  const [showGuide, setShowGuide] = useState(false);
   const [sutureSide, setSutureSide] = useState<string | null>(initialSutureSide);
   const [priorityZone, setPriorityZone] = useState<string | null>(initialPriorityZone);
   const [notes, setNotes] = useState<string | null>(initialNotes);
@@ -59,7 +67,6 @@ const LymphaticAssessment = ({
   };
 
   const handleSutureSideChange = (value: string) => {
-    // ToggleGroup with type="single" returns empty string if deselected
     const newValue = value || null;
     setSutureSide(newValue);
     onSaveField('lymphatic_suture_side', newValue);
@@ -76,6 +83,11 @@ const LymphaticAssessment = ({
       onSaveField('lymphatic_notes', notes);
     }
   };
+
+  const zones = [
+    'Maxillary', 'Cervical', 'Thoracic (L)', 'Thoracic (R)', 
+    'Cisterna Chyli', 'Inguinal', 'Popliteal', 'Axillary'
+  ];
 
   return (
     <Collapsible
@@ -96,118 +108,181 @@ const LymphaticAssessment = ({
                   <p className="text-xs font-bold text-slate-400 uppercase tracking-widest">Assessment & Counterstrain</p>
                 </div>
               </div>
-              <ChevronDown className={cn("h-5 w-5 text-slate-400 transition-transform duration-200", isOpen && "rotate-180")} />
+              <div className="flex items-center gap-3">
+                {priorityZone && (
+                  <Badge className="bg-blue-100 text-blue-700 border-none font-bold text-[10px] uppercase tracking-widest">
+                    Priority: {priorityZone}
+                  </Badge>
+                )}
+                <ChevronDown className={cn("h-5 w-5 text-slate-400 transition-transform duration-200", isOpen && "rotate-180")} />
+              </div>
             </div>
           </CardHeader>
         </CollapsibleTrigger>
         
         <CollapsibleContent>
-          <CardContent className="p-6 pt-0 space-y-6">
-            <Alert className="bg-blue-50 border-blue-100 text-blue-800 rounded-xl">
-              <Info className="h-4 w-4 text-blue-600" />
-              <AlertTitle className="text-xs font-black uppercase tracking-wider mb-1">5-Step Protocol</AlertTitle>
-              <AlertDescription className="text-sm font-medium leading-relaxed">
-                1. Palpate Suture → 2. Test IM → 3. TL Zone → 4. Counterstrain (45-90s) → 5. Re-assess
-              </AlertDescription>
-            </Alert>
+          <CardContent className="p-6 pt-0 space-y-8">
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+              <div className="lg:col-span-2 space-y-6">
+                <Alert className="bg-blue-50 border-blue-100 text-blue-800 rounded-2xl">
+                  <Info className="h-5 w-5 text-blue-600" />
+                  <AlertTitle className="text-xs font-black uppercase tracking-wider mb-2">The Drainage Analogy</AlertTitle>
+                  <AlertDescription className="text-sm font-medium leading-relaxed italic">
+                    "Think of lymph like the drainage pipes in a house. If one pipe is blocked, water backs up elsewhere. Our job is to find the main clog, not mop every spill."
+                  </AlertDescription>
+                </Alert>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div className="space-y-3">
-                <label className="text-xs font-black text-slate-400 uppercase tracking-widest">Suture Side</label>
-                <ToggleGroup 
-                  type="single" 
-                  value={sutureSide || ""} 
-                  onValueChange={handleSutureSideChange}
-                  className="justify-start gap-2"
-                >
-                  <ToggleGroupItem value="Left" className="rounded-xl px-4 py-2 h-10 font-bold data-[state=on]:bg-blue-600 data-[state=on]:text-white">Left</ToggleGroupItem>
-                  <ToggleGroupItem value="Right" className="rounded-xl px-4 py-2 h-10 font-bold data-[state=on]:bg-blue-600 data-[state=on]:text-white">Right</ToggleGroupItem>
-                  <ToggleGroupItem value="None" className="rounded-xl px-4 py-2 h-10 font-bold data-[state=on]:bg-blue-600 data-[state=on]:text-white">None</ToggleGroupItem>
-                </ToggleGroup>
-              </div>
-
-              <div className="space-y-3">
-                <label className="text-xs font-black text-slate-400 uppercase tracking-widest">Priority Zone</label>
-                <ToggleGroup 
-                  type="single" 
-                  value={priorityZone || ""} 
-                  onValueChange={handlePriorityZoneChange}
-                  className="flex flex-wrap justify-start gap-2"
-                >
-                  {['Cervical', 'Thoracic', 'Cisterna Chyli', 'Inguinal', 'Popliteal'].map(zone => (
-                    <ToggleGroupItem 
-                      key={zone} 
-                      value={zone} 
-                      className="rounded-xl px-3 py-2 h-10 text-xs font-bold data-[state=on]:bg-blue-600 data-[state=on]:text-white"
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <div className="space-y-3">
+                    <label className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] flex items-center gap-2">
+                      <Search size={12} /> 1. Suture Side (Hologram)
+                    </label>
+                    <ToggleGroup 
+                      type="single" 
+                      value={sutureSide || ""} 
+                      onValueChange={handleSutureSideChange}
+                      className="justify-start gap-2"
                     >
-                      {zone}
-                    </ToggleGroupItem>
-                  ))}
-                </ToggleGroup>
-              </div>
-            </div>
+                      <ToggleGroupItem value="Left" className="rounded-xl px-4 py-2 h-10 font-bold data-[state=on]:bg-blue-600 data-[state=on]:text-white border border-slate-100">Left</ToggleGroupItem>
+                      <ToggleGroupItem value="Right" className="rounded-xl px-4 py-2 h-10 font-bold data-[state=on]:bg-blue-600 data-[state=on]:text-white border border-slate-100">Right</ToggleGroupItem>
+                      <ToggleGroupItem value="None" className="rounded-xl px-4 py-2 h-10 font-bold data-[state=on]:bg-blue-600 data-[state=on]:text-white border border-slate-100">None</ToggleGroupItem>
+                    </ToggleGroup>
+                    <p className="text-[10px] text-slate-400 italic">Palpate Temporoparietal suture for restricted glide or tenderness.</p>
+                  </div>
 
-            <div className="p-4 bg-slate-50 rounded-2xl border border-slate-100 space-y-4">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-2">
-                  <Timer size={18} className="text-blue-600" />
-                  <span className="text-sm font-black text-slate-700 uppercase tracking-wider">Counterstrain Timer</span>
+                  <div className="space-y-3">
+                    <label className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] flex items-center gap-2">
+                      <Zap size={12} /> 2. Priority Node Zone
+                    </label>
+                    <div className="flex flex-wrap gap-2">
+                      {zones.map(zone => (
+                        <Button 
+                          key={zone}
+                          variant={priorityZone === zone ? "default" : "outline"}
+                          onClick={() => handlePriorityZoneChange(zone)}
+                          className={cn(
+                            "rounded-xl px-3 py-1 h-8 text-[10px] font-bold uppercase tracking-wider transition-all",
+                            priorityZone === zone ? "bg-blue-600 text-white shadow-md" : "border-slate-100 hover:bg-blue-50"
+                          )}
+                        >
+                          {zone}
+                        </Button>
+                      ))}
+                    </div>
+                  </div>
                 </div>
-                {timeLeft !== null && (
-                  <div className="text-2xl font-black text-blue-600 tabular-nums">
-                    {Math.floor(timeLeft / 60)}:{(timeLeft % 60).toString().padStart(2, '0')}
+
+                <div className="p-6 bg-slate-900 text-white rounded-[2rem] border border-slate-800 space-y-4 shadow-xl">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-3">
+                      <div className="w-10 h-10 rounded-xl bg-blue-500/20 flex items-center justify-center text-blue-400">
+                        <Timer size={20} />
+                      </div>
+                      <span className="text-xs font-black uppercase tracking-[0.2em]">Counterstrain Timer</span>
+                    </div>
+                    {timeLeft !== null && (
+                      <div className="text-4xl font-black text-blue-400 tabular-nums tracking-tighter">
+                        {Math.floor(timeLeft / 60)}:{(timeLeft % 60).toString().padStart(2, '0')}
+                      </div>
+                    )}
+                  </div>
+
+                  <div className="flex flex-wrap gap-3">
+                    <Button 
+                      variant="outline" 
+                      onClick={() => startTimer(45)}
+                      className="rounded-xl font-black text-[10px] uppercase tracking-widest border-white/10 bg-white/5 hover:bg-white/10 text-white h-10 px-6"
+                    >
+                      45s
+                    </Button>
+                    <Button 
+                      variant="outline" 
+                      onClick={() => startTimer(90)}
+                      className="rounded-xl font-black text-[10px] uppercase tracking-widest border-white/10 bg-white/5 hover:bg-white/10 text-white h-10 px-6"
+                    >
+                      90s
+                    </Button>
+                    {timeLeft !== null && (
+                      <div className="flex gap-2 ml-auto">
+                        <Button 
+                          variant="ghost" 
+                          size="icon" 
+                          onClick={toggleTimer}
+                          className="rounded-xl text-white hover:bg-white/10"
+                        >
+                          {isActive ? <Pause size={20} /> : <Play size={20} />}
+                        </Button>
+                        <Button 
+                          variant="ghost" 
+                          size="icon" 
+                          onClick={resetTimer}
+                          className="rounded-xl text-white hover:bg-white/10"
+                        >
+                          <RotateCcw size={20} />
+                        </Button>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              </div>
+
+              <div className="space-y-6">
+                <Card className="border-none shadow-inner bg-slate-50 rounded-2xl overflow-hidden">
+                  <CardHeader className="pb-2">
+                    <CardTitle className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] flex items-center gap-2">
+                      <HelpCircle size={14} className="text-blue-500" /> Priority Check
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent className="space-y-4">
+                    <div className="p-3 bg-white rounded-xl border border-slate-200">
+                      <p className="text-xs font-bold text-slate-700 leading-relaxed">
+                        Touch <span className="text-blue-600 font-black">Kidney 27</span> points while client touches the node.
+                      </p>
+                      <p className="text-[10px] text-slate-500 mt-2 font-medium">
+                        If the indicator muscle locks, you've found the priority pathway.
+                      </p>
+                    </div>
+                    <Button 
+                      variant="ghost" 
+                      size="sm" 
+                      onClick={() => setShowGuide(!showGuide)}
+                      className="w-full text-[10px] font-black uppercase tracking-widest text-blue-600 hover:bg-blue-50"
+                    >
+                      {showGuide ? "Hide Protocol" : "View Full Protocol"}
+                    </Button>
+                  </CardContent>
+                </Card>
+
+                {showGuide && (
+                  <div className="space-y-3 animate-in fade-in slide-in-from-right-2 duration-300">
+                    <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Step-by-Step</h4>
+                    <ol className="space-y-2">
+                      {[
+                        "Palpate suture (glide/tenderness)",
+                        "Client holds tender point",
+                        "Test IM (should inhibit)",
+                        "Work neck down to find priority",
+                        "Confirm with K27 priority check",
+                        "Correct only the priority point"
+                      ].map((step, i) => (
+                        <li key={i} className="flex gap-3 text-[10px] font-bold text-slate-600">
+                          <span className="text-blue-500">{i + 1}.</span> {step}
+                        </li>
+                      ))}
+                    </ol>
                   </div>
                 )}
               </div>
-
-              <div className="flex flex-wrap gap-2">
-                <Button 
-                  variant="outline" 
-                  size="sm" 
-                  onClick={() => startTimer(45)}
-                  className="rounded-xl font-bold border-slate-200 hover:bg-blue-50 hover:text-blue-600"
-                >
-                  45s
-                </Button>
-                <Button 
-                  variant="outline" 
-                  size="sm" 
-                  onClick={() => startTimer(90)}
-                  className="rounded-xl font-bold border-slate-200 hover:bg-blue-50 hover:text-blue-600"
-                >
-                  90s
-                </Button>
-                {timeLeft !== null && (
-                  <>
-                    <Button 
-                      variant="ghost" 
-                      size="sm" 
-                      onClick={toggleTimer}
-                      className="rounded-xl font-bold text-slate-600"
-                    >
-                      {isActive ? <Pause size={16} /> : <Play size={16} />}
-                    </Button>
-                    <Button 
-                      variant="ghost" 
-                      size="sm" 
-                      onClick={resetTimer}
-                      className="rounded-xl font-bold text-slate-600"
-                    >
-                      <RotateCcw size={16} />
-                    </Button>
-                  </>
-                )}
-              </div>
             </div>
 
-            <div className="space-y-3">
-              <label className="text-xs font-black text-slate-400 uppercase tracking-widest">Assessment Notes</label>
+            <div className="space-y-3 pt-4 border-t border-slate-100">
+              <label className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">Assessment Notes</label>
               <Textarea 
                 value={notes || ""} 
                 onChange={(e) => setNotes(e.target.value)}
                 onBlur={handleNotesBlur}
-                placeholder="Specific observations, tenderness, or findings..."
-                className="rounded-2xl border-slate-200 focus:ring-blue-500 min-h-[100px] text-sm font-medium"
+                placeholder="Document specific findings, tenderness levels, or client feedback..."
+                className="rounded-2xl border-slate-200 focus:ring-blue-500 min-h-[120px] text-sm font-medium bg-slate-50/30"
               />
             </div>
           </CardContent>

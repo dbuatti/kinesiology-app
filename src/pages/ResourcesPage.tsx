@@ -32,6 +32,7 @@ import Breadcrumbs from "@/components/crm/Breadcrumbs";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { cn } from "@/lib/utils";
 import AcupointReference from "@/components/crm/AcupointReference";
+import SpinalSegmentReference from "@/components/crm/SpinalSegmentReference";
 import { VAGUS_ASSOCIATIONS } from "@/data/vagus-data";
 
 const ResourcesPage = () => {
@@ -50,7 +51,7 @@ const ResourcesPage = () => {
       </div>
 
       <Tabs value={activeTab} onValueChange={(v) => setSearchParams({ tab: v })} className="w-full">
-        <TabsList className="grid w-full grid-cols-2 md:grid-cols-5 h-auto p-1 bg-slate-100 rounded-2xl">
+        <TabsList className="grid w-full grid-cols-2 md:grid-cols-7 h-auto p-1 bg-slate-100 rounded-2xl">
           <TabsTrigger value="vestibular" className="rounded-xl py-2.5 data-[state=active]:bg-white data-[state=active]:shadow-sm">
             <Footprints size={16} className="mr-2" /> Vestibular
           </TabsTrigger>
@@ -63,6 +64,9 @@ const ResourcesPage = () => {
           <TabsTrigger value="acupoints" className="rounded-xl py-2.5 data-[state=active]:bg-white data-[state=active]:shadow-sm">
             <Target size={16} className="mr-2" /> Acupoints
           </TabsTrigger>
+          <TabsTrigger value="spinal" className="rounded-xl py-2.5 data-[state=active]:bg-white data-[state=active]:shadow-sm">
+            <Move size={16} className="mr-2" /> Spinal
+          </TabsTrigger>
           <TabsTrigger value="lymphatic" className="rounded-xl py-2.5 data-[state=active]:bg-white data-[state=active]:shadow-sm">
             <Droplets size={16} className="mr-2" /> Lymphatic
           </TabsTrigger>
@@ -73,6 +77,10 @@ const ResourcesPage = () => {
 
         <TabsContent value="acupoints" className="mt-8">
           <AcupointReference />
+        </TabsContent>
+
+        <TabsContent value="spinal" className="mt-8">
+          <SpinalSegmentReference />
         </TabsContent>
 
         <TabsContent value="vestibular" className="mt-8 space-y-8">

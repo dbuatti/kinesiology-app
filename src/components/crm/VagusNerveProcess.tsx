@@ -11,6 +11,7 @@ import { cn } from '@/lib/utils';
 import { VAGUS_ASSOCIATIONS, VAGAL_FUNCTIONS, HAND_REFLEXOLOGY } from '@/data/vagus-data';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { showSuccess } from '@/utils/toast';
+import MuscleInfoModal from "./MuscleInfoModal";
 
 interface VagusNerveProcessProps {
   appointmentId: string;
@@ -49,6 +50,10 @@ const VagusNerveProcess = ({ appointmentId, initialNotes, onSaveField, onUpdate 
   const [isCorrectionActive, setIsCorrectionActive] = useState(false);
   const [isCleared, setIsCleared] = useState(false);
 
+  // Muscle Info Modal State
+  const [selectedMuscleForInfo, setSelectedMuscleForInfo] = useState<string | null>(null);
+  const [infoModalOpen, setInfoModalOpen] = useState(false);
+
   const timerRef = useRef<NodeJS.Timeout | null>(null);
   const correctionTimerRef = useRef<NodeJS.Timeout | null>(null);
 
@@ -84,6 +89,11 @@ const VagusNerveProcess = ({ appointmentId, initialNotes, onSaveField, onUpdate 
     const mins = Math.floor(seconds / 60);
     const secs = seconds % 60;
     return `${mins}:${secs.toString().padStart(2, '0')}`;
+  };
+
+  const handleShowMuscleInfo = (muscleName: string) => {
+    setSelectedMuscleForInfo(muscleName);
+    setInfoModalOpen(true);
   };
 
   // Filter associations based on selected organ
@@ -341,19 +351,25 @@ const VagusNerveProcess = ({ appointmentId, initialNotes, onSaveField, onUpdate 
               {partnerInfo && (
                 <div className="p-4 bg-indigo-50 rounded-2xl border border-indigo-100 animate-in fade-in slide-in-from-top-2">
                   <div className="grid grid-cols-2 gap-6">
-                    <div>
+                    <div className="space-y-2">
                       <p className="text-[10px] font-black text-indigo-400 uppercase tracking-widest mb-1">Muscle to Test</p>
-                      <p className="text-lg font-black text-indigo-900">
+                      <button 
+                        onClick={() => handleShowMuscleInfo(partnerInfo.currentMuscle)}
+                        className="text-lg font-black text-indigo-900 hover:underline decoration-indigo-300 underline-offset-4 text-left block"
+                      >
                         {partnerInfo.currentMuscle}
-                      </p>
+                      </button>
                       <p className="text-[10px] font-bold text-indigo-600 mt-1">Organ: {partnerInfo.currentOrgan}</p>
                       <p className="text-[10px] font-bold text-indigo-400">Segment: {selectedAssociation}</p>
                     </div>
-                    <div className="text-right">
+                    <div className="text-right space-y-2">
                       <p className="text-[10px] font-black text-rose-400 uppercase tracking-widest mb-1">Lovett-Brother Partner</p>
-                      <p className="text-lg font-black text-rose-900">
+                      <button 
+                        onClick={() => handleShowMuscleInfo(partnerInfo.partnerMuscle)}
+                        className="text-lg font-black text-rose-900 hover:underline decoration-rose-300 underline-offset-4 text-right block w-full"
+                      >
                         {partnerInfo.partnerMuscle}
-                      </p>
+                      </button>
                       <p className="text-[10px] font-bold text-rose-600 mt-1">Organ: {partnerInfo.partnerOrgan}</p>
                       <p className="text-[10px] font-bold text-rose-400">Segment: {partnerInfo.partnerSegment}</p>
                     </div>
@@ -418,6 +434,12 @@ const VagusNerveProcess = ({ appointmentId, initialNotes, onSaveField, onUpdate 
           <EditableField field="vagus_nerve_notes" label="" value={initialNotes} multiline placeholder="Document stimulation details and client response..." onSave={(field, value) => onSaveField(field, value as string)} className="bg-slate-50/50 border-slate-100 rounded-2xl" />
         </div>
       </CardContent>
+
+      <MuscleInfoModal 
+        muscleName={selectedMuscleForInfo}
+        open={infoModalOpen}
+        onOpenChange={setInfoModalOpen}
+      />
     </Card>
   );
 };

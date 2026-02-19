@@ -33,21 +33,21 @@ export const MUSCLE_STATUSES: MuscleStatus[] = [
   {
     value: 'Switching',
     label: 'Switching',
-    description: 'Muscle or nervous system is confused. Firing in opposites. Neurological confusion.',
+    description: 'Muscle or nervous system is confused. Firing in opposites.',
     icon: HelpCircle,
     color: 'text-purple-600 bg-purple-50 border-purple-200',
   },
   {
     value: 'Dysfunctional',
     label: 'Dysfunctional',
-    description: 'Appears strong but inhibits when tested again with IM. It is compensating.',
+    description: 'Appears strong but inhibits when tested again with IM.',
     icon: CircleSlash,
     color: 'text-indigo-600 bg-indigo-50 border-indigo-200',
   },
 ];
 
 export const MUSCLE_GROUPS: Record<string, string[]> = {
-  'Intrinsic Stabilisation System': [
+  'Intrinsic Stabilisation': [
     'Transverse Abdominals',
     'Diaphragm',
     'Pelvic Floor',
@@ -57,40 +57,62 @@ export const MUSCLE_GROUPS: Record<string, string[]> = {
     'Quadratus Lumborum',
     'Erector Spinae',
   ],
-  'Facial & Cranial': [
+  'Upper Body & Shoulder': [
+    'Supraspinatus',
+    'Subscapularis',
+    'Teres Major',
+    'Teres Minor',
+    'Infraspinatus',
+    'Latissimus Dorsi',
+    'Rhomboids',
+    'Deltoids (Anterior)',
+    'Deltoids (Middle)',
+    'Deltoids (Posterior)',
+    'Pectoralis Major (Clavicular)',
+    'Pectoralis Major (Sternal)',
+    'Pec Minor',
+    'Serratus Anterior',
+    'Levator Scapula',
+    'Upper Trapezius',
+    'Middle Trapezius',
+    'Lower Trapezius',
+  ],
+  'Arm & Hand': [
+    'Biceps',
+    'Triceps',
+    'Coracobrachialis',
+    'Brachioradialis',
+    'Dorsal Interossei',
+  ],
+  'Head & Neck': [
+    'Sternocleidomastoid (SCM)',
     'Buccinator',
     'Masseter',
     'External Pterygoid',
     'Orbicularis Oris',
     'Occipitalis',
   ],
-  'Upper Body': [
-    'Supraspinatus',
-    'Subscapularis',
-    'Deltoids (Anterior)',
-    'Deltoids (Middle)',
-    'Deltoids (Posterior)',
-    'Mid Trapezius',
-    'Lower Trapezius',
-    'Pectoralis Major (Clavicular)',
-    'Pectoralis Major (Sternal)',
-    'Serratus Anterior',
-    'Biceps',
-    'Triceps',
-    'Upper Trapezius',
-    'Sternocleidomastoid (SCM)',
-    'Dorsal Interossei',
-  ],
   'Lower Body': [
     'Quadriceps Group',
     'Vastus Lateralis',
     'Hamstrings',
     'Tensor Fasciae Latae (TFL)',
-    'Gluteus Medius',
     'Gluteus Maximus',
+    'Gluteus Medius',
+    'Gluteus Minimus',
     'Piriformis',
-    'Flexor Hallucis Longus',
+    'Sartorius',
+    'Gracilis',
+    'Adductors',
+  ],
+  'Lower Leg & Foot': [
+    'Gastrocnemius',
+    'Soleus',
+    'Popliteus',
     'Tibialis Anterior',
+    'Tibialis Posterior',
+    'Peroneus Longus',
+    'Flexor Hallucis Longus',
   ],
 };
 
@@ -98,29 +120,20 @@ export const MUSCLE_TEST_ASSISTANCE = {
   title: "What to do if an indicator muscle doesn't unlock...",
   steps: [
     {
-      title: "Harmonic Rocking, TL Emotion Reflex point, Check Hydration, previous injury or do Cross Crawls",
-      details: "General techniques to clear neurological confusion or stress."
+      title: "General Clearing",
+      details: "Harmonic Rocking, TL Emotion Reflex point, Check Hydration, or do Cross Crawls."
     },
     {
-      title: "Emotion",
-      details: "Hold Emotion Reflex Point and think of current stress and tap on Cranium or Ki27's."
+      title: "Emotional Stress",
+      details: "Hold Emotion Reflex Point, think of current stress, and tap on Cranium or Ki27s."
     },
     {
-      title: "Hydration",
-      details: "Pull hair, have Water with a little salt and rub Large Intestine Reflex."
+      title: "Hydration Check",
+      details: "Pull hair, drink water with a pinch of salt, and rub Large Intestine Reflex."
     },
     {
-      title: "Previous Injury",
-      details: "Rub over injury site, client thinks of injury & suffering and you tap on the head."
+      title: "Injury Recall",
+      details: "Rub over injury site, client recalls the event, and practitioner taps on the head."
     },
-    {
-      title: "Re-assess muscle for Normal Tone",
-      details: "After intervention, re-test the muscle to confirm normal tone."
-    }
   ],
-  process: [
-    "Test muscle in the clear.",
-    "Check if muscle inhibits normally (Spindles, II Lines, Gait Reflexes).",
-    "If it doesn't, find out why or find another indicator muscle."
-  ]
 };

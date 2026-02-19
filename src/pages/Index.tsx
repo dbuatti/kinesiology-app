@@ -7,7 +7,7 @@ import { Badge } from "@/components/ui/badge";
 import { 
   Users, Calendar, Activity, TrendingUp, Loader2, 
   Plus, ArrowRight, UserPlus, Sparkles, Clock, 
-  CheckCircle2, Zap, Target, FlaskConical, Brain, Info, Heart, AlertCircle, StickyNote, Wind
+  CheckCircle2, Zap, Target, FlaskConical, Brain, Info, Heart, AlertCircle, StickyNote, Wind, Layers, RefreshCw
 } from "lucide-react";
 import { MadeWithDyad } from "@/components/made-with-dyad";
 import {
@@ -25,6 +25,7 @@ import { format, subMonths, isToday, subDays, differenceInMinutes, startOfWeek, 
 import { Skeleton } from "@/components/ui/skeleton";
 import { cn } from "@/lib/utils";
 import { Textarea } from "@/components/ui/textarea";
+import { TCM_CHANNELS } from "@/data/tcm-channel-data";
 
 const SCRATCHPAD_KEY = "antigravity_practitioner_scratchpad";
 
@@ -46,11 +47,33 @@ const Index = () => {
   const [appDialogOpen, setAppDialogOpen] = useState(false);
   const [chartData, setChartData] = useState<any[]>([]);
   const [scratchpad, setScratchpad] = useState("");
+  const [currentTime, setCurrentTime] = useState(new Date());
 
   useEffect(() => {
     const saved = localStorage.getItem(SCRATCHPAD_KEY);
     if (saved) setScratchpad(saved);
+    
+    const timer = setInterval(() => setCurrentTime(new Date()), 60000);
+    return () => clearInterval(timer);
   }, []);
+
+  const currentPeakMeridian = (() => {
+    const hour = currentTime.getHours();
+    return TCM_CHANNELS.find(c => {
+      if (c.peakTime === 'None') return false;
+      const parts = c.peakTime.toLowerCase().split('-').map(p => p.trim());
+      const parseHour = (s: string) => {
+        const h = parseInt(s);
+        if (s.includes('pm') && h !== 12) return h + 12;
+        if (s.includes('am') && h === 12) return 0;
+        return h;
+      };
+      const start = parseHour(parts[0]);
+      const end = parseHour(parts[1]);
+      if (start > end) return hour >= start || hour < end;
+      return hour >= start && hour < end;
+    });
+  })();
 
   const handleScratchpadChange = (val: string) => {
     setScratchpad(val);
@@ -184,7 +207,7 @@ const Index = () => {
           </div>
           <div className="pr-4">
             <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Today's Date</p>
-            <p className="text-lg font-bold text-slate-900">{format(new Date(), "EEEE, MMMM d")}</p>
+            <p className="text-lg font-bold text-slate-900">{format(currentTime, "EEEE, MMMM d")}</p>
           </div>
         </div>
       </div>
@@ -345,6 +368,34 @@ const Index = () => {
             </Card>
 
             <div className="space-y-10">
+              {/* Live Meridian Widget */}
+              {currentPeakMeridian && (
+                <Card className={cn(
+                  "border-none shadow-xl rounded-[2.5rem] overflow-hidden transition-all duration-500 group hover:shadow-2xl",
+                  currentPeakMeridian.color
+                )}>
+                  <CardHeader className="pb-2">
+                    <div className="flex items-center justify-between">
+                      <p className="text-[10px] font-black uppercase tracking-[0.25em] opacity-70">Current Peak Meridian</p>
+                      <Clock size={14} className="animate-pulse" />
+                    </div>
+                    <CardTitle className="text-3xl font-black tracking-tight">{currentPeakMeridian.name}</CardTitle>
+                  </CardHeader>
+                  <CardContent className="space-y-4">
+                    <div className="flex gap-2">
+                      <Badge className="bg-white/20 text-white border-none font-black text-[9px] uppercase tracking-widest">{currentPeakMeridian.element}</Badge>
+                      <Badge className="bg-white/20 text-white border-none font-black text-[9px] uppercase tracking-widest">{currentPeakMeridian.yinYang}</Badge>
+                    </div>
+                    <div className="p-4 bg-white/10 rounded-2xl border border-white/10">
+                      <p className="text-[10px] font-black uppercase tracking-widest opacity-70 mb-1">Midday-Midnight Partner</p>
+                      <p className="text-lg font-black">{TCM_CHANNELS.find(c => c.id === currentPeakMeridian.oppositeId)?.name}</p>
+                    </div>
+                    <Link to="/resources?tab=channels" className="flex items-center justify-between text-[10px] font-black uppercase tracking-widest opacity-70 hover:opacity-100 transition-opacity pt-2">
+                      View Channel Reference <ArrowRight size={12} />
+                    </Link>
+                  </CardContent>
+                </Card>
+              )}
               <UpcomingAppointments />
               <RecentActivity />
             </div>

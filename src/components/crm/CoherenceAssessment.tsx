@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect, useRef, useMemo } from "react";
-import { Activity, ChevronDown, Heart, Brain, RotateCcw, Zap, Info, Timer, CheckCircle2, RefreshCw } from "lucide-react";
+import { Activity, ChevronDown, Heart, Brain, RotateCcw, Zap, Info, Timer, CheckCircle2, RefreshCw, Loader2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { showSuccess, showError } from "@/utils/toast";
 import { Badge } from "@/components/ui/badge";

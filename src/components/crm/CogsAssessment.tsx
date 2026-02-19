@@ -8,7 +8,7 @@ import {
 } from "@/components/ui/collapsible";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
-import { ChevronDown, Move, Info, Save, Loader2, ImageOff, RotateCcw, Zap, CheckCircle2, AlertCircle } from "lucide-react";
+import { ChevronDown, Move, Info, Save, Loader2, ImageOff, RotateCcw, Zap, CheckCircle2, AlertCircle, RefreshCw } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { supabase } from "@/integrations/supabase/client";
 import { showSuccess, showError } from "@/utils/toast";

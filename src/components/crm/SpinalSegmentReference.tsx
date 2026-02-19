@@ -4,11 +4,15 @@ import React, { useState } from "react";
 import { VAGUS_ASSOCIATIONS } from "@/data/vagus-data";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Search, Move, Activity, Zap, RefreshCw } from "lucide-react";
+import { Search, Move, Activity, Zap, RefreshCw, Info } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
+import MuscleInfoModal from "./MuscleInfoModal";
+import { Button } from "@/components/ui/button";
 
 const SpinalSegmentReference = () => {
   const [search, setSearch] = useState("");
+  const [selectedMuscle, setSelectedMuscle] = useState<string | null>(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
 
   const filteredAssociations = VAGUS_ASSOCIATIONS.filter(a => 
     a.spinalSegment.toLowerCase().includes(search.toLowerCase()) ||
@@ -16,6 +20,11 @@ const SpinalSegmentReference = () => {
     a.organ.toLowerCase().includes(search.toLowerCase()) ||
     a.reciprocatingSegment.toLowerCase().includes(search.toLowerCase())
   );
+
+  const handleMuscleClick = (muscleName: string) => {
+    setSelectedMuscle(muscleName);
+    setIsModalOpen(true);
+  };
 
   return (
     <div className="space-y-6">
@@ -49,12 +58,21 @@ const SpinalSegmentReference = () => {
             </CardHeader>
             <CardContent className="p-6 space-y-6">
               <div className="grid grid-cols-1 gap-4">
-                <div className="p-4 bg-indigo-50/50 rounded-2xl border border-indigo-100">
-                  <p className="text-[10px] font-black text-indigo-400 uppercase tracking-widest mb-1 flex items-center gap-1">
-                    <Zap size={12} /> Associated Muscle
+                <button 
+                  onClick={() => handleMuscleClick(assoc.muscle)}
+                  className="p-4 bg-indigo-50/50 rounded-2xl border border-indigo-100 text-left hover:bg-indigo-100 transition-colors group/muscle"
+                >
+                  <div className="flex items-center justify-between mb-1">
+                    <p className="text-[10px] font-black text-indigo-400 uppercase tracking-widest flex items-center gap-1">
+                      <Zap size={12} /> Associated Muscle
+                    </p>
+                    <Info size={12} className="text-indigo-300 group-hover/muscle:text-indigo-600 transition-colors" />
+                  </div>
+                  <p className="text-lg font-black text-indigo-900 group-hover/muscle:underline decoration-indigo-300 underline-offset-4">
+                    {assoc.muscle}
                   </p>
-                  <p className="text-lg font-black text-indigo-900">{assoc.muscle}</p>
-                </div>
+                </button>
+                
                 <div className="p-4 bg-slate-50 rounded-2xl border border-slate-100">
                   <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1 flex items-center gap-1">
                     <Activity size={12} /> Organ / Gland
@@ -89,6 +107,12 @@ const SpinalSegmentReference = () => {
           <p className="text-slate-500 mt-2">Try searching for a different segment, muscle, or organ.</p>
         </div>
       )}
+
+      <MuscleInfoModal 
+        muscleName={selectedMuscle}
+        open={isModalOpen}
+        onOpenChange={setIsModalOpen}
+      />
     </div>
   );
 };

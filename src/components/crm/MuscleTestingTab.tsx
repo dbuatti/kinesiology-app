@@ -17,6 +17,7 @@ import {
   CollapsibleContent,
   CollapsibleTrigger,
 } from "@/components/ui/collapsible";
+import MuscleInfoModal from "./MuscleInfoModal";
 
 const PRIMARY_14_MUSCLES = [
   'Supraspinatus', 'Teres Major', 'Pectoralis Major (Clavicular)', 'Latissimus Dorsi', 
@@ -33,6 +34,9 @@ const MuscleTestingTab = ({ appointmentId }: MuscleTestingTabProps) => {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
+  const [selectedMuscleForInfo, setSelectedMuscleForInfo] = useState<string | null>(null);
+  const [infoModalOpen, setInfoModalOpen] = useState(false);
+  
   const [openGroups, setOpenGroups] = useState<Record<string, boolean>>(() => {
     const initial: Record<string, boolean> = {};
     Object.keys(MUSCLE_GROUPS).forEach(group => {
@@ -180,6 +184,11 @@ const MuscleTestingTab = ({ appointmentId }: MuscleTestingTabProps) => {
     } finally {
       setSaving(false);
     }
+  };
+
+  const handleShowInfo = (muscleName: string) => {
+    setSelectedMuscleForInfo(muscleName);
+    setInfoModalOpen(true);
   };
 
   const getStatusDetails = (statusValue: MuscleStatus['value']) => {
@@ -337,6 +346,14 @@ const MuscleTestingTab = ({ appointmentId }: MuscleTestingTabProps) => {
                                 Tested
                               </Badge>
                             )}
+                            <Button 
+                              variant="ghost" 
+                              size="icon" 
+                              className="h-6 w-6 rounded-full text-slate-300 hover:text-indigo-600 hover:bg-indigo-50"
+                              onClick={() => handleShowInfo(muscle)}
+                            >
+                              <Info size={14} />
+                            </Button>
                           </div>
                           {currentResult && (
                             <div className={cn("px-4 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest flex items-center gap-2 shadow-sm", statusDetails?.color)}>
@@ -435,6 +452,12 @@ const MuscleTestingTab = ({ appointmentId }: MuscleTestingTabProps) => {
           </CardContent>
         </Card>
       </div>
+
+      <MuscleInfoModal 
+        muscleName={selectedMuscleForInfo}
+        open={infoModalOpen}
+        onOpenChange={setInfoModalOpen}
+      />
     </div>
   );
 };

@@ -1,7 +1,7 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { groupAppointmentsByMonth } from "@/utils/crm-utils";
-import { format, isToday } from "date-fns";
+import { format, isToday, startOfMonth, endOfMonth, isWithinInterval } from "date-fns";
 import { Badge } from "@/components/ui/badge";
 import { 
   Calendar as CalendarIcon, 
@@ -18,7 +18,10 @@ import {
   Zap,
   CheckCircle2,
   Search,
-  Filter
+  Filter,
+  CalendarDays,
+  CheckCircle,
+  CircleDashed
 } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -44,6 +47,7 @@ import { cn } from "@/lib/utils";
 import { APPOINTMENT_STATUSES } from "@/data/appointment-data";
 import Breadcrumbs from "@/components/crm/Breadcrumbs";
 import { Input } from "@/components/ui/input";
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 interface AppointmentWithClient extends Appointment {
   clients: { name: string; id: string };
@@ -54,6 +58,7 @@ const AppointmentsPage = () => {
   const [loading, setLoading] = useState(true);
   const [open, setOpen] = useState(false);
   const [search, setSearch] = useState("");
+  const [statusFilter, setStatusFilter] = useState<string>("all");
 
   const fetchAppointments = async () => {
     try {
@@ -121,11 +126,30 @@ const AppointmentsPage = () => {
     fetchAppointments();
   }, []);
 
-  const filteredAppointments = appointments.filter(app => 
-    app.clients?.name.toLowerCase().includes(search.toLowerCase()) ||
-    app.tag.toLowerCase().includes(search.toLowerCase()) ||
-    app.name?.toLowerCase().includes(search.toLowerCase())
-  );
+  const filteredAppointments = useMemo(() => {
+    return appointments.filter(app => {
+      const matchesSearch = app.clients?.name.toLowerCase().includes(search.toLowerCase()) ||
+        app.tag.toLowerCase().includes(search.toLowerCase()) ||
+        app.name?.toLowerCase().includes(search.toLowerCase());
+      
+      const matchesStatus = statusFilter === "all" || app.status === statusFilter;
+      
+      return matchesSearch && matchesStatus;
+    });
+  }, [appointments, search, statusFilter]);
+
+  const stats = useMemo(() => {
+    const now = new Date();
+    const monthStart = startOfMonth(now);
+    const monthEnd = endOfMonth(now);
+
+    return {
+      today: appointments.filter(a => isToday(a.date)).length,
+      month: appointments.filter(a => isWithinInterval(a.date, { start: monthStart, end: monthEnd })).length,
+      pending: appointments.filter(a => a.status === 'Scheduled').length,
+      completed: appointments.filter(a => a.status === 'Completed').length
+    };
+  }, [appointments]);
 
   const todaySessions = filteredAppointments.filter(app => isToday(app.date));
   const otherSessions = filteredAppointments.filter(app => !isToday(app.date));
@@ -300,14 +324,64 @@ const AppointmentsPage = () => {
         </Dialog>
       </div>
 
-      <div className="relative max-w-md">
-        <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
-        <Input 
-          placeholder="Search by client name or tag..." 
-          className="pl-12 bg-white border-slate-200 h-12 rounded-2xl shadow-sm font-medium focus:ring-2 focus:ring-indigo-500"
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
-        />
+      {/* Summary Stats */}
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+        <Card className="border-none shadow-sm bg-white rounded-2xl p-4 flex items-center gap-4">
+          <div className="w-10 h-10 rounded-xl bg-rose-50 text-rose-600 flex items-center justify-center">
+            <Zap size={20} className="fill-current" />
+          </div>
+          <div>
+            <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Today</p>
+            <p className="text-xl font-black text-slate-900">{stats.today}</p>
+          </div>
+        </Card>
+        <Card className="border-none shadow-sm bg-white rounded-2xl p-4 flex items-center gap-4">
+          <div className="w-10 h-10 rounded-xl bg-indigo-50 text-indigo-600 flex items-center justify-center">
+            <CalendarDays size={20} />
+          </div>
+          <div>
+            <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">This Month</p>
+            <p className="text-xl font-black text-slate-900">{stats.month}</p>
+          </div>
+        </Card>
+        <Card className="border-none shadow-sm bg-white rounded-2xl p-4 flex items-center gap-4">
+          <div className="w-10 h-10 rounded-xl bg-amber-50 text-amber-600 flex items-center justify-center">
+            <CircleDashed size={20} />
+          </div>
+          <div>
+            <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Scheduled</p>
+            <p className="text-xl font-black text-slate-900">{stats.pending}</p>
+          </div>
+        </Card>
+        <Card className="border-none shadow-sm bg-white rounded-2xl p-4 flex items-center gap-4">
+          <div className="w-10 h-10 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center">
+            <CheckCircle size={20} />
+          </div>
+          <div>
+            <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Completed</p>
+            <p className="text-xl font-black text-slate-900">{stats.completed}</p>
+          </div>
+        </Card>
+      </div>
+
+      <div className="flex flex-col md:flex-row gap-4 items-center justify-between">
+        <div className="relative w-full max-w-md">
+          <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
+          <Input 
+            placeholder="Search by client name or tag..." 
+            className="pl-12 bg-white border-slate-200 h-12 rounded-2xl shadow-sm font-medium focus:ring-2 focus:ring-indigo-500"
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+          />
+        </div>
+        
+        <Tabs value={statusFilter} onValueChange={setStatusFilter} className="w-full md:w-auto">
+          <TabsList className="grid grid-cols-3 h-12 bg-slate-100 p-1 rounded-xl">
+            <TabsTrigger value="all" className="rounded-lg text-[10px] font-black uppercase tracking-widest">All</TabsTrigger>
+            <TabsTrigger value="Scheduled" className="rounded-lg text-[10px] font-black uppercase tracking-widest">Scheduled</TabsTrigger>
+            <TabsTrigger value="Completed" className="rounded-lg text-[10px] font-black uppercase tracking-widest">Completed</TabsTrigger>
+          </TabsList>
+        </Tabs>
       </div>
 
       {loading ? (
@@ -354,7 +428,7 @@ const AppointmentsPage = () => {
               </div>
               <p className="text-slate-900 font-black text-xl">No appointments found</p>
               <p className="text-slate-500 mt-2 mb-8">Try adjusting your search or schedule a new session.</p>
-              <Button variant="outline" className="h-12 px-8 border-slate-200 hover:bg-white rounded-2xl font-bold" onClick={() => { setSearch(""); setOpen(true); }}>
+              <Button variant="outline" className="h-12 px-8 border-slate-200 hover:bg-white rounded-2xl font-bold" onClick={() => { setSearch(""); setStatusFilter("all"); setOpen(true); }}>
                 Schedule First Session
               </Button>
             </div>

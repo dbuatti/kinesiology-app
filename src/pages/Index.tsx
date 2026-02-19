@@ -21,7 +21,7 @@ import AppointmentForm from "@/components/crm/AppointmentForm";
 import RecentActivity from "@/components/crm/RecentActivity";
 import UpcomingAppointments from "@/components/crm/UpcomingAppointments";
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip as ChartTooltip, ResponsiveContainer } from 'recharts';
-import { format, subMonths, isToday, subDays, differenceInMinutes } from "date-fns";
+import { format, subMonths, isToday, subDays, differenceInMinutes, startOfWeek, endOfWeek, isWithinInterval } from "date-fns";
 import { Skeleton } from "@/components/ui/skeleton";
 import { cn } from "@/lib/utils";
 import { Textarea } from "@/components/ui/textarea";
@@ -34,6 +34,7 @@ const Index = () => {
     appointments: 0,
     newClients30d: 0,
     sessions30d: 0,
+    sessionsThisWeek: 0,
     avgBolt: 0,
     avgCoherence: 0,
     imperativeAlerts: 0
@@ -59,6 +60,8 @@ const Index = () => {
   const fetchDashboardData = async () => {
     try {
       const thirtyDaysAgo = subDays(new Date(), 30).toISOString();
+      const weekStart = startOfWeek(new Date());
+      const weekEnd = endOfWeek(new Date());
 
       const [
         { count: clientCount }, 
@@ -93,11 +96,16 @@ const Index = () => {
         }
       });
 
+      const sessionsThisWeek = allApps?.filter(app => 
+        isWithinInterval(new Date(app.date), { start: weekStart, end: weekEnd })
+      ).length || 0;
+
       setStats({ 
         clients: clientCount || 0, 
         appointments: appCount || 0,
         newClients30d: newClientsCount || 0,
         sessions30d: recentAppsCount || 0,
+        sessionsThisWeek,
         avgBolt,
         avgCoherence: avgCoh,
         imperativeAlerts
@@ -224,7 +232,7 @@ const Index = () => {
                   <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Total Sessions</p>
                   <p className="text-4xl font-black text-slate-900">{stats.appointments}</p>
                   <p className="text-[10px] text-indigo-600 font-black mt-1">
-                    {stats.sessions30d} this month
+                    {stats.sessionsThisWeek} this week
                   </p>
                 </div>
               </CardContent>

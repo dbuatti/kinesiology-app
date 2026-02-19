@@ -3,7 +3,7 @@
 import React, { useState, useEffect, useCallback, useMemo } from "react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Loader2, CheckCircle2, AlertTriangle, Info, RotateCcw, Save, Dumbbell, Zap, Sparkles, Search, ChevronDown, ChevronUp, Filter } from "lucide-react";
+import { Loader2, CheckCircle2, AlertTriangle, Info, RotateCcw, Save, Dumbbell, Zap, Sparkles, Search, ChevronDown, ChevronUp, Filter, Eye, EyeOff } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { supabase } from "@/integrations/supabase/client";
 import { showSuccess, showError } from "@/utils/toast";
@@ -18,6 +18,8 @@ import {
   CollapsibleTrigger,
 } from "@/components/ui/collapsible";
 import MuscleInfoModal from "./MuscleInfoModal";
+import { Switch } from "@/components/ui/switch";
+import { Label } from "@/components/ui/label";
 
 const PRIMARY_14_MUSCLES = [
   'Supraspinatus', 'Teres Major', 'Pectoralis Major (Clavicular)', 'Latissimus Dorsi', 
@@ -34,6 +36,8 @@ const MuscleTestingTab = ({ appointmentId }: MuscleTestingTabProps) => {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
+  const [showOnlyTested, setShowOnlyTested] = useState(false);
+  const [showOnlyDysfunctional, setShowOnlyDysfunctional] = useState(false);
   const [selectedMuscleForInfo, setSelectedMuscleForInfo] = useState<string | null>(null);
   const [infoModalOpen, setInfoModalOpen] = useState(false);
   
@@ -200,17 +204,27 @@ const MuscleTestingTab = ({ appointmentId }: MuscleTestingTabProps) => {
   };
 
   const filteredGroups = useMemo(() => {
-    if (!searchTerm) return MUSCLE_GROUPS;
-    
     const filtered: Record<string, string[]> = {};
+    
     Object.entries(MUSCLE_GROUPS).forEach(([group, muscles]) => {
-      const matchingMuscles = muscles.filter(m => m.toLowerCase().includes(searchTerm.toLowerCase()));
+      const matchingMuscles = muscles.filter(m => {
+        const matchesSearch = m.toLowerCase().includes(searchTerm.toLowerCase());
+        const isTested = !!results[m];
+        const isDysfunctional = isTested && results[m].status !== 'Normotonic';
+        
+        if (!matchesSearch) return false;
+        if (showOnlyDysfunctional && !isDysfunctional) return false;
+        if (showOnlyTested && !isTested) return false;
+        
+        return true;
+      });
+
       if (matchingMuscles.length > 0) {
         filtered[group] = matchingMuscles;
       }
     });
     return filtered;
-  }, [searchTerm]);
+  }, [searchTerm, showOnlyTested, showOnlyDysfunctional, results]);
 
   const totalMusclesCount = useMemo(() => {
     return Object.values(MUSCLE_GROUPS).reduce((acc, curr) => acc + curr.length, 0);
@@ -265,29 +279,70 @@ const MuscleTestingTab = ({ appointmentId }: MuscleTestingTabProps) => {
       </div>
 
       {/* Search & Filter Bar */}
-      <div className="flex flex-col md:flex-row gap-4 items-center">
-        <div className="relative flex-1 w-full">
-          <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
-          <Input 
-            placeholder="Search muscles (e.g. Psoas, Deltoid)..." 
-            className="pl-12 bg-white border-slate-200 h-12 rounded-2xl shadow-sm font-medium focus:ring-2 focus:ring-indigo-500"
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-          />
+      <div className="space-y-4">
+        <div className="flex flex-col md:flex-row gap-4 items-center">
+          <div className="relative flex-1 w-full">
+            <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
+            <Input 
+              placeholder="Search muscles (e.g. Psoas, Deltoid)..." 
+              className="pl-12 bg-white border-slate-200 h-12 rounded-2xl shadow-sm font-medium focus:ring-2 focus:ring-indigo-500"
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+            />
+          </div>
+          <div className="flex gap-2 w-full md:w-auto">
+            <Button 
+              variant="outline" 
+              className="flex-1 md:flex-none rounded-xl h-12 px-6 border-slate-200 font-bold text-slate-600"
+              onClick={() => {
+                const allOpen = Object.values(openGroups).every(v => v);
+                const newState: Record<string, boolean> = {};
+                Object.keys(MUSCLE_GROUPS).forEach(k => newState[k] = !allOpen);
+                setOpenGroups(newState);
+              }}
+            >
+              {Object.values(openGroups).every(v => v) ? "Collapse All" : "Expand All"}
+            </Button>
+          </div>
         </div>
-        <div className="flex gap-2 w-full md:w-auto">
-          <Button 
-            variant="outline" 
-            className="flex-1 md:flex-none rounded-xl h-12 px-6 border-slate-200 font-bold text-slate-600"
-            onClick={() => {
-              const allOpen = Object.values(openGroups).every(v => v);
-              const newState: Record<string, boolean> = {};
-              Object.keys(MUSCLE_GROUPS).forEach(k => newState[k] = !allOpen);
-              setOpenGroups(newState);
-            }}
-          >
-            {Object.values(openGroups).every(v => v) ? "Collapse All" : "Expand All"}
-          </Button>
+
+        <div className="flex flex-wrap items-center gap-6 px-4 py-3 bg-slate-50 rounded-2xl border border-slate-100">
+          <div className="flex items-center space-x-2">
+            <Switch 
+              id="show-tested" 
+              checked={showOnlyTested} 
+              onCheckedChange={setShowOnlyTested} 
+              className="data-[state=checked]:bg-indigo-600"
+            />
+            <Label htmlFor="show-tested" className="text-xs font-bold text-slate-600 cursor-pointer flex items-center gap-1.5">
+              <Eye size={14} className="text-indigo-500" /> Show Only Tested
+            </Label>
+          </div>
+          <div className="flex items-center space-x-2">
+            <Switch 
+              id="show-dysfunctional" 
+              checked={showOnlyDysfunctional} 
+              onCheckedChange={setShowOnlyDysfunctional} 
+              className="data-[state=checked]:bg-rose-600"
+            />
+            <Label htmlFor="show-dysfunctional" className="text-xs font-bold text-slate-600 cursor-pointer flex items-center gap-1.5">
+              <AlertTriangle size={14} className="text-rose-500" /> Show Only Dysfunctional
+            </Label>
+          </div>
+          {(showOnlyTested || showOnlyDysfunctional || searchTerm) && (
+            <Button 
+              variant="ghost" 
+              size="sm" 
+              onClick={() => {
+                setShowOnlyTested(false);
+                setShowOnlyDysfunctional(false);
+                setSearchTerm("");
+              }}
+              className="text-[10px] font-black uppercase tracking-widest text-indigo-600 hover:bg-indigo-50 h-7 px-3 rounded-lg"
+            >
+              Clear Filters
+            </Button>
+          )}
         </div>
       </div>
 
@@ -407,6 +462,27 @@ const MuscleTestingTab = ({ appointmentId }: MuscleTestingTabProps) => {
             </Card>
           </Collapsible>
         ))}
+
+        {Object.keys(filteredGroups).length === 0 && (
+          <div className="text-center py-20 bg-slate-50 rounded-[3rem] border-2 border-dashed border-slate-200">
+            <div className="mx-auto w-16 h-16 bg-white rounded-2xl flex items-center justify-center mb-4 shadow-sm">
+              <Filter className="text-slate-300" size={24} />
+            </div>
+            <p className="text-slate-900 font-black text-lg">No muscles match your filters</p>
+            <p className="text-slate-500 mt-1">Try clearing your search or toggling the filters.</p>
+            <Button 
+              variant="link" 
+              onClick={() => {
+                setShowOnlyTested(false);
+                setShowOnlyDysfunctional(false);
+                setSearchTerm("");
+              }}
+              className="mt-4 text-indigo-600 font-bold"
+            >
+              Reset All Filters
+            </Button>
+          </div>
+        )}
       </div>
 
       {/* Legend & Assistance */}

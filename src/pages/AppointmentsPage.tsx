@@ -16,7 +16,9 @@ import {
   Move, 
   ChevronDown, 
   Zap,
-  CheckCircle2
+  CheckCircle2,
+  Search,
+  Filter
 } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -41,6 +43,7 @@ import { Link } from "react-router-dom";
 import { cn } from "@/lib/utils";
 import { APPOINTMENT_STATUSES } from "@/data/appointment-data";
 import Breadcrumbs from "@/components/crm/Breadcrumbs";
+import { Input } from "@/components/ui/input";
 
 interface AppointmentWithClient extends Appointment {
   clients: { name: string; id: string };
@@ -50,6 +53,7 @@ const AppointmentsPage = () => {
   const [appointments, setAppointments] = useState<AppointmentWithClient[]>([]);
   const [loading, setLoading] = useState(true);
   const [open, setOpen] = useState(false);
+  const [search, setSearch] = useState("");
 
   const fetchAppointments = async () => {
     try {
@@ -117,8 +121,14 @@ const AppointmentsPage = () => {
     fetchAppointments();
   }, []);
 
-  const todaySessions = appointments.filter(app => isToday(app.date));
-  const otherSessions = appointments.filter(app => !isToday(app.date));
+  const filteredAppointments = appointments.filter(app => 
+    app.clients?.name.toLowerCase().includes(search.toLowerCase()) ||
+    app.tag.toLowerCase().includes(search.toLowerCase()) ||
+    app.name?.toLowerCase().includes(search.toLowerCase())
+  );
+
+  const todaySessions = filteredAppointments.filter(app => isToday(app.date));
+  const otherSessions = filteredAppointments.filter(app => !isToday(app.date));
   const grouped = groupAppointmentsByMonth(otherSessions);
 
   const AppointmentCard = ({ app }: { app: AppointmentWithClient }) => {
@@ -290,6 +300,16 @@ const AppointmentsPage = () => {
         </Dialog>
       </div>
 
+      <div className="relative max-w-md">
+        <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
+        <Input 
+          placeholder="Search by client name or tag..." 
+          className="pl-12 bg-white border-slate-200 h-12 rounded-2xl shadow-sm font-medium focus:ring-2 focus:ring-indigo-500"
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+        />
+      </div>
+
       {loading ? (
         <div className="p-24 flex flex-col items-center justify-center gap-6">
           <Loader2 className="animate-spin text-indigo-500" size={48} />
@@ -327,14 +347,14 @@ const AppointmentsPage = () => {
             </div>
           ))}
 
-          {appointments.length === 0 && (
+          {filteredAppointments.length === 0 && (
             <div className="text-center py-32 bg-slate-50 rounded-[3rem] border-2 border-dashed border-slate-200">
               <div className="w-20 h-20 bg-white rounded-3xl flex items-center justify-center mx-auto mb-6 shadow-xl">
                 <CalendarIcon className="text-slate-300" size={40} />
               </div>
-              <p className="text-slate-900 font-black text-xl">No appointments yet</p>
-              <p className="text-slate-500 mt-2 mb-8">Your clinical schedule is currently empty.</p>
-              <Button variant="outline" className="h-12 px-8 border-slate-200 hover:bg-white rounded-2xl font-bold" onClick={() => setOpen(true)}>
+              <p className="text-slate-900 font-black text-xl">No appointments found</p>
+              <p className="text-slate-500 mt-2 mb-8">Try adjusting your search or schedule a new session.</p>
+              <Button variant="outline" className="h-12 px-8 border-slate-200 hover:bg-white rounded-2xl font-bold" onClick={() => { setSearch(""); setOpen(true); }}>
                 Schedule First Session
               </Button>
             </div>

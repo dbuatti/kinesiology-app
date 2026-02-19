@@ -13,7 +13,9 @@ import {
   Heart, 
   TrendingUp,
   ArrowRight,
-  FlaskConical
+  FlaskConical,
+  Plus,
+  UserPlus
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import SearchBar from "./SearchBar";
@@ -23,6 +25,13 @@ import { useEffect, useState, useCallback } from "react";
 import HelpModal from "./HelpModal";
 import { useRecentClients } from "@/hooks/use-recent-clients";
 import { isToday, differenceInMinutes } from "date-fns";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import ClientForm from "./ClientForm";
 
 const SESSION_STAGES = [
   { name: "Goal Setting", duration: 22 },
@@ -36,6 +45,7 @@ const Sidebar = () => {
   const location = useLocation();
   const navigate = useNavigate();
   const [helpOpen, setHelpOpen] = useState(false);
+  const [clientDialogOpen, setClientDialogOpen] = useState(false);
   const [activeSession, setActiveSession] = useState<{ id: string, stage: string, clientName: string } | null>(null);
   const { recentClients } = useRecentClients();
   
@@ -207,11 +217,19 @@ const Sidebar = () => {
           </div>
         )}
 
-        {recentClients.length > 0 && (
-          <div className="px-2 space-y-4">
-            <p className="text-[9px] font-black text-slate-600 uppercase tracking-[0.25em] flex items-center gap-2 px-2">
+        <div className="px-2 space-y-4">
+          <div className="flex items-center justify-between px-2">
+            <p className="text-[9px] font-black text-slate-600 uppercase tracking-[0.25em] flex items-center gap-2">
               <Clock size={12} /> Recent Clients
             </p>
+            <button 
+              onClick={() => setClientDialogOpen(true)}
+              className="w-5 h-5 rounded-md bg-slate-900 border border-slate-800 flex items-center justify-center text-slate-500 hover:text-indigo-400 hover:border-indigo-500/40 transition-all"
+            >
+              <Plus size={12} />
+            </button>
+          </div>
+          {recentClients.length > 0 ? (
             <div className="flex flex-col gap-1">
               {recentClients.map(client => (
                 <Link 
@@ -226,8 +244,10 @@ const Sidebar = () => {
                 </Link>
               ))}
             </div>
-          </div>
-        )}
+          ) : (
+            <p className="text-[10px] text-slate-700 italic px-4">No recent clients</p>
+          )}
+        </div>
 
         <div className="px-2 pt-4">
           <Link 
@@ -270,6 +290,15 @@ const Sidebar = () => {
       </div>
 
       <HelpModal open={helpOpen} onOpenChange={setHelpOpen} />
+      
+      <Dialog open={clientDialogOpen} onOpenChange={setClientDialogOpen}>
+        <DialogContent className="sm:max-w-[600px] rounded-[3.5rem] p-10">
+          <DialogHeader className="mb-6">
+            <DialogTitle className="text-3xl font-black tracking-tight">Add New Client</DialogTitle>
+          </DialogHeader>
+          <ClientForm onSuccess={() => { setClientDialogOpen(false); }} />
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };

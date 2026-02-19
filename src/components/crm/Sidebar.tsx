@@ -15,7 +15,8 @@ import {
   ArrowRight,
   FlaskConical,
   Plus,
-  UserPlus
+  UserPlus,
+  CalendarPlus
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import SearchBar from "./SearchBar";
@@ -32,6 +33,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import ClientForm from "./ClientForm";
+import AppointmentForm from "./AppointmentForm";
 
 const SESSION_STAGES = [
   { name: "Goal Setting", duration: 22 },
@@ -46,6 +48,7 @@ const Sidebar = () => {
   const navigate = useNavigate();
   const [helpOpen, setHelpOpen] = useState(false);
   const [clientDialogOpen, setClientDialogOpen] = useState(false);
+  const [appDialogOpen, setAppDialogOpen] = useState(false);
   const [activeSession, setActiveSession] = useState<{ id: string, stage: string, clientName: string } | null>(null);
   const { recentClients } = useRecentClients();
   
@@ -193,11 +196,21 @@ const Sidebar = () => {
           })}
         </nav>
 
+        <div className="px-2">
+          <Button 
+            onClick={() => setAppDialogOpen(true)}
+            className="w-full bg-rose-600 hover:bg-rose-700 text-white rounded-2xl h-12 font-black text-[10px] uppercase tracking-widest shadow-lg shadow-rose-600/20"
+          >
+            <CalendarPlus size={18} className="mr-2" />
+            Book Session
+          </Button>
+        </div>
+
         {activeSession && (
           <div className="px-2">
             <Link 
               to={`/appointments/${activeSession.id}`}
-              className="flex items-center gap-4 px-5 py-4 bg-rose-600 rounded-[2rem] text-white shadow-2xl shadow-rose-600/30 hover:bg-rose-700 transition-all duration-500 group relative overflow-hidden"
+              className="flex items-center gap-4 px-5 py-4 bg-indigo-600 rounded-[2rem] text-white shadow-2xl shadow-indigo-600/30 hover:bg-indigo-700 transition-all duration-500 group relative overflow-hidden"
             >
               <div className="absolute inset-0 bg-white/10 animate-pulse" />
               <div className="relative z-10 flex items-center gap-4">
@@ -297,6 +310,15 @@ const Sidebar = () => {
             <DialogTitle className="text-3xl font-black tracking-tight">Add New Client</DialogTitle>
           </DialogHeader>
           <ClientForm onSuccess={() => { setClientDialogOpen(false); }} />
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={appDialogOpen} onOpenChange={setAppDialogOpen}>
+        <DialogContent className="sm:max-w-[550px] rounded-[3.5rem] p-10">
+          <DialogHeader className="mb-6">
+            <DialogTitle className="text-3xl font-black tracking-tight">Schedule New Session</DialogTitle>
+          </DialogHeader>
+          <AppointmentForm onSuccess={() => { setAppDialogOpen(false); }} />
         </DialogContent>
       </Dialog>
     </div>

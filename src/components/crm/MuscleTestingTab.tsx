@@ -3,7 +3,7 @@
 import React, { useState, useEffect, useCallback, useMemo } from "react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Loader2, CheckCircle2, AlertTriangle, Info, RotateCcw, Save, Dumbbell, Zap, Sparkles, Search, ChevronDown, ChevronUp, Filter, Eye, EyeOff } from "lucide-react";
+import { Loader2, CheckCircle2, AlertTriangle, Info, RotateCcw, Save, Dumbbell, Zap, Sparkles, Search, ChevronDown, ChevronUp, Filter, Eye, EyeOff, Layers } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { supabase } from "@/integrations/supabase/client";
 import { showSuccess, showError } from "@/utils/toast";
@@ -21,6 +21,14 @@ import {
 import MuscleInfoModal from "./MuscleInfoModal";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
+import { TCM_CHANNELS, getChannelByMuscle } from "@/data/tcm-channel-data";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 const PRIMARY_14_MUSCLES = [
   'Supraspinatus', 'Teres Major', 'Pectoralis Major (Clavicular)', 'Latissimus Dorsi', 
@@ -37,6 +45,7 @@ const MuscleTestingTab = ({ appointmentId }: MuscleTestingTabProps) => {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
+  const [meridianFilter, setMeridianFilter] = useState<string>("all");
   const [showOnlyTested, setShowOnlyTested] = useState(false);
   const [showOnlyDysfunctional, setShowOnlyDysfunctional] = useState(false);
   const [selectedMuscleForInfo, setSelectedMuscleForInfo] = useState<string | null>(null);
@@ -213,7 +222,15 @@ const MuscleTestingTab = ({ appointmentId }: MuscleTestingTabProps) => {
         const isTested = !!results[m];
         const isDysfunctional = isTested && results[m].status !== 'Normotonic';
         
+        // Meridian Filter Logic
+        let matchesMeridian = true;
+        if (meridianFilter !== "all") {
+          const channel = getChannelByMuscle(m);
+          matchesMeridian = channel?.name === meridianFilter || channel?.code === meridianFilter;
+        }
+        
         if (!matchesSearch) return false;
+        if (!matchesMeridian) return false;
         if (showOnlyDysfunctional && !isDysfunctional) return false;
         if (showOnlyTested && !isTested) return false;
         
@@ -225,7 +242,7 @@ const MuscleTestingTab = ({ appointmentId }: MuscleTestingTabProps) => {
       }
     });
     return filtered;
-  }, [searchTerm, showOnlyTested, showOnlyDysfunctional, results]);
+  }, [searchTerm, meridianFilter, showOnlyTested, showOnlyDysfunctional, results]);
 
   const totalMusclesCount = useMemo(() => {
     return Object.values(MUSCLE_GROUPS).reduce((acc, curr) => acc + curr.length, 0);
@@ -291,6 +308,26 @@ const MuscleTestingTab = ({ appointmentId }: MuscleTestingTabProps) => {
               onChange={(e) => setSearchTerm(e.target.value)}
             />
           </div>
+          
+          <div className="w-full md:w-64">
+            <Select value={meridianFilter} onValueChange={setMeridianFilter}>
+              <SelectTrigger className="h-12 rounded-2xl border-slate-200 bg-white font-bold text-slate-600">
+                <div className="flex items-center gap-2">
+                  <Layers size={16} className="text-indigo-500" />
+                  <SelectValue placeholder="Filter by Meridian" />
+                </div>
+              </SelectTrigger>
+              <SelectContent className="rounded-2xl border-none shadow-2xl p-2">
+                <SelectItem value="all" className="rounded-xl">All Meridians</SelectItem>
+                {TCM_CHANNELS.map(channel => (
+                  <SelectItem key={channel.id} value={channel.name} className="rounded-xl">
+                    {channel.name} ({channel.code})
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+
           <div className="flex gap-2 w-full md:w-auto">
             <Button 
               variant="outline" 
@@ -330,7 +367,7 @@ const MuscleTestingTab = ({ appointmentId }: MuscleTestingTabProps) => {
               <AlertTriangle size={14} className="text-rose-500" /> Show Only Dysfunctional
             </Label>
           </div>
-          {(showOnlyTested || showOnlyDysfunctional || searchTerm) && (
+          {(showOnlyTested || showOnlyDysfunctional || searchTerm || meridianFilter !== "all") && (
             <Button 
               variant="ghost" 
               size="sm" 
@@ -338,6 +375,7 @@ const MuscleTestingTab = ({ appointmentId }: MuscleTestingTabProps) => {
                 setShowOnlyTested(false);
                 setShowOnlyDysfunctional(false);
                 setSearchTerm("");
+                setMeridianFilter("all");
               }}
               className="text-[10px] font-black uppercase tracking-widest text-indigo-600 hover:bg-indigo-50 h-7 px-3 rounded-lg"
             >
@@ -383,6 +421,7 @@ const MuscleTestingTab = ({ appointmentId }: MuscleTestingTabProps) => {
                     const statusDetails = currentResult ? getStatusDetails(currentResult.status) : null;
                     const Icon = statusDetails?.icon || CheckCircle2;
                     const isTested = !!currentResult;
+                    const channel = getChannelByMuscle(muscle);
 
                     return (
                       <div 
@@ -418,6 +457,14 @@ const MuscleTestingTab = ({ appointmentId }: MuscleTestingTabProps) => {
                             </div>
                           )}
                         </div>
+
+                        {channel && (
+                          <div className="flex items-center gap-2">
+                            <Badge variant="outline" className={cn("text-[8px] font-black uppercase tracking-widest border-none px-2 py-0.5", channel.color)}>
+                              {channel.name} ({channel.code})
+                            </Badge>
+                          </div>
+                        )}
                         
                         <div className="flex flex-wrap gap-2">
                           {MUSCLE_STATUSES.map(status => {
@@ -477,6 +524,7 @@ const MuscleTestingTab = ({ appointmentId }: MuscleTestingTabProps) => {
                 setShowOnlyTested(false);
                 setShowOnlyDysfunctional(false);
                 setSearchTerm("");
+                setMeridianFilter("all");
               }}
               className="mt-4 text-indigo-600 font-bold"
             >

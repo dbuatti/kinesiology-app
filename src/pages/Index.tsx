@@ -7,7 +7,7 @@ import { Badge } from "@/components/ui/badge";
 import { 
   Users, Calendar, Activity, TrendingUp, Loader2, 
   Plus, ArrowRight, UserPlus, Sparkles, Clock, 
-  CheckCircle2, Zap, Target, FlaskConical, Brain, Info, Heart, AlertCircle, StickyNote, Wind, Layers, RefreshCw
+  CheckCircle2, Zap, Target, FlaskConical, Brain, Info, Heart, AlertCircle, StickyNote, Wind, Layers, RefreshCw, Timer
 } from "lucide-react";
 import { MadeWithDyad } from "@/components/made-with-dyad";
 import {
@@ -21,7 +21,7 @@ import AppointmentForm from "@/components/crm/AppointmentForm";
 import RecentActivity from "@/components/crm/RecentActivity";
 import UpcomingAppointments from "@/components/crm/UpcomingAppointments";
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip as ChartTooltip, ResponsiveContainer } from 'recharts';
-import { format, subMonths, isToday, subDays, differenceInMinutes, startOfWeek, endOfWeek, isWithinInterval } from "date-fns";
+import { format, subMonths, isToday, subDays, differenceInMinutes, startOfWeek, endOfWeek, isWithinInterval, formatDistanceToNow } from "date-fns";
 import { Skeleton } from "@/components/ui/skeleton";
 import { cn } from "@/lib/utils";
 import { Textarea } from "@/components/ui/textarea";
@@ -42,6 +42,7 @@ const Index = () => {
   });
   const [todaySessions, setTodaySessions] = useState<any[]>([]);
   const [activeSession, setActiveSession] = useState<any>(null);
+  const [nextSession, setNextSession] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [clientDialogOpen, setClientDialogOpen] = useState(false);
   const [appDialogOpen, setAppDialogOpen] = useState(false);
@@ -119,11 +120,17 @@ const Index = () => {
       const today = allApps?.filter(app => isToday(new Date(app.date))) || [];
       setTodaySessions(today);
 
+      const now = new Date();
       const active = today.find(app => {
-        const diff = differenceInMinutes(new Date(), new Date(app.date));
+        const diff = differenceInMinutes(now, new Date(app.date));
         return diff >= 0 && diff < 90 && app.status !== 'Completed';
       });
       setActiveSession(active);
+
+      const upcoming = today
+        .filter(app => new Date(app.date) > now && app.status === 'Scheduled')
+        .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime())[0];
+      setNextSession(upcoming);
 
       const months = Array.from({ length: 6 }).map((_, i) => {
         const d = subMonths(new Date(), 5 - i);
@@ -350,6 +357,29 @@ const Index = () => {
             </Card>
 
             <div className="space-y-10">
+              {nextSession && (
+                <Card className="border-none shadow-xl rounded-[2.5rem] bg-indigo-600 text-white overflow-hidden animate-in zoom-in-95 duration-500">
+                  <CardContent className="p-8 flex items-center justify-between">
+                    <div className="flex items-center gap-5">
+                      <div className="w-14 h-14 rounded-2xl bg-white/20 flex items-center justify-center shadow-inner">
+                        <Timer size={28} className="animate-pulse" />
+                      </div>
+                      <div>
+                        <p className="text-[10px] font-black uppercase tracking-[0.3em] opacity-80">Next Session Starts In</p>
+                        <h3 className="text-3xl font-black tracking-tight">
+                          {formatDistanceToNow(new Date(nextSession.date))}
+                        </h3>
+                        <p className="text-xs font-bold opacity-90 mt-1">Client: {nextSession.clients?.name}</p>
+                      </div>
+                    </div>
+                    <Link to={`/appointments/${nextSession.id}`}>
+                      <Button size="icon" className="w-12 h-12 rounded-2xl bg-white text-indigo-600 hover:bg-indigo-50 shadow-lg">
+                        <ArrowRight size={24} />
+                      </Button>
+                    </Link>
+                  </CardContent>
+                </Card>
+              )}
               <MeridianClock />
               <UpcomingAppointments />
               <RecentActivity />

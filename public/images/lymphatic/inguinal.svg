@@ -1,9 +1,0 @@
-<svg width="400" height="300" viewBox="0 0 400 300" fill="none" xmlns="http://www.w3.org/2000/svg">
-  <rect width="400" height="300" rx="20" fill="#F0F9FF"/>
-  <path d="M120 80H280V180C280 200 260 210 200 210C140 210 120 200 120 180V80Z" stroke="#0284C7" stroke-width="4"/>
-  <path d="M140 210L120 280" stroke="#0284C7" stroke-width="4" stroke-linecap="round"/>
-  <path d="M260 210L280 280" stroke="#0284C7" stroke-width="4" stroke-linecap="round"/>
-  <circle cx="150" cy="200" r="8" fill="#3B82F6" opacity="0.6"/>
-  <circle cx="250" cy="200" r="8" fill="#3B82F6" opacity="0.6"/>
-  <text x="200" y="250" text-anchor="middle" font-family="sans-serif" font-weight="bold" font-size="14" fill="#0369A1">INGUINAL NODES</text>
-</svg>

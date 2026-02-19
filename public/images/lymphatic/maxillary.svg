@@ -1,8 +1,0 @@
-<svg width="400" height="300" viewBox="0 0 400 300" fill="none" xmlns="http://www.w3.org/2000/svg">
-  <rect width="400" height="300" rx="20" fill="#F0F9FF"/>
-  <path d="M200 60C230 60 255 85 255 115V140C255 170 230 195 200 195C170 195 145 170 145 140V115C145 85 170 60 200 60Z" stroke="#0284C7" stroke-width="4"/>
-  <path d="M160 150C170 165 185 170 200 170C215 170 230 165 240 150" stroke="#0284C7" stroke-width="4" stroke-linecap="round"/>
-  <circle cx="165" cy="145" r="6" fill="#3B82F6" opacity="0.6"/>
-  <circle cx="235" cy="145" r="6" fill="#3B82F6" opacity="0.6"/>
-  <text x="200" y="240" text-anchor="middle" font-family="sans-serif" font-weight="bold" font-size="14" fill="#0369A1">MAXILLARY / FACIAL NODES</text>
-</svg>

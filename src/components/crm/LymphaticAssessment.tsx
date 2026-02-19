@@ -8,7 +8,8 @@ import { Textarea } from "@/components/ui/textarea";
 import { 
   Info, Timer, Play, Pause, RotateCcw, 
   Droplets, ChevronDown, Zap, Search, 
-  AlertCircle, HelpCircle, Brain, Move
+  AlertCircle, HelpCircle, Brain, Move,
+  CheckCircle2, ShieldCheck, RefreshCw
 } from "lucide-react";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
@@ -45,8 +46,8 @@ const RELEASE_INSTRUCTIONS: Record<string, { position: string; pearl?: string }>
     pearl: "Clinical Pearl: Releasing popliteal tension often resolves long-term chronic headaches."
   },
   'Cisterna Chyli': { 
-    position: "Central abdominal release. Use gentle pressure and find the angle of ease that softens the deep abdominal tension.",
-    pearl: "The central reservoir for all lymph from the lower body."
+    position: "Central abdominal release. Shorten the abdominals by bending the client's knees or gently moving tissue up towards the head. Hold until tension softens.",
+    pearl: "You may feel a strong pulse here (abdominal aorta). This is the central reservoir for all lymph from the lower body."
   },
   'Maxillary': { 
     position: "Gentle traction along the jawline and facial nodes to find the position of maximum softening.",
@@ -70,6 +71,8 @@ const LymphaticAssessment = ({
   const [sutureSide, setSutureSide] = useState<string | null>(initialSutureSide);
   const [priorityZone, setPriorityZone] = useState<string | null>(initialPriorityZone);
   const [notes, setNotes] = useState<string | null>(initialNotes);
+  const [permissionGranted, setPermissionGranted] = useState(false);
+  const [isVerified, setIsVerified] = useState(false);
   
   const [timeLeft, setTimeLeft] = useState<number | null>(null);
   const [isActive, setIsActive] = useState(false);
@@ -131,7 +134,12 @@ const LymphaticAssessment = ({
                 </div>
               </div>
               <div className="flex items-center gap-3">
-                {priorityZone && (
+                {isVerified && (
+                  <Badge className="bg-emerald-500 text-white border-none font-bold text-[10px] uppercase tracking-widest">
+                    Verified
+                  </Badge>
+                )}
+                {priorityZone && !isVerified && (
                   <Badge className="bg-blue-600 text-white border-none font-bold text-[10px] uppercase tracking-widest">
                     Priority: {priorityZone}
                   </Badge>
@@ -155,7 +163,7 @@ const LymphaticAssessment = ({
                       <ToggleGroupItem value="Left" className="rounded-xl px-4 py-2 h-10 font-bold data-[state=on]:bg-blue-600 data-[state=on]:text-white border border-slate-100">Left</ToggleGroupItem>
                       <ToggleGroupItem value="Right" className="rounded-xl px-4 py-2 h-10 font-bold data-[state=on]:bg-blue-600 data-[state=on]:text-white border border-slate-100">Right</ToggleGroupItem>
                     </ToggleGroup>
-                    <p className="text-[10px] text-slate-400 italic">Palpate Temporoparietal suture for restricted glide or tenderness.</p>
+                    <p className="text-[10px] text-slate-400 italic">Palpate suture for restricted glide or tenderness.</p>
                   </div>
 
                   <div className="space-y-3">
@@ -181,26 +189,43 @@ const LymphaticAssessment = ({
                 </div>
 
                 {priorityZone && (
-                  <div className="p-6 bg-blue-50 rounded-[2rem] border-2 border-blue-100 space-y-4 animate-in fade-in slide-in-from-top-2 duration-500">
-                    <div className="flex items-center gap-3">
-                      <div className="w-10 h-10 rounded-xl bg-blue-600 text-white flex items-center justify-center shadow-lg">
-                        <Move size={20} />
+                  <div className="space-y-4 animate-in fade-in slide-in-from-top-2 duration-500">
+                    <div className="flex items-center justify-between p-4 bg-indigo-50 rounded-2xl border border-indigo-100">
+                      <div className="flex items-center gap-3">
+                        <ShieldCheck size={20} className="text-indigo-600" />
+                        <span className="text-sm font-bold text-indigo-900">Permission to correct?</span>
                       </div>
-                      <div>
-                        <p className="text-[10px] font-black text-blue-600 uppercase tracking-widest">Release Position: {priorityZone}</p>
-                        <p className="text-sm font-bold text-blue-900 leading-relaxed">
-                          {RELEASE_INSTRUCTIONS[priorityZone].position}
-                        </p>
-                      </div>
+                      <Button 
+                        variant={permissionGranted ? "default" : "outline"}
+                        size="sm"
+                        onClick={() => setPermissionGranted(!permissionGranted)}
+                        className={cn("rounded-xl font-bold", permissionGranted ? "bg-indigo-600" : "border-indigo-200 text-indigo-600")}
+                      >
+                        {permissionGranted ? "Granted" : "Ask Client"}
+                      </Button>
                     </div>
-                    {RELEASE_INSTRUCTIONS[priorityZone].pearl && (
-                      <div className="flex items-start gap-3 p-3 bg-white/60 rounded-xl border border-blue-200">
-                        <Brain size={16} className="text-blue-600 mt-0.5 shrink-0" />
-                        <p className="text-xs text-blue-800 font-medium italic">
-                          {RELEASE_INSTRUCTIONS[priorityZone].pearl}
-                        </p>
+
+                    <div className="p-6 bg-blue-50 rounded-[2rem] border-2 border-blue-100 space-y-4">
+                      <div className="flex items-center gap-3">
+                        <div className="w-10 h-10 rounded-xl bg-blue-600 text-white flex items-center justify-center shadow-lg">
+                          <Move size={20} />
+                        </div>
+                        <div>
+                          <p className="text-[10px] font-black text-blue-600 uppercase tracking-widest">Release Position: {priorityZone}</p>
+                          <p className="text-sm font-bold text-blue-900 leading-relaxed">
+                            {RELEASE_INSTRUCTIONS[priorityZone].position}
+                          </p>
+                        </div>
                       </div>
-                    )}
+                      {RELEASE_INSTRUCTIONS[priorityZone].pearl && (
+                        <div className="flex items-start gap-3 p-3 bg-white/60 rounded-xl border border-blue-200">
+                          <Brain size={16} className="text-blue-600 mt-0.5 shrink-0" />
+                          <p className="text-xs text-blue-800 font-medium italic">
+                            {RELEASE_INSTRUCTIONS[priorityZone].pearl}
+                          </p>
+                        </div>
+                      )}
+                    </div>
                   </div>
                 )}
 
@@ -229,6 +254,23 @@ const LymphaticAssessment = ({
                     )}
                   </div>
                 </div>
+
+                {priorityZone && (
+                  <div className="p-4 bg-emerald-50 rounded-2xl border border-emerald-100 flex items-center justify-between">
+                    <div className="flex items-center gap-3">
+                      <RefreshCw size={18} className="text-emerald-600" />
+                      <span className="text-xs font-bold text-emerald-900">Verify: Re-test suture glide & tenderness</span>
+                    </div>
+                    <Button 
+                      variant={isVerified ? "default" : "outline"}
+                      size="sm"
+                      onClick={() => setIsVerified(!isVerified)}
+                      className={cn("rounded-xl font-bold", isVerified ? "bg-emerald-600" : "border-emerald-200 text-emerald-600")}
+                    >
+                      {isVerified ? "Verified" : "Mark Verified"}
+                    </Button>
+                  </div>
+                )}
               </div>
 
               <div className="space-y-6">
@@ -255,7 +297,16 @@ const LymphaticAssessment = ({
                   <div className="space-y-3 animate-in fade-in slide-in-from-right-2 duration-300">
                     <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Step-by-Step</h4>
                     <ol className="space-y-2">
-                      {["Palpate suture (glide/tenderness)", "Client holds tender point", "Test IM (should inhibit)", "Work neck down to find priority", "Confirm with K27 priority check", "Correct only the priority point"].map((step, i) => (
+                      {[
+                        "Palpate suture (glide/tenderness)",
+                        "Client holds tender point",
+                        "Test IM (should inhibit)",
+                        "Work neck down to find priority",
+                        "Confirm with K27 priority check",
+                        "Ask permission to correct",
+                        "Correct only the priority point",
+                        "Re-test suture for restored glide"
+                      ].map((step, i) => (
                         <li key={i} className="flex gap-3 text-[10px] font-bold text-slate-600"><span className="text-blue-500">{i + 1}.</span> {step}</li>
                       ))}
                     </ol>

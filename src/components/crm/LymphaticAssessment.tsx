@@ -30,31 +30,31 @@ const RELEASE_INSTRUCTIONS: Record<string, { position: string; pearl?: string; i
     category: 'Primary',
     position: "C4 level, slightly anterior. Feel for nodule. Move tissue towards spine or slightly up to find 'Position of Ease'.",
     pearl: "The 'Brain Drain' — essential for clearing neural inflammation and brain fog.",
-    image: "/images/lymphatic/cervical.svg"
+    image: "/images/lymphatic/cervical.png"
   },
   'Thoracic (L)': { 
     category: 'Primary',
     position: "Shorten the Pec Minor. Bring the left arm into a position of ease (usually across the chest or slightly elevated) to soften the duct.",
     pearl: "The Left Thoracic Duct drains the entire left side of the body and the brain.",
-    image: "/images/lymphatic/thoracic-l.svg"
+    image: "/images/lymphatic/thoracic-l.png"
   },
   'Thoracic (R)': { 
     category: 'Primary',
     position: "Shorten the Pec Minor. Bring the right arm into a position of ease to soften the duct.",
     pearl: "Drains the right upper quadrant of the body.",
-    image: "/images/lymphatic/thoracic-r.svg"
+    image: "/images/lymphatic/thoracic-r.png"
   },
   'Cisterna Chyli': { 
     category: 'Primary',
     position: "Central abdominal release. Shorten the abdominals by bending the client's knees or gently moving tissue up towards the head.",
     pearl: "The central reservoir for all lymph from the lower body. Often pulses strongly.",
-    image: "/images/lymphatic/cisterna-chyli.svg"
+    image: "/images/lymphatic/cisterna-chyli.png"
   },
   'Inguinal': { 
     category: 'Secondary',
     position: "Find the ASIS (pelvic bone). Hold the position next to the bone where you feel the tissue soften.",
     pearl: "Key for lower extremity drainage and pelvic congestion.",
-    image: "/images/lymphatic/inguinal.svg"
+    image: "/images/lymphatic/inguinal.png"
   },
   'Popliteal': { 
     category: 'Secondary',
@@ -66,13 +66,13 @@ const RELEASE_INSTRUCTIONS: Record<string, { position: string; pearl?: string; i
     category: 'Secondary',
     position: "Gentle traction along the jawline and facial nodes to find the position of maximum softening.",
     pearl: "Often improves once the Cervical and Thoracic ducts are cleared.",
-    image: "/images/lymphatic/maxillary.svg"
+    image: "/images/lymphatic/maxillary.png"
   },
   'Axillary': { 
     category: 'Secondary',
     position: "Shorten the shoulder girdle. Usually self-corrects once Thoracic ducts are opened.",
     pearl: "Secondary to Thoracic duct clearance.",
-    image: "/images/lymphatic/axillary.svg"
+    image: "/images/lymphatic/axillary.png"
   }
 };
 
@@ -251,7 +251,7 @@ const LymphaticAssessment = ({
                         </label>
                         <Badge className={cn(
                           "font-black text-[10px] uppercase tracking-widest px-3 py-1",
-                          tenderness[0] <= 3 ? "bg-emerald-500 text-white" : "bg-amber-500 text-white"
+                          tenderness[0] <= 3 ? "bg-emerald-50 text-white" : "bg-amber-50 text-white"
                         )}>
                           {100 - (tenderness[0] * 10)}% Reduction
                         </Badge>

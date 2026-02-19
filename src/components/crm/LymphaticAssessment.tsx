@@ -9,7 +9,7 @@ import {
   Info, Timer, Play, Pause, RotateCcw, 
   Droplets, ChevronDown, Zap, Search, 
   AlertCircle, HelpCircle, Brain, Move,
-  CheckCircle2, ShieldCheck, RefreshCw
+  CheckCircle2, ShieldCheck, RefreshCw, Image as ImageIcon
 } from "lucide-react";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
@@ -24,7 +24,7 @@ interface LymphaticAssessmentProps {
   onSaveField: (field: string, value: string | null) => Promise<void>;
 }
 
-const RELEASE_INSTRUCTIONS: Record<string, { position: string; pearl?: string }> = {
+const RELEASE_INSTRUCTIONS: Record<string, { position: string; pearl?: string; image?: string }> = {
   'Cervical': { 
     position: "C4 level, slightly anterior. Feel for nodule. Move tissue towards spine or slightly up to find 'Position of Ease'.",
     pearl: "The 'Brain Drain' — essential for clearing neural inflammation and brain fog."
@@ -43,7 +43,8 @@ const RELEASE_INSTRUCTIONS: Record<string, { position: string; pearl?: string }>
   },
   'Popliteal': { 
     position: "Shorten the muscle (top of calves or bottom of hamstrings). Wait for the tissue to soften.",
-    pearl: "Clinical Pearl: Releasing popliteal tension often resolves long-term chronic headaches."
+    pearl: "Clinical Pearl: Releasing popliteal tension often resolves long-term chronic headaches.",
+    image: "/images/lymphatic/popliteal.png"
   },
   'Cisterna Chyli': { 
     position: "Central abdominal release. Shorten the abdominals by bending the client's knees or gently moving tissue up towards the head. Hold until tension softens.",
@@ -205,24 +206,42 @@ const LymphaticAssessment = ({
                       </Button>
                     </div>
 
-                    <div className="p-6 bg-blue-50 rounded-[2rem] border-2 border-blue-100 space-y-4">
-                      <div className="flex items-center gap-3">
-                        <div className="w-10 h-10 rounded-xl bg-blue-600 text-white flex items-center justify-center shadow-lg">
-                          <Move size={20} />
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div className="p-6 bg-blue-50 rounded-[2rem] border-2 border-blue-100 space-y-4">
+                        <div className="flex items-center gap-3">
+                          <div className="w-10 h-10 rounded-xl bg-blue-600 text-white flex items-center justify-center shadow-lg">
+                            <Move size={20} />
+                          </div>
+                          <div>
+                            <p className="text-[10px] font-black text-blue-600 uppercase tracking-widest">Release Position: {priorityZone}</p>
+                            <p className="text-sm font-bold text-blue-900 leading-relaxed">
+                              {RELEASE_INSTRUCTIONS[priorityZone].position}
+                            </p>
+                          </div>
                         </div>
-                        <div>
-                          <p className="text-[10px] font-black text-blue-600 uppercase tracking-widest">Release Position: {priorityZone}</p>
-                          <p className="text-sm font-bold text-blue-900 leading-relaxed">
-                            {RELEASE_INSTRUCTIONS[priorityZone].position}
-                          </p>
-                        </div>
+                        {RELEASE_INSTRUCTIONS[priorityZone].pearl && (
+                          <div className="flex items-start gap-3 p-3 bg-white/60 rounded-xl border border-blue-200">
+                            <Brain size={16} className="text-blue-600 mt-0.5 shrink-0" />
+                            <p className="text-xs text-blue-800 font-medium italic">
+                              {RELEASE_INSTRUCTIONS[priorityZone].pearl}
+                            </p>
+                          </div>
+                        )}
                       </div>
-                      {RELEASE_INSTRUCTIONS[priorityZone].pearl && (
-                        <div className="flex items-start gap-3 p-3 bg-white/60 rounded-xl border border-blue-200">
-                          <Brain size={16} className="text-blue-600 mt-0.5 shrink-0" />
-                          <p className="text-xs text-blue-800 font-medium italic">
-                            {RELEASE_INSTRUCTIONS[priorityZone].pearl}
-                          </p>
+
+                      {RELEASE_INSTRUCTIONS[priorityZone].image && (
+                        <div className="bg-white rounded-[2rem] border-2 border-blue-100 p-2 overflow-hidden flex flex-col">
+                          <div className="flex items-center gap-2 px-4 py-2 border-b border-slate-50">
+                            <ImageIcon size={14} className="text-blue-500" />
+                            <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Visual Guide</span>
+                          </div>
+                          <div className="flex-1 flex items-center justify-center p-2">
+                            <img 
+                              src={RELEASE_INSTRUCTIONS[priorityZone].image} 
+                              alt={`${priorityZone} Release Position`}
+                              className="max-w-full h-auto rounded-xl shadow-sm"
+                            />
+                          </div>
                         </div>
                       )}
                     </div>

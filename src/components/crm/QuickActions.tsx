@@ -49,6 +49,11 @@ const QuickActions = () => {
         e.preventDefault();
         navigate('/procedures');
       }
+      // Cmd/Ctrl + / for help
+      if ((e.metaKey || e.ctrlKey) && e.key === '/') {
+        e.preventDefault();
+        setHelpOpen(true);
+      }
     };
 
     document.addEventListener('keydown', handleKeyDown);

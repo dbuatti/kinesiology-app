@@ -227,16 +227,16 @@ const ClientProgressTab = ({ client, appointments, onRefresh }: ClientProgressTa
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-4 relative z-10">
-              <div className="p-4 bg-white/10 rounded-2xl border border-white/10">
-                <h5 className="text-[10px] font-black uppercase tracking-widest text-indigo-300 mb-2">Primary Focus</h5>
+              <div className="p-4 bg-white/10 rounded-2xl border border-white/10 shadow-inner">
+                <p className="text-[10px] font-black text-indigo-300 uppercase tracking-widest mb-2">Primary Focus</p>
                 <p className="text-sm font-bold leading-relaxed">
                   {latestBolt !== null && latestBolt < 25 
                     ? "Prioritize CO2 tolerance and respiratory mechanics. Shift from SNS to Receptive state."
                     : "Refine autonomic synchronization and multi-planar mobility patterns."}
                 </p>
               </div>
-              <div className="p-4 bg-white/10 rounded-2xl border border-white/10">
-                <h5 className="text-[10px] font-black uppercase tracking-widest text-indigo-300 mb-2">Shared Responsibility</h5>
+              <div className="p-4 bg-white/10 rounded-2xl border border-white/10 shadow-inner">
+                <p className="text-[10px] font-black text-indigo-300 uppercase tracking-widest mb-2">Shared Responsibility</p>
                 <p className="text-xs text-indigo-100 leading-relaxed italic">
                   "There needs to be a balance of shared responsibility, but ultimately the client must drive their own healing process."
                 </p>

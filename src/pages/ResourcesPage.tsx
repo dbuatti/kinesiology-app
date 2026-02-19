@@ -28,7 +28,8 @@ import {
   Sparkles,
   Dumbbell,
   Clock,
-  RefreshCw
+  RefreshCw,
+  Youtube
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -42,6 +43,7 @@ import TcmChannelReference from "@/components/crm/TcmChannelReference";
 import MeridianClock from "@/components/crm/MeridianClock";
 import FiveElementCycle from "@/components/crm/FiveElementCycle";
 import ClinicalCheatSheet from "@/components/crm/ClinicalCheatSheet";
+import VideoLibrary from "@/components/crm/VideoLibrary";
 
 const ResourcesPage = () => {
   const [searchParams, setSearchParams] = useSearchParams();
@@ -66,6 +68,9 @@ const ResourcesPage = () => {
             </TabsTrigger>
             <TabsTrigger value="cheatsheet" className="rounded-xl py-2.5 px-6 data-[state=active]:bg-white data-[state=active]:text-indigo-600 data-[state=active]:shadow-sm font-bold text-xs uppercase tracking-widest">
               <Zap size={16} className="mr-2" /> Cheat Sheets
+            </TabsTrigger>
+            <TabsTrigger value="video" className="rounded-xl py-2.5 px-6 data-[state=active]:bg-white data-[state=active]:text-indigo-600 data-[state=active]:shadow-sm font-bold text-xs uppercase tracking-widest">
+              <Youtube size={16} className="mr-2" /> Video Library
             </TabsTrigger>
             <TabsTrigger value="elements" className="rounded-xl py-2.5 px-6 data-[state=active]:bg-white data-[state=active]:text-indigo-600 data-[state=active]:shadow-sm font-bold text-xs uppercase tracking-widest">
               <RefreshCw size={16} className="mr-2" /> 5 Elements
@@ -94,6 +99,10 @@ const ResourcesPage = () => {
 
         <TabsContent value="cheatsheet" className="mt-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
           <ClinicalCheatSheet />
+        </TabsContent>
+
+        <TabsContent value="video" className="mt-8">
+          <VideoLibrary />
         </TabsContent>
 
         <TabsContent value="elements" className="mt-8 animate-in fade-in slide-in-from-bottom-4 duration-500">

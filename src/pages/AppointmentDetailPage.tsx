@@ -10,7 +10,7 @@ import { Label } from "@/components/ui/label";
 import { 
   ArrowLeft, Calendar, Clock, 
   Loader2, Trash2, User, Droplets,
-  Copy, Check, History, MoreHorizontal, ChevronDown, Star, Play, Printer, Zap
+  Copy, Check, History, MoreHorizontal, ChevronDown, Star, Play, Printer, Zap, Target, AlertCircle, Activity, ExternalLink
 } from "lucide-react";
 import { format, isToday } from "date-fns";
 import { Appointment } from "@/types/crm";
@@ -39,6 +39,7 @@ import {
 import Breadcrumbs from "@/components/crm/Breadcrumbs";
 import { Button } from "@/components/ui/button";
 import { TCM_CHANNELS } from "@/data/tcm-channel-data";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 export interface AppointmentWithClient extends Appointment {
   clients: { name: string; id: string; born?: string };
@@ -441,9 +442,71 @@ KEY ASSESSMENTS:
               </div>
             </div>
 
-            <div className="p-6 grid grid-cols-1 md:grid-cols-2 gap-8">
-              <EditableField key={`goal-${appointment.id}`} field="goal" label="Session Goal" value={appointment.goal} placeholder="What is the primary goal for this balance?" onSave={saveField} className="bg-slate-50/50 p-4 rounded-2xl border border-slate-100 print:bg-white print:border-none print:p-0" />
-              <EditableField key={`issue-${appointment.id}`} field="issue" label="Main Concern / Issue" value={appointment.issue} placeholder="Describe the client's main concern..." onSave={saveField} className="bg-slate-50/50 p-4 rounded-2xl border border-slate-100 print:bg-white print:border-none print:p-0" />
+            <div className="p-6">
+              <Tabs defaultValue="goal" className="w-full">
+                <TabsList className="grid w-full grid-cols-3 h-12 bg-slate-100 p-1 rounded-xl mb-6">
+                  <TabsTrigger value="goal" className="flex items-center gap-2 data-[state=active]:bg-white data-[state=active]:text-indigo-600 data-[state=active]:shadow-sm rounded-lg h-10 text-[10px] font-black uppercase tracking-wider">
+                    <Target size={14} /> Session Goal
+                  </TabsTrigger>
+                  <TabsTrigger value="issue" className="flex items-center gap-2 data-[state=active]:bg-white data-[state=active]:text-indigo-600 data-[state=active]:shadow-sm rounded-lg h-10 text-[10px] font-black uppercase tracking-wider">
+                    <AlertCircle size={14} /> Main Concern
+                  </TabsTrigger>
+                  <TabsTrigger value="context" className="flex items-center gap-2 data-[state=active]:bg-white data-[state=active]:text-indigo-600 data-[state=active]:shadow-sm rounded-lg h-10 text-[10px] font-black uppercase tracking-wider">
+                    <Zap size={14} /> Session Context
+                  </TabsTrigger>
+                </TabsList>
+
+                <TabsContent value="goal" className="animate-in fade-in slide-in-from-bottom-2 duration-300">
+                  <EditableField key={`goal-${appointment.id}`} field="goal" label="Session Goal" value={appointment.goal} placeholder="What is the primary goal for this balance?" onSave={saveField} className="bg-slate-50/50 p-4 rounded-2xl border border-slate-100" />
+                </TabsContent>
+
+                <TabsContent value="issue" className="animate-in fade-in slide-in-from-bottom-2 duration-300">
+                  <EditableField key={`issue-${appointment.id}`} field="issue" label="Main Concern / Issue" value={appointment.issue} placeholder="Describe the client's main concern..." onSave={saveField} className="bg-slate-50/50 p-4 rounded-2xl border border-slate-100" />
+                </TabsContent>
+
+                <TabsContent value="context" className="animate-in fade-in slide-in-from-bottom-2 duration-300">
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <EditableField 
+                      key={`acupoints-${appointment.id}`} 
+                      field="acupoints" 
+                      label="Acupoints" 
+                      value={appointment.acupoints} 
+                      placeholder="Points used..." 
+                      onSave={saveField as any} 
+                      className="bg-white"
+                    />
+                    <EditableField 
+                      key={`notes-${appointment.id}`} 
+                      field="notes" 
+                      label="General Notes" 
+                      value={appointment.notes} 
+                      multiline 
+                      placeholder="Observations..." 
+                      onSave={saveField as any} 
+                      className="bg-white"
+                    />
+                    <div className="space-y-4">
+                      <EditableField 
+                        key={`journal-${appointment.id}`} 
+                        field="journal" 
+                        label="Practitioner Reflection" 
+                        value={appointment.journal} 
+                        multiline 
+                        className="bg-amber-50/50 border-amber-100" 
+                        placeholder="Personal insights..." 
+                        onSave={saveField as any} 
+                      />
+                      {appointment.notion_link && (
+                        <Button variant="outline" size="sm" className="w-full h-12 rounded-2xl border-slate-200 font-bold text-slate-600 hover:bg-slate-50" asChild>
+                          <a href={appointment.notion_link} target="_blank" rel="noopener noreferrer">
+                            <ExternalLink size={16} className="mr-2" /> View Notion Link
+                          </a>
+                        </Button>
+                      )}
+                    </div>
+                  </div>
+                </TabsContent>
+              </Tabs>
             </div>
           </Card>
 

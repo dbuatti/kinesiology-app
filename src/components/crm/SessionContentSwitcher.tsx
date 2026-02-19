@@ -114,60 +114,6 @@ const SessionContentSwitcher = ({ appointment, onUpdate, saveField }: SessionCon
           </TabsContent>
         </Tabs>
       </div>
-
-      {/* Session Context - Moved to bottom and organized into a grid */}
-      <div className="pt-10 border-t border-slate-200">
-        <div className="flex items-center gap-3 mb-8">
-          <div className="w-12 h-12 bg-indigo-600 rounded-2xl flex items-center justify-center text-white shadow-lg shadow-indigo-100">
-            <Zap size={24} />
-          </div>
-          <div>
-            <h3 className="text-xl font-black text-slate-900 uppercase tracking-widest">Session Context & Notes</h3>
-            <p className="text-xs font-bold text-slate-400 uppercase tracking-widest">General observations and practitioner reflections</p>
-          </div>
-        </div>
-        
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-          <EditableField 
-            key={`acupoints-${appointmentId}`} 
-            field="acupoints" 
-            label="Acupoints" 
-            value={appointment.acupoints} 
-            placeholder="Points used..." 
-            onSave={saveField as any} 
-            className="bg-white"
-          />
-          <EditableField 
-            key={`notes-${appointmentId}`} 
-            field="notes" 
-            label="General Notes" 
-            value={appointment.notes} 
-            multiline 
-            placeholder="Observations..." 
-            onSave={saveField as any} 
-            className="bg-white"
-          />
-          <div className="space-y-4">
-            <EditableField 
-              key={`journal-${appointmentId}`} 
-              field="journal" 
-              label="Practitioner Reflection" 
-              value={appointment.journal} 
-              multiline 
-              className="bg-amber-50/50 border-amber-100" 
-              placeholder="Personal insights..." 
-              onSave={saveField as any} 
-            />
-            {appointment.notion_link && (
-              <Button variant="outline" size="sm" className="w-full h-12 rounded-2xl border-slate-200 font-bold text-slate-600 hover:bg-slate-50" asChild>
-                <a href={appointment.notion_link} target="_blank" rel="noopener noreferrer">
-                  <ExternalLink size={16} className="mr-2" /> View Notion Link
-                </a>
-              </Button>
-            )}
-          </div>
-        </div>
-      </div>
     </div>
   );
 

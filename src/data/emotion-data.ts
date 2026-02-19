@@ -1,16 +1,20 @@
+import { TCM_CHANNELS, TcmElement } from "./tcm-channel-data";
+
+// Derived from the central database for backward compatibility with existing components
 export const CHANNEL_EMOTIONS: Record<string, string[]> = {
-  'SI AND SJ': ['Domineering', 'Elation', 'Calm', 'Excited', 'Understood', 'Open To Others', 'Sex', 'Intimacy', 'Love/Hate (Others)', 'Expression', 'Defensive', 'Outer Boundaries'],
-  'HT AND PC': ['Self-Love', 'In-Tune', 'Balance', 'Open To My Heart', 'Closed', 'Joy', 'Hurt', 'Emotional', 'Passion', 'Propriety', 'Spontaneity', 'Inner Boundaries'],
-  'ST': ['External Needs', 'Sympathy', 'Worry About Others', 'Blame', 'Worry About Relationships', 'Protect', 'Obligation', 'Positivity', 'Ingratiating'],
-  'SP': ['Self Analysis', 'Self Nourishment', 'Truth', 'Integrity', 'Care For Self', 'Self Is Lowest Priority', 'Needy', 'Contentment', 'Purpose', 'Fulfilled', 'Truth'],
-  'LI': ['Attachment', 'Letting Go', 'Holding On', 'Loss Of Others Or Things', 'Alienation', 'Longing For What Is Lost', 'Acknowledgment', 'Value', 'Respected'],
-  'LU': ['Grief', 'Sadness', 'Guilt', 'Regret', 'Value', 'Worthless', 'Loss Of Spirit', 'Disconnection From Spirit', 'Separation (Wears Mask)'],
-  'BL': ['Control', 'Drive', 'Invisible', 'Withdrawn', 'Unsafe', 'Knowledge', 'Cleverness', 'Will', 'Safety', 'Security', 'Impatient', 'Can’t Rest', 'Disconnected From Others'],
-  'KI': ['Fear', 'Anxiety', 'Trust', 'Faith', 'Stillness', 'Destiny', 'Alone', 'Numb To Self', 'Disconnected From Self', 'Essence', 'Instincts', 'Unrelenting', 'Core', 'Potential', 'Wisdom'],
-  'GB': ['Passive/Aggressive', 'Resentment', 'Stuck', 'Indecisive', 'Judgemental', 'Rejection', 'High Expectations', 'Doing', 'Moving Forward', 'Choice', 'Perfect', 'Right/Wrong', 'Courage'],
-  'LIVER': ['Anger', 'Rage', 'Frustration', 'Flow', 'Inflexibility', 'Stagnation', 'Acceptance Of Self', 'Hopeless', 'Expectations Of Self', 'Stuck', 'Self Esteem', 'Planning'],
+  'SI AND SJ': [...new Set([...(TCM_CHANNELS.find(c => c.id === 'SI')?.emotions || []), ...(TCM_CHANNELS.find(c => c.id === 'SJ')?.emotions || [])])],
+  'HT AND PC': [...new Set([...(TCM_CHANNELS.find(c => c.id === 'HT')?.emotions || []), ...(TCM_CHANNELS.find(c => c.id === 'PC')?.emotions || [])])],
+  'ST': TCM_CHANNELS.find(c => c.id === 'ST')?.emotions || [],
+  'SP': TCM_CHANNELS.find(c => c.id === 'SP')?.emotions || [],
+  'LI': TCM_CHANNELS.find(c => c.id === 'LI')?.emotions || [],
+  'LU': TCM_CHANNELS.find(c => c.id === 'LU')?.emotions || [],
+  'BL': TCM_CHANNELS.find(c => c.id === 'BL')?.emotions || [],
+  'KI': TCM_CHANNELS.find(c => c.id === 'KI')?.emotions || [],
+  'GB': TCM_CHANNELS.find(c => c.id === 'GB')?.emotions || [],
+  'LIVER': TCM_CHANNELS.find(c => c.id === 'LV')?.emotions || [],
 };
 
+// 5 Element Emotions (Static for now as they represent the archetypal element state)
 export const ELEMENT_EMOTIONS: Record<string, string[]> = {
   'FIRE': ['Joy', 'Love', 'Hate', 'Elation', 'In-Tune', 'Maturity', 'Harmony', 'Balance', 'Calm', 'Excited', 'Understanding', 'Openness', 'Agitation', 'Domineering', 'Emotional', 'Passion', 'Expression', 'Apathy', 'Propriety', 'Self-Love', 'Defensive', 'Heart', 'Boundaries', 'Individuality'],
   'EARTH': ['Worry', 'Contemplation', 'Centering', 'Satisfaction', 'Positive/Happy State Of Mind', 'Thinking', 'Analysis', 'Ingratiating', 'Giving/Receiving', 'Relationships', 'Dependence', 'Obligation', 'Support', 'Responsibility', 'Nuture', 'Nourish', 'Integrity', 'Sympathy', 'Empathy', 'Blame', 'Needy', 'Contentment'],

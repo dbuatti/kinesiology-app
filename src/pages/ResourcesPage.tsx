@@ -23,7 +23,8 @@ import {
   Move,
   Droplets,
   Target,
-  Heart
+  Heart,
+  Layers
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -33,6 +34,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { cn } from "@/lib/utils";
 import AcupointReference from "@/components/crm/AcupointReference";
 import SpinalSegmentReference from "@/components/crm/SpinalSegmentReference";
+import TcmChannelReference from "@/components/crm/TcmChannelReference";
 import { VAGUS_ASSOCIATIONS } from "@/data/vagus-data";
 
 const ResourcesPage = () => {
@@ -51,7 +53,7 @@ const ResourcesPage = () => {
       </div>
 
       <Tabs value={activeTab} onValueChange={(v) => setSearchParams({ tab: v })} className="w-full">
-        <TabsList className="grid w-full grid-cols-2 md:grid-cols-7 h-auto p-1 bg-slate-100 rounded-2xl">
+        <TabsList className="grid w-full grid-cols-2 md:grid-cols-8 h-auto p-1 bg-slate-100 rounded-2xl">
           <TabsTrigger value="vestibular" className="rounded-xl py-2.5 data-[state=active]:bg-white data-[state=active]:shadow-sm">
             <Footprints size={16} className="mr-2" /> Vestibular
           </TabsTrigger>
@@ -60,6 +62,9 @@ const ResourcesPage = () => {
           </TabsTrigger>
           <TabsTrigger value="neurological" className="rounded-xl py-2.5 data-[state=active]:bg-white data-[state=active]:shadow-sm">
             <Brain size={16} className="mr-2" /> Neurological
+          </TabsTrigger>
+          <TabsTrigger value="channels" className="rounded-xl py-2.5 data-[state=active]:bg-white data-[state=active]:shadow-sm">
+            <Layers size={16} className="mr-2" /> Channels
           </TabsTrigger>
           <TabsTrigger value="acupoints" className="rounded-xl py-2.5 data-[state=active]:bg-white data-[state=active]:shadow-sm">
             <Target size={16} className="mr-2" /> Acupoints
@@ -74,6 +79,10 @@ const ResourcesPage = () => {
             <Activity size={16} className="mr-2" /> Vagus Nerve
           </TabsTrigger>
         </TabsList>
+
+        <TabsContent value="channels" className="mt-8">
+          <TcmChannelReference />
+        </TabsContent>
 
         <TabsContent value="acupoints" className="mt-8">
           <AcupointReference />
@@ -340,26 +349,6 @@ const ResourcesPage = () => {
           </div>
         </TabsContent>
 
-        <TabsContent value="kinesiology" className="mt-8">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <Card className="rounded-3xl border-none shadow-sm bg-white">
-              <CardHeader>
-                <div className="w-12 h-12 bg-rose-100 text-rose-600 rounded-xl flex items-center justify-center mb-2">
-                  <Activity size={24} />
-                </div>
-                <CardTitle>Muscle Testing Fundamentals</CardTitle>
-                <CardDescription>Normotonic vs. Dysfunctional responses</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <p className="text-sm text-slate-600 leading-relaxed mb-4">
-                  A guide to identifying muscle states: Inhibition, Hypertonicity, and Neurological Switching.
-                </p>
-                <Button variant="link" className="p-0 text-rose-600 font-bold">View Full Protocol <ArrowRight size={14} className="ml-1" /></Button>
-              </CardContent>
-            </Card>
-          </div>
-        </TabsContent>
-
         <TabsContent value="vagus" className="mt-8 space-y-8">
           <Card className="border-none shadow-lg rounded-3xl overflow-hidden bg-white">
             <div className="bg-gradient-to-r from-indigo-600 to-violet-600 p-8 text-white">
@@ -474,83 +463,6 @@ const ResourcesPage = () => {
                       <li>Uncontrolled epilepsy</li>
                       <li>Recent neck surgery or trauma</li>
                     </ul>
-                  </div>
-                </div>
-              </div>
-
-              <div className="mt-12 grid grid-cols-1 lg:grid-cols-2 gap-12">
-                <div className="space-y-6">
-                  <h3 className="text-2xl font-black text-slate-900 flex items-center gap-3">
-                    <Heart size={24} className="text-rose-500" /> Hand Reflexology Mapping
-                  </h3>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div className="p-5 bg-white rounded-3xl border border-slate-200 shadow-sm space-y-4">
-                      <h4 className="font-black text-indigo-600 uppercase tracking-widest text-xs">Right Hand</h4>
-                      <div className="space-y-2">
-                        <p className="text-[10px] font-black text-slate-400 uppercase">Superficial (Light)</p>
-                        <ul className="text-xs font-bold text-slate-700 space-y-1">
-                          <li className="flex items-center gap-2"><span className="w-2 h-2 rounded-full bg-pink-400" /> Adrenals/Thyroid (Fire)</li>
-                          <li className="flex items-center gap-2"><span className="w-2 h-2 rounded-full bg-yellow-400" /> Stomach (Earth)</li>
-                          <li className="flex items-center gap-2"><span className="w-2 h-2 rounded-full bg-slate-200" /> Large Intestine (Metal)</li>
-                          <li className="flex items-center gap-2"><span className="w-2 h-2 rounded-full bg-purple-400" /> GV / CV</li>
-                        </ul>
-                      </div>
-                      <div className="space-y-2">
-                        <p className="text-[10px] font-black text-slate-400 uppercase">Deep</p>
-                        <ul className="text-xs font-bold text-slate-700 space-y-1">
-                          <li className="flex items-center gap-2"><span className="w-2 h-2 rounded-full bg-pink-400" /> Sex Organs (Fire)</li>
-                          <li className="flex items-center gap-2"><span className="w-2 h-2 rounded-full bg-yellow-400" /> Spleen (Earth)</li>
-                          <li className="flex items-center gap-2"><span className="w-2 h-2 rounded-full bg-slate-200" /> Lung (Metal)</li>
-                        </ul>
-                      </div>
-                    </div>
-
-                    <div className="p-5 bg-white rounded-3xl border border-slate-200 shadow-sm space-y-4">
-                      <h4 className="font-black text-rose-600 uppercase tracking-widest text-xs">Left Hand</h4>
-                      <div className="space-y-2">
-                        <p className="text-[10px] font-black text-slate-400 uppercase">Superficial (Light)</p>
-                        <ul className="text-xs font-bold text-slate-700 space-y-1">
-                          <li className="flex items-center gap-2"><span className="w-2 h-2 rounded-full bg-blue-400" /> Bladder (Water)</li>
-                          <li className="flex items-center gap-2"><span className="w-2 h-2 rounded-full bg-emerald-400" /> Gall Bladder (Wood)</li>
-                          <li className="flex items-center gap-2"><span className="w-2 h-2 rounded-full bg-pink-400" /> Small Intestine (Fire)</li>
-                        </ul>
-                      </div>
-                      <div className="space-y-2">
-                        <p className="text-[10px] font-black text-slate-400 uppercase">Deep</p>
-                        <ul className="text-xs font-bold text-slate-700 space-y-1">
-                          <li className="flex items-center gap-2"><span className="w-2 h-2 rounded-full bg-blue-400" /> Kidney (Water)</li>
-                          <li className="flex items-center gap-2"><span className="w-2 h-2 rounded-full bg-emerald-400" /> Liver (Wood)</li>
-                          <li className="flex items-center gap-2"><span className="w-2 h-2 rounded-full bg-pink-400" /> Heart (Fire)</li>
-                          <li className="flex items-center gap-2"><span className="w-2 h-2 rounded-full bg-purple-400" /> GV / CV</li>
-                        </ul>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-
-                <div className="space-y-6">
-                  <h3 className="text-2xl font-black text-slate-900 flex items-center gap-3">
-                    <Move size={24} className="text-indigo-500" /> Spinal Reciprocal Segments
-                  </h3>
-                  <div className="overflow-hidden rounded-3xl border border-slate-200 shadow-sm">
-                    <table className="w-full text-left text-sm">
-                      <thead className="bg-slate-50 border-b border-slate-200">
-                        <tr>
-                          <th className="px-6 py-4 font-black text-slate-400 uppercase tracking-widest text-[10px]">Spinal Segment</th>
-                          <th className="px-6 py-4 font-black text-slate-400 uppercase tracking-widest text-[10px]">Muscle (Gland/Organ)</th>
-                          <th className="px-6 py-4 font-black text-slate-400 uppercase tracking-widest text-[10px]">Reciprocating Segment</th>
-                        </tr>
-                      </thead>
-                      <tbody className="divide-y divide-slate-100 bg-white">
-                        {VAGUS_ASSOCIATIONS.map((a) => (
-                          <tr key={a.spinalSegment} className="hover:bg-slate-50 transition-colors">
-                            <td className="px-6 py-3 font-bold text-indigo-600">{a.spinalSegment}</td>
-                            <td className="px-6 py-3 font-medium text-slate-700">{a.muscle} <span className="text-slate-400">({a.organ})</span></td>
-                            <td className="px-6 py-3 font-bold text-rose-500">{a.reciprocatingSegment}</td>
-                          </tr>
-                        ))}
-                      </tbody>
-                    </table>
                   </div>
                 </div>
               </div>

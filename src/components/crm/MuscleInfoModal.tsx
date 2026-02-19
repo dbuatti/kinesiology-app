@@ -8,6 +8,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { getMuscleInfo } from "@/data/muscle-info-data";
+import { getChannelByName } from "@/data/tcm-channel-data";
 import { 
   Dumbbell, 
   Activity, 
@@ -19,7 +20,9 @@ import {
   Brain,
   AlertCircle,
   Link as LinkIcon,
-  RefreshCw
+  RefreshCw,
+  Clock,
+  Layers
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
@@ -34,6 +37,7 @@ const MuscleInfoModal = ({ muscleName, open, onOpenChange }: MuscleInfoModalProp
   if (!muscleName) return null;
   
   const info = getMuscleInfo(muscleName);
+  const channel = info.meridian ? getChannelByName(info.meridian) : undefined;
 
   const SectionHeader = ({ icon: Icon, title, color }: { icon: any, title: string, color: string }) => (
     <h4 className={cn("text-[10px] font-black uppercase tracking-[0.2em] flex items-center gap-2 mb-3", color)}>
@@ -43,8 +47,8 @@ const MuscleInfoModal = ({ muscleName, open, onOpenChange }: MuscleInfoModalProp
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[700px] rounded-[2.5rem] overflow-hidden p-0 border-none shadow-2xl">
-        <div className="bg-indigo-600 p-8 text-white">
+      <DialogContent className="sm:max-w-[750px] rounded-[2.5rem] overflow-hidden p-0 border-none shadow-2xl">
+        <div className={cn("p-8 text-white transition-colors", channel ? channel.color.split(' ')[0] : "bg-indigo-600")}>
           <div className="flex items-center gap-4 mb-4">
             <div className="w-14 h-14 bg-white/20 backdrop-blur-md rounded-2xl flex items-center justify-center shadow-lg">
               <Dumbbell size={32} />
@@ -56,7 +60,7 @@ const MuscleInfoModal = ({ muscleName, open, onOpenChange }: MuscleInfoModalProp
                   {info.meridian || 'General'} Meridian
                 </Badge>
                 {info.myotome && (
-                  <Badge className="bg-indigo-500 text-white border-none font-bold text-[10px] uppercase tracking-widest">
+                  <Badge className="bg-white/20 text-white border-none font-bold text-[10px] uppercase tracking-widest">
                     Myotome: {info.myotome}
                   </Badge>
                 )}
@@ -66,6 +70,38 @@ const MuscleInfoModal = ({ muscleName, open, onOpenChange }: MuscleInfoModalProp
         </div>
 
         <div className="p-8 space-y-10 max-h-[70vh] overflow-y-auto">
+          {/* Meridian Insights (New Section) */}
+          {channel && (
+            <section className="animate-in fade-in slide-in-from-top-2 duration-500">
+              <SectionHeader icon={Layers} title="Meridian Insights" color="text-indigo-600" />
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="p-5 bg-indigo-50 rounded-2xl border border-indigo-100 space-y-3">
+                  <div className="flex items-center justify-between">
+                    <p className="text-[10px] font-black text-indigo-400 uppercase tracking-widest">Peak Activity</p>
+                    <Clock size={14} className="text-indigo-400" />
+                  </div>
+                  <p className="text-lg font-black text-indigo-900">{channel.peakTime}</p>
+                  <p className="text-xs text-indigo-700 leading-relaxed font-medium">
+                    {channel.description}
+                  </p>
+                </div>
+                <div className="p-5 bg-rose-50 rounded-2xl border border-rose-100 space-y-3">
+                  <div className="flex items-center justify-between">
+                    <p className="text-[10px] font-black text-rose-400 uppercase tracking-widest">Emotional Context</p>
+                    <Heart size={14} className="text-rose-400" />
+                  </div>
+                  <div className="flex flex-wrap gap-1.5">
+                    {channel.emotions.slice(0, 8).map(e => (
+                      <Badge key={e} variant="outline" className="bg-white border-rose-100 text-rose-600 text-[9px] font-bold">
+                        {e}
+                      </Badge>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            </section>
+          )}
+
           {/* Clinical Indications */}
           {info.clinicalIndications && (
             <section>

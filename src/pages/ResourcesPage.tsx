@@ -24,7 +24,9 @@ import {
   Droplets,
   Target,
   Heart,
-  Layers
+  Layers,
+  Sparkles,
+  Dumbbell
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -53,7 +55,7 @@ const ResourcesPage = () => {
       </div>
 
       <Tabs value={activeTab} onValueChange={(v) => setSearchParams({ tab: v })} className="w-full">
-        <TabsList className="grid w-full grid-cols-2 md:grid-cols-8 h-auto p-1 bg-slate-100 rounded-2xl">
+        <TabsList className="grid w-full grid-cols-2 md:grid-cols-9 h-auto p-1 bg-slate-100 rounded-2xl">
           <TabsTrigger value="vestibular" className="rounded-xl py-2.5 data-[state=active]:bg-white data-[state=active]:shadow-sm">
             <Footprints size={16} className="mr-2" /> Vestibular
           </TabsTrigger>
@@ -62,6 +64,9 @@ const ResourcesPage = () => {
           </TabsTrigger>
           <TabsTrigger value="neurological" className="rounded-xl py-2.5 data-[state=active]:bg-white data-[state=active]:shadow-sm">
             <Brain size={16} className="mr-2" /> Neurological
+          </TabsTrigger>
+          <TabsTrigger value="patterns" className="rounded-xl py-2.5 data-[state=active]:bg-white data-[state=active]:shadow-sm">
+            <Sparkles size={16} className="mr-2" /> Patterns
           </TabsTrigger>
           <TabsTrigger value="channels" className="rounded-xl py-2.5 data-[state=active]:bg-white data-[state=active]:shadow-sm">
             <Layers size={16} className="mr-2" /> Channels
@@ -79,6 +84,87 @@ const ResourcesPage = () => {
             <Activity size={16} className="mr-2" /> Vagus Nerve
           </TabsTrigger>
         </TabsList>
+
+        <TabsContent value="patterns" className="mt-8 space-y-8">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+            <Card className="border-none shadow-lg rounded-3xl bg-white overflow-hidden">
+              <CardHeader className="bg-indigo-600 text-white">
+                <CardTitle className="flex items-center gap-2">
+                  <Brain size={20} /> Upper Crossed Syndrome
+                </CardTitle>
+                <CardDescription className="text-indigo-100">Common postural dysfunction pattern</CardDescription>
+              </CardHeader>
+              <CardContent className="p-6 space-y-6">
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="p-4 bg-rose-50 rounded-2xl border border-rose-100">
+                    <p className="text-[10px] font-black text-rose-600 uppercase mb-2">Hypertonic / Tight</p>
+                    <ul className="text-xs font-bold text-rose-900 space-y-1">
+                      <li>• Upper Trapezius</li>
+                      <li>• Levator Scapulae</li>
+                      <li>• Pectoralis Major</li>
+                      <li>• SCM</li>
+                    </ul>
+                  </div>
+                  <div className="p-4 bg-emerald-50 rounded-2xl border border-emerald-100">
+                    <p className="text-[10px] font-black text-emerald-600 uppercase mb-2">Inhibited / Weak</p>
+                    <ul className="text-xs font-bold text-emerald-900 space-y-1">
+                      <li>• Deep Neck Flexors</li>
+                      <li>• Lower Trapezius</li>
+                      <li>• Serratus Anterior</li>
+                      <li>• Rhomboids</li>
+                    </ul>
+                  </div>
+                </div>
+                <div className="p-4 bg-slate-50 rounded-2xl border border-slate-100">
+                  <h4 className="text-xs font-black text-slate-900 uppercase mb-2">Clinical Insight</h4>
+                  <p className="text-xs text-slate-600 leading-relaxed">
+                    Often linked to <strong>Stomach</strong> and <strong>Lung</strong> meridian imbalances. Focus on ESR for emotional stress and Diaphragm Reset to restore respiratory mechanics.
+                  </p>
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card className="border-none shadow-lg rounded-3xl bg-white overflow-hidden">
+              <CardHeader className="bg-emerald-600 text-white">
+                <CardTitle className="flex items-center gap-2">
+                  <Dumbbell size={20} /> The Core Cylinder
+                </CardTitle>
+                <CardDescription className="text-emerald-100">Intrinsic stabilization relationships</CardDescription>
+              </CardHeader>
+              <CardContent className="p-6 space-y-6">
+                <div className="space-y-4">
+                  <div className="flex items-center gap-4 p-3 bg-slate-50 rounded-2xl border border-slate-100">
+                    <div className="w-10 h-10 bg-white rounded-xl flex items-center justify-center text-emerald-600 shadow-sm font-bold">Top</div>
+                    <div>
+                      <p className="text-sm font-black text-slate-900">Diaphragm</p>
+                      <p className="text-[10px] text-slate-500">Respiratory & Vagal Control</p>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-4 p-3 bg-slate-50 rounded-2xl border border-slate-100">
+                    <div className="w-10 h-10 bg-white rounded-xl flex items-center justify-center text-emerald-600 shadow-sm font-bold">Base</div>
+                    <div>
+                      <p className="text-sm font-black text-slate-900">Pelvic Floor</p>
+                      <p className="text-[10px] text-slate-500">Bladder Meridian / Stability</p>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-4 p-3 bg-slate-50 rounded-2xl border border-slate-100">
+                    <div className="w-10 h-10 bg-white rounded-xl flex items-center justify-center text-emerald-600 shadow-sm font-bold">Wall</div>
+                    <div>
+                      <p className="text-sm font-black text-slate-900">Transverse Abdominals</p>
+                      <p className="text-[10px] text-slate-500">Small Intestine / Core Pressure</p>
+                    </div>
+                  </div>
+                </div>
+                <Alert className="bg-amber-50 border-amber-100">
+                  <Info className="h-4 w-4 text-amber-600" />
+                  <AlertDescription className="text-xs text-amber-800 font-bold">
+                    If one part of the cylinder is dysfunctional, the others will compensate. Always check the Diaphragm if Pelvic Floor issues are present.
+                  </AlertDescription>
+                </Alert>
+              </CardContent>
+            </Card>
+          </div>
+        </TabsContent>
 
         <TabsContent value="channels" className="mt-8">
           <TcmChannelReference />

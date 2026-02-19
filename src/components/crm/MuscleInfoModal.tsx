@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import {
   Dialog,
   DialogContent,
@@ -9,6 +9,7 @@ import {
 } from "@/components/ui/dialog";
 import { getMuscleInfo } from "@/data/muscle-info-data";
 import { getChannelByName } from "@/data/tcm-channel-data";
+import { VAGUS_ASSOCIATIONS } from "@/data/vagus-data";
 import { 
   Dumbbell, 
   Activity, 
@@ -22,7 +23,8 @@ import {
   Link as LinkIcon,
   RefreshCw,
   Clock,
-  Layers
+  Layers,
+  ArrowRightLeft
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
@@ -42,10 +44,25 @@ const MuscleInfoModal = ({ muscleName, open, onOpenChange }: MuscleInfoModalProp
     }
   }, [open]);
 
-  if (!muscleName) return null;
-  
-  const info = getMuscleInfo(muscleName);
-  const channel = info.meridian ? getChannelByName(info.meridian) : undefined;
+  const info = useMemo(() => muscleName ? getMuscleInfo(muscleName) : null, [muscleName]);
+  const channel = useMemo(() => info?.meridian ? getChannelByName(info.meridian) : undefined, [info]);
+
+  // Find Lovett-Brother Partner
+  const lovettPartner = useMemo(() => {
+    if (!muscleName) return null;
+    const association = VAGUS_ASSOCIATIONS.find(a => a.muscle.toLowerCase() === muscleName.toLowerCase());
+    if (!association) return null;
+    
+    const partnerAssoc = VAGUS_ASSOCIATIONS.find(a => a.spinalSegment === association.reciprocatingSegment);
+    return {
+      segment: association.spinalSegment,
+      partnerSegment: association.reciprocatingSegment,
+      partnerMuscle: partnerAssoc?.muscle || "Unknown",
+      partnerOrgan: partnerAssoc?.organ || "Unknown"
+    };
+  }, [muscleName]);
+
+  if (!muscleName || !info) return null;
 
   const isPeakNow = (peakTimeStr: string) => {
     if (peakTimeStr === 'None') return false;
@@ -102,9 +119,34 @@ const MuscleInfoModal = ({ muscleName, open, onOpenChange }: MuscleInfoModalProp
         </div>
 
         <div className="p-8 space-y-10 max-h-[70vh] overflow-y-auto">
+          {/* Lovett-Brother Partner (New Section) */}
+          {lovettPartner && (
+            <section className="animate-in fade-in slide-in-from-top-2 duration-500">
+              <SectionHeader icon={ArrowRightLeft} title="Lovett-Brother Relationship" color="text-rose-600" />
+              <div className="p-5 bg-rose-50 rounded-2xl border-2 border-rose-100 flex items-center justify-between gap-6">
+                <div className="text-center flex-1">
+                  <p className="text-[10px] font-black text-rose-400 uppercase mb-1">Current Segment</p>
+                  <p className="text-2xl font-black text-rose-900">{lovettPartner.segment}</p>
+                  <p className="text-[10px] font-bold text-rose-600">{muscleName}</p>
+                </div>
+                <div className="w-10 h-10 rounded-full bg-white flex items-center justify-center shadow-sm border border-rose-200">
+                  <RefreshCw size={20} className="text-rose-400" />
+                </div>
+                <div className="text-center flex-1">
+                  <p className="text-[10px] font-black text-rose-400 uppercase mb-1">Lovett Partner</p>
+                  <p className="text-2xl font-black text-rose-900">{lovettPartner.partnerSegment}</p>
+                  <p className="text-[10px] font-bold text-rose-600">{lovettPartner.partnerMuscle}</p>
+                </div>
+              </div>
+              <p className="text-[10px] text-rose-700 font-medium mt-2 italic text-center">
+                Dysfunction in {muscleName} often reciprocates in the {lovettPartner.partnerMuscle}.
+              </p>
+            </section>
+          )}
+
           {/* Meridian Insights */}
           {channel && (
-            <section className="animate-in fade-in slide-in-from-top-2 duration-500">
+            <section>
               <SectionHeader icon={Layers} title="Meridian Insights" color="text-indigo-600" />
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className={cn(

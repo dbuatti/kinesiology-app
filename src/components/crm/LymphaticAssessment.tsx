@@ -27,19 +27,23 @@ interface LymphaticAssessmentProps {
 const RELEASE_INSTRUCTIONS: Record<string, { position: string; pearl?: string; image?: string }> = {
   'Cervical': { 
     position: "C4 level, slightly anterior. Feel for nodule. Move tissue towards spine or slightly up to find 'Position of Ease'.",
-    pearl: "The 'Brain Drain' — essential for clearing neural inflammation and brain fog."
+    pearl: "The 'Brain Drain' — essential for clearing neural inflammation and brain fog.",
+    image: "/images/lymphatic/cervical.svg"
   },
   'Thoracic (L)': { 
     position: "Shorten the Pec Minor. Bring the left arm into a position of ease (usually across the chest or slightly elevated) to soften the duct.",
-    pearl: "The Left Thoracic Duct drains the entire left side of the body and the brain."
+    pearl: "The Left Thoracic Duct drains the entire left side of the body and the brain.",
+    image: "/images/lymphatic/thoracic-l.svg"
   },
   'Thoracic (R)': { 
     position: "Shorten the Pec Minor. Bring the right arm into a position of ease to soften the duct.",
-    pearl: "Drains the right upper quadrant of the body."
+    pearl: "Drains the right upper quadrant of the body.",
+    image: "/images/lymphatic/thoracic-r.svg"
   },
   'Inguinal': { 
     position: "Find the ASIS (pelvic bone). Hold the position next to the bone where you feel the tissue soften.",
-    pearl: "Key for lower extremity drainage and pelvic congestion."
+    pearl: "Key for lower extremity drainage and pelvic congestion.",
+    image: "/images/lymphatic/inguinal.svg"
   },
   'Popliteal': { 
     position: "Shorten the muscle (top of calves or bottom of hamstrings). Wait for the tissue to soften.",
@@ -48,15 +52,18 @@ const RELEASE_INSTRUCTIONS: Record<string, { position: string; pearl?: string; i
   },
   'Cisterna Chyli': { 
     position: "Central abdominal release. Shorten the abdominals by bending the client's knees or gently moving tissue up towards the head. Hold until tension softens.",
-    pearl: "You may feel a strong pulse here (abdominal aorta). This is the central reservoir for all lymph from the lower body."
+    pearl: "You may feel a strong pulse here (abdominal aorta). This is the central reservoir for all lymph from the lower body.",
+    image: "/images/lymphatic/cisterna-chyli.svg"
   },
   'Maxillary': { 
     position: "Gentle traction along the jawline and facial nodes to find the position of maximum softening.",
-    pearl: "Often improves once the Cervical and Thoracic ducts are cleared."
+    pearl: "Often improves once the Cervical and Thoracic ducts are cleared.",
+    image: "/images/lymphatic/maxillary.svg"
   },
   'Axillary': { 
     position: "Shorten the shoulder girdle. This zone usually self-corrects once the Thoracic ducts are opened.",
-    pearl: "Secondary to Thoracic duct clearance."
+    pearl: "Secondary to Thoracic duct clearance.",
+    image: "/images/lymphatic/axillary.svg"
   }
 };
 

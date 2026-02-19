@@ -10,7 +10,7 @@ import { Label } from "@/components/ui/label";
 import { 
   ArrowLeft, Calendar, Clock, 
   Loader2, Trash2, User, Droplets,
-  Copy, Check, History, MoreHorizontal, ChevronDown, Star, Play, Printer
+  Copy, Check, History, MoreHorizontal, ChevronDown, Star, Play, Printer, Zap
 } from "lucide-react";
 import { format, isToday } from "date-fns";
 import { Appointment } from "@/types/crm";
@@ -38,6 +38,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import Breadcrumbs from "@/components/crm/Breadcrumbs";
 import { Button } from "@/components/ui/button";
+import { TCM_CHANNELS } from "@/data/tcm-channel-data";
 
 export interface AppointmentWithClient extends Appointment {
   clients: { name: string; id: string; born?: string };
@@ -72,6 +73,30 @@ const AppointmentDetailPage = () => {
   const [isFixedHeaderActive, setIsFixedHeaderActive] = useState(false);
   const [copied, setCopied] = useState(false);
   const [cloning, setCloning] = useState(false);
+  const [currentTime, setCurrentTime] = useState(new Date());
+
+  useEffect(() => {
+    const timer = setInterval(() => setCurrentTime(new Date()), 60000);
+    return () => clearInterval(timer);
+  }, []);
+
+  const currentPeakMeridian = (() => {
+    const hour = currentTime.getHours();
+    return TCM_CHANNELS.find(c => {
+      if (c.peakTime === 'None') return false;
+      const parts = c.peakTime.toLowerCase().split('-').map(p => p.trim());
+      const parseHour = (s: string) => {
+        const h = parseInt(s);
+        if (s.includes('pm') && h !== 12) return h + 12;
+        if (s.includes('am') && h === 12) return 0;
+        return h;
+      };
+      const start = parseHour(parts[0]);
+      const end = parseHour(parts[1]);
+      if (start > end) return hour >= start || hour < end;
+      return hour >= start && hour < end;
+    });
+  })();
 
   const fetchAppointmentData = async () => {
     if (!id) return;
@@ -375,6 +400,11 @@ KEY ASSESSMENTS:
                       </SelectTrigger>
                       <SelectContent>{APPOINTMENT_STATUSES.map(status => <SelectItem key={status} value={status}>{status}</SelectItem>)}</SelectContent>
                     </Select>
+                    {currentPeakMeridian && (
+                      <Badge className={cn("border-none text-white font-black text-[9px] uppercase tracking-widest px-3 py-1 rounded-full animate-in fade-in zoom-in duration-500", currentPeakMeridian.color.split(' ')[0])}>
+                        <Zap size={10} className="mr-1.5 fill-white" /> Peak: {currentPeakMeridian.name}
+                      </Badge>
+                    )}
                   </div>
                   <h1 className="text-3xl font-black text-slate-900 tracking-tight">{appointment.name || "Kinesiology Session"}</h1>
                   <div className="flex flex-wrap items-center gap-4 text-sm font-medium text-slate-500">

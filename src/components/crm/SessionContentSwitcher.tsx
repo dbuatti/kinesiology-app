@@ -57,84 +57,115 @@ const SessionContentSwitcher = ({ appointment, onUpdate, saveField }: SessionCon
   );
 
   const renderHomeView = () => (
-    <div className="space-y-8">
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        <div className="lg:col-span-2 space-y-6">
-          <Tabs defaultValue="baseline" className="w-full">
-            <TabsList className="grid w-full grid-cols-5 h-14 bg-slate-200/50 p-1.5 rounded-2xl">
-              <TabsTrigger value="baseline" className="flex items-center gap-2 data-[state=active]:bg-white data-[state=active]:text-indigo-600 data-[state=active]:shadow-sm rounded-xl h-11 text-[10px] font-black uppercase tracking-wider">
-                <FlaskConical size={14} /> 1. Baseline
-              </TabsTrigger>
-              <TabsTrigger value="sympathetic" className="flex items-center gap-2 data-[state=active]:bg-white data-[state=active]:text-indigo-600 data-[state=active]:shadow-sm rounded-xl h-11 text-[10px] font-black uppercase tracking-wider">
-                <Heart size={14} /> 2. SNS
-              </TabsTrigger>
-              <TabsTrigger value="pathway" className="flex items-center gap-2 data-[state=active]:bg-white data-[state=active]:text-indigo-600 data-[state=active]:shadow-sm rounded-xl h-11 text-[10px] font-black uppercase tracking-wider">
-                <TrendingUp size={14} /> 3. Pathway
-              </TabsTrigger>
-              <TabsTrigger value="calibration" className="flex items-center gap-2 data-[state=active]:bg-white data-[state=active]:text-indigo-600 data-[state=active]:shadow-sm rounded-xl h-11 text-[10px] font-black uppercase tracking-wider">
-                <CheckCircle2 size={14} /> 4. Correction
-              </TabsTrigger>
-              <TabsTrigger value="reassessment" className="flex items-center gap-2 data-[state=active]:bg-white data-[state=active]:text-indigo-600 data-[state=active]:shadow-sm rounded-xl h-11 text-[10px] font-black uppercase tracking-wider">
-                <Zap size={14} /> 5. Re-Test
-              </TabsTrigger>
-            </TabsList>
+    <div className="space-y-12">
+      {/* Main Assessment Area - Full Width */}
+      <div className="space-y-6">
+        <Tabs defaultValue="baseline" className="w-full">
+          <TabsList className="grid w-full grid-cols-5 h-14 bg-slate-200/50 p-1.5 rounded-2xl">
+            <TabsTrigger value="baseline" className="flex items-center gap-2 data-[state=active]:bg-white data-[state=active]:text-indigo-600 data-[state=active]:shadow-sm rounded-xl h-11 text-[10px] font-black uppercase tracking-wider">
+              <FlaskConical size={14} /> 1. Baseline
+            </TabsTrigger>
+            <TabsTrigger value="sympathetic" className="flex items-center gap-2 data-[state=active]:bg-white data-[state=active]:text-indigo-600 data-[state=active]:shadow-sm rounded-xl h-11 text-[10px] font-black uppercase tracking-wider">
+              <Heart size={14} /> 2. SNS
+            </TabsTrigger>
+            <TabsTrigger value="pathway" className="flex items-center gap-2 data-[state=active]:bg-white data-[state=active]:text-indigo-600 data-[state=active]:shadow-sm rounded-xl h-11 text-[10px] font-black uppercase tracking-wider">
+              <TrendingUp size={14} /> 3. Pathway
+            </TabsTrigger>
+            <TabsTrigger value="calibration" className="flex items-center gap-2 data-[state=active]:bg-white data-[state=active]:text-indigo-600 data-[state=active]:shadow-sm rounded-xl h-11 text-[10px] font-black uppercase tracking-wider">
+              <CheckCircle2 size={14} /> 4. Correction
+            </TabsTrigger>
+            <TabsTrigger value="reassessment" className="flex items-center gap-2 data-[state=active]:bg-white data-[state=active]:text-indigo-600 data-[state=active]:shadow-sm rounded-xl h-11 text-[10px] font-black uppercase tracking-wider">
+              <Zap size={14} /> 5. Re-Test
+            </TabsTrigger>
+          </TabsList>
 
-            <TabsContent value="baseline" className="mt-6 space-y-6">
-              <BoltTestSection appointmentId={appointmentId} initialBoltScore={appointment.bolt_score} onUpdate={onUpdate} />
-              <CoherenceAssessment appointmentId={appointmentId} initialHeartRate={appointment.heart_rate} initialBreathRate={appointment.breath_rate} initialCoherenceScore={appointment.coherence_score} onUpdate={onUpdate} />
-              <CogsAssessment appointmentId={appointmentId} initialSagittalNotes={appointment.sagittal_plane_notes} initialFrontalNotes={appointment.frontal_plane_notes} initialTransverseNotes={appointment.transverse_plane_notes} onUpdate={onUpdate} />
-              <NeurologicalAssessments appointmentId={appointmentId} initialFakudaNotes={appointment.fakuda_notes} initialRhombergsNotes={appointment.sharpened_rhombergs_notes} initialFrontalLobeNotes={appointment.frontal_lobe_notes} onUpdate={onUpdate} />
-              <LymphaticAssessment
-                appointmentId={appointmentId}
-                initialSutureSide={appointment.lymphatic_suture_side}
-                initialPriorityZone={appointment.lymphatic_priority_zone}
-                initialNotes={appointment.lymphatic_notes}
-                onSaveField={saveField as any}
-              />
-            </TabsContent>
+          <TabsContent value="baseline" className="mt-6 space-y-6">
+            <BoltTestSection appointmentId={appointmentId} initialBoltScore={appointment.bolt_score} onUpdate={onUpdate} />
+            <CoherenceAssessment appointmentId={appointmentId} initialHeartRate={appointment.heart_rate} initialBreathRate={appointment.breath_rate} initialCoherenceScore={appointment.coherence_score} onUpdate={onUpdate} />
+            <CogsAssessment appointmentId={appointmentId} initialSagittalNotes={appointment.sagittal_plane_notes} initialFrontalNotes={appointment.frontal_plane_notes} initialTransverseNotes={appointment.transverse_plane_notes} onUpdate={onUpdate} />
+            <NeurologicalAssessments appointmentId={appointmentId} initialFakudaNotes={appointment.fakuda_notes} initialRhombergsNotes={appointment.sharpened_rhombergs_notes} initialFrontalLobeNotes={appointment.frontal_lobe_notes} onUpdate={onUpdate} />
+            <LymphaticAssessment
+              appointmentId={appointmentId}
+              initialSutureSide={appointment.lymphatic_suture_side}
+              initialPriorityZone={appointment.lymphatic_priority_zone}
+              initialNotes={appointment.lymphatic_notes}
+              onSaveField={saveField as any}
+            />
+          </TabsContent>
 
-            <TabsContent value="sympathetic" className="mt-6 space-y-6">
-              <SympatheticDownRegulation appointmentId={appointmentId} initialNotes={appointment.harmonic_rocking_notes} onSaveField={saveField as any} onUpdate={onUpdate} />
-              <T1SympatheticReset appointmentId={appointmentId} initialNotes={appointment.t1_reset_notes} onSaveField={saveField as any} onUpdate={onUpdate} />
-              <DiaphragmReset appointmentId={appointmentId} initialNotes={appointment.diaphragm_reset_notes} onSaveField={saveField as any} onUpdate={onUpdate} />
-              <VagusNerveProcess appointmentId={appointmentId} initialNotes={appointment.vagus_nerve_notes} onSaveField={saveField as any} onUpdate={onUpdate} />
-              <EditableField key={`notes-sympathetic-general-${appointmentId}`} field="additional_notes" label="Other SNS Techniques" value={appointment.additional_notes} multiline placeholder="ESR, Vagus Nerve, etc..." onSave={saveField as any} className="bg-white p-6 rounded-2xl border border-slate-100 shadow-sm" />
-            </TabsContent>
+          <TabsContent value="sympathetic" className="mt-6 space-y-6">
+            <SympatheticDownRegulation appointmentId={appointmentId} initialNotes={appointment.harmonic_rocking_notes} onSaveField={saveField as any} onUpdate={onUpdate} />
+            <T1SympatheticReset appointmentId={appointmentId} initialNotes={appointment.t1_reset_notes} onSaveField={saveField as any} onUpdate={onUpdate} />
+            <DiaphragmReset appointmentId={appointmentId} initialNotes={appointment.diaphragm_reset_notes} onSaveField={saveField as any} onUpdate={onUpdate} />
+            <VagusNerveProcess appointmentId={appointmentId} initialNotes={appointment.vagus_nerve_notes} onSaveField={saveField as any} onUpdate={onUpdate} />
+            <EditableField key={`notes-sympathetic-general-${appointmentId}`} field="additional_notes" label="Other SNS Techniques" value={appointment.additional_notes} multiline placeholder="ESR, Vagus Nerve, etc..." onSave={saveField as any} className="bg-white p-6 rounded-2xl border border-slate-100 shadow-sm" />
+          </TabsContent>
 
-            <TabsContent value="pathway" className="mt-6 space-y-6">
-              <EditableField key={`notes-pathway-${appointmentId}`} field="priority_pattern" label="Pathway Assessment Notes" value={appointment.priority_pattern} multiline placeholder="Document specific pathways tested and findings..." onSave={saveField as any} className="bg-white p-6 rounded-2xl border border-slate-100 shadow-sm min-h-[300px]" />
-            </TabsContent>
+          <TabsContent value="pathway" className="mt-6 space-y-6">
+            <EditableField key={`notes-pathway-${appointmentId}`} field="priority_pattern" label="Pathway Assessment Notes" value={appointment.priority_pattern} multiline placeholder="Document specific pathways tested and findings..." onSave={saveField as any} className="bg-white p-6 rounded-2xl border border-slate-100 shadow-sm min-h-[300px]" />
+          </TabsContent>
 
-            <TabsContent value="calibration" className="mt-6 space-y-6">
-              <EditableField key={`notes-calibration-${appointmentId}`} field="modes_balances" label="Calibration & Correction Notes" value={appointment.modes_balances} multiline placeholder="Document specific corrections, modes, and balances used..." onSave={saveField as any} className="bg-white p-6 rounded-2xl border border-slate-100 shadow-sm min-h-[300px]" />
-            </TabsContent>
+          <TabsContent value="calibration" className="mt-6 space-y-6">
+            <EditableField key={`notes-calibration-${appointmentId}`} field="modes_balances" label="Calibration & Correction Notes" value={appointment.modes_balances} multiline placeholder="Document specific corrections, modes, and balances used..." onSave={saveField as any} className="bg-white p-6 rounded-2xl border border-slate-100 shadow-sm min-h-[300px]" />
+          </TabsContent>
 
-            <TabsContent value="reassessment" className="mt-6 space-y-6">
-              <EditableField key={`notes-reassessment-${appointmentId}`} field="session_north_star" label="Re-Assessment & Home Reinforcement" value={appointment.session_north_star} multiline placeholder="Document re-test results and client homework..." onSave={saveField as any} className="bg-white p-6 rounded-2xl border border-slate-100 shadow-sm min-h-[300px]" />
-            </TabsContent>
-          </Tabs>
+          <TabsContent value="reassessment" className="mt-6 space-y-6">
+            <EditableField key={`notes-reassessment-${appointmentId}`} field="session_north_star" label="Re-Assessment & Home Reinforcement" value={appointment.session_north_star} multiline placeholder="Document re-test results and client homework..." onSave={saveField as any} className="bg-white p-6 rounded-2xl border border-slate-100 shadow-sm min-h-[300px]" />
+          </TabsContent>
+        </Tabs>
+      </div>
+
+      {/* Session Context - Moved to bottom and organized into a grid */}
+      <div className="pt-10 border-t border-slate-200">
+        <div className="flex items-center gap-3 mb-8">
+          <div className="w-12 h-12 bg-indigo-600 rounded-2xl flex items-center justify-center text-white shadow-lg shadow-indigo-100">
+            <Zap size={24} />
+          </div>
+          <div>
+            <h3 className="text-xl font-black text-slate-900 uppercase tracking-widest">Session Context & Notes</h3>
+            <p className="text-xs font-bold text-slate-400 uppercase tracking-widest">General observations and practitioner reflections</p>
+          </div>
         </div>
-
-        <div className="space-y-6">
-          <Card className="border-none shadow-sm rounded-2xl bg-white">
-            <CardHeader className="pb-2">
-              <CardTitle className="text-sm font-bold text-slate-400 uppercase tracking-widest flex items-center gap-2">
-                <Zap size={16} className="text-indigo-500" /> Session Context
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-6">
-              <EditableField key={`acupoints-${appointmentId}`} field="acupoints" label="Acupoints" value={appointment.acupoints} placeholder="Points used..." onSave={saveField as any} />
-              <EditableField key={`notes-${appointmentId}`} field="notes" label="General Notes" value={appointment.notes} multiline placeholder="Observations..." onSave={saveField as any} />
-              <EditableField key={`journal-${appointmentId}`} field="journal" label="Practitioner Reflection" value={appointment.journal} multiline className="bg-amber-50/50 p-4 rounded-xl border border-amber-100" placeholder="Personal insights..." onSave={saveField as any} />
-              {appointment.notion_link && (
-                <Button variant="outline" size="sm" className="w-full text-xs rounded-xl" asChild>
-                  <a href={appointment.notion_link} target="_blank" rel="noopener noreferrer">
-                    <ExternalLink size={14} className="mr-2" /> View Notion Link
-                  </a>
-                </Button>
-              )}
-            </CardContent>
-          </Card>
+        
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+          <EditableField 
+            key={`acupoints-${appointmentId}`} 
+            field="acupoints" 
+            label="Acupoints" 
+            value={appointment.acupoints} 
+            placeholder="Points used..." 
+            onSave={saveField as any} 
+            className="bg-white"
+          />
+          <EditableField 
+            key={`notes-${appointmentId}`} 
+            field="notes" 
+            label="General Notes" 
+            value={appointment.notes} 
+            multiline 
+            placeholder="Observations..." 
+            onSave={saveField as any} 
+            className="bg-white"
+          />
+          <div className="space-y-4">
+            <EditableField 
+              key={`journal-${appointmentId}`} 
+              field="journal" 
+              label="Practitioner Reflection" 
+              value={appointment.journal} 
+              multiline 
+              className="bg-amber-50/50 border-amber-100" 
+              placeholder="Personal insights..." 
+              onSave={saveField as any} 
+            />
+            {appointment.notion_link && (
+              <Button variant="outline" size="sm" className="w-full h-12 rounded-2xl border-slate-200 font-bold text-slate-600 hover:bg-slate-50" asChild>
+                <a href={appointment.notion_link} target="_blank" rel="noopener noreferrer">
+                  <ExternalLink size={16} className="mr-2" /> View Notion Link
+                </a>
+              </Button>
+            )}
+          </div>
         </div>
       </div>
     </div>

@@ -40,6 +40,13 @@ export const VAGAL_FUNCTIONS = [
   "Smile with Teeth and Swallow"
 ];
 
+export const VAGAL_GLANDS = [
+  { name: "Hypothalamus", reflex: "Tongue to roof of mouth", icon: "Brain" },
+  { name: "Thymus", reflex: "Masseter (Jaw)", icon: "Shield" },
+  { name: "Thyroid", reflex: "Supraspinatus (Shoulder)", icon: "Zap" },
+  { name: "Pineal", reflex: "Tongue to soft palate", icon: "Sparkles" },
+];
+
 export const HAND_REFLEXOLOGY = {
   Right: {
     Light: [

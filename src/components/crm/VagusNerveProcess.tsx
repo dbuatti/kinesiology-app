@@ -20,11 +20,13 @@ import {
   Wind, 
   RefreshCw, 
   Trash2,
-  ChevronDown
+  ChevronDown,
+  Sparkles,
+  Shield
 } from 'lucide-react';
 import EditableField from './EditableField';
 import { cn } from '@/lib/utils';
-import { VAGUS_ASSOCIATIONS, VAGAL_FUNCTIONS, HAND_REFLEXOLOGY } from '@/data/vagus-data';
+import { VAGUS_ASSOCIATIONS, VAGAL_FUNCTIONS, HAND_REFLEXOLOGY, VAGAL_GLANDS } from '@/data/vagus-data';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { showSuccess } from '@/utils/toast';
 import MuscleInfoModal from "./MuscleInfoModal";
@@ -63,6 +65,7 @@ const VagusNerveProcess = ({ appointmentId, initialNotes, onSaveField, onUpdate 
   const [reflexPoint, setReflexPoint] = useState<string>("Occiput");
   const [auricularSide, setAuricularSide] = useState<string>("Left");
   const [selectedFunction, setSelectedFunction] = useState<string>("");
+  const [selectedGland, setSelectedGland] = useState<string>("");
   const [pulseSide, setPulseSide] = useState<"Right" | "Left">("Right");
   const [pulseDepth, setPulseDepth] = useState<"Light" | "Deep">("Light");
   const [selectedOrgan, setSelectedOrgan] = useState<string>("");
@@ -166,6 +169,7 @@ const VagusNerveProcess = ({ appointmentId, initialNotes, onSaveField, onUpdate 
     setReflexPoint("Occiput");
     setAuricularSide("Left");
     setSelectedFunction("");
+    setSelectedGland("");
     setPulseSide("Right");
     setPulseDepth("Light");
     setSelectedOrgan("");
@@ -187,7 +191,9 @@ const VagusNerveProcess = ({ appointmentId, initialNotes, onSaveField, onUpdate 
     } else {
       const assoc = VAGUS_ASSOCIATIONS.find(a => a.spinalSegment === selectedAssociation);
       const reflexLabel = reflexPoint === 'Auricular' ? `Auricular (${auricularSide})` : 'Occiput (Both)';
-      summary = `VAGUS SCREEN & RESET:\n- Reflex Point: ${reflexLabel}\n- Dysfunctional Function: ${selectedFunction}\n- Organ Pulse: ${pulseSide} Hand (${pulseDepth})\n- Selected Organ: ${selectedOrgan}\n- Associated Spinal: ${selectedAssociation} (${partnerInfo?.currentOrgan})\n- Muscle: ${assoc?.muscle}\n- Lovett-Brother: ${assoc?.reciprocatingSegment} (${partnerInfo?.partnerOrgan}) - ${partnerInfo?.partnerMuscle}\n- Correction: ${breathingPattern} for ${30 - correctionTime}s\n- Status: ${isCleared ? 'Cleared/Balanced' : 'In Progress'}`;
+      const glandInfo = selectedGland ? `\n- Gland Challenge: ${selectedGland} (${VAGAL_GLANDS.find(g => g.name === selectedGland)?.reflex})` : "";
+      
+      summary = `VAGUS SCREEN & RESET:\n- Reflex Point: ${reflexLabel}\n- Dysfunctional Function: ${selectedFunction}${glandInfo}\n- Organ Pulse: ${pulseSide} Hand (${pulseDepth})\n- Selected Organ: ${selectedOrgan}\n- Associated Spinal: ${selectedAssociation} (${partnerInfo?.currentOrgan})\n- Muscle: ${assoc?.muscle}\n- Lovett-Brother: ${assoc?.reciprocatingSegment} (${partnerInfo?.partnerOrgan}) - ${partnerInfo?.partnerMuscle}\n- Correction: ${breathingPattern} for ${30 - correctionTime}s\n- Status: ${isCleared ? 'Cleared/Balanced' : 'In Progress'}`;
     }
     
     const currentNotes = initialNotes ? `${initialNotes}\n\n${summary}` : summary;
@@ -317,6 +323,29 @@ const VagusNerveProcess = ({ appointmentId, initialNotes, onSaveField, onUpdate 
                   </div>
                 </div>
 
+                {/* New Gland Challenge Section */}
+                <div className="space-y-4 p-4 bg-indigo-50/30 rounded-2xl border border-indigo-100">
+                  <label className="text-xs font-black uppercase tracking-widest text-indigo-600 flex items-center gap-2">
+                    <Sparkles size={14} className="text-indigo-500" /> 2b. Gland Challenge (Optional)
+                  </label>
+                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+                    {VAGAL_GLANDS.map((gland) => (
+                      <Button
+                        key={gland.name}
+                        variant={selectedGland === gland.name ? "default" : "outline"}
+                        onClick={() => setSelectedGland(selectedGland === gland.name ? "" : gland.name)}
+                        className={cn(
+                          "h-auto py-3 flex flex-col items-center gap-1 rounded-xl transition-all",
+                          selectedGland === gland.name ? "bg-indigo-600 text-white shadow-md" : "bg-white border-slate-200 text-slate-600"
+                        )}
+                      >
+                        <span className="text-[10px] font-black uppercase tracking-widest">{gland.name}</span>
+                        <span className="text-[8px] font-bold opacity-70 text-center leading-tight">{gland.reflex}</span>
+                      </Button>
+                    ))}
+                  </div>
+                </div>
+
                 <div className="space-y-4 p-4 bg-slate-50 rounded-2xl border border-slate-100">
                   <label className="text-xs font-black uppercase tracking-widest text-slate-400 flex items-center gap-2">
                     <Heart size={14} className="text-rose-500" /> 3. Organ Pulse (Hand Reflexology)
@@ -338,13 +367,12 @@ const VagusNerveProcess = ({ appointmentId, initialNotes, onSaveField, onUpdate 
                           key={org.name}
                           variant={selectedOrgan === org.name ? "default" : "outline"}
                           onClick={() => {
-                            // Toggle selection: if already selected, clear it
                             if (selectedOrgan === org.name) {
                               setSelectedOrgan("");
                               setSelectedAssociation("");
                             } else {
                               setSelectedOrgan(org.name);
-                              setSelectedAssociation(""); // Reset association to trigger auto-select
+                              setSelectedAssociation("");
                             }
                           }}
                           className={cn(

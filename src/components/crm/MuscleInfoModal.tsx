@@ -1,6 +1,6 @@
 "use client";
 
-import React from "react";
+import React, { useState, useEffect } from "react";
 import {
   Dialog,
   DialogContent,
@@ -34,10 +34,35 @@ interface MuscleInfoModalProps {
 }
 
 const MuscleInfoModal = ({ muscleName, open, onOpenChange }: MuscleInfoModalProps) => {
+  const [currentTime, setCurrentTime] = useState(new Date().getHours());
+
+  useEffect(() => {
+    if (open) {
+      setCurrentTime(new Date().getHours());
+    }
+  }, [open]);
+
   if (!muscleName) return null;
   
   const info = getMuscleInfo(muscleName);
   const channel = info.meridian ? getChannelByName(info.meridian) : undefined;
+
+  const isPeakNow = (peakTimeStr: string) => {
+    if (peakTimeStr === 'None') return false;
+    const parts = peakTimeStr.toLowerCase().split('-').map(p => p.trim());
+    const parseHour = (s: string) => {
+      const hour = parseInt(s);
+      if (s.includes('pm') && hour !== 12) return hour + 12;
+      if (s.includes('am') && hour === 12) return 0;
+      return hour;
+    };
+    const start = parseHour(parts[0]);
+    const end = parseHour(parts[1]);
+    if (start > end) return currentTime >= start || currentTime < end;
+    return currentTime >= start && currentTime < end;
+  };
+
+  const isPeak = channel ? isPeakNow(channel.peakTime) : false;
 
   const SectionHeader = ({ icon: Icon, title, color }: { icon: any, title: string, color: string }) => (
     <h4 className={cn("text-[10px] font-black uppercase tracking-[0.2em] flex items-center gap-2 mb-3", color)}>
@@ -48,7 +73,14 @@ const MuscleInfoModal = ({ muscleName, open, onOpenChange }: MuscleInfoModalProp
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-[750px] rounded-[2.5rem] overflow-hidden p-0 border-none shadow-2xl">
-        <div className={cn("p-8 text-white transition-colors", channel ? channel.color.split(' ')[0] : "bg-indigo-600")}>
+        <div className={cn("p-8 text-white transition-colors relative", channel ? channel.color.split(' ')[0] : "bg-indigo-600")}>
+          {isPeak && (
+            <div className="absolute top-6 right-6 animate-pulse">
+              <Badge className="bg-white text-slate-900 border-none font-black text-[8px] uppercase tracking-widest px-2 py-0.5">
+                <Zap size={10} className="mr-1 fill-amber-400 text-amber-400" /> Peak Now
+              </Badge>
+            </div>
+          )}
           <div className="flex items-center gap-4 mb-4">
             <div className="w-14 h-14 bg-white/20 backdrop-blur-md rounded-2xl flex items-center justify-center shadow-lg">
               <Dumbbell size={32} />
@@ -70,17 +102,20 @@ const MuscleInfoModal = ({ muscleName, open, onOpenChange }: MuscleInfoModalProp
         </div>
 
         <div className="p-8 space-y-10 max-h-[70vh] overflow-y-auto">
-          {/* Meridian Insights (New Section) */}
+          {/* Meridian Insights */}
           {channel && (
             <section className="animate-in fade-in slide-in-from-top-2 duration-500">
               <SectionHeader icon={Layers} title="Meridian Insights" color="text-indigo-600" />
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div className="p-5 bg-indigo-50 rounded-2xl border border-indigo-100 space-y-3">
+                <div className={cn(
+                  "p-5 rounded-2xl border space-y-3 transition-all",
+                  isPeak ? "bg-amber-50 border-amber-200 shadow-inner" : "bg-indigo-50 border-indigo-100"
+                )}>
                   <div className="flex items-center justify-between">
                     <p className="text-[10px] font-black text-indigo-400 uppercase tracking-widest">Peak Activity</p>
-                    <Clock size={14} className="text-indigo-400" />
+                    <Clock size={14} className={isPeak ? "text-amber-500" : "text-indigo-400"} />
                   </div>
-                  <p className="text-lg font-black text-indigo-900">{channel.peakTime}</p>
+                  <p className={cn("text-lg font-black", isPeak ? "text-amber-900" : "text-indigo-900")}>{channel.peakTime}</p>
                   <p className="text-xs text-indigo-700 leading-relaxed font-medium">
                     {channel.description}
                   </p>

@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
+import { TCM_CHANNELS } from "@/data/tcm-channel-data";
 import {
   CommandDialog,
   CommandEmpty,
@@ -12,11 +13,11 @@ import {
   CommandList,
   CommandSeparator,
 } from "@/components/ui/command";
-import { Search, User, Calendar, Target, Zap, Clock, Trash2, UserPlus, CalendarPlus, Upload, Settings } from "lucide-react";
+import { Search, User, Calendar, Target, Zap, Clock, Trash2, UserPlus, CalendarPlus, Upload, Settings, Layers } from "lucide-react";
 import { format } from "date-fns";
 
 interface SearchResult {
-  type: "client" | "appointment" | "procedure" | "action";
+  type: "client" | "appointment" | "procedure" | "action" | "channel";
   id: string;
   title: string;
   subtitle?: string;
@@ -105,6 +106,22 @@ const SearchBar = () => {
       ]);
 
       const searchResults: SearchResult[] = [];
+
+      // Search TCM Channels (Local Data)
+      const matchingChannels = TCM_CHANNELS.filter(c => 
+        c.name.toLowerCase().includes(query.toLowerCase()) || 
+        c.code.toLowerCase().includes(query.toLowerCase())
+      );
+
+      matchingChannels.forEach(c => {
+        searchResults.push({
+          type: "channel",
+          id: c.id,
+          title: `${c.name} Meridian`,
+          subtitle: `${c.element} Element • ${c.peakTime}`,
+          path: `/resources?tab=channels`,
+        });
+      });
 
       if (clientsData.data) {
         clientsData.data.forEach((client) => {
@@ -244,6 +261,24 @@ const SearchBar = () => {
 
           {results.length > 0 && (
             <>
+              <CommandGroup heading="Meridians & Channels">
+                {results
+                  .filter((r) => r.type === "channel")
+                  .map((result) => (
+                    <CommandItem
+                      key={result.id}
+                      onSelect={() => handleSelect(result)}
+                    >
+                      <Layers size={16} className="mr-2 text-indigo-500" />
+                      <div className="flex flex-col">
+                        <span className="font-medium">{result.title}</span>
+                        <span className="text-xs text-slate-500">
+                          {result.subtitle}
+                        </span>
+                      </div>
+                    </CommandItem>
+                  ))}
+              </CommandGroup>
               <CommandGroup heading="Clients">
                 {results
                   .filter((r) => r.type === "client")

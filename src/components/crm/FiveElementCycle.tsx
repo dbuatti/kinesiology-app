@@ -5,6 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/com
 import { Badge } from "@/components/ui/badge";
 import { RefreshCw, Zap, Heart, Shield, ArrowRight, Info } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 
 const ELEMENTS = [
   { 

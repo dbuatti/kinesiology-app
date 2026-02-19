@@ -5,6 +5,8 @@ import { TCM_CHANNELS, TcmChannel } from "@/data/tcm-channel-data";
 import { cn } from "@/lib/utils";
 import { Clock, Zap, ArrowRightLeft, Info, Activity } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
+import { format } from "date-fns";
+import { Card, CardContent } from "@/components/ui/card";
 
 const MeridianClock = () => {
   const [currentTime, setCurrentTime] = useState(new Date());

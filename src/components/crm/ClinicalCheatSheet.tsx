@@ -4,7 +4,7 @@ import React, { useState } from "react";
 import { CLINICAL_COMPLAINTS, ClinicalComplaint } from "@/data/clinical-complaints-data";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
-import { Search, Zap, Brain, Activity, Move, Info, AlertCircle, ArrowRight } from "lucide-react";
+import { Search, Zap, Brain, Activity, Move, Info, AlertCircle, ArrowRight, CheckCircle2 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 

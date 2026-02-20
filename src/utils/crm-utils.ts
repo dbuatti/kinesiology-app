@@ -1,4 +1,4 @@
-import { differenceInYears, format, isBefore, isAfter, startOfMonth } from "date-fns";
+import { differenceInYears, format } from "date-fns";
 import { Appointment } from "@/types/crm";
 
 export const calculateAge = (born: Date): number => {
@@ -45,4 +45,33 @@ export const groupAppointmentsByMonth = <T extends Appointment>(appointments: T[
   return Object.entries(groups).sort((a, b) => {
     return new Date(b[1][0].date).getTime() - new Date(a[1][0].date).getTime();
   }) as [string, T[]][];
+};
+
+/**
+ * Determines if a TCM Meridian is currently at its peak activity time.
+ */
+export const isMeridianPeakNow = (peakTimeStr: string, currentHour: number): boolean => {
+  if (!peakTimeStr || peakTimeStr === 'None') return false;
+  
+  const parts = peakTimeStr.toLowerCase().split('-').map(p => p.trim());
+  
+  const parseHour = (s: string) => {
+    const hour = parseInt(s);
+    if (s.includes('pm') && hour !== 12) return hour + 12;
+    if (s.includes('am') && hour === 12) return 0;
+    return hour;
+  };
+
+  try {
+    const start = parseHour(parts[0]);
+    const end = parseHour(parts[1]);
+
+    if (start > end) { // Crosses midnight (e.g., 11pm - 1am)
+      return currentHour >= start || currentHour < end;
+    }
+    return currentHour >= start && currentHour < end;
+  } catch (e) {
+    console.error("Error parsing peak time:", peakTimeStr);
+    return false;
+  }
 };

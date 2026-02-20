@@ -10,6 +10,7 @@ import {
 import { getMuscleInfo } from "@/data/muscle-info-data";
 import { getChannelByName } from "@/data/tcm-channel-data";
 import { VAGUS_ASSOCIATIONS } from "@/data/vagus-data";
+import { isMeridianPeakNow } from "@/utils/crm-utils";
 import { 
   Dumbbell, 
   Activity, 
@@ -64,22 +65,7 @@ const MuscleInfoModal = ({ muscleName, open, onOpenChange }: MuscleInfoModalProp
 
   if (!muscleName || !info) return null;
 
-  const isPeakNow = (peakTimeStr: string) => {
-    if (!peakTimeStr || peakTimeStr === 'None') return false;
-    const parts = peakTimeStr.toLowerCase().split('-').map(p => p.trim());
-    const parseHour = (s: string) => {
-      const hour = parseInt(s);
-      if (s.includes('pm') && hour !== 12) return hour + 12;
-      if (s.includes('am') && hour === 12) return 0;
-      return hour;
-    };
-    const start = parseHour(parts[0]);
-    const end = parseHour(parts[1]);
-    if (start > end) return currentTime >= start || currentTime < end;
-    return currentTime >= start && currentTime < end;
-  };
-
-  const isPeak = channel ? isPeakNow(channel.peakTime) : false;
+  const isPeak = channel ? isMeridianPeakNow(channel.peakTime, currentTime) : false;
 
   const SectionHeader = ({ icon: Icon, title, color }: { icon: any, title: string, color: string }) => (
     <h4 className={cn("text-[10px] font-black uppercase tracking-[0.2em] flex items-center gap-2 mb-3", color)}>

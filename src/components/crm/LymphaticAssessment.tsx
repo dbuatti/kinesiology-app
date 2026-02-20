@@ -88,7 +88,7 @@ const LymphaticAssessment = ({
   const [sutureSide, setSutureSide] = useState<string | null>(initialSutureSide);
   const [priorityZone, setPriorityZone] = useState<string | null>(initialPriorityZone);
   const [notes, setNotes] = useState<string | null>(initialNotes);
-  const [tenderness, setTenderness] = useState([10]); // 1-10 scale
+  const [tenderness, setTenderness] = useState([10]); // 0-10 scale
   const [prescribeHomework, setPrescribeHomework] = useState(false);
   const [isVerified, setIsVerified] = useState(false);
   
@@ -130,8 +130,17 @@ const LymphaticAssessment = ({
   };
 
   const handleAutoPopulate = async () => {
+    if (!priorityZone) return;
+    
     const reduction = 100 - (tenderness[0] * 10);
-    let summary = `LYMPHATIC ASSESSMENT:\n- Suture Side: ${sutureSide || 'Not set'}\n- Priority Zone: ${priorityZone}\n- Tenderness Reduction: ${reduction}% (Level ${tenderness[0]}/10)`;
+    const summaryHeader = `LYMPHATIC ASSESSMENT:`;
+    
+    // Check if we already have a lymphatic summary to avoid duplicates
+    if (notes?.includes(summaryHeader)) {
+      if (!confirm("A lymphatic summary already exists in your notes. Append another one?")) return;
+    }
+
+    let summary = `${summaryHeader}\n- Suture Side: ${sutureSide || 'Not set'}\n- Priority Zone: ${priorityZone}\n- Tenderness Reduction: ${reduction}% (Level ${tenderness[0]}/10)`;
     
     if (prescribeHomework) {
       summary += `\n- HOMEWORK: Prescribed 5 mins/day of ${priorityZone} lymphatic movement.`;
@@ -251,7 +260,7 @@ const LymphaticAssessment = ({
                         </label>
                         <Badge className={cn(
                           "font-black text-[10px] uppercase tracking-widest px-3 py-1",
-                          tenderness[0] <= 3 ? "bg-emerald-50 text-white" : "bg-amber-50 text-white"
+                          tenderness[0] <= 3 ? "bg-emerald-500 text-white" : "bg-amber-500 text-white"
                         )}>
                           {100 - (tenderness[0] * 10)}% Reduction
                         </Badge>
@@ -261,6 +270,7 @@ const LymphaticAssessment = ({
                         <Slider 
                           value={tenderness} 
                           onValueChange={setTenderness} 
+                          min={0}
                           max={10} 
                           step={1} 
                           className="[&>span:first-child]:h-2 [&>span:first-child]:bg-indigo-200 [&_[role=slider]]:h-6 [&_[role=slider]]:w-6 [&_[role=slider]]:border-4 [&_[role=slider]]:border-white [&_[role=slider]]:bg-indigo-600 [&_[role=slider]]:shadow-lg"

@@ -188,18 +188,27 @@ const VagusNerveProcess = ({ appointmentId, initialNotes, onSaveField, onUpdate 
 
   const handleAutoPopulate = async () => {
     let summary = "";
+    const stimHeader = "VAGUS STIMULATION:";
+    const screenHeader = "VAGUS SCREEN & RESET:";
+
     if (mode === 'stimulation') {
+      if (initialNotes?.includes(stimHeader)) {
+        if (!confirm("A stimulation summary already exists. Append another?")) return;
+      }
       const branchLabel = branch.charAt(0).toUpperCase() + branch.slice(1);
       const shifts = selectedShifts.map(s => SHIFT_SIGNS.find(ss => ss.id === s)?.label).join(', ');
-      summary = `VAGUS STIMULATION:\n- Branch: ${branchLabel}\n- Shifts: ${shifts || 'None observed'}\n- Duration: ${60 - timeLeft}s`;
+      summary = `${stimHeader}\n- Branch: ${branchLabel}\n- Shifts: ${shifts || 'None observed'}\n- Duration: ${60 - timeLeft}s`;
     } else {
+      if (initialNotes?.includes(screenHeader)) {
+        if (!confirm("A screen & reset summary already exists. Append another?")) return;
+      }
       const assoc = VAGUS_ASSOCIATIONS.find(a => a.spinalSegment === selectedAssociation);
       const reflexLabel = reflexPoint === 'Auricular' ? `Auricular (${auricularSide})` : 'Occiput (Both)';
       const challengeLabel = challengeType === 'hand' 
         ? `Organ Pulse: ${pulseSide} Hand (${pulseDepth}) - ${selectedOrgan}`
         : `Gland Challenge: ${selectedGland} (${VAGAL_GLANDS.find(g => g.name === selectedGland)?.reflex})`;
       
-      summary = `VAGUS SCREEN & RESET:\n- Reflex Point: ${reflexLabel}\n- Dysfunctional Function: ${selectedFunction}\n- ${challengeLabel}\n- Associated Spinal: ${selectedAssociation} (${partnerInfo?.currentOrgan})\n- Muscle: ${assoc?.muscle}\n- Lovett-Brother: ${assoc?.reciprocatingSegment} (${partnerInfo?.partnerOrgan}) - ${partnerInfo?.partnerMuscle}\n- Correction: ${breathingPattern} for ${30 - correctionTime}s\n- Status: ${isCleared ? 'Cleared/Balanced' : 'In Progress'}`;
+      summary = `${screenHeader}\n- Reflex Point: ${reflexLabel}\n- Dysfunctional Function: ${selectedFunction}\n- ${challengeLabel}\n- Associated Spinal: ${selectedAssociation} (${partnerInfo?.currentOrgan})\n- Muscle: ${assoc?.muscle}\n- Lovett-Brother: ${assoc?.reciprocatingSegment} (${partnerInfo?.partnerOrgan}) - ${partnerInfo?.partnerMuscle}\n- Correction: ${breathingPattern} for ${30 - correctionTime}s\n- Status: ${isCleared ? 'Cleared/Balanced' : 'In Progress'}`;
     }
     
     const currentNotes = initialNotes ? `${initialNotes}\n\n${summary}` : summary;

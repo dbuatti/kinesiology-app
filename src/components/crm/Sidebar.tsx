@@ -19,7 +19,8 @@ import {
   CalendarPlus,
   Settings,
   ShieldCheck,
-  Activity
+  Activity,
+  Search
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import SearchBar from "./SearchBar";
@@ -76,7 +77,6 @@ const Sidebar = () => {
       .order('date', { ascending: false });
 
     if (data) {
-      // Get latest BOLT for each client
       const latestByClient: Record<string, number> = {};
       data.forEach(app => {
         if (!latestByClient[app.client_id]) {

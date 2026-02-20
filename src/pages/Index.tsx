@@ -101,7 +101,7 @@ const Index = () => {
 
       const allApps = (allAppsRaw || []).map(a => ({
         ...a,
-        clientId: (a as any).client_id, // Map database field to type property
+        clientId: (a as any).client_id,
         date: new Date(a.date)
       })) as unknown as AppointmentWithClient[];
 
@@ -123,7 +123,6 @@ const Index = () => {
           const latestBolt = (sortedApps[0] as any).bolt_score;
           if (latestBolt < 25) {
             imperativeAlerts++;
-            // Check if they are scheduled for today
             const isScheduledToday = allApps.some(app => app.clientId === client.id && isToday(app.date));
             if (isScheduledToday) {
               priorities.push({

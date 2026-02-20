@@ -86,7 +86,6 @@ const EditableField = ({
     const newValue = localValue ? `${localValue.trim()} ${chip}` : chip;
     setLocalValue(newValue);
     debouncedSave(newValue);
-    // Keep focus on input
     setTimeout(() => inputRef.current?.focus(), 0);
   };
 
@@ -115,7 +114,6 @@ const EditableField = ({
         lastCommittedRef.current = trimmed;
       }
     }
-    // Small delay to allow chip clicks to register before blur hides them
     setTimeout(() => setIsFocused(false), 200);
   };
 
@@ -135,7 +133,7 @@ const EditableField = ({
       className={cn(
         "group relative p-6 rounded-[2.5rem] transition-all duration-500 border-2",
         isFocused 
-          ? "bg-white border-indigo-500 shadow-2xl shadow-indigo-100/50" 
+          ? "bg-white border-indigo-500 shadow-2xl shadow-indigo-100/50 scale-[1.01]" 
           : hasError 
             ? "bg-rose-50 border-rose-300"
             : "bg-slate-50/50 border-transparent hover:bg-white hover:border-slate-200 hover:shadow-xl",

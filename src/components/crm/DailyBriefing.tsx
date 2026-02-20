@@ -4,7 +4,7 @@ import React from "react";
 import { Link } from "react-router-dom";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Zap, ArrowRight, CheckCircle2, Sparkles } from "lucide-react";
+import { Zap, ArrowRight, CheckCircle2, Sparkles, Target } from "lucide-react";
 import { format } from "date-fns";
 import { cn } from "@/lib/utils";
 import { AppointmentWithClient } from "@/types/crm";
@@ -43,26 +43,38 @@ const DailyBriefing = ({ todaySessions, activeSession }: DailyBriefingProps) => 
             todaySessions.map(session => (
               <Link key={session.id} to={`/appointments/${session.id}`}>
                 <div className={cn(
-                  "p-8 rounded-[3rem] border transition-all duration-500 flex items-center justify-between group",
+                  "p-8 rounded-[3rem] border transition-all duration-500 flex flex-col gap-4 group",
                   activeSession?.id === session.id 
                     ? "bg-white text-slate-950 border-white shadow-2xl scale-[1.02]" 
                     : "bg-white/5 hover:bg-white/10 border-white/10 text-white"
                 )}>
-                  <div className="min-w-0">
-                    <p className={cn(
-                      "text-[10px] font-black uppercase tracking-[0.35em] mb-3",
-                      activeSession?.id === session.id ? "text-rose-500" : "text-slate-500"
+                  <div className="flex items-center justify-between w-full">
+                    <div className="min-w-0">
+                      <p className={cn(
+                        "text-[10px] font-black uppercase tracking-[0.35em] mb-2",
+                        activeSession?.id === session.id ? "text-rose-500" : "text-slate-500"
+                      )}>
+                        {activeSession?.id === session.id ? "ONGOING" : format(session.date, "h:mm a")}
+                      </p>
+                      <p className="font-black text-2xl truncate">{session.clients?.name}</p>
+                    </div>
+                    <div className={cn(
+                      "w-12 h-12 rounded-2xl flex items-center justify-center transition-all duration-500 shadow-sm",
+                      activeSession?.id === session.id ? "bg-indigo-50 text-indigo-600" : "bg-white/5 text-slate-500 group-hover:text-white"
                     )}>
-                      {activeSession?.id === session.id ? "ONGOING" : format(session.date, "h:mm a")}
-                    </p>
-                    <p className="font-black text-2xl truncate">{session.clients?.name}</p>
+                      <ArrowRight size={24} className="group-hover:translate-x-1.5 transition-transform" />
+                    </div>
                   </div>
-                  <div className={cn(
-                    "w-12 h-12 rounded-2xl flex items-center justify-center transition-all duration-500 shadow-sm",
-                    activeSession?.id === session.id ? "bg-indigo-50 text-indigo-600" : "bg-white/5 text-slate-500 group-hover:text-white"
-                  )}>
-                    <ArrowRight size={24} className="group-hover:translate-x-1.5 transition-transform" />
-                  </div>
+                  
+                  {session.goal && (
+                    <div className={cn(
+                      "p-4 rounded-2xl text-sm font-medium flex items-start gap-3",
+                      activeSession?.id === session.id ? "bg-slate-50 text-slate-600" : "bg-white/5 text-slate-400"
+                    )}>
+                      <Target size={16} className={cn("shrink-0 mt-0.5", activeSession?.id === session.id ? "text-indigo-500" : "text-slate-500")} />
+                      <p className="line-clamp-2 italic">"{session.goal}"</p>
+                    </div>
+                  )}
                 </div>
               </Link>
             ))

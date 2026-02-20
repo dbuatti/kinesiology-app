@@ -1,10 +1,10 @@
 "use client";
 
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { Button } from '@/components/ui/button';
-import { Home, Heart, Dumbbell, FlaskConical, Activity, Move, Zap, CheckCircle2, TrendingUp, History, Footprints } from 'lucide-react';
+import { Home, Heart, Dumbbell, FlaskConical, Activity, Move, Zap, CheckCircle2, TrendingUp, History, Footprints, Droplets } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { AppointmentWithClient } from '@/types/crm'; // Updated import
+import { AppointmentWithClient } from '@/types/crm';
 import BoltTestSection from './BoltTestSection';
 import CoherenceAssessment from './CoherenceAssessment';
 import CogsAssessment from './CogsAssessment';
@@ -34,6 +34,14 @@ const SessionContentSwitcher = ({ appointment, onUpdate, saveField }: SessionCon
   const [activeView, setActiveView] = useState<ActiveView>('home');
   const appointmentId = appointment.id;
 
+  const tabStatus = useMemo(() => ({
+    baseline: !!(appointment.bolt_score || appointment.coherence_score || appointment.sagittal_plane_notes || appointment.fakuda_notes || appointment.lymphatic_priority_zone),
+    sympathetic: !!(appointment.harmonic_rocking_notes || appointment.t1_reset_notes || appointment.diaphragm_reset_notes || appointment.vagus_nerve_notes || appointment.additional_notes),
+    pathway: !!appointment.priority_pattern,
+    calibration: !!appointment.modes_balances,
+    reassessment: !!appointment.session_north_star
+  }), [appointment]);
+
   const handleSaveColors = async (color1: string | null, color2: string | null) => {
     await saveField('luscher_color_1', color1);
     await saveField('luscher_color_2', color2);
@@ -57,24 +65,28 @@ const SessionContentSwitcher = ({ appointment, onUpdate, saveField }: SessionCon
 
   const renderHomeView = () => (
     <div className="space-y-12">
-      {/* Main Assessment Area - Full Width */}
       <div className="space-y-6">
         <Tabs defaultValue="baseline" className="w-full">
           <TabsList className="grid w-full grid-cols-5 h-14 bg-slate-200/50 p-1.5 rounded-2xl">
-            <TabsTrigger value="baseline" className="flex items-center gap-2 data-[state=active]:bg-white data-[state=active]:text-indigo-600 data-[state=active]:shadow-sm rounded-xl h-11 text-[10px] font-black uppercase tracking-wider">
+            <TabsTrigger value="baseline" className="flex items-center gap-2 data-[state=active]:bg-white data-[state=active]:text-indigo-600 data-[state=active]:shadow-sm rounded-xl h-11 text-[10px] font-black uppercase tracking-wider relative">
               <FlaskConical size={14} /> 1. Baseline
+              {tabStatus.baseline && <span className="absolute top-1 right-1 w-1.5 h-1.5 bg-indigo-500 rounded-full" />}
             </TabsTrigger>
-            <TabsTrigger value="sympathetic" className="flex items-center gap-2 data-[state=active]:bg-white data-[state=active]:text-indigo-600 data-[state=active]:shadow-sm rounded-xl h-11 text-[10px] font-black uppercase tracking-wider">
+            <TabsTrigger value="sympathetic" className="flex items-center gap-2 data-[state=active]:bg-white data-[state=active]:text-indigo-600 data-[state=active]:shadow-sm rounded-xl h-11 text-[10px] font-black uppercase tracking-wider relative">
               <Heart size={14} /> 2. SNS
+              {tabStatus.sympathetic && <span className="absolute top-1 right-1 w-1.5 h-1.5 bg-indigo-500 rounded-full" />}
             </TabsTrigger>
-            <TabsTrigger value="pathway" className="flex items-center gap-2 data-[state=active]:bg-white data-[state=active]:text-indigo-600 data-[state=active]:shadow-sm rounded-xl h-11 text-[10px] font-black uppercase tracking-wider">
+            <TabsTrigger value="pathway" className="flex items-center gap-2 data-[state=active]:bg-white data-[state=active]:text-indigo-600 data-[state=active]:shadow-sm rounded-xl h-11 text-[10px] font-black uppercase tracking-wider relative">
               <TrendingUp size={14} /> 3. Pathway
+              {tabStatus.pathway && <span className="absolute top-1 right-1 w-1.5 h-1.5 bg-indigo-500 rounded-full" />}
             </TabsTrigger>
-            <TabsTrigger value="calibration" className="flex items-center gap-2 data-[state=active]:bg-white data-[state=active]:text-indigo-600 data-[state=active]:shadow-sm rounded-xl h-11 text-[10px] font-black uppercase tracking-wider">
+            <TabsTrigger value="calibration" className="flex items-center gap-2 data-[state=active]:bg-white data-[state=active]:text-indigo-600 data-[state=active]:shadow-sm rounded-xl h-11 text-[10px] font-black uppercase tracking-wider relative">
               <CheckCircle2 size={14} /> 4. Correction
+              {tabStatus.calibration && <span className="absolute top-1 right-1 w-1.5 h-1.5 bg-indigo-500 rounded-full" />}
             </TabsTrigger>
-            <TabsTrigger value="reassessment" className="flex items-center gap-2 data-[state=active]:bg-white data-[state=active]:text-indigo-600 data-[state=active]:shadow-sm rounded-xl h-11 text-[10px] font-black uppercase tracking-wider">
+            <TabsTrigger value="reassessment" className="flex items-center gap-2 data-[state=active]:bg-white data-[state=active]:text-indigo-600 data-[state=active]:shadow-sm rounded-xl h-11 text-[10px] font-black uppercase tracking-wider relative">
               <Zap size={14} /> 5. Re-Test
+              {tabStatus.reassessment && <span className="absolute top-1 right-1 w-1.5 h-1.5 bg-indigo-500 rounded-full" />}
             </TabsTrigger>
           </TabsList>
 

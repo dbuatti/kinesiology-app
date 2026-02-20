@@ -160,7 +160,7 @@ const ResourcesPage = () => {
                       {[
                         { step: 1, text: "Stand in a designated area (ideally marked with 0.5m and 1.0m concentric circles divided by 30° angles)." },
                         { step: 2, text: "Blindfold the patient (or close eyes) and instruct them to hold both arms straight out anteriorly." },
-                        { step: 3, text: "Instruct the patient to step in place for 50 or 100 paces at a comfortable, brisk walking pace." },
+                        { step: 3, text: "Instruct the patient to step in place for 50 or 100 paces at a rhythmic, brisk walking pace." },
                         { step: 4, text: "Observe for body sway, trajectory length, and the final angle of rotation from the starting line." }
                       ].map((item) => (
                         <div key={item.step} className="flex gap-4 p-4 bg-slate-50 rounded-2xl border border-slate-100">

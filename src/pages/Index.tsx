@@ -3,11 +3,10 @@ import { Link } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
 import { 
-  Users, Calendar, Activity, TrendingUp, Loader2, 
-  Plus, ArrowRight, UserPlus, Sparkles, Clock, 
-  CheckCircle2, Zap, Target, FlaskConical, Brain, Info, Heart, AlertCircle, StickyNote, Wind, Layers, RefreshCw, Timer
+  Calendar, Activity, Loader2, 
+  Plus, UserPlus, Sparkles, 
+  CheckCircle2, Zap, FlaskConical, Brain, Wind, StickyNote, Timer
 } from "lucide-react";
 import { MadeWithDyad } from "@/components/made-with-dyad";
 import {
@@ -23,10 +22,11 @@ import UpcomingAppointments from "@/components/crm/UpcomingAppointments";
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip as ChartTooltip, ResponsiveContainer } from 'recharts';
 import { format, subMonths, isToday, subDays, differenceInMinutes, startOfWeek, endOfWeek, isWithinInterval, formatDistanceToNow } from "date-fns";
 import { Skeleton } from "@/components/ui/skeleton";
-import { cn } from "@/lib/utils";
 import { Textarea } from "@/components/ui/textarea";
 import MeridianClock from "@/components/crm/MeridianClock";
 import { AppointmentWithClient } from "@/types/crm";
+import DashboardStats from "@/components/crm/DashboardStats";
+import DailyBriefing from "@/components/crm/DailyBriefing";
 
 const SCRATCHPAD_KEY = "antigravity_practitioner_scratchpad";
 const SCRATCHPAD_TIME_KEY = "antigravity_practitioner_scratchpad_time";
@@ -183,18 +183,6 @@ const Index = () => {
 
   const hasData = stats.clients > 0 || stats.appointments > 0;
 
-  const QuickAction = ({ icon: Icon, label, onClick, color }: any) => (
-    <button 
-      onClick={onClick}
-      className="flex flex-col items-center justify-center p-8 bg-white rounded-[3rem] border border-slate-100 shadow-sm hover:shadow-2xl hover:border-indigo-200 hover:-translate-y-1.5 transition-all duration-500 group"
-    >
-      <div className={cn("w-16 h-16 rounded-2xl flex items-center justify-center mb-4 transition-transform group-hover:scale-110 shadow-xl", color)}>
-        <Icon size={32} className="text-white" />
-      </div>
-      <span className="text-[11px] font-black text-slate-500 uppercase tracking-[0.25em]">{label}</span>
-    </button>
-  );
-
   return (
     <div className="p-4 md:p-10 max-w-full mx-auto space-y-12">
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-8">
@@ -231,142 +219,12 @@ const Index = () => {
         </div>
       ) : (
         <>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
-            <Card className="border-none shadow-lg rounded-[2.5rem] bg-white overflow-hidden group hover:shadow-2xl transition-all duration-500">
-              <CardContent className="p-8 flex items-center gap-6">
-                <div className="w-16 h-16 rounded-2xl bg-indigo-50 text-indigo-600 flex items-center justify-center shrink-0 group-hover:scale-105 transition-transform shadow-sm">
-                  <Users size={32} />
-                </div>
-                <div>
-                  <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Total Clients</p>
-                  <p className="text-4xl font-black text-slate-900">{stats.clients}</p>
-                  <p className="text-[10px] text-emerald-600 font-black mt-1 flex items-center gap-1">
-                    <TrendingUp size={10} /> +{stats.newClients30d} this month
-                  </p>
-                </div>
-              </CardContent>
-            </Card>
-
-            <Card className="border-none shadow-lg rounded-[2.5rem] bg-white overflow-hidden group hover:shadow-2xl transition-all duration-500">
-              <CardContent className="p-8 flex items-center gap-6">
-                <div className="w-16 h-16 rounded-2xl bg-rose-50 text-rose-600 flex items-center justify-center shrink-0 group-hover:scale-105 transition-transform shadow-sm">
-                  <Calendar size={32} />
-                </div>
-                <div>
-                  <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Weekly Load</p>
-                  <p className="text-4xl font-black text-slate-900">{stats.sessionsThisWeek}</p>
-                  <p className="text-[10px] text-indigo-600 font-black mt-1">
-                    {stats.sessions30d} sessions in 30d
-                  </p>
-                </div>
-              </CardContent>
-            </Card>
-
-            <Card className="border-none shadow-lg rounded-[2.5rem] bg-white overflow-hidden group hover:shadow-2xl transition-all duration-500">
-              <CardContent className="p-8 flex items-center gap-6">
-                <div className="w-16 h-16 rounded-2xl bg-emerald-50 text-emerald-600 flex items-center justify-center shrink-0 group-hover:scale-105 transition-transform shadow-sm">
-                  <FlaskConical size={32} />
-                </div>
-                <div>
-                  <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Avg BOLT Score</p>
-                  <p className="text-4xl font-black text-slate-900">{stats.avgBolt}s</p>
-                  <p className="text-[10px] text-slate-400 font-black mt-1">Practice average</p>
-                </div>
-              </CardContent>
-            </Card>
-
-            <Card className={cn(
-              "border-none shadow-lg rounded-[2.5rem] overflow-hidden group hover:shadow-2xl transition-all duration-500",
-              stats.imperativeAlerts > 0 ? "bg-rose-600 text-white" : "bg-white"
-            )}>
-              <CardContent className="p-8 flex items-center gap-6">
-                <div className={cn(
-                  "w-16 h-16 rounded-2xl flex items-center justify-center shrink-0 group-hover:scale-105 transition-transform shadow-xl",
-                  stats.imperativeAlerts > 0 ? "bg-white/20 backdrop-blur-md" : "bg-amber-50 text-amber-600"
-                )}>
-                  <AlertCircle size={32} />
-                </div>
-                <div>
-                  <p className={cn("text-[10px] font-black uppercase tracking-widest", stats.imperativeAlerts > 0 ? "text-rose-100" : "text-slate-400")}>Imperative Cases</p>
-                  <p className="text-4xl font-black">{stats.imperativeAlerts}</p>
-                  <p className={cn("text-[10px] font-black mt-1", stats.imperativeAlerts > 0 ? "text-rose-100" : "text-slate-400")}>Requires attention</p>
-                </div>
-              </CardContent>
-            </Card>
-          </div>
-
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
-            <QuickAction icon={UserPlus} label="New Client" onClick={() => setClientDialogOpen(true)} color="bg-indigo-600" />
-            <QuickAction icon={Calendar} label="Book Session" onClick={() => setAppDialogOpen(true)} color="bg-rose-500" />
-            <QuickAction icon={Heart} label="Self Practice" onClick={() => window.location.href='/self-practice'} color="bg-rose-500" />
-            <QuickAction icon={Target} label="Procedures" onClick={() => window.location.href='/procedures'} color="bg-emerald-500" />
-          </div>
+          <DashboardStats stats={stats} />
 
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-10">
-            <Card className="lg:col-span-2 border-none shadow-2xl bg-slate-900 text-white rounded-[3.5rem] overflow-hidden relative">
-              <div className="absolute top-0 right-0 p-12 opacity-5 pointer-events-none"><Sparkles size={250} /></div>
-              <CardHeader className="pb-4 p-12">
-                <div className="flex items-center justify-between">
-                  <CardTitle className="text-4xl font-black flex items-center gap-5">
-                    <Zap size={40} className="text-amber-400 fill-amber-400" /> Daily Briefing
-                  </CardTitle>
-                  {activeSession && (
-                    <Link to={`/appointments/${activeSession.id}`}>
-                      <Badge className="bg-rose-500 hover:bg-rose-600 text-white border-none px-8 py-3 animate-pulse cursor-pointer font-black text-[11px] uppercase tracking-[0.2em] rounded-2xl shadow-xl shadow-rose-500/20">
-                        LIVE SESSION: {activeSession.clients?.name}
-                      </Badge>
-                    </Link>
-                  )}
-                </div>
-                <CardDescription className="text-slate-400 text-xl font-medium mt-4">
-                  {todaySessions.length > 0 
-                    ? `You have ${todaySessions.length} session${todaySessions.length === 1 ? '' : 's'} scheduled for today.`
-                    : "No sessions scheduled for today. Time for some research or admin!"}
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="p-12 pt-0">
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-8">
-                  {todaySessions.length > 0 ? (
-                    todaySessions.map(session => (
-                      <Link key={session.id} to={`/appointments/${session.id}`}>
-                        <div className={cn(
-                          "p-8 rounded-[3rem] border transition-all duration-500 flex items-center justify-between group",
-                          activeSession?.id === session.id 
-                            ? "bg-white text-slate-950 border-white shadow-2xl scale-[1.02]" 
-                            : "bg-white/5 hover:bg-white/10 border-white/10 text-white"
-                        )}>
-                          <div className="min-w-0">
-                            <p className={cn(
-                              "text-[10px] font-black uppercase tracking-[0.35em] mb-3",
-                              activeSession?.id === session.id ? "text-rose-500" : "text-slate-500"
-                            )}>
-                              {activeSession?.id === session.id ? "ONGOING" : format(session.date, "h:mm a")}
-                            </p>
-                            <p className="font-black text-2xl truncate">{session.clients?.name}</p>
-                          </div>
-                          <div className={cn(
-                            "w-12 h-12 rounded-2xl flex items-center justify-center transition-all duration-500 shadow-sm",
-                            activeSession?.id === session.id ? "bg-indigo-50 text-indigo-600" : "bg-white/5 text-slate-500 group-hover:text-white"
-                          )}>
-                            <ArrowRight size={24} className="group-hover:translate-x-1.5 transition-transform" />
-                          </div>
-                        </div>
-                      </Link>
-                    ))
-                  ) : (
-                    <div className="sm:col-span-2 flex items-center gap-8 p-10 bg-white/5 rounded-[3rem] border border-white/10">
-                      <div className="w-20 h-20 rounded-[2rem] bg-emerald-500/20 flex items-center justify-center text-emerald-400 shadow-inner">
-                        <CheckCircle2 size={40} />
-                      </div>
-                      <div>
-                        <p className="font-black text-slate-200 text-2xl">Your schedule is clear.</p>
-                        <p className="text-slate-400 font-medium text-lg mt-1">Enjoy the space for deep work or rest.</p>
-                      </div>
-                    </div>
-                  )}
-                </div>
-              </CardContent>
-            </Card>
+            <div className="lg:col-span-2">
+              <DailyBriefing todaySessions={todaySessions} activeSession={activeSession} />
+            </div>
 
             <div className="space-y-10">
               {nextSession && (

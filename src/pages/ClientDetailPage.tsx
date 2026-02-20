@@ -1,13 +1,13 @@
 import { useState, useEffect } from "react";
 import { useParams, Link, useNavigate, useSearchParams } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
-import { calculateAge, getStarSign, getClientRollups } from "@/utils/crm-utils";
+import { getClientRollups } from "@/utils/crm-utils";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { 
   ArrowLeft, Mail, Phone, MapPin, Calendar, 
-  Star, Loader2, Briefcase, Heart, Baby,
+  Loader2, Briefcase, Heart, Baby,
   Activity, Edit3, Trash2, MoreHorizontal, FlaskConical, TrendingUp, Clock, Brain,
   LayoutDashboard, History, ArrowRight, Copy, Check, Sparkles, Plus
 } from "lucide-react";
@@ -34,6 +34,7 @@ import Breadcrumbs from "@/components/crm/Breadcrumbs";
 import { useRecentClients } from "@/hooks/use-recent-clients";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import ClientProgressTab from "@/components/crm/ClientProgressTab";
+import ClientProfileCard from "@/components/crm/ClientProfileCard";
 
 const ClientDetailPage = () => {
   const { id } = useParams();
@@ -100,15 +101,13 @@ const ClientDetailPage = () => {
     setAiCopying(true);
 
     const latestApp = appointments[0];
-    const age = client.born ? calculateAge(client.born) : 'N/A';
+    const age = client.born ? format(client.born, "yyyy") : 'N/A';
     
     let prompt = `
 I am a Kinesiology practitioner analyzing a client case. Please provide clinical insights based on the following data:
 
 CLIENT PROFILE:
 - Name: ${client.name}
-- Age: ${age}
-- Occupation: ${client.occupation || 'N/A'}
 - History: ${client.journal || 'N/A'}
 
 LATEST SESSION FINDINGS (${latestApp ? format(latestApp.date, "MMM d, yyyy") : 'No sessions'}):
@@ -117,10 +116,8 @@ LATEST SESSION FINDINGS (${latestApp ? format(latestApp.date, "MMM d, yyyy") : '
 - BOLT Score: ${latestApp?.bolt_score ? `${latestApp.bolt_score}s` : 'N/A'}
 - Coherence: ${latestApp?.coherence_score ? latestApp.coherence_score.toFixed(2) : 'N/A'}
 - Acupoints Used: ${latestApp?.acupoints || 'N/A'}
-- Pathway Notes: ${latestApp?.priority_pattern || 'N/A'}
-- Corrections: ${latestApp?.modes_balances || 'N/A'}
 
-Please analyze the relationship between the respiratory (BOLT), autonomic (Coherence), and emotional findings. Suggest potential priority pathways or neurological drills that might be relevant for the next session.
+Please analyze the relationship between the respiratory (BOLT), autonomic (Coherence), and emotional findings.
 `;
 
     navigator.clipboard.writeText(prompt.trim());
@@ -234,34 +231,7 @@ Please analyze the relationship between the respiratory (BOLT), autonomic (Coher
         <TabsContent value="overview" className="space-y-8">
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
             <div className="lg:col-span-1 space-y-6">
-              <Card className="overflow-hidden border-none shadow-lg bg-white rounded-2xl">
-                <div className="h-24 bg-gradient-to-r from-indigo-600 to-indigo-500 relative">
-                    <div className="absolute bottom-0 left-6 translate-y-1/2 p-1 bg-white rounded-full shadow-md">
-                        <div className="w-20 h-20 bg-indigo-50 rounded-full flex items-center justify-center text-3xl font-bold text-indigo-600 border-2 border-indigo-100">
-                          {client.name.charAt(0)}
-                        </div>
-                    </div>
-                </div>
-                <CardContent className="pt-14 px-6 pb-6 space-y-4">
-                  <div>
-                    <h2 className="text-2xl font-bold text-slate-900">{client.name}</h2>
-                    <p className="text-slate-500 font-medium">{client.pronouns || 'No pronouns set'}</p>
-                  </div>
-                  <div className="flex flex-wrap gap-2">
-                    {client.born && (
-                      <>
-                        <Badge className="bg-indigo-50 text-indigo-600 hover:bg-indigo-100 border-none px-3 py-1 rounded-full">
-                          {calculateAge(client.born)} years old
-                        </Badge>
-                        <Badge variant="outline" className="flex gap-1 items-center px-3 py-1 border-slate-200 rounded-full">
-                          <Star size={12} className="fill-amber-400 text-amber-400" />
-                          {getStarSign(client.born)}
-                        </Badge>
-                      </>
-                    )}
-                  </div>
-                </CardContent>
-              </Card>
+              <ClientProfileCard client={client} />
 
               <Card className="border-none shadow-sm bg-white rounded-2xl">
                 <CardHeader className="pb-3">

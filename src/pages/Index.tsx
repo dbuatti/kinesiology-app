@@ -241,10 +241,10 @@ const Index = () => {
                   <Calendar size={32} />
                 </div>
                 <div>
-                  <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Total Sessions</p>
-                  <p className="text-4xl font-black text-slate-900">{stats.appointments}</p>
+                  <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Weekly Load</p>
+                  <p className="text-4xl font-black text-slate-900">{stats.sessionsThisWeek}</p>
                   <p className="text-[10px] text-indigo-600 font-black mt-1">
-                    {stats.sessionsThisWeek} this week
+                    {stats.sessions30d} sessions in 30d
                   </p>
                 </div>
               </CardContent>

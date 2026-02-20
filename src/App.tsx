@@ -22,13 +22,26 @@ import SettingsPage from "./pages/SettingsPage";
 import Login from "./pages/Login";
 import NotFound from "./pages/NotFound";
 import { AuthProvider, useAuth } from "./components/AuthProvider";
+import { Loader2 } from "lucide-react";
 
 const queryClient = new QueryClient();
 
 const ProtectedLayout = ({ children }: { children: React.ReactNode }) => {
   const { session } = useAuth();
   
-  if (session === undefined) return null; // Loading state
+  if (session === undefined) {
+    return (
+      <div className="min-h-screen flex flex-col items-center justify-center bg-slate-50 gap-4">
+        <div className="w-16 h-16 bg-indigo-600 rounded-2xl flex items-center justify-center text-white font-black text-2xl shadow-2xl shadow-indigo-200 animate-bounce">
+          A
+        </div>
+        <div className="flex items-center gap-2 text-slate-400 font-black text-[10px] uppercase tracking-[0.3em]">
+          <Loader2 className="animate-spin" size={14} /> Initializing Practice
+        </div>
+      </div>
+    );
+  }
+
   if (!session) return <Navigate to="/login" replace />;
 
   return (

@@ -126,14 +126,14 @@ const EditableField = ({
         }
       }}
     >
-      <div className="flex items-center justify-between mb-4">
+      <div className="flex items-center justify-between mb-4 h-5">
         <p className={cn(
           "font-black uppercase text-[10px] tracking-[0.25em] transition-colors",
           isFocused ? "text-indigo-600" : "text-slate-400"
         )}>
           {label}
         </p>
-        <div className="flex items-center gap-2 h-4">
+        <div className="flex items-center gap-2 min-w-[60px] justify-end">
           {isSaving && (
             <div className="flex items-center gap-1.5 text-[10px] font-black text-indigo-600 animate-pulse">
               <Loader2 size={12} className="animate-spin" /> SAVING

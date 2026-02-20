@@ -3,7 +3,7 @@
 import React, { useState, useEffect, useCallback, useMemo } from "react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Loader2, CheckCircle2, AlertTriangle, Info, RotateCcw, Save, Dumbbell, Zap, Sparkles, Search, ChevronDown, ChevronUp, Filter, Eye, EyeOff, Layers } from "lucide-react";
+import { Loader2, CheckCircle2, AlertTriangle, Info, RotateCcw, Save, Dumbbell, Zap, Sparkles, Search, ChevronDown, ChevronUp, Filter, Eye, EyeOff, Layers, Trash2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { supabase } from "@/integrations/supabase/client";
 import { showSuccess, showError } from "@/utils/toast";
@@ -172,6 +172,28 @@ const MuscleTestingTab = ({ appointmentId }: MuscleTestingTabProps) => {
     }
   };
 
+  const handleClearAll = async () => {
+    if (Object.keys(results).length === 0) return;
+    if (!confirm("Are you sure you want to clear ALL muscle test results for this session? This cannot be undone.")) return;
+
+    setSaving(true);
+    try {
+      const { error } = await supabase
+        .from("muscle_tests")
+        .delete()
+        .eq('appointment_id', appointmentId);
+
+      if (error) throw error;
+
+      setResults({});
+      showSuccess("All muscle tests cleared for this session.");
+    } catch (error: any) {
+      showError(error.message || "Failed to clear muscle tests.");
+    } finally {
+      setSaving(false);
+    }
+  };
+
   const handleClearMuscle = async (muscleName: string) => {
     const result = results[muscleName];
     if (!result) return;
@@ -274,14 +296,26 @@ const MuscleTestingTab = ({ appointmentId }: MuscleTestingTabProps) => {
               <p className="text-indigo-100 text-xs font-medium">Quick-log the standard TFH primary balance.</p>
             </div>
           </div>
-          <Button 
-            onClick={handleQuickLog14}
-            disabled={saving}
-            className="bg-white text-indigo-600 hover:bg-indigo-50 rounded-xl font-black text-xs uppercase tracking-widest h-12 px-8 shadow-lg"
-          >
-            {saving ? <Loader2 className="mr-2 animate-spin" /> : <Zap size={18} className="mr-2 fill-current" />}
-            Log 14 Primary Muscles
-          </Button>
+          <div className="flex gap-2">
+            <Button 
+              onClick={handleQuickLog14}
+              disabled={saving}
+              className="bg-white text-indigo-600 hover:bg-indigo-50 rounded-xl font-black text-xs uppercase tracking-widest h-12 px-8 shadow-lg"
+            >
+              {saving ? <Loader2 className="mr-2 animate-spin" /> : <Zap size={18} className="mr-2 fill-current" />}
+              Log 14 Primary
+            </Button>
+            {testedCount > 0 && (
+              <Button 
+                variant="outline"
+                onClick={handleClearAll}
+                disabled={saving}
+                className="bg-indigo-700/50 border-indigo-400 text-white hover:bg-indigo-700 rounded-xl h-12 px-4"
+              >
+                <Trash2 size={18} />
+              </Button>
+            )}
+          </div>
         </div>
 
         <Card className="border-none shadow-lg rounded-[2rem] bg-white overflow-hidden">

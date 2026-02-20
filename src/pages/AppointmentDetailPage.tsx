@@ -5,10 +5,10 @@ import { useParams, useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Card } from "@/components/ui/card";
 import { 
-  Loader2, Trash2, MoreHorizontal, History, Printer, Copy, Check, Play, ExternalLink
+  Loader2, Trash2, MoreHorizontal, History, Printer, Copy, Check, Play
 } from "lucide-react";
 import { format, isToday } from "date-fns";
-import { AppointmentWithClient } from "@/types/crm"; // Import from centralized types
+import { AppointmentWithClient } from "@/types/crm";
 import { showSuccess, showError } from "@/utils/toast";
 import EditableField from "@/components/crm/EditableField";
 import SessionTimer from "@/components/crm/SessionTimer";
@@ -26,7 +26,6 @@ import {
 import Breadcrumbs from "@/components/crm/Breadcrumbs";
 import { Button } from "@/components/ui/button";
 import { TCM_CHANNELS } from "@/data/tcm-channel-data";
-import { cn } from "@/lib/utils";
 
 const AppointmentDetailPage = () => {
   const { id } = useParams<{ id: string }>();

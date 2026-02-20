@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Zap, ExternalLink } from "lucide-react";
 import { cn } from "@/lib/utils";
 import EditableField from "./EditableField";
-import { AppointmentWithClient } from "@/types/crm"; // Updated import
+import { AppointmentWithClient } from "@/types/crm";
 
 interface AppointmentContextCardsProps {
   appointment: AppointmentWithClient;

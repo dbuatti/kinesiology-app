@@ -16,7 +16,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { APPOINTMENT_STATUSES } from "@/data/appointment-data";
-import { AppointmentWithClient } from "@/types/crm"; // Updated import
+import { AppointmentWithClient } from "@/types/crm";
 
 interface AppointmentHeaderProps {
   appointment: AppointmentWithClient;

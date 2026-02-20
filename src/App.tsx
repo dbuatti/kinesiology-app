@@ -22,13 +22,23 @@ import SettingsPage from "./pages/SettingsPage";
 import Login from "./pages/Login";
 import NotFound from "./pages/NotFound";
 import { AuthProvider, useAuth } from "./components/AuthProvider";
-import { Loader2 } from "lucide-react";
+import { Loader2, PanelLeftOpen } from "lucide-react";
+import { useState, useEffect } from "react";
+import { Button } from "./components/ui/button";
 
 const queryClient = new QueryClient();
 
 const ProtectedLayout = ({ children }: { children: React.ReactNode }) => {
   const { session } = useAuth();
+  const [isSidebarVisible, setIsSidebarVisible] = useState(() => {
+    const saved = localStorage.getItem("antigravity_sidebar_visible");
+    return saved !== null ? JSON.parse(saved) : true;
+  });
   
+  useEffect(() => {
+    localStorage.setItem("antigravity_sidebar_visible", JSON.stringify(isSidebarVisible));
+  }, [isSidebarVisible]);
+
   if (session === undefined) {
     return (
       <div className="min-h-screen flex flex-col items-center justify-center bg-slate-50 gap-4">
@@ -47,8 +57,21 @@ const ProtectedLayout = ({ children }: { children: React.ReactNode }) => {
   return (
     <div className="flex flex-col lg:flex-row min-h-screen bg-slate-50">
       <MobileNav />
-      <Sidebar />
-      <main className="flex-1 overflow-auto">
+      {isSidebarVisible && <Sidebar onHide={() => setIsSidebarVisible(false)} />}
+      
+      <main className="flex-1 overflow-auto relative">
+        {!isSidebarVisible && (
+          <div className="hidden lg:block fixed top-6 left-6 z-50">
+            <Button 
+              variant="outline" 
+              size="icon" 
+              onClick={() => setIsSidebarVisible(true)}
+              className="h-12 w-12 rounded-2xl bg-white border-slate-200 shadow-xl hover:bg-indigo-50 hover:text-indigo-600 transition-all group"
+            >
+              <PanelLeftOpen size={24} className="group-hover:scale-110 transition-transform" />
+            </Button>
+          </div>
+        )}
         {children}
       </main>
       <QuickActions />

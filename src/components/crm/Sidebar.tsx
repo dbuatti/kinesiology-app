@@ -20,7 +20,9 @@ import {
   Settings,
   ShieldCheck,
   Activity,
-  Search
+  Search,
+  ChevronLeft,
+  PanelLeftClose
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import SearchBar from "./SearchBar";
@@ -41,6 +43,10 @@ import ClientForm from "./ClientForm";
 import AppointmentForm from "./AppointmentForm";
 import { Progress } from "@/components/ui/progress";
 
+interface SidebarProps {
+  onHide?: () => void;
+}
+
 const SESSION_STAGES = [
   { name: "Goal Setting", duration: 22 },
   { name: "Activation", duration: 23 },
@@ -49,7 +55,7 @@ const SESSION_STAGES = [
   { name: "Home Reinforcement", duration: 5 },
 ];
 
-const Sidebar = () => {
+const Sidebar = ({ onHide }: SidebarProps) => {
   const location = useLocation();
   const navigate = useNavigate();
   const [helpOpen, setHelpOpen] = useState(false);
@@ -165,12 +171,13 @@ const Sidebar = () => {
           case 'p': e.preventDefault(); navigate('/procedures'); break;
           case 'r': e.preventDefault(); navigate('/resources'); break;
           case '/': e.preventDefault(); setHelpOpen(true); break;
+          case '[': e.preventDefault(); onHide?.(); break;
         }
       }
     };
     document.addEventListener('keydown', handleKeyDown);
     return () => document.removeEventListener('keydown', handleKeyDown);
-  }, [navigate]);
+  }, [navigate, onHide]);
 
   const handleSignOut = async () => {
     try {
@@ -184,12 +191,22 @@ const Sidebar = () => {
 
   return (
     <div className="hidden lg:flex w-72 bg-slate-950 text-white min-h-screen p-6 flex-col gap-8 sticky top-0 h-screen overflow-y-auto border-r border-slate-900 shadow-2xl">
-      <div className="flex items-center gap-4 px-2 py-4">
-        <div className="w-12 h-12 bg-indigo-600 rounded-2xl flex items-center justify-center font-black text-2xl shadow-2xl shadow-indigo-500/40 transition-transform hover:scale-105">A</div>
-        <div>
-          <h1 className="text-xl font-black tracking-tight">Antigravity</h1>
-          <p className="text-[9px] text-slate-500 uppercase font-black tracking-[0.25em]">Kinesiology CRM</p>
+      <div className="flex items-center justify-between px-2 py-4">
+        <div className="flex items-center gap-4">
+          <div className="w-12 h-12 bg-indigo-600 rounded-2xl flex items-center justify-center font-black text-2xl shadow-2xl shadow-indigo-500/40 transition-transform hover:scale-105">A</div>
+          <div>
+            <h1 className="text-xl font-black tracking-tight">Antigravity</h1>
+            <p className="text-[9px] text-slate-500 uppercase font-black tracking-[0.25em]">Kinesiology CRM</p>
+          </div>
         </div>
+        <Button 
+          variant="ghost" 
+          size="icon" 
+          onClick={onHide}
+          className="text-slate-600 hover:text-white hover:bg-slate-900 rounded-xl"
+        >
+          <PanelLeftClose size={20} />
+        </Button>
       </div>
 
       <div className="px-2">

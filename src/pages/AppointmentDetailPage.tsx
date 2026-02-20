@@ -10,6 +10,7 @@ import {
 import { format, isToday } from "date-fns";
 import { AppointmentWithClient } from "@/types/crm";
 import { showSuccess, showError } from "@/utils/toast";
+import { cn } from "@/lib/utils";
 import EditableField from "@/components/crm/EditableField";
 import SessionTimer from "@/components/crm/SessionTimer";
 import AppLayout from "@/components/crm/AppLayout";

@@ -6,7 +6,8 @@ import { Button } from "@/components/ui/button";
 import { 
   Calendar, Activity, Loader2, 
   Plus, UserPlus, Sparkles, 
-  CheckCircle2, Zap, FlaskConical, Brain, Wind, StickyNote, Timer
+  CheckCircle2, Zap, FlaskConical, Brain, Wind, StickyNote, Timer,
+  ArrowRight
 } from "lucide-react";
 import { MadeWithDyad } from "@/components/made-with-dyad";
 import {

@@ -25,7 +25,7 @@ const formSchema = z.object({
   phone: z.string().optional(),
   pronouns: z.string().optional(),
   born: z.string().optional(),
-  suburb: z.string().optional(), // Handled as comma-separated string in form
+  suburbs: z.string().optional(), // Standardized to match DB column name
   occupation: z.string().optional(),
   marital_status: z.string().optional(),
   children: z.string().optional(),
@@ -50,7 +50,7 @@ const ClientForm = ({ onSuccess, initialData }: ClientFormProps) => {
       phone: initialData?.phone || "",
       pronouns: initialData?.pronouns || "",
       born: initialData?.born ? new Date(initialData.born).toISOString().split('T')[0] : "",
-      suburb: initialData?.suburbs?.join(", ") || "", // Fixed: changed suburb to suburbs
+      suburbs: initialData?.suburbs?.join(", ") || "",
       occupation: initialData?.occupation || "",
       marital_status: initialData?.marital_status || "",
       children: initialData?.children || "",
@@ -64,9 +64,8 @@ const ClientForm = ({ onSuccess, initialData }: ClientFormProps) => {
     setSubmitting(true);
 
     try {
-      // Convert comma-separated string back to array, filtering out empty strings
-      const suburbsArray = values.suburb 
-        ? values.suburb.split(",").map(s => s.trim()).filter(s => s.length > 0) 
+      const suburbsArray = values.suburbs 
+        ? values.suburbs.split(",").map(s => s.trim()).filter(s => s.length > 0) 
         : [];
 
       const payload = {
@@ -76,7 +75,7 @@ const ClientForm = ({ onSuccess, initialData }: ClientFormProps) => {
         phone: values.phone || null,
         pronouns: values.pronouns || null,
         born: values.born ? new Date(values.born).toISOString() : null,
-        suburbs: suburbsArray, // Use the correct column name and array format
+        suburbs: suburbsArray,
         occupation: values.occupation || null,
         marital_status: values.marital_status || null,
         children: values.children || null,
@@ -182,7 +181,7 @@ const ClientForm = ({ onSuccess, initialData }: ClientFormProps) => {
 
         <FormField
           control={form.control}
-          name="suburb"
+          name="suburbs"
           render={({ field }) => (
             <FormItem>
               <FormLabel>Suburbs (comma separated)</FormLabel>

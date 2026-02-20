@@ -4,7 +4,7 @@ import React, { useState, useEffect, useRef, useLayoutEffect, useCallback } from
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { cn } from "@/lib/utils";
-import { Loader2, Edit3, CheckCircle2 } from "lucide-react";
+import { Loader2, Edit3, CheckCircle2, AlertCircle } from "lucide-react";
 
 type InputElement = HTMLInputElement | HTMLTextAreaElement;
 
@@ -32,6 +32,7 @@ const EditableField = ({
   const [isFocused, setIsFocused] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [showSaved, setShowSaved] = useState(false);
+  const [hasError, setHasError] = useState(false);
   
   const inputRef = useRef<InputElement>(null);
   const debounceTimer = useRef<NodeJS.Timeout | null>(null);
@@ -52,6 +53,7 @@ const EditableField = ({
 
     setIsSaving(true);
     setShowSaved(false);
+    setHasError(false);
     
     debounceTimer.current = setTimeout(async () => {
       const valueToSave = trimmed === '' ? null : trimmed;
@@ -65,6 +67,7 @@ const EditableField = ({
       } catch (error) {
         console.error("Debounced save failed:", error);
         setIsSaving(false);
+        setHasError(true);
       }
     }, 1000);
   }, [field, onSave]);
@@ -86,13 +89,17 @@ const EditableField = ({
       const trimmed = localValue.trim();
       if (trimmed !== lastCommittedRef.current) {
         setIsSaving(true);
+        setHasError(false);
         onSave(field, trimmed === '' ? null : trimmed)
           .then(() => {
             setIsSaving(false);
             setShowSaved(true);
             setTimeout(() => setShowSaved(false), 3000);
           })
-          .catch(() => setIsSaving(false));
+          .catch(() => {
+            setIsSaving(false);
+            setHasError(true);
+          });
         lastCommittedRef.current = trimmed;
       }
     }
@@ -116,7 +123,9 @@ const EditableField = ({
         "group relative p-6 rounded-[2.5rem] transition-all duration-500 border-2",
         isFocused 
           ? "bg-white border-indigo-500 shadow-2xl shadow-indigo-100/50" 
-          : "bg-slate-50/50 border-transparent hover:bg-white hover:border-slate-200 hover:shadow-xl",
+          : hasError 
+            ? "bg-rose-50 border-rose-300"
+            : "bg-slate-50/50 border-transparent hover:bg-white hover:border-slate-200 hover:shadow-xl",
         className
       )}
       onClick={() => {
@@ -129,7 +138,7 @@ const EditableField = ({
       <div className="flex items-center justify-between mb-4 h-5">
         <p className={cn(
           "font-black uppercase text-[10px] tracking-[0.25em] transition-colors",
-          isFocused ? "text-indigo-600" : "text-slate-400"
+          isFocused ? "text-indigo-600" : hasError ? "text-rose-600" : "text-slate-400"
         )}>
           {label}
         </p>
@@ -144,7 +153,12 @@ const EditableField = ({
               <CheckCircle2 size={12} /> SAVED
             </div>
           )}
-          {!isFocused && !isSaving && !showSaved && (
+          {hasError && !isSaving && (
+            <div className="flex items-center gap-1.5 text-[10px] font-black text-rose-600">
+              <AlertCircle size={12} /> ERROR
+            </div>
+          )}
+          {!isFocused && !isSaving && !showSaved && !hasError && (
             <Edit3 size={14} className="text-slate-300 opacity-0 group-hover:opacity-100 transition-opacity" />
           )}
         </div>

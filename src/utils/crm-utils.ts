@@ -1,4 +1,4 @@
-import { differenceInYears, format } from "date-fns";
+import { differenceInYears, format, intervalToDuration } from "date-fns";
 import { Appointment } from "@/types/crm";
 
 export const calculateAge = (born: Date): number => {
@@ -21,6 +21,15 @@ export const getStarSign = (date: Date): string => {
   if ((month === 12 && day >= 22) || (month === 1 && day <= 19)) return "Capricorn";
   if ((month === 1 && day >= 20) || (month === 2 && day <= 18)) return "Aquarius";
   return "Pisces";
+};
+
+export const formatDuration = (seconds: number): string => {
+  const duration = intervalToDuration({ start: 0, end: seconds * 1000 });
+  const parts = [];
+  if (duration.hours) parts.push(`${duration.hours}h`);
+  if (duration.minutes) parts.push(`${duration.minutes}m`);
+  if (duration.seconds || parts.length === 0) parts.push(`${duration.seconds}s`);
+  return parts.join(" ");
 };
 
 export const getClientRollups = (appointments: Appointment[]) => {
@@ -47,9 +56,6 @@ export const groupAppointmentsByMonth = <T extends Appointment>(appointments: T[
   }) as [string, T[]][];
 };
 
-/**
- * Determines if a TCM Meridian is currently at its peak activity time.
- */
 export const isMeridianPeakNow = (peakTimeStr: string, currentHour: number): boolean => {
   if (!peakTimeStr || peakTimeStr === 'None') return false;
   
@@ -66,12 +72,11 @@ export const isMeridianPeakNow = (peakTimeStr: string, currentHour: number): boo
     const start = parseHour(parts[0]);
     const end = parseHour(parts[1]);
 
-    if (start > end) { // Crosses midnight (e.g., 11pm - 1am)
+    if (start > end) {
       return currentHour >= start || currentHour < end;
     }
     return currentHour >= start && currentHour < end;
   } catch (e) {
-    console.error("Error parsing peak time:", peakTimeStr);
     return false;
   }
 };

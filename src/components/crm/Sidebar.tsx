@@ -13,7 +13,6 @@ import {
   TrendingUp,
   ArrowRight,
   FlaskConical,
-  Plus,
   UserPlus,
   CalendarPlus,
   Settings
@@ -72,9 +71,10 @@ const Sidebar = () => {
       .limit(10);
 
     if (data) {
-      const active = (data as unknown as AppointmentWithClient[]).find(app => {
-        const diff = differenceInMinutes(new Date(), app.date);
-        return isToday(app.date) && 
+      const active = (data as any[]).find(app => {
+        const appDate = new Date(app.date);
+        const diff = differenceInMinutes(new Date(), appDate);
+        return isToday(appDate) && 
                diff >= 0 && 
                diff < 90 && 
                app.status !== 'Completed' && 
@@ -84,7 +84,7 @@ const Sidebar = () => {
       });
 
       if (active) {
-        const elapsedMinutes = differenceInMinutes(new Date(), active.date);
+        const elapsedMinutes = differenceInMinutes(new Date(), new Date(active.date));
         let currentStageName = SESSION_STAGES[0].name;
         let cumulative = 0;
         for (const stage of SESSION_STAGES) {
@@ -97,7 +97,7 @@ const Sidebar = () => {
         setActiveSession({ 
           id: active.id, 
           stage: currentStageName,
-          clientName: active.clients.name
+          clientName: active.clients?.name || "Client"
         });
       } else {
         setActiveSession(null);
@@ -323,7 +323,7 @@ const Sidebar = () => {
           </DialogHeader>
           <AppointmentForm onSuccess={() => { setAppDialogOpen(false); }} />
         </DialogContent>
-      </div>
+      </Dialog>
     </div>
   );
 };

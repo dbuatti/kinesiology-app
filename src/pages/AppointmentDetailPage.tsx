@@ -8,7 +8,7 @@ import {
   Loader2, Trash2, MoreHorizontal, History, Printer, Copy, Check, Play, ExternalLink
 } from "lucide-react";
 import { format, isToday } from "date-fns";
-import { AppointmentWithClient } from "@/types/crm";
+import { AppointmentWithClient } from "@/types/crm"; // Import from centralized types
 import { showSuccess, showError } from "@/utils/toast";
 import EditableField from "@/components/crm/EditableField";
 import SessionTimer from "@/components/crm/SessionTimer";

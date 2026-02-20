@@ -2,10 +2,9 @@
 
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
-import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card';
-import { Home, Heart, Dumbbell, FlaskConical, Activity, Move, Zap, CheckCircle2, TrendingUp, History, Footprints, ExternalLink } from 'lucide-react';
+import { Home, Heart, Dumbbell, FlaskConical, Activity, Move, Zap, CheckCircle2, TrendingUp, History, Footprints } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { AppointmentWithClient } from '@/pages/AppointmentDetailPage';
+import { AppointmentWithClient } from '@/types/crm'; // Updated import
 import BoltTestSection from './BoltTestSection';
 import CoherenceAssessment from './CoherenceAssessment';
 import CogsAssessment from './CogsAssessment';

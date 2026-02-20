@@ -46,6 +46,12 @@ export const MUSCLE_STATUSES: MuscleStatus[] = [
   },
 ];
 
+export const PRIMARY_14_MUSCLES = [
+  'Supraspinatus', 'Teres Major', 'Pectoralis Major (Clavicular)', 'Latissimus Dorsi', 
+  'Subscapularis', 'Quadriceps Group', 'Peroneus', 'Psoas', 'Gluteus Medius', 
+  'Teres Minor', 'Anterior Deltoid', 'Pectoralis Major (Sternal)', 'Serratus Anterior', 'Middle Trapezius'
+];
+
 export const MUSCLE_GROUPS: Record<string, string[]> = {
   'Intrinsic Stabilisation': [
     'Transverse Abdominals',

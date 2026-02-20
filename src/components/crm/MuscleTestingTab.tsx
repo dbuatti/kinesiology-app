@@ -1,40 +1,19 @@
 "use client";
 
 import React, { useState, useEffect, useCallback, useMemo } from "react";
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Loader2, CheckCircle2, AlertTriangle, Info, RotateCcw, Save, Dumbbell, Zap, Sparkles, Search, ChevronDown, ChevronUp, Filter, Eye, EyeOff, Layers, Trash2 } from "lucide-react";
+import { Loader2, AlertTriangle, RotateCcw, Zap, Sparkles, Trash2, Filter } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { supabase } from "@/integrations/supabase/client";
 import { showSuccess, showError } from "@/utils/toast";
-import { MUSCLE_GROUPS, MUSCLE_STATUSES, MUSCLE_TEST_ASSISTANCE, MuscleStatus } from "@/data/muscle-data";
+import { MUSCLE_GROUPS, MUSCLE_STATUSES, MUSCLE_TEST_ASSISTANCE, PRIMARY_14_MUSCLES, MuscleStatus } from "@/data/muscle-data";
 import { MuscleTestResult } from "@/types/crm";
-import { Alert, AlertDescription } from "@/components/ui/alert";
-import { Input } from "@/components/ui/input";
 import { Progress } from "@/components/ui/progress";
-import { Badge } from "@/components/ui/badge";
-import {
-  Collapsible,
-  CollapsibleContent,
-  CollapsibleTrigger,
-} from "@/components/ui/collapsible";
 import MuscleInfoModal from "./MuscleInfoModal";
-import { Switch } from "@/components/ui/switch";
-import { Label } from "@/components/ui/label";
-import { TCM_CHANNELS, getChannelByMuscle } from "@/data/tcm-channel-data";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-
-const PRIMARY_14_MUSCLES = [
-  'Supraspinatus', 'Teres Major', 'Pectoralis Major (Clavicular)', 'Latissimus Dorsi', 
-  'Subscapularis', 'Quadriceps Group', 'Peroneus', 'Psoas', 'Gluteus Medius', 
-  'Teres Minor', 'Anterior Deltoid', 'Pectoralis Major (Sternal)', 'Serratus Anterior', 'Middle Trapezius'
-];
+import { getChannelByMuscle } from "@/data/tcm-channel-data";
+import MuscleTestingFilters from "./MuscleTestingFilters";
+import MuscleGroupCollapsible from "./MuscleGroupCollapsible";
 
 interface MuscleTestingTabProps {
   appointmentId: string;
@@ -54,7 +33,7 @@ const MuscleTestingTab = ({ appointmentId }: MuscleTestingTabProps) => {
   const [openGroups, setOpenGroups] = useState<Record<string, boolean>>(() => {
     const initial: Record<string, boolean> = {};
     Object.keys(MUSCLE_GROUPS).forEach(group => {
-      initial[group] = true; // Default all open
+      initial[group] = true;
     });
     return initial;
   });
@@ -227,14 +206,6 @@ const MuscleTestingTab = ({ appointmentId }: MuscleTestingTabProps) => {
     setInfoModalOpen(true);
   };
 
-  const getStatusDetails = (statusValue: MuscleStatus['value']) => {
-    return MUSCLE_STATUSES.find(s => s.value === statusValue);
-  };
-
-  const toggleGroup = (group: string) => {
-    setOpenGroups(prev => ({ ...prev, [group]: !prev[group] }));
-  };
-
   const filteredGroups = useMemo(() => {
     const filtered: Record<string, string[]> = {};
     
@@ -244,7 +215,6 @@ const MuscleTestingTab = ({ appointmentId }: MuscleTestingTabProps) => {
         const isTested = !!results[m];
         const isDysfunctional = isTested && results[m].status !== 'Normotonic';
         
-        // Meridian Filter Logic
         let matchesMeridian = true;
         if (meridianFilter !== "all") {
           const channel = getChannelByMuscle(m);
@@ -284,7 +254,6 @@ const MuscleTestingTab = ({ appointmentId }: MuscleTestingTabProps) => {
 
   return (
     <div className="space-y-10">
-      {/* Header & Quick Actions */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <div className="lg:col-span-2 flex flex-col md:flex-row md:items-center justify-between gap-4 p-6 bg-indigo-600 rounded-[2rem] text-white shadow-xl shadow-indigo-100">
           <div className="flex items-center gap-4">
@@ -330,219 +299,38 @@ const MuscleTestingTab = ({ appointmentId }: MuscleTestingTabProps) => {
         </Card>
       </div>
 
-      {/* Search & Filter Bar */}
-      <div className="space-y-4">
-        <div className="flex flex-col md:flex-row gap-4 items-center">
-          <div className="relative flex-1 w-full">
-            <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
-            <Input 
-              placeholder="Search muscles (e.g. Psoas, Deltoid)..." 
-              className="pl-12 bg-white border-slate-200 h-12 rounded-2xl shadow-sm font-medium focus:ring-2 focus:ring-indigo-500"
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-            />
-          </div>
-          
-          <div className="w-full md:w-64">
-            <Select value={meridianFilter} onValueChange={setMeridianFilter}>
-              <SelectTrigger className="h-12 rounded-2xl border-slate-200 bg-white font-bold text-slate-600">
-                <div className="flex items-center gap-2">
-                  <Layers size={16} className="text-indigo-500" />
-                  <SelectValue placeholder="Filter by Meridian" />
-                </div>
-              </SelectTrigger>
-              <SelectContent className="rounded-2xl border-none shadow-2xl p-2">
-                <SelectItem value="all" className="rounded-xl">All Meridians</SelectItem>
-                {TCM_CHANNELS.map(channel => (
-                  <SelectItem key={channel.id} value={channel.name} className="rounded-xl">
-                    {channel.name} ({channel.code})
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
+      <MuscleTestingFilters
+        searchTerm={searchTerm}
+        setSearchTerm={setSearchTerm}
+        meridianFilter={meridianFilter}
+        setMeridianFilter={setMeridianFilter}
+        showOnlyTested={showOnlyTested}
+        setShowOnlyTested={setShowOnlyTested}
+        showOnlyDysfunctional={showOnlyDysfunctional}
+        setShowOnlyDysfunctional={setShowOnlyDysfunctional}
+        isAllExpanded={Object.values(openGroups).every(v => v)}
+        onToggleAllGroups={() => {
+          const allOpen = Object.values(openGroups).every(v => v);
+          const newState: Record<string, boolean> = {};
+          Object.keys(MUSCLE_GROUPS).forEach(k => newState[k] = !allOpen);
+          setOpenGroups(newState);
+        }}
+      />
 
-          <div className="flex gap-2 w-full md:w-auto">
-            <Button 
-              variant="outline" 
-              className="flex-1 md:flex-none rounded-xl h-12 px-6 border-slate-200 font-bold text-slate-600"
-              onClick={() => {
-                const allOpen = Object.values(openGroups).every(v => v);
-                const newState: Record<string, boolean> = {};
-                Object.keys(MUSCLE_GROUPS).forEach(k => newState[k] = !allOpen);
-                setOpenGroups(newState);
-              }}
-            >
-              {Object.values(openGroups).every(v => v) ? "Collapse All" : "Expand All"}
-            </Button>
-          </div>
-        </div>
-
-        <div className="flex flex-wrap items-center gap-6 px-4 py-3 bg-slate-50 rounded-2xl border border-slate-100">
-          <div className="flex items-center space-x-2">
-            <Switch 
-              id="show-tested" 
-              checked={showOnlyTested} 
-              onCheckedChange={setShowOnlyTested} 
-              className="data-[state=checked]:bg-indigo-600"
-            />
-            <Label htmlFor="show-tested" className="text-xs font-bold text-slate-600 cursor-pointer flex items-center gap-1.5">
-              <Eye size={14} className="text-indigo-500" /> Show Only Tested
-            </Label>
-          </div>
-          <div className="flex items-center space-x-2">
-            <Switch 
-              id="show-dysfunctional" 
-              checked={showOnlyDysfunctional} 
-              onCheckedChange={setShowOnlyDysfunctional} 
-              className="data-[state=checked]:bg-rose-600"
-            />
-            <Label htmlFor="show-dysfunctional" className="text-xs font-bold text-slate-600 cursor-pointer flex items-center gap-1.5">
-              <AlertTriangle size={14} className="text-rose-500" /> Show Only Dysfunctional
-            </Label>
-          </div>
-          {(showOnlyTested || showOnlyDysfunctional || searchTerm || meridianFilter !== "all") && (
-            <Button 
-              variant="ghost" 
-              size="sm" 
-              onClick={() => {
-                setShowOnlyTested(false);
-                setShowOnlyDysfunctional(false);
-                setSearchTerm("");
-                setMeridianFilter("all");
-              }}
-              className="text-[10px] font-black uppercase tracking-widest text-indigo-600 hover:bg-indigo-50 h-7 px-3 rounded-lg"
-            >
-              Clear Filters
-            </Button>
-          )}
-        </div>
-      </div>
-
-      {/* Muscle Groups */}
       <div className="space-y-6">
         {Object.entries(filteredGroups).map(([groupName, muscles]) => (
-          <Collapsible 
-            key={groupName} 
-            open={openGroups[groupName]} 
-            onOpenChange={() => toggleGroup(groupName)}
-            className="w-full"
-          >
-            <Card className="border-none shadow-xl rounded-[2.5rem] bg-white overflow-hidden">
-              <CollapsibleTrigger asChild>
-                <CardHeader className="bg-slate-900 text-white p-6 cursor-pointer hover:bg-slate-800 transition-colors">
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-3">
-                      <div className="w-10 h-10 rounded-xl bg-white/10 flex items-center justify-center">
-                        <Dumbbell size={20} />
-                      </div>
-                      <div>
-                        <CardTitle className="text-xl font-black">{groupName}</CardTitle>
-                        <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest mt-0.5">
-                          {muscles.length} Muscles • {muscles.filter(m => results[m]).length} Tested
-                        </p>
-                      </div>
-                    </div>
-                    {openGroups[groupName] ? <ChevronUp size={20} className="text-slate-500" /> : <ChevronDown size={20} className="text-slate-500" />}
-                  </div>
-                </CardHeader>
-              </CollapsibleTrigger>
-              
-              <CollapsibleContent>
-                <CardContent className="p-8 grid grid-cols-1 md:grid-cols-2 gap-6">
-                  {muscles.map(muscle => {
-                    const currentResult = results[muscle];
-                    const statusDetails = currentResult ? getStatusDetails(currentResult.status) : null;
-                    const Icon = statusDetails?.icon || CheckCircle2;
-                    const isTested = !!currentResult;
-                    const channel = getChannelByMuscle(muscle);
-
-                    return (
-                      <div 
-                        key={muscle} 
-                        className={cn(
-                          "p-6 border rounded-[2rem] space-y-5 transition-all duration-300 group relative",
-                          isTested 
-                            ? "bg-indigo-50/30 border-indigo-100 shadow-sm" 
-                            : "bg-white border-slate-100 hover:border-indigo-100 hover:shadow-lg"
-                        )}
-                      >
-                        <div className="flex items-center justify-between">
-                          <div className="flex items-center gap-2">
-                            <h4 className="font-black text-lg text-slate-800">{muscle}</h4>
-                            {isTested && (
-                              <Badge className="bg-indigo-600 text-white border-none text-[8px] font-black uppercase tracking-widest h-4 px-1.5">
-                                Tested
-                              </Badge>
-                            )}
-                            <Button 
-                              variant="ghost" 
-                              size="icon" 
-                              className="h-6 w-6 rounded-full text-slate-300 hover:text-indigo-600 hover:bg-indigo-50"
-                              onClick={() => handleShowInfo(muscle)}
-                            >
-                              <Info size={14} />
-                            </Button>
-                          </div>
-                          {currentResult && (
-                            <div className={cn("px-4 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest flex items-center gap-2 shadow-sm", statusDetails?.color)}>
-                              <Icon size={14} />
-                              {statusDetails?.label}
-                            </div>
-                          )}
-                        </div>
-
-                        {channel && (
-                          <div className="flex items-center gap-2">
-                            <Badge variant="outline" className={cn("text-[8px] font-black uppercase tracking-widest border-none px-2 py-0.5", channel.color)}>
-                              {channel.name} ({channel.code})
-                            </Badge>
-                          </div>
-                        )}
-                        
-                        <div className="flex flex-wrap gap-2">
-                          {MUSCLE_STATUSES.map(status => {
-                            const isSelected = currentResult?.status === status.value;
-                            const StatusIcon = status.icon;
-                            
-                            return (
-                              <Button
-                                key={status.value}
-                                variant={isSelected ? 'default' : 'outline'}
-                                size="sm"
-                                onClick={() => handleStatusChange(muscle, status.value)}
-                                className={cn(
-                                  "h-9 text-[10px] font-black uppercase tracking-widest transition-all duration-300 rounded-xl",
-                                  isSelected 
-                                    ? "bg-slate-900 text-white hover:bg-slate-800 shadow-lg"
-                                    : "border-slate-200 bg-white hover:bg-slate-50 text-slate-500"
-                                )}
-                                disabled={saving}
-                              >
-                                <StatusIcon size={14} className="mr-2" />
-                                {status.label.split(' ')[0]}
-                              </Button>
-                            );
-                          })}
-                          {currentResult && (
-                            <Button
-                              variant="ghost"
-                              size="icon"
-                              onClick={() => handleClearMuscle(muscle)}
-                              className="h-9 w-9 text-rose-500 hover:bg-rose-50 rounded-xl transition-all"
-                              disabled={saving}
-                            >
-                              <RotateCcw size={16} />
-                            </Button>
-                          )}
-                        </div>
-                      </div>
-                    );
-                  })}
-                </CardContent>
-              </CollapsibleContent>
-            </Card>
-          </Collapsible>
+          <MuscleGroupCollapsible
+            key={groupName}
+            groupName={groupName}
+            muscles={muscles}
+            results={results}
+            isOpen={openGroups[groupName]}
+            onToggle={() => setOpenGroups(prev => ({ ...prev, [groupName]: !prev[groupName] }))}
+            onStatusChange={handleStatusChange}
+            onClear={handleClearMuscle}
+            onShowInfo={handleShowInfo}
+            disabled={saving}
+          />
         ))}
 
         {Object.keys(filteredGroups).length === 0 && (
@@ -568,7 +356,6 @@ const MuscleTestingTab = ({ appointmentId }: MuscleTestingTabProps) => {
         )}
       </div>
 
-      {/* Legend & Assistance */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
         <Card className="border-none shadow-sm rounded-[2rem] bg-white overflow-hidden">
           <CardHeader className="bg-slate-50/50 border-b border-slate-100 p-8">

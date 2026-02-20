@@ -26,8 +26,10 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { cn } from "@/lib/utils";
 import { Textarea } from "@/components/ui/textarea";
 import MeridianClock from "@/components/crm/MeridianClock";
+import { AppointmentWithClient } from "@/types/crm";
 
 const SCRATCHPAD_KEY = "antigravity_practitioner_scratchpad";
+const SCRATCHPAD_TIME_KEY = "antigravity_practitioner_scratchpad_time";
 
 const Index = () => {
   const [stats, setStats] = useState({ 
@@ -40,27 +42,33 @@ const Index = () => {
     avgCoherence: 0,
     imperativeAlerts: 0
   });
-  const [todaySessions, setTodaySessions] = useState<any[]>([]);
-  const [activeSession, setActiveSession] = useState<any>(null);
-  const [nextSession, setNextSession] = useState<any>(null);
+  const [todaySessions, setTodaySessions] = useState<AppointmentWithClient[]>([]);
+  const [activeSession, setActiveSession] = useState<AppointmentWithClient | null>(null);
+  const [nextSession, setNextSession] = useState<AppointmentWithClient | null>(null);
   const [loading, setLoading] = useState(true);
   const [clientDialogOpen, setClientDialogOpen] = useState(false);
   const [appDialogOpen, setAppDialogOpen] = useState(false);
-  const [chartData, setChartData] = useState<any[]>([]);
+  const [chartData, setChartData] = useState<{ name: string; sessions: number; date: Date }[]>([]);
   const [scratchpad, setScratchpad] = useState("");
+  const [lastSaved, setLastSaved] = useState<string | null>(null);
   const [currentTime, setCurrentTime] = useState(new Date());
 
   useEffect(() => {
     const saved = localStorage.getItem(SCRATCHPAD_KEY);
+    const savedTime = localStorage.getItem(SCRATCHPAD_TIME_KEY);
     if (saved) setScratchpad(saved);
+    if (savedTime) setLastSaved(savedTime);
     
     const timer = setInterval(() => setCurrentTime(new Date()), 60000);
     return () => clearInterval(timer);
   }, []);
 
   const handleScratchpadChange = (val: string) => {
+    const now = format(new Date(), "h:mm a");
     setScratchpad(val);
+    setLastSaved(now);
     localStorage.setItem(SCRATCHPAD_KEY, val);
+    localStorage.setItem(SCRATCHPAD_TIME_KEY, now);
   };
 
   const fetchDashboardData = async () => {
@@ -72,7 +80,7 @@ const Index = () => {
       const [
         { count: clientCount }, 
         { count: appCount }, 
-        { data: allApps },
+        { data: allAppsRaw },
         { count: newClientsCount },
         { count: recentAppsCount },
         { data: clinicalClients }
@@ -85,8 +93,13 @@ const Index = () => {
         supabase.from('clients').select('id, appointments(bolt_score, date)').or('is_practitioner.eq.false,is_practitioner.is.null')
       ]);
 
-      const boltScores = allApps?.filter(a => a.bolt_score).map(a => a.bolt_score) || [];
-      const cohScores = allApps?.filter(a => a.coherence_score).map(a => a.coherence_score) || [];
+      const allApps = (allAppsRaw || []).map(a => ({
+        ...a,
+        date: new Date(a.date)
+      })) as unknown as AppointmentWithClient[];
+
+      const boltScores = allApps.filter(a => a.bolt_score).map(a => a.bolt_score as number);
+      const cohScores = allApps.filter(a => a.coherence_score).map(a => a.coherence_score as number);
       
       const avgBolt = boltScores.length > 0 ? Math.round(boltScores.reduce((a, b) => a + b, 0) / boltScores.length) : 0;
       const avgCoh = cohScores.length > 0 ? cohScores.reduce((a, b) => a + b, 0) / cohScores.length : 0;
@@ -102,9 +115,9 @@ const Index = () => {
         }
       });
 
-      const sessionsThisWeek = allApps?.filter(app => 
-        isWithinInterval(new Date(app.date), { start: weekStart, end: weekEnd })
-      ).length || 0;
+      const sessionsThisWeek = allApps.filter(app => 
+        isWithinInterval(app.date, { start: weekStart, end: weekEnd })
+      ).length;
 
       setStats({ 
         clients: clientCount || 0, 
@@ -117,31 +130,30 @@ const Index = () => {
         imperativeAlerts
       });
 
-      const today = allApps?.filter(app => isToday(new Date(app.date))) || [];
+      const today = allApps.filter(app => isToday(app.date));
       setTodaySessions(today);
 
       const now = new Date();
       const active = today.find(app => {
-        const diff = differenceInMinutes(now, new Date(app.date));
+        const diff = differenceInMinutes(now, app.date);
         return diff >= 0 && diff < 90 && app.status !== 'Completed';
       });
-      setActiveSession(active);
+      setActiveSession(active || null);
 
       const upcoming = today
-        .filter(app => new Date(app.date) > now && app.status === 'Scheduled')
-        .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime())[0];
-      setNextSession(upcoming);
+        .filter(app => app.date > now && app.status === 'Scheduled')
+        .sort((a, b) => a.date.getTime() - b.date.getTime())[0];
+      setNextSession(upcoming || null);
 
       const months = Array.from({ length: 6 }).map((_, i) => {
         const d = subMonths(new Date(), 5 - i);
         return { name: format(d, "MMM"), sessions: 0, date: d };
       });
 
-      allApps?.forEach(app => {
-        const appDate = new Date(app.date);
+      allApps.forEach(app => {
         const monthIndex = months.findIndex(m => 
-          appDate.getMonth() === m.date.getMonth() && 
-          appDate.getFullYear() === m.date.getFullYear()
+          app.date.getMonth() === m.date.getMonth() && 
+          app.date.getFullYear() === m.date.getFullYear()
         );
         if (monthIndex !== -1) months[monthIndex].sessions += 1;
       });
@@ -328,7 +340,7 @@ const Index = () => {
                               "text-[10px] font-black uppercase tracking-[0.35em] mb-3",
                               activeSession?.id === session.id ? "text-rose-500" : "text-slate-500"
                             )}>
-                              {activeSession?.id === session.id ? "ONGOING" : format(new Date(session.date), "h:mm a")}
+                              {activeSession?.id === session.id ? "ONGOING" : format(session.date, "h:mm a")}
                             </p>
                             <p className="font-black text-2xl truncate">{session.clients?.name}</p>
                           </div>
@@ -367,7 +379,7 @@ const Index = () => {
                       <div>
                         <p className="text-[10px] font-black uppercase tracking-[0.3em] opacity-80">Next Session Starts In</p>
                         <h3 className="text-3xl font-black tracking-tight">
-                          {formatDistanceToNow(new Date(nextSession.date))}
+                          {formatDistanceToNow(nextSession.date)}
                         </h3>
                         <p className="text-xs font-bold opacity-90 mt-1">Client: {nextSession.clients?.name}</p>
                       </div>
@@ -430,7 +442,7 @@ const Index = () => {
                     className="min-h-[250px] bg-white/70 border-amber-200 focus:ring-amber-500 focus:border-amber-500 resize-none text-amber-900 placeholder:text-amber-300 rounded-[3rem] p-10 text-2xl font-medium leading-relaxed shadow-inner"
                   />
                   <div className="flex items-center justify-end gap-3 mt-8 text-[11px] font-black text-amber-600 uppercase tracking-[0.35em]">
-                    <CheckCircle2 size={16} /> Auto-saved to browser
+                    <CheckCircle2 size={16} /> {lastSaved ? `Last saved at ${lastSaved}` : 'Auto-saved to browser'}
                   </div>
                 </CardContent>
               </Card>

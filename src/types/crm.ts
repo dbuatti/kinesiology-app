@@ -73,7 +73,7 @@ export interface Client {
   name: string;
   pronouns: string;
   born: Date;
-  suburbs: string[]; // Updated from suburb to match DB
+  suburbs: string[];
   email: string;
   phone: string;
   occupation?: string;
@@ -83,4 +83,13 @@ export interface Client {
   journal?: string;
   created_at?: string;
   is_practitioner?: boolean;
+}
+
+export interface AppointmentWithClient extends Appointment {
+  clients: { 
+    id: string; 
+    name: string; 
+    born?: string | Date;
+    is_practitioner?: boolean;
+  };
 }

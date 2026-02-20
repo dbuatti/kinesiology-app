@@ -7,23 +7,12 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Calendar, Clock, Loader2, ArrowRight } from "lucide-react";
 import { Link } from "react-router-dom";
-import { format, isToday, isTomorrow, isFuture } from "date-fns";
+import { format, isToday, isTomorrow } from "date-fns";
 import { cn } from "@/lib/utils";
-
-interface UpcomingAppointment {
-  id: string;
-  name: string;
-  display_id: string;
-  date: Date;
-  tag: string;
-  clients: {
-    id: string;
-    name: string;
-  };
-}
+import { AppointmentWithClient } from "@/types/crm";
 
 const UpcomingAppointments = () => {
-  const [appointments, setAppointments] = useState<UpcomingAppointment[]>([]);
+  const [appointments, setAppointments] = useState<AppointmentWithClient[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -32,11 +21,7 @@ const UpcomingAppointments = () => {
         const { data, error } = await supabase
           .from("appointments")
           .select(`
-            id,
-            name,
-            display_id,
-            date,
-            tag,
+            *,
             clients (
               id,
               name
@@ -52,7 +37,7 @@ const UpcomingAppointments = () => {
           (data || []).map((app: any) => ({
             ...app,
             date: new Date(app.date),
-          }))
+          })) as unknown as AppointmentWithClient[]
         );
       } catch (error) {
         console.error("Error fetching upcoming appointments:", error);

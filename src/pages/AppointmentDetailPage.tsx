@@ -8,7 +8,7 @@ import {
   Loader2, Trash2, MoreHorizontal, History, Printer, Copy, Check, Play, ExternalLink
 } from "lucide-react";
 import { format, isToday } from "date-fns";
-import { Appointment } from "@/types/crm";
+import { AppointmentWithClient } from "@/types/crm";
 import { showSuccess, showError } from "@/utils/toast";
 import EditableField from "@/components/crm/EditableField";
 import SessionTimer from "@/components/crm/SessionTimer";
@@ -26,32 +26,7 @@ import {
 import Breadcrumbs from "@/components/crm/Breadcrumbs";
 import { Button } from "@/components/ui/button";
 import { TCM_CHANNELS } from "@/data/tcm-channel-data";
-import { cn } from "@/lib/utils"; // Ensure cn is imported
-
-export interface AppointmentWithClient extends Appointment {
-  clients: { name: string; id: string; born?: string };
-  sagittal_plane_notes?: string | null;
-  frontal_plane_notes?: string | null;
-  transverse_plane_notes?: string | null;
-  hydrated?: boolean | null;
-  hydration_notes?: string | null;
-  emotion_mode?: string | null;
-  emotion_primary_selection?: string | null;
-  emotion_secondary_selection?: string[] | null;
-  emotion_notes?: string | null;
-  fakuda_notes?: string | null;
-  sharpened_rhombergs_notes?: string | null;
-  frontal_lobe_notes?: string | null;
-  luscher_color_1?: string | null;
-  luscher_color_2?: string | null;
-  harmonic_rocking_notes?: string | null;
-  t1_reset_notes?: string | null;
-  diaphragm_reset_notes?: string | null;
-  vagus_nerve_notes?: string | null;
-  lymphatic_suture_side?: string | null;
-  lymphatic_priority_zone?: string | null;
-  lymphatic_notes?: string | null;
-}
+import { cn } from "@/lib/utils";
 
 const AppointmentDetailPage = () => {
   const { id } = useParams<{ id: string }>();
@@ -134,7 +109,7 @@ const AppointmentDetailPage = () => {
           if (updatedData.date && typeof updatedData.date === 'string') {
             updatedData.date = new Date(updatedData.date);
           }
-          return { ...prev, ...updatedData };
+          return { ...prev, ...updatedData } as AppointmentWithClient;
         });
       })
       .subscribe();
@@ -156,7 +131,7 @@ const AppointmentDetailPage = () => {
 
       if (error) throw error;
       
-      setAppointment(prev => prev ? { ...prev, [field]: normalized } : null);
+      setAppointment(prev => prev ? { ...prev, [field]: normalized } as AppointmentWithClient : null);
     } catch (err: any) {
       console.error(`Silent save failed for ${field}:`, err);
       showError(`Failed to save ${field}`);
@@ -183,7 +158,7 @@ const AppointmentDetailPage = () => {
       const { data: previous, error } = await supabase
         .from('appointments')
         .select('goal, issue, acupoints')
-        .eq('client_id', appointment.clientId)
+        .eq('client_id', appointment.clients.id)
         .neq('id', id)
         .order('date', { ascending: false })
         .limit(1)

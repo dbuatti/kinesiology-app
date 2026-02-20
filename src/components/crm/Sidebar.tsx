@@ -35,6 +35,7 @@ import {
 import { Button } from "@/components/ui/button";
 import ClientForm from "./ClientForm";
 import AppointmentForm from "./AppointmentForm";
+import { AppointmentWithClient } from "@/types/crm";
 
 const SESSION_STAGES = [
   { name: "Goal Setting", duration: 22 },
@@ -71,10 +72,9 @@ const Sidebar = () => {
       .limit(10);
 
     if (data) {
-      const active = data.find(app => {
-        const appDate = new Date(app.date);
-        const diff = differenceInMinutes(new Date(), appDate);
-        return isToday(appDate) && 
+      const active = (data as unknown as AppointmentWithClient[]).find(app => {
+        const diff = differenceInMinutes(new Date(), app.date);
+        return isToday(app.date) && 
                diff >= 0 && 
                diff < 90 && 
                app.status !== 'Completed' && 
@@ -84,7 +84,7 @@ const Sidebar = () => {
       });
 
       if (active) {
-        const elapsedMinutes = differenceInMinutes(new Date(), new Date(active.date));
+        const elapsedMinutes = differenceInMinutes(new Date(), active.date);
         let currentStageName = SESSION_STAGES[0].name;
         let cumulative = 0;
         for (const stage of SESSION_STAGES) {
@@ -97,7 +97,7 @@ const Sidebar = () => {
         setActiveSession({ 
           id: active.id, 
           stage: currentStageName,
-          clientName: (active.clients as any)?.name || "Client"
+          clientName: active.clients.name
         });
       } else {
         setActiveSession(null);
@@ -323,7 +323,7 @@ const Sidebar = () => {
           </DialogHeader>
           <AppointmentForm onSuccess={() => { setAppDialogOpen(false); }} />
         </DialogContent>
-      </Dialog>
+      </div>
     </div>
   );
 };

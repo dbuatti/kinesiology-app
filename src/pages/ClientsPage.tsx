@@ -58,7 +58,7 @@ const ClientsPage = () => {
         return {
           ...c,
           born: c.born ? new Date(c.born) : null,
-          suburb: c.suburbs || [],
+          suburbs: c.suburbs || [],
           session_count: c.appointments?.length || 0,
           last_session_at: sortedApps.length > 0 ? sortedApps[0].date : null
         };
@@ -84,7 +84,7 @@ const ClientsPage = () => {
   const filteredClients = clients.filter(c => 
     c.name.toLowerCase().includes(search.toLowerCase()) ||
     c.email?.toLowerCase().includes(search.toLowerCase()) ||
-    c.suburb.some(s => s.toLowerCase().includes(search.toLowerCase()))
+    c.suburbs.some(s => s.toLowerCase().includes(search.toLowerCase()))
   );
 
   return (
@@ -286,9 +286,9 @@ const ClientsPage = () => {
                             </Button>
                           </div>
                         )}
-                        {client.suburb.length > 0 && (
+                        {client.suburbs.length > 0 && (
                           <div className="flex items-center gap-3 text-xs font-bold text-slate-600">
-                            <MapPin size={14} className="text-indigo-400" /> {client.suburb.join(", ")}
+                            <MapPin size={14} className="text-indigo-400" /> {client.suburbs.join(", ")}
                           </div>
                         )}
                       </div>

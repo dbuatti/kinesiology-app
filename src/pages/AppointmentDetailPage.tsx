@@ -1,35 +1,22 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { useParams, Link, useNavigate } from "react-router-dom";
+import { useParams, useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
-import { Badge } from "@/components/ui/badge";
-import { Card, CardContent } from "@/components/ui/card";
-import { Switch } from "@/components/ui/switch";
-import { Label } from "@/components/ui/label";
+import { Card } from "@/components/ui/card";
 import { 
-  ArrowLeft, Calendar, Clock, 
-  Loader2, Trash2, User, Droplets,
-  Copy, Check, History, MoreHorizontal, ChevronDown, Star, Play, Printer, Zap, Target, AlertCircle, Activity, ExternalLink
+  Loader2, Trash2, MoreHorizontal, History, Printer, Copy, Check, Play, ExternalLink
 } from "lucide-react";
 import { format, isToday } from "date-fns";
 import { Appointment } from "@/types/crm";
 import { showSuccess, showError } from "@/utils/toast";
-import { cn } from "@/lib/utils";
 import EditableField from "@/components/crm/EditableField";
 import SessionTimer from "@/components/crm/SessionTimer";
 import AppLayout from "@/components/crm/AppLayout";
 import SessionContentSwitcher from "@/components/crm/SessionContentSwitcher";
 import PreviousSessionInsightsBar from "@/components/crm/PreviousSessionInsightsBar";
-import { calculateAge, getStarSign } from "@/utils/crm-utils";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import { APPOINTMENT_STATUSES } from "@/data/appointment-data";
+import AppointmentHeader from "@/components/crm/AppointmentHeader";
+import AppointmentContextCards from "@/components/crm/AppointmentContextCards";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -39,7 +26,6 @@ import {
 import Breadcrumbs from "@/components/crm/Breadcrumbs";
 import { Button } from "@/components/ui/button";
 import { TCM_CHANNELS } from "@/data/tcm-channel-data";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 export interface AppointmentWithClient extends Appointment {
   clients: { name: string; id: string; born?: string };
@@ -294,8 +280,6 @@ KEY ASSESSMENTS:
   if (loading) return <div className="flex min-h-screen items-center justify-center"><Loader2 className="animate-spin text-indigo-500" size={48} /></div>;
   if (!appointment) return <div className="p-12 text-center">Appointment not found</div>;
 
-  const clientLink = `/clients/${appointment.clients.id}`;
-  const clientBorn = appointment.clients.born ? new Date(appointment.clients.born) : null;
   const isSessionToday = isToday(appointment.date);
 
   return (
@@ -392,55 +376,7 @@ KEY ASSESSMENTS:
           {/* Hero Command Center */}
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
             <Card className="lg:col-span-2 border-none shadow-xl rounded-[2.5rem] bg-white overflow-hidden">
-              <div className="p-8 border-b border-slate-100 bg-slate-50/30">
-                <div className="flex flex-col md:flex-row md:items-center justify-between gap-8">
-                  <div className="flex items-center gap-6">
-                    <div className="w-20 h-20 rounded-[2rem] bg-indigo-600 text-white flex items-center justify-center text-3xl font-black shadow-2xl shadow-indigo-200">
-                      {appointment.clients.name.charAt(0)}
-                    </div>
-                    <div className="space-y-2">
-                      <div className="flex flex-wrap items-center gap-3">
-                        <Badge variant="secondary" className="font-black bg-white border-slate-200 text-slate-600 text-[10px] uppercase tracking-widest">{appointment.display_id || appointment.id.slice(0, 8)}</Badge>
-                        <Badge className="bg-indigo-600 text-white border-none font-black text-[10px] uppercase tracking-widest">{appointment.tag}</Badge>
-                        <Select value={appointment.status} onValueChange={(newStatus) => saveField('status', newStatus)}>
-                          <SelectTrigger className={cn("h-8 w-[130px] text-[10px] font-black uppercase tracking-widest border-slate-200 shadow-sm bg-white rounded-xl", appointment.status === 'Completed' ? "text-emerald-600" : "text-indigo-600")}>
-                            <SelectValue placeholder="Status" />
-                          </SelectTrigger>
-                          <SelectContent className="rounded-2xl border-none shadow-2xl p-2">{APPOINTMENT_STATUSES.map(status => <SelectItem key={status} value={status} className="rounded-xl">{status}</SelectItem>)}</SelectContent>
-                        </Select>
-                      </div>
-                      <h1 className="text-4xl font-black text-slate-900 tracking-tight">{appointment.clients.name}</h1>
-                      <div className="flex flex-wrap items-center gap-4 text-sm font-bold text-slate-500">
-                        <div className="flex items-center gap-1.5"><Calendar size={16} className="text-indigo-400" /> {format(appointment.date, "EEEE, MMM d")}</div>
-                        <div className="flex items-center gap-1.5"><Clock size={16} className="text-indigo-400" /> {format(appointment.date, "h:mm a")}</div>
-                        {clientBorn && (
-                          <div className="flex items-center gap-3 border-l border-slate-200 pl-4">
-                            <span className="bg-indigo-50 text-indigo-700 px-2 py-0.5 rounded-md text-[10px] font-black uppercase">{calculateAge(clientBorn)} yrs</span>
-                            <span className="flex items-center gap-1 text-amber-600 font-black text-[10px] uppercase tracking-widest">
-                              <Star size={12} className="fill-amber-500" /> {getStarSign(clientBorn)}
-                            </span>
-                          </div>
-                        )}
-                      </div>
-                    </div>
-                  </div>
-
-                  <div className="flex flex-col items-end gap-4">
-                    <div className="flex items-center gap-4 p-4 bg-white rounded-[2rem] border border-slate-100 shadow-sm">
-                      <div className={cn("w-12 h-12 rounded-2xl flex items-center justify-center transition-all duration-500 shadow-inner", appointment.hydrated ? "bg-emerald-100 text-emerald-600" : "bg-rose-100 text-rose-600")}>
-                        <Droplets size={24} />
-                      </div>
-                      <div className="pr-2">
-                        <Label htmlFor="hydration-toggle" className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] block mb-1">Hydration</Label>
-                        <div className="flex items-center gap-3">
-                          <span className="text-sm font-black text-slate-700">{appointment.hydrated ? "PASSED" : "ATTENTION"}</span>
-                          <Switch id="hydration-toggle" checked={appointment.hydrated || false} onCheckedChange={(checked) => saveField('hydrated', checked)} className="data-[state=checked]:bg-emerald-500" />
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
+              <AppointmentHeader appointment={appointment} onSaveField={saveField} />
 
               <div className="p-8 grid grid-cols-1 md:grid-cols-2 gap-8">
                 <EditableField key={`goal-${appointment.id}`} field="goal" label="Session Goal" value={appointment.goal} placeholder="What is the primary goal for this balance?" onSave={saveField} className="bg-slate-50/50 p-6 rounded-[2rem] border border-slate-100" />
@@ -448,70 +384,11 @@ KEY ASSESSMENTS:
               </div>
             </Card>
 
-            <div className="space-y-8">
-              {currentPeakMeridian && (
-                <Card className={cn("border-none shadow-xl rounded-[2.5rem] text-white overflow-hidden relative group", currentPeakMeridian.color.split(' ')[0])}>
-                  <div className="absolute top-0 right-0 p-8 opacity-10 group-hover:scale-110 transition-transform duration-700"><Zap size={120} /></div>
-                  <CardContent className="p-8 space-y-4 relative z-10">
-                    <div className="flex items-center justify-between">
-                      <p className="text-[10px] font-black uppercase tracking-[0.3em] opacity-80">Current Peak Meridian</p>
-                      <Badge className="bg-white/20 text-white border-none font-black text-[9px] uppercase tracking-widest">TCM Clock</Badge>
-                    </div>
-                    <div>
-                      <h3 className="text-3xl font-black tracking-tight">{currentPeakMeridian.name}</h3>
-                      <p className="text-xs font-bold opacity-90 mt-1">{currentPeakMeridian.peakTime}</p>
-                    </div>
-                    <div className="pt-4 border-t border-white/10">
-                      <p className="text-[10px] font-black uppercase tracking-widest opacity-70 mb-2">Core Emotions</p>
-                      <div className="flex flex-wrap gap-1.5">
-                        {currentPeakMeridian.emotions.slice(0, 3).map(e => (
-                          <Badge key={e} variant="outline" className="bg-white/10 border-white/20 text-white text-[9px] font-bold">{e}</Badge>
-                        ))}
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
-              )}
-
-              <Card className="border-none shadow-lg rounded-[2.5rem] bg-slate-900 text-white overflow-hidden">
-                <CardContent className="p-8 space-y-6">
-                  <div className="flex items-center justify-between">
-                    <p className="text-[10px] font-black text-slate-500 uppercase tracking-[0.3em]">Session Context</p>
-                    <ExternalLink size={16} className="text-slate-700" />
-                  </div>
-                  <div className="space-y-4">
-                    <EditableField 
-                      key={`acupoints-${appointment.id}`} 
-                      field="acupoints" 
-                      label="Acupoints" 
-                      value={appointment.acupoints} 
-                      placeholder="Points used..." 
-                      onSave={saveField as any} 
-                      className="bg-white/5 border-white/10 p-4 rounded-2xl"
-                    />
-                    <div className="space-y-4">
-                      <EditableField 
-                        key={`journal-${appointment.id}`} 
-                        field="journal" 
-                        label="Practitioner Reflection" 
-                        value={appointment.journal} 
-                        multiline 
-                        className="bg-amber-500/10 border-amber-500/20 p-4 rounded-2xl" 
-                        placeholder="Personal insights..." 
-                        onSave={saveField as any} 
-                      />
-                      {appointment.notion_link && (
-                        <Button variant="outline" size="sm" className="w-full h-12 rounded-2xl border-white/10 bg-white/5 text-white hover:bg-white/10 font-bold text-xs" asChild>
-                          <a href={appointment.notion_link} target="_blank" rel="noopener noreferrer">
-                            <ExternalLink size={16} className="mr-2" /> View Notion Link
-                          </a>
-                        </Button>
-                      )}
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-            </div>
+            <AppointmentContextCards 
+              appointment={appointment} 
+              currentPeakMeridian={currentPeakMeridian} 
+              onSaveField={saveField} 
+            />
           </div>
 
           {/* Main Session Flow */}

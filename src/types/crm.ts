@@ -44,7 +44,7 @@ export interface Appointment {
   // Emotion Assessment fields
   emotion_mode?: string | null;
   emotion_primary_selection?: string | null;
-  emotion_secondary_selection?: string[] | null; // Updated to string array
+  emotion_secondary_selection?: string[] | null;
   emotion_notes?: string | null;
   // Fakuda Step Test field
   fakuda_notes?: string | null;
@@ -73,7 +73,7 @@ export interface Client {
   name: string;
   pronouns: string;
   born: Date;
-  suburb: string[];
+  suburbs: string[]; // Updated from suburb to match DB
   email: string;
   phone: string;
   occupation?: string;
@@ -82,5 +82,5 @@ export interface Client {
   chatgpt_url?: string;
   journal?: string;
   created_at?: string;
-  is_practitioner?: boolean; // New flag for self-monitoring
+  is_practitioner?: boolean;
 }

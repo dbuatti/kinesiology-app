@@ -3,12 +3,12 @@ import { useParams, Link, useNavigate, useSearchParams } from "react-router-dom"
 import { supabase } from "@/integrations/supabase/client";
 import { calculateAge, getStarSign, getClientRollups } from "@/utils/crm-utils";
 import { Badge } from "@/components/ui/badge";
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { 
-  ArrowLeft, Plus, Mail, Phone, MapPin, Calendar, 
-  Star, Loader2, Briefcase, Heart, Baby, ExternalLink,
-  Activity, Edit3, Trash2, MoreHorizontal, FlaskConical, TrendingUp, Clock, Brain, ArrowUpRight, ArrowDownRight,
+  ArrowLeft, Mail, Phone, MapPin, Calendar, 
+  Star, Loader2, Briefcase, Heart, Baby,
+  Activity, Edit3, Trash2, MoreHorizontal, FlaskConical, TrendingUp, Clock, Brain,
   LayoutDashboard, History, ArrowRight, Copy, Check, Sparkles
 } from "lucide-react";
 import { format } from "date-fns";
@@ -71,7 +71,7 @@ const ClientDetailPage = () => {
       const mappedClient = {
         ...clientData,
         born: clientData.born ? new Date(clientData.born) : null,
-        suburb: clientData.suburbs || []
+        suburbs: clientData.suburbs || []
       } as unknown as Client;
 
       setClient(mappedClient);
@@ -324,7 +324,7 @@ Please analyze the relationship between the respiratory (BOLT), autonomic (Coher
                         <MapPin size={16} />
                     </div>
                     <div className="flex gap-1 flex-wrap text-slate-700">
-                      {client.suburb.length > 0 ? client.suburb.map(s => <span key={s} className="mr-1">{s}</span>) : 'No suburb'}
+                      {client.suburbs.length > 0 ? client.suburbs.map(s => <span key={s} className="mr-1">{s}</span>) : 'No suburb'}
                     </div>
                   </div>
                 </CardContent>

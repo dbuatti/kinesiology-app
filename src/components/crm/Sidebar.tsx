@@ -48,9 +48,9 @@ interface SidebarProps {
 }
 
 const SESSION_STAGES = [
-  { name: "Goal Setting", duration: 22 },
-  { name: "Activation", duration: 23 },
-  { name: "Correction", duration: 35 },
+  { name: "Goal Setting", duration: 15 },
+  { name: "Activation", duration: 15 },
+  { name: "Correction", duration: 20 },
   { name: "Challenge", duration: 5 },
   { name: "Home Reinforcement", duration: 5 },
 ];
@@ -111,7 +111,7 @@ const Sidebar = ({ onHide }: SidebarProps) => {
         const diff = differenceInMinutes(new Date(), appDate);
         return isToday(appDate) && 
                diff >= 0 && 
-               diff < 90 && 
+               diff < 60 && 
                app.status !== 'Completed' && 
                app.status !== 'Cancelled' &&
                app.status !== 'No Show' &&

@@ -159,7 +159,7 @@ const Index = () => {
       const now = new Date();
       const active = today.find(app => {
         const diff = differenceInMinutes(now, app.date);
-        return diff >= 0 && diff < 90 && app.status !== 'Completed';
+        return diff >= 0 && diff < 60 && app.status !== 'Completed';
       });
       setActiveSession(active || null);
 

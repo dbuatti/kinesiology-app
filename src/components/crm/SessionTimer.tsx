@@ -14,9 +14,9 @@ interface SessionTimerProps {
 }
 
 const SESSION_STAGES = [
-  { name: "Goal Setting", duration: 22, color: "bg-indigo-600", Icon: Target },
-  { name: "Activation", duration: 23, color: "bg-blue-600", Icon: Zap },
-  { name: "Correction", duration: 35, color: "bg-emerald-600", Icon: CheckCircle2 },
+  { name: "Goal Setting", duration: 15, color: "bg-indigo-600", Icon: Target },
+  { name: "Activation", duration: 15, color: "bg-blue-600", Icon: Zap },
+  { name: "Correction", duration: 20, color: "bg-emerald-600", Icon: CheckCircle2 },
   { name: "Challenge", duration: 5, color: "bg-amber-600", Icon: AlertTriangle },
   { name: "Home Reinforcement", duration: 5, color: "bg-rose-600", Icon: Home },
 ];

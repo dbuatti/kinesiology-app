@@ -29,9 +29,9 @@ const HelpModal = ({ open, onOpenChange }: HelpModalProps) => {
   ];
 
   const stages = [
-    { name: "Goal Setting", time: "22m", icon: Target, color: "text-indigo-600" },
-    { name: "Activation", time: "23m", icon: Zap, color: "text-blue-600" },
-    { name: "Correction", time: "35m", icon: CheckCircle2, color: "text-emerald-600" },
+    { name: "Goal Setting", time: "15m", icon: Target, color: "text-indigo-600" },
+    { name: "Activation", time: "15m", icon: Zap, color: "text-blue-600" },
+    { name: "Correction", time: "20m", icon: CheckCircle2, color: "text-emerald-600" },
     { name: "Challenge", time: "5m", icon: AlertTriangle, color: "text-amber-600" },
     { name: "Home Reinforcement", time: "5m", icon: Home, color: "text-rose-600" },
   ];
@@ -54,7 +54,7 @@ const HelpModal = ({ open, onOpenChange }: HelpModalProps) => {
         <div className="space-y-8 py-4">
           <section>
             <h3 className="text-sm font-bold text-slate-400 uppercase tracking-widest mb-3 flex items-center gap-2">
-              <Clock size={14} /> Session Timer Stages (90m Total)
+              <Clock size={14} /> Session Timer Stages (60m Total)
             </h3>
             <div className="grid grid-cols-1 sm:grid-cols-5 gap-2">
               {stages.map((s) => (

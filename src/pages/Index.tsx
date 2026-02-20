@@ -1,13 +1,16 @@
+"use client";
+
 import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
 import { 
   Calendar, Activity, Loader2, 
   Plus, UserPlus, Sparkles, 
   CheckCircle2, Zap, FlaskConical, Brain, Wind, StickyNote, Timer,
-  ArrowRight
+  ArrowRight, AlertCircle, TrendingUp, Clock
 } from "lucide-react";
 import { MadeWithDyad } from "@/components/made-with-dyad";
 import {
@@ -28,6 +31,7 @@ import MeridianClock from "@/components/crm/MeridianClock";
 import { AppointmentWithClient } from "@/types/crm";
 import DashboardStats from "@/components/crm/DashboardStats";
 import DailyBriefing from "@/components/crm/DailyBriefing";
+import { cn } from "@/lib/utils";
 
 const SCRATCHPAD_KEY = "antigravity_practitioner_scratchpad";
 const SCRATCHPAD_TIME_KEY = "antigravity_practitioner_scratchpad_time";
@@ -46,6 +50,7 @@ const Index = () => {
   const [todaySessions, setTodaySessions] = useState<AppointmentWithClient[]>([]);
   const [activeSession, setActiveSession] = useState<AppointmentWithClient | null>(null);
   const [nextSession, setNextSession] = useState<AppointmentWithClient | null>(null);
+  const [priorityClients, setPriorityClients] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [clientDialogOpen, setClientDialogOpen] = useState(false);
   const [appDialogOpen, setAppDialogOpen] = useState(false);
@@ -91,11 +96,12 @@ const Index = () => {
         supabase.from('appointments').select('*, clients!inner(name, is_practitioner)').or('is_practitioner.eq.false,is_practitioner.is.null', { foreignTable: 'clients' }).order('date', { ascending: true }),
         supabase.from('clients').select('*', { count: 'exact', head: true }).or('is_practitioner.eq.false,is_practitioner.is.null').gte('created_at', thirtyDaysAgo),
         supabase.from('appointments').select('*, clients!inner(is_practitioner)', { count: 'exact', head: true }).or('is_practitioner.eq.false,is_practitioner.is.null', { foreignTable: 'clients' }).gte('date', thirtyDaysAgo),
-        supabase.from('clients').select('id, appointments(bolt_score, date)').or('is_practitioner.eq.false,is_practitioner.is.null')
+        supabase.from('clients').select('id, name, appointments(bolt_score, date)').or('is_practitioner.eq.false,is_practitioner.is.null')
       ]);
 
       const allApps = (allAppsRaw || []).map(a => ({
         ...a,
+        clientId: (a as any).client_id, // Map database field to type property
         date: new Date(a.date)
       })) as unknown as AppointmentWithClient[];
 
@@ -106,15 +112,32 @@ const Index = () => {
       const avgCoh = cohScores.length > 0 ? cohScores.reduce((a, b) => a + b, 0) / cohScores.length : 0;
 
       let imperativeAlerts = 0;
+      const priorities: any[] = [];
+
       clinicalClients?.forEach(client => {
         const sortedApps = (client.appointments || [])
           .filter((a: any) => a.bolt_score !== null)
           .sort((a: any, b: any) => new Date(b.date).getTime() - new Date(a.date).getTime());
         
-        if (sortedApps.length > 0 && (sortedApps[0] as any).bolt_score < 25) {
-          imperativeAlerts++;
+        if (sortedApps.length > 0) {
+          const latestBolt = (sortedApps[0] as any).bolt_score;
+          if (latestBolt < 25) {
+            imperativeAlerts++;
+            // Check if they are scheduled for today
+            const isScheduledToday = allApps.some(app => app.clientId === client.id && isToday(app.date));
+            if (isScheduledToday) {
+              priorities.push({
+                id: client.id,
+                name: client.name,
+                bolt: latestBolt,
+                appointment: allApps.find(app => app.clientId === client.id && isToday(app.date))
+              });
+            }
+          }
         }
       });
+
+      setPriorityClients(priorities);
 
       const sessionsThisWeek = allApps.filter(app => 
         isWithinInterval(app.date, { start: weekStart, end: weekEnd })
@@ -223,8 +246,54 @@ const Index = () => {
           <DashboardStats stats={stats} />
 
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-10">
-            <div className="lg:col-span-2">
+            <div className="lg:col-span-2 space-y-10">
               <DailyBriefing todaySessions={todaySessions} activeSession={activeSession} />
+              
+              {priorityClients.length > 0 && (
+                <Card className="border-none shadow-xl rounded-[3rem] bg-rose-50 border-2 border-rose-100 overflow-hidden">
+                  <CardHeader className="p-10 pb-6">
+                    <div className="flex items-center justify-between">
+                      <CardTitle className="text-2xl font-black flex items-center gap-4 text-rose-900">
+                        <AlertCircle size={28} className="text-rose-600" /> Clinical Priority: Today
+                      </CardTitle>
+                      <Badge className="bg-rose-600 text-white border-none font-black text-[10px] uppercase tracking-widest px-4 py-1.5 rounded-full">
+                        {priorityClients.length} High Risk
+                      </Badge>
+                    </div>
+                    <CardDescription className="text-rose-700 font-medium text-lg mt-2">
+                      Clients scheduled for today with BOLT scores below functional baseline (25s).
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent className="p-10 pt-0 space-y-4">
+                    {priorityClients.map(pc => (
+                      <Link key={pc.id} to={`/appointments/${pc.appointment.id}`}>
+                        <div className="p-6 bg-white rounded-[2rem] border border-rose-200 flex items-center justify-between group hover:shadow-lg transition-all duration-300">
+                          <div className="flex items-center gap-6">
+                            <div className="w-12 h-12 rounded-2xl bg-rose-100 text-rose-600 flex items-center justify-center font-black text-xl">
+                              {pc.name.charAt(0)}
+                            </div>
+                            <div>
+                              <p className="font-black text-xl text-slate-900 group-hover:text-rose-600 transition-colors">{pc.name}</p>
+                              <p className="text-xs font-bold text-slate-500 flex items-center gap-2 mt-1">
+                                <Clock size={14} className="text-rose-400" /> {format(new Date(pc.appointment.date), "h:mm a")}
+                              </p>
+                            </div>
+                          </div>
+                          <div className="flex items-center gap-8">
+                            <div className="text-right">
+                              <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest">Latest BOLT</p>
+                              <p className="text-2xl font-black text-rose-600">{pc.bolt}s</p>
+                            </div>
+                            <div className="w-10 h-10 rounded-xl bg-rose-50 text-rose-400 flex items-center justify-center group-hover:bg-rose-600 group-hover:text-white transition-all">
+                              <ArrowRight size={20} />
+                            </div>
+                          </div>
+                        </div>
+                      </Link>
+                    ))}
+                  </CardContent>
+                </Card>
+              )}
             </div>
 
             <div className="space-y-10">
@@ -294,6 +363,17 @@ const Index = () => {
                   <CardDescription className="text-amber-700 font-medium text-xl">Quick notes, reminders, or research ideas. Saves automatically.</CardDescription>
                 </CardHeader>
                 <CardContent className="p-12 pt-0">
+                  <div className="flex flex-wrap gap-2 mb-6">
+                    {["Research", "Follow-up", "Protocol Idea", "Clinical Note"].map(tag => (
+                      <button 
+                        key={tag}
+                        onClick={() => handleScratchpadChange(scratchpad ? `${scratchpad}\n[${tag}] ` : `[${tag}] `)}
+                        className="px-4 py-2 rounded-xl bg-white border border-amber-200 text-[10px] font-black uppercase tracking-widest text-amber-600 hover:bg-amber-100 transition-colors"
+                      >
+                        + {tag}
+                      </button>
+                    ))}
+                  </div>
                   <Textarea 
                     value={scratchpad}
                     onChange={(e) => handleScratchpadChange(e.target.value)}

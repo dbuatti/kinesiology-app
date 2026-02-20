@@ -1,3 +1,5 @@
+"use client";
+
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { 
   Users, 
@@ -15,13 +17,15 @@ import {
   FlaskConical,
   UserPlus,
   CalendarPlus,
-  Settings
+  Settings,
+  ShieldCheck,
+  Activity
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import SearchBar from "./SearchBar";
 import { supabase } from "@/integrations/supabase/client";
 import { showSuccess } from "@/utils/toast";
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useState, useCallback, useMemo } from "react";
 import HelpModal from "./HelpModal";
 import { useRecentClients } from "@/hooks/use-recent-clients";
 import { isToday, differenceInMinutes } from "date-fns";
@@ -34,7 +38,7 @@ import {
 import { Button } from "@/components/ui/button";
 import ClientForm from "./ClientForm";
 import AppointmentForm from "./AppointmentForm";
-import { AppointmentWithClient } from "@/types/crm";
+import { Progress } from "@/components/ui/progress";
 
 const SESSION_STAGES = [
   { name: "Goal Setting", duration: 22 },
@@ -51,6 +55,7 @@ const Sidebar = () => {
   const [clientDialogOpen, setClientDialogOpen] = useState(false);
   const [appDialogOpen, setAppDialogOpen] = useState(false);
   const [activeSession, setActiveSession] = useState<{ id: string, stage: string, clientName: string } | null>(null);
+  const [practiceHealth, setPracticeHealth] = useState(0);
   const { recentClients } = useRecentClients();
   
   const navItems = [
@@ -62,6 +67,30 @@ const Sidebar = () => {
     { label: "Procedures", icon: Target, path: "/procedures", shortcut: "⌘P" },
     { label: "Resources", icon: BookOpen, path: "/resources", shortcut: "⌘R" },
   ];
+
+  const fetchPracticeHealth = useCallback(async () => {
+    const { data } = await supabase
+      .from('appointments')
+      .select('bolt_score, client_id')
+      .not('bolt_score', 'is', null)
+      .order('date', { ascending: false });
+
+    if (data) {
+      // Get latest BOLT for each client
+      const latestByClient: Record<string, number> = {};
+      data.forEach(app => {
+        if (!latestByClient[app.client_id]) {
+          latestByClient[app.client_id] = app.bolt_score;
+        }
+      });
+
+      const scores = Object.values(latestByClient);
+      if (scores.length > 0) {
+        const functional = scores.filter(s => s >= 25).length;
+        setPracticeHealth(Math.round((functional / scores.length) * 100));
+      }
+    }
+  }, []);
 
   const checkActiveSession = useCallback(async () => {
     const { data } = await supabase
@@ -109,10 +138,12 @@ const Sidebar = () => {
 
   useEffect(() => {
     checkActiveSession();
+    fetchPracticeHealth();
     const channel = supabase
-      .channel('sidebar-sessions')
+      .channel('sidebar-updates')
       .on('postgres_changes', { event: '*', schema: 'public', table: 'appointments' }, () => {
         checkActiveSession();
+        fetchPracticeHealth();
       })
       .subscribe();
     const interval = setInterval(checkActiveSession, 60000);
@@ -120,7 +151,7 @@ const Sidebar = () => {
       clearInterval(interval);
       supabase.removeChannel(channel);
     };
-  }, [checkActiveSession]);
+  }, [checkActiveSession, fetchPracticeHealth]);
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -205,14 +236,6 @@ const Sidebar = () => {
             <CalendarPlus size={18} className="mr-2" />
             Book Session
           </Button>
-          <Button 
-            variant="outline"
-            onClick={() => setClientDialogOpen(true)}
-            className="w-full border-slate-800 bg-slate-900/50 hover:bg-slate-900 text-slate-300 hover:text-white rounded-2xl h-12 font-black text-[10px] uppercase tracking-widest"
-          >
-            <UserPlus size={18} className="mr-2" />
-            New Client
-          </Button>
         </div>
 
         {activeSession && (
@@ -239,6 +262,19 @@ const Sidebar = () => {
           </div>
         )}
 
+        <div className="px-4 py-4 bg-slate-900/50 rounded-[2rem] border border-slate-800/50 mx-2 space-y-3">
+          <div className="flex items-center justify-between">
+            <p className="text-[9px] font-black text-slate-500 uppercase tracking-[0.25em] flex items-center gap-2">
+              <ShieldCheck size={12} className="text-emerald-500" /> Practice Health
+            </p>
+            <span className="text-[10px] font-black text-emerald-500">{practiceHealth}%</span>
+          </div>
+          <Progress value={practiceHealth} className="h-1.5 bg-slate-800 [&>div]:bg-emerald-500" />
+          <p className="text-[8px] text-slate-500 font-bold leading-tight">
+            Percentage of clients at functional BOLT baseline (25s+).
+          </p>
+        </div>
+
         <div className="px-2 space-y-4">
           <div className="flex items-center justify-between px-2">
             <p className="text-[9px] font-black text-slate-600 uppercase tracking-[0.25em] flex items-center gap-2">
@@ -263,19 +299,6 @@ const Sidebar = () => {
           ) : (
             <p className="text-[10px] text-slate-700 italic px-4">No recent clients</p>
           )}
-        </div>
-
-        <div className="px-2 pt-4">
-          <Link 
-            to="/demo-session"
-            className={cn(
-              "flex items-center gap-3 px-4 py-3 rounded-2xl transition-all duration-300 border border-dashed border-slate-800 text-slate-500 hover:text-amber-400 hover:border-amber-400/50 hover:bg-amber-400/5",
-              location.pathname === "/demo-session" && "bg-amber-400/10 text-amber-400 border-amber-400/50"
-            )}
-          >
-            <FlaskConical size={18} />
-            <span className="font-bold text-[11px] uppercase tracking-widest">Demo Session</span>
-          </Link>
         </div>
       </div>
       

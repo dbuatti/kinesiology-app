@@ -2,19 +2,20 @@
 
 import React, { useState, useEffect, useCallback, useMemo } from "react";
 import { Button } from "@/components/ui/button";
-import { Loader2, RotateCcw, Zap, Sparkles, Trash2, Filter } from "lucide-react";
+import { Loader2, RotateCcw, Zap, Sparkles, Trash2, Filter, Clock } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { supabase } from "@/integrations/supabase/client";
 import { showSuccess, showError } from "@/utils/toast";
 import { MUSCLE_GROUPS, PRIMARY_14_MUSCLES, MuscleStatus } from "@/data/muscle-data";
 import { MuscleTestResult } from "@/types/crm";
 import MuscleInfoModal from "./MuscleInfoModal";
-import { getChannelByMuscle } from "@/data/tcm-channel-data";
+import { getChannelByMuscle, TCM_CHANNELS } from "@/data/tcm-channel-data";
 import MuscleTestingFilters from "./MuscleTestingFilters";
 import MuscleGroupCollapsible from "./MuscleGroupCollapsible";
 import MuscleStatusLegend from "./MuscleStatusLegend";
 import MuscleTestAssistanceCard from "./MuscleTestAssistanceCard";
 import MuscleProgressCard from "./MuscleProgressCard";
+import { Badge } from "@/components/ui/badge";
 
 interface MuscleTestingTabProps {
   appointmentId: string;
@@ -38,6 +39,24 @@ const MuscleTestingTab = ({ appointmentId }: MuscleTestingTabProps) => {
     });
     return initial;
   });
+
+  const currentPeakMeridian = useMemo(() => {
+    const hour = new Date().getHours();
+    return TCM_CHANNELS.find(c => {
+      if (c.peakTime === 'None') return false;
+      const parts = c.peakTime.toLowerCase().split('-').map(p => p.trim());
+      const parseHour = (s: string) => {
+        const h = parseInt(s);
+        if (s.includes('pm') && h !== 12) return h + 12;
+        if (s.includes('am') && h === 12) return 0;
+        return h;
+      };
+      const start = parseHour(parts[0]);
+      const end = parseHour(parts[1]);
+      if (start > end) return hour >= start || hour < end;
+      return hour >= start && hour < end;
+    });
+  }, []);
 
   const fetchMuscleTests = useCallback(async () => {
     setLoading(true);
@@ -240,19 +259,39 @@ const MuscleTestingTab = ({ appointmentId }: MuscleTestingTabProps) => {
         <MuscleProgressCard testedCount={testedCount} totalCount={totalMusclesCount} />
       </div>
 
-      <MuscleTestingFilters
-        searchTerm={searchTerm} setSearchTerm={setSearchTerm}
-        meridianFilter={meridianFilter} setMeridianFilter={setMeridianFilter}
-        showOnlyTested={showOnlyTested} setShowOnlyTested={setShowOnlyTested}
-        showOnlyDysfunctional={showOnlyDysfunctional} setShowOnlyDysfunctional={setShowOnlyDysfunctional}
-        isAllExpanded={Object.values(openGroups).every(v => v)}
-        onToggleAllGroups={() => {
-          const allOpen = Object.values(openGroups).every(v => v);
-          const newState: Record<string, boolean> = {};
-          Object.keys(MUSCLE_GROUPS).forEach(k => newState[k] = !allOpen);
-          setOpenGroups(newState);
-        }}
-      />
+      <div className="space-y-4">
+        <div className="flex items-center justify-between px-2">
+          <h3 className="text-sm font-black text-slate-400 uppercase tracking-[0.3em] flex items-center gap-2">
+            <Filter size={14} className="text-indigo-500" /> Filters & Smart Suggestions
+          </h3>
+          {currentPeakMeridian && (
+            <Button 
+              variant="outline" 
+              size="sm" 
+              onClick={() => setMeridianFilter(currentPeakMeridian.name)}
+              className={cn(
+                "rounded-xl h-9 px-4 font-black text-[10px] uppercase tracking-widest transition-all",
+                meridianFilter === currentPeakMeridian.name ? "bg-amber-500 text-white border-none shadow-lg" : "border-amber-200 text-amber-600 hover:bg-amber-50"
+              )}
+            >
+              <Clock size={14} className="mr-2" /> Peak Now: {currentPeakMeridian.name}
+            </Button>
+          )}
+        </div>
+        <MuscleTestingFilters
+          searchTerm={searchTerm} setSearchTerm={setSearchTerm}
+          meridianFilter={meridianFilter} setMeridianFilter={setMeridianFilter}
+          showOnlyTested={showOnlyTested} setShowOnlyTested={setShowOnlyTested}
+          showOnlyDysfunctional={showOnlyDysfunctional} setShowOnlyDysfunctional={setShowOnlyDysfunctional}
+          isAllExpanded={Object.values(openGroups).every(v => v)}
+          onToggleAllGroups={() => {
+            const allOpen = Object.values(openGroups).every(v => v);
+            const newState: Record<string, boolean> = {};
+            Object.keys(MUSCLE_GROUPS).forEach(k => newState[k] = !allOpen);
+            setOpenGroups(newState);
+          }}
+        />
+      </div>
 
       <div className="space-y-6">
         {Object.entries(filteredGroups).map(([groupName, muscles]) => (

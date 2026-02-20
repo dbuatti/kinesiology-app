@@ -4,7 +4,7 @@ import React, { useState, useEffect, useRef, useLayoutEffect, useCallback } from
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { cn } from "@/lib/utils";
-import { Loader2, Edit3, CheckCircle2, AlertCircle } from "lucide-react";
+import { Loader2, Edit3, CheckCircle2, AlertCircle, Sparkles } from "lucide-react";
 
 type InputElement = HTMLInputElement | HTMLTextAreaElement;
 
@@ -17,6 +17,10 @@ interface EditableFieldProps {
   placeholder?: string;
   onSave: (field: string, value: string | null) => Promise<void>;
 }
+
+const SMART_CHIPS = [
+  "Inhibited", "Hypertonic", "Cleared", "Balanced", "Priority", "Switching", "ESR", "K27", "TL"
+];
 
 const EditableField = ({ 
   field, 
@@ -78,6 +82,14 @@ const EditableField = ({
     debouncedSave(newValue);
   };
 
+  const handleChipClick = (chip: string) => {
+    const newValue = localValue ? `${localValue.trim()} ${chip}` : chip;
+    setLocalValue(newValue);
+    debouncedSave(newValue);
+    // Keep focus on input
+    setTimeout(() => inputRef.current?.focus(), 0);
+  };
+
   const handleFocus = () => {
     setIsFocused(true);
     if (debounceTimer.current) clearTimeout(debounceTimer.current);
@@ -103,7 +115,8 @@ const EditableField = ({
         lastCommittedRef.current = trimmed;
       }
     }
-    setIsFocused(false);
+    // Small delay to allow chip clicks to register before blur hides them
+    setTimeout(() => setIsFocused(false), 200);
   };
 
   useLayoutEffect(() => {
@@ -166,18 +179,38 @@ const EditableField = ({
       
       <div className="relative">
         {isFocused ? (
-          <InputComponent
-            ref={inputRef}
-            value={localValue}
-            onChange={handleChange}
-            onFocus={handleFocus}
-            onBlur={handleBlur}
-            placeholder={placeholder}
-            className={cn(
-              multiline ? "min-h-[140px] resize-none" : "h-10",
-              "transition-all duration-300 border-none focus-visible:ring-0 p-0 text-base font-bold text-slate-900 placeholder:text-slate-300 bg-transparent",
-            )}
-          />
+          <div className="space-y-4">
+            <InputComponent
+              ref={inputRef}
+              value={localValue}
+              onChange={handleChange}
+              onFocus={handleFocus}
+              onBlur={handleBlur}
+              placeholder={placeholder}
+              className={cn(
+                multiline ? "min-h-[140px] resize-none" : "h-10",
+                "transition-all duration-300 border-none focus-visible:ring-0 p-0 text-base font-bold text-slate-900 placeholder:text-slate-300 bg-transparent",
+              )}
+            />
+            <div className="flex flex-wrap gap-1.5 pt-2 border-t border-slate-100 animate-in fade-in slide-in-from-bottom-1 duration-300">
+              <div className="flex items-center gap-1.5 mr-2 text-[9px] font-black text-slate-400 uppercase tracking-widest">
+                <Sparkles size={10} className="text-indigo-400" /> Smart Chips:
+              </div>
+              {SMART_CHIPS.map(chip => (
+                <button
+                  key={chip}
+                  type="button"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    handleChipClick(chip);
+                  }}
+                  className="px-2 py-1 rounded-lg bg-slate-100 hover:bg-indigo-600 hover:text-white text-[9px] font-black uppercase tracking-wider text-slate-500 transition-all"
+                >
+                  {chip}
+                </button>
+              ))}
+            </div>
+          </div>
         ) : (
           <p className={cn(
             "text-base leading-relaxed whitespace-pre-wrap min-h-[24px]",

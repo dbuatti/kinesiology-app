@@ -26,6 +26,7 @@ import {
 import Breadcrumbs from "@/components/crm/Breadcrumbs";
 import { Button } from "@/components/ui/button";
 import { TCM_CHANNELS } from "@/data/tcm-channel-data";
+import { cn } from "@/lib/utils"; // Ensure cn is imported
 
 export interface AppointmentWithClient extends Appointment {
   clients: { name: string; id: string; born?: string };

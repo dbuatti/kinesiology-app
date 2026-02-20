@@ -50,7 +50,7 @@ const ClientForm = ({ onSuccess, initialData }: ClientFormProps) => {
       phone: initialData?.phone || "",
       pronouns: initialData?.pronouns || "",
       born: initialData?.born ? new Date(initialData.born).toISOString().split('T')[0] : "",
-      suburb: initialData?.suburb?.join(", ") || "", // Convert array to string for form
+      suburb: initialData?.suburbs?.join(", ") || "", // Fixed: changed suburb to suburbs
       occupation: initialData?.occupation || "",
       marital_status: initialData?.marital_status || "",
       children: initialData?.children || "",

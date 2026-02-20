@@ -7,7 +7,7 @@ export const INITIAL_CLIENTS: Client[] = [
     name: "Georg Gleeson",
     pronouns: "They/Them",
     born: new Date("1992-05-15"),
-    suburb: ["Brunswick"],
+    suburbs: ["Brunswick"], // Fixed: changed suburb to suburbs
     email: "georg@example.com",
     phone: "0400 123 456"
   },
@@ -16,7 +16,7 @@ export const INITIAL_CLIENTS: Client[] = [
     name: "Alex Smith",
     pronouns: "She/Her",
     born: new Date("1985-11-20"),
-    suburb: ["Fitzroy", "Northcote"],
+    suburbs: ["Fitzroy", "Northcote"], // Fixed: changed suburb to suburbs
     email: "alex@example.com",
     phone: "0411 987 654"
   }

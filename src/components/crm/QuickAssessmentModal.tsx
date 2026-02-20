@@ -80,7 +80,7 @@ const QuickAssessmentModal = ({
             Quick {type === 'bolt' ? 'BOLT' : 'Coherence'} Test
           </DialogTitle>
           <DialogDescription className="font-medium">
-            Performing assessment for <span className="text-slate-900 font-bold">{clientName}</span>
+            Performing assessment for <span className="text-slate-900 font-bold">{clientName}</span>. This will create a new record in the client's history.
           </DialogDescription>
         </DialogHeader>
 
@@ -93,16 +93,16 @@ const QuickAssessmentModal = ({
             />
           ) : (
             <div className="space-y-4">
-              {/* We use a simplified version of the coherence logic here or just the component if it can handle null ID */}
               <CoherenceAssessment 
-                appointmentId="temp" // The component expects an ID, but we'll override the save logic
+                appointmentId="temp"
                 initialHeartRate={null}
                 initialBreathRate={null}
                 initialCoherenceScore={null}
-                onUpdate={() => {}} // Not used in this context
+                onUpdate={() => {}}
+                onSave={(data) => handleSaveResult(data)}
               />
               <p className="text-[10px] text-slate-400 text-center italic">
-                Note: Use the "Save" button inside the coherence tool to log the result.
+                Note: Use the "Save Result" button inside the tool to log the findings.
               </p>
             </div>
           )}

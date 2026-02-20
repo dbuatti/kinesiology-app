@@ -1,7 +1,7 @@
 "use client";
 
-import React, { useState, useEffect, useRef, useMemo } from "react";
-import { Activity, ChevronDown, Heart, Brain, RotateCcw, Zap, Info, Timer, CheckCircle2, RefreshCw, Loader2 } from "lucide-react";
+import React, { useState, useEffect, useRef } from "react";
+import { Activity, ChevronDown, Heart, Brain, RotateCcw, Zap, RefreshCw, Loader2, CheckCircle2, Info } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { showSuccess, showError } from "@/utils/toast";
 import { Badge } from "@/components/ui/badge";
@@ -21,6 +21,7 @@ interface CoherenceAssessmentProps {
   initialBreathRate: number | null | undefined;
   initialCoherenceScore: number | null | undefined;
   onUpdate: () => void;
+  onSave?: (data: { heart_rate: number; breath_rate: number; coherence_score: number }) => Promise<void>;
 }
 
 const CoherenceAssessment = ({ 
@@ -28,7 +29,8 @@ const CoherenceAssessment = ({
   initialHeartRate, 
   initialBreathRate, 
   initialCoherenceScore,
-  onUpdate 
+  onUpdate,
+  onSave
 }: CoherenceAssessmentProps) => {
   const [loading, setLoading] = useState(false);
   const [isOpen, setIsOpen] = useState(false);
@@ -78,14 +80,22 @@ const CoherenceAssessment = ({
     if (calculatedScore === null) return;
     setLoading(true);
     try {
-      const { error } = await supabase
-        .from("appointments")
-        .update({ heart_rate: heartRate, breath_rate: breathRate, coherence_score: calculatedScore })
-        .eq("id", appointmentId);
+      if (onSave) {
+        await onSave({
+          heart_rate: heartRate,
+          breath_rate: breathRate,
+          coherence_score: calculatedScore
+        });
+      } else if (appointmentId && appointmentId !== "temp") {
+        const { error } = await supabase
+          .from("appointments")
+          .update({ heart_rate: heartRate, breath_rate: breathRate, coherence_score: calculatedScore })
+          .eq("id", appointmentId);
 
-      if (error) throw error;
-      showSuccess("Coherence assessment saved.");
-      onUpdate();
+        if (error) throw error;
+        showSuccess("Coherence assessment saved.");
+        onUpdate();
+      }
     } catch (error: any) {
       showError(error.message || "Failed to save.");
     } finally {
@@ -97,7 +107,9 @@ const CoherenceAssessment = ({
     if (!confirm("Reset coherence data?")) return;
     setLoading(true);
     try {
-      await supabase.from("appointments").update({ heart_rate: null, breath_rate: null, coherence_score: null }).eq("id", appointmentId);
+      if (appointmentId && appointmentId !== "temp") {
+        await supabase.from("appointments").update({ heart_rate: null, breath_rate: null, coherence_score: null }).eq("id", appointmentId);
+      }
       setHeartRateRaw(''); setBreathRateRaw(''); setCalculatedScore(null);
       showSuccess("Reset complete.");
       onUpdate();
@@ -131,12 +143,13 @@ const CoherenceAssessment = ({
 
   return (
     <div className="bg-white rounded-[2.5rem] border border-slate-100 shadow-lg overflow-hidden transition-all hover:shadow-xl">
-      <Collapsible open={isOpen} onOpenChange={setIsOpen}>
+      <Collapsible open={isOpen || appointmentId === "temp"} onOpenChange={setIsOpen}>
         <CollapsibleTrigger asChild>
           <div className={cn(
             "p-6 flex items-center justify-between cursor-pointer transition-all duration-500",
             isOpen ? "bg-slate-50/80" : "hover:bg-slate-50/50",
-            calculatedScore && !isOpen && (isCoherent ? "bg-emerald-50/30" : "bg-rose-50/30")
+            calculatedScore && !isOpen && (isCoherent ? "bg-emerald-50/30" : "bg-rose-50/30"),
+            appointmentId === "temp" && "hidden"
           )}>
             <div className="flex items-center gap-5">
               <div className={cn(

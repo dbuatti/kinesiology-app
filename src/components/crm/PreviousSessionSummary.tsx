@@ -32,7 +32,7 @@ const PreviousSessionSummary = ({ clientId, currentAppointmentId }: PreviousSess
           .neq('id', currentAppointmentId)
           .order('date', { ascending: false })
           .limit(1)
-          .single();
+          .maybeSingle();
 
         if (!error && data) {
           setPreviousSession(data);

@@ -6,6 +6,7 @@ import {
   DialogContent,
   DialogHeader,
   DialogTitle,
+  DialogDescription,
 } from "@/components/ui/dialog";
 import { getMuscleInfo } from "@/data/muscle-info-data";
 import { getChannelByName } from "@/data/tcm-channel-data";
@@ -76,33 +77,36 @@ const MuscleInfoModal = ({ muscleName, open, onOpenChange }: MuscleInfoModalProp
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-[750px] rounded-[2.5rem] overflow-hidden p-0 border-none shadow-2xl">
-        <div className={cn("p-8 text-white transition-colors relative", channel ? channel.color.split(' ')[0] : "bg-indigo-600")}>
-          {isPeak && (
-            <div className="absolute top-6 right-6 animate-pulse">
-              <Badge className="bg-white text-slate-900 border-none font-black text-[8px] uppercase tracking-widest px-2 py-0.5">
-                <Zap size={10} className="mr-1 fill-amber-400 text-amber-400" /> Peak Now
-              </Badge>
-            </div>
-          )}
-          <div className="flex items-center gap-4 mb-4">
-            <div className="w-14 h-14 bg-white/20 backdrop-blur-md rounded-2xl flex items-center justify-center shadow-lg">
-              <Dumbbell size={32} />
-            </div>
-            <div>
-              <DialogTitle className="text-3xl font-black tracking-tight">{info.name}</DialogTitle>
-              <div className="flex gap-2 mt-2">
-                <Badge className="bg-white/20 text-white border-none font-bold text-[10px] uppercase tracking-widest">
-                  {info.meridian || 'General'} Meridian
+        <DialogHeader className="p-0">
+          <div className={cn("p-8 text-white transition-colors relative", channel ? channel.color.split(' ')[0] : "bg-indigo-600")}>
+            {isPeak && (
+              <div className="absolute top-6 right-6 animate-pulse">
+                <Badge className="bg-white text-slate-900 border-none font-black text-[8px] uppercase tracking-widest px-2 py-0.5">
+                  <Zap size={10} className="mr-1 fill-amber-400 text-amber-400" /> Peak Now
                 </Badge>
-                {info.myotome && (
+              </div>
+            )}
+            <div className="flex items-center gap-4 mb-4">
+              <div className="w-14 h-14 bg-white/20 backdrop-blur-md rounded-2xl flex items-center justify-center shadow-lg">
+                <Dumbbell size={32} />
+              </div>
+              <div>
+                <DialogTitle className="text-3xl font-black tracking-tight">{info.name}</DialogTitle>
+                <DialogDescription className="sr-only">Clinical details and associations for {info.name}</DialogDescription>
+                <div className="flex gap-2 mt-2">
                   <Badge className="bg-white/20 text-white border-none font-bold text-[10px] uppercase tracking-widest">
-                    Myotome: {info.myotome}
+                    {info.meridian || 'General'} Meridian
                   </Badge>
-                )}
+                  {info.myotome && (
+                    <Badge className="bg-white/20 text-white border-none font-bold text-[10px] uppercase tracking-widest">
+                      Myotome: {info.myotome}
+                    </Badge>
+                  )}
+                </div>
               </div>
             </div>
           </div>
-        </div>
+        </DialogHeader>
 
         <div className="p-8 space-y-10 max-h-[70vh] overflow-y-auto">
           {/* Lovett-Brother Partner */}

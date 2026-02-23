@@ -118,7 +118,7 @@ const SessionContentSwitcher = ({ appointment, onUpdate, saveField }: SessionCon
           <TabsContent value="pathway" className="mt-6 space-y-6">
             <div className="flex items-center gap-2 p-1 bg-slate-100 rounded-xl w-fit mb-4">
               <Button
-                variant={pathwayTool === 'standard' ? 'white' : 'ghost'}
+                variant={pathwayTool === 'standard' ? 'secondary' : 'ghost'}
                 size="sm"
                 onClick={() => setPathwayTool('standard')}
                 className={cn(
@@ -129,7 +129,7 @@ const SessionContentSwitcher = ({ appointment, onUpdate, saveField }: SessionCon
                 Standard Wizard
               </Button>
               <Button
-                variant={pathwayTool === 'nociceptive' ? 'white' : 'ghost'}
+                variant={pathwayTool === 'nociceptive' ? 'secondary' : 'ghost'}
                 size="sm"
                 onClick={() => setPathwayTool('nociceptive')}
                 className={cn(

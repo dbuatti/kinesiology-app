@@ -36,7 +36,7 @@ export const VAGAL_FUNCTIONS = [
   "Humming",
   "Swallowing",
   "Say AAh",
-  "Clean Mouth with Tongue",
+  "Clean the roof of the mouth with tongue",
   "Smile with Teeth and Swallow"
 ];
 

@@ -246,44 +246,64 @@ const NociceptiveThreatAssessment = ({ onSave, initialValue }: NociceptiveThreat
         );
 
       case 'PATHWAY_SELECTION':
+        const afferentOptions = [
+          { id: 'Mechanoreceptor', icon: Activity, color: 'text-blue-500', label: 'Mechanoreceptor (Joint/Muscle)' },
+          { id: 'Vestibular/Ocular', icon: Eye, color: 'text-cyan-500', label: 'Vestibular / Ocular' },
+          { id: 'Physiological', icon: Droplets, color: 'text-emerald-500', label: 'Physiological' },
+        ];
+        const efferentOptions = [
+          { id: 'Cortical', icon: Brain, color: 'text-purple-500', label: 'Cortical (Top-Down)' },
+          { id: 'Subcortical', icon: Zap, color: 'text-amber-500', label: 'Subcortical (Autonomic)' },
+          { id: 'Emotional', icon: Heart, color: 'text-rose-500', label: 'Emotional' },
+        ];
+
+        const renderOption = (opt: any) => (
+          <Button
+            key={opt.id}
+            variant="outline"
+            className={cn(
+              "h-16 justify-start gap-4 px-6 rounded-2xl border-2 transition-all",
+              currentLayer.specific === opt.id ? "border-indigo-600 bg-indigo-50 text-indigo-700" : "border-slate-100 hover:border-indigo-200"
+            )}
+            onClick={() => {
+              setCurrentLayer({ 
+                ...currentLayer, 
+                specific: opt.id as SpecificCorrection,
+                direction: ['Mechanoreceptor', 'Vestibular/Ocular', 'Physiological'].includes(opt.id) ? 'Afferent (Bottom-Up)' : 'Efferent (Top-Down)'
+              });
+              nextStep(opt.id === 'Mechanoreceptor' ? 'MECHANO_DETAIL' : 'CORRECTION_ACTION');
+            }}
+          >
+            <div className="w-10 h-10 rounded-xl bg-white shadow-sm flex items-center justify-center">
+              <opt.icon size={20} className={opt.color} />
+            </div>
+            <span className="font-bold text-lg">{opt.label}</span>
+          </Button>
+        );
+
         return (
           <div className="space-y-6 animate-in fade-in slide-in-from-right-4 duration-300">
             <div className="space-y-2">
               <h3 className="text-xl font-black text-slate-900">Identify Correction Pathway</h3>
               <p className="text-sm text-slate-500">Follow the standard Afferent/Efferent process.</p>
             </div>
-            <div className="grid grid-cols-1 gap-3">
-              {[
-                { id: 'Mechanoreceptor', icon: Activity, color: 'text-blue-500', label: 'Mechanoreceptor (Joint/Muscle)' },
-                { id: 'Vestibular/Ocular', icon: Eye, color: 'text-cyan-500', label: 'Vestibular / Ocular' },
-                { id: 'Physiological', icon: Droplets, color: 'text-emerald-500', label: 'Physiological' },
-                { id: 'Cortical', icon: Brain, color: 'text-purple-500', label: 'Cortical (Top-Down)' },
-                { id: 'Subcortical', icon: Zap, color: 'text-amber-500', label: 'Subcortical (Autonomic)' },
-                { id: 'Emotional', icon: Heart, color: 'text-rose-500', label: 'Emotional' },
-              ].map((opt) => (
-                <Button
-                  key={opt.id}
-                  variant="outline"
-                  className={cn(
-                    "h-16 justify-start gap-4 px-6 rounded-2xl border-2 transition-all",
-                    currentLayer.specific === opt.id ? "border-indigo-600 bg-indigo-50 text-indigo-700" : "border-slate-100 hover:border-indigo-200"
-                  )}
-                  onClick={() => {
-                    setCurrentLayer({ 
-                      ...currentLayer, 
-                      specific: opt.id as SpecificCorrection,
-                      direction: ['Mechanoreceptor', 'Vestibular/Ocular', 'Physiological'].includes(opt.id) ? 'Afferent (Bottom-Up)' : 'Efferent (Top-Down)'
-                    });
-                    nextStep(opt.id === 'Mechanoreceptor' ? 'MECHANO_DETAIL' : 'CORRECTION_ACTION');
-                  }}
-                >
-                  <div className="w-10 h-10 rounded-xl bg-white shadow-sm flex items-center justify-center">
-                    <opt.icon size={20} className={opt.color} />
-                  </div>
-                  <span className="font-bold text-lg">{opt.label}</span>
-                </Button>
-              ))}
+            
+            <div className="space-y-6">
+              <div className="space-y-3">
+                <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-[0.3em] px-1">Afferent (Bottom-Up)</h4>
+                <div className="grid grid-cols-1 gap-3">
+                  {afferentOptions.map(renderOption)}
+                </div>
+              </div>
+
+              <div className="space-y-3">
+                <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-[0.3em] px-1">Efferent (Top-Down)</h4>
+                <div className="grid grid-cols-1 gap-3">
+                  {efferentOptions.map(renderOption)}
+                </div>
+              </div>
             </div>
+
             <Button variant="ghost" onClick={() => prevStep('IM_TEST')} className="w-full h-12 rounded-xl">
               <ChevronLeft size={18} className="mr-2" /> Back
             </Button>

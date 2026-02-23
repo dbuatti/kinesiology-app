@@ -10,7 +10,7 @@ import {
   ArrowRightLeft, MousePointer2, 
   Layers, Activity, ShieldAlert,
   Upload, Image as ImageIcon, X, Loader2,
-  Plus
+  Plus, Sparkles
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
@@ -19,7 +19,6 @@ import { showSuccess, showError } from "@/utils/toast";
 
 const BUCKET_NAME = 'reflex-images';
 
-// Sub-component for the Image Upload/Display Zone
 const ReflexImageZone = ({ 
   reflexId, 
   initialUrl, 
@@ -48,11 +47,9 @@ const ReflexImageZone = ({
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error("User not authenticated");
 
-      // Use a consistent filename pattern for the same reflex to allow overwriting
       const fileExt = file.name.split('.').pop() || 'png';
       const filePath = `${user.id}/${reflexId}.${fileExt}`;
 
-      // 1. Upload to Storage
       const { error: uploadError } = await supabase.storage
         .from(BUCKET_NAME)
         .upload(filePath, file, { 
@@ -60,20 +57,12 @@ const ReflexImageZone = ({
           contentType: file.type
         });
 
-      if (uploadError) {
-        console.error("[ReflexImageZone] Storage error:", uploadError);
-        if (uploadError.message.includes('Bucket not found')) {
-          throw new Error("Storage bucket 'reflex-images' not found. Please create it in your Supabase dashboard.");
-        }
-        throw uploadError;
-      }
+      if (uploadError) throw uploadError;
 
-      // 2. Get Public URL
       const { data: { publicUrl } } = supabase.storage
         .from(BUCKET_NAME)
         .getPublicUrl(filePath);
 
-      // 3. Save to Database with explicit conflict handling
       const { error: dbError } = await supabase
         .from('brain_reflex_customizations')
         .upsert({
@@ -90,7 +79,6 @@ const ReflexImageZone = ({
       onUploadComplete(publicUrl);
       showSuccess("Reference image saved!");
     } catch (error: any) {
-      console.error("[ReflexImageZone] Upload error:", error);
       showError(error.message || "Failed to upload image.");
     } finally {
       setIsUploading(false);
@@ -128,23 +116,13 @@ const ReflexImageZone = ({
     if (file) handleUpload(file);
   }, [reflexId]);
 
-  const onPaste = useCallback((e: React.ClipboardEvent) => {
-    const item = e.clipboardData.items[0];
-    if (item?.type.startsWith('image/')) {
-      const file = item.getAsFile();
-      if (file) handleUpload(file);
-    }
-  }, [reflexId]);
-
   return (
     <div 
       onDragOver={(e) => { e.preventDefault(); setIsDragging(true); }}
       onDragLeave={() => setIsDragging(false)}
       onDrop={onDrop}
-      onPaste={onPaste}
-      tabIndex={0}
       className={cn(
-        "relative group/image aspect-video rounded-2xl border-2 border-dashed transition-all duration-300 flex flex-col items-center justify-center overflow-hidden outline-none focus:ring-2 focus:ring-indigo-500",
+        "relative group/image aspect-video rounded-2xl border-2 border-dashed transition-all duration-300 flex flex-col items-center justify-center overflow-hidden outline-none",
         imageUrl ? "border-transparent" : "border-slate-200 bg-slate-50/50 hover:border-indigo-300 hover:bg-indigo-50/30",
         isDragging && "border-indigo-500 bg-indigo-100/50 scale-[0.98]",
         isUploading && "opacity-50 pointer-events-none"
@@ -172,7 +150,7 @@ const ReflexImageZone = ({
                 <Plus size={20} />
               </div>
               <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">
-                Drop or Paste Image
+                Drop Reference Image
               </p>
             </>
           )}
@@ -186,33 +164,18 @@ const BrainReflexReference = () => {
   const [search, setSearch] = useState("");
   const [selectedCategory, setSelectedCategory] = useState<BrainRegionCategory | 'All'>('All');
   const [customizations, setCustomizations] = useState<Record<string, string>>({});
-  const [loadingImages, setLoadingImages] = useState(true);
 
   useEffect(() => {
     const fetchCustomizations = async () => {
       try {
         const { data: { user } } = await supabase.auth.getUser();
         if (!user) return;
-
-        const { data, error } = await supabase
-          .from('brain_reflex_customizations')
-          .select('reflex_id, image_url')
-          .eq('user_id', user.id);
-
-        if (error) throw error;
-
+        const { data } = await supabase.from('brain_reflex_customizations').select('reflex_id, image_url').eq('user_id', user.id);
         const mapping: Record<string, string> = {};
-        data?.forEach(item => {
-          if (item.image_url) mapping[item.reflex_id] = item.image_url;
-        });
+        data?.forEach(item => { if (item.image_url) mapping[item.reflex_id] = item.image_url; });
         setCustomizations(mapping);
-      } catch (err: any) {
-        console.error("[BrainReflexReference] Error fetching reflex images:", err);
-      } finally {
-        setLoadingImages(false);
-      }
+      } catch (err) {}
     };
-
     fetchCustomizations();
   }, []);
 
@@ -296,103 +259,42 @@ const BrainReflexReference = () => {
               </div>
             </CardHeader>
             <CardContent className="p-6 space-y-6">
-              {/* Reference Image Zone */}
               <ReflexImageZone 
                 reflexId={point.id} 
                 initialUrl={customizations[point.id]} 
                 onUploadComplete={(url) => {
                   if (url) setCustomizations(prev => ({ ...prev, [point.id]: url }));
-                  else setCustomizations(prev => {
-                    const next = { ...prev };
-                    delete next[point.id];
-                    return next;
-                  });
+                  else setCustomizations(prev => { const next = { ...prev }; delete next[point.id]; return next; });
                 }}
               />
 
-              <div className="space-y-3">
+              <div className="space-y-4">
                 <div>
-                  <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-1">Location</p>
+                  <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-1">Location & Technique</p>
                   <p className="text-sm font-bold text-slate-700 leading-relaxed">{point.location}</p>
+                  {point.technique && <p className="text-xs text-slate-500 mt-1 italic">{point.technique}</p>}
                 </div>
                 
-                {point.technique && (
-                  <div className="p-3 bg-slate-50 rounded-xl border border-slate-100">
-                    <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-1 flex items-center gap-1">
-                      <MousePointer2 size={10} /> Technique
+                {point.pearl && (
+                  <div className="p-4 bg-indigo-50/50 rounded-2xl border border-indigo-100 relative overflow-hidden">
+                    <div className="absolute top-0 right-0 p-2 opacity-10"><Sparkles size={32} className="text-indigo-600" /></div>
+                    <p className="text-[9px] font-black text-indigo-400 uppercase tracking-widest mb-1 flex items-center gap-1">
+                      <Info size={10} /> Clinical Pearl
                     </p>
-                    <p className="text-xs text-slate-600 font-medium leading-relaxed">{point.technique}</p>
+                    <p className="text-xs text-indigo-900 font-bold leading-relaxed">{point.pearl}</p>
                   </div>
                 )}
 
                 {point.acupoint && (
-                  <div className="flex items-center gap-2">
-                    <Badge className="bg-amber-50 text-amber-700 border-amber-100 text-[9px] font-black px-2 py-0.5 rounded-md">
-                      Acupoint: {point.acupoint}
-                    </Badge>
-                  </div>
-                )}
-
-                {point.clinicalNote && (
-                  <div className="p-3 bg-indigo-50/50 rounded-xl border border-indigo-100">
-                    <p className="text-[9px] font-black text-indigo-400 uppercase tracking-widest mb-1 flex items-center gap-1">
-                      <Info size={10} /> Clinical Insight
-                    </p>
-                    <p className="text-xs text-indigo-900 font-bold leading-relaxed italic">"{point.clinicalNote}"</p>
-                  </div>
+                  <Badge className="bg-amber-50 text-amber-700 border-amber-100 text-[9px] font-black px-2 py-0.5 rounded-md">
+                    Acupoint: {point.acupoint}
+                  </Badge>
                 )}
               </div>
             </CardContent>
           </Card>
         ))}
       </div>
-
-      {/* Clinical Logic Summary */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pt-8">
-        <Card className="border-none shadow-lg rounded-[2.5rem] bg-slate-900 text-white overflow-hidden relative">
-          <div className="absolute top-0 right-0 p-8 opacity-10"><ArrowRightLeft size={100} /></div>
-          <CardHeader>
-            <CardTitle className="text-xl font-black flex items-center gap-3">
-              <ArrowRightLeft size={24} className="text-purple-400" /> Cortical Logic
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4 relative z-10">
-            <p className="text-sm text-slate-300 leading-relaxed">
-              Cortical pathways generally <span className="text-purple-400 font-black">CROSS OVER</span>. Stimulating the body on one side sends information to the opposing cortex.
-            </p>
-            <div className="p-4 bg-white/5 rounded-2xl border border-white/10">
-              <p className="text-xs font-bold text-slate-400">Example:</p>
-              <p className="text-sm font-medium">Stimulating the right eyebrow (Insular) affects the left insular cortex.</p>
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card className="border-none shadow-lg rounded-[2.5rem] bg-indigo-900 text-white overflow-hidden relative">
-          <div className="absolute top-0 right-0 p-8 opacity-10"><Activity size={100} /></div>
-          <CardHeader>
-            <CardTitle className="text-xl font-black flex items-center gap-3">
-              <Activity size={24} className="text-teal-400" /> Subcortical Logic
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4 relative z-10">
-            <p className="text-sm text-slate-300 leading-relaxed">
-              Subcortical pathways are generally <span className="text-teal-400 font-black">IPSILATERAL</span>. Information stays on the same side of the body.
-            </p>
-            <div className="p-4 bg-white/5 rounded-2xl border border-white/10">
-              <p className="text-xs font-bold text-slate-400">Example:</p>
-              <p className="text-sm font-medium">The cerebellum and brainstem primarily process information from the same side of the body.</p>
-            </div>
-          </CardContent>
-        </Card>
-      </div>
-
-      {filteredPoints.length === 0 && (
-        <div className="text-center py-32 bg-slate-50 rounded-[3rem] border-2 border-dashed border-slate-200">
-          <Search size={48} className="mx-auto text-slate-300 mb-4" />
-          <h3 className="text-xl font-black text-slate-900">No reflex areas found</h3>
-          <p className="text-slate-500 mt-2">Try searching for a different region or category.</p>
-        </div>
-      )}
     </div>
   );
 };

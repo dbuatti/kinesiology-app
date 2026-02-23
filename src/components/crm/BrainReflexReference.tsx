@@ -17,6 +17,8 @@ import { cn } from "@/lib/utils";
 import { supabase } from "@/integrations/supabase/client";
 import { showSuccess, showError } from "@/utils/toast";
 
+const BUCKET_NAME = 'reflex-images';
+
 // Sub-component for the Image Upload/Display Zone
 const ReflexImageZone = ({ 
   reflexId, 
@@ -31,6 +33,10 @@ const ReflexImageZone = ({
   const [isUploading, setIsUploading] = useState(false);
   const [imageUrl, setImageUrl] = useState<string | null>(initialUrl || null);
 
+  useEffect(() => {
+    setImageUrl(initialUrl || null);
+  }, [initialUrl]);
+
   const handleUpload = async (file: File) => {
     if (!file.type.startsWith('image/')) {
       showError("Please upload an image file.");
@@ -44,18 +50,26 @@ const ReflexImageZone = ({
 
       const fileExt = file.name.split('.').pop() || 'png';
       const fileName = `${user.id}/${reflexId}-${Math.random().toString(36).substring(7)}.${fileExt}`;
-      const filePath = `reflex-images/${fileName}`;
+      const filePath = fileName; // Path within the bucket
 
-      // 1. Upload to Storage (using a public bucket 'practitioner-assets')
+      // 1. Upload to Storage
       const { error: uploadError } = await supabase.storage
-        .from('practitioner-assets')
-        .upload(filePath, file, { upsert: true });
+        .from(BUCKET_NAME)
+        .upload(filePath, file, { 
+          upsert: true,
+          contentType: file.type
+        });
 
-      if (uploadError) throw uploadError;
+      if (uploadError) {
+        if (uploadError.message.includes('Bucket not found')) {
+          throw new Error("Storage bucket not found. Please ensure 'reflex-images' bucket exists in Supabase.");
+        }
+        throw uploadError;
+      }
 
       // 2. Get Public URL
       const { data: { publicUrl } } = supabase.storage
-        .from('practitioner-assets')
+        .from(BUCKET_NAME)
         .getPublicUrl(filePath);
 
       // 3. Save to Database
@@ -73,7 +87,7 @@ const ReflexImageZone = ({
       onUploadComplete(publicUrl);
       showSuccess("Reference image saved!");
     } catch (error: any) {
-      console.error("Upload error:", error);
+      console.error("[ReflexImageZone] Upload error:", error);
       showError(error.message || "Failed to upload image.");
     } finally {
       setIsUploading(false);
@@ -88,11 +102,13 @@ const ReflexImageZone = ({
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) return;
 
-      await supabase
+      const { error } = await supabase
         .from('brain_reflex_customizations')
         .delete()
         .eq('user_id', user.id)
         .eq('reflex_id', reflexId);
+
+      if (error) throw error;
 
       setImageUrl(null);
       onUploadComplete(null);
@@ -123,9 +139,9 @@ const ReflexImageZone = ({
       onDragLeave={() => setIsDragging(false)}
       onDrop={onDrop}
       onPaste={onPaste}
-      tabIndex={0} // Make it focusable for paste
+      tabIndex={0}
       className={cn(
-        "relative group/image aspect-video rounded-2xl border-2 border-dashed transition-all duration-300 flex flex-col items-center justify-center overflow-hidden",
+        "relative group/image aspect-video rounded-2xl border-2 border-dashed transition-all duration-300 flex flex-col items-center justify-center overflow-hidden outline-none focus:ring-2 focus:ring-indigo-500",
         imageUrl ? "border-transparent" : "border-slate-200 bg-slate-50/50 hover:border-indigo-300 hover:bg-indigo-50/30",
         isDragging && "border-indigo-500 bg-indigo-100/50 scale-[0.98]",
         isUploading && "opacity-50 pointer-events-none"
@@ -187,8 +203,8 @@ const BrainReflexReference = () => {
           if (item.image_url) mapping[item.reflex_id] = item.image_url;
         });
         setCustomizations(mapping);
-      } catch (err) {
-        console.error("Error fetching reflex images:", err);
+      } catch (err: any) {
+        console.error("[BrainReflexReference] Error fetching reflex images:", err);
       } finally {
         setLoadingImages(false);
       }

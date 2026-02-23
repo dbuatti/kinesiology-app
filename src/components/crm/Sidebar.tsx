@@ -14,24 +14,20 @@ import {
   Heart, 
   TrendingUp,
   ArrowRight,
-  FlaskConical,
-  UserPlus,
   CalendarPlus,
   Settings,
   ShieldCheck,
-  Activity,
-  Search,
-  ChevronLeft,
   PanelLeftClose
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import SearchBar from "./SearchBar";
 import { supabase } from "@/integrations/supabase/client";
 import { showSuccess } from "@/utils/toast";
-import { useEffect, useState, useCallback, useMemo } from "react";
+import { useState, useEffect } from "react";
 import HelpModal from "./HelpModal";
 import { useRecentClients } from "@/hooks/use-recent-clients";
-import { isToday, differenceInMinutes } from "date-fns";
+import { useActiveSession } from "@/hooks/useActiveSession";
+import { usePracticeStats } from "@/hooks/usePracticeStats";
 import {
   Dialog,
   DialogContent,
@@ -47,22 +43,15 @@ interface SidebarProps {
   onHide?: () => void;
 }
 
-const SESSION_STAGES = [
-  { name: "Goal Setting", duration: 15 },
-  { name: "Activation", duration: 15 },
-  { name: "Correction", duration: 20 },
-  { name: "Challenge", duration: 5 },
-  { name: "Home Reinforcement", duration: 5 },
-];
-
 const Sidebar = ({ onHide }: SidebarProps) => {
   const location = useLocation();
   const navigate = useNavigate();
   const [helpOpen, setHelpOpen] = useState(false);
   const [clientDialogOpen, setClientDialogOpen] = useState(false);
   const [appDialogOpen, setAppDialogOpen] = useState(false);
-  const [activeSession, setActiveSession] = useState<{ id: string, stage: string, clientName: string } | null>(null);
-  const [practiceHealth, setPracticeHealth] = useState(0);
+  
+  const activeSession = useActiveSession();
+  const { practiceHealth } = usePracticeStats();
   const { recentClients } = useRecentClients();
   
   const navItems = [
@@ -74,90 +63,6 @@ const Sidebar = ({ onHide }: SidebarProps) => {
     { label: "Procedures", icon: Target, path: "/procedures", shortcut: "⌘P" },
     { label: "Resources", icon: BookOpen, path: "/resources", shortcut: "⌘R" },
   ];
-
-  const fetchPracticeHealth = useCallback(async () => {
-    const { data } = await supabase
-      .from('appointments')
-      .select('bolt_score, client_id')
-      .not('bolt_score', 'is', null)
-      .order('date', { ascending: false });
-
-    if (data) {
-      const latestByClient: Record<string, number> = {};
-      data.forEach(app => {
-        if (!latestByClient[app.client_id]) {
-          latestByClient[app.client_id] = app.bolt_score;
-        }
-      });
-
-      const scores = Object.values(latestByClient);
-      if (scores.length > 0) {
-        const functional = scores.filter(s => s >= 25).length;
-        setPracticeHealth(Math.round((functional / scores.length) * 100));
-      }
-    }
-  }, []);
-
-  const checkActiveSession = useCallback(async () => {
-    const { data } = await supabase
-      .from('appointments')
-      .select('id, date, status, clients(name)')
-      .order('date', { ascending: false })
-      .limit(10);
-
-    if (data) {
-      const active = (data as any[]).find(app => {
-        const appDate = new Date(app.date);
-        const diff = differenceInMinutes(new Date(), appDate);
-        return isToday(appDate) && 
-               diff >= 0 && 
-               diff < 60 && 
-               app.status !== 'Completed' && 
-               app.status !== 'Cancelled' &&
-               app.status !== 'No Show' &&
-               app.status !== 'AP';
-      });
-
-      if (active) {
-        const elapsedMinutes = differenceInMinutes(new Date(), new Date(active.date));
-        let currentStageName = SESSION_STAGES[0].name;
-        let cumulative = 0;
-        for (const stage of SESSION_STAGES) {
-          cumulative += stage.duration;
-          if (elapsedMinutes < cumulative) {
-            currentStageName = stage.name;
-            break;
-          }
-        }
-        setActiveSession({ 
-          id: active.id, 
-          stage: currentStageName,
-          clientName: active.clients?.name || "Client"
-        });
-      } else {
-        setActiveSession(null);
-      }
-    } else {
-      setActiveSession(null);
-    }
-  }, []);
-
-  useEffect(() => {
-    checkActiveSession();
-    fetchPracticeHealth();
-    const channel = supabase
-      .channel('sidebar-updates')
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'appointments' }, () => {
-        checkActiveSession();
-        fetchPracticeHealth();
-      })
-      .subscribe();
-    const interval = setInterval(checkActiveSession, 60000);
-    return () => {
-      clearInterval(interval);
-      supabase.removeChannel(channel);
-    };
-  }, [checkActiveSession, fetchPracticeHealth]);
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {

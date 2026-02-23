@@ -9,26 +9,27 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { 
   ChevronRight, 
   ChevronLeft, 
-  Activity, 
-  Brain, 
   AlertTriangle, 
   CheckCircle2, 
   Zap, 
-  Eye, 
-  Heart, 
-  Layers,
+  History, 
+  Info, 
+  X, 
+  Wind, 
+  RefreshCw, 
+  Timer,
   Plus,
-  History,
-  Info,
-  X,
-  Droplets,
-  Move,
-  Wind,
-  RefreshCw,
-  Timer
+  Layers
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { 
+  AFFERENT_PATHWAYS, 
+  EFFERENT_PATHWAYS, 
+  getPathwayById, 
+  SpecificCorrectionType, 
+  DirectionType 
+} from '@/data/pathway-logic-data';
 
 type Step = 
   | 'THREAT_DEFINITION'
@@ -39,21 +40,12 @@ type Step =
   | 'CORRECTION_ACTION'
   | 'REASSESSMENT';
 
-type Direction = 'Afferent (Bottom-Up)' | 'Efferent (Top-Down)';
-type SpecificCorrection = 
-  | 'Mechanoreceptor' 
-  | 'Vestibular/Ocular' 
-  | 'Physiological'
-  | 'Cortical' 
-  | 'Subcortical' 
-  | 'Emotional';
-
 interface Layer {
   id: number;
   threat: string;
   response: 'Clear' | 'Inhibited' | null;
-  direction: Direction | null;
-  specific: SpecificCorrection | null;
+  direction: DirectionType | null;
+  specific: SpecificCorrectionType | null;
   joint?: string;
   plane?: string;
   action?: string;
@@ -246,17 +238,6 @@ const NociceptiveThreatAssessment = ({ onSave, initialValue }: NociceptiveThreat
         );
 
       case 'PATHWAY_SELECTION':
-        const afferentOptions = [
-          { id: 'Mechanoreceptor', icon: Activity, color: 'text-blue-500', label: 'Mechanoreceptor (Joint/Muscle)' },
-          { id: 'Vestibular/Ocular', icon: Eye, color: 'text-cyan-500', label: 'Vestibular / Ocular' },
-          { id: 'Physiological', icon: Droplets, color: 'text-emerald-500', label: 'Physiological' },
-        ];
-        const efferentOptions = [
-          { id: 'Cortical', icon: Brain, color: 'text-purple-500', label: 'Cortical (Top-Down)' },
-          { id: 'Subcortical', icon: Zap, color: 'text-amber-500', label: 'Subcortical (Autonomic)' },
-          { id: 'Emotional', icon: Heart, color: 'text-rose-500', label: 'Emotional' },
-        ];
-
         const renderOption = (opt: any) => (
           <Button
             key={opt.id}
@@ -268,8 +249,8 @@ const NociceptiveThreatAssessment = ({ onSave, initialValue }: NociceptiveThreat
             onClick={() => {
               setCurrentLayer({ 
                 ...currentLayer, 
-                specific: opt.id as SpecificCorrection,
-                direction: ['Mechanoreceptor', 'Vestibular/Ocular', 'Physiological'].includes(opt.id) ? 'Afferent (Bottom-Up)' : 'Efferent (Top-Down)'
+                specific: opt.id as SpecificCorrectionType,
+                direction: opt.direction
               });
               nextStep(opt.id === 'Mechanoreceptor' ? 'MECHANO_DETAIL' : 'CORRECTION_ACTION');
             }}
@@ -292,14 +273,14 @@ const NociceptiveThreatAssessment = ({ onSave, initialValue }: NociceptiveThreat
               <div className="space-y-3">
                 <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-[0.3em] px-1">Afferent (Bottom-Up)</h4>
                 <div className="grid grid-cols-1 gap-3">
-                  {afferentOptions.map(renderOption)}
+                  {AFFERENT_PATHWAYS.map(renderOption)}
                 </div>
               </div>
 
               <div className="space-y-3">
                 <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-[0.3em] px-1">Efferent (Top-Down)</h4>
                 <div className="grid grid-cols-1 gap-3">
-                  {efferentOptions.map(renderOption)}
+                  {EFFERENT_PATHWAYS.map(renderOption)}
                 </div>
               </div>
             </div>
@@ -358,6 +339,7 @@ const NociceptiveThreatAssessment = ({ onSave, initialValue }: NociceptiveThreat
         );
 
       case 'CORRECTION_ACTION':
+        const pathway = getPathwayById(currentLayer.specific!);
         return (
           <div className="space-y-6 animate-in fade-in slide-in-from-right-4 duration-300">
             <div className="bg-indigo-50 p-8 rounded-[2.5rem] border-2 border-indigo-100 relative overflow-hidden">
@@ -383,9 +365,11 @@ const NociceptiveThreatAssessment = ({ onSave, initialValue }: NociceptiveThreat
                     </div>
                     <div>
                       <p className="text-sm font-black text-indigo-900 uppercase tracking-tight">The Protocol</p>
-                      <p className="text-sm text-indigo-700 font-medium leading-relaxed">
-                        Hold the position/points for <span className="font-black">3-5 seconds</span> with <span className="font-black">30% contraction</span>.
-                      </p>
+                      <div className="text-sm text-indigo-700 font-medium leading-relaxed">
+                        <ul className="list-disc list-inside space-y-1">
+                          {pathway?.protocols.map((p, i) => <li key={i}>{p}</li>)}
+                        </ul>
+                      </div>
                     </div>
                   </div>
                   <div className="flex items-start gap-4">

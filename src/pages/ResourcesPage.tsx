@@ -32,7 +32,8 @@ import {
   Youtube,
   TrendingUp,
   ShieldCheck,
-  GraduationCap
+  GraduationCap,
+  Crosshair
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -47,6 +48,7 @@ import MeridianClock from "@/components/crm/MeridianClock";
 import FiveElementCycle from "@/components/crm/FiveElementCycle";
 import ClinicalCheatSheet from "@/components/crm/ClinicalCheatSheet";
 import VideoLibrary from "@/components/crm/VideoLibrary";
+import BrainReflexReference from "@/components/crm/BrainReflexReference";
 
 const ResourcesPage = () => {
   const [searchParams, setSearchParams] = useSearchParams();
@@ -68,6 +70,9 @@ const ResourcesPage = () => {
           <TabsList className="flex w-max h-auto p-1.5 bg-slate-200/50 rounded-2xl gap-1">
             <TabsTrigger value="clock" className="rounded-xl py-2.5 px-6 data-[state=active]:bg-white data-[state=active]:text-indigo-600 data-[state=active]:shadow-sm font-bold text-xs uppercase tracking-widest">
               <Clock size={16} className="mr-2" /> Meridian Clock
+            </TabsTrigger>
+            <TabsTrigger value="brain" className="rounded-xl py-2.5 px-6 data-[state=active]:bg-white data-[state=active]:text-indigo-600 data-[state=active]:shadow-sm font-bold text-xs uppercase tracking-widest">
+              <Brain size={16} className="mr-2" /> Brain Reflexes
             </TabsTrigger>
             <TabsTrigger value="foundations" className="rounded-xl py-2.5 px-6 data-[state=active]:bg-white data-[state=active]:text-indigo-600 data-[state=active]:shadow-sm font-bold text-xs uppercase tracking-widest">
               <GraduationCap size={16} className="mr-2" /> Foundations
@@ -101,6 +106,10 @@ const ResourcesPage = () => {
 
         <TabsContent value="clock" className="mt-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
           <MeridianClock />
+        </TabsContent>
+
+        <TabsContent value="brain" className="mt-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
+          <BrainReflexReference />
         </TabsContent>
 
         <TabsContent value="foundations" className="mt-8 space-y-10 animate-in fade-in slide-in-from-bottom-4 duration-500">

@@ -2,15 +2,11 @@ import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Progress } from "@/components/ui/progress";
-import { Badge } from "@/components/ui/badge";
-import { Switch } from "@/components/ui/switch";
-import {
-  Target, Plus, TrendingUp, CheckCircle2, Loader2,
-  FlaskConical, Brain, Activity, Zap, Edit3, Trash2, PowerOff, Footprints, Scale, Hand, Dumbbell, Heart, Move, Wind, Droplets, ExternalLink
+import { 
+  Target, Plus, TrendingUp, Loader2, 
+  FlaskConical, Brain, Activity, Zap, Footprints, 
+  Scale, Hand, Heart, Move, Wind, Droplets 
 } from "lucide-react";
-import { Link } from "react-router-dom";
-
 import {
   Dialog,
   DialogContent,
@@ -25,17 +21,9 @@ import { showSuccess, showError } from "@/utils/toast";
 import { cn } from "@/lib/utils";
 import MusclePracticeStats from "@/components/crm/MusclePracticeStats";
 import { fetchLatestProcedureScores, LatestProcedureScores } from "@/utils/procedure-stats";
-
-interface Procedure {
-  id: string;
-  name: string;
-  description: string;
-  target_count: number;
-  current_count: number;
-  icon: string;
-  enabled: boolean;
-  created_at: string;
-}
+import ProcedureCard from "@/components/crm/ProcedureCard";
+import Breadcrumbs from "@/components/crm/Breadcrumbs";
+import { Progress } from "@/components/ui/progress";
 
 const ICON_OPTIONS = [
   { value: 'flask', label: 'Flask', icon: FlaskConical },
@@ -52,17 +40,12 @@ const ICON_OPTIONS = [
   { value: 'droplets', label: 'Droplets', icon: Droplets },
 ];
 
-const getIconComponent = (iconName: string) => {
-  const iconOption = ICON_OPTIONS.find(opt => opt.value === iconName);
-  return iconOption ? iconOption.icon : Target;
-};
-
 const ProceduresPage = () => {
-  const [procedures, setProcedures] = useState<Procedure[]>([]);
+  const [procedures, setProcedures] = useState<any[]>([]);
   const [latestScores, setLatestScores] = useState<LatestProcedureScores>({ bolt_score: null, coherence_score: null });
   const [loading, setLoading] = useState(true);
   const [dialogOpen, setDialogOpen] = useState(false);
-  const [editingProcedure, setEditingProcedure] = useState<Procedure | null>(null);
+  const [editingProcedure, setEditingProcedure] = useState<any>(null);
   const [formData, setFormData] = useState({
     name: '',
     description: '',
@@ -73,19 +56,13 @@ const ProceduresPage = () => {
   const fetchProcedures = async () => {
     try {
       const [procedureData, scoreData] = await Promise.all([
-        supabase
-          .from('procedures')
-          .select('*')
-          .order('created_at', { ascending: false }),
+        supabase.from('procedures').select('*').order('created_at', { ascending: false }),
         fetchLatestProcedureScores()
       ]);
-
       if (procedureData.error) throw procedureData.error;
-      
       setProcedures(procedureData.data || []);
       setLatestScores(scoreData);
     } catch (err) {
-      console.error("Error fetching procedures:", err);
       showError("Failed to load procedures");
     } finally {
       setLoading(false);
@@ -94,13 +71,8 @@ const ProceduresPage = () => {
 
   const handleToggleEnabled = async (id: string, currentEnabled: boolean) => {
     try {
-      const { error } = await supabase
-        .from('procedures')
-        .update({ enabled: !currentEnabled })
-        .eq('id', id);
-
+      const { error } = await supabase.from('procedures').update({ enabled: !currentEnabled }).eq('id', id);
       if (error) throw error;
-      
       showSuccess(currentEnabled ? "Procedure disabled" : "Procedure enabled");
       fetchProcedures();
     } catch (err: any) {
@@ -110,39 +82,26 @@ const ProceduresPage = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
     try {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error("Not authenticated");
 
+      const payload = {
+        user_id: user.id,
+        name: formData.name,
+        description: formData.description,
+        target_count: formData.target_count,
+        icon: formData.icon,
+      };
+
       if (editingProcedure) {
-        const { error } = await supabase
-          .from('procedures')
-          .update({
-            name: formData.name,
-            description: formData.description,
-            target_count: formData.target_count,
-            icon: formData.icon,
-          })
-          .eq('id', editingProcedure.id);
-
+        const { error } = await supabase.from('procedures').update(payload).eq('id', editingProcedure.id);
         if (error) throw error;
-        showSuccess("Procedure updated successfully");
+        showSuccess("Procedure updated");
       } else {
-        const { error } = await supabase
-          .from('procedures')
-          .insert({
-            user_id: user.id,
-            name: formData.name,
-            description: formData.description,
-            target_count: formData.target_count,
-            current_count: 0,
-            icon: formData.icon,
-            enabled: true,
-          });
-
+        const { error } = await supabase.from('procedures').insert({ ...payload, current_count: 0, enabled: true });
         if (error) throw error;
-        showSuccess("Procedure added successfully");
+        showSuccess("Procedure added");
       }
 
       setDialogOpen(false);
@@ -155,44 +114,18 @@ const ProceduresPage = () => {
   };
 
   const handleDelete = async (id: string) => {
-    if (!confirm("Are you sure you want to delete this procedure?")) return;
-
+    if (!confirm("Are you sure?")) return;
     try {
-      const { error } = await supabase
-        .from('procedures')
-        .delete()
-        .eq('id', id);
-
+      const { error } = await supabase.from('procedures').delete().eq('id', id);
       if (error) throw error;
       showSuccess("Procedure deleted");
       fetchProcedures();
     } catch (err: any) {
-      showError(err.message || "Failed to delete procedure");
+      showError("Failed to delete procedure");
     }
   };
 
-  const handleEdit = (procedure: Procedure) => {
-    setEditingProcedure(procedure);
-    setFormData({
-      name: procedure.name,
-      description: procedure.description,
-      target_count: procedure.target_count,
-      icon: procedure.icon,
-    });
-    setDialogOpen(true);
-  };
-
-  const handleDialogClose = (open: boolean) => {
-    setDialogOpen(open);
-    if (!open) {
-      setEditingProcedure(null);
-      setFormData({ name: '', description: '', target_count: 5, icon: 'target' });
-    }
-  };
-
-  useEffect(() => {
-    fetchProcedures();
-  }, []);
+  useEffect(() => { fetchProcedures(); }, []);
 
   const enabledProcedures = procedures.filter(p => p.enabled);
   const completedCount = enabledProcedures.filter(p => p.current_count >= p.target_count).length;
@@ -201,79 +134,49 @@ const ProceduresPage = () => {
         enabledProcedures.reduce((sum, p) => sum + p.target_count, 0)) * 100)
     : 0;
 
+  if (loading) return <div className="flex min-h-screen items-center justify-center"><Loader2 className="animate-spin text-indigo-500" size={48} /></div>;
+
   return (
     <div className="p-4 md:p-8 max-w-full mx-auto space-y-8">
+      <Breadcrumbs items={[{ label: "Procedures" }]} />
+      
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
         <div>
-          <h1 className="text-3xl font-bold tracking-tight text-slate-900">Procedure Tracker</h1>
-          <p className="text-slate-500 mt-1">Track your progress learning new functional neurology procedures</p>
+          <h1 className="text-4xl font-black tracking-tight text-slate-900">Procedure Tracker</h1>
+          <p className="text-slate-500 font-medium mt-1">Monitor your clinical mastery and protocol consistency.</p>
         </div>
-        <Dialog open={dialogOpen} onOpenChange={handleDialogClose}>
+        <Dialog open={dialogOpen} onOpenChange={(open) => { setDialogOpen(open); if (!open) setEditingProcedure(null); }}>
           <DialogTrigger asChild>
-            <Button className="bg-indigo-600 hover:bg-indigo-700 shadow-lg shadow-indigo-100">
-              <Plus size={18} className="mr-2" /> Add Procedure
+            <Button className="bg-indigo-600 hover:bg-indigo-700 shadow-xl shadow-indigo-100 rounded-2xl h-12 px-8 font-black text-xs uppercase tracking-widest">
+              <Plus size={20} className="mr-2" /> Add Procedure
             </Button>
           </DialogTrigger>
-          <DialogContent className="sm:max-w-[500px]">
-            <DialogHeader>
-              <DialogTitle>{editingProcedure ? 'Edit Procedure' : 'Add New Procedure'}</DialogTitle>
-            </DialogHeader>
-            <form onSubmit={handleSubmit} className="space-y-4">
-              <div>
-                <Label htmlFor="name">Procedure Name</Label>
-                <Input
-                  id="name"
-                  value={formData.name}
-                  onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                  placeholder="e.g., BOLT Test"
-                  required
-                />
+          <DialogContent className="sm:max-w-[500px] rounded-[2rem]">
+            <DialogHeader><DialogTitle className="text-2xl font-black">{editingProcedure ? 'Edit Procedure' : 'Add New Procedure'}</DialogTitle></DialogHeader>
+            <form onSubmit={handleSubmit} className="space-y-6">
+              <div className="space-y-2">
+                <Label htmlFor="name" className="text-[10px] font-black uppercase tracking-widest text-slate-400">Procedure Name</Label>
+                <Input id="name" value={formData.name} onChange={(e) => setFormData({ ...formData, name: e.target.value })} placeholder="e.g., BOLT Test" required className="h-12 rounded-xl" />
               </div>
-              <div>
-                <Label htmlFor="description">Description</Label>
-                <Textarea
-                  id="description"
-                  value={formData.description}
-                  onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                  placeholder="Brief description of the procedure..."
-                  rows={3}
-                />
+              <div className="space-y-2">
+                <Label htmlFor="description" className="text-[10px] font-black uppercase tracking-widest text-slate-400">Description</Label>
+                <Textarea id="description" value={formData.description} onChange={(e) => setFormData({ ...formData, description: e.target.value })} placeholder="Brief description..." rows={3} className="rounded-xl resize-none" />
               </div>
-              <div>
-                <Label htmlFor="target">Target Count</Label>
-                <Input
-                  id="target"
-                  type="number"
-                  min="1"
-                  value={formData.target_count}
-                  onChange={(e) => setFormData({ ...formData, target_count: parseInt(e.target.value) })}
-                  required
-                />
+              <div className="space-y-2">
+                <Label htmlFor="target" className="text-[10px] font-black uppercase tracking-widest text-slate-400">Target Count</Label>
+                <Input id="target" type="number" min="1" value={formData.target_count} onChange={(e) => setFormData({ ...formData, target_count: parseInt(e.target.value) })} required className="h-12 rounded-xl" />
               </div>
-              <div>
-                <Label>Icon</Label>
-                <div className="grid grid-cols-5 gap-2 mt-2">
-                  {ICON_OPTIONS.map((option) => {
-                    const IconComponent = option.icon;
-                    return (
-                      <button
-                        key={option.value}
-                        type="button"
-                        onClick={() => setFormData({ ...formData, icon: option.value })}
-                        className={cn(
-                          "p-3 rounded-lg border-2 transition-all hover:border-indigo-300",
-                          formData.icon === option.value 
-                            ? "border-indigo-600 bg-indigo-50" 
-                            : "border-slate-200 bg-white"
-                        )}
-                      >
-                        <IconComponent size={24} className={formData.icon === option.value ? "text-indigo-600" : "text-slate-400"} />
-                      </button>
-                    );
-                  })}
+              <div className="space-y-3">
+                <Label className="text-[10px] font-black uppercase tracking-widest text-slate-400">Visual Icon</Label>
+                <div className="grid grid-cols-6 gap-2">
+                  {ICON_OPTIONS.map((option) => (
+                    <button key={option.value} type="button" onClick={() => setFormData({ ...formData, icon: option.value })} className={cn("p-3 rounded-xl border-2 transition-all", formData.icon === option.value ? "border-indigo-600 bg-indigo-50" : "border-slate-100 bg-white hover:bg-slate-50")}>
+                      <option.icon size={20} className={formData.icon === option.value ? "text-indigo-600" : "text-slate-400"} />
+                    </button>
+                  ))}
                 </div>
               </div>
-              <Button type="submit" className="w-full bg-indigo-600 hover:bg-indigo-700">
+              <Button type="submit" className="w-full bg-indigo-600 hover:bg-indigo-700 h-12 rounded-xl font-bold shadow-lg shadow-indigo-100">
                 {editingProcedure ? 'Update Procedure' : 'Add Procedure'}
               </Button>
             </form>
@@ -281,209 +184,39 @@ const ProceduresPage = () => {
         </Dialog>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        <div className="lg:col-span-2">
-          <MusclePracticeStats />
-        </div>
-        
-        <Card className="border-none shadow-lg rounded-2xl bg-white">
-          <CardHeader className="pb-3">
-            <CardTitle className="text-xl font-bold flex items-center gap-2 text-emerald-600">
-              <TrendingUp size={24} className="text-emerald-600" /> Overall Progress
-            </CardTitle>
-            <CardDescription>
-              Tracking completion across all enabled procedures.
-            </CardDescription>
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        <div className="lg:col-span-2"><MusclePracticeStats /></div>
+        <Card className="border-none shadow-lg rounded-[2.5rem] bg-white overflow-hidden">
+          <CardHeader className="bg-slate-50/50 border-b border-slate-100 p-8">
+            <CardTitle className="text-xl font-black flex items-center gap-3 text-emerald-600"><TrendingUp size={24} /> Overall Progress</CardTitle>
           </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="space-y-2">
-              <div className="flex items-center justify-between text-sm">
-                <span className="font-bold text-slate-700">Total Completion</span>
-                <span className="font-bold text-indigo-600">{totalProgress}%</span>
+          <CardContent className="p-8 space-y-6">
+            <div className="space-y-3">
+              <div className="flex items-center justify-between text-[10px] font-black uppercase tracking-widest">
+                <span className="text-slate-400">Total Completion</span>
+                <span className="text-indigo-600">{totalProgress}%</span>
               </div>
-              <Progress 
-                value={totalProgress} 
-                className="h-3 [&>div]:bg-indigo-600"
-              />
+              <Progress value={totalProgress} className="h-3 bg-slate-100 [&>div]:bg-indigo-600" />
             </div>
-            <div className="flex justify-between text-sm text-slate-600">
-              <span>Completed Procedures:</span>
-              <span className="font-bold text-slate-800">{completedCount} / {enabledProcedures.length}</span>
-            </div>
-            <div className="flex justify-between text-sm text-slate-600">
-              <span>Total Procedures Tracked:</span>
-              <span className="font-bold text-slate-800">{procedures.length}</span>
+            <div className="grid grid-cols-1 gap-3">
+              <div className="flex justify-between items-center p-4 bg-slate-50 rounded-2xl border border-slate-100">
+                <span className="text-xs font-bold text-slate-500">Completed:</span>
+                <span className="font-black text-slate-900">{completedCount} / {enabledProcedures.length}</span>
+              </div>
+              <div className="flex justify-between items-center p-4 bg-slate-50 rounded-2xl border border-slate-100">
+                <span className="text-xs font-bold text-slate-500">Total Tracked:</span>
+                <span className="font-black text-slate-900">{procedures.length}</span>
+              </div>
             </div>
           </CardContent>
         </Card>
       </div>
 
-      {procedures.length > 0 && (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {procedures.map((procedure) => {
-            const IconComponent = getIconComponent(procedure.icon);
-            const progress = Math.min((procedure.current_count / procedure.target_count) * 100, 100);
-            const isComplete = procedure.current_count >= procedure.target_count;
-            
-            let specificStatus = null;
-            let statusColor = "text-slate-500";
-
-            if (procedure.name.includes("BOLT Test")) {
-              const score = latestScores.bolt_score;
-              if (score !== null) {
-                specificStatus = `Current: ${score}s`;
-                statusColor = score >= 25 ? "text-emerald-600" : "text-amber-600";
-              }
-            } else if (procedure.name.includes("Coherence")) {
-              const score = latestScores.coherence_score;
-              if (score !== null) {
-                specificStatus = `Score: ${score.toFixed(2)}`;
-                const isCoherent = Math.abs(score - Math.round(score)) < 0.01;
-                statusColor = isCoherent ? "text-emerald-600" : "text-amber-600";
-              }
-            } else if (
-                procedure.name.includes("Range of Motion") ||
-                procedure.name.includes("Neurological Global") ||
-                procedure.name.includes("Sympathetic Down Regulation") ||
-                procedure.name.includes("T1 Sympathetic Chain Reset") ||
-                procedure.name.includes("Diaphragm (Phrenic Nerve)") ||
-                procedure.name.includes("Lymphatic System")
-            ) {
-                if (procedure.current_count > 0) {
-                    specificStatus = "Assessed";
-                    statusColor = "text-indigo-600";
-                }
-            }
-
-            return (
-              <Card key={procedure.id} className={cn(
-                "border-none shadow-md rounded-2xl overflow-hidden transition-all hover:shadow-lg",
-                !procedure.enabled && "opacity-60",
-                isComplete && procedure.enabled ? "bg-gradient-to-br from-emerald-50 to-emerald-100" : "bg-white"
-              )}>
-                <CardHeader className="pb-3">
-                  <div className="flex items-start justify-between">
-                    <div className="flex items-center gap-3 flex-1">
-                      <div className={cn(
-                        "w-12 h-12 rounded-xl flex items-center justify-center shadow-sm",
-                        !procedure.enabled ? "bg-slate-300" :
-                        isComplete ? "bg-emerald-500" : "bg-indigo-600"
-                      )}>
-                        <IconComponent size={24} className="text-white" />
-                      </div>
-                      <div className="flex-1">
-                        <CardTitle className="text-lg font-bold text-slate-900">{procedure.name}</CardTitle>
-                        <div className="flex items-center gap-2 mt-1">
-                          {isComplete && procedure.enabled && (
-                            <Badge className="bg-emerald-600 hover:bg-emerald-700 text-white border-none text-xs">
-                              <CheckCircle2 size={12} className="mr-1" /> Complete
-                            </Badge>
-                          )}
-                          {!procedure.enabled && (
-                            <Badge variant="outline" className="border-slate-300 text-slate-500 text-xs">
-                              <PowerOff size={12} className="mr-1" /> Disabled
-                            </Badge>
-                          )}
-                          {specificStatus && (
-                            <span className={cn("text-xs font-bold", statusColor)}>
-                                {specificStatus}
-                            </span>
-                          )}
-                        </div>
-                      </div>
-                    </div>
-                    <div className="flex gap-1">
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        className="h-8 w-8"
-                        onClick={() => handleEdit(procedure)}
-                      >
-                        <Edit3 size={14} />
-                      </Button>
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        className="h-8 w-8 text-red-500 hover:text-red-700"
-                        onClick={() => handleDelete(procedure.id)}
-                      >
-                        <Trash2 size={14} />
-                      </Button>
-                    </div>
-                  </div>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  {procedure.description && (
-                    <p className="text-sm text-slate-600 leading-relaxed">{procedure.description}</p>
-                  )}
-                  
-                  <div className="flex items-center justify-between">
-                    <span className="text-sm font-medium text-slate-700">Track in appointments</span>
-                    <Switch
-                      checked={procedure.enabled}
-                      onCheckedChange={() => handleToggleEnabled(procedure.id, procedure.enabled)}
-                    />
-                  </div>
-
-                  {procedure.enabled && (
-                    <div className="space-y-2">
-                      <div className="flex items-center justify-between text-sm">
-                        <span className="font-bold text-slate-700">Progress</span>
-                        <span className={cn(
-                          "font-bold",
-                          isComplete ? "text-emerald-600" : "text-indigo-600"
-                        )}>
-                          {procedure.current_count} / {procedure.target_count}
-                        </span>
-                      </div>
-                      <Progress
-                        value={progress}
-                        className={cn(
-                          "h-3",
-                          isComplete ? "[&>div]:bg-emerald-500" : "[&>div]:bg-indigo-600"
-                        )}
-                      />
-                      <p className="text-xs text-slate-500 text-center">
-                        {isComplete
-                          ? "🎉 Target reached!"
-                          : `${procedure.target_count - procedure.current_count} more to go`
-                        }
-                      </p>
-                    </div>
-                  )}
-
-                  {procedure.name.includes("Lymphatic System") && (
-                    <Button variant="outline" size="sm" className="w-full rounded-xl border-blue-100 text-blue-600 hover:bg-blue-50" asChild>
-                      <Link to="/resources?tab=lymphatic">
-                        <ExternalLink size={14} className="mr-2" /> View Protocol
-                      </Link>
-                    </Button>
-                  )}
-                </CardContent>
-              </Card>
-            );
-          })}
-        </div>
-      )}
-
-      {procedures.length === 0 && (
-        <div className="text-center py-20 bg-white rounded-3xl border-2 border-dashed border-slate-200">
-          <div className="w-16 h-16 bg-indigo-50 rounded-2xl flex items-center justify-center mx-auto mb-4">
-            <Target className="text-indigo-300" size={32} />
-          </div>
-          <h3 className="text-slate-900 font-bold text-lg">No procedures yet</h3>
-          <p className="text-slate-500 mt-1 max-w-sm mx-auto">
-            Procedures will automatically appear here when you use them in appointments (like BOLT tests).
-            You can also manually add procedures to track.
-          </p>
-          <Button 
-            className="mt-6 bg-indigo-600 hover:bg-indigo-700"
-            onClick={() => setDialogOpen(true)}
-          >
-            <Plus size={18} className="mr-2" /> Add Your First Procedure
-          </Button>
-        </div>
-      )}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        {procedures.map((p) => (
+          <ProcedureCard key={p.id} procedure={p} latestScores={latestScores} onEdit={(proc) => { setEditingProcedure(proc); setFormData({ name: proc.name, description: proc.description, target_count: proc.target_count, icon: proc.icon }); setDialogOpen(true); }} onDelete={handleDelete} onToggle={handleToggleEnabled} />
+        ))}
+      </div>
     </div>
   );
 };

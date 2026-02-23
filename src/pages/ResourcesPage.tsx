@@ -29,7 +29,10 @@ import {
   Dumbbell,
   Clock,
   RefreshCw,
-  Youtube
+  Youtube,
+  TrendingUp,
+  ShieldCheck,
+  GraduationCap
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -66,6 +69,9 @@ const ResourcesPage = () => {
             <TabsTrigger value="clock" className="rounded-xl py-2.5 px-6 data-[state=active]:bg-white data-[state=active]:text-indigo-600 data-[state=active]:shadow-sm font-bold text-xs uppercase tracking-widest">
               <Clock size={16} className="mr-2" /> Meridian Clock
             </TabsTrigger>
+            <TabsTrigger value="foundations" className="rounded-xl py-2.5 px-6 data-[state=active]:bg-white data-[state=active]:text-indigo-600 data-[state=active]:shadow-sm font-bold text-xs uppercase tracking-widest">
+              <GraduationCap size={16} className="mr-2" /> Foundations
+            </TabsTrigger>
             <TabsTrigger value="cheatsheet" className="rounded-xl py-2.5 px-6 data-[state=active]:bg-white data-[state=active]:text-indigo-600 data-[state=active]:shadow-sm font-bold text-xs uppercase tracking-widest">
               <Zap size={16} className="mr-2" /> Cheat Sheets
             </TabsTrigger>
@@ -95,6 +101,66 @@ const ResourcesPage = () => {
 
         <TabsContent value="clock" className="mt-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
           <MeridianClock />
+        </TabsContent>
+
+        <TabsContent value="foundations" className="mt-8 space-y-10 animate-in fade-in slide-in-from-bottom-4 duration-500">
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            <Card className="lg:col-span-2 border-none shadow-lg rounded-[2.5rem] bg-white overflow-hidden">
+              <div className="bg-indigo-600 p-8 text-white">
+                <h3 className="text-2xl font-black flex items-center gap-3">
+                  <ShieldCheck size={28} /> The Practitioner's Journey
+                </h3>
+                <p className="text-indigo-100 mt-2 font-medium">Understanding the evolution of clinical accuracy and muscle testing.</p>
+              </div>
+              <CardContent className="p-8 space-y-8">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <div className="p-6 bg-slate-50 rounded-3xl border border-slate-100 text-center space-y-2">
+                    <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">2 Years Experience</p>
+                    <p className="text-5xl font-black text-indigo-600">65%</p>
+                    <p className="text-sm font-bold text-slate-700">Accuracy Baseline</p>
+                  </div>
+                  <div className="p-6 bg-indigo-50 rounded-3xl border border-indigo-100 text-center space-y-2">
+                    <p className="text-[10px] font-black text-indigo-400 uppercase tracking-widest">5+ Years Experience</p>
+                    <p className="text-5xl font-black text-indigo-600">95%</p>
+                    <p className="text-sm font-bold text-slate-700">Clinical Mastery</p>
+                  </div>
+                </div>
+                <div className="p-6 bg-amber-50 rounded-3xl border border-amber-100">
+                  <h4 className="font-bold text-amber-900 mb-2 flex items-center gap-2">
+                    <Info size={18} /> Practitioner Insight
+                  </h4>
+                  <p className="text-sm text-amber-800 leading-relaxed italic">
+                    "I always second guess myself, even after 12 years. You have no idea the biases going on in your mind. Stay loose in the saddle and respond to what is happening in front of you."
+                  </p>
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card className="border-none shadow-lg rounded-[2.5rem] bg-slate-900 text-white overflow-hidden">
+              <CardHeader className="p-8">
+                <CardTitle className="text-xl font-black flex items-center gap-3">
+                  <Brain size={24} className="text-purple-400" /> Neurological Hierarchy
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="p-8 pt-0 space-y-6">
+                <div className="space-y-4">
+                  <div className="p-4 bg-white/5 rounded-2xl border border-white/10">
+                    <p className="text-xs font-black text-purple-400 uppercase tracking-widest mb-2">The Rule of Action</p>
+                    <p className="text-lg font-bold leading-tight">"Joints act, muscles and tissues react."</p>
+                  </div>
+                  <p className="text-sm text-slate-400 leading-relaxed">
+                    Joint actions are more important than muscles and fascia. They are "slaves" to the joint. The cerebellum is always paying attention to the joint action first.
+                  </p>
+                  <div className="pt-4 border-t border-white/10">
+                    <p className="text-xs font-black text-rose-400 uppercase tracking-widest mb-2">Pandora's Box</p>
+                    <p className="text-sm text-slate-400 leading-relaxed">
+                      Neurological work brings up and clears deeper layers of compensation. As you create safety for the system, deeper emotional layers will surface.
+                    </p>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
         </TabsContent>
 
         <TabsContent value="cheatsheet" className="mt-8 animate-in fade-in slide-in-from-bottom-4 duration-500">

@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -21,16 +21,21 @@ import {
   History,
   Info,
   X,
-  Droplets
+  Droplets,
+  Move,
+  Wind,
+  RefreshCw,
+  Timer
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 type Step = 
   | 'THREAT_DEFINITION'
   | 'STIMULATION'
   | 'IM_TEST'
   | 'PATHWAY_SELECTION'
-  | 'SPECIFIC_CORRECTION'
+  | 'MECHANO_DETAIL'
   | 'CORRECTION_ACTION'
   | 'REASSESSMENT';
 
@@ -49,8 +54,14 @@ interface Layer {
   response: 'Clear' | 'Inhibited' | null;
   direction: Direction | null;
   specific: SpecificCorrection | null;
+  joint?: string;
+  plane?: string;
+  action?: string;
   cleared: boolean;
 }
+
+const JOINTS = ["Foot", "Ankle", "Knee", "Hip", "Pelvis", "Lumbar", "Thoracic", "Cervical", "Shoulder", "Elbow", "Wrist"];
+const PLANES = ["Sagittal", "Frontal", "Transverse"];
 
 interface NociceptiveThreatAssessmentProps {
   onSave: (summary: string) => void;
@@ -95,9 +106,13 @@ const NociceptiveThreatAssessment = ({ onSave, initialValue }: NociceptiveThreat
       finalLayers.push({ ...currentLayer, cleared: true } as Layer);
     }
 
-    const summary = finalLayers.map(l => 
-      `Layer ${l.id}: ${l.threat} (${l.specific || 'Cleared'})`
-    ).join(' -> ');
+    const summary = finalLayers.map(l => {
+      let detail = l.specific || 'Cleared';
+      if (l.specific === 'Mechanoreceptor' && l.joint) {
+        detail = `${l.joint} ${l.plane} ${l.action}`;
+      }
+      return `Layer ${l.id}: ${l.threat} (${detail})`;
+    }).join(' -> ');
     
     onSave(`Nociceptive Threat Assessment: ${summary}`);
     
@@ -120,16 +135,29 @@ const NociceptiveThreatAssessment = ({ onSave, initialValue }: NociceptiveThreat
           <div className="space-y-6 animate-in fade-in slide-in-from-right-4 duration-300">
             <div className="space-y-2">
               <h3 className="text-xl font-black text-slate-900">Define the Threat</h3>
-              <p className="text-sm text-slate-500">What is the specific injury, movement, or sensation causing the threat?</p>
+              <p className="text-sm text-slate-500">Identify the area of increased nociception (Injury, Scar, or Movement).</p>
             </div>
-            <div className="relative">
-              <AlertTriangle className="absolute left-4 top-1/2 -translate-y-1/2 text-orange-500" size={20} />
-              <Input 
-                placeholder="e.g. Right Ankle Inversion, Lower Back Flexion..." 
-                className="h-14 pl-12 rounded-xl border-2 border-slate-100 focus:border-orange-500 transition-all text-lg font-medium"
-                value={currentLayer.threat}
-                onChange={(e) => setCurrentLayer({ ...currentLayer, threat: e.target.value })}
-              />
+            <div className="grid grid-cols-1 gap-4">
+              <div className="relative">
+                <AlertTriangle className="absolute left-4 top-1/2 -translate-y-1/2 text-orange-500" size={20} />
+                <Input 
+                  placeholder="e.g. C-Section Scar, Walking Downstairs..." 
+                  className="h-14 pl-12 rounded-xl border-2 border-slate-100 focus:border-orange-500 transition-all text-lg font-medium"
+                  value={currentLayer.threat}
+                  onChange={(e) => setCurrentLayer({ ...currentLayer, threat: e.target.value })}
+                />
+              </div>
+              <div className="flex flex-wrap gap-2">
+                {["Old Injury", "Surgical Scar", "Specific Movement", "Chronic Pain"].map(tag => (
+                  <button 
+                    key={tag}
+                    onClick={() => setCurrentLayer({ ...currentLayer, threat: tag })}
+                    className="px-3 py-1.5 rounded-lg bg-slate-100 hover:bg-orange-100 text-[10px] font-black uppercase tracking-widest text-slate-500 hover:text-orange-600 transition-all"
+                  >
+                    + {tag}
+                  </button>
+                ))}
+              </div>
             </div>
             <Button 
               disabled={!currentLayer.threat}
@@ -146,16 +174,17 @@ const NociceptiveThreatAssessment = ({ onSave, initialValue }: NociceptiveThreat
           <div className="space-y-6 animate-in fade-in slide-in-from-right-4 duration-300">
             <div className="bg-orange-50 p-6 rounded-2xl border-2 border-orange-100">
               <h3 className="text-lg font-bold text-orange-900 mb-3 flex items-center gap-2">
-                <Zap size={20} className="text-orange-600" /> Stimulation Phase
+                <Zap size={20} className="text-orange-600" /> Aggravate & Challenge
               </h3>
               <div className="space-y-4 text-orange-800">
                 <p className="font-medium leading-relaxed">
-                  1. Ask the client to perform or visualize the threat: <br/>
-                  <span className="text-orange-600 font-black underline">"{currentLayer.threat}"</span>
+                  Stimulate the threat: <span className="text-orange-600 font-black underline">"{currentLayer.threat}"</span>
                 </p>
-                <p className="text-sm opacity-80">
-                  This activates the nociceptive pathways and reveals neurological inhibition.
-                </p>
+                <ul className="list-disc list-inside text-sm space-y-2 opacity-90">
+                  <li><strong>Physical:</strong> Prod or rub the area/scar.</li>
+                  <li><strong>Functional:</strong> Perform the threatening movement.</li>
+                  <li><strong>Mental:</strong> Visualize the injury or movement.</li>
+                </ul>
               </div>
             </div>
             <div className="flex gap-3">
@@ -174,7 +203,7 @@ const NociceptiveThreatAssessment = ({ onSave, initialValue }: NociceptiveThreat
           <div className="space-y-6 animate-in fade-in slide-in-from-right-4 duration-300">
             <div className="space-y-2 text-center">
               <h3 className="text-xl font-black text-slate-900">Indicator Muscle (IM) Test</h3>
-              <p className="text-sm text-slate-500">Test the IM while the threat is active.</p>
+              <p className="text-sm text-slate-500">Test the IM while the system is "irritated" by the threat.</p>
             </div>
             <div className="grid grid-cols-2 gap-4">
               <Button
@@ -220,48 +249,40 @@ const NociceptiveThreatAssessment = ({ onSave, initialValue }: NociceptiveThreat
         return (
           <div className="space-y-6 animate-in fade-in slide-in-from-right-4 duration-300">
             <div className="space-y-2">
-              <h3 className="text-xl font-black text-slate-900">Select Pathway Flow</h3>
-              <p className="text-sm text-slate-500">Determine the direction of the neurological correction.</p>
+              <h3 className="text-xl font-black text-slate-900">Identify Correction Pathway</h3>
+              <p className="text-sm text-slate-500">Follow the standard Afferent/Efferent process.</p>
             </div>
-            <div className="grid grid-cols-1 gap-4">
-              <Button
-                variant="outline"
-                className={cn(
-                  "h-24 justify-between px-8 rounded-2xl border-2 transition-all",
-                  currentLayer.direction === 'Afferent (Bottom-Up)' ? "border-indigo-600 bg-indigo-50 text-indigo-700" : "border-slate-100 hover:border-indigo-200"
-                )}
-                onClick={() => {
-                  setCurrentLayer({ ...currentLayer, direction: 'Afferent (Bottom-Up)' });
-                  nextStep('SPECIFIC_CORRECTION');
-                }}
-              >
-                <div className="text-left">
-                  <div className="font-black text-lg">Afferent</div>
-                  <div className="text-sm font-medium opacity-70">Bottom-Up (Sensory Input)</div>
-                </div>
-                <div className="w-10 h-10 rounded-full bg-indigo-100 flex items-center justify-center text-indigo-600">
-                  <ChevronRight size={24} />
-                </div>
-              </Button>
-              <Button
-                variant="outline"
-                className={cn(
-                  "h-24 justify-between px-8 rounded-2xl border-2 transition-all",
-                  currentLayer.direction === 'Efferent (Top-Down)' ? "border-indigo-600 bg-indigo-50 text-indigo-700" : "border-slate-100 hover:border-indigo-200"
-                )}
-                onClick={() => {
-                  setCurrentLayer({ ...currentLayer, direction: 'Efferent (Top-Down)' });
-                  nextStep('SPECIFIC_CORRECTION');
-                }}
-              >
-                <div className="text-left">
-                  <div className="font-black text-lg">Efferent</div>
-                  <div className="text-sm font-medium opacity-70">Top-Down (Motor/Cognitive)</div>
-                </div>
-                <div className="w-10 h-10 rounded-full bg-indigo-100 flex items-center justify-center text-indigo-600">
-                  <ChevronRight size={24} />
-                </div>
-              </Button>
+            <div className="grid grid-cols-1 gap-3">
+              {[
+                { id: 'Mechanoreceptor', icon: Activity, color: 'text-blue-500', label: 'Mechanoreceptor (Joint/Muscle)' },
+                { id: 'Vestibular/Ocular', icon: Eye, color: 'text-cyan-500', label: 'Vestibular / Ocular' },
+                { id: 'Physiological', icon: Droplets, color: 'text-emerald-500', label: 'Physiological' },
+                { id: 'Cortical', icon: Brain, color: 'text-purple-500', label: 'Cortical (Top-Down)' },
+                { id: 'Subcortical', icon: Zap, color: 'text-amber-500', label: 'Subcortical (Autonomic)' },
+                { id: 'Emotional', icon: Heart, color: 'text-rose-500', label: 'Emotional' },
+              ].map((opt) => (
+                <Button
+                  key={opt.id}
+                  variant="outline"
+                  className={cn(
+                    "h-16 justify-start gap-4 px-6 rounded-2xl border-2 transition-all",
+                    currentLayer.specific === opt.id ? "border-indigo-600 bg-indigo-50 text-indigo-700" : "border-slate-100 hover:border-indigo-200"
+                  )}
+                  onClick={() => {
+                    setCurrentLayer({ 
+                      ...currentLayer, 
+                      specific: opt.id as SpecificCorrection,
+                      direction: ['Mechanoreceptor', 'Vestibular/Ocular', 'Physiological'].includes(opt.id) ? 'Afferent (Bottom-Up)' : 'Efferent (Top-Down)'
+                    });
+                    nextStep(opt.id === 'Mechanoreceptor' ? 'MECHANO_DETAIL' : 'CORRECTION_ACTION');
+                  }}
+                >
+                  <div className="w-10 h-10 rounded-xl bg-white shadow-sm flex items-center justify-center">
+                    <opt.icon size={20} className={opt.color} />
+                  </div>
+                  <span className="font-bold text-lg">{opt.label}</span>
+                </Button>
+              ))}
             </div>
             <Button variant="ghost" onClick={() => prevStep('IM_TEST')} className="w-full h-12 rounded-xl">
               <ChevronLeft size={18} className="mr-2" /> Back
@@ -269,103 +290,100 @@ const NociceptiveThreatAssessment = ({ onSave, initialValue }: NociceptiveThreat
           </div>
         );
 
-      case 'SPECIFIC_CORRECTION':
-        const options: SpecificCorrection[] = currentLayer.direction === 'Afferent (Bottom-Up)' 
-          ? ['Mechanoreceptor', 'Vestibular/Ocular', 'Physiological']
-          : ['Cortical', 'Subcortical', 'Emotional'];
-
+      case 'MECHANO_DETAIL':
         return (
           <div className="space-y-6 animate-in fade-in slide-in-from-right-4 duration-300">
             <div className="space-y-2">
-              <h3 className="text-xl font-black text-slate-900">Specific Correction</h3>
-              <p className="text-sm text-slate-500">Identify the primary driver for this layer.</p>
+              <h3 className="text-xl font-black text-slate-900">Mechanical Specifics</h3>
+              <p className="text-sm text-slate-500">Identify the joint and plane of motion the brain is requesting.</p>
             </div>
-            <div className="grid grid-cols-1 gap-3">
-              {options.map((opt) => (
-                <Button
-                  key={opt}
-                  variant="outline"
-                  className={cn(
-                    "h-16 justify-start gap-4 px-6 rounded-2xl border-2 transition-all",
-                    currentLayer.specific === opt ? "border-indigo-600 bg-indigo-50 text-indigo-700" : "border-slate-100 hover:border-indigo-200"
-                  )}
-                  onClick={() => {
-                    setCurrentLayer({ ...currentLayer, specific: opt });
-                    nextStep('CORRECTION_ACTION');
-                  }}
-                >
-                  <div className="w-10 h-10 rounded-xl bg-white shadow-sm flex items-center justify-center">
-                    {opt === 'Mechanoreceptor' && <Activity size={20} className="text-blue-500" />}
-                    {opt === 'Vestibular/Ocular' && <Eye size={20} className="text-cyan-500" />}
-                    {opt === 'Physiological' && <Droplets size={20} className="text-emerald-500" />}
-                    {opt === 'Cortical' && <Brain size={20} className="text-purple-500" />}
-                    {opt === 'Subcortical' && <Zap size={20} className="text-amber-500" />}
-                    {opt === 'Emotional' && <Heart size={20} className="text-rose-500" />}
-                  </div>
-                  <span className="font-bold text-lg">{opt}</span>
-                </Button>
-              ))}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Joint</label>
+                <Select value={currentLayer.joint} onValueChange={(v) => setCurrentLayer({ ...currentLayer, joint: v })}>
+                  <SelectTrigger className="rounded-xl h-12 font-bold"><SelectValue placeholder="Select Joint" /></SelectTrigger>
+                  <SelectContent>{JOINTS.map(j => <SelectItem key={j} value={j}>{j}</SelectItem>)}</SelectContent>
+                </Select>
+              </div>
+              <div className="space-y-2">
+                <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Plane</label>
+                <Select value={currentLayer.plane} onValueChange={(v) => setCurrentLayer({ ...currentLayer, plane: v })}>
+                  <SelectTrigger className="rounded-xl h-12 font-bold"><SelectValue placeholder="Select Plane" /></SelectTrigger>
+                  <SelectContent>{PLANES.map(p => <SelectItem key={p} value={p}>{p}</SelectItem>)}</SelectContent>
+                </Select>
+              </div>
             </div>
-            <Button variant="ghost" onClick={() => prevStep('PATHWAY_SELECTION')} className="w-full h-12 rounded-xl">
-              <ChevronLeft size={18} className="mr-2" /> Back
-            </Button>
+            <div className="space-y-2">
+              <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Action (e.g. Plantarflexion, Extension)</label>
+              <Input 
+                placeholder="Enter specific action..." 
+                className="h-12 rounded-xl font-bold"
+                value={currentLayer.action || ""}
+                onChange={(e) => setCurrentLayer({ ...currentLayer, action: e.target.value })}
+              />
+            </div>
+            <div className="flex gap-3">
+              <Button variant="ghost" onClick={() => prevStep('PATHWAY_SELECTION')} className="flex-1 h-12 rounded-xl">
+                <ChevronLeft size={18} className="mr-2" /> Back
+              </Button>
+              <Button 
+                disabled={!currentLayer.joint || !currentLayer.plane || !currentLayer.action}
+                onClick={() => nextStep('CORRECTION_ACTION')} 
+                className="flex-[2] h-12 rounded-xl bg-indigo-600 hover:bg-indigo-700 font-bold"
+              >
+                Continue <ChevronRight size={18} className="ml-2" />
+              </Button>
+            </div>
           </div>
         );
 
       case 'CORRECTION_ACTION':
         return (
           <div className="space-y-6 animate-in fade-in slide-in-from-right-4 duration-300">
-            <div className="bg-indigo-50 p-6 rounded-3xl border-2 border-indigo-100">
-              <h3 className="text-lg font-bold text-indigo-900 mb-4 flex items-center gap-2">
-                <CheckCircle2 size={20} className="text-indigo-600" /> Apply Correction
+            <div className="bg-indigo-50 p-8 rounded-[2.5rem] border-2 border-indigo-100 relative overflow-hidden">
+              <div className="absolute top-0 right-0 p-8 opacity-5 pointer-events-none"><Wind size={120} /></div>
+              <h3 className="text-xl font-black text-indigo-900 mb-6 flex items-center gap-3">
+                <CheckCircle2 size={24} className="text-indigo-600" /> 
+                {currentLayer.specific === 'Mechanoreceptor' ? `Correct ${currentLayer.joint}` : 'Apply Correction'}
               </h3>
-              <div className="text-indigo-800 space-y-4">
-                <p className="font-bold text-lg">Perform the {currentLayer.specific} protocol:</p>
-                <ul className="space-y-3">
-                  {currentLayer.specific === 'Mechanoreceptor' && (
-                    <li className="flex gap-3 items-start">
-                      <div className="w-1.5 h-1.5 rounded-full bg-indigo-400 mt-2 shrink-0" />
-                      <span>Stimulate the local receptor site while maintaining the threat position.</span>
-                    </li>
-                  )}
-                  {currentLayer.specific === 'Vestibular/Ocular' && (
-                    <li className="flex gap-3 items-start">
-                      <div className="w-1.5 h-1.5 rounded-full bg-indigo-400 mt-2 shrink-0" />
-                      <span>Perform VOR (Vestibulo-Ocular Reflex) or saccades in the direction of threat.</span>
-                    </li>
-                  )}
-                  {currentLayer.specific === 'Physiological' && (
-                    <li className="flex gap-3 items-start">
-                      <div className="w-1.5 h-1.5 rounded-full bg-indigo-400 mt-2 shrink-0" />
-                      <span>Address biochemical or organ-specific reflexes related to the threat.</span>
-                    </li>
-                  )}
-                  {currentLayer.specific === 'Cortical' && (
-                    <li className="flex gap-3 items-start">
-                      <div className="w-1.5 h-1.5 rounded-full bg-indigo-400 mt-2 shrink-0" />
-                      <span>Engage conscious motor control or visualization of pain-free movement.</span>
-                    </li>
-                  )}
-                  {currentLayer.specific === 'Subcortical' && (
-                    <li className="flex gap-3 items-start">
-                      <div className="w-1.5 h-1.5 rounded-full bg-indigo-400 mt-2 shrink-0" />
-                      <span>Use rhythmic breathing or autonomic reset techniques (e.g. T1 reset).</span>
-                    </li>
-                  )}
-                  {currentLayer.specific === 'Emotional' && (
-                    <li className="flex gap-3 items-start">
-                      <div className="w-1.5 h-1.5 rounded-full bg-indigo-400 mt-2 shrink-0" />
-                      <span>Apply ESR points and identify the emotional driver of the threat.</span>
-                    </li>
-                  )}
-                </ul>
-                <div className="pt-4 border-t border-indigo-100 mt-4">
-                  <p className="text-sm italic font-medium">"Hold the correction for 30-60 seconds until the nervous system integrates the change."</p>
+              
+              <div className="space-y-6">
+                <div className="p-5 bg-white rounded-2xl border border-indigo-200 shadow-sm">
+                  <p className="text-lg font-bold text-indigo-900 leading-tight">
+                    {currentLayer.specific === 'Mechanoreceptor' 
+                      ? `Perform ${currentLayer.action} in the ${currentLayer.plane} plane.`
+                      : `Apply the ${currentLayer.specific} protocol.`}
+                  </p>
+                </div>
+
+                <div className="grid grid-cols-1 gap-4">
+                  <div className="flex items-start gap-4">
+                    <div className="w-10 h-10 rounded-xl bg-indigo-600 text-white flex items-center justify-center shrink-0 shadow-lg">
+                      <Timer size={20} />
+                    </div>
+                    <div>
+                      <p className="text-sm font-black text-indigo-900 uppercase tracking-tight">The Protocol</p>
+                      <p className="text-sm text-indigo-700 font-medium leading-relaxed">
+                        Hold the position/points for <span className="font-black">3-5 seconds</span> with <span className="font-black">30% contraction</span>.
+                      </p>
+                    </div>
+                  </div>
+                  <div className="flex items-start gap-4">
+                    <div className="w-10 h-10 rounded-xl bg-teal-500 text-white flex items-center justify-center shrink-0 shadow-lg">
+                      <Wind size={20} />
+                    </div>
+                    <div>
+                      <p className="text-sm font-black text-teal-900 uppercase tracking-tight">Nasal Breathing</p>
+                      <p className="text-sm text-teal-700 font-medium leading-relaxed">
+                        Instruct client to breathe <span className="font-black">in and out through the nose</span> to provide a parasympathetic stimulus.
+                      </p>
+                    </div>
+                  </div>
                 </div>
               </div>
             </div>
             <div className="flex gap-3">
-              <Button variant="ghost" onClick={() => prevStep('SPECIFIC_CORRECTION')} className="flex-1 h-12 rounded-xl">
+              <Button variant="ghost" onClick={() => prevStep(currentLayer.specific === 'Mechanoreceptor' ? 'MECHANO_DETAIL' : 'PATHWAY_SELECTION')} className="flex-1 h-12 rounded-xl">
                 <ChevronLeft size={18} className="mr-2" /> Back
               </Button>
               <Button onClick={() => nextStep('REASSESSMENT')} className="flex-[2] h-12 rounded-xl bg-indigo-600 hover:bg-indigo-700 font-bold">
@@ -378,19 +396,19 @@ const NociceptiveThreatAssessment = ({ onSave, initialValue }: NociceptiveThreat
       case 'REASSESSMENT':
         return (
           <div className="space-y-6 animate-in fade-in slide-in-from-right-4 duration-300">
-            <div className="bg-green-50 p-8 rounded-3xl border-2 border-green-100 text-center">
+            <div className="bg-emerald-50 p-8 rounded-[2.5rem] border-2 border-emerald-100 text-center">
               <div className="w-20 h-20 rounded-full bg-white shadow-sm flex items-center justify-center mx-auto mb-6">
-                <CheckCircle2 size={48} className="text-green-500" />
+                <RefreshCw size={48} className="text-emerald-500" />
               </div>
-              <h3 className="text-2xl font-black text-green-900 mb-2">Re-Assessment</h3>
-              <p className="text-green-700 font-medium">
+              <h3 className="text-2xl font-black text-emerald-900 mb-2">Re-Assessment</h3>
+              <p className="text-emerald-700 font-medium">
                 Re-stimulate <span className="font-black underline">"{currentLayer.threat}"</span> and test the IM.
               </p>
             </div>
             
             <div className="grid grid-cols-1 gap-4">
               <Button 
-                className="h-16 rounded-2xl bg-green-600 hover:bg-green-700 text-xl font-black shadow-lg shadow-green-100"
+                className="h-16 rounded-2xl bg-emerald-600 hover:bg-emerald-700 text-xl font-black shadow-lg shadow-emerald-100"
                 onClick={handleFinish}
               >
                 Threat is Clear <CheckCircle2 size={24} className="ml-2" />
@@ -426,7 +444,7 @@ const NociceptiveThreatAssessment = ({ onSave, initialValue }: NociceptiveThreat
             )}
             style={{ 
               width: `${(
-                ['THREAT_DEFINITION', 'STIMULATION', 'IM_TEST', 'PATHWAY_SELECTION', 'SPECIFIC_CORRECTION', 'CORRECTION_ACTION', 'REASSESSMENT'].indexOf(currentStep) + 1
+                ['THREAT_DEFINITION', 'STIMULATION', 'IM_TEST', 'PATHWAY_SELECTION', 'MECHANO_DETAIL', 'CORRECTION_ACTION', 'REASSESSMENT'].indexOf(currentStep) + 1
               ) / 7 * 100}%` 
             }} 
           />
@@ -447,7 +465,7 @@ const NociceptiveThreatAssessment = ({ onSave, initialValue }: NociceptiveThreat
                   Layer {layers.length + 1}
                 </Badge>
                 <span className="text-[10px] text-slate-400 font-black uppercase tracking-widest">
-                  Step {['THREAT_DEFINITION', 'STIMULATION', 'IM_TEST', 'PATHWAY_SELECTION', 'SPECIFIC_CORRECTION', 'CORRECTION_ACTION', 'REASSESSMENT'].indexOf(currentStep) + 1} of 7
+                  Step {['THREAT_DEFINITION', 'STIMULATION', 'IM_TEST', 'PATHWAY_SELECTION', 'MECHANO_DETAIL', 'CORRECTION_ACTION', 'REASSESSMENT'].indexOf(currentStep) + 1} of 7
                 </span>
               </div>
             </div>
@@ -473,39 +491,39 @@ const NociceptiveThreatAssessment = ({ onSave, initialValue }: NociceptiveThreat
           </div>
         </div>
 
-        <div className="min-h-[400px] flex flex-col justify-center">
+        <div className="min-h-[450px] flex flex-col justify-center">
           {renderStep()}
         </div>
 
         {showInfo && (
           <div className="absolute inset-0 z-20 bg-white/95 backdrop-blur-sm p-8 animate-in fade-in zoom-in-95 duration-200">
             <div className="flex justify-between items-center mb-6">
-              <h3 className="text-xl font-black text-slate-900">Physiology Reference</h3>
+              <h3 className="text-xl font-black text-slate-900">Clinical Logic</h3>
               <Button variant="ghost" size="icon" onClick={() => setShowInfo(false)} className="rounded-full">
                 <X size={20} />
               </Button>
             </div>
             <div className="space-y-6">
-              <div className="p-4 bg-blue-50 rounded-2xl border border-blue-100">
-                <h4 className="font-bold text-blue-900 mb-2 flex items-center gap-2">
-                  <Zap size={16} /> Neo-spinothalamic Pathway
+              <div className="p-4 bg-orange-50 rounded-2xl border border-orange-100">
+                <h4 className="font-bold text-orange-900 mb-2 flex items-center gap-2">
+                  <Zap size={16} /> The Stimulus
                 </h4>
-                <p className="text-sm text-blue-800 leading-relaxed">
-                  The "Fast" pathway. Transmits sharp, localized pain signals via A-delta fibers. Crucial for immediate threat detection and withdrawal reflexes.
+                <p className="text-sm text-orange-800 leading-relaxed">
+                  Use a previous injury, scar, or movement as the "in" to the system. Aggravate it slightly to reveal the neurological threat response.
                 </p>
               </div>
-              <div className="p-4 bg-purple-50 rounded-2xl border border-purple-100">
-                <h4 className="font-bold text-purple-900 mb-2 flex items-center gap-2">
-                  <Activity size={16} /> Paleospinothalamic Pathway
+              <div className="p-4 bg-indigo-50 rounded-2xl border border-indigo-100">
+                <h4 className="font-bold text-indigo-900 mb-2 flex items-center gap-2">
+                  <Wind size={16} /> The Correction
                 </h4>
-                <p className="text-sm text-purple-800 leading-relaxed">
-                  The "Slow" pathway. Transmits dull, aching, chronic pain via C-fibers. Connects to the limbic system, driving the emotional and autonomic response to threat.
+                <p className="text-sm text-indigo-800 leading-relaxed">
+                  Put the limb in the threatening movement + Nasal Breathing. This brings a parasympathetic stimulus to down-regulate the threat.
                 </p>
               </div>
               <div className="p-4 bg-slate-50 rounded-2xl border border-slate-200">
-                <h4 className="font-bold text-slate-900 mb-2">Neurological Inhibition</h4>
+                <h4 className="font-bold text-slate-900 mb-2">Layering Compensation</h4>
                 <p className="text-sm text-slate-600 leading-relaxed">
-                  When the brain perceives a threat, it may "down-regulate" or inhibit muscle function to prevent further injury. This tool identifies and clears these protective patterns layer by layer.
+                  One area of threat may have multiple layers (e.g. Foot {"->"} Knee {"->"} Hip). Clear each layer until the movement no longer inhibits the system.
                 </p>
               </div>
             </div>
@@ -547,11 +565,13 @@ const NociceptiveThreatAssessment = ({ onSave, initialValue }: NociceptiveThreat
                     <h4 className="font-bold text-slate-900 text-sm mb-1">{layer.threat}</h4>
                     <div className="flex flex-wrap gap-1 mt-2">
                       <Badge variant="secondary" className="text-[9px] bg-indigo-50 text-indigo-600 border-none">
-                        {layer.direction?.split(' ')[0]}
+                        {layer.specific === 'Mechanoreceptor' ? layer.joint : layer.specific}
                       </Badge>
-                      <Badge variant="secondary" className="text-[9px] bg-slate-100 text-slate-600 border-none">
-                        {layer.specific}
-                      </Badge>
+                      {layer.action && (
+                        <Badge variant="secondary" className="text-[9px] bg-slate-100 text-slate-600 border-none">
+                          {layer.action}
+                        </Badge>
+                      )}
                     </div>
                   </div>
                 ))}

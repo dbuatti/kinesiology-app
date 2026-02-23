@@ -48,9 +48,9 @@ const ReflexImageZone = ({
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error("User not authenticated");
 
+      // Use a consistent filename pattern for the same reflex to allow overwriting
       const fileExt = file.name.split('.').pop() || 'png';
-      const fileName = `${user.id}/${reflexId}-${Math.random().toString(36).substring(7)}.${fileExt}`;
-      const filePath = fileName; // Path within the bucket
+      const filePath = `${user.id}/${reflexId}.${fileExt}`;
 
       // 1. Upload to Storage
       const { error: uploadError } = await supabase.storage
@@ -61,8 +61,9 @@ const ReflexImageZone = ({
         });
 
       if (uploadError) {
+        console.error("[ReflexImageZone] Storage error:", uploadError);
         if (uploadError.message.includes('Bucket not found')) {
-          throw new Error("Storage bucket not found. Please ensure 'reflex-images' bucket exists in Supabase.");
+          throw new Error("Storage bucket 'reflex-images' not found. Please create it in your Supabase dashboard.");
         }
         throw uploadError;
       }
@@ -72,13 +73,15 @@ const ReflexImageZone = ({
         .from(BUCKET_NAME)
         .getPublicUrl(filePath);
 
-      // 3. Save to Database
+      // 3. Save to Database with explicit conflict handling
       const { error: dbError } = await supabase
         .from('brain_reflex_customizations')
         .upsert({
           user_id: user.id,
           reflex_id: reflexId,
           image_url: publicUrl
+        }, { 
+          onConflict: 'user_id,reflex_id' 
         });
 
       if (dbError) throw dbError;

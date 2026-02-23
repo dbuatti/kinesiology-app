@@ -27,6 +27,7 @@ import {
 import Breadcrumbs from "@/components/crm/Breadcrumbs";
 import { Button } from "@/components/ui/button";
 import { TCM_CHANNELS } from "@/data/tcm-channel-data";
+import { generateSessionSummary } from "@/utils/summary-generator";
 
 const AppointmentDetailPage = () => {
   const { id } = useParams<{ id: string }>();
@@ -157,7 +158,7 @@ const AppointmentDetailPage = () => {
     try {
       const { data: previous, error } = await supabase
         .from('appointments')
-        .select('goal, issue, acupoints')
+        .select('goal, issue, acupoints, priority_pattern')
         .eq('client_id', appointment.clients.id)
         .neq('id', id)
         .order('date', { ascending: false })
@@ -177,10 +178,11 @@ const AppointmentDetailPage = () => {
         await supabase.from('appointments').update({
           goal: previous.goal,
           issue: previous.issue,
-          acupoints: previous.acupoints
+          acupoints: previous.acupoints,
+          priority_pattern: previous.priority_pattern
         }).eq('id', id);
         
-        showSuccess("Cloned Goal, Issue, and Acupoints from previous session.");
+        showSuccess("Cloned data from previous session.");
         fetchAppointmentData();
       }
     } catch (err: any) {
@@ -196,44 +198,8 @@ const AppointmentDetailPage = () => {
 
   const handleCopySummary = () => {
     if (!appointment) return;
-    
-    let summary = `
-SESSION SUMMARY: ${appointment.clients.name}
-Date: ${format(appointment.date, "MMMM d, yyyy")}
-Goal: ${appointment.goal || 'Not set'}
-Issue: ${appointment.issue || 'Not set'}
-
-KEY ASSESSMENTS:
-- BOLT Score: ${appointment.bolt_score ? `${appointment.bolt_score}s` : 'Not recorded'}
-- Coherence: ${appointment.coherence_score ? appointment.coherence_score.toFixed(2) : 'Not recorded'}
-- Hydration: ${appointment.hydrated ? 'Passed' : 'Needs attention'}
-`;
-
-    if (appointment.sagittal_plane_notes || appointment.frontal_plane_notes || appointment.transverse_plane_notes) {
-      summary += `\nRANGE OF MOTION (COGS):\n`;
-      if (appointment.sagittal_plane_notes) summary += `- Sagittal: ${appointment.sagittal_plane_notes}\n`;
-      if (appointment.frontal_plane_notes) summary += `- Frontal: ${appointment.frontal_plane_notes}\n`;
-      if (appointment.transverse_plane_notes) summary += `- Transverse: ${appointment.transverse_plane_notes}\n`;
-    }
-
-    if (appointment.fakuda_notes || appointment.sharpened_rhombergs_notes || appointment.frontal_lobe_notes) {
-      summary += `\nNEUROLOGICAL FINDINGS:\n`;
-      if (appointment.fakuda_notes) summary += `- Fakuda: ${appointment.fakuda_notes}\n`;
-      if (appointment.sharpened_rhombergs_notes) summary += `- Rhombergs: ${appointment.sharpened_rhombergs_notes}\n`;
-      if (appointment.frontal_lobe_notes) summary += `- Frontal Lobe: ${appointment.frontal_lobe_notes}\n`;
-    }
-
-    if (appointment.emotion_secondary_selection && appointment.emotion_secondary_selection.length > 0) {
-      summary += `\nEMOTIONAL CONTEXT: ${appointment.emotion_secondary_selection.join(', ')}\n`;
-    }
-
-    summary += `\nSESSION NOTES:\n${appointment.notes || 'No general notes recorded.'}`;
-    
-    if (appointment.acupoints) {
-      summary += `\n\nACUPOINTS USED: ${appointment.acupoints}`;
-    }
-
-    navigator.clipboard.writeText(summary.trim());
+    const summary = generateSessionSummary(appointment);
+    navigator.clipboard.writeText(summary);
     setCopied(true);
     showSuccess("Detailed session summary copied to clipboard!");
     setTimeout(() => setCopied(false), 3000);

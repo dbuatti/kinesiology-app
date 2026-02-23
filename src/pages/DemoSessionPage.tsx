@@ -34,6 +34,7 @@ import {
 import Breadcrumbs from "@/components/crm/Breadcrumbs";
 import { Button } from "@/components/ui/button";
 import { Alert, AlertDescription } from "@/components/ui/alert";
+import { generateSessionSummary } from "@/utils/summary-generator";
 
 const DemoSessionPage = () => {
   // Mock initial data
@@ -62,8 +63,6 @@ const DemoSessionPage = () => {
   const saveField = async (field: string, value: any) => {
     console.log(`[Demo Mode] Saving ${field}:`, value);
     setAppointment((prev: any) => ({ ...prev, [field]: value }));
-    // We don't show success toasts for every keystroke in demo mode to keep it clean,
-    // but we'll log it to the console for debugging.
   };
 
   const handleStartSession = () => {
@@ -77,6 +76,8 @@ const DemoSessionPage = () => {
   };
 
   const handleCopySummary = () => {
+    const summary = generateSessionSummary(appointment);
+    navigator.clipboard.writeText(summary);
     showSuccess("Summary copied (Demo Mode)");
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);

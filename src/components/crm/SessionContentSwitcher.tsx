@@ -21,6 +21,7 @@ import VagusNerveProcess from './VagusNerveProcess';
 import PreviousSessionSummary from './PreviousSessionSummary';
 import GaitReflexAssessment from './GaitReflexAssessment';
 import LymphaticAssessment from './LymphaticAssessment';
+import PathwayAssessmentWizard from './PathwayAssessmentWizard';
 
 type ActiveView = 'home' | 'kinesiology' | 'muscles' | 'gait' | 'previous';
 
@@ -113,7 +114,11 @@ const SessionContentSwitcher = ({ appointment, onUpdate, saveField }: SessionCon
           </TabsContent>
 
           <TabsContent value="pathway" className="mt-6 space-y-6">
-            <EditableField key={`notes-pathway-${appointmentId}`} field="priority_pattern" label="Pathway Assessment Notes" value={appointment.priority_pattern} multiline placeholder="Document specific pathways tested and findings..." onSave={saveField as any} className="bg-white p-6 rounded-2xl border border-slate-100 shadow-sm min-h-[300px]" />
+            <PathwayAssessmentWizard
+              initialValue={appointment.priority_pattern || undefined}
+              onSave={(summary) => saveField('priority_pattern', summary)}
+            />
+            <EditableField key={`notes-pathway-${appointmentId}`} field="priority_pattern" label="Pathway Assessment Notes" value={appointment.priority_pattern} multiline placeholder="Document specific pathways tested and findings..." onSave={saveField as any} className="bg-white p-6 rounded-2xl border border-slate-100 shadow-sm min-h-[200px]" />
           </TabsContent>
 
           <TabsContent value="calibration" className="mt-6 space-y-6">

@@ -15,7 +15,8 @@ import {
   RefreshCw, 
   Sparkles,
   Heart,
-  X
+  X,
+  Activity
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { BRAIN_REFLEX_POINTS, BrainReflexPoint } from '@/data/brain-reflex-data';

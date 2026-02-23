@@ -1,21 +1,201 @@
 "use client";
 
-import React, { useState } from "react";
-import { BRAIN_REFLEX_POINTS, BrainRegionCategory } from "@/data/brain-reflex-data";
+import React, { useState, useEffect, useCallback } from "react";
+import { BRAIN_REFLEX_POINTS, BrainRegionCategory, BrainReflexPoint } from "@/data/brain-reflex-data";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { 
   Search, Brain, Zap, Info, 
   ArrowRightLeft, MousePointer2, 
-  Layers, Activity, ShieldAlert
+  Layers, Activity, ShieldAlert,
+  Upload, Image as ImageIcon, X, Loader2,
+  Plus
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
+import { supabase } from "@/integrations/supabase/client";
+import { showSuccess, showError } from "@/utils/toast";
+
+// Sub-component for the Image Upload/Display Zone
+const ReflexImageZone = ({ 
+  reflexId, 
+  initialUrl, 
+  onUploadComplete 
+}: { 
+  reflexId: string; 
+  initialUrl?: string; 
+  onUploadComplete: (url: string | null) => void 
+}) => {
+  const [isDragging, setIsDragging] = useState(false);
+  const [isUploading, setIsUploading] = useState(false);
+  const [imageUrl, setImageUrl] = useState<string | null>(initialUrl || null);
+
+  const handleUpload = async (file: File) => {
+    if (!file.type.startsWith('image/')) {
+      showError("Please upload an image file.");
+      return;
+    }
+
+    setIsUploading(true);
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) throw new Error("User not authenticated");
+
+      const fileExt = file.name.split('.').pop() || 'png';
+      const fileName = `${user.id}/${reflexId}-${Math.random().toString(36).substring(7)}.${fileExt}`;
+      const filePath = `reflex-images/${fileName}`;
+
+      // 1. Upload to Storage (using a public bucket 'practitioner-assets')
+      const { error: uploadError } = await supabase.storage
+        .from('practitioner-assets')
+        .upload(filePath, file, { upsert: true });
+
+      if (uploadError) throw uploadError;
+
+      // 2. Get Public URL
+      const { data: { publicUrl } } = supabase.storage
+        .from('practitioner-assets')
+        .getPublicUrl(filePath);
+
+      // 3. Save to Database
+      const { error: dbError } = await supabase
+        .from('brain_reflex_customizations')
+        .upsert({
+          user_id: user.id,
+          reflex_id: reflexId,
+          image_url: publicUrl
+        });
+
+      if (dbError) throw dbError;
+
+      setImageUrl(publicUrl);
+      onUploadComplete(publicUrl);
+      showSuccess("Reference image saved!");
+    } catch (error: any) {
+      console.error("Upload error:", error);
+      showError(error.message || "Failed to upload image.");
+    } finally {
+      setIsUploading(false);
+    }
+  };
+
+  const handleRemove = async (e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (!confirm("Remove this reference image?")) return;
+
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
+
+      await supabase
+        .from('brain_reflex_customizations')
+        .delete()
+        .eq('user_id', user.id)
+        .eq('reflex_id', reflexId);
+
+      setImageUrl(null);
+      onUploadComplete(null);
+      showSuccess("Image removed.");
+    } catch (error) {
+      showError("Failed to remove image.");
+    }
+  };
+
+  const onDrop = useCallback((e: React.DragEvent) => {
+    e.preventDefault();
+    setIsDragging(false);
+    const file = e.dataTransfer.files?.[0];
+    if (file) handleUpload(file);
+  }, [reflexId]);
+
+  const onPaste = useCallback((e: React.ClipboardEvent) => {
+    const item = e.clipboardData.items[0];
+    if (item?.type.startsWith('image/')) {
+      const file = item.getAsFile();
+      if (file) handleUpload(file);
+    }
+  }, [reflexId]);
+
+  return (
+    <div 
+      onDragOver={(e) => { e.preventDefault(); setIsDragging(true); }}
+      onDragLeave={() => setIsDragging(false)}
+      onDrop={onDrop}
+      onPaste={onPaste}
+      tabIndex={0} // Make it focusable for paste
+      className={cn(
+        "relative group/image aspect-video rounded-2xl border-2 border-dashed transition-all duration-300 flex flex-col items-center justify-center overflow-hidden",
+        imageUrl ? "border-transparent" : "border-slate-200 bg-slate-50/50 hover:border-indigo-300 hover:bg-indigo-50/30",
+        isDragging && "border-indigo-500 bg-indigo-100/50 scale-[0.98]",
+        isUploading && "opacity-50 pointer-events-none"
+      )}
+    >
+      {imageUrl ? (
+        <>
+          <img src={imageUrl} alt="Reflex Reference" className="w-full h-full object-cover" />
+          <div className="absolute inset-0 bg-black/40 opacity-0 group-hover/image:opacity-100 transition-opacity flex items-center justify-center gap-2">
+            <Button variant="secondary" size="sm" className="rounded-xl font-bold h-8" onClick={() => setImageUrl(null)}>
+              <ImageIcon size={14} className="mr-2" /> Change
+            </Button>
+            <Button variant="destructive" size="icon" className="rounded-xl h-8 w-8" onClick={handleRemove}>
+              <X size={14} />
+            </Button>
+          </div>
+        </>
+      ) : (
+        <div className="text-center p-4 space-y-2">
+          {isUploading ? (
+            <Loader2 className="mx-auto text-indigo-500 animate-spin" size={24} />
+          ) : (
+            <>
+              <div className="w-10 h-10 rounded-xl bg-white shadow-sm border border-slate-100 flex items-center justify-center mx-auto text-slate-400 group-hover/image:text-indigo-500 group-hover/image:scale-110 transition-all">
+                <Plus size={20} />
+              </div>
+              <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">
+                Drop or Paste Image
+              </p>
+            </>
+          )}
+        </div>
+      )}
+    </div>
+  );
+};
 
 const BrainReflexReference = () => {
   const [search, setSearch] = useState("");
   const [selectedCategory, setSelectedCategory] = useState<BrainRegionCategory | 'All'>('All');
+  const [customizations, setCustomizations] = useState<Record<string, string>>({});
+  const [loadingImages, setLoadingImages] = useState(true);
+
+  useEffect(() => {
+    const fetchCustomizations = async () => {
+      try {
+        const { data: { user } } = await supabase.auth.getUser();
+        if (!user) return;
+
+        const { data, error } = await supabase
+          .from('brain_reflex_customizations')
+          .select('reflex_id, image_url')
+          .eq('user_id', user.id);
+
+        if (error) throw error;
+
+        const mapping: Record<string, string> = {};
+        data?.forEach(item => {
+          if (item.image_url) mapping[item.reflex_id] = item.image_url;
+        });
+        setCustomizations(mapping);
+      } catch (err) {
+        console.error("Error fetching reflex images:", err);
+      } finally {
+        setLoadingImages(false);
+      }
+    };
+
+    fetchCustomizations();
+  }, []);
 
   const filteredPoints = BRAIN_REFLEX_POINTS.filter(p => {
     const matchesSearch = p.name.toLowerCase().includes(search.toLowerCase()) || 
@@ -96,7 +276,21 @@ const BrainReflexReference = () => {
                 </div>
               </div>
             </CardHeader>
-            <CardContent className="p-6 space-y-4">
+            <CardContent className="p-6 space-y-6">
+              {/* Reference Image Zone */}
+              <ReflexImageZone 
+                reflexId={point.id} 
+                initialUrl={customizations[point.id]} 
+                onUploadComplete={(url) => {
+                  if (url) setCustomizations(prev => ({ ...prev, [point.id]: url }));
+                  else setCustomizations(prev => {
+                    const next = { ...prev };
+                    delete next[point.id];
+                    return next;
+                  });
+                }}
+              />
+
               <div className="space-y-3">
                 <div>
                   <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-1">Location</p>

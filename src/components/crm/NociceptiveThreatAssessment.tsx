@@ -19,7 +19,8 @@ import {
   RefreshCw, 
   Timer,
   Plus,
-  Layers
+  Layers,
+  Brain
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -30,6 +31,7 @@ import {
   SpecificCorrectionType, 
   DirectionType 
 } from '@/data/pathway-logic-data';
+import EfferentBrainIntegration from './EfferentBrainIntegration';
 
 type Step = 
   | 'THREAT_DEFINITION'
@@ -38,7 +40,8 @@ type Step =
   | 'PATHWAY_SELECTION'
   | 'MECHANO_DETAIL'
   | 'CORRECTION_ACTION'
-  | 'REASSESSMENT';
+  | 'REASSESSMENT'
+  | 'EFFERENT_INTEGRATION';
 
 interface Layer {
   id: number;
@@ -252,7 +255,12 @@ const NociceptiveThreatAssessment = ({ onSave, initialValue }: NociceptiveThreat
                 specific: opt.id as SpecificCorrectionType,
                 direction: opt.direction
               });
-              nextStep(opt.id === 'Mechanoreceptor' ? 'MECHANO_DETAIL' : 'CORRECTION_ACTION');
+              
+              if (opt.direction === 'Efferent (Top-Down)') {
+                nextStep('EFFERENT_INTEGRATION');
+              } else {
+                nextStep(opt.id === 'Mechanoreceptor' ? 'MECHANO_DETAIL' : 'CORRECTION_ACTION');
+              }
             }}
           >
             <div className="w-10 h-10 rounded-xl bg-white shadow-sm flex items-center justify-center">
@@ -288,6 +296,21 @@ const NociceptiveThreatAssessment = ({ onSave, initialValue }: NociceptiveThreat
             <Button variant="ghost" onClick={() => prevStep('IM_TEST')} className="w-full h-12 rounded-xl">
               <ChevronLeft size={18} className="mr-2" /> Back
             </Button>
+          </div>
+        );
+
+      case 'EFFERENT_INTEGRATION':
+        return (
+          <div className="animate-in fade-in zoom-in-95 duration-300">
+            <EfferentBrainIntegration 
+              initialEntryPoint={currentLayer.threat}
+              onSave={(summary) => {
+                // Extract specific info from summary if possible, or just mark as cleared
+                setCurrentLayer({ ...currentLayer, cleared: true });
+                nextStep('REASSESSMENT');
+              }}
+              onCancel={() => nextStep('PATHWAY_SELECTION')}
+            />
           </div>
         );
 
@@ -448,8 +471,8 @@ const NociceptiveThreatAssessment = ({ onSave, initialValue }: NociceptiveThreat
             )}
             style={{ 
               width: `${(
-                ['THREAT_DEFINITION', 'STIMULATION', 'IM_TEST', 'PATHWAY_SELECTION', 'MECHANO_DETAIL', 'CORRECTION_ACTION', 'REASSESSMENT'].indexOf(currentStep) + 1
-              ) / 7 * 100}%` 
+                ['THREAT_DEFINITION', 'STIMULATION', 'IM_TEST', 'PATHWAY_SELECTION', 'MECHANO_DETAIL', 'CORRECTION_ACTION', 'REASSESSMENT', 'EFFERENT_INTEGRATION'].indexOf(currentStep) + 1
+              ) / 8 * 100}%` 
             }} 
           />
         </div>
@@ -469,7 +492,7 @@ const NociceptiveThreatAssessment = ({ onSave, initialValue }: NociceptiveThreat
                   Layer {layers.length + 1}
                 </Badge>
                 <span className="text-[10px] text-slate-400 font-black uppercase tracking-widest">
-                  Step {['THREAT_DEFINITION', 'STIMULATION', 'IM_TEST', 'PATHWAY_SELECTION', 'MECHANO_DETAIL', 'CORRECTION_ACTION', 'REASSESSMENT'].indexOf(currentStep) + 1} of 7
+                  Step {['THREAT_DEFINITION', 'STIMULATION', 'IM_TEST', 'PATHWAY_SELECTION', 'MECHANO_DETAIL', 'CORRECTION_ACTION', 'REASSESSMENT', 'EFFERENT_INTEGRATION'].indexOf(currentStep) + 1} of 8
                 </span>
               </div>
             </div>

@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useMemo } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -17,7 +17,8 @@ import {
   Timer,
   Music,
   Sparkles,
-  Heart
+  Heart,
+  X
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { BRAIN_REFLEX_POINTS, BrainReflexPoint } from '@/data/brain-reflex-data';
@@ -32,12 +33,14 @@ interface Coordinate {
 
 interface EfferentBrainIntegrationProps {
   onSave: (summary: string) => void;
+  onCancel?: () => void;
   initialValue?: string;
+  initialEntryPoint?: string;
 }
 
-const EfferentBrainIntegration = ({ onSave, initialValue }: EfferentBrainIntegrationProps) => {
-  const [step, setStep] = useState<Step>('ENTRY');
-  const [entryPoint, setEntryPoint] = useState("");
+const EfferentBrainIntegration = ({ onSave, onCancel, initialValue, initialEntryPoint }: EfferentBrainIntegrationProps) => {
+  const [step, setStep] = useState<Step>(initialEntryPoint ? 'COORD_1' : 'ENTRY');
+  const [entryPoint, setEntryPoint] = useState(initialEntryPoint || "");
   const [coord1, setCoord1] = useState<Coordinate>({ point: null, side: null });
   const [coord2, setCoord2] = useState<Coordinate>({ point: null, side: null });
   const [method, setMethod] = useState<'Tapping' | 'Holding + Intention' | 'Tuning Fork' | null>(null);
@@ -152,7 +155,14 @@ const EfferentBrainIntegration = ({ onSave, initialValue }: EfferentBrainIntegra
             </p>
           </div>
         </div>
-        {isComplete && <Badge className="bg-emerald-500 text-white border-none font-black">Cleared</Badge>}
+        <div className="flex items-center gap-2">
+          {isComplete && <Badge className="bg-emerald-500 text-white border-none font-black">Cleared</Badge>}
+          {onCancel && (
+            <Button variant="ghost" size="icon" onClick={onCancel} className="rounded-full hover:bg-slate-100">
+              <X size={20} className="text-slate-400" />
+            </Button>
+          )}
+        </div>
       </div>
 
       <div className="min-h-[400px] flex flex-col justify-center">
@@ -189,7 +199,7 @@ const EfferentBrainIntegration = ({ onSave, initialValue }: EfferentBrainIntegra
           </div>
         )}
 
-        {step === 'COORD_1' && renderCoordinateSelection(coord1, setCoord1, 'COORD_2', 'ENTRY', 'Coordinate 1 (Primary)')}
+        {step === 'COORD_1' && renderCoordinateSelection(coord1, setCoord1, 'COORD_2', initialEntryPoint ? 'COORD_1' : 'ENTRY', 'Coordinate 1 (Primary)')}
         {step === 'COORD_2' && renderCoordinateSelection(coord2, setCoord2, 'METHOD', 'COORD_1', 'Coordinate 2 (Secondary)')}
 
         {step === 'METHOD' && (

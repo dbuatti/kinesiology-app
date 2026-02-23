@@ -22,6 +22,7 @@ import PreviousSessionSummary from './PreviousSessionSummary';
 import GaitReflexAssessment from './GaitReflexAssessment';
 import LymphaticAssessment from './LymphaticAssessment';
 import PathwayAssessmentWizard from './PathwayAssessmentWizard';
+import NociceptiveThreatAssessment from './NociceptiveThreatAssessment';
 
 type ActiveView = 'home' | 'kinesiology' | 'muscles' | 'gait' | 'previous';
 
@@ -33,6 +34,7 @@ interface SessionContentSwitcherProps {
 
 const SessionContentSwitcher = ({ appointment, onUpdate, saveField }: SessionContentSwitcherProps) => {
   const [activeView, setActiveView] = useState<ActiveView>('home');
+  const [pathwayTool, setPathwayTool] = useState<'standard' | 'nociceptive'>('standard');
   const appointmentId = appointment.id;
 
   const tabStatus = useMemo(() => ({
@@ -114,10 +116,42 @@ const SessionContentSwitcher = ({ appointment, onUpdate, saveField }: SessionCon
           </TabsContent>
 
           <TabsContent value="pathway" className="mt-6 space-y-6">
-            <PathwayAssessmentWizard
-              initialValue={appointment.priority_pattern || undefined}
-              onSave={(summary) => saveField('priority_pattern', summary)}
-            />
+            <div className="flex items-center gap-2 p-1 bg-slate-100 rounded-xl w-fit mb-4">
+              <Button
+                variant={pathwayTool === 'standard' ? 'white' : 'ghost'}
+                size="sm"
+                onClick={() => setPathwayTool('standard')}
+                className={cn(
+                  "rounded-lg font-bold text-xs h-8 px-4",
+                  pathwayTool === 'standard' ? "bg-white shadow-sm text-indigo-600" : "text-slate-500"
+                )}
+              >
+                Standard Wizard
+              </Button>
+              <Button
+                variant={pathwayTool === 'nociceptive' ? 'white' : 'ghost'}
+                size="sm"
+                onClick={() => setPathwayTool('nociceptive')}
+                className={cn(
+                  "rounded-lg font-bold text-xs h-8 px-4",
+                  pathwayTool === 'nociceptive' ? "bg-white shadow-sm text-orange-600" : "text-slate-500"
+                )}
+              >
+                Nociceptive Threat
+              </Button>
+            </div>
+
+            {pathwayTool === 'standard' ? (
+              <PathwayAssessmentWizard
+                initialValue={appointment.priority_pattern || undefined}
+                onSave={(summary) => saveField('priority_pattern', summary)}
+              />
+            ) : (
+              <NociceptiveThreatAssessment
+                initialValue={appointment.priority_pattern || undefined}
+                onSave={(summary) => saveField('priority_pattern', summary)}
+              />
+            )}
             <EditableField key={`notes-pathway-${appointmentId}`} field="priority_pattern" label="Pathway Assessment Notes" value={appointment.priority_pattern} multiline placeholder="Document specific pathways tested and findings..." onSave={saveField as any} className="bg-white p-6 rounded-2xl border border-slate-100 shadow-sm min-h-[200px]" />
           </TabsContent>
 

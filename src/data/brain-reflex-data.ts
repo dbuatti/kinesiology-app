@@ -129,6 +129,24 @@ export const BRAIN_REFLEX_POINTS: BrainReflexPoint[] = [
     technique: 'Touch the ST2 acupoint area.',
     lateralization: 'Ipsilateral',
   },
+  {
+    id: 'hypothalamus',
+    name: 'Hypothalamus',
+    category: 'Subcortical',
+    location: 'Internal (Tongue to roof of mouth).',
+    technique: 'Direct client to push tongue to the roof of the mouth.',
+    clinicalNote: 'Master regulator of the autonomic nervous system.',
+    lateralization: 'Bilateral',
+  },
+  {
+    id: 'hippocampus',
+    name: 'Hippocampus',
+    category: 'Subcortical',
+    location: 'Temporal lobe area.',
+    technique: 'Focus on memory processing and spatial navigation.',
+    clinicalNote: 'Key for long-term memory and emotional context.',
+    lateralization: 'Ipsilateral',
+  },
 
   // CRANIAL NERVES
   {

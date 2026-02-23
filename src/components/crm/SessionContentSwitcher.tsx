@@ -2,7 +2,7 @@
 
 import React, { useState, useMemo } from 'react';
 import { Button } from '@/components/ui/button';
-import { Home, Heart, Dumbbell, FlaskConical, Activity, Move, Zap, CheckCircle2, TrendingUp, History, Footprints, Droplets } from 'lucide-react';
+import { Home, Heart, Dumbbell, FlaskConical, Activity, Move, Zap, CheckCircle2, TrendingUp, History, Footprints, Droplets, Brain } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { AppointmentWithClient } from '@/types/crm';
 import BoltTestSection from './BoltTestSection';
@@ -23,6 +23,7 @@ import GaitReflexAssessment from './GaitReflexAssessment';
 import LymphaticAssessment from './LymphaticAssessment';
 import PathwayAssessmentWizard from './PathwayAssessmentWizard';
 import NociceptiveThreatAssessment from './NociceptiveThreatAssessment';
+import EfferentBrainIntegration from './EfferentBrainIntegration';
 
 type ActiveView = 'home' | 'kinesiology' | 'muscles' | 'gait' | 'previous';
 
@@ -34,7 +35,7 @@ interface SessionContentSwitcherProps {
 
 const SessionContentSwitcher = ({ appointment, onUpdate, saveField }: SessionContentSwitcherProps) => {
   const [activeView, setActiveView] = useState<ActiveView>('home');
-  const [pathwayTool, setPathwayTool] = useState<'standard' | 'nociceptive'>('standard');
+  const [pathwayTool, setPathwayTool] = useState<'standard' | 'nociceptive' | 'efferent'>('standard');
   const appointmentId = appointment.id;
 
   const tabStatus = useMemo(() => ({
@@ -139,15 +140,33 @@ const SessionContentSwitcher = ({ appointment, onUpdate, saveField }: SessionCon
               >
                 Nociceptive Threat
               </Button>
+              <Button
+                variant={pathwayTool === 'efferent' ? 'secondary' : 'ghost'}
+                size="sm"
+                onClick={() => setPathwayTool('efferent')}
+                className={cn(
+                  "rounded-lg font-bold text-xs h-8 px-4",
+                  pathwayTool === 'efferent' ? "bg-white shadow-sm text-purple-600" : "text-slate-500"
+                )}
+              >
+                Efferent Integration
+              </Button>
             </div>
 
-            {pathwayTool === 'standard' ? (
+            {pathwayTool === 'standard' && (
               <PathwayAssessmentWizard
                 initialValue={appointment.priority_pattern || undefined}
                 onSave={(summary) => saveField('priority_pattern', summary)}
               />
-            ) : (
+            )}
+            {pathwayTool === 'nociceptive' && (
               <NociceptiveThreatAssessment
+                initialValue={appointment.priority_pattern || undefined}
+                onSave={(summary) => saveField('priority_pattern', summary)}
+              />
+            )}
+            {pathwayTool === 'efferent' && (
+              <EfferentBrainIntegration
                 initialValue={appointment.priority_pattern || undefined}
                 onSave={(summary) => saveField('priority_pattern', summary)}
               />

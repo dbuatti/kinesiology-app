@@ -16,7 +16,7 @@ import {
   Eye, 
   Heart, 
   RotateCcw,
-  Save
+  Droplets
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
@@ -35,6 +35,7 @@ type DirectionType = 'Afferent (Bottom-Up)' | 'Efferent (Top-Down)';
 type SpecificCorrection = 
   | 'Mechanoreceptor' 
   | 'Vestibular/Ocular' 
+  | 'Physiological'
   | 'Cortical' 
   | 'Subcortical' 
   | 'Emotional';
@@ -79,8 +80,6 @@ const PathwayAssessmentWizard = ({ onSave, initialValue }: PathwayAssessmentWiza
   const handleComplete = () => {
     const summary = generateSummary(state);
     onSave(summary);
-    // Reset or show success? Let's reset to start but maybe keep the summary visible?
-    // For now, let's just reset to start.
     setStep('SELECT_PATHWAY');
     setState({
       pathway: null,
@@ -159,7 +158,6 @@ const PathwayAssessmentWizard = ({ onSave, initialValue }: PathwayAssessmentWiza
                 )}
                 onClick={() => {
                   setState({ ...state, response: 'Clear/Normal' });
-                  // If clear, we can jump to reassess or just finish
                   nextStep('REASSESS');
                 }}
               >
@@ -235,7 +233,7 @@ const PathwayAssessmentWizard = ({ onSave, initialValue }: PathwayAssessmentWiza
 
       case 'SELECT_SPECIFIC':
         const options: SpecificCorrection[] = state.direction === 'Afferent (Bottom-Up)' 
-          ? ['Mechanoreceptor', 'Vestibular/Ocular']
+          ? ['Mechanoreceptor', 'Vestibular/Ocular', 'Physiological']
           : ['Cortical', 'Subcortical', 'Emotional'];
 
         return (
@@ -258,6 +256,7 @@ const PathwayAssessmentWizard = ({ onSave, initialValue }: PathwayAssessmentWiza
                   <div className="w-8 h-8 rounded-lg bg-white shadow-sm flex items-center justify-center">
                     {opt === 'Mechanoreceptor' && <Activity size={18} className="text-blue-500" />}
                     {opt === 'Vestibular/Ocular' && <Eye size={18} className="text-cyan-500" />}
+                    {opt === 'Physiological' && <Droplets size={18} className="text-emerald-500" />}
                     {opt === 'Cortical' && <Brain size={18} className="text-purple-500" />}
                     {opt === 'Subcortical' && <Zap size={18} className="text-amber-500" />}
                     {opt === 'Emotional' && <Heart size={18} className="text-rose-500" />}
@@ -290,6 +289,12 @@ const PathwayAssessmentWizard = ({ onSave, initialValue }: PathwayAssessmentWiza
                     <>
                       <li>Perform VOR or saccadic eye movements.</li>
                       <li>Use head rotations or balance challenges.</li>
+                    </>
+                  )}
+                  {state.specific === 'Physiological' && (
+                    <>
+                      <li>Address biochemical or organ-specific reflexes.</li>
+                      <li>Check for nutritional or hydration priorities.</li>
                     </>
                   )}
                   {state.specific === 'Cortical' && (
@@ -350,7 +355,6 @@ const PathwayAssessmentWizard = ({ onSave, initialValue }: PathwayAssessmentWiza
                 variant="outline" 
                 className="h-14 rounded-xl border-2 border-red-100 text-red-600 hover:bg-red-50"
                 onClick={() => {
-                  // Loop back to direction selection if still inhibited
                   setStep('SELECT_DIRECTION');
                 }}
               >

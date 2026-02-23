@@ -20,7 +20,8 @@ import {
   Plus,
   History,
   Info,
-  X
+  X,
+  Droplets
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
@@ -37,6 +38,7 @@ type Direction = 'Afferent (Bottom-Up)' | 'Efferent (Top-Down)';
 type SpecificCorrection = 
   | 'Mechanoreceptor' 
   | 'Vestibular/Ocular' 
+  | 'Physiological'
   | 'Cortical' 
   | 'Subcortical' 
   | 'Emotional';
@@ -69,14 +71,6 @@ const NociceptiveThreatAssessment = ({ onSave, initialValue }: NociceptiveThreat
   const [showHistory, setShowHistory] = useState(false);
   const [showInfo, setShowInfo] = useState(false);
 
-  // Parse initial value if it exists and we have no layers
-  useEffect(() => {
-    if (initialValue && layers.length === 0) {
-      // Simple parsing logic if needed, but usually we start fresh or just show the text
-      // For now, we'll just keep it as a reference
-    }
-  }, [initialValue]);
-
   const nextStep = (step: Step) => setCurrentStep(step);
   const prevStep = (step: Step) => setCurrentStep(step);
 
@@ -84,16 +78,15 @@ const NociceptiveThreatAssessment = ({ onSave, initialValue }: NociceptiveThreat
     const completedLayer = { ...currentLayer, cleared: true } as Layer;
     setLayers([...layers, completedLayer]);
     
-    // Reset for next layer
     setCurrentLayer({
       id: layers.length + 2,
-      threat: currentLayer.threat, // Usually same threat, different layer
+      threat: currentLayer.threat,
       response: null,
       direction: null,
       specific: null,
       cleared: false
     });
-    setCurrentStep('IM_TEST'); // Skip threat definition for subsequent layers
+    setCurrentStep('IM_TEST');
   };
 
   const handleFinish = () => {
@@ -108,7 +101,6 @@ const NociceptiveThreatAssessment = ({ onSave, initialValue }: NociceptiveThreat
     
     onSave(`Nociceptive Threat Assessment: ${summary}`);
     
-    // Reset
     setLayers([]);
     setCurrentLayer({
       id: 1,
@@ -279,7 +271,7 @@ const NociceptiveThreatAssessment = ({ onSave, initialValue }: NociceptiveThreat
 
       case 'SPECIFIC_CORRECTION':
         const options: SpecificCorrection[] = currentLayer.direction === 'Afferent (Bottom-Up)' 
-          ? ['Mechanoreceptor', 'Vestibular/Ocular']
+          ? ['Mechanoreceptor', 'Vestibular/Ocular', 'Physiological']
           : ['Cortical', 'Subcortical', 'Emotional'];
 
         return (
@@ -305,6 +297,7 @@ const NociceptiveThreatAssessment = ({ onSave, initialValue }: NociceptiveThreat
                   <div className="w-10 h-10 rounded-xl bg-white shadow-sm flex items-center justify-center">
                     {opt === 'Mechanoreceptor' && <Activity size={20} className="text-blue-500" />}
                     {opt === 'Vestibular/Ocular' && <Eye size={20} className="text-cyan-500" />}
+                    {opt === 'Physiological' && <Droplets size={20} className="text-emerald-500" />}
                     {opt === 'Cortical' && <Brain size={20} className="text-purple-500" />}
                     {opt === 'Subcortical' && <Zap size={20} className="text-amber-500" />}
                     {opt === 'Emotional' && <Heart size={20} className="text-rose-500" />}
@@ -339,6 +332,12 @@ const NociceptiveThreatAssessment = ({ onSave, initialValue }: NociceptiveThreat
                     <li className="flex gap-3 items-start">
                       <div className="w-1.5 h-1.5 rounded-full bg-indigo-400 mt-2 shrink-0" />
                       <span>Perform VOR (Vestibulo-Ocular Reflex) or saccades in the direction of threat.</span>
+                    </li>
+                  )}
+                  {currentLayer.specific === 'Physiological' && (
+                    <li className="flex gap-3 items-start">
+                      <div className="w-1.5 h-1.5 rounded-full bg-indigo-400 mt-2 shrink-0" />
+                      <span>Address biochemical or organ-specific reflexes related to the threat.</span>
                     </li>
                   )}
                   {currentLayer.specific === 'Cortical' && (
@@ -418,9 +417,7 @@ const NociceptiveThreatAssessment = ({ onSave, initialValue }: NociceptiveThreat
 
   return (
     <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
-      {/* Main Wizard */}
       <Card className="lg:col-span-8 p-8 bg-white border-slate-100 shadow-xl rounded-[2rem] overflow-hidden relative">
-        {/* Progress Bar */}
         <div className="absolute top-0 left-0 w-full h-1.5 bg-slate-100">
           <div 
             className={cn(
@@ -480,7 +477,6 @@ const NociceptiveThreatAssessment = ({ onSave, initialValue }: NociceptiveThreat
           {renderStep()}
         </div>
 
-        {/* Info Panel Overlay */}
         {showInfo && (
           <div className="absolute inset-0 z-20 bg-white/95 backdrop-blur-sm p-8 animate-in fade-in zoom-in-95 duration-200">
             <div className="flex justify-between items-center mb-6">
@@ -517,7 +513,6 @@ const NociceptiveThreatAssessment = ({ onSave, initialValue }: NociceptiveThreat
         )}
       </Card>
 
-      {/* Sidebar / History */}
       <div className={cn(
         "lg:col-span-4 space-y-6 transition-all duration-300",
         !showHistory && "hidden lg:block opacity-50 grayscale pointer-events-none"

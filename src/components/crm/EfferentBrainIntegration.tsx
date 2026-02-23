@@ -18,7 +18,8 @@ import {
   Music,
   Sparkles,
   Heart,
-  X
+  X,
+  RefreshCw
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { BRAIN_REFLEX_POINTS, BrainReflexPoint } from '@/data/brain-reflex-data';
@@ -67,7 +68,7 @@ const EfferentBrainIntegration = ({ onSave, onCancel, initialValue, initialEntry
 
       <div className="space-y-6">
         <div className="space-y-3">
-          <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest px-1">Cortical Zones</p>
+          <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest px-1">Cortical Zones (Contralateral)</p>
           <div className="flex flex-wrap gap-2">
             {corticalPoints.map(p => (
               <Button 
@@ -84,7 +85,7 @@ const EfferentBrainIntegration = ({ onSave, onCancel, initialValue, initialEntry
         </div>
 
         <div className="space-y-3">
-          <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest px-1">Subcortical Zones</p>
+          <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest px-1">Subcortical Zones (Ipsilateral)</p>
           <div className="flex flex-wrap gap-2">
             {subcorticalPoints.map(p => (
               <Button 
@@ -111,6 +112,12 @@ const EfferentBrainIntegration = ({ onSave, onCancel, initialValue, initialEntry
               <ToggleGroupItem value="Right" className="flex-1 rounded-xl border-2 data-[state=on]:bg-slate-900 data-[state=on]:text-white font-bold">Right</ToggleGroupItem>
               <ToggleGroupItem value="Bilateral" className="flex-1 rounded-xl border-2 data-[state=on]:bg-slate-900 data-[state=on]:text-white font-bold">Bilateral</ToggleGroupItem>
             </ToggleGroup>
+            {coord.point.pearl && (
+              <div className="p-3 bg-white rounded-xl border border-slate-100">
+                <p className="text-[9px] font-black text-indigo-400 uppercase tracking-widest mb-1">Clinical Pearl</p>
+                <p className="text-[10px] text-slate-600 font-medium leading-relaxed italic">"{coord.point.pearl}"</p>
+              </div>
+            )}
           </div>
         )}
       </div>

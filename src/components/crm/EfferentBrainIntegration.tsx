@@ -1,7 +1,7 @@
 "use client";
 
-import React, { useState, useEffect } from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import React, { useState } from 'react';
+import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
@@ -11,21 +11,18 @@ import {
   ChevronRight, 
   ChevronLeft, 
   CheckCircle2, 
-  Activity, 
   Layers, 
-  MousePointer2,
-  Timer,
-  Music,
+  RefreshCw, 
   Sparkles,
   Heart,
-  X,
-  RefreshCw
+  X
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { BRAIN_REFLEX_POINTS, BrainReflexPoint } from '@/data/brain-reflex-data';
 import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
 
 type Step = 'ENTRY' | 'COORD_1' | 'COORD_2' | 'METHOD' | 'CALIBRATE' | 'REASSESS';
+type IntegrationMethod = 'Tapping' | 'Holding + Intention' | 'Tuning Fork';
 
 interface Coordinate {
   point: BrainReflexPoint | null;
@@ -44,7 +41,7 @@ const EfferentBrainIntegration = ({ onSave, onCancel, initialValue, initialEntry
   const [entryPoint, setEntryPoint] = useState(initialEntryPoint || "");
   const [coord1, setCoord1] = useState<Coordinate>({ point: null, side: null });
   const [coord2, setCoord2] = useState<Coordinate>({ point: null, side: null });
-  const [method, setMethod] = useState<'Tapping' | 'Holding + Intention' | 'Tuning Fork' | null>(null);
+  const [method, setMethod] = useState<IntegrationMethod | null>(null);
   const [isComplete, setIsComplete] = useState(false);
 
   const nextStep = (next: Step) => setStep(next);
@@ -68,7 +65,7 @@ const EfferentBrainIntegration = ({ onSave, onCancel, initialValue, initialEntry
 
       <div className="space-y-6">
         <div className="space-y-3">
-          <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest px-1">Cortical Zones (Contralateral)</p>
+          <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest px-1">Cortical Zones</p>
           <div className="flex flex-wrap gap-2">
             {corticalPoints.map(p => (
               <Button 
@@ -85,7 +82,7 @@ const EfferentBrainIntegration = ({ onSave, onCancel, initialValue, initialEntry
         </div>
 
         <div className="space-y-3">
-          <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest px-1">Subcortical Zones (Ipsilateral)</p>
+          <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest px-1">Subcortical Zones</p>
           <div className="flex flex-wrap gap-2">
             {subcorticalPoints.map(p => (
               <Button 
@@ -112,12 +109,6 @@ const EfferentBrainIntegration = ({ onSave, onCancel, initialValue, initialEntry
               <ToggleGroupItem value="Right" className="flex-1 rounded-xl border-2 data-[state=on]:bg-slate-900 data-[state=on]:text-white font-bold">Right</ToggleGroupItem>
               <ToggleGroupItem value="Bilateral" className="flex-1 rounded-xl border-2 data-[state=on]:bg-slate-900 data-[state=on]:text-white font-bold">Bilateral</ToggleGroupItem>
             </ToggleGroup>
-            {coord.point.pearl && (
-              <div className="p-3 bg-white rounded-xl border border-slate-100">
-                <p className="text-[9px] font-black text-indigo-400 uppercase tracking-widest mb-1">Clinical Pearl</p>
-                <p className="text-[10px] text-slate-600 font-medium leading-relaxed italic">"{coord.point.pearl}"</p>
-              </div>
-            )}
           </div>
         )}
       </div>
@@ -185,17 +176,6 @@ const EfferentBrainIntegration = ({ onSave, onCancel, initialValue, initialEntry
               value={entryPoint}
               onChange={(e) => setEntryPoint(e.target.value)}
             />
-            <div className="flex flex-wrap gap-2">
-              {["Muscle Inhibition", "Primitive Reflex", "Cranial Nerve", "Pain Response"].map(tag => (
-                <button 
-                  key={tag}
-                  onClick={() => setEntryPoint(tag)}
-                  className="px-3 py-1.5 rounded-lg bg-slate-100 hover:bg-indigo-100 text-[10px] font-black uppercase tracking-widest text-slate-500 hover:text-indigo-600 transition-all"
-                >
-                  + {tag}
-                </button>
-              ))}
-            </div>
             <Button 
               disabled={!entryPoint}
               onClick={() => nextStep('COORD_1')}
@@ -219,7 +199,7 @@ const EfferentBrainIntegration = ({ onSave, onCancel, initialValue, initialEntry
               {[
                 { id: 'Tapping', icon: Zap, color: 'text-amber-500', desc: 'Simultaneous tapping for 3-5 seconds.' },
                 { id: 'Holding + Intention', icon: Heart, color: 'text-rose-500', desc: 'Light hold + mental repetition of zones.' },
-                { id: 'Tuning Fork', icon: Music, color: 'text-blue-500', desc: 'Vibrational reset on the cranium.' }
+                { id: 'Tuning Fork', icon: Activity, color: 'text-blue-500', desc: 'Vibrational reset on the cranium.' }
               ].map((m) => (
                 <Button
                   key={m.id}
@@ -229,7 +209,7 @@ const EfferentBrainIntegration = ({ onSave, onCancel, initialValue, initialEntry
                     method === m.id ? "border-indigo-600 bg-indigo-50 text-indigo-700" : "border-slate-100 hover:border-indigo-200"
                   )}
                   onClick={() => {
-                    setMethod(m.id as any);
+                    setMethod(m.id as IntegrationMethod);
                     nextStep('CALIBRATE');
                   }}
                 >
@@ -286,12 +266,11 @@ const EfferentBrainIntegration = ({ onSave, onCancel, initialValue, initialEntry
                         <div className="p-4 bg-indigo-50 rounded-xl border-2 border-indigo-100 text-center italic font-black text-indigo-600">
                           "{entryPoint} — {coord1.point?.name} — {coord2.point?.name}"
                         </div>
-                        <p className="text-xs text-slate-500">Continue for up to 3 minutes for long-term conditions.</p>
                       </div>
                     )}
                     {method === 'Tuning Fork' && (
                       <p className="text-lg font-bold leading-tight">
-                        Therapy localize both points, strike tuning fork, and place the base on the <span className="text-indigo-600">Cranium</span> for 2-3 seconds.
+                        Therapy localize both points and strike tuning fork on the <span className="text-indigo-600">Cranium</span>.
                       </p>
                     )}
                   </div>
@@ -343,15 +322,6 @@ const EfferentBrainIntegration = ({ onSave, onCancel, initialValue, initialEntry
           </div>
         )}
       </div>
-
-      {initialValue && step === 'ENTRY' && (
-        <div className="mt-8 pt-6 border-t border-slate-50">
-          <h4 className="text-xs font-black text-slate-400 uppercase tracking-widest mb-3">Previous Assessment</h4>
-          <div className="p-4 bg-slate-50 rounded-xl text-sm text-slate-600 font-medium border border-slate-100 italic">
-            {initialValue}
-          </div>
-        </div>
-      )}
     </Card>
   );
 };

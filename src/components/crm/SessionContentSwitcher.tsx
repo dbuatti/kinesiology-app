@@ -22,7 +22,6 @@ import PreviousSessionSummary from './PreviousSessionSummary';
 import GaitReflexAssessment from './GaitReflexAssessment';
 import LymphaticAssessment from './LymphaticAssessment';
 import PathwayAssessmentWizard from './PathwayAssessmentWizard';
-import NociceptiveThreatAssessment from './NociceptiveThreatAssessment';
 import EfferentBrainIntegration from './EfferentBrainIntegration';
 
 type ActiveView = 'home' | 'kinesiology' | 'muscles' | 'gait' | 'previous';
@@ -35,7 +34,7 @@ interface SessionContentSwitcherProps {
 
 const SessionContentSwitcher = ({ appointment, onUpdate, saveField }: SessionContentSwitcherProps) => {
   const [activeView, setActiveView] = useState<ActiveView>('home');
-  const [pathwayTool, setPathwayTool] = useState<'standard' | 'nociceptive' | 'efferent'>('standard');
+  const [pathwayTool, setPathwayTool] = useState<'standard' | 'efferent'>('standard');
   const appointmentId = appointment.id;
 
   const tabStatus = useMemo(() => ({
@@ -130,17 +129,6 @@ const SessionContentSwitcher = ({ appointment, onUpdate, saveField }: SessionCon
                 Standard Wizard
               </Button>
               <Button
-                variant={pathwayTool === 'nociceptive' ? 'secondary' : 'ghost'}
-                size="sm"
-                onClick={() => setPathwayTool('nociceptive')}
-                className={cn(
-                  "rounded-lg font-bold text-xs h-8 px-4",
-                  pathwayTool === 'nociceptive' ? "bg-white shadow-sm text-orange-600" : "text-slate-500"
-                )}
-              >
-                Nociceptive Threat
-              </Button>
-              <Button
                 variant={pathwayTool === 'efferent' ? 'secondary' : 'ghost'}
                 size="sm"
                 onClick={() => setPathwayTool('efferent')}
@@ -155,12 +143,6 @@ const SessionContentSwitcher = ({ appointment, onUpdate, saveField }: SessionCon
 
             {pathwayTool === 'standard' && (
               <PathwayAssessmentWizard
-                initialValue={appointment.priority_pattern || undefined}
-                onSave={(summary) => saveField('priority_pattern', summary)}
-              />
-            )}
-            {pathwayTool === 'nociceptive' && (
-              <NociceptiveThreatAssessment
                 initialValue={appointment.priority_pattern || undefined}
                 onSave={(summary) => saveField('priority_pattern', summary)}
               />

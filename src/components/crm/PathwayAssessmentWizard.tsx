@@ -16,9 +16,11 @@ import {
   Eye, 
   Heart, 
   RotateCcw,
-  Droplets
+  Droplets,
+  AlertTriangle
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import NociceptiveThreatAssessment from './NociceptiveThreatAssessment';
 
 type Step = 
   | 'SELECT_PATHWAY' 
@@ -29,7 +31,7 @@ type Step =
   | 'CORRECTION' 
   | 'REASSESS';
 
-type PathwayType = 'Primitive Reflex' | 'Cranial Nerve' | 'Brain Zone' | 'Muscle' | 'Pain/Injury';
+type PathwayType = 'Primitive Reflex' | 'Cranial Nerve' | 'Brain Zone' | 'Muscle' | 'Nociceptive Threat';
 type ResponseType = 'Clear/Normal' | 'Inhibited/Abnormal';
 type DirectionType = 'Afferent (Bottom-Up)' | 'Efferent (Top-Down)';
 type SpecificCorrection = 
@@ -55,6 +57,7 @@ interface PathwayAssessmentWizardProps {
 
 const PathwayAssessmentWizard = ({ onSave, initialValue }: PathwayAssessmentWizardProps) => {
   const [step, setStep] = useState<Step>('SELECT_PATHWAY');
+  const [showNociceptive, setShowNociceptive] = useState(false);
   const [state, setState] = useState<WizardState>({
     pathway: null,
     response: null,
@@ -90,6 +93,19 @@ const PathwayAssessmentWizard = ({ onSave, initialValue }: PathwayAssessmentWiza
     });
   };
 
+  if (showNociceptive) {
+    return (
+      <NociceptiveThreatAssessment 
+        onSave={(summary) => {
+          onSave(summary);
+          setShowNociceptive(false);
+        }} 
+        initialValue={initialValue}
+        onCancel={() => setShowNociceptive(false)} 
+      />
+    );
+  }
+
   const renderStep = () => {
     switch (step) {
       case 'SELECT_PATHWAY':
@@ -97,7 +113,7 @@ const PathwayAssessmentWizard = ({ onSave, initialValue }: PathwayAssessmentWiza
           <div className="space-y-4">
             <h3 className="text-lg font-bold text-slate-900">Select Pathway to Assess</h3>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-              {(['Primitive Reflex', 'Cranial Nerve', 'Brain Zone', 'Muscle', 'Pain/Injury'] as PathwayType[]).map((p) => (
+              {(['Primitive Reflex', 'Cranial Nerve', 'Brain Zone', 'Muscle', 'Nociceptive Threat'] as PathwayType[]).map((p) => (
                 <Button
                   key={p}
                   variant="outline"
@@ -106,8 +122,12 @@ const PathwayAssessmentWizard = ({ onSave, initialValue }: PathwayAssessmentWiza
                     state.pathway === p ? "border-indigo-600 bg-indigo-50 text-indigo-700" : "border-slate-100 hover:border-indigo-200"
                   )}
                   onClick={() => {
-                    setState({ ...state, pathway: p });
-                    nextStep('TEST_IM');
+                    if (p === 'Nociceptive Threat') {
+                      setShowNociceptive(true);
+                    } else {
+                      setState({ ...state, pathway: p });
+                      nextStep('TEST_IM');
+                    }
                   }}
                 >
                   <div className="w-8 h-8 rounded-lg bg-white shadow-sm flex items-center justify-center">
@@ -115,7 +135,7 @@ const PathwayAssessmentWizard = ({ onSave, initialValue }: PathwayAssessmentWiza
                     {p === 'Cranial Nerve' && <Activity size={18} className="text-blue-500" />}
                     {p === 'Brain Zone' && <Brain size={18} className="text-purple-500" />}
                     {p === 'Muscle' && <Dumbbell size={18} className="text-green-500" />}
-                    {p === 'Pain/Injury' && <AlertCircle size={18} className="text-red-500" />}
+                    {p === 'Nociceptive Threat' && <AlertTriangle size={18} className="text-red-500" />}
                   </div>
                   <span className="font-semibold">{p}</span>
                 </Button>

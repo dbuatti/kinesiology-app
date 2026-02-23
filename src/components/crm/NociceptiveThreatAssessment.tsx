@@ -60,10 +60,11 @@ const PLANES = ["Sagittal", "Frontal", "Transverse"];
 
 interface NociceptiveThreatAssessmentProps {
   onSave: (summary: string) => void;
+  onCancel?: () => void;
   initialValue?: string;
 }
 
-const NociceptiveThreatAssessment = ({ onSave, initialValue }: NociceptiveThreatAssessmentProps) => {
+const NociceptiveThreatAssessment = ({ onSave, onCancel, initialValue }: NociceptiveThreatAssessmentProps) => {
   const [layers, setLayers] = useState<Layer[]>([]);
   const [currentStep, setCurrentStep] = useState<Step>('THREAT_DEFINITION');
   const [currentLayer, setCurrentLayer] = useState<Partial<Layer>>({
@@ -154,13 +155,20 @@ const NociceptiveThreatAssessment = ({ onSave, initialValue }: NociceptiveThreat
                 ))}
               </div>
             </div>
-            <Button 
-              disabled={!currentLayer.threat}
-              onClick={() => nextStep('STIMULATION')}
-              className="w-full h-14 rounded-xl bg-orange-600 hover:bg-orange-700 text-lg font-bold shadow-lg shadow-orange-200"
-            >
-              Begin Assessment <ChevronRight size={20} className="ml-2" />
-            </Button>
+            <div className="flex gap-3">
+              {onCancel && (
+                <Button variant="ghost" onClick={onCancel} className="flex-1 h-14 rounded-xl font-bold">
+                  Cancel
+                </Button>
+              )}
+              <Button 
+                disabled={!currentLayer.threat}
+                onClick={() => nextStep('STIMULATION')}
+                className="flex-[2] h-14 rounded-xl bg-orange-600 hover:bg-orange-700 text-lg font-bold shadow-lg shadow-orange-200"
+              >
+                Begin Assessment <ChevronRight size={20} className="ml-2" />
+              </Button>
+            </div>
           </div>
         );
 
@@ -234,9 +242,11 @@ const NociceptiveThreatAssessment = ({ onSave, initialValue }: NociceptiveThreat
                 <span className="font-black text-lg">INHIBITED</span>
               </Button>
             </div>
-            <Button variant="ghost" onClick={() => prevStep('STIMULATION')} className="w-full h-12 rounded-xl">
-              <ChevronLeft size={18} className="mr-2" /> Back
-            </Button>
+            <div className="flex gap-3">
+              <Button variant="ghost" onClick={() => prevStep('STIMULATION')} className="flex-1 h-12 rounded-xl">
+                <ChevronLeft size={18} className="mr-2" /> Back
+              </Button>
+            </div>
           </div>
         );
 
@@ -305,7 +315,6 @@ const NociceptiveThreatAssessment = ({ onSave, initialValue }: NociceptiveThreat
             <EfferentBrainIntegration 
               initialEntryPoint={currentLayer.threat}
               onSave={(summary) => {
-                // Extract specific info from summary if possible, or just mark as cleared
                 setCurrentLayer({ ...currentLayer, cleared: true });
                 nextStep('REASSESSMENT');
               }}

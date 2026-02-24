@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect, useCallback } from "react";
+import React, { useState, useEffect, useCallback, useRef } from "react";
 import { BRAIN_REFLEX_POINTS, BrainRegionCategory, BrainReflexPoint } from "@/data/brain-reflex-data";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -38,6 +38,7 @@ const ReflexImageZone = ({
 }) => {
   const [isDragging, setIsDragging] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const handleUpload = async (file: File) => {
     if (!file.type.startsWith('image/')) {
@@ -50,6 +51,7 @@ const ReflexImageZone = ({
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error("User not authenticated");
 
+      // Use a consistent filename to ensure overwriting in storage
       const fileExt = file.name.split('.').pop() || 'png';
       const filePath = `${user.id}/${reflexId}_${type}.${fileExt}`;
 
@@ -66,6 +68,7 @@ const ReflexImageZone = ({
         .from(BUCKET_NAME)
         .getPublicUrl(filePath);
 
+      // Force a fresh URL with a timestamp to bypass browser cache
       const cacheBustedUrl = `${publicUrl}?t=${Date.now()}`;
       const dbField = type === 'primary' ? 'image_url' : 'secondary_image_url';
 
@@ -82,8 +85,9 @@ const ReflexImageZone = ({
       if (dbError) throw dbError;
 
       onUploadComplete(cacheBustedUrl);
-      showSuccess(`${type === 'primary' ? 'Main' : 'Reflex'} image saved!`);
+      showSuccess(`${type === 'primary' ? 'Main' : 'Reflex'} image updated!`);
     } catch (error: any) {
+      console.error("[ReflexImageZone] Upload error:", error);
       showError(error.message || "Failed to upload image.");
     } finally {
       setIsUploading(false);
@@ -111,6 +115,7 @@ const ReflexImageZone = ({
       onUploadComplete(null);
       showSuccess("Image removed.");
     } catch (error) {
+      console.error("[ReflexImageZone] Remove error:", error);
       showError("Failed to remove image.");
     }
   };
@@ -130,24 +135,46 @@ const ReflexImageZone = ({
       onDragOver={(e) => { e.preventDefault(); e.stopPropagation(); setIsDragging(true); }}
       onDragLeave={(e) => { e.preventDefault(); e.stopPropagation(); setIsDragging(false); }}
       onDrop={onDrop}
+      onClick={() => fileInputRef.current?.click()}
       className={cn(
-        "relative group/image transition-all duration-300 flex flex-col items-center justify-center overflow-hidden outline-none",
+        "relative group/image transition-all duration-300 flex flex-col items-center justify-center overflow-hidden outline-none cursor-pointer",
         isPrimary ? "aspect-video rounded-2xl border-2 border-dashed" : "w-24 h-24 rounded-2xl border-2 border-dashed bg-white/90 backdrop-blur-md shadow-xl",
         currentUrl ? "border-transparent" : "border-slate-200 bg-slate-50/50 hover:border-indigo-400 hover:bg-indigo-50/30",
         isDragging && "border-indigo-600 bg-indigo-100/80 scale-[1.02] ring-4 ring-indigo-500/20",
         isUploading && "opacity-50 pointer-events-none"
       )}
     >
+      <input 
+        type="file" 
+        ref={fileInputRef} 
+        className="hidden" 
+        accept="image/*" 
+        onChange={(e) => {
+          const file = e.target.files?.[0];
+          if (file) handleUpload(file);
+        }}
+      />
+      
       {currentUrl ? (
         <>
-          <img src={currentUrl} alt="Reflex Reference" className="w-full h-full object-cover" />
+          <img 
+            key={currentUrl} // Force re-render when URL changes
+            src={currentUrl} 
+            alt="Reflex Reference" 
+            className="w-full h-full object-cover" 
+          />
           <div className="absolute inset-0 bg-black/40 opacity-0 group-hover/image:opacity-100 transition-opacity flex items-center justify-center gap-2">
-            <Button variant="secondary" size="icon" className="rounded-xl h-8 w-8 shadow-lg" onClick={(e) => { e.stopPropagation(); onUploadComplete(null); }}>
-              <ImageIcon size={14} />
-            </Button>
-            <Button variant="destructive" size="icon" className="rounded-xl h-8 w-8 shadow-lg" onClick={handleRemove}>
-              <X size={14} />
-            </Button>
+            <div className="flex flex-col items-center gap-2">
+              <div className="flex gap-2">
+                <Button variant="secondary" size="icon" className="rounded-xl h-8 w-8 shadow-lg">
+                  <Upload size={14} />
+                </Button>
+                <Button variant="destructive" size="icon" className="rounded-xl h-8 w-8 shadow-lg" onClick={handleRemove}>
+                  <X size={14} />
+                </Button>
+              </div>
+              <p className="text-[8px] font-black text-white uppercase tracking-widest">Click to Change</p>
+            </div>
           </div>
         </>
       ) : (
@@ -163,7 +190,7 @@ const ReflexImageZone = ({
                 {isPrimary ? <Plus size={24} /> : <Target size={18} />}
               </div>
               <p className={cn("font-black text-slate-500 uppercase tracking-widest", isPrimary ? "text-[10px]" : "text-[8px]")}>
-                {isPrimary ? "Drop Main Image" : "Drop Reflex Point"}
+                {isPrimary ? "Click or Drop Main Image" : "Click or Drop Reflex"}
               </p>
             </>
           )}
@@ -199,7 +226,9 @@ const BrainReflexReference = () => {
           };
         });
         setCustomizations(mapping);
-      } catch (err) {}
+      } catch (err) {
+        console.error("Failed to fetch customizations:", err);
+      }
     };
     fetchCustomizations();
   }, []);

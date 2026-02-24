@@ -19,7 +19,9 @@ import {
   Droplets,
   AlertTriangle,
   Info,
-  Sparkles
+  Sparkles,
+  Wind,
+  RefreshCw
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import NociceptiveThreatAssessment from './NociceptiveThreatAssessment';

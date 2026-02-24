@@ -22,7 +22,8 @@ import {
   Sparkles,
   Wind,
   RefreshCw,
-  Lightbulb
+  Lightbulb,
+  Search
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import NociceptiveThreatAssessment from './NociceptiveThreatAssessment';
@@ -32,9 +33,11 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
+import { Input } from '@/components/ui/input';
 
 type Step = 
   | 'SELECT_PATHWAY' 
+  | 'SELECT_MUSCLE'
   | 'TEST_IM' 
   | 'SELECT_RESPONSE' 
   | 'SELECT_DIRECTION' 
@@ -55,15 +58,11 @@ type SpecificCorrection =
 
 interface WizardState {
   pathway: PathwayType | null;
+  selectedMuscle: string | null;
   response: ResponseType | null;
   direction: DirectionType | null;
   specific: SpecificCorrection | null;
   reassessed: boolean;
-}
-
-interface PathwayAssessmentWizardProps {
-  onSave: (summary: string) => void;
-  initialValue?: string;
 }
 
 const PATHWAY_DESCRIPTIONS: Record<PathwayType, string> = {
@@ -74,8 +73,28 @@ const PATHWAY_DESCRIPTIONS: Record<PathwayType, string> = {
   'Nociceptive Threat': 'Systemic threat response triggered by injury, scars, or movement.'
 };
 
+const DIRECT_MUSCLE_TESTS = [
+  {
+    group: "Intrinsic Stabilisation System",
+    muscles: ["Transverse Abdominals (TVA)", "Diaphragm", "Pelvic Floor", "Multifidi", "Sacrospinalis (Erector Spinae)"]
+  },
+  {
+    group: "Upper Body & Extremities",
+    muscles: [
+      "Deltoids, Mid & Lower Traps, Pecs and Serratus Anterior",
+      "Biceps and Triceps",
+      "Upper Trapezius and SCM"
+    ]
+  },
+  {
+    group: "Lower Body & Pelvis",
+    muscles: ["Quadriceps Group", "Hamstrings", "TFL", "Glute Med", "Glute Max"]
+  }
+];
+
 const LEARNING_TIPS: Record<Step, string> = {
   'SELECT_PATHWAY': "Start with the most foundational system. Primitive reflexes and Cranial Nerves often underpin complex muscle dysfunctions.",
+  'SELECT_MUSCLE': "Select the specific muscle or system you are challenging. The Intrinsic Stabilisation System is often a priority for core stability.",
   'TEST_IM': "The Indicator Muscle (IM) acts as a binary feedback loop for the nervous system. It reveals if the stimulus is perceived as a 'threat'.",
   'SELECT_RESPONSE': "An inhibited response means the brain is prioritizing protection over performance. This is where the correction is needed.",
   'SELECT_DIRECTION': "Afferent corrections address the 'input' (sensors), while Efferent corrections address the 'output' (processing/planning).",
@@ -87,8 +106,10 @@ const LEARNING_TIPS: Record<Step, string> = {
 const PathwayAssessmentWizard = ({ onSave, initialValue }: PathwayAssessmentWizardProps) => {
   const [step, setStep] = useState<Step>('SELECT_PATHWAY');
   const [showNociceptive, setShowNociceptive] = useState(false);
+  const [muscleSearch, setMuscleSearch] = useState("");
   const [state, setState] = useState<WizardState>({
     pathway: null,
+    selectedMuscle: null,
     response: null,
     direction: null,
     specific: null,
@@ -100,7 +121,12 @@ const PathwayAssessmentWizard = ({ onSave, initialValue }: PathwayAssessmentWiza
 
   const generateSummary = (finalState: WizardState) => {
     const parts = [];
-    if (finalState.pathway) parts.push(`Pathway: ${finalState.pathway}`);
+    if (finalState.pathway) {
+      const pathwayLabel = finalState.pathway === 'Muscle' && finalState.selectedMuscle 
+        ? `Muscle: ${finalState.selectedMuscle}`
+        : `Pathway: ${finalState.pathway}`;
+      parts.push(pathwayLabel);
+    }
     if (finalState.response) parts.push(`Response: ${finalState.response}`);
     if (finalState.direction) parts.push(`Correction: ${finalState.direction}`);
     if (finalState.specific) parts.push(`Specific: ${finalState.specific}`);
@@ -115,6 +141,7 @@ const PathwayAssessmentWizard = ({ onSave, initialValue }: PathwayAssessmentWiza
     setStep('SELECT_PATHWAY');
     setState({
       pathway: null,
+      selectedMuscle: null,
       response: null,
       direction: null,
       specific: null,
@@ -160,7 +187,7 @@ const PathwayAssessmentWizard = ({ onSave, initialValue }: PathwayAssessmentWiza
                             setShowNociceptive(true);
                           } else {
                             setState({ ...state, pathway: p });
-                            nextStep('TEST_IM');
+                            nextStep(p === 'Muscle' ? 'SELECT_MUSCLE' : 'TEST_IM');
                           }
                         }}
                       >
@@ -187,6 +214,64 @@ const PathwayAssessmentWizard = ({ onSave, initialValue }: PathwayAssessmentWiza
           </div>
         );
 
+      case 'SELECT_MUSCLE':
+        return (
+          <div className="space-y-6 animate-in fade-in slide-in-from-right-4 duration-300">
+            <div className="space-y-2">
+              <h3 className="text-xl font-black text-slate-900">Direct Muscle Tests</h3>
+              <p className="text-sm text-slate-500">Select the muscle or system to challenge.</p>
+            </div>
+
+            <div className="relative">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={16} />
+              <Input 
+                placeholder="Search muscles..." 
+                className="pl-10 h-11 rounded-xl border-slate-200"
+                value={muscleSearch}
+                onChange={(e) => setMuscleSearch(e.target.value)}
+              />
+            </div>
+
+            <div className="space-y-6 max-h-[400px] overflow-y-auto pr-2 custom-scrollbar">
+              {DIRECT_MUSCLE_TESTS.map((group) => {
+                const filteredMuscles = group.muscles.filter(m => 
+                  m.toLowerCase().includes(muscleSearch.toLowerCase())
+                );
+                
+                if (filteredMuscles.length === 0) return null;
+
+                return (
+                  <div key={group.group} className="space-y-3">
+                    <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] px-1">{group.group}</h4>
+                    <div className="grid grid-cols-1 gap-2">
+                      {filteredMuscles.map((m) => (
+                        <Button
+                          key={m}
+                          variant="outline"
+                          className={cn(
+                            "h-auto py-3 justify-start px-4 rounded-xl border-2 transition-all text-left",
+                            state.selectedMuscle === m ? "border-green-600 bg-green-50 text-green-700" : "border-slate-100 hover:border-green-200"
+                          )}
+                          onClick={() => {
+                            setState({ ...state, selectedMuscle: m });
+                            nextStep('TEST_IM');
+                          }}
+                        >
+                          <span className="font-bold text-sm">{m}</span>
+                        </Button>
+                      ))}
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+
+            <Button variant="ghost" onClick={() => prevStep('SELECT_PATHWAY')} className="w-full h-12 rounded-xl">
+              <ChevronLeft size={18} className="mr-2" /> Back
+            </Button>
+          </div>
+        );
+
       case 'TEST_IM':
         return (
           <div className="space-y-6 animate-in fade-in slide-in-from-right-4 duration-300">
@@ -199,7 +284,7 @@ const PathwayAssessmentWizard = ({ onSave, initialValue }: PathwayAssessmentWiza
               <div className="space-y-6 relative z-10">
                 <div className="p-6 bg-white/10 rounded-2xl border border-white/10 shadow-inner">
                   <p className="text-lg font-bold leading-tight">
-                    1. Stimulate the <span className="text-amber-400 underline">"{state.pathway}"</span> pathway.
+                    1. Stimulate the <span className="text-amber-400 underline">"{state.selectedMuscle || state.pathway}"</span> pathway.
                   </p>
                 </div>
                 <div className="p-6 bg-white/10 rounded-2xl border border-white/10 shadow-inner">
@@ -216,7 +301,7 @@ const PathwayAssessmentWizard = ({ onSave, initialValue }: PathwayAssessmentWiza
               </div>
             </div>
             <div className="flex gap-3">
-              <Button variant="ghost" onClick={() => prevStep('SELECT_PATHWAY')} className="flex-1 h-14 rounded-2xl font-bold">
+              <Button variant="ghost" onClick={() => prevStep(state.pathway === 'Muscle' ? 'SELECT_MUSCLE' : 'SELECT_PATHWAY')} className="flex-1 h-14 rounded-2xl font-bold">
                 <ChevronLeft size={18} className="mr-2" /> Back
               </Button>
               <Button onClick={() => nextStep('SELECT_RESPONSE')} className="flex-[2] h-14 rounded-2xl bg-indigo-600 hover:bg-indigo-700 text-lg font-black shadow-lg shadow-indigo-200">
@@ -456,7 +541,7 @@ const PathwayAssessmentWizard = ({ onSave, initialValue }: PathwayAssessmentWiza
               </div>
               <h3 className="text-3xl font-black text-emerald-900 mb-2">Final Re-assessment</h3>
               <p className="text-emerald-700 font-medium text-lg">
-                Re-stimulate the <span className="font-black underline">"{state.pathway}"</span> pathway and test the IM again.
+                Re-stimulate the <span className="font-black underline">"{state.selectedMuscle || state.pathway}"</span> pathway and test the IM again.
               </p>
             </div>
             
@@ -500,8 +585,8 @@ const PathwayAssessmentWizard = ({ onSave, initialValue }: PathwayAssessmentWiza
             className="h-full bg-indigo-600 transition-all duration-700 ease-out" 
             style={{ 
               width: `${(
-                ['SELECT_PATHWAY', 'TEST_IM', 'SELECT_RESPONSE', 'SELECT_DIRECTION', 'SELECT_SPECIFIC', 'CORRECTION', 'REASSESS'].indexOf(step) + 1
-              ) / 7 * 100}%` 
+                ['SELECT_PATHWAY', 'SELECT_MUSCLE', 'TEST_IM', 'SELECT_RESPONSE', 'SELECT_DIRECTION', 'SELECT_SPECIFIC', 'CORRECTION', 'REASSESS'].indexOf(step) + 1
+              ) / 8 * 100}%` 
             }} 
           />
         </div>
@@ -513,7 +598,7 @@ const PathwayAssessmentWizard = ({ onSave, initialValue }: PathwayAssessmentWiza
             </div>
             <div>
               <h2 className="text-xl font-black text-slate-900 leading-none">Pathway Wizard</h2>
-              <p className="text-[10px] text-slate-400 font-black uppercase tracking-widest mt-2">Step {['SELECT_PATHWAY', 'TEST_IM', 'SELECT_RESPONSE', 'SELECT_DIRECTION', 'SELECT_SPECIFIC', 'CORRECTION', 'REASSESS'].indexOf(step) + 1} of 7</p>
+              <p className="text-[10px] text-slate-400 font-black uppercase tracking-widest mt-2">Step {['SELECT_PATHWAY', 'SELECT_MUSCLE', 'TEST_IM', 'SELECT_RESPONSE', 'SELECT_DIRECTION', 'SELECT_SPECIFIC', 'CORRECTION', 'REASSESS'].indexOf(step) + 1} of 8</p>
             </div>
           </div>
           {state.pathway && (

@@ -74,6 +74,11 @@ interface WizardState {
   reassessed: boolean;
 }
 
+interface PathwayAssessmentWizardProps {
+  onSave: (summary: string) => void;
+  initialValue?: string;
+}
+
 const PATHWAY_DESCRIPTIONS: Record<PathwayType, string> = {
   'Primitive Reflex': 'Foundational movement patterns that should be integrated in infancy.',
   'Cranial Nerve': 'Direct pathways from the brainstem controlling sensory and motor functions.',

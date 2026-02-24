@@ -26,7 +26,9 @@ import {
   RefreshCw,
   Clock,
   Layers,
-  ArrowRightLeft
+  ArrowRightLeft,
+  PlayCircle,
+  FileText
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
@@ -109,9 +111,39 @@ const MuscleInfoModal = ({ muscleName, open, onOpenChange }: MuscleInfoModalProp
         </DialogHeader>
 
         <div className="p-8 space-y-10 max-h-[70vh] overflow-y-auto">
+          {/* Educational Content: Description & Video */}
+          {(info.description || info.videoUrl) && (
+            <section className="space-y-6 animate-in fade-in slide-in-from-top-2 duration-500">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                {info.description && (
+                  <div className="space-y-3">
+                    <SectionHeader icon={FileText} title="Muscle Overview" color="text-slate-600" />
+                    <p className="text-sm text-slate-600 leading-relaxed font-medium bg-slate-50 p-4 rounded-2xl border border-slate-100">
+                      {info.description}
+                    </p>
+                  </div>
+                )}
+                {info.videoUrl && (
+                  <div className="space-y-3">
+                    <SectionHeader icon={PlayCircle} title="Technique Video" color="text-rose-600" />
+                    <div className="aspect-video rounded-2xl overflow-hidden border-2 border-slate-100 shadow-sm bg-slate-900">
+                      <iframe
+                        src={info.videoUrl}
+                        title={`${info.name} Technique`}
+                        className="w-full h-full"
+                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                        allowFullScreen
+                      />
+                    </div>
+                  </div>
+                )}
+              </div>
+            </section>
+          )}
+
           {/* Lovett-Brother Partner */}
           {lovettPartner && (
-            <section className="animate-in fade-in slide-in-from-top-2 duration-500">
+            <section>
               <SectionHeader icon={ArrowRightLeft} title="Spinal / Lovett-Brother Relationship" color="text-rose-600" />
               <div className="p-5 bg-rose-50 rounded-2xl border-2 border-rose-100 flex items-center justify-between gap-6">
                 <div className="text-center flex-1">

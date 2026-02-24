@@ -1,13 +1,14 @@
 "use client";
 
 import React from "react";
-import { Info, RotateCcw, CheckCircle2 } from "lucide-react";
+import { Info, RotateCcw, CheckCircle2, GraduationCap } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 import { MUSCLE_STATUSES, MuscleStatus } from "@/data/muscle-data";
 import { MuscleTestResult } from "@/types/crm";
 import { getChannelByMuscle } from "@/data/tcm-channel-data";
+import { useMuscleProficiency } from "@/hooks/useMuscleProficiency";
 
 interface MuscleTestCardProps {
   muscle: string;
@@ -30,6 +31,10 @@ const MuscleTestCard = ({
   const channel = getChannelByMuscle(muscle);
   const statusDetails = currentResult ? MUSCLE_STATUSES.find(s => s.value === currentResult.status) : null;
   const Icon = statusDetails?.icon || CheckCircle2;
+  
+  // Get proficiency count for this specific muscle
+  const { counts } = useMuscleProficiency();
+  const proficiencyCount = counts[muscle] || 0;
 
   return (
     <div 
@@ -57,12 +62,20 @@ const MuscleTestCard = ({
             <Info size={14} />
           </Button>
         </div>
-        {currentResult && (
-          <div className={cn("px-4 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest flex items-center gap-2 shadow-sm", statusDetails?.color)}>
-            <Icon size={14} />
-            {statusDetails?.label}
-          </div>
-        )}
+        <div className="flex items-center gap-2">
+          {proficiencyCount > 0 && (
+            <div className="flex items-center gap-1 text-[9px] font-black text-slate-400 uppercase tracking-widest bg-slate-50 px-2 py-1 rounded-lg border border-slate-100">
+              <GraduationCap size={12} className="text-indigo-500" />
+              {proficiencyCount}x
+            </div>
+          )}
+          {currentResult && (
+            <div className={cn("px-4 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest flex items-center gap-2 shadow-sm", statusDetails?.color)}>
+              <Icon size={14} />
+              {statusDetails?.label}
+            </div>
+          )}
+        </div>
       </div>
 
       {channel && (

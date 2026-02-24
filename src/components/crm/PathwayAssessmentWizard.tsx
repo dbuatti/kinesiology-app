@@ -1,7 +1,6 @@
 "use client";
 
 import React, { useState, useEffect } from 'react';
-import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { 
@@ -10,7 +9,6 @@ import {
   Activity, 
   Brain, 
   Dumbbell, 
-  AlertCircle, 
   AlertTriangle,
   CheckCircle2, 
   Zap, 
@@ -18,9 +16,7 @@ import {
   Sparkles,
   Wind,
   RefreshCw,
-  Search,
-  ImageIcon,
-  Loader2
+  Search
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import NociceptiveThreatAssessment from './NociceptiveThreatAssessment';
@@ -139,7 +135,6 @@ const PathwayAssessmentWizard = ({ onSave, initialValue }: PathwayAssessmentWiza
     reassessed: false,
   });
 
-  // Fetch custom images for the brain reflex points
   useEffect(() => {
     const fetchCustomizations = async () => {
       setLoadingImages(true);
@@ -566,19 +561,19 @@ const PathwayAssessmentWizard = ({ onSave, initialValue }: PathwayAssessmentWiza
 
   return (
     <div className="space-y-6">
-      <Card className="p-8 bg-white border-slate-100 shadow-xl rounded-[2.5rem] overflow-hidden relative">
-        <div className="absolute top-0 left-0 w-full h-1.5 bg-slate-100">
-          <div className="h-full bg-indigo-600 transition-all duration-700 ease-out" style={{ width: `${(['SELECT_PATHWAY', 'SELECT_MUSCLE', 'SELECT_BRAIN_ZONE', 'TEST_IM', 'SELECT_RESPONSE', 'SELECT_DIRECTION', 'SELECT_SPECIFIC', 'MECHANO_DETAIL', 'EFFERENT_INTEGRATION', 'CORRECTION', 'REASSESS'].indexOf(step) + 1) / 11 * 100}%` }} />
+      <div className="relative overflow-hidden">
+        <div className="absolute top-0 left-0 w-full h-1.5 bg-slate-100 rounded-full">
+          <div className="h-full bg-indigo-600 transition-all duration-700 ease-out rounded-full" style={{ width: `${(['SELECT_PATHWAY', 'SELECT_MUSCLE', 'SELECT_BRAIN_ZONE', 'TEST_IM', 'SELECT_RESPONSE', 'SELECT_DIRECTION', 'SELECT_SPECIFIC', 'MECHANO_DETAIL', 'EFFERENT_INTEGRATION', 'CORRECTION', 'REASSESS'].indexOf(step) + 1) / 11 * 100}%` }} />
         </div>
-        <div className="flex items-center justify-between mb-10 mt-2">
+        <div className="flex items-center justify-between mb-10 mt-6">
           <div className="flex items-center gap-4">
             <div className="w-14 h-14 rounded-2xl bg-indigo-600 text-white flex items-center justify-center shadow-lg shadow-indigo-200"><Zap size={28} /></div>
             <div><h2 className="text-xl font-black text-slate-900 leading-none">Pathway Wizard</h2><p className="text-[10px] text-slate-400 font-black uppercase tracking-widest mt-2">Step {['SELECT_PATHWAY', 'SELECT_MUSCLE', 'SELECT_BRAIN_ZONE', 'TEST_IM', 'SELECT_RESPONSE', 'SELECT_DIRECTION', 'SELECT_SPECIFIC', 'MECHANO_DETAIL', 'EFFERENT_INTEGRATION', 'CORRECTION', 'REASSESS'].indexOf(step) + 1} of 11</p></div>
           </div>
           {state.pathway && <Badge variant="secondary" className="bg-indigo-50 text-indigo-700 border-none px-4 py-1.5 rounded-full font-black text-[10px] uppercase tracking-widest shadow-sm">{state.pathway}</Badge>}
         </div>
-        <div className="min-h-[400px] flex flex-col justify-center">{renderStep()}</div>
-      </Card>
+        <div className="flex flex-col justify-center">{renderStep()}</div>
+      </div>
       <div className="p-6 bg-indigo-900 text-white rounded-[2rem] shadow-xl animate-in fade-in slide-in-from-bottom-2 duration-500"><div className="flex items-start gap-4"><div className="w-10 h-10 rounded-xl bg-white/10 flex items-center justify-center shrink-0"><Sparkles size={20} className="text-amber-400" /></div><div><p className="text-[10px] font-black uppercase tracking-[0.3em] text-indigo-300 mb-1">Learning Tip</p><p className="text-sm font-medium leading-relaxed">{LEARNING_TIPS[step]}</p></div></div></div>
     </div>
   );

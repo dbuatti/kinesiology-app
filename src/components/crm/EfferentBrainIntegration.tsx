@@ -1,7 +1,6 @@
 "use client";
 
 import React, { useState, useEffect } from 'react';
-import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
@@ -56,7 +55,6 @@ const EfferentBrainIntegration = ({ onSave, onCancel, initialValue, initialEntry
   const [customizations, setCustomizations] = useState<Record<string, ReflexImages>>({});
   const [loadingImages, setLoadingImages] = useState(false);
 
-  // Fetch custom images for the brain reflex points
   useEffect(() => {
     const fetchCustomizations = async () => {
       setLoadingImages(true);
@@ -195,10 +193,10 @@ const EfferentBrainIntegration = ({ onSave, onCancel, initialValue, initialEntry
   );
 
   return (
-    <Card className="p-8 bg-white border-slate-100 shadow-xl rounded-[2.5rem] overflow-hidden relative">
-      <div className="absolute top-0 left-0 w-full h-1.5 bg-slate-100">
+    <div className="relative overflow-hidden">
+      <div className="absolute top-0 left-0 w-full h-1.5 bg-slate-100 rounded-full">
         <div 
-          className="h-full bg-indigo-600 transition-all duration-700 ease-out" 
+          className="h-full bg-indigo-600 transition-all duration-700 ease-out rounded-full" 
           style={{ 
             width: `${(
               ['ENTRY', 'COORD_1', 'COORD_2', 'METHOD', 'CALIBRATE', 'REASSESS'].indexOf(step) + 1
@@ -207,7 +205,7 @@ const EfferentBrainIntegration = ({ onSave, onCancel, initialValue, initialEntry
         />
       </div>
 
-      <div className="flex items-center justify-between mb-8 mt-2">
+      <div className="flex items-center justify-between mb-8 mt-6">
         <div className="flex items-center gap-4">
           <div className="w-14 h-14 rounded-2xl bg-indigo-600 text-white flex items-center justify-center shadow-lg shadow-indigo-200">
             <Brain size={28} />
@@ -229,7 +227,7 @@ const EfferentBrainIntegration = ({ onSave, onCancel, initialValue, initialEntry
         </div>
       </div>
 
-      <div className="min-h-[400px] flex flex-col justify-center">
+      <div className="flex flex-col justify-center">
         {step === 'ENTRY' && (
           <div className="space-y-6 animate-in fade-in slide-in-from-right-4 duration-300">
             <div className="space-y-2">
@@ -402,7 +400,7 @@ const EfferentBrainIntegration = ({ onSave, onCancel, initialValue, initialEntry
           </div>
         )}
       </div>
-    </Card>
+    </div>
   );
 };
 

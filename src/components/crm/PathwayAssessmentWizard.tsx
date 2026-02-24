@@ -22,7 +22,8 @@ import {
   Wind,
   RefreshCw,
   Search,
-  AlertTriangle
+  AlertTriangle,
+  Layers
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import NociceptiveThreatAssessment from './NociceptiveThreatAssessment';
@@ -41,11 +42,13 @@ import {
   SpecificCorrectionType, 
   DirectionType 
 } from '@/data/pathway-logic-data';
+import { BRAIN_REFLEX_POINTS, BrainReflexPoint } from '@/data/brain-reflex-data';
 import EfferentBrainIntegration from './EfferentBrainIntegration';
 
 type Step = 
   | 'SELECT_PATHWAY' 
   | 'SELECT_MUSCLE'
+  | 'SELECT_BRAIN_ZONE'
   | 'TEST_IM' 
   | 'SELECT_RESPONSE' 
   | 'SELECT_DIRECTION' 
@@ -61,6 +64,7 @@ type ResponseType = 'Clear/Normal' | 'Inhibited/Abnormal';
 interface WizardState {
   pathway: PathwayType | null;
   selectedMuscle: string | null;
+  selectedBrainZone: BrainReflexPoint | null;
   response: ResponseType | null;
   direction: DirectionType | null;
   specific: SpecificCorrectionType | null;
@@ -68,11 +72,6 @@ interface WizardState {
   plane?: string;
   action?: string;
   reassessed: boolean;
-}
-
-interface PathwayAssessmentWizardProps {
-  onSave: (summary: string) => void;
-  initialValue?: string;
 }
 
 const PATHWAY_DESCRIPTIONS: Record<PathwayType, string> = {
@@ -104,6 +103,7 @@ const DIRECT_MUSCLE_TESTS = [
 const LEARNING_TIPS: Record<Step, string> = {
   'SELECT_PATHWAY': "Start with the most foundational system. Primitive reflexes and Cranial Nerves often underpin complex muscle dysfunctions.",
   'SELECT_MUSCLE': "Select the specific muscle or system you are challenging.",
+  'SELECT_BRAIN_ZONE': "Identify the specific brain region you are challenging via Therapy Localization (TL).",
   'TEST_IM': "The Indicator Muscle (IM) reveals if the stimulus is perceived as a 'threat'.",
   'SELECT_RESPONSE': "An inhibited response means the brain is prioritizing protection over performance.",
   'SELECT_DIRECTION': "Afferent corrections address the 'input' (sensors), while Efferent corrections address the 'output' (processing).",
@@ -118,9 +118,11 @@ const PathwayAssessmentWizard = ({ onSave, initialValue }: PathwayAssessmentWiza
   const [step, setStep] = useState<Step>('SELECT_PATHWAY');
   const [showNociceptive, setShowNociceptive] = useState(false);
   const [muscleSearch, setMuscleSearch] = useState("");
+  const [brainSearch, setBrainSearch] = useState("");
   const [state, setState] = useState<WizardState>({
     pathway: null,
     selectedMuscle: null,
+    selectedBrainZone: null,
     response: null,
     direction: null,
     specific: null,
@@ -133,9 +135,12 @@ const PathwayAssessmentWizard = ({ onSave, initialValue }: PathwayAssessmentWiza
   const generateSummary = (finalState: WizardState) => {
     const parts = [];
     if (finalState.pathway) {
-      const pathwayLabel = finalState.pathway === 'Muscle' && finalState.selectedMuscle 
-        ? `Muscle: ${finalState.selectedMuscle}`
-        : `Pathway: ${finalState.pathway}`;
+      let pathwayLabel = `Pathway: ${finalState.pathway}`;
+      if (finalState.pathway === 'Muscle' && finalState.selectedMuscle) {
+        pathwayLabel = `Muscle: ${finalState.selectedMuscle}`;
+      } else if (finalState.pathway === 'Brain Zone' && finalState.selectedBrainZone) {
+        pathwayLabel = `Brain Zone: ${finalState.selectedBrainZone.name}`;
+      }
       parts.push(pathwayLabel);
     }
     if (finalState.response) parts.push(`Response: ${finalState.response}`);
@@ -159,6 +164,7 @@ const PathwayAssessmentWizard = ({ onSave, initialValue }: PathwayAssessmentWiza
     setState({
       pathway: null,
       selectedMuscle: null,
+      selectedBrainZone: null,
       response: null,
       direction: null,
       specific: null,
@@ -204,7 +210,9 @@ const PathwayAssessmentWizard = ({ onSave, initialValue }: PathwayAssessmentWiza
                             setShowNociceptive(true);
                           } else {
                             setState({ ...state, pathway: p });
-                            nextStep(p === 'Muscle' ? 'SELECT_MUSCLE' : 'TEST_IM');
+                            if (p === 'Muscle') nextStep('SELECT_MUSCLE');
+                            else if (p === 'Brain Zone') nextStep('SELECT_BRAIN_ZONE');
+                            else nextStep('TEST_IM');
                           }
                         }}
                       >
@@ -264,7 +272,74 @@ const PathwayAssessmentWizard = ({ onSave, initialValue }: PathwayAssessmentWiza
           </div>
         );
 
+      case 'SELECT_BRAIN_ZONE':
+        const cortical = BRAIN_REFLEX_POINTS.filter(p => p.category === 'Cortical' && p.name.toLowerCase().includes(brainSearch.toLowerCase()));
+        const subcortical = BRAIN_REFLEX_POINTS.filter(p => p.category === 'Subcortical' && p.name.toLowerCase().includes(brainSearch.toLowerCase()));
+        const cranial = BRAIN_REFLEX_POINTS.filter(p => p.category === 'Cranial Nerve' && p.name.toLowerCase().includes(brainSearch.toLowerCase()));
+
+        return (
+          <div className="space-y-6 animate-in fade-in slide-in-from-right-4 duration-300">
+            <div className="space-y-2">
+              <h3 className="text-xl font-black text-slate-900">Brain Zone Selection</h3>
+              <p className="text-sm text-slate-500">Select the specific region to challenge via TL.</p>
+            </div>
+            <div className="relative">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={16} />
+              <Input placeholder="Search brain zones..." className="pl-10 h-11 rounded-xl border-slate-200" value={brainSearch} onChange={(e) => setBrainSearch(e.target.value)} />
+            </div>
+            <div className="space-y-6 max-h-[400px] overflow-y-auto pr-2 custom-scrollbar">
+              {cortical.length > 0 && (
+                <div className="space-y-3">
+                  <h4 className="text-[10px] font-black text-purple-500 uppercase tracking-[0.2em] px-1">Cortical (Contralateral)</h4>
+                  <div className="grid grid-cols-1 gap-2">
+                    {cortical.map((p) => (
+                      <Button key={p.id} variant="outline" className={cn("h-auto py-3 justify-start px-4 rounded-xl border-2 transition-all text-left", state.selectedBrainZone?.id === p.id ? "border-purple-600 bg-purple-50 text-purple-700" : "border-slate-100 hover:border-purple-200")} onClick={() => { setState({ ...state, selectedBrainZone: p }); nextStep('TEST_IM'); }}>
+                        <div className="flex items-center justify-between w-full">
+                          <span className="font-bold text-sm">{p.name}</span>
+                          <Badge variant="outline" className="text-[8px] font-black uppercase border-purple-200 text-purple-400">{p.lateralization}</Badge>
+                        </div>
+                      </Button>
+                    ))}
+                  </div>
+                </div>
+              )}
+              {subcortical.length > 0 && (
+                <div className="space-y-3">
+                  <h4 className="text-[10px] font-black text-indigo-500 uppercase tracking-[0.2em] px-1">Subcortical (Ipsilateral)</h4>
+                  <div className="grid grid-cols-1 gap-2">
+                    {subcortical.map((p) => (
+                      <Button key={p.id} variant="outline" className={cn("h-auto py-3 justify-start px-4 rounded-xl border-2 transition-all text-left", state.selectedBrainZone?.id === p.id ? "border-indigo-600 bg-indigo-50 text-indigo-700" : "border-slate-100 hover:border-indigo-200")} onClick={() => { setState({ ...state, selectedBrainZone: p }); nextStep('TEST_IM'); }}>
+                        <div className="flex items-center justify-between w-full">
+                          <span className="font-bold text-sm">{p.name}</span>
+                          <Badge variant="outline" className="text-[8px] font-black uppercase border-indigo-200 text-indigo-400">{p.lateralization}</Badge>
+                        </div>
+                      </Button>
+                    ))}
+                  </div>
+                </div>
+              )}
+              {cranial.length > 0 && (
+                <div className="space-y-3">
+                  <h4 className="text-[10px] font-black text-emerald-500 uppercase tracking-[0.2em] px-1">Cranial Nerves</h4>
+                  <div className="grid grid-cols-1 gap-2">
+                    {cranial.map((p) => (
+                      <Button key={p.id} variant="outline" className={cn("h-auto py-3 justify-start px-4 rounded-xl border-2 transition-all text-left", state.selectedBrainZone?.id === p.id ? "border-emerald-600 bg-emerald-50 text-emerald-700" : "border-slate-100 hover:border-emerald-200")} onClick={() => { setState({ ...state, selectedBrainZone: p }); nextStep('TEST_IM'); }}>
+                        <div className="flex items-center justify-between w-full">
+                          <span className="font-bold text-sm">{p.name}</span>
+                          <Badge variant="outline" className="text-[8px] font-black uppercase border-emerald-200 text-emerald-400">{p.lateralization}</Badge>
+                        </div>
+                      </Button>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
+            <Button variant="ghost" onClick={() => prevStep('SELECT_PATHWAY')} className="w-full h-12 rounded-xl"><ChevronLeft size={18} className="mr-2" /> Back</Button>
+          </div>
+        );
+
       case 'TEST_IM':
+        const targetLabel = state.selectedBrainZone?.name || state.selectedMuscle || state.pathway;
         return (
           <div className="space-y-6 animate-in fade-in slide-in-from-right-4 duration-300">
             <div className="bg-indigo-900 text-white p-8 rounded-[2.5rem] shadow-2xl relative overflow-hidden">
@@ -272,7 +347,10 @@ const PathwayAssessmentWizard = ({ onSave, initialValue }: PathwayAssessmentWiza
               <h3 className="text-2xl font-black mb-6 flex items-center gap-3"><Zap size={28} className="text-amber-400 fill-amber-400" /> Stimulation & Test</h3>
               <div className="space-y-6 relative z-10">
                 <div className="p-6 bg-white/10 rounded-2xl border border-white/10 shadow-inner">
-                  <p className="text-lg font-bold leading-tight">1. Stimulate the <span className="text-amber-400 underline">"{state.selectedMuscle || state.pathway}"</span> pathway.</p>
+                  <p className="text-lg font-bold leading-tight">1. Stimulate the <span className="text-amber-400 underline">"{targetLabel}"</span> pathway.</p>
+                  {state.selectedBrainZone && (
+                    <p className="text-xs text-indigo-300 mt-2 font-medium italic">Location: {state.selectedBrainZone.location}</p>
+                  )}
                 </div>
                 <div className="p-6 bg-white/10 rounded-2xl border border-white/10 shadow-inner">
                   <p className="text-lg font-bold leading-tight">2. Immediately test the <span className="text-indigo-300 underline">Indicator Muscle (IM)</span>.</p>
@@ -280,7 +358,7 @@ const PathwayAssessmentWizard = ({ onSave, initialValue }: PathwayAssessmentWiza
               </div>
             </div>
             <div className="flex gap-3">
-              <Button variant="ghost" onClick={() => prevStep(state.pathway === 'Muscle' ? 'SELECT_MUSCLE' : 'SELECT_PATHWAY')} className="flex-1 h-14 rounded-2xl font-bold"><ChevronLeft size={18} className="mr-2" /> Back</Button>
+              <Button variant="ghost" onClick={() => prevStep(state.pathway === 'Muscle' ? 'SELECT_MUSCLE' : state.pathway === 'Brain Zone' ? 'SELECT_BRAIN_ZONE' : 'SELECT_PATHWAY')} className="flex-1 h-14 rounded-2xl font-bold"><ChevronLeft size={18} className="mr-2" /> Back</Button>
               <Button onClick={() => nextStep('SELECT_RESPONSE')} className="flex-[2] h-14 rounded-2xl bg-indigo-600 hover:bg-indigo-700 text-lg font-black shadow-lg shadow-indigo-200">Test Complete <ChevronRight size={18} className="ml-2" /></Button>
             </div>
           </div>
@@ -361,9 +439,10 @@ const PathwayAssessmentWizard = ({ onSave, initialValue }: PathwayAssessmentWiza
         );
 
       case 'EFFERENT_INTEGRATION':
+        const entry = state.selectedBrainZone?.name || state.selectedMuscle || state.pathway || "";
         return (
           <div className="animate-in fade-in zoom-in-95 duration-300">
-            <EfferentBrainIntegration initialEntryPoint={state.selectedMuscle || state.pathway || ""} onSave={(summary) => { setState({ ...state, reassessed: true }); nextStep('REASSESS'); }} onCancel={() => nextStep('SELECT_SPECIFIC')} />
+            <EfferentBrainIntegration initialEntryPoint={entry} onSave={(summary) => { setState({ ...state, reassessed: true }); nextStep('REASSESS'); }} onCancel={() => nextStep('SELECT_SPECIFIC')} />
           </div>
         );
 
@@ -387,12 +466,13 @@ const PathwayAssessmentWizard = ({ onSave, initialValue }: PathwayAssessmentWiza
         );
 
       case 'REASSESS':
+        const reassessLabel = state.selectedBrainZone?.name || state.selectedMuscle || state.pathway;
         return (
           <div className="space-y-6 animate-in fade-in slide-in-from-right-4 duration-300">
             <div className="bg-emerald-50 p-10 rounded-[3rem] border-2 border-emerald-100 text-center">
               <div className="w-24 h-24 rounded-full bg-white shadow-sm flex items-center justify-center mx-auto mb-6"><RefreshCw size={48} className="text-emerald-500" /></div>
               <h3 className="text-3xl font-black text-emerald-900 mb-2">Final Re-assessment</h3>
-              <p className="text-emerald-700 font-medium text-lg">Re-stimulate the <span className="font-black underline">"{state.selectedMuscle || state.pathway}"</span> pathway and test the IM again.</p>
+              <p className="text-emerald-700 font-medium text-lg">Re-stimulate the <span className="font-black underline">"{reassessLabel}"</span> pathway and test the IM again.</p>
             </div>
             <div className="grid grid-cols-1 gap-4">
               <Button className="h-16 rounded-2xl bg-emerald-600 hover:bg-emerald-700 text-xl font-black shadow-lg shadow-emerald-100" onClick={() => { setState({ ...state, reassessed: true }); handleComplete(); }}>Pathway is Clear <CheckCircle2 size={24} className="ml-2" /></Button>
@@ -411,12 +491,12 @@ const PathwayAssessmentWizard = ({ onSave, initialValue }: PathwayAssessmentWiza
     <div className="space-y-6">
       <Card className="p-8 bg-white border-slate-100 shadow-xl rounded-[2.5rem] overflow-hidden relative">
         <div className="absolute top-0 left-0 w-full h-1.5 bg-slate-100">
-          <div className="h-full bg-indigo-600 transition-all duration-700 ease-out" style={{ width: `${(['SELECT_PATHWAY', 'SELECT_MUSCLE', 'TEST_IM', 'SELECT_RESPONSE', 'SELECT_DIRECTION', 'SELECT_SPECIFIC', 'MECHANO_DETAIL', 'EFFERENT_INTEGRATION', 'CORRECTION', 'REASSESS'].indexOf(step) + 1) / 10 * 100}%` }} />
+          <div className="h-full bg-indigo-600 transition-all duration-700 ease-out" style={{ width: `${(['SELECT_PATHWAY', 'SELECT_MUSCLE', 'SELECT_BRAIN_ZONE', 'TEST_IM', 'SELECT_RESPONSE', 'SELECT_DIRECTION', 'SELECT_SPECIFIC', 'MECHANO_DETAIL', 'EFFERENT_INTEGRATION', 'CORRECTION', 'REASSESS'].indexOf(step) + 1) / 11 * 100}%` }} />
         </div>
         <div className="flex items-center justify-between mb-10 mt-2">
           <div className="flex items-center gap-4">
             <div className="w-14 h-14 rounded-2xl bg-indigo-600 text-white flex items-center justify-center shadow-lg shadow-indigo-200"><Zap size={28} /></div>
-            <div><h2 className="text-xl font-black text-slate-900 leading-none">Pathway Wizard</h2><p className="text-[10px] text-slate-400 font-black uppercase tracking-widest mt-2">Step {['SELECT_PATHWAY', 'SELECT_MUSCLE', 'TEST_IM', 'SELECT_RESPONSE', 'SELECT_DIRECTION', 'SELECT_SPECIFIC', 'MECHANO_DETAIL', 'EFFERENT_INTEGRATION', 'CORRECTION', 'REASSESS'].indexOf(step) + 1} of 10</p></div>
+            <div><h2 className="text-xl font-black text-slate-900 leading-none">Pathway Wizard</h2><p className="text-[10px] text-slate-400 font-black uppercase tracking-widest mt-2">Step {['SELECT_PATHWAY', 'SELECT_MUSCLE', 'SELECT_BRAIN_ZONE', 'TEST_IM', 'SELECT_RESPONSE', 'SELECT_DIRECTION', 'SELECT_SPECIFIC', 'MECHANO_DETAIL', 'EFFERENT_INTEGRATION', 'CORRECTION', 'REASSESS'].indexOf(step) + 1} of 11</p></div>
           </div>
           {state.pathway && <Badge variant="secondary" className="bg-indigo-50 text-indigo-700 border-none px-4 py-1.5 rounded-full font-black text-[10px] uppercase tracking-widest shadow-sm">{state.pathway}</Badge>}
         </div>

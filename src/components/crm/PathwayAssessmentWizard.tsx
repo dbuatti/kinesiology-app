@@ -81,7 +81,13 @@ const PATHWAY_DESCRIPTIONS: Record<PathwayType, string> = {
 const DIRECT_MUSCLE_TESTS = [
   {
     group: "Intrinsic Stabilisation System",
-    muscles: ["Transverse Abdominals (TVA)", "Diaphragm", "Pelvic Floor", "Multifidi", "Sacrospinalis (Erector Spinae)"]
+    muscles: [
+      "Transverse Abdominals (TVA)",
+      "Diaphragm",
+      "Pelvic Floor",
+      "Multifidi",
+      "Sacrospinalis"
+    ]
   },
   {
     group: "Upper Body & Extremities",
@@ -93,7 +99,13 @@ const DIRECT_MUSCLE_TESTS = [
   },
   {
     group: "Lower Body & Pelvis",
-    muscles: ["Quadriceps Group", "Hamstrings", "TFL", "Glute Med", "Glute Max"]
+    muscles: [
+      "Quadriceps Group",
+      "Hamstrings",
+      "TFL",
+      "Glute Med",
+      "Glute Max"
+    ]
   }
 ];
 

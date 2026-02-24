@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -13,17 +13,13 @@ import {
   AlertCircle, 
   CheckCircle2, 
   Zap, 
-  Eye, 
-  Heart, 
   RotateCcw,
-  Droplets,
-  Info,
   Sparkles,
   Wind,
   RefreshCw,
   Search,
-  AlertTriangle,
-  Layers
+  ImageIcon,
+  Loader2
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import NociceptiveThreatAssessment from './NociceptiveThreatAssessment';
@@ -44,6 +40,7 @@ import {
 } from '@/data/pathway-logic-data';
 import { BRAIN_REFLEX_POINTS, BrainReflexPoint } from '@/data/brain-reflex-data';
 import EfferentBrainIntegration from './EfferentBrainIntegration';
+import { supabase } from "@/integrations/supabase/client";
 
 type Step = 
   | 'SELECT_PATHWAY' 
@@ -72,6 +69,11 @@ interface WizardState {
   plane?: string;
   action?: string;
   reassessed: boolean;
+}
+
+interface ReflexImages {
+  primaryUrl: string | null;
+  secondaryUrl: string | null;
 }
 
 interface PathwayAssessmentWizardProps {
@@ -124,6 +126,8 @@ const PathwayAssessmentWizard = ({ onSave, initialValue }: PathwayAssessmentWiza
   const [showNociceptive, setShowNociceptive] = useState(false);
   const [muscleSearch, setMuscleSearch] = useState("");
   const [brainSearch, setBrainSearch] = useState("");
+  const [customizations, setCustomizations] = useState<Record<string, ReflexImages>>({});
+  const [loadingImages, setLoadingImages] = useState(false);
   const [state, setState] = useState<WizardState>({
     pathway: null,
     selectedMuscle: null,
@@ -133,6 +137,36 @@ const PathwayAssessmentWizard = ({ onSave, initialValue }: PathwayAssessmentWiza
     specific: null,
     reassessed: false,
   });
+
+  // Fetch custom images for the brain reflex points
+  useEffect(() => {
+    const fetchCustomizations = async () => {
+      setLoadingImages(true);
+      try {
+        const { data: { user } } = await supabase.auth.getUser();
+        if (!user) return;
+        
+        const { data } = await supabase
+          .from('brain_reflex_customizations')
+          .select('reflex_id, image_url, secondary_image_url')
+          .eq('user_id', user.id);
+        
+        const mapping: Record<string, ReflexImages> = {};
+        data?.forEach(item => { 
+          mapping[item.reflex_id] = {
+            primaryUrl: item.image_url,
+            secondaryUrl: item.secondary_image_url
+          };
+        });
+        setCustomizations(mapping);
+      } catch (err) {
+        console.error("Failed to fetch reflex images:", err);
+      } finally {
+        setLoadingImages(false);
+      }
+    };
+    fetchCustomizations();
+  }, []);
 
   const nextStep = (next: Step) => setStep(next);
   const prevStep = (prev: Step) => setStep(prev);
@@ -175,6 +209,28 @@ const PathwayAssessmentWizard = ({ onSave, initialValue }: PathwayAssessmentWiza
       specific: null,
       reassessed: false,
     });
+  };
+
+  const renderImagePreview = (pointId: string) => {
+    const images = customizations[pointId];
+    if (!images || (!images.primaryUrl && !images.secondaryUrl)) return null;
+
+    return (
+      <div className="grid grid-cols-2 gap-3 mt-4 animate-in fade-in zoom-in-95 duration-500">
+        {images.primaryUrl && (
+          <div className="aspect-video rounded-xl overflow-hidden border border-slate-200 bg-slate-50 relative group">
+            <img src={images.primaryUrl} alt="Anatomy" className="w-full h-full object-cover" />
+            <div className="absolute bottom-1 left-1 px-1.5 py-0.5 bg-black/50 backdrop-blur-sm rounded text-[8px] font-black text-white uppercase tracking-widest">Anatomy</div>
+          </div>
+        )}
+        {images.secondaryUrl && (
+          <div className="aspect-video rounded-xl overflow-hidden border border-slate-200 bg-slate-50 relative group">
+            <img src={images.secondaryUrl} alt="Reflex" className="w-full h-full object-cover" />
+            <div className="absolute bottom-1 left-1 px-1.5 py-0.5 bg-indigo-600/80 backdrop-blur-sm rounded text-[8px] font-black text-white uppercase tracking-widest">Reflex Point</div>
+          </div>
+        )}
+      </div>
+    );
   };
 
   if (showNociceptive) {
@@ -298,12 +354,15 @@ const PathwayAssessmentWizard = ({ onSave, initialValue }: PathwayAssessmentWiza
                   <h4 className="text-[10px] font-black text-purple-500 uppercase tracking-[0.2em] px-1">Cortical (Contralateral)</h4>
                   <div className="grid grid-cols-1 gap-2">
                     {cortical.map((p) => (
-                      <Button key={p.id} variant="outline" className={cn("h-auto py-3 justify-start px-4 rounded-xl border-2 transition-all text-left", state.selectedBrainZone?.id === p.id ? "border-purple-600 bg-purple-50 text-purple-700" : "border-slate-100 hover:border-purple-200")} onClick={() => { setState({ ...state, selectedBrainZone: p }); nextStep('TEST_IM'); }}>
-                        <div className="flex items-center justify-between w-full">
-                          <span className="font-bold text-sm">{p.name}</span>
-                          <Badge variant="outline" className="text-[8px] font-black uppercase border-purple-200 text-purple-400">{p.lateralization}</Badge>
-                        </div>
-                      </Button>
+                      <div key={p.id} className="space-y-2">
+                        <Button variant="outline" className={cn("h-auto py-3 justify-start px-4 rounded-xl border-2 transition-all text-left w-full", state.selectedBrainZone?.id === p.id ? "border-purple-600 bg-purple-50 text-purple-700" : "border-slate-100 hover:border-purple-200")} onClick={() => setState({ ...state, selectedBrainZone: p })}>
+                          <div className="flex items-center justify-between w-full">
+                            <span className="font-bold text-sm">{p.name}</span>
+                            <Badge variant="outline" className="text-[8px] font-black uppercase border-purple-200 text-purple-400">{p.lateralization}</Badge>
+                          </div>
+                        </Button>
+                        {state.selectedBrainZone?.id === p.id && renderImagePreview(p.id)}
+                      </div>
                     ))}
                   </div>
                 </div>
@@ -313,12 +372,15 @@ const PathwayAssessmentWizard = ({ onSave, initialValue }: PathwayAssessmentWiza
                   <h4 className="text-[10px] font-black text-indigo-500 uppercase tracking-[0.2em] px-1">Subcortical (Ipsilateral)</h4>
                   <div className="grid grid-cols-1 gap-2">
                     {subcortical.map((p) => (
-                      <Button key={p.id} variant="outline" className={cn("h-auto py-3 justify-start px-4 rounded-xl border-2 transition-all text-left", state.selectedBrainZone?.id === p.id ? "border-indigo-600 bg-indigo-50 text-indigo-700" : "border-slate-100 hover:border-indigo-200")} onClick={() => { setState({ ...state, selectedBrainZone: p }); nextStep('TEST_IM'); }}>
-                        <div className="flex items-center justify-between w-full">
-                          <span className="font-bold text-sm">{p.name}</span>
-                          <Badge variant="outline" className="text-[8px] font-black uppercase border-indigo-200 text-indigo-400">{p.lateralization}</Badge>
-                        </div>
-                      </Button>
+                      <div key={p.id} className="space-y-2">
+                        <Button variant="outline" className={cn("h-auto py-3 justify-start px-4 rounded-xl border-2 transition-all text-left w-full", state.selectedBrainZone?.id === p.id ? "border-indigo-600 bg-indigo-50 text-indigo-700" : "border-slate-100 hover:border-indigo-200")} onClick={() => setState({ ...state, selectedBrainZone: p })}>
+                          <div className="flex items-center justify-between w-full">
+                            <span className="font-bold text-sm">{p.name}</span>
+                            <Badge variant="outline" className="text-[8px] font-black uppercase border-indigo-200 text-indigo-400">{p.lateralization}</Badge>
+                          </div>
+                        </Button>
+                        {state.selectedBrainZone?.id === p.id && renderImagePreview(p.id)}
+                      </div>
                     ))}
                   </div>
                 </div>
@@ -328,18 +390,24 @@ const PathwayAssessmentWizard = ({ onSave, initialValue }: PathwayAssessmentWiza
                   <h4 className="text-[10px] font-black text-emerald-500 uppercase tracking-[0.2em] px-1">Cranial Nerves</h4>
                   <div className="grid grid-cols-1 gap-2">
                     {cranial.map((p) => (
-                      <Button key={p.id} variant="outline" className={cn("h-auto py-3 justify-start px-4 rounded-xl border-2 transition-all text-left", state.selectedBrainZone?.id === p.id ? "border-emerald-600 bg-emerald-50 text-emerald-700" : "border-slate-100 hover:border-emerald-200")} onClick={() => { setState({ ...state, selectedBrainZone: p }); nextStep('TEST_IM'); }}>
-                        <div className="flex items-center justify-between w-full">
-                          <span className="font-bold text-sm">{p.name}</span>
-                          <Badge variant="outline" className="text-[8px] font-black uppercase border-emerald-200 text-emerald-400">{p.lateralization}</Badge>
-                        </div>
-                      </Button>
+                      <div key={p.id} className="space-y-2">
+                        <Button variant="outline" className={cn("h-auto py-3 justify-start px-4 rounded-xl border-2 transition-all text-left w-full", state.selectedBrainZone?.id === p.id ? "border-emerald-600 bg-emerald-50 text-emerald-700" : "border-slate-100 hover:border-emerald-200")} onClick={() => setState({ ...state, selectedBrainZone: p })}>
+                          <div className="flex items-center justify-between w-full">
+                            <span className="font-bold text-sm">{p.name}</span>
+                            <Badge variant="outline" className="text-[8px] font-black uppercase border-emerald-200 text-emerald-400">{p.lateralization}</Badge>
+                          </div>
+                        </Button>
+                        {state.selectedBrainZone?.id === p.id && renderImagePreview(p.id)}
+                      </div>
                     ))}
                   </div>
                 </div>
               )}
             </div>
-            <Button variant="ghost" onClick={() => prevStep('SELECT_PATHWAY')} className="w-full h-12 rounded-xl"><ChevronLeft size={18} className="mr-2" /> Back</Button>
+            <div className="flex gap-3">
+              <Button variant="ghost" onClick={() => prevStep('SELECT_PATHWAY')} className="flex-1 h-12 rounded-xl"><ChevronLeft size={18} className="mr-2" /> Back</Button>
+              <Button disabled={!state.selectedBrainZone} onClick={() => nextStep('TEST_IM')} className="flex-[2] h-12 rounded-xl bg-indigo-600 hover:bg-indigo-700 font-bold">Continue <ChevronRight size={18} className="ml-2" /></Button>
+            </div>
           </div>
         );
 
@@ -354,7 +422,10 @@ const PathwayAssessmentWizard = ({ onSave, initialValue }: PathwayAssessmentWiza
                 <div className="p-6 bg-white/10 rounded-2xl border border-white/10 shadow-inner">
                   <p className="text-lg font-bold leading-tight">1. Stimulate the <span className="text-amber-400 underline">"{targetLabel}"</span> pathway.</p>
                   {state.selectedBrainZone && (
-                    <p className="text-xs text-indigo-300 mt-2 font-medium italic">Location: {state.selectedBrainZone.location}</p>
+                    <div className="mt-4 space-y-4">
+                      <p className="text-xs text-indigo-300 font-medium italic">Location: {state.selectedBrainZone.location}</p>
+                      {renderImagePreview(state.selectedBrainZone.id)}
+                    </div>
                   )}
                 </div>
                 <div className="p-6 bg-white/10 rounded-2xl border border-white/10 shadow-inner">

@@ -17,6 +17,8 @@ export interface MuscleInfo {
   testingPosition?: string;
   neurolymphatic?: string;
   neurovascular?: string;
+  description?: string;
+  videoUrl?: string;
 }
 
 export const MUSCLE_INFO_DETAILS: Record<string, MuscleInfo> = {
@@ -168,17 +170,23 @@ export const MUSCLE_INFO_DETAILS: Record<string, MuscleInfo> = {
     name: 'Sacrospinalis',
     brainstemControl: 'Pons, Cerebellum',
     meridian: 'Bladder',
+    description: 'Part of the erector spinae group, essential for maintaining upright posture and spinal extension.',
+    videoUrl: 'https://www.youtube.com/embed/dQw4w9WgXcQ',
   },
   'Multifidi': {
     name: 'Multifidi',
     brainstemControl: 'Pons, Cerebellum',
     organGland: 'Kidney',
     meridian: 'Bladder',
+    description: 'Deep spinal muscles that provide segmental stability and control of the vertebrae.',
+    videoUrl: 'https://www.youtube.com/embed/dQw4w9WgXcQ',
   },
   'Pelvic Floor (Anterior)': {
     name: 'Anterior PF',
     organGland: 'Bladder',
     meridian: 'Bladder',
+    description: 'A group of muscles that support the pelvic organs and contribute to core stability and continence.',
+    videoUrl: 'https://www.youtube.com/embed/dQw4w9WgXcQ',
   },
   'Erector Spinae': {
     name: 'Erector Spinae',
@@ -186,6 +194,8 @@ export const MUSCLE_INFO_DETAILS: Record<string, MuscleInfo> = {
     organGland: 'Bladder',
     spinalFixation: 'L1-C5',
     meridian: 'Bladder',
+    description: 'A set of muscles that straighten and rotate the back.',
+    videoUrl: 'https://www.youtube.com/embed/dQw4w9WgXcQ',
   },
   'Diaphragm': {
     name: 'Diaphragm',
@@ -193,34 +203,46 @@ export const MUSCLE_INFO_DETAILS: Record<string, MuscleInfo> = {
     organGland: 'Stomach',
     spinalFixation: 'C3-L3',
     meridian: 'Pericardium',
+    description: 'The primary muscle of respiration, also playing a critical role in core stability and intra-abdominal pressure regulation.',
+    videoUrl: 'https://www.youtube.com/embed/dQw4w9WgXcQ',
   },
   'Pelvic Floor (Posterior)': {
     name: 'Posterior PF',
     organGland: 'Bladder',
     meridian: 'Bladder',
+    description: 'The posterior portion of the pelvic floor muscles, providing support and stability.',
+    videoUrl: 'https://www.youtube.com/embed/dQw4w9WgXcQ',
   },
   'Internal Obs': {
     name: 'Internal Obliques',
     brainstemControl: 'Medulla, Midbrain',
     organGland: 'Stomach',
     meridian: 'Stomach',
+    description: 'Abdominal muscles that assist in forced respiration and trunk rotation.',
+    videoUrl: 'https://www.youtube.com/embed/dQw4w9WgXcQ',
   },
   'Serratus Anterior': {
     name: 'Serratus Anterior',
     brainstemControl: 'Medulla, Midbrain',
     meridian: 'Pericardium',
+    description: 'Muscle that pulls the scapula forward around the thorax.',
+    videoUrl: 'https://www.youtube.com/embed/dQw4w9WgXcQ',
   },
   'External Obs': {
     name: 'External Obliques',
     brainstemControl: 'Medulla, Midbrain',
     organGland: 'Stomach',
     meridian: 'Stomach',
+    description: 'The largest and outermost of the three flat abdominal muscles.',
+    videoUrl: 'https://www.youtube.com/embed/dQw4w9WgXcQ',
   },
   'Transverse Abdominals': {
     name: 'TVA',
     brainstemControl: 'Medulla, Midbrain',
     organGland: 'Stomach',
     meridian: 'Stomach',
+    description: 'The deepest of the abdominal muscles, acting as a natural corset to provide stability to the spine and pelvis.',
+    videoUrl: 'https://www.youtube.com/embed/dQw4w9WgXcQ',
   },
   'Rectus Abdominals': {
     name: 'Rectus Abdominals',

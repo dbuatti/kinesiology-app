@@ -65,6 +65,9 @@ const ReflexImageZone = ({
         .from(BUCKET_NAME)
         .getPublicUrl(filePath);
 
+      // Add cache-busting timestamp to force browser refresh
+      const cacheBustedUrl = `${publicUrl}?t=${Date.now()}`;
+
       const dbField = type === 'primary' ? 'image_url' : 'secondary_image_url';
 
       const { error: dbError } = await supabase
@@ -72,14 +75,14 @@ const ReflexImageZone = ({
         .upsert({
           user_id: user.id,
           reflex_id: reflexId,
-          [dbField]: publicUrl
+          [dbField]: publicUrl // Store clean URL in DB
         }, { 
           onConflict: 'user_id,reflex_id' 
         });
 
       if (dbError) throw dbError;
 
-      onUploadComplete(publicUrl);
+      onUploadComplete(cacheBustedUrl);
       showSuccess(`${type === 'primary' ? 'Main' : 'Reflex'} image saved!`);
     } catch (error: any) {
       showError(error.message || "Failed to upload image.");
@@ -188,9 +191,11 @@ const BrainReflexReference = () => {
         
         const mapping: Record<string, ReflexImageData> = {};
         data?.forEach(item => { 
+          // Add cache-busting to initial load as well
+          const timestamp = Date.now();
           mapping[item.reflex_id] = {
-            primaryUrl: item.image_url || null,
-            secondaryUrl: item.secondary_image_url || null
+            primaryUrl: item.image_url ? `${item.image_url}?t=${timestamp}` : null,
+            secondaryUrl: item.secondary_image_url ? `${item.secondary_image_url}?t=${timestamp}` : null
           };
         });
         setCustomizations(mapping);

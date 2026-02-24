@@ -21,6 +21,7 @@ interface MuscleGroupCollapsibleProps {
   onStatusChange: (muscle: string, status: MuscleStatus['value']) => void;
   onClear: (muscle: string) => void;
   onShowInfo: (muscle: string) => void;
+  onShowLogic?: (muscle: string, status: MuscleStatus['value']) => void;
   disabled?: boolean;
 }
 
@@ -33,6 +34,7 @@ const MuscleGroupCollapsible = ({
   onStatusChange,
   onClear,
   onShowInfo,
+  onShowLogic,
   disabled
 }: MuscleGroupCollapsibleProps) => {
   const testedInGroup = muscles.filter(m => results[m]).length;
@@ -73,6 +75,7 @@ const MuscleGroupCollapsible = ({
                 onStatusChange={onStatusChange}
                 onClear={onClear}
                 onShowInfo={onShowInfo}
+                onShowLogic={onShowLogic}
                 disabled={disabled}
               />
             ))}

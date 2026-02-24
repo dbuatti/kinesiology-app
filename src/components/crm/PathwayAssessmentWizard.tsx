@@ -65,6 +65,11 @@ interface WizardState {
   reassessed: boolean;
 }
 
+interface PathwayAssessmentWizardProps {
+  onSave: (summary: string) => void;
+  initialValue?: string;
+}
+
 const PATHWAY_DESCRIPTIONS: Record<PathwayType, string> = {
   'Primitive Reflex': 'Foundational movement patterns that should be integrated in infancy.',
   'Cranial Nerve': 'Direct pathways from the brainstem controlling sensory and motor functions.',
@@ -593,7 +598,7 @@ const PathwayAssessmentWizard = ({ onSave, initialValue }: PathwayAssessmentWiza
         
         <div className="flex items-center justify-between mb-10 mt-2">
           <div className="flex items-center gap-4">
-            <div className="w-14 h-14 rounded-2xl bg-indigo-600 flex items-center justify-center text-white shadow-lg shadow-indigo-200">
+            <div className="w-14 h-14 rounded-2xl bg-indigo-600 text-white flex items-center justify-center shadow-lg shadow-indigo-200">
               <Zap size={28} />
             </div>
             <div>

@@ -10,12 +10,13 @@ import {
   ArrowRightLeft, MousePointer2, 
   Layers, Activity, ShieldAlert,
   Upload, Image as ImageIcon, X, Loader2,
-  Plus, Sparkles, Target
+  Plus, Sparkles, Target, Maximize2
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 import { supabase } from "@/integrations/supabase/client";
 import { showSuccess, showError } from "@/utils/toast";
+import BrainReflexModal from "./BrainReflexModal";
 
 const BUCKET_NAME = 'reflex-images';
 
@@ -65,9 +66,7 @@ const ReflexImageZone = ({
         .from(BUCKET_NAME)
         .getPublicUrl(filePath);
 
-      // Add cache-busting timestamp to force browser refresh
       const cacheBustedUrl = `${publicUrl}?t=${Date.now()}`;
-
       const dbField = type === 'primary' ? 'image_url' : 'secondary_image_url';
 
       const { error: dbError } = await supabase
@@ -75,7 +74,7 @@ const ReflexImageZone = ({
         .upsert({
           user_id: user.id,
           reflex_id: reflexId,
-          [dbField]: publicUrl // Store clean URL in DB
+          [dbField]: publicUrl 
         }, { 
           onConflict: 'user_id,reflex_id' 
         });
@@ -178,6 +177,8 @@ const BrainReflexReference = () => {
   const [search, setSearch] = useState("");
   const [selectedCategory, setSelectedCategory] = useState<BrainRegionCategory | 'All'>('All');
   const [customizations, setCustomizations] = useState<Record<string, ReflexImageData>>({});
+  const [selectedPoint, setSelectedPoint] = useState<BrainReflexPoint | null>(null);
+  const [modalOpen, setModalOpen] = useState(false);
 
   useEffect(() => {
     const fetchCustomizations = async () => {
@@ -191,7 +192,6 @@ const BrainReflexReference = () => {
         
         const mapping: Record<string, ReflexImageData> = {};
         data?.forEach(item => { 
-          // Add cache-busting to initial load as well
           const timestamp = Date.now();
           mapping[item.reflex_id] = {
             primaryUrl: item.image_url ? `${item.image_url}?t=${timestamp}` : null,
@@ -215,6 +215,11 @@ const BrainReflexReference = () => {
         }
       };
     });
+  };
+
+  const handleCardClick = (point: BrainReflexPoint) => {
+    setSelectedPoint(point);
+    setModalOpen(true);
   };
 
   const filteredPoints = BRAIN_REFLEX_POINTS.filter(p => {
@@ -261,13 +266,22 @@ const BrainReflexReference = () => {
           const data = customizations[point.id] || { primaryUrl: null, secondaryUrl: null };
           
           return (
-            <Card key={point.id} className="border-none shadow-lg rounded-[2.5rem] bg-white hover:shadow-2xl transition-all group overflow-hidden">
+            <Card 
+              key={point.id} 
+              className="border-none shadow-lg rounded-[2.5rem] bg-white hover:shadow-2xl transition-all group overflow-hidden cursor-pointer"
+              onClick={() => handleCardClick(point)}
+            >
               <CardHeader className={cn(
-                "pb-4 border-b transition-colors",
+                "pb-4 border-b transition-colors relative",
                 point.category === 'Cortical' ? "bg-purple-50/50 border-purple-100" :
                 point.category === 'Subcortical' ? "bg-indigo-50/50 border-indigo-100" :
                 "bg-emerald-50/50 border-emerald-100"
               )}>
+                <div className="absolute top-4 right-4 opacity-0 group-hover:opacity-100 transition-opacity">
+                  <div className="w-8 h-8 rounded-full bg-white/80 backdrop-blur-sm flex items-center justify-center text-slate-400 shadow-sm">
+                    <Maximize2 size={14} />
+                  </div>
+                </div>
                 <div className="flex items-start justify-between">
                   <div className="space-y-1">
                     <div className="flex gap-2 mb-2">
@@ -300,8 +314,7 @@ const BrainReflexReference = () => {
                 </div>
               </CardHeader>
               <CardContent className="p-6 space-y-6">
-                {/* Image Container with Hover Logic */}
-                <div className="relative group/container">
+                <div className="relative group/container" onClick={(e) => e.stopPropagation()}>
                   <ReflexImageZone 
                     reflexId={point.id} 
                     type="primary"
@@ -309,7 +322,6 @@ const BrainReflexReference = () => {
                     onUploadComplete={(url) => updateLocalCustomization(point.id, 'primary', url)}
                   />
                   
-                  {/* Secondary Image Zone - Bottom Right */}
                   <div className={cn(
                     "absolute bottom-3 right-3 transition-all duration-500 z-20",
                     data.secondaryUrl 
@@ -328,24 +340,16 @@ const BrainReflexReference = () => {
                 <div className="space-y-4">
                   <div>
                     <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-1">Location & Technique</p>
-                    <p className="text-sm font-bold text-slate-700 leading-relaxed">{point.location}</p>
-                    {point.technique && <p className="text-xs text-slate-500 mt-1 italic">{point.technique}</p>}
+                    <p className="text-sm font-bold text-slate-700 leading-relaxed line-clamp-2">{point.location}</p>
                   </div>
                   
                   {point.pearl && (
                     <div className="p-4 bg-indigo-50/50 rounded-2xl border border-indigo-100 relative overflow-hidden">
-                      <div className="absolute top-0 right-0 p-2 opacity-10"><Sparkles size={32} className="text-indigo-600" /></div>
                       <p className="text-[9px] font-black text-indigo-400 uppercase tracking-widest mb-1 flex items-center gap-1">
                         <Info size={10} /> Clinical Pearl
                       </p>
-                      <p className="text-xs text-indigo-900 font-bold leading-relaxed">{point.pearl}</p>
+                      <p className="text-xs text-indigo-900 font-bold leading-relaxed line-clamp-2">{point.pearl}</p>
                     </div>
-                  )}
-
-                  {point.acupoint && (
-                    <Badge className="bg-amber-50 text-amber-700 border-amber-100 text-[9px] font-black px-2 py-0.5 rounded-md">
-                      Acupoint: {point.acupoint}
-                    </Badge>
                   )}
                 </div>
               </CardContent>
@@ -353,6 +357,14 @@ const BrainReflexReference = () => {
           );
         })}
       </div>
+
+      <BrainReflexModal 
+        point={selectedPoint}
+        primaryUrl={selectedPoint ? customizations[selectedPoint.id]?.primaryUrl : null}
+        secondaryUrl={selectedPoint ? customizations[selectedPoint.id]?.secondaryUrl : null}
+        open={modalOpen}
+        onOpenChange={setModalOpen}
+      />
     </div>
   );
 };

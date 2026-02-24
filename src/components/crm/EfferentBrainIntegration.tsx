@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -16,11 +16,15 @@ import {
   Sparkles,
   Heart,
   X,
-  Activity
+  Activity,
+  Target,
+  ImageIcon,
+  Loader2
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { BRAIN_REFLEX_POINTS, BrainReflexPoint } from '@/data/brain-reflex-data';
 import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
+import { supabase } from "@/integrations/supabase/client";
 
 type Step = 'ENTRY' | 'COORD_1' | 'COORD_2' | 'METHOD' | 'CALIBRATE' | 'REASSESS';
 type IntegrationMethod = 'Tapping' | 'Holding + Intention' | 'Tuning Fork';
@@ -28,6 +32,11 @@ type IntegrationMethod = 'Tapping' | 'Holding + Intention' | 'Tuning Fork';
 interface Coordinate {
   point: BrainReflexPoint | null;
   side: 'Left' | 'Right' | 'Bilateral' | null;
+}
+
+interface ReflexImages {
+  primaryUrl: string | null;
+  secondaryUrl: string | null;
 }
 
 interface EfferentBrainIntegrationProps {
@@ -44,6 +53,38 @@ const EfferentBrainIntegration = ({ onSave, onCancel, initialValue, initialEntry
   const [coord2, setCoord2] = useState<Coordinate>({ point: null, side: null });
   const [method, setMethod] = useState<IntegrationMethod | null>(null);
   const [isComplete, setIsComplete] = useState(false);
+  const [customizations, setCustomizations] = useState<Record<string, ReflexImages>>({});
+  const [loadingImages, setLoadingImages] = useState(false);
+
+  // Fetch custom images for the brain reflex points
+  useEffect(() => {
+    const fetchCustomizations = async () => {
+      setLoadingImages(true);
+      try {
+        const { data: { user } } = await supabase.auth.getUser();
+        if (!user) return;
+        
+        const { data } = await supabase
+          .from('brain_reflex_customizations')
+          .select('reflex_id, image_url, secondary_image_url')
+          .eq('user_id', user.id);
+        
+        const mapping: Record<string, ReflexImages> = {};
+        data?.forEach(item => { 
+          mapping[item.reflex_id] = {
+            primaryUrl: item.image_url,
+            secondaryUrl: item.secondary_image_url
+          };
+        });
+        setCustomizations(mapping);
+      } catch (err) {
+        console.error("Failed to fetch reflex images:", err);
+      } finally {
+        setLoadingImages(false);
+      }
+    };
+    fetchCustomizations();
+  }, []);
 
   const nextStep = (next: Step) => setStep(next);
   const prevStep = (prev: Step) => setStep(prev);
@@ -55,6 +96,28 @@ const EfferentBrainIntegration = ({ onSave, onCancel, initialValue, initialEntry
     const summary = `Efferent Integration: ${entryPoint} -> ${coord1.side} ${coord1.point?.name} + ${coord2.side} ${coord2.point?.name} via ${method}`;
     onSave(summary);
     setIsComplete(true);
+  };
+
+  const renderImagePreview = (pointId: string) => {
+    const images = customizations[pointId];
+    if (!images || (!images.primaryUrl && !images.secondaryUrl)) return null;
+
+    return (
+      <div className="grid grid-cols-2 gap-3 mt-4 animate-in fade-in zoom-in-95 duration-500">
+        {images.primaryUrl && (
+          <div className="aspect-video rounded-xl overflow-hidden border border-slate-200 bg-slate-50 relative group">
+            <img src={images.primaryUrl} alt="Anatomy" className="w-full h-full object-cover" />
+            <div className="absolute bottom-1 left-1 px-1.5 py-0.5 bg-black/50 backdrop-blur-sm rounded text-[8px] font-black text-white uppercase tracking-widest">Anatomy</div>
+          </div>
+        )}
+        {images.secondaryUrl && (
+          <div className="aspect-video rounded-xl overflow-hidden border border-slate-200 bg-slate-50 relative group">
+            <img src={images.secondaryUrl} alt="Reflex" className="w-full h-full object-cover" />
+            <div className="absolute bottom-1 left-1 px-1.5 py-0.5 bg-indigo-600/80 backdrop-blur-sm rounded text-[8px] font-black text-white uppercase tracking-widest">Reflex Point</div>
+          </div>
+        )}
+      </div>
+    );
   };
 
   const renderCoordinateSelection = (coord: Coordinate, setCoord: (c: Coordinate) => void, next: Step, prev: Step, title: string) => (
@@ -110,6 +173,8 @@ const EfferentBrainIntegration = ({ onSave, onCancel, initialValue, initialEntry
               <ToggleGroupItem value="Right" className="flex-1 rounded-xl border-2 data-[state=on]:bg-slate-900 data-[state=on]:text-white font-bold">Right</ToggleGroupItem>
               <ToggleGroupItem value="Bilateral" className="flex-1 rounded-xl border-2 data-[state=on]:bg-slate-900 data-[state=on]:text-white font-bold">Bilateral</ToggleGroupItem>
             </ToggleGroup>
+            
+            {renderImagePreview(coord.point.id)}
           </div>
         )}
       </div>
@@ -240,14 +305,28 @@ const EfferentBrainIntegration = ({ onSave, onCancel, initialValue, initialEntry
               </h3>
               
               <div className="space-y-8 relative z-10">
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="p-4 bg-white/10 rounded-2xl border border-white/10 text-center">
-                    <p className="text-[10px] font-black text-indigo-300 uppercase mb-1">Coordinate 1</p>
-                    <p className="text-lg font-bold">{coord1.side} {coord1.point?.name}</p>
+                <div className="grid grid-cols-2 gap-6">
+                  <div className="space-y-3">
+                    <div className="p-4 bg-white/10 rounded-2xl border border-white/10 text-center">
+                      <p className="text-[10px] font-black text-indigo-300 uppercase mb-1">Coordinate 1</p>
+                      <p className="text-lg font-bold">{coord1.side} {coord1.point?.name}</p>
+                    </div>
+                    {coord1.point && customizations[coord1.point.id]?.secondaryUrl && (
+                      <div className="aspect-video rounded-xl overflow-hidden border border-white/10 bg-white/5">
+                        <img src={customizations[coord1.point.id].secondaryUrl!} alt="Reflex 1" className="w-full h-full object-cover" />
+                      </div>
+                    )}
                   </div>
-                  <div className="p-4 bg-white/10 rounded-2xl border border-white/10 text-center">
-                    <p className="text-[10px] font-black text-indigo-300 uppercase mb-1">Coordinate 2</p>
-                    <p className="text-lg font-bold">{coord2.side} {coord2.point?.name}</p>
+                  <div className="space-y-3">
+                    <div className="p-4 bg-white/10 rounded-2xl border border-white/10 text-center">
+                      <p className="text-[10px] font-black text-indigo-300 uppercase mb-1">Coordinate 2</p>
+                      <p className="text-lg font-bold">{coord2.side} {coord2.point?.name}</p>
+                    </div>
+                    {coord2.point && customizations[coord2.point.id]?.secondaryUrl && (
+                      <div className="aspect-video rounded-xl overflow-hidden border border-white/10 bg-white/5">
+                        <img src={customizations[coord2.point.id].secondaryUrl!} alt="Reflex 2" className="w-full h-full object-cover" />
+                      </div>
+                    )}
                   </div>
                 </div>
 

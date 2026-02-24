@@ -10,7 +10,7 @@ import {
   ArrowRightLeft, MousePointer2, 
   Layers, Activity, ShieldAlert,
   Upload, Image as ImageIcon, X, Loader2,
-  Plus, Sparkles
+  Plus, Sparkles, Target
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
@@ -19,22 +19,24 @@ import { showSuccess, showError } from "@/utils/toast";
 
 const BUCKET_NAME = 'reflex-images';
 
+interface ReflexImageData {
+  primaryUrl: string | null;
+  secondaryUrl: string | null;
+}
+
 const ReflexImageZone = ({ 
   reflexId, 
-  initialUrl, 
+  type,
+  currentUrl, 
   onUploadComplete 
 }: { 
   reflexId: string; 
-  initialUrl?: string; 
+  type: 'primary' | 'secondary';
+  currentUrl?: string | null; 
   onUploadComplete: (url: string | null) => void 
 }) => {
   const [isDragging, setIsDragging] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
-  const [imageUrl, setImageUrl] = useState<string | null>(initialUrl || null);
-
-  useEffect(() => {
-    setImageUrl(initialUrl || null);
-  }, [initialUrl]);
 
   const handleUpload = async (file: File) => {
     if (!file.type.startsWith('image/')) {
@@ -48,7 +50,7 @@ const ReflexImageZone = ({
       if (!user) throw new Error("User not authenticated");
 
       const fileExt = file.name.split('.').pop() || 'png';
-      const filePath = `${user.id}/${reflexId}.${fileExt}`;
+      const filePath = `${user.id}/${reflexId}_${type}.${fileExt}`;
 
       const { error: uploadError } = await supabase.storage
         .from(BUCKET_NAME)
@@ -63,21 +65,22 @@ const ReflexImageZone = ({
         .from(BUCKET_NAME)
         .getPublicUrl(filePath);
 
+      const dbField = type === 'primary' ? 'image_url' : 'secondary_image_url';
+
       const { error: dbError } = await supabase
         .from('brain_reflex_customizations')
         .upsert({
           user_id: user.id,
           reflex_id: reflexId,
-          image_url: publicUrl
+          [dbField]: publicUrl
         }, { 
           onConflict: 'user_id,reflex_id' 
         });
 
       if (dbError) throw dbError;
 
-      setImageUrl(publicUrl);
       onUploadComplete(publicUrl);
-      showSuccess("Reference image saved!");
+      showSuccess(`${type === 'primary' ? 'Main' : 'Reflex'} image saved!`);
     } catch (error: any) {
       showError(error.message || "Failed to upload image.");
     } finally {
@@ -87,21 +90,22 @@ const ReflexImageZone = ({
 
   const handleRemove = async (e: React.MouseEvent) => {
     e.stopPropagation();
-    if (!confirm("Remove this reference image?")) return;
+    if (!confirm(`Remove this ${type} image?`)) return;
 
     try {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) return;
 
+      const dbField = type === 'primary' ? 'image_url' : 'secondary_image_url';
+
       const { error } = await supabase
         .from('brain_reflex_customizations')
-        .delete()
+        .update({ [dbField]: null })
         .eq('user_id', user.id)
         .eq('reflex_id', reflexId);
 
       if (error) throw error;
 
-      setImageUrl(null);
       onUploadComplete(null);
       showSuccess("Image removed.");
     } catch (error) {
@@ -114,7 +118,9 @@ const ReflexImageZone = ({
     setIsDragging(false);
     const file = e.dataTransfer.files?.[0];
     if (file) handleUpload(file);
-  }, [reflexId]);
+  }, [reflexId, type]);
+
+  const isPrimary = type === 'primary';
 
   return (
     <div 
@@ -122,35 +128,39 @@ const ReflexImageZone = ({
       onDragLeave={() => setIsDragging(false)}
       onDrop={onDrop}
       className={cn(
-        "relative group/image aspect-video rounded-2xl border-2 border-dashed transition-all duration-300 flex flex-col items-center justify-center overflow-hidden outline-none",
-        imageUrl ? "border-transparent" : "border-slate-200 bg-slate-50/50 hover:border-indigo-300 hover:bg-indigo-50/30",
+        "relative group/image transition-all duration-300 flex flex-col items-center justify-center overflow-hidden outline-none",
+        isPrimary ? "aspect-video rounded-2xl border-2 border-dashed" : "w-20 h-20 rounded-xl border-2 border-dashed bg-white/80 backdrop-blur-sm shadow-lg",
+        currentUrl ? "border-transparent" : "border-slate-200 bg-slate-50/50 hover:border-indigo-300 hover:bg-indigo-50/30",
         isDragging && "border-indigo-500 bg-indigo-100/50 scale-[0.98]",
         isUploading && "opacity-50 pointer-events-none"
       )}
     >
-      {imageUrl ? (
+      {currentUrl ? (
         <>
-          <img src={imageUrl} alt="Reflex Reference" className="w-full h-full object-cover" />
-          <div className="absolute inset-0 bg-black/40 opacity-0 group-hover/image:opacity-100 transition-opacity flex items-center justify-center gap-2">
-            <Button variant="secondary" size="sm" className="rounded-xl font-bold h-8" onClick={() => setImageUrl(null)}>
-              <ImageIcon size={14} className="mr-2" /> Change
+          <img src={currentUrl} alt="Reflex Reference" className="w-full h-full object-cover" />
+          <div className="absolute inset-0 bg-black/40 opacity-0 group-hover/image:opacity-100 transition-opacity flex items-center justify-center gap-1">
+            <Button variant="secondary" size="icon" className="rounded-lg h-7 w-7" onClick={(e) => { e.stopPropagation(); onUploadComplete(null); }}>
+              <ImageIcon size={12} />
             </Button>
-            <Button variant="destructive" size="icon" className="rounded-xl h-8 w-8" onClick={handleRemove}>
-              <X size={14} />
+            <Button variant="destructive" size="icon" className="rounded-lg h-7 w-7" onClick={handleRemove}>
+              <X size={12} />
             </Button>
           </div>
         </>
       ) : (
-        <div className="text-center p-4 space-y-2">
+        <div className="text-center p-2 space-y-1">
           {isUploading ? (
-            <Loader2 className="mx-auto text-indigo-500 animate-spin" size={24} />
+            <Loader2 className="mx-auto text-indigo-500 animate-spin" size={isPrimary ? 24 : 16} />
           ) : (
             <>
-              <div className="w-10 h-10 rounded-xl bg-white shadow-sm border border-slate-100 flex items-center justify-center mx-auto text-slate-400 group-hover/image:text-indigo-500 group-hover/image:scale-110 transition-all">
-                <Plus size={20} />
+              <div className={cn(
+                "rounded-lg bg-white shadow-sm border border-slate-100 flex items-center justify-center mx-auto text-slate-400 group-hover/image:text-indigo-500 group-hover/image:scale-110 transition-all",
+                isPrimary ? "w-10 h-10" : "w-6 h-6"
+              )}>
+                {isPrimary ? <Plus size={20} /> : <Target size={14} />}
               </div>
-              <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">
-                Drop Reference Image
+              <p className={cn("font-black text-slate-400 uppercase tracking-widest", isPrimary ? "text-[10px]" : "text-[7px]")}>
+                {isPrimary ? "Drop Main" : "Reflex Point"}
               </p>
             </>
           )}
@@ -163,21 +173,43 @@ const ReflexImageZone = ({
 const BrainReflexReference = () => {
   const [search, setSearch] = useState("");
   const [selectedCategory, setSelectedCategory] = useState<BrainRegionCategory | 'All'>('All');
-  const [customizations, setCustomizations] = useState<Record<string, string>>({});
+  const [customizations, setCustomizations] = useState<Record<string, ReflexImageData>>({});
 
   useEffect(() => {
     const fetchCustomizations = async () => {
       try {
         const { data: { user } } = await supabase.auth.getUser();
         if (!user) return;
-        const { data } = await supabase.from('brain_reflex_customizations').select('reflex_id, image_url').eq('user_id', user.id);
-        const mapping: Record<string, string> = {};
-        data?.forEach(item => { if (item.image_url) mapping[item.reflex_id] = item.image_url; });
+        const { data } = await supabase
+          .from('brain_reflex_customizations')
+          .select('reflex_id, image_url, secondary_image_url')
+          .eq('user_id', user.id);
+        
+        const mapping: Record<string, ReflexImageData> = {};
+        data?.forEach(item => { 
+          mapping[item.reflex_id] = {
+            primaryUrl: item.image_url || null,
+            secondaryUrl: item.secondary_image_url || null
+          };
+        });
         setCustomizations(mapping);
       } catch (err) {}
     };
     fetchCustomizations();
   }, []);
+
+  const updateLocalCustomization = (reflexId: string, type: 'primary' | 'secondary', url: string | null) => {
+    setCustomizations(prev => {
+      const current = prev[reflexId] || { primaryUrl: null, secondaryUrl: null };
+      return {
+        ...prev,
+        [reflexId]: {
+          ...current,
+          [type === 'primary' ? 'primaryUrl' : 'secondaryUrl']: url
+        }
+      };
+    });
+  };
 
   const filteredPoints = BRAIN_REFLEX_POINTS.filter(p => {
     const matchesSearch = p.name.toLowerCase().includes(search.toLowerCase()) || 
@@ -219,81 +251,99 @@ const BrainReflexReference = () => {
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {filteredPoints.map(point => (
-          <Card key={point.id} className="border-none shadow-md rounded-[2rem] bg-white hover:shadow-xl transition-all group overflow-hidden">
-            <CardHeader className={cn(
-              "pb-4 border-b transition-colors",
-              point.category === 'Cortical' ? "bg-purple-50/50 border-purple-100" :
-              point.category === 'Subcortical' ? "bg-indigo-50/50 border-indigo-100" :
-              "bg-emerald-50/50 border-emerald-100"
-            )}>
-              <div className="flex items-start justify-between">
-                <div className="space-y-1">
-                  <div className="flex gap-2 mb-2">
-                    <Badge className={cn(
-                      "border-none font-black text-[8px] uppercase tracking-widest",
-                      point.category === 'Cortical' ? "bg-purple-100 text-purple-700" :
-                      point.category === 'Subcortical' ? "bg-indigo-100 text-indigo-700" :
-                      "bg-emerald-100 text-emerald-700"
-                    )}>
-                      {point.category}
-                    </Badge>
-                    <Badge variant="outline" className="border-slate-200 text-slate-500 font-black text-[8px] uppercase tracking-widest">
-                      {point.lateralization}
-                    </Badge>
+        {filteredPoints.map(point => {
+          const data = customizations[point.id] || { primaryUrl: null, secondaryUrl: null };
+          
+          return (
+            <Card key={point.id} className="border-none shadow-md rounded-[2rem] bg-white hover:shadow-xl transition-all group overflow-hidden">
+              <CardHeader className={cn(
+                "pb-4 border-b transition-colors",
+                point.category === 'Cortical' ? "bg-purple-50/50 border-purple-100" :
+                point.category === 'Subcortical' ? "bg-indigo-50/50 border-indigo-100" :
+                "bg-emerald-50/50 border-emerald-100"
+              )}>
+                <div className="flex items-start justify-between">
+                  <div className="space-y-1">
+                    <div className="flex gap-2 mb-2">
+                      <Badge className={cn(
+                        "border-none font-black text-[8px] uppercase tracking-widest",
+                        point.category === 'Cortical' ? "bg-purple-100 text-purple-700" :
+                        point.category === 'Subcortical' ? "bg-indigo-100 text-indigo-700" :
+                        "bg-emerald-100 text-emerald-700"
+                      )}>
+                        {point.category}
+                      </Badge>
+                      <Badge variant="outline" className="border-slate-200 text-slate-500 font-black text-[8px] uppercase tracking-widest">
+                        {point.lateralization}
+                      </Badge>
+                    </div>
+                    <CardTitle className="text-xl font-black text-slate-900 group-hover:text-indigo-600 transition-colors">
+                      {point.name}
+                    </CardTitle>
                   </div>
-                  <CardTitle className="text-xl font-black text-slate-900 group-hover:text-indigo-600 transition-colors">
-                    {point.name}
-                  </CardTitle>
-                </div>
-                <div className={cn(
-                  "w-10 h-10 rounded-xl flex items-center justify-center shadow-sm transition-all",
-                  point.category === 'Cortical' ? "bg-purple-600 text-white" :
-                  point.category === 'Subcortical' ? "bg-indigo-600 text-white" :
-                  "bg-emerald-600 text-white"
-                )}>
-                  {point.category === 'Cortical' ? <Brain size={20} /> : 
-                   point.category === 'Subcortical' ? <Layers size={20} /> : 
-                   <Zap size={20} />}
-                </div>
-              </div>
-            </CardHeader>
-            <CardContent className="p-6 space-y-6">
-              <ReflexImageZone 
-                reflexId={point.id} 
-                initialUrl={customizations[point.id]} 
-                onUploadComplete={(url) => {
-                  if (url) setCustomizations(prev => ({ ...prev, [point.id]: url }));
-                  else setCustomizations(prev => { const next = { ...prev }; delete next[point.id]; return next; });
-                }}
-              />
-
-              <div className="space-y-4">
-                <div>
-                  <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-1">Location & Technique</p>
-                  <p className="text-sm font-bold text-slate-700 leading-relaxed">{point.location}</p>
-                  {point.technique && <p className="text-xs text-slate-500 mt-1 italic">{point.technique}</p>}
-                </div>
-                
-                {point.pearl && (
-                  <div className="p-4 bg-indigo-50/50 rounded-2xl border border-indigo-100 relative overflow-hidden">
-                    <div className="absolute top-0 right-0 p-2 opacity-10"><Sparkles size={32} className="text-indigo-600" /></div>
-                    <p className="text-[9px] font-black text-indigo-400 uppercase tracking-widest mb-1 flex items-center gap-1">
-                      <Info size={10} /> Clinical Pearl
-                    </p>
-                    <p className="text-xs text-indigo-900 font-bold leading-relaxed">{point.pearl}</p>
+                  <div className={cn(
+                    "w-10 h-10 rounded-xl flex items-center justify-center shadow-sm transition-all",
+                    point.category === 'Cortical' ? "bg-purple-600 text-white" :
+                    point.category === 'Subcortical' ? "bg-indigo-600 text-white" :
+                    "bg-emerald-600 text-white"
+                  )}>
+                    {point.category === 'Cortical' ? <Brain size={20} /> : 
+                     point.category === 'Subcortical' ? <Layers size={20} /> : 
+                     <Zap size={20} />}
                   </div>
-                )}
+                </div>
+              </CardHeader>
+              <CardContent className="p-6 space-y-6">
+                {/* Image Container with Hover Logic */}
+                <div className="relative group/container">
+                  <ReflexImageZone 
+                    reflexId={point.id} 
+                    type="primary"
+                    currentUrl={data.primaryUrl} 
+                    onUploadComplete={(url) => updateLocalCustomization(point.id, 'primary', url)}
+                  />
+                  
+                  {/* Secondary Image Zone - Bottom Right */}
+                  <div className={cn(
+                    "absolute bottom-2 right-2 transition-all duration-500 z-10",
+                    data.secondaryUrl ? "opacity-40 group-hover/container:opacity-100 group-hover/container:scale-110" : "opacity-0 group-hover/container:opacity-100"
+                  )}>
+                    <ReflexImageZone 
+                      reflexId={point.id} 
+                      type="secondary"
+                      currentUrl={data.secondaryUrl} 
+                      onUploadComplete={(url) => updateLocalCustomization(point.id, 'secondary', url)}
+                    />
+                  </div>
+                </div>
 
-                {point.acupoint && (
-                  <Badge className="bg-amber-50 text-amber-700 border-amber-100 text-[9px] font-black px-2 py-0.5 rounded-md">
-                    Acupoint: {point.acupoint}
-                  </Badge>
-                )}
-              </div>
-            </CardContent>
-          </Card>
-        ))}
+                <div className="space-y-4">
+                  <div>
+                    <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-1">Location & Technique</p>
+                    <p className="text-sm font-bold text-slate-700 leading-relaxed">{point.location}</p>
+                    {point.technique && <p className="text-xs text-slate-500 mt-1 italic">{point.technique}</p>}
+                  </div>
+                  
+                  {point.pearl && (
+                    <div className="p-4 bg-indigo-50/50 rounded-2xl border border-indigo-100 relative overflow-hidden">
+                      <div className="absolute top-0 right-0 p-2 opacity-10"><Sparkles size={32} className="text-indigo-600" /></div>
+                      <p className="text-[9px] font-black text-indigo-400 uppercase tracking-widest mb-1 flex items-center gap-1">
+                        <Info size={10} /> Clinical Pearl
+                      </p>
+                      <p className="text-xs text-indigo-900 font-bold leading-relaxed">{point.pearl}</p>
+                    </div>
+                  )}
+
+                  {point.acupoint && (
+                    <Badge className="bg-amber-50 text-amber-700 border-amber-100 text-[9px] font-black px-2 py-0.5 rounded-md">
+                      Acupoint: {point.acupoint}
+                    </Badge>
+                  )}
+                </div>
+              </CardContent>
+            </Card>
+          );
+        })}
       </div>
     </div>
   );

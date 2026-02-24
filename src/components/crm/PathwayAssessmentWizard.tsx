@@ -11,6 +11,7 @@ import {
   Brain, 
   Dumbbell, 
   AlertCircle, 
+  AlertTriangle,
   CheckCircle2, 
   Zap, 
   RotateCcw,

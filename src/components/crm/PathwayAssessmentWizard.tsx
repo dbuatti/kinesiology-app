@@ -21,7 +21,8 @@ import {
   Sparkles,
   Wind,
   RefreshCw,
-  Search
+  Search,
+  AlertTriangle
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import NociceptiveThreatAssessment from './NociceptiveThreatAssessment';
@@ -67,6 +68,11 @@ interface WizardState {
   plane?: string;
   action?: string;
   reassessed: boolean;
+}
+
+interface PathwayAssessmentWizardProps {
+  onSave: (summary: string) => void;
+  initialValue?: string;
 }
 
 const PATHWAY_DESCRIPTIONS: Record<PathwayType, string> = {

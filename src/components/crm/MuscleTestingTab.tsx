@@ -9,6 +9,7 @@ import { showSuccess, showError } from "@/utils/toast";
 import { MUSCLE_GROUPS, PRIMARY_14_MUSCLES, MuscleStatus } from "@/data/muscle-data";
 import { MuscleTestResult } from "@/types/crm";
 import MuscleInfoModal from "./MuscleInfoModal";
+import ClinicalReasoningModal from "./ClinicalReasoningModal";
 import { getChannelByMuscle, TCM_CHANNELS } from "@/data/tcm-channel-data";
 import MuscleTestingFilters from "./MuscleTestingFilters";
 import MuscleGroupCollapsible from "./MuscleGroupCollapsible";
@@ -29,8 +30,13 @@ const MuscleTestingTab = ({ appointmentId }: MuscleTestingTabProps) => {
   const [meridianFilter, setMeridianFilter] = useState<string>("all");
   const [showOnlyTested, setShowOnlyTested] = useState(false);
   const [showOnlyDysfunctional, setShowOnlyDysfunctional] = useState(false);
+  
   const [selectedMuscleForInfo, setSelectedMuscleForInfo] = useState<string | null>(null);
   const [infoModalOpen, setInfoModalOpen] = useState(false);
+  
+  const [selectedMuscleForLogic, setSelectedMuscleForLogic] = useState<string | null>(null);
+  const [selectedStatusForLogic, setSelectedStatusForLogic] = useState<MuscleStatus['value'] | null>(null);
+  const [logicModalOpen, setLogicModalOpen] = useState(false);
   
   const [openGroups, setOpenGroups] = useState<Record<string, boolean>>(() => {
     const initial: Record<string, boolean> = {};
@@ -300,6 +306,7 @@ const MuscleTestingTab = ({ appointmentId }: MuscleTestingTabProps) => {
             isOpen={openGroups[groupName]} onToggle={() => setOpenGroups(prev => ({ ...prev, [groupName]: !prev[groupName] }))}
             onStatusChange={handleStatusChange} onClear={handleClearMuscle}
             onShowInfo={(m) => { setSelectedMuscleForInfo(m); setInfoModalOpen(true); }}
+            onShowLogic={(m, s) => { setSelectedMuscleForLogic(m); setSelectedStatusForLogic(s); setLogicModalOpen(true); }}
             disabled={saving}
           />
         ))}
@@ -319,6 +326,12 @@ const MuscleTestingTab = ({ appointmentId }: MuscleTestingTabProps) => {
       </div>
 
       <MuscleInfoModal muscleName={selectedMuscleForInfo} open={infoModalOpen} onOpenChange={setInfoModalOpen} />
+      <ClinicalReasoningModal 
+        muscleName={selectedMuscleForLogic} 
+        status={selectedStatusForLogic} 
+        open={logicModalOpen} 
+        onOpenChange={setLogicModalOpen} 
+      />
     </div>
   );
 };

@@ -21,7 +21,8 @@ import {
   Info,
   Sparkles,
   Wind,
-  RefreshCw
+  RefreshCw,
+  Lightbulb
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import NociceptiveThreatAssessment from './NociceptiveThreatAssessment';
@@ -71,6 +72,16 @@ const PATHWAY_DESCRIPTIONS: Record<PathwayType, string> = {
   'Brain Zone': 'Specific cortical or subcortical regions (e.g., PFC, Cerebellum).',
   'Muscle': 'Direct assessment of individual muscle facilitation/inhibition.',
   'Nociceptive Threat': 'Systemic threat response triggered by injury, scars, or movement.'
+};
+
+const LEARNING_TIPS: Record<Step, string> = {
+  'SELECT_PATHWAY': "Start with the most foundational system. Primitive reflexes and Cranial Nerves often underpin complex muscle dysfunctions.",
+  'TEST_IM': "The Indicator Muscle (IM) acts as a binary feedback loop for the nervous system. It reveals if the stimulus is perceived as a 'threat'.",
+  'SELECT_RESPONSE': "An inhibited response means the brain is prioritizing protection over performance. This is where the correction is needed.",
+  'SELECT_DIRECTION': "Afferent corrections address the 'input' (sensors), while Efferent corrections address the 'output' (processing/planning).",
+  'SELECT_SPECIFIC': "Challenge the system to find the specific pathway. The brain usually has a preferred 'entry point' for calibration.",
+  'CORRECTION': "Hold the correction for 30 seconds with nasal breathing to provide a parasympathetic anchor for the new neurological state.",
+  'REASSESS': "Re-testing is critical. If the IM still inhibits, there is likely a deeper layer or a different pathway priority."
 };
 
 const PathwayAssessmentWizard = ({ onSave, initialValue }: PathwayAssessmentWizardProps) => {
@@ -482,48 +493,65 @@ const PathwayAssessmentWizard = ({ onSave, initialValue }: PathwayAssessmentWiza
   };
 
   return (
-    <Card className="p-8 bg-white border-slate-100 shadow-xl rounded-[2.5rem] overflow-hidden relative">
-      <div className="absolute top-0 left-0 w-full h-1.5 bg-slate-100">
-        <div 
-          className="h-full bg-indigo-600 transition-all duration-700 ease-out" 
-          style={{ 
-            width: `${(
-              ['SELECT_PATHWAY', 'TEST_IM', 'SELECT_RESPONSE', 'SELECT_DIRECTION', 'SELECT_SPECIFIC', 'CORRECTION', 'REASSESS'].indexOf(step) + 1
-            ) / 7 * 100}%` 
-          }} 
-        />
-      </div>
-      
-      <div className="flex items-center justify-between mb-10 mt-2">
-        <div className="flex items-center gap-4">
-          <div className="w-14 h-14 rounded-2xl bg-indigo-600 flex items-center justify-center text-white shadow-lg shadow-indigo-200">
-            <Zap size={28} />
+    <div className="space-y-6">
+      <Card className="p-8 bg-white border-slate-100 shadow-xl rounded-[2.5rem] overflow-hidden relative">
+        <div className="absolute top-0 left-0 w-full h-1.5 bg-slate-100">
+          <div 
+            className="h-full bg-indigo-600 transition-all duration-700 ease-out" 
+            style={{ 
+              width: `${(
+                ['SELECT_PATHWAY', 'TEST_IM', 'SELECT_RESPONSE', 'SELECT_DIRECTION', 'SELECT_SPECIFIC', 'CORRECTION', 'REASSESS'].indexOf(step) + 1
+              ) / 7 * 100}%` 
+            }} 
+          />
+        </div>
+        
+        <div className="flex items-center justify-between mb-10 mt-2">
+          <div className="flex items-center gap-4">
+            <div className="w-14 h-14 rounded-2xl bg-indigo-600 flex items-center justify-center text-white shadow-lg shadow-indigo-200">
+              <Zap size={28} />
+            </div>
+            <div>
+              <h2 className="text-xl font-black text-slate-900 leading-none">Pathway Wizard</h2>
+              <p className="text-[10px] text-slate-400 font-black uppercase tracking-widest mt-2">Step {['SELECT_PATHWAY', 'TEST_IM', 'SELECT_RESPONSE', 'SELECT_DIRECTION', 'SELECT_SPECIFIC', 'CORRECTION', 'REASSESS'].indexOf(step) + 1} of 7</p>
+            </div>
+          </div>
+          {state.pathway && (
+            <Badge variant="secondary" className="bg-indigo-50 text-indigo-700 border-none px-4 py-1.5 rounded-full font-black text-[10px] uppercase tracking-widest shadow-sm">
+              {state.pathway}
+            </Badge>
+          )}
+        </div>
+
+        <div className="min-h-[400px] flex flex-col justify-center">
+          {renderStep()}
+        </div>
+
+        {initialValue && step === 'SELECT_PATHWAY' && (
+          <div className="mt-10 pt-8 border-t border-slate-50">
+            <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-[0.3em] mb-4">Current Assessment</h4>
+            <div className="p-6 bg-slate-50 rounded-[2rem] text-sm text-slate-600 font-bold border border-slate-100 shadow-inner italic">
+              {initialValue}
+            </div>
+          </div>
+        )}
+      </Card>
+
+      {/* Learning Tip Bar */}
+      <div className="p-6 bg-indigo-900 text-white rounded-[2rem] shadow-xl animate-in fade-in slide-in-from-bottom-2 duration-500">
+        <div className="flex items-start gap-4">
+          <div className="w-10 h-10 rounded-xl bg-white/10 flex items-center justify-center shrink-0">
+            <Lightbulb size={20} className="text-amber-400" />
           </div>
           <div>
-            <h2 className="text-xl font-black text-slate-900 leading-none">Pathway Wizard</h2>
-            <p className="text-[10px] text-slate-400 font-black uppercase tracking-widest mt-2">Step {['SELECT_PATHWAY', 'TEST_IM', 'SELECT_RESPONSE', 'SELECT_DIRECTION', 'SELECT_SPECIFIC', 'CORRECTION', 'REASSESS'].indexOf(step) + 1} of 7</p>
+            <p className="text-[10px] font-black uppercase tracking-[0.3em] text-indigo-300 mb-1">Learning Tip</p>
+            <p className="text-sm font-medium leading-relaxed">
+              {LEARNING_TIPS[step]}
+            </p>
           </div>
         </div>
-        {state.pathway && (
-          <Badge variant="secondary" className="bg-indigo-50 text-indigo-700 border-none px-4 py-1.5 rounded-full font-black text-[10px] uppercase tracking-widest shadow-sm">
-            {state.pathway}
-          </Badge>
-        )}
       </div>
-
-      <div className="min-h-[400px] flex flex-col justify-center">
-        {renderStep()}
-      </div>
-
-      {initialValue && step === 'SELECT_PATHWAY' && (
-        <div className="mt-10 pt-8 border-t border-slate-50">
-          <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-[0.3em] mb-4">Current Assessment</h4>
-          <div className="p-6 bg-slate-50 rounded-[2rem] text-sm text-slate-600 font-bold border border-slate-100 shadow-inner italic">
-            {initialValue}
-          </div>
-        </div>
-      )}
-    </Card>
+    </div>
   );
 };
 

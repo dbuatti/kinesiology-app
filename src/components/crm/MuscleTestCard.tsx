@@ -1,7 +1,7 @@
 "use client";
 
 import React from "react";
-import { Info, RotateCcw, CheckCircle2, GraduationCap } from "lucide-react";
+import { Info, RotateCcw, CheckCircle2, GraduationCap, Lightbulb } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
@@ -16,6 +16,7 @@ interface MuscleTestCardProps {
   onStatusChange: (muscle: string, status: MuscleStatus['value']) => void;
   onClear: (muscle: string) => void;
   onShowInfo: (muscle: string) => void;
+  onShowLogic?: (muscle: string, status: MuscleStatus['value']) => void;
   disabled?: boolean;
 }
 
@@ -25,6 +26,7 @@ const MuscleTestCard = ({
   onStatusChange,
   onClear,
   onShowInfo,
+  onShowLogic,
   disabled
 }: MuscleTestCardProps) => {
   const isTested = !!currentResult;
@@ -32,9 +34,10 @@ const MuscleTestCard = ({
   const statusDetails = currentResult ? MUSCLE_STATUSES.find(s => s.value === currentResult.status) : null;
   const Icon = statusDetails?.icon || CheckCircle2;
   
-  // Get proficiency count for this specific muscle
   const { counts } = useMuscleProficiency();
   const proficiencyCount = counts[muscle] || 0;
+
+  const isDysfunctional = isTested && currentResult.status !== 'Normotonic';
 
   return (
     <div 
@@ -63,6 +66,16 @@ const MuscleTestCard = ({
           </Button>
         </div>
         <div className="flex items-center gap-2">
+          {isDysfunctional && onShowLogic && (
+            <Button 
+              variant="outline" 
+              size="sm" 
+              onClick={() => onShowLogic(muscle, currentResult.status)}
+              className="h-7 px-2 rounded-lg border-amber-200 bg-amber-50 text-amber-600 hover:bg-amber-100 font-black text-[9px] uppercase tracking-widest animate-in fade-in zoom-in-95"
+            >
+              <Lightbulb size={12} className="mr-1" /> Logic
+            </Button>
+          )}
           {proficiencyCount > 0 && (
             <div className="flex items-center gap-1 text-[9px] font-black text-slate-400 uppercase tracking-widest bg-slate-50 px-2 py-1 rounded-lg border border-slate-100">
               <GraduationCap size={12} className="text-indigo-500" />

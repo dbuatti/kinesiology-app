@@ -33,7 +33,9 @@ import {
   TrendingUp,
   ShieldCheck,
   GraduationCap,
-  Crosshair
+  Crosshair,
+  Lightbulb,
+  ShieldAlert
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -71,6 +73,9 @@ const ResourcesPage = () => {
             <TabsTrigger value="clock" className="rounded-xl py-2.5 px-6 data-[state=active]:bg-white data-[state=active]:text-indigo-600 data-[state=active]:shadow-sm font-bold text-xs uppercase tracking-widest">
               <Clock size={16} className="mr-2" /> Meridian Clock
             </TabsTrigger>
+            <TabsTrigger value="logic" className="rounded-xl py-2.5 px-6 data-[state=active]:bg-white data-[state=active]:text-indigo-600 data-[state=active]:shadow-sm font-bold text-xs uppercase tracking-widest">
+              <Lightbulb size={16} className="mr-2" /> Clinical Logic
+            </TabsTrigger>
             <TabsTrigger value="brain" className="rounded-xl py-2.5 px-6 data-[state=active]:bg-white data-[state=active]:text-indigo-600 data-[state=active]:shadow-sm font-bold text-xs uppercase tracking-widest">
               <Brain size={16} className="mr-2" /> Brain Reflexes
             </TabsTrigger>
@@ -106,6 +111,76 @@ const ResourcesPage = () => {
 
         <TabsContent value="clock" className="mt-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
           <MeridianClock />
+        </TabsContent>
+
+        <TabsContent value="logic" className="mt-8 space-y-10 animate-in fade-in slide-in-from-bottom-4 duration-500">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+            <Card className="border-none shadow-lg rounded-[3rem] bg-slate-900 text-white overflow-hidden relative">
+              <div className="absolute top-0 right-0 p-10 opacity-10"><Lightbulb size={150} /></div>
+              <CardHeader className="p-10">
+                <CardTitle className="text-3xl font-black flex items-center gap-4">
+                  <Zap size={32} className="text-amber-400" /> The Hierarchy of Correction
+                </CardTitle>
+                <CardDescription className="text-slate-400 text-lg font-medium mt-2">
+                  Clinical reasoning follows a specific neurological order to ensure lasting results.
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="p-10 pt-0 space-y-8 relative z-10">
+                <div className="space-y-4">
+                  {[
+                    { step: 1, title: "Safety First", desc: "Address SNS dominance (Harmonic Rocking, Diaphragm) before deep work." },
+                    { step: 2, title: "Foundations", desc: "Check Primitive Reflexes and Cranial Nerves. They are the brain's OS." },
+                    { step: 3, title: "Input (Afferent)", desc: "Calibrate Mechanoreceptors and Vestibular systems to clear 'threat'." },
+                    { step: 4, title: "Output (Efferent)", desc: "Integrate Cortical and Subcortical processing for motor control." }
+                  ].map((item) => (
+                    <div key={item.step} className="flex gap-5 p-5 bg-white/5 rounded-2xl border border-white/10">
+                      <span className="w-10 h-10 rounded-full bg-indigo-600 flex items-center justify-center font-black text-lg shrink-0">{item.step}</span>
+                      <div>
+                        <h4 className="font-black text-indigo-300 uppercase tracking-widest text-xs mb-1">{item.title}</h4>
+                        <p className="text-sm text-slate-300 font-medium leading-relaxed">{item.desc}</p>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </CardContent>
+            </Card>
+
+            <div className="space-y-8">
+              <Card className="border-none shadow-lg rounded-[2.5rem] bg-white overflow-hidden">
+                <CardHeader className="bg-indigo-50 p-8">
+                  <CardTitle className="text-xl font-black flex items-center gap-3 text-indigo-900">
+                    <ShieldAlert size={24} /> Contralateral vs Ipsilateral
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="p-8 space-y-6">
+                  <div className="p-5 bg-slate-50 rounded-2xl border border-slate-100">
+                    <h4 className="font-black text-indigo-600 text-xs uppercase tracking-widest mb-2">Cortical Logic (Contralateral)</h4>
+                    <p className="text-sm text-slate-600 leading-relaxed font-medium">
+                      The <strong>Cortex</strong> (PFC, M1, S1) controls the opposite side of the body. If the left side is dysfunctional, check the right cortex.
+                    </p>
+                  </div>
+                  <div className="p-5 bg-slate-50 rounded-2xl border border-slate-100">
+                    <h4 className="font-black text-rose-600 text-xs uppercase tracking-widest mb-2">Subcortical Logic (Ipsilateral)</h4>
+                    <p className="text-sm text-slate-600 leading-relaxed font-medium">
+                      The <strong>Brainstem & Cerebellum</strong> control the same side of the body. If the left side is dysfunctional, check the left cerebellum.
+                    </p>
+                  </div>
+                </CardContent>
+              </Card>
+
+              <Card className="border-none shadow-lg rounded-[2.5rem] bg-indigo-600 text-white overflow-hidden">
+                <CardContent className="p-8 space-y-4">
+                  <div className="flex items-center gap-3">
+                    <Sparkles size={24} className="text-teal-300" />
+                    <h4 className="text-lg font-black">The Rule of Action</h4>
+                  </div>
+                  <p className="text-indigo-100 font-medium leading-relaxed italic">
+                    "Joints act, muscles and tissues react. The cerebellum is always paying attention to the joint action first. Calibrate the joint to fix the muscle."
+                  </p>
+                </CardContent>
+              </Card>
+            </div>
+          </div>
         </TabsContent>
 
         <TabsContent value="brain" className="mt-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
@@ -212,7 +287,7 @@ const ResourcesPage = () => {
                 </div>
               </div>
               <p className="text-emerald-50 text-lg max-w-2xl leading-relaxed">
-                Examines labyrinthine function by triggering vestibulospinal reflexes. Used to isolate peripheral vestibular dysfunction and postural instability.
+                Examines labyrinthine function by triggering vestibulosp reflexes. Used to isolate peripheral vestibular dysfunction and postural instability.
               </p>
             </div>
             <CardContent className="p-8">

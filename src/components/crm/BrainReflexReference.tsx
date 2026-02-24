@@ -115,6 +115,7 @@ const ReflexImageZone = ({
 
   const onDrop = useCallback((e: React.DragEvent) => {
     e.preventDefault();
+    e.stopPropagation();
     setIsDragging(false);
     const file = e.dataTransfer.files?.[0];
     if (file) handleUpload(file);
@@ -124,43 +125,43 @@ const ReflexImageZone = ({
 
   return (
     <div 
-      onDragOver={(e) => { e.preventDefault(); setIsDragging(true); }}
-      onDragLeave={() => setIsDragging(false)}
+      onDragOver={(e) => { e.preventDefault(); e.stopPropagation(); setIsDragging(true); }}
+      onDragLeave={(e) => { e.preventDefault(); e.stopPropagation(); setIsDragging(false); }}
       onDrop={onDrop}
       className={cn(
         "relative group/image transition-all duration-300 flex flex-col items-center justify-center overflow-hidden outline-none",
-        isPrimary ? "aspect-video rounded-2xl border-2 border-dashed" : "w-20 h-20 rounded-xl border-2 border-dashed bg-white/80 backdrop-blur-sm shadow-lg",
-        currentUrl ? "border-transparent" : "border-slate-200 bg-slate-50/50 hover:border-indigo-300 hover:bg-indigo-50/30",
-        isDragging && "border-indigo-500 bg-indigo-100/50 scale-[0.98]",
+        isPrimary ? "aspect-video rounded-2xl border-2 border-dashed" : "w-24 h-24 rounded-2xl border-2 border-dashed bg-white/90 backdrop-blur-md shadow-xl",
+        currentUrl ? "border-transparent" : "border-slate-200 bg-slate-50/50 hover:border-indigo-400 hover:bg-indigo-50/30",
+        isDragging && "border-indigo-600 bg-indigo-100/80 scale-[1.02] ring-4 ring-indigo-500/20",
         isUploading && "opacity-50 pointer-events-none"
       )}
     >
       {currentUrl ? (
         <>
           <img src={currentUrl} alt="Reflex Reference" className="w-full h-full object-cover" />
-          <div className="absolute inset-0 bg-black/40 opacity-0 group-hover/image:opacity-100 transition-opacity flex items-center justify-center gap-1">
-            <Button variant="secondary" size="icon" className="rounded-lg h-7 w-7" onClick={(e) => { e.stopPropagation(); onUploadComplete(null); }}>
-              <ImageIcon size={12} />
+          <div className="absolute inset-0 bg-black/40 opacity-0 group-hover/image:opacity-100 transition-opacity flex items-center justify-center gap-2">
+            <Button variant="secondary" size="icon" className="rounded-xl h-8 w-8 shadow-lg" onClick={(e) => { e.stopPropagation(); onUploadComplete(null); }}>
+              <ImageIcon size={14} />
             </Button>
-            <Button variant="destructive" size="icon" className="rounded-lg h-7 w-7" onClick={handleRemove}>
-              <X size={12} />
+            <Button variant="destructive" size="icon" className="rounded-xl h-8 w-8 shadow-lg" onClick={handleRemove}>
+              <X size={14} />
             </Button>
           </div>
         </>
       ) : (
-        <div className="text-center p-2 space-y-1">
+        <div className="text-center p-3 space-y-2">
           {isUploading ? (
             <Loader2 className="mx-auto text-indigo-500 animate-spin" size={isPrimary ? 24 : 16} />
           ) : (
             <>
               <div className={cn(
-                "rounded-lg bg-white shadow-sm border border-slate-100 flex items-center justify-center mx-auto text-slate-400 group-hover/image:text-indigo-500 group-hover/image:scale-110 transition-all",
-                isPrimary ? "w-10 h-10" : "w-6 h-6"
+                "rounded-xl bg-white shadow-sm border border-slate-100 flex items-center justify-center mx-auto text-slate-400 group-hover/image:text-indigo-600 group-hover/image:scale-110 transition-all",
+                isPrimary ? "w-12 h-12" : "w-8 h-8"
               )}>
-                {isPrimary ? <Plus size={20} /> : <Target size={14} />}
+                {isPrimary ? <Plus size={24} /> : <Target size={18} />}
               </div>
-              <p className={cn("font-black text-slate-400 uppercase tracking-widest", isPrimary ? "text-[10px]" : "text-[7px]")}>
-                {isPrimary ? "Drop Main" : "Reflex Point"}
+              <p className={cn("font-black text-slate-500 uppercase tracking-widest", isPrimary ? "text-[10px]" : "text-[8px]")}>
+                {isPrimary ? "Drop Main Image" : "Drop Reflex Point"}
               </p>
             </>
           )}
@@ -250,12 +251,12 @@ const BrainReflexReference = () => {
         </div>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
         {filteredPoints.map(point => {
           const data = customizations[point.id] || { primaryUrl: null, secondaryUrl: null };
           
           return (
-            <Card key={point.id} className="border-none shadow-md rounded-[2rem] bg-white hover:shadow-xl transition-all group overflow-hidden">
+            <Card key={point.id} className="border-none shadow-lg rounded-[2.5rem] bg-white hover:shadow-2xl transition-all group overflow-hidden">
               <CardHeader className={cn(
                 "pb-4 border-b transition-colors",
                 point.category === 'Cortical' ? "bg-purple-50/50 border-purple-100" :
@@ -305,8 +306,10 @@ const BrainReflexReference = () => {
                   
                   {/* Secondary Image Zone - Bottom Right */}
                   <div className={cn(
-                    "absolute bottom-2 right-2 transition-all duration-500 z-10",
-                    data.secondaryUrl ? "opacity-40 group-hover/container:opacity-100 group-hover/container:scale-110" : "opacity-0 group-hover/container:opacity-100"
+                    "absolute bottom-3 right-3 transition-all duration-500 z-20",
+                    data.secondaryUrl 
+                      ? "opacity-60 group-hover/container:opacity-100 group-hover/container:scale-105" 
+                      : "opacity-0 group-hover/container:opacity-100"
                   )}>
                     <ReflexImageZone 
                       reflexId={point.id} 

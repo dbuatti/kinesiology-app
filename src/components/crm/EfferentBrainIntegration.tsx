@@ -309,9 +309,13 @@ const EfferentBrainIntegration = ({ onSave, onCancel, initialValue, initialEntry
                       <p className="text-[10px] font-black text-indigo-300 uppercase mb-1">Coordinate 1</p>
                       <p className="text-lg font-bold">{coord1.side} {coord1.point?.name}</p>
                     </div>
-                    {coord1.point && customizations[coord1.point.id]?.secondaryUrl && (
+                    {coord1.point && (customizations[coord1.point.id]?.secondaryUrl || customizations[coord1.point.id]?.primaryUrl) && (
                       <div className="aspect-video rounded-xl overflow-hidden border border-white/10 bg-white/5">
-                        <img src={customizations[coord1.point.id].secondaryUrl!} alt="Reflex 1" className="w-full h-full object-cover" />
+                        <img 
+                          src={customizations[coord1.point.id].secondaryUrl || customizations[coord1.point.id].primaryUrl || ""} 
+                          alt="Reflex 1" 
+                          className="w-full h-full object-cover" 
+                        />
                       </div>
                     )}
                   </div>
@@ -320,9 +324,13 @@ const EfferentBrainIntegration = ({ onSave, onCancel, initialValue, initialEntry
                       <p className="text-[10px] font-black text-indigo-300 uppercase mb-1">Coordinate 2</p>
                       <p className="text-lg font-bold">{coord2.side} {coord2.point?.name}</p>
                     </div>
-                    {coord2.point && customizations[coord2.point.id]?.secondaryUrl && (
+                    {coord2.point && (customizations[coord2.point.id]?.secondaryUrl || customizations[coord2.point.id]?.primaryUrl) && (
                       <div className="aspect-video rounded-xl overflow-hidden border border-white/10 bg-white/5">
-                        <img src={customizations[coord2.point.id].secondaryUrl!} alt="Reflex 2" className="w-full h-full object-cover" />
+                        <img 
+                          src={customizations[coord2.point.id].secondaryUrl || customizations[coord2.point.id].primaryUrl || ""} 
+                          alt="Reflex 2" 
+                          className="w-full h-full object-cover" 
+                        />
                       </div>
                     )}
                   </div>

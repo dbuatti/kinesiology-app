@@ -35,7 +35,8 @@ import {
   GraduationCap,
   Crosshair,
   Lightbulb,
-  ShieldAlert
+  ShieldAlert,
+  Compass
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -51,6 +52,7 @@ import FiveElementCycle from "@/components/crm/FiveElementCycle";
 import ClinicalCheatSheet from "@/components/crm/ClinicalCheatSheet";
 import VideoLibrary from "@/components/crm/VideoLibrary";
 import BrainReflexReference from "@/components/crm/BrainReflexReference";
+import IntentionReflectionSheet from "@/components/crm/IntentionReflectionSheet";
 
 const ResourcesPage = () => {
   const [searchParams, setSearchParams] = useSearchParams();
@@ -72,6 +74,9 @@ const ResourcesPage = () => {
           <TabsList className="flex w-max h-auto p-1.5 bg-slate-200/50 rounded-2xl gap-1">
             <TabsTrigger value="clock" className="rounded-xl py-2.5 px-6 data-[state=active]:bg-white data-[state=active]:text-indigo-600 data-[state=active]:shadow-sm font-bold text-xs uppercase tracking-widest">
               <Clock size={16} className="mr-2" /> Meridian Clock
+            </TabsTrigger>
+            <TabsTrigger value="intention" className="rounded-xl py-2.5 px-6 data-[state=active]:bg-white data-[state=active]:text-indigo-600 data-[state=active]:shadow-sm font-bold text-xs uppercase tracking-widest">
+              <Compass size={16} className="mr-2" /> Intention
             </TabsTrigger>
             <TabsTrigger value="logic" className="rounded-xl py-2.5 px-6 data-[state=active]:bg-white data-[state=active]:text-indigo-600 data-[state=active]:shadow-sm font-bold text-xs uppercase tracking-widest">
               <Lightbulb size={16} className="mr-2" /> Clinical Logic
@@ -111,6 +116,10 @@ const ResourcesPage = () => {
 
         <TabsContent value="clock" className="mt-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
           <MeridianClock />
+        </TabsContent>
+
+        <TabsContent value="intention" className="mt-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
+          <IntentionReflectionSheet />
         </TabsContent>
 
         <TabsContent value="logic" className="mt-8 space-y-10 animate-in fade-in slide-in-from-bottom-4 duration-500">

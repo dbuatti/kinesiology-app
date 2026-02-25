@@ -342,7 +342,7 @@ const EfferentBrainIntegration = ({ onSave, onCancel, initialValue, initialEntry
                           Hold both points lightly and mentally repeat:
                         </p>
                         <div className="p-4 bg-indigo-50 rounded-xl border-2 border-indigo-100 text-center italic font-black text-indigo-600">
-                          "{entryPoint} — {coord1.point?.name} — {coord2.point?.name}"
+                          "{entryPoint} — {coord1.side} {coord1.point?.name} — {coord2.side} {coord2.point?.name}"
                         </div>
                       </div>
                     )}

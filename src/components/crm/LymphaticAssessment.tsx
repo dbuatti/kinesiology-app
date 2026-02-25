@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
@@ -10,7 +10,7 @@ import {
   Droplets, ChevronDown, Zap, Search, 
   AlertCircle, HelpCircle, Brain, Move,
   CheckCircle2, ShieldCheck, RefreshCw, Image as ImageIcon,
-  Thermometer, BookOpen, ClipboardCheck, Sparkles
+  Thermometer, BookOpen, ClipboardCheck, Sparkles, X
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
@@ -86,7 +86,17 @@ const LymphaticAssessment = ({
   const [isOpen, setIsOpen] = useState(false);
   const [showGuide, setShowGuide] = useState(false);
   const [sutureSide, setSutureSide] = useState<string | null>(initialSutureSide);
-  const [priorityZone, setPriorityZone] = useState<string | null>(initialPriorityZone);
+  
+  // Support multiple zones
+  const [priorityZones, setPriorityZones] = useState<string[]>(
+    initialPriorityZone ? initialPriorityZone.split(',').map(s => s.trim()).filter(Boolean) : []
+  );
+  
+  // Track which zone is currently being viewed/focused for instructions
+  const [focusedZone, setFocusedZone] = useState<string | null>(
+    priorityZones.length > 0 ? priorityZones[0] : null
+  );
+
   const [notes, setNotes] = useState<string | null>(initialNotes);
   const [tenderness, setTenderness] = useState([10]); // 0-10 scale
   const [prescribeHomework, setPrescribeHomework] = useState(false);
@@ -122,28 +132,40 @@ const LymphaticAssessment = ({
     onSaveField('lymphatic_suture_side', newValue);
   };
 
-  const handlePriorityZoneChange = (value: string) => {
-    const newValue = value || null;
-    setPriorityZone(newValue);
-    onSaveField('lymphatic_priority_zone', newValue);
-    setTenderness([10]); // Reset tenderness when zone changes
+  const togglePriorityZone = (zone: string) => {
+    setPriorityZones(prev => {
+      const newZones = prev.includes(zone) 
+        ? prev.filter(z => z !== zone)
+        : [...prev, zone];
+      
+      // Update focused zone if needed
+      if (newZones.length > 0 && (!focusedZone || !newZones.includes(focusedZone))) {
+        setFocusedZone(newZones[newZones.length - 1]);
+      } else if (newZones.length === 0) {
+        setFocusedZone(null);
+      }
+
+      // Save to DB as comma-separated string
+      onSaveField('lymphatic_priority_zone', newZones.length > 0 ? newZones.join(', ') : null);
+      return newZones;
+    });
+    setTenderness([10]); // Reset tenderness when toggling
   };
 
   const handleAutoPopulate = async () => {
-    if (!priorityZone) return;
+    if (priorityZones.length === 0) return;
     
     const reduction = 100 - (tenderness[0] * 10);
     const summaryHeader = `LYMPHATIC ASSESSMENT:`;
     
-    // Check if we already have a lymphatic summary to avoid duplicates
     if (notes?.includes(summaryHeader)) {
       if (!confirm("A lymphatic summary already exists in your notes. Append another one?")) return;
     }
 
-    let summary = `${summaryHeader}\n- Suture Side: ${sutureSide || 'Not set'}\n- Priority Zone: ${priorityZone}\n- Tenderness Reduction: ${reduction}% (Level ${tenderness[0]}/10)`;
+    let summary = `${summaryHeader}\n- Suture Side: ${sutureSide || 'Not set'}\n- Priority Zones: ${priorityZones.join(', ')}\n- Tenderness Reduction: ${reduction}% (Level ${tenderness[0]}/10)`;
     
     if (prescribeHomework) {
-      summary += `\n- HOMEWORK: Prescribed 5 mins/day of ${priorityZone} lymphatic movement.`;
+      summary += `\n- HOMEWORK: Prescribed 5 mins/day of lymphatic movement for: ${priorityZones.join(', ')}.`;
     }
     
     const currentNotes = notes ? `${notes}\n\n${summary}` : summary;
@@ -176,9 +198,9 @@ const LymphaticAssessment = ({
                     Verified
                   </Badge>
                 )}
-                {priorityZone && !isVerified && (
+                {priorityZones.length > 0 && !isVerified && (
                   <Badge className="bg-blue-600 text-white border-none font-black text-[10px] uppercase tracking-widest px-3 py-1">
-                    Priority: {priorityZone}
+                    {priorityZones.length} Zones Selected
                   </Badge>
                 )}
                 <div className="w-10 h-10 rounded-full bg-slate-100 flex items-center justify-center text-slate-400">
@@ -207,7 +229,7 @@ const LymphaticAssessment = ({
 
                   <div className="space-y-4">
                     <label className="text-[10px] font-black text-slate-400 uppercase tracking-[0.3em] flex items-center gap-2">
-                      <Zap size={14} className="text-amber-500" /> 2. Priority Node Zone
+                      <Zap size={14} className="text-amber-500" /> 2. Priority Node Zones
                     </label>
                     <div className="space-y-4">
                       <div>
@@ -216,11 +238,11 @@ const LymphaticAssessment = ({
                           {primaryZones.map(zone => (
                             <Button 
                               key={zone}
-                              variant={priorityZone === zone ? "default" : "outline"}
-                              onClick={() => handlePriorityZoneChange(zone)}
+                              variant={priorityZones.includes(zone) ? "default" : "outline"}
+                              onClick={() => togglePriorityZone(zone)}
                               className={cn(
                                 "rounded-xl px-3 py-1 h-8 text-[10px] font-black uppercase tracking-wider transition-all",
-                                priorityZone === zone ? "bg-blue-600 text-white shadow-lg" : "border-slate-100 hover:bg-blue-50 text-slate-500"
+                                priorityZones.includes(zone) ? "bg-blue-600 text-white shadow-lg" : "border-slate-100 hover:bg-blue-50 text-slate-500"
                               )}
                             >
                               {zone}
@@ -234,11 +256,11 @@ const LymphaticAssessment = ({
                           {secondaryZones.map(zone => (
                             <Button 
                               key={zone}
-                              variant={priorityZone === zone ? "default" : "outline"}
-                              onClick={() => handlePriorityZoneChange(zone)}
+                              variant={priorityZones.includes(zone) ? "default" : "outline"}
+                              onClick={() => togglePriorityZone(zone)}
                               className={cn(
                                 "rounded-xl px-3 py-1 h-8 text-[10px] font-black uppercase tracking-wider transition-all",
-                                priorityZone === zone ? "bg-blue-600 text-white shadow-lg" : "border-slate-100 hover:bg-blue-50 text-slate-500"
+                                priorityZones.includes(zone) ? "bg-blue-600 text-white shadow-lg" : "border-slate-100 hover:bg-blue-50 text-slate-500"
                               )}
                             >
                               {zone}
@@ -250,8 +272,25 @@ const LymphaticAssessment = ({
                   </div>
                 </div>
 
-                {priorityZone && (
+                {priorityZones.length > 0 && (
                   <div className="space-y-6 animate-in fade-in slide-in-from-top-4 duration-500">
+                    {/* Zone Focus Switcher */}
+                    <div className="flex items-center gap-2 overflow-x-auto pb-2">
+                      <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest mr-2">Focus Instruction:</span>
+                      {priorityZones.map(zone => (
+                        <Badge 
+                          key={zone}
+                          onClick={() => setFocusedZone(zone)}
+                          className={cn(
+                            "cursor-pointer transition-all px-3 py-1 border-none font-black text-[9px] uppercase tracking-widest",
+                            focusedZone === zone ? "bg-indigo-600 text-white shadow-md scale-105" : "bg-slate-100 text-slate-400 hover:bg-slate-200"
+                          )}
+                        >
+                          {zone}
+                        </Badge>
+                      ))}
+                    </div>
+
                     {/* Tenderness Tracker */}
                     <div className="p-6 bg-indigo-50 rounded-[2rem] border-2 border-indigo-100 space-y-6">
                       <div className="flex items-center justify-between">
@@ -280,61 +319,54 @@ const LymphaticAssessment = ({
                           <span>Initial Pain (10)</span>
                         </div>
                       </div>
-
-                      {tenderness[0] > 3 && (
-                        <div className="flex items-center gap-3 p-3 bg-white/50 rounded-xl border border-indigo-200">
-                          <AlertCircle size={16} className="text-indigo-600 shrink-0" />
-                          <p className="text-xs text-indigo-900 font-bold">
-                            Aim for at least <span className="text-indigo-600">70% reduction</span> (Level 3 or lower) before starting the timer.
-                          </p>
-                        </div>
-                      )}
                     </div>
 
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                      <div className="p-8 bg-blue-50 rounded-[2.5rem] border-2 border-blue-100 space-y-6 relative overflow-hidden">
-                        <div className="absolute top-0 right-0 p-6 opacity-5 pointer-events-none"><Move size={120} /></div>
-                        <div className="flex items-center gap-4">
-                          <div className="w-12 h-12 rounded-2xl bg-blue-600 text-white flex items-center justify-center shadow-xl">
-                            <Move size={24} />
-                          </div>
-                          <div>
-                            <p className="text-[10px] font-black text-blue-600 uppercase tracking-widest">Release Position</p>
-                            <h4 className="text-xl font-black text-blue-900">{priorityZone}</h4>
-                          </div>
-                        </div>
-                        <p className="text-sm font-bold text-blue-900 leading-relaxed bg-white/40 p-4 rounded-2xl border border-blue-100">
-                          {RELEASE_INSTRUCTIONS[priorityZone].position}
-                        </p>
-                        {RELEASE_INSTRUCTIONS[priorityZone].pearl && (
-                          <div className="flex items-start gap-3 p-4 bg-indigo-600 text-white rounded-2xl shadow-lg">
-                            <Brain size={20} className="shrink-0 mt-0.5" />
+                    {focusedZone && (
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 animate-in fade-in duration-500">
+                        <div className="p-8 bg-blue-50 rounded-[2.5rem] border-2 border-blue-100 space-y-6 relative overflow-hidden">
+                          <div className="absolute top-0 right-0 p-6 opacity-5 pointer-events-none"><Move size={120} /></div>
+                          <div className="flex items-center gap-4">
+                            <div className="w-12 h-12 rounded-2xl bg-blue-600 text-white flex items-center justify-center shadow-xl">
+                              <Move size={24} />
+                            </div>
                             <div>
-                              <p className="text-[9px] font-black uppercase tracking-widest opacity-70 mb-1">Clinical Pearl</p>
-                              <p className="text-xs font-bold leading-relaxed">
-                                {RELEASE_INSTRUCTIONS[priorityZone].pearl}
-                              </p>
+                              <p className="text-[10px] font-black text-blue-600 uppercase tracking-widest">Release Position</p>
+                              <h4 className="text-xl font-black text-blue-900">{focusedZone}</h4>
+                            </div>
+                          </div>
+                          <p className="text-sm font-bold text-blue-900 leading-relaxed bg-white/40 p-4 rounded-2xl border border-blue-100">
+                            {RELEASE_INSTRUCTIONS[focusedZone].position}
+                          </p>
+                          {RELEASE_INSTRUCTIONS[focusedZone].pearl && (
+                            <div className="flex items-start gap-3 p-4 bg-indigo-600 text-white rounded-2xl shadow-lg">
+                              <Brain size={20} className="shrink-0 mt-0.5" />
+                              <div>
+                                <p className="text-[9px] font-black uppercase tracking-widest opacity-70 mb-1">Clinical Pearl</p>
+                                <p className="text-xs font-bold leading-relaxed">
+                                  {RELEASE_INSTRUCTIONS[focusedZone].pearl}
+                                </p>
+                              </div>
+                            </div>
+                          )}
+                        </div>
+
+                        {RELEASE_INSTRUCTIONS[focusedZone].image && (
+                          <div className="bg-white rounded-[2.5rem] border-2 border-blue-100 p-4 overflow-hidden flex flex-col shadow-sm">
+                            <div className="flex items-center gap-2 px-4 py-2 border-b border-slate-50 mb-4">
+                              <ImageIcon size={16} className="text-blue-500" />
+                              <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Visual Reference</span>
+                            </div>
+                            <div className="flex-1 flex items-center justify-center p-4 bg-slate-50 rounded-3xl">
+                              <img 
+                                src={RELEASE_INSTRUCTIONS[focusedZone].image} 
+                                alt={`${focusedZone} Release Position`}
+                                className="max-w-full h-auto rounded-xl"
+                              />
                             </div>
                           </div>
                         )}
                       </div>
-
-                      {RELEASE_INSTRUCTIONS[priorityZone].image && (
-                        <div className="bg-white rounded-[2.5rem] border-2 border-blue-100 p-4 overflow-hidden flex flex-col shadow-sm">
-                          <div className="flex items-center gap-2 px-4 py-2 border-b border-slate-50 mb-4">
-                            <ImageIcon size={16} className="text-blue-500" />
-                            <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Visual Reference</span>
-                          </div>
-                          <div className="flex-1 flex items-center justify-center p-4 bg-slate-50 rounded-3xl">
-                            <img 
-                              src={RELEASE_INSTRUCTIONS[priorityZone].image} 
-                              alt={`${priorityZone} Release Position`}
-                              className="max-w-full h-auto rounded-xl"
-                            />
-                          </div>
-                        </div>
-                      )}
-                    </div>
+                    )}
                   </div>
                 )}
 
@@ -369,7 +401,7 @@ const LymphaticAssessment = ({
                   </div>
                 </div>
 
-                {priorityZone && (
+                {priorityZones.length > 0 && (
                   <div className="p-6 bg-emerald-50 rounded-[2rem] border-2 border-emerald-100 flex items-center justify-between shadow-sm">
                     <div className="flex items-center gap-4">
                       <div className="w-10 h-10 rounded-xl bg-emerald-100 flex items-center justify-center text-emerald-600">

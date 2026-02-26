@@ -17,7 +17,8 @@ import {
   CalendarPlus,
   Settings,
   ShieldCheck,
-  PanelLeftClose
+  PanelLeftClose,
+  Compass
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import SearchBar from "./SearchBar";
@@ -58,6 +59,7 @@ const Sidebar = ({ onHide }: SidebarProps) => {
     { label: "Dashboard", icon: LayoutDashboard, path: "/", shortcut: "⌘D" },
     { label: "Clients", icon: Users, path: "/clients", shortcut: "⌘1" },
     { label: "Appointments", icon: Calendar, path: "/appointments", shortcut: "⌘2" },
+    { label: "North Star", icon: Compass, path: "/north-star", shortcut: "⌘N" },
     { label: "Clinical Oversight", icon: TrendingUp, path: "/oversight", shortcut: "⌘O" },
     { label: "Self Practice", icon: Heart, path: "/self-practice", shortcut: "⌘S" },
     { label: "Procedures", icon: Target, path: "/procedures", shortcut: "⌘P" },
@@ -71,6 +73,7 @@ const Sidebar = ({ onHide }: SidebarProps) => {
           case 'd': e.preventDefault(); navigate('/'); break;
           case '1': e.preventDefault(); navigate('/clients'); break;
           case '2': e.preventDefault(); navigate('/appointments'); break;
+          case 'n': e.preventDefault(); navigate('/north-star'); break;
           case 'o': e.preventDefault(); navigate('/oversight'); break;
           case 's': e.preventDefault(); navigate('/self-practice'); break;
           case 'p': e.preventDefault(); navigate('/procedures'); break;

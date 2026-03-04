@@ -7,17 +7,18 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { 
-  ShieldCheck, 
-  Brain, 
-  Briefcase, 
-  Users, 
-  Heart, 
-  Wind, 
-  PenLine, 
+import {
+  ShieldCheck,
+  Brain,
+  Briefcase,
+  Users,
+  Heart,
+  Wind,
+  PenLine,
   Sparkles,
   AlertCircle,
-  CheckCircle2
+  CheckCircle2,
+  Printer
 } from 'lucide-react';
 import { toast } from "sonner";
 
@@ -37,6 +38,10 @@ const Week3Worksheet = () => {
     }
     setIsReleased(true);
     toast.success("Sovereignty Reclaimed. The release is sealed.");
+  };
+
+  const handlePrint = () => {
+    window.print();
   };
 
   const containerVariants = {
@@ -63,10 +68,22 @@ const Week3Worksheet = () => {
         className="space-y-12"
       >
         {/* Header */}
-        <motion.div variants={itemVariants} className="text-center space-y-4">
+        <motion.div variants={itemVariants} className="text-center space-y-4 relative">
+          <div className="absolute right-0 top-0 print:hidden">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={handlePrint}
+              className="flex items-center gap-2 border-slate-200 text-slate-600 hover:bg-slate-100"
+            >
+              <Printer className="w-4 h-4" />
+              Print Worksheet
+            </Button>
+          </div>
           <div className="inline-flex items-center justify-center p-2 bg-indigo-100 rounded-full text-indigo-600 mb-4">
             <Sparkles className="w-6 h-6" />
           </div>
+
           <h1 className="text-4xl font-bold tracking-tight text-slate-900 sm:text-5xl">
             The Integrated Healer Program: Week 3
           </h1>
@@ -218,9 +235,9 @@ const Week3Worksheet = () => {
                 <p className="text-center text-2xl font-bold pt-4">"So it is. It is done. It is sealed."</p>
               </div>
 
-              <div className="flex flex-col items-center gap-4 pt-8">
+              <div className="flex flex-col items-center gap-4 pt-8 print:hidden">
                 {!isReleased ? (
-                  <Button 
+                  <Button
                     onClick={handleRelease}
                     className="bg-white text-indigo-900 hover:bg-indigo-50 px-12 py-6 text-xl font-bold rounded-full shadow-lg transition-all hover:scale-105"
                   >
@@ -233,6 +250,12 @@ const Week3Worksheet = () => {
                   </div>
                 )}
               </div>
+              {isReleased && (
+                <div className="hidden print:block text-center pt-8 border-t border-indigo-800">
+                  <p className="text-emerald-400 text-2xl font-bold">Sovereignty Reclaimed & Sealed</p>
+                  <p className="text-indigo-200 text-sm mt-2">Signed: {name}</p>
+                </div>
+              )}
             </CardContent>
           </Card>
         </motion.div>

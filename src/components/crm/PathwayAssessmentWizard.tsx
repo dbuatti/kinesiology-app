@@ -20,8 +20,7 @@ import {
   X,
   ArrowRight,
   Info,
-  Eye,
-  Droplets
+  XCircle
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import NociceptiveThreatAssessment from './NociceptiveThreatAssessment';
@@ -44,19 +43,18 @@ import { BRAIN_REFLEX_POINTS, BrainReflexPoint } from '@/data/brain-reflex-data'
 import EfferentBrainIntegration from './EfferentBrainIntegration';
 import { supabase } from "@/integrations/supabase/client";
 import { motion, AnimatePresence } from 'framer-motion';
-import MechanoConscious from './pathway-wizard/MechanoConscious';
-import MechanoUnconscious from './pathway-wizard/MechanoUnconscious';
+import { MUSCLE_GROUPS } from '@/data/muscle-data';
 
 type Step = 
   | 'SELECT_PATHWAY' 
   | 'SELECT_MUSCLE'
   | 'SELECT_BRAIN_ZONE'
+  | 'SELECT_CRANIAL_NERVE'
   | 'TEST_IM' 
   | 'SELECT_RESPONSE' 
   | 'SELECT_DIRECTION' 
   | 'SELECT_SPECIFIC' 
-  | 'MECHANO_CONSCIOUS'
-  | 'MECHANO_UNCONSCIOUS'
+  | 'MECHANO_DETAIL'
   | 'EFFERENT_INTEGRATION'
   | 'CORRECTION' 
   | 'REASSESS';
@@ -64,13 +62,28 @@ type Step =
 type PathwayType = 'Primitive Reflex' | 'Cranial Nerve' | 'Brain Zone' | 'Muscle' | 'Nociceptive Threat';
 type ResponseType = 'Clear/Normal' | 'Inhibited/Abnormal';
 
+interface CranialNerveResult {
+  nerve: BrainReflexPoint;
+  status: 'Clear' | 'Inhibited';
+}
+
+interface MuscleResult {
+  muscle: string;
+  status: 'Clear' | 'Inhibited';
+}
+
 interface WizardState {
   pathway: PathwayType | null;
   selectedMuscle: string | null;
   selectedBrainZone: BrainReflexPoint | null;
+  cranialNerveResults: CranialNerveResult[];
+  muscleResults: MuscleResult[];
   response: ResponseType | null;
   direction: DirectionType | null;
   specific: SpecificCorrectionType | null;
+  joint?: string;
+  plane?: string;
+  action?: string;
   reassessed: boolean;
 }
 
@@ -92,31 +105,19 @@ const PATHWAY_DESCRIPTIONS: Record<PathwayType, string> = {
   'Nociceptive Threat': 'Systemic threat response triggered by injury, scars, or movement.'
 };
 
-const DIRECT_MUSCLE_TESTS = [
-  {
-    group: "Intrinsic Stabilisation System",
-    muscles: ["Transverse Abdominals (TVA)", "Diaphragm", "Pelvic Floor", "Multifidi", "Sacrospinalis"]
-  },
-  {
-    group: "Upper Body & Extremities",
-    muscles: ["Deltoids, Mid & Lower Traps, Pecs and Serratus Anterior", "Biceps and Triceps", "Upper Trapezius and SCM"]
-  },
-  {
-    group: "Lower Body & Pelvis",
-    muscles: ["Quadriceps Group", "Hamstrings", "TFL", "Glute Med", "Glute Max"]
-  }
-];
+const JOINTS = ["Foot", "Ankle", "Knee", "Hip", "Pelvis", "Lumbar", "Thoracic", "Cervical", "Shoulder", "Elbow", "Wrist"];
+const PLANES = ["Sagittal", "Frontal", "Transverse"];
 
 const LEARNING_TIPS: Record<Step, string> = {
   'SELECT_PATHWAY': "Start with the most foundational system. Primitive reflexes and Cranial Nerves often underpin complex muscle dysfunctions.",
-  'SELECT_MUSCLE': "Select the specific muscle or system you are challenging.",
+  'SELECT_MUSCLE': "Test each muscle systematically. Mark as Clear or Inhibited to identify patterns.",
   'SELECT_BRAIN_ZONE': "Identify the specific brain region you are challenging via Therapy Localization (TL).",
+  'SELECT_CRANIAL_NERVE': "Test each cranial nerve systematically. Mark as Clear or Inhibited. Any inhibited nerves require correction.",
   'TEST_IM': "The Indicator Muscle (IM) reveals if the stimulus is perceived as a 'threat'.",
   'SELECT_RESPONSE': "An inhibited response means the brain is prioritizing protection over performance.",
   'SELECT_DIRECTION': "Afferent corrections address the 'input' (sensors), while Efferent corrections address the 'output' (processing).",
   'SELECT_SPECIFIC': "The brain usually has a preferred 'entry point' for calibration.",
-  'MECHANO_CONSCIOUS': "Conscious mechanoreceptive corrections target the DCML pathway (15% of afferent input) via joint actions and isometric contractions.",
-  'MECHANO_UNCONSCIOUS': "Unconscious mechanoreceptive corrections target spinocerebellar tracts (85% of afferent input) via ligament/tendon stretches.",
+  'MECHANO_DETAIL': "Identify the specific joint action the cerebellum is requesting to clear the threat.",
   'EFFERENT_INTEGRATION': "Use the brain coordinate system to integrate the top-down motor plan.",
   'CORRECTION': "Hold the correction for 30 seconds with nasal breathing to provide a parasympathetic anchor.",
   'REASSESS': "Re-testing is critical. If the IM still inhibits, there is likely a deeper layer."
@@ -134,6 +135,8 @@ const PathwayAssessmentWizard = ({ onSave, initialValue }: PathwayAssessmentWiza
     pathway: null,
     selectedMuscle: null,
     selectedBrainZone: null,
+    cranialNerveResults: [],
+    muscleResults: [],
     response: null,
     direction: null,
     specific: null,
@@ -191,10 +194,13 @@ const PathwayAssessmentWizard = ({ onSave, initialValue }: PathwayAssessmentWiza
     if (confirm("Are you sure you want to start over? All current selections will be cleared.")) {
       setDirection(-1);
       setStep('SELECT_PATHWAY');
+      setShowNociceptive(false);
       setState({
         pathway: null,
         selectedMuscle: null,
         selectedBrainZone: null,
+        cranialNerveResults: [],
+        muscleResults: [],
         response: null,
         direction: null,
         specific: null,
@@ -203,21 +209,85 @@ const PathwayAssessmentWizard = ({ onSave, initialValue }: PathwayAssessmentWiza
     }
   };
 
+  const toggleCranialNerve = (nerve: BrainReflexPoint, status: 'Clear' | 'Inhibited') => {
+    setState(prev => {
+      const existing = prev.cranialNerveResults.find(r => r.nerve.id === nerve.id);
+      
+      if (existing) {
+        if (existing.status === status) {
+          return {
+            ...prev,
+            cranialNerveResults: prev.cranialNerveResults.filter(r => r.nerve.id !== nerve.id)
+          };
+        } else {
+          return {
+            ...prev,
+            cranialNerveResults: prev.cranialNerveResults.map(r => 
+              r.nerve.id === nerve.id ? { ...r, status } : r
+            )
+          };
+        }
+      } else {
+        return {
+          ...prev,
+          cranialNerveResults: [...prev.cranialNerveResults, { nerve, status }]
+        };
+      }
+    });
+  };
+
+  const toggleMuscle = (muscle: string, status: 'Clear' | 'Inhibited') => {
+    setState(prev => {
+      const existing = prev.muscleResults.find(r => r.muscle === muscle);
+      
+      if (existing) {
+        if (existing.status === status) {
+          return {
+            ...prev,
+            muscleResults: prev.muscleResults.filter(r => r.muscle !== muscle)
+          };
+        } else {
+          return {
+            ...prev,
+            muscleResults: prev.muscleResults.map(r => 
+              r.muscle === muscle ? { ...r, status } : r
+            )
+          };
+        }
+      } else {
+        return {
+          ...prev,
+          muscleResults: [...prev.muscleResults, { muscle, status }]
+        };
+      }
+    });
+  };
+
   const generateSummary = (finalState: WizardState) => {
     const parts = [];
     if (finalState.pathway) {
       let pathwayLabel = `Pathway: ${finalState.pathway}`;
-      if (finalState.pathway === 'Muscle' && finalState.selectedMuscle) {
-        pathwayLabel = `Muscle: ${finalState.selectedMuscle}`;
+      if (finalState.pathway === 'Muscle' && finalState.muscleResults.length > 0) {
+        const inhibited = finalState.muscleResults.filter(r => r.status === 'Inhibited').map(r => r.muscle);
+        const clear = finalState.muscleResults.filter(r => r.status === 'Clear').map(r => r.muscle);
+        pathwayLabel = `Muscles - Inhibited: [${inhibited.join(', ') || 'None'}] | Clear: [${clear.join(', ') || 'None'}]`;
       } else if (finalState.pathway === 'Brain Zone' && finalState.selectedBrainZone) {
         pathwayLabel = `Brain Zone: ${finalState.selectedBrainZone.name}`;
+      } else if (finalState.pathway === 'Cranial Nerve' && finalState.cranialNerveResults.length > 0) {
+        const inhibited = finalState.cranialNerveResults.filter(r => r.status === 'Inhibited').map(r => r.nerve.name);
+        const clear = finalState.cranialNerveResults.filter(r => r.status === 'Clear').map(r => r.nerve.name);
+        pathwayLabel = `Cranial Nerves - Inhibited: [${inhibited.join(', ') || 'None'}] | Clear: [${clear.join(', ') || 'None'}]`;
       }
       parts.push(pathwayLabel);
     }
     if (finalState.response) parts.push(`Response: ${finalState.response}`);
     if (finalState.direction) parts.push(`Correction: ${finalState.direction}`);
     if (finalState.specific) {
-      parts.push(`Specific: ${finalState.specific}`);
+      let detail = finalState.specific as string;
+      if (finalState.specific === 'Mechanoreceptor' && finalState.joint) {
+        detail = `Mechano (${finalState.joint} ${finalState.plane} ${finalState.action})`;
+      }
+      parts.push(`Specific: ${detail}`);
     }
     if (finalState.reassessed) parts.push(`Status: Cleared`);
     
@@ -228,10 +298,13 @@ const PathwayAssessmentWizard = ({ onSave, initialValue }: PathwayAssessmentWiza
     const summary = generateSummary(state);
     onSave(summary);
     setStep('SELECT_PATHWAY');
+    setShowNociceptive(false);
     setState({
       pathway: null,
       selectedMuscle: null,
       selectedBrainZone: null,
+      cranialNerveResults: [],
+      muscleResults: [],
       response: null,
       direction: null,
       specific: null,
@@ -239,27 +312,37 @@ const PathwayAssessmentWizard = ({ onSave, initialValue }: PathwayAssessmentWiza
     });
   };
 
-  const renderImagePreview = (pointId: string) => {
-    const images = customizations[pointId];
-    if (!images || (!images.primaryUrl && !images.secondaryUrl)) return null;
+  const handleNociceptiveSave = (summary: string) => {
+    onSave(summary);
+    setShowNociceptive(false);
+    setStep('SELECT_PATHWAY');
+    setState({
+      pathway: null,
+      selectedMuscle: null,
+      selectedBrainZone: null,
+      cranialNerveResults: [],
+      muscleResults: [],
+      response: null,
+      direction: null,
+      specific: null,
+      reassessed: false,
+    });
+  };
 
+  const handleNociceptiveCancel = () => {
+    setShowNociceptive(false);
+  };
+
+  if (showNociceptive) {
     return (
-      <div className="grid grid-cols-2 gap-3 mt-4 animate-in fade-in zoom-in-95 duration-500">
-        {images.primaryUrl && (
-          <div className="aspect-video rounded-xl overflow-hidden border border-slate-200 bg-slate-50 relative group">
-            <img src={images.primaryUrl} alt="Anatomy" className="w-full h-full object-cover" />
-            <div className="absolute bottom-1 left-1 px-1.5 py-0.5 bg-black/50 backdrop-blur-sm rounded text-[8px] font-black text-white uppercase tracking-widest">Anatomy</div>
-          </div>
-        )}
-        {images.secondaryUrl && (
-          <div className="aspect-video rounded-xl overflow-hidden border border-slate-200 bg-slate-50 relative group">
-            <img src={images.secondaryUrl} alt="Reflex" className="w-full h-full object-cover" />
-            <div className="absolute bottom-1 left-1 px-1.5 py-0.5 bg-indigo-600/80 backdrop-blur-sm rounded text-[8px] font-black text-white uppercase tracking-widest">Reflex Point</div>
-          </div>
-        )}
+      <div className="animate-in fade-in zoom-in-95 duration-500">
+        <NociceptiveThreatAssessment 
+          onSave={handleNociceptiveSave}
+          onCancel={handleNociceptiveCancel}
+        />
       </div>
     );
-  };
+  }
 
   const renderStep = () => {
     switch (step) {
@@ -268,9 +351,10 @@ const PathwayAssessmentWizard = ({ onSave, initialValue }: PathwayAssessmentWiza
           <motion.div 
             key="SELECT_PATHWAY"
             custom={direction}
-            initial={{ x: direction > 0 ? 50 : -50, opacity: 0 }}
-            animate={{ x: 0, opacity: 1 }}
-            exit={{ x: direction < 0 ? 50 : -50, opacity: 0 }}
+            variants={slideVariants}
+            initial="enter"
+            animate="center"
+            exit="exit"
             transition={{ duration: 0.3, ease: "easeInOut" }}
             className="space-y-6"
           >
@@ -291,11 +375,13 @@ const PathwayAssessmentWizard = ({ onSave, initialValue }: PathwayAssessmentWiza
                         )}
                         onClick={() => {
                           if (p === 'Nociceptive Threat') {
+                            setState({ ...state, pathway: p });
                             setShowNociceptive(true);
                           } else {
                             setState({ ...state, pathway: p });
                             if (p === 'Muscle') nextStep('SELECT_MUSCLE');
                             else if (p === 'Brain Zone') nextStep('SELECT_BRAIN_ZONE');
+                            else if (p === 'Cranial Nerve') nextStep('SELECT_CRANIAL_NERVE');
                             else nextStep('TEST_IM');
                           }
                         }}
@@ -323,21 +409,140 @@ const PathwayAssessmentWizard = ({ onSave, initialValue }: PathwayAssessmentWiza
           </motion.div>
         );
 
-      case 'SELECT_MUSCLE':
+      case 'SELECT_CRANIAL_NERVE':
+        const cranialNerves = BRAIN_REFLEX_POINTS.filter(p => p.category === 'Cranial Nerve');
+        
         return (
           <motion.div 
-            key="SELECT_MUSCLE"
+            key="SELECT_CRANIAL_NERVE"
             custom={direction}
-            initial={{ x: direction > 0 ? 50 : -50, opacity: 0 }}
-            animate={{ x: 0, opacity: 1 }}
-            exit={{ x: direction < 0 ? 50 : -50, opacity: 0 }}
+            variants={slideVariants}
+            initial="enter"
+            animate="center"
+            exit="exit"
             transition={{ duration: 0.3, ease: "easeInOut" }}
             className="space-y-6"
           >
             <div className="space-y-2">
-              <h3 className="text-xl font-black text-slate-900">Direct Muscle Tests</h3>
-              <p className="text-sm text-slate-500">Select the muscle or system to challenge.</p>
+              <h3 className="text-xl font-black text-slate-900">Cranial Nerve Assessment</h3>
+              <p className="text-sm text-slate-500">Test each nerve and mark as Clear or Inhibited.</p>
             </div>
+
+            <div className="grid grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-3">
+              {cranialNerves.map((nerve) => {
+                const result = state.cranialNerveResults.find(r => r.nerve.id === nerve.id);
+                const images = customizations[nerve.id];
+                
+                return (
+                  <div key={nerve.id} className="space-y-1.5">
+                    <div className={cn(
+                      "p-2 rounded-xl border-2 transition-all group relative overflow-hidden",
+                      result?.status === 'Clear' ? "border-emerald-500 bg-emerald-50" :
+                      result?.status === 'Inhibited' ? "border-rose-500 bg-rose-50" :
+                      "border-slate-200 bg-white hover:border-indigo-200"
+                    )}>
+                      <div className="space-y-2">
+                        <div className="flex items-center justify-between">
+                          <h4 className="font-black text-[10px] text-slate-900 leading-tight">{nerve.name}</h4>
+                          {result && (
+                            <div className={cn(
+                              "w-4 h-4 rounded-full flex items-center justify-center",
+                              result.status === 'Clear' ? "bg-emerald-500" : "bg-rose-500"
+                            )}>
+                              {result.status === 'Clear' ? (
+                                <CheckCircle2 size={10} className="text-white" />
+                              ) : (
+                                <XCircle size={10} className="text-white" />
+                              )}
+                            </div>
+                          )}
+                        </div>
+
+                        {images?.secondaryUrl && (
+                          <div className="aspect-square rounded-lg overflow-hidden border border-slate-200 bg-slate-50">
+                            <img src={images.secondaryUrl} alt={nerve.name} className="w-full h-full object-cover" />
+                          </div>
+                        )}
+
+                        <div className="flex gap-1">
+                          <Button
+                            size="sm"
+                            variant={result?.status === 'Clear' ? 'default' : 'outline'}
+                            onClick={() => toggleCranialNerve(nerve, 'Clear')}
+                            className={cn(
+                              "flex-1 h-6 rounded-md text-[8px] font-black uppercase tracking-widest px-1",
+                              result?.status === 'Clear' ? "bg-emerald-600 hover:bg-emerald-700" : "border-emerald-200 text-emerald-600 hover:bg-emerald-50"
+                            )}
+                          >
+                            ✓
+                          </Button>
+                          <Button
+                            size="sm"
+                            variant={result?.status === 'Inhibited' ? 'default' : 'outline'}
+                            onClick={() => toggleCranialNerve(nerve, 'Inhibited')}
+                            className={cn(
+                              "flex-1 h-6 rounded-md text-[8px] font-black uppercase tracking-widest px-1",
+                              result?.status === 'Inhibited' ? "bg-rose-600 hover:bg-rose-700" : "border-rose-200 text-rose-600 hover:bg-rose-50"
+                            )}
+                          >
+                            ✗
+                          </Button>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+
+            <div className="p-4 bg-blue-50 rounded-2xl border border-blue-100 flex items-start gap-3">
+              <Info size={18} className="text-blue-600 shrink-0 mt-0.5" />
+              <div className="space-y-1">
+                <p className="text-xs font-black text-blue-900 uppercase tracking-tight">Assessment Summary</p>
+                <p className="text-sm text-blue-800 font-medium">
+                  {state.cranialNerveResults.filter(r => r.status === 'Clear').length} Clear • {' '}
+                  {state.cranialNerveResults.filter(r => r.status === 'Inhibited').length} Inhibited • {' '}
+                  {cranialNerves.length - state.cranialNerveResults.length} Not Tested
+                </p>
+              </div>
+            </div>
+
+            <div className="flex gap-3">
+              <Button variant="ghost" onClick={() => prevStep('SELECT_PATHWAY')} className="flex-1 h-12 rounded-xl">
+                <ChevronLeft size={18} className="mr-2" /> Back
+              </Button>
+              <Button 
+                onClick={() => nextStep('REASSESS')} 
+                className="flex-[2] h-12 rounded-xl bg-indigo-600 hover:bg-indigo-700 font-bold"
+              >
+                Complete Assessment <ChevronRight size={18} className="ml-2" />
+              </Button>
+            </div>
+          </motion.div>
+        );
+
+      case 'SELECT_MUSCLE':
+        const allMuscles = Object.values(MUSCLE_GROUPS).flat();
+        const filteredMuscles = allMuscles.filter(m => 
+          m.toLowerCase().includes(muscleSearch.toLowerCase())
+        );
+        
+        return (
+          <motion.div 
+            key="SELECT_MUSCLE"
+            custom={direction}
+            variants={slideVariants}
+            initial="enter"
+            animate="center"
+            exit="exit"
+            transition={{ duration: 0.3, ease: "easeInOut" }}
+            className="space-y-6"
+          >
+            <div className="space-y-2">
+              <h3 className="text-xl font-black text-slate-900">Muscle Assessment</h3>
+              <p className="text-sm text-slate-500">Test each muscle and mark as Clear or Inhibited.</p>
+            </div>
+            
             <div className="relative">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={16} />
               <Input 
@@ -348,50 +553,105 @@ const PathwayAssessmentWizard = ({ onSave, initialValue }: PathwayAssessmentWiza
                 onChange={(e) => setMuscleSearch(e.target.value)} 
               />
             </div>
-            <div className="space-y-6 max-h-[400px] overflow-y-auto pr-2 custom-scrollbar">
-              {DIRECT_MUSCLE_TESTS.map((group) => {
-                const filteredMuscles = group.muscles.filter(m => m.toLowerCase().includes(muscleSearch.toLowerCase()));
-                if (filteredMuscles.length === 0) return null;
+
+            <div className="grid grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-3">
+              {filteredMuscles.map((muscle) => {
+                const result = state.muscleResults.find(r => r.muscle === muscle);
+                
                 return (
-                  <div key={group.group} className="space-y-3">
-                    <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] px-1">{group.group}</h4>
-                    <div className="grid grid-cols-1 gap-2">
-                      {filteredMuscles.map((m) => (
-                        <Button
-                          key={m}
-                          variant="outline"
-                          className={cn(
-                            "h-auto py-3 justify-start px-4 rounded-xl border-2 transition-all text-left",
-                            state.selectedMuscle === m ? "border-green-600 bg-green-50 text-green-700" : "border-slate-100 hover:border-green-200"
+                  <div key={muscle} className="space-y-1.5">
+                    <div className={cn(
+                      "p-2 rounded-xl border-2 transition-all group relative overflow-hidden",
+                      result?.status === 'Clear' ? "border-emerald-500 bg-emerald-50" :
+                      result?.status === 'Inhibited' ? "border-rose-500 bg-rose-50" :
+                      "border-slate-200 bg-white hover:border-green-200"
+                    )}>
+                      <div className="space-y-2">
+                        <div className="flex items-center justify-between">
+                          <h4 className="font-black text-[10px] text-slate-900 leading-tight line-clamp-2">{muscle}</h4>
+                          {result && (
+                            <div className={cn(
+                              "w-4 h-4 rounded-full flex items-center justify-center shrink-0 ml-1",
+                              result.status === 'Clear' ? "bg-emerald-500" : "bg-rose-500"
+                            )}>
+                              {result.status === 'Clear' ? (
+                                <CheckCircle2 size={10} className="text-white" />
+                              ) : (
+                                <XCircle size={10} className="text-white" />
+                              )}
+                            </div>
                           )}
-                          onClick={() => { setState({ ...state, selectedMuscle: m }); nextStep('TEST_IM'); }}
-                        >
-                          <span className="font-bold text-sm">{m}</span>
-                        </Button>
-                      ))}
+                        </div>
+
+                        <div className="flex gap-1">
+                          <Button
+                            size="sm"
+                            variant={result?.status === 'Clear' ? 'default' : 'outline'}
+                            onClick={() => toggleMuscle(muscle, 'Clear')}
+                            className={cn(
+                              "flex-1 h-6 rounded-md text-[8px] font-black uppercase tracking-widest px-1",
+                              result?.status === 'Clear' ? "bg-emerald-600 hover:bg-emerald-700" : "border-emerald-200 text-emerald-600 hover:bg-emerald-50"
+                            )}
+                          >
+                            ✓
+                          </Button>
+                          <Button
+                            size="sm"
+                            variant={result?.status === 'Inhibited' ? 'default' : 'outline'}
+                            onClick={() => toggleMuscle(muscle, 'Inhibited')}
+                            className={cn(
+                              "flex-1 h-6 rounded-md text-[8px] font-black uppercase tracking-widest px-1",
+                              result?.status === 'Inhibited' ? "bg-rose-600 hover:bg-rose-700" : "border-rose-200 text-rose-600 hover:bg-rose-50"
+                            )}
+                          >
+                            ✗
+                          </Button>
+                        </div>
+                      </div>
                     </div>
                   </div>
                 );
               })}
             </div>
-            <Button variant="ghost" onClick={() => prevStep('SELECT_PATHWAY')} className="w-full h-12 rounded-xl">
-              <ChevronLeft size={18} className="mr-2" /> Back
-            </Button>
+
+            <div className="p-4 bg-green-50 rounded-2xl border border-green-100 flex items-start gap-3">
+              <Info size={18} className="text-green-600 shrink-0 mt-0.5" />
+              <div className="space-y-1">
+                <p className="text-xs font-black text-green-900 uppercase tracking-tight">Assessment Summary</p>
+                <p className="text-sm text-green-800 font-medium">
+                  {state.muscleResults.filter(r => r.status === 'Clear').length} Clear • {' '}
+                  {state.muscleResults.filter(r => r.status === 'Inhibited').length} Inhibited • {' '}
+                  {allMuscles.length - state.muscleResults.length} Not Tested
+                </p>
+              </div>
+            </div>
+
+            <div className="flex gap-3">
+              <Button variant="ghost" onClick={() => prevStep('SELECT_PATHWAY')} className="flex-1 h-12 rounded-xl">
+                <ChevronLeft size={18} className="mr-2" /> Back
+              </Button>
+              <Button 
+                onClick={() => nextStep('REASSESS')} 
+                className="flex-[2] h-12 rounded-xl bg-green-600 hover:bg-green-700 font-bold"
+              >
+                Complete Assessment <ChevronRight size={18} className="ml-2" />
+              </Button>
+            </div>
           </motion.div>
         );
 
       case 'SELECT_BRAIN_ZONE':
         const cortical = BRAIN_REFLEX_POINTS.filter(p => p.category === 'Cortical' && p.name.toLowerCase().includes(brainSearch.toLowerCase()));
         const subcortical = BRAIN_REFLEX_POINTS.filter(p => p.category === 'Subcortical' && p.name.toLowerCase().includes(brainSearch.toLowerCase()));
-        const cranial = BRAIN_REFLEX_POINTS.filter(p => p.category === 'Cranial Nerve' && p.name.toLowerCase().includes(brainSearch.toLowerCase()));
 
         return (
           <motion.div 
             key="SELECT_BRAIN_ZONE"
             custom={direction}
-            initial={{ x: direction > 0 ? 50 : -50, opacity: 0 }}
-            animate={{ x: 0, opacity: 1 }}
-            exit={{ x: direction < 0 ? 50 : -50, opacity: 0 }}
+            variants={slideVariants}
+            initial="enter"
+            animate="center"
+            exit="exit"
             transition={{ duration: 0.3, ease: "easeInOut" }}
             className="space-y-6"
           >
@@ -409,67 +669,98 @@ const PathwayAssessmentWizard = ({ onSave, initialValue }: PathwayAssessmentWiza
                 onChange={(e) => setBrainSearch(e.target.value)} 
               />
             </div>
-            <div className="space-y-6 max-h-[400px] overflow-y-auto pr-2 custom-scrollbar">
+
+            <div className="space-y-6">
               {cortical.length > 0 && (
                 <div className="space-y-3">
                   <h4 className="text-[10px] font-black text-purple-500 uppercase tracking-[0.2em] px-1">Cortical (Contralateral)</h4>
-                  <div className="grid grid-cols-1 gap-2">
-                    {cortical.map((p) => (
-                      <div key={p.id} className="space-y-2">
-                        <Button variant="outline" className={cn("h-auto py-3 justify-start px-4 rounded-xl border-2 transition-all text-left w-full", state.selectedBrainZone?.id === p.id ? "border-purple-600 bg-purple-50 text-purple-700" : "border-slate-100 hover:border-purple-200")} onClick={() => setState({ ...state, selectedBrainZone: p })}>
-                          <div className="flex items-center justify-between w-full">
-                            <span className="font-bold text-sm">{p.name}</span>
-                            <Badge variant="outline" className="text-[8px] font-black uppercase border-purple-200 text-purple-400">{p.lateralization}</Badge>
+                  <div className="grid grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3">
+                    {cortical.map((p) => {
+                      const images = customizations[p.id];
+                      const isSelected = state.selectedBrainZone?.id === p.id;
+                      
+                      return (
+                        <button
+                          key={p.id}
+                          onClick={() => setState({ ...state, selectedBrainZone: p })}
+                          className={cn(
+                            "p-2 rounded-xl border-2 transition-all text-left space-y-2 group",
+                            isSelected ? "border-purple-600 bg-purple-50" : "border-slate-200 bg-white hover:border-purple-200"
+                          )}
+                        >
+                          <div className="flex items-center justify-between">
+                            <span className="font-black text-[10px] text-slate-900 leading-tight">{p.name}</span>
+                            {isSelected && (
+                              <CheckCircle2 size={12} className="text-purple-600 shrink-0" />
+                            )}
                           </div>
-                        </Button>
-                        {state.selectedBrainZone?.id === p.id && renderImagePreview(p.id)}
-                      </div>
-                    ))}
+
+                          {images?.secondaryUrl && (
+                            <div className="aspect-square rounded-lg overflow-hidden border border-slate-200 bg-slate-50">
+                              <img src={images.secondaryUrl} alt={p.name} className="w-full h-full object-cover" />
+                            </div>
+                          )}
+
+                          <Badge variant="outline" className="text-[7px] font-black uppercase border-purple-200 text-purple-600 w-full justify-center py-0">
+                            {p.lateralization}
+                          </Badge>
+                        </button>
+                      );
+                    })}
                   </div>
                 </div>
               )}
+
               {subcortical.length > 0 && (
                 <div className="space-y-3">
                   <h4 className="text-[10px] font-black text-indigo-500 uppercase tracking-[0.2em] px-1">Subcortical (Ipsilateral)</h4>
-                  <div className="grid grid-cols-1 gap-2">
-                    {subcortical.map((p) => (
-                      <div key={p.id} className="space-y-2">
-                        <Button variant="outline" className={cn("h-auto py-3 justify-start px-4 rounded-xl border-2 transition-all text-left w-full", state.selectedBrainZone?.id === p.id ? "border-indigo-600 bg-indigo-50 text-indigo-700" : "border-slate-100 hover:border-indigo-200")} onClick={() => setState({ ...state, selectedBrainZone: p })}>
-                          <div className="flex items-center justify-between w-full">
-                            <span className="font-bold text-sm">{p.name}</span>
-                            <Badge variant="outline" className="text-[8px] font-black uppercase border-indigo-200 text-indigo-400">{p.lateralization}</Badge>
+                  <div className="grid grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3">
+                    {subcortical.map((p) => {
+                      const images = customizations[p.id];
+                      const isSelected = state.selectedBrainZone?.id === p.id;
+                      
+                      return (
+                        <button
+                          key={p.id}
+                          onClick={() => setState({ ...state, selectedBrainZone: p })}
+                          className={cn(
+                            "p-2 rounded-xl border-2 transition-all text-left space-y-2 group",
+                            isSelected ? "border-indigo-600 bg-indigo-50" : "border-slate-200 bg-white hover:border-indigo-200"
+                          )}
+                        >
+                          <div className="flex items-center justify-between">
+                            <span className="font-black text-[10px] text-slate-900 leading-tight">{p.name}</span>
+                            {isSelected && (
+                              <CheckCircle2 size={12} className="text-indigo-600 shrink-0" />
+                            )}
                           </div>
-                        </Button>
-                        {state.selectedBrainZone?.id === p.id && renderImagePreview(p.id)}
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              )}
-              {cranial.length > 0 && (
-                <div className="space-y-3">
-                  <h4 className="text-[10px] font-black text-emerald-500 uppercase tracking-[0.2em] px-1">Cranial Nerves</h4>
-                  <div className="grid grid-cols-1 gap-2">
-                    {cranial.map((p) => (
-                      <div key={p.id} className="space-y-2">
-                        <Button variant="outline" className={cn("h-auto py-3 justify-start px-4 rounded-xl border-2 transition-all text-left w-full", state.selectedBrainZone?.id === p.id ? "border-emerald-600 bg-emerald-50 text-emerald-700" : "border-slate-100 hover:border-emerald-200")} onClick={() => setState({ ...state, selectedBrainZone: p })}>
-                          <div className="flex items-center justify-between w-full">
-                            <span className="font-bold text-sm">{p.name}</span>
-                            <Badge variant="outline" className="text-[8px] font-black uppercase border-emerald-200 text-emerald-400">{p.lateralization}</Badge>
-                          </div>
-                        </Button>
-                        {state.selectedBrainZone?.id === p.id && renderImagePreview(p.id)}
-                      </div>
-                    ))}
+
+                          {images?.secondaryUrl && (
+                            <div className="aspect-square rounded-lg overflow-hidden border border-slate-200 bg-slate-50">
+                              <img src={images.secondaryUrl} alt={p.name} className="w-full h-full object-cover" />
+                            </div>
+                          )}
+
+                          <Badge variant="outline" className="text-[7px] font-black uppercase border-indigo-200 text-indigo-600 w-full justify-center py-0">
+                            {p.lateralization}
+                          </Badge>
+                        </button>
+                      );
+                    })}
                   </div>
                 </div>
               )}
             </div>
+
             <div className="flex gap-3">
               <Button variant="ghost" onClick={() => prevStep('SELECT_PATHWAY')} className="flex-1 h-12 rounded-xl">
                 <ChevronLeft size={18} className="mr-2" /> Back
               </Button>
-              <Button disabled={!state.selectedBrainZone} onClick={() => nextStep('TEST_IM')} className="flex-[2] h-12 rounded-xl bg-indigo-600 hover:bg-indigo-700 font-bold">
+              <Button 
+                disabled={!state.selectedBrainZone} 
+                onClick={() => nextStep('TEST_IM')} 
+                className="flex-[2] h-12 rounded-xl bg-indigo-600 hover:bg-indigo-700 font-bold"
+              >
                 Continue <ChevronRight size={18} className="ml-2" />
               </Button>
             </div>
@@ -482,22 +773,22 @@ const PathwayAssessmentWizard = ({ onSave, initialValue }: PathwayAssessmentWiza
           <motion.div 
             key="TEST_IM"
             custom={direction}
-            initial={{ x: direction > 0 ? 50 : -50, opacity: 0 }}
-            animate={{ x: 0, opacity: 1 }}
-            exit={{ x: direction < 0 ? 50 : -50, opacity: 0 }}
+            variants={slideVariants}
+            initial="enter"
+            animate="center"
+            exit="exit"
             transition={{ duration: 0.3, ease: "easeInOut" }}
             className="space-y-6"
           >
-            <div className="bg-indigo-900/95 backdrop-blur-md text-white p-8 rounded-[2.5rem] shadow-2xl relative overflow-hidden">
+            <div className="bg-indigo-900 text-white p-8 rounded-[2.5rem] shadow-2xl relative overflow-hidden">
               <div className="absolute top-0 right-0 p-8 opacity-10 pointer-events-none"><Sparkles size={150} /></div>
               <h3 className="text-2xl font-black mb-6 flex items-center gap-3"><Zap size={28} className="text-amber-400 fill-amber-400" /> Stimulation & Test</h3>
               <div className="space-y-6 relative z-10">
                 <div className="p-6 bg-white/10 rounded-2xl border border-white/10 shadow-inner">
                   <p className="text-lg font-bold leading-tight">1. Stimulate the <span className="text-amber-400 underline">"{targetLabel}"</span> pathway.</p>
                   {state.selectedBrainZone && (
-                    <div className="mt-4 space-y-4">
+                    <div className="mt-4 space-y-2">
                       <p className="text-xs text-indigo-300 font-medium italic">Location: {state.selectedBrainZone.location}</p>
-                      {renderImagePreview(state.selectedBrainZone.id)}
                     </div>
                   )}
                 </div>
@@ -507,12 +798,8 @@ const PathwayAssessmentWizard = ({ onSave, initialValue }: PathwayAssessmentWiza
               </div>
             </div>
             <div className="flex gap-3">
-              <Button variant="ghost" onClick={() => prevStep(state.pathway === 'Muscle' ? 'SELECT_MUSCLE' : state.pathway === 'Brain Zone' ? 'SELECT_BRAIN_ZONE' : 'SELECT_PATHWAY')} className="flex-1 h-14 rounded-2xl font-bold">
-                <ChevronLeft size={18} className="mr-2" /> Back
-              </Button>
-              <Button onClick={() => nextStep('SELECT_RESPONSE')} className="flex-[2] h-14 rounded-2xl bg-indigo-600 hover:bg-indigo-700 text-lg font-black shadow-lg shadow-indigo-200">
-                Test Complete <ChevronRight size={18} className="ml-2" />
-              </Button>
+              <Button variant="ghost" onClick={() => prevStep(state.pathway === 'Muscle' ? 'SELECT_MUSCLE' : state.pathway === 'Brain Zone' ? 'SELECT_BRAIN_ZONE' : 'SELECT_PATHWAY')} className="flex-1 h-14 rounded-2xl font-bold"><ChevronLeft size={18} className="mr-2" /> Back</Button>
+              <Button onClick={() => nextStep('SELECT_RESPONSE')} className="flex-[2] h-14 rounded-2xl bg-indigo-600 hover:bg-indigo-700 text-lg font-black shadow-lg shadow-indigo-200">Test Complete <ChevronRight size={18} className="ml-2" /></Button>
             </div>
           </motion.div>
         );
@@ -522,9 +809,10 @@ const PathwayAssessmentWizard = ({ onSave, initialValue }: PathwayAssessmentWiza
           <motion.div 
             key="SELECT_RESPONSE"
             custom={direction}
-            initial={{ x: direction > 0 ? 50 : -50, opacity: 0 }}
-            animate={{ x: 0, opacity: 1 }}
-            exit={{ x: direction < 0 ? 50 : -50, opacity: 0 }}
+            variants={slideVariants}
+            initial="enter"
+            animate="center"
+            exit="exit"
             transition={{ duration: 0.3, ease: "easeInOut" }}
             className="space-y-6"
           >
@@ -541,9 +829,7 @@ const PathwayAssessmentWizard = ({ onSave, initialValue }: PathwayAssessmentWiza
                 <div className="text-center"><span className="font-black text-xl block">INHIBITED</span><span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Abnormal Response</span></div>
               </Button>
             </div>
-            <Button variant="ghost" onClick={() => prevStep('TEST_IM')} className="w-full h-12 rounded-xl">
-              <ChevronLeft size={18} className="mr-2" /> Back
-            </Button>
+            <Button variant="ghost" onClick={() => prevStep('TEST_IM')} className="w-full h-12 rounded-xl"><ChevronLeft size={18} className="mr-2" /> Back</Button>
           </motion.div>
         );
 
@@ -552,9 +838,10 @@ const PathwayAssessmentWizard = ({ onSave, initialValue }: PathwayAssessmentWiza
           <motion.div 
             key="SELECT_DIRECTION"
             custom={direction}
-            initial={{ x: direction > 0 ? 50 : -50, opacity: 0 }}
-            animate={{ x: 0, opacity: 1 }}
-            exit={{ x: direction < 0 ? 50 : -50, opacity: 0 }}
+            variants={slideVariants}
+            initial="enter"
+            animate="center"
+            exit="exit"
             transition={{ duration: 0.3, ease: "easeInOut" }}
             className="space-y-6"
           >
@@ -572,9 +859,7 @@ const PathwayAssessmentWizard = ({ onSave, initialValue }: PathwayAssessmentWiza
                 <div className="w-12 h-12 rounded-2xl bg-white shadow-sm flex items-center justify-center group-hover:translate-x-1 transition-all"><ChevronRight size={24} className="text-indigo-600" /></div>
               </Button>
             </div>
-            <Button variant="ghost" onClick={() => prevStep('SELECT_RESPONSE')} className="w-full h-12 rounded-xl">
-              <ChevronLeft size={18} className="mr-2" /> Back
-            </Button>
+            <Button variant="ghost" onClick={() => prevStep('SELECT_RESPONSE')} className="w-full h-12 rounded-xl"><ChevronLeft size={18} className="mr-2" /> Back</Button>
           </motion.div>
         );
 
@@ -584,9 +869,10 @@ const PathwayAssessmentWizard = ({ onSave, initialValue }: PathwayAssessmentWiza
           <motion.div 
             key="SELECT_SPECIFIC"
             custom={direction}
-            initial={{ x: direction > 0 ? 50 : -50, opacity: 0 }}
-            animate={{ x: 0, opacity: 1 }}
-            exit={{ x: direction < 0 ? 50 : -50, opacity: 0 }}
+            variants={slideVariants}
+            initial="enter"
+            animate="center"
+            exit="exit"
             transition={{ duration: 0.3, ease: "easeInOut" }}
             className="space-y-6"
           >
@@ -596,47 +882,36 @@ const PathwayAssessmentWizard = ({ onSave, initialValue }: PathwayAssessmentWiza
             </div>
             <div className="grid grid-cols-1 gap-3">
               {options.map((opt) => (
-                <Button key={opt.id} variant="outline" className={cn("h-20 justify-start gap-4 px-6 rounded-2xl border-2 transition-all group", state.specific === opt.id ? "border-indigo-600 bg-indigo-50 text-indigo-700" : "border-slate-100 hover:border-indigo-200")} onClick={() => { 
-                  setState({ ...state, specific: opt.id }); 
-                  if (opt.id === 'Mechanoreceptor') {
-                    nextStep('MECHANO_CONSCIOUS');
-                  } else if (opt.direction === 'Efferent (Top-Down)' && (opt.id === 'Cortical' || opt.id === 'Subcortical')) {
-                    nextStep('EFFERENT_INTEGRATION');
-                  } else {
-                    nextStep('CORRECTION');
-                  }
-                }}>
+                <Button key={opt.id} variant="outline" className={cn("h-20 justify-start gap-4 px-6 rounded-2xl border-2 transition-all group", state.specific === opt.id ? "border-indigo-600 bg-indigo-50 text-indigo-700" : "border-slate-100 hover:border-indigo-200")} onClick={() => { setState({ ...state, specific: opt.id }); if (opt.id === 'Mechanoreceptor') nextStep('MECHANO_DETAIL'); else if (opt.direction === 'Efferent (Top-Down)' && (opt.id === 'Cortical' || opt.id === 'Subcortical')) nextStep('EFFERENT_INTEGRATION'); else nextStep('CORRECTION'); }}>
                   <div className="w-10 h-10 rounded-xl bg-white shadow-sm flex items-center justify-center group-hover:scale-110 transition-transform"><opt.icon size={20} className={opt.color} /></div>
                   <div className="text-left"><span className="font-black text-lg block">{opt.label}</span><span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Correction Pathway</span></div>
                 </Button>
               ))}
             </div>
-            <Button variant="ghost" onClick={() => prevStep('SELECT_DIRECTION')} className="w-full h-12 rounded-xl">
-              <ChevronLeft size={18} className="mr-2" /> Back
-            </Button>
+            <Button variant="ghost" onClick={() => prevStep('SELECT_DIRECTION')} className="w-full h-12 rounded-xl"><ChevronLeft size={18} className="mr-2" /> Back</Button>
           </motion.div>
         );
 
-      case 'MECHANO_CONSCIOUS':
+      case 'MECHANO_DETAIL':
         return (
-          <MechanoConscious 
-            onComplete={(summary) => {
-              setState({ ...state, reassessed: true });
-              nextStep('REASSESS');
-            }}
-            onCancel={() => prevStep('SELECT_SPECIFIC')}
-          />
-        );
-
-      case 'MECHANO_UNCONSCIOUS':
-        return (
-          <MechanoUnconscious 
-            onComplete={(summary) => {
-              setState({ ...state, reassessed: true });
-              nextStep('REASSESS');
-            }}
-            onCancel={() => prevStep('SELECT_SPECIFIC')}
-          />
+          <motion.div 
+            key="MECHANO_DETAIL"
+            custom={direction}
+            variants={slideVariants}
+            initial="enter"
+            animate="center"
+            exit="exit"
+            transition={{ duration: 0.3, ease: "easeInOut" }}
+            className="space-y-6"
+          >
+            <div className="space-y-2"><h3 className="text-xl font-black text-slate-900">Mechanical Specifics</h3><p className="text-sm text-slate-500">Identify the joint and plane of motion the brain is requesting.</p></div>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="space-y-2"><label className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Joint</label><Select value={state.joint} onValueChange={(v) => setState({ ...state, joint: v })}><SelectTrigger className="rounded-xl h-12 font-bold"><SelectValue placeholder="Select Joint" /></SelectTrigger><SelectContent>{JOINTS.map(j => <SelectItem key={j} value={j}>{j}</SelectItem>)}</SelectContent></Select></div>
+              <div className="space-y-2"><label className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Plane</label><Select value={state.plane} onValueChange={(v) => setState({ ...state, plane: v })}><SelectTrigger className="rounded-xl h-12 font-bold"><SelectValue placeholder="Select Plane" /></SelectTrigger><SelectContent>{PLANES.map(p => <SelectItem key={p} value={p}>{p}</SelectItem>)}</SelectContent></Select></div>
+            </div>
+            <div className="space-y-2"><label className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Action (e.g. Plantarflexion)</label><Input placeholder="Enter specific action..." className="h-12 rounded-xl font-bold" value={state.action || ""} onChange={(e) => setState({ ...state, action: e.target.value })} /></div>
+            <div className="flex gap-3"><Button variant="ghost" onClick={() => prevStep('SELECT_SPECIFIC')} className="flex-1 h-12 rounded-xl"><ChevronLeft size={18} className="mr-2" /> Back</Button><Button disabled={!state.joint || !state.plane || !state.action} onClick={() => nextStep('CORRECTION')} className="flex-[2] h-12 rounded-xl bg-indigo-600 hover:bg-indigo-700 font-bold">Continue <ChevronRight size={18} className="ml-2" /></Button></div>
+          </motion.div>
         );
 
       case 'EFFERENT_INTEGRATION':
@@ -645,9 +920,10 @@ const PathwayAssessmentWizard = ({ onSave, initialValue }: PathwayAssessmentWiza
           <motion.div 
             key="EFFERENT_INTEGRATION"
             custom={direction}
-            initial={{ x: direction > 0 ? 50 : -50, opacity: 0 }}
-            animate={{ x: 0, opacity: 1 }}
-            exit={{ x: direction < 0 ? 50 : -50, opacity: 0 }}
+            variants={slideVariants}
+            initial="enter"
+            animate="center"
+            exit="exit"
             transition={{ duration: 0.3, ease: "easeInOut" }}
           >
             <EfferentBrainIntegration initialEntryPoint={entry} onSave={(summary) => { setState({ ...state, reassessed: true }); nextStep('REASSESS'); }} onCancel={() => nextStep('SELECT_SPECIFIC')} />
@@ -660,31 +936,25 @@ const PathwayAssessmentWizard = ({ onSave, initialValue }: PathwayAssessmentWiza
           <motion.div 
             key="CORRECTION"
             custom={direction}
-            initial={{ x: direction > 0 ? 50 : -50, opacity: 0 }}
-            animate={{ x: 0, opacity: 1 }}
-            exit={{ x: direction < 0 ? 50 : -50, opacity: 0 }}
+            variants={slideVariants}
+            initial="enter"
+            animate="center"
+            exit="exit"
             transition={{ duration: 0.3, ease: "easeInOut" }}
             className="space-y-6"
           >
             <div className="bg-indigo-50 p-8 rounded-[2.5rem] border-2 border-indigo-100 relative overflow-hidden">
               <div className="absolute top-0 right-0 p-8 opacity-5 pointer-events-none"><Wind size={120} /></div>
-              <h3 className="text-xl font-black text-indigo-900 mb-6 flex items-center gap-3"><CheckCircle2 size={24} className="text-indigo-600" /> Apply Correction</h3>
+              <h3 className="text-xl font-black text-indigo-900 mb-6 flex items-center gap-3"><CheckCircle2 size={24} className="text-indigo-600" /> {state.specific === 'Mechanoreceptor' ? `Correct ${state.joint}` : 'Apply Correction'}</h3>
               <div className="space-y-6 relative z-10">
-                <div className="p-5 bg-white rounded-2xl border border-indigo-200 shadow-sm"><p className="text-lg font-bold text-indigo-900 leading-tight">Apply the {state.specific} protocol.</p></div>
+                <div className="p-5 bg-white rounded-2xl border border-indigo-200 shadow-sm"><p className="text-lg font-bold text-indigo-900 leading-tight">{state.specific === 'Mechanoreceptor' ? `Perform ${state.action} in the ${state.plane} plane.` : `Apply the ${state.specific} protocol.`}</p></div>
                 <div className="grid grid-cols-1 gap-4">
                   <div className="flex items-start gap-4"><div className="w-10 h-10 rounded-xl bg-indigo-600 text-white flex items-center justify-center shrink-0 shadow-lg"><Sparkles size={20} /></div><div><p className="text-sm font-black text-indigo-900 uppercase tracking-tight">The Protocol</p><div className="text-sm text-indigo-700 font-medium leading-relaxed"><ul className="list-disc list-inside space-y-1">{pathway?.protocols.map((p, i) => <li key={i}>{p}</li>)}</ul></div></div></div>
                   <div className="flex items-start gap-4"><div className="w-10 h-10 rounded-xl bg-teal-500 text-white flex items-center justify-center shrink-0 shadow-lg"><Wind size={20} /></div><div><p className="text-sm font-black text-teal-900 uppercase tracking-tight">Nasal Breathing</p><p className="text-sm text-teal-700 font-medium leading-relaxed">Instruct client to breathe <span className="font-black">in and out through the nose</span>.</p></div></div>
                 </div>
               </div>
             </div>
-            <div className="flex gap-3">
-              <Button variant="ghost" onClick={() => prevStep('SELECT_SPECIFIC')} className="flex-1 h-14 rounded-2xl font-bold">
-                <ChevronLeft size={18} className="mr-2" /> Back
-              </Button>
-              <Button onClick={() => nextStep('REASSESS')} className="flex-[2] h-14 rounded-2xl bg-indigo-600 hover:bg-indigo-700 text-lg font-black shadow-lg shadow-indigo-200">
-                Correction Applied <ChevronRight size={18} className="ml-2" />
-              </Button>
-            </div>
+            <div className="flex gap-3"><Button variant="ghost" onClick={() => prevStep(state.specific === 'Mechanoreceptor' ? 'MECHANO_DETAIL' : 'SELECT_SPECIFIC')} className="flex-1 h-14 rounded-2xl font-bold"><ChevronLeft size={18} className="mr-2" /> Back</Button><Button onClick={() => nextStep('REASSESS')} className="flex-[2] h-14 rounded-2xl bg-indigo-600 hover:bg-indigo-700 text-lg font-black shadow-lg shadow-indigo-200">Correction Applied <ChevronRight size={18} className="ml-2" /></Button></div>
           </motion.div>
         );
 
@@ -694,28 +964,34 @@ const PathwayAssessmentWizard = ({ onSave, initialValue }: PathwayAssessmentWiza
           <motion.div 
             key="REASSESS"
             custom={direction}
-            initial={{ x: direction > 0 ? 50 : -50, opacity: 0 }}
-            animate={{ x: 0, opacity: 1 }}
-            exit={{ x: direction < 0 ? 50 : -50, opacity: 0 }}
+            variants={slideVariants}
+            initial="enter"
+            animate="center"
+            exit="exit"
             transition={{ duration: 0.3, ease: "easeInOut" }}
             className="space-y-6"
           >
             <div className="bg-emerald-50 p-10 rounded-[3rem] border-2 border-emerald-100 text-center">
               <div className="w-24 h-24 rounded-full bg-white shadow-sm flex items-center justify-center mx-auto mb-6"><RefreshCw size={48} className="text-emerald-500" /></div>
               <h3 className="text-3xl font-black text-emerald-900 mb-2">Final Re-assessment</h3>
-              <p className="text-emerald-700 font-medium text-lg">Re-stimulate the <span className="font-black underline">"{reassessLabel}"</span> pathway and test the IM again.</p>
+              <p className="text-emerald-700 font-medium text-lg">
+                {state.pathway === 'Cranial Nerve' 
+                  ? "Review your cranial nerve assessment results."
+                  : state.pathway === 'Muscle'
+                  ? "Review your muscle assessment results."
+                  : `Re-stimulate the "${reassessLabel}" pathway and test the IM again.`
+                }
+              </p>
             </div>
             <div className="grid grid-cols-1 gap-4">
-              <Button className="h-16 rounded-2xl bg-emerald-600 hover:bg-emerald-700 text-xl font-black shadow-lg shadow-emerald-100" onClick={handleComplete}>
-                Pathway is Clear <CheckCircle2 size={24} className="ml-2" />
+              <Button className="h-16 rounded-2xl bg-emerald-600 hover:bg-emerald-700 text-xl font-black shadow-lg shadow-emerald-100" onClick={() => { setState({ ...state, reassessed: true }); handleComplete(); }}>
+                {(state.pathway === 'Cranial Nerve' || state.pathway === 'Muscle') ? 'Complete Assessment' : 'Pathway is Clear'} <CheckCircle2 size={24} className="ml-2" />
               </Button>
-              <Button variant="outline" className="h-16 rounded-2xl border-2 border-rose-200 text-rose-700 hover:bg-rose-50 font-bold text-lg" onClick={() => setStep('SELECT_DIRECTION')}>
-                Still Inhibited - Try Another Correction
-              </Button>
+              {state.pathway !== 'Cranial Nerve' && state.pathway !== 'Muscle' && (
+                <Button variant="outline" className="h-16 rounded-2xl border-2 border-rose-200 text-rose-700 hover:bg-rose-50 font-bold text-lg" onClick={() => setStep('SELECT_DIRECTION')}>Still Inhibited - Try Another Correction</Button>
+              )}
             </div>
-            <Button variant="ghost" onClick={() => prevStep(state.response === 'Clear/Normal' ? 'SELECT_RESPONSE' : state.specific === 'Mechanoreceptor' ? 'MECHANO_CONSCIOUS' : 'CORRECTION')} className="w-full h-12 rounded-xl">
-              <ChevronLeft size={18} className="mr-2" /> Back
-            </Button>
+            <Button variant="ghost" onClick={() => prevStep(state.pathway === 'Cranial Nerve' ? 'SELECT_CRANIAL_NERVE' : state.pathway === 'Muscle' ? 'SELECT_MUSCLE' : (state.response === 'Clear/Normal' ? 'SELECT_RESPONSE' : 'CORRECTION'))} className="w-full h-12 rounded-xl"><ChevronLeft size={18} className="mr-2" /> Back</Button>
           </motion.div>
         );
 
@@ -724,21 +1000,26 @@ const PathwayAssessmentWizard = ({ onSave, initialValue }: PathwayAssessmentWiza
     }
   };
 
-  const stepsList = ['SELECT_PATHWAY', 'SELECT_MUSCLE', 'SELECT_BRAIN_ZONE', 'TEST_IM', 'SELECT_RESPONSE', 'SELECT_DIRECTION', 'SELECT_SPECIFIC', 'MECHANO_CONSCIOUS', 'MECHANO_UNCONSCIOUS', 'EFFERENT_INTEGRATION', 'CORRECTION', 'REASSESS'];
+  const slideVariants = {
+    enter: (direction: number) => ({
+      x: direction > 0 ? 50 : -50,
+      opacity: 0
+    }),
+    center: {
+      zIndex: 1,
+      x: 0,
+      opacity: 1
+    },
+    exit: (direction: number) => ({
+      zIndex: 0,
+      x: direction < 0 ? 50 : -50,
+      opacity: 0
+    })
+  };
+
+  const stepsList = ['SELECT_PATHWAY', 'SELECT_MUSCLE', 'SELECT_BRAIN_ZONE', 'SELECT_CRANIAL_NERVE', 'TEST_IM', 'SELECT_RESPONSE', 'SELECT_DIRECTION', 'SELECT_SPECIFIC', 'MECHANO_DETAIL', 'EFFERENT_INTEGRATION', 'CORRECTION', 'REASSESS'];
   const currentStepIndex = stepsList.indexOf(step);
   const progress = ((currentStepIndex + 1) / stepsList.length) * 100;
-
-  if (showNociceptive) {
-    return (
-      <NociceptiveThreatAssessment 
-        onSave={(summary) => {
-          onSave(summary);
-          setShowNociceptive(false);
-        }}
-        onCancel={() => setShowNociceptive(false)}
-      />
-    );
-  }
 
   return (
     <div className="space-y-6">
@@ -752,7 +1033,7 @@ const PathwayAssessmentWizard = ({ onSave, initialValue }: PathwayAssessmentWiza
           />
         </div>
 
-        <div className="flex items-center justify-between mb-8 mt-4">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-8 mt-4 gap-4">
           <div className="flex items-center gap-4">
             <div className="w-14 h-14 rounded-2xl bg-indigo-600 text-white flex items-center justify-center shadow-lg shadow-indigo-200">
               <Zap size={28} />
@@ -788,11 +1069,21 @@ const PathwayAssessmentWizard = ({ onSave, initialValue }: PathwayAssessmentWiza
             {state.pathway && (
               <div className="flex items-center gap-1.5">
                 <span className="text-xs font-bold text-slate-700">{state.pathway}</span>
-                {(state.selectedMuscle || state.selectedBrainZone) && <ArrowRight size={10} className="text-slate-300" />}
+                {(state.selectedMuscle || state.selectedBrainZone || state.cranialNerveResults.length > 0 || state.muscleResults.length > 0) && <ArrowRight size={10} className="text-slate-300" />}
               </div>
             )}
             {state.selectedMuscle && <span className="text-xs font-bold text-indigo-600">{state.selectedMuscle}</span>}
             {state.selectedBrainZone && <span className="text-xs font-bold text-purple-600">{state.selectedBrainZone.name}</span>}
+            {state.cranialNerveResults.length > 0 && (
+              <span className="text-xs font-bold text-blue-600">
+                {state.cranialNerveResults.length} CN Tested
+              </span>
+            )}
+            {state.muscleResults.length > 0 && (
+              <span className="text-xs font-bold text-green-600">
+                {state.muscleResults.length} Muscles Tested
+              </span>
+            )}
             {state.response && (
               <div className="flex items-center gap-1.5">
                 <ArrowRight size={10} className="text-slate-300" />
@@ -808,7 +1099,7 @@ const PathwayAssessmentWizard = ({ onSave, initialValue }: PathwayAssessmentWiza
           </div>
         )}
 
-        <div className="min-h-[300px] flex flex-col">
+        <div className="flex flex-col">
           <AnimatePresence mode="wait" custom={direction}>
             {renderStep()}
           </AnimatePresence>

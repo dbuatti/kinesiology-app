@@ -14,8 +14,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import EmotionAssessment from './EmotionAssessment';
 import PreviousSessionSummary from './PreviousSessionSummary';
 import GaitReflexAssessment from './GaitReflexAssessment';
-import PathwayAssessmentWizard from './PathwayAssessmentWizard';
-import EfferentBrainIntegration from './EfferentBrainIntegration';
+import PathwayAssessment from './PathwayAssessment';
 
 type ActiveView = 'home' | 'kinesiology' | 'muscles' | 'gait' | 'previous';
 
@@ -27,8 +26,7 @@ interface SessionContentSwitcherProps {
 
 const SessionContentSwitcher = ({ appointment, onUpdate, saveField }: SessionContentSwitcherProps) => {
   const [activeView, setActiveView] = useState<ActiveView>('home');
-  const [pathwayTool, setPathwayTool] = useState<'standard' | 'efferent'>('standard');
-
+  
   const tabStatus = useMemo(() => ({
     baseline: !!(appointment.bolt_score || appointment.coherence_score || appointment.sagittal_plane_notes || appointment.fakuda_notes || appointment.lymphatic_priority_zone),
     sympathetic: !!(appointment.harmonic_rocking_notes || appointment.t1_reset_notes || appointment.diaphragm_reset_notes || appointment.vagus_nerve_notes || appointment.additional_notes),
@@ -73,13 +71,11 @@ const SessionContentSwitcher = ({ appointment, onUpdate, saveField }: SessionCon
           <SympatheticTab appointment={appointment} onUpdate={onUpdate} saveField={saveField} />
         </TabsContent>
 
-        <TabsContent value="pathway" className="mt-6 space-y-6">
-          <div className="flex items-center gap-2 p-1 bg-slate-100 rounded-xl w-fit mb-4">
-            <Button variant={pathwayTool === 'standard' ? 'secondary' : 'ghost'} size="sm" onClick={() => setPathwayTool('standard')} className={cn("rounded-lg font-bold text-xs h-8 px-4", pathwayTool === 'standard' ? "bg-white shadow-sm text-indigo-600" : "text-slate-500")}>Standard Wizard</Button>
-            <Button variant={pathwayTool === 'efferent' ? 'secondary' : 'ghost'} size="sm" onClick={() => setPathwayTool('efferent')} className={cn("rounded-lg font-bold text-xs h-8 px-4", pathwayTool === 'efferent' ? "bg-white shadow-sm text-purple-600" : "text-slate-500")}>Efferent Integration</Button>
-          </div>
-          {pathwayTool === 'standard' ? <PathwayAssessmentWizard initialValue={appointment.priority_pattern || undefined} onSave={(s) => saveField('priority_pattern', s)} /> : <EfferentBrainIntegration initialEntryPoint={appointment.priority_pattern || undefined} onSave={(s) => saveField('priority_pattern', s)} />}
-          <EditableField field="priority_pattern" label="Pathway Assessment Notes" value={appointment.priority_pattern} multiline placeholder="Document specific pathways tested..." onSave={saveField} className="bg-white p-6 rounded-2xl border border-slate-100 shadow-sm min-h-[200px]" />
+        <TabsContent value="pathway" className="mt-6">
+          <PathwayAssessment 
+            initialValue={appointment.priority_pattern || undefined} 
+            onSave={(s) => saveField('priority_pattern', s)} 
+          />
         </TabsContent>
 
         <TabsContent value="calibration" className="mt-6">

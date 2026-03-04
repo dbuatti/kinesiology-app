@@ -69,6 +69,16 @@
   ::-webkit-scrollbar-thumb {
     @apply bg-slate-200 rounded-full hover:bg-slate-300;
   }
+
+  /* Smooth scrolling for better UX */
+  html {
+    scroll-behavior: smooth;
+  }
+
+  /* Focus visible for accessibility */
+  *:focus-visible {
+    @apply outline-none ring-2 ring-indigo-500 ring-offset-2;
+  }
 }
 
 .glass-card {
@@ -77,6 +87,20 @@
 
 .neo-blur {
   @apply bg-slate-900/90 backdrop-blur-xl border border-slate-800;
+}
+
+/* Custom scrollbar for specific areas */
+.custom-scrollbar::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-track {
+  @apply bg-slate-100 rounded-full;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  @apply bg-indigo-300 rounded-full hover:bg-indigo-400;
 }
 
 @media print {

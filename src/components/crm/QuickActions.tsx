@@ -9,7 +9,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { Plus, UserPlus, Calendar, Target, Upload, Keyboard, HelpCircle } from "lucide-react";
+import { Plus, UserPlus, Calendar, Target, Upload, HelpCircle, Sparkles } from "lucide-react";
 import {
   Dialog,
   DialogContent,
@@ -60,7 +60,7 @@ const QuickActions = () => {
 
   return (
     <>
-      <div className="fixed bottom-8 right-8 z-50">
+      <div className="fixed bottom-8 right-8 z-50 print:hidden">
         <Tooltip>
           <TooltipTrigger asChild>
             <DropdownMenu open={isOpen} onOpenChange={setIsOpen}>

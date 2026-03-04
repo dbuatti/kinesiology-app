@@ -20,7 +20,8 @@ import {
   PanelLeftClose,
   Compass,
   ChevronDown,
-  ChevronUp
+  ChevronUp,
+  UserPlus
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import SearchBar from "./SearchBar";
@@ -186,6 +187,23 @@ const Sidebar = ({ onHide }: SidebarProps) => {
       <div className="px-2">
         <SearchBar />
       </div>
+
+      {/* Quick Actions */}
+      <div className="px-2 space-y-2">
+        <Button 
+          onClick={() => setClientDialogOpen(true)}
+          variant="outline"
+          className="w-full justify-start bg-white/5 border-white/10 text-white hover:bg-white/10 rounded-xl h-11 font-bold text-xs"
+        >
+          <UserPlus size={18} className="mr-3" /> New Client
+        </Button>
+        <Button 
+          onClick={() => setAppDialogOpen(true)}
+          className="w-full justify-start bg-rose-600 hover:bg-rose-700 text-white rounded-xl h-11 font-bold text-xs shadow-lg shadow-rose-600/20"
+        >
+          <CalendarPlus size={18} className="mr-3" /> Book Session
+        </Button>
+      </div>
       
       <div className="space-y-6 flex-1">
         {/* Core Navigation */}
@@ -242,17 +260,6 @@ const Sidebar = ({ onHide }: SidebarProps) => {
           )}
         </div>
 
-        {/* Quick Action Button */}
-        <div className="px-2 pt-4 border-t border-slate-900">
-          <Button 
-            onClick={() => setAppDialogOpen(true)}
-            className="w-full bg-rose-600 hover:bg-rose-700 text-white rounded-2xl h-12 font-black text-[10px] uppercase tracking-widest shadow-lg shadow-rose-600/20"
-          >
-            <CalendarPlus size={18} className="mr-2" />
-            Book Session
-          </Button>
-        </div>
-
         {/* Active Session Indicator */}
         {activeSession && (
           <div className="px-2">
@@ -293,13 +300,13 @@ const Sidebar = ({ onHide }: SidebarProps) => {
         </div>
 
         {/* Recent Clients */}
-        <div className="px-2 space-y-4">
-          <div className="flex items-center justify-between px-2">
-            <p className="text-[9px] font-black text-slate-600 uppercase tracking-[0.25em] flex items-center gap-2">
-              <Clock size={12} /> Recent Clients
-            </p>
-          </div>
-          {recentClients.length > 0 ? (
+        {recentClients.length > 0 && (
+          <div className="px-2 space-y-4">
+            <div className="flex items-center justify-between px-2">
+              <p className="text-[9px] font-black text-slate-600 uppercase tracking-[0.25em] flex items-center gap-2">
+                <Clock size={12} /> Recent Clients
+              </p>
+            </div>
             <div className="flex flex-col gap-1">
               {recentClients.map(client => (
                 <Tooltip key={client.id}>
@@ -320,10 +327,8 @@ const Sidebar = ({ onHide }: SidebarProps) => {
                 </Tooltip>
               ))}
             </div>
-          ) : (
-            <p className="text-[10px] text-slate-700 italic px-4">No recent clients</p>
-          )}
-        </div>
+          </div>
+        )}
       </div>
       
       {/* Footer Actions */}

@@ -16,7 +16,8 @@ import {
   Clock,
   UserPlus,
   CalendarPlus,
-  Zap
+  Zap,
+  HelpCircle
 } from "lucide-react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { cn } from "@/lib/utils";
@@ -32,11 +33,13 @@ import {
 } from "@/components/ui/dialog";
 import ClientForm from "./ClientForm";
 import AppointmentForm from "./AppointmentForm";
+import HelpModal from "./HelpModal";
 
 const MobileNav = () => {
   const [open, setOpen] = useState(false);
   const [clientDialogOpen, setClientDialogOpen] = useState(false);
   const [appDialogOpen, setAppDialogOpen] = useState(false);
+  const [helpOpen, setHelpOpen] = useState(false);
   const location = useLocation();
   const navigate = useNavigate();
   const { recentClients } = useRecentClients();
@@ -154,6 +157,13 @@ const MobileNav = () => {
 
             {/* Footer */}
             <div className="mt-auto p-4 border-t border-slate-800 space-y-2">
+              <button 
+                onClick={() => { setHelpOpen(true); setOpen(false); }}
+                className="flex items-center gap-3 px-4 py-3 text-slate-400 hover:text-white hover:bg-slate-800 transition-all rounded-xl w-full"
+              >
+                <HelpCircle size={20} />
+                <span className="font-medium">Help & Shortcuts</span>
+              </button>
               <Link 
                 to="/settings"
                 onClick={() => setOpen(false)}
@@ -191,6 +201,8 @@ const MobileNav = () => {
           <AppointmentForm onSuccess={() => setAppDialogOpen(false)} />
         </DialogContent>
       </Dialog>
+
+      <HelpModal open={helpOpen} onOpenChange={setHelpOpen} />
     </>
   );
 };

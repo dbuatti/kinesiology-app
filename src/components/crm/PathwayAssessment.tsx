@@ -130,7 +130,7 @@ const PathwayAssessment = ({ initialValue, onSave }: PathwayAssessmentProps) => 
   const [results, setResults] = useState<AssessmentResults>({});
   const [showNociceptive, setShowNociceptive] = useState(false);
   const [muscleSearch, setMuscleSearch] = useState("");
-  const [showImages, setShowImages] = useState(false);
+  const [showImages, setShowImages] = useState(true);
   const [customizations, setCustomizations] = useState<Record<string, ReflexImageData>>({});
   const [loadingImages, setLoadingImages] = useState(true);
 

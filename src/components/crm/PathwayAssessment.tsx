@@ -5,19 +5,20 @@ import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { 
-  Brain, Zap, Activity, Shield, Dumbbell, AlertTriangle, ChevronDown, Check, X, Plus, Search, RotateCcw, Layers, ImageIcon
+  Brain, Zap, Activity, Shield, Dumbbell, AlertTriangle, ChevronDown, Check, X, Plus, Search, RotateCcw, Layers, ImageIcon, Info
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { BRAIN_REFLEX_POINTS, BrainReflexPoint } from '@/data/brain-reflex-data';
 import { MUSCLE_GROUPS } from '@/data/muscle-data';
 import NociceptiveThreatAssessment from './NociceptiveThreatAssessment';
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Dialog, DialogContent } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { supabase } from "@/integrations/supabase/client";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
-import { Skeleton } from "@/components/ui/skeleton";
+import BrainReflexModal from './BrainReflexModal';
+import MuscleInfoModal from './MuscleInfoModal';
 
 type Status = 'Clear' | 'Inhibited';
 type AssessmentResults = Record<string, Record<string, Status>>;
@@ -26,18 +27,22 @@ interface AssessmentItemProps {
   name: string;
   status?: Status;
   onSetStatus: (status: Status) => void;
+  onShowInfo: () => void;
   imageUrl?: string | null;
   showImage?: boolean;
 }
 
-const AssessmentItem = ({ name, status, onSetStatus, imageUrl, showImage }: AssessmentItemProps) => {
+const AssessmentItem = ({ name, status, onSetStatus, onShowInfo, imageUrl, showImage }: AssessmentItemProps) => {
   return (
-    <div className={cn(
-      "group relative p-4 rounded-2xl border-2 transition-all",
-      status === 'Clear' ? "bg-emerald-50 border-emerald-200" :
-      status === 'Inhibited' ? "bg-rose-50 border-rose-200" :
-      "bg-white border-slate-100 hover:border-indigo-100"
-    )}>
+    <div 
+      onClick={onShowInfo}
+      className={cn(
+        "group relative p-4 rounded-2xl border-2 transition-all cursor-pointer",
+        status === 'Clear' ? "bg-emerald-50 border-emerald-200" :
+        status === 'Inhibited' ? "bg-rose-50 border-rose-200" :
+        "bg-white border-slate-100 hover:border-indigo-100"
+      )}
+    >
       <div className="flex items-center justify-between">
         <p className="font-bold text-sm text-slate-800">{name}</p>
         {status && (
@@ -55,10 +60,10 @@ const AssessmentItem = ({ name, status, onSetStatus, imageUrl, showImage }: Asse
         </div>
       )}
       <div className="absolute inset-0 bg-slate-900/5 rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2">
-        <Button size="sm" className="bg-emerald-500 hover:bg-emerald-600 rounded-xl h-9" onClick={() => onSetStatus('Clear')}>
+        <Button size="sm" className="bg-emerald-500 hover:bg-emerald-600 rounded-xl h-9" onClick={(e) => { e.stopPropagation(); onSetStatus('Clear'); }}>
           <Check size={16} className="mr-1" /> Clear
         </Button>
-        <Button size="sm" className="bg-rose-500 hover:bg-rose-600 rounded-xl h-9" onClick={() => onSetStatus('Inhibited')}>
+        <Button size="sm" className="bg-rose-500 hover:bg-rose-600 rounded-xl h-9" onClick={(e) => { e.stopPropagation(); onSetStatus('Inhibited'); }}>
           <X size={16} className="mr-1" /> Inhibited
         </Button>
       </div>
@@ -134,6 +139,11 @@ const PathwayAssessment = ({ initialValue, onSave }: PathwayAssessmentProps) => 
   const [customizations, setCustomizations] = useState<Record<string, ReflexImageData>>({});
   const [loadingImages, setLoadingImages] = useState(true);
 
+  const [selectedReflex, setSelectedReflex] = useState<BrainReflexPoint | null>(null);
+  const [reflexModalOpen, setReflexModalOpen] = useState(false);
+  const [selectedMuscle, setSelectedMuscle] = useState<string | null>(null);
+  const [muscleModalOpen, setMuscleModalOpen] = useState(false);
+
   useEffect(() => {
     try {
       if (initialValue) {
@@ -195,6 +205,19 @@ const PathwayAssessment = ({ initialValue, onSave }: PathwayAssessmentProps) => 
     return { count, inhibitedCount };
   };
 
+  const handleShowReflexInfo = (pointName: string) => {
+    const point = BRAIN_REFLEX_POINTS.find(p => p.name === pointName);
+    if (point) {
+      setSelectedReflex(point);
+      setReflexModalOpen(true);
+    }
+  };
+
+  const handleShowMuscleInfo = (muscleName: string) => {
+    setSelectedMuscle(muscleName);
+    setMuscleModalOpen(true);
+  };
+
   const cranialNerves = BRAIN_REFLEX_POINTS.filter(p => p.category === 'Cranial Nerve');
   const brainZones = BRAIN_REFLEX_POINTS.filter(p => p.category !== 'Cranial Nerve');
 
@@ -236,6 +259,7 @@ const PathwayAssessment = ({ initialValue, onSave }: PathwayAssessmentProps) => 
                 name={nerve.name}
                 status={results.cranialNerves?.[nerve.name]}
                 onSetStatus={(status) => handleSetStatus('cranialNerves', nerve.name, status)}
+                onShowInfo={() => handleShowReflexInfo(nerve.name)}
                 imageUrl={imageUrl}
                 showImage={showImages}
               />
@@ -254,6 +278,7 @@ const PathwayAssessment = ({ initialValue, onSave }: PathwayAssessmentProps) => 
                 name={zone.name}
                 status={results.brainZones?.[zone.name]}
                 onSetStatus={(status) => handleSetStatus('brainZones', zone.name, status)}
+                onShowInfo={() => handleShowReflexInfo(zone.name)}
                 imageUrl={imageUrl}
                 showImage={showImages}
               />
@@ -283,6 +308,7 @@ const PathwayAssessment = ({ initialValue, onSave }: PathwayAssessmentProps) => 
                     name={muscle}
                     status={results.muscles?.[muscle]}
                     onSetStatus={(status) => handleSetStatus('muscles', muscle, status)}
+                    onShowInfo={() => handleShowMuscleInfo(muscle)}
                   />
                 ))}
               </div>
@@ -314,6 +340,19 @@ const PathwayAssessment = ({ initialValue, onSave }: PathwayAssessmentProps) => 
           </div>
         </DialogContent>
       </Dialog>
+
+      <BrainReflexModal 
+        point={selectedReflex}
+        primaryUrl={selectedReflex ? customizations[selectedReflex.id]?.primaryUrl : null}
+        secondaryUrl={selectedReflex ? customizations[selectedReflex.id]?.secondaryUrl : null}
+        open={reflexModalOpen}
+        onOpenChange={setReflexModalOpen}
+      />
+      <MuscleInfoModal 
+        muscleName={selectedMuscle}
+        open={muscleModalOpen}
+        onOpenChange={setMuscleModalOpen}
+      />
     </div>
   );
 };

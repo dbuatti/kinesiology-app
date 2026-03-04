@@ -9,6 +9,7 @@ import {
   Workflow,
   Lightbulb
 } from 'lucide-react';
+import { Alert, AlertDescription } from "@/components/ui/alert";
 
 const SectionHeader = ({ icon: Icon, title, color }: { icon: React.ElementType, title: string, color: string }) => (
   <h3 className={`text-2xl font-black flex items-center gap-3 ${color}`}>
@@ -118,9 +119,7 @@ const FnTheory = () => {
         <div className="absolute top-0 right-0 p-12 opacity-5"><Workflow size={200} /></div>
         <CardHeader className="p-12 relative z-10">
           <div className="flex items-center gap-5 mb-4">
-            <div className="w-16 h-16 bg-white/10 backdrop-blur-md rounded-2xl flex items-center justify-center border border-white/20">
-              <GitBranch size={32} className="text-indigo-400" />
-            </div>
+            <div className="w-16 h-16 bg-white/10 backdrop-blur-md rounded-2xl flex items-center justify-center border border-white/20"><GitBranch size={32} className="text-indigo-400" /></div>
             <div>
               <CardTitle className="text-4xl font-black tracking-tight">Functional Neuro Approach</CardTitle>
               <CardDescription className="text-slate-400 text-xl font-medium mt-2">
@@ -132,6 +131,13 @@ const FnTheory = () => {
       </Card>
 
       {/* Mechanoreceptive Section */}
+      <Alert className="bg-blue-50 border-blue-100 rounded-2xl">
+        <Info className="h-5 w-5 text-blue-600" />
+        <AlertDescription className="text-sm text-blue-900 font-medium leading-relaxed">
+          When Mechanoreception is the priority, it means the brain requires more feedback from a specific joint to normalize tone and clear the pathway. This process helps you localize the joint and its specific action to provide clear, targeted input to the nervous system.
+        </AlertDescription>
+      </Alert>
+
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
         <Card className="border-none shadow-lg rounded-[2.5rem] bg-white overflow-hidden">
           <CardHeader className="bg-blue-50 p-8">
@@ -139,10 +145,10 @@ const FnTheory = () => {
             <p className="text-blue-800 font-medium">Targets the DCML pathway (15% of afferent input) to the contralateral sensory cortex (S1).</p>
           </CardHeader>
           <CardContent className="p-8 space-y-8">
-            <Step num={1} title="Confirm Conscious Pathway"><p>1. X-pattern facilitates → <Badge className="bg-blue-100 text-blue-700">Mechanoreceptive</Badge></p><p>2. TL opposite S1 facilitates → <Badge className="bg-blue-100 text-blue-700">Conscious (DCML)</Badge></p></Step>
+            <Step num={1} title="Confirm Conscious Pathway"><p>1. X-pattern facilitates → <Badge className="bg-blue-100 text-blue-700">Mechanoreceptive</Badge></p><p>2. TL opposite M1/S1 facilitates → <Badge className="bg-blue-100 text-blue-700">Conscious (DCML)</Badge></p></Step>
             <Step num={2} title="Localize the Joint"><p>Ask: Axial or Appendicular? Upper or Lower? Left or Right? Then localize the specific joint.</p></Step>
             <Step num={3} title="Find Joint Action"><p>Challenge planes of motion (Sagittal, Frontal, Transverse) to find the priority action.</p></Step>
-            <Step num={4} title="Perform Correction"><p>Place joint into priority action. Perform an isometric contraction (30-40% effort) for 3-5 seconds with nasal breathing.</p></Step>
+            <Step num={4} title="Perform Correction"><p>Place joint into priority action. Perform an isometric contraction (30-40% effort) for <span className="font-bold text-blue-700">30-90 seconds</span> with nasal breathing. Hold associated M1/S1 representations.</p></Step>
             <Step num={5} title="Re-Assess"><p>Re-test the original pathway. Repeat for all layers until no inhibition remains.</p></Step>
           </CardContent>
         </Card>

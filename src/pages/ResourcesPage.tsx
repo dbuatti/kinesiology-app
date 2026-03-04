@@ -3,6 +3,7 @@
 import React, { useEffect, useState } from "react";
 import { useSearchParams } from "react-router-dom";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 
 import { 
   BookOpen, 
@@ -36,7 +37,10 @@ import {
   Crosshair,
   Lightbulb,
   ShieldAlert,
-  Compass
+  Compass,
+  GitBranch,
+  Eye,
+  Workflow
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -77,6 +81,9 @@ const ResourcesPage = () => {
           <TabsList className="flex w-max h-auto p-1.5 bg-slate-200/50 rounded-2xl gap-1">
             <TabsTrigger value="intention" className="rounded-xl py-2.5 px-6 data-[state=active]:bg-white data-[state=active]:text-indigo-600 data-[state=active]:shadow-sm font-bold text-xs uppercase tracking-widest">
               <Compass size={16} className="mr-2" /> North Star Process
+            </TabsTrigger>
+            <TabsTrigger value="theory" className="rounded-xl py-2.5 px-6 data-[state=active]:bg-white data-[state=active]:text-indigo-600 data-[state=active]:shadow-sm font-bold text-xs uppercase tracking-widest">
+              <Workflow size={16} className="mr-2" /> FN Theory
             </TabsTrigger>
             <TabsTrigger value="clock" className="rounded-xl py-2.5 px-6 data-[state=active]:bg-white data-[state=active]:text-indigo-600 data-[state=active]:shadow-sm font-bold text-xs uppercase tracking-widest">
               <Clock size={16} className="mr-2" /> Meridian Clock
@@ -119,6 +126,248 @@ const ResourcesPage = () => {
 
         <TabsContent value="intention" className="mt-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
           <IntentionReflectionSheet />
+        </TabsContent>
+
+        <TabsContent value="theory" className="mt-8 space-y-10 animate-in fade-in slide-in-from-bottom-4 duration-500">
+          <Card className="border-none shadow-2xl rounded-[3.5rem] bg-slate-900 text-white overflow-hidden relative">
+            <div className="absolute top-0 right-0 p-12 opacity-5"><Workflow size={200} /></div>
+            <CardHeader className="p-12 relative z-10">
+              <div className="flex items-center gap-5 mb-4">
+                <div className="w-16 h-16 bg-white/10 backdrop-blur-md rounded-2xl flex items-center justify-center border border-white/20">
+                  <GitBranch size={32} className="text-indigo-400" />
+                </div>
+                <div>
+                  <CardTitle className="text-4xl font-black tracking-tight">Functional Neuro Approach</CardTitle>
+                  <CardDescription className="text-slate-400 text-xl font-medium mt-2">
+                    The complete pathway assessment framework
+                  </CardDescription>
+                </div>
+              </div>
+            </CardHeader>
+            <CardContent className="p-12 pt-0 space-y-10 relative z-10">
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                <div className="space-y-6">
+                  <h3 className="text-2xl font-black text-indigo-300 flex items-center gap-3">
+                    <Sparkles size={24} /> Core Principles
+                  </h3>
+                  <div className="space-y-4">
+                    {[
+                      { title: "Indicator Muscle", desc: "A strong muscle weakens (inhibits) when a pathway lacks integrity." },
+                      { title: "Stimulus", desc: "Trigger the pathway (prod injury, test reflex) and re-test the indicator." },
+                      { title: "Decision Tree", desc: "Check afferent first, then efferent, then emotions." },
+                      { title: "Re-Assessment", desc: "Always return to original stimulus after correction to confirm resolution." },
+                      { title: "Layers", desc: "Issues often have multiple layers; repeat until no inhibition remains." }
+                    ].map((item, i) => (
+                      <div key={i} className="flex gap-4 p-5 bg-white/5 rounded-2xl border border-white/10">
+                        <span className="w-8 h-8 rounded-full bg-indigo-600 flex items-center justify-center font-black shrink-0">{i + 1}</span>
+                        <div>
+                          <h4 className="font-black text-indigo-300 uppercase tracking-widest text-xs mb-1">{item.title}</h4>
+                          <p className="text-sm text-slate-300 font-medium leading-relaxed">{item.desc}</p>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                <div className="space-y-6">
+                  <h3 className="text-2xl font-black text-rose-300 flex items-center gap-3">
+                    <GitBranch size={24} /> The Decision Tree
+                  </h3>
+                  <div className="space-y-4">
+                    <div className="p-6 bg-blue-500/20 rounded-2xl border border-blue-400/30">
+                      <div className="flex items-center gap-3 mb-3">
+                        <Activity size={20} className="text-blue-300" />
+                        <h4 className="font-black text-blue-200 uppercase tracking-widest text-xs">Step 1: Check Afferent</h4>
+                      </div>
+                      <p className="text-sm text-blue-100 leading-relaxed mb-3">Bottom-up sensory input issue?</p>
+                      <div className="space-y-2 text-xs text-blue-200">
+                        <p>• Mechanoreceptive: Joints/muscles need more info</p>
+                        <p>• Vestibular/Ocular: Balance/eye system input</p>
+                        <p>• Physiological: Organ/gland/energetic</p>
+                      </div>
+                    </div>
+
+                    <div className="p-6 bg-purple-500/20 rounded-2xl border border-purple-400/30">
+                      <div className="flex items-center gap-3 mb-3">
+                        <Brain size={20} className="text-purple-300" />
+                        <h4 className="font-black text-purple-200 uppercase tracking-widest text-xs">Step 2: Check Efferent</h4>
+                      </div>
+                      <p className="text-sm text-purple-100 leading-relaxed mb-3">If not afferent, brain processing issue?</p>
+                      <div className="space-y-2 text-xs text-purple-200">
+                        <p>• Cortical: Cortex area out of integration</p>
+                        <p>• Subcortical: Deeper structure involved</p>
+                        <p>• Zones corrected in pairs (2 coordinates)</p>
+                      </div>
+                    </div>
+
+                    <div className="p-6 bg-rose-500/20 rounded-2xl border border-rose-400/30">
+                      <div className="flex items-center gap-3 mb-3">
+                        <Heart size={20} className="text-rose-300" />
+                        <h4 className="font-black text-rose-200 uppercase tracking-widest text-xs">Step 3: Check Emotions</h4>
+                      </div>
+                      <p className="text-sm text-rose-100 leading-relaxed">If neither afferent nor efferent, move to emotional process, complete it, then re-assess.</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div className="p-8 bg-white/5 rounded-[2rem] border border-white/10">
+                <h3 className="text-xl font-black text-amber-300 mb-4 flex items-center gap-3">
+                  <Sparkles size={24} /> Universal Rule
+                </h3>
+                <p className="text-lg text-slate-200 font-medium leading-relaxed italic">
+                  "Apply this process to everything: muscles, injuries, reflexes, movements, brain zones. Every pathway is a reflex response. The nervous system holds a complete record—ask the right questions via muscle testing."
+                </p>
+              </div>
+            </CardContent>
+          </Card>
+
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+            <Card className="border-none shadow-lg rounded-[2.5rem] bg-white overflow-hidden">
+              <CardHeader className="bg-indigo-50 p-8">
+                <CardTitle className="text-2xl font-black flex items-center gap-3 text-indigo-900">
+                  <Activity size={28} /> Afferent vs Efferent
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="p-8 space-y-6">
+                <div className="p-6 bg-blue-50 rounded-2xl border border-blue-100">
+                  <div className="flex items-center justify-between mb-4">
+                    <h4 className="font-black text-blue-900 uppercase tracking-widest text-sm">Afferent (Sensory Input)</h4>
+                    <Badge className="bg-blue-600 text-white">75% of Spinal Cord</Badge>
+                  </div>
+                  <p className="text-sm text-blue-800 leading-relaxed mb-4">
+                    Bottom-up processing. Sensory information from the body traveling TO the brain.
+                  </p>
+                  <div className="space-y-2 text-xs text-blue-700">
+                    <p>• <strong>Conscious (15%):</strong> DCML → Sensory Cortex (S1)</p>
+                    <p>• <strong>Unconscious (85%):</strong> Spinocerebellar → Cerebellum</p>
+                  </div>
+                </div>
+
+                <div className="p-6 bg-purple-50 rounded-2xl border border-purple-100">
+                  <div className="flex items-center justify-between mb-4">
+                    <h4 className="font-black text-purple-900 uppercase tracking-widest text-sm">Efferent (Motor Output)</h4>
+                    <Badge className="bg-purple-600 text-white">25% of Spinal Cord</Badge>
+                  </div>
+                  <p className="text-sm text-purple-800 leading-relaxed mb-4">
+                    Top-down processing. Motor commands FROM the brain to the body.
+                  </p>
+                  <div className="space-y-2 text-xs text-purple-700">
+                    <p>• <strong>Cortical:</strong> Intentional, cognitive, motor planning</p>
+                    <p>• <strong>Subcortical:</strong> Automatic, reflexive, autonomic</p>
+                  </div>
+                </div>
+
+                <Alert className="bg-amber-50 border-amber-200">
+                  <AlertCircle className="h-4 w-4 text-amber-600" />
+                  <AlertDescription className="text-sm text-amber-900">
+                    <strong>Clinical Insight:</strong> Most practitioners focus on output (muscles, movement). The FN approach prioritizes input and processing—where the real dysfunction lives.
+                  </AlertDescription>
+                </Alert>
+              </CardContent>
+            </Card>
+
+            <Card className="border-none shadow-lg rounded-[2.5rem] bg-white overflow-hidden">
+              <CardHeader className="bg-rose-50 p-8">
+                <CardTitle className="text-2xl font-black flex items-center gap-3 text-rose-900">
+                  <Target size={28} /> Nociceptive Threat Protocol
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="p-8 space-y-6">
+                <p className="text-slate-600 leading-relaxed font-medium">
+                  Uses threat areas (injuries, scars, painful movements) as stimuli. Powerful for chronic pain, rehab, and dysfunction.
+                </p>
+
+                <div className="space-y-4">
+                  <h4 className="text-sm font-black text-slate-900 uppercase tracking-widest">When to Use</h4>
+                  <div className="grid grid-cols-1 gap-2">
+                    {[
+                      "Previous/chronic injuries",
+                      "Surgical scars (e.g., C-section)",
+                      "Painful or fearful movements",
+                      "Sensitive/guarded areas"
+                    ].map((item, i) => (
+                      <div key={i} className="flex items-center gap-3 p-3 bg-slate-50 rounded-xl border border-slate-100">
+                        <CheckCircle2 size={14} className="text-rose-500 shrink-0" />
+                        <span className="text-sm font-medium text-slate-700">{item}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                <div className="p-6 bg-rose-900 text-white rounded-2xl">
+                  <h4 className="text-xs font-black uppercase tracking-widest text-rose-300 mb-3">Expect Multiple Layers</h4>
+                  <p className="text-sm leading-relaxed">
+                    Common to find 5-15+ mechanoreceptive corrections, plus vestibular, efferent, and emotional layers. Each layer reveals deeper compensation patterns.
+                  </p>
+                </div>
+
+                <Alert className="bg-amber-50 border-amber-200">
+                  <Info className="h-4 w-4 text-amber-600" />
+                  <AlertDescription className="text-sm text-amber-900">
+                    <strong>Important:</strong> Avoid suggesting memories or emotions (bias). Let the nervous system guide you. For apprehensive clients, start with emotional clearing first.
+                  </AlertDescription>
+                </Alert>
+              </CardContent>
+            </Card>
+          </div>
+
+          <Card className="border-none shadow-lg rounded-[2.5rem] bg-white overflow-hidden">
+            <CardHeader className="bg-emerald-50 p-8">
+              <CardTitle className="text-2xl font-black flex items-center gap-3 text-emerald-900">
+                <Zap size={28} /> Efferent Correction Methods
+              </CardTitle>
+              <CardDescription className="text-emerald-700 font-medium text-lg mt-2">
+                Three techniques for integrating brain zones
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="p-8">
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <div className="p-6 bg-slate-50 rounded-2xl border border-slate-100 space-y-4">
+                  <div className="w-12 h-12 rounded-xl bg-indigo-600 flex items-center justify-center text-white">
+                    <Zap size={24} />
+                  </div>
+                  <div>
+                    <h4 className="font-black text-slate-900 mb-2">Simultaneous Tapping</h4>
+                    <p className="text-sm text-slate-600 leading-relaxed mb-3">Tap both zones for 3-5 seconds.</p>
+                    <Badge className="bg-indigo-50 text-indigo-700 border-none text-[10px]">Best for: Quick fixes, postural, children</Badge>
+                  </div>
+                </div>
+
+                <div className="p-6 bg-slate-50 rounded-2xl border border-slate-100 space-y-4">
+                  <div className="w-12 h-12 rounded-xl bg-purple-600 flex items-center justify-center text-white">
+                    <Brain size={24} />
+                  </div>
+                  <div>
+                    <h4 className="font-black text-slate-900 mb-2">Holding + Intention</h4>
+                    <p className="text-sm text-slate-600 leading-relaxed mb-3">Hold points, mentally repeat zone names until therapeutic pulse.</p>
+                    <Badge className="bg-purple-50 text-purple-700 border-none text-[10px]">Best for: Deep issues, primitive reflexes</Badge>
+                  </div>
+                </div>
+
+                <div className="p-6 bg-slate-50 rounded-2xl border border-slate-100 space-y-4">
+                  <div className="w-12 h-12 rounded-xl bg-teal-600 flex items-center justify-center text-white">
+                    <Activity size={24} />
+                  </div>
+                  <div>
+                    <h4 className="font-black text-slate-900 mb-2">Tuning Fork</h4>
+                    <p className="text-sm text-slate-600 leading-relaxed mb-3">TL both points, strike fork, place on cranium.</p>
+                    <Badge className="bg-teal-50 text-teal-700 border-none text-[10px]">Best for: Multiple corrections, vibrational reset</Badge>
+                  </div>
+                </div>
+              </div>
+
+              <div className="p-6 bg-indigo-900 text-white rounded-2xl mt-8">
+                <h4 className="text-xs font-black uppercase tracking-widest text-indigo-300 mb-3">Holding + Intention Example</h4>
+                <p className="text-sm leading-relaxed italic">
+                  "Left Psoas... Right Prefrontal Cortex... Left Limbic System..."
+                </p>
+                <p className="text-xs text-indigo-200 mt-3">
+                  Repeat mentally until you feel a therapeutic pulse or shift in the tissue.
+                </p>
+              </div>
+            </CardContent>
+          </Card>
         </TabsContent>
 
         <TabsContent value="clock" className="mt-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
@@ -175,6 +424,12 @@ const ResourcesPage = () => {
                     <h4 className="font-black text-rose-600 text-xs uppercase tracking-widest mb-2">Subcortical Logic (Ipsilateral)</h4>
                     <p className="text-sm text-slate-600 leading-relaxed font-medium">
                       The <strong>Brainstem & Cerebellum</strong> control the same side of the body. If the left side is dysfunctional, check the left cerebellum.
+                    </p>
+                  </div>
+                  <div className="p-5 bg-slate-50 rounded-2xl border border-slate-100">
+                    <h4 className="font-black text-purple-600 text-xs uppercase tracking-widest mb-2">Limbic Lateralization</h4>
+                    <p className="text-sm text-slate-600 leading-relaxed font-medium">
+                      <strong>Left Limbic:</strong> Historical/past trauma. <strong>Right Limbic:</strong> Current emotional processing.
                     </p>
                   </div>
                 </CardContent>
@@ -299,7 +554,7 @@ const ResourcesPage = () => {
                 </div>
               </div>
               <p className="text-emerald-50 text-lg max-w-2xl leading-relaxed">
-                Examines labyrinthine function by triggering vestibulosp reflexes. Used to isolate peripheral vestibular dysfunction and postural instability.
+                Examines labyrinthine function by triggering vestibulospinal reflexes. Used to isolate peripheral vestibular dysfunction and postural instability.
               </p>
             </div>
             <CardContent className="p-8">

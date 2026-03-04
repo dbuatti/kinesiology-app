@@ -21,6 +21,7 @@ import { cn } from '@/lib/utils';
 import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Alert, AlertDescription } from "@/components/ui/alert";
+import ConfirmationTestCard from './ConfirmationTestCard';
 
 type SkeletonType = 'Axial' | 'Appendicular' | null;
 type RegionType = 'Upper' | 'Lower' | null;
@@ -62,7 +63,7 @@ interface MechanoConsciousProps {
 }
 
 const MechanoConscious = ({ onComplete, onCancel }: MechanoConsciousProps) => {
-  const [step, setStep] = useState<'skeleton' | 'region' | 'side' | 'joint' | 'plane' | 'action' | 'correction' | 'reassess'>('skeleton');
+  const [step, setStep] = useState<'confirm' | 'skeleton' | 'region' | 'side' | 'joint' | 'plane' | 'action' | 'correction' | 'reassess'>('confirm');
   const [skeleton, setSkeleton] = useState<SkeletonType>(null);
   const [region, setRegion] = useState<RegionType>(null);
   const [side, setSide] = useState<SideType>(null);
@@ -116,6 +117,34 @@ const MechanoConscious = ({ onComplete, onCancel }: MechanoConsciousProps) => {
 
   const renderStep = () => {
     switch (step) {
+      case 'confirm':
+        return (
+          <div className="space-y-6 animate-in fade-in slide-in-from-right-4 duration-300">
+            <div className="space-y-2">
+              <h3 className="text-xl font-black text-slate-900">Confirm Conscious Pathway</h3>
+              <p className="text-sm text-slate-500">Verify this is the correct mechanoreceptive pathway.</p>
+            </div>
+            
+            <ConfirmationTestCard test="TL opposing Sensory Cortex (S1) → If IM facilitates, this is CONSCIOUS pathway" />
+            
+            <Alert className="bg-indigo-50 border-indigo-200">
+              <Info className="h-4 w-4 text-indigo-600" />
+              <AlertDescription className="text-sm text-indigo-900">
+                <strong>DCML Pathway:</strong> 15% of afferent input travels via Dorsal Column-Medial Lemniscus to the contralateral Sensory Cortex (S1). This is the "conscious" proprioceptive pathway.
+              </AlertDescription>
+            </Alert>
+
+            <div className="flex gap-3">
+              <Button variant="ghost" onClick={onCancel} className="flex-1 h-12 rounded-xl">
+                <ChevronLeft size={18} className="mr-2" /> Back
+              </Button>
+              <Button onClick={() => setStep('skeleton')} className="flex-[2] h-12 rounded-xl bg-blue-600 hover:bg-blue-700 font-bold">
+                Confirmed - Continue <ChevronRight size={18} className="ml-2" />
+              </Button>
+            </div>
+          </div>
+        );
+
       case 'skeleton':
         return (
           <div className="space-y-6 animate-in fade-in slide-in-from-right-4 duration-300">
@@ -163,8 +192,8 @@ const MechanoConscious = ({ onComplete, onCancel }: MechanoConsciousProps) => {
                 <span className="font-black text-lg">Appendicular Skeleton</span>
               </Button>
             </div>
-            <Button variant="ghost" onClick={onCancel} className="w-full h-12 rounded-xl">
-              <ChevronLeft size={18} className="mr-2" /> Cancel
+            <Button variant="ghost" onClick={() => setStep('confirm')} className="w-full h-12 rounded-xl">
+              <ChevronLeft size={18} className="mr-2" /> Back
             </Button>
           </div>
         );
@@ -442,9 +471,9 @@ const MechanoConscious = ({ onComplete, onCancel }: MechanoConsciousProps) => {
                       <Brain size={20} />
                     </div>
                     <div>
-                      <p className="text-sm font-black text-purple-300 uppercase tracking-tight mb-1">4. Hold S1 (Optional)</p>
+                      <p className="text-sm font-black text-purple-300 uppercase tracking-tight mb-1">4. TL S1 (Optional)</p>
                       <p className="text-sm text-indigo-100 leading-relaxed">
-                        TL the <span className="font-black text-white">opposite sensory cortex</span> (S1) on the scalp.
+                        Hold the <span className="font-black text-white">opposite sensory cortex</span> (S1) on the scalp.
                       </p>
                     </div>
                   </div>
@@ -500,7 +529,7 @@ const MechanoConscious = ({ onComplete, onCancel }: MechanoConsciousProps) => {
             <Alert className="bg-blue-50 border-blue-200">
               <Info className="h-4 w-4 text-blue-600" />
               <AlertDescription className="text-sm text-blue-900">
-                <strong>Clinical Note:</strong> It's normal to have 5-15+ layers of mechanoreceptive corrections, often working up kinetic chains. Repeat this process until the pathway normalizes.
+                <strong>Clinical Note:</strong> The joint may not be related to the symptom site—it's where the brain needs proprioceptive input to reduce threat. Expect 5-15+ layers in complex cases.
               </AlertDescription>
             </Alert>
 
@@ -543,7 +572,7 @@ const MechanoConscious = ({ onComplete, onCancel }: MechanoConsciousProps) => {
           <div 
             className="h-full bg-blue-600 transition-all duration-500" 
             style={{ 
-              width: `${(['skeleton', 'region', 'side', 'joint', 'plane', 'action', 'correction', 'reassess'].indexOf(step) + 1) / 8 * 100}%` 
+              width: `${(['confirm', 'skeleton', 'region', 'side', 'joint', 'plane', 'action', 'correction', 'reassess'].indexOf(step) + 1) / 9 * 100}%` 
             }} 
           />
         </div>

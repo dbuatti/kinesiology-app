@@ -65,8 +65,6 @@ type Step =
   | 'EFFERENT_PROCESS'
   | 'EMOTIONS_PROCESS';
 
-type MechanoUnconsciousStep = 'JOINT' | 'LIGAMENT' | 'CORRECTION';
-
 interface PathwayLogicWizardProps {
   onSave: (summary: string) => void;
   initialValue?: string;
@@ -76,18 +74,14 @@ const PathwayLogicWizard = ({ onSave, initialValue }: PathwayLogicWizardProps) =
   const [step, setStep] = useState<Step>('START');
   const [history, setHistory] = useState<Step[]>([]);
   
-  // State for the wizard flow
   const [direction, setDirection] = useState<'Afferent' | 'Efferent' | null>(null);
   const [afferentType, setAfferentType] = useState<'Mechanoreceptive' | 'Vestibular' | 'Nociceptive' | null>(null);
   const [mechanoType, setMechanoType] = useState<'Conscious' | 'Unconscious' | null>(null);
   
-  // State for conscious process
   const [consciousJoint, setConsciousJoint] = useState('');
   const [consciousPlane, setConsciousPlane] = useState('');
   const [consciousAction, setConsciousAction] = useState('');
 
-  // State for unconscious process
-  const [mechanoUnconsciousStep, setMechanoUnconsciousStep] = useState<MechanoUnconsciousStep>('JOINT');
   const [unconsciousJoint, setUnconsciousJoint] = useState('');
   const [unconsciousLigament, setUnconsciousLigament] = useState('');
 
@@ -150,7 +144,6 @@ const PathwayLogicWizard = ({ onSave, initialValue }: PathwayLogicWizardProps) =
     setDirection(null);
     setAfferentType(null);
     setMechanoType(null);
-    setMechanoUnconsciousStep('JOINT');
     setUnconsciousJoint('');
     setUnconsciousLigament('');
   };
@@ -243,49 +236,27 @@ const PathwayLogicWizard = ({ onSave, initialValue }: PathwayLogicWizardProps) =
       case 'MECHANO_UNCONSCIOUS_PROCESS':
         const selectedCategory = jointToCategoryMap[unconsciousJoint];
         const imagesForJoint = ligamentImages[selectedCategory] || [];
-
         return (
-          <div className="space-y-6 animate-in fade-in slide-in-from-right-4 duration-300">
-            {mechanoUnconsciousStep === 'JOINT' && (
-              <div className="space-y-4">
-                <div className="space-y-2"><h3 className="text-xl font-black text-slate-900">Unconscious: Joint</h3><p className="text-sm text-slate-500">Localize the joint while holding GV16.</p></div>
-                <Select value={unconsciousJoint} onValueChange={(v) => { setUnconsciousJoint(v); setMechanoUnconsciousStep('LIGAMENT'); }}>
-                  <SelectTrigger className="rounded-xl h-12 font-bold"><SelectValue placeholder="Select Joint" /></SelectTrigger>
-                  <SelectContent>{JOINT_ACTION_DATA.map(j => <SelectItem key={j.joint} value={j.joint}>{j.joint}</SelectItem>)}</SelectContent>
-                </Select>
-                <Button variant="ghost" onClick={goBack} className="w-full"><ChevronLeft size={16} className="mr-2" /> Back</Button>
-              </div>
-            )}
-            {mechanoUnconsciousStep === 'LIGAMENT' && (
-              <div className="space-y-4">
-                <div className="space-y-2"><h3 className="text-xl font-black text-slate-900">Unconscious: Ligament</h3><p className="text-sm text-slate-500">Use your reference images to identify the specific ligament.</p></div>
-                {imagesForJoint.length > 0 && (
-                  <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-                    {imagesForJoint.map((url, index) => url && (
-                      <button key={index} onClick={() => setUnconsciousLigament(`${unconsciousJoint} Ligament #${index + 1}`)} className="aspect-video rounded-lg overflow-hidden border-2 hover:border-indigo-500 transition-all">
-                        <img src={url} alt={`Ligament ${index + 1}`} className="w-full h-full object-cover" />
-                      </button>
-                    ))}
-                  </div>
-                )}
+          <div className="space-y-8 animate-in fade-in slide-in-from-right-4 duration-300">
+            <div className="space-y-2">
+              <h3 className="text-2xl font-black text-slate-900 flex items-center gap-3"><Activity size={28} className="text-emerald-600" /> Mechanoreceptive Unconscious Process</h3>
+              <p className="text-sm text-slate-500">Targets spinocerebellar tracts (85% of afferent input) via ligaments, tendons, and fascia projecting to the cerebellum.</p>
+            </div>
+            <Card className="border-emerald-100 bg-emerald-50/50">
+              <CardHeader><CardTitle className="text-lg font-bold text-emerald-900 flex items-center gap-2"><Brain size={20} /> Neurological Basis</CardTitle></CardHeader>
+              <CardContent className="text-sm text-emerald-800 space-y-2"><p>This pathway is common in old injuries where stretch receptors (Golgi tendon organs) remain sensitized. Proprioceptive input from joints/muscles/tendons travels via the spinocerebellar tracts to the cerebellum for unconscious processing of movement and posture.</p></CardContent>
+            </Card>
+            <div className="space-y-6">
+              <div className="flex gap-4"><div className="w-8 h-8 rounded-full bg-emerald-600 text-white flex items-center justify-center font-black shrink-0">1</div><div><h4 className="font-bold text-slate-800">Confirm Pathway</h4><p className="text-xs text-slate-500">X-pattern facilitates → Mechanoreceptive. TL GV16 facilitates → Unconscious.</p></div></div>
+              <div className="flex gap-4"><div className="w-8 h-8 rounded-full bg-emerald-600 text-white flex items-center justify-center font-black shrink-0">2</div><div className="flex-1 space-y-3"><h4 className="font-bold text-slate-800">Localize Joint & Ligament</h4><p className="text-xs text-slate-500">Hold GV16 while localizing. Use charts to identify the structure and challenge its stretch direction.</p><div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <Select value={unconsciousJoint} onValueChange={setUnconsciousJoint}><SelectTrigger className="rounded-xl h-12 font-bold"><SelectValue placeholder="Select Joint" /></SelectTrigger><SelectContent>{JOINT_ACTION_DATA.map(j => <SelectItem key={j.joint} value={j.joint}>{j.joint}</SelectItem>)}</SelectContent></Select>
                 <Input placeholder="Enter specific ligament/tendon..." className="h-12 rounded-xl font-bold" value={unconsciousLigament} onChange={(e) => setUnconsciousLigament(e.target.value)} />
-                <div className="flex gap-3"><Button variant="ghost" onClick={() => setMechanoUnconsciousStep('JOINT')} className="flex-1 h-12 rounded-xl"><ChevronLeft size={18} className="mr-2" /> Back</Button><Button disabled={!unconsciousLigament} onClick={() => setMechanoUnconsciousStep('CORRECTION')} className="flex-[2] h-12 rounded-xl bg-indigo-600 hover:bg-indigo-700 font-bold">Continue <ChevronRight size={18} className="ml-2" /></Button></div>
-              </div>
-            )}
-            {mechanoUnconsciousStep === 'CORRECTION' && (
-              <div className="space-y-4">
-                <div className="p-4 bg-emerald-50 border border-emerald-100 rounded-xl text-sm text-emerald-800 space-y-4">
-                  <p className="font-bold">Perform Correction:</p>
-                  <ul className="list-disc list-inside space-y-2">
-                    <li>Hold GV16.</li>
-                    <li>Stretch the priority ligament: <span className="font-bold">{unconsciousLigament}</span>.</li>
-                    <li>Apply a tuning fork to the cranium OR tap for 3-5 seconds.</li>
-                  </ul>
-                </div>
-                <div className="max-w-[200px] mx-auto"><CalibrationTimer duration={5} /></div>
-                <div className="flex gap-3"><Button variant="ghost" onClick={() => setMechanoUnconsciousStep('LIGAMENT')} className="flex-1 h-12 rounded-xl"><ChevronLeft size={18} className="mr-2" /> Back</Button><Button onClick={() => handleSave(`Mechanoreceptive Unconscious: ${unconsciousJoint} - ${unconsciousLigament}`)} className="flex-[2] h-12 rounded-xl bg-emerald-600 hover:bg-emerald-700 font-bold">Save & Finish <CheckCircle2 size={18} className="ml-2" /></Button></div>
-              </div>
-            )}
+              </div>{unconsciousJoint && (<div className="p-4 bg-slate-50 rounded-2xl border border-slate-100"><h5 className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-3">Reference Images for {unconsciousJoint}</h5>{imagesForJoint.length > 0 ? (<div className="grid grid-cols-2 gap-3">{imagesForJoint.map((url, index) => url && (<div key={index} className="aspect-video rounded-lg overflow-hidden border bg-white"><img src={url} alt={`Ligament ${index + 1}`} className="w-full h-full object-cover" /></div>))}</div>) : (<p className="text-xs text-slate-400 italic">No custom reference images uploaded for this category.</p>)}<Button variant="link" size="sm" className="text-xs mt-2" onClick={() => setLigamentModalOpen(true)}>View All Ligament Charts</Button></div>)}</div></div>
+              <div className="flex gap-4"><div className="w-8 h-8 rounded-full bg-emerald-600 text-white flex items-center justify-center font-black shrink-0">3</div><div className="flex-1 space-y-3"><h4 className="font-bold text-slate-800">Perform Correction</h4><p className="text-xs text-slate-500">Stretch the ligament, hold GV16, and apply tuning fork or tap for 3-5 seconds.</p><div className="max-w-[200px]"><CalibrationTimer duration={5} /></div></div></div>
+              <div className="flex gap-4"><div className="w-8 h-8 rounded-full bg-emerald-600 text-white flex items-center justify-center font-black shrink-0">4</div><div><h4 className="font-bold text-slate-800">Re-Assess</h4><p className="text-xs text-slate-500">Re-test the original pathway. Repeat for all layers until normalized.</p></div></div>
+            </div>
+            <Card className="border-amber-100 bg-amber-50/50"><CardHeader><CardTitle className="text-lg font-bold text-amber-900 flex items-center gap-2"><Lightbulb size={20} /> Clinical Notes</CardTitle></CardHeader><CardContent className="text-sm text-amber-800 space-y-2"><ul className="list-disc list-inside space-y-1"><li>Normal to find 5-15+ correction layers per issue, working up kinetic chains.</li><li>Often combines with vestibular/ocular, efferent, or emotional corrections.</li><li>Ankle sprains are a classic example of unconscious mechanoreceptive issues.</li><li>The priority joint may seem unrelated to the symptom site (e.g., wrist for low back issue).</li></ul></CardContent></Card>
+            <div className="flex gap-3 pt-6 border-t border-slate-100"><Button variant="ghost" onClick={goBack} className="flex-1 h-12 rounded-xl"><ChevronLeft size={18} className="mr-2" /> Back</Button><Button disabled={!unconsciousJoint || !unconsciousLigament} onClick={() => handleSave(`Mechanoreceptive Unconscious: ${unconsciousJoint} - ${unconsciousLigament}`)} className="flex-[2] h-12 rounded-xl bg-emerald-600 hover:bg-emerald-700 font-bold">Save & Finish <CheckCircle2 size={18} className="ml-2" /></Button></div>
           </div>
         );
 

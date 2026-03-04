@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
@@ -194,17 +194,6 @@ const EfferentBrainIntegration = ({ onSave, onCancel, initialValue, initialEntry
 
   return (
     <div className="relative overflow-hidden">
-      <div className="absolute top-0 left-0 w-full h-1.5 bg-slate-100 rounded-full">
-        <div 
-          className="h-full bg-indigo-600 transition-all duration-700 ease-out rounded-full" 
-          style={{ 
-            width: `${(
-              ['ENTRY', 'COORD_1', 'COORD_2', 'METHOD', 'CALIBRATE', 'REASSESS'].indexOf(step) + 1
-            ) / 6 * 100}%` 
-          }} 
-        />
-      </div>
-
       <div className="flex items-center justify-between mb-8 mt-6">
         <div className="flex items-center gap-4">
           <div className="w-14 h-14 rounded-2xl bg-indigo-600 text-white flex items-center justify-center shadow-lg shadow-indigo-200">

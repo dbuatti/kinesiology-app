@@ -66,9 +66,10 @@ const PLANES = ["Sagittal", "Frontal", "Transverse"];
 interface NociceptiveThreatAssessmentProps {
   onSave: (summary: string) => void;
   initialValue?: string;
+  onCancel?: () => void;
 }
 
-const NociceptiveThreatAssessment = ({ onSave, initialValue }: NociceptiveThreatAssessmentProps) => {
+const NociceptiveThreatAssessment = ({ onSave, initialValue, onCancel }: NociceptiveThreatAssessmentProps) => {
   const [layers, setLayers] = useState<Layer[]>([]);
   const [currentStep, setCurrentStep] = useState<Step>('THREAT_DEFINITION');
   const [currentLayer, setCurrentLayer] = useState<Partial<Layer>>({
@@ -214,7 +215,7 @@ const NociceptiveThreatAssessment = ({ onSave, initialValue }: NociceptiveThreat
           <div className="space-y-6 animate-in fade-in slide-in-from-right-4 duration-300">
             <div className="bg-emerald-50 p-8 rounded-[2.5rem] border-2 border-emerald-100 text-center">
               <div className="w-20 h-20 rounded-full bg-white shadow-sm flex items-center justify-center mx-auto mb-6"><RefreshCw size={48} className="text-emerald-500" /></div>
-              <h3 className="text-2xl font-black text-emerald-900 mb-2">Re-Assessment</h3>
+              <h3 className="text-2xl font-black text-emerald-900 mb-2">Final Re-assessment</h3>
               <p className="text-emerald-700 font-medium">Re-stimulate <span className="font-black underline">"{currentLayer.threat}"</span> and test the IM.</p>
             </div>
             <div className="grid grid-cols-1 gap-4">
@@ -233,8 +234,29 @@ const NociceptiveThreatAssessment = ({ onSave, initialValue }: NociceptiveThreat
   return (
     <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
       <div className="lg:col-span-8 relative overflow-hidden">
-        <div className="absolute top-0 left-0 w-full h-1.5 bg-slate-100 rounded-full"><div className={cn("h-full transition-all duration-700 ease-out rounded-full", currentStep === 'THREAT_DEFINITION' || currentStep === 'STIMULATION' ? "bg-orange-500" : "bg-indigo-600")} style={{ width: `${(['THREAT_DEFINITION', 'STIMULATION', 'IM_TEST', 'SELECT_DIRECTION', 'SELECT_SPECIFIC', 'MECHANO_DETAIL', 'EFFERENT_INTEGRATION', 'CORRECTION_ACTION', 'REASSESSMENT'].indexOf(currentStep) + 1) / 9 * 100}%` }} /></div>
-        <div className="flex items-center justify-between mb-8 mt-6"><div className="flex items-center gap-4"><div className={cn("w-14 h-14 rounded-2xl flex items-center justify-center text-white shadow-lg", currentStep === 'THREAT_DEFINITION' || currentStep === 'STIMULATION' ? "bg-orange-600 shadow-orange-200" : "bg-indigo-600 shadow-indigo-200")}><AlertTriangle size={28} /></div><div><h2 className="text-xl font-black text-slate-900 leading-none">Nociceptive Threat</h2><div className="flex items-center gap-2 mt-2"><Badge variant="outline" className="bg-slate-50 text-slate-500 border-slate-200 font-bold px-2 py-0.5 rounded-lg text-[10px] uppercase tracking-wider">Layer {layers.length + 1}</Badge><span className="text-[10px] text-slate-400 font-black uppercase tracking-widest">Step {['THREAT_DEFINITION', 'STIMULATION', 'IM_TEST', 'SELECT_DIRECTION', 'SELECT_SPECIFIC', 'MECHANO_DETAIL', 'EFFERENT_INTEGRATION', 'CORRECTION_ACTION', 'REASSESSMENT'].indexOf(currentStep) + 1} of 9</span></div></div></div><div className="flex gap-2"><Button variant="ghost" size="icon" className={cn("rounded-xl hover:bg-slate-100", showHistory && "bg-slate-100")} onClick={() => setShowHistory(!showHistory)}><History size={20} className="text-slate-400" /></Button></div></div>
+        <div className="flex items-center justify-between mb-8 mt-6">
+          <div className="flex items-center gap-4">
+            <div className={cn("w-14 h-14 rounded-2xl flex items-center justify-center text-white shadow-lg", currentStep === 'THREAT_DEFINITION' || currentStep === 'STIMULATION' ? "bg-orange-600 shadow-orange-200" : "bg-indigo-600 shadow-indigo-200")}>
+              <AlertTriangle size={28} />
+            </div>
+            <div>
+              <h2 className="text-xl font-black text-slate-900 leading-none">Nociceptive Threat</h2>
+              <div className="flex items-center gap-2 mt-2">
+                <Badge variant="outline" className="bg-slate-50 text-slate-500 border-slate-200 font-bold px-2 py-0.5 rounded-lg text-[10px] uppercase tracking-wider">Layer {layers.length + 1}</Badge>
+              </div>
+            </div>
+          </div>
+          <div className="flex items-center gap-2">
+            {onCancel && (
+              <Button variant="ghost" size="icon" onClick={onCancel} className="rounded-full hover:bg-slate-100">
+                <X size={20} className="text-slate-400" />
+              </Button>
+            )}
+            <Button variant="ghost" size="icon" className={cn("rounded-full hover:bg-slate-100", showHistory && "bg-slate-100")} onClick={() => setShowHistory(!showHistory)}>
+              <History size={20} className="text-slate-400" />
+            </Button>
+          </div>
+        </div>
         <div className="flex flex-col justify-center">{renderStep()}</div>
       </div>
       <div className={cn("lg:col-span-4 space-y-6 transition-all duration-300", !showHistory && "hidden lg:block opacity-50 grayscale pointer-events-none")}><Card className="p-6 bg-slate-50 border-slate-100 shadow-sm rounded-[2rem] h-full flex flex-col"><div className="flex items-center justify-between mb-6"><h3 className="text-lg font-black text-slate-900 flex items-center gap-2"><Layers size={20} className="text-indigo-600" /> Layer History</h3><Badge className="bg-indigo-600 text-white border-none font-black">{layers.length} Cleared</Badge></div><ScrollArea className="flex-1 pr-4">{layers.length === 0 ? (<div className="flex flex-col items-center justify-center py-12 text-center space-y-4"><div className="w-12 h-12 rounded-full bg-slate-200 flex items-center justify-center text-slate-400"><History size={24} /></div><p className="text-sm text-slate-400 font-medium">No layers cleared yet.</p></div>) : (<div className="space-y-4">{layers.map((layer, idx) => (<div key={idx} className="p-4 bg-white rounded-2xl border border-slate-200 shadow-sm relative overflow-hidden"><div className="absolute left-0 top-0 w-1 h-full bg-green-500" /><div className="flex justify-between items-start mb-2"><span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Layer {layer.id}</span><CheckCircle2 size={14} className="text-green-500" /></div><h4 className="font-bold text-slate-900 text-sm mb-1">{layer.threat}</h4><div className="flex flex-wrap gap-1 mt-2"><Badge variant="secondary" className="text-[9px] bg-indigo-50 text-indigo-600 border-none">{layer.specific === 'Mechanoreceptor' ? layer.joint : layer.specific}</Badge>{layer.action && (<Badge variant="secondary" className="text-[9px] bg-slate-100 text-slate-600 border-none">{layer.action}</Badge>)}</div></div>))}</div>)}</ScrollArea></Card></div>

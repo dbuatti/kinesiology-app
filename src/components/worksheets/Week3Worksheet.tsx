@@ -1,12 +1,11 @@
-import React, { useState } from 'react';
+"use client";
+
+import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
-import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
-import { Separator } from "@/components/ui/separator";
-import { ScrollArea } from "@/components/ui/scroll-area";
 import {
   ShieldCheck,
   Brain,
@@ -18,31 +17,113 @@ import {
   Sparkles,
   AlertCircle,
   CheckCircle2,
-  Printer
+  Printer,
+  Save,
+  Loader2
 } from 'lucide-react';
 import { toast } from "sonner";
+import { supabase } from "@/integrations/supabase/client";
 
 const Week3Worksheet = () => {
   const [name, setName] = useState('');
   const [isReleased, setIsReleased] = useState(false);
   const [answers, setAnswers] = useState<Record<string, string>>({});
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
+  const [userId, setUserId] = useState<string | null>(null);
+
+  useEffect(() => {
+    const fetchData = async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (user) {
+        setUserId(user.id);
+        const { data, error } = await supabase
+          .from('week3_worksheets')
+          .select('*')
+          .eq('user_id', user.id)
+          .maybeSingle();
+
+        if (data) {
+          setAnswers(data.form_data || {});
+          setName(data.signature_name || '');
+          setIsReleased(data.is_released || false);
+        }
+      }
+      setLoading(false);
+    };
+
+    fetchData();
+  }, []);
+
+  const handleSave = async (silent = false) => {
+    if (!userId) return;
+    
+    if (!silent) setSaving(true);
+    try {
+      const { error } = await supabase
+        .from('week3_worksheets')
+        .upsert({
+          user_id: userId,
+          form_data: answers,
+          signature_name: name,
+          is_released: isReleased,
+          updated_at: new Date().toISOString()
+        }, { onConflict: 'user_id' });
+
+      if (error) throw error;
+      if (!silent) toast.success("Progress saved successfully.");
+    } catch (error: any) {
+      console.error("Error saving worksheet:", error);
+      if (!silent) toast.error("Failed to save progress.");
+    } finally {
+      if (!silent) setSaving(false);
+    }
+  };
 
   const handleAnswerChange = (id: string, value: string) => {
     setAnswers(prev => ({ ...prev, [id]: value }));
   };
 
-  const handleRelease = () => {
+  const handleRelease = async () => {
     if (!name) {
       toast.error("Please enter your full name to sign the release statement.");
       return;
     }
-    setIsReleased(true);
-    toast.success("Sovereignty Reclaimed. The release is sealed.");
+    
+    setSaving(true);
+    try {
+      const { error } = await supabase
+        .from('week3_worksheets')
+        .upsert({
+          user_id: userId,
+          form_data: answers,
+          signature_name: name,
+          is_released: true,
+          updated_at: new Date().toISOString()
+        }, { onConflict: 'user_id' });
+
+      if (error) throw error;
+      setIsReleased(true);
+      toast.success("Sovereignty Reclaimed. The release is sealed.");
+    } catch (error: any) {
+      toast.error("Failed to seal release.");
+    } finally {
+      setSaving(false);
+    }
   };
 
   const handlePrint = () => {
     window.print();
   };
+
+  if (loading) {
+    return (
+      <div className="flex flex-col items-center justify-center min-h-[400px] space-y-4">
+        <Loader2 className="w-12 h-12 text-indigo-600 animate-spin" />
+        <p className="text-slate-500 font-medium">Loading your worksheet...</p>
+      </div>
+    );
+  }
 
   const containerVariants = {
     hidden: { opacity: 0 },
@@ -60,7 +141,7 @@ const Week3Worksheet = () => {
   };
 
   return (
-    <div className="max-w-4xl mx-auto py-12 px-4 sm:px-6 lg:px-8 bg-slate-50/50 min-h-screen">
+    <div className="max-w-4xl mx-auto py-12 px-4 sm:px-6 lg:px-8 bg-slate-50/50 min-h-screen pb-32">
       <motion.div 
         initial="hidden"
         animate="visible"
@@ -69,7 +150,17 @@ const Week3Worksheet = () => {
       >
         {/* Header */}
         <motion.div variants={itemVariants} className="text-center space-y-4 relative">
-          <div className="absolute right-0 top-0 print:hidden">
+          <div className="absolute right-0 top-0 flex gap-2 print:hidden">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => handleSave()}
+              disabled={saving}
+              className="flex items-center gap-2 border-slate-200 text-slate-600 hover:bg-slate-100"
+            >
+              {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
+              Save Progress
+            </Button>
             <Button
               variant="outline"
               size="sm"
@@ -77,7 +168,7 @@ const Week3Worksheet = () => {
               className="flex items-center gap-2 border-slate-200 text-slate-600 hover:bg-slate-100"
             >
               <Printer className="w-4 h-4" />
-              Print Worksheet
+              Print
             </Button>
           </div>
           <div className="inline-flex items-center justify-center p-2 bg-indigo-100 rounded-full text-indigo-600 mb-4">
@@ -239,8 +330,10 @@ const Week3Worksheet = () => {
                 {!isReleased ? (
                   <Button
                     onClick={handleRelease}
+                    disabled={saving}
                     className="bg-white text-indigo-900 hover:bg-indigo-50 px-12 py-6 text-xl font-bold rounded-full shadow-lg transition-all hover:scale-105"
                   >
+                    {saving ? <Loader2 className="mr-2 h-6 w-6 animate-spin" /> : null}
                     Seal the Release
                   </Button>
                 ) : (
@@ -330,6 +423,17 @@ const Week3Worksheet = () => {
           </p>
         </motion.div>
       </motion.div>
+
+      {/* Floating Save Button for Mobile */}
+      <div className="fixed bottom-8 right-8 print:hidden lg:hidden">
+        <Button
+          onClick={() => handleSave()}
+          disabled={saving}
+          className="w-14 h-14 rounded-full bg-indigo-600 text-white shadow-2xl hover:bg-indigo-700"
+        >
+          {saving ? <Loader2 className="w-6 h-6 animate-spin" /> : <Save className="w-6 h-6" />}
+        </Button>
+      </div>
     </div>
   );
 };

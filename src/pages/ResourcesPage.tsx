@@ -76,7 +76,7 @@ const ResourcesPage = () => {
               <Clock size={16} className="mr-2" /> Meridian Clock
             </TabsTrigger>
             <TabsTrigger value="intention" className="rounded-xl py-2.5 px-6 data-[state=active]:bg-white data-[state=active]:text-indigo-600 data-[state=active]:shadow-sm font-bold text-xs uppercase tracking-widest">
-              <Compass size={16} className="mr-2" /> Intention
+              <Compass size={16} className="mr-2" /> North Star
             </TabsTrigger>
             <TabsTrigger value="logic" className="rounded-xl py-2.5 px-6 data-[state=active]:bg-white data-[state=active]:text-indigo-600 data-[state=active]:shadow-sm font-bold text-xs uppercase tracking-widest">
               <Lightbulb size={16} className="mr-2" /> Clinical Logic

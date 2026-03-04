@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
@@ -22,8 +22,8 @@ import {
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { BRAIN_REFLEX_POINTS, BrainReflexPoint } from '@/data/brain-reflex-data';
-import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
 import { supabase } from "@/integrations/supabase/client";
+import { showError } from '@/utils/toast';
 
 type Step = 'ENTRY' | 'COORD_1' | 'COORD_2' | 'METHOD' | 'CALIBRATE' | 'REASSESS';
 type IntegrationMethod = 'Tapping' | 'Holding + Intention' | 'Tuning Fork';
@@ -44,6 +44,39 @@ interface EfferentBrainIntegrationProps {
   initialValue?: string;
   initialEntryPoint?: string;
 }
+
+const ZoneCard = ({ point, images, onSelect, isLoading }: { 
+  point: BrainReflexPoint, 
+  images?: ReflexImages, 
+  onSelect: (side: 'Left' | 'Right' | 'Bilateral') => void,
+  isLoading: boolean
+}) => {
+    const imageUrl = images?.secondaryUrl || images?.primaryUrl;
+
+    return (
+        <div className="relative group border-2 border-slate-100 rounded-2xl overflow-hidden transition-all hover:border-indigo-300 hover:shadow-lg bg-white">
+            <div className="aspect-video bg-slate-50 flex items-center justify-center">
+                {isLoading ? (
+                  <Loader2 size={24} className="text-slate-300 animate-spin" />
+                ) : imageUrl ? (
+                    <img src={imageUrl} alt={point.name} className="w-full h-full object-cover" />
+                ) : (
+                    <ImageIcon size={24} className="text-slate-300" />
+                )}
+            </div>
+            <div className="p-3">
+                <p className="font-bold text-xs text-slate-800 truncate">{point.name}</p>
+            </div>
+
+            {/* Overlay */}
+            <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-1 p-2">
+                <Button size="sm" className="h-8 rounded-lg bg-white/80 text-black hover:bg-white font-bold" onClick={(e) => { e.stopPropagation(); onSelect('Left'); }}>L</Button>
+                <Button size="sm" className="h-8 rounded-lg bg-white/80 text-black hover:bg-white font-bold" onClick={(e) => { e.stopPropagation(); onSelect('Right'); }}>R</Button>
+                <Button size="sm" className="h-8 rounded-lg bg-white/80 text-black hover:bg-white font-bold" onClick={(e) => { e.stopPropagation(); onSelect('Bilateral'); }}>Bi</Button>
+            </div>
+        </div>
+    );
+};
 
 const EfferentBrainIntegration = ({ onSave, onCancel, initialValue, initialEntryPoint }: EfferentBrainIntegrationProps) => {
   const [step, setStep] = useState<Step>(initialEntryPoint ? 'COORD_1' : 'ENTRY');
@@ -96,98 +129,69 @@ const EfferentBrainIntegration = ({ onSave, onCancel, initialValue, initialEntry
     setIsComplete(true);
   };
 
-  const renderImagePreview = (pointId: string) => {
-    const images = customizations[pointId];
-    if (!images || (!images.primaryUrl && !images.secondaryUrl)) return null;
+  const renderCoordinateSelection = (coord: Coordinate, setCoord: (c: Coordinate) => void, next: Step, prev: Step, title: string) => {
+    const handleSelect = (point: BrainReflexPoint, side: 'Left' | 'Right' | 'Bilateral') => {
+        setCoord({ point, side });
+        nextStep(next);
+    };
 
     return (
-      <div className="grid grid-cols-2 gap-3 mt-4 animate-in fade-in zoom-in-95 duration-500">
-        {images.primaryUrl && (
-          <div className="aspect-video rounded-xl overflow-hidden border border-slate-200 bg-slate-50 relative group">
-            <img src={images.primaryUrl} alt="Anatomy" className="w-full h-full object-cover" />
-            <div className="absolute bottom-1 left-1 px-1.5 py-0.5 bg-black/50 backdrop-blur-sm rounded text-[8px] font-black text-white uppercase tracking-widest">Anatomy</div>
+      <div className="space-y-6 animate-in fade-in slide-in-from-right-4 duration-300">
+        <div className="space-y-2">
+          <h3 className="text-xl font-black text-slate-900">{title}</h3>
+          <p className="text-sm text-slate-500">Hover over a zone and select the lateralization (L/R/Bi).</p>
+        </div>
+
+        <div className="space-y-6">
+          <div className="space-y-3">
+            <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest px-1">Cortical Zones</p>
+            <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+              {corticalPoints.map(p => (
+                <ZoneCard 
+                  key={p.id}
+                  point={p}
+                  images={customizations[p.id]}
+                  onSelect={(side) => handleSelect(p, side)}
+                  isLoading={loadingImages}
+                />
+              ))}
+            </div>
           </div>
-        )}
-        {images.secondaryUrl && (
-          <div className="aspect-video rounded-xl overflow-hidden border border-slate-200 bg-slate-50 relative group">
-            <img src={images.secondaryUrl} alt="Reflex" className="w-full h-full object-cover" />
-            <div className="absolute bottom-1 left-1 px-1.5 py-0.5 bg-indigo-600/80 backdrop-blur-sm rounded text-[8px] font-black text-white uppercase tracking-widest">Reflex Point</div>
+
+          <div className="space-y-3">
+            <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest px-1">Subcortical Zones</p>
+            <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+              {subcorticalPoints.map(p => (
+                <ZoneCard 
+                  key={p.id}
+                  point={p}
+                  images={customizations[p.id]}
+                  onSelect={(side) => handleSelect(p, side)}
+                  isLoading={loadingImages}
+                />
+              ))}
+            </div>
           </div>
-        )}
+        </div>
+
+        <div className="flex gap-3 pt-4">
+          <Button variant="ghost" onClick={() => prevStep(prev)} className="flex-1 h-12 rounded-xl">
+            <ChevronLeft size={18} className="mr-2" /> Back
+          </Button>
+        </div>
       </div>
     );
   };
 
-  const renderCoordinateSelection = (coord: Coordinate, setCoord: (c: Coordinate) => void, next: Step, prev: Step, title: string) => (
-    <div className="space-y-6 animate-in fade-in slide-in-from-right-4 duration-300">
-      <div className="space-y-2">
-        <h3 className="text-xl font-black text-slate-900">{title}</h3>
-        <p className="text-sm text-slate-500">Select the brain zone and lateralize the response.</p>
+  const SelectionSummary = () => (
+    <div className="grid grid-cols-2 gap-3 mb-6">
+      <div className={cn("p-3 rounded-xl border-2", coord1.point ? "bg-indigo-50 border-indigo-200" : "bg-slate-50 border-slate-100")}>
+        <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest">Coordinate 1</p>
+        <p className="text-sm font-bold text-slate-800 truncate">{coord1.point ? `${coord1.side} ${coord1.point.name}` : '...'}</p>
       </div>
-
-      <div className="space-y-6">
-        <div className="space-y-3">
-          <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest px-1">Cortical Zones</p>
-          <div className="flex flex-wrap gap-2">
-            {corticalPoints.map(p => (
-              <Button 
-                key={p.id} 
-                variant={coord.point?.id === p.id ? "default" : "outline"}
-                size="sm"
-                onClick={() => setCoord({ ...coord, point: p })}
-                className={cn("rounded-xl font-bold text-xs h-9", coord.point?.id === p.id ? "bg-purple-600" : "border-slate-200")}
-              >
-                {p.name}
-              </Button>
-            ))}
-          </div>
-        </div>
-
-        <div className="space-y-3">
-          <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest px-1">Subcortical Zones</p>
-          <div className="flex flex-wrap gap-2">
-            {subcorticalPoints.map(p => (
-              <Button 
-                key={p.id} 
-                variant={coord.point?.id === p.id ? "default" : "outline"}
-                size="sm"
-                onClick={() => setCoord({ ...coord, point: p })}
-                className={cn("rounded-xl font-bold text-xs h-9", coord.point?.id === p.id ? "bg-indigo-600" : "border-slate-200")}
-              >
-                {p.name}
-              </Button>
-            ))}
-          </div>
-        </div>
-
-        {coord.point && (
-          <div className="p-4 bg-slate-50 rounded-2xl border border-slate-100 space-y-4 animate-in zoom-in-95">
-            <div className="flex items-center justify-between">
-              <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Lateralize Response</p>
-              <Badge className="bg-white text-slate-900 border-slate-200 font-bold">{coord.point.name}</Badge>
-            </div>
-            <ToggleGroup type="single" value={coord.side || ""} onValueChange={(v) => v && setCoord({ ...coord, side: v as any })} className="justify-start gap-2">
-              <ToggleGroupItem value="Left" className="flex-1 rounded-xl border-2 data-[state=on]:bg-slate-900 data-[state=on]:text-white font-bold">Left</ToggleGroupItem>
-              <ToggleGroupItem value="Right" className="flex-1 rounded-xl border-2 data-[state=on]:bg-slate-900 data-[state=on]:text-white font-bold">Right</ToggleGroupItem>
-              <ToggleGroupItem value="Bilateral" className="flex-1 rounded-xl border-2 data-[state=on]:bg-slate-900 data-[state=on]:text-white font-bold">Bilateral</ToggleGroupItem>
-            </ToggleGroup>
-            
-            {renderImagePreview(coord.point.id)}
-          </div>
-        )}
-      </div>
-
-      <div className="flex gap-3 pt-4">
-        <Button variant="ghost" onClick={() => prevStep(prev)} className="flex-1 h-12 rounded-xl">
-          <ChevronLeft size={18} className="mr-2" /> Back
-        </Button>
-        <Button 
-          disabled={!coord.point || !coord.side}
-          onClick={() => nextStep(next)} 
-          className="flex-[2] h-12 rounded-xl bg-indigo-600 hover:bg-indigo-700 font-bold"
-        >
-          Continue <ChevronRight size={18} className="ml-2" />
-        </Button>
+      <div className={cn("p-3 rounded-xl border-2", coord2.point ? "bg-purple-50 border-purple-200" : "bg-slate-50 border-slate-100")}>
+        <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest">Coordinate 2</p>
+        <p className="text-sm font-bold text-slate-800 truncate">{coord2.point ? `${coord2.side} ${coord2.point.name}` : '...'}</p>
       </div>
     </div>
   );
@@ -215,6 +219,8 @@ const EfferentBrainIntegration = ({ onSave, onCancel, initialValue, initialEntry
           )}
         </div>
       </div>
+
+      {step !== 'ENTRY' && <SelectionSummary />}
 
       <div className="flex flex-col justify-center">
         {step === 'ENTRY' && (

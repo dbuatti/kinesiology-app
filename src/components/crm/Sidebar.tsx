@@ -18,7 +18,9 @@ import {
   Settings,
   ShieldCheck,
   PanelLeftClose,
-  Compass
+  Compass,
+  ChevronDown,
+  ChevronUp
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import SearchBar from "./SearchBar";
@@ -39,7 +41,11 @@ import { Button } from "@/components/ui/button";
 import ClientForm from "./ClientForm";
 import AppointmentForm from "./AppointmentForm";
 import { Progress } from "@/components/ui/progress";
-import { Badge } from "@/components/ui/badge";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 
 interface SidebarProps {
   onHide?: () => void;
@@ -51,23 +57,28 @@ const Sidebar = ({ onHide }: SidebarProps) => {
   const [helpOpen, setHelpOpen] = useState(false);
   const [clientDialogOpen, setClientDialogOpen] = useState(false);
   const [appDialogOpen, setAppDialogOpen] = useState(false);
+  const [practiceOpen, setPracticeOpen] = useState(true);
+  const [resourcesOpen, setResourcesOpen] = useState(true);
   
   const activeSession = useActiveSession();
   const { practiceHealth } = usePracticeStats();
   const { recentClients } = useRecentClients();
   
-  const navItems = [
+  const coreNavItems = [
     { label: "Dashboard", icon: LayoutDashboard, path: "/", shortcut: "⌘D" },
     { label: "Clients", icon: Users, path: "/clients", shortcut: "⌘1" },
     { label: "Appointments", icon: Calendar, path: "/appointments", shortcut: "⌘2" },
-    { label: "Self Practice", icon: Heart, path: "/self-practice", shortcut: "⌘S" },
-    { label: "Procedures", icon: Target, path: "/procedures", shortcut: "⌘P" },
-    { label: "Resources", icon: BookOpen, path: "/resources", shortcut: "⌘R" },
+    { label: "Oversight", icon: TrendingUp, path: "/oversight", shortcut: "⌘O" },
   ];
 
-  const secondaryItems = [
-    { label: "North Star", icon: Compass, path: "/north-star" },
-    { label: "Clinical Oversight", icon: TrendingUp, path: "/oversight" },
+  const practiceNavItems = [
+    { label: "Self Practice", icon: Heart, path: "/self-practice", shortcut: "⌘S" },
+    { label: "Procedures", icon: Target, path: "/procedures", shortcut: "⌘P" },
+  ];
+
+  const resourceNavItems = [
+    { label: "North Star", icon: Compass, path: "/north-star", shortcut: "⌘N" },
+    { label: "Resources", icon: BookOpen, path: "/resources", shortcut: "⌘R" },
   ];
 
   useEffect(() => {
@@ -77,6 +88,8 @@ const Sidebar = ({ onHide }: SidebarProps) => {
           case 'd': e.preventDefault(); navigate('/'); break;
           case '1': e.preventDefault(); navigate('/clients'); break;
           case '2': e.preventDefault(); navigate('/appointments'); break;
+          case 'n': e.preventDefault(); navigate('/north-star'); break;
+          case 'o': e.preventDefault(); navigate('/oversight'); break;
           case 's': e.preventDefault(); navigate('/self-practice'); break;
           case 'p': e.preventDefault(); navigate('/procedures'); break;
           case 'r': e.preventDefault(); navigate('/resources'); break;
@@ -99,24 +112,75 @@ const Sidebar = ({ onHide }: SidebarProps) => {
     }
   };
 
-  return (
-    <div className="hidden lg:flex w-72 bg-slate-950 text-white min-h-screen p-6 flex-col gap-6 sticky top-0 h-screen overflow-y-auto border-r border-slate-900 shadow-2xl">
-      <div className="flex items-center justify-between px-2 py-2">
+  const NavItem = ({ item, tooltip = true }: { item: any, tooltip?: boolean }) => {
+    const isActive = location.pathname === item.path || (item.path !== "/" && location.pathname.startsWith(item.path));
+    
+    const linkContent = (
+      <Link
+        to={item.path}
+        className={cn(
+          "flex items-center justify-between gap-3 px-4 py-3 rounded-2xl transition-all duration-300 group",
+          isActive 
+            ? "bg-indigo-600 text-white shadow-xl shadow-indigo-600/20" 
+            : "text-slate-400 hover:text-white hover:bg-slate-900"
+        )}
+      >
         <div className="flex items-center gap-3">
-          <div className="w-10 h-10 bg-indigo-600 rounded-xl flex items-center justify-center font-black text-lg shadow-lg shadow-indigo-500/40">A</div>
+          <item.icon size={18} className={cn("transition-all duration-300", isActive ? "text-white" : "text-slate-500 group-hover:text-slate-300")} />
+          <span className="font-bold text-[11px] uppercase tracking-widest">{item.label}</span>
+        </div>
+        {item.shortcut && (
+          <kbd className={cn(
+            "hidden xl:inline-flex h-5 select-none items-center gap-1 rounded border px-1.5 font-mono text-[9px] font-black opacity-0 group-hover:opacity-100 transition-all duration-300",
+            isActive ? "border-indigo-400 bg-indigo-700 text-indigo-100" : "border-slate-800 bg-slate-900 text-slate-600"
+          )}>
+            {item.shortcut}
+          </kbd>
+        )}
+      </Link>
+    );
+
+    if (!tooltip) return linkContent;
+
+    return (
+      <Tooltip>
+        <TooltipTrigger asChild>
+          {linkContent}
+        </TooltipTrigger>
+        <TooltipContent side="right" className="rounded-xl font-bold text-xs">
+          <p>{item.label}</p>
+          {item.shortcut && <p className="text-[10px] text-slate-400 mt-1">{item.shortcut}</p>}
+        </TooltipContent>
+      </Tooltip>
+    );
+  };
+
+  return (
+    <div className="hidden lg:flex w-72 bg-slate-950 text-white min-h-screen p-6 flex-col gap-8 sticky top-0 h-screen overflow-y-auto border-r border-slate-900 shadow-2xl">
+      <div className="flex items-center justify-between px-2 py-4">
+        <div className="flex items-center gap-4">
+          <div className="w-12 h-12 bg-indigo-600 rounded-2xl flex items-center justify-center font-black text-2xl shadow-2xl shadow-indigo-500/40 transition-transform hover:scale-105">A</div>
           <div>
-            <h1 className="text-lg font-black tracking-tight">Antigravity</h1>
-            <p className="text-[8px] text-slate-500 uppercase font-black tracking-[0.2em]">Kinesiology CRM</p>
+            <h1 className="text-xl font-black tracking-tight">Antigravity</h1>
+            <p className="text-[9px] text-slate-500 uppercase font-black tracking-[0.25em]">Kinesiology CRM</p>
           </div>
         </div>
-        <Button 
-          variant="ghost" 
-          size="icon" 
-          onClick={onHide}
-          className="h-8 w-8 text-slate-600 hover:text-white hover:bg-slate-900 rounded-lg"
-        >
-          <PanelLeftClose size={18} />
-        </Button>
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <Button 
+              variant="ghost" 
+              size="icon" 
+              onClick={onHide}
+              className="text-slate-600 hover:text-white hover:bg-slate-900 rounded-xl"
+            >
+              <PanelLeftClose size={20} />
+            </Button>
+          </TooltipTrigger>
+          <TooltipContent side="right" className="rounded-xl font-bold text-xs">
+            <p>Hide Sidebar</p>
+            <p className="text-[10px] text-slate-400 mt-1">⌘[</p>
+          </TooltipContent>
+        </Tooltip>
       </div>
 
       <div className="px-2">
@@ -124,175 +188,208 @@ const Sidebar = ({ onHide }: SidebarProps) => {
       </div>
       
       <div className="space-y-6 flex-1">
-        <nav className="flex flex-col gap-1">
-          {navItems.map((item) => {
-            const isActive = location.pathname === item.path || (item.path !== "/" && location.pathname.startsWith(item.path));
-            return (
-              <Link
-                key={item.path}
-                to={item.path}
-                className={cn(
-                  "flex items-center justify-between gap-3 px-4 py-2.5 rounded-xl transition-all duration-200 group",
-                  isActive 
-                    ? "bg-indigo-600 text-white shadow-lg shadow-indigo-600/20" 
-                    : "text-slate-400 hover:text-white hover:bg-slate-900"
-                )}
-              >
-                <div className="flex items-center gap-3">
-                  <item.icon size={18} className={cn("transition-colors", isActive ? "text-white" : "text-slate-500 group-hover:text-slate-300")} />
-                  <span className="font-bold text-xs uppercase tracking-wider">{item.label}</span>
-                </div>
-                {item.shortcut && (
-                  <kbd className={cn(
-                    "hidden xl:inline-flex h-5 select-none items-center gap-1 rounded border px-1.5 font-mono text-[9px] font-black opacity-0 group-hover:opacity-100 transition-opacity",
-                    isActive ? "border-indigo-400 bg-indigo-700 text-indigo-100" : "border-slate-800 bg-slate-900 text-slate-600"
-                  )}>
-                    {item.shortcut}
-                  </kbd>
-                )}
-              </Link>
-            );
-          })}
+        {/* Core Navigation */}
+        <nav className="space-y-1">
+          <div className="px-2 mb-3">
+            <p className="text-[9px] font-black text-slate-600 uppercase tracking-[0.3em]">Core</p>
+          </div>
+          {coreNavItems.map((item) => (
+            <NavItem key={item.path} item={item} />
+          ))}
         </nav>
 
-        <div className="px-2 space-y-1">
-          <p className="text-[9px] font-black text-slate-600 uppercase tracking-[0.2em] px-2 mb-2">More</p>
-          {secondaryItems.map((item) => {
-            const isActive = location.pathname === item.path;
-            return (
-              <Link
-                key={item.path}
-                to={item.path}
-                className={cn(
-                  "flex items-center gap-3 px-4 py-2.5 rounded-xl transition-all duration-200 group",
-                  isActive 
-                    ? "bg-slate-900 text-white" 
-                    : "text-slate-500 hover:text-white hover:bg-slate-900"
-                )}
-              >
-                <item.icon size={16} className="transition-colors" />
-                <span className="font-bold text-xs uppercase tracking-wider">{item.label}</span>
-              </Link>
-            );
-          })}
+        {/* Practice Section */}
+        <div className="space-y-1">
+          <button
+            onClick={() => setPracticeOpen(!practiceOpen)}
+            className="flex items-center justify-between w-full px-4 py-2 rounded-xl text-slate-500 hover:text-white hover:bg-slate-900 transition-all group"
+          >
+            <div className="flex items-center gap-2">
+              <Zap size={16} className="text-slate-600 group-hover:text-slate-400" />
+              <span className="text-[9px] font-black uppercase tracking-[0.3em]">Practice</span>
+            </div>
+            {practiceOpen ? <ChevronUp size={14} /> : <ChevronDown size={14} />}
+          </button>
+          
+          {practiceOpen && (
+            <div className="space-y-1 pl-2 animate-in fade-in slide-in-from-top-2 duration-300">
+              {practiceNavItems.map((item) => (
+                <NavItem key={item.path} item={item} />
+              ))}
+            </div>
+          )}
         </div>
 
-        <div className="px-2">
+        {/* Resources Section */}
+        <div className="space-y-1">
+          <button
+            onClick={() => setResourcesOpen(!resourcesOpen)}
+            className="flex items-center justify-between w-full px-4 py-2 rounded-xl text-slate-500 hover:text-white hover:bg-slate-900 transition-all group"
+          >
+            <div className="flex items-center gap-2">
+              <BookOpen size={16} className="text-slate-600 group-hover:text-slate-400" />
+              <span className="text-[9px] font-black uppercase tracking-[0.3em]">Resources</span>
+            </div>
+            {resourcesOpen ? <ChevronUp size={14} /> : <ChevronDown size={14} />}
+          </button>
+          
+          {resourcesOpen && (
+            <div className="space-y-1 pl-2 animate-in fade-in slide-in-from-top-2 duration-300">
+              {resourceNavItems.map((item) => (
+                <NavItem key={item.path} item={item} />
+              ))}
+            </div>
+          )}
+        </div>
+
+        {/* Quick Action Button */}
+        <div className="px-2 pt-4 border-t border-slate-900">
           <Button 
             onClick={() => setAppDialogOpen(true)}
-            className="w-full bg-rose-600 hover:bg-rose-700 text-white rounded-xl h-11 font-black text-[10px] uppercase tracking-widest shadow-lg shadow-rose-600/20"
+            className="w-full bg-rose-600 hover:bg-rose-700 text-white rounded-2xl h-12 font-black text-[10px] uppercase tracking-widest shadow-lg shadow-rose-600/20"
           >
-            <CalendarPlus size={16} className="mr-2" />
+            <CalendarPlus size={18} className="mr-2" />
             Book Session
           </Button>
         </div>
 
+        {/* Active Session Indicator */}
         {activeSession && (
           <div className="px-2">
             <Link 
               to={`/appointments/${activeSession.id}`}
-              className="flex items-center gap-3 px-4 py-3 bg-indigo-600 rounded-xl text-white shadow-lg shadow-indigo-600/30 hover:bg-indigo-700 transition-all group relative overflow-hidden"
+              className="flex items-center gap-4 px-5 py-4 bg-indigo-600 rounded-[2rem] text-white shadow-2xl shadow-indigo-600/30 hover:bg-indigo-700 transition-all duration-500 group relative overflow-hidden"
             >
               <div className="absolute inset-0 bg-white/10 animate-pulse" />
-              <div className="relative z-10 flex items-center gap-3 flex-1 min-w-0">
+              <div className="relative z-10 flex items-center gap-4">
                 <div className="relative">
-                  <div className="w-9 h-9 bg-white/20 rounded-lg flex items-center justify-center">
-                    <Zap size={18} className="fill-white" />
+                  <div className="w-10 h-10 bg-white/20 rounded-xl flex items-center justify-center">
+                    <Zap size={20} className="fill-white" />
                   </div>
-                  <span className="absolute -top-1 -right-1 w-2.5 h-2.5 bg-white rounded-full animate-ping" />
+                  <span className="absolute -top-1 -right-1 w-3 h-3 bg-white rounded-full animate-ping" />
                 </div>
                 <div className="flex flex-col min-w-0">
-                  <span className="text-[8px] font-black uppercase tracking-wider opacity-80 truncate">{activeSession.clientName}</span>
-                  <span className="text-xs font-black truncate">{activeSession.stage}</span>
+                  <span className="text-[9px] font-black uppercase tracking-[0.2em] opacity-80 truncate">{activeSession.clientName}</span>
+                  <span className="text-xs font-black">{activeSession.stage}</span>
                 </div>
               </div>
-              <ArrowRight size={14} className="group-hover:translate-x-1 transition-transform shrink-0" />
+              <ArrowRight size={16} className="ml-auto group-hover:translate-x-1 transition-transform shrink-0" />
             </Link>
           </div>
         )}
 
-        <div className="px-4 py-4 bg-slate-900/50 rounded-xl border border-slate-800/50 mx-2 space-y-3">
+        {/* Practice Health */}
+        <div className="px-4 py-4 bg-slate-900/50 rounded-[2rem] border border-slate-800/50 mx-2 space-y-3">
           <div className="flex items-center justify-between">
-            <p className="text-[9px] font-black text-slate-500 uppercase tracking-wider flex items-center gap-2">
-              <ShieldCheck size={11} className="text-emerald-500" /> Practice Health
+            <p className="text-[9px] font-black text-slate-500 uppercase tracking-[0.25em] flex items-center gap-2">
+              <ShieldCheck size={12} className="text-emerald-500" /> Practice Health
             </p>
-            <span className="text-xs font-black text-emerald-500">{practiceHealth}%</span>
+            <span className="text-[10px] font-black text-emerald-500">{practiceHealth}%</span>
           </div>
           <Progress value={practiceHealth} className="h-1.5 bg-slate-800 [&>div]:bg-emerald-500" />
-          <p className="text-[8px] text-slate-500 font-medium leading-tight">
-            Clients at functional BOLT baseline (25s+)
+          <p className="text-[8px] text-slate-500 font-bold leading-tight">
+            Percentage of clients at functional BOLT baseline (25s+).
           </p>
         </div>
 
-        {recentClients.length > 0 && (
-          <div className="px-2 space-y-3">
-            <div className="flex items-center justify-between px-2">
-              <p className="text-[9px] font-black text-slate-600 uppercase tracking-wider flex items-center gap-2">
-                <Clock size={11} /> Recent
-              </p>
-              <Badge variant="outline" className="border-slate-800 text-slate-500 h-5 px-2 text-[8px] font-black">
-                {recentClients.length}
-              </Badge>
-            </div>
+        {/* Recent Clients */}
+        <div className="px-2 space-y-4">
+          <div className="flex items-center justify-between px-2">
+            <p className="text-[9px] font-black text-slate-600 uppercase tracking-[0.25em] flex items-center gap-2">
+              <Clock size={12} /> Recent Clients
+            </p>
+          </div>
+          {recentClients.length > 0 ? (
             <div className="flex flex-col gap-1">
-              {recentClients.slice(0, 4).map(client => (
-                <Link 
-                  key={client.id} 
-                  to={`/clients/${client.id}`}
-                  className="flex items-center gap-3 text-sm text-slate-500 hover:text-indigo-400 transition-all py-2 px-3 rounded-lg hover:bg-slate-900 truncate group"
-                >
-                  <div className="w-7 h-7 rounded-lg bg-slate-900 border border-slate-800 flex items-center justify-center text-[9px] font-black group-hover:border-indigo-500/40 transition-all">
-                    {client.name.charAt(0)}
-                  </div>
-                  <span className="truncate font-bold text-xs">{client.name}</span>
-                </Link>
+              {recentClients.map(client => (
+                <Tooltip key={client.id}>
+                  <TooltipTrigger asChild>
+                    <Link 
+                      to={`/clients/${client.id}`}
+                      className="flex items-center gap-3 text-sm text-slate-500 hover:text-indigo-400 transition-all duration-300 py-2.5 px-4 rounded-xl hover:bg-slate-900 truncate group"
+                    >
+                      <div className="w-8 h-8 rounded-xl bg-slate-900 border border-slate-800 flex items-center justify-center text-[10px] font-black group-hover:border-indigo-500/40 transition-all">
+                        {client.name.charAt(0)}
+                      </div>
+                      <span className="truncate font-bold text-xs">{client.name}</span>
+                    </Link>
+                  </TooltipTrigger>
+                  <TooltipContent side="right" className="rounded-xl font-bold text-xs">
+                    <p>View {client.name}'s profile</p>
+                  </TooltipContent>
+                </Tooltip>
               ))}
             </div>
-          </div>
-        )}
+          ) : (
+            <p className="text-[10px] text-slate-700 italic px-4">No recent clients</p>
+          )}
+        </div>
       </div>
       
-      <div className="mt-auto pt-4 border-t border-slate-900 space-y-1">
-        <button 
-          onClick={() => setHelpOpen(true)}
-          className="flex items-center gap-3 px-4 py-2.5 rounded-xl text-slate-500 hover:text-white hover:bg-slate-900 transition-all w-full text-left group"
-        >
-          <HelpCircle size={16} className="group-hover:text-amber-400 transition-colors" />
-          <span className="font-bold text-xs uppercase tracking-wider">Help</span>
-        </button>
+      {/* Footer Actions */}
+      <div className="mt-auto pt-6 border-t border-slate-900 space-y-1">
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <button 
+              onClick={() => setHelpOpen(true)}
+              className="flex items-center gap-3 px-4 py-3 rounded-xl text-slate-500 hover:text-white hover:bg-slate-900 transition-all duration-300 w-full text-left group"
+            >
+              <HelpCircle size={18} className="group-hover:text-amber-400 transition-colors" />
+              <span className="font-bold text-[11px] uppercase tracking-widest">Help Center</span>
+            </button>
+          </TooltipTrigger>
+          <TooltipContent side="right" className="rounded-xl font-bold text-xs">
+            <p>Keyboard shortcuts & tips</p>
+            <p className="text-[10px] text-slate-400 mt-1">⌘/</p>
+          </TooltipContent>
+        </Tooltip>
 
-        <Link 
-          to="/settings"
-          className="flex items-center gap-3 px-4 py-2.5 rounded-xl text-slate-500 hover:text-white hover:bg-slate-900 transition-all group"
-        >
-          <Settings size={16} className="group-hover:text-indigo-400 transition-colors" />
-          <span className="font-bold text-xs uppercase tracking-wider">Settings</span>
-        </Link>
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <Link 
+              to="/settings"
+              className="flex items-center gap-3 px-4 py-3 rounded-xl text-slate-500 hover:text-white hover:bg-slate-900 transition-all duration-300 group"
+            >
+              <Settings size={18} className="group-hover:text-indigo-400 transition-colors" />
+              <span className="font-bold text-[11px] uppercase tracking-widest">Settings</span>
+            </Link>
+          </TooltipTrigger>
+          <TooltipContent side="right" className="rounded-xl font-bold text-xs">
+            <p>Account & preferences</p>
+          </TooltipContent>
+        </Tooltip>
 
-        <div 
-          onClick={handleSignOut}
-          className="flex items-center gap-3 px-4 py-2.5 rounded-xl text-slate-500 hover:text-rose-400 hover:bg-slate-900 transition-all cursor-pointer group"
-        >
-          <LogOut size={16} className="group-hover:text-rose-400 transition-colors" />
-          <span className="font-bold text-xs uppercase tracking-wider">Sign Out</span>
-        </div>
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <div 
+              onClick={handleSignOut}
+              className="flex items-center gap-3 px-4 py-3 rounded-xl text-slate-500 hover:text-rose-400 hover:bg-slate-900 transition-all duration-300 cursor-pointer group"
+            >
+              <LogOut size={18} className="group-hover:text-rose-400 transition-colors" />
+              <span className="font-bold text-[11px] uppercase tracking-widest">Sign Out</span>
+            </div>
+          </TooltipTrigger>
+          <TooltipContent side="right" className="rounded-xl font-bold text-xs">
+            <p>Sign out of your account</p>
+          </TooltipContent>
+        </Tooltip>
       </div>
 
       <HelpModal open={helpOpen} onOpenChange={setHelpOpen} />
       
       <Dialog open={clientDialogOpen} onOpenChange={setClientDialogOpen}>
-        <DialogContent className="sm:max-w-[600px] rounded-[2.5rem]">
-          <DialogHeader>
-            <DialogTitle className="text-2xl font-black">Add New Client</DialogTitle>
+        <DialogContent className="sm:max-w-[600px] rounded-[3.5rem] p-10">
+          <DialogHeader className="mb-6">
+            <DialogTitle className="text-3xl font-black tracking-tight">Add New Client</DialogTitle>
           </DialogHeader>
           <ClientForm onSuccess={() => { setClientDialogOpen(false); }} />
         </DialogContent>
       </Dialog>
 
       <Dialog open={appDialogOpen} onOpenChange={setAppDialogOpen}>
-        <DialogContent className="sm:max-w-[550px] rounded-[2.5rem]">
-          <DialogHeader>
-            <DialogTitle className="text-2xl font-black">Schedule New Session</DialogTitle>
+        <DialogContent className="sm:max-w-[550px] rounded-[3.5rem] p-10">
+          <DialogHeader className="mb-6">
+            <DialogTitle className="text-3xl font-black tracking-tight">Schedule New Session</DialogTitle>
           </DialogHeader>
           <AppointmentForm onSuccess={() => { setAppDialogOpen(false); }} />
         </DialogContent>

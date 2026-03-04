@@ -56,7 +56,7 @@ import IntentionReflectionSheet from "@/components/crm/IntentionReflectionSheet"
 
 const ResourcesPage = () => {
   const [searchParams, setSearchParams] = useSearchParams();
-  const activeTab = searchParams.get("tab") || "clock";
+  const activeTab = searchParams.get("tab") || "intention";
 
   return (
     <div className="p-4 md:p-8 max-w-full mx-auto space-y-8">
@@ -64,19 +64,22 @@ const ResourcesPage = () => {
 
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
         <div>
-          <h1 className="text-4xl font-black tracking-tight text-slate-900">Clinical Resources</h1>
-          <p className="text-slate-500 font-medium mt-1 text-lg">Protocols, research, and assessment guides for your practice.</p>
+          <Badge className="bg-indigo-100 text-indigo-600 border-indigo-200 font-black text-[10px] uppercase tracking-[0.3em] px-4 py-1 mb-2">
+            Integrated Healer
+          </Badge>
+          <h1 className="text-4xl font-black tracking-tight text-slate-900">Resources & Exercises</h1>
+          <p className="text-slate-500 font-medium mt-1 text-lg">Tools for your transformation journey and clinical practice.</p>
         </div>
       </div>
 
       <Tabs value={activeTab} onValueChange={(v) => setSearchParams({ tab: v })} className="w-full">
         <div className="overflow-x-auto pb-4">
           <TabsList className="flex w-max h-auto p-1.5 bg-slate-200/50 rounded-2xl gap-1">
+            <TabsTrigger value="intention" className="rounded-xl py-2.5 px-6 data-[state=active]:bg-white data-[state=active]:text-indigo-600 data-[state=active]:shadow-sm font-bold text-xs uppercase tracking-widest">
+              <Compass size={16} className="mr-2" /> North Star Process
+            </TabsTrigger>
             <TabsTrigger value="clock" className="rounded-xl py-2.5 px-6 data-[state=active]:bg-white data-[state=active]:text-indigo-600 data-[state=active]:shadow-sm font-bold text-xs uppercase tracking-widest">
               <Clock size={16} className="mr-2" /> Meridian Clock
-            </TabsTrigger>
-            <TabsTrigger value="intention" className="rounded-xl py-2.5 px-6 data-[state=active]:bg-white data-[state=active]:text-indigo-600 data-[state=active]:shadow-sm font-bold text-xs uppercase tracking-widest">
-              <Compass size={16} className="mr-2" /> North Star
             </TabsTrigger>
             <TabsTrigger value="logic" className="rounded-xl py-2.5 px-6 data-[state=active]:bg-white data-[state=active]:text-indigo-600 data-[state=active]:shadow-sm font-bold text-xs uppercase tracking-widest">
               <Lightbulb size={16} className="mr-2" /> Clinical Logic
@@ -114,12 +117,12 @@ const ResourcesPage = () => {
           </TabsList>
         </div>
 
-        <TabsContent value="clock" className="mt-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
-          <MeridianClock />
-        </TabsContent>
-
         <TabsContent value="intention" className="mt-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
           <IntentionReflectionSheet />
+        </TabsContent>
+
+        <TabsContent value="clock" className="mt-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
+          <MeridianClock />
         </TabsContent>
 
         <TabsContent value="logic" className="mt-8 space-y-10 animate-in fade-in slide-in-from-bottom-4 duration-500">

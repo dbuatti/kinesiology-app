@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { 
@@ -13,7 +13,8 @@ import {
   Droplets,
   AlertTriangle,
   ArrowRight,
-  Heart
+  Heart,
+  ImageIcon
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Badge } from '@/components/ui/badge';
@@ -22,6 +23,9 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import NociceptiveThreatAssessment from './NociceptiveThreatAssessment';
 import EfferentBrainIntegration from './EfferentBrainIntegration';
 import CalibrationTimer from './CalibrationTimer';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import { supabase } from "@/integrations/supabase/client";
 
 const JOINT_ACTION_DATA = [
   { joint: "Cranium", sagittal: "Flexion, Extension", frontal: "Lateral Flexion", transverse: "Rotation" },
@@ -70,6 +74,30 @@ const PathwayLogicWizard = ({ onSave, initialValue }: { onSave: (summary: string
   // State for unconscious process
   const [unconsciousJoint, setUnconsciousJoint] = useState('');
   const [unconsciousLigament, setUnconsciousLigament] = useState('');
+
+  const [ligamentImages, setLigamentImages] = useState<Record<string, (string | null)[]>>({});
+  const [ligamentModalOpen, setLigamentModalOpen] = useState(false);
+
+  useEffect(() => {
+    const fetchLigamentImages = async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
+      const { data } = await supabase
+        .from('ligament_images')
+        .select('category, image_index, image_url')
+        .eq('user_id', user.id);
+      
+      if (data) {
+        const imageMap: Record<string, (string | null)[]> = {};
+        data.forEach(item => {
+          if (!imageMap[item.category]) imageMap[item.category] = [];
+          imageMap[item.category][item.image_index] = item.image_url ? `${item.image_url}?t=${Date.now()}` : null;
+        });
+        setLigamentImages(imageMap);
+      }
+    };
+    fetchLigamentImages();
+  }, []);
 
   const availableActions = useMemo(() => {
     if (!consciousJoint || !consciousPlane) return [];
@@ -199,6 +227,7 @@ const PathwayLogicWizard = ({ onSave, initialValue }: { onSave: (summary: string
             <div className="space-y-2"><h3 className="text-xl font-black text-slate-900">Unconscious Process</h3><p className="text-sm text-slate-500">Localize joint and ligament, then perform stretch correction.</p></div>
             <div className="space-y-2"><label className="text-[10px] font-black text-slate-400 uppercase tracking-widest">1. Localize Joint (hold GV16)</label><Select value={unconsciousJoint} onValueChange={setUnconsciousJoint}><SelectTrigger className="rounded-xl h-12 font-bold"><SelectValue placeholder="Select Joint" /></SelectTrigger><SelectContent>{JOINT_ACTION_DATA.map(j => <SelectItem key={j.joint} value={j.joint}>{j.joint}</SelectItem>)}</SelectContent></Select></div>
             <div className="space-y-2"><label className="text-[10px] font-black text-slate-400 uppercase tracking-widest">2. Localize Ligament/Tendon</label><Input placeholder="Enter specific ligament/tendon..." className="h-12 rounded-xl font-bold" value={unconsciousLigament} onChange={(e) => setUnconsciousLigament(e.target.value)} /></div>
+            <Button variant="outline" onClick={() => setLigamentModalOpen(true)} className="w-full h-12 rounded-xl font-bold"><ImageIcon size={16} className="mr-2" /> View Ligament References</Button>
             <div className="p-4 bg-emerald-50 border border-emerald-100 rounded-xl text-sm text-emerald-800 space-y-4">
               <p className="font-bold">3. Perform Correction:</p>
               <ul className="list-disc list-inside space-y-2">
@@ -236,17 +265,40 @@ const PathwayLogicWizard = ({ onSave, initialValue }: { onSave: (summary: string
   };
 
   return (
-    <Card className="border-none shadow-lg rounded-[2.5rem] bg-white overflow-hidden">
-      <CardHeader className="p-8">
-        <CardTitle className="text-2xl font-black text-slate-900 tracking-tight">Pathway Logic Wizard</CardTitle>
-        <CardDescription className="text-slate-500 font-medium">
-          A step-by-step guide to identify and clear layers of neurological interference.
-        </CardDescription>
-      </CardHeader>
-      <CardContent className="p-8 pt-0">
-        {renderStep()}
-      </CardContent>
-    </Card>
+    <>
+      <Card className="border-none shadow-lg rounded-[2.5rem] bg-white overflow-hidden">
+        <CardHeader className="p-8">
+          <CardTitle className="text-2xl font-black text-slate-900 tracking-tight">Pathway Logic Wizard</CardTitle>
+          <CardDescription className="text-slate-500 font-medium">
+            A step-by-step guide to identify and clear layers of neurological interference.
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="p-8 pt-0">
+          {renderStep()}
+        </CardContent>
+      </Card>
+      <Dialog open={ligamentModalOpen} onOpenChange={setLigamentModalOpen}>
+        <DialogContent className="sm:max-w-[80vw] max-h-[90vh] rounded-3xl">
+          <DialogHeader>
+            <DialogTitle className="text-2xl font-bold">Ligament Reference Images</DialogTitle>
+          </DialogHeader>
+          <ScrollArea className="max-h-[70vh]">
+            <div className="p-6 space-y-8">
+              {Object.entries(ligamentImages).map(([category, urls]) => (
+                <div key={category} className="space-y-4">
+                  <h3 className="text-lg font-bold text-slate-800 capitalize">{category.replace('_', ' ')}</h3>
+                  <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+                    {urls.map((url, index) => (
+                      url ? <img key={index} src={url} alt={`${category} ${index}`} className="rounded-lg border" /> : null
+                    ))}
+                  </div>
+                </div>
+              ))}
+            </div>
+          </ScrollArea>
+        </DialogContent>
+      </Dialog>
+    </>
   );
 };
 

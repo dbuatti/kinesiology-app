@@ -40,7 +40,8 @@ import {
   Compass,
   GitBranch,
   Eye,
-  Workflow
+  Workflow,
+  ImageIcon
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -58,6 +59,7 @@ import VideoLibrary from "@/components/crm/VideoLibrary";
 import BrainReflexReference from "@/components/crm/BrainReflexReference";
 import IntentionReflectionSheet from "@/components/crm/IntentionReflectionSheet";
 import FnTheory from "@/components/crm/FnTheory";
+import LigamentReference from "@/components/crm/LigamentReference";
 
 const ResourcesPage = () => {
   const [searchParams, setSearchParams] = useSearchParams();
@@ -94,6 +96,9 @@ const ResourcesPage = () => {
             </TabsTrigger>
             <TabsTrigger value="brain" className="rounded-xl py-2.5 px-6 data-[state=active]:bg-white data-[state=active]:text-indigo-600 data-[state=active]:shadow-sm font-bold text-xs uppercase tracking-widest">
               <Brain size={16} className="mr-2" /> Brain Reflexes
+            </TabsTrigger>
+            <TabsTrigger value="ligaments" className="rounded-xl py-2.5 px-6 data-[state=active]:bg-white data-[state=active]:text-indigo-600 data-[state=active]:shadow-sm font-bold text-xs uppercase tracking-widest">
+              <ImageIcon size={16} className="mr-2" /> Ligaments
             </TabsTrigger>
             <TabsTrigger value="foundations" className="rounded-xl py-2.5 px-6 data-[state=active]:bg-white data-[state=active]:text-indigo-600 data-[state=active]:shadow-sm font-bold text-xs uppercase tracking-widest">
               <GraduationCap size={16} className="mr-2" /> Foundations
@@ -215,6 +220,10 @@ const ResourcesPage = () => {
 
         <TabsContent value="brain" className="mt-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
           <BrainReflexReference />
+        </TabsContent>
+
+        <TabsContent value="ligaments" className="mt-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
+          <LigamentReference />
         </TabsContent>
 
         <TabsContent value="foundations" className="mt-8 space-y-10 animate-in fade-in slide-in-from-bottom-4 duration-500">

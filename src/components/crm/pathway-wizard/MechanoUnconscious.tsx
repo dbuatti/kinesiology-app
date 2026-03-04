@@ -20,6 +20,7 @@ import {
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Alert, AlertDescription } from "@/components/ui/alert";
+import ConfirmationTestCard from './ConfirmationTestCard';
 
 type SkeletonType = 'Axial' | 'Appendicular' | null;
 type RegionType = 'Upper' | 'Lower' | null;
@@ -79,7 +80,7 @@ interface MechanoUnconsciousProps {
 }
 
 const MechanoUnconscious = ({ onComplete, onCancel }: MechanoUnconsciousProps) => {
-  const [step, setStep] = useState<'skeleton' | 'region' | 'side' | 'joint' | 'structure' | 'ligament' | 'direction' | 'correction' | 'reassess'>('skeleton');
+  const [step, setStep] = useState<'confirm' | 'skeleton' | 'region' | 'side' | 'joint' | 'structure' | 'ligament' | 'direction' | 'correction' | 'reassess'>('confirm');
   const [skeleton, setSkeleton] = useState<SkeletonType>(null);
   const [region, setRegion] = useState<RegionType>(null);
   const [side, setSide] = useState<SideType>(null);
@@ -137,6 +138,34 @@ const MechanoUnconscious = ({ onComplete, onCancel }: MechanoUnconsciousProps) =
 
   const renderStep = () => {
     switch (step) {
+      case 'confirm':
+        return (
+          <div className="space-y-6 animate-in fade-in slide-in-from-right-4 duration-300">
+            <div className="space-y-2">
+              <h3 className="text-xl font-black text-slate-900">Confirm Unconscious Pathway</h3>
+              <p className="text-sm text-slate-500">Verify this is the correct mechanoreceptive pathway.</p>
+            </div>
+            
+            <ConfirmationTestCard test="TL GV16 (Cerebellum) → If IM facilitates, this is UNCONSCIOUS pathway" />
+            
+            <Alert className="bg-indigo-50 border-indigo-200">
+              <Info className="h-4 w-4 text-indigo-600" />
+              <AlertDescription className="text-sm text-indigo-900">
+                <strong>Spinocerebellar Pathway:</strong> 85% of afferent input travels via Spinocerebellar tracts to the ipsilateral Cerebellum. This is the "unconscious" proprioceptive pathway, often related to old injuries.
+              </AlertDescription>
+            </Alert>
+
+            <div className="flex gap-3">
+              <Button variant="ghost" onClick={onCancel} className="flex-1 h-12 rounded-xl">
+                <ChevronLeft size={18} className="mr-2" /> Back
+              </Button>
+              <Button onClick={() => setStep('skeleton')} className="flex-[2] h-12 rounded-xl bg-purple-600 hover:bg-purple-700 font-bold">
+                Confirmed - Continue <ChevronRight size={18} className="ml-2" />
+              </Button>
+            </div>
+          </div>
+        );
+
       case 'skeleton':
         return (
           <div className="space-y-6 animate-in fade-in slide-in-from-right-4 duration-300">
@@ -184,8 +213,8 @@ const MechanoUnconscious = ({ onComplete, onCancel }: MechanoUnconsciousProps) =
                 <span className="font-black text-lg">Appendicular Skeleton</span>
               </Button>
             </div>
-            <Button variant="ghost" onClick={onCancel} className="w-full h-12 rounded-xl">
-              <ChevronLeft size={18} className="mr-2" /> Cancel
+            <Button variant="ghost" onClick={() => setStep('confirm')} className="w-full h-12 rounded-xl">
+              <ChevronLeft size={18} className="mr-2" /> Back
             </Button>
           </div>
         );
@@ -269,7 +298,7 @@ const MechanoUnconscious = ({ onComplete, onCancel }: MechanoUnconsciousProps) =
               <h3 className="text-xl font-black text-slate-900">Select Specific Joint</h3>
               <p className="text-sm text-slate-500">Challenge each joint while holding GV16.</p>
             </div>
-            <div className="grid grid-cols-2 gap-3">
+            <div className="grid grid-cols-2 gap-3 max-h-[400px] overflow-y-auto pr-2 custom-scrollbar">
               {availableJoints.map(joint => (
                 <Button
                   key={joint}
@@ -595,7 +624,7 @@ const MechanoUnconscious = ({ onComplete, onCancel }: MechanoUnconsciousProps) =
           <div 
             className="h-full bg-purple-600 transition-all duration-500" 
             style={{ 
-              width: `${(['skeleton', 'region', 'side', 'joint', 'structure', 'ligament', 'direction', 'correction', 'reassess'].indexOf(step) + 1) / 9 * 100}%` 
+              width: `${(['confirm', 'skeleton', 'region', 'side', 'joint', 'structure', 'ligament', 'direction', 'correction', 'reassess'].indexOf(step) + 1) / 9 * 100}%` 
             }} 
           />
         </div>

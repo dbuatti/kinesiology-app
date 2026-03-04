@@ -84,6 +84,7 @@ const PathwayLogicWizard = ({ onSave, initialValue }: PathwayLogicWizardProps) =
 
   const [unconsciousJoint, setUnconsciousJoint] = useState('');
   const [unconsciousLigament, setUnconsciousLigament] = useState('');
+  const [unconsciousSubStep, setUnconsciousSubStep] = useState(1);
 
   const [ligamentImages, setLigamentImages] = useState<Record<string, (string | null)[]>>({});
   const [ligamentModalOpen, setLigamentModalOpen] = useState(false);
@@ -146,6 +147,7 @@ const PathwayLogicWizard = ({ onSave, initialValue }: PathwayLogicWizardProps) =
     setMechanoType(null);
     setUnconsciousJoint('');
     setUnconsciousLigament('');
+    setUnconsciousSubStep(1);
   };
 
   const handleSave = (summary: string) => {
@@ -236,6 +238,58 @@ const PathwayLogicWizard = ({ onSave, initialValue }: PathwayLogicWizardProps) =
       case 'MECHANO_UNCONSCIOUS_PROCESS':
         const selectedCategory = jointToCategoryMap[unconsciousJoint];
         const imagesForJoint = ligamentImages[selectedCategory] || [];
+
+        const renderSubStep = () => {
+          switch (unconsciousSubStep) {
+            case 1: // Confirm Pathway
+              return (
+                <div className="space-y-6 animate-in fade-in">
+                  <div className="flex gap-4"><div className="w-8 h-8 rounded-full bg-emerald-600 text-white flex items-center justify-center font-black shrink-0">1</div><div><h4 className="font-bold text-slate-800">Confirm Pathway</h4><p className="text-xs text-slate-500">Confirm the following tests facilitate the indicator muscle.</p></div></div>
+                  <div className="p-4 bg-slate-50 rounded-xl border border-slate-100 space-y-3">
+                    <p className="font-bold text-sm">1. X-pattern facilitates → <Badge className="bg-emerald-100 text-emerald-700">Mechanoreceptive</Badge></p>
+                    <p className="font-bold text-sm">2. TL GV16 facilitates → <Badge className="bg-emerald-100 text-emerald-700">Unconscious</Badge></p>
+                  </div>
+                  <Button onClick={() => setUnconsciousSubStep(2)} className="w-full h-12 rounded-xl bg-emerald-600 hover:bg-emerald-700 font-bold">Next: Localize Joint <ChevronRight size={18} className="ml-2" /></Button>
+                </div>
+              );
+            case 2: // Localize Joint
+              return (
+                <div className="space-y-6 animate-in fade-in">
+                  <div className="flex gap-4"><div className="w-8 h-8 rounded-full bg-emerald-600 text-white flex items-center justify-center font-black shrink-0">2</div><div><h4 className="font-bold text-slate-800">Localize the Joint</h4><p className="text-xs text-slate-500">Hold GV16 during localization. Test Axial/Appendicular, Upper/Lower, Left/Right, then specific joint.</p></div></div>
+                  <Select value={unconsciousJoint} onValueChange={setUnconsciousJoint}><SelectTrigger className="rounded-xl h-12 font-bold"><SelectValue placeholder="Select Joint" /></SelectTrigger><SelectContent>{JOINT_ACTION_DATA.map(j => <SelectItem key={j.joint} value={j.joint}>{j.joint}</SelectItem>)}</SelectContent></Select>
+                  <div className="flex gap-3"><Button variant="ghost" onClick={() => setUnconsciousSubStep(1)} className="flex-1 h-12 rounded-xl"><ChevronLeft size={18} className="mr-2" /> Back</Button><Button disabled={!unconsciousJoint} onClick={() => setUnconsciousSubStep(3)} className="flex-[2] h-12 rounded-xl bg-emerald-600 hover:bg-emerald-700 font-bold">Next: Localize Ligament <ChevronRight size={18} className="ml-2" /></Button></div>
+                </div>
+              );
+            case 3: // Localize Ligament/Tendon
+              return (
+                <div className="space-y-6 animate-in fade-in">
+                  <div className="flex gap-4"><div className="w-8 h-8 rounded-full bg-emerald-600 text-white flex items-center justify-center font-black shrink-0">3</div><div><h4 className="font-bold text-slate-800">Localize Ligament or Tendon</h4><p className="text-xs text-slate-500">Challenge: Tendon or Ligament? Then challenge direction of stretch.</p></div></div>
+                  <Input placeholder="Enter specific ligament/tendon..." className="h-12 rounded-xl font-bold" value={unconsciousLigament} onChange={(e) => setUnconsciousLigament(e.target.value)} />
+                  {unconsciousJoint && (<div className="p-4 bg-slate-50 rounded-2xl border border-slate-100"><h5 className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-3">Reference Images for {unconsciousJoint}</h5>{imagesForJoint.length > 0 ? (<div className="grid grid-cols-2 gap-3">{imagesForJoint.map((url, index) => url && (<div key={index} className="aspect-video rounded-lg overflow-hidden border bg-white"><img src={url} alt={`Ligament ${index + 1}`} className="w-full h-full object-cover" /></div>))}</div>) : (<p className="text-xs text-slate-400 italic">No custom reference images uploaded for this category.</p>)}<Button variant="link" size="sm" className="text-xs mt-2" onClick={() => setLigamentModalOpen(true)}>View All Ligament Charts</Button></div>)}
+                  <div className="flex gap-3"><Button variant="ghost" onClick={() => setUnconsciousSubStep(2)} className="flex-1 h-12 rounded-xl"><ChevronLeft size={18} className="mr-2" /> Back</Button><Button disabled={!unconsciousLigament} onClick={() => setUnconsciousSubStep(4)} className="flex-[2] h-12 rounded-xl bg-emerald-600 hover:bg-emerald-700 font-bold">Next: Correction <ChevronRight size={18} className="ml-2" /></Button></div>
+                </div>
+              );
+            case 4: // Correction
+              return (
+                <div className="space-y-6 animate-in fade-in">
+                  <div className="flex gap-4"><div className="w-8 h-8 rounded-full bg-emerald-600 text-white flex items-center justify-center font-black shrink-0">4</div><div><h4 className="font-bold text-slate-800">Perform Correction</h4><p className="text-xs text-slate-500">Stretch the ligament, hold GV16, and apply tuning fork or tap for 3-5 seconds.</p></div></div>
+                  <div className="max-w-[200px] mx-auto"><CalibrationTimer duration={5} /></div>
+                  <div className="flex gap-3"><Button variant="ghost" onClick={() => setUnconsciousSubStep(3)} className="flex-1 h-12 rounded-xl"><ChevronLeft size={18} className="mr-2" /> Back</Button><Button onClick={() => setUnconsciousSubStep(5)} className="flex-[2] h-12 rounded-xl bg-emerald-600 hover:bg-emerald-700 font-bold">Next: Re-Assess <ChevronRight size={18} className="ml-2" /></Button></div>
+                </div>
+              );
+            case 5: // Re-Assess
+              return (
+                <div className="space-y-6 animate-in fade-in">
+                  <div className="flex gap-4"><div className="w-8 h-8 rounded-full bg-emerald-600 text-white flex items-center justify-center font-black shrink-0">5</div><div><h4 className="font-bold text-slate-800">Re-Assess</h4><p className="text-xs text-slate-500">Re-test the original pathway. Repeat for all layers until normalized.</p></div></div>
+                  <Button disabled={!unconsciousJoint || !unconsciousLigament} onClick={() => handleSave(`Mechanoreceptive Unconscious: ${unconsciousJoint} - ${unconsciousLigament}`)} className="w-full h-12 rounded-xl bg-emerald-600 hover:bg-emerald-700 font-bold">Save & Finish <CheckCircle2 size={18} className="ml-2" /></Button>
+                  <Button variant="ghost" onClick={() => setUnconsciousSubStep(4)} className="w-full h-12 rounded-xl"><ChevronLeft size={18} className="mr-2" /> Back</Button>
+                </div>
+              );
+            default:
+              return null;
+          }
+        };
+
         return (
           <div className="space-y-8 animate-in fade-in slide-in-from-right-4 duration-300">
             <div className="space-y-2">
@@ -246,17 +300,13 @@ const PathwayLogicWizard = ({ onSave, initialValue }: PathwayLogicWizardProps) =
               <CardHeader><CardTitle className="text-lg font-bold text-emerald-900 flex items-center gap-2"><Brain size={20} /> Neurological Basis</CardTitle></CardHeader>
               <CardContent className="text-sm text-emerald-800 space-y-2"><p>This pathway is common in old injuries where stretch receptors (Golgi tendon organs) remain sensitized. Proprioceptive input from joints/muscles/tendons travels via the spinocerebellar tracts to the cerebellum for unconscious processing of movement and posture.</p></CardContent>
             </Card>
-            <div className="space-y-6">
-              <div className="flex gap-4"><div className="w-8 h-8 rounded-full bg-emerald-600 text-white flex items-center justify-center font-black shrink-0">1</div><div><h4 className="font-bold text-slate-800">Confirm Pathway</h4><p className="text-xs text-slate-500">X-pattern facilitates → Mechanoreceptive. TL GV16 facilitates → Unconscious.</p></div></div>
-              <div className="flex gap-4"><div className="w-8 h-8 rounded-full bg-emerald-600 text-white flex items-center justify-center font-black shrink-0">2</div><div className="flex-1 space-y-3"><h4 className="font-bold text-slate-800">Localize Joint & Ligament</h4><p className="text-xs text-slate-500">Hold GV16 while localizing. Use charts to identify the structure and challenge its stretch direction.</p><div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <Select value={unconsciousJoint} onValueChange={setUnconsciousJoint}><SelectTrigger className="rounded-xl h-12 font-bold"><SelectValue placeholder="Select Joint" /></SelectTrigger><SelectContent>{JOINT_ACTION_DATA.map(j => <SelectItem key={j.joint} value={j.joint}>{j.joint}</SelectItem>)}</SelectContent></Select>
-                <Input placeholder="Enter specific ligament/tendon..." className="h-12 rounded-xl font-bold" value={unconsciousLigament} onChange={(e) => setUnconsciousLigament(e.target.value)} />
-              </div>{unconsciousJoint && (<div className="p-4 bg-slate-50 rounded-2xl border border-slate-100"><h5 className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-3">Reference Images for {unconsciousJoint}</h5>{imagesForJoint.length > 0 ? (<div className="grid grid-cols-2 gap-3">{imagesForJoint.map((url, index) => url && (<div key={index} className="aspect-video rounded-lg overflow-hidden border bg-white"><img src={url} alt={`Ligament ${index + 1}`} className="w-full h-full object-cover" /></div>))}</div>) : (<p className="text-xs text-slate-400 italic">No custom reference images uploaded for this category.</p>)}<Button variant="link" size="sm" className="text-xs mt-2" onClick={() => setLigamentModalOpen(true)}>View All Ligament Charts</Button></div>)}</div></div>
-              <div className="flex gap-4"><div className="w-8 h-8 rounded-full bg-emerald-600 text-white flex items-center justify-center font-black shrink-0">3</div><div className="flex-1 space-y-3"><h4 className="font-bold text-slate-800">Perform Correction</h4><p className="text-xs text-slate-500">Stretch the ligament, hold GV16, and apply tuning fork or tap for 3-5 seconds.</p><div className="max-w-[200px]"><CalibrationTimer duration={5} /></div></div></div>
-              <div className="flex gap-4"><div className="w-8 h-8 rounded-full bg-emerald-600 text-white flex items-center justify-center font-black shrink-0">4</div><div><h4 className="font-bold text-slate-800">Re-Assess</h4><p className="text-xs text-slate-500">Re-test the original pathway. Repeat for all layers until normalized.</p></div></div>
-            </div>
+            
+            {renderSubStep()}
+
             <Card className="border-amber-100 bg-amber-50/50"><CardHeader><CardTitle className="text-lg font-bold text-amber-900 flex items-center gap-2"><Lightbulb size={20} /> Clinical Notes</CardTitle></CardHeader><CardContent className="text-sm text-amber-800 space-y-2"><ul className="list-disc list-inside space-y-1"><li>Normal to find 5-15+ correction layers per issue, working up kinetic chains.</li><li>Often combines with vestibular/ocular, efferent, or emotional corrections.</li><li>Ankle sprains are a classic example of unconscious mechanoreceptive issues.</li><li>The priority joint may seem unrelated to the symptom site (e.g., wrist for low back issue).</li></ul></CardContent></Card>
-            <div className="flex gap-3 pt-6 border-t border-slate-100"><Button variant="ghost" onClick={goBack} className="flex-1 h-12 rounded-xl"><ChevronLeft size={18} className="mr-2" /> Back</Button><Button disabled={!unconsciousJoint || !unconsciousLigament} onClick={() => handleSave(`Mechanoreceptive Unconscious: ${unconsciousJoint} - ${unconsciousLigament}`)} className="flex-[2] h-12 rounded-xl bg-emerald-600 hover:bg-emerald-700 font-bold">Save & Finish <CheckCircle2 size={18} className="ml-2" /></Button></div>
+            <div className="flex gap-3 pt-6 border-t border-slate-100">
+              <Button variant="ghost" onClick={goBack} className="flex-1 h-12 rounded-xl"><ChevronLeft size={18} className="mr-2" /> Back to Mechano Type</Button>
+            </div>
           </div>
         );
 

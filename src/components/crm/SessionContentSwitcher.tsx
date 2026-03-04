@@ -2,7 +2,7 @@
 
 import React, { useState, useMemo } from 'react';
 import { Button } from '@/components/ui/button';
-import { Home, Heart, Dumbbell, Footprints, History } from 'lucide-react';
+import { Home, Heart, Dumbbell, Footprints, History, GitBranch } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { AppointmentWithClient } from '@/types/crm';
 import BaselineTab from './session-tabs/BaselineTab';

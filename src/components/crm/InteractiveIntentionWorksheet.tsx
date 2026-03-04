@@ -98,27 +98,32 @@ const InteractiveIntentionWorksheet = () => {
 
   useEffect(() => {
     const init = async () => {
-      // Load from localStorage first for immediate feedback
-      const saved = localStorage.getItem(STORAGE_KEY);
-      if (saved) {
-        setFormData(JSON.parse(saved));
-      }
-
-      // Try to load from Supabase if logged in
-      const { data: { user } } = await supabase.auth.getUser();
-      if (user) {
-        setUserId(user.id);
-        const { data, error } = await supabase
-          .from('north_star_intentions')
-          .select('form_data')
-          .eq('user_id', user.id)
-          .maybeSingle();
-        
-        if (data?.form_data) {
-          setFormData(data.form_data as Record<string, string>);
+      try {
+        // Load from localStorage first for immediate feedback
+        const saved = localStorage.getItem(STORAGE_KEY);
+        if (saved) {
+          setFormData(JSON.parse(saved));
         }
+
+        // Try to load from Supabase if logged in
+        const { data: { user } } = await supabase.auth.getUser();
+        if (user) {
+          setUserId(user.id);
+          const { data, error } = await supabase
+            .from('north_star_intentions')
+            .select('form_data')
+            .eq('user_id', user.id)
+            .maybeSingle();
+          
+          if (data?.form_data) {
+            setFormData(data.form_data as Record<string, string>);
+          }
+        }
+      } catch (err) {
+        console.error("Error initializing North Star data:", err);
+      } finally {
+        setIsLoaded(true);
       }
-      setIsLoaded(true);
     };
     init();
   }, []);
@@ -267,24 +272,34 @@ const InteractiveIntentionWorksheet = () => {
 
         {/* Right Side: Questions */}
         <div className="lg:col-span-3 space-y-8 print:space-y-12">
-          {/* Print Mode: Show all questions if printing */}
-          <div className="grid grid-cols-1 gap-8 print:gap-12">
-            {(window.matchMedia('print').matches ? STEPS.flatMap(s => s.questions) : stepData.questions).map((question) => (
-              <div key={question.id} className="space-y-4 animate-in fade-in slide-in-from-right-4 duration-500 print:break-inside-avoid">
+          {/* Interactive Mode: Show current step questions */}
+          <div className="grid grid-cols-1 gap-8 print:hidden">
+            {stepData.questions.map((question) => (
+              <div key={question.id} className="space-y-4 animate-in fade-in slide-in-from-right-4 duration-500">
                 <div className="space-y-1">
-                  <label className="text-lg font-black text-slate-900 print:text-base">{question.label}</label>
-                  <p className="text-sm text-slate-500 font-medium print:text-xs">{question.sub}</p>
+                  <label className="text-lg font-black text-slate-900">{question.label}</label>
+                  <p className="text-sm text-slate-500 font-medium">{question.sub}</p>
                 </div>
-                <div className="print:hidden">
-                  <Textarea 
-                    className="min-h-[150px] rounded-[2rem] border-2 border-slate-100 focus:border-indigo-500 bg-white p-8 text-lg font-medium leading-relaxed shadow-inner resize-none transition-all"
-                    placeholder="Write freely here..."
-                    value={formData[question.id] || ""}
-                    onChange={(e) => handleInputChange(question.id, e.target.value)}
-                  />
+                <Textarea 
+                  className="min-h-[150px] rounded-[2rem] border-2 border-slate-100 focus:border-indigo-500 bg-white p-8 text-lg font-medium leading-relaxed shadow-inner resize-none transition-all"
+                  placeholder="Write freely here..."
+                  value={formData[question.id] || ""}
+                  onChange={(e) => handleInputChange(question.id, e.target.value)}
+                />
+              </div>
+            ))}
+          </div>
+
+          {/* Print Mode: Show all questions from all steps */}
+          <div className="hidden print:grid grid-cols-1 gap-12">
+            {STEPS.flatMap(s => s.questions).map((question) => (
+              <div key={`print-${question.id}`} className="space-y-4 break-inside-avoid">
+                <div className="space-y-1">
+                  <label className="text-base font-bold text-slate-900">{question.label}</label>
+                  <p className="text-xs text-slate-500 font-medium">{question.sub}</p>
                 </div>
-                <div className="hidden print:block p-4 border-2 border-slate-100 rounded-xl min-h-[100px] text-slate-800">
-                  {formData[question.id] || "No response provided."}
+                <div className="p-4 border-2 border-slate-100 rounded-xl min-h-[100px] text-slate-800 bg-slate-50/30">
+                  {formData[question.id] || <span className="text-slate-300 italic">No response provided.</span>}
                 </div>
               </div>
             ))}

@@ -14,7 +14,8 @@ import {
   AlertTriangle,
   ArrowRight,
   Heart,
-  ImageIcon
+  ImageIcon,
+  Loader2
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Badge } from '@/components/ui/badge';
@@ -45,6 +46,13 @@ const JOINT_ACTION_DATA = [
   { joint: "Hand/Fingers", sagittal: "Palm Extension, Finger Extension, Palm Flexion, Finger Flexion", frontal: "Finger Adduction, Finger Abduction", transverse: "-" }
 ];
 
+const jointToCategoryMap: Record<string, string> = {
+  "Hip": "hip_shoulder", "Shoulder (GH Joint)": "hip_shoulder", "Scapula": "hip_shoulder",
+  "Knee": "knee_elbow", "Elbow": "knee_elbow",
+  "Foot/Ankle": "ankle_wrist", "Wrist": "ankle_wrist", "Hand/Fingers": "ankle_wrist",
+  "Cranium": "spinal", "Jaw": "spinal", "Cervical Spine": "spinal", "Thoracic Spine": "spinal", "Lumbar Spine": "spinal", "Pelvis": "spinal", "Sacrum": "spinal"
+};
+
 type Step = 
   | 'START'
   | 'AFFERENT_SELECT'
@@ -57,7 +65,14 @@ type Step =
   | 'EFFERENT_PROCESS'
   | 'EMOTIONS_PROCESS';
 
-const PathwayLogicWizard = ({ onSave, initialValue }: { onSave: (summary: string) => void; initialValue?: string }) => {
+type MechanoUnconsciousStep = 'JOINT' | 'LIGAMENT' | 'CORRECTION';
+
+interface PathwayLogicWizardProps {
+  onSave: (summary: string) => void;
+  initialValue?: string;
+}
+
+const PathwayLogicWizard = ({ onSave, initialValue }: PathwayLogicWizardProps) => {
   const [step, setStep] = useState<Step>('START');
   const [history, setHistory] = useState<Step[]>([]);
   
@@ -72,6 +87,7 @@ const PathwayLogicWizard = ({ onSave, initialValue }: { onSave: (summary: string
   const [consciousAction, setConsciousAction] = useState('');
 
   // State for unconscious process
+  const [mechanoUnconsciousStep, setMechanoUnconsciousStep] = useState<MechanoUnconsciousStep>('JOINT');
   const [unconsciousJoint, setUnconsciousJoint] = useState('');
   const [unconsciousLigament, setUnconsciousLigament] = useState('');
 
@@ -134,6 +150,9 @@ const PathwayLogicWizard = ({ onSave, initialValue }: { onSave: (summary: string
     setDirection(null);
     setAfferentType(null);
     setMechanoType(null);
+    setMechanoUnconsciousStep('JOINT');
+    setUnconsciousJoint('');
+    setUnconsciousLigament('');
   };
 
   const handleSave = (summary: string) => {
@@ -222,24 +241,51 @@ const PathwayLogicWizard = ({ onSave, initialValue }: { onSave: (summary: string
         );
 
       case 'MECHANO_UNCONSCIOUS_PROCESS':
+        const selectedCategory = jointToCategoryMap[unconsciousJoint];
+        const imagesForJoint = ligamentImages[selectedCategory] || [];
+
         return (
           <div className="space-y-6 animate-in fade-in slide-in-from-right-4 duration-300">
-            <div className="space-y-2"><h3 className="text-xl font-black text-slate-900">Unconscious Process</h3><p className="text-sm text-slate-500">Localize joint and ligament, then perform stretch correction.</p></div>
-            <div className="space-y-2"><label className="text-[10px] font-black text-slate-400 uppercase tracking-widest">1. Localize Joint (hold GV16)</label><Select value={unconsciousJoint} onValueChange={setUnconsciousJoint}><SelectTrigger className="rounded-xl h-12 font-bold"><SelectValue placeholder="Select Joint" /></SelectTrigger><SelectContent>{JOINT_ACTION_DATA.map(j => <SelectItem key={j.joint} value={j.joint}>{j.joint}</SelectItem>)}</SelectContent></Select></div>
-            <div className="space-y-2"><label className="text-[10px] font-black text-slate-400 uppercase tracking-widest">2. Localize Ligament/Tendon</label><Input placeholder="Enter specific ligament/tendon..." className="h-12 rounded-xl font-bold" value={unconsciousLigament} onChange={(e) => setUnconsciousLigament(e.target.value)} /></div>
-            <Button variant="outline" onClick={() => setLigamentModalOpen(true)} className="w-full h-12 rounded-xl font-bold"><ImageIcon size={16} className="mr-2" /> View Ligament References</Button>
-            <div className="p-4 bg-emerald-50 border border-emerald-100 rounded-xl text-sm text-emerald-800 space-y-4">
-              <p className="font-bold">3. Perform Correction:</p>
-              <ul className="list-disc list-inside space-y-2">
-                <li>Hold GV16.</li>
-                <li>Stretch the priority ligament/tendon in the identified direction.</li>
-                <li>Apply a tuning fork to the cranium OR tap for 3-5 seconds.</li>
-              </ul>
-            </div>
-            <div className="max-w-[200px] mx-auto">
-              <CalibrationTimer duration={5} />
-            </div>
-            <div className="flex gap-3"><Button variant="ghost" onClick={goBack} className="flex-1 h-12 rounded-xl"><ChevronLeft size={18} className="mr-2" /> Back</Button><Button disabled={!unconsciousJoint || !unconsciousLigament} onClick={() => handleSave(`Mechanoreceptive Unconscious: ${unconsciousJoint} - ${unconsciousLigament}`)} className="flex-[2] h-12 rounded-xl bg-emerald-600 hover:bg-emerald-700 font-bold">Save & Finish <CheckCircle2 size={18} className="ml-2" /></Button></div>
+            {mechanoUnconsciousStep === 'JOINT' && (
+              <div className="space-y-4">
+                <div className="space-y-2"><h3 className="text-xl font-black text-slate-900">Unconscious: Joint</h3><p className="text-sm text-slate-500">Localize the joint while holding GV16.</p></div>
+                <Select value={unconsciousJoint} onValueChange={(v) => { setUnconsciousJoint(v); setMechanoUnconsciousStep('LIGAMENT'); }}>
+                  <SelectTrigger className="rounded-xl h-12 font-bold"><SelectValue placeholder="Select Joint" /></SelectTrigger>
+                  <SelectContent>{JOINT_ACTION_DATA.map(j => <SelectItem key={j.joint} value={j.joint}>{j.joint}</SelectItem>)}</SelectContent>
+                </Select>
+                <Button variant="ghost" onClick={goBack} className="w-full"><ChevronLeft size={16} className="mr-2" /> Back</Button>
+              </div>
+            )}
+            {mechanoUnconsciousStep === 'LIGAMENT' && (
+              <div className="space-y-4">
+                <div className="space-y-2"><h3 className="text-xl font-black text-slate-900">Unconscious: Ligament</h3><p className="text-sm text-slate-500">Use your reference images to identify the specific ligament.</p></div>
+                {imagesForJoint.length > 0 && (
+                  <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+                    {imagesForJoint.map((url, index) => url && (
+                      <button key={index} onClick={() => setUnconsciousLigament(`${unconsciousJoint} Ligament #${index + 1}`)} className="aspect-video rounded-lg overflow-hidden border-2 hover:border-indigo-500 transition-all">
+                        <img src={url} alt={`Ligament ${index + 1}`} className="w-full h-full object-cover" />
+                      </button>
+                    ))}
+                  </div>
+                )}
+                <Input placeholder="Enter specific ligament/tendon..." className="h-12 rounded-xl font-bold" value={unconsciousLigament} onChange={(e) => setUnconsciousLigament(e.target.value)} />
+                <div className="flex gap-3"><Button variant="ghost" onClick={() => setMechanoUnconsciousStep('JOINT')} className="flex-1 h-12 rounded-xl"><ChevronLeft size={18} className="mr-2" /> Back</Button><Button disabled={!unconsciousLigament} onClick={() => setMechanoUnconsciousStep('CORRECTION')} className="flex-[2] h-12 rounded-xl bg-indigo-600 hover:bg-indigo-700 font-bold">Continue <ChevronRight size={18} className="ml-2" /></Button></div>
+              </div>
+            )}
+            {mechanoUnconsciousStep === 'CORRECTION' && (
+              <div className="space-y-4">
+                <div className="p-4 bg-emerald-50 border border-emerald-100 rounded-xl text-sm text-emerald-800 space-y-4">
+                  <p className="font-bold">Perform Correction:</p>
+                  <ul className="list-disc list-inside space-y-2">
+                    <li>Hold GV16.</li>
+                    <li>Stretch the priority ligament: <span className="font-bold">{unconsciousLigament}</span>.</li>
+                    <li>Apply a tuning fork to the cranium OR tap for 3-5 seconds.</li>
+                  </ul>
+                </div>
+                <div className="max-w-[200px] mx-auto"><CalibrationTimer duration={5} /></div>
+                <div className="flex gap-3"><Button variant="ghost" onClick={() => setMechanoUnconsciousStep('LIGAMENT')} className="flex-1 h-12 rounded-xl"><ChevronLeft size={18} className="mr-2" /> Back</Button><Button onClick={() => handleSave(`Mechanoreceptive Unconscious: ${unconsciousJoint} - ${unconsciousLigament}`)} className="flex-[2] h-12 rounded-xl bg-emerald-600 hover:bg-emerald-700 font-bold">Save & Finish <CheckCircle2 size={18} className="ml-2" /></Button></div>
+              </div>
+            )}
           </div>
         );
 

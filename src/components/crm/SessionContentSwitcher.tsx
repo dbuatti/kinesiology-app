@@ -72,14 +72,22 @@ const SessionContentSwitcher = ({ appointment, onUpdate, saveField }: SessionCon
         </TabsContent>
 
         <TabsContent value="pathway" className="mt-6">
-          <PathwayAssessment 
-            initialValue={appointment.priority_pattern || undefined} 
-            onSave={(s) => saveField('priority_pattern', s)} 
+          <EditableField 
+            field="priority_pattern" 
+            label="Pathway & Pattern Notes" 
+            value={appointment.priority_pattern} 
+            multiline 
+            placeholder="Document the primary pathway and patterns identified..." 
+            onSave={saveField} 
+            className="bg-white p-6 rounded-2xl border border-slate-100 shadow-sm min-h-[300px]" 
           />
         </TabsContent>
 
         <TabsContent value="calibration" className="mt-6">
-          <EditableField field="modes_balances" label="Calibration & Correction Notes" value={appointment.modes_balances} multiline placeholder="Document specific corrections..." onSave={saveField} className="bg-white p-6 rounded-2xl border border-slate-100 shadow-sm min-h-[300px]" />
+          <PathwayAssessment 
+            initialValue={appointment.modes_balances || undefined} 
+            onSave={(s) => saveField('modes_balances', s)} 
+          />
         </TabsContent>
 
         <TabsContent value="reassessment" className="mt-6">

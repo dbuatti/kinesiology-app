@@ -44,8 +44,8 @@ import { BRAIN_REFLEX_POINTS, BrainReflexPoint } from '@/data/brain-reflex-data'
 import EfferentBrainIntegration from './EfferentBrainIntegration';
 import { supabase } from "@/integrations/supabase/client";
 import { motion, AnimatePresence } from 'framer-motion';
-import MechanoConscious from './MechanoConscious';
-import MechanoUnconscious from './MechanoUnconscious';
+import MechanoConscious from './pathway-wizard/MechanoConscious';
+import MechanoUnconscious from './pathway-wizard/MechanoUnconscious';
 import { Alert, AlertDescription } from "@/components/ui/alert";
 
 type Step = 

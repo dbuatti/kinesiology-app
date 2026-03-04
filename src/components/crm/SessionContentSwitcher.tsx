@@ -17,7 +17,6 @@ import GaitReflexAssessment from './GaitReflexAssessment';
 import PathwayAssessment from './PathwayAssessment';
 import NociceptiveThreatAssessment from './NociceptiveThreatAssessment';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
-import PathwayLogicWizard from './PathwayLogicWizard';
 
 type ActiveView = 'home' | 'kinesiology' | 'muscles' | 'gait' | 'previous';
 
@@ -84,11 +83,16 @@ const SessionContentSwitcher = ({ appointment, onUpdate, saveField }: SessionCon
         <TabsContent value="calibration" className="mt-6">
           <Card className="border-none shadow-lg rounded-[2.5rem] bg-white overflow-hidden">
             <CardHeader className="p-8">
-              <CardTitle className="text-2xl font-black text-slate-900 tracking-tight">Calibration Protocol</CardTitle>
-              <CardDescription className="text-slate-500 font-medium">Use the pathway logic wizard to identify the priority correction.</CardDescription>
+              <CardTitle className="text-2xl font-black text-slate-900 tracking-tight">Nociceptive Threat Assessment</CardTitle>
+              <CardDescription className="text-slate-500 font-medium">
+                A step-by-step wizard to identify and clear layers of neurological threat.
+              </CardDescription>
             </CardHeader>
             <CardContent className="p-8 pt-0">
-              <PathwayLogicWizard />
+              <NociceptiveThreatAssessment
+                onSave={(summary) => saveField('modes_balances', summary)}
+                initialValue={appointment.modes_balances || undefined}
+              />
             </CardContent>
           </Card>
         </TabsContent>

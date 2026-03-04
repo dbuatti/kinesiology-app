@@ -65,11 +65,10 @@ const PLANES = ["Sagittal", "Frontal", "Transverse"];
 
 interface NociceptiveThreatAssessmentProps {
   onSave: (summary: string) => void;
-  onCancel?: () => void;
   initialValue?: string;
 }
 
-const NociceptiveThreatAssessment = ({ onSave, onCancel, initialValue }: NociceptiveThreatAssessmentProps) => {
+const NociceptiveThreatAssessment = ({ onSave, initialValue }: NociceptiveThreatAssessmentProps) => {
   const [layers, setLayers] = useState<Layer[]>([]);
   const [currentStep, setCurrentStep] = useState<Step>('THREAT_DEFINITION');
   const [currentLayer, setCurrentLayer] = useState<Partial<Layer>>({
@@ -118,7 +117,7 @@ const NociceptiveThreatAssessment = ({ onSave, onCancel, initialValue }: Nocicep
               <div className="relative"><AlertTriangle className="absolute left-4 top-1/2 -translate-y-1/2 text-orange-500" size={20} /><Input placeholder="e.g. C-Section Scar, Walking Downstairs..." className="h-14 pl-12 rounded-xl border-2 border-slate-100 focus:border-orange-500 transition-all text-lg font-medium" value={currentLayer.threat} onChange={(e) => setCurrentLayer({ ...currentLayer, threat: e.target.value })} /></div>
               <div className="flex flex-wrap gap-2">{["Old Injury", "Surgical Scar", "Specific Movement", "Chronic Pain"].map(tag => (<button key={tag} onClick={() => setCurrentLayer({ ...currentLayer, threat: tag })} className="px-3 py-1.5 rounded-lg bg-slate-100 hover:bg-orange-100 text-[10px] font-black uppercase tracking-widest text-slate-500 hover:text-orange-600 transition-all">+ {tag}</button>))}</div>
             </div>
-            <div className="flex gap-3">{onCancel && (<Button variant="ghost" onClick={onCancel} className="flex-1 h-14 rounded-xl font-bold">Cancel</Button>)}<Button disabled={!currentLayer.threat} onClick={() => nextStep('STIMULATION')} className="flex-[2] h-14 rounded-xl bg-orange-600 hover:bg-orange-700 text-lg font-bold shadow-lg shadow-orange-200">Begin Assessment <ChevronRight size={20} className="ml-2" /></Button></div>
+            <div className="flex gap-3"><Button disabled={!currentLayer.threat} onClick={() => nextStep('STIMULATION')} className="w-full h-14 rounded-xl bg-orange-600 hover:bg-orange-700 text-lg font-bold shadow-lg shadow-orange-200">Begin Assessment <ChevronRight size={20} className="ml-2" /></Button></div>
           </div>
         );
 

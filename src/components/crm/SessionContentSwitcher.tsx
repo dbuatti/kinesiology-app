@@ -15,6 +15,8 @@ import EmotionAssessment from './EmotionAssessment';
 import PreviousSessionSummary from './PreviousSessionSummary';
 import GaitReflexAssessment from './GaitReflexAssessment';
 import PathwayAssessment from './PathwayAssessment';
+import NociceptiveThreatAssessment from './NociceptiveThreatAssessment';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 
 type ActiveView = 'home' | 'kinesiology' | 'muscles' | 'gait' | 'previous';
 
@@ -79,7 +81,22 @@ const SessionContentSwitcher = ({ appointment, onUpdate, saveField }: SessionCon
         </TabsContent>
 
         <TabsContent value="calibration" className="mt-6">
-          <EditableField field="modes_balances" label="Calibration & Correction Notes" value={appointment.modes_balances} multiline placeholder="Document specific corrections..." onSave={saveField} className="bg-white p-6 rounded-2xl border border-slate-100 shadow-sm min-h-[300px]" />
+          <Card className="border-none shadow-lg rounded-[2.5rem] bg-white overflow-hidden">
+            <CardHeader className="p-8">
+              <CardTitle className="text-2xl font-black text-slate-900 tracking-tight">Calibration Protocol</CardTitle>
+              <CardDescription className="text-slate-500 font-medium">Use the Nociceptive Threat wizard to identify and clear pathway dysfunctions.</CardDescription>
+            </CardHeader>
+            <CardContent className="p-8 pt-0">
+              <NociceptiveThreatAssessment 
+                onSave={(summary) => {
+                  const newNotes = appointment.modes_balances 
+                    ? `${appointment.modes_balances}\n\n${summary}` 
+                    : summary;
+                  saveField('modes_balances', newNotes);
+                }}
+              />
+            </CardContent>
+          </Card>
         </TabsContent>
 
         <TabsContent value="reassessment" className="mt-6">

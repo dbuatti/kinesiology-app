@@ -19,7 +19,9 @@ import {
   Search,
   X,
   ArrowRight,
-  Info
+  Info,
+  Eye,
+  Droplets
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import NociceptiveThreatAssessment from './NociceptiveThreatAssessment';
@@ -42,6 +44,8 @@ import { BRAIN_REFLEX_POINTS, BrainReflexPoint } from '@/data/brain-reflex-data'
 import EfferentBrainIntegration from './EfferentBrainIntegration';
 import { supabase } from "@/integrations/supabase/client";
 import { motion, AnimatePresence } from 'framer-motion';
+import MechanoConscious from './MechanoConscious';
+import MechanoUnconscious from './MechanoUnconscious';
 
 type Step = 
   | 'SELECT_PATHWAY' 
@@ -51,7 +55,8 @@ type Step =
   | 'SELECT_RESPONSE' 
   | 'SELECT_DIRECTION' 
   | 'SELECT_SPECIFIC' 
-  | 'MECHANO_DETAIL'
+  | 'MECHANO_CONSCIOUS'
+  | 'MECHANO_UNCONSCIOUS'
   | 'EFFERENT_INTEGRATION'
   | 'CORRECTION' 
   | 'REASSESS';
@@ -66,9 +71,6 @@ interface WizardState {
   response: ResponseType | null;
   direction: DirectionType | null;
   specific: SpecificCorrectionType | null;
-  joint?: string;
-  plane?: string;
-  action?: string;
   reassessed: boolean;
 }
 
@@ -89,9 +91,6 @@ const PATHWAY_DESCRIPTIONS: Record<PathwayType, string> = {
   'Muscle': 'Direct assessment of individual muscle facilitation/inhibition.',
   'Nociceptive Threat': 'Systemic threat response triggered by injury, scars, or movement.'
 };
-
-const JOINTS = ["Foot", "Ankle", "Knee", "Hip", "Pelvis", "Lumbar", "Thoracic", "Cervical", "Shoulder", "Elbow", "Wrist"];
-const PLANES = ["Sagittal", "Frontal", "Transverse"];
 
 const DIRECT_MUSCLE_TESTS = [
   {
@@ -116,7 +115,8 @@ const LEARNING_TIPS: Record<Step, string> = {
   'SELECT_RESPONSE': "An inhibited response means the brain is prioritizing protection over performance.",
   'SELECT_DIRECTION': "Afferent corrections address the 'input' (sensors), while Efferent corrections address the 'output' (processing).",
   'SELECT_SPECIFIC': "The brain usually has a preferred 'entry point' for calibration.",
-  'MECHANO_DETAIL': "Identify the specific joint action the cerebellum is requesting to clear the threat.",
+  'MECHANO_CONSCIOUS': "Conscious mechanoreceptive corrections target the DCML pathway (15% of afferent input) via joint actions and isometric contractions.",
+  'MECHANO_UNCONSCIOUS': "Unconscious mechanoreceptive corrections target spinocerebellar tracts (85% of afferent input) via ligament/tendon stretches.",
   'EFFERENT_INTEGRATION': "Use the brain coordinate system to integrate the top-down motor plan.",
   'CORRECTION': "Hold the correction for 30 seconds with nasal breathing to provide a parasympathetic anchor.",
   'REASSESS': "Re-testing is critical. If the IM still inhibits, there is likely a deeper layer."
@@ -191,7 +191,6 @@ const PathwayAssessmentWizard = ({ onSave, initialValue }: PathwayAssessmentWiza
     if (confirm("Are you sure you want to start over? All current selections will be cleared.")) {
       setDirection(-1);
       setStep('SELECT_PATHWAY');
-      setShowNociceptive(false);
       setState({
         pathway: null,
         selectedMuscle: null,
@@ -218,11 +217,7 @@ const PathwayAssessmentWizard = ({ onSave, initialValue }: PathwayAssessmentWiza
     if (finalState.response) parts.push(`Response: ${finalState.response}`);
     if (finalState.direction) parts.push(`Correction: ${finalState.direction}`);
     if (finalState.specific) {
-      let detail = finalState.specific as string;
-      if (finalState.specific === 'Mechanoreceptor' && finalState.joint) {
-        detail = `Mechano (${finalState.joint} ${finalState.plane} ${finalState.action})`;
-      }
-      parts.push(`Specific: ${detail}`);
+      parts.push(`Specific: ${finalState.specific}`);
     }
     if (finalState.reassessed) parts.push(`Status: Cleared`);
     
@@ -233,7 +228,6 @@ const PathwayAssessmentWizard = ({ onSave, initialValue }: PathwayAssessmentWiza
     const summary = generateSummary(state);
     onSave(summary);
     setStep('SELECT_PATHWAY');
-    setShowNociceptive(false);
     setState({
       pathway: null,
       selectedMuscle: null,
@@ -243,25 +237,6 @@ const PathwayAssessmentWizard = ({ onSave, initialValue }: PathwayAssessmentWiza
       specific: null,
       reassessed: false,
     });
-  };
-
-  const handleNociceptiveSave = (summary: string) => {
-    onSave(summary);
-    setShowNociceptive(false);
-    setStep('SELECT_PATHWAY');
-    setState({
-      pathway: null,
-      selectedMuscle: null,
-      selectedBrainZone: null,
-      response: null,
-      direction: null,
-      specific: null,
-      reassessed: false,
-    });
-  };
-
-  const handleNociceptiveCancel = () => {
-    setShowNociceptive(false);
   };
 
   const renderImagePreview = (pointId: string) => {
@@ -286,35 +261,6 @@ const PathwayAssessmentWizard = ({ onSave, initialValue }: PathwayAssessmentWiza
     );
   };
 
-  const slideVariants = {
-    enter: (direction: number) => ({
-      x: direction > 0 ? 50 : -50,
-      opacity: 0
-    }),
-    center: {
-      zIndex: 1,
-      x: 0,
-      opacity: 1
-    },
-    exit: (direction: number) => ({
-      zIndex: 0,
-      x: direction < 0 ? 50 : -50,
-      opacity: 0
-    })
-  };
-
-  // If Nociceptive Threat Assessment is active, render it instead
-  if (showNociceptive) {
-    return (
-      <div className="animate-in fade-in zoom-in-95 duration-500">
-        <NociceptiveThreatAssessment 
-          onSave={handleNociceptiveSave}
-          onCancel={handleNociceptiveCancel}
-        />
-      </div>
-    );
-  }
-
   const renderStep = () => {
     switch (step) {
       case 'SELECT_PATHWAY':
@@ -322,10 +268,9 @@ const PathwayAssessmentWizard = ({ onSave, initialValue }: PathwayAssessmentWiza
           <motion.div 
             key="SELECT_PATHWAY"
             custom={direction}
-            variants={slideVariants}
-            initial="enter"
-            animate="center"
-            exit="exit"
+            initial={{ x: direction > 0 ? 50 : -50, opacity: 0 }}
+            animate={{ x: 0, opacity: 1 }}
+            exit={{ x: direction < 0 ? 50 : -50, opacity: 0 }}
             transition={{ duration: 0.3, ease: "easeInOut" }}
             className="space-y-6"
           >
@@ -346,7 +291,6 @@ const PathwayAssessmentWizard = ({ onSave, initialValue }: PathwayAssessmentWiza
                         )}
                         onClick={() => {
                           if (p === 'Nociceptive Threat') {
-                            setState({ ...state, pathway: p });
                             setShowNociceptive(true);
                           } else {
                             setState({ ...state, pathway: p });
@@ -384,10 +328,9 @@ const PathwayAssessmentWizard = ({ onSave, initialValue }: PathwayAssessmentWiza
           <motion.div 
             key="SELECT_MUSCLE"
             custom={direction}
-            variants={slideVariants}
-            initial="enter"
-            animate="center"
-            exit="exit"
+            initial={{ x: direction > 0 ? 50 : -50, opacity: 0 }}
+            animate={{ x: 0, opacity: 1 }}
+            exit={{ x: direction < 0 ? 50 : -50, opacity: 0 }}
             transition={{ duration: 0.3, ease: "easeInOut" }}
             className="space-y-6"
           >
@@ -414,7 +357,15 @@ const PathwayAssessmentWizard = ({ onSave, initialValue }: PathwayAssessmentWiza
                     <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] px-1">{group.group}</h4>
                     <div className="grid grid-cols-1 gap-2">
                       {filteredMuscles.map((m) => (
-                        <Button key={m} variant="outline" className={cn("h-auto py-3 justify-start px-4 rounded-xl border-2 transition-all text-left", state.selectedMuscle === m ? "border-green-600 bg-green-50 text-green-700" : "border-slate-100 hover:border-green-200")} onClick={() => { setState({ ...state, selectedMuscle: m }); nextStep('TEST_IM'); }}>
+                        <Button
+                          key={m}
+                          variant="outline"
+                          className={cn(
+                            "h-auto py-3 justify-start px-4 rounded-xl border-2 transition-all text-left",
+                            state.selectedMuscle === m ? "border-green-600 bg-green-50 text-green-700" : "border-slate-100 hover:border-green-200"
+                          )}
+                          onClick={() => { setState({ ...state, selectedMuscle: m }); nextStep('TEST_IM'); }}
+                        >
                           <span className="font-bold text-sm">{m}</span>
                         </Button>
                       ))}
@@ -423,7 +374,9 @@ const PathwayAssessmentWizard = ({ onSave, initialValue }: PathwayAssessmentWiza
                 );
               })}
             </div>
-            <Button variant="ghost" onClick={() => prevStep('SELECT_PATHWAY')} className="w-full h-12 rounded-xl"><ChevronLeft size={18} className="mr-2" /> Back</Button>
+            <Button variant="ghost" onClick={() => prevStep('SELECT_PATHWAY')} className="w-full h-12 rounded-xl">
+              <ChevronLeft size={18} className="mr-2" /> Back
+            </Button>
           </motion.div>
         );
 
@@ -436,10 +389,9 @@ const PathwayAssessmentWizard = ({ onSave, initialValue }: PathwayAssessmentWiza
           <motion.div 
             key="SELECT_BRAIN_ZONE"
             custom={direction}
-            variants={slideVariants}
-            initial="enter"
-            animate="center"
-            exit="exit"
+            initial={{ x: direction > 0 ? 50 : -50, opacity: 0 }}
+            animate={{ x: 0, opacity: 1 }}
+            exit={{ x: direction < 0 ? 50 : -50, opacity: 0 }}
             transition={{ duration: 0.3, ease: "easeInOut" }}
             className="space-y-6"
           >
@@ -514,8 +466,12 @@ const PathwayAssessmentWizard = ({ onSave, initialValue }: PathwayAssessmentWiza
               )}
             </div>
             <div className="flex gap-3">
-              <Button variant="ghost" onClick={() => prevStep('SELECT_PATHWAY')} className="flex-1 h-12 rounded-xl"><ChevronLeft size={18} className="mr-2" /> Back</Button>
-              <Button disabled={!state.selectedBrainZone} onClick={() => nextStep('TEST_IM')} className="flex-[2] h-12 rounded-xl bg-indigo-600 hover:bg-indigo-700 font-bold">Continue <ChevronRight size={18} className="ml-2" /></Button>
+              <Button variant="ghost" onClick={() => prevStep('SELECT_PATHWAY')} className="flex-1 h-12 rounded-xl">
+                <ChevronLeft size={18} className="mr-2" /> Back
+              </Button>
+              <Button disabled={!state.selectedBrainZone} onClick={() => nextStep('TEST_IM')} className="flex-[2] h-12 rounded-xl bg-indigo-600 hover:bg-indigo-700 font-bold">
+                Continue <ChevronRight size={18} className="ml-2" />
+              </Button>
             </div>
           </motion.div>
         );
@@ -526,14 +482,13 @@ const PathwayAssessmentWizard = ({ onSave, initialValue }: PathwayAssessmentWiza
           <motion.div 
             key="TEST_IM"
             custom={direction}
-            variants={slideVariants}
-            initial="enter"
-            animate="center"
-            exit="exit"
+            initial={{ x: direction > 0 ? 50 : -50, opacity: 0 }}
+            animate={{ x: 0, opacity: 1 }}
+            exit={{ x: direction < 0 ? 50 : -50, opacity: 0 }}
             transition={{ duration: 0.3, ease: "easeInOut" }}
             className="space-y-6"
           >
-            <div className="bg-indigo-900 text-white p-8 rounded-[2.5rem] shadow-2xl relative overflow-hidden">
+            <div className="bg-indigo-900/95 backdrop-blur-md text-white p-8 rounded-[2.5rem] shadow-2xl relative overflow-hidden">
               <div className="absolute top-0 right-0 p-8 opacity-10 pointer-events-none"><Sparkles size={150} /></div>
               <h3 className="text-2xl font-black mb-6 flex items-center gap-3"><Zap size={28} className="text-amber-400 fill-amber-400" /> Stimulation & Test</h3>
               <div className="space-y-6 relative z-10">
@@ -552,8 +507,12 @@ const PathwayAssessmentWizard = ({ onSave, initialValue }: PathwayAssessmentWiza
               </div>
             </div>
             <div className="flex gap-3">
-              <Button variant="ghost" onClick={() => prevStep(state.pathway === 'Muscle' ? 'SELECT_MUSCLE' : state.pathway === 'Brain Zone' ? 'SELECT_BRAIN_ZONE' : 'SELECT_PATHWAY')} className="flex-1 h-14 rounded-2xl font-bold"><ChevronLeft size={18} className="mr-2" /> Back</Button>
-              <Button onClick={() => nextStep('SELECT_RESPONSE')} className="flex-[2] h-14 rounded-2xl bg-indigo-600 hover:bg-indigo-700 text-lg font-black shadow-lg shadow-indigo-200">Test Complete <ChevronRight size={18} className="ml-2" /></Button>
+              <Button variant="ghost" onClick={() => prevStep(state.pathway === 'Muscle' ? 'SELECT_MUSCLE' : state.pathway === 'Brain Zone' ? 'SELECT_BRAIN_ZONE' : 'SELECT_PATHWAY')} className="flex-1 h-14 rounded-2xl font-bold">
+                <ChevronLeft size={18} className="mr-2" /> Back
+              </Button>
+              <Button onClick={() => nextStep('SELECT_RESPONSE')} className="flex-[2] h-14 rounded-2xl bg-indigo-600 hover:bg-indigo-700 text-lg font-black shadow-lg shadow-indigo-200">
+                Test Complete <ChevronRight size={18} className="ml-2" />
+              </Button>
             </div>
           </motion.div>
         );
@@ -563,10 +522,9 @@ const PathwayAssessmentWizard = ({ onSave, initialValue }: PathwayAssessmentWiza
           <motion.div 
             key="SELECT_RESPONSE"
             custom={direction}
-            variants={slideVariants}
-            initial="enter"
-            animate="center"
-            exit="exit"
+            initial={{ x: direction > 0 ? 50 : -50, opacity: 0 }}
+            animate={{ x: 0, opacity: 1 }}
+            exit={{ x: direction < 0 ? 50 : -50, opacity: 0 }}
             transition={{ duration: 0.3, ease: "easeInOut" }}
             className="space-y-6"
           >
@@ -583,7 +541,9 @@ const PathwayAssessmentWizard = ({ onSave, initialValue }: PathwayAssessmentWiza
                 <div className="text-center"><span className="font-black text-xl block">INHIBITED</span><span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Abnormal Response</span></div>
               </Button>
             </div>
-            <Button variant="ghost" onClick={() => prevStep('TEST_IM')} className="w-full h-12 rounded-xl"><ChevronLeft size={18} className="mr-2" /> Back</Button>
+            <Button variant="ghost" onClick={() => prevStep('TEST_IM')} className="w-full h-12 rounded-xl">
+              <ChevronLeft size={18} className="mr-2" /> Back
+            </Button>
           </motion.div>
         );
 
@@ -592,10 +552,9 @@ const PathwayAssessmentWizard = ({ onSave, initialValue }: PathwayAssessmentWiza
           <motion.div 
             key="SELECT_DIRECTION"
             custom={direction}
-            variants={slideVariants}
-            initial="enter"
-            animate="center"
-            exit="exit"
+            initial={{ x: direction > 0 ? 50 : -50, opacity: 0 }}
+            animate={{ x: 0, opacity: 1 }}
+            exit={{ x: direction < 0 ? 50 : -50, opacity: 0 }}
             transition={{ duration: 0.3, ease: "easeInOut" }}
             className="space-y-6"
           >
@@ -613,7 +572,9 @@ const PathwayAssessmentWizard = ({ onSave, initialValue }: PathwayAssessmentWiza
                 <div className="w-12 h-12 rounded-2xl bg-white shadow-sm flex items-center justify-center group-hover:translate-x-1 transition-all"><ChevronRight size={24} className="text-indigo-600" /></div>
               </Button>
             </div>
-            <Button variant="ghost" onClick={() => prevStep('SELECT_RESPONSE')} className="w-full h-12 rounded-xl"><ChevronLeft size={18} className="mr-2" /> Back</Button>
+            <Button variant="ghost" onClick={() => prevStep('SELECT_RESPONSE')} className="w-full h-12 rounded-xl">
+              <ChevronLeft size={18} className="mr-2" /> Back
+            </Button>
           </motion.div>
         );
 
@@ -623,10 +584,9 @@ const PathwayAssessmentWizard = ({ onSave, initialValue }: PathwayAssessmentWiza
           <motion.div 
             key="SELECT_SPECIFIC"
             custom={direction}
-            variants={slideVariants}
-            initial="enter"
-            animate="center"
-            exit="exit"
+            initial={{ x: direction > 0 ? 50 : -50, opacity: 0 }}
+            animate={{ x: 0, opacity: 1 }}
+            exit={{ x: direction < 0 ? 50 : -50, opacity: 0 }}
             transition={{ duration: 0.3, ease: "easeInOut" }}
             className="space-y-6"
           >
@@ -636,36 +596,47 @@ const PathwayAssessmentWizard = ({ onSave, initialValue }: PathwayAssessmentWiza
             </div>
             <div className="grid grid-cols-1 gap-3">
               {options.map((opt) => (
-                <Button key={opt.id} variant="outline" className={cn("h-20 justify-start gap-4 px-6 rounded-2xl border-2 transition-all group", state.specific === opt.id ? "border-indigo-600 bg-indigo-50 text-indigo-700" : "border-slate-100 hover:border-indigo-200")} onClick={() => { setState({ ...state, specific: opt.id }); if (opt.id === 'Mechanoreceptor') nextStep('MECHANO_DETAIL'); else if (opt.direction === 'Efferent (Top-Down)' && (opt.id === 'Cortical' || opt.id === 'Subcortical')) nextStep('EFFERENT_INTEGRATION'); else nextStep('CORRECTION'); }}>
+                <Button key={opt.id} variant="outline" className={cn("h-20 justify-start gap-4 px-6 rounded-2xl border-2 transition-all group", state.specific === opt.id ? "border-indigo-600 bg-indigo-50 text-indigo-700" : "border-slate-100 hover:border-indigo-200")} onClick={() => { 
+                  setState({ ...state, specific: opt.id }); 
+                  if (opt.id === 'Mechanoreceptor') {
+                    nextStep('MECHANO_CONSCIOUS');
+                  } else if (opt.direction === 'Efferent (Top-Down)' && (opt.id === 'Cortical' || opt.id === 'Subcortical')) {
+                    nextStep('EFFERENT_INTEGRATION');
+                  } else {
+                    nextStep('CORRECTION');
+                  }
+                }}>
                   <div className="w-10 h-10 rounded-xl bg-white shadow-sm flex items-center justify-center group-hover:scale-110 transition-transform"><opt.icon size={20} className={opt.color} /></div>
                   <div className="text-left"><span className="font-black text-lg block">{opt.label}</span><span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Correction Pathway</span></div>
                 </Button>
               ))}
             </div>
-            <Button variant="ghost" onClick={() => prevStep('SELECT_DIRECTION')} className="w-full h-12 rounded-xl"><ChevronLeft size={18} className="mr-2" /> Back</Button>
+            <Button variant="ghost" onClick={() => prevStep('SELECT_DIRECTION')} className="w-full h-12 rounded-xl">
+              <ChevronLeft size={18} className="mr-2" /> Back
+            </Button>
           </motion.div>
         );
 
-      case 'MECHANO_DETAIL':
+      case 'MECHANO_CONSCIOUS':
         return (
-          <motion.div 
-            key="MECHANO_DETAIL"
-            custom={direction}
-            variants={slideVariants}
-            initial="enter"
-            animate="center"
-            exit="exit"
-            transition={{ duration: 0.3, ease: "easeInOut" }}
-            className="space-y-6"
-          >
-            <div className="space-y-2"><h3 className="text-xl font-black text-slate-900">Mechanical Specifics</h3><p className="text-sm text-slate-500">Identify the joint and plane of motion the brain is requesting.</p></div>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div className="space-y-2"><label className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Joint</label><Select value={state.joint} onValueChange={(v) => setState({ ...state, joint: v })}><SelectTrigger className="rounded-xl h-12 font-bold"><SelectValue placeholder="Select Joint" /></SelectTrigger><SelectContent>{JOINTS.map(j => <SelectItem key={j} value={j}>{j}</SelectItem>)}</SelectContent></Select></div>
-              <div className="space-y-2"><label className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Plane</label><Select value={state.plane} onValueChange={(v) => setState({ ...state, plane: v })}><SelectTrigger className="rounded-xl h-12 font-bold"><SelectValue placeholder="Select Plane" /></SelectTrigger><SelectContent>{PLANES.map(p => <SelectItem key={p} value={p}>{p}</SelectItem>)}</SelectContent></Select></div>
-            </div>
-            <div className="space-y-2"><label className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Action (e.g. Plantarflexion)</label><Input placeholder="Enter specific action..." className="h-12 rounded-xl font-bold" value={state.action || ""} onChange={(e) => setState({ ...state, action: e.target.value })} /></div>
-            <div className="flex gap-3"><Button variant="ghost" onClick={() => prevStep('SELECT_SPECIFIC')} className="flex-1 h-12 rounded-xl"><ChevronLeft size={18} className="mr-2" /> Back</Button><Button disabled={!state.joint || !state.plane || !state.action} onClick={() => nextStep('CORRECTION')} className="flex-[2] h-12 rounded-xl bg-indigo-600 hover:bg-indigo-700 font-bold">Continue <ChevronRight size={18} className="ml-2" /></Button></div>
-          </motion.div>
+          <MechanoConscious 
+            onComplete={(summary) => {
+              setState({ ...state, reassessed: true });
+              nextStep('REASSESS');
+            }}
+            onCancel={() => prevStep('SELECT_SPECIFIC')}
+          />
+        );
+
+      case 'MECHANO_UNCONSCIOUS':
+        return (
+          <MechanoUnconscious 
+            onComplete={(summary) => {
+              setState({ ...state, reassessed: true });
+              nextStep('REASSESS');
+            }}
+            onCancel={() => prevStep('SELECT_SPECIFIC')}
+          />
         );
 
       case 'EFFERENT_INTEGRATION':
@@ -674,10 +645,9 @@ const PathwayAssessmentWizard = ({ onSave, initialValue }: PathwayAssessmentWiza
           <motion.div 
             key="EFFERENT_INTEGRATION"
             custom={direction}
-            variants={slideVariants}
-            initial="enter"
-            animate="center"
-            exit="exit"
+            initial={{ x: direction > 0 ? 50 : -50, opacity: 0 }}
+            animate={{ x: 0, opacity: 1 }}
+            exit={{ x: direction < 0 ? 50 : -50, opacity: 0 }}
             transition={{ duration: 0.3, ease: "easeInOut" }}
           >
             <EfferentBrainIntegration initialEntryPoint={entry} onSave={(summary) => { setState({ ...state, reassessed: true }); nextStep('REASSESS'); }} onCancel={() => nextStep('SELECT_SPECIFIC')} />
@@ -690,25 +660,31 @@ const PathwayAssessmentWizard = ({ onSave, initialValue }: PathwayAssessmentWiza
           <motion.div 
             key="CORRECTION"
             custom={direction}
-            variants={slideVariants}
-            initial="enter"
-            animate="center"
-            exit="exit"
+            initial={{ x: direction > 0 ? 50 : -50, opacity: 0 }}
+            animate={{ x: 0, opacity: 1 }}
+            exit={{ x: direction < 0 ? 50 : -50, opacity: 0 }}
             transition={{ duration: 0.3, ease: "easeInOut" }}
             className="space-y-6"
           >
             <div className="bg-indigo-50 p-8 rounded-[2.5rem] border-2 border-indigo-100 relative overflow-hidden">
               <div className="absolute top-0 right-0 p-8 opacity-5 pointer-events-none"><Wind size={120} /></div>
-              <h3 className="text-xl font-black text-indigo-900 mb-6 flex items-center gap-3"><CheckCircle2 size={24} className="text-indigo-600" /> {state.specific === 'Mechanoreceptor' ? `Correct ${state.joint}` : 'Apply Correction'}</h3>
+              <h3 className="text-xl font-black text-indigo-900 mb-6 flex items-center gap-3"><CheckCircle2 size={24} className="text-indigo-600" /> Apply Correction</h3>
               <div className="space-y-6 relative z-10">
-                <div className="p-5 bg-white rounded-2xl border border-indigo-200 shadow-sm"><p className="text-lg font-bold text-indigo-900 leading-tight">{state.specific === 'Mechanoreceptor' ? `Perform ${state.action} in the ${state.plane} plane.` : `Apply the ${state.specific} protocol.`}</p></div>
+                <div className="p-5 bg-white rounded-2xl border border-indigo-200 shadow-sm"><p className="text-lg font-bold text-indigo-900 leading-tight">Apply the {state.specific} protocol.</p></div>
                 <div className="grid grid-cols-1 gap-4">
                   <div className="flex items-start gap-4"><div className="w-10 h-10 rounded-xl bg-indigo-600 text-white flex items-center justify-center shrink-0 shadow-lg"><Sparkles size={20} /></div><div><p className="text-sm font-black text-indigo-900 uppercase tracking-tight">The Protocol</p><div className="text-sm text-indigo-700 font-medium leading-relaxed"><ul className="list-disc list-inside space-y-1">{pathway?.protocols.map((p, i) => <li key={i}>{p}</li>)}</ul></div></div></div>
                   <div className="flex items-start gap-4"><div className="w-10 h-10 rounded-xl bg-teal-500 text-white flex items-center justify-center shrink-0 shadow-lg"><Wind size={20} /></div><div><p className="text-sm font-black text-teal-900 uppercase tracking-tight">Nasal Breathing</p><p className="text-sm text-teal-700 font-medium leading-relaxed">Instruct client to breathe <span className="font-black">in and out through the nose</span>.</p></div></div>
                 </div>
               </div>
             </div>
-            <div className="flex gap-3"><Button variant="ghost" onClick={() => prevStep(state.specific === 'Mechanoreceptor' ? 'MECHANO_DETAIL' : 'SELECT_SPECIFIC')} className="flex-1 h-14 rounded-2xl font-bold"><ChevronLeft size={18} className="mr-2" /> Back</Button><Button onClick={() => nextStep('REASSESS')} className="flex-[2] h-14 rounded-2xl bg-indigo-600 hover:bg-indigo-700 text-lg font-black shadow-lg shadow-indigo-200">Correction Applied <ChevronRight size={18} className="ml-2" /></Button></div>
+            <div className="flex gap-3">
+              <Button variant="ghost" onClick={() => prevStep('SELECT_SPECIFIC')} className="flex-1 h-14 rounded-2xl font-bold">
+                <ChevronLeft size={18} className="mr-2" /> Back
+              </Button>
+              <Button onClick={() => nextStep('REASSESS')} className="flex-[2] h-14 rounded-2xl bg-indigo-600 hover:bg-indigo-700 text-lg font-black shadow-lg shadow-indigo-200">
+                Correction Applied <ChevronRight size={18} className="ml-2" />
+              </Button>
+            </div>
           </motion.div>
         );
 
@@ -718,10 +694,9 @@ const PathwayAssessmentWizard = ({ onSave, initialValue }: PathwayAssessmentWiza
           <motion.div 
             key="REASSESS"
             custom={direction}
-            variants={slideVariants}
-            initial="enter"
-            animate="center"
-            exit="exit"
+            initial={{ x: direction > 0 ? 50 : -50, opacity: 0 }}
+            animate={{ x: 0, opacity: 1 }}
+            exit={{ x: direction < 0 ? 50 : -50, opacity: 0 }}
             transition={{ duration: 0.3, ease: "easeInOut" }}
             className="space-y-6"
           >
@@ -731,10 +706,16 @@ const PathwayAssessmentWizard = ({ onSave, initialValue }: PathwayAssessmentWiza
               <p className="text-emerald-700 font-medium text-lg">Re-stimulate the <span className="font-black underline">"{reassessLabel}"</span> pathway and test the IM again.</p>
             </div>
             <div className="grid grid-cols-1 gap-4">
-              <Button className="h-16 rounded-2xl bg-emerald-600 hover:bg-emerald-700 text-xl font-black shadow-lg shadow-emerald-100" onClick={() => { setState({ ...state, reassessed: true }); handleComplete(); }}>Pathway is Clear <CheckCircle2 size={24} className="ml-2" /></Button>
-              <Button variant="outline" className="h-16 rounded-2xl border-2 border-rose-200 text-rose-700 hover:bg-rose-50 font-bold text-lg" onClick={() => setStep('SELECT_DIRECTION')}>Still Inhibited - Try Another Correction</Button>
+              <Button className="h-16 rounded-2xl bg-emerald-600 hover:bg-emerald-700 text-xl font-black shadow-lg shadow-emerald-100" onClick={handleComplete}>
+                Pathway is Clear <CheckCircle2 size={24} className="ml-2" />
+              </Button>
+              <Button variant="outline" className="h-16 rounded-2xl border-2 border-rose-200 text-rose-700 hover:bg-rose-50 font-bold text-lg" onClick={() => setStep('SELECT_DIRECTION')}>
+                Still Inhibited - Try Another Correction
+              </Button>
             </div>
-            <Button variant="ghost" onClick={() => prevStep(state.response === 'Clear/Normal' ? 'SELECT_RESPONSE' : 'CORRECTION')} className="w-full h-12 rounded-xl"><ChevronLeft size={18} className="mr-2" /> Back</Button>
+            <Button variant="ghost" onClick={() => prevStep(state.response === 'Clear/Normal' ? 'SELECT_RESPONSE' : state.specific === 'Mechanoreceptor' ? 'MECHANO_CONSCIOUS' : 'CORRECTION')} className="w-full h-12 rounded-xl">
+              <ChevronLeft size={18} className="mr-2" /> Back
+            </Button>
           </motion.div>
         );
 
@@ -743,9 +724,21 @@ const PathwayAssessmentWizard = ({ onSave, initialValue }: PathwayAssessmentWiza
     }
   };
 
-  const stepsList = ['SELECT_PATHWAY', 'SELECT_MUSCLE', 'SELECT_BRAIN_ZONE', 'TEST_IM', 'SELECT_RESPONSE', 'SELECT_DIRECTION', 'SELECT_SPECIFIC', 'MECHANO_DETAIL', 'EFFERENT_INTEGRATION', 'CORRECTION', 'REASSESS'];
+  const stepsList = ['SELECT_PATHWAY', 'SELECT_MUSCLE', 'SELECT_BRAIN_ZONE', 'TEST_IM', 'SELECT_RESPONSE', 'SELECT_DIRECTION', 'SELECT_SPECIFIC', 'MECHANO_CONSCIOUS', 'MECHANO_UNCONSCIOUS', 'EFFERENT_INTEGRATION', 'CORRECTION', 'REASSESS'];
   const currentStepIndex = stepsList.indexOf(step);
   const progress = ((currentStepIndex + 1) / stepsList.length) * 100;
+
+  if (showNociceptive) {
+    return (
+      <NociceptiveThreatAssessment 
+        onSave={(summary) => {
+          onSave(summary);
+          setShowNociceptive(false);
+        }}
+        onCancel={() => setShowNociceptive(false)}
+      />
+    );
+  }
 
   return (
     <div className="space-y-6">
@@ -759,7 +752,7 @@ const PathwayAssessmentWizard = ({ onSave, initialValue }: PathwayAssessmentWiza
           />
         </div>
 
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-8 mt-4 gap-4">
+        <div className="flex items-center justify-between mb-8 mt-4">
           <div className="flex items-center gap-4">
             <div className="w-14 h-14 rounded-2xl bg-indigo-600 text-white flex items-center justify-center shadow-lg shadow-indigo-200">
               <Zap size={28} />

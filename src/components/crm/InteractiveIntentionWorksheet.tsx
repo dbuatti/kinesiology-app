@@ -18,7 +18,9 @@ import {
   Shield,
   CheckCircle2,
   Save,
-  RotateCcw
+  RotateCcw,
+  Clock,
+  Zap
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Textarea } from "@/components/ui/textarea";

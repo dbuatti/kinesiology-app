@@ -124,7 +124,7 @@ const LEARNING_TIPS: Record<Step, string> = {
 
 const PathwayAssessmentWizard = ({ onSave, initialValue }: PathwayAssessmentWizardProps) => {
   const [step, setStep] = useState<Step>('SELECT_PATHWAY');
-  const [direction, setDirection] = useState(1); // 1 for forward, -1 for backward
+  const [direction, setDirection] = useState(1);
   const [showNociceptive, setShowNociceptive] = useState(false);
   const [muscleSearch, setMuscleSearch] = useState("");
   const [brainSearch, setBrainSearch] = useState("");
@@ -171,7 +171,6 @@ const PathwayAssessmentWizard = ({ onSave, initialValue }: PathwayAssessmentWiza
     fetchCustomizations();
   }, []);
 
-  // Auto-focus search inputs
   useEffect(() => {
     if ((step === 'SELECT_MUSCLE' || step === 'SELECT_BRAIN_ZONE') && searchInputRef.current) {
       searchInputRef.current.focus();
@@ -192,6 +191,7 @@ const PathwayAssessmentWizard = ({ onSave, initialValue }: PathwayAssessmentWiza
     if (confirm("Are you sure you want to start over? All current selections will be cleared.")) {
       setDirection(-1);
       setStep('SELECT_PATHWAY');
+      setShowNociceptive(false);
       setState({
         pathway: null,
         selectedMuscle: null,
@@ -233,6 +233,7 @@ const PathwayAssessmentWizard = ({ onSave, initialValue }: PathwayAssessmentWiza
     const summary = generateSummary(state);
     onSave(summary);
     setStep('SELECT_PATHWAY');
+    setShowNociceptive(false);
     setState({
       pathway: null,
       selectedMuscle: null,
@@ -242,6 +243,25 @@ const PathwayAssessmentWizard = ({ onSave, initialValue }: PathwayAssessmentWiza
       specific: null,
       reassessed: false,
     });
+  };
+
+  const handleNociceptiveSave = (summary: string) => {
+    onSave(summary);
+    setShowNociceptive(false);
+    setStep('SELECT_PATHWAY');
+    setState({
+      pathway: null,
+      selectedMuscle: null,
+      selectedBrainZone: null,
+      response: null,
+      direction: null,
+      specific: null,
+      reassessed: false,
+    });
+  };
+
+  const handleNociceptiveCancel = () => {
+    setShowNociceptive(false);
   };
 
   const renderImagePreview = (pointId: string) => {
@@ -283,6 +303,18 @@ const PathwayAssessmentWizard = ({ onSave, initialValue }: PathwayAssessmentWiza
     })
   };
 
+  // If Nociceptive Threat Assessment is active, render it instead
+  if (showNociceptive) {
+    return (
+      <div className="animate-in fade-in zoom-in-95 duration-500">
+        <NociceptiveThreatAssessment 
+          onSave={handleNociceptiveSave}
+          onCancel={handleNociceptiveCancel}
+        />
+      </div>
+    );
+  }
+
   const renderStep = () => {
     switch (step) {
       case 'SELECT_PATHWAY':
@@ -314,6 +346,7 @@ const PathwayAssessmentWizard = ({ onSave, initialValue }: PathwayAssessmentWiza
                         )}
                         onClick={() => {
                           if (p === 'Nociceptive Threat') {
+                            setState({ ...state, pathway: p });
                             setShowNociceptive(true);
                           } else {
                             setState({ ...state, pathway: p });
@@ -717,7 +750,6 @@ const PathwayAssessmentWizard = ({ onSave, initialValue }: PathwayAssessmentWiza
   return (
     <div className="space-y-6">
       <div className="relative overflow-hidden bg-white rounded-[2.5rem] border border-slate-100 shadow-xl p-8">
-        {/* Progress Bar */}
         <div className="absolute top-0 left-0 w-full h-1.5 bg-slate-100">
           <motion.div 
             className="h-full bg-indigo-600" 
@@ -727,7 +759,6 @@ const PathwayAssessmentWizard = ({ onSave, initialValue }: PathwayAssessmentWiza
           />
         </div>
 
-        {/* Header */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-8 mt-4 gap-4">
           <div className="flex items-center gap-4">
             <div className="w-14 h-14 rounded-2xl bg-indigo-600 text-white flex items-center justify-center shadow-lg shadow-indigo-200">
@@ -758,7 +789,6 @@ const PathwayAssessmentWizard = ({ onSave, initialValue }: PathwayAssessmentWiza
           </div>
         </div>
 
-        {/* Selection Summary Bar */}
         {(state.pathway || state.response || state.direction) && (
           <div className="flex flex-wrap items-center gap-2 mb-8 p-3 bg-slate-50 rounded-2xl border border-slate-100 animate-in fade-in slide-in-from-top-2">
             <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest ml-2 mr-1">Current:</span>
@@ -785,7 +815,6 @@ const PathwayAssessmentWizard = ({ onSave, initialValue }: PathwayAssessmentWiza
           </div>
         )}
 
-        {/* Step Content */}
         <div className="min-h-[300px] flex flex-col">
           <AnimatePresence mode="wait" custom={direction}>
             {renderStep()}
@@ -793,7 +822,6 @@ const PathwayAssessmentWizard = ({ onSave, initialValue }: PathwayAssessmentWiza
         </div>
       </div>
 
-      {/* Learning Tip */}
       <motion.div 
         key={`tip-${step}`}
         initial={{ opacity: 0, y: 10 }}

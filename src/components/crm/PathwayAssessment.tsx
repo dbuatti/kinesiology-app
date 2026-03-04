@@ -5,7 +5,7 @@ import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { 
-  Brain, Zap, Activity, Shield, Dumbbell, AlertTriangle, ChevronDown, Check, X, Plus, Search, RotateCcw, Layers
+  Brain, Zap, Activity, Shield, Dumbbell, AlertTriangle, ChevronDown, Check, X, Plus, Search, RotateCcw, Layers, ImageIcon
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { BRAIN_REFLEX_POINTS, BrainReflexPoint } from '@/data/brain-reflex-data';
@@ -14,6 +14,10 @@ import NociceptiveThreatAssessment from './NociceptiveThreatAssessment';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
+import { supabase } from "@/integrations/supabase/client";
+import { Switch } from "@/components/ui/switch";
+import { Label } from "@/components/ui/label";
+import { Skeleton } from "@/components/ui/skeleton";
 
 type Status = 'Clear' | 'Inhibited';
 type AssessmentResults = Record<string, Record<string, Status>>;
@@ -22,9 +26,11 @@ interface AssessmentItemProps {
   name: string;
   status?: Status;
   onSetStatus: (status: Status) => void;
+  imageUrl?: string | null;
+  showImage?: boolean;
 }
 
-const AssessmentItem = ({ name, status, onSetStatus }: AssessmentItemProps) => {
+const AssessmentItem = ({ name, status, onSetStatus, imageUrl, showImage }: AssessmentItemProps) => {
   return (
     <div className={cn(
       "group relative p-4 rounded-2xl border-2 transition-all",
@@ -43,6 +49,11 @@ const AssessmentItem = ({ name, status, onSetStatus }: AssessmentItemProps) => {
           </Badge>
         )}
       </div>
+      {showImage && imageUrl && (
+        <div className="mt-4 aspect-video rounded-lg overflow-hidden border border-slate-200 bg-slate-100">
+          <img src={imageUrl} alt={name} className="w-full h-full object-cover" />
+        </div>
+      )}
       <div className="absolute inset-0 bg-slate-900/5 rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2">
         <Button size="sm" className="bg-emerald-500 hover:bg-emerald-600 rounded-xl h-9" onClick={() => onSetStatus('Clear')}>
           <Check size={16} className="mr-1" /> Clear
@@ -110,10 +121,18 @@ interface PathwayAssessmentProps {
   onSave: (summary: string) => void;
 }
 
+interface ReflexImageData {
+  primaryUrl: string | null;
+  secondaryUrl: string | null;
+}
+
 const PathwayAssessment = ({ initialValue, onSave }: PathwayAssessmentProps) => {
   const [results, setResults] = useState<AssessmentResults>({});
   const [showNociceptive, setShowNociceptive] = useState(false);
   const [muscleSearch, setMuscleSearch] = useState("");
+  const [showImages, setShowImages] = useState(false);
+  const [customizations, setCustomizations] = useState<Record<string, ReflexImageData>>({});
+  const [loadingImages, setLoadingImages] = useState(true);
 
   useEffect(() => {
     try {
@@ -125,6 +144,35 @@ const PathwayAssessment = ({ initialValue, onSave }: PathwayAssessmentProps) => 
       console.error("Failed to parse initial pathway data", e);
     }
   }, [initialValue]);
+
+  useEffect(() => {
+    const fetchCustomizations = async () => {
+      setLoadingImages(true);
+      try {
+        const { data: { user } } = await supabase.auth.getUser();
+        if (!user) return;
+        const { data } = await supabase
+          .from('brain_reflex_customizations')
+          .select('reflex_id, image_url, secondary_image_url')
+          .eq('user_id', user.id);
+        
+        const mapping: Record<string, ReflexImageData> = {};
+        data?.forEach(item => { 
+          const timestamp = Date.now();
+          mapping[item.reflex_id] = {
+            primaryUrl: item.image_url ? `${item.image_url}?t=${timestamp}` : null,
+            secondaryUrl: item.secondary_image_url ? `${item.secondary_image_url}?t=${timestamp}` : null
+          };
+        });
+        setCustomizations(mapping);
+      } catch (err) {
+        console.error("Failed to fetch customizations:", err);
+      } finally {
+        setLoadingImages(false);
+      }
+    };
+    fetchCustomizations();
+  }, []);
 
   const handleSetStatus = (category: string, item: string, status: Status) => {
     const newResults = { ...results };
@@ -163,6 +211,14 @@ const PathwayAssessment = ({ initialValue, onSave }: PathwayAssessmentProps) => 
 
   return (
     <div className="space-y-8">
+      <div className="flex items-center justify-end gap-3 p-3 bg-slate-100 rounded-2xl border border-slate-200">
+        <ImageIcon size={16} className="text-slate-500" />
+        <Label htmlFor="show-images" className="text-xs font-bold text-slate-600 uppercase tracking-wider">
+          Preview Reflex Images
+        </Label>
+        <Switch id="show-images" checked={showImages} onCheckedChange={setShowImages} disabled={loadingImages} />
+      </div>
+
       <AssessmentSection title="Primitive Reflex Assessment" description="Check foundational movement patterns." icon={RotateCcw} {...getCounts('primitiveReflexes')}>
         <div className="text-center p-12 bg-slate-50 rounded-2xl border-2 border-dashed border-slate-200">
           <p className="font-bold text-slate-500">Coming Soon</p>
@@ -172,27 +228,37 @@ const PathwayAssessment = ({ initialValue, onSave }: PathwayAssessmentProps) => 
 
       <AssessmentSection title="Cranial Nerve Assessment" description="Test direct pathways from the brainstem." icon={Activity} {...getCounts('cranialNerves')}>
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-          {cranialNerves.map(nerve => (
-            <AssessmentItem 
-              key={nerve.id}
-              name={nerve.name}
-              status={results.cranialNerves?.[nerve.name]}
-              onSetStatus={(status) => handleSetStatus('cranialNerves', nerve.name, status)}
-            />
-          ))}
+          {cranialNerves.map(nerve => {
+            const imageUrl = customizations[nerve.id]?.secondaryUrl || customizations[nerve.id]?.primaryUrl;
+            return (
+              <AssessmentItem 
+                key={nerve.id}
+                name={nerve.name}
+                status={results.cranialNerves?.[nerve.name]}
+                onSetStatus={(status) => handleSetStatus('cranialNerves', nerve.name, status)}
+                imageUrl={imageUrl}
+                showImage={showImages}
+              />
+            );
+          })}
         </div>
       </AssessmentSection>
 
       <AssessmentSection title="Brain Zone Assessment" description="Challenge specific cortical and subcortical regions." icon={Brain} {...getCounts('brainZones')}>
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-          {brainZones.map(zone => (
-            <AssessmentItem 
-              key={zone.id}
-              name={zone.name}
-              status={results.brainZones?.[zone.name]}
-              onSetStatus={(status) => handleSetStatus('brainZones', zone.name, status)}
-            />
-          ))}
+          {brainZones.map(zone => {
+            const imageUrl = customizations[zone.id]?.secondaryUrl || customizations[zone.id]?.primaryUrl;
+            return (
+              <AssessmentItem 
+                key={zone.id}
+                name={zone.name}
+                status={results.brainZones?.[zone.name]}
+                onSetStatus={(status) => handleSetStatus('brainZones', zone.name, status)}
+                imageUrl={imageUrl}
+                showImage={showImages}
+              />
+            );
+          })}
         </div>
       </AssessmentSection>
 

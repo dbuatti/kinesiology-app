@@ -428,7 +428,7 @@ const PathwayAssessmentWizard = ({ onSave, initialValue }: PathwayAssessmentWiza
               <p className="text-sm text-slate-500">Test each nerve and mark as Clear or Inhibited.</p>
             </div>
 
-            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
+            <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 gap-3">
               {cranialNerves.map((nerve) => {
                 const result = state.cranialNerveResults.find(r => r.nerve.id === nerve.id);
                 const images = customizations[nerve.id];
@@ -437,56 +437,56 @@ const PathwayAssessmentWizard = ({ onSave, initialValue }: PathwayAssessmentWiza
                   <div 
                     key={nerve.id} 
                     className={cn(
-                      "p-4 rounded-2xl border-2 transition-all group relative overflow-hidden space-y-3",
+                      "p-2 rounded-xl border-2 transition-all group relative overflow-hidden space-y-2",
                       result?.status === 'Clear' ? "border-emerald-500 bg-emerald-50" :
                       result?.status === 'Inhibited' ? "border-rose-500 bg-rose-50" :
                       "border-slate-200 bg-white hover:border-indigo-200"
                     )}
                   >
                     <div className="flex items-start justify-between">
-                      <h4 className="font-black text-sm text-slate-900 leading-tight">{nerve.name}</h4>
+                      <h4 className="font-black text-xs text-slate-900 leading-tight">{nerve.name}</h4>
                       {result && (
                         <div className={cn(
-                          "w-5 h-5 rounded-full flex items-center justify-center shrink-0",
+                          "w-4 h-4 rounded-full flex items-center justify-center shrink-0",
                           result.status === 'Clear' ? "bg-emerald-500" : "bg-rose-500"
                         )}>
                           {result.status === 'Clear' ? (
-                            <CheckCircle2 size={12} className="text-white" />
+                            <CheckCircle2 size={10} className="text-white" />
                           ) : (
-                            <XCircle size={12} className="text-white" />
+                            <XCircle size={10} className="text-white" />
                           )}
                         </div>
                       )}
                     </div>
 
                     {images?.secondaryUrl && (
-                      <div className="aspect-square rounded-xl overflow-hidden border border-slate-200 bg-slate-50">
+                      <div className="aspect-square rounded-lg overflow-hidden border border-slate-200 bg-slate-50">
                         <img src={images.secondaryUrl} alt={nerve.name} className="w-full h-full object-cover" />
                       </div>
                     )}
 
-                    <div className="flex gap-2">
+                    <div className="flex gap-1">
                       <Button
                         size="sm"
                         variant={result?.status === 'Clear' ? 'default' : 'outline'}
                         onClick={() => toggleCranialNerve(nerve, 'Clear')}
                         className={cn(
-                          "flex-1 h-8 rounded-lg text-[10px] font-black uppercase tracking-widest",
+                          "flex-1 h-6 rounded-md text-[8px] font-black uppercase tracking-widest px-1",
                           result?.status === 'Clear' ? "bg-emerald-600 hover:bg-emerald-700" : "border-emerald-200 text-emerald-600 hover:bg-emerald-50"
                         )}
                       >
-                        Clear
+                        ✓
                       </Button>
                       <Button
                         size="sm"
                         variant={result?.status === 'Inhibited' ? 'default' : 'outline'}
                         onClick={() => toggleCranialNerve(nerve, 'Inhibited')}
                         className={cn(
-                          "flex-1 h-8 rounded-lg text-[10px] font-black uppercase tracking-widest",
+                          "flex-1 h-6 rounded-md text-[8px] font-black uppercase tracking-widest px-1",
                           result?.status === 'Inhibited' ? "bg-rose-600 hover:bg-rose-700" : "border-rose-200 text-rose-600 hover:bg-rose-50"
                         )}
                       >
-                        Inhibited
+                        ✗
                       </Button>
                     </div>
                   </div>
@@ -556,7 +556,7 @@ const PathwayAssessmentWizard = ({ onSave, initialValue }: PathwayAssessmentWiza
                 return (
                   <div key={group} className="space-y-3">
                     <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] px-1">{group}</h4>
-                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+                    <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-2">
                       {filteredMuscles.map((muscle) => {
                         const result = state.muscleResults.find(r => r.muscle === muscle);
                         
@@ -564,14 +564,14 @@ const PathwayAssessmentWizard = ({ onSave, initialValue }: PathwayAssessmentWiza
                           <div 
                             key={muscle}
                             className={cn(
-                              "p-3 rounded-xl border-2 transition-all group relative",
+                              "p-2 rounded-lg border-2 transition-all group relative",
                               result?.status === 'Clear' ? "border-emerald-500 bg-emerald-50" :
                               result?.status === 'Inhibited' ? "border-rose-500 bg-rose-50" :
                               "border-slate-200 bg-white hover:border-green-200"
                             )}
                           >
                             <div className="flex items-center justify-between mb-2">
-                              <h4 className="font-black text-sm text-slate-900 leading-tight">{muscle}</h4>
+                              <h4 className="font-black text-xs text-slate-900 leading-tight">{muscle}</h4>
                               {result && (
                                 <div className={cn(
                                   "w-4 h-4 rounded-full flex items-center justify-center shrink-0",
@@ -591,7 +591,7 @@ const PathwayAssessmentWizard = ({ onSave, initialValue }: PathwayAssessmentWiza
                                 variant={result?.status === 'Clear' ? 'default' : 'outline'}
                                 onClick={() => toggleMuscle(muscle, 'Clear')}
                                 className={cn(
-                                  "flex-1 h-7 rounded-md text-[9px] font-black uppercase tracking-widest",
+                                  "flex-1 h-6 rounded-md text-[8px] font-black uppercase tracking-widest",
                                   result?.status === 'Clear' ? "bg-emerald-600 hover:bg-emerald-700" : "border-emerald-200 text-emerald-600 hover:bg-emerald-50"
                                 )}
                               >
@@ -602,7 +602,7 @@ const PathwayAssessmentWizard = ({ onSave, initialValue }: PathwayAssessmentWiza
                                 variant={result?.status === 'Inhibited' ? 'default' : 'outline'}
                                 onClick={() => toggleMuscle(muscle, 'Inhibited')}
                                 className={cn(
-                                  "flex-1 h-7 rounded-md text-[9px] font-black uppercase tracking-widest",
+                                  "flex-1 h-6 rounded-md text-[8px] font-black uppercase tracking-widest",
                                   result?.status === 'Inhibited' ? "bg-rose-600 hover:bg-rose-700" : "border-rose-200 text-rose-600 hover:bg-rose-50"
                                 )}
                               >
@@ -666,7 +666,7 @@ const PathwayAssessmentWizard = ({ onSave, initialValue }: PathwayAssessmentWiza
               {cortical.length > 0 && (
                 <div className="space-y-3">
                   <h4 className="text-[10px] font-black text-purple-500 uppercase tracking-[0.2em] px-1">Cortical (Contralateral)</h4>
-                  <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
+                  <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 gap-3">
                     {cortical.map((p) => {
                       const images = customizations[p.id];
                       const isSelected = state.selectedBrainZone?.id === p.id;
@@ -676,24 +676,24 @@ const PathwayAssessmentWizard = ({ onSave, initialValue }: PathwayAssessmentWiza
                           key={p.id}
                           onClick={() => setState({ ...state, selectedBrainZone: p })}
                           className={cn(
-                            "p-4 rounded-2xl border-2 transition-all text-left space-y-3 group",
+                            "p-2 rounded-xl border-2 transition-all text-left space-y-2 group",
                             isSelected ? "border-purple-600 bg-purple-50" : "border-slate-200 bg-white hover:border-purple-200"
                           )}
                         >
                           <div className="flex items-start justify-between">
-                            <span className="font-black text-sm text-slate-900 leading-tight">{p.name}</span>
+                            <span className="font-black text-xs text-slate-900 leading-tight">{p.name}</span>
                             {isSelected && (
-                              <CheckCircle2 size={16} className="text-purple-600 shrink-0" />
+                              <CheckCircle2 size={14} className="text-purple-600 shrink-0" />
                             )}
                           </div>
 
                           {images?.secondaryUrl && (
-                            <div className="aspect-square rounded-xl overflow-hidden border border-slate-200 bg-slate-50">
+                            <div className="aspect-square rounded-lg overflow-hidden border border-slate-200 bg-slate-50">
                               <img src={images.secondaryUrl} alt={p.name} className="w-full h-full object-cover" />
                             </div>
                           )}
 
-                          <Badge variant="outline" className="text-[8px] font-black uppercase border-purple-200 text-purple-600 w-full justify-center py-1">
+                          <Badge variant="outline" className="text-[7px] font-black uppercase border-purple-200 text-purple-600 w-full justify-center py-0">
                             {p.lateralization}
                           </Badge>
                         </button>
@@ -706,7 +706,7 @@ const PathwayAssessmentWizard = ({ onSave, initialValue }: PathwayAssessmentWiza
               {subcortical.length > 0 && (
                 <div className="space-y-3">
                   <h4 className="text-[10px] font-black text-indigo-500 uppercase tracking-[0.2em] px-1">Subcortical (Ipsilateral)</h4>
-                  <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
+                  <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 gap-3">
                     {subcortical.map((p) => {
                       const images = customizations[p.id];
                       const isSelected = state.selectedBrainZone?.id === p.id;
@@ -716,24 +716,24 @@ const PathwayAssessmentWizard = ({ onSave, initialValue }: PathwayAssessmentWiza
                           key={p.id}
                           onClick={() => setState({ ...state, selectedBrainZone: p })}
                           className={cn(
-                            "p-4 rounded-2xl border-2 transition-all text-left space-y-3 group",
+                            "p-2 rounded-xl border-2 transition-all text-left space-y-2 group",
                             isSelected ? "border-indigo-600 bg-indigo-50" : "border-slate-200 bg-white hover:border-indigo-200"
                           )}
                         >
                           <div className="flex items-start justify-between">
-                            <span className="font-black text-sm text-slate-900 leading-tight">{p.name}</span>
+                            <span className="font-black text-xs text-slate-900 leading-tight">{p.name}</span>
                             {isSelected && (
-                              <CheckCircle2 size={16} className="text-indigo-600 shrink-0" />
+                              <CheckCircle2 size={14} className="text-indigo-600 shrink-0" />
                             )}
                           </div>
 
                           {images?.secondaryUrl && (
-                            <div className="aspect-square rounded-xl overflow-hidden border border-slate-200 bg-slate-50">
+                            <div className="aspect-square rounded-lg overflow-hidden border border-slate-200 bg-slate-50">
                               <img src={images.secondaryUrl} alt={p.name} className="w-full h-full object-cover" />
                             </div>
                           )}
 
-                          <Badge variant="outline" className="text-[8px] font-black uppercase border-indigo-200 text-indigo-600 w-full justify-center py-1">
+                          <Badge variant="outline" className="text-[7px] font-black uppercase border-indigo-200 text-indigo-600 w-full justify-center py-0">
                             {p.lateralization}
                           </Badge>
                         </button>

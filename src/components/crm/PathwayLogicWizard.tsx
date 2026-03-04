@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { 
@@ -70,6 +70,22 @@ const PathwayLogicWizard = ({ onSave, initialValue }: { onSave: (summary: string
   // State for unconscious process
   const [unconsciousJoint, setUnconsciousJoint] = useState('');
   const [unconsciousLigament, setUnconsciousLigament] = useState('');
+
+  const availableActions = useMemo(() => {
+    if (!consciousJoint || !consciousPlane) return [];
+    
+    const jointData = JOINT_ACTION_DATA.find(j => j.joint === consciousJoint);
+    if (!jointData) return [];
+
+    const planeKey = consciousPlane.toLowerCase() as keyof typeof jointData;
+    const actionsString = jointData[planeKey];
+    
+    if (typeof actionsString === 'string' && actionsString !== '-') {
+      return actionsString.split(',').map(s => s.trim());
+    }
+    
+    return [];
+  }, [consciousJoint, consciousPlane]);
 
   const goToStep = (nextStep: Step) => {
     setHistory([...history, step]);
@@ -148,8 +164,17 @@ const PathwayLogicWizard = ({ onSave, initialValue }: { onSave: (summary: string
         return (
           <div className="space-y-6 animate-in fade-in slide-in-from-right-4 duration-300">
             <div className="space-y-2"><h3 className="text-xl font-black text-slate-900">Conscious Process</h3><p className="text-sm text-slate-500">Localize joint and action, then perform isometric correction.</p></div>
-            <div className="space-y-2"><label className="text-[10px] font-black text-slate-400 uppercase tracking-widest">1. Localize Joint</label><Select value={consciousJoint} onValueChange={setConsciousJoint}><SelectTrigger className="rounded-xl h-12 font-bold"><SelectValue placeholder="Select Joint" /></SelectTrigger><SelectContent>{JOINT_ACTION_DATA.map(j => <SelectItem key={j.joint} value={j.joint}>{j.joint}</SelectItem>)}</SelectContent></Select></div>
-            <div className="space-y-2"><label className="text-[10px] font-black text-slate-400 uppercase tracking-widest">2. Find Joint Action</label><div className="grid grid-cols-2 gap-2"><Select value={consciousPlane} onValueChange={setConsciousPlane}><SelectTrigger className="rounded-xl h-12 font-bold"><SelectValue placeholder="Select Plane" /></SelectTrigger><SelectContent>{["Sagittal", "Frontal", "Transverse"].map(p => <SelectItem key={p} value={p}>{p}</SelectItem>)}</SelectContent></Select><Input placeholder="Enter specific action..." className="h-12 rounded-xl font-bold" value={consciousAction} onChange={(e) => setConsciousAction(e.target.value)} /></div></div>
+            <div className="space-y-2"><label className="text-[10px] font-black text-slate-400 uppercase tracking-widest">1. Localize Joint</label><Select value={consciousJoint} onValueChange={(v) => { setConsciousJoint(v); setConsciousPlane(''); setConsciousAction(''); }}><SelectTrigger className="rounded-xl h-12 font-bold"><SelectValue placeholder="Select Joint" /></SelectTrigger><SelectContent>{JOINT_ACTION_DATA.map(j => <SelectItem key={j.joint} value={j.joint}>{j.joint}</SelectItem>)}</SelectContent></Select></div>
+            <div className="space-y-2"><label className="text-[10px] font-black text-slate-400 uppercase tracking-widest">2. Find Joint Action</label><div className="grid grid-cols-2 gap-2">
+              <Select value={consciousPlane} onValueChange={(v) => { setConsciousPlane(v); setConsciousAction(''); }} disabled={!consciousJoint}>
+                <SelectTrigger className="rounded-xl h-12 font-bold"><SelectValue placeholder="Select Plane" /></SelectTrigger>
+                <SelectContent>{["Sagittal", "Frontal", "Transverse"].map(p => <SelectItem key={p} value={p}>{p}</SelectItem>)}</SelectContent>
+              </Select>
+              <Select value={consciousAction} onValueChange={setConsciousAction} disabled={!consciousJoint || !consciousPlane || availableActions.length === 0}>
+                <SelectTrigger className="rounded-xl h-12 font-bold"><SelectValue placeholder="Select Action" /></SelectTrigger>
+                <SelectContent>{availableActions.map(action => <SelectItem key={action} value={action}>{action}</SelectItem>)}</SelectContent>
+              </Select>
+            </div></div>
             <div className="p-4 bg-blue-50 border border-blue-100 rounded-xl text-sm text-blue-800 space-y-4">
               <p className="font-bold">3. Perform Correction:</p>
               <ul className="list-disc list-inside space-y-2">

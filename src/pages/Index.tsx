@@ -7,10 +7,10 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/com
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { 
-  Calendar, Activity, Loader2, 
-  Plus, UserPlus, Sparkles, 
+  Calendar, Activity, Loader2,
+  Plus, UserPlus, Sparkles,
   CheckCircle2, Zap, FlaskConical, Brain, Wind, StickyNote, Timer,
-  ArrowRight, AlertCircle, TrendingUp, Clock
+  ArrowRight, AlertCircle, TrendingUp, Clock, ShieldCheck
 } from "lucide-react";
 import { MadeWithDyad } from "@/components/made-with-dyad";
 import {
@@ -428,6 +428,27 @@ const Index = () => {
                     </Button>
                     <Button variant="outline" className="justify-start h-14 rounded-2xl border-slate-100 hover:bg-slate-50 font-black text-[11px] uppercase tracking-widest text-slate-700 shadow-sm" asChild>
                       <Link to="/self-practice"><Activity size={18} className="mr-4 text-rose-500" /> Practice Coherence</Link>
+                    </Button>
+                  </div>
+                </CardContent>
+              </Card>
+
+              <Card className="border-none shadow-xl rounded-[3.5rem] bg-indigo-50 border border-indigo-100 overflow-hidden">
+                <CardHeader className="p-10">
+                  <CardTitle className="text-3xl font-black flex items-center gap-4 text-indigo-900">
+                    <Sparkles size={32} className="text-indigo-600" /> Program Resources
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="p-10 pt-0 space-y-6">
+                  <p className="text-lg text-indigo-700 font-medium leading-relaxed">Access your weekly worksheets and program materials.</p>
+                  <div className="grid grid-cols-1 gap-4">
+                    <Button className="justify-start h-16 rounded-2xl bg-indigo-600 hover:bg-indigo-700 font-black text-[11px] uppercase tracking-widest text-white shadow-lg shadow-indigo-200" asChild>
+                      <Link to="/week-3-worksheet">
+                        <ShieldCheck size={20} className="mr-4" /> Week 3: Releasing Curses & Trauma
+                      </Link>
+                    </Button>
+                    <Button variant="outline" className="justify-start h-14 rounded-2xl border-indigo-200 hover:bg-indigo-100 font-black text-[11px] uppercase tracking-widest text-indigo-700 shadow-sm" asChild>
+                      <Link to="/north-star"><Sparkles size={18} className="mr-4 text-indigo-500" /> North Star Worksheet</Link>
                     </Button>
                   </div>
                 </CardContent>

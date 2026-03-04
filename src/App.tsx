@@ -20,6 +20,7 @@ import DebugAppointmentPage from "./pages/DebugAppointmentPage";
 import DemoSessionPage from "./pages/DemoSessionPage";
 import SettingsPage from "./pages/SettingsPage";
 import NorthStarPage from "./pages/NorthStarPage";
+import Week3WorksheetPage from "./pages/Week3WorksheetPage";
 import Login from "./pages/Login";
 import NotFound from "./pages/NotFound";
 import { AuthProvider, useAuth } from "./components/AuthProvider";
@@ -100,6 +101,7 @@ const App = () => (
             <Route path="/resources" element={<ProtectedLayout><ResourcesPage /></ProtectedLayout>} />
             <Route path="/self-practice" element={<ProtectedLayout><SelfPracticePage /></ProtectedLayout>} />
             <Route path="/north-star" element={<ProtectedLayout><NorthStarPage /></ProtectedLayout>} />
+            <Route path="/week-3-worksheet" element={<ProtectedLayout><Week3WorksheetPage /></ProtectedLayout>} />
             <Route path="/debug" element={<ProtectedLayout><DebugAppointmentPage /></ProtectedLayout>} />
             <Route path="/demo-session" element={<ProtectedLayout><DemoSessionPage /></ProtectedLayout>} />
             <Route path="/settings" element={<ProtectedLayout><SettingsPage /></ProtectedLayout>} />

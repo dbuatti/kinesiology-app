@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
-import { useSearchParams } from "react-router-dom";
+import { useSearchParams, Link } from "react-router-dom";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 
@@ -57,7 +57,6 @@ import FiveElementCycle from "@/components/crm/FiveElementCycle";
 import ClinicalCheatSheet from "@/components/crm/ClinicalCheatSheet";
 import VideoLibrary from "@/components/crm/VideoLibrary";
 import BrainReflexReference from "@/components/crm/BrainReflexReference";
-import IntentionReflectionSheet from "@/components/crm/IntentionReflectionSheet";
 import FnTheory from "@/components/crm/FnTheory";
 import LigamentReference from "@/components/crm/LigamentReference";
 
@@ -131,7 +130,31 @@ const ResourcesPage = () => {
         </div>
 
         <TabsContent value="intention" className="mt-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
-          <IntentionReflectionSheet />
+          <Card className="border-none shadow-lg rounded-[2.5rem] bg-indigo-600 text-white overflow-hidden">
+            <CardHeader className="p-10">
+              <div className="flex items-center gap-4 mb-4">
+                <div className="w-16 h-16 bg-white/10 backdrop-blur-md rounded-2xl flex items-center justify-center border border-white/20">
+                  <Compass size={32} className="text-indigo-300" />
+                </div>
+                <div>
+                  <CardTitle className="text-3xl font-black">North Star Worksheet</CardTitle>
+                  <CardDescription className="text-indigo-200 text-lg mt-1">
+                    Define your core intention and commitment.
+                  </CardDescription>
+                </div>
+              </div>
+            </CardHeader>
+            <CardContent className="p-10 pt-0">
+              <p className="text-indigo-100 mb-6">
+                This interactive worksheet is a dedicated space for deep reflection. It's designed to be a focused experience. Click below to open the worksheet in a full-page view.
+              </p>
+              <Button asChild className="bg-white text-indigo-600 hover:bg-indigo-50 h-12 px-8 rounded-xl font-bold">
+                <Link to="/north-star">
+                  Open North Star Worksheet <ArrowRight className="ml-2" size={16} />
+                </Link>
+              </Button>
+            </CardContent>
+          </Card>
         </TabsContent>
 
         <TabsContent value="theory" className="mt-8 space-y-10 animate-in fade-in slide-in-from-bottom-4 duration-500">

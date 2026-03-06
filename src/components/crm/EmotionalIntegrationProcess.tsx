@@ -76,7 +76,7 @@ const EmotionalIntegrationProcess = ({ onSave, onCancel }: EmotionalIntegrationP
   };
 
   const handleFinish = () => {
-    const timelineDetail = timeline === 'Historic' ? `Age ${age}` : `Current: ${currentStress}`;
+    const timelineDetail = timeline === 'Historic' ? (age ? `Age ${age}` : 'Historic') : (currentStress ? `Current: ${currentStress}` : 'Current');
     const summary = `Emotional Integration: ${selectedEmotion.label} (${selectedOrgan}, ${polarity}) | Timeline: ${timelineDetail} | Eye Position: ${selectedEyePos.label} (${selectedEyePos.pos})`;
     onSave(summary);
   };
@@ -132,7 +132,7 @@ const EmotionalIntegrationProcess = ({ onSave, onCancel }: EmotionalIntegrationP
               </Button>
               {timeline === 'Current' && (
                 <Input 
-                  placeholder="Describe current stress..." 
+                  placeholder="Describe current stress (optional)..." 
                   className="h-12 rounded-xl font-bold border-2 border-rose-100 animate-in slide-in-from-top-2"
                   value={currentStress}
                   onChange={(e) => setCurrentStress(e.target.value)}
@@ -157,7 +157,7 @@ const EmotionalIntegrationProcess = ({ onSave, onCancel }: EmotionalIntegrationP
               </Button>
               {timeline === 'Historic' && (
                 <Input 
-                  placeholder="What age did this happen?" 
+                  placeholder="What age did this happen (optional)?" 
                   className="h-12 rounded-xl font-bold border-2 border-rose-100 animate-in slide-in-from-top-2"
                   value={age}
                   onChange={(e) => setAge(e.target.value)}
@@ -168,7 +168,7 @@ const EmotionalIntegrationProcess = ({ onSave, onCancel }: EmotionalIntegrationP
           <div className="flex gap-3">
             <Button variant="ghost" onClick={goBack} className="flex-1 h-12 rounded-xl"><ChevronLeft size={18} className="mr-2" /> Back</Button>
             <Button 
-              disabled={!timeline || (timeline === 'Historic' && !age) || (timeline === 'Current' && !currentStress)} 
+              disabled={!timeline} 
               onClick={() => goToStep('EMOTION_SELECT')} 
               className="flex-[2] h-12 rounded-xl bg-rose-600 hover:bg-rose-700 font-bold shadow-lg"
             >
@@ -254,7 +254,7 @@ const EmotionalIntegrationProcess = ({ onSave, onCancel }: EmotionalIntegrationP
               variant="outline" 
               className={cn(
                 "h-32 flex-col gap-3 rounded-3xl border-2 transition-all",
-                polarity === 'Energy IN' ? "border-rose-600 bg-rose-50 text-rose-700" : "border-slate-100 hover:border-rose-200"
+                polarity === 'Energy IN' ? "border-rose-600 bg-rose-50 text-rose-700" : "border-slate-100 hover:border-blue-200"
               )}
               onClick={() => { setPolarity('Energy IN'); goToStep('EYE_POSITION'); }}
             >

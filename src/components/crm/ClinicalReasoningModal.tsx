@@ -36,7 +36,6 @@ interface ClinicalReasoningModalProps {
 
 const ClinicalReasoningModal = ({ muscleName, status, open, onOpenChange }: ClinicalReasoningModalProps) => {
   const info = useMemo(() => muscleName ? getMuscleInfo(muscleName) : null, [muscleName]);
-  const channel = useMemo(() => info?.meridian ? getChannelByName(info.meridian) : undefined, [info]);
   
   const lovettPartner = useMemo(() => {
     if (!muscleName) return null;

@@ -7,9 +7,11 @@ import {
   GitBranch, Sparkles, Brain, Activity, CheckCircle2, 
   Zap, Info, List, RefreshCw, Eye, Dumbbell, Link as LinkIcon,
   Workflow,
-  Lightbulb
+  Lightbulb,
+  ShieldAlert
 } from 'lucide-react';
 import { Alert, AlertDescription } from "@/components/ui/alert";
+import MotorControlHierarchy from './MotorControlHierarchy';
 
 const SectionHeader = ({ icon: Icon, title, color }: { icon: React.ElementType, title: string, color: string }) => (
   <h3 className={`text-2xl font-black flex items-center gap-3 ${color}`}>
@@ -130,6 +132,15 @@ const FnTheory = () => {
         </CardHeader>
       </Card>
 
+      {/* NEW: Motor Control Hierarchy Section */}
+      <div className="space-y-8">
+        <div className="px-2">
+          <SectionHeader icon={ShieldAlert} title="Brainstem & Motor Control" color="text-indigo-600" />
+          <p className="text-slate-500 font-medium mt-2 text-lg">The relationship between brainstem regions, cranial nerves, and flexor/extensor tone.</p>
+        </div>
+        <MotorControlHierarchy />
+      </div>
+
       {/* Mechanoreceptive Section */}
       <Alert className="bg-blue-50 border-blue-100 rounded-2xl">
         <Info className="h-5 w-5 text-blue-600" />
@@ -190,9 +201,8 @@ const FnTheory = () => {
           <CardHeader className="bg-purple-50 p-8"><SectionHeader icon={Brain} title="Cortical Brain Zones" color="text-purple-600" /><p className="text-purple-800 font-medium mt-2">Higher-level areas for conscious processing. Follows contralateral logic.</p></CardHeader>
           <CardContent className="p-8 grid grid-cols-1 gap-4">{corticalZones.map(zone => <BrainZoneItem key={zone.name} name={zone.name} reflex={zone.reflex} functions={zone.functions} indicators={zone.indicators} laterality={zone.laterality} lateralityColor={zone.color} />)}</CardContent>
         </Card>
-        <Card className="border-none shadow-lg rounded-[2.5rem] bg-white overflow-hidden">
-          <CardHeader className="bg-indigo-50 p-8"><SectionHeader icon={Zap} title="Subcortical Brain Zones" color="text-indigo-600" /><p className="text-indigo-800 font-medium mt-2">Deeper structures for automatic functions. Follows ipsilateral logic.</p></CardHeader>
-          <CardContent className="p-8 grid grid-cols-1 gap-4">{subcorticalZones.map(zone => <BrainZoneItem key={zone.name} name={zone.name} reflex={zone.reflex} functions={zone.functions} indicators={zone.indicators} laterality={zone.laterality} lateralityColor={zone.color} />)}</CardContent>
+        <Card className="border-none shadow-lg rounded-[2.5rem] bg-indigo-50 p-8"><CardHeader className="bg-indigo-50 p-8"><SectionHeader icon={Zap} title="Subcortical Brain Zones" color="text-indigo-600" /><p className="text-indigo-800 font-medium mt-2">Deeper structures for automatic functions. Follows ipsilateral logic.</p></CardHeader>
+        <CardContent className="p-8 grid grid-cols-1 gap-4">{subcorticalZones.map(zone => <BrainZoneItem key={zone.name} name={zone.name} reflex={zone.reflex} functions={zone.functions} indicators={zone.indicators} laterality={zone.laterality} lateralityColor={zone.color} />)}</CardContent>
         </Card>
       </div>
 

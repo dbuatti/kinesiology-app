@@ -6,7 +6,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { 
   Loader2, Trash2, MoreHorizontal, History, Printer, Copy, Check, Play,
-  FileText, Zap, Activity, Target, ClipboardList
+  FileText, Zap, Activity, Target, ClipboardList, PanelRightOpen, PanelRightClose
 } from "lucide-react";
 import { format, isToday } from "date-fns";
 import { AppointmentWithClient } from "@/types/crm";
@@ -40,6 +40,7 @@ const AppointmentDetailPage = () => {
   const [copied, setCopied] = useState(false);
   const [cloning, setCloning] = useState(false);
   const [currentTime, setCurrentTime] = useState(new Date());
+  const [showSidebar, setShowSidebar] = useState(false);
 
   useEffect(() => {
     const timer = setInterval(() => setCurrentTime(new Date()), 60000);
@@ -246,6 +247,18 @@ const AppointmentDetailPage = () => {
               className="mb-0"
             />
             <div className="flex items-center gap-2">
+              <Button 
+                variant="outline" 
+                size="sm" 
+                className={cn(
+                  "h-10 px-4 font-bold text-xs rounded-xl transition-all",
+                  showSidebar ? "bg-indigo-600 text-white border-indigo-600" : "bg-white border-slate-200 text-slate-600 hover:bg-slate-50"
+                )}
+                onClick={() => setShowSidebar(!showSidebar)}
+              >
+                {showSidebar ? <PanelRightClose size={16} className="mr-2" /> : <PanelRightOpen size={16} className="mr-2" />}
+                {showSidebar ? "Hide Sidebar" : "Show Sidebar"}
+              </Button>
               {isSessionToday && !isFixedHeaderActive && appointment.status === 'Scheduled' && (
                 <Button 
                   variant="default" 
@@ -320,7 +333,7 @@ const AppointmentDetailPage = () => {
           {/* Main Command Center Layout */}
           <div className="grid grid-cols-1 xl:grid-cols-12 gap-8">
             {/* Left Column: Main Session Flow */}
-            <div className="xl:col-span-8 space-y-8">
+            <div className={cn(showSidebar ? "xl:col-span-8" : "xl:col-span-12", "space-y-8 transition-all duration-500")}>
               <Card className="border-none shadow-xl rounded-[2.5rem] bg-white overflow-hidden">
                 <AppointmentHeader appointment={appointment} onSaveField={saveField} onUpdate={fetchAppointmentData} />
 
@@ -352,59 +365,61 @@ const AppointmentDetailPage = () => {
             </div>
 
             {/* Right Column: Clinical Sidebar */}
-            <div className="xl:col-span-4 space-y-8 print:hidden">
-              <AppointmentContextCards 
-                appointment={appointment} 
-                currentPeakMeridian={currentPeakMeridian} 
-                onSaveField={saveField} 
-              />
+            {showSidebar && (
+              <div className="xl:col-span-4 space-y-8 print:hidden animate-in fade-in slide-in-from-right-4 duration-500">
+                <AppointmentContextCards 
+                  appointment={appointment} 
+                  currentPeakMeridian={currentPeakMeridian} 
+                  onSaveField={saveField} 
+                />
 
-              {/* Live Summary Preview */}
-              <Card className="border-none shadow-lg rounded-[2.5rem] bg-white overflow-hidden">
-                <CardHeader className="bg-slate-50/50 border-b border-slate-100">
-                  <CardTitle className="text-sm font-black text-slate-400 uppercase tracking-[0.3em] flex items-center gap-2">
-                    <ClipboardList size={16} className="text-indigo-500" /> Live Summary
-                  </CardTitle>
-                </CardHeader>
-                <CardContent className="p-6 space-y-4">
-                  <div className="space-y-3">
-                    <div className="flex justify-between items-center text-xs">
-                      <span className="text-slate-400 font-bold uppercase">BOLT</span>
-                      <span className={cn("font-black", appointment.bolt_score ? "text-indigo-600" : "text-slate-300")}>
-                        {appointment.bolt_score ? `${appointment.bolt_score}s` : '—'}
-                      </span>
+                {/* Live Summary Preview */}
+                <Card className="border-none shadow-lg rounded-[2.5rem] bg-white overflow-hidden">
+                  <CardHeader className="bg-slate-50/50 border-b border-slate-100">
+                    <CardTitle className="text-sm font-black text-slate-400 uppercase tracking-[0.3em] flex items-center gap-2">
+                      <ClipboardList size={16} className="text-indigo-500" /> Live Summary
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent className="p-6 space-y-4">
+                    <div className="space-y-3">
+                      <div className="flex justify-between items-center text-xs">
+                        <span className="text-slate-400 font-bold uppercase">BOLT</span>
+                        <span className={cn("font-black", appointment.bolt_score ? "text-indigo-600" : "text-slate-300")}>
+                          {appointment.bolt_score ? `${appointment.bolt_score}s` : '—'}
+                        </span>
+                      </div>
+                      <div className="flex justify-between items-center text-xs">
+                        <span className="text-slate-400 font-bold uppercase">Coherence</span>
+                        <span className={cn("font-black", appointment.coherence_score ? "text-rose-600" : "text-slate-300")}>
+                          {appointment.coherence_score ? appointment.coherence_score.toFixed(2) : '—'}
+                        </span>
+                      </div>
+                      <div className="flex justify-between items-center text-xs">
+                        <span className="text-slate-400 font-bold uppercase">Hydration</span>
+                        <Badge className={cn("border-none text-[8px] font-black", appointment.hydrated ? "bg-emerald-500" : "bg-rose-500")}>
+                          {appointment.hydrated ? 'PASSED' : 'ATTENTION'}
+                        </Badge>
+                      </div>
                     </div>
-                    <div className="flex justify-between items-center text-xs">
-                      <span className="text-slate-400 font-bold uppercase">Coherence</span>
-                      <span className={cn("font-black", appointment.coherence_score ? "text-rose-600" : "text-slate-300")}>
-                        {appointment.coherence_score ? appointment.coherence_score.toFixed(2) : '—'}
-                      </span>
+                    
+                    <div className="pt-4 border-t border-slate-100">
+                      <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2">Pathway Findings</p>
+                      <p className="text-xs text-slate-600 font-medium leading-relaxed line-clamp-3 italic">
+                        {appointment.priority_pattern || "No pathway data recorded yet."}
+                      </p>
                     </div>
-                    <div className="flex justify-between items-center text-xs">
-                      <span className="text-slate-400 font-bold uppercase">Hydration</span>
-                      <Badge className={cn("border-none text-[8px] font-black", appointment.hydrated ? "bg-emerald-500" : "bg-rose-500")}>
-                        {appointment.hydrated ? 'PASSED' : 'ATTENTION'}
-                      </Badge>
-                    </div>
-                  </div>
-                  
-                  <div className="pt-4 border-t border-slate-100">
-                    <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2">Pathway Findings</p>
-                    <p className="text-xs text-slate-600 font-medium leading-relaxed line-clamp-3 italic">
-                      {appointment.priority_pattern || "No pathway data recorded yet."}
-                    </p>
-                  </div>
 
-                  <Button 
-                    variant="ghost" 
-                    className="w-full text-[10px] font-black uppercase tracking-widest text-indigo-600 hover:bg-indigo-50 h-9 rounded-xl"
-                    onClick={handleCopySummary}
-                  >
-                    <Copy size={12} className="mr-2" /> Copy Full Summary
-                  </Button>
-                </CardContent>
-              </Card>
-            </div>
+                    <Button 
+                      variant="ghost" 
+                      className="w-full text-[10px] font-black uppercase tracking-widest text-indigo-600 hover:bg-indigo-50 h-9 rounded-xl"
+                      onClick={handleCopySummary}
+                    >
+                      <Copy size={12} className="mr-2" /> Copy Full Summary
+                    </Button>
+                  </CardContent>
+                </Card>
+              </div>
+            )}
           </div>
 
           {/* Print Layout (Hidden on Screen) */}

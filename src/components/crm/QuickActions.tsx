@@ -9,7 +9,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { Plus, UserPlus, Calendar, Target, Upload, HelpCircle, Sparkles } from "lucide-react";
+import { Plus, UserPlus, Calendar, Target, Upload, HelpCircle, Sparkles, Zap } from "lucide-react";
 import {
   Dialog,
   DialogContent,
@@ -48,6 +48,10 @@ const QuickActions = () => {
         e.preventDefault();
         navigate('/procedures');
       }
+      if ((e.metaKey || e.ctrlKey) && e.key === 'q') {
+        e.preventDefault();
+        navigate('/quick-calibrate');
+      }
       if ((e.metaKey || e.ctrlKey) && e.key === '/') {
         e.preventDefault();
         setHelpOpen(true);
@@ -80,6 +84,24 @@ const QuickActions = () => {
                   <p className="text-[9px] font-black text-slate-400 uppercase tracking-[0.3em]">Quick Actions</p>
                 </div>
                 
+                <DropdownMenuItem 
+                  onClick={() => { navigate("/quick-calibrate"); setIsOpen(false); }} 
+                  className="rounded-xl py-3 px-4 cursor-pointer group"
+                >
+                  <div className="w-10 h-10 rounded-xl bg-amber-50 flex items-center justify-center mr-3 group-hover:bg-amber-100 transition-colors">
+                    <Zap size={20} className="text-amber-600" />
+                  </div>
+                  <div className="flex-1">
+                    <span className="font-bold block">Quick Calibrate</span>
+                    <span className="text-[10px] text-slate-400">Instant Pathway Logic</span>
+                  </div>
+                  <kbd className="ml-auto pointer-events-none inline-flex h-5 select-none items-center gap-1 rounded border bg-slate-100 px-1.5 font-mono text-[10px] font-black text-slate-600">
+                    ⌘Q
+                  </kbd>
+                </DropdownMenuItem>
+
+                <DropdownMenuSeparator className="my-2" />
+
                 <DropdownMenuItem 
                   onClick={() => { setClientDialogOpen(true); setIsOpen(false); }} 
                   className="rounded-xl py-3 px-4 cursor-pointer group"

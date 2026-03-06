@@ -49,6 +49,7 @@ const MobileNav = () => {
     { label: "Clients", icon: Users, path: "/clients" },
     { label: "Appointments", icon: Calendar, path: "/appointments" },
     { label: "Oversight", icon: TrendingUp, path: "/oversight" },
+    { label: "Quick Calibrate", icon: Zap, path: "/quick-calibrate" },
     { label: "Self Practice", icon: Heart, path: "/self-practice" },
     { label: "Procedures", icon: Target, path: "/procedures" },
     { label: "North Star", icon: Compass, path: "/north-star" },

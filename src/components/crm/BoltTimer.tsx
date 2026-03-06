@@ -78,72 +78,62 @@ const BoltTimer = ({ initialScore, onScoreRecorded, isSaving }: BoltTimerProps) 
   };
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4">
       {showInstructions && !isRunning && (
-        <Alert className="bg-blue-50 border-blue-200">
-          <Info className="h-4 w-4 text-blue-600" />
-          <AlertDescription className="text-sm text-blue-900">
-            <strong>Quick Instructions:</strong> Have the client breathe normally, then hold their breath after a normal exhalation. 
-            Stop when they feel the first definite desire to breathe.
+        <Alert className="bg-blue-50 border-blue-200 py-2">
+          <Info className="h-3 w-3 text-blue-600" />
+          <AlertDescription className="text-[10px] text-blue-900 leading-tight">
+            Breathe normally, then hold after a normal exhalation. Stop at the first definite desire to breathe.
           </AlertDescription>
         </Alert>
       )}
 
       <div className="relative">
         <div className={cn(
-          "flex flex-col items-center justify-center p-8 rounded-2xl border-2 transition-all",
+          "flex flex-col items-center justify-center p-4 rounded-xl border transition-all",
           isRunning ? "bg-indigo-50 border-indigo-300 animate-pulse" : "bg-slate-50 border-slate-200"
         )}>
-          <div className="flex items-baseline gap-2">
+          <div className="flex items-baseline gap-1">
             <span className={cn(
-              "text-7xl font-black tabular-nums transition-colors",
+              "text-5xl font-black tabular-nums transition-colors",
               isRunning ? "text-indigo-600" : getScoreColor(displayTime)
             )}>
               {displayTime}
             </span>
-            <span className="text-3xl font-semibold text-slate-400">s</span>
+            <span className="text-xl font-semibold text-slate-400">s</span>
           </div>
           
           {!isRunning && displayTime > 0 && (
-            <div className="mt-3 flex items-center gap-2">
+            <div className="mt-1 flex items-center gap-2">
               <div className={cn(
-                "px-3 py-1 rounded-full text-xs font-bold",
+                "px-2 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider",
                 displayTime >= 40 ? "bg-emerald-100 text-emerald-700" :
                 displayTime >= 25 ? "bg-blue-100 text-blue-700" :
                 "bg-amber-100 text-amber-700"
               )}>
                 {getScoreLabel(displayTime)}
               </div>
-              {displayTime >= 25 && (
-                <span className="text-xs text-slate-500">Target: 40s for optimal</span>
-              )}
             </div>
-          )}
-
-          {isRunning && (
-            <p className="mt-4 text-sm font-medium text-indigo-600 animate-pulse">
-              Test in progress...
-            </p>
           )}
         </div>
       </div>
 
-      <div className="flex gap-3">
+      <div className="flex gap-2">
         {!isRunning && !isFinished && (
           <Button 
             onClick={startTimer} 
-            className="flex-1 bg-indigo-600 hover:bg-indigo-700 rounded-xl shadow-md shadow-indigo-100 h-12 text-base font-semibold"
+            className="flex-1 bg-indigo-600 hover:bg-indigo-700 rounded-xl h-10 text-xs font-bold"
           >
-            <Play size={20} className="mr-2" /> Start BOLT Test
+            <Play size={16} className="mr-2" /> Start BOLT
           </Button>
         )}
 
         {isRunning && (
           <Button 
             onClick={stopTimer} 
-            className="flex-1 bg-red-600 hover:bg-red-700 rounded-xl shadow-md shadow-red-100 h-12 text-base font-semibold"
+            className="flex-1 bg-red-600 hover:bg-red-700 rounded-xl h-10 text-xs font-bold"
           >
-            <Square size={20} className="mr-2" /> Stop Test
+            <Square size={16} className="mr-2" /> Stop
           </Button>
         )}
 
@@ -152,30 +142,22 @@ const BoltTimer = ({ initialScore, onScoreRecorded, isSaving }: BoltTimerProps) 
             <Button 
               onClick={handleSave} 
               disabled={isSaving}
-              className="flex-1 bg-emerald-600 hover:bg-emerald-700 rounded-xl shadow-md shadow-emerald-100 h-12 text-base font-semibold"
+              className="flex-1 bg-emerald-600 hover:bg-emerald-700 rounded-xl h-10 text-xs font-bold"
             >
-              {isSaving ? <Loader2 className="mr-2 h-5 w-5 animate-spin" /> : <Save size={20} className="mr-2" />}
-              Save Score ({time}s)
+              {isSaving ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Save size={16} className="mr-2" />}
+              Save ({time}s)
             </Button>
             <Button 
               onClick={resetTimer} 
               variant="outline" 
-              className="px-6 rounded-xl border-slate-200 hover:bg-slate-100 h-12"
+              className="px-4 rounded-xl border-slate-200 hover:bg-slate-100 h-10"
               disabled={isSaving}
             >
-              <RotateCcw size={20} />
+              <RotateCcw size={16} />
             </Button>
           </>
         )}
       </div>
-
-      {initialScore !== null && initialScore !== undefined && !isRunning && !isFinished && (
-        <div className="text-center">
-          <p className="text-xs text-slate-500">
-            Previous score: <span className="font-bold text-slate-700">{initialScore}s</span>
-          </p>
-        </div>
-      )}
     </div>
   );
 };

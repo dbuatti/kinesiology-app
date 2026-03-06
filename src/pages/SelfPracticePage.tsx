@@ -176,17 +176,17 @@ const SelfPracticePage = () => {
 
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
         <div className="flex items-center gap-4">
-          <div className="w-16 h-16 bg-rose-600 rounded-2xl flex items-center justify-center text-white shadow-xl shadow-rose-200">
+          <div className="w-16 h-16 bg-rose-600 rounded-2xl flex items-center justify-center text-white shadow-xl shadow-rose-200 dark:shadow-rose-900/20">
             <Heart size={32} className="fill-current" />
           </div>
           <div>
-            <h1 className="text-3xl font-black tracking-tight text-slate-900">Self-Monitoring Zone</h1>
-            <p className="text-slate-500 font-medium">Your private space for personal health tracking and protocol practice.</p>
+            <h1 className="text-3xl font-black tracking-tight text-foreground">Self-Monitoring Zone</h1>
+            <p className="text-muted-foreground font-medium">Your private space for personal health tracking and protocol practice.</p>
           </div>
         </div>
         <div className="flex items-center gap-3">
           <div className="hidden sm:flex flex-col items-end mr-4">
-            <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Practice Streak</p>
+            <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">Practice Streak</p>
             <p className="text-xl font-black text-orange-500 flex items-center gap-1">
               <Zap size={18} className="fill-current" /> {streak} Days
             </p>
@@ -194,7 +194,7 @@ const SelfPracticePage = () => {
           <Button 
             onClick={() => handleNewSelfSession()} 
             disabled={creating}
-            className="bg-rose-600 hover:bg-rose-700 shadow-lg shadow-rose-100 h-12 px-8 rounded-xl font-bold"
+            className="bg-rose-600 hover:bg-rose-700 shadow-lg shadow-rose-100 dark:shadow-rose-900/20 h-12 px-8 rounded-xl font-bold"
           >
             {creating ? <Loader2 className="mr-2 animate-spin" /> : <Plus size={20} className="mr-2" />}
             Start Self-Session
@@ -203,19 +203,19 @@ const SelfPracticePage = () => {
       </div>
 
       <Tabs value={activeTab} onValueChange={(v) => setSearchParams({ tab: v })} className="w-full">
-        <TabsList className="grid w-full grid-cols-2 h-14 bg-slate-200/50 p-1.5 rounded-2xl mb-8">
-          <TabsTrigger value="overview" className="flex items-center gap-2 data-[state=active]:bg-white data-[state=active]:text-rose-600 data-[state=active]:shadow-sm rounded-xl h-11 font-black uppercase tracking-wider text-[10px]">
+        <TabsList className="grid w-full grid-cols-2 h-14 bg-muted p-1.5 rounded-2xl mb-8">
+          <TabsTrigger value="overview" className="flex items-center gap-2 data-[state=active]:bg-card data-[state=active]:text-rose-600 data-[state=active]:shadow-sm rounded-xl h-11 font-black uppercase tracking-wider text-[10px]">
             <LayoutDashboard size={14} /> Practice Dashboard
           </TabsTrigger>
-          <TabsTrigger value="progress" className="flex items-center gap-2 data-[state=active]:bg-white data-[state=active]:text-rose-600 data-[state=active]:shadow-sm rounded-xl h-11 font-black uppercase tracking-wider text-[10px]">
+          <TabsTrigger value="progress" className="flex items-center gap-2 data-[state=active]:bg-card data-[state=active]:text-rose-600 data-[state=active]:shadow-sm rounded-xl h-11 font-black uppercase tracking-wider text-[10px]">
             <TrendingUp size={14} /> Progress & Protocols
           </TabsTrigger>
         </TabsList>
 
         <TabsContent value="overview" className="space-y-8">
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-            <Card className="lg:col-span-2 border-none shadow-lg bg-white rounded-3xl overflow-hidden">
-              <CardHeader className="bg-slate-50/50 border-b border-slate-100">
+            <Card className="lg:col-span-2 border-none shadow-lg bg-card rounded-3xl overflow-hidden">
+              <CardHeader className="bg-muted/30 border-b border-border">
                 <div className="flex items-center justify-between">
                   <div>
                     <CardTitle className="text-xl font-bold flex items-center gap-2">
@@ -225,14 +225,14 @@ const SelfPracticePage = () => {
                   </div>
                   <div className="flex gap-3">
                     <div className="text-right">
-                      <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Latest BOLT</p>
+                      <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">Latest BOLT</p>
                       <p className={cn("text-2xl font-black", lastBolt && lastBolt >= 25 ? "text-emerald-600" : "text-amber-600")}>
                         {lastBolt ? `${lastBolt}s` : 'N/A'}
                       </p>
                     </div>
-                    <div className="text-right border-l border-slate-200 pl-3">
-                      <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Latest Coh</p>
-                      <p className="text-2xl font-black text-indigo-600">
+                    <div className="text-right border-l border-border pl-3">
+                      <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">Latest Coh</p>
+                      <p className="text-2xl font-black text-indigo-600 dark:text-indigo-400">
                         {lastCoh ? lastCoh.toFixed(2) : 'N/A'}
                       </p>
                     </div>
@@ -250,26 +250,26 @@ const SelfPracticePage = () => {
                             <stop offset="95%" stopColor="#e11d48" stopOpacity={0}/>
                           </linearGradient>
                         </defs>
-                        <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
-                        <XAxis dataKey="date" axisLine={false} tickLine={false} tick={{fontSize: 12, fill: '#94a3b8'}} />
-                        <YAxis axisLine={false} tickLine={false} tick={{fontSize: 12, fill: '#94a3b8'}} />
-                        <ChartTooltip contentStyle={{borderRadius: '12px', border: 'none', boxShadow: '0 10px 15px -3px rgb(0 0 0 / 0.1)'}} />
+                        <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="hsl(var(--border))" />
+                        <XAxis dataKey="date" axisLine={false} tickLine={false} tick={{fontSize: 12, fill: 'hsl(var(--muted-foreground))'}} />
+                        <YAxis axisLine={false} tickLine={false} tick={{fontSize: 12, fill: 'hsl(var(--muted-foreground))'}} />
+                        <ChartTooltip contentStyle={{borderRadius: '12px', border: 'none', backgroundColor: 'hsl(var(--card))', boxShadow: '0 10px 15px -3px rgb(0 0 0 / 0.1)'}} />
                         <Area type="monotone" dataKey="score" stroke="#e11d48" strokeWidth={3} fillOpacity={1} fill="url(#colorBolt)" />
                       </AreaChart>
                     </ResponsiveContainer>
                   </div>
                 ) : (
-                  <div className="h-[300px] flex flex-col items-center justify-center text-center bg-slate-50 rounded-2xl border-2 border-dashed border-slate-200">
-                    <Activity size={48} className="text-slate-300 mb-4" />
-                    <p className="text-slate-500 font-medium">Not enough data to show trends yet.</p>
-                    <p className="text-xs text-slate-400 mt-1">Complete at least 2 self-sessions with BOLT scores.</p>
+                  <div className="h-[300px] flex flex-col items-center justify-center text-center bg-muted/30 rounded-2xl border-2 border-dashed border-border">
+                    <Activity size={48} className="text-muted-foreground mb-4" />
+                    <p className="text-muted-foreground font-medium">Not enough data to show trends yet.</p>
+                    <p className="text-xs text-muted-foreground/60 mt-1">Complete at least 2 self-sessions with BOLT scores.</p>
                   </div>
                 )}
               </CardContent>
             </Card>
 
             <div className="space-y-6">
-              <Card className="border-none shadow-lg bg-gradient-to-br from-slate-900 to-slate-800 text-white rounded-3xl overflow-hidden relative">
+              <Card className="border-none shadow-lg bg-slate-900 dark:bg-slate-950 text-white rounded-3xl overflow-hidden relative">
                 <div className="absolute top-0 right-0 p-8 opacity-10">
                   <Sparkles size={120} />
                 </div>
@@ -301,7 +301,7 @@ const SelfPracticePage = () => {
                 </CardContent>
               </Card>
 
-              <Card className="border-none shadow-lg bg-white rounded-3xl">
+              <Card className="border-none shadow-lg bg-card rounded-3xl">
                 <CardHeader>
                   <CardTitle className="text-lg font-bold flex items-center gap-2">
                     <Info size={18} className="text-indigo-500" /> Practice Tips
@@ -309,18 +309,18 @@ const SelfPracticePage = () => {
                 </CardHeader>
                 <CardContent className="space-y-4">
                   <div className="flex gap-3">
-                    <div className="w-6 h-6 rounded-full bg-emerald-100 flex items-center justify-center shrink-0">
-                      <CheckCircle2 size={14} className="text-emerald-600" />
+                    <div className="w-6 h-6 rounded-full bg-emerald-100 dark:bg-emerald-900/30 flex items-center justify-center shrink-0">
+                      <CheckCircle2 size={14} className="text-emerald-600 dark:text-emerald-400" />
                     </div>
-                    <p className="text-xs text-slate-600 leading-relaxed">
+                    <p className="text-xs text-muted-foreground leading-relaxed font-medium">
                       Use the <strong>Session Timer</strong> to pace your practice. Aim for 20 mins of focused drill work.
                     </p>
                   </div>
                   <div className="flex gap-3">
-                    <div className="w-6 h-6 rounded-full bg-emerald-100 flex items-center justify-center shrink-0">
-                      <CheckCircle2 size={14} className="text-emerald-600" />
+                    <div className="w-6 h-6 rounded-full bg-emerald-100 dark:bg-emerald-900/30 flex items-center justify-center shrink-0">
+                      <CheckCircle2 size={14} className="text-emerald-600 dark:text-emerald-400" />
                     </div>
-                    <p className="text-xs text-slate-600 leading-relaxed">
+                    <p className="text-xs text-muted-foreground leading-relaxed font-medium">
                       Self-sessions count towards your <strong>Procedure Tracker</strong> progress!
                     </p>
                   </div>
@@ -331,10 +331,10 @@ const SelfPracticePage = () => {
 
           <div className="space-y-4">
             <div className="flex items-center justify-between px-2">
-              <h2 className="text-2xl font-bold text-slate-900 flex items-center gap-2">
+              <h2 className="text-2xl font-bold text-foreground flex items-center gap-2">
                 <History size={24} className="text-indigo-500" /> Self-Session History
               </h2>
-              <Badge variant="secondary" className="bg-slate-100 text-slate-600 font-bold">
+              <Badge variant="secondary" className="bg-muted text-muted-foreground font-bold">
                 {sessions.length} Sessions
               </Badge>
             </div>
@@ -342,40 +342,40 @@ const SelfPracticePage = () => {
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               {sessions.map(session => (
                 <Link key={session.id} to={`/appointments/${session.id}`}>
-                  <Card className="hover:shadow-xl transition-all border-slate-200 bg-white group rounded-2xl overflow-hidden cursor-pointer h-full">
+                  <Card className="hover:shadow-xl transition-all border-border bg-card group rounded-2xl overflow-hidden cursor-pointer h-full">
                     <CardContent className="p-6 space-y-4">
                       <div className="flex items-start justify-between">
                         <div className="space-y-1">
                           <p className="text-[10px] font-black text-rose-500 uppercase tracking-widest">
                             {isToday(new Date(session.date)) ? "TODAY" : format(new Date(session.date), "EEEE, MMM d")}
                           </p>
-                          <h3 className="font-bold text-lg text-slate-900 group-hover:text-rose-600 transition-colors">
+                          <h3 className="font-bold text-lg text-foreground group-hover:text-rose-600 dark:group-hover:text-rose-400 transition-colors">
                             {session.name || "Self Practice Session"}
                           </h3>
                         </div>
-                        <div className="w-10 h-10 rounded-xl bg-slate-50 flex items-center justify-center text-slate-400 group-hover:bg-rose-50 group-hover:text-rose-500 transition-colors">
+                        <div className="w-10 h-10 rounded-xl bg-muted flex items-center justify-center text-muted-foreground group-hover:bg-rose-50 dark:group-hover:bg-rose-900/20 group-hover:text-rose-500 transition-colors">
                           <ArrowRight size={20} />
                         </div>
                       </div>
 
                       <div className="flex flex-wrap gap-2">
                         {session.bolt_score && (
-                          <Badge className="bg-indigo-50 text-indigo-700 border-none text-[10px] font-bold">
+                          <Badge className="bg-indigo-50 dark:bg-indigo-900/20 text-indigo-700 dark:text-indigo-400 border-none text-[10px] font-bold">
                             BOLT: {session.bolt_score}s
                           </Badge>
                         )}
                         {session.coherence_score && (
-                          <Badge className="bg-rose-50 text-rose-700 border-none text-[10px] font-bold">
+                          <Badge className="bg-rose-50 dark:bg-rose-900/20 text-rose-700 dark:text-rose-400 border-none text-[10px] font-bold">
                             COH: {session.coherence_score.toFixed(2)}
                           </Badge>
                         )}
-                        <Badge variant="outline" className="text-[10px] font-bold border-slate-200 text-slate-500">
+                        <Badge variant="outline" className="text-[10px] font-bold border-border text-muted-foreground">
                           {session.status}
                         </Badge>
                       </div>
 
                       {session.goal && (
-                        <p className="text-xs text-slate-500 line-clamp-2 italic">
+                        <p className="text-xs text-muted-foreground line-clamp-2 italic font-medium">
                           "{session.goal}"
                         </p>
                       )}
@@ -385,12 +385,12 @@ const SelfPracticePage = () => {
               ))}
 
               {sessions.length === 0 && (
-                <div className="col-span-full text-center py-20 bg-white rounded-3xl border-2 border-dashed border-slate-200">
-                  <div className="w-16 h-16 bg-rose-50 rounded-full flex items-center justify-center mx-auto mb-4">
-                    <Heart className="text-rose-300" size={32} />
+                <div className="col-span-full text-center py-20 bg-card rounded-3xl border-2 border-dashed border-border">
+                  <div className="w-16 h-16 bg-rose-50 dark:bg-rose-900/20 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <Heart className="text-rose-300 dark:text-rose-700" size={32} />
                   </div>
-                  <h3 className="text-slate-900 font-bold text-lg">No self-sessions yet</h3>
-                  <p className="text-slate-500 mt-1 max-w-xs mx-auto">Start your first self-monitoring session to track your personal health and practice protocols.</p>
+                  <h3 className="text-foreground font-bold text-lg">No self-sessions yet</h3>
+                  <p className="text-muted-foreground mt-1 max-w-xs mx-auto font-medium">Start your first self-monitoring session to track your personal health and practice protocols.</p>
                   <Button 
                     className="mt-6 bg-rose-600 hover:bg-rose-700 rounded-xl"
                     onClick={() => handleNewSelfSession()}

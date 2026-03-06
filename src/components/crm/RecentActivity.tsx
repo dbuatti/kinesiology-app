@@ -87,7 +87,7 @@ const RecentActivity = () => {
 
   if (loading) {
     return (
-      <Card className="border-none shadow-sm rounded-2xl bg-white">
+      <Card className="border-none shadow-sm rounded-2xl bg-card">
         <CardHeader>
           <CardTitle className="text-lg font-bold flex items-center gap-2">
             <Clock size={20} className="text-indigo-500" />
@@ -102,7 +102,7 @@ const RecentActivity = () => {
   }
 
   return (
-    <Card className="border-none shadow-sm rounded-2xl bg-white">
+    <Card className="border-none shadow-sm rounded-2xl bg-card">
       <CardHeader>
         <CardTitle className="text-lg font-bold flex items-center gap-2">
           <Clock size={20} className="text-indigo-500" />
@@ -115,14 +115,14 @@ const RecentActivity = () => {
             <Link
               key={activity.id}
               to={activity.link}
-              className="flex items-start gap-3 p-3 rounded-xl hover:bg-slate-50 transition-colors group"
+              className="flex items-start gap-3 p-3 rounded-xl hover:bg-muted/50 transition-colors group"
             >
               <div
                 className={cn(
                   "w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0",
                   activity.type === "client"
-                    ? "bg-indigo-50 text-indigo-600"
-                    : "bg-rose-50 text-rose-600"
+                    ? "bg-indigo-50 dark:bg-indigo-900/20 text-indigo-600 dark:text-indigo-400"
+                    : "bg-rose-50 dark:bg-rose-900/20 text-rose-600 dark:text-rose-400"
                 )}
               >
                 {activity.type === "client" ? (
@@ -132,18 +132,18 @@ const RecentActivity = () => {
                 )}
               </div>
               <div className="flex-1 min-w-0">
-                <p className="font-medium text-sm text-slate-900 group-hover:text-indigo-600 transition-colors truncate">
+                <p className="font-black text-sm text-foreground group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors truncate">
                   {activity.title}
                 </p>
-                <p className="text-xs text-slate-500 truncate">{activity.subtitle}</p>
+                <p className="text-xs text-muted-foreground font-medium truncate">{activity.subtitle}</p>
               </div>
-              <div className="text-xs text-slate-400 flex-shrink-0">
+              <div className="text-[10px] text-muted-foreground font-bold flex-shrink-0">
                 {formatDistanceToNow(activity.timestamp, { addSuffix: true })}
               </div>
             </Link>
           ))}
           {activities.length === 0 && (
-            <p className="text-center text-slate-400 text-sm py-8">
+            <p className="text-center text-muted-foreground text-sm py-8 font-medium">
               No recent activity
             </p>
           )}

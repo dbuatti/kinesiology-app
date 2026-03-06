@@ -21,19 +21,19 @@ const QuickCalibratePage = () => {
         
         <div className="flex flex-col gap-2">
           <div className="flex items-center gap-3">
-            <div className="w-12 h-12 bg-amber-500 rounded-2xl flex items-center justify-center text-white shadow-lg shadow-amber-200">
+            <div className="w-12 h-12 bg-amber-500 rounded-2xl flex items-center justify-center text-white shadow-lg shadow-amber-200 dark:shadow-amber-900/20">
               <Zap size={28} className="fill-current" />
             </div>
-            <h1 className="text-3xl font-black tracking-tight text-slate-900">Quick Calibrate</h1>
+            <h1 className="text-3xl font-black tracking-tight text-foreground">Quick Calibrate</h1>
           </div>
-          <p className="text-slate-500 font-medium">
+          <p className="text-muted-foreground font-medium">
             Standalone pathway logic for quick clinical checks and self-correction.
           </p>
         </div>
 
-        <Alert className="bg-indigo-50 border-indigo-100 rounded-2xl">
-          <Info className="h-5 w-5 text-indigo-600" />
-          <AlertDescription className="text-sm text-indigo-900 font-medium">
+        <Alert className="bg-indigo-50 dark:bg-indigo-900/20 border-indigo-100 dark:border-indigo-900/30 rounded-2xl">
+          <Info className="h-5 w-5 text-indigo-600 dark:text-indigo-400" />
+          <AlertDescription className="text-sm text-indigo-900 dark:text-indigo-100 font-medium">
             <strong>Note:</strong> This is a sandbox mode. Data generated here is not saved to any specific client record. Use this for rapid testing or personal practice.
           </AlertDescription>
         </Alert>
@@ -45,7 +45,7 @@ const QuickCalibratePage = () => {
           }} 
         />
 
-        <div className="p-6 bg-slate-900 text-white rounded-[2.5rem] shadow-xl relative overflow-hidden">
+        <div className="p-6 bg-slate-900 dark:bg-slate-950 text-white rounded-[2.5rem] shadow-xl relative overflow-hidden">
           <div className="absolute top-0 right-0 p-8 opacity-10">
             <ShieldCheck size={100} />
           </div>

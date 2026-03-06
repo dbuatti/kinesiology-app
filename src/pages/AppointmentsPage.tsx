@@ -196,11 +196,11 @@ const AppointmentsPage = () => {
     return (
       <Card 
         className={cn(
-          "border-slate-200 transition-all duration-300 group overflow-hidden relative rounded-[2rem]",
+          "border-border transition-all duration-300 group overflow-hidden relative rounded-[2rem]",
           isTodaySession 
-            ? "border-indigo-300 shadow-xl shadow-indigo-100 ring-2 ring-indigo-50 bg-white" 
-            : "bg-white hover:shadow-xl hover:border-slate-300",
-          isHighRisk && !isCompleted && "border-rose-200 ring-rose-50"
+            ? "border-indigo-300 dark:border-indigo-900/50 shadow-xl shadow-indigo-100 dark:shadow-indigo-900/20 ring-2 ring-indigo-50 dark:ring-indigo-900/10 bg-card" 
+            : "bg-card hover:shadow-xl hover:border-muted-foreground/20",
+          isHighRisk && !isCompleted && "border-rose-200 dark:border-rose-900/50 ring-rose-50 dark:ring-rose-900/10"
         )}
       >
         <CardContent className="p-0">
@@ -209,7 +209,7 @@ const AppointmentsPage = () => {
               <div className="flex items-start justify-between">
                 <div className="space-y-2">
                   <div className="flex items-center gap-3">
-                    <Link to={`/appointments/${app.id}`} className="font-black text-2xl text-slate-900 hover:text-indigo-600 transition-colors">
+                    <Link to={`/appointments/${app.id}`} className="font-black text-2xl text-foreground hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors">
                       {app.clients?.name}
                     </Link>
                     {isTodaySession && (
@@ -218,17 +218,17 @@ const AppointmentsPage = () => {
                       </Badge>
                     )}
                     {isHighRisk && !isCompleted && (
-                      <Badge className="bg-rose-100 text-rose-600 border-none font-black text-[8px] uppercase tracking-widest px-2 py-0.5 flex items-center gap-1">
+                      <Badge className="bg-rose-100 dark:bg-rose-900/30 text-rose-600 dark:text-rose-400 border-none font-black text-[8px] uppercase tracking-widest px-2 py-0.5 flex items-center gap-1">
                         <AlertCircle size={10} /> High Priority
                       </Badge>
                     )}
                   </div>
                   <div className="flex flex-wrap items-center gap-4 text-sm">
-                    <span className="flex items-center gap-2 font-bold text-slate-500">
+                    <span className="flex items-center gap-2 font-bold text-muted-foreground">
                       <Clock size={16} className={cn(isTodaySession ? "text-rose-500" : "text-indigo-500")} />
                       {format(app.date, isTodaySession ? "h:mm a" : "EEEE, d MMM • h:mm a")}
                     </span>
-                    <Badge variant="secondary" className="bg-slate-100 text-slate-600 font-black text-[10px] uppercase tracking-widest border-none px-3 py-1">
+                    <Badge variant="secondary" className="bg-muted text-muted-foreground font-black text-[10px] uppercase tracking-widest border-none px-3 py-1">
                       {app.tag}
                     </Badge>
                   </div>
@@ -236,26 +236,26 @@ const AppointmentsPage = () => {
               </div>
               
               {app.goal && (
-                <div className="text-sm bg-slate-50/50 rounded-2xl p-4 border border-slate-100 group-hover:bg-white group-hover:border-indigo-100 transition-all">
-                  <span className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] block mb-2">Session Goal</span>
-                  <p className="text-slate-700 font-medium leading-relaxed line-clamp-2 italic">"{app.goal}"</p>
+                <div className="text-sm bg-muted/30 rounded-2xl p-4 border border-border group-hover:bg-card group-hover:border-indigo-100 dark:group-hover:border-indigo-900/50 transition-all">
+                  <span className="text-[10px] font-black text-muted-foreground uppercase tracking-[0.2em] block mb-2">Session Goal</span>
+                  <p className="text-foreground font-medium leading-relaxed line-clamp-2 italic">"{app.goal}"</p>
                 </div>
               )}
 
               <div className="flex flex-wrap items-center justify-between gap-4 pt-2">
                 <div className="flex flex-wrap gap-3">
                   {hasBolt && (
-                    <Badge className="bg-indigo-50 text-indigo-700 border border-indigo-100 flex items-center gap-1.5 text-[10px] font-black uppercase tracking-wider px-3 py-1 rounded-full">
+                    <Badge className="bg-indigo-50 dark:bg-indigo-900/20 text-indigo-700 dark:text-indigo-400 border border-indigo-100 dark:border-indigo-900/30 flex items-center gap-1.5 text-[10px] font-black uppercase tracking-wider px-3 py-1 rounded-full">
                       <FlaskConical size={12} /> BOLT: {app.bolt_score}s
                     </Badge>
                   )}
                   {hasCoherence && (
-                    <Badge className="bg-rose-50 text-rose-700 border border-rose-100 flex items-center gap-1.5 text-[10px] font-black uppercase tracking-wider px-3 py-1 rounded-full">
+                    <Badge className="bg-rose-50 dark:bg-rose-900/20 text-rose-700 dark:text-rose-400 border border-rose-100 dark:border-rose-900/30 flex items-center gap-1.5 text-[10px] font-black uppercase tracking-wider px-3 py-1 rounded-full">
                       <Activity size={12} /> COH: {app.coherence_score?.toFixed(2)}
                     </Badge>
                   )}
                   {hasCogs && (
-                    <Badge className="bg-purple-50 text-purple-700 border border-purple-100 flex items-center gap-1.5 text-[10px] font-black uppercase tracking-wider px-3 py-1 rounded-full">
+                    <Badge className="bg-purple-50 dark:bg-purple-900/20 text-purple-700 dark:text-purple-400 border border-purple-100 dark:border-purple-900/30 flex items-center gap-1.5 text-[10px] font-black uppercase tracking-wider px-3 py-1 rounded-full">
                       <Move size={12} /> COGS
                     </Badge>
                   )}
@@ -266,7 +266,7 @@ const AppointmentsPage = () => {
                     <Button 
                       size="sm" 
                       variant="outline" 
-                      className="h-8 rounded-xl border-indigo-100 text-indigo-600 hover:bg-indigo-50 font-black text-[9px] uppercase tracking-widest"
+                      className="h-8 rounded-xl border-indigo-100 dark:border-indigo-900/30 text-indigo-600 dark:text-indigo-400 hover:bg-indigo-50 dark:hover:bg-indigo-900/20 font-black text-[9px] uppercase tracking-widest"
                       onClick={() => setAssessmentModal({ open: true, type: 'bolt', clientId: app.clients.id, clientName: app.clients.name })}
                     >
                       <FlaskConical size={12} className="mr-1" /> Log BOLT
@@ -274,7 +274,7 @@ const AppointmentsPage = () => {
                     <Button 
                       size="sm" 
                       variant="outline" 
-                      className="h-8 rounded-xl border-rose-100 text-rose-600 hover:bg-rose-50 font-black text-[9px] uppercase tracking-widest"
+                      className="h-8 rounded-xl border-rose-100 dark:border-rose-900/30 text-rose-600 dark:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-900/20 font-black text-[9px] uppercase tracking-widest"
                       onClick={() => setAssessmentModal({ open: true, type: 'coherence', clientId: app.clients.id, clientName: app.clients.name })}
                     >
                       <Activity size={12} className="mr-1" /> Log COH
@@ -291,7 +291,7 @@ const AppointmentsPage = () => {
               </div>
             </div>
 
-            <div className="p-8 flex flex-col justify-between items-end border-t sm:border-t-0 sm:border-l border-slate-100 bg-slate-50/30 group-hover:bg-indigo-50/20 transition-colors">
+            <div className="p-8 flex flex-col justify-between items-end border-t sm:border-t-0 sm:border-l border-border bg-muted/30 group-hover:bg-indigo-50/20 dark:group-hover:bg-indigo-900/10 transition-colors">
               <div className="flex items-center gap-3">
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
@@ -299,25 +299,25 @@ const AppointmentsPage = () => {
                       variant={isCompleted ? 'default' : 'outline'} 
                       className={cn(
                         "font-black h-9 text-[10px] uppercase tracking-widest rounded-xl shadow-sm px-4",
-                        isCompleted ? 'bg-emerald-600 hover:bg-emerald-700 border-none text-white' : 'border-slate-200 text-slate-600 bg-white hover:bg-slate-50'
+                        isCompleted ? 'bg-emerald-600 hover:bg-emerald-700 border-none text-white' : 'border-border text-muted-foreground bg-card hover:bg-muted'
                       )}
                     >
                       {app.status}
                       <ChevronDown size={14} className="ml-2 opacity-50" />
                     </Button>
                   </DropdownMenuTrigger>
-                  <DropdownMenuContent align="end" className="w-48 rounded-2xl p-2 shadow-2xl border-none">
+                  <DropdownMenuContent align="end" className="w-48 rounded-2xl p-2 shadow-2xl border-none bg-card">
                     {APPOINTMENT_STATUSES.map(status => (
                       <DropdownMenuItem 
                         key={status}
                         onClick={() => updateStatus(app.id, status)}
                         className={cn(
                           "flex items-center justify-between rounded-xl py-2.5 px-4 cursor-pointer",
-                          app.status === status && "bg-indigo-50 text-indigo-600 font-black"
+                          app.status === status && "bg-indigo-50 dark:bg-indigo-900/20 text-indigo-600 dark:text-indigo-400 font-black"
                         )}
                       >
                         {status}
-                        {app.status === status && <CheckCircle2 size={16} className="text-indigo-600" />}
+                        {app.status === status && <CheckCircle2 size={16} className="text-indigo-600 dark:text-indigo-400" />}
                       </DropdownMenuItem>
                     ))}
                   </DropdownMenuContent>
@@ -325,11 +325,11 @@ const AppointmentsPage = () => {
 
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
-                    <Button variant="ghost" size="icon" className="h-9 w-9 text-slate-400 hover:text-slate-900 hover:bg-white rounded-xl transition-all">
+                    <Button variant="ghost" size="icon" className="h-9 w-9 text-muted-foreground hover:text-foreground hover:bg-card rounded-xl transition-all">
                       <MoreVertical size={18} />
                     </Button>
                   </DropdownMenuTrigger>
-                  <DropdownMenuContent align="end" className="rounded-2xl p-2 shadow-2xl border-none">
+                  <DropdownMenuContent align="end" className="rounded-2xl p-2 shadow-2xl border-none bg-card">
                     <DropdownMenuItem asChild className="rounded-xl py-2.5 px-4 cursor-pointer">
                       <Link to={`/appointments/${app.id}`} className="flex items-center gap-3">
                         <ExternalLink size={16} className="text-indigo-500" /> View Details
@@ -347,10 +347,10 @@ const AppointmentsPage = () => {
               </div>
               
               <div className="flex flex-col items-end gap-1">
-                <span className="text-[9px] font-black text-slate-400 uppercase tracking-[0.2em]">
+                <span className="text-[9px] font-black text-muted-foreground uppercase tracking-[0.2em]">
                   Session ID
                 </span>
-                <span className="text-xs font-bold text-slate-600 font-mono">
+                <span className="text-xs font-bold text-muted-foreground font-mono">
                   {app.display_id || app.id.slice(0,8)}
                 </span>
               </div>
@@ -367,16 +367,16 @@ const AppointmentsPage = () => {
       
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-6">
         <div>
-          <h1 className="text-4xl font-black tracking-tight text-slate-900">Appointments</h1>
-          <p className="text-slate-500 font-medium mt-1">View and manage upcoming and past clinical sessions</p>
+          <h1 className="text-4xl font-black tracking-tight text-foreground">Appointments</h1>
+          <p className="text-muted-foreground font-medium mt-1">View and manage upcoming and past clinical sessions</p>
         </div>
         <div className="flex items-center gap-3">
-          <div className="flex items-center gap-1 bg-slate-100 p-1 rounded-xl">
+          <div className="flex items-center gap-1 bg-muted p-1 rounded-xl">
             <Button 
               variant={viewMode === 'list' ? 'default' : 'ghost'} 
               size="sm" 
               onClick={() => setViewMode('list')}
-              className={cn("rounded-lg h-9 px-4 font-bold text-xs uppercase tracking-widest", viewMode === 'list' ? "bg-white text-indigo-600 shadow-sm hover:bg-white" : "text-slate-500")}
+              className={cn("rounded-lg h-9 px-4 font-bold text-xs uppercase tracking-widest", viewMode === 'list' ? "bg-card text-indigo-600 shadow-sm hover:bg-card" : "text-muted-foreground")}
             >
               <List size={16} className="mr-2" /> List
             </Button>
@@ -384,14 +384,14 @@ const AppointmentsPage = () => {
               variant={viewMode === 'calendar' ? 'default' : 'ghost'} 
               size="sm" 
               onClick={() => setViewMode('calendar')}
-              className={cn("rounded-lg h-9 px-4 font-bold text-xs uppercase tracking-widest", viewMode === 'calendar' ? "bg-white text-indigo-600 shadow-sm hover:bg-white" : "text-slate-500")}
+              className={cn("rounded-lg h-9 px-4 font-bold text-xs uppercase tracking-widest", viewMode === 'calendar' ? "bg-card text-indigo-600 shadow-sm hover:bg-card" : "text-muted-foreground")}
             >
               <LayoutGrid size={16} className="mr-2" /> Calendar
             </Button>
           </div>
           <Dialog open={open} onOpenChange={setOpen}>
             <DialogTrigger asChild>
-              <Button className="bg-indigo-600 hover:bg-indigo-700 shadow-xl shadow-indigo-100 rounded-2xl h-12 px-8 font-black text-xs uppercase tracking-widest">
+              <Button className="bg-indigo-600 hover:bg-indigo-700 shadow-xl shadow-indigo-100 dark:shadow-indigo-900/20 rounded-2xl h-12 px-8 font-black text-xs uppercase tracking-widest">
                 <Plus size={20} className="mr-2" /> New Appointment
               </Button>
             </DialogTrigger>
@@ -412,57 +412,57 @@ const AppointmentsPage = () => {
 
       {/* Summary Stats */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-        <Card className="border-none shadow-sm bg-white rounded-2xl p-4 flex items-center gap-4">
-          <div className="w-10 h-10 rounded-xl bg-rose-50 text-rose-600 flex items-center justify-center">
+        <Card className="border-none shadow-sm bg-card rounded-2xl p-4 flex items-center gap-4">
+          <div className="w-10 h-10 rounded-xl bg-rose-50 dark:bg-rose-900/20 text-rose-600 dark:text-rose-400 flex items-center justify-center">
             <Zap size={20} className="fill-current" />
           </div>
           <div>
-            <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Today</p>
-            <p className="text-xl font-black text-slate-900">{stats.today}</p>
+            <p className="text-[10px] font-black text-muted-foreground uppercase tracking-widest">Today</p>
+            <p className="text-xl font-black text-foreground">{stats.today}</p>
           </div>
         </Card>
-        <Card className="border-none shadow-sm bg-white rounded-2xl p-4 flex items-center gap-4">
-          <div className="w-10 h-10 rounded-xl bg-indigo-50 text-indigo-600 flex items-center justify-center">
+        <Card className="border-none shadow-sm bg-card rounded-2xl p-4 flex items-center gap-4">
+          <div className="w-10 h-10 rounded-xl bg-indigo-50 dark:bg-indigo-900/20 text-indigo-600 dark:text-indigo-400 flex items-center justify-center">
             <CalendarDays size={20} />
           </div>
           <div>
-            <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">This Month</p>
-            <p className="text-xl font-black text-slate-900">{stats.month}</p>
+            <p className="text-[10px] font-black text-muted-foreground uppercase tracking-widest">This Month</p>
+            <p className="text-xl font-black text-foreground">{stats.month}</p>
           </div>
         </Card>
-        <Card className="border-none shadow-sm bg-white rounded-2xl p-4 flex items-center gap-4">
-          <div className="w-10 h-10 rounded-xl bg-amber-50 text-amber-600 flex items-center justify-center">
+        <Card className="border-none shadow-sm bg-card rounded-2xl p-4 flex items-center gap-4">
+          <div className="w-10 h-10 rounded-xl bg-amber-50 dark:bg-amber-900/20 text-amber-600 dark:text-amber-400 flex items-center justify-center">
             <CircleDashed size={20} />
           </div>
           <div>
-            <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Scheduled</p>
-            <p className="text-xl font-black text-slate-900">{stats.pending}</p>
+            <p className="text-[10px] font-black text-muted-foreground uppercase tracking-widest">Scheduled</p>
+            <p className="text-xl font-black text-foreground">{stats.pending}</p>
           </div>
         </Card>
-        <Card className="border-none shadow-sm bg-white rounded-2xl p-4 flex items-center gap-4">
-          <div className="w-10 h-10 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center">
+        <Card className="border-none shadow-sm bg-card rounded-2xl p-4 flex items-center gap-4">
+          <div className="w-10 h-10 rounded-xl bg-emerald-50 dark:bg-emerald-900/20 text-emerald-600 dark:text-emerald-400 flex items-center justify-center">
             <CheckCircle size={20} />
           </div>
           <div>
-            <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Completed</p>
-            <p className="text-xl font-black text-slate-900">{stats.completed}</p>
+            <p className="text-[10px] font-black text-muted-foreground uppercase tracking-widest">Completed</p>
+            <p className="text-xl font-black text-foreground">{stats.completed}</p>
           </div>
         </Card>
       </div>
 
       <div className="flex flex-col md:flex-row gap-4 items-center justify-between">
         <div className="relative w-full max-w-md">
-          <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
+          <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground" size={18} />
           <Input 
             placeholder="Search by client name or tag..." 
-            className="pl-12 bg-white border-slate-200 h-12 rounded-2xl shadow-sm font-medium focus:ring-2 focus:ring-indigo-500"
+            className="pl-12 bg-card border-border h-12 rounded-2xl shadow-sm font-medium focus:ring-2 focus:ring-indigo-500"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
           />
         </div>
         
         <Tabs value={statusFilter} onValueChange={setStatusFilter} className="w-full md:w-auto">
-          <TabsList className="grid grid-cols-3 h-12 bg-slate-100 p-1 rounded-xl">
+          <TabsList className="grid grid-cols-3 h-12 bg-muted p-1 rounded-xl">
             <TabsTrigger value="all" className="rounded-lg text-[10px] font-black uppercase tracking-widest">All</TabsTrigger>
             <TabsTrigger value="Scheduled" className="rounded-lg text-[10px] font-black uppercase tracking-widest">Scheduled</TabsTrigger>
             <TabsTrigger value="Completed" className="rounded-lg text-[10px] font-black uppercase tracking-widest">Completed</TabsTrigger>
@@ -473,7 +473,7 @@ const AppointmentsPage = () => {
       {loading ? (
         <div className="p-24 flex flex-col items-center justify-center gap-6">
           <Loader2 className="animate-spin text-indigo-500" size={48} />
-          <p className="text-slate-400 font-bold uppercase tracking-widest text-xs">Loading your schedule...</p>
+          <p className="text-muted-foreground font-bold uppercase tracking-widest text-xs">Loading your schedule...</p>
         </div>
       ) : viewMode === 'calendar' ? (
         <CalendarView appointments={filteredAppointments} />
@@ -482,11 +482,11 @@ const AppointmentsPage = () => {
           {todaySessions.length > 0 && (
             <div className="space-y-6">
               <div className="flex items-center gap-4 px-2">
-                <div className="w-12 h-12 rounded-2xl bg-rose-100 flex items-center justify-center text-rose-600 flex-shrink-0 shadow-sm">
+                <div className="w-12 h-12 rounded-2xl bg-rose-100 dark:bg-rose-900/30 flex items-center justify-center text-rose-600 dark:text-rose-400 flex-shrink-0 shadow-sm">
                   <Zap size={24} className="fill-current" />
                 </div>
-                <h2 className="text-2xl font-black text-slate-900 tracking-tight">Today's Sessions</h2>
-                <div className="flex-1 h-[2px] bg-rose-100 rounded-full opacity-50" />
+                <h2 className="text-2xl font-black text-foreground tracking-tight">Today's Sessions</h2>
+                <div className="flex-1 h-[2px] bg-rose-100 dark:bg-rose-900/30 rounded-full opacity-50" />
               </div>
               <div className="grid gap-6">
                 {todaySessions.map(app => <AppointmentCard key={app.id} app={app} />)}
@@ -497,11 +497,11 @@ const AppointmentsPage = () => {
           {grouped.map(([month, apps]) => (
             <div key={month} className="space-y-6">
               <div className="flex items-center gap-4 px-2">
-                <div className="w-12 h-12 rounded-2xl bg-indigo-100 flex items-center justify-center text-indigo-600 flex-shrink-0 shadow-sm">
+                <div className="w-12 h-12 rounded-2xl bg-indigo-100 dark:bg-indigo-900/30 flex items-center justify-center text-indigo-600 dark:text-indigo-400 flex-shrink-0 shadow-sm">
                   <CalendarIcon size={24} />
                 </div>
-                <h2 className="text-2xl font-black text-slate-900 tracking-tight">{month}</h2>
-                <div className="flex-1 h-[2px] bg-slate-200 rounded-full opacity-50" />
+                <h2 className="text-2xl font-black text-foreground tracking-tight">{month}</h2>
+                <div className="flex-1 h-[2px] bg-border rounded-full opacity-50" />
               </div>
               <div className="grid gap-6">
                 {apps.map(app => <AppointmentCard key={app.id} app={app} />)}
@@ -510,13 +510,13 @@ const AppointmentsPage = () => {
           ))}
 
           {filteredAppointments.length === 0 && (
-            <div className="text-center py-32 bg-slate-50 rounded-[3rem] border-2 border-dashed border-slate-200">
-              <div className="w-20 h-20 bg-white rounded-3xl flex items-center justify-center mx-auto mb-6 shadow-xl">
-                <CalendarIcon className="text-slate-300" size={40} />
+            <div className="text-center py-32 bg-muted/30 rounded-[3rem] border-2 border-dashed border-border">
+              <div className="w-20 h-20 bg-card rounded-3xl flex items-center justify-center mx-auto mb-6 shadow-xl">
+                <CalendarIcon className="text-muted-foreground" size={40} />
               </div>
-              <p className="text-slate-900 font-black text-xl">No appointments found</p>
-              <p className="text-slate-500 mt-2 mb-8">Try adjusting your search or schedule a new session.</p>
-              <Button variant="outline" className="h-12 px-8 border-slate-200 hover:bg-white rounded-2xl font-bold" onClick={() => { setSearch(""); setStatusFilter("all"); setOpen(true); }}>
+              <p className="text-foreground font-black text-xl">No appointments found</p>
+              <p className="text-muted-foreground mt-2 mb-8 font-medium">Try adjusting your search or schedule a new session.</p>
+              <Button variant="outline" className="h-12 px-8 border-border hover:bg-card rounded-2xl font-bold" onClick={() => { setSearch(""); setStatusFilter("all"); setOpen(true); }}>
                 Schedule First Session
               </Button>
             </div>

@@ -102,40 +102,40 @@ const PathwayLogicWizard = ({ onSave, initialValue }: PathwayLogicWizardProps) =
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6 animate-in fade-in zoom-in-95 duration-500">
             <button 
                 onClick={() => goToStep('AFFERENT_SELECT')} 
-                className="p-10 rounded-[3rem] border-2 border-blue-100 bg-blue-50/30 hover:border-blue-400 hover:bg-blue-50 hover:shadow-2xl hover:-translate-y-1 transition-all duration-500 text-left group relative overflow-hidden"
+                className="p-10 rounded-[3rem] border-2 border-blue-100 dark:border-blue-900/30 bg-blue-50/30 dark:bg-blue-900/10 hover:border-blue-400 dark:hover:border-blue-900/50 hover:bg-blue-50 dark:hover:bg-blue-900/20 hover:shadow-2xl hover:-translate-y-1 transition-all duration-500 text-left group relative overflow-hidden"
             >
               <div className="absolute top-0 right-0 p-8 opacity-5 group-hover:scale-110 transition-transform duration-700"><GitBranch size={150} /></div>
               <div className="flex items-center justify-between mb-6 relative z-10">
-                <div className="w-16 h-16 rounded-2xl bg-white shadow-xl flex items-center justify-center group-hover:bg-blue-600 group-hover:text-white transition-all duration-500">
+                <div className="w-16 h-16 rounded-2xl bg-card shadow-xl flex items-center justify-center group-hover:bg-blue-600 group-hover:text-white transition-all duration-500">
                   <GitBranch size={32} className="text-blue-600 group-hover:text-white transition-colors" />
                 </div>
-                <Badge className="bg-blue-100 text-blue-700 border-none font-black text-[10px] uppercase tracking-widest px-3 py-1">Bottom-Up</Badge>
+                <Badge className="bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400 border-none font-black text-[10px] uppercase tracking-widest px-3 py-1">Bottom-Up</Badge>
               </div>
               <div className="relative z-10">
-                <h3 className="text-3xl font-black text-blue-900 tracking-tight">Afferent</h3>
-                <p className="text-sm font-bold text-blue-700 mt-2 leading-relaxed">Sensory input from body to brain. Calibrate mechanoreceptors and vestibular systems.</p>
+                <h3 className="text-3xl font-black text-blue-900 dark:text-blue-100 tracking-tight">Afferent</h3>
+                <p className="text-sm font-bold text-blue-700 dark:text-blue-400 mt-2 leading-relaxed">Sensory input from body to brain. Calibrate mechanoreceptors and vestibular systems.</p>
               </div>
-              <div className="mt-8 flex items-center text-[10px] font-black uppercase tracking-widest text-blue-400 group-hover:text-blue-600 transition-colors relative z-10">
+              <div className="mt-8 flex items-center text-[10px] font-black uppercase tracking-widest text-blue-400 group-hover:text-blue-600 dark:group-hover:text-blue-300 transition-colors relative z-10">
                 Start Assessment <ArrowRight size={14} className="ml-2 group-hover:translate-x-1 transition-transform" />
               </div>
             </button>
 
             <button 
                 onClick={() => goToStep('EFFERENT_SELECT')} 
-                className="p-10 rounded-[3rem] border-2 border-purple-100 bg-purple-50/30 hover:border-purple-400 hover:bg-purple-50 hover:shadow-2xl hover:-translate-y-1 transition-all duration-500 text-left group relative overflow-hidden"
+                className="p-10 rounded-[3rem] border-2 border-purple-100 dark:border-purple-900/30 bg-purple-50/30 dark:bg-purple-900/10 hover:border-purple-400 dark:hover:border-purple-900/50 hover:bg-purple-50 dark:hover:bg-purple-900/20 hover:shadow-2xl hover:-translate-y-1 transition-all duration-500 text-left group relative overflow-hidden"
             >
               <div className="absolute top-0 right-0 p-8 opacity-5 group-hover:scale-110 transition-transform duration-700"><Sparkles size={150} /></div>
               <div className="flex items-center justify-between mb-6 relative z-10">
-                <div className="w-16 h-16 rounded-2xl bg-white shadow-xl flex items-center justify-center group-hover:bg-purple-600 group-hover:text-white transition-all duration-500">
+                <div className="w-16 h-16 rounded-2xl bg-card shadow-xl flex items-center justify-center group-hover:bg-purple-600 group-hover:text-white transition-all duration-500">
                   <Sparkles size={32} className="text-purple-600 group-hover:text-white transition-colors" />
                 </div>
-                <Badge className="bg-purple-100 text-purple-700 border-none font-black text-[10px] uppercase tracking-widest px-3 py-1">Top-Down</Badge>
+                <Badge className="bg-purple-100 dark:bg-purple-900/30 text-purple-700 dark:text-purple-400 border-none font-black text-[10px] uppercase tracking-widest px-3 py-1">Top-Down</Badge>
               </div>
               <div className="relative z-10">
-                <h3 className="text-3xl font-black text-purple-900 tracking-tight">Efferent</h3>
-                <p className="text-sm font-bold text-purple-700 mt-2 leading-relaxed">Motor commands from brain to body. Integrate cortical and subcortical processing.</p>
+                <h3 className="text-3xl font-black text-purple-900 dark:text-purple-100 tracking-tight">Efferent</h3>
+                <p className="text-sm font-bold text-purple-700 dark:text-purple-400 mt-2 leading-relaxed">Motor commands from brain to body. Integrate cortical and subcortical processing.</p>
               </div>
-              <div className="mt-8 flex items-center text-[10px] font-black uppercase tracking-widest text-purple-400 group-hover:text-purple-600 transition-colors relative z-10">
+              <div className="mt-8 flex items-center text-[10px] font-black uppercase tracking-widest text-purple-400 group-hover:text-purple-600 dark:group-hover:text-purple-300 transition-colors relative z-10">
                 Start Integration <ArrowRight size={14} className="ml-2 group-hover:translate-x-1 transition-transform" />
               </div>
             </button>
@@ -152,13 +152,13 @@ const PathwayLogicWizard = ({ onSave, initialValue }: PathwayLogicWizardProps) =
             ].map(item => (
               <button key={item.type} onClick={() => goToStep(item.step as Step)} className={cn(
                 "p-8 rounded-[2rem] border-2 transition-all duration-300 text-left group w-full",
-                item.color === 'blue' ? "border-blue-100 bg-blue-50/30 hover:border-blue-300 hover:bg-blue-50" :
-                item.color === 'cyan' ? "border-cyan-100 bg-cyan-50/30 hover:border-cyan-300 hover:bg-cyan-50" :
-                "border-orange-100 bg-orange-50/30 hover:border-orange-300 hover:bg-orange-50"
+                item.color === 'blue' ? "border-blue-100 dark:border-blue-900/30 bg-blue-50/30 dark:bg-blue-900/10 hover:border-blue-300 dark:hover:border-blue-900/50 hover:bg-blue-50 dark:hover:bg-blue-900/20" :
+                item.color === 'cyan' ? "border-cyan-100 dark:border-cyan-900/30 bg-cyan-50/30 dark:bg-cyan-900/10 hover:border-cyan-300 dark:hover:border-cyan-900/50 hover:bg-cyan-50 dark:hover:bg-cyan-900/20" :
+                "border-orange-100 dark:border-orange-900/30 bg-orange-50/30 dark:bg-orange-900/10 hover:border-orange-300 dark:hover:border-orange-900/50 hover:bg-orange-50 dark:hover:bg-orange-900/20"
               )}>
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-5">
-                    <div className="w-14 h-14 rounded-2xl bg-white shadow-md flex items-center justify-center group-hover:scale-110 transition-transform">
+                    <div className="w-14 h-14 rounded-2xl bg-card shadow-md flex items-center justify-center group-hover:scale-110 transition-transform">
                       <item.icon size={28} className={cn(
                         item.color === 'blue' ? "text-blue-600" :
                         item.color === 'cyan' ? "text-cyan-600" :
@@ -166,17 +166,17 @@ const PathwayLogicWizard = ({ onSave, initialValue }: PathwayLogicWizardProps) =
                       )} />
                     </div>
                     <div>
-                        <p className="font-black text-xl text-slate-900">{item.type}</p>
-                        <p className="text-sm font-medium text-slate-500 mt-1">{item.desc}</p>
+                        <p className="font-black text-xl text-foreground">{item.type}</p>
+                        <p className="text-sm font-medium text-muted-foreground mt-1">{item.desc}</p>
                     </div>
                   </div>
-                  <div className="w-10 h-10 rounded-xl bg-white/50 flex items-center justify-center text-slate-300 group-hover:text-indigo-600 group-hover:bg-white transition-all">
+                  <div className="w-10 h-10 rounded-xl bg-muted/50 flex items-center justify-center text-muted-foreground group-hover:text-indigo-600 dark:group-hover:text-indigo-400 group-hover:bg-card transition-all">
                     <ArrowRight size={24} className="group-hover:translate-x-1 transition-transform" />
                   </div>
                 </div>
               </button>
             ))}
-            <Button variant="ghost" onClick={goBack} className="w-full h-12 rounded-xl font-bold text-slate-400 hover:text-slate-600"><ChevronLeft size={18} className="mr-2" /> Back to Direction</Button>
+            <Button variant="ghost" onClick={goBack} className="w-full h-12 rounded-xl font-bold text-muted-foreground hover:text-foreground"><ChevronLeft size={18} className="mr-2" /> Back to Direction</Button>
           </div>
         );
 
@@ -189,28 +189,28 @@ const PathwayLogicWizard = ({ onSave, initialValue }: PathwayLogicWizardProps) =
             ].map(item => (
               <button key={item.type} onClick={() => goToStep(item.step as Step)} className={cn(
                 "p-8 rounded-[2rem] border-2 transition-all duration-300 text-left group w-full",
-                item.color === 'purple' ? "border-purple-100 bg-purple-50/30 hover:border-purple-300 hover:bg-purple-50" :
-                "border-rose-100 bg-rose-50/30 hover:border-rose-300 hover:bg-rose-50"
+                item.color === 'purple' ? "border-purple-100 dark:border-purple-900/30 bg-purple-50/30 dark:bg-purple-900/10 hover:border-purple-300 dark:hover:border-purple-900/50 hover:bg-purple-50 dark:hover:bg-purple-900/20" :
+                "border-rose-100 dark:border-rose-900/30 bg-rose-50/30 dark:bg-rose-900/10 hover:border-rose-300 dark:hover:border-rose-900/50 hover:bg-rose-50 dark:hover:bg-rose-900/20"
               )}>
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-5">
-                    <div className="w-14 h-14 rounded-2xl bg-white shadow-md flex items-center justify-center group-hover:scale-110 transition-transform">
+                    <div className="w-14 h-14 rounded-2xl bg-card shadow-md flex items-center justify-center group-hover:scale-110 transition-transform">
                       <item.icon size={28} className={cn(
                         item.color === 'purple' ? "text-purple-600" : "text-rose-600"
                       )} />
                     </div>
                     <div>
-                        <p className="font-black text-xl text-slate-900">{item.type}</p>
-                        <p className="text-sm font-medium text-slate-500 mt-1">{item.desc}</p>
+                        <p className="font-black text-xl text-foreground">{item.type}</p>
+                        <p className="text-sm font-medium text-muted-foreground mt-1">{item.desc}</p>
                     </div>
                   </div>
-                  <div className="w-10 h-10 rounded-xl bg-white/50 flex items-center justify-center text-slate-300 group-hover:text-indigo-600 group-hover:bg-white transition-all">
+                  <div className="w-10 h-10 rounded-xl bg-muted/50 flex items-center justify-center text-muted-foreground group-hover:text-indigo-600 dark:group-hover:text-indigo-400 group-hover:bg-card transition-all">
                     <ArrowRight size={24} className="group-hover:translate-x-1 transition-transform" />
                   </div>
                 </div>
               </button>
             ))}
-            <Button variant="ghost" onClick={goBack} className="w-full h-12 rounded-xl font-bold text-slate-400 hover:text-slate-600"><ChevronLeft size={18} className="mr-2" /> Back to Direction</Button>
+            <Button variant="ghost" onClick={goBack} className="w-full h-12 rounded-xl font-bold text-muted-foreground hover:text-foreground"><ChevronLeft size={18} className="mr-2" /> Back to Direction</Button>
           </div>
         );
 
@@ -236,13 +236,13 @@ const PathwayLogicWizard = ({ onSave, initialValue }: PathwayLogicWizardProps) =
 
       case 'VESTIBULAR_PROCESS':
         return (
-          <div className="text-center py-20 bg-slate-50 rounded-[3rem] border-2 border-dashed border-slate-200 animate-in fade-in">
-            <div className="w-20 h-20 rounded-3xl bg-white shadow-xl flex items-center justify-center mx-auto mb-6">
-                <Sparkles size={40} className="text-slate-300" />
+          <div className="text-center py-20 bg-muted/30 rounded-[3rem] border-2 border-dashed border-border animate-in fade-in">
+            <div className="w-20 h-20 rounded-3xl bg-card shadow-xl flex items-center justify-center mx-auto mb-6">
+                <Sparkles size={40} className="text-muted-foreground" />
             </div>
-            <p className="font-black text-xl text-slate-900">Coming Soon</p>
-            <p className="text-sm font-medium text-slate-500 mt-2">Vestibular assessment tools will be added here.</p>
-            <Button variant="outline" onClick={goBack} className="mt-8 rounded-xl h-12 px-8 border-slate-200 font-bold"><ChevronLeft size={18} className="mr-2" /> Back</Button>
+            <p className="font-black text-xl text-foreground">Coming Soon</p>
+            <p className="text-sm font-medium text-muted-foreground mt-2">Vestibular assessment tools will be added here.</p>
+            <Button variant="outline" onClick={goBack} className="mt-8 rounded-xl h-12 px-8 border-border font-bold"><ChevronLeft size={18} className="mr-2" /> Back</Button>
           </div>
         );
 
@@ -253,17 +253,17 @@ const PathwayLogicWizard = ({ onSave, initialValue }: PathwayLogicWizardProps) =
 
   return (
     <>
-      <Card className="border-none shadow-xl rounded-[3rem] bg-white overflow-hidden">
+      <Card className="border-none shadow-xl rounded-[3rem] bg-card overflow-hidden">
         <CardHeader className="p-10 pb-6">
           <div className="flex items-center justify-between">
             <div className="space-y-1">
-                <CardTitle className="text-3xl font-black text-slate-900 tracking-tight">Pathway Logic Wizard</CardTitle>
-                <CardDescription className="text-slate-500 font-medium text-lg">
+                <CardTitle className="text-3xl font-black text-foreground tracking-tight">Pathway Logic Wizard</CardTitle>
+                <CardDescription className="text-muted-foreground font-medium text-lg">
                     Identify and clear layers of neurological interference.
                 </CardDescription>
             </div>
             {step !== 'START' && (
-                <Button variant="ghost" size="sm" onClick={resetWizard} className="text-[10px] font-black uppercase tracking-widest text-slate-400 hover:text-rose-600">
+                <Button variant="ghost" size="sm" onClick={resetWizard} className="text-[10px] font-black uppercase tracking-widest text-muted-foreground hover:text-rose-600">
                     <RefreshCw size={14} className="mr-2" /> Reset Wizard
                 </Button>
             )}
@@ -274,8 +274,8 @@ const PathwayLogicWizard = ({ onSave, initialValue }: PathwayLogicWizardProps) =
         </CardContent>
       </Card>
       <Dialog open={ligamentModalOpen} onOpenChange={setLigamentModalOpen}>
-        <DialogContent className="sm:max-w-[80vw] max-h-[90vh] rounded-[3rem] p-0 overflow-hidden border-none shadow-2xl">
-          <DialogHeader className="p-8 bg-slate-900 text-white">
+        <DialogContent className="sm:max-w-[80vw] max-h-[90vh] rounded-[3rem] p-0 overflow-hidden border-none shadow-2xl bg-card">
+          <DialogHeader className="p-8 bg-slate-900 dark:bg-slate-950 text-white">
             <DialogTitle className="text-2xl font-black">Ligament Reference Images</DialogTitle>
           </DialogHeader>
           <ScrollArea className="max-h-[70vh] p-8">
@@ -283,15 +283,15 @@ const PathwayLogicWizard = ({ onSave, initialValue }: PathwayLogicWizardProps) =
               {Object.entries(ligamentImages).map(([category, urls]) => (
                 <div key={category} className="space-y-6">
                   <div className="flex items-center gap-3">
-                    <div className="w-8 h-8 rounded-lg bg-indigo-100 text-indigo-600 flex items-center justify-center">
+                    <div className="w-8 h-8 rounded-lg bg-indigo-100 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-400 flex items-center justify-center">
                         <ImageIcon size={18} />
                     </div>
-                    <h3 className="text-xl font-black text-slate-800 capitalize">{category.replace('_', ' ')}</h3>
+                    <h3 className="text-xl font-black text-foreground capitalize">{category.replace('_', ' ')}</h3>
                   </div>
                   <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
                     {urls.map((url, index) => (
                       url ? (
-                        <div key={index} className="aspect-video rounded-2xl overflow-hidden border-2 border-slate-100 shadow-sm hover:border-indigo-300 transition-all">
+                        <div key={index} className="aspect-video rounded-2xl overflow-hidden border-2 border-border shadow-sm hover:border-indigo-300 dark:hover:border-indigo-900 transition-all">
                             <img src={url} alt={`${category} ${index}`} className="w-full h-full object-cover" />
                         </div>
                       ) : null

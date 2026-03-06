@@ -18,7 +18,6 @@ const UpcomingAppointments = () => {
   useEffect(() => {
     const fetchUpcoming = async () => {
       try {
-        // Filter out practitioner sessions using inner join
         const { data, error } = await supabase
           .from("appointments")
           .select(`
@@ -60,7 +59,7 @@ const UpcomingAppointments = () => {
 
   if (loading) {
     return (
-      <Card className="border-none shadow-sm rounded-2xl bg-white">
+      <Card className="border-none shadow-sm rounded-2xl bg-card">
         <CardHeader>
           <CardTitle className="text-lg font-bold flex items-center gap-2">
             <Calendar size={20} className="text-indigo-500" />
@@ -75,7 +74,7 @@ const UpcomingAppointments = () => {
   }
 
   return (
-    <Card className="border-none shadow-sm rounded-2xl bg-white">
+    <Card className="border-none shadow-sm rounded-2xl bg-card">
       <CardHeader>
         <CardTitle className="text-lg font-bold flex items-center gap-2">
           <Calendar size={20} className="text-indigo-500" />
@@ -95,15 +94,15 @@ const UpcomingAppointments = () => {
                 className={cn(
                   "flex items-start gap-3 p-3 rounded-xl transition-all group border-2",
                   isUrgent
-                    ? "border-amber-200 bg-amber-50 hover:border-amber-300"
-                    : "border-slate-100 hover:bg-slate-50"
+                    ? "border-amber-200 dark:border-amber-900/30 bg-amber-50 dark:bg-amber-900/10 hover:border-amber-300 dark:hover:border-amber-900/50"
+                    : "border-muted bg-muted/30 hover:bg-muted/50"
                 )}
               >
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2 mb-1">
                     <Badge
                       className={cn(
-                        "text-xs font-bold",
+                        "text-[10px] font-black uppercase tracking-widest",
                         isUrgent
                           ? "bg-amber-500 hover:bg-amber-600"
                           : "bg-indigo-500 hover:bg-indigo-600"
@@ -111,15 +110,15 @@ const UpcomingAppointments = () => {
                     >
                       {dateLabel}
                     </Badge>
-                    <span className="text-xs text-slate-500 flex items-center gap-1">
+                    <span className="text-[10px] text-muted-foreground font-bold flex items-center gap-1">
                       <Clock size={12} />
                       {format(appointment.date, "h:mm a")}
                     </span>
                   </div>
-                  <p className="font-bold text-sm text-slate-900 group-hover:text-indigo-600 transition-colors truncate">
+                  <p className="font-black text-sm text-foreground group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors truncate">
                     {appointment.clients.name}
                   </p>
-                  <p className="text-xs text-slate-500 truncate">
+                  <p className="text-xs text-muted-foreground truncate">
                     {appointment.name || appointment.tag}
                   </p>
                 </div>
@@ -135,9 +134,9 @@ const UpcomingAppointments = () => {
           })}
           {appointments.length === 0 && (
             <div className="text-center py-8">
-              <p className="text-slate-400 text-sm mb-2">No upcoming sessions</p>
+              <p className="text-muted-foreground text-sm mb-2 font-medium">No upcoming sessions</p>
               <Link to="/appointments">
-                <Button variant="outline" size="sm" className="text-xs">
+                <Button variant="outline" size="sm" className="text-[10px] font-black uppercase tracking-widest rounded-xl">
                   Schedule Session
                 </Button>
               </Link>
@@ -148,7 +147,7 @@ const UpcomingAppointments = () => {
           <Link to="/appointments" className="block mt-4">
             <Button
               variant="ghost"
-              className="w-full text-indigo-600 hover:bg-indigo-50 text-xs font-bold"
+              className="w-full text-indigo-600 dark:text-indigo-400 hover:bg-indigo-50 dark:hover:bg-indigo-900/20 text-[10px] font-black uppercase tracking-widest"
             >
               VIEW ALL APPOINTMENTS
             </Button>

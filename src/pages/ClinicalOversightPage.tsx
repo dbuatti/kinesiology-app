@@ -83,14 +83,14 @@ const ClinicalOversightPage = () => {
 
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
         <div>
-          <h1 className="text-3xl font-black tracking-tight text-slate-900">Clinical Oversight</h1>
-          <p className="text-slate-500 font-medium">Practice-wide health monitoring and case management.</p>
+          <h1 className="text-3xl font-black tracking-tight text-foreground">Clinical Oversight</h1>
+          <p className="text-muted-foreground font-medium">Practice-wide health monitoring and case management.</p>
         </div>
         <div className="relative w-full md:w-72">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" size={18} />
           <Input 
             placeholder="Search clients..." 
-            className="pl-10 bg-white border-slate-200 rounded-2xl shadow-sm"
+            className="pl-10 bg-card border-border rounded-2xl shadow-sm"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
           />
@@ -139,7 +139,7 @@ const ClinicalOversightPage = () => {
       </div>
 
       <div className="grid grid-cols-1 gap-4">
-        <h2 className="text-xl font-black text-slate-900 px-2 flex items-center gap-2">
+        <h2 className="text-xl font-black text-foreground px-2 flex items-center gap-2">
           <TrendingUp size={24} className="text-indigo-600" /> Client Clinical Status
         </h2>
         
@@ -153,17 +153,17 @@ const ClinicalOversightPage = () => {
               <Link key={client.id} to={`/clients/${client.id}?tab=progress`}>
                 <Card className={cn(
                   "hover:shadow-xl transition-all border-2 rounded-3xl overflow-hidden group h-full",
-                  isImperative ? "border-rose-200 bg-rose-50/30" : "border-slate-100 bg-white"
+                  isImperative ? "border-rose-200 dark:border-rose-900/50 bg-rose-50/30 dark:bg-rose-900/10" : "border-border bg-card"
                 )}>
                   <CardContent className="p-6 space-y-4">
                     <div className="flex items-start justify-between">
                       <div className="space-y-1">
-                        <h3 className="font-black text-xl text-slate-900 group-hover:text-indigo-600 transition-colors">{client.name}</h3>
-                        <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">
+                        <h3 className="font-black text-xl text-foreground group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors">{client.name}</h3>
+                        <p className="text-[10px] font-black text-muted-foreground uppercase tracking-widest">
                           {client.totalAssessments} Assessments Recorded
                         </p>
                       </div>
-                      <div className="w-10 h-10 rounded-2xl bg-slate-50 flex items-center justify-center text-slate-400 group-hover:bg-indigo-600 group-hover:text-white transition-all">
+                      <div className="w-10 h-10 rounded-2xl bg-muted flex items-center justify-center text-muted-foreground group-hover:bg-indigo-600 group-hover:text-white transition-all">
                         <ArrowRight size={20} />
                       </div>
                     </div>
@@ -171,17 +171,17 @@ const ClinicalOversightPage = () => {
                     <div className="grid grid-cols-2 gap-3">
                       <div className={cn(
                         "p-3 rounded-2xl border flex flex-col items-center text-center",
-                        bolt === null ? "bg-slate-50 border-slate-100" : (bolt >= 25 ? "bg-emerald-50 border-emerald-100" : "bg-rose-100 border-rose-200")
+                        bolt === null ? "bg-muted/30 border-border" : (bolt >= 25 ? "bg-emerald-50 dark:bg-emerald-900/20 border-emerald-100 dark:border-emerald-900/30" : "bg-rose-100 dark:bg-rose-900/30 border-rose-200 dark:border-rose-900/50")
                       )}>
-                        <FlaskConical size={14} className={cn("mb-1", bolt === null ? "text-slate-300" : (bolt >= 25 ? "text-emerald-600" : "text-rose-600"))} />
+                        <FlaskConical size={14} className={cn("mb-1", bolt === null ? "text-muted-foreground" : (bolt >= 25 ? "text-emerald-600" : "text-rose-600"))} />
                         <p className="text-[10px] font-black uppercase tracking-widest opacity-60">BOLT</p>
                         <p className="text-xl font-black">{bolt !== null ? `${bolt}s` : "—"}</p>
                       </div>
                       <div className={cn(
                         "p-3 rounded-2xl border flex flex-col items-center text-center",
-                        coh === null ? "bg-slate-50 border-slate-100" : "bg-indigo-50 border-indigo-100"
+                        coh === null ? "bg-muted/30 border-border" : "bg-indigo-50 dark:bg-indigo-900/20 border-indigo-100 dark:border-indigo-900/30"
                       )}>
-                        <Activity size={14} className={cn("mb-1", coh === null ? "text-slate-300" : "text-indigo-600")} />
+                        <Activity size={14} className={cn("mb-1", coh === null ? "text-muted-foreground" : "text-indigo-600 dark:text-indigo-400")} />
                         <p className="text-[10px] font-black uppercase tracking-widest opacity-60">COH</p>
                         <p className="text-xl font-black">{coh !== null ? coh.toFixed(1) : "—"}</p>
                       </div>
@@ -201,10 +201,10 @@ const ClinicalOversightPage = () => {
         </div>
 
         {filteredClients.length === 0 && (
-          <div className="text-center py-20 bg-slate-50 rounded-3xl border-2 border-dashed border-slate-200">
-            <Users size={48} className="mx-auto text-slate-300 mb-4" />
-            <h3 className="text-lg font-bold text-slate-900">No clients found</h3>
-            <p className="text-slate-500">Try adjusting your search or add new clients to monitor.</p>
+          <div className="text-center py-20 bg-muted/30 rounded-3xl border-2 border-dashed border-border">
+            <Users size={48} className="mx-auto text-muted-foreground mb-4" />
+            <h3 className="text-lg font-bold text-foreground">No clients found</h3>
+            <p className="text-muted-foreground font-medium">Try adjusting your search or add new clients to monitor.</p>
           </div>
         )}
       </div>

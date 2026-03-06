@@ -21,7 +21,11 @@ import {
   Filter,
   CalendarDays,
   CheckCircle,
-  CircleDashed
+  CircleDashed,
+  LayoutGrid,
+  List,
+  AlertCircle,
+  Play
 } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -42,23 +46,30 @@ import {
 import AppointmentForm from "@/components/crm/AppointmentForm";
 import { Appointment } from "@/types/crm";
 import { showSuccess, showError } from "@/utils/toast";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { cn } from "@/lib/utils";
 import { APPOINTMENT_STATUSES } from "@/data/appointment-data";
 import Breadcrumbs from "@/components/crm/Breadcrumbs";
 import { Input } from "@/components/ui/input";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import CalendarView from "@/components/crm/CalendarView";
+import QuickAssessmentModal from "@/components/crm/QuickAssessmentModal";
 
 interface AppointmentWithClient extends Appointment {
-  clients: { name: string; id: string };
+  clients: { name: string; id: string; latest_bolt?: number | null };
 }
 
 const AppointmentsPage = () => {
+  const navigate = useNavigate();
   const [appointments, setAppointments] = useState<AppointmentWithClient[]>([]);
   const [loading, setLoading] = useState(true);
   const [open, setOpen] = useState(false);
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState<string>("all");
+  const [viewMode, setViewMode] = useState<'list' | 'calendar'>('list');
+  
+  // Quick Assessment State
+  const [assessmentModal, setAssessmentModal] = useState<{ open: boolean; type: 'bolt' | 'coherence'; clientId: string; clientName: string } | null>(null);
 
   const fetchAppointments = async () => {
     try {
@@ -75,9 +86,27 @@ const AppointmentsPage = () => {
 
       if (error) throw error;
 
+      // Fetch latest BOLT scores for all clients to show risk indicators
+      const { data: clientScores } = await supabase
+        .from('appointments')
+        .select('client_id, bolt_score, date')
+        .not('bolt_score', 'is', null)
+        .order('date', { ascending: false });
+
+      const latestScores: Record<string, number> = {};
+      clientScores?.forEach(score => {
+        if (!latestScores[score.client_id]) {
+          latestScores[score.client_id] = score.bolt_score;
+        }
+      });
+
       const mapped = (data || []).map(a => ({
         ...a,
         date: new Date(a.date),
+        clients: {
+          ...a.clients,
+          latest_bolt: latestScores[a.clients.id] || null
+        }
       })) as unknown as AppointmentWithClient[];
 
       setAppointments(mapped);
@@ -162,6 +191,7 @@ const AppointmentsPage = () => {
     const hasAnyAssessment = hasBolt || hasCoherence || hasCogs;
     const isCompleted = app.status === 'Completed';
     const isTodaySession = isToday(app.date);
+    const isHighRisk = app.clients.latest_bolt !== null && app.clients.latest_bolt! < 25;
 
     return (
       <Card 
@@ -169,20 +199,28 @@ const AppointmentsPage = () => {
           "border-slate-200 transition-all duration-300 group overflow-hidden relative rounded-[2rem]",
           isTodaySession 
             ? "border-indigo-300 shadow-xl shadow-indigo-100 ring-2 ring-indigo-50 bg-white" 
-            : "bg-white hover:shadow-xl hover:border-slate-300"
+            : "bg-white hover:shadow-xl hover:border-slate-300",
+          isHighRisk && !isCompleted && "border-rose-200 ring-rose-50"
         )}
       >
         <CardContent className="p-0">
           <div className="flex flex-col sm:flex-row sm:items-stretch">
-            <Link to={`/appointments/${app.id}`} className="p-8 flex-1 space-y-6">
+            <div className="p-8 flex-1 space-y-6">
               <div className="flex items-start justify-between">
                 <div className="space-y-2">
                   <div className="flex items-center gap-3">
-                    <h3 className="font-black text-2xl text-slate-900 group-hover:text-indigo-600 transition-colors">
+                    <Link to={`/appointments/${app.id}`} className="font-black text-2xl text-slate-900 hover:text-indigo-600 transition-colors">
                       {app.clients?.name}
-                    </h3>
+                    </Link>
                     {isTodaySession && (
-                      <span className="flex h-2 w-2 rounded-full bg-rose-500 animate-pulse" />
+                      <Badge className="bg-rose-500 text-white border-none animate-pulse font-black text-[8px] uppercase tracking-widest px-2 py-0.5">
+                        Live Today
+                      </Badge>
+                    )}
+                    {isHighRisk && !isCompleted && (
+                      <Badge className="bg-rose-100 text-rose-600 border-none font-black text-[8px] uppercase tracking-widest px-2 py-0.5 flex items-center gap-1">
+                        <AlertCircle size={10} /> High Priority
+                      </Badge>
                     )}
                   </div>
                   <div className="flex flex-wrap items-center gap-4 text-sm">
@@ -204,8 +242,8 @@ const AppointmentsPage = () => {
                 </div>
               )}
 
-              {hasAnyAssessment && (
-                <div className="flex flex-wrap gap-3 pt-2">
+              <div className="flex flex-wrap items-center justify-between gap-4 pt-2">
+                <div className="flex flex-wrap gap-3">
                   {hasBolt && (
                     <Badge className="bg-indigo-50 text-indigo-700 border border-indigo-100 flex items-center gap-1.5 text-[10px] font-black uppercase tracking-wider px-3 py-1 rounded-full">
                       <FlaskConical size={12} /> BOLT: {app.bolt_score}s
@@ -222,8 +260,36 @@ const AppointmentsPage = () => {
                     </Badge>
                   )}
                 </div>
-              )}
-            </Link>
+
+                {isTodaySession && !isCompleted && (
+                  <div className="flex gap-2 animate-in fade-in slide-in-from-right-2 duration-500">
+                    <Button 
+                      size="sm" 
+                      variant="outline" 
+                      className="h-8 rounded-xl border-indigo-100 text-indigo-600 hover:bg-indigo-50 font-black text-[9px] uppercase tracking-widest"
+                      onClick={() => setAssessmentModal({ open: true, type: 'bolt', clientId: app.clients.id, clientName: app.clients.name })}
+                    >
+                      <FlaskConical size={12} className="mr-1" /> Log BOLT
+                    </Button>
+                    <Button 
+                      size="sm" 
+                      variant="outline" 
+                      className="h-8 rounded-xl border-rose-100 text-rose-600 hover:bg-rose-50 font-black text-[9px] uppercase tracking-widest"
+                      onClick={() => setAssessmentModal({ open: true, type: 'coherence', clientId: app.clients.id, clientName: app.clients.name })}
+                    >
+                      <Activity size={12} className="mr-1" /> Log COH
+                    </Button>
+                    <Button 
+                      size="sm" 
+                      className="h-8 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-black text-[9px] uppercase tracking-widest"
+                      onClick={() => navigate(`/appointments/${app.id}`)}
+                    >
+                      <Play size={12} className="mr-1 fill-current" /> Start
+                    </Button>
+                  </div>
+                )}
+              </div>
+            </div>
 
             <div className="p-8 flex flex-col justify-between items-end border-t sm:border-t-0 sm:border-l border-slate-100 bg-slate-50/30 group-hover:bg-indigo-50/20 transition-colors">
               <div className="flex items-center gap-3">
@@ -304,24 +370,44 @@ const AppointmentsPage = () => {
           <h1 className="text-4xl font-black tracking-tight text-slate-900">Appointments</h1>
           <p className="text-slate-500 font-medium mt-1">View and manage upcoming and past clinical sessions</p>
         </div>
-        <Dialog open={open} onOpenChange={setOpen}>
-          <DialogTrigger asChild>
-            <Button className="bg-indigo-600 hover:bg-indigo-700 shadow-xl shadow-indigo-100 rounded-2xl h-12 px-8 font-black text-xs uppercase tracking-widest">
-              <Plus size={20} className="mr-2" /> New Appointment
+        <div className="flex items-center gap-3">
+          <div className="flex items-center gap-1 bg-slate-100 p-1 rounded-xl">
+            <Button 
+              variant={viewMode === 'list' ? 'default' : 'ghost'} 
+              size="sm" 
+              onClick={() => setViewMode('list')}
+              className={cn("rounded-lg h-9 px-4 font-bold text-xs uppercase tracking-widest", viewMode === 'list' ? "bg-white text-indigo-600 shadow-sm hover:bg-white" : "text-slate-500")}
+            >
+              <List size={16} className="mr-2" /> List
             </Button>
-          </DialogTrigger>
-          <DialogContent className="sm:max-w-[500px] rounded-[2rem]">
-            <DialogHeader>
-              <DialogTitle className="text-2xl font-black">Schedule New Appointment</DialogTitle>
-            </DialogHeader>
-            <AppointmentForm 
-              onSuccess={() => {
-                setOpen(false);
-                fetchAppointments();
-              }} 
-            />
-          </DialogContent>
-        </Dialog>
+            <Button 
+              variant={viewMode === 'calendar' ? 'default' : 'ghost'} 
+              size="sm" 
+              onClick={() => setViewMode('calendar')}
+              className={cn("rounded-lg h-9 px-4 font-bold text-xs uppercase tracking-widest", viewMode === 'calendar' ? "bg-white text-indigo-600 shadow-sm hover:bg-white" : "text-slate-500")}
+            >
+              <LayoutGrid size={16} className="mr-2" /> Calendar
+            </Button>
+          </div>
+          <Dialog open={open} onOpenChange={setOpen}>
+            <DialogTrigger asChild>
+              <Button className="bg-indigo-600 hover:bg-indigo-700 shadow-xl shadow-indigo-100 rounded-2xl h-12 px-8 font-black text-xs uppercase tracking-widest">
+                <Plus size={20} className="mr-2" /> New Appointment
+              </Button>
+            </DialogTrigger>
+            <DialogContent className="sm:max-w-[500px] rounded-[2rem]">
+              <DialogHeader>
+                <DialogTitle className="text-2xl font-black">Schedule New Appointment</DialogTitle>
+              </DialogHeader>
+              <AppointmentForm 
+                onSuccess={() => {
+                  setOpen(false);
+                  fetchAppointments();
+                }} 
+              />
+            </DialogContent>
+          </Dialog>
+        </div>
       </div>
 
       {/* Summary Stats */}
@@ -389,6 +475,8 @@ const AppointmentsPage = () => {
           <Loader2 className="animate-spin text-indigo-500" size={48} />
           <p className="text-slate-400 font-bold uppercase tracking-widest text-xs">Loading your schedule...</p>
         </div>
+      ) : viewMode === 'calendar' ? (
+        <CalendarView appointments={filteredAppointments} />
       ) : (
         <div className="space-y-16">
           {todaySessions.length > 0 && (
@@ -434,6 +522,17 @@ const AppointmentsPage = () => {
             </div>
           )}
         </div>
+      )}
+
+      {assessmentModal && (
+        <QuickAssessmentModal 
+          open={assessmentModal.open}
+          onOpenChange={(open) => !open && setAssessmentModal(null)}
+          clientId={assessmentModal.clientId}
+          clientName={assessmentModal.clientName}
+          type={assessmentModal.type}
+          onComplete={fetchAppointments}
+        />
       )}
     </div>
   );

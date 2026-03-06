@@ -1,6 +1,6 @@
 "use client";
 
-import React from 'react';
+import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { 
@@ -18,17 +18,25 @@ import {
   ArrowRight,
   Compass,
   Lightbulb,
-  Sparkles
+  Sparkles,
+  Search,
+  List
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { Button } from '@/components/ui/button';
+import JointActionTableModal from './JointActionTableModal';
 
 const MechanoBible = () => {
+  const [tableOpen, setTableOpen] = useState(false);
+
   const consciousExamples = [
     {
       title: "Chronic Low Back Pain",
       joint: "L4/L5 Lumbar",
       action: "Isometric Extension",
       logic: "Contralateral S1",
+      localization: "Axial -> Lower -> Midline -> L4/L5",
+      plane: "Sagittal",
       protocol: "Hold the sensory cortex representation for the opposite side of the low back. Perform a 30% isometric extension for 60s."
     },
     {
@@ -36,6 +44,8 @@ const MechanoBible = () => {
       joint: "GH Joint",
       action: "Isometric External Rotation",
       logic: "Contralateral M1/S1",
+      localization: "Appendicular -> Upper -> Right -> GH Joint",
+      plane: "Transverse",
       protocol: "Identify the restricted rotation. Hold the opposite motor strip zone while the client performs a light isometric hold."
     },
     {
@@ -43,6 +53,8 @@ const MechanoBible = () => {
       joint: "Talocrural",
       action: "Isometric Dorsiflexion",
       logic: "Contralateral S1 (Foot Map)",
+      localization: "Appendicular -> Lower -> Left -> Ankle",
+      plane: "Sagittal",
       protocol: "Reset the 'smudged' sensory map by providing clear, conscious resistance in the plane of greatest restriction."
     }
   ];
@@ -53,6 +65,7 @@ const MechanoBible = () => {
       tissue: "ATFL Ligament",
       stimulus: "Ligament Stretch",
       logic: "Ipsilateral GV16",
+      localization: "Appendicular -> Lower -> Right -> Ankle",
       protocol: "Hold GV16 (Cerebellum) while stretching the ATFL. Apply a tuning fork to the cranium for 5s to clear the threat."
     },
     {
@@ -60,6 +73,7 @@ const MechanoBible = () => {
       tissue: "Cervical Ligaments",
       stimulus: "Posterior Stretch",
       logic: "Ipsilateral GV16",
+      localization: "Axial -> Upper -> Midline -> C3/C4",
       protocol: "Gently stretch the posterior cervical ligaments while holding the base of the skull. Use simultaneous tapping to reset."
     },
     {
@@ -67,6 +81,7 @@ const MechanoBible = () => {
       tissue: "MCL (Medial Collateral)",
       stimulus: "Valgus Stress Stretch",
       logic: "Ipsilateral GV16",
+      localization: "Appendicular -> Lower -> Left -> Knee",
       protocol: "Challenge the MCL with a light stretch. Hold GV16 to update the cerebellum's unconscious map of knee stability."
     }
   ];
@@ -77,72 +92,82 @@ const MechanoBible = () => {
       <Card className="border-none shadow-2xl rounded-[3.5rem] bg-slate-900 text-white overflow-hidden relative">
         <div className="absolute top-0 right-0 p-12 opacity-5"><BookOpen size={200} /></div>
         <CardHeader className="p-12 relative z-10">
-          <div className="flex items-center gap-5 mb-4">
-            <div className="w-16 h-16 bg-indigo-600 rounded-2xl flex items-center justify-center shadow-2xl shadow-indigo-500/40">
-              <BookOpen size={32} className="text-white" />
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-5">
+              <div className="w-16 h-16 bg-indigo-600 rounded-2xl flex items-center justify-center shadow-2xl shadow-indigo-500/40">
+                <BookOpen size={32} className="text-white" />
+              </div>
+              <div>
+                <CardTitle className="text-4xl font-black tracking-tight">The Mechano Bible</CardTitle>
+                <CardDescription className="text-slate-400 text-xl font-medium mt-2">
+                  Your definitive guide to joints, tissues, and the geometry of movement.
+                </CardDescription>
+              </div>
             </div>
-            <div>
-              <CardTitle className="text-4xl font-black tracking-tight">The Mechano Bible</CardTitle>
-              <CardDescription className="text-slate-400 text-xl font-medium mt-2">
-                Your definitive guide to joints, tissues, and the geometry of movement.
-              </CardDescription>
-            </div>
+            <Button 
+              onClick={() => setTableOpen(true)}
+              className="bg-white text-indigo-600 hover:bg-indigo-50 h-14 px-8 rounded-2xl font-black text-xs uppercase tracking-widest shadow-xl"
+            >
+              <List size={20} className="mr-2" /> Quick Access: Action Table
+            </Button>
           </div>
         </CardHeader>
       </Card>
 
-      {/* The Rule of Action */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-        <Card className="lg:col-span-2 border-none shadow-lg rounded-[2.5rem] bg-indigo-600 text-white overflow-hidden">
-          <CardContent className="p-10 space-y-6">
-            <div className="flex items-center gap-4">
-              <div className="w-12 h-12 rounded-xl bg-white/10 backdrop-blur-md flex items-center justify-center border border-white/20">
-                <Zap size={24} className="text-amber-300" />
-              </div>
-              <h3 className="text-2xl font-black">The Rule of Action</h3>
-            </div>
-            <p className="text-xl font-bold leading-relaxed italic">
-              "Joints act, muscles and tissues react."
-            </p>
-            <p className="text-indigo-100 leading-relaxed">
-              In Functional Neurology, we don't just fix muscles. We calibrate the <strong>Joint Action</strong>. The brain prioritizes the safety and accuracy of a joint's movement over the status of any single muscle. If a joint action is perceived as a threat, the brain will inhibit (weaken) the surrounding muscles to prevent movement.
-            </p>
-            <div className="flex gap-4 pt-4">
-              <div className="flex-1 p-4 bg-white/10 rounded-2xl border border-white/10">
-                <p className="text-[10px] font-black uppercase tracking-widest mb-1">The Goal</p>
-                <p className="text-sm font-bold">Restore high-fidelity feedback from the joint to the brain.</p>
-              </div>
-              <div className="flex-1 p-4 bg-white/10 rounded-2xl border border-white/10">
-                <p className="text-[10px] font-black uppercase tracking-widest mb-1">The Result</p>
-                <p className="text-sm font-bold">Immediate normalization of muscle tone and strength.</p>
-              </div>
+      {/* Localization Process */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+        <Card className="border-none shadow-lg rounded-[2.5rem] bg-white overflow-hidden">
+          <CardHeader className="bg-indigo-50 p-8">
+            <CardTitle className="text-xl font-black flex items-center gap-3 text-indigo-900">
+              <Search size={24} /> 1. Localization Hierarchy
+            </CardTitle>
+            <CardDescription className="text-indigo-700 font-medium">Follow this order to isolate the priority joint.</CardDescription>
+          </CardHeader>
+          <CardContent className="p-8 space-y-6">
+            <div className="space-y-4">
+              {[
+                { label: "Skeleton Type", value: "Axial vs. Appendicular" },
+                { label: "Region", value: "Upper vs. Lower" },
+                { label: "Laterality", value: "Left vs. Right" },
+                { label: "Specific Joint", value: "e.g. L4/L5, GH Joint, Talocrural" }
+              ].map((step, i) => (
+                <div key={i} className="flex items-center gap-4 p-4 bg-slate-50 rounded-2xl border border-slate-100">
+                  <span className="w-8 h-8 rounded-full bg-indigo-600 text-white flex items-center justify-center font-black text-xs">{i + 1}</span>
+                  <div>
+                    <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">{step.label}</p>
+                    <p className="text-sm font-bold text-slate-900">{step.value}</p>
+                  </div>
+                </div>
+              ))}
             </div>
           </CardContent>
         </Card>
 
         <Card className="border-none shadow-lg rounded-[2.5rem] bg-white overflow-hidden">
-          <CardHeader className="bg-slate-50 border-b border-slate-100">
-            <CardTitle className="text-sm font-black text-slate-400 uppercase tracking-widest flex items-center gap-2">
-              <Brain size={16} className="text-indigo-500" /> The Hierarchy
+          <CardHeader className="bg-emerald-50 p-8">
+            <CardTitle className="text-xl font-black flex items-center gap-3 text-emerald-900">
+              <Move size={24} /> 2. Finding Joint Action
             </CardTitle>
+            <CardDescription className="text-emerald-700 font-medium">Utilize planes of motion to speed up the process.</CardDescription>
           </CardHeader>
-          <CardContent className="p-8 space-y-4">
-            {[
-              { step: 1, label: "Joint Action", desc: "The primary priority" },
-              { step: 2, label: "Ligaments", desc: "Unconscious stability" },
-              { step: 3, label: "Tendons", desc: "Force transmission" },
-              { step: 4, label: "Muscles", desc: "The reactive slaves" }
-            ].map((item) => (
-              <div key={item.step} className="flex items-center gap-4">
-                <span className="w-8 h-8 rounded-full bg-indigo-50 text-indigo-600 flex items-center justify-center font-black text-xs border border-indigo-100">
-                  {item.step}
-                </span>
-                <div>
-                  <p className="font-black text-slate-900 text-sm">{item.label}</p>
-                  <p className="text-[10px] text-slate-500 font-bold uppercase">{item.desc}</p>
+          <CardContent className="p-8 space-y-6">
+            <div className="p-6 bg-emerald-900 text-white rounded-[2rem] shadow-xl relative overflow-hidden">
+              <div className="absolute top-0 right-0 p-6 opacity-10"><Zap size={80} /></div>
+              <p className="text-sm font-bold leading-relaxed relative z-10">
+                "Once the joint is found, utilize the Action Table. To speed it up, ask the body for the <strong>Plane of Motion</strong> first."
+              </p>
+            </div>
+            <div className="grid grid-cols-3 gap-3">
+              {["Sagittal", "Frontal", "Transverse"].map(plane => (
+                <div key={plane} className="p-4 bg-slate-50 rounded-2xl border border-slate-100 text-center">
+                  <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Plane</p>
+                  <p className="text-xs font-black text-slate-900">{plane}</p>
                 </div>
-              </div>
-            ))}
+              ))}
+            </div>
+            <Button variant="outline" onClick={() => setTableOpen(true)} className="w-full h-12 rounded-xl border-emerald-200 text-emerald-700 hover:bg-emerald-50 font-bold">
+              View Action Table Reference
+            </Button>
           </CardContent>
         </Card>
       </div>
@@ -162,15 +187,21 @@ const MechanoBible = () => {
             </div>
             {consciousExamples.map((ex, i) => (
               <Card key={i} className="border-none shadow-md rounded-2xl bg-white overflow-hidden border-l-4 border-blue-500">
-                <CardContent className="p-6 space-y-3">
+                <CardContent className="p-6 space-y-4">
                   <div className="flex justify-between items-start">
-                    <h5 className="font-black text-slate-900">{ex.title}</h5>
+                    <h5 className="font-black text-slate-900 text-lg">{ex.title}</h5>
                     <Badge className="bg-blue-50 text-blue-700 border-none text-[8px] font-black uppercase">{ex.logic}</Badge>
                   </div>
+                  
+                  <div className="p-3 bg-slate-50 rounded-xl border border-slate-100">
+                    <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-1">Localization Path</p>
+                    <p className="text-xs font-bold text-indigo-600">{ex.localization}</p>
+                  </div>
+
                   <div className="grid grid-cols-2 gap-4 text-xs">
                     <div>
-                      <p className="text-slate-400 font-bold uppercase tracking-widest text-[9px]">Joint</p>
-                      <p className="font-bold text-slate-700">{ex.joint}</p>
+                      <p className="text-slate-400 font-bold uppercase tracking-widest text-[9px]">Plane</p>
+                      <p className="font-bold text-slate-700">{ex.plane}</p>
                     </div>
                     <div>
                       <p className="text-slate-400 font-bold uppercase tracking-widest text-[9px]">Action</p>
@@ -194,11 +225,17 @@ const MechanoBible = () => {
             </div>
             {unconsciousExamples.map((ex, i) => (
               <Card key={i} className="border-none shadow-md rounded-2xl bg-white overflow-hidden border-l-4 border-emerald-500">
-                <CardContent className="p-6 space-y-3">
+                <CardContent className="p-6 space-y-4">
                   <div className="flex justify-between items-start">
-                    <h5 className="font-black text-slate-900">{ex.title}</h5>
+                    <h5 className="font-black text-slate-900 text-lg">{ex.title}</h5>
                     <Badge className="bg-emerald-50 text-emerald-700 border-none text-[8px] font-black uppercase">{ex.logic}</Badge>
                   </div>
+
+                  <div className="p-3 bg-slate-50 rounded-xl border border-slate-100">
+                    <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-1">Localization Path</p>
+                    <p className="text-xs font-bold text-emerald-600">{ex.localization}</p>
+                  </div>
+
                   <div className="grid grid-cols-2 gap-4 text-xs">
                     <div>
                       <p className="text-slate-400 font-bold uppercase tracking-widest text-[9px]">Tissue</p>
@@ -401,6 +438,8 @@ const MechanoBible = () => {
           </p>
         </div>
       </div>
+
+      <JointActionTableModal open={tableOpen} onOpenChange={setTableOpen} />
     </div>
   );
 };

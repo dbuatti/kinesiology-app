@@ -27,6 +27,7 @@ import CalibrationTimer from './CalibrationTimer';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { supabase } from "@/integrations/supabase/client";
+import JointActionTableModal from './JointActionTableModal';
 
 const JOINT_ACTION_DATA = [
   { joint: "Cranium", sagittal: "Flexion, Extension", frontal: "Lateral Flexion", transverse: "Rotation" },
@@ -88,6 +89,7 @@ const PathwayLogicWizard = ({ onSave, initialValue }: PathwayLogicWizardProps) =
 
   const [ligamentImages, setLigamentImages] = useState<Record<string, (string | null)[]>>({});
   const [ligamentModalOpen, setLigamentModalOpen] = useState(false);
+  const [actionTableOpen, setActionTableOpen] = useState(false);
 
   useEffect(() => {
     const fetchLigamentImages = async () => {
@@ -205,7 +207,10 @@ const PathwayLogicWizard = ({ onSave, initialValue }: PathwayLogicWizardProps) =
       case 'MECHANO_CONSCIOUS_PROCESS':
         return (
           <div className="space-y-6 animate-in fade-in slide-in-from-right-4 duration-300">
-            <div className="space-y-2"><h3 className="text-xl font-black text-slate-900">Conscious Process</h3><p className="text-sm text-slate-500">Localize joint and action, then perform isometric correction.</p></div>
+            <div className="flex items-center justify-between">
+              <div className="space-y-2"><h3 className="text-xl font-black text-slate-900">Conscious Process</h3><p className="text-sm text-slate-500">Localize joint and action, then perform isometric correction.</p></div>
+              <Button variant="ghost" size="icon" onClick={() => setActionTableOpen(true)} className="h-10 w-10 rounded-xl text-indigo-600 hover:bg-indigo-50"><Info size={24} /></Button>
+            </div>
             <div className="space-y-2"><label className="text-[10px] font-black text-slate-400 uppercase tracking-widest">1. Localize Joint</label><Select value={consciousJoint} onValueChange={(v) => { setConsciousJoint(v); setConsciousPlane(''); setConsciousAction(''); }}><SelectTrigger className="rounded-xl h-12 font-bold"><SelectValue placeholder="Select Joint" /></SelectTrigger><SelectContent>{JOINT_ACTION_DATA.map(j => <SelectItem key={j.joint} value={j.joint}>{j.joint}</SelectItem>)}</SelectContent></Select></div>
             <div className="space-y-2"><label className="text-[10px] font-black text-slate-400 uppercase tracking-widest">2. Find Joint Action</label><div className="grid grid-cols-2 gap-2">
               <Select value={consciousPlane} onValueChange={(v) => { setConsciousPlane(v); setConsciousAction(''); }} disabled={!consciousJoint}>
@@ -365,6 +370,7 @@ const PathwayLogicWizard = ({ onSave, initialValue }: PathwayLogicWizardProps) =
           </ScrollArea>
         </DialogContent>
       </Dialog>
+      <JointActionTableModal open={actionTableOpen} onOpenChange={setActionTableOpen} />
     </>
   );
 };

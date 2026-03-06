@@ -22,6 +22,7 @@ import { Badge } from '@/components/ui/badge';
 import NociceptiveThreatAssessment from './NociceptiveThreatAssessment';
 import EfferentBrainIntegration from './EfferentBrainIntegration';
 import MechanoreceptiveProcess from './MechanoreceptiveProcess';
+import EmotionalIntegrationProcess from './EmotionalIntegrationProcess';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { supabase } from "@/integrations/supabase/client";
@@ -230,15 +231,17 @@ const PathwayLogicWizard = ({ onSave, initialValue }: PathwayLogicWizardProps) =
       case 'EFFERENT_PROCESS':
         return <EfferentBrainIntegration onSave={handleSave} onCancel={goBack} />;
 
-      case 'VESTIBULAR_PROCESS':
       case 'EMOTIONS_PROCESS':
+        return <EmotionalIntegrationProcess onSave={handleSave} onCancel={goBack} />;
+
+      case 'VESTIBULAR_PROCESS':
         return (
           <div className="text-center py-20 bg-slate-50 rounded-[3rem] border-2 border-dashed border-slate-200 animate-in fade-in">
             <div className="w-20 h-20 rounded-3xl bg-white shadow-xl flex items-center justify-center mx-auto mb-6">
                 <Sparkles size={40} className="text-slate-300" />
             </div>
             <p className="font-black text-xl text-slate-900">Coming Soon</p>
-            <p className="text-sm font-medium text-slate-500 mt-2">{step === 'VESTIBULAR_PROCESS' ? 'Vestibular' : 'Emotions'} assessment tools will be added here.</p>
+            <p className="text-sm font-medium text-slate-500 mt-2">Vestibular assessment tools will be added here.</p>
             <Button variant="outline" onClick={goBack} className="mt-8 rounded-xl h-12 px-8 border-slate-200 font-bold"><ChevronLeft size={18} className="mr-2" /> Back</Button>
           </div>
         );

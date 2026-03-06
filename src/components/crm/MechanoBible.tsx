@@ -17,11 +17,60 @@ import {
   CheckCircle2,
   ArrowRight,
   Compass,
-  Lightbulb
+  Lightbulb,
+  Sparkles
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 const MechanoBible = () => {
+  const consciousExamples = [
+    {
+      title: "Chronic Low Back Pain",
+      joint: "L4/L5 Lumbar",
+      action: "Isometric Extension",
+      logic: "Contralateral S1",
+      protocol: "Hold the sensory cortex representation for the opposite side of the low back. Perform a 30% isometric extension for 60s."
+    },
+    {
+      title: "Shoulder Impingement",
+      joint: "GH Joint",
+      action: "Isometric External Rotation",
+      logic: "Contralateral M1/S1",
+      protocol: "Identify the restricted rotation. Hold the opposite motor strip zone while the client performs a light isometric hold."
+    },
+    {
+      title: "Ankle Instability",
+      joint: "Talocrural",
+      action: "Isometric Dorsiflexion",
+      logic: "Contralateral S1 (Foot Map)",
+      protocol: "Reset the 'smudged' sensory map by providing clear, conscious resistance in the plane of greatest restriction."
+    }
+  ];
+
+  const unconsciousExamples = [
+    {
+      title: "Old Ankle Sprain",
+      tissue: "ATFL Ligament",
+      stimulus: "Ligament Stretch",
+      logic: "Ipsilateral GV16",
+      protocol: "Hold GV16 (Cerebellum) while stretching the ATFL. Apply a tuning fork to the cranium for 5s to clear the threat."
+    },
+    {
+      title: "Whiplash History",
+      tissue: "Cervical Ligaments",
+      stimulus: "Posterior Stretch",
+      logic: "Ipsilateral GV16",
+      protocol: "Gently stretch the posterior cervical ligaments while holding the base of the skull. Use simultaneous tapping to reset."
+    },
+    {
+      title: "Knee Instability",
+      tissue: "MCL (Medial Collateral)",
+      stimulus: "Valgus Stress Stretch",
+      logic: "Ipsilateral GV16",
+      protocol: "Challenge the MCL with a light stretch. Hold GV16 to update the cerebellum's unconscious map of knee stability."
+    }
+  ];
+
   return (
     <div className="space-y-12 animate-in fade-in duration-700">
       {/* Hero Section */}
@@ -96,6 +145,79 @@ const MechanoBible = () => {
             ))}
           </CardContent>
         </Card>
+      </div>
+
+      {/* Clinical Examples Section */}
+      <div className="space-y-8">
+        <h3 className="text-2xl font-black text-slate-900 px-2 flex items-center gap-3">
+          <Sparkles size={28} className="text-indigo-600" /> Clinical Examples
+        </h3>
+        
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+          {/* Conscious Examples */}
+          <div className="space-y-4">
+            <div className="flex items-center gap-2 px-4">
+              <Brain size={20} className="text-blue-600" />
+              <h4 className="font-black text-blue-900 uppercase tracking-widest text-sm">Conscious (DCML)</h4>
+            </div>
+            {consciousExamples.map((ex, i) => (
+              <Card key={i} className="border-none shadow-md rounded-2xl bg-white overflow-hidden border-l-4 border-blue-500">
+                <CardContent className="p-6 space-y-3">
+                  <div className="flex justify-between items-start">
+                    <h5 className="font-black text-slate-900">{ex.title}</h5>
+                    <Badge className="bg-blue-50 text-blue-700 border-none text-[8px] font-black uppercase">{ex.logic}</Badge>
+                  </div>
+                  <div className="grid grid-cols-2 gap-4 text-xs">
+                    <div>
+                      <p className="text-slate-400 font-bold uppercase tracking-widest text-[9px]">Joint</p>
+                      <p className="font-bold text-slate-700">{ex.joint}</p>
+                    </div>
+                    <div>
+                      <p className="text-slate-400 font-bold uppercase tracking-widest text-[9px]">Action</p>
+                      <p className="font-bold text-slate-700">{ex.action}</p>
+                    </div>
+                  </div>
+                  <div className="pt-3 border-t border-slate-50">
+                    <p className="text-[9px] font-black text-blue-600 uppercase tracking-widest mb-1">Protocol</p>
+                    <p className="text-xs text-slate-600 leading-relaxed font-medium">{ex.protocol}</p>
+                  </div>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+
+          {/* Unconscious Examples */}
+          <div className="space-y-4">
+            <div className="flex items-center gap-2 px-4">
+              <Activity size={20} className="text-emerald-600" />
+              <h4 className="font-black text-emerald-900 uppercase tracking-widest text-sm">Unconscious (Spinocerebellar)</h4>
+            </div>
+            {unconsciousExamples.map((ex, i) => (
+              <Card key={i} className="border-none shadow-md rounded-2xl bg-white overflow-hidden border-l-4 border-emerald-500">
+                <CardContent className="p-6 space-y-3">
+                  <div className="flex justify-between items-start">
+                    <h5 className="font-black text-slate-900">{ex.title}</h5>
+                    <Badge className="bg-emerald-50 text-emerald-700 border-none text-[8px] font-black uppercase">{ex.logic}</Badge>
+                  </div>
+                  <div className="grid grid-cols-2 gap-4 text-xs">
+                    <div>
+                      <p className="text-slate-400 font-bold uppercase tracking-widest text-[9px]">Tissue</p>
+                      <p className="font-bold text-slate-700">{ex.tissue}</p>
+                    </div>
+                    <div>
+                      <p className="text-slate-400 font-bold uppercase tracking-widest text-[9px]">Stimulus</p>
+                      <p className="font-bold text-slate-700">{ex.stimulus}</p>
+                    </div>
+                  </div>
+                  <div className="pt-3 border-t border-slate-50">
+                    <p className="text-[9px] font-black text-emerald-600 uppercase tracking-widest mb-1">Protocol</p>
+                    <p className="text-xs text-slate-600 leading-relaxed font-medium">{ex.protocol}</p>
+                  </div>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        </div>
       </div>
 
       {/* The Players: Ligaments vs Tendons */}

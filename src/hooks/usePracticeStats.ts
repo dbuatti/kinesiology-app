@@ -9,7 +9,8 @@ export function usePracticeStats() {
   const fetchPracticeHealth = useCallback(async () => {
     const { data } = await supabase
       .from('appointments')
-      .select('bolt_score, client_id')
+      .select('bolt_score, client_id, clients!inner(is_practitioner)')
+      .or('is_practitioner.eq.false,is_practitioner.is.null', { foreignTable: 'clients' })
       .not('bolt_score', 'is', null)
       .order('date', { ascending: false });
 

@@ -18,15 +18,18 @@ const UpcomingAppointments = () => {
   useEffect(() => {
     const fetchUpcoming = async () => {
       try {
+        // Filter out practitioner sessions using inner join
         const { data, error } = await supabase
           .from("appointments")
           .select(`
             *,
-            clients (
+            clients!inner (
               id,
-              name
+              name,
+              is_practitioner
             )
           `)
+          .or('is_practitioner.eq.false,is_practitioner.is.null', { foreignTable: 'clients' })
           .gte("date", new Date().toISOString())
           .order("date", { ascending: true })
           .limit(5);

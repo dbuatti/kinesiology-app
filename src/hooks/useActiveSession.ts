@@ -18,7 +18,8 @@ export function useActiveSession() {
   const checkActiveSession = useCallback(async () => {
     const { data } = await supabase
       .from('appointments')
-      .select('id, date, status, clients(name)')
+      .select('id, date, status, clients!inner(name, is_practitioner)')
+      .or('is_practitioner.eq.false,is_practitioner.is.null', { foreignTable: 'clients' })
       .order('date', { ascending: false })
       .limit(10);
 

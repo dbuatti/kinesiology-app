@@ -28,7 +28,8 @@ const RecentActivity = () => {
         const [clientsData, appointmentsData] = await Promise.all([
           supabase
             .from("clients")
-            .select("id, name, created_at")
+            .select("id, name, created_at, is_practitioner")
+            .or('is_practitioner.eq.false,is_practitioner.is.null')
             .order("created_at", { ascending: false })
             .limit(5),
           supabase
@@ -38,10 +39,12 @@ const RecentActivity = () => {
               name,
               date,
               display_id,
-              clients (
-                name
+              clients!inner (
+                name,
+                is_practitioner
               )
             `)
+            .or('is_practitioner.eq.false,is_practitioner.is.null', { foreignTable: 'clients' })
             .order("date", { ascending: false })
             .limit(5),
         ]);

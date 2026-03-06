@@ -143,12 +143,12 @@ const EditableField = ({
   return (
     <div 
       className={cn(
-        "group relative p-6 rounded-[2rem] transition-all duration-500 border-2",
+        "group relative p-4 rounded-2xl transition-all duration-500 border-2",
         isFocused 
-          ? "bg-white border-indigo-500 shadow-2xl shadow-indigo-100/50 scale-[1.01]" 
+          ? "bg-white border-indigo-500 shadow-xl shadow-indigo-100/50 scale-[1.01]" 
           : hasError 
             ? "bg-rose-50 border-rose-300"
-            : "bg-slate-50/50 border-transparent hover:bg-white hover:border-slate-200 hover:shadow-xl",
+            : "bg-slate-50/50 border-transparent hover:bg-white hover:border-slate-200 hover:shadow-lg",
         className
       )}
       onClick={() => {
@@ -158,35 +158,35 @@ const EditableField = ({
         }
       }}
     >
-      <div className="flex items-center justify-between mb-4 h-5">
+      <div className="flex items-center justify-between mb-2 h-4">
         <p className={cn(
-          "font-black uppercase text-[9px] tracking-[0.25em] transition-colors",
+          "font-black uppercase text-[8px] tracking-[0.2em] transition-colors",
           isFocused ? "text-indigo-600" : hasError ? "text-rose-600" : "text-slate-400"
         )}>
           {label}
         </p>
-        <div className="flex items-center gap-2 min-w-[60px] justify-end">
+        <div className="flex items-center gap-1.5 min-w-[50px] justify-end">
           {isSaving && (
-            <div className="flex items-center gap-1.5 text-[9px] font-black text-indigo-600 animate-pulse">
-              <Loader2 size={10} className="animate-spin" /> SAVING
+            <div className="flex items-center gap-1 text-[8px] font-black text-indigo-600 animate-pulse">
+              <Loader2 size={8} className="animate-spin" /> SAVING
             </div>
           )}
           {showSaved && !isSaving && (
-            <div className="flex items-center gap-1.5 text-[9px] font-black text-emerald-600 animate-in fade-in slide-in-from-right-2">
-              <CheckCircle2 size={10} /> SAVED
+            <div className="flex items-center gap-1 text-[8px] font-black text-emerald-600 animate-in fade-in slide-in-from-right-1">
+              <CheckCircle2 size={8} /> SAVED
             </div>
           )}
           {hasError && !isSaving && (
-            <div className="flex items-center gap-1.5 text-[9px] font-black text-rose-600">
-              <AlertCircle size={10} /> ERROR
+            <div className="flex items-center gap-1 text-[8px] font-black text-rose-600">
+              <AlertCircle size={8} /> ERROR
             </div>
           )}
           {!isFocused && !isSaving && !showSaved && !hasError && (
             <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-              <Button variant="ghost" size="icon" className="h-7 w-7 rounded-lg text-slate-400 hover:text-indigo-600 hover:bg-indigo-50" onClick={handleCopy}>
-                {isCopied ? <Check size={14} className="text-emerald-500" /> : <Copy size={14} />}
+              <Button variant="ghost" size="icon" className="h-6 w-6 rounded-lg text-slate-400 hover:text-indigo-600 hover:bg-indigo-50" onClick={handleCopy}>
+                {isCopied ? <Check size={12} className="text-emerald-500" /> : <Copy size={12} />}
               </Button>
-              <Edit3 size={14} className="text-slate-300" />
+              <Edit3 size={12} className="text-slate-300" />
             </div>
           )}
         </div>
@@ -194,7 +194,7 @@ const EditableField = ({
       
       <div className="relative">
         {isFocused ? (
-          <div className="space-y-4">
+          <div className="space-y-3">
             <InputComponent
               ref={inputRef}
               value={localValue}
@@ -203,13 +203,13 @@ const EditableField = ({
               onBlur={handleBlur}
               placeholder={placeholder}
               className={cn(
-                multiline ? "min-h-[120px] resize-none" : "h-10",
-                "transition-all duration-300 border-none focus-visible:ring-0 p-0 text-base font-bold text-slate-900 placeholder:text-slate-300 bg-transparent",
+                multiline ? "min-h-[100px] resize-none" : "h-8",
+                "transition-all duration-300 border-none focus-visible:ring-0 p-0 text-sm font-bold text-slate-900 placeholder:text-slate-300 bg-transparent",
               )}
             />
-            <div className="flex flex-wrap gap-1.5 pt-2 border-t border-slate-100 animate-in fade-in slide-in-from-bottom-1 duration-300">
-              <div className="flex items-center gap-1.5 mr-2 text-[8px] font-black text-slate-400 uppercase tracking-widest">
-                <Sparkles size={10} className="text-indigo-400" /> Quick Tags:
+            <div className="flex flex-wrap gap-1 pt-1.5 border-t border-slate-100 animate-in fade-in slide-in-from-bottom-1 duration-300">
+              <div className="flex items-center gap-1 mr-1.5 text-[7px] font-black text-slate-400 uppercase tracking-widest">
+                <Sparkles size={8} className="text-indigo-400" /> Tags:
               </div>
               {SMART_CHIPS.map(chip => (
                 <button
@@ -219,7 +219,7 @@ const EditableField = ({
                     e.stopPropagation();
                     handleChipClick(chip);
                   }}
-                  className="px-2 py-1 rounded-lg bg-slate-100 hover:bg-indigo-600 hover:text-white text-[8px] font-black uppercase tracking-wider text-slate-500 transition-all"
+                  className="px-1.5 py-0.5 rounded-md bg-slate-100 hover:bg-indigo-600 hover:text-white text-[7px] font-black uppercase tracking-wider text-slate-500 transition-all"
                 >
                   {chip}
                 </button>
@@ -228,7 +228,7 @@ const EditableField = ({
           </div>
         ) : (
           <p className={cn(
-            "text-base leading-relaxed whitespace-pre-wrap min-h-[24px]",
+            "text-sm leading-relaxed whitespace-pre-wrap min-h-[20px]",
             isEmpty ? "text-slate-400 italic font-medium" : "text-slate-700 font-bold"
           )}>
             {isEmpty ? placeholder : localValue}

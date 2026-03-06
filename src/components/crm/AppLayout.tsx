@@ -1,3 +1,5 @@
+"use client";
+
 import React from 'react';
 import { cn } from '@/lib/utils';
 
@@ -10,9 +12,9 @@ interface AppLayoutProps {
 const AppLayout = ({ children, hasFixedHeader = false, fullWidth = false }: AppLayoutProps) => {
   return (
     <div className={cn(
-      fullWidth ? "p-8 max-w-none mx-auto space-y-8" : "p-4 md:p-8 max-w-full mx-auto space-y-8",
+      fullWidth ? "p-6 max-w-none mx-auto space-y-6" : "p-3 md:p-6 max-w-full mx-auto space-y-6",
       // If SessionTimer is active, add top padding to prevent content overlap
-      hasFixedHeader ? "pt-[100px]" : "pt-4 md:pt-8"
+      hasFixedHeader ? "pt-[80px]" : "pt-3 md:pt-6"
     )}>
       {children}
     </div>

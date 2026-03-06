@@ -246,24 +246,30 @@ const EmotionalIntegrationProcess = ({ onSave, onCancel }: EmotionalIntegrationP
             <Button 
               variant="outline" 
               className={cn(
-                "h-32 flex-col gap-3 rounded-3xl border-2 transition-all",
+                "h-40 flex-col gap-3 rounded-3xl border-2 transition-all",
                 polarity === 'Energy OUT' ? "border-blue-600 bg-blue-50 text-blue-700" : "border-slate-100 hover:border-blue-200"
               )}
               onClick={() => { setPolarity('Energy OUT'); goToStep('EYE_POSITION'); }}
             >
               <div className="w-12 h-12 rounded-xl bg-white shadow-sm flex items-center justify-center"><Zap size={24} className="text-blue-500" /></div>
-              <span className="font-black">Energy OUT (-)</span>
+              <div className="text-center">
+                <span className="font-black block">Energy OUT (-)</span>
+                <span className="text-[10px] font-bold text-blue-600 uppercase tracking-widest mt-1">Practitioner LEFT Hand</span>
+              </div>
             </Button>
             <Button 
               variant="outline" 
               className={cn(
-                "h-32 flex-col gap-3 rounded-3xl border-2 transition-all",
+                "h-40 flex-col gap-3 rounded-3xl border-2 transition-all",
                 polarity === 'Energy IN' ? "border-rose-600 bg-rose-50 text-rose-700" : "border-slate-100 hover:border-blue-200"
               )}
               onClick={() => { setPolarity('Energy IN'); goToStep('EYE_POSITION'); }}
             >
               <div className="w-12 h-12 rounded-xl bg-white shadow-sm flex items-center justify-center"><Zap size={24} className="text-rose-500" /></div>
-              <span className="font-black">Energy IN (+)</span>
+              <div className="text-center">
+                <span className="font-black block">Energy IN (+)</span>
+                <span className="text-[10px] font-bold text-rose-600 uppercase tracking-widest mt-1">Practitioner RIGHT Hand</span>
+              </div>
             </Button>
           </div>
           <Button variant="ghost" onClick={goBack} className="w-full h-12 rounded-xl"><ChevronLeft size={18} className="mr-2" /> Back</Button>
@@ -318,18 +324,23 @@ const EmotionalIntegrationProcess = ({ onSave, onCancel }: EmotionalIntegrationP
                 </div>
 
                 {pulsePoint && (
-                  <div className="p-5 bg-indigo-50 rounded-2xl border-2 border-indigo-200 flex items-start gap-4 animate-in fade-in slide-in-from-top-2">
-                    <div className="w-10 h-10 rounded-xl bg-indigo-600 text-white flex items-center justify-center shrink-0 shadow-lg">
-                      <Hand size={20} />
+                  <div className="p-6 bg-indigo-50 rounded-[2rem] border-2 border-indigo-200 flex items-start gap-5 animate-in fade-in slide-in-from-top-2">
+                    <div className="w-12 h-12 rounded-2xl bg-indigo-600 text-white flex items-center justify-center shrink-0 shadow-lg">
+                      <Hand size={24} />
                     </div>
-                    <div>
-                      <p className="text-[10px] font-black text-indigo-600 uppercase tracking-widest mb-1">Pulse Point Locator</p>
-                      <p className="text-sm font-bold text-indigo-900 leading-tight">
-                        {pulsePoint.hand} Hand • {pulsePoint.position}
-                      </p>
-                      <p className="text-[10px] text-indigo-500 mt-1 font-black uppercase">
+                    <div className="space-y-2">
+                      <p className="text-[10px] font-black text-indigo-600 uppercase tracking-[0.2em] mb-1">Pulse Point Locator</p>
+                      <div className="space-y-1">
+                        <p className="text-lg font-black text-indigo-900 leading-tight">
+                          Practitioner: <span className="text-rose-600 underline decoration-rose-200 underline-offset-4">{polarity === 'Energy OUT' ? 'LEFT' : 'RIGHT'}</span> Hand
+                        </p>
+                        <p className="text-sm font-bold text-indigo-700">
+                          Client: {pulsePoint.hand} Wrist • {pulsePoint.position}
+                        </p>
+                      </div>
+                      <Badge className="bg-indigo-200 text-indigo-800 border-none font-black text-[9px] uppercase tracking-widest px-2 py-0.5">
                         Depth: {pulsePoint.depth}
-                      </p>
+                      </Badge>
                     </div>
                   </div>
                 )}

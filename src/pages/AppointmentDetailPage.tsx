@@ -3,9 +3,10 @@
 import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
-import { Card } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { 
-  Loader2, Trash2, MoreHorizontal, History, Printer, Copy, Check, Play
+  Loader2, Trash2, MoreHorizontal, History, Printer, Copy, Check, Play,
+  FileText, Zap, Activity, Target, ClipboardList
 } from "lucide-react";
 import { format, isToday } from "date-fns";
 import { AppointmentWithClient } from "@/types/crm";
@@ -28,6 +29,7 @@ import Breadcrumbs from "@/components/crm/Breadcrumbs";
 import { Button } from "@/components/ui/button";
 import { TCM_CHANNELS } from "@/data/tcm-channel-data";
 import { generateSessionSummary } from "@/utils/summary-generator";
+import { Badge } from "@/components/ui/badge";
 
 const AppointmentDetailPage = () => {
   const { id } = useParams<{ id: string }>();
@@ -233,7 +235,7 @@ const AppointmentDetailPage = () => {
         onCompleteSession={handleCompleteSession}
       />
       <AppLayout hasFixedHeader={isFixedHeaderActive}>
-        <div className="flex flex-col gap-8 print:p-0">
+        <div className="flex flex-col gap-8 print:p-0 max-w-[1600px] mx-auto">
           {/* Top Action Bar */}
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 print:hidden">
             <Breadcrumbs 
@@ -315,30 +317,97 @@ const AppointmentDetailPage = () => {
             currentAppointmentId={appointment.id} 
           />
 
-          {/* Hero Command Center */}
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-            <Card className="lg:col-span-2 border-none shadow-xl rounded-[2.5rem] bg-white overflow-hidden">
-              <AppointmentHeader appointment={appointment} onSaveField={saveField} />
+          {/* Main Command Center Layout */}
+          <div className="grid grid-cols-1 xl:grid-cols-12 gap-8">
+            {/* Left Column: Main Session Flow */}
+            <div className="xl:col-span-8 space-y-8">
+              <Card className="border-none shadow-xl rounded-[2.5rem] bg-white overflow-hidden">
+                <AppointmentHeader appointment={appointment} onSaveField={saveField} onUpdate={fetchAppointmentData} />
 
-              <div className="p-8 grid grid-cols-1 md:grid-cols-2 gap-8">
-                <EditableField key={`goal-${appointment.id}`} field="goal" label="Session Goal" value={appointment.goal} placeholder="What is the primary goal for this balance?" onSave={saveField} className="bg-slate-50/50 p-6 rounded-[2rem] border border-slate-100" />
-                <EditableField key={`issue-${appointment.id}`} field="issue" label="Main Concern / Issue" value={appointment.issue} placeholder="Describe the client's main concern..." onSave={saveField} className="bg-slate-50/50 p-6 rounded-[2rem] border border-slate-100" />
+                <div className="p-8 grid grid-cols-1 md:grid-cols-2 gap-8">
+                  <EditableField 
+                    key={`goal-${appointment.id}`} 
+                    field="goal" 
+                    label="Session Goal" 
+                    value={appointment.goal} 
+                    placeholder="What is the primary goal for this balance?" 
+                    onSave={saveField} 
+                    className="bg-slate-50/50 p-6 rounded-[2rem] border border-slate-100" 
+                  />
+                  <EditableField 
+                    key={`issue-${appointment.id}`} 
+                    field="issue" 
+                    label="Main Concern / Issue" 
+                    value={appointment.issue} 
+                    placeholder="Describe the client's main concern..." 
+                    onSave={saveField} 
+                    className="bg-slate-50/50 p-6 rounded-[2rem] border border-slate-100" 
+                  />
+                </div>
+              </Card>
+
+              <div className="print:hidden">
+                <SessionContentSwitcher appointment={appointment} onUpdate={fetchAppointmentData} saveField={saveField} />
               </div>
-            </Card>
+            </div>
 
-            <AppointmentContextCards 
-              appointment={appointment} 
-              currentPeakMeridian={currentPeakMeridian} 
-              onSaveField={saveField} 
-            />
+            {/* Right Column: Clinical Sidebar */}
+            <div className="xl:col-span-4 space-y-8 print:hidden">
+              <AppointmentContextCards 
+                appointment={appointment} 
+                currentPeakMeridian={currentPeakMeridian} 
+                onSaveField={saveField} 
+              />
+
+              {/* Live Summary Preview */}
+              <Card className="border-none shadow-lg rounded-[2.5rem] bg-white overflow-hidden">
+                <CardHeader className="bg-slate-50/50 border-b border-slate-100">
+                  <CardTitle className="text-sm font-black text-slate-400 uppercase tracking-[0.3em] flex items-center gap-2">
+                    <ClipboardList size={16} className="text-indigo-500" /> Live Summary
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="p-6 space-y-4">
+                  <div className="space-y-3">
+                    <div className="flex justify-between items-center text-xs">
+                      <span className="text-slate-400 font-bold uppercase">BOLT</span>
+                      <span className={cn("font-black", appointment.bolt_score ? "text-indigo-600" : "text-slate-300")}>
+                        {appointment.bolt_score ? `${appointment.bolt_score}s` : '—'}
+                      </span>
+                    </div>
+                    <div className="flex justify-between items-center text-xs">
+                      <span className="text-slate-400 font-bold uppercase">Coherence</span>
+                      <span className={cn("font-black", appointment.coherence_score ? "text-rose-600" : "text-slate-300")}>
+                        {appointment.coherence_score ? appointment.coherence_score.toFixed(2) : '—'}
+                      </span>
+                    </div>
+                    <div className="flex justify-between items-center text-xs">
+                      <span className="text-slate-400 font-bold uppercase">Hydration</span>
+                      <Badge className={cn("border-none text-[8px] font-black", appointment.hydrated ? "bg-emerald-500" : "bg-rose-500")}>
+                        {appointment.hydrated ? 'PASSED' : 'ATTENTION'}
+                      </Badge>
+                    </div>
+                  </div>
+                  
+                  <div className="pt-4 border-t border-slate-100">
+                    <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2">Pathway Findings</p>
+                    <p className="text-xs text-slate-600 font-medium leading-relaxed line-clamp-3 italic">
+                      {appointment.priority_pattern || "No pathway data recorded yet."}
+                    </p>
+                  </div>
+
+                  <Button 
+                    variant="ghost" 
+                    className="w-full text-[10px] font-black uppercase tracking-widest text-indigo-600 hover:bg-indigo-50 h-9 rounded-xl"
+                    onClick={handleCopySummary}
+                  >
+                    <Copy size={12} className="mr-2" /> Copy Full Summary
+                  </Button>
+                </CardContent>
+              </Card>
+            </div>
           </div>
 
-          {/* Main Session Flow */}
-          <div className="print:hidden">
-            <SessionContentSwitcher appointment={appointment} onUpdate={fetchAppointmentData} saveField={saveField} />
-          </div>
-
-          {/* Print Layout */}
+          {/* Print Layout (Hidden on Screen) */}
           <div className="hidden print:block space-y-8">
             <div className="grid grid-cols-2 gap-8">
               <div className="p-6 bg-slate-50 rounded-2xl border border-slate-100">

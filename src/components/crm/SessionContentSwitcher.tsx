@@ -2,7 +2,19 @@
 
 import React, { useState, useMemo } from 'react';
 import { Button } from '@/components/ui/button';
-import { Home, Heart, Dumbbell, Footprints, History, GitBranch } from 'lucide-react';
+import { 
+  Home, 
+  Heart, 
+  Dumbbell, 
+  Footprints, 
+  History, 
+  GitBranch,
+  Activity,
+  Zap,
+  Target,
+  RefreshCw,
+  ClipboardCheck
+} from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { AppointmentWithClient } from '@/types/crm';
 import BaselineTab from './session-tabs/BaselineTab';
@@ -15,8 +27,6 @@ import EmotionAssessment from './EmotionAssessment';
 import PreviousSessionSummary from './PreviousSessionSummary';
 import GaitReflexAssessment from './GaitReflexAssessment';
 import PathwayAssessment from './PathwayAssessment';
-import NociceptiveThreatAssessment from './NociceptiveThreatAssessment';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import PathwayLogicWizard from './PathwayLogicWizard';
 
 type ActiveView = 'home' | 'kinesiology' | 'muscles' | 'gait' | 'previous';
@@ -43,61 +53,85 @@ const SessionContentSwitcher = ({ appointment, onUpdate, saveField }: SessionCon
       variant="ghost"
       onClick={() => setActiveView(view)}
       className={cn(
-        "h-12 px-6 rounded-2xl transition-all font-bold text-sm",
+        "h-11 px-5 rounded-xl transition-all font-black text-[10px] uppercase tracking-widest",
         activeView === view 
           ? "bg-white text-indigo-600 shadow-sm border border-slate-100" 
           : "text-slate-500 hover:bg-white/50 hover:text-slate-900"
       )}
     >
-      <Icon size={18} className="mr-2" />
+      <Icon size={16} className="mr-2" />
       {label}
     </Button>
   );
 
   const renderHomeView = () => (
-    <div className="space-y-12">
+    <div className="space-y-10">
       <Tabs defaultValue="baseline" className="w-full">
-        <TabsList className="grid w-full grid-cols-5 h-14 bg-slate-200/50 p-1.5 rounded-2xl">
-          {['baseline', 'sympathetic', 'pathway', 'calibration', 'reassessment'].map((tab, i) => (
-            <TabsTrigger key={tab} value={tab} className="flex items-center gap-2 data-[state=active]:bg-white data-[state=active]:text-indigo-600 data-[state=active]:shadow-sm rounded-xl h-11 text-[10px] font-black uppercase tracking-wider relative">
-              {i + 1}. {tab}
-              {(tabStatus as any)[tab] && <span className="absolute top-1 right-1 w-1.5 h-1.5 bg-indigo-500 rounded-full" />}
+        <TabsList className="grid w-full grid-cols-5 h-16 bg-slate-200/50 p-1.5 rounded-[1.5rem]">
+          {[
+            { id: 'baseline', label: 'Baseline', icon: Activity },
+            { id: 'sympathetic', label: 'SNS Reset', icon: Zap },
+            { id: 'pathway', label: 'Pathway', icon: GitBranch },
+            { id: 'calibration', label: 'Calibrate', icon: Target },
+            { id: 'reassessment', label: 'Review', icon: ClipboardCheck }
+          ].map((tab, i) => (
+            <TabsTrigger 
+              key={tab.id} 
+              value={tab.id} 
+              className="flex items-center gap-2 data-[state=active]:bg-white data-[state=active]:text-indigo-600 data-[state=active]:shadow-sm rounded-xl h-13 text-[10px] font-black uppercase tracking-wider relative transition-all"
+            >
+              <tab.icon size={14} className={cn((tabStatus as any)[tab.id] ? "text-indigo-500" : "text-slate-400")} />
+              <span className="hidden sm:inline">{i + 1}. {tab.label}</span>
+              <span className="sm:hidden">{i + 1}</span>
+              {(tabStatus as any)[tab.id] && (
+                <span className="absolute top-2 right-2 w-2 h-2 bg-emerald-500 rounded-full border-2 border-white shadow-sm" />
+              )}
             </TabsTrigger>
           ))}
         </TabsList>
 
-        <TabsContent value="baseline" className="mt-6">
-          <BaselineTab appointment={appointment} onUpdate={onUpdate} saveField={saveField} />
-        </TabsContent>
+        <div className="mt-8 animate-in fade-in slide-in-from-bottom-2 duration-500">
+          <TabsContent value="baseline" className="focus-visible:ring-0">
+            <BaselineTab appointment={appointment} onUpdate={onUpdate} saveField={saveField} />
+          </TabsContent>
 
-        <TabsContent value="sympathetic" className="mt-6">
-          <SympatheticTab appointment={appointment} onUpdate={onUpdate} saveField={saveField} />
-        </TabsContent>
+          <TabsContent value="sympathetic" className="focus-visible:ring-0">
+            <SympatheticTab appointment={appointment} onUpdate={onUpdate} saveField={saveField} />
+          </TabsContent>
 
-        <TabsContent value="pathway" className="mt-6">
-          <PathwayAssessment 
-            initialValue={appointment.priority_pattern || undefined} 
-            onSave={(s) => saveField('priority_pattern', s)} 
-          />
-        </TabsContent>
+          <TabsContent value="pathway" className="focus-visible:ring-0">
+            <PathwayAssessment 
+              initialValue={appointment.priority_pattern || undefined} 
+              onSave={(s) => saveField('priority_pattern', s)} 
+            />
+          </TabsContent>
 
-        <TabsContent value="calibration" className="mt-6">
-          <PathwayLogicWizard
-            onSave={(summary) => saveField('modes_balances', summary)}
-            initialValue={appointment.modes_balances || undefined}
-          />
-        </TabsContent>
+          <TabsContent value="calibration" className="focus-visible:ring-0">
+            <PathwayLogicWizard
+              onSave={(summary) => saveField('modes_balances', summary)}
+              initialValue={appointment.modes_balances || undefined}
+            />
+          </TabsContent>
 
-        <TabsContent value="reassessment" className="mt-6">
-          <EditableField field="session_north_star" label="Re-Assessment & Home Reinforcement" value={appointment.session_north_star} multiline placeholder="Document re-test results..." onSave={saveField} className="bg-white p-6 rounded-2xl border border-slate-100 shadow-sm min-h-[300px]" />
-        </TabsContent>
+          <TabsContent value="reassessment" className="focus-visible:ring-0">
+            <EditableField 
+              field="session_north_star" 
+              label="Re-Assessment & Home Reinforcement" 
+              value={appointment.session_north_star} 
+              multiline 
+              placeholder="Document re-test results and prescribed homework..." 
+              onSave={saveField} 
+              className="bg-white p-8 rounded-[2.5rem] border border-slate-100 shadow-sm min-h-[400px]" 
+            />
+          </TabsContent>
+        </div>
       </Tabs>
     </div>
   );
 
   return (
-    <div className="space-y-6">
-      <div className="flex items-center gap-2 overflow-x-auto pb-2 bg-slate-200/30 p-2 rounded-2xl border border-slate-200/50">
+    <div className="space-y-8">
+      <div className="flex items-center gap-2 overflow-x-auto pb-2 bg-slate-200/30 p-2 rounded-2xl border border-slate-200/50 no-scrollbar">
         <NavItem view="home" label="Session Flow" Icon={Home} />
         <NavItem view="kinesiology" label="Kinesiology Tools" Icon={Heart} />
         <NavItem view="muscles" label="Muscle Log" Icon={Dumbbell} />
@@ -113,9 +147,17 @@ const SessionContentSwitcher = ({ appointment, onUpdate, saveField }: SessionCon
             <EmotionAssessment appointmentId={appointment.id} initialMode={appointment.emotion_mode} initialPrimary={appointment.emotion_primary_selection} initialSecondary={appointment.emotion_secondary_selection} initialNotes={appointment.emotion_notes} onSaveField={saveField} onUpdate={onUpdate} />
           </div>
         )}
-        {activeView === 'muscles' && <div className="bg-white rounded-2xl border border-slate-100 shadow-sm p-6"><MuscleTestingTab appointmentId={appointment.id} /></div>}
-        {activeView === 'gait' && <GaitReflexAssessment appointmentId={appointment.id} initialNotes={appointment.gait_notes} onSaveField={saveField} />}
-        {activeView === 'previous' && <PreviousSessionSummary clientId={appointment.clients.id} currentAppointmentId={appointment.id} />}
+        {activeView === 'muscles' && (
+          <div className="bg-white rounded-[2.5rem] border border-slate-100 shadow-sm p-8">
+            <MuscleTestingTab appointmentId={appointment.id} />
+          </div>
+        )}
+        {activeView === 'gait' && (
+          <GaitReflexAssessment appointmentId={appointment.id} initialNotes={appointment.gait_notes} onSaveField={saveField} />
+        )}
+        {activeView === 'previous' && (
+          <PreviousSessionSummary clientId={appointment.clients.id} currentAppointmentId={appointment.id} />
+        )}
       </div>
     </div>
   );

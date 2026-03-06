@@ -10,7 +10,7 @@ import {
   ArrowRightLeft, MousePointer2, 
   Layers, Activity, ShieldAlert,
   Upload, Image as ImageIcon, X, Loader2,
-  Plus, Sparkles, Target, Maximize2
+  Plus, Sparkles, Target, Maximize2, Hand, PlayCircle
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
@@ -51,7 +51,6 @@ const ReflexImageZone = ({
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error("User not authenticated");
 
-      // Use a consistent filename to ensure overwriting in storage
       const fileExt = file.name.split('.').pop() || 'png';
       const filePath = `${user.id}/${reflexId}_${type}.${fileExt}`;
 
@@ -68,7 +67,6 @@ const ReflexImageZone = ({
         .from(BUCKET_NAME)
         .getPublicUrl(filePath);
 
-      // Force a fresh URL with a timestamp to bypass browser cache
       const cacheBustedUrl = `${publicUrl}?t=${Date.now()}`;
       const dbField = type === 'primary' ? 'image_url' : 'secondary_image_url';
 
@@ -135,7 +133,7 @@ const ReflexImageZone = ({
       onDragOver={(e) => { e.preventDefault(); e.stopPropagation(); setIsDragging(true); }}
       onDragLeave={(e) => { e.preventDefault(); e.stopPropagation(); setIsDragging(false); }}
       onDrop={onDrop}
-      onClick={() => fileInputRef.current?.click()}
+      onClick={(e) => { e.stopPropagation(); fileInputRef.current?.click(); }}
       className={cn(
         "relative group/image transition-all duration-300 flex flex-col items-center justify-center overflow-hidden outline-none cursor-pointer",
         isPrimary ? "aspect-video rounded-2xl border-2 border-dashed" : "w-24 h-24 rounded-2xl border-2 border-dashed bg-white/90 backdrop-blur-md shadow-xl",
@@ -158,7 +156,7 @@ const ReflexImageZone = ({
       {currentUrl ? (
         <>
           <img 
-            key={currentUrl} // Force re-render when URL changes
+            key={currentUrl} 
             src={currentUrl} 
             alt="Reflex Reference" 
             className="w-full h-full object-cover" 
@@ -367,17 +365,27 @@ const BrainReflexReference = () => {
                 </div>
 
                 <div className="space-y-4">
-                  <div>
-                    <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-1">Location & Technique</p>
-                    <p className="text-sm font-bold text-slate-700 leading-relaxed line-clamp-2">{point.location}</p>
+                  <div className="grid grid-cols-1 gap-3">
+                    <div className="p-3 bg-indigo-50/50 rounded-xl border border-indigo-100">
+                      <p className="text-[8px] font-black text-indigo-400 uppercase tracking-widest mb-1 flex items-center gap-1">
+                        <Hand size={10} /> Reflex Point
+                      </p>
+                      <p className="text-xs font-bold text-indigo-900 leading-tight line-clamp-1">{point.location}</p>
+                    </div>
+                    <div className="p-3 bg-amber-50/50 rounded-xl border border-amber-100">
+                      <p className="text-[8px] font-black text-amber-600 uppercase tracking-widest mb-1 flex items-center gap-1">
+                        <PlayCircle size={10} /> Stimulus
+                      </p>
+                      <p className="text-xs font-bold text-amber-900 leading-tight line-clamp-1">{point.stimulus || point.technique}</p>
+                    </div>
                   </div>
                   
                   {point.pearl && (
-                    <div className="p-4 bg-indigo-50/50 rounded-2xl border border-indigo-100 relative overflow-hidden">
-                      <p className="text-[9px] font-black text-indigo-400 uppercase tracking-widest mb-1 flex items-center gap-1">
+                    <div className="p-4 bg-slate-50 rounded-2xl border border-slate-100 relative overflow-hidden">
+                      <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-1 flex items-center gap-1">
                         <Info size={10} /> Clinical Pearl
                       </p>
-                      <p className="text-xs text-indigo-900 font-bold leading-relaxed line-clamp-2">{point.pearl}</p>
+                      <p className="text-xs text-slate-600 font-bold leading-relaxed line-clamp-1 italic">"{point.pearl}"</p>
                     </div>
                   )}
                 </div>

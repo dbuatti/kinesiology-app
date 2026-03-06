@@ -25,7 +25,6 @@ import {
 import { cn } from '@/lib/utils';
 import { BRAIN_REFLEX_POINTS, BrainReflexPoint } from '@/data/brain-reflex-data';
 import { supabase } from "@/integrations/supabase/client";
-import { ScrollArea } from '@/components/ui/scroll-area';
 
 type Step = 'ENTRY' | 'COORD_1' | 'COORD_2' | 'METHOD' | 'CALIBRATE' | 'REASSESS';
 type IntegrationMethod = 'Tapping' | 'Holding + Intention' | 'Tuning Fork';
@@ -203,47 +202,45 @@ const EfferentBrainIntegration = ({ onSave, onCancel, initialEntryPoint }: Effer
           </div>
         </div>
 
-        <ScrollArea className="h-[320px] pr-3">
-            <div className="space-y-6">
-                <div className="space-y-2">
-                    <p className="text-[8px] font-black text-slate-400 uppercase tracking-widest px-1">Cortical Zones</p>
-                    <div className="grid grid-cols-4 sm:grid-cols-5 gap-2">
-                        {corticalPoints.map(p => (
-                            <ZoneCard 
-                                key={p.id}
-                                point={p}
-                                isSelected={coord.point?.id === p.id}
-                                images={customizations[p.id]}
-                                onSelect={(side) => {
-                                    setCoord({ point: p, side });
-                                    nextStep(next);
-                                }}
-                                isLoading={loadingImages}
-                            />
-                        ))}
-                    </div>
-                </div>
-
-                <div className="space-y-2">
-                    <p className="text-[8px] font-black text-slate-400 uppercase tracking-widest px-1">Subcortical Zones</p>
-                    <div className="grid grid-cols-4 sm:grid-cols-5 gap-2">
-                        {subcorticalPoints.map(p => (
-                            <ZoneCard 
-                                key={p.id}
-                                point={p}
-                                isSelected={coord.point?.id === p.id}
-                                images={customizations[p.id]}
-                                onSelect={(side) => {
-                                    setCoord({ point: p, side });
-                                    nextStep(next);
-                                }}
-                                isLoading={loadingImages}
-                            />
-                        ))}
-                    </div>
+        <div className="space-y-6">
+            <div className="space-y-2">
+                <p className="text-[8px] font-black text-slate-400 uppercase tracking-widest px-1">Cortical Zones</p>
+                <div className="grid grid-cols-4 sm:grid-cols-5 gap-2">
+                    {corticalPoints.map(p => (
+                        <ZoneCard 
+                            key={p.id}
+                            point={p}
+                            isSelected={coord.point?.id === p.id}
+                            images={customizations[p.id]}
+                            onSelect={(side) => {
+                                setCoord({ point: p, side });
+                                nextStep(next);
+                            }}
+                            isLoading={loadingImages}
+                        />
+                    ))}
                 </div>
             </div>
-        </ScrollArea>
+
+            <div className="space-y-2">
+                <p className="text-[8px] font-black text-slate-400 uppercase tracking-widest px-1">Subcortical Zones</p>
+                <div className="grid grid-cols-4 sm:grid-cols-5 gap-2">
+                    {subcorticalPoints.map(p => (
+                        <ZoneCard 
+                            key={p.id}
+                            point={p}
+                            isSelected={coord.point?.id === p.id}
+                            images={customizations[p.id]}
+                            onSelect={(side) => {
+                                setCoord({ point: p, side });
+                                nextStep(next);
+                            }}
+                            isLoading={loadingImages}
+                        />
+                    ))}
+                </div>
+            </div>
+        </div>
 
         <div className="flex gap-2 pt-2">
           <Button variant="ghost" onClick={() => prevStep(prev)} className="flex-1 h-10 rounded-xl font-bold text-xs">

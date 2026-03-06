@@ -4,7 +4,9 @@ import React, { useState, useEffect, useRef, useLayoutEffect, useCallback } from
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { cn } from "@/lib/utils";
-import { Loader2, Edit3, CheckCircle2, AlertCircle, Sparkles } from "lucide-react";
+import { Loader2, Edit3, CheckCircle2, AlertCircle, Sparkles, Copy, Check } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { showSuccess } from "@/utils/toast";
 
 type InputElement = HTMLInputElement | HTMLTextAreaElement;
 
@@ -37,6 +39,7 @@ const EditableField = ({
   const [isSaving, setIsSaving] = useState(false);
   const [showSaved, setShowSaved] = useState(false);
   const [hasError, setHasError] = useState(false);
+  const [isCopied, setIsCopied] = useState(false);
   
   const inputRef = useRef<InputElement>(null);
   const debounceTimer = useRef<NodeJS.Timeout | null>(null);
@@ -89,6 +92,15 @@ const EditableField = ({
     setTimeout(() => inputRef.current?.focus(), 0);
   };
 
+  const handleCopy = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (!localValue) return;
+    navigator.clipboard.writeText(localValue);
+    setIsCopied(true);
+    showSuccess("Copied to clipboard");
+    setTimeout(() => setIsCopied(false), 2000);
+  };
+
   const handleFocus = () => {
     setIsFocused(true);
     if (debounceTimer.current) clearTimeout(debounceTimer.current);
@@ -131,7 +143,7 @@ const EditableField = ({
   return (
     <div 
       className={cn(
-        "group relative p-6 rounded-[2.5rem] transition-all duration-500 border-2",
+        "group relative p-6 rounded-[2rem] transition-all duration-500 border-2",
         isFocused 
           ? "bg-white border-indigo-500 shadow-2xl shadow-indigo-100/50 scale-[1.01]" 
           : hasError 
@@ -148,29 +160,34 @@ const EditableField = ({
     >
       <div className="flex items-center justify-between mb-4 h-5">
         <p className={cn(
-          "font-black uppercase text-[10px] tracking-[0.25em] transition-colors",
+          "font-black uppercase text-[9px] tracking-[0.25em] transition-colors",
           isFocused ? "text-indigo-600" : hasError ? "text-rose-600" : "text-slate-400"
         )}>
           {label}
         </p>
         <div className="flex items-center gap-2 min-w-[60px] justify-end">
           {isSaving && (
-            <div className="flex items-center gap-1.5 text-[10px] font-black text-indigo-600 animate-pulse">
-              <Loader2 size={12} className="animate-spin" /> SAVING
+            <div className="flex items-center gap-1.5 text-[9px] font-black text-indigo-600 animate-pulse">
+              <Loader2 size={10} className="animate-spin" /> SAVING
             </div>
           )}
           {showSaved && !isSaving && (
-            <div className="flex items-center gap-1.5 text-[10px] font-black text-emerald-600 animate-in fade-in slide-in-from-right-2">
-              <CheckCircle2 size={12} /> SAVED
+            <div className="flex items-center gap-1.5 text-[9px] font-black text-emerald-600 animate-in fade-in slide-in-from-right-2">
+              <CheckCircle2 size={10} /> SAVED
             </div>
           )}
           {hasError && !isSaving && (
-            <div className="flex items-center gap-1.5 text-[10px] font-black text-rose-600">
-              <AlertCircle size={12} /> ERROR
+            <div className="flex items-center gap-1.5 text-[9px] font-black text-rose-600">
+              <AlertCircle size={10} /> ERROR
             </div>
           )}
           {!isFocused && !isSaving && !showSaved && !hasError && (
-            <Edit3 size={14} className="text-slate-300 opacity-0 group-hover:opacity-100 transition-opacity" />
+            <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+              <Button variant="ghost" size="icon" className="h-7 w-7 rounded-lg text-slate-400 hover:text-indigo-600 hover:bg-indigo-50" onClick={handleCopy}>
+                {isCopied ? <Check size={14} className="text-emerald-500" /> : <Copy size={14} />}
+              </Button>
+              <Edit3 size={14} className="text-slate-300" />
+            </div>
           )}
         </div>
       </div>
@@ -186,13 +203,13 @@ const EditableField = ({
               onBlur={handleBlur}
               placeholder={placeholder}
               className={cn(
-                multiline ? "min-h-[140px] resize-none" : "h-10",
+                multiline ? "min-h-[120px] resize-none" : "h-10",
                 "transition-all duration-300 border-none focus-visible:ring-0 p-0 text-base font-bold text-slate-900 placeholder:text-slate-300 bg-transparent",
               )}
             />
             <div className="flex flex-wrap gap-1.5 pt-2 border-t border-slate-100 animate-in fade-in slide-in-from-bottom-1 duration-300">
-              <div className="flex items-center gap-1.5 mr-2 text-[9px] font-black text-slate-400 uppercase tracking-widest">
-                <Sparkles size={10} className="text-indigo-400" /> Smart Chips:
+              <div className="flex items-center gap-1.5 mr-2 text-[8px] font-black text-slate-400 uppercase tracking-widest">
+                <Sparkles size={10} className="text-indigo-400" /> Quick Tags:
               </div>
               {SMART_CHIPS.map(chip => (
                 <button
@@ -202,7 +219,7 @@ const EditableField = ({
                     e.stopPropagation();
                     handleChipClick(chip);
                   }}
-                  className="px-2 py-1 rounded-lg bg-slate-100 hover:bg-indigo-600 hover:text-white text-[9px] font-black uppercase tracking-wider text-slate-500 transition-all"
+                  className="px-2 py-1 rounded-lg bg-slate-100 hover:bg-indigo-600 hover:text-white text-[8px] font-black uppercase tracking-wider text-slate-500 transition-all"
                 >
                   {chip}
                 </button>

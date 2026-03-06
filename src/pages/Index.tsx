@@ -10,7 +10,7 @@ import {
   Calendar, Activity, Loader2,
   Plus, UserPlus, Sparkles,
   CheckCircle2, Zap, FlaskConical, Brain, Wind, StickyNote, Timer,
-  ArrowRight, AlertCircle, TrendingUp, Clock, ShieldCheck
+  ArrowRight, AlertCircle, TrendingUp, Clock, ShieldCheck, Heart
 } from "lucide-react";
 import { MadeWithDyad } from "@/components/made-with-dyad";
 import {
@@ -207,41 +207,84 @@ const Index = () => {
   const hasData = stats.clients > 0 || stats.appointments > 0;
 
   return (
-    <div className="p-4 md:p-10 max-w-full mx-auto space-y-12">
+    <div className="p-4 md:p-10 max-w-full mx-auto space-y-10">
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-8">
         <div>
-          <h1 className="text-5xl font-black tracking-tighter text-slate-900">Practice Hub</h1>
-          <p className="text-slate-500 font-medium mt-2 text-xl">Welcome back! Here's your clinical overview for today.</p>
+          <h1 className="text-4xl font-black tracking-tighter text-slate-900">Practice Hub</h1>
+          <p className="text-slate-500 font-medium mt-1 text-lg">Welcome back! Here's your clinical overview for today.</p>
         </div>
-        <div className="flex items-center gap-4 bg-white p-4 rounded-3xl border border-slate-100 shadow-sm">
-          <div className="w-12 h-12 bg-indigo-50 rounded-2xl flex items-center justify-center text-indigo-600">
-            <Calendar size={24} />
+        <div className="flex items-center gap-4 bg-white p-3 rounded-2xl border border-slate-100 shadow-sm">
+          <div className="w-10 h-10 bg-indigo-50 rounded-xl flex items-center justify-center text-indigo-600">
+            <Calendar size={20} />
           </div>
           <div className="pr-4">
-            <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Today's Date</p>
-            <p className="text-lg font-bold text-slate-900">{format(currentTime, "EEEE, MMMM d")}</p>
+            <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest">Today's Date</p>
+            <p className="text-base font-bold text-slate-900">{format(currentTime, "EEEE, MMMM d")}</p>
           </div>
         </div>
       </div>
 
       {!hasData ? (
-        <div className="text-center py-32 bg-gradient-to-br from-indigo-50 to-blue-50 rounded-[4rem] border-2 border-dashed border-indigo-200">
-          <div className="mx-auto w-24 h-24 bg-white rounded-3xl flex items-center justify-center mb-8 shadow-2xl">
-            <Sparkles className="text-indigo-500" size={48} />
+        <div className="text-center py-32 bg-gradient-to-br from-indigo-50 to-blue-50 rounded-[3rem] border-2 border-dashed border-indigo-200">
+          <div className="mx-auto w-20 h-20 bg-white rounded-3xl flex items-center justify-center mb-8 shadow-2xl">
+            <Sparkles className="text-indigo-500" size={40} />
           </div>
-          <h2 className="text-4xl font-black text-slate-900 mb-4">Welcome to Antigravity CRM!</h2>
-          <p className="text-slate-600 max-w-md mx-auto mb-12 text-xl font-medium">Start building your kinesiology practice by adding your first client and scheduling sessions.</p>
+          <h2 className="text-3xl font-black text-slate-900 mb-4">Welcome to Antigravity CRM!</h2>
+          <p className="text-slate-600 max-w-md mx-auto mb-10 text-lg font-medium">Start building your kinesiology practice by adding your first client and scheduling sessions.</p>
           <div className="flex gap-4 justify-center">
-            <Button className="bg-indigo-600 hover:bg-indigo-700 h-14 px-10 rounded-2xl font-black text-xs uppercase tracking-widest shadow-2xl shadow-indigo-200" onClick={() => setClientDialogOpen(true)}>
-              <UserPlus size={20} className="mr-2" /> Add First Client
+            <Button className="bg-indigo-600 hover:bg-indigo-700 h-12 px-8 rounded-xl font-black text-[10px] uppercase tracking-widest shadow-2xl shadow-indigo-200" onClick={() => setClientDialogOpen(true)}>
+              <UserPlus size={18} className="mr-2" /> Add First Client
             </Button>
-            <Button variant="outline" className="h-14 px-10 rounded-2xl font-black text-xs uppercase tracking-widest border-slate-200 bg-white" onClick={() => setAppDialogOpen(true)}>
-              <Calendar size={20} className="mr-2" /> Schedule Session
+            <Button variant="outline" className="h-12 px-8 rounded-xl font-black text-[10px] uppercase tracking-widest border-slate-200 bg-white" onClick={() => setAppDialogOpen(true)}>
+              <Calendar size={18} className="mr-2" /> Schedule Session
             </Button>
           </div>
         </div>
       ) : (
         <>
+          {/* Clinical Pulse Row */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <Card className="border-none shadow-lg rounded-[2rem] bg-indigo-900 text-white overflow-hidden relative group">
+              <div className="absolute top-0 right-0 p-6 opacity-10 group-hover:scale-110 transition-transform duration-700"><Activity size={80} /></div>
+              <CardContent className="p-6 flex items-center gap-5 relative z-10">
+                <div className="w-12 h-12 rounded-xl bg-white/10 backdrop-blur-md flex items-center justify-center border border-white/10">
+                  <Activity size={24} className="text-indigo-300" />
+                </div>
+                <div>
+                  <p className="text-[9px] font-black text-indigo-300 uppercase tracking-widest">Clinical Pulse</p>
+                  <p className="text-2xl font-black">Autonomic Sync</p>
+                  <p className="text-[10px] text-indigo-200 font-medium mt-1">Avg Coherence: {stats.avgCoherence.toFixed(2)}</p>
+                </div>
+              </CardContent>
+            </Card>
+            <Card className="border-none shadow-lg rounded-[2rem] bg-emerald-600 text-white overflow-hidden relative group">
+              <div className="absolute top-0 right-0 p-6 opacity-10 group-hover:scale-110 transition-transform duration-700"><Wind size={80} /></div>
+              <CardContent className="p-6 flex items-center gap-5 relative z-10">
+                <div className="w-12 h-12 rounded-xl bg-white/10 backdrop-blur-md flex items-center justify-center border border-white/10">
+                  <Wind size={24} className="text-emerald-200" />
+                </div>
+                <div>
+                  <p className="text-[9px] font-black text-emerald-200 uppercase tracking-widest">Respiratory Health</p>
+                  <p className="text-2xl font-black">CO2 Tolerance</p>
+                  <p className="text-[10px] text-emerald-100 font-medium mt-1">Avg BOLT: {stats.avgBolt}s</p>
+                </div>
+              </CardContent>
+            </Card>
+            <Card className="border-none shadow-lg rounded-[2rem] bg-rose-600 text-white overflow-hidden relative group">
+              <div className="absolute top-0 right-0 p-6 opacity-10 group-hover:scale-110 transition-transform duration-700"><Heart size={80} /></div>
+              <CardContent className="p-6 flex items-center gap-5 relative z-10">
+                <div className="w-12 h-12 rounded-xl bg-white/10 backdrop-blur-md flex items-center justify-center border border-white/10">
+                  <Heart size={24} className="text-rose-200" />
+                </div>
+                <div>
+                  <p className="text-[9px] font-black text-rose-200 uppercase tracking-widest">Practice Load</p>
+                  <p className="text-2xl font-black">Active Cases</p>
+                  <p className="text-[10px] text-rose-100 font-medium mt-1">{stats.sessionsThisWeek} sessions this week</p>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+
           <DashboardStats stats={stats} />
 
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-10">
@@ -249,42 +292,42 @@ const Index = () => {
               <DailyBriefing todaySessions={todaySessions} activeSession={activeSession} />
               
               {priorityClients.length > 0 && (
-                <Card className="border-none shadow-xl rounded-[3rem] bg-rose-50 border-2 border-rose-100 overflow-hidden">
-                  <CardHeader className="p-10 pb-6">
+                <Card className="border-none shadow-xl rounded-[2.5rem] bg-rose-50 border-2 border-rose-100 overflow-hidden">
+                  <CardHeader className="p-8 pb-4">
                     <div className="flex items-center justify-between">
-                      <CardTitle className="text-2xl font-black flex items-center gap-4 text-rose-900">
-                        <AlertCircle size={28} className="text-rose-600" /> Clinical Priority: Today
+                      <CardTitle className="text-xl font-black flex items-center gap-3 text-rose-900">
+                        <AlertCircle size={24} className="text-rose-600" /> Clinical Priority: Today
                       </CardTitle>
-                      <Badge className="bg-rose-600 text-white border-none font-black text-[10px] uppercase tracking-widest px-4 py-1.5 rounded-full">
+                      <Badge className="bg-rose-600 text-white border-none font-black text-[9px] uppercase tracking-widest px-3 py-1 rounded-full">
                         {priorityClients.length} High Risk
                       </Badge>
                     </div>
-                    <CardDescription className="text-rose-700 font-medium text-lg mt-2">
+                    <CardDescription className="text-rose-700 font-medium text-base mt-1">
                       Clients scheduled for today with BOLT scores below functional baseline (25s).
                     </CardDescription>
                   </CardHeader>
-                  <CardContent className="p-10 pt-0 space-y-4">
+                  <CardContent className="p-8 pt-0 space-y-3">
                     {priorityClients.map(pc => (
                       <Link key={pc.id} to={`/appointments/${pc.appointment.id}`}>
-                        <div className="p-6 bg-white rounded-[2rem] border border-rose-200 flex items-center justify-between group hover:shadow-lg transition-all duration-300">
-                          <div className="flex items-center gap-6">
-                            <div className="w-12 h-12 rounded-2xl bg-rose-100 text-rose-600 flex items-center justify-center font-black text-xl">
+                        <div className="p-5 bg-white rounded-2xl border border-rose-200 flex items-center justify-between group hover:shadow-md transition-all duration-300">
+                          <div className="flex items-center gap-4">
+                            <div className="w-10 h-10 rounded-xl bg-rose-100 text-rose-600 flex items-center justify-center font-black text-lg">
                               {pc.name.charAt(0)}
                             </div>
                             <div>
-                              <p className="font-black text-xl text-slate-900 group-hover:text-rose-600 transition-colors">{pc.name}</p>
-                              <p className="text-xs font-bold text-slate-500 flex items-center gap-2 mt-1">
-                                <Clock size={14} className="text-rose-400" /> {format(new Date(pc.appointment.date), "h:mm a")}
+                              <p className="font-black text-lg text-slate-900 group-hover:text-rose-600 transition-colors">{pc.name}</p>
+                              <p className="text-[10px] font-bold text-slate-500 flex items-center gap-1.5 mt-0.5">
+                                <Clock size={12} className="text-rose-400" /> {format(new Date(pc.appointment.date), "h:mm a")}
                               </p>
                             </div>
                           </div>
-                          <div className="flex items-center gap-8">
+                          <div className="flex items-center gap-6">
                             <div className="text-right">
-                              <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest">Latest BOLT</p>
-                              <p className="text-2xl font-black text-rose-600">{pc.bolt}s</p>
+                              <p className="text-[8px] font-black text-slate-400 uppercase tracking-widest">Latest BOLT</p>
+                              <p className="text-xl font-black text-rose-600">{pc.bolt}s</p>
                             </div>
-                            <div className="w-10 h-10 rounded-xl bg-rose-50 text-rose-400 flex items-center justify-center group-hover:bg-rose-600 group-hover:text-white transition-all">
-                              <ArrowRight size={20} />
+                            <div className="w-8 h-8 rounded-lg bg-rose-50 text-rose-400 flex items-center justify-center group-hover:bg-rose-600 group-hover:text-white transition-all">
+                              <ArrowRight size={16} />
                             </div>
                           </div>
                         </div>
@@ -297,23 +340,23 @@ const Index = () => {
 
             <div className="space-y-10">
               {nextSession && (
-                <Card className="border-none shadow-xl rounded-[2.5rem] bg-indigo-600 text-white overflow-hidden animate-in zoom-in-95 duration-500">
-                  <CardContent className="p-8 flex items-center justify-between">
-                    <div className="flex items-center gap-5">
-                      <div className="w-14 h-14 rounded-2xl bg-white/20 flex items-center justify-center shadow-inner">
-                        <Timer size={28} className="animate-pulse" />
+                <Card className="border-none shadow-xl rounded-[2rem] bg-indigo-600 text-white overflow-hidden animate-in zoom-in-95 duration-500">
+                  <CardContent className="p-6 flex items-center justify-between">
+                    <div className="flex items-center gap-4">
+                      <div className="w-12 h-12 rounded-xl bg-white/20 flex items-center justify-center shadow-inner">
+                        <Timer size={24} className="animate-pulse" />
                       </div>
                       <div>
-                        <p className="text-[10px] font-black uppercase tracking-[0.3em] opacity-80">Next Session Starts In</p>
-                        <h3 className="text-3xl font-black tracking-tight">
+                        <p className="text-[9px] font-black uppercase tracking-[0.3em] opacity-80">Next Session In</p>
+                        <h3 className="text-2xl font-black tracking-tight">
                           {formatDistanceToNow(nextSession.date)}
                         </h3>
-                        <p className="text-xs font-bold opacity-90 mt-1">Client: {nextSession.clients?.name}</p>
+                        <p className="text-[10px] font-bold opacity-90 mt-0.5">Client: {nextSession.clients?.name}</p>
                       </div>
                     </div>
                     <Link to={`/appointments/${nextSession.id}`}>
-                      <Button size="icon" className="w-12 h-12 rounded-2xl bg-white text-indigo-600 hover:bg-indigo-50 shadow-lg">
-                        <ArrowRight size={24} />
+                      <Button size="icon" className="w-10 h-10 rounded-xl bg-white text-indigo-600 hover:bg-indigo-50 shadow-lg">
+                        <ArrowRight size={20} />
                       </Button>
                     </Link>
                   </CardContent>
@@ -327,12 +370,12 @@ const Index = () => {
 
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-10">
             <div className="lg:col-span-2 space-y-10">
-              <Card className="border-none shadow-xl rounded-[3.5rem] overflow-hidden bg-white">
-                <CardHeader className="p-12 pb-0">
-                  <CardTitle className="text-3xl font-black tracking-tight">Session Activity</CardTitle>
-                  <CardDescription className="font-medium text-xl mt-2">Volume of appointments over the last 6 months</CardDescription>
+              <Card className="border-none shadow-xl rounded-[3rem] overflow-hidden bg-white">
+                <CardHeader className="p-10 pb-0">
+                  <CardTitle className="text-2xl font-black tracking-tight">Session Activity</CardTitle>
+                  <CardDescription className="font-medium text-lg mt-1">Volume of appointments over the last 6 months</CardDescription>
                 </CardHeader>
-                <CardContent className="h-[400px] p-12 pt-8">
+                <CardContent className="h-[350px] p-10 pt-6">
                   <ResponsiveContainer width="100%" height="100%">
                     <AreaChart data={chartData}>
                       <defs>
@@ -342,32 +385,32 @@ const Index = () => {
                         </linearGradient>
                       </defs>
                       <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
-                      <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{fontSize: 12, fill: '#94a3b8', fontWeight: 900}} />
-                      <YAxis axisLine={false} tickLine={false} tick={{fontSize: 12, fill: '#94a3b8', fontWeight: 900}} />
+                      <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{fontSize: 10, fill: '#94a3b8', fontWeight: 900}} />
+                      <YAxis axisLine={false} tickLine={false} tick={{fontSize: 10, fill: '#94a3b8', fontWeight: 900}} />
                       <ChartTooltip 
-                        contentStyle={{borderRadius: '24px', border: 'none', boxShadow: '0 25px 50px -12px rgb(0 0 0 / 0.25)', padding: '20px'}}
-                        labelStyle={{fontWeight: 900, color: '#1e293b', marginBottom: '10px', fontSize: '16px'}}
+                        contentStyle={{borderRadius: '20px', border: 'none', boxShadow: '0 20px 40px -10px rgb(0 0 0 / 0.2)', padding: '15px'}}
+                        labelStyle={{fontWeight: 900, color: '#1e293b', marginBottom: '5px', fontSize: '14px'}}
                       />
-                      <Area type="monotone" dataKey="sessions" stroke="#4f46e5" strokeWidth={6} fillOpacity={1} fill="url(#colorSessions)" />
+                      <Area type="monotone" dataKey="sessions" stroke="#4f46e5" strokeWidth={5} fillOpacity={1} fill="url(#colorSessions)" />
                     </AreaChart>
                   </ResponsiveContainer>
                 </CardContent>
               </Card>
 
-              <Card className="border-none shadow-xl rounded-[3.5rem] bg-amber-50 border border-amber-100 overflow-hidden">
-                <CardHeader className="p-12 pb-6">
-                  <CardTitle className="text-3xl font-black flex items-center gap-5 text-amber-900">
-                    <StickyNote size={32} className="text-amber-600" /> Practitioner Scratchpad
+              <Card className="border-none shadow-xl rounded-[3rem] bg-amber-50 border border-amber-100 overflow-hidden">
+                <CardHeader className="p-10 pb-4">
+                  <CardTitle className="text-2xl font-black flex items-center gap-4 text-amber-900">
+                    <StickyNote size={28} className="text-amber-600" /> Practitioner Scratchpad
                   </CardTitle>
-                  <CardDescription className="text-amber-700 font-medium text-xl">Quick notes, reminders, or research ideas. Saves automatically.</CardDescription>
+                  <CardDescription className="text-amber-700 font-medium text-lg">Quick notes, reminders, or research ideas. Saves automatically.</CardDescription>
                 </CardHeader>
-                <CardContent className="p-12 pt-0">
-                  <div className="flex flex-wrap gap-2 mb-6">
+                <CardContent className="p-10 pt-0">
+                  <div className="flex flex-wrap gap-2 mb-4">
                     {["Research", "Follow-up", "Protocol Idea", "Clinical Note"].map(tag => (
                       <button 
                         key={tag}
                         onClick={() => handleScratchpadChange(scratchpad ? `${scratchpad}\n[${tag}] ` : `[${tag}] `)}
-                        className="px-4 py-2 rounded-xl bg-white border border-amber-200 text-[10px] font-black uppercase tracking-widest text-amber-600 hover:bg-amber-100 transition-colors"
+                        className="px-3 py-1.5 rounded-xl bg-white border border-amber-200 text-[9px] font-black uppercase tracking-widest text-amber-600 hover:bg-amber-100 transition-colors"
                       >
                         + {tag}
                       </button>
@@ -377,78 +420,78 @@ const Index = () => {
                     value={scratchpad}
                     onChange={(e) => handleScratchpadChange(e.target.value)}
                     placeholder="Type something here..."
-                    className="min-h-[250px] bg-white/70 border-amber-200 focus:ring-amber-500 focus:border-amber-500 resize-none text-amber-900 placeholder:text-amber-300 rounded-[3rem] p-10 text-2xl font-medium leading-relaxed shadow-inner"
+                    className="min-h-[200px] bg-white/70 border-amber-200 focus:ring-amber-500 focus:border-amber-500 resize-none text-amber-900 placeholder:text-amber-300 rounded-[2.5rem] p-8 text-xl font-medium leading-relaxed shadow-inner"
                   />
-                  <div className="flex items-center justify-end gap-3 mt-8 text-[11px] font-black text-amber-600 uppercase tracking-[0.35em]">
-                    <CheckCircle2 size={16} /> {lastSaved ? `Last saved at ${lastSaved}` : 'Auto-saved to browser'}
+                  <div className="flex items-center justify-end gap-2 mt-6 text-[10px] font-black text-amber-600 uppercase tracking-[0.3em]">
+                    <CheckCircle2 size={14} /> {lastSaved ? `Last saved at ${lastSaved}` : 'Auto-saved to browser'}
                   </div>
                 </CardContent>
               </Card>
             </div>
 
             <div className="space-y-10">
-              <Card className="border-none shadow-xl rounded-[3.5rem] bg-indigo-900 text-white overflow-hidden relative">
-                <div className="absolute top-0 right-0 p-12 opacity-10 pointer-events-none"><Wind size={150} /></div>
-                <CardHeader className="p-10">
-                  <CardTitle className="text-3xl font-black flex items-center gap-4">
-                    <Wind size={32} className="text-teal-400" /> Clinical Focus
+              <Card className="border-none shadow-xl rounded-[2.5rem] bg-indigo-900 text-white overflow-hidden relative">
+                <div className="absolute top-0 right-0 p-10 opacity-10 pointer-events-none"><Wind size={120} /></div>
+                <CardHeader className="p-8">
+                  <CardTitle className="text-2xl font-black flex items-center gap-3">
+                    <Wind size={28} className="text-teal-400" /> Clinical Focus
                   </CardTitle>
                 </CardHeader>
-                <CardContent className="p-10 pt-0 space-y-8">
-                  <div className="p-6 bg-white/10 rounded-[2rem] border border-white/10 shadow-inner">
-                    <p className="text-[11px] font-black text-indigo-300 uppercase tracking-widest mb-3">Practice Goal</p>
-                    <p className="text-xl font-bold leading-snug">Improve practice-wide BOLT scores by 15% this quarter.</p>
+                <CardContent className="p-8 pt-0 space-y-6">
+                  <div className="p-5 bg-white/10 rounded-2xl border border-white/10 shadow-inner">
+                    <p className="text-[10px] font-black text-indigo-300 uppercase tracking-widest mb-2">Practice Goal</p>
+                    <p className="text-lg font-bold leading-snug">Improve practice-wide BOLT scores by 15% this quarter.</p>
                   </div>
-                  <div className="space-y-5">
-                    <div className="flex items-center justify-between text-sm font-black uppercase tracking-widest">
+                  <div className="space-y-4">
+                    <div className="flex items-center justify-between text-xs font-black uppercase tracking-widest">
                       <span className="text-indigo-300">Quarterly Progress</span>
                       <span className="text-teal-400">68%</span>
                     </div>
-                    <div className="h-3 bg-white/10 rounded-full overflow-hidden shadow-inner">
+                    <div className="h-2.5 bg-white/10 rounded-full overflow-hidden shadow-inner">
                       <div className="h-full bg-teal-400 rounded-full shadow-lg" style={{ width: '68%' }} />
                     </div>
                   </div>
-                  <Button variant="outline" className="w-full bg-transparent border-white/20 text-white hover:bg-white/10 rounded-2xl font-black text-[11px] uppercase tracking-[0.2em] h-14 shadow-lg" asChild>
+                  <Button variant="outline" className="w-full bg-transparent border-white/20 text-white hover:bg-white/10 rounded-xl font-black text-[10px] uppercase tracking-[0.2em] h-12 shadow-lg" asChild>
                     <Link to="/oversight">View Clinical Oversight</Link>
                   </Button>
                 </CardContent>
               </Card>
 
-              <Card className="border-none shadow-xl rounded-[3.5rem] bg-white overflow-hidden">
-                <CardHeader className="p-10">
-                  <CardTitle className="text-3xl font-black flex items-center gap-4 text-slate-900">
-                    <Brain size={32} className="text-purple-600" /> Protocol Mastery
+              <Card className="border-none shadow-xl rounded-[2.5rem] bg-white overflow-hidden">
+                <CardHeader className="p-8">
+                  <CardTitle className="text-2xl font-black flex items-center gap-3 text-slate-900">
+                    <Brain size={28} className="text-purple-600" /> Protocol Mastery
                   </CardTitle>
                 </CardHeader>
-                <CardContent className="p-10 pt-0 space-y-6">
-                  <p className="text-lg text-slate-500 font-medium leading-relaxed">Keep your skills sharp by practicing protocols in the Self-Monitoring Zone.</p>
-                  <div className="grid grid-cols-1 gap-4">
-                    <Button variant="outline" className="justify-start h-14 rounded-2xl border-slate-100 hover:bg-slate-50 font-black text-[11px] uppercase tracking-widest text-slate-700 shadow-sm" asChild>
-                      <Link to="/self-practice"><FlaskConical size={18} className="mr-4 text-indigo-500" /> Practice BOLT Test</Link>
+                <CardContent className="p-8 pt-0 space-y-4">
+                  <p className="text-base text-slate-500 font-medium leading-relaxed">Keep your skills sharp by practicing protocols in the Self-Monitoring Zone.</p>
+                  <div className="grid grid-cols-1 gap-3">
+                    <Button variant="outline" className="justify-start h-12 rounded-xl border-slate-100 hover:bg-slate-50 font-black text-[10px] uppercase tracking-widest text-slate-700 shadow-sm" asChild>
+                      <Link to="/self-practice"><FlaskConical size={16} className="mr-3 text-indigo-500" /> Practice BOLT Test</Link>
                     </Button>
-                    <Button variant="outline" className="justify-start h-14 rounded-2xl border-slate-100 hover:bg-slate-50 font-black text-[11px] uppercase tracking-widest text-slate-700 shadow-sm" asChild>
-                      <Link to="/self-practice"><Activity size={18} className="mr-4 text-rose-500" /> Practice Coherence</Link>
+                    <Button variant="outline" className="justify-start h-12 rounded-xl border-slate-100 hover:bg-slate-50 font-black text-[10px] uppercase tracking-widest text-slate-700 shadow-sm" asChild>
+                      <Link to="/self-practice"><Activity size={16} className="mr-3 text-rose-500" /> Practice Coherence</Link>
                     </Button>
                   </div>
                 </CardContent>
               </Card>
 
-              <Card className="border-none shadow-xl rounded-[3.5rem] bg-indigo-50 border border-indigo-100 overflow-hidden">
-                <CardHeader className="p-10">
-                  <CardTitle className="text-3xl font-black flex items-center gap-4 text-indigo-900">
-                    <Sparkles size={32} className="text-indigo-600" /> Program Resources
+              <Card className="border-none shadow-xl rounded-[2.5rem] bg-indigo-50 border border-indigo-100 overflow-hidden">
+                <CardHeader className="p-8">
+                  <CardTitle className="text-2xl font-black flex items-center gap-3 text-indigo-900">
+                    <Sparkles size={28} className="text-indigo-600" /> Program Resources
                   </CardTitle>
                 </CardHeader>
-                <CardContent className="p-10 pt-0 space-y-6">
-                  <p className="text-lg text-indigo-700 font-medium leading-relaxed">Access your weekly worksheets and program materials.</p>
-                  <div className="grid grid-cols-1 gap-4">
-                    <Button className="justify-start h-16 rounded-2xl bg-indigo-600 hover:bg-indigo-700 font-black text-[11px] uppercase tracking-widest text-white shadow-lg shadow-indigo-200" asChild>
+                <CardContent className="p-8 pt-0 space-y-4">
+                  <p className="text-base text-indigo-700 font-medium leading-relaxed">Access your weekly worksheets and program materials.</p>
+                  <div className="grid grid-cols-1 gap-3">
+                    <Button className="justify-start h-14 rounded-xl bg-indigo-600 hover:bg-indigo-700 font-black text-[10px] uppercase tracking-widest text-white shadow-lg shadow-indigo-200" asChild>
                       <Link to="/week-3-worksheet">
-                        <ShieldCheck size={20} className="mr-4" /> Week 3: Releasing Curses & Trauma
+                        <ShieldCheck size={18} className="mr-3" /> Week 3: Releasing Curses
                       </Link>
                     </Button>
-                    <Button variant="outline" className="justify-start h-14 rounded-2xl border-indigo-200 hover:bg-indigo-100 font-black text-[11px] uppercase tracking-widest text-indigo-700 shadow-sm" asChild>
-                      <Link to="/north-star"><Sparkles size={18} className="mr-4 text-indigo-500" /> North Star Worksheet</Link>
+                    <Button variant="outline" className="justify-start h-12 rounded-xl border-indigo-200 hover:bg-indigo-100 font-black text-[10px] uppercase tracking-widest text-indigo-700 shadow-sm" asChild>
+                      <Link to="/north-star"><Sparkles size={16} className="mr-3 text-indigo-500" /> North Star Worksheet</Link>
                     </Button>
                   </div>
                 </CardContent>
@@ -459,15 +502,15 @@ const Index = () => {
       )}
 
       <Dialog open={clientDialogOpen} onOpenChange={setClientDialogOpen}>
-        <DialogContent className="sm:max-w-[600px] rounded-[3.5rem] p-10">
-          <DialogHeader className="mb-6"><DialogTitle className="text-3xl font-black tracking-tight">Add New Client</DialogTitle></DialogHeader>
+        <DialogContent className="sm:max-w-[600px] rounded-[3rem] p-10">
+          <DialogHeader className="mb-6"><DialogTitle className="text-2xl font-black tracking-tight">Add New Client</DialogTitle></DialogHeader>
           <ClientForm onSuccess={() => { setClientDialogOpen(false); fetchDashboardData(); }} />
         </DialogContent>
       </Dialog>
 
       <Dialog open={appDialogOpen} onOpenChange={setAppDialogOpen}>
-        <DialogContent className="sm:max-w-[550px] rounded-[3.5rem] p-10">
-          <DialogHeader className="mb-6"><DialogTitle className="text-3xl font-black tracking-tight">Schedule New Session</DialogTitle></DialogHeader>
+        <DialogContent className="sm:max-w-[550px] rounded-[3rem] p-10">
+          <DialogHeader className="mb-6"><DialogTitle className="text-2xl font-black tracking-tight">Schedule New Session</DialogTitle></DialogHeader>
           <AppointmentForm onSuccess={() => { setAppDialogOpen(false); fetchDashboardData(); }} />
         </DialogContent>
       </Dialog>

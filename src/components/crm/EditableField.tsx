@@ -145,10 +145,10 @@ const EditableField = ({
       className={cn(
         "group relative p-4 rounded-2xl transition-all duration-500 border-2",
         isFocused 
-          ? "bg-white border-indigo-500 shadow-xl shadow-indigo-100/50 scale-[1.01]" 
+          ? "bg-card border-indigo-500 shadow-xl shadow-indigo-100/50 dark:shadow-indigo-900/20 scale-[1.01]" 
           : hasError 
-            ? "bg-rose-50 border-rose-300"
-            : "bg-slate-50/50 border-transparent hover:bg-white hover:border-slate-200 hover:shadow-lg",
+            ? "bg-rose-50 dark:bg-rose-950/10 border-rose-300 dark:border-rose-900/30"
+            : "bg-muted/50 border-transparent hover:bg-card hover:border-border hover:shadow-lg",
         className
       )}
       onClick={() => {
@@ -161,7 +161,7 @@ const EditableField = ({
       <div className="flex items-center justify-between mb-2 h-4">
         <p className={cn(
           "font-black uppercase text-[8px] tracking-[0.2em] transition-colors",
-          isFocused ? "text-indigo-600" : hasError ? "text-rose-600" : "text-slate-400"
+          isFocused ? "text-indigo-600" : hasError ? "text-rose-600" : "text-muted-foreground"
         )}>
           {label}
         </p>
@@ -183,10 +183,10 @@ const EditableField = ({
           )}
           {!isFocused && !isSaving && !showSaved && !hasError && (
             <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-              <Button variant="ghost" size="icon" className="h-6 w-6 rounded-lg text-slate-400 hover:text-indigo-600 hover:bg-indigo-50" onClick={handleCopy}>
+              <Button variant="ghost" size="icon" className="h-6 w-6 rounded-lg text-muted-foreground hover:text-indigo-600 hover:bg-accent" onClick={handleCopy}>
                 {isCopied ? <Check size={12} className="text-emerald-500" /> : <Copy size={12} />}
               </Button>
-              <Edit3 size={12} className="text-slate-300" />
+              <Edit3 size={12} className="text-muted-foreground/50" />
             </div>
           )}
         </div>
@@ -204,11 +204,11 @@ const EditableField = ({
               placeholder={placeholder}
               className={cn(
                 multiline ? "min-h-[100px] resize-none" : "h-8",
-                "transition-all duration-300 border-none focus-visible:ring-0 p-0 text-sm font-bold text-slate-900 placeholder:text-slate-300 bg-transparent",
+                "transition-all duration-300 border-none focus-visible:ring-0 p-0 text-sm font-bold text-foreground placeholder:text-muted-foreground/30 bg-transparent",
               )}
             />
-            <div className="flex flex-wrap gap-1 pt-1.5 border-t border-slate-100 animate-in fade-in slide-in-from-bottom-1 duration-300">
-              <div className="flex items-center gap-1 mr-1.5 text-[7px] font-black text-slate-400 uppercase tracking-widest">
+            <div className="flex flex-wrap gap-1 pt-1.5 border-t border-border animate-in fade-in slide-in-from-bottom-1 duration-300">
+              <div className="flex items-center gap-1 mr-1.5 text-[7px] font-black text-muted-foreground uppercase tracking-widest">
                 <Sparkles size={8} className="text-indigo-400" /> Tags:
               </div>
               {SMART_CHIPS.map(chip => (
@@ -219,7 +219,7 @@ const EditableField = ({
                     e.stopPropagation();
                     handleChipClick(chip);
                   }}
-                  className="px-1.5 py-0.5 rounded-md bg-slate-100 hover:bg-indigo-600 hover:text-white text-[7px] font-black uppercase tracking-wider text-slate-500 transition-all"
+                  className="px-1.5 py-0.5 rounded-md bg-muted hover:bg-indigo-600 hover:text-white text-[7px] font-black uppercase tracking-wider text-muted-foreground transition-all"
                 >
                   {chip}
                 </button>
@@ -229,7 +229,7 @@ const EditableField = ({
         ) : (
           <p className={cn(
             "text-sm leading-relaxed whitespace-pre-wrap min-h-[20px]",
-            isEmpty ? "text-slate-400 italic font-medium" : "text-slate-700 font-bold"
+            isEmpty ? "text-muted-foreground/50 italic font-medium" : "text-foreground font-bold"
           )}>
             {isEmpty ? placeholder : localValue}
           </p>

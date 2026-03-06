@@ -45,11 +45,11 @@ const ProtectedLayout = ({ children }: { children: React.ReactNode }) => {
 
   if (session === undefined) {
     return (
-      <div className="min-h-screen flex flex-col items-center justify-center bg-slate-50 dark:bg-slate-950 gap-4">
-        <div className="w-16 h-16 bg-indigo-600 rounded-2xl flex items-center justify-center text-white font-black text-2xl shadow-2xl shadow-indigo-200 animate-bounce">
+      <div className="min-h-screen flex flex-col items-center justify-center bg-background gap-4">
+        <div className="w-16 h-16 bg-indigo-600 rounded-2xl flex items-center justify-center text-white font-black text-2xl shadow-2xl shadow-indigo-200 dark:shadow-indigo-900/20 animate-bounce">
           A
         </div>
-        <div className="flex items-center gap-2 text-slate-400 font-black text-[10px] uppercase tracking-[0.3em]">
+        <div className="flex items-center gap-2 text-muted-foreground font-black text-[10px] uppercase tracking-[0.3em]">
           <Loader2 className="animate-spin" size={14} /> Initializing Practice
         </div>
       </div>
@@ -59,7 +59,7 @@ const ProtectedLayout = ({ children }: { children: React.ReactNode }) => {
   if (!session) return <Navigate to="/login" replace />;
 
   return (
-    <div className="flex flex-col lg:flex-row min-h-screen bg-slate-50 dark:bg-slate-950">
+    <div className="flex flex-col lg:flex-row min-h-screen bg-background">
       <MobileNav />
       {isSidebarVisible && <Sidebar onHide={() => setIsSidebarVisible(false)} />}
       
@@ -70,7 +70,7 @@ const ProtectedLayout = ({ children }: { children: React.ReactNode }) => {
               variant="outline" 
               size="icon" 
               onClick={() => setIsSidebarVisible(true)}
-              className="h-12 w-12 rounded-2xl bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800 shadow-xl hover:bg-indigo-50 dark:hover:bg-indigo-900/20 hover:text-indigo-600 transition-all group"
+              className="h-12 w-12 rounded-2xl bg-card border-border shadow-xl hover:bg-accent hover:text-indigo-600 transition-all group"
             >
               <PanelLeftOpen size={24} className="group-hover:scale-110 transition-transform" />
             </Button>

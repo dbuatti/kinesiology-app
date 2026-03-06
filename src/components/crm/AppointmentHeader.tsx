@@ -41,21 +41,21 @@ const AppointmentHeader = ({ appointment, onSaveField, onUpdate }: AppointmentHe
   const isSessionToday = isToday(appointment.date);
 
   return (
-    <div className="p-6 border-b border-slate-100 bg-white">
+    <div className="p-6 border-b border-border bg-card">
       <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6">
         <div className="flex items-start gap-5">
           <div className="relative group">
-            <div className="w-16 h-16 rounded-2xl bg-indigo-600 text-white flex items-center justify-center text-2xl font-black shadow-xl shadow-indigo-200 group-hover:scale-105 transition-transform duration-500">
+            <div className="w-16 h-16 rounded-2xl bg-indigo-600 text-white flex items-center justify-center text-2xl font-black shadow-xl shadow-indigo-200 dark:shadow-indigo-900/20 group-hover:scale-105 transition-transform duration-500">
               {appointment.clients.name.charAt(0)}
             </div>
             {isSessionToday && (
-              <span className="absolute -top-0.5 -right-0.5 w-4 h-4 bg-rose-500 border-2 border-white rounded-full animate-pulse" />
+              <span className="absolute -top-0.5 -right-0.5 w-4 h-4 bg-rose-500 border-2 border-background rounded-full animate-pulse" />
             )}
           </div>
           
           <div className="space-y-2">
             <div className="flex flex-wrap items-center gap-2">
-              <Badge variant="secondary" className="font-black bg-slate-100 border-none text-slate-500 text-[8px] uppercase tracking-widest px-2 py-0.5 rounded-md">
+              <Badge variant="secondary" className="font-black bg-muted border-none text-muted-foreground text-[8px] uppercase tracking-widest px-2 py-0.5 rounded-md">
                 {appointment.display_id || appointment.id.slice(0, 8)}
               </Badge>
               <Badge className="bg-indigo-600 text-white border-none font-black text-[8px] uppercase tracking-widest px-2 py-0.5 rounded-md">
@@ -63,7 +63,7 @@ const AppointmentHeader = ({ appointment, onSaveField, onUpdate }: AppointmentHe
               </Badge>
               <Select value={appointment.status} onValueChange={(newStatus) => onSaveField('status', newStatus)}>
                 <SelectTrigger className={cn(
-                  "h-6 w-[100px] text-[8px] font-black uppercase tracking-widest border-slate-200 shadow-sm bg-white rounded-md",
+                  "h-6 w-[100px] text-[8px] font-black uppercase tracking-widest border-border shadow-sm bg-card rounded-md",
                   appointment.status === 'Completed' ? "text-emerald-600" : "text-indigo-600"
                 )}>
                   <SelectValue placeholder="Status" />
@@ -76,14 +76,14 @@ const AppointmentHeader = ({ appointment, onSaveField, onUpdate }: AppointmentHe
               </Select>
             </div>
             
-            <h1 className="text-3xl font-black text-slate-900 tracking-tight flex items-center gap-2">
+            <h1 className="text-3xl font-black text-foreground tracking-tight flex items-center gap-2">
               {appointment.clients.name}
-              <Button variant="ghost" size="icon" className="h-7 w-7 rounded-full text-slate-300 hover:text-indigo-600" asChild>
+              <Button variant="ghost" size="icon" className="h-7 w-7 rounded-full text-muted-foreground hover:text-indigo-600" asChild>
                 <a href={`/clients/${appointment.clients.id}`}><ChevronRight size={18} /></a>
               </Button>
             </h1>
             
-            <div className="flex flex-wrap items-center gap-4 text-xs font-bold text-slate-500">
+            <div className="flex flex-wrap items-center gap-4 text-xs font-bold text-muted-foreground">
               <div className="flex items-center gap-1.5">
                 <Calendar size={14} className="text-indigo-400" /> 
                 {format(appointment.date, "EEEE, MMM d")}
@@ -93,11 +93,11 @@ const AppointmentHeader = ({ appointment, onSaveField, onUpdate }: AppointmentHe
                 {format(appointment.date, "h:mm a")}
               </div>
               {clientBorn && (
-                <div className="flex items-center gap-3 border-l border-slate-200 pl-4">
-                  <span className="bg-indigo-50 text-indigo-700 px-2 py-0.5 rounded-md text-[9px] font-black uppercase tracking-wider">
+                <div className="flex items-center gap-3 border-l border-border pl-4">
+                  <span className="bg-indigo-50 dark:bg-indigo-900/20 text-indigo-700 dark:text-indigo-300 px-2 py-0.5 rounded-md text-[9px] font-black uppercase tracking-wider">
                     {calculateAge(clientBorn)} yrs
                   </span>
-                  <span className="flex items-center gap-1 text-amber-600 font-black text-[9px] uppercase tracking-widest">
+                  <span className="flex items-center gap-1 text-amber-600 dark:text-amber-400 font-black text-[9px] uppercase tracking-widest">
                     <Star size={12} className="fill-amber-500" /> {getStarSign(clientBorn)}
                   </span>
                 </div>
@@ -112,7 +112,7 @@ const AppointmentHeader = ({ appointment, onSaveField, onUpdate }: AppointmentHe
               <Button 
                 size="sm" 
                 variant="outline" 
-                className="h-9 rounded-xl border-indigo-100 bg-indigo-50/50 text-indigo-600 hover:bg-indigo-100 font-black text-[9px] uppercase tracking-widest px-3"
+                className="h-9 rounded-xl border-indigo-100 dark:border-indigo-900/30 bg-indigo-50/50 dark:bg-indigo-900/10 text-indigo-600 dark:text-indigo-400 hover:bg-indigo-100 dark:hover:bg-indigo-900/20 font-black text-[9px] uppercase tracking-widest px-3"
                 onClick={() => setAssessmentModal({ open: true, type: 'bolt' })}
               >
                 <FlaskConical size={12} className="mr-1.5" /> Log BOLT
@@ -120,7 +120,7 @@ const AppointmentHeader = ({ appointment, onSaveField, onUpdate }: AppointmentHe
               <Button 
                 size="sm" 
                 variant="outline" 
-                className="h-9 rounded-xl border-rose-100 bg-rose-50/50 text-rose-600 hover:bg-rose-100 font-black text-[9px] uppercase tracking-widest px-3"
+                className="h-9 rounded-xl border-rose-100 dark:border-rose-900/30 bg-rose-50/50 dark:bg-rose-900/10 text-rose-600 dark:text-rose-400 hover:bg-rose-100 dark:hover:bg-rose-900/20 font-black text-[9px] uppercase tracking-widest px-3"
                 onClick={() => setAssessmentModal({ open: true, type: 'coherence' })}
               >
                 <Activity size={12} className="mr-1.5" /> Log COH
@@ -128,7 +128,7 @@ const AppointmentHeader = ({ appointment, onSaveField, onUpdate }: AppointmentHe
             </div>
           )}
 
-          <div className="flex items-center gap-3 p-2.5 bg-slate-50 rounded-xl border border-slate-100 shadow-inner">
+          <div className="flex items-center gap-3 p-2.5 bg-muted/50 rounded-xl border border-border shadow-inner">
             <div className={cn(
               "w-8 h-8 rounded-lg flex items-center justify-center transition-all duration-500 shadow-sm",
               appointment.hydrated ? "bg-emerald-500 text-white" : "bg-rose-500 text-white"
@@ -136,7 +136,7 @@ const AppointmentHeader = ({ appointment, onSaveField, onUpdate }: AppointmentHe
               <Droplets size={16} />
             </div>
             <div className="pr-1">
-              <Label htmlFor="hydration-toggle" className="text-[8px] font-black text-slate-400 uppercase tracking-[0.2em] block mb-0.5">
+              <Label htmlFor="hydration-toggle" className="text-[8px] font-black text-muted-foreground uppercase tracking-[0.2em] block mb-0.5">
                 Hydration
               </Label>
               <div className="flex items-center gap-2">

@@ -127,17 +127,17 @@ const Sidebar = ({ onHide }: SidebarProps) => {
           "flex items-center justify-between gap-2 px-3 py-2 rounded-xl transition-all duration-300 group",
           isActive 
             ? "bg-indigo-600 text-white shadow-lg shadow-indigo-600/20" 
-            : "text-slate-400 hover:text-white hover:bg-slate-900"
+            : "text-muted-foreground hover:text-foreground hover:bg-accent"
         )}
       >
         <div className="flex items-center gap-2.5">
-          <item.icon size={16} className={cn("transition-all duration-300", isActive ? "text-white" : "text-slate-500 group-hover:text-slate-300")} />
+          <item.icon size={16} className={cn("transition-all duration-300", isActive ? "text-white" : "text-muted-foreground group-hover:text-foreground")} />
           <span className="font-bold text-[10px] uppercase tracking-widest">{item.label}</span>
         </div>
         {item.shortcut && (
           <kbd className={cn(
             "hidden xl:inline-flex h-4 select-none items-center gap-1 rounded border px-1 font-mono text-[8px] font-black opacity-0 group-hover:opacity-100 transition-all duration-300",
-            isActive ? "border-indigo-400 bg-indigo-700 text-indigo-100" : "border-slate-800 bg-slate-900 text-slate-600"
+            isActive ? "border-indigo-400 bg-indigo-700 text-indigo-100" : "border-border bg-muted text-muted-foreground"
           )}>
             {item.shortcut}
           </kbd>
@@ -161,13 +161,13 @@ const Sidebar = ({ onHide }: SidebarProps) => {
   };
 
   return (
-    <div className="hidden lg:flex w-64 bg-slate-950 text-white min-h-screen p-4 flex-col gap-6 sticky top-0 h-screen overflow-y-auto border-r border-slate-900 shadow-2xl">
+    <div className="hidden lg:flex w-64 bg-card dark:bg-slate-950 text-foreground min-h-screen p-4 flex-col gap-6 sticky top-0 h-screen overflow-y-auto border-r border-border shadow-2xl">
       <div className="flex items-center justify-between px-2 py-2">
         <div className="flex items-center gap-3">
-          <div className="w-10 h-10 bg-indigo-600 rounded-xl flex items-center justify-center font-black text-xl shadow-2xl shadow-indigo-500/40 transition-transform hover:scale-105">A</div>
+          <div className="w-10 h-10 bg-indigo-600 rounded-xl flex items-center justify-center font-black text-xl text-white shadow-2xl shadow-indigo-500/40 transition-transform hover:scale-105">A</div>
           <div>
             <h1 className="text-lg font-black tracking-tight">Antigravity</h1>
-            <p className="text-[8px] text-slate-500 uppercase font-black tracking-[0.2em]">Kinesiology CRM</p>
+            <p className="text-[8px] text-muted-foreground uppercase font-black tracking-[0.2em]">Kinesiology CRM</p>
           </div>
         </div>
         <Tooltip>
@@ -176,7 +176,7 @@ const Sidebar = ({ onHide }: SidebarProps) => {
               variant="ghost" 
               size="icon" 
               onClick={onHide}
-              className="text-slate-600 hover:text-white hover:bg-slate-900 rounded-lg h-8 w-8"
+              className="text-muted-foreground hover:text-foreground hover:bg-accent rounded-lg h-8 w-8"
             >
               <PanelLeftClose size={18} />
             </Button>
@@ -197,7 +197,7 @@ const Sidebar = ({ onHide }: SidebarProps) => {
         <Button 
           onClick={() => setClientDialogOpen(true)}
           variant="outline"
-          className="w-full justify-start bg-white/5 border-white/10 text-white hover:bg-white/10 rounded-xl h-9 font-bold text-[10px] uppercase tracking-wider"
+          className="w-full justify-start bg-accent/50 border-border text-foreground hover:bg-accent rounded-xl h-9 font-bold text-[10px] uppercase tracking-wider"
         >
           <UserPlus size={16} className="mr-2.5" /> New Client
         </Button>
@@ -213,7 +213,7 @@ const Sidebar = ({ onHide }: SidebarProps) => {
         {/* Core Navigation */}
         <nav className="space-y-0.5">
           <div className="px-2 mb-2">
-            <p className="text-[8px] font-black text-slate-600 uppercase tracking-[0.3em]">Core</p>
+            <p className="text-[8px] font-black text-muted-foreground uppercase tracking-[0.3em]">Core</p>
           </div>
           {coreNavItems.map((item) => (
             <NavItem key={item.path} item={item} />
@@ -224,10 +224,10 @@ const Sidebar = ({ onHide }: SidebarProps) => {
         <div className="space-y-0.5">
           <button
             onClick={() => setPracticeOpen(!practiceOpen)}
-            className="flex items-center justify-between w-full px-3 py-1.5 rounded-lg text-slate-500 hover:text-white hover:bg-slate-900 transition-all group"
+            className="flex items-center justify-between w-full px-3 py-1.5 rounded-lg text-muted-foreground hover:text-foreground hover:bg-accent transition-all group"
           >
             <div className="flex items-center gap-2">
-              <Zap size={14} className="text-slate-600 group-hover:text-slate-400" />
+              <Zap size={14} className="text-muted-foreground group-hover:text-foreground" />
               <span className="text-[8px] font-black uppercase tracking-[0.3em]">Practice</span>
             </div>
             {practiceOpen ? <ChevronUp size={12} /> : <ChevronDown size={12} />}
@@ -246,10 +246,10 @@ const Sidebar = ({ onHide }: SidebarProps) => {
         <div className="space-y-0.5">
           <button
             onClick={() => setResourcesOpen(!resourcesOpen)}
-            className="flex items-center justify-between w-full px-3 py-1.5 rounded-lg text-slate-500 hover:text-white hover:bg-slate-900 transition-all group"
+            className="flex items-center justify-between w-full px-3 py-1.5 rounded-lg text-muted-foreground hover:text-foreground hover:bg-accent transition-all group"
           >
             <div className="flex items-center gap-2">
-              <BookOpen size={14} className="text-slate-600 group-hover:text-slate-400" />
+              <BookOpen size={14} className="text-muted-foreground group-hover:text-foreground" />
               <span className="text-[8px] font-black uppercase tracking-[0.3em]">Resources</span>
             </div>
             {resourcesOpen ? <ChevronUp size={12} /> : <ChevronDown size={12} />}
@@ -290,21 +290,21 @@ const Sidebar = ({ onHide }: SidebarProps) => {
         )}
 
         {/* Practice Health */}
-        <div className="px-3 py-3 bg-slate-900/50 rounded-2xl border border-slate-800/50 mx-1 space-y-2">
+        <div className="px-3 py-3 bg-muted/50 rounded-2xl border border-border mx-1 space-y-2">
           <div className="flex items-center justify-between">
-            <p className="text-[8px] font-black text-slate-500 uppercase tracking-[0.2em] flex items-center gap-1.5">
+            <p className="text-[8px] font-black text-muted-foreground uppercase tracking-[0.2em] flex items-center gap-1.5">
               <ShieldCheck size={10} className="text-emerald-500" /> Health
             </p>
             <span className="text-[9px] font-black text-emerald-500">{practiceHealth}%</span>
           </div>
-          <Progress value={practiceHealth} className="h-1 bg-slate-800 [&>div]:bg-emerald-500" />
+          <Progress value={practiceHealth} className="h-1 bg-muted [&>div]:bg-emerald-500" />
         </div>
 
         {/* Recent Clients */}
         {recentClients.length > 0 && (
           <div className="px-1 space-y-2">
             <div className="px-2">
-              <p className="text-[8px] font-black text-slate-600 uppercase tracking-[0.3em] flex items-center gap-1.5">
+              <p className="text-[8px] font-black text-muted-foreground uppercase tracking-[0.3em] flex items-center gap-1.5">
                 <Clock size={10} /> Recent
               </p>
             </div>
@@ -314,9 +314,9 @@ const Sidebar = ({ onHide }: SidebarProps) => {
                   <TooltipTrigger asChild>
                     <Link 
                       to={`/clients/${client.id}`}
-                      className="flex items-center gap-2.5 text-xs text-slate-500 hover:text-indigo-400 transition-all duration-300 py-2 px-3 rounded-lg hover:bg-slate-900 truncate group"
+                      className="flex items-center gap-2.5 text-xs text-muted-foreground hover:text-indigo-400 transition-all duration-300 py-2 px-3 rounded-lg hover:bg-accent truncate group"
                     >
-                      <div className="w-6 h-6 rounded-lg bg-slate-900 border border-slate-800 flex items-center justify-center text-[8px] font-black group-hover:border-indigo-500/40 transition-all">
+                      <div className="w-6 h-6 rounded-lg bg-muted border border-border flex items-center justify-center text-[8px] font-black group-hover:border-indigo-500/40 transition-all">
                         {client.name.charAt(0)}
                       </div>
                       <span className="truncate font-bold text-[11px]">{client.name}</span>
@@ -333,14 +333,14 @@ const Sidebar = ({ onHide }: SidebarProps) => {
       </div>
       
       {/* Footer Actions */}
-      <div className="mt-auto pt-4 border-t border-slate-900 space-y-0.5">
+      <div className="mt-auto pt-4 border-t border-border space-y-0.5">
         <div className="flex items-center justify-between px-3 mb-2">
           <ModeToggle />
           <Tooltip>
             <TooltipTrigger asChild>
               <button 
                 onClick={() => setHelpOpen(true)}
-                className="flex items-center justify-center h-9 w-9 rounded-xl text-slate-500 hover:text-white hover:bg-slate-900 transition-all duration-300 group"
+                className="flex items-center justify-center h-9 w-9 rounded-xl text-muted-foreground hover:text-foreground hover:bg-accent transition-all duration-300 group"
               >
                 <HelpCircle size={18} className="group-hover:text-amber-400 transition-colors" />
               </button>
@@ -356,7 +356,7 @@ const Sidebar = ({ onHide }: SidebarProps) => {
           <TooltipTrigger asChild>
             <Link 
               to="/settings"
-              className="flex items-center gap-2.5 px-3 py-2 rounded-lg text-slate-500 hover:text-white hover:bg-slate-900 transition-all duration-300 group"
+              className="flex items-center gap-2.5 px-3 py-2 rounded-lg text-muted-foreground hover:text-foreground hover:bg-accent transition-all duration-300 group"
             >
               <Settings size={16} className="group-hover:text-indigo-400 transition-colors" />
               <span className="font-bold text-[10px] uppercase tracking-widest">Settings</span>
@@ -371,7 +371,7 @@ const Sidebar = ({ onHide }: SidebarProps) => {
           <TooltipTrigger asChild>
             <div 
               onClick={handleSignOut}
-              className="flex items-center gap-2.5 px-3 py-2 rounded-lg text-slate-500 hover:text-rose-400 hover:bg-slate-900 transition-all duration-300 cursor-pointer group"
+              className="flex items-center gap-2.5 px-3 py-2 rounded-lg text-muted-foreground hover:text-rose-400 hover:bg-accent transition-all duration-300 cursor-pointer group"
             >
               <LogOut size={16} className="group-hover:text-rose-400 transition-colors" />
               <span className="font-bold text-[10px] uppercase tracking-widest">Sign Out</span>

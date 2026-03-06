@@ -210,32 +210,32 @@ const Index = () => {
     <div className="p-4 md:p-8 max-w-full mx-auto space-y-8">
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
-          <h1 className="text-4xl font-black tracking-tighter text-slate-900">Practice Hub</h1>
-          <p className="text-slate-500 font-medium mt-1 text-lg">Welcome back! Here's your clinical overview.</p>
+          <h1 className="text-4xl font-black tracking-tighter text-foreground">Practice Hub</h1>
+          <p className="text-muted-foreground font-medium mt-1 text-lg">Welcome back! Here's your clinical overview.</p>
         </div>
-        <div className="flex items-center gap-3 bg-white p-3 rounded-2xl border border-slate-100 shadow-sm">
-          <div className="w-10 h-10 bg-indigo-50 rounded-xl flex items-center justify-center text-indigo-600">
+        <div className="flex items-center gap-3 bg-card p-3 rounded-2xl border border-border shadow-sm">
+          <div className="w-10 h-10 bg-indigo-50 dark:bg-indigo-900/20 rounded-xl flex items-center justify-center text-indigo-600 dark:text-indigo-400">
             <Calendar size={20} />
           </div>
           <div className="pr-2">
-            <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Today's Date</p>
-            <p className="text-base font-bold text-slate-900">{format(currentTime, "EEEE, MMMM d")}</p>
+            <p className="text-[10px] font-black text-muted-foreground uppercase tracking-widest">Today's Date</p>
+            <p className="text-base font-bold text-foreground">{format(currentTime, "EEEE, MMMM d")}</p>
           </div>
         </div>
       </div>
 
       {!hasData ? (
-        <div className="text-center py-20 bg-gradient-to-br from-indigo-50 to-blue-50 rounded-[2.5rem] border-2 border-dashed border-indigo-200">
-          <div className="mx-auto w-16 h-16 bg-white rounded-2xl flex items-center justify-center mb-6 shadow-xl">
+        <div className="text-center py-20 bg-gradient-to-br from-indigo-50 to-blue-50 dark:from-indigo-950/20 dark:to-blue-950/20 rounded-[2.5rem] border-2 border-dashed border-indigo-200 dark:border-indigo-800">
+          <div className="mx-auto w-16 h-16 bg-card rounded-2xl flex items-center justify-center mb-6 shadow-xl">
             <Sparkles className="text-indigo-500" size={32} />
           </div>
-          <h2 className="text-2xl font-black text-slate-900 mb-2">Welcome to Antigravity CRM!</h2>
-          <p className="text-slate-600 max-w-md mx-auto mb-8 text-base font-medium">Start building your kinesiology practice by adding your first client and scheduling sessions.</p>
+          <h2 className="text-2xl font-black text-foreground mb-2">Welcome to Antigravity CRM!</h2>
+          <p className="text-muted-foreground max-w-md mx-auto mb-8 text-base font-medium">Start building your kinesiology practice by adding your first client and scheduling sessions.</p>
           <div className="flex gap-3 justify-center">
             <Button className="bg-indigo-600 hover:bg-indigo-700 h-12 px-8 rounded-xl font-black text-xs uppercase tracking-widest shadow-xl shadow-indigo-200" onClick={() => setClientDialogOpen(true)}>
               <UserPlus size={20} className="mr-2" /> Add First Client
             </Button>
-            <Button variant="outline" className="h-12 px-8 rounded-xl font-black text-xs uppercase tracking-widest border-slate-200 bg-white" onClick={() => setAppDialogOpen(true)}>
+            <Button variant="outline" className="h-12 px-8 rounded-xl font-black text-xs uppercase tracking-widest border-border bg-card" onClick={() => setAppDialogOpen(true)}>
               <Calendar size={20} className="mr-2" /> Schedule Session
             </Button>
           </div>
@@ -293,41 +293,41 @@ const Index = () => {
               <DailyBriefing todaySessions={todaySessions} activeSession={activeSession} />
               
               {priorityClients.length > 0 && (
-                <Card className="border-none shadow-lg rounded-[2.5rem] bg-rose-50 border-2 border-rose-100 overflow-hidden">
+                <Card className="border-none shadow-lg rounded-[2.5rem] bg-rose-50 dark:bg-rose-950/10 border-2 border-rose-100 dark:border-rose-900/30 overflow-hidden">
                   <CardHeader className="p-8 pb-4">
                     <div className="flex items-center justify-between">
-                      <CardTitle className="text-xl font-black flex items-center gap-3 text-rose-900">
+                      <CardTitle className="text-xl font-black flex items-center gap-3 text-rose-900 dark:text-rose-100">
                         <AlertCircle size={24} className="text-rose-600" /> Clinical Priority: Today
                       </CardTitle>
                       <Badge className="bg-rose-600 text-white border-none font-black text-[10px] uppercase tracking-widest px-3 py-1 rounded-full">
                         {priorityClients.length} High Risk
                       </Badge>
                     </div>
-                    <CardDescription className="text-rose-700 font-medium text-base mt-1">
+                    <CardDescription className="text-rose-700 dark:text-rose-300 font-medium text-base mt-1">
                       Clients scheduled for today with BOLT scores below functional baseline (25s).
                     </CardDescription>
                   </CardHeader>
                   <CardContent className="p-8 pt-0 space-y-3">
                     {priorityClients.map(pc => (
                       <Link key={pc.id} to={`/appointments/${pc.appointment.id}`}>
-                        <div className="p-5 bg-white rounded-2xl border border-rose-200 flex items-center justify-between group hover:shadow-md transition-all duration-300">
+                        <div className="p-5 bg-card rounded-2xl border border-rose-200 dark:border-rose-900/30 flex items-center justify-between group hover:shadow-md transition-all duration-300">
                           <div className="flex items-center gap-4">
-                            <div className="w-10 h-10 rounded-xl bg-rose-100 text-rose-600 flex items-center justify-center font-black text-lg">
+                            <div className="w-10 h-10 rounded-xl bg-rose-100 dark:bg-rose-900/40 text-rose-600 dark:text-rose-400 flex items-center justify-center font-black text-lg">
                               {pc.name.charAt(0)}
                             </div>
                             <div>
-                              <p className="font-black text-lg text-slate-900 group-hover:text-rose-600 transition-colors">{pc.name}</p>
-                              <p className="text-xs font-bold text-slate-500 flex items-center gap-1.5 mt-1">
+                              <p className="font-black text-lg text-foreground group-hover:text-rose-600 transition-colors">{pc.name}</p>
+                              <p className="text-xs font-bold text-muted-foreground flex items-center gap-1.5 mt-1">
                                 <Clock size={14} className="text-rose-400" /> {format(new Date(pc.appointment.date), "h:mm a")}
                               </p>
                             </div>
                           </div>
                           <div className="flex items-center gap-6">
                             <div className="text-right">
-                              <p className="text-[8px] font-black text-slate-400 uppercase tracking-widest">Latest BOLT</p>
+                              <p className="text-[8px] font-black text-muted-foreground uppercase tracking-widest">Latest BOLT</p>
                               <p className="text-2xl font-black text-rose-600">{pc.bolt}s</p>
                             </div>
-                            <div className="w-10 h-10 rounded-xl bg-rose-50 text-rose-400 flex items-center justify-center group-hover:bg-rose-600 group-hover:text-white transition-all">
+                            <div className="w-10 h-10 rounded-xl bg-rose-50 dark:bg-rose-900/20 text-rose-400 flex items-center justify-center group-hover:bg-rose-600 group-hover:text-white transition-all">
                               <ArrowRight size={20} />
                             </div>
                           </div>
@@ -338,7 +338,7 @@ const Index = () => {
                 </Card>
               )}
 
-              <Card className="border-none shadow-lg rounded-[2.5rem] overflow-hidden bg-white">
+              <Card className="border-none shadow-lg rounded-[2.5rem] overflow-hidden bg-card">
                 <CardHeader className="p-8 pb-0">
                   <CardTitle className="text-2xl font-black tracking-tight">Session Activity</CardTitle>
                   <CardDescription className="font-medium text-lg mt-1">Volume of appointments over the last 6 months</CardDescription>
@@ -352,12 +352,12 @@ const Index = () => {
                           <stop offset="95%" stopColor="#4f46e5" stopOpacity={0}/>
                         </linearGradient>
                       </defs>
-                      <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
-                      <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{fontSize: 10, fill: '#94a3b8', fontWeight: 900}} />
-                      <YAxis axisLine={false} tickLine={false} tick={{fontSize: 10, fill: '#94a3b8', fontWeight: 900}} />
+                      <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="hsl(var(--border))" />
+                      <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{fontSize: 10, fill: 'hsl(var(--muted-foreground))', fontWeight: 900}} />
+                      <YAxis axisLine={false} tickLine={false} tick={{fontSize: 10, fill: 'hsl(var(--muted-foreground))', fontWeight: 900}} />
                       <ChartTooltip 
-                        contentStyle={{borderRadius: '20px', border: 'none', boxShadow: '0 20px 25px -5px rgb(0 0 0 / 0.1)', padding: '15px'}}
-                        labelStyle={{fontWeight: 900, color: '#1e293b', marginBottom: '5px', fontSize: '14px'}}
+                        contentStyle={{borderRadius: '20px', border: 'none', backgroundColor: 'hsl(var(--card))', boxShadow: '0 20px 25px -5px rgb(0 0 0 / 0.1)', padding: '15px'}}
+                        labelStyle={{fontWeight: 900, color: 'hsl(var(--foreground))', marginBottom: '5px', fontSize: '14px'}}
                       />
                       <Area type="monotone" dataKey="sessions" stroke="#4f46e5" strokeWidth={5} fillOpacity={1} fill="url(#colorSessions)" />
                     </AreaChart>
@@ -365,12 +365,12 @@ const Index = () => {
                 </CardContent>
               </Card>
 
-              <Card className="border-none shadow-lg rounded-[2.5rem] bg-amber-50 border border-amber-100 overflow-hidden">
+              <Card className="border-none shadow-lg rounded-[2.5rem] bg-amber-50 dark:bg-amber-950/10 border border-amber-100 dark:border-amber-900/30 overflow-hidden">
                 <CardHeader className="p-8 pb-4">
-                  <CardTitle className="text-2xl font-black flex items-center gap-3 text-amber-900">
+                  <CardTitle className="text-2xl font-black flex items-center gap-3 text-amber-900 dark:text-amber-100">
                     <StickyNote size={28} className="text-amber-600" /> Practitioner Scratchpad
                   </CardTitle>
-                  <CardDescription className="text-amber-700 font-medium text-lg">Quick notes or research ideas. Saves automatically.</CardDescription>
+                  <CardDescription className="text-amber-700 dark:text-amber-300 font-medium text-lg">Quick notes or research ideas. Saves automatically.</CardDescription>
                 </CardHeader>
                 <CardContent className="p-8 pt-0">
                   <div className="flex flex-wrap gap-2 mb-4">
@@ -378,7 +378,7 @@ const Index = () => {
                       <button 
                         key={tag}
                         onClick={() => handleScratchpadChange(scratchpad ? `${scratchpad}\n[${tag}] ` : `[${tag}] `)}
-                        className="px-3 py-1.5 rounded-xl bg-white border border-amber-200 text-[10px] font-black uppercase tracking-widest text-amber-600 hover:bg-amber-100 transition-colors"
+                        className="px-3 py-1.5 rounded-xl bg-card border border-amber-200 dark:border-amber-900/30 text-[10px] font-black uppercase tracking-widest text-amber-600 hover:bg-amber-100 dark:hover:bg-amber-900/20 transition-colors"
                       >
                         + {tag}
                       </button>
@@ -388,7 +388,7 @@ const Index = () => {
                     value={scratchpad}
                     onChange={(e) => handleScratchpadChange(e.target.value)}
                     placeholder="Type something here..."
-                    className="min-h-[200px] bg-white/70 border-amber-200 focus:ring-amber-500 focus:border-amber-500 resize-none text-amber-900 placeholder:text-amber-300 rounded-[2rem] p-8 text-xl font-medium leading-relaxed shadow-inner"
+                    className="min-h-[200px] bg-card/70 border-amber-200 dark:border-amber-900/30 focus:ring-amber-500 focus:border-amber-500 resize-none text-amber-900 dark:text-amber-100 placeholder:text-amber-300 dark:placeholder:text-amber-800 rounded-[2rem] p-8 text-xl font-medium leading-relaxed shadow-inner"
                   />
                   <div className="flex items-center justify-end gap-2 mt-4 text-[10px] font-black text-amber-600 uppercase tracking-[0.3em]">
                     <CheckCircle2 size={14} /> {lastSaved ? `Last saved at ${lastSaved}` : 'Auto-saved to browser'}
@@ -456,40 +456,40 @@ const Index = () => {
                 </CardContent>
               </Card>
 
-              <Card className="border-none shadow-lg rounded-[2rem] bg-white overflow-hidden">
+              <Card className="border-none shadow-lg rounded-[2rem] bg-card overflow-hidden">
                 <CardHeader className="p-8">
-                  <CardTitle className="text-2xl font-black flex items-center gap-3 text-slate-900">
+                  <CardTitle className="text-2xl font-black flex items-center gap-3 text-foreground">
                     <Brain size={28} className="text-purple-600" /> Protocol Mastery
                   </CardTitle>
                 </CardHeader>
                 <CardContent className="p-8 pt-0 space-y-4">
-                  <p className="text-base text-slate-500 font-medium leading-relaxed">Keep your skills sharp by practicing protocols.</p>
+                  <p className="text-base text-muted-foreground font-medium leading-relaxed">Keep your skills sharp by practicing protocols.</p>
                   <div className="grid grid-cols-1 gap-3">
-                    <Button variant="outline" className="justify-start h-12 rounded-2xl border-slate-100 hover:bg-slate-50 font-black text-[10px] uppercase tracking-widest text-slate-700 shadow-sm" asChild>
+                    <Button variant="outline" className="justify-start h-12 rounded-2xl border-border hover:bg-accent font-black text-[10px] uppercase tracking-widest text-foreground shadow-sm" asChild>
                       <Link to="/self-practice"><FlaskConical size={18} className="mr-3 text-indigo-500" /> Practice BOLT Test</Link>
                     </Button>
-                    <Button variant="outline" className="justify-start h-12 rounded-2xl border-slate-100 hover:bg-slate-50 font-black text-[10px] uppercase tracking-widest text-slate-700 shadow-sm" asChild>
+                    <Button variant="outline" className="justify-start h-12 rounded-2xl border-border hover:bg-accent font-black text-[10px] uppercase tracking-widest text-foreground shadow-sm" asChild>
                       <Link to="/self-practice"><Activity size={18} className="mr-3 text-rose-500" /> Practice Coherence</Link>
                     </Button>
                   </div>
                 </CardContent>
               </Card>
 
-              <Card className="border-none shadow-lg rounded-[2rem] bg-indigo-50 border border-indigo-100 overflow-hidden">
+              <Card className="border-none shadow-lg rounded-[2rem] bg-indigo-50 dark:bg-indigo-950/20 border border-indigo-100 dark:border-indigo-900/30 overflow-hidden">
                 <CardHeader className="p-8">
-                  <CardTitle className="text-2xl font-black flex items-center gap-3 text-indigo-900">
+                  <CardTitle className="text-2xl font-black flex items-center gap-3 text-indigo-900 dark:text-indigo-100">
                     <Sparkles size={28} className="text-indigo-600" /> Program Resources
                   </CardTitle>
                 </CardHeader>
                 <CardContent className="p-8 pt-0 space-y-4">
-                  <p className="text-base text-indigo-700 font-medium leading-relaxed">Access your weekly worksheets and materials.</p>
+                  <p className="text-base text-indigo-700 dark:text-indigo-300 font-medium leading-relaxed">Access your weekly worksheets and materials.</p>
                   <div className="grid grid-cols-1 gap-3">
                     <Button className="justify-start h-14 rounded-2xl bg-indigo-600 hover:bg-indigo-700 font-black text-[10px] uppercase tracking-widest text-white shadow-lg shadow-indigo-200" asChild>
                       <Link to="/week-3-worksheet">
                         <ShieldCheck size={20} className="mr-3" /> Week 3: Releasing Curses
                       </Link>
                     </Button>
-                    <Button variant="outline" className="justify-start h-12 rounded-2xl border-indigo-200 hover:bg-indigo-100 font-black text-[10px] uppercase tracking-widest text-indigo-700 shadow-sm" asChild>
+                    <Button variant="outline" className="justify-start h-12 rounded-2xl border-indigo-200 dark:border-indigo-900/30 hover:bg-indigo-100 dark:hover:bg-indigo-900/40 font-black text-[10px] uppercase tracking-widest text-indigo-700 dark:text-indigo-300 shadow-sm" asChild>
                       <Link to="/north-star"><Sparkles size={18} className="mr-3 text-indigo-500" /> North Star Worksheet</Link>
                     </Button>
                   </div>

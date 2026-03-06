@@ -16,7 +16,7 @@ interface DailyBriefingProps {
 
 const DailyBriefing = ({ todaySessions, activeSession }: DailyBriefingProps) => {
   return (
-    <Card className="border-none shadow-2xl bg-slate-900 text-white rounded-[3rem] overflow-hidden relative">
+    <Card className="border-none shadow-2xl bg-slate-900 dark:bg-slate-950 text-white rounded-[3rem] overflow-hidden relative">
       <div className="absolute top-0 right-0 p-12 opacity-5 pointer-events-none"><Sparkles size={200} /></div>
       <CardHeader className="pb-4 p-10">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">

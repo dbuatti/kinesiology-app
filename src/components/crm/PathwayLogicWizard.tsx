@@ -98,26 +98,45 @@ const PathwayLogicWizard = ({ onSave, initialValue }: PathwayLogicWizardProps) =
     switch (step) {
       case 'START':
         return (
-          <div className="space-y-4 animate-in fade-in zoom-in-95 duration-300">
-            <button onClick={() => goToStep('AFFERENT_SELECT')} className="p-8 rounded-3xl border-2 border-blue-100 bg-blue-50/50 hover:border-blue-300 hover:bg-blue-50 transition-all text-left group w-full">
-              <div className="flex items-center justify-between mb-4">
-                <h3 className="text-2xl font-black text-blue-900">Afferent</h3>
-                <div className="w-12 h-12 rounded-2xl bg-white shadow-sm flex items-center justify-center group-hover:scale-110 transition-transform">
-                  <GitBranch size={24} className="text-blue-600" />
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 animate-in fade-in zoom-in-95 duration-500">
+            <button 
+                onClick={() => goToStep('AFFERENT_SELECT')} 
+                className="p-10 rounded-[3rem] border-2 border-blue-100 bg-blue-50/30 hover:border-blue-400 hover:bg-blue-50 hover:shadow-2xl hover:-translate-y-1 transition-all duration-500 text-left group relative overflow-hidden"
+            >
+              <div className="absolute top-0 right-0 p-8 opacity-5 group-hover:scale-110 transition-transform duration-700"><GitBranch size={150} /></div>
+              <div className="flex items-center justify-between mb-6 relative z-10">
+                <div className="w-16 h-16 rounded-2xl bg-white shadow-xl flex items-center justify-center group-hover:bg-blue-600 group-hover:text-white transition-all duration-500">
+                  <GitBranch size={32} className="text-blue-600 group-hover:text-white transition-colors" />
                 </div>
+                <Badge className="bg-blue-100 text-blue-700 border-none font-black text-[10px] uppercase tracking-widest px-3 py-1">Bottom-Up</Badge>
               </div>
-              <p className="text-sm font-bold text-blue-700">Bottom-Up Processing</p>
-              <p className="text-xs text-blue-600 mt-1">Sensory input from body to brain.</p>
+              <div className="relative z-10">
+                <h3 className="text-3xl font-black text-blue-900 tracking-tight">Afferent</h3>
+                <p className="text-sm font-bold text-blue-700 mt-2 leading-relaxed">Sensory input from body to brain. Calibrate mechanoreceptors and vestibular systems.</p>
+              </div>
+              <div className="mt-8 flex items-center text-[10px] font-black uppercase tracking-widest text-blue-400 group-hover:text-blue-600 transition-colors relative z-10">
+                Start Assessment <ArrowRight size={14} className="ml-2 group-hover:translate-x-1 transition-transform" />
+              </div>
             </button>
-            <button onClick={() => goToStep('EFFERENT_SELECT')} className="p-8 rounded-3xl border-2 border-purple-100 bg-purple-50/50 hover:border-purple-300 hover:bg-purple-50 transition-all text-left group w-full">
-              <div className="flex items-center justify-between mb-4">
-                <h3 className="text-2xl font-black text-purple-900">Efferent</h3>
-                <div className="w-12 h-12 rounded-2xl bg-white shadow-sm flex items-center justify-center group-hover:scale-110 transition-transform">
-                  <Sparkles size={24} className="text-purple-600" />
+
+            <button 
+                onClick={() => goToStep('EFFERENT_SELECT')} 
+                className="p-10 rounded-[3rem] border-2 border-purple-100 bg-purple-50/30 hover:border-purple-400 hover:bg-purple-50 hover:shadow-2xl hover:-translate-y-1 transition-all duration-500 text-left group relative overflow-hidden"
+            >
+              <div className="absolute top-0 right-0 p-8 opacity-5 group-hover:scale-110 transition-transform duration-700"><Sparkles size={150} /></div>
+              <div className="flex items-center justify-between mb-6 relative z-10">
+                <div className="w-16 h-16 rounded-2xl bg-white shadow-xl flex items-center justify-center group-hover:bg-purple-600 group-hover:text-white transition-all duration-500">
+                  <Sparkles size={32} className="text-purple-600 group-hover:text-white transition-colors" />
                 </div>
+                <Badge className="bg-purple-100 text-purple-700 border-none font-black text-[10px] uppercase tracking-widest px-3 py-1">Top-Down</Badge>
               </div>
-              <p className="text-sm font-bold text-purple-700">Top-Down Processing</p>
-              <p className="text-xs text-purple-600 mt-1">Motor commands from brain to body.</p>
+              <div className="relative z-10">
+                <h3 className="text-3xl font-black text-purple-900 tracking-tight">Efferent</h3>
+                <p className="text-sm font-bold text-purple-700 mt-2 leading-relaxed">Motor commands from brain to body. Integrate cortical and subcortical processing.</p>
+              </div>
+              <div className="mt-8 flex items-center text-[10px] font-black uppercase tracking-widest text-purple-400 group-hover:text-purple-600 transition-colors relative z-10">
+                Start Integration <ArrowRight size={14} className="ml-2 group-hover:translate-x-1 transition-transform" />
+              </div>
             </button>
           </div>
         );
@@ -126,23 +145,37 @@ const PathwayLogicWizard = ({ onSave, initialValue }: PathwayLogicWizardProps) =
         return (
           <div className="space-y-4 animate-in fade-in slide-in-from-right-4 duration-300">
             {[
-              { type: 'Mechanoreceptive', icon: Activity, color: 'blue', step: 'MECHANO_PROCESS' },
-              { type: 'Vestibular', icon: Eye, color: 'cyan', step: 'VESTIBULAR_PROCESS' },
-              { type: 'Nociceptive', icon: AlertTriangle, color: 'orange', step: 'NOCICEPTIVE_PROCESS' }
+              { type: 'Mechanoreceptive', icon: Activity, color: 'blue', step: 'MECHANO_PROCESS', desc: 'Joint and muscle receptor calibration.' },
+              { type: 'Vestibular', icon: Eye, color: 'cyan', step: 'VESTIBULAR_PROCESS', desc: 'Balance and visual system integration.' },
+              { type: 'Nociceptive', icon: AlertTriangle, color: 'orange', step: 'NOCICEPTIVE_PROCESS', desc: 'Clearing threat from scars or old injuries.' }
             ].map(item => (
-              <button key={item.type} onClick={() => goToStep(item.step as Step)} className={`p-6 rounded-2xl border-2 border-${item.color}-100 bg-${item.color}-50/50 hover:border-${item.color}-300 hover:bg-${item.color}-50 transition-all text-left group w-full`}>
+              <button key={item.type} onClick={() => goToStep(item.step as Step)} className={cn(
+                "p-8 rounded-[2rem] border-2 transition-all duration-300 text-left group w-full",
+                item.color === 'blue' ? "border-blue-100 bg-blue-50/30 hover:border-blue-300 hover:bg-blue-50" :
+                item.color === 'cyan' ? "border-cyan-100 bg-cyan-50/30 hover:border-cyan-300 hover:bg-cyan-50" :
+                "border-orange-100 bg-orange-50/30 hover:border-orange-300 hover:bg-orange-50"
+              )}>
                 <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-4">
-                    <div className="w-10 h-10 rounded-xl bg-white shadow-sm flex items-center justify-center">
-                      <item.icon size={20} className={`text-${item.color}-600`} />
+                  <div className="flex items-center gap-5">
+                    <div className="w-14 h-14 rounded-2xl bg-white shadow-md flex items-center justify-center group-hover:scale-110 transition-transform">
+                      <item.icon size={28} className={cn(
+                        item.color === 'blue' ? "text-blue-600" :
+                        item.color === 'cyan' ? "text-cyan-600" :
+                        "text-orange-600"
+                      )} />
                     </div>
-                    <p className="font-bold text-slate-900">{item.type}</p>
+                    <div>
+                        <p className="font-black text-xl text-slate-900">{item.type}</p>
+                        <p className="text-sm font-medium text-slate-500 mt-1">{item.desc}</p>
+                    </div>
                   </div>
-                  <ArrowRight size={20} className="text-slate-300 group-hover:text-indigo-500 group-hover:translate-x-1 transition-transform" />
+                  <div className="w-10 h-10 rounded-xl bg-white/50 flex items-center justify-center text-slate-300 group-hover:text-indigo-600 group-hover:bg-white transition-all">
+                    <ArrowRight size={24} className="group-hover:translate-x-1 transition-transform" />
+                  </div>
                 </div>
               </button>
             ))}
-            <Button variant="ghost" onClick={goBack} className="w-full"><ChevronLeft size={16} className="mr-2" /> Back to Direction</Button>
+            <Button variant="ghost" onClick={goBack} className="w-full h-12 rounded-xl font-bold text-slate-400 hover:text-slate-600"><ChevronLeft size={18} className="mr-2" /> Back to Direction</Button>
           </div>
         );
 
@@ -150,22 +183,33 @@ const PathwayLogicWizard = ({ onSave, initialValue }: PathwayLogicWizardProps) =
         return (
           <div className="space-y-4 animate-in fade-in slide-in-from-right-4 duration-300">
             {[
-              { type: 'Cortical / Subcortical', icon: Brain, color: 'purple', step: 'EFFERENT_PROCESS' },
-              { type: 'Emotions', icon: Heart, color: 'rose', step: 'EMOTIONS_PROCESS' }
+              { type: 'Cortical / Subcortical', icon: Brain, color: 'purple', step: 'EFFERENT_PROCESS', desc: 'Integrate higher and lower brain processing.' },
+              { type: 'Emotions', icon: Heart, color: 'rose', step: 'EMOTIONS_PROCESS', desc: 'Limbic system and emotional context balancing.' }
             ].map(item => (
-              <button key={item.type} onClick={() => goToStep(item.step as Step)} className={`p-6 rounded-2xl border-2 border-${item.color}-100 bg-${item.color}-50/50 hover:border-${item.color}-300 hover:bg-${item.color}-50 transition-all text-left group w-full`}>
+              <button key={item.type} onClick={() => goToStep(item.step as Step)} className={cn(
+                "p-8 rounded-[2rem] border-2 transition-all duration-300 text-left group w-full",
+                item.color === 'purple' ? "border-purple-100 bg-purple-50/30 hover:border-purple-300 hover:bg-purple-50" :
+                "border-rose-100 bg-rose-50/30 hover:border-rose-300 hover:bg-rose-50"
+              )}>
                 <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-4">
-                    <div className="w-10 h-10 rounded-xl bg-white shadow-sm flex items-center justify-center">
-                      <item.icon size={20} className={`text-${item.color}-600`} />
+                  <div className="flex items-center gap-5">
+                    <div className="w-14 h-14 rounded-2xl bg-white shadow-md flex items-center justify-center group-hover:scale-110 transition-transform">
+                      <item.icon size={28} className={cn(
+                        item.color === 'purple' ? "text-purple-600" : "text-rose-600"
+                      )} />
                     </div>
-                    <p className="font-bold text-slate-900">{item.type}</p>
+                    <div>
+                        <p className="font-black text-xl text-slate-900">{item.type}</p>
+                        <p className="text-sm font-medium text-slate-500 mt-1">{item.desc}</p>
+                    </div>
                   </div>
-                  <ArrowRight size={20} className="text-slate-300 group-hover:text-indigo-500 group-hover:translate-x-1 transition-transform" />
+                  <div className="w-10 h-10 rounded-xl bg-white/50 flex items-center justify-center text-slate-300 group-hover:text-indigo-600 group-hover:bg-white transition-all">
+                    <ArrowRight size={24} className="group-hover:translate-x-1 transition-transform" />
+                  </div>
                 </div>
               </button>
             ))}
-            <Button variant="ghost" onClick={goBack} className="w-full"><ChevronLeft size={16} className="mr-2" /> Back to Direction</Button>
+            <Button variant="ghost" onClick={goBack} className="w-full h-12 rounded-xl font-bold text-slate-400 hover:text-slate-600"><ChevronLeft size={18} className="mr-2" /> Back to Direction</Button>
           </div>
         );
 
@@ -189,10 +233,13 @@ const PathwayLogicWizard = ({ onSave, initialValue }: PathwayLogicWizardProps) =
       case 'VESTIBULAR_PROCESS':
       case 'EMOTIONS_PROCESS':
         return (
-          <div className="text-center p-12 bg-slate-50 rounded-2xl border-2 border-dashed border-slate-200 animate-in fade-in">
-            <p className="font-bold text-slate-500">Coming Soon</p>
-            <p className="text-sm text-slate-400">{step === 'VESTIBULAR_PROCESS' ? 'Vestibular' : 'Emotions'} assessment tools will be added here.</p>
-            <Button variant="ghost" onClick={goBack} className="mt-4"><ChevronLeft size={16} className="mr-2" /> Back</Button>
+          <div className="text-center py-20 bg-slate-50 rounded-[3rem] border-2 border-dashed border-slate-200 animate-in fade-in">
+            <div className="w-20 h-20 rounded-3xl bg-white shadow-xl flex items-center justify-center mx-auto mb-6">
+                <Sparkles size={40} className="text-slate-300" />
+            </div>
+            <p className="font-black text-xl text-slate-900">Coming Soon</p>
+            <p className="text-sm font-medium text-slate-500 mt-2">{step === 'VESTIBULAR_PROCESS' ? 'Vestibular' : 'Emotions'} assessment tools will be added here.</p>
+            <Button variant="outline" onClick={goBack} className="mt-8 rounded-xl h-12 px-8 border-slate-200 font-bold"><ChevronLeft size={18} className="mr-2" /> Back</Button>
           </div>
         );
 
@@ -203,30 +250,48 @@ const PathwayLogicWizard = ({ onSave, initialValue }: PathwayLogicWizardProps) =
 
   return (
     <>
-      <Card className="border-none shadow-lg rounded-[2.5rem] bg-white overflow-hidden">
-        <CardHeader className="p-8">
-          <CardTitle className="text-2xl font-black text-slate-900 tracking-tight">Pathway Logic Wizard</CardTitle>
-          <CardDescription className="text-slate-500 font-medium">
-            A step-by-step guide to identify and clear layers of neurological interference.
-          </CardDescription>
+      <Card className="border-none shadow-xl rounded-[3rem] bg-white overflow-hidden">
+        <CardHeader className="p-10 pb-6">
+          <div className="flex items-center justify-between">
+            <div className="space-y-1">
+                <CardTitle className="text-3xl font-black text-slate-900 tracking-tight">Pathway Logic Wizard</CardTitle>
+                <CardDescription className="text-slate-500 font-medium text-lg">
+                    Identify and clear layers of neurological interference.
+                </CardDescription>
+            </div>
+            {step !== 'START' && (
+                <Button variant="ghost" size="sm" onClick={resetWizard} className="text-[10px] font-black uppercase tracking-widest text-slate-400 hover:text-rose-600">
+                    <RefreshCw size={14} className="mr-2" /> Reset Wizard
+                </Button>
+            )}
+          </div>
         </CardHeader>
-        <CardContent className="p-8 pt-0">
+        <CardContent className="p-10 pt-0">
           {renderStep()}
         </CardContent>
       </Card>
       <Dialog open={ligamentModalOpen} onOpenChange={setLigamentModalOpen}>
-        <DialogContent className="sm:max-w-[80vw] max-h-[90vh] rounded-3xl">
-          <DialogHeader>
-            <DialogTitle className="text-2xl font-bold">Ligament Reference Images</DialogTitle>
+        <DialogContent className="sm:max-w-[80vw] max-h-[90vh] rounded-[3rem] p-0 overflow-hidden border-none shadow-2xl">
+          <DialogHeader className="p-8 bg-slate-900 text-white">
+            <DialogTitle className="text-2xl font-black">Ligament Reference Images</DialogTitle>
           </DialogHeader>
-          <ScrollArea className="max-h-[70vh]">
-            <div className="p-6 space-y-8">
+          <ScrollArea className="max-h-[70vh] p-8">
+            <div className="space-y-12">
               {Object.entries(ligamentImages).map(([category, urls]) => (
-                <div key={category} className="space-y-4">
-                  <h3 className="text-lg font-bold text-slate-800 capitalize">{category.replace('_', ' ')}</h3>
-                  <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+                <div key={category} className="space-y-6">
+                  <div className="flex items-center gap-3">
+                    <div className="w-8 h-8 rounded-lg bg-indigo-100 text-indigo-600 flex items-center justify-center">
+                        <ImageIcon size={18} />
+                    </div>
+                    <h3 className="text-xl font-black text-slate-800 capitalize">{category.replace('_', ' ')}</h3>
+                  </div>
+                  <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
                     {urls.map((url, index) => (
-                      url ? <img key={index} src={url} alt={`${category} ${index}`} className="rounded-lg border" /> : null
+                      url ? (
+                        <div key={index} className="aspect-video rounded-2xl overflow-hidden border-2 border-slate-100 shadow-sm hover:border-indigo-300 transition-all">
+                            <img src={url} alt={`${category} ${index}`} className="w-full h-full object-cover" />
+                        </div>
+                      ) : null
                     ))}
                   </div>
                 </div>

@@ -85,7 +85,9 @@ const ZoneCard = ({ point, images, isSelected, onSelect, isLoading }: {
             {/* Side Selection Overlay */}
             <div className={cn(
                 "absolute inset-0 bg-slate-900/90 backdrop-blur-sm rounded-xl flex flex-col items-center justify-center p-2 gap-1.5 transition-all duration-300",
-                isSelected ? "opacity-100 pointer-events-auto" : "opacity-0 pointer-events-none group-hover:opacity-100"
+                isSelected 
+                  ? "opacity-100 pointer-events-auto" 
+                  : "opacity-0 pointer-events-none group-hover:opacity-100 group-hover:pointer-events-auto"
             )}>
                 <p className="text-[7px] font-black text-indigo-300 uppercase tracking-widest mb-1">Select Side</p>
                 <div className="flex flex-col w-full gap-1">

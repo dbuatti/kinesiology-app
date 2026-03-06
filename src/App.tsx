@@ -25,6 +25,7 @@ import QuickCalibratePage from "./pages/QuickCalibratePage";
 import Login from "./pages/Login";
 import NotFound from "./pages/NotFound";
 import { AuthProvider, useAuth } from "./components/AuthProvider";
+import { ThemeProvider } from "./components/theme-provider";
 import { Loader2, PanelLeftOpen } from "lucide-react";
 import { useState, useEffect } from "react";
 import { Button } from "./components/ui/button";
@@ -44,7 +45,7 @@ const ProtectedLayout = ({ children }: { children: React.ReactNode }) => {
 
   if (session === undefined) {
     return (
-      <div className="min-h-screen flex flex-col items-center justify-center bg-slate-50 gap-4">
+      <div className="min-h-screen flex flex-col items-center justify-center bg-slate-50 dark:bg-slate-950 gap-4">
         <div className="w-16 h-16 bg-indigo-600 rounded-2xl flex items-center justify-center text-white font-black text-2xl shadow-2xl shadow-indigo-200 animate-bounce">
           A
         </div>
@@ -58,7 +59,7 @@ const ProtectedLayout = ({ children }: { children: React.ReactNode }) => {
   if (!session) return <Navigate to="/login" replace />;
 
   return (
-    <div className="flex flex-col lg:flex-row min-h-screen bg-slate-50">
+    <div className="flex flex-col lg:flex-row min-h-screen bg-slate-50 dark:bg-slate-950">
       <MobileNav />
       {isSidebarVisible && <Sidebar onHide={() => setIsSidebarVisible(false)} />}
       
@@ -69,7 +70,7 @@ const ProtectedLayout = ({ children }: { children: React.ReactNode }) => {
               variant="outline" 
               size="icon" 
               onClick={() => setIsSidebarVisible(true)}
-              className="h-12 w-12 rounded-2xl bg-white border-slate-200 shadow-xl hover:bg-indigo-50 hover:text-indigo-600 transition-all group"
+              className="h-12 w-12 rounded-2xl bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800 shadow-xl hover:bg-indigo-50 dark:hover:bg-indigo-900/20 hover:text-indigo-600 transition-all group"
             >
               <PanelLeftOpen size={24} className="group-hover:scale-110 transition-transform" />
             </Button>
@@ -84,34 +85,36 @@ const ProtectedLayout = ({ children }: { children: React.ReactNode }) => {
 
 const App = () => (
   <QueryClientProvider client={queryClient}>
-    <TooltipProvider>
-      <AuthProvider>
-        <Toaster />
-        <Sonner />
-        <BrowserRouter>
-          <Routes>
-            <Route path="/login" element={<Login />} />
-            <Route path="/" element={<ProtectedLayout><Index /></ProtectedLayout>} />
-            <Route path="/clients" element={<ProtectedLayout><ClientsPage /></ProtectedLayout>} />
-            <Route path="/clients/:id" element={<ProtectedLayout><ClientDetailPage /></ProtectedLayout>} />
-            <Route path="/appointments" element={<ProtectedLayout><AppointmentsPage /></ProtectedLayout>} />
-            <Route path="/appointments/:id" element={<ProtectedLayout><AppointmentDetailPage /></ProtectedLayout>} />
-            <Route path="/oversight" element={<ProtectedLayout><ClinicalOversightPage /></ProtectedLayout>} />
-            <Route path="/import" element={<ProtectedLayout><ImportPage /></ProtectedLayout>} />
-            <Route path="/procedures" element={<ProtectedLayout><ProceduresPage /></ProtectedLayout>} />
-            <Route path="/resources" element={<ProtectedLayout><ResourcesPage /></ProtectedLayout>} />
-            <Route path="/self-practice" element={<ProtectedLayout><SelfPracticePage /></ProtectedLayout>} />
-            <Route path="/north-star" element={<ProtectedLayout><NorthStarPage /></ProtectedLayout>} />
-            <Route path="/week-3-worksheet" element={<ProtectedLayout><Week3WorksheetPage /></ProtectedLayout>} />
-            <Route path="/quick-calibrate" element={<ProtectedLayout><QuickCalibratePage /></ProtectedLayout>} />
-            <Route path="/debug" element={<ProtectedLayout><DebugAppointmentPage /></ProtectedLayout>} />
-            <Route path="/demo-session" element={<ProtectedLayout><DemoSessionPage /></ProtectedLayout>} />
-            <Route path="/settings" element={<ProtectedLayout><SettingsPage /></ProtectedLayout>} />
-            <Route path="*" element={<NotFound />} />
-          </Routes>
-        </BrowserRouter>
-      </AuthProvider>
-    </TooltipProvider>
+    <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
+      <TooltipProvider>
+        <AuthProvider>
+          <Toaster />
+          <Sonner />
+          <BrowserRouter>
+            <Routes>
+              <Route path="/login" element={<Login />} />
+              <Route path="/" element={<ProtectedLayout><Index /></ProtectedLayout>} />
+              <Route path="/clients" element={<ProtectedLayout><ClientsPage /></ProtectedLayout>} />
+              <Route path="/clients/:id" element={<ProtectedLayout><ClientDetailPage /></ProtectedLayout>} />
+              <Route path="/appointments" element={<ProtectedLayout><AppointmentsPage /></ProtectedLayout>} />
+              <Route path="/appointments/:id" element={<ProtectedLayout><AppointmentDetailPage /></ProtectedLayout>} />
+              <Route path="/oversight" element={<ProtectedLayout><ClinicalOversightPage /></ProtectedLayout>} />
+              <Route path="/import" element={<ProtectedLayout><ImportPage /></ProtectedLayout>} />
+              <Route path="/procedures" element={<ProtectedLayout><ProceduresPage /></ProtectedLayout>} />
+              <Route path="/resources" element={<ProtectedLayout><ResourcesPage /></ProtectedLayout>} />
+              <Route path="/self-practice" element={<ProtectedLayout><SelfPracticePage /></ProtectedLayout>} />
+              <Route path="/north-star" element={<ProtectedLayout><NorthStarPage /></ProtectedLayout>} />
+              <Route path="/week-3-worksheet" element={<ProtectedLayout><Week3WorksheetPage /></ProtectedLayout>} />
+              <Route path="/quick-calibrate" element={<ProtectedLayout><QuickCalibratePage /></ProtectedLayout>} />
+              <Route path="/debug" element={<ProtectedLayout><DebugAppointmentPage /></ProtectedLayout>} />
+              <Route path="/demo-session" element={<ProtectedLayout><DemoSessionPage /></ProtectedLayout>} />
+              <Route path="/settings" element={<ProtectedLayout><SettingsPage /></ProtectedLayout>} />
+              <Route path="*" element={<NotFound />} />
+            </Routes>
+          </BrowserRouter>
+        </AuthProvider>
+      </TooltipProvider>
+    </ThemeProvider>
   </QueryClientProvider>
 );
 

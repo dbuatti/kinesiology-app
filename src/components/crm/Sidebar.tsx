@@ -48,6 +48,7 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
+import { ModeToggle } from "./ModeToggle";
 
 interface SidebarProps {
   onHide?: () => void;
@@ -279,7 +280,7 @@ const Sidebar = ({ onHide }: SidebarProps) => {
                   <span className="absolute -top-0.5 -right-0.5 w-2 h-2 bg-white rounded-full animate-ping" />
                 </div>
                 <div className="flex flex-col min-w-0">
-                  <span className="text-[8px] font-black uppercase tracking-[0.2em] opacity-80 truncate">{activeSession.clientName}</span>
+                  <span className="text-[8px] font-black uppercase tracking-0.2em opacity-80 truncate">{activeSession.clientName}</span>
                   <span className="text-[10px] font-black">{activeSession.stage}</span>
                 </div>
               </div>
@@ -333,21 +334,23 @@ const Sidebar = ({ onHide }: SidebarProps) => {
       
       {/* Footer Actions */}
       <div className="mt-auto pt-4 border-t border-slate-900 space-y-0.5">
-        <Tooltip>
-          <TooltipTrigger asChild>
-            <button 
-              onClick={() => setHelpOpen(true)}
-              className="flex items-center gap-2.5 px-3 py-2 rounded-lg text-slate-500 hover:text-white hover:bg-slate-900 transition-all duration-300 w-full text-left group"
-            >
-              <HelpCircle size={16} className="group-hover:text-amber-400 transition-colors" />
-              <span className="font-bold text-[10px] uppercase tracking-widest">Help</span>
-            </button>
-          </TooltipTrigger>
-          <TooltipContent side="right" className="rounded-xl font-bold text-xs">
-            <p>Keyboard shortcuts & tips</p>
-            <p className="text-[10px] text-slate-400 mt-1">⌘/</p>
-          </TooltipContent>
-        </Tooltip>
+        <div className="flex items-center justify-between px-3 mb-2">
+          <ModeToggle />
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <button 
+                onClick={() => setHelpOpen(true)}
+                className="flex items-center justify-center h-9 w-9 rounded-xl text-slate-500 hover:text-white hover:bg-slate-900 transition-all duration-300 group"
+              >
+                <HelpCircle size={18} className="group-hover:text-amber-400 transition-colors" />
+              </button>
+            </TooltipTrigger>
+            <TooltipContent side="right" className="rounded-xl font-bold text-xs">
+              <p>Help & Shortcuts</p>
+              <p className="text-[10px] text-slate-400 mt-1">⌘/</p>
+            </TooltipContent>
+          </Tooltip>
+        </div>
 
         <Tooltip>
           <TooltipTrigger asChild>

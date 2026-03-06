@@ -10,8 +10,8 @@ import { MadeWithDyad } from "@/components/made-with-dyad";
 
 const QuickCalibratePage = () => {
   return (
-    <AppLayout>
-      <div className="space-y-8 max-w-4xl mx-auto">
+    <AppLayout fullWidth>
+      <div className="space-y-8 w-full">
         <Breadcrumbs 
           items={[
             { label: "Quick Tools" },

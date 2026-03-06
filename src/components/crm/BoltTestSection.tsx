@@ -67,13 +67,13 @@ const BoltTestSection = ({ appointmentId, initialBoltScore, onUpdate }: BoltTest
   const isOptimal = initialBoltScore !== null && initialBoltScore !== undefined && initialBoltScore >= 40;
 
   return (
-    <div className="bg-white rounded-3xl border border-slate-100 shadow-sm overflow-hidden transition-all hover:shadow-md">
+    <div className="bg-card rounded-3xl border border-border shadow-sm overflow-hidden transition-all hover:shadow-md">
       <Collapsible open={isOpen} onOpenChange={setIsOpen}>
         <CollapsibleTrigger asChild>
           <div className={cn(
             "p-4 flex items-center justify-between cursor-pointer transition-all duration-300",
-            isOpen ? "bg-slate-50/80" : "hover:bg-slate-50/50",
-            initialBoltScore && !isOpen && (isOptimal ? "bg-emerald-50/30" : needsImprovement ? "bg-rose-50/30" : "bg-blue-50/30")
+            isOpen ? "bg-muted/50" : "hover:bg-muted/30",
+            initialBoltScore && !isOpen && (isOptimal ? "bg-emerald-500/10" : needsImprovement ? "bg-rose-500/10" : "bg-indigo-500/10")
           )}>
             <div className="flex items-center gap-4">
               <div className={cn(
@@ -84,8 +84,8 @@ const BoltTestSection = ({ appointmentId, initialBoltScore, onUpdate }: BoltTest
                 <FlaskConical size={20} className="text-white" />
               </div>
               <div>
-                <h3 className="text-base font-black text-slate-900 tracking-tight">BOLT Test</h3>
-                <p className="text-[8px] font-black text-slate-400 uppercase tracking-widest">Body Oxygen Level</p>
+                <h3 className="text-base font-black text-foreground tracking-tight">BOLT Test</h3>
+                <p className="text-[8px] font-black text-muted-foreground uppercase tracking-widest">Body Oxygen Level</p>
               </div>
             </div>
             <div className="flex items-center gap-3">
@@ -101,7 +101,7 @@ const BoltTestSection = ({ appointmentId, initialBoltScore, onUpdate }: BoltTest
                   </Badge>
                 </div>
               )}
-              <div className="w-8 h-8 rounded-full bg-white shadow-sm border border-slate-100 flex items-center justify-center text-slate-400">
+              <div className="w-8 h-8 rounded-full bg-card shadow-sm border border-border flex items-center justify-center text-muted-foreground">
                 <ChevronDown className={cn("h-4 w-4 transition-transform duration-300", isOpen && "rotate-180")} />
               </div>
             </div>
@@ -109,14 +109,14 @@ const BoltTestSection = ({ appointmentId, initialBoltScore, onUpdate }: BoltTest
         </CollapsibleTrigger>
 
         <CollapsibleContent>
-          <div className="p-6 border-t border-slate-100 space-y-6 animate-in fade-in slide-in-from-top-1 duration-300">
+          <div className="p-6 border-t border-border space-y-6 animate-in fade-in slide-in-from-top-1 duration-300">
             {needsImprovement && (
-              <div className="bg-rose-50 border border-rose-100 p-3 rounded-2xl flex items-center justify-between gap-4">
+              <div className="bg-rose-500/10 border border-rose-500/20 p-3 rounded-2xl flex items-center justify-between gap-4">
                 <div className="flex items-center gap-3">
-                  <AlertCircle size={18} className="text-rose-600 shrink-0" />
-                  <p className="text-[10px] font-bold text-rose-900 uppercase tracking-tight">Clinical Alert: Low CO2 Tolerance</p>
+                  <AlertCircle size={18} className="text-rose-600 dark:text-rose-400 shrink-0" />
+                  <p className="text-[10px] font-bold text-rose-900 dark:text-rose-100 uppercase tracking-tight">Clinical Alert: Low CO2 Tolerance</p>
                 </div>
-                <Button onClick={() => setResourcesOpen(true)} variant="ghost" size="sm" className="h-7 text-[9px] font-black uppercase tracking-widest text-rose-600 hover:bg-rose-100 rounded-lg">
+                <Button onClick={() => setResourcesOpen(true)} variant="ghost" size="sm" className="h-7 text-[9px] font-black uppercase tracking-widest text-rose-600 dark:text-rose-400 hover:bg-rose-500/20 rounded-lg">
                   Protocol
                 </Button>
               </div>
@@ -129,26 +129,26 @@ const BoltTestSection = ({ appointmentId, initialBoltScore, onUpdate }: BoltTest
 
               <div className="space-y-4">
                 <div className="grid grid-cols-1 gap-2">
-                  <div className="flex items-center justify-between p-2.5 rounded-xl bg-slate-50 border border-slate-100">
-                    <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest">Below 20s</span>
-                    <span className="text-[10px] font-bold text-rose-600">Compromised</span>
+                  <div className="flex items-center justify-between p-2.5 rounded-xl bg-muted/50 border border-border">
+                    <span className="text-[9px] font-black text-muted-foreground uppercase tracking-widest">Below 20s</span>
+                    <span className="text-[10px] font-bold text-rose-600 dark:text-rose-400">Compromised</span>
                   </div>
-                  <div className="flex items-center justify-between p-2.5 rounded-xl bg-slate-50 border border-slate-100">
-                    <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest">25-35s</span>
-                    <span className="text-[10px] font-bold text-blue-600">Functional</span>
+                  <div className="flex items-center justify-between p-2.5 rounded-xl bg-muted/50 border border-border">
+                    <span className="text-[9px] font-black text-muted-foreground uppercase tracking-widest">25-35s</span>
+                    <span className="text-[10px] font-bold text-blue-600 dark:text-blue-400">Functional</span>
                   </div>
-                  <div className="flex items-center justify-between p-2.5 rounded-xl bg-emerald-50 border border-emerald-100">
-                    <span className="text-[9px] font-black text-emerald-600 uppercase tracking-widest">40s+</span>
-                    <CheckCircle2 size={14} className="text-emerald-600" />
+                  <div className="flex items-center justify-between p-2.5 rounded-xl bg-emerald-500/10 border border-emerald-500/20">
+                    <span className="text-[9px] font-black text-emerald-600 dark:text-emerald-400 uppercase tracking-widest">40s+</span>
+                    <CheckCircle2 size={14} className="text-emerald-600 dark:text-emerald-400" />
                   </div>
                 </div>
 
                 <div className="flex gap-2">
-                  <Button variant="outline" onClick={() => setResourcesOpen(true)} className="flex-1 rounded-xl border-slate-200 text-slate-600 h-9 font-bold text-[10px] uppercase tracking-widest">
+                  <Button variant="outline" onClick={() => setResourcesOpen(true)} className="flex-1 rounded-xl border-border text-muted-foreground h-9 font-bold text-[10px] uppercase tracking-widest">
                     <BookOpen size={14} className="mr-2" /> Resources
                   </Button>
                   {initialBoltScore !== null && (
-                    <Button variant="ghost" onClick={handleReset} className="text-rose-600 hover:bg-rose-50 h-9 px-3 rounded-xl font-bold text-[10px] uppercase tracking-widest">
+                    <Button variant="ghost" onClick={handleReset} className="text-rose-600 dark:text-rose-400 hover:bg-rose-500/10 h-9 px-3 rounded-xl font-bold text-[10px] uppercase tracking-widest">
                       <RotateCcw size={14} />
                     </Button>
                   )}

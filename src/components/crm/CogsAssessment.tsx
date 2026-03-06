@@ -83,7 +83,7 @@ const CogsAssessment = ({
       showSuccess("Reset complete.");
       onUpdate();
     } catch (error: any) {
-      showError("Failed to reset.");
+      showError(error.message || "Failed to reset.");
     } finally {
       setLoading(false);
     }
@@ -102,10 +102,10 @@ const CogsAssessment = ({
   }: any) => (
     <div className={cn("p-4 rounded-2xl border transition-all duration-300 space-y-3", color)}>
       <div className="flex items-center gap-2">
-        <div className="w-7 h-7 bg-white rounded-lg flex items-center justify-center shadow-sm">
+        <div className="w-7 h-7 bg-card rounded-lg flex items-center justify-center shadow-sm">
           <Icon size={14} className={color.split(' ')[0].replace('bg-', 'text-')} />
         </div>
-        <h4 className="text-xs font-black text-slate-900 uppercase tracking-tight">{title}</h4>
+        <h4 className="text-xs font-black text-foreground uppercase tracking-tight">{title}</h4>
       </div>
 
       <div className="space-y-2">
@@ -114,7 +114,7 @@ const CogsAssessment = ({
             <button 
               key={tag} 
               onClick={() => addTag(plane, tag)}
-              className="px-1.5 py-0.5 rounded-md bg-white/60 border border-white hover:bg-white transition-all text-[8px] font-black uppercase tracking-wider text-slate-500"
+              className="px-1.5 py-0.5 rounded-md bg-card/60 border border-border hover:bg-card transition-all text-[8px] font-black uppercase tracking-wider text-muted-foreground"
             >
               + {tag}
             </button>
@@ -124,31 +124,31 @@ const CogsAssessment = ({
           value={notes} 
           onChange={(e) => setNotes(e.target.value)} 
           placeholder="Notes..." 
-          className="min-h-[60px] rounded-xl border-none bg-white/80 focus:ring-1 focus:ring-indigo-500 font-medium text-[11px] p-2"
+          className="min-h-[60px] rounded-xl border-none bg-card/80 focus:ring-1 focus:ring-indigo-500 font-medium text-[11px] p-2"
         />
       </div>
     </div>
   );
 
   return (
-    <div className="bg-white rounded-3xl border border-slate-100 shadow-sm overflow-hidden transition-all hover:shadow-md">
+    <div className="bg-card rounded-3xl border border-border shadow-sm overflow-hidden transition-all hover:shadow-md">
       <Collapsible open={isOpen} onOpenChange={setIsOpen}>
         <CollapsibleTrigger asChild>
           <div className={cn(
             "p-4 flex items-center justify-between cursor-pointer transition-all duration-300",
-            isOpen ? "bg-slate-50/80" : "hover:bg-slate-50/50",
-            hasSavedNotes && !isOpen && "bg-purple-50/30"
+            isOpen ? "bg-muted/50" : "hover:bg-muted/30",
+            hasSavedNotes && !isOpen && "bg-purple-500/10"
           )}>
             <div className="flex items-center gap-4">
               <div className={cn(
-                "w-10 h-10 rounded-xl bg-purple-600 flex items-center justify-center shadow-sm transition-transform",
+                "w-10 h-10 rounded-xl flex items-center justify-center shadow-sm transition-transform",
                 isOpen ? "scale-105" : ""
               )}>
-                <Move size={20} className="text-white" />
+                <Move size={20} className="text-white bg-purple-600 rounded-xl p-1" />
               </div>
               <div>
-                <h3 className="text-base font-black text-slate-900 tracking-tight">ROM (Cogs)</h3>
-                <p className="text-[8px] font-black text-slate-400 uppercase tracking-widest">3-Plane Mobility</p>
+                <h3 className="text-base font-black text-foreground tracking-tight">ROM (Cogs)</h3>
+                <p className="text-[8px] font-black text-muted-foreground uppercase tracking-widest">3-Plane Mobility</p>
               </div>
             </div>
             <div className="flex items-center gap-3">
@@ -157,7 +157,7 @@ const CogsAssessment = ({
                   Recorded
                 </Badge>
               )}
-              <div className="w-8 h-8 rounded-full bg-white shadow-sm border border-slate-100 flex items-center justify-center text-slate-400">
+              <div className="w-8 h-8 rounded-full bg-card shadow-sm border border-border flex items-center justify-center text-muted-foreground">
                 <ChevronDown className={cn("h-4 w-4 transition-transform duration-300", isOpen && "rotate-180")} />
               </div>
             </div>
@@ -165,11 +165,11 @@ const CogsAssessment = ({
         </CollapsibleTrigger>
 
         <CollapsibleContent>
-          <div className="p-6 border-t border-slate-100 space-y-6 animate-in fade-in slide-in-from-top-1 duration-300">
+          <div className="p-6 border-t border-border space-y-6 animate-in fade-in slide-in-from-top-1 duration-300">
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-              <PlaneCard title="Sagittal" plane="sagittal" notes={sagittalNotes} setNotes={setSagittalNotes} tags={QUICK_TAGS.sagittal} color="bg-orange-50 border-orange-100" icon={Zap} />
-              <PlaneCard title="Frontal" plane="frontal" notes={frontalNotes} setNotes={setFrontalNotes} tags={QUICK_TAGS.frontal} color="bg-emerald-50 border-emerald-100" icon={Move} />
-              <PlaneCard title="Transverse" plane="transverse" notes={transverseNotes} setNotes={setTransverseNotes} tags={QUICK_TAGS.transverse} color="bg-blue-50 border-blue-100" icon={RefreshCw} />
+              <PlaneCard title="Sagittal" plane="sagittal" notes={sagittalNotes} setNotes={setSagittalNotes} tags={QUICK_TAGS.sagittal} color="bg-orange-500/10 border-orange-500/20" icon={Zap} />
+              <PlaneCard title="Frontal" plane="frontal" notes={frontalNotes} setNotes={setFrontalNotes} tags={QUICK_TAGS.frontal} color="bg-emerald-500/10 border-emerald-500/20" icon={Move} />
+              <PlaneCard title="Transverse" plane="transverse" notes={transverseNotes} setNotes={setTransverseNotes} tags={QUICK_TAGS.transverse} color="bg-blue-500/10 border-blue-500/20" icon={RefreshCw} />
             </div>
 
             <div className="flex gap-2">
@@ -178,7 +178,7 @@ const CogsAssessment = ({
                 Save ROM
               </Button>
               {hasSavedNotes && (
-                <Button variant="ghost" onClick={handleReset} className="text-rose-600 hover:bg-rose-50 h-10 px-3 rounded-xl">
+                <Button variant="ghost" onClick={handleReset} className="text-rose-600 dark:text-rose-400 hover:bg-rose-500/10 h-9 px-3 rounded-xl font-bold text-[10px] uppercase tracking-widest">
                   <RotateCcw size={14} />
                 </Button>
               )}

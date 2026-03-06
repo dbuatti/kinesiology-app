@@ -55,8 +55,8 @@ const SessionContentSwitcher = ({ appointment, onUpdate, saveField }: SessionCon
       className={cn(
         "h-11 px-5 rounded-xl transition-all font-black text-[10px] uppercase tracking-widest",
         activeView === view 
-          ? "bg-white text-indigo-600 shadow-sm border border-slate-100" 
-          : "text-slate-500 hover:bg-white/50 hover:text-slate-900"
+          ? "bg-card text-indigo-600 shadow-sm border border-border" 
+          : "text-muted-foreground hover:bg-accent hover:text-foreground"
       )}
     >
       <Icon size={16} className="mr-2" />
@@ -67,7 +67,7 @@ const SessionContentSwitcher = ({ appointment, onUpdate, saveField }: SessionCon
   const renderHomeView = () => (
     <div className="space-y-10">
       <Tabs defaultValue="baseline" className="w-full">
-        <TabsList className="grid w-full grid-cols-5 h-16 bg-slate-200/50 p-1.5 rounded-[1.5rem]">
+        <TabsList className="grid w-full grid-cols-5 h-16 bg-muted/50 p-1.5 rounded-[1.5rem]">
           {[
             { id: 'baseline', label: 'Baseline', icon: Activity },
             { id: 'sympathetic', label: 'SNS Reset', icon: Zap },
@@ -78,13 +78,13 @@ const SessionContentSwitcher = ({ appointment, onUpdate, saveField }: SessionCon
             <TabsTrigger 
               key={tab.id} 
               value={tab.id} 
-              className="flex items-center gap-2 data-[state=active]:bg-white data-[state=active]:text-indigo-600 data-[state=active]:shadow-sm rounded-xl h-13 text-[10px] font-black uppercase tracking-wider relative transition-all"
+              className="flex items-center gap-2 data-[state=active]:bg-card data-[state=active]:text-indigo-600 data-[state=active]:shadow-sm rounded-xl h-13 text-[10px] font-black uppercase tracking-wider relative transition-all"
             >
-              <tab.icon size={14} className={cn((tabStatus as any)[tab.id] ? "text-indigo-500" : "text-slate-400")} />
+              <tab.icon size={14} className={cn((tabStatus as any)[tab.id] ? "text-indigo-500" : "text-muted-foreground")} />
               <span className="hidden sm:inline">{i + 1}. {tab.label}</span>
               <span className="sm:hidden">{i + 1}</span>
               {(tabStatus as any)[tab.id] && (
-                <span className="absolute top-2 right-2 w-2 h-2 bg-emerald-500 rounded-full border-2 border-white shadow-sm" />
+                <span className="absolute top-2 right-2 w-2 h-2 bg-emerald-500 rounded-full border-2 border-background shadow-sm" />
               )}
             </TabsTrigger>
           ))}
@@ -121,7 +121,7 @@ const SessionContentSwitcher = ({ appointment, onUpdate, saveField }: SessionCon
               multiline 
               placeholder="Document re-test results and prescribed homework..." 
               onSave={saveField} 
-              className="bg-white p-8 rounded-[2.5rem] border border-slate-100 shadow-sm min-h-[400px]" 
+              className="bg-card p-8 rounded-[2.5rem] border border-border shadow-sm min-h-[400px]" 
             />
           </TabsContent>
         </div>
@@ -131,7 +131,7 @@ const SessionContentSwitcher = ({ appointment, onUpdate, saveField }: SessionCon
 
   return (
     <div className="space-y-8">
-      <div className="flex items-center gap-2 overflow-x-auto pb-2 bg-slate-200/30 p-2 rounded-2xl border border-slate-200/50 no-scrollbar">
+      <div className="flex items-center gap-2 overflow-x-auto pb-2 bg-muted/30 p-2 rounded-2xl border border-border/50 no-scrollbar">
         <NavItem view="home" label="Session Flow" Icon={Home} />
         <NavItem view="kinesiology" label="Kinesiology Tools" Icon={Heart} />
         <NavItem view="muscles" label="Muscle Log" Icon={Dumbbell} />
@@ -148,7 +148,7 @@ const SessionContentSwitcher = ({ appointment, onUpdate, saveField }: SessionCon
           </div>
         )}
         {activeView === 'muscles' && (
-          <div className="bg-white rounded-[2.5rem] border border-slate-100 shadow-sm p-8">
+          <div className="bg-card rounded-[2.5rem] border border-border shadow-sm p-8">
             <MuscleTestingTab appointmentId={appointment.id} />
           </div>
         )}

@@ -7,6 +7,14 @@ export interface MechanoFlashcard {
   category: 'Theory' | 'Conscious' | 'Unconscious' | 'Clinical';
 }
 
+export interface MechanoResource {
+  title: string;
+  description: string;
+  url: string;
+  type: 'Video' | 'Article' | 'Course' | 'Research';
+  source: string;
+}
+
 export const MECHANO_FLASHCARDS: MechanoFlashcard[] = [
   {
     id: '1',
@@ -55,5 +63,43 @@ export const MECHANO_FLASHCARDS: MechanoFlashcard[] = [
     category: 'Clinical',
     question: "If an X-pattern facilitates a previously inhibited IM, what does this indicate?",
     answer: "A Mechanoreceptive priority (Afferent Bottom-Up)."
+  }
+];
+
+export const MECHANO_RESOURCES: MechanoResource[] = [
+  {
+    title: "The DCML Pathway Explained",
+    description: "A deep dive into the conscious proprioceptive pathway and its role in motor control.",
+    url: "https://www.youtube.com/results?search_query=DCML+pathway+neurology",
+    type: "Video",
+    source: "YouTube Education"
+  },
+  {
+    title: "Spinocerebellar Tracts & Cerebellum",
+    description: "Understanding how 85% of your movement data is processed without you knowing it.",
+    url: "https://www.youtube.com/results?search_query=spinocerebellar+tracts+cerebellum",
+    type: "Video",
+    source: "YouTube Education"
+  },
+  {
+    title: "Z-Health: Applied Functional Neurology",
+    description: "Practical drills and joint-by-joint mobility assessments based on brain-first principles.",
+    url: "https://zhealtheducation.com/blog/",
+    type: "Article",
+    source: "Z-Health"
+  },
+  {
+    title: "Carrick Institute: Clinical Neuro",
+    description: "The gold standard for Functional Neurology research and clinical applications.",
+    url: "https://carrickinstitute.com/research/",
+    type: "Research",
+    source: "Carrick Institute"
+  },
+  {
+    title: "Proprioception & Chronic Pain",
+    description: "Research on how 'smudged' sensory maps lead to chronic pain and how to fix them.",
+    url: "https://pubmed.ncbi.nlm.nih.gov/?term=proprioception+chronic+pain+rehabilitation",
+    type: "Research",
+    source: "PubMed"
   }
 ];

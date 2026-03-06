@@ -17,10 +17,15 @@ import {
   RotateCcw,
   CheckCircle2,
   Activity,
-  Lightbulb
+  Lightbulb,
+  BookOpen,
+  ExternalLink,
+  Search,
+  Youtube,
+  GraduationCap
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { MECHANO_FLASHCARDS } from '@/data/mechano-quiz-data';
+import { MECHANO_FLASHCARDS, MECHANO_RESOURCES } from '@/data/mechano-quiz-data';
 
 const JOINTS = ["Cervical", "Thoracic", "Lumbar", "Pelvis", "Hip", "Knee", "Ankle", "Shoulder", "Elbow", "Wrist"];
 const PLANES = ["Sagittal", "Frontal", "Transverse"];
@@ -31,7 +36,7 @@ const ACTIONS: Record<string, string[]> = {
 };
 
 const MechanoMastery = () => {
-  const [activeTab, setActiveTab] = useState<'flashcards' | 'simulator'>('flashcards');
+  const [activeTab, setActiveTab] = useState<'flashcards' | 'simulator' | 'research'>('flashcards');
   
   // Flashcard State
   const [cardIndex, setCardIndex] = useState(0);
@@ -49,12 +54,17 @@ const MechanoMastery = () => {
     setShowSolution(false);
   };
 
+  const handleResearchJoint = (joint: string) => {
+    const query = encodeURIComponent(`${joint} joint mechanoreceptors functional neurology`);
+    window.open(`https://www.google.com/search?q=${query}`, '_blank');
+  };
+
   const currentCard = MECHANO_FLASHCARDS[cardIndex];
 
   return (
     <div className="space-y-8 animate-in fade-in duration-500">
       <div className="flex justify-center">
-        <div className="bg-slate-200/50 p-1.5 rounded-2xl flex gap-1">
+        <div className="bg-slate-200/50 p-1.5 rounded-2xl flex flex-wrap justify-center gap-1">
           <Button 
             variant={activeTab === 'flashcards' ? 'default' : 'ghost'}
             onClick={() => setActiveTab('flashcards')}
@@ -69,10 +79,17 @@ const MechanoMastery = () => {
           >
             <Zap size={16} className="mr-2" /> Clinical Simulator
           </Button>
+          <Button 
+            variant={activeTab === 'research' ? 'default' : 'ghost'}
+            onClick={() => setActiveTab('research')}
+            className={cn("rounded-xl h-10 px-6 font-bold text-[10px] uppercase tracking-widest", activeTab === 'research' ? "bg-white text-indigo-600 shadow-sm" : "text-slate-500")}
+          >
+            <BookOpen size={16} className="mr-2" /> Research & Practice
+          </Button>
         </div>
       </div>
 
-      {activeTab === 'flashcards' ? (
+      {activeTab === 'flashcards' && (
         <div className="max-w-xl mx-auto space-y-8">
           <div 
             className="perspective-1000 h-[350px] cursor-pointer group"
@@ -131,7 +148,9 @@ const MechanoMastery = () => {
             </Button>
           </div>
         </div>
-      ) : (
+      )}
+
+      {activeTab === 'simulator' && (
         <div className="max-w-3xl mx-auto space-y-8">
           {!scenario ? (
             <Card className="border-none shadow-lg rounded-[2.5rem] bg-white p-12 text-center space-y-6">
@@ -172,7 +191,17 @@ const MechanoMastery = () => {
                 <CardContent className="p-10 pt-0 space-y-8 relative z-10">
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div className="p-6 bg-white/5 rounded-3xl border border-white/10">
-                      <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2">Priority Joint</p>
+                      <div className="flex items-center justify-between mb-2">
+                        <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Priority Joint</p>
+                        <Button 
+                          variant="ghost" 
+                          size="sm" 
+                          onClick={() => handleResearchJoint(scenario.joint)}
+                          className="h-6 px-2 text-[8px] font-black uppercase tracking-widest text-indigo-400 hover:text-white hover:bg-white/10"
+                        >
+                          <Search size={10} className="mr-1" /> Research
+                        </Button>
+                      </div>
                       <p className="text-2xl font-black text-white">{scenario.joint}</p>
                     </div>
                     <div className="p-6 bg-white/5 rounded-3xl border border-white/10">
@@ -266,6 +295,55 @@ const MechanoMastery = () => {
               )}
             </div>
           )}
+        </div>
+      )}
+
+      {activeTab === 'research' && (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
+          {MECHANO_RESOURCES.map((res) => (
+            <Card key={res.url} className="border-none shadow-lg rounded-[2rem] bg-white hover:shadow-xl transition-all group overflow-hidden flex flex-col">
+              <CardHeader className="pb-4">
+                <div className="flex items-start justify-between">
+                  <Badge className={cn(
+                    "border-none font-black text-[8px] uppercase tracking-widest mb-2",
+                    res.type === 'Video' ? "bg-rose-100 text-rose-700" :
+                    res.type === 'Research' ? "bg-indigo-100 text-indigo-700" :
+                    "bg-emerald-100 text-emerald-700"
+                  )}>
+                    {res.type}
+                  </Badge>
+                  <div className="w-8 h-8 rounded-lg bg-slate-50 flex items-center justify-center text-slate-400 group-hover:text-indigo-600 transition-colors">
+                    {res.type === 'Video' ? <Youtube size={18} /> : <BookOpen size={18} />}
+                  </div>
+                </div>
+                <CardTitle className="text-lg font-black text-slate-900 group-hover:text-indigo-600 transition-colors">
+                  {res.title}
+                </CardTitle>
+                <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">{res.source}</p>
+              </CardHeader>
+              <CardContent className="flex-1 flex flex-col justify-between">
+                <p className="text-sm text-slate-600 leading-relaxed font-medium mb-6">
+                  {res.description}
+                </p>
+                <Button 
+                  asChild
+                  className="w-full bg-slate-900 hover:bg-indigo-600 h-11 rounded-xl font-black text-[10px] uppercase tracking-widest shadow-lg transition-all"
+                >
+                  <a href={res.url} target="_blank" rel="noopener noreferrer">
+                    Open Resource <ExternalLink size={14} className="ml-2" />
+                  </a>
+                </Button>
+              </CardContent>
+            </Card>
+          ))}
+
+          <Card className="border-2 border-dashed border-slate-200 shadow-none rounded-[2rem] bg-slate-50/50 flex flex-col items-center justify-center p-8 text-center group hover:border-indigo-300 hover:bg-indigo-50/30 transition-all">
+            <div className="w-12 h-12 rounded-xl bg-white shadow-sm flex items-center justify-center text-slate-300 group-hover:text-indigo-400 transition-all mb-4">
+              <GraduationCap size={24} />
+            </div>
+            <h3 className="text-sm font-black text-slate-400 group-hover:text-indigo-900 transition-colors uppercase tracking-widest">Deepen Your Practice</h3>
+            <p className="text-xs text-slate-400 mt-2">Research specific joints or pathways to build clinical intuition.</p>
+          </Card>
         </div>
       )}
 

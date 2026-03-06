@@ -429,6 +429,37 @@ const EfferentBrainIntegration = ({ onSave, onCancel, initialValue, initialEntry
                     {method}
                 </Badge>
               </div>
+
+              {/* Instructions moved to prominent position below header */}
+              <div className="relative z-10 mb-10 p-8 bg-white rounded-[2.5rem] text-slate-900 shadow-2xl border-t-8 border-indigo-600 animate-in zoom-in-95 duration-500">
+                <div className="flex items-center gap-3 mb-4">
+                  <Info size={20} className="text-indigo-600" />
+                  <p className="text-xs font-black text-slate-400 uppercase tracking-widest">Clinical Instructions</p>
+                </div>
+                <div className="space-y-6">
+                  {method === 'Tapping' && (
+                    <p className="text-2xl font-black leading-tight text-slate-900">
+                      Simultaneously <span className="text-indigo-600 underline decoration-indigo-200 underline-offset-4">TAP</span> both reflex points for 3-5 seconds.
+                    </p>
+                  )}
+                  {method === 'Holding + Intention' && (
+                    <div className="space-y-6">
+                      <p className="text-xl font-bold leading-tight text-slate-700">
+                        Hold both points lightly and mentally repeat the integration sequence:
+                      </p>
+                      <div className="p-6 bg-indigo-50 rounded-2xl border-2 border-indigo-100 text-center italic font-black text-indigo-600 text-lg shadow-inner">
+                        "{entryPoint} — {coord1.side} {coord1.point?.name} — {coord2.side} {coord2.point?.name}"
+                      </div>
+                      <p className="text-xs text-slate-400 font-medium text-center">Hold until you feel a therapeutic pulse or shift in tone.</p>
+                    </div>
+                  )}
+                  {method === 'Tuning Fork' && (
+                    <p className="text-2xl font-black leading-tight text-slate-900">
+                      Therapy localize both points and strike tuning fork on the <span className="text-indigo-600 underline decoration-indigo-200 underline-offset-4">Cranium</span>.
+                    </p>
+                  )}
+                </div>
+              </div>
               
               <div className="space-y-10 relative z-10">
                 <div className="grid grid-cols-2 gap-8">
@@ -460,36 +491,6 @@ const EfferentBrainIntegration = ({ onSave, onCancel, initialValue, initialEntry
                           className="w-full h-full object-cover opacity-80 hover:opacity-100 transition-opacity" 
                         />
                       </div>
-                    )}
-                  </div>
-                </div>
-
-                <div className="p-8 bg-white rounded-[2.5rem] text-slate-900 shadow-2xl border-t-8 border-indigo-600">
-                  <div className="flex items-center gap-3 mb-4">
-                    <Info size={20} className="text-indigo-600" />
-                    <p className="text-xs font-black text-slate-400 uppercase tracking-widest">Clinical Instructions</p>
-                  </div>
-                  <div className="space-y-6">
-                    {method === 'Tapping' && (
-                      <p className="text-2xl font-black leading-tight text-slate-900">
-                        Simultaneously <span className="text-indigo-600 underline decoration-indigo-200 underline-offset-4">TAP</span> both reflex points for 3-5 seconds.
-                      </p>
-                    )}
-                    {method === 'Holding + Intention' && (
-                      <div className="space-y-6">
-                        <p className="text-xl font-bold leading-tight text-slate-700">
-                          Hold both points lightly and mentally repeat the integration sequence:
-                        </p>
-                        <div className="p-6 bg-indigo-50 rounded-2xl border-2 border-indigo-100 text-center italic font-black text-indigo-600 text-lg shadow-inner">
-                          "{entryPoint} — {coord1.side} {coord1.point?.name} — {coord2.side} {coord2.point?.name}"
-                        </div>
-                        <p className="text-xs text-slate-400 font-medium text-center">Hold until you feel a therapeutic pulse or shift in tone.</p>
-                      </div>
-                    )}
-                    {method === 'Tuning Fork' && (
-                      <p className="text-2xl font-black leading-tight text-slate-900">
-                        Therapy localize both points and strike tuning fork on the <span className="text-indigo-600 underline decoration-indigo-200 underline-offset-4">Cranium</span>.
-                      </p>
                     )}
                   </div>
                 </div>

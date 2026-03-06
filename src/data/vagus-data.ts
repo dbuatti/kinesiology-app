@@ -50,28 +50,44 @@ export const VAGAL_GLANDS = [
 export const HAND_REFLEXOLOGY = {
   Right: {
     Light: [
-      { name: "Adrenals/Thyroid", element: "Fire", color: "bg-pink-400" },
-      { name: "Stomach", element: "Earth", color: "bg-yellow-400" },
-      { name: "Large Intestine", element: "Metal", color: "bg-slate-200" },
-      { name: "GV / CV", element: "Central", color: "bg-purple-400" },
+      { name: "Large Intestine", position: "Distal (Cun)", color: "bg-slate-200" },
+      { name: "Stomach", position: "Middle (Guan)", color: "bg-yellow-400" },
+      { name: "Triple Warmer", position: "Proximal (Chi)", color: "bg-orange-400" },
     ],
     Deep: [
-      { name: "Sex Organs", element: "Fire", color: "bg-pink-400" },
-      { name: "Spleen", element: "Earth", color: "bg-yellow-400" },
-      { name: "Lung", element: "Metal", color: "bg-slate-200" },
+      { name: "Lung", position: "Distal (Cun)", color: "bg-slate-100" },
+      { name: "Spleen", position: "Middle (Guan)", color: "bg-yellow-600" },
+      { name: "Pericardium", position: "Proximal (Chi)", color: "bg-pink-400" },
     ]
   },
   Left: {
     Light: [
-      { name: "Bladder", element: "Water", color: "bg-blue-400" },
-      { name: "Gall Bladder", element: "Wood", color: "bg-emerald-400" },
-      { name: "Small Intestine", element: "Fire", color: "bg-pink-400" },
+      { name: "Small Intestine", position: "Distal (Cun)", color: "bg-red-400" },
+      { name: "Gall Bladder", position: "Middle (Guan)", color: "bg-emerald-400" },
+      { name: "Bladder", position: "Proximal (Chi)", color: "bg-blue-700" },
     ],
     Deep: [
-      { name: "Kidney", element: "Water", color: "bg-blue-400" },
-      { name: "Liver", element: "Wood", color: "bg-emerald-400" },
-      { name: "Heart", element: "Fire", color: "bg-pink-400" },
-      { name: "GV / CV", element: "Central", color: "bg-purple-400" },
+      { name: "Heart", position: "Distal (Cun)", color: "bg-red-600" },
+      { name: "Liver", position: "Middle (Guan)", color: "bg-emerald-600" },
+      { name: "Kidney", position: "Proximal (Chi)", color: "bg-blue-500" },
     ]
   }
+};
+
+export const getPulsePointDescription = (organName: string) => {
+  const searchName = organName.toLowerCase();
+  
+  for (const [hand, depths] of Object.entries(HAND_REFLEXOLOGY)) {
+    for (const [depth, points] of Object.entries(depths)) {
+      const match = points.find(p => p.name.toLowerCase().includes(searchName) || searchName.includes(p.name.toLowerCase()));
+      if (match) {
+        return {
+          hand,
+          depth: depth === 'Light' ? 'Superficial' : 'Deep',
+          position: match.position
+        };
+      }
+    }
+  }
+  return null;
 };

@@ -372,12 +372,15 @@ const VagusNerveProcess = ({ appointmentId, initialNotes, onSaveField, onUpdate 
                               setSelectedGland("");
                             }}
                             className={cn(
-                              "h-9 text-[10px] font-black uppercase tracking-widest rounded-xl transition-all",
+                              "h-auto py-2 flex flex-col items-center gap-0.5 rounded-xl transition-all",
                               selectedOrgan === org.name ? "bg-slate-900 text-white" : "bg-white border-slate-200"
                             )}
                           >
-                            <span className={cn("w-2 h-2 rounded-full mr-2", org.color)} />
-                            {org.name}
+                            <div className="flex items-center">
+                              <span className={cn("w-2 h-2 rounded-full mr-2", org.color)} />
+                              <span className="text-[10px] font-black uppercase tracking-widest">{org.name}</span>
+                            </div>
+                            <span className="text-[7px] font-bold opacity-60 uppercase">{org.position}</span>
                           </Button>
                         ))}
                       </div>

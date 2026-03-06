@@ -24,11 +24,13 @@ import {
   Activity,
   Timer,
   Pause,
-  Play
+  Play,
+  Hand
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Badge } from '@/components/ui/badge';
 import { PRIMARY_EMOTIONS, EYE_POSITIONS } from '@/data/emotion-data';
+import { getPulsePointDescription } from '@/data/vagus-data';
 import { Button } from '@/components/ui/button';
 import CalibrationTimer from './CalibrationTimer';
 
@@ -80,6 +82,8 @@ const EmotionalIntegrationProcess = ({ onSave, onCancel }: EmotionalIntegrationP
     const summary = `Emotional Integration: ${selectedEmotion.label} (${selectedOrgan}, ${polarity}) | Timeline: ${timelineDetail} | Eye Position: ${selectedEyePos.label} (${selectedEyePos.pos})`;
     onSave(summary);
   };
+
+  const pulsePoint = selectedOrgan ? getPulsePointDescription(selectedOrgan) : null;
 
   return (
     <div className="space-y-6 animate-in fade-in slide-in-from-right-4 duration-300">
@@ -313,6 +317,23 @@ const EmotionalIntegrationProcess = ({ onSave, onCancel }: EmotionalIntegrationP
                   </ul>
                 </div>
 
+                {pulsePoint && (
+                  <div className="p-5 bg-indigo-50 rounded-2xl border-2 border-indigo-200 flex items-start gap-4 animate-in fade-in slide-in-from-top-2">
+                    <div className="w-10 h-10 rounded-xl bg-indigo-600 text-white flex items-center justify-center shrink-0 shadow-lg">
+                      <Hand size={20} />
+                    </div>
+                    <div>
+                      <p className="text-[10px] font-black text-indigo-600 uppercase tracking-widest mb-1">Pulse Point Locator</p>
+                      <p className="text-sm font-bold text-indigo-900 leading-tight">
+                        {pulsePoint.hand} Hand • {pulsePoint.position}
+                      </p>
+                      <p className="text-[10px] text-indigo-500 mt-1 font-black uppercase">
+                        Depth: {pulsePoint.depth}
+                      </p>
+                    </div>
+                  </div>
+                )}
+
                 <div className="p-5 bg-indigo-600 text-white rounded-2xl shadow-lg">
                   <div className="flex items-start gap-3">
                     <Target size={20} className="shrink-0 mt-0.5" />
@@ -348,7 +369,7 @@ const EmotionalIntegrationProcess = ({ onSave, onCancel }: EmotionalIntegrationP
           </div>
           <div className="grid grid-cols-1 gap-4">
             <Button className="h-16 rounded-2xl bg-emerald-600 hover:bg-emerald-700 text-xl font-black shadow-lg shadow-emerald-100" onClick={handleFinish}>Emotion is Balanced <CheckCircle2 size={24} className="ml-2" /></Button>
-            <Button variant="outline" className="h-16 rounded-2xl border-2 border-rose-200 text-rose-700 hover:bg-rose-50 font-bold text-lg" onClick={() => goToStep('EMOTION_SELECT')}>Still Inhibited - Find New Layer</Button>
+            <Button variant="outline" className="h-16 rounded-2xl border-2 border-rose-200 text-rose-700 hover:bg-orange-50 font-bold text-lg" onClick={() => goToStep('EMOTION_SELECT')}>Still Inhibited - Find New Layer</Button>
           </div>
           <Button variant="ghost" onClick={goBack} className="w-full h-12 rounded-xl"><ChevronLeft size={18} className="mr-2" /> Back</Button>
         </div>

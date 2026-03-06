@@ -41,7 +41,8 @@ import {
   GitBranch,
   Eye,
   Workflow,
-  ImageIcon
+  ImageIcon,
+  Trophy
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -59,6 +60,7 @@ import VideoLibrary from "@/components/crm/VideoLibrary";
 import BrainReflexReference from "@/components/crm/BrainReflexReference";
 import FnTheory from "@/components/crm/FnTheory";
 import LigamentReference from "@/components/crm/LigamentReference";
+import MechanoMastery from "@/components/crm/MechanoMastery";
 
 const ResourcesPage = () => {
   const [searchParams, setSearchParams] = useSearchParams();
@@ -83,6 +85,9 @@ const ResourcesPage = () => {
           <TabsList className="flex w-max h-auto p-1.5 bg-slate-200/50 rounded-2xl gap-1">
             <TabsTrigger value="intention" className="rounded-xl py-2.5 px-6 data-[state=active]:bg-white data-[state=active]:text-indigo-600 data-[state=active]:shadow-sm font-bold text-xs uppercase tracking-widest">
               <Compass size={16} className="mr-2" /> North Star Process
+            </TabsTrigger>
+            <TabsTrigger value="mechano" className="rounded-xl py-2.5 px-6 data-[state=active]:bg-white data-[state=active]:text-indigo-600 data-[state=active]:shadow-sm font-bold text-xs uppercase tracking-widest">
+              <Trophy size={16} className="mr-2" /> Mechano Mastery
             </TabsTrigger>
             <TabsTrigger value="theory" className="rounded-xl py-2.5 px-6 data-[state=active]:bg-white data-[state=active]:text-indigo-600 data-[state=active]:shadow-sm font-bold text-xs uppercase tracking-widest">
               <Workflow size={16} className="mr-2" /> FN Theory
@@ -157,6 +162,10 @@ const ResourcesPage = () => {
           </Card>
         </TabsContent>
 
+        <TabsContent value="mechano" className="mt-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
+          <MechanoMastery />
+        </TabsContent>
+
         <TabsContent value="theory" className="mt-8 space-y-10 animate-in fade-in slide-in-from-bottom-4 duration-500">
           <FnTheory />
         </TabsContent>
@@ -177,7 +186,7 @@ const ResourcesPage = () => {
                   Clinical reasoning follows a specific neurological order to ensure lasting results.
                 </CardDescription>
               </CardHeader>
-              <CardContent className="p-10 pt-0 space-y-8 relative z-10">
+              <CardContent className="p-10 pt-0 space-y-4 relative z-10">
                 <div className="space-y-4">
                   {[
                     { step: 1, title: "Safety First", desc: "Address SNS dominance (Harmonic Rocking, Diaphragm) before deep work." },

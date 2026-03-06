@@ -18,12 +18,15 @@ import {
   Activity,
   Target,
   ImageIcon,
-  Loader2
+  Loader2,
+  Info,
+  ShieldAlert
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { BRAIN_REFLEX_POINTS, BrainReflexPoint } from '@/data/brain-reflex-data';
 import { supabase } from "@/integrations/supabase/client";
 import { showError } from '@/utils/toast';
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 
 type Step = 'ENTRY' | 'COORD_1' | 'COORD_2' | 'METHOD' | 'CALIBRATE' | 'REASSESS';
 type IntegrationMethod = 'Tapping' | 'Holding + Intention' | 'Tuning Fork';
@@ -65,7 +68,8 @@ const ZoneCard = ({ point, images, onSelect, isLoading }: {
                 )}
             </div>
             <div className="p-3">
-                <p className="font-bold text-xs text-slate-800 truncate">{point.name}</p>
+                <p className="font-bold text-[10px] text-slate-800 truncate">{point.name}</p>
+                <p className="text-[8px] font-black text-slate-400 uppercase tracking-widest">{point.lateralization}</p>
             </div>
 
             {/* Overlay */}
@@ -140,6 +144,23 @@ const EfferentBrainIntegration = ({ onSave, onCancel, initialValue, initialEntry
         <div className="space-y-2">
           <h3 className="text-xl font-black text-slate-900">{title}</h3>
           <p className="text-sm text-slate-500">Hover over a zone and select the lateralization (L/R/Bi).</p>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="p-4 bg-purple-50 border border-purple-100 rounded-2xl flex items-start gap-3">
+            <ShieldAlert size={18} className="text-purple-600 shrink-0 mt-0.5" />
+            <div>
+              <p className="text-[10px] font-black text-purple-600 uppercase tracking-widest">Cortical Logic</p>
+              <p className="text-xs font-bold text-purple-900">Contralateral: Right cortex controls Left body.</p>
+            </div>
+          </div>
+          <div className="p-4 bg-indigo-50 border border-indigo-100 rounded-2xl flex items-start gap-3">
+            <ShieldAlert size={18} className="text-indigo-600 shrink-0 mt-0.5" />
+            <div>
+              <p className="text-[10px] font-black text-indigo-600 uppercase tracking-widest">Subcortical Logic</p>
+              <p className="text-xs font-bold text-indigo-900">Ipsilateral: Left cerebellum controls Left body.</p>
+            </div>
+          </div>
         </div>
 
         <div className="space-y-6">
@@ -256,15 +277,15 @@ const EfferentBrainIntegration = ({ onSave, onCancel, initialValue, initialEntry
             </div>
             <div className="grid grid-cols-1 gap-3">
               {[
-                { id: 'Tapping', icon: Zap, color: 'text-amber-500', desc: 'Simultaneous tapping for 3-5 seconds.' },
-                { id: 'Holding + Intention', icon: Heart, color: 'text-rose-500', desc: 'Light hold + mental repetition of zones.' },
-                { id: 'Tuning Fork', icon: Activity, color: 'text-blue-500', desc: 'Vibrational reset on the cranium.' }
+                { id: 'Tapping', icon: Zap, color: 'text-amber-500', desc: 'Simultaneous tapping for 3-5 seconds.', best: 'Fast resets, postural fixes' },
+                { id: 'Holding + Intention', icon: Heart, color: 'text-rose-500', desc: 'Light hold + mental repetition of zones.', best: 'Deep trauma, complex patterns' },
+                { id: 'Tuning Fork', icon: Activity, color: 'text-blue-500', desc: 'Vibrational reset on the cranium.', best: 'Multiple layers, vibrational priority' }
               ].map((m) => (
                 <Button
                   key={m.id}
                   variant="outline"
                   className={cn(
-                    "h-20 justify-start gap-4 px-6 rounded-2xl border-2 transition-all",
+                    "h-24 justify-start gap-4 px-6 rounded-2xl border-2 transition-all",
                     method === m.id ? "border-indigo-600 bg-indigo-50 text-indigo-700" : "border-slate-100 hover:border-indigo-200"
                   )}
                   onClick={() => {
@@ -272,12 +293,13 @@ const EfferentBrainIntegration = ({ onSave, onCancel, initialValue, initialEntry
                     nextStep('CALIBRATE');
                   }}
                 >
-                  <div className="w-10 h-10 rounded-xl bg-white shadow-sm flex items-center justify-center">
-                    <m.icon size={20} className={m.color} />
+                  <div className="w-12 h-12 rounded-xl bg-white shadow-sm flex items-center justify-center shrink-0">
+                    <m.icon size={24} className={m.color} />
                   </div>
                   <div className="text-left">
                     <div className="font-bold text-lg">{m.id}</div>
                     <div className="text-xs opacity-70">{m.desc}</div>
+                    <div className="text-[9px] font-black text-indigo-500 uppercase tracking-widest mt-1">Best for: {m.best}</div>
                   </div>
                 </Button>
               ))}

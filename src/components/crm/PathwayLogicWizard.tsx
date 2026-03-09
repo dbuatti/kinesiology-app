@@ -8,7 +8,7 @@ import {
   Zap, Info, List, RefreshCw, Eye, Dumbbell, Link as LinkIcon,
   Workflow, Lightbulb, ChevronRight, ChevronLeft, Droplets, 
   AlertTriangle, ArrowRight, Heart, ImageIcon, Loader2, Search,
-  ShieldAlert, Hand, PlayCircle
+  ShieldAlert, Hand, PlayCircle, Baby
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Badge } from '@/components/ui/badge';
@@ -29,6 +29,7 @@ import { supabase } from "@/integrations/supabase/client";
 import JointActionTableModal from './JointActionTableModal';
 import { BRAIN_REFLEX_POINTS } from '@/data/brain-reflex-data';
 import { getMuscleInfo } from '@/data/muscle-info-data';
+import { PRIMITIVE_REFLEXES } from '@/data/primitive-reflex-data';
 
 type Step = 
   | 'SELECT_START'
@@ -117,7 +118,26 @@ const PathwayLogicWizard = ({ onSave, priorityPattern }: PathwayLogicWizardProps
   const clinicalTip = useMemo(() => {
     if (!selectedItem || selectedItem === 'CUSTOM') return null;
 
-    // 1. Check for Brain Reflex Points (Nerves, Cortical, Subcortical)
+    // 1. Check for Primitive Reflexes
+    const primitive = PRIMITIVE_REFLEXES.find(r => 
+      selectedItem.toLowerCase().includes(r.name.toLowerCase()) || 
+      r.name.toLowerCase().includes(selectedItem.toLowerCase())
+    );
+
+    if (primitive) {
+      return {
+        type: 'Primitive Reflex',
+        icon: Baby,
+        title: primitive.name,
+        content: primitive.pearl || "Foundational neurological pattern.",
+        logic: `${primitive.category} Category`,
+        location: primitive.inhibitionPattern,
+        stimulus: primitive.stimulus,
+        extra: "Usually 1-3 corrections needed for integration."
+      };
+    }
+
+    // 2. Check for Brain Reflex Points (Nerves, Cortical, Subcortical)
     const brainPoint = BRAIN_REFLEX_POINTS.find(p => 
       selectedItem.toLowerCase().includes(p.name.toLowerCase()) || 
       p.name.toLowerCase().includes(selectedItem.toLowerCase())
@@ -126,6 +146,7 @@ const PathwayLogicWizard = ({ onSave, priorityPattern }: PathwayLogicWizardProps
     if (brainPoint) {
       return {
         type: brainPoint.category,
+        icon: Brain,
         title: brainPoint.name,
         content: brainPoint.pearl || "Neurological priority detected.",
         logic: `${brainPoint.lateralization} Logic`,
@@ -135,11 +156,12 @@ const PathwayLogicWizard = ({ onSave, priorityPattern }: PathwayLogicWizardProps
       };
     }
 
-    // 2. Check for Muscle Info
+    // 3. Check for Muscle Info
     const muscle = getMuscleInfo(selectedItem);
     if (muscle && muscle.meridian !== 'General') {
       return {
         type: 'Muscle',
+        icon: Dumbbell,
         title: muscle.name,
         content: muscle.clinicalIndications || muscle.description || "Muscle inhibition detected.",
         logic: `Meridian: ${muscle.meridian}`,
@@ -227,7 +249,7 @@ const PathwayLogicWizard = ({ onSave, priorityPattern }: PathwayLogicWizardProps
               <div className="p-8 bg-amber-50 rounded-[2.5rem] border-2 border-amber-100 animate-in zoom-in-95 duration-500 space-y-6">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-3">
-                    <Lightbulb size={24} className="text-amber-600" />
+                    <clinicalTip.icon size={24} className="text-amber-600" />
                     <h4 className="font-black text-amber-900 text-sm uppercase tracking-widest">Clinical Insight: {clinicalTip.title}</h4>
                   </div>
                   <div className="flex gap-2">
@@ -243,7 +265,8 @@ const PathwayLogicWizard = ({ onSave, priorityPattern }: PathwayLogicWizardProps
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div className="p-4 bg-white/60 rounded-2xl border border-amber-200 space-y-1">
                     <p className="text-[8px] font-black text-amber-600 uppercase tracking-widest flex items-center gap-1">
-                      <Hand size={10} /> Reflex Point
+                      {clinicalTip.type === 'Primitive Reflex' ? <ShieldAlert size={10} /> : <Hand size={10} />}
+                      {clinicalTip.type === 'Primitive Reflex' ? 'Inhibition Pattern' : 'Reflex Point'}
                     </p>
                     <p className="text-xs font-bold text-amber-900 leading-tight">{clinicalTip.location}</p>
                   </div>

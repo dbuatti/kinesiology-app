@@ -35,10 +35,10 @@ export const CRANIAL_NERVES: CranialNerve[] = [
     latinName: "Optic",
     nuclei: "Cortex",
     toneEffect: "None",
-    reflexPoint: "Bladder 2 (inner eyebrow)",
+    reflexPoint: "Bladder 2 (inner edge of the eyebrow)",
     functions: ["Vision", "Light reflex"],
-    stimulus: "Shine light into eye from various angles.",
-    clinicalPearl: "Arises from the occipital lobe in the cortex.",
+    stimulus: "1. Test reflex point at the inner edge of the eyebrow. 2. If inhibited, shine a light into the eye from multiple directions: straight on, superior, inferior, medial, and lateral to identify the priority angle.",
+    clinicalPearl: "Only proceed to light testing if the reflex point indicates a priority. This nerve arises from the occipital lobe in the cortex.",
     color: "bg-purple-600"
   },
   {

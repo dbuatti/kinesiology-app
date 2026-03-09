@@ -23,10 +23,10 @@ export const CRANIAL_NERVES: CranialNerve[] = [
     latinName: "Olfactory",
     nuclei: "Cortex",
     toneEffect: "None",
-    reflexPoint: "Yin Tang (between eyebrows)",
+    reflexPoint: "Yin Tang (Third Eye / between eyebrows)",
     functions: ["Smell", "Limbic integration"],
-    stimulus: "Smell an essential oil in one nostril at a time.",
-    clinicalPearl: "Directly impacts the limbic system; the only sense that bypasses the thalamus.",
+    stimulus: "1. Test Yin Tang reflex point. 2. If inhibited, use an essential oil to isolate side. Block one nostril and sniff; identify which side affects the IM.",
+    clinicalPearl: "The only sense that bypasses the thalamus. Only proceed to essential oil testing if the Yin Tang reflex point indicates a priority first.",
     color: "bg-purple-500"
   },
   {

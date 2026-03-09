@@ -2,11 +2,12 @@
 
 import React, { useState } from "react";
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/card";
-import { Footprints, Scale, Brain, ChevronDown, Hand, CheckCircle2, Info, AlertCircle } from "lucide-react";
+import { Footprints, Scale, Brain, ChevronDown, Hand, CheckCircle2, Info, AlertCircle, RefreshCw } from "lucide-react";
 import { cn } from "@/lib/utils";
 import FakudaStepTest from "./FakudaStepTest";
 import SharpenedRhombergsTest from "./SharpenedRhombergsTest";
 import FrontalLobeAssessment from "./FrontalLobeAssessment";
+import RightingReflexesAssessment from "./RightingReflexesAssessment";
 import { Button } from "@/components/ui/button";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -17,6 +18,7 @@ interface NeurologicalAssessmentsProps {
   initialFakudaNotes: string | null | undefined;
   initialRhombergsNotes: string | null | undefined;
   initialFrontalLobeNotes: string | null | undefined;
+  initialRightingReflexNotes?: string | null | undefined;
   onUpdate: () => void;
 }
 
@@ -25,6 +27,7 @@ const NeurologicalAssessments = ({
   initialFakudaNotes,
   initialRhombergsNotes,
   initialFrontalLobeNotes,
+  initialRightingReflexNotes,
   onUpdate,
 }: NeurologicalAssessmentsProps) => {
   const [isOpen, setIsOpen] = useState(false);
@@ -32,7 +35,8 @@ const NeurologicalAssessments = ({
   const hasFakudaNotes = !!initialFakudaNotes;
   const hasRhombergsNotes = !!initialRhombergsNotes;
   const hasFrontalLobeNotes = !!initialFrontalLobeNotes;
-  const hasAnyNotes = hasFakudaNotes || hasRhombergsNotes || hasFrontalLobeNotes;
+  const hasRightingNotes = !!initialRightingReflexNotes;
+  const hasAnyNotes = hasFakudaNotes || hasRhombergsNotes || hasFrontalLobeNotes || hasRightingNotes;
 
   return (
     <Collapsible open={isOpen} onOpenChange={setIsOpen}>
@@ -71,7 +75,7 @@ const NeurologicalAssessments = ({
         <CollapsibleContent>
           <div className="p-8 border-t border-border space-y-8 animate-in fade-in slide-in-from-top-2 duration-500">
             <Tabs defaultValue="fakuda" className="w-full">
-              <TabsList className="grid w-full grid-cols-3 h-16 bg-muted p-1.5 rounded-2xl">
+              <TabsList className="grid w-full grid-cols-4 h-16 bg-muted p-1.5 rounded-2xl">
                 <TabsTrigger value="fakuda" className="flex items-center gap-2 data-[state=active]:bg-card data-[state=active]:text-emerald-600 data-[state=active]:shadow-sm rounded-xl h-13 font-black uppercase tracking-wider text-[10px] relative">
                   <Footprints size={16} /> Fakuda
                   {hasFakudaNotes && <span className="absolute top-2 right-2 w-2 h-2 bg-emerald-500 rounded-full" />}
@@ -81,8 +85,12 @@ const NeurologicalAssessments = ({
                   {hasRhombergsNotes && <span className="absolute top-2 right-2 w-2 h-2 bg-purple-500 rounded-full" />}
                 </TabsTrigger>
                 <TabsTrigger value="frontal-lobe" className="flex items-center gap-2 data-[state=active]:bg-card data-[state=active]:text-indigo-600 data-[state=active]:shadow-sm rounded-xl h-13 font-black uppercase tracking-wider text-[10px] relative">
-                  <Hand size={16} /> Frontal Lobe
+                  <Hand size={16} /> Frontal
                   {hasFrontalLobeNotes && <span className="absolute top-2 right-2 w-2 h-2 bg-indigo-500 rounded-full" />}
+                </TabsTrigger>
+                <TabsTrigger value="righting" className="flex items-center gap-2 data-[state=active]:bg-card data-[state=active]:text-blue-600 data-[state=active]:shadow-sm rounded-xl h-13 font-black uppercase tracking-wider text-[10px] relative">
+                  <RefreshCw size={16} /> Righting
+                  {hasRightingNotes && <span className="absolute top-2 right-2 w-2 h-2 bg-blue-500 rounded-full" />}
                 </TabsTrigger>
               </TabsList>
               
@@ -127,6 +135,21 @@ const NeurologicalAssessments = ({
                 <FrontalLobeAssessment
                   appointmentId={appointmentId}
                   initialNotes={initialFrontalLobeNotes}
+                  onUpdate={onUpdate}
+                />
+              </TabsContent>
+
+              <TabsContent value="righting" className="mt-8 space-y-6">
+                <div className="flex items-center justify-between px-2">
+                  <div className="space-y-1">
+                    <h4 className="text-lg font-black text-foreground">Righting Reflexes</h4>
+                    <p className="text-xs text-muted-foreground font-medium">Ocular & Labyrinthine postural organization</p>
+                  </div>
+                  {hasRightingNotes && <Badge className="bg-blue-500/10 text-blue-600 dark:text-blue-400 border-blue-500/20 font-bold">Completed</Badge>}
+                </div>
+                <RightingReflexesAssessment
+                  appointmentId={appointmentId}
+                  initialNotes={initialRightingReflexNotes}
                   onUpdate={onUpdate}
                 />
               </TabsContent>

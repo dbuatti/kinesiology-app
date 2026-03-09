@@ -52,6 +52,8 @@ export interface Appointment {
   sharpened_rhombergs_notes?: string | null;
   // Frontal Lobe Assessment field
   frontal_lobe_notes?: string | null;
+  // Righting Reflexes field
+  righting_reflex_notes?: string | null;
   // Luscher Colour Assessment fields
   luscher_color_1?: string | null;
   luscher_color_2?: string | null;

@@ -41,6 +41,7 @@ const BaselineTab = ({ appointment, onUpdate, saveField }: BaselineTabProps) => 
         initialFakudaNotes={appointment.fakuda_notes} 
         initialRhombergsNotes={appointment.sharpened_rhombergs_notes} 
         initialFrontalLobeNotes={appointment.frontal_lobe_notes} 
+        initialRightingReflexNotes={appointment.righting_reflex_notes}
         onUpdate={onUpdate} 
       />
       <LymphaticAssessment

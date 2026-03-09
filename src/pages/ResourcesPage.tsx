@@ -50,6 +50,7 @@ import FnTheory from "@/components/crm/FnTheory";
 import LigamentReference from "@/components/crm/LigamentReference";
 import MechanoMastery from "@/components/crm/MechanoMastery";
 import MechanoBible from "@/components/crm/MechanoBible";
+import RightingReflexesAssessment from "@/components/crm/RightingReflexesAssessment";
 
 const CATEGORIES = [
   {
@@ -107,6 +108,7 @@ const CATEGORIES = [
       { id: "spinal", label: "Spinal", icon: Move, desc: "Spinal segment and Lovett-Brother associations." },
       { id: "vestibular", label: "Vestibular", icon: Footprints, desc: "Fukuda Step Test and balance protocols." },
       { id: "lymphatic", label: "Lymphatic", icon: Droplets, desc: "Drainage protocols and counterstrain points." },
+      { id: "postural", label: "Postural Reflexes", icon: RefreshCw, desc: "Ocular and Labyrinthine righting reflexes." },
     ]
   }
 ];
@@ -360,6 +362,15 @@ const ResourcesPage = () => {
                   </div>
                 </CardContent>
               </Card>
+            </TabsContent>
+            <TabsContent value="postural">
+              <div className="max-w-4xl mx-auto">
+                <RightingReflexesAssessment 
+                  appointmentId="temp" 
+                  initialNotes={null} 
+                  onUpdate={() => {}} 
+                />
+              </div>
             </TabsContent>
           </div>
         </Tabs>

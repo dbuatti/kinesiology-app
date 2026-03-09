@@ -21,11 +21,12 @@ export const generateSessionSummary = (appointment: AppointmentWithClient): stri
     if (appointment.transverse_plane_notes) summary += `- Transverse: ${appointment.transverse_plane_notes}\n`;
   }
 
-  if (appointment.fakuda_notes || appointment.sharpened_rhombergs_notes || appointment.frontal_lobe_notes) {
+  if (appointment.fakuda_notes || appointment.sharpened_rhombergs_notes || appointment.frontal_lobe_notes || appointment.righting_reflex_notes) {
     summary += `\nNEUROLOGICAL FINDINGS:\n`;
     if (appointment.fakuda_notes) summary += `- Fakuda: ${appointment.fakuda_notes}\n`;
     if (appointment.sharpened_rhombergs_notes) summary += `- Rhombergs: ${appointment.sharpened_rhombergs_notes}\n`;
     if (appointment.frontal_lobe_notes) summary += `- Frontal Lobe: ${appointment.frontal_lobe_notes}\n`;
+    if (appointment.righting_reflex_notes) summary += `- Righting Reflexes: ${appointment.righting_reflex_notes}\n`;
   }
 
   if (appointment.emotion_secondary_selection && appointment.emotion_secondary_selection.length > 0) {

@@ -8,7 +8,7 @@ import {
   Zap, Info, List, RefreshCw, Eye, Dumbbell, Link as LinkIcon,
   Workflow, Lightbulb, ChevronRight, ChevronLeft, Droplets, 
   AlertTriangle, ArrowRight, Heart, ImageIcon, Loader2, Search,
-  ShieldAlert
+  ShieldAlert, Hand, PlayCircle
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Badge } from '@/components/ui/badge';
@@ -129,6 +129,8 @@ const PathwayLogicWizard = ({ onSave, priorityPattern }: PathwayLogicWizardProps
         title: brainPoint.name,
         content: brainPoint.pearl || "Neurological priority detected.",
         logic: `${brainPoint.lateralization} Logic`,
+        location: brainPoint.location,
+        stimulus: brainPoint.stimulus || brainPoint.technique,
         extra: brainPoint.nuclei ? `Nuclei: ${brainPoint.nuclei}` : null
       };
     }
@@ -141,6 +143,8 @@ const PathwayLogicWizard = ({ onSave, priorityPattern }: PathwayLogicWizardProps
         title: muscle.name,
         content: muscle.clinicalIndications || muscle.description || "Muscle inhibition detected.",
         logic: `Meridian: ${muscle.meridian}`,
+        location: muscle.neurolymphatic || "Check NL points",
+        stimulus: muscle.testingPosition || "Standard test",
         extra: muscle.brainstemControl ? `Control: ${muscle.brainstemControl}` : null
       };
     }
@@ -220,11 +224,11 @@ const PathwayLogicWizard = ({ onSave, priorityPattern }: PathwayLogicWizardProps
             </div>
 
             {clinicalTip && (
-              <div className="p-6 bg-amber-50 rounded-[2rem] border-2 border-amber-100 animate-in zoom-in-95 duration-500">
-                <div className="flex items-center justify-between mb-3">
+              <div className="p-8 bg-amber-50 rounded-[2.5rem] border-2 border-amber-100 animate-in zoom-in-95 duration-500 space-y-6">
+                <div className="flex items-center justify-between">
                   <div className="flex items-center gap-3">
-                    <Lightbulb size={20} className="text-amber-600" />
-                    <h4 className="font-black text-amber-900 text-xs uppercase tracking-widest">Clinical Insight: {clinicalTip.title}</h4>
+                    <Lightbulb size={24} className="text-amber-600" />
+                    <h4 className="font-black text-amber-900 text-sm uppercase tracking-widest">Clinical Insight: {clinicalTip.title}</h4>
                   </div>
                   <div className="flex gap-2">
                     <Badge variant="outline" className="bg-white border-amber-200 text-amber-700 font-black text-[8px] uppercase tracking-widest">
@@ -235,14 +239,32 @@ const PathwayLogicWizard = ({ onSave, priorityPattern }: PathwayLogicWizardProps
                     </Badge>
                   </div>
                 </div>
-                <p className="text-sm text-amber-800 font-medium leading-relaxed italic">
-                  "{clinicalTip.content}"
-                </p>
-                {clinicalTip.extra && (
-                  <div className="mt-3 pt-3 border-t border-amber-200 flex items-center gap-2 text-[10px] font-black text-amber-600 uppercase tracking-widest">
-                    <ShieldAlert size={12} /> {clinicalTip.extra}
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="p-4 bg-white/60 rounded-2xl border border-amber-200 space-y-1">
+                    <p className="text-[8px] font-black text-amber-600 uppercase tracking-widest flex items-center gap-1">
+                      <Hand size={10} /> Reflex Point
+                    </p>
+                    <p className="text-xs font-bold text-amber-900 leading-tight">{clinicalTip.location}</p>
                   </div>
-                )}
+                  <div className="p-4 bg-white/60 rounded-2xl border border-amber-200 space-y-1">
+                    <p className="text-[8px] font-black text-amber-600 uppercase tracking-widest flex items-center gap-1">
+                      <PlayCircle size={10} /> Stimulus
+                    </p>
+                    <p className="text-xs font-bold text-amber-900 leading-tight">{clinicalTip.stimulus}</p>
+                  </div>
+                </div>
+
+                <div className="pt-4 border-t border-amber-200">
+                  <p className="text-sm text-amber-800 font-medium leading-relaxed italic">
+                    "{clinicalTip.content}"
+                  </p>
+                  {clinicalTip.extra && (
+                    <div className="mt-3 flex items-center gap-2 text-[10px] font-black text-amber-600 uppercase tracking-widest">
+                      <ShieldAlert size={12} /> {clinicalTip.extra}
+                    </div>
+                  )}
+                </div>
               </div>
             )}
           </div>

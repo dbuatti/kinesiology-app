@@ -7,7 +7,8 @@ import {
   GitBranch, Sparkles, Brain, Activity, CheckCircle2, 
   Zap, Info, List, RefreshCw, Eye, Dumbbell, Link as LinkIcon,
   Workflow, Lightbulb, ChevronRight, ChevronLeft, Droplets, 
-  AlertTriangle, ArrowRight, Heart, ImageIcon, Loader2, Search
+  AlertTriangle, ArrowRight, Heart, ImageIcon, Loader2, Search,
+  ShieldAlert
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Badge } from '@/components/ui/badge';
@@ -26,7 +27,8 @@ import MechanoreceptiveProcess from './MechanoreceptiveProcess';
 import EmotionalIntegrationProcess from './EmotionalIntegrationProcess';
 import { supabase } from "@/integrations/supabase/client";
 import JointActionTableModal from './JointActionTableModal';
-import { CRANIAL_NERVES } from '@/data/cranial-nerve-data';
+import { BRAIN_REFLEX_POINTS } from '@/data/brain-reflex-data';
+import { getMuscleInfo } from '@/data/muscle-info-data';
 
 type Step = 
   | 'SELECT_START'
@@ -111,9 +113,39 @@ const PathwayLogicWizard = ({ onSave, priorityPattern }: PathwayLogicWizardProps
     resetWizard();
   };
 
-  const nerveInfo = useMemo(() => {
-    if (!selectedItem) return null;
-    return CRANIAL_NERVES.find(n => selectedItem.includes(n.name) || selectedItem.includes(n.latinName));
+  // Dynamic Clinical Tip Logic
+  const clinicalTip = useMemo(() => {
+    if (!selectedItem || selectedItem === 'CUSTOM') return null;
+
+    // 1. Check for Brain Reflex Points (Nerves, Cortical, Subcortical)
+    const brainPoint = BRAIN_REFLEX_POINTS.find(p => 
+      selectedItem.toLowerCase().includes(p.name.toLowerCase()) || 
+      p.name.toLowerCase().includes(selectedItem.toLowerCase())
+    );
+
+    if (brainPoint) {
+      return {
+        type: brainPoint.category,
+        title: brainPoint.name,
+        content: brainPoint.pearl || "Neurological priority detected.",
+        logic: `${brainPoint.lateralization} Logic`,
+        extra: brainPoint.nuclei ? `Nuclei: ${brainPoint.nuclei}` : null
+      };
+    }
+
+    // 2. Check for Muscle Info
+    const muscle = getMuscleInfo(selectedItem);
+    if (muscle && muscle.meridian !== 'General') {
+      return {
+        type: 'Muscle',
+        title: muscle.name,
+        content: muscle.clinicalIndications || muscle.description || "Muscle inhibition detected.",
+        logic: `Meridian: ${muscle.meridian}`,
+        extra: muscle.brainstemControl ? `Control: ${muscle.brainstemControl}` : null
+      };
+    }
+
+    return null;
   }, [selectedItem]);
 
   const renderStep = () => {
@@ -187,16 +219,30 @@ const PathwayLogicWizard = ({ onSave, priorityPattern }: PathwayLogicWizardProps
               </div>
             </div>
 
-            {nerveInfo && (
+            {clinicalTip && (
               <div className="p-6 bg-amber-50 rounded-[2rem] border-2 border-amber-100 animate-in zoom-in-95 duration-500">
-                <div className="flex items-center gap-3 mb-3">
-                  <Lightbulb size={20} className="text-amber-600" />
-                  <h4 className="font-black text-amber-900 text-xs uppercase tracking-widest">Clinical Tip: {nerveInfo.name}</h4>
+                <div className="flex items-center justify-between mb-3">
+                  <div className="flex items-center gap-3">
+                    <Lightbulb size={20} className="text-amber-600" />
+                    <h4 className="font-black text-amber-900 text-xs uppercase tracking-widest">Clinical Insight: {clinicalTip.title}</h4>
+                  </div>
+                  <div className="flex gap-2">
+                    <Badge variant="outline" className="bg-white border-amber-200 text-amber-700 font-black text-[8px] uppercase tracking-widest">
+                      {clinicalTip.type}
+                    </Badge>
+                    <Badge className="bg-amber-600 text-white border-none font-black text-[8px] uppercase tracking-widest">
+                      {clinicalTip.logic}
+                    </Badge>
+                  </div>
                 </div>
-                <p className="text-sm text-amber-800 font-medium leading-relaxed">
-                  This nerve arises from the <span className="font-black underline">{nerveInfo.nuclei}</span> nuclei. 
-                  {nerveInfo.toneEffect !== 'None' && ` It primarily influences ${nerveInfo.toneEffect} tone.`}
+                <p className="text-sm text-amber-800 font-medium leading-relaxed italic">
+                  "{clinicalTip.content}"
                 </p>
+                {clinicalTip.extra && (
+                  <div className="mt-3 pt-3 border-t border-amber-200 flex items-center gap-2 text-[10px] font-black text-amber-600 uppercase tracking-widest">
+                    <ShieldAlert size={12} /> {clinicalTip.extra}
+                  </div>
+                )}
               </div>
             )}
           </div>
@@ -269,7 +315,8 @@ const PathwayLogicWizard = ({ onSave, priorityPattern }: PathwayLogicWizardProps
                     <div className="w-12 h-12 rounded-xl bg-card shadow-sm flex items-center justify-center group-hover:scale-110 transition-transform">
                       <item.icon size={24} className={cn(
                         item.color === 'purple' ? "text-purple-600" :
-                        "text-rose-600"
+                        item.color === 'rose' ? "text-rose-600" :
+                        "text-slate-600"
                       )} />
                     </div>
                     <div>

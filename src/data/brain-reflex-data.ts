@@ -1,5 +1,7 @@
 "use client";
 
+import { CRANIAL_NERVES } from "./cranial-nerve-data";
+
 export type BrainRegionCategory = 'Cortical' | 'Subcortical' | 'Cranial Nerve';
 
 export interface BrainReflexPoint {
@@ -17,8 +19,7 @@ export interface BrainReflexPoint {
   toneEffect?: 'Flexors' | 'Extensors' | 'None';
 }
 
-export const BRAIN_REFLEX_POINTS: BrainReflexPoint[] = [
-  // CORTICAL (Contralateral Logic)
+const CORTICAL_POINTS: BrainReflexPoint[] = [
   {
     id: 'pfc',
     name: 'Prefrontal Cortex',
@@ -82,8 +83,9 @@ export const BRAIN_REFLEX_POINTS: BrainReflexPoint[] = [
     lateralization: 'Contralateral',
     pearl: 'The "Suffering Center". Often upregulated in chronic pain.',
   },
+];
 
-  // SUBCORTICAL (Ipsilateral Logic)
+const SUBCORTICAL_POINTS: BrainReflexPoint[] = [
   {
     id: 'limbic',
     name: 'Limbic System',
@@ -169,138 +171,24 @@ export const BRAIN_REFLEX_POINTS: BrainReflexPoint[] = [
     lateralization: 'Ipsilateral',
     pearl: 'Bottom of brainstem. Controls heart rate and respiration.',
   },
+];
 
-  // CRANIAL NERVES (Updated from Lecture)
-  {
-    id: 'cn1',
-    name: 'CN I: Olfactory',
-    category: 'Cranial Nerve',
-    location: 'Yin Tang Acupoint (between eyebrows).',
-    stimulus: 'Smell an essential oil in nostril.',
-    lateralization: 'Bilateral',
-    nuclei: 'Cortex',
-    toneEffect: 'None',
-    pearl: 'Directly linked to the limbic system; bypasses the thalamus.',
-  },
-  {
-    id: 'cn2',
-    name: 'CN II: Optic',
-    category: 'Cranial Nerve',
-    location: 'Bladder 2 acupoint.',
-    stimulus: 'Shine light into eye from various angles.',
-    lateralization: 'Contralateral',
-    nuclei: 'Cortex',
-    toneEffect: 'None',
-    pearl: 'Arises from the occipital lobe.',
-  },
-  {
-    id: 'cn3',
-    name: 'CN III: Oculomotor',
-    category: 'Cranial Nerve',
-    location: 'Lightly touch eyelids.',
-    stimulus: 'Move eyes up, down, and medially.',
-    lateralization: 'Ipsilateral',
-    nuclei: 'Midbrain',
-    toneEffect: 'Flexors',
-    pearl: 'Midbrain nuclei control flexor tone.',
-  },
-  {
-    id: 'cn4',
-    name: 'CN IV: Trochlear',
-    category: 'Cranial Nerve',
-    location: 'Lightly touch eyes.',
-    stimulus: 'Move eyes towards tip of nose.',
-    lateralization: 'Ipsilateral',
-    nuclei: 'Midbrain',
-    toneEffect: 'Flexors',
-    pearl: 'Controls superior oblique muscle.',
-  },
-  {
-    id: 'cn5',
-    name: 'CN V: Trigeminal',
-    category: 'Cranial Nerve',
-    location: 'Hand across mandible (cheek).',
-    stimulus: 'Light touch to face or soft sound stimulus.',
-    lateralization: 'Ipsilateral',
-    nuclei: 'Pons',
-    toneEffect: 'Extensors',
-    pearl: 'Pons nuclei control extensor tone.',
-  },
-  {
-    id: 'cn6',
-    name: 'CN VI: Abducens',
-    category: 'Cranial Nerve',
-    location: 'Lightly touch eyes.',
-    stimulus: 'Move eyes laterally (away from nose).',
-    lateralization: 'Ipsilateral',
-    nuclei: 'Pons',
-    toneEffect: 'Extensors',
-    pearl: 'Controls lateral rectus muscle.',
-  },
-  {
-    id: 'cn7',
-    name: 'CN VII: Facial',
-    category: 'Cranial Nerve',
-    location: 'Hand along temporal / TMJ area.',
-    stimulus: 'Squeeze eyes shut or make facial expressions.',
-    lateralization: 'Ipsilateral',
-    nuclei: 'Pons',
-    toneEffect: 'Extensors',
-    pearl: 'Essential for social engagement.',
-  },
-  {
-    id: 'cn8',
-    name: 'CN VIII: Vestibulocochlear',
-    category: 'Cranial Nerve',
-    location: 'Finger in ear canal.',
-    stimulus: 'Click fingers near ear or move head.',
-    lateralization: 'Ipsilateral',
-    nuclei: 'Pons',
-    toneEffect: 'Extensors',
-    pearl: 'Primary focus for dizziness and vertigo.',
-  },
-  {
-    id: 'cn9',
-    name: 'CN IX: Glossopharyngeal',
-    category: 'Cranial Nerve',
-    location: 'GB21 acupoint.',
-    stimulus: 'Perform a swallow or hum.',
-    lateralization: 'Ipsilateral',
-    nuclei: 'Medulla',
-    toneEffect: 'Flexors',
-    pearl: 'Medulla nuclei control flexor tone.',
-  },
-  {
-    id: 'cn10',
-    name: 'CN X: Vagus',
-    category: 'Cranial Nerve',
-    location: 'Hand along Occiput-Atlas joint.',
-    stimulus: 'Swallowing, humming, or "Aaah" sound.',
-    lateralization: 'Ipsilateral',
-    nuclei: 'Medulla',
-    toneEffect: 'Flexors',
-    pearl: 'The primary parasympathetic nerve.',
-  },
-  {
-    id: 'cn11',
-    name: 'CN XI: Accessory',
-    category: 'Cranial Nerve',
-    location: 'Posterior ramus of jaw.',
-    stimulus: 'Shrug shoulders or rotate head.',
-    lateralization: 'Mixed',
-    nuclei: 'Medulla',
-    toneEffect: 'Flexors',
-    pearl: 'Unique cranial and spinal roots.',
-  },
-  {
-    id: 'cn12',
-    name: 'CN XII: Hypoglossal',
-    category: 'Cranial Nerve',
-    location: 'Sulcus under chin.',
-    stimulus: 'Move tongue in various directions.',
-    lateralization: 'Ipsilateral',
-    nuclei: 'Medulla',
-    toneEffect: 'Flexors',
-    pearl: 'Motor control of the tongue.',
-  },
+// Map the central Cranial Nerve data to the BrainReflexPoint interface
+const MAPPED_CRANIAL_NERVES: BrainReflexPoint[] = CRANIAL_NERVES.map(nerve => ({
+  id: `cn${nerve.id}`,
+  name: `${nerve.name}: ${nerve.latinName}`,
+  category: 'Cranial Nerve',
+  location: nerve.reflexPoint,
+  stimulus: nerve.stimulus,
+  lateralization: nerve.id === 1 ? 'Bilateral' : nerve.id === 2 ? 'Contralateral' : 'Ipsilateral',
+  pearl: nerve.clinicalPearl,
+  nuclei: nerve.nuclei,
+  toneEffect: nerve.toneEffect
+}));
+
+// Export the combined list as the single source of truth for all brain-related points
+export const BRAIN_REFLEX_POINTS: BrainReflexPoint[] = [
+  ...CORTICAL_POINTS,
+  ...SUBCORTICAL_POINTS,
+  ...MAPPED_CRANIAL_NERVES
 ];

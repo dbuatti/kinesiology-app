@@ -30,6 +30,8 @@ import { CRANIAL_NERVES } from '@/data/cranial-nerve-data';
 
 type Step = 
   | 'SELECT_START'
+  | 'AFFERENT_SELECT'
+  | 'EFFERENT_SELECT'
   | 'MECHANO_PROCESS'
   | 'VESTIBULAR_PROCESS'
   | 'NOCICEPTIVE_PROCESS'
@@ -156,7 +158,7 @@ const PathwayLogicWizard = ({ onSave, priorityPattern }: PathwayLogicWizardProps
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <button 
-                    onClick={() => goToStep('AFFERENT_SELECT' as any)} 
+                    onClick={() => goToStep('AFFERENT_SELECT')} 
                     className="p-8 rounded-[2.5rem] border-2 border-blue-100 bg-blue-50/30 hover:border-blue-400 hover:bg-blue-50 transition-all duration-500 text-left group"
                 >
                   <div className="flex items-center justify-between mb-4">
@@ -170,7 +172,7 @@ const PathwayLogicWizard = ({ onSave, priorityPattern }: PathwayLogicWizardProps
                 </button>
 
                 <button 
-                    onClick={() => goToStep('EFFERENT_PROCESS')} 
+                    onClick={() => goToStep('EFFERENT_SELECT')} 
                     className="p-8 rounded-[2.5rem] border-2 border-purple-100 bg-purple-50/30 hover:border-purple-400 hover:bg-purple-50 transition-all duration-500 text-left group"
                 >
                   <div className="flex items-center justify-between mb-4">
@@ -200,7 +202,7 @@ const PathwayLogicWizard = ({ onSave, priorityPattern }: PathwayLogicWizardProps
           </div>
         );
 
-      case 'AFFERENT_SELECT' as any:
+      case 'AFFERENT_SELECT':
         return (
           <div className="space-y-4 animate-in fade-in slide-in-from-right-4 duration-300">
             <div className="p-4 bg-indigo-50 rounded-2xl border border-indigo-100 flex items-center justify-between mb-4">
@@ -228,6 +230,46 @@ const PathwayLogicWizard = ({ onSave, priorityPattern }: PathwayLogicWizardProps
                         item.color === 'blue' ? "text-blue-600" :
                         item.color === 'cyan' ? "text-cyan-600" :
                         "text-orange-600"
+                      )} />
+                    </div>
+                    <div>
+                        <p className="font-black text-lg text-foreground">{item.type}</p>
+                        <p className="text-xs font-medium text-muted-foreground">{item.desc}</p>
+                    </div>
+                  </div>
+                  <ArrowRight size={20} className="text-muted-foreground group-hover:text-indigo-600 group-hover:translate-x-1 transition-all" />
+                </div>
+              </button>
+            ))}
+            <Button variant="ghost" onClick={goBack} className="w-full h-12 rounded-xl font-bold text-muted-foreground"><ChevronLeft size={18} className="mr-2" /> Back</Button>
+          </div>
+        );
+
+      case 'EFFERENT_SELECT':
+        return (
+          <div className="space-y-4 animate-in fade-in slide-in-from-right-4 duration-300">
+            <div className="p-4 bg-indigo-50 rounded-2xl border border-indigo-100 flex items-center justify-between mb-4">
+              <div>
+                <p className="text-[10px] font-black text-indigo-400 uppercase tracking-widest">Correcting</p>
+                <p className="text-lg font-black text-indigo-900">{selectedItem || "General Correction"}</p>
+              </div>
+              <Badge className="bg-purple-600 text-white border-none font-black text-[8px] uppercase tracking-widest">Efferent</Badge>
+            </div>
+            {[
+              { type: 'Brain Integration', icon: Brain, color: 'purple', step: 'EFFERENT_PROCESS', desc: 'Cortical and subcortical zone pairing.' },
+              { type: 'Emotional Integration', icon: Heart, color: 'rose', step: 'EMOTIONS_PROCESS', desc: 'Limbic system and emotional context balancing.' }
+            ].map(item => (
+              <button key={item.type} onClick={() => goToStep(item.step as Step)} className={cn(
+                "p-6 rounded-2xl border-2 transition-all duration-300 text-left group w-full",
+                item.color === 'purple' ? "border-purple-100 bg-purple-50/30 hover:border-purple-300" :
+                "border-rose-100 bg-rose-50/30 hover:border-rose-300"
+              )}>
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-4">
+                    <div className="w-12 h-12 rounded-xl bg-card shadow-sm flex items-center justify-center group-hover:scale-110 transition-transform">
+                      <item.icon size={24} className={cn(
+                        item.color === 'purple' ? "text-purple-600" :
+                        "text-rose-600"
                       )} />
                     </div>
                     <div>

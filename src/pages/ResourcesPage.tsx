@@ -29,13 +29,17 @@ import {
   ImageIcon, 
   Trophy,
   LayoutGrid,
-  ChevronRight
+  ChevronRight,
+  Eye,
+  Timer,
+  CheckCircle2
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import Breadcrumbs from "@/components/crm/Breadcrumbs";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { cn } from "@/lib/utils";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 
 // Component Imports
 import AcupointReference from "@/components/crm/AcupointReference";
@@ -86,7 +90,7 @@ const CATEGORIES = [
     label: "TCM & Meridians",
     icon: Layers,
     color: "text-emerald-600",
-    bgColor: "bg-emerald-50 dark:bg-emerald-900/20",
+    bgColor: "bg-emerald-50 dark:bg-indigo-900/20",
     borderColor: "border-emerald-100 dark:border-emerald-900/30",
     items: [
       { id: "clock", label: "Meridian Clock", icon: Clock, desc: "Interactive TCM peak activity reference." },
@@ -364,12 +368,110 @@ const ResourcesPage = () => {
               </Card>
             </TabsContent>
             <TabsContent value="postural">
-              <div className="max-w-4xl mx-auto">
-                <RightingReflexesAssessment 
-                  appointmentId="temp" 
-                  initialNotes={null} 
-                  onUpdate={() => {}} 
-                />
+              <div className="space-y-12">
+                <Card className="border-none shadow-2xl rounded-[3.5rem] bg-slate-900 text-white overflow-hidden relative">
+                  <div className="absolute top-0 right-0 p-12 opacity-5"><RefreshCw size={200} /></div>
+                  <CardHeader className="p-12 relative z-10">
+                    <div className="flex items-center gap-5 mb-4">
+                      <div className="w-16 h-16 bg-white/10 backdrop-blur-md rounded-2xl flex items-center justify-center border border-white/20">
+                        <RefreshCw size={32} className="text-blue-400" />
+                      </div>
+                      <div>
+                        <CardTitle className="text-4xl font-black tracking-tight">Postural Righting Reflexes</CardTitle>
+                        <CardDescription className="text-slate-400 text-xl font-medium mt-2">
+                          The Horizon of the Nervous System
+                        </CardDescription>
+                      </div>
+                    </div>
+                  </CardHeader>
+                </Card>
+
+                <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                  <Card className="lg:col-span-2 border-none shadow-lg rounded-[2.5rem] bg-card overflow-hidden">
+                    <CardHeader className="p-8 bg-indigo-50 dark:bg-indigo-900/20">
+                      <h3 className="text-2xl font-black flex items-center gap-3 text-indigo-900 dark:text-indigo-100">
+                        <Info size={28} /> Theory & Clinical Significance
+                      </h3>
+                    </CardHeader>
+                    <CardContent className="p-8 space-y-8">
+                      <div className="space-y-4">
+                        <p className="text-lg font-medium text-muted-foreground leading-relaxed">
+                          Righting reflexes are the "next lot" of reflexes that take over once primitive reflexes integrate (usually around 1-2 years). They represent the architecture of the nervous system's ability to organize the head around the eyes and the horizon.
+                        </p>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                          <div className="p-6 bg-blue-50 dark:bg-blue-900/20 rounded-3xl border border-blue-100 dark:border-blue-900/30">
+                            <h4 className="font-black text-blue-900 dark:text-blue-100 flex items-center gap-2 mb-2">
+                              <Eye size={18} /> Ocular Righting
+                            </h4>
+                            <p className="text-sm text-blue-800 dark:text-blue-200 font-medium">
+                              The ability to keep the head level using visual input. Tested with eyes open on a distant target.
+                            </p>
+                          </div>
+                          <div className="p-6 bg-emerald-50 dark:bg-emerald-900/20 rounded-3xl border border-emerald-100 dark:border-emerald-900/30">
+                            <h4 className="font-black text-emerald-900 dark:text-emerald-100 flex items-center gap-2 mb-2">
+                              <Activity size={18} /> Labyrinthine Righting
+                            </h4>
+                            <p className="text-sm text-emerald-800 dark:text-emerald-200 font-medium">
+                              The vestibular system's ability to organize the head without vision. Tested with eyes closed.
+                            </p>
+                          </div>
+                        </div>
+                      </div>
+
+                      <div className="p-6 bg-amber-50 dark:bg-amber-900/10 rounded-3xl border border-amber-100 dark:border-amber-900/30">
+                        <h4 className="font-bold text-amber-900 dark:text-amber-100 mb-2 flex items-center gap-2">
+                          <ShieldAlert size={18} /> When to Assess?
+                        </h4>
+                        <p className="text-sm text-amber-800 dark:text-amber-200 leading-relaxed font-medium">
+                          Prioritize these reflexes in cases of chronic head, neck, shoulder, or back pain that is non-responsive to standard rehab. Also critical for clients experiencing vertigo or motion sickness.
+                        </p>
+                      </div>
+                    </CardContent>
+                  </Card>
+
+                  <Card className="border-none shadow-lg rounded-[2.5rem] bg-slate-900 dark:bg-slate-950 text-white overflow-hidden">
+                    <CardHeader className="p-8">
+                      <CardTitle className="text-xl font-black flex items-center gap-3">
+                        <Zap size={24} className="text-amber-400" /> Correction Logic
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent className="p-8 pt-0 space-y-6">
+                      <div className="space-y-4">
+                        <div className="p-4 bg-white/5 rounded-2xl border border-white/10">
+                          <p className="text-xs font-black text-amber-400 uppercase tracking-widest mb-2">The Hierarchy</p>
+                          <p className="text-sm font-bold leading-tight">Primitive → Postural → Fine Motor</p>
+                        </div>
+                        <p className="text-sm text-slate-400 leading-relaxed font-medium">
+                          If a righting reflex is dysfunctional, it is typically an <strong>Afferent (Mechanoreceptive)</strong> priority.
+                        </p>
+                        <div className="space-y-3">
+                          <p className="text-[10px] font-black text-slate-500 uppercase tracking-widest">Required Tools</p>
+                          <div className="flex items-center gap-3 p-3 bg-white/5 rounded-xl border border-white/10">
+                            <Timer size={16} className="text-indigo-400" />
+                            <span className="text-xs font-bold">128Hz Tuning Fork</span>
+                          </div>
+                        </div>
+                        <div className="pt-4 border-t border-white/10">
+                          <p className="text-xs text-slate-400 italic">"Clearing the primitive reflexes first often clears the righting reflexes automatically."</p>
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+                </div>
+
+                <div className="max-w-4xl mx-auto">
+                  <div className="flex items-center gap-3 mb-6 px-4">
+                    <div className="w-10 h-10 rounded-xl bg-indigo-600 text-white flex items-center justify-center shadow-lg">
+                      <Target size={20} />
+                    </div>
+                    <h3 className="text-2xl font-black text-foreground">Interactive Assessment Tool</h3>
+                  </div>
+                  <RightingReflexesAssessment 
+                    appointmentId="temp" 
+                    initialNotes={null} 
+                    onUpdate={() => {}} 
+                  />
+                </div>
               </div>
             </TabsContent>
           </div>

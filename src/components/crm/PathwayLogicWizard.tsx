@@ -6,37 +6,34 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/com
 import { 
   GitBranch, Sparkles, Brain, Activity, CheckCircle2, 
   Zap, Info, List, RefreshCw, Eye, Dumbbell, Link as LinkIcon,
-  Workflow,
-  Lightbulb,
-  ChevronRight,
-  ChevronLeft,
-  Droplets,
-  AlertTriangle,
-  ArrowRight,
-  Heart,
-  ImageIcon,
-  Loader2
+  Workflow, Lightbulb, ChevronRight, ChevronLeft, Droplets, 
+  AlertTriangle, ArrowRight, Heart, ImageIcon, Loader2, Search
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Badge } from '@/components/ui/badge';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Input } from "@/components/ui/input";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import NociceptiveThreatAssessment from './NociceptiveThreatAssessment';
 import EfferentBrainIntegration from './EfferentBrainIntegration';
 import MechanoreceptiveProcess from './MechanoreceptiveProcess';
 import EmotionalIntegrationProcess from './EmotionalIntegrationProcess';
-import CranialNerveProcess from './CranialNerveProcess';
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { ScrollArea } from "@/components/ui/scroll-area";
 import { supabase } from "@/integrations/supabase/client";
 import JointActionTableModal from './JointActionTableModal';
+import { CRANIAL_NERVES } from '@/data/cranial-nerve-data';
 
 type Step = 
-  | 'START'
-  | 'AFFERENT_SELECT'
-  | 'EFFERENT_SELECT'
+  | 'SELECT_ITEM'
+  | 'SELECT_DIRECTION'
   | 'MECHANO_PROCESS'
   | 'VESTIBULAR_PROCESS'
   | 'NOCICEPTIVE_PROCESS'
-  | 'CRANIAL_NERVE_PROCESS'
   | 'EFFERENT_PROCESS'
   | 'EMOTIONS_PROCESS';
 
@@ -46,22 +43,53 @@ interface PathwayLogicWizardProps {
 }
 
 const PathwayLogicWizard = ({ onSave, initialValue }: PathwayLogicWizardProps) => {
-  const [step, setStep] = useState<Step>('START');
+  const [step, setStep] = useState<Step>('SELECT_ITEM');
   const [history, setHistory] = useState<Step[]>([]);
+  const [inhibitedItems, setInhibitedItems] = useState<string[]>([]);
+  const [selectedItem, setSelectedItem] = useState<string>("");
   
   const [ligamentImages, setLigamentImages] = useState<Record<string, (string | null)[]>>({});
   const [ligamentModalOpen, setLigamentModalOpen] = useState(false);
   const [actionTableOpen, setActionTableOpen] = useState(false);
 
+  // Fetch inhibited items from the priority_pattern field
+  useEffect(() => {
+    const fetchInhibited = async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
+
+      // Get the latest appointment's priority_pattern
+      const { data } = await supabase
+        .from('appointments')
+        .select('priority_pattern')
+        .eq('user_id', user.id)
+        .order('updated_at', { ascending: false })
+        .limit(1)
+        .single();
+
+      if (data?.priority_pattern) {
+        try {
+          const parsed = JSON.parse(data.priority_pattern);
+          const items: string[] = [];
+          Object.entries(parsed).forEach(([category, values]: [string, any]) => {
+            Object.entries(values).forEach(([name, status]) => {
+              if (status === 'Inhibited') items.push(name);
+            });
+          });
+          setInhibitedItems(items);
+        } catch (e) {
+          console.error("Failed to parse priority pattern", e);
+        }
+      }
+    };
+    fetchInhibited();
+  }, []);
+
   useEffect(() => {
     const fetchLigamentImages = async () => {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) return;
-      const { data } = await supabase
-        .from('ligament_images')
-        .select('category, image_index, image_url')
-        .eq('user_id', user.id);
-      
+      const { data } = await supabase.from('ligament_images').select('category, image_index, image_url').eq('user_id', user.id);
       if (data) {
         const imageMap: Record<string, (string | null)[]> = {};
         data.forEach(item => {
@@ -88,8 +116,9 @@ const PathwayLogicWizard = ({ onSave, initialValue }: PathwayLogicWizardProps) =
   };
 
   const resetWizard = () => {
-    setStep('START');
+    setStep('SELECT_ITEM');
     setHistory([]);
+    setSelectedItem("");
   };
 
   const handleSave = (summary: string) => {
@@ -97,54 +126,113 @@ const PathwayLogicWizard = ({ onSave, initialValue }: PathwayLogicWizardProps) =
     resetWizard();
   };
 
+  // Get specific tips if the selected item is a Cranial Nerve
+  const nerveInfo = useMemo(() => {
+    if (!selectedItem) return null;
+    return CRANIAL_NERVES.find(n => selectedItem.includes(n.name) || selectedItem.includes(n.latinName));
+  }, [selectedItem]);
+
   const renderStep = () => {
     switch (step) {
-      case 'START':
+      case 'SELECT_ITEM':
         return (
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 animate-in fade-in zoom-in-95 duration-500">
-            <button 
-                onClick={() => goToStep('AFFERENT_SELECT')} 
-                className="p-10 rounded-[3rem] border-2 border-blue-100 dark:border-blue-900/30 bg-blue-50/30 dark:bg-blue-900/10 hover:border-blue-400 dark:hover:border-blue-900/50 hover:bg-blue-50 dark:hover:bg-blue-900/20 hover:shadow-2xl hover:-translate-y-1 transition-all duration-500 text-left group relative overflow-hidden"
-            >
-              <div className="absolute top-0 right-0 p-8 opacity-5 group-hover:scale-110 transition-transform duration-700"><GitBranch size={150} /></div>
-              <div className="flex items-center justify-between mb-6 relative z-10">
-                <div className="w-16 h-16 rounded-2xl bg-card shadow-xl flex items-center justify-center group-hover:bg-blue-600 group-hover:text-white transition-all duration-500">
-                  <GitBranch size={32} className="text-blue-600 group-hover:text-white transition-colors" />
-                </div>
-                <Badge className="bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400 border-none font-black text-[10px] uppercase tracking-widest px-3 py-1">Bottom-Up</Badge>
-              </div>
-              <div className="relative z-10">
-                <h3 className="text-3xl font-black text-blue-900 dark:text-blue-100 tracking-tight">Afferent</h3>
-                <p className="text-sm font-bold text-blue-700 dark:text-blue-400 mt-2 leading-relaxed">Sensory input from body to brain. Calibrate mechanoreceptors and vestibular systems.</p>
-              </div>
-              <div className="mt-8 flex items-center text-[10px] font-black uppercase tracking-widest text-blue-400 group-hover:text-blue-600 dark:group-hover:text-blue-300 transition-colors relative z-10">
-                Start Assessment <ArrowRight size={14} className="ml-2 group-hover:translate-x-1 transition-transform" />
-              </div>
-            </button>
+          <div className="space-y-6 animate-in fade-in zoom-in-95 duration-500">
+            <div className="space-y-2">
+              <h3 className="text-xl font-black text-slate-900">1. Select Inhibited Item</h3>
+              <p className="text-sm text-slate-500 font-medium">Choose a finding from your Pathway Assessment to correct.</p>
+            </div>
+            
+            <div className="grid grid-cols-1 gap-4">
+              <Select value={selectedItem} onValueChange={(v) => setSelectedItem(v)}>
+                <SelectTrigger className="h-14 rounded-2xl border-2 border-slate-100 bg-white font-bold text-lg">
+                  <SelectValue placeholder={inhibitedItems.length > 0 ? "Select inhibited finding..." : "No inhibited items found"} />
+                </SelectTrigger>
+                <SelectContent className="rounded-2xl border-none shadow-2xl p-2">
+                  {inhibitedItems.map(item => (
+                    <SelectItem key={item} value={item} className="rounded-xl py-3 font-bold">{item}</SelectItem>
+                  ))}
+                  <SelectItem value="CUSTOM" className="rounded-xl py-3 font-bold text-indigo-600">+ New Correction Entry</SelectItem>
+                </SelectContent>
+              </Select>
 
-            <button 
-                onClick={() => goToStep('EFFERENT_SELECT')} 
-                className="p-10 rounded-[3rem] border-2 border-purple-100 dark:border-purple-900/30 bg-purple-50/30 dark:bg-purple-900/10 hover:border-purple-400 dark:hover:border-purple-900/50 hover:bg-purple-50 dark:hover:bg-purple-900/20 hover:shadow-2xl hover:-translate-y-1 transition-all duration-500 text-left group relative overflow-hidden"
+              {selectedItem === 'CUSTOM' && (
+                <Input 
+                  placeholder="Enter custom entry point..." 
+                  className="h-12 rounded-xl font-bold border-2 border-indigo-100"
+                  onChange={(e) => setSelectedItem(e.target.value)}
+                />
+              )}
+            </div>
+
+            <Button 
+              disabled={!selectedItem} 
+              onClick={() => goToStep('SELECT_DIRECTION')} 
+              className="w-full h-14 rounded-2xl bg-indigo-600 hover:bg-indigo-700 text-lg font-black shadow-xl shadow-indigo-100"
             >
-              <div className="absolute top-0 right-0 p-8 opacity-5 group-hover:scale-110 transition-transform duration-700"><Sparkles size={150} /></div>
-              <div className="flex items-center justify-between mb-6 relative z-10">
-                <div className="w-16 h-16 rounded-2xl bg-card shadow-xl flex items-center justify-center group-hover:bg-purple-600 group-hover:text-white transition-all duration-500">
-                  <Sparkles size={32} className="text-purple-600 group-hover:text-white transition-colors" />
-                </div>
-                <Badge className="bg-purple-100 dark:bg-purple-900/30 text-purple-700 dark:text-purple-400 border-none font-black text-[10px] uppercase tracking-widest px-3 py-1">Top-Down</Badge>
-              </div>
-              <div className="relative z-10">
-                <h3 className="text-3xl font-black text-purple-900 dark:text-purple-100 tracking-tight">Efferent</h3>
-                <p className="text-sm font-bold text-purple-700 dark:text-purple-400 mt-2 leading-relaxed">Motor commands from brain to body. Integrate cortical and subcortical processing.</p>
-              </div>
-              <div className="mt-8 flex items-center text-[10px] font-black uppercase tracking-widest text-purple-400 group-hover:text-purple-600 dark:group-hover:text-purple-300 transition-colors relative z-10">
-                Start Integration <ArrowRight size={14} className="ml-2 group-hover:translate-x-1 transition-transform" />
-              </div>
-            </button>
+              Continue to Direction <ChevronRight size={20} className="ml-2" />
+            </Button>
           </div>
         );
-      
-      case 'AFFERENT_SELECT':
+
+      case 'SELECT_DIRECTION':
+        return (
+          <div className="space-y-8 animate-in fade-in slide-in-from-right-4 duration-300">
+            <div className="p-4 bg-indigo-50 rounded-2xl border border-indigo-100 flex items-center justify-between">
+              <div>
+                <p className="text-[10px] font-black text-indigo-400 uppercase tracking-widest">Correcting</p>
+                <p className="text-lg font-black text-indigo-900">{selectedItem}</p>
+              </div>
+              <Badge className="bg-indigo-600 text-white border-none font-black text-[8px] uppercase tracking-widest">Priority</Badge>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <button 
+                  onClick={() => goToStep('AFFERENT_SELECT' as any)} 
+                  className="p-8 rounded-[2.5rem] border-2 border-blue-100 bg-blue-50/30 hover:border-blue-400 hover:bg-blue-50 transition-all duration-500 text-left group"
+              >
+                <div className="flex items-center justify-between mb-4">
+                  <div className="w-12 h-12 rounded-xl bg-white shadow-md flex items-center justify-center group-hover:bg-blue-600 group-hover:text-white transition-all">
+                    <GitBranch size={24} className="text-blue-600 group-hover:text-white" />
+                  </div>
+                  <Badge className="bg-blue-100 text-blue-700 border-none font-black text-[8px] uppercase tracking-widest">Bottom-Up</Badge>
+                </div>
+                <h3 className="text-2xl font-black text-blue-900 tracking-tight">Afferent</h3>
+                <p className="text-xs font-bold text-blue-700 mt-2">Sensory input issue.</p>
+              </button>
+
+              <button 
+                  onClick={() => goToStep('EFFERENT_PROCESS')} 
+                  className="p-8 rounded-[2.5rem] border-2 border-purple-100 bg-purple-50/30 hover:border-purple-400 hover:bg-purple-50 transition-all duration-500 text-left group"
+              >
+                <div className="flex items-center justify-between mb-4">
+                  <div className="w-12 h-12 rounded-xl bg-white shadow-md flex items-center justify-center group-hover:bg-purple-600 group-hover:text-white transition-all">
+                    <Sparkles size={24} className="text-purple-600 group-hover:text-white" />
+                  </div>
+                  <Badge className="bg-purple-100 text-purple-700 border-none font-black text-[8px] uppercase tracking-widest">Top-Down</Badge>
+                </div>
+                <h3 className="text-2xl font-black text-purple-900 tracking-tight">Efferent</h3>
+                <p className="text-xs font-bold text-purple-700 mt-2">Processing issue.</p>
+              </button>
+            </div>
+
+            {nerveInfo && (
+              <div className="p-6 bg-amber-50 rounded-[2rem] border-2 border-amber-100 animate-in zoom-in-95 duration-500">
+                <div className="flex items-center gap-3 mb-3">
+                  <Lightbulb size={20} className="text-amber-600" />
+                  <h4 className="font-black text-amber-900 text-xs uppercase tracking-widest">Clinical Tip: {nerveInfo.name}</h4>
+                </div>
+                <p className="text-sm text-amber-800 font-medium leading-relaxed">
+                  This nerve arises from the <span className="font-black underline">{nerveInfo.nuclei}</span> nuclei. 
+                  {nerveInfo.toneEffect !== 'None' && ` It primarily influences ${nerveInfo.toneEffect} tone.`}
+                </p>
+              </div>
+            )}
+
+            <Button variant="ghost" onClick={goBack} className="w-full h-12 rounded-xl font-bold text-muted-foreground"><ChevronLeft size={18} className="mr-2" /> Back</Button>
+          </div>
+        );
+
+      case 'AFFERENT_SELECT' as any:
         return (
           <div className="space-y-4 animate-in fade-in slide-in-from-right-4 duration-300">
             {[
@@ -153,70 +241,30 @@ const PathwayLogicWizard = ({ onSave, initialValue }: PathwayLogicWizardProps) =
               { type: 'Nociceptive', icon: AlertTriangle, color: 'orange', step: 'NOCICEPTIVE_PROCESS', desc: 'Clearing threat from scars or old injuries.' }
             ].map(item => (
               <button key={item.type} onClick={() => goToStep(item.step as Step)} className={cn(
-                "p-8 rounded-[2rem] border-2 transition-all duration-300 text-left group w-full",
-                item.color === 'blue' ? "border-blue-100 dark:border-blue-900/30 bg-blue-50/30 dark:bg-blue-900/10 hover:border-blue-300 dark:hover:border-blue-900/50 hover:bg-blue-50 dark:hover:bg-blue-900/20" :
-                item.color === 'cyan' ? "border-cyan-100 dark:border-cyan-900/30 bg-cyan-50/30 dark:bg-cyan-900/10 hover:border-cyan-300 dark:hover:border-cyan-900/50 hover:bg-cyan-50 dark:hover:bg-cyan-900/20" :
-                "border-orange-100 dark:border-orange-900/30 bg-orange-50/30 dark:bg-orange-900/10 hover:border-orange-300 dark:hover:border-orange-900/50 hover:bg-orange-50 dark:hover:bg-orange-900/20"
+                "p-6 rounded-2xl border-2 transition-all duration-300 text-left group w-full",
+                item.color === 'blue' ? "border-blue-100 bg-blue-50/30 hover:border-blue-300" :
+                item.color === 'cyan' ? "border-cyan-100 bg-cyan-50/30 hover:border-cyan-300" :
+                "border-orange-100 bg-orange-50/30 hover:border-orange-300"
               )}>
                 <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-5">
-                    <div className="w-14 h-14 rounded-2xl bg-card shadow-md flex items-center justify-center group-hover:scale-110 transition-transform">
-                      <item.icon size={28} className={cn(
+                  <div className="flex items-center gap-4">
+                    <div className="w-12 h-12 rounded-xl bg-card shadow-sm flex items-center justify-center group-hover:scale-110 transition-transform">
+                      <item.icon size={24} className={cn(
                         item.color === 'blue' ? "text-blue-600" :
                         item.color === 'cyan' ? "text-cyan-600" :
                         "text-orange-600"
                       )} />
                     </div>
                     <div>
-                        <p className="font-black text-xl text-foreground">{item.type}</p>
-                        <p className="text-sm font-medium text-muted-foreground mt-1">{item.desc}</p>
+                        <p className="font-black text-lg text-foreground">{item.type}</p>
+                        <p className="text-xs font-medium text-muted-foreground">{item.desc}</p>
                     </div>
                   </div>
-                  <div className="w-10 h-10 rounded-xl bg-muted/50 flex items-center justify-center text-muted-foreground group-hover:text-indigo-600 dark:group-hover:text-indigo-400 group-hover:bg-card transition-all">
-                    <ArrowRight size={24} className="group-hover:translate-x-1 transition-transform" />
-                  </div>
+                  <ArrowRight size={20} className="text-muted-foreground group-hover:text-indigo-600 group-hover:translate-x-1 transition-all" />
                 </div>
               </button>
             ))}
-            <Button variant="ghost" onClick={goBack} className="w-full h-12 rounded-xl font-bold text-muted-foreground hover:text-foreground"><ChevronLeft size={18} className="mr-2" /> Back to Direction</Button>
-          </div>
-        );
-
-      case 'EFFERENT_SELECT':
-        return (
-          <div className="space-y-4 animate-in fade-in slide-in-from-right-4 duration-300">
-            {[
-              { type: 'Cranial Nerves', icon: Zap, color: 'amber', step: 'CRANIAL_NERVE_PROCESS', desc: 'Assess and clear brainstem nuclei signaling.' },
-              { type: 'Cortical / Subcortical', icon: Brain, color: 'purple', step: 'EFFERENT_PROCESS', desc: 'Integrate higher and lower brain processing.' },
-              { type: 'Emotions', icon: Heart, color: 'rose', step: 'EMOTIONS_PROCESS', desc: 'Limbic system and emotional context balancing.' }
-            ].map(item => (
-              <button key={item.type} onClick={() => goToStep(item.step as Step)} className={cn(
-                "p-8 rounded-[2rem] border-2 transition-all duration-300 text-left group w-full",
-                item.color === 'amber' ? "border-amber-100 dark:border-amber-900/30 bg-amber-50/30 dark:bg-amber-900/10 hover:border-amber-300 dark:hover:border-amber-900/50 hover:bg-amber-50 dark:hover:bg-amber-900/20" :
-                item.color === 'purple' ? "border-purple-100 dark:border-purple-900/30 bg-purple-50/30 dark:bg-purple-900/10 hover:border-purple-300 dark:hover:border-purple-900/50 hover:bg-purple-50 dark:hover:bg-purple-900/20" :
-                "border-rose-100 dark:border-rose-900/30 bg-rose-50/30 dark:bg-rose-900/10 hover:border-rose-300 dark:hover:border-rose-900/50 hover:bg-rose-50 dark:hover:bg-rose-900/20"
-              )}>
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-5">
-                    <div className="w-14 h-14 rounded-2xl bg-card shadow-md flex items-center justify-center group-hover:scale-110 transition-transform">
-                      <item.icon size={28} className={cn(
-                        item.color === 'amber' ? "text-amber-600" :
-                        item.color === 'purple' ? "text-purple-600" :
-                        "text-rose-600"
-                      )} />
-                    </div>
-                    <div>
-                        <p className="font-black text-xl text-foreground">{item.type}</p>
-                        <p className="text-sm font-medium text-muted-foreground mt-1">{item.desc}</p>
-                    </div>
-                  </div>
-                  <div className="w-10 h-10 rounded-xl bg-muted/50 flex items-center justify-center text-muted-foreground group-hover:text-indigo-600 dark:group-hover:text-indigo-400 group-hover:bg-card transition-all">
-                    <ArrowRight size={24} className="group-hover:translate-x-1 transition-transform" />
-                  </div>
-                </div>
-              </button>
-            ))}
-            <Button variant="ghost" onClick={goBack} className="w-full h-12 rounded-xl font-bold text-muted-foreground hover:text-foreground"><ChevronLeft size={18} className="mr-2" /> Back to Direction</Button>
+            <Button variant="ghost" onClick={goBack} className="w-full h-12 rounded-xl font-bold text-muted-foreground"><ChevronLeft size={18} className="mr-2" /> Back</Button>
           </div>
         );
 
@@ -234,11 +282,8 @@ const PathwayLogicWizard = ({ onSave, initialValue }: PathwayLogicWizardProps) =
       case 'NOCICEPTIVE_PROCESS':
         return <NociceptiveThreatAssessment onSave={handleSave} onCancel={goBack} />;
       
-      case 'CRANIAL_NERVE_PROCESS':
-        return <CranialNerveProcess onSave={handleSave} onCancel={goBack} />;
-      
       case 'EFFERENT_PROCESS':
-        return <EfferentBrainIntegration onSave={handleSave} onCancel={goBack} />;
+        return <EfferentBrainIntegration initialEntryPoint={selectedItem} onSave={handleSave} onCancel={goBack} />;
 
       case 'EMOTIONS_PROCESS':
         return <EmotionalIntegrationProcess onSave={handleSave} onCancel={goBack} />;
@@ -266,12 +311,12 @@ const PathwayLogicWizard = ({ onSave, initialValue }: PathwayLogicWizardProps) =
         <CardHeader className="p-10 pb-6">
           <div className="flex items-center justify-between">
             <div className="space-y-1">
-                <CardTitle className="text-3xl font-black text-foreground tracking-tight">Pathway Logic Wizard</CardTitle>
+                <CardTitle className="text-3xl font-black text-foreground tracking-tight">Calibration Wizard</CardTitle>
                 <CardDescription className="text-muted-foreground font-medium text-lg">
-                    Identify and clear layers of neurological interference.
+                    Correct inhibited findings via Afferent or Efferent pathways.
                 </CardDescription>
             </div>
-            {step !== 'START' && (
+            {step !== 'SELECT_ITEM' && (
                 <Button variant="ghost" size="sm" onClick={resetWizard} className="text-[10px] font-black uppercase tracking-widest text-muted-foreground hover:text-rose-600">
                     <RefreshCw size={14} className="mr-2" /> Reset Wizard
                 </Button>

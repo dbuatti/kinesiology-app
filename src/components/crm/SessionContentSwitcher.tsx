@@ -109,7 +109,7 @@ const SessionContentSwitcher = ({ appointment, onUpdate, saveField }: SessionCon
           <TabsContent value="calibration" className="focus-visible:ring-0">
             <PathwayLogicWizard
               onSave={(summary) => saveField('modes_balances', summary)}
-              initialValue={appointment.modes_balances || undefined}
+              priorityPattern={appointment.priority_pattern}
             />
           </TabsContent>
 

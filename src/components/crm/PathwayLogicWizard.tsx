@@ -38,50 +38,35 @@ type Step =
 
 interface PathwayLogicWizardProps {
   onSave: (summary: string) => void;
-  initialValue?: string;
+  priorityPattern?: string | null;
 }
 
-const PathwayLogicWizard = ({ onSave, initialValue }: PathwayLogicWizardProps) => {
+const PathwayLogicWizard = ({ onSave, priorityPattern }: PathwayLogicWizardProps) => {
   const [step, setStep] = useState<Step>('SELECT_START');
   const [history, setHistory] = useState<Step[]>([]);
-  const [inhibitedItems, setInhibitedItems] = useState<string[]>([]);
   const [selectedItem, setSelectedItem] = useState<string>("");
   
   const [ligamentImages, setLigamentImages] = useState<Record<string, (string | null)[]>>({});
   const [ligamentModalOpen, setLigamentModalOpen] = useState(false);
   const [actionTableOpen, setActionTableOpen] = useState(false);
 
-  // Fetch inhibited items from the priority_pattern field
-  useEffect(() => {
-    const fetchInhibited = async () => {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) return;
-
-      const { data } = await supabase
-        .from('appointments')
-        .select('priority_pattern')
-        .eq('user_id', user.id)
-        .order('updated_at', { ascending: false })
-        .limit(1)
-        .single();
-
-      if (data?.priority_pattern) {
-        try {
-          const parsed = JSON.parse(data.priority_pattern);
-          const items: string[] = [];
-          Object.entries(parsed).forEach(([category, values]: [string, any]) => {
-            Object.entries(values).forEach(([name, status]) => {
-              if (status === 'Inhibited') items.push(name);
-            });
-          });
-          setInhibitedItems(items);
-        } catch (e) {
-          console.error("Failed to parse priority pattern", e);
-        }
-      }
-    };
-    fetchInhibited();
-  }, []);
+  // Parse inhibited items from the priorityPattern prop
+  const inhibitedItems = useMemo(() => {
+    if (!priorityPattern) return [];
+    try {
+      const parsed = JSON.parse(priorityPattern);
+      const items: string[] = [];
+      Object.entries(parsed).forEach(([category, values]: [string, any]) => {
+        Object.entries(values).forEach(([name, status]) => {
+          if (status === 'Inhibited') items.push(name);
+        });
+      });
+      return items;
+    } catch (e) {
+      console.error("Failed to parse priority pattern", e);
+      return [];
+    }
+  }, [priorityPattern]);
 
   useEffect(() => {
     const fetchLigamentImages = async () => {

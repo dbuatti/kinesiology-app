@@ -29,8 +29,7 @@ import JointActionTableModal from './JointActionTableModal';
 import { CRANIAL_NERVES } from '@/data/cranial-nerve-data';
 
 type Step = 
-  | 'SELECT_ITEM'
-  | 'SELECT_DIRECTION'
+  | 'SELECT_START'
   | 'MECHANO_PROCESS'
   | 'VESTIBULAR_PROCESS'
   | 'NOCICEPTIVE_PROCESS'
@@ -43,7 +42,7 @@ interface PathwayLogicWizardProps {
 }
 
 const PathwayLogicWizard = ({ onSave, initialValue }: PathwayLogicWizardProps) => {
-  const [step, setStep] = useState<Step>('SELECT_ITEM');
+  const [step, setStep] = useState<Step>('SELECT_START');
   const [history, setHistory] = useState<Step[]>([]);
   const [inhibitedItems, setInhibitedItems] = useState<string[]>([]);
   const [selectedItem, setSelectedItem] = useState<string>("");
@@ -58,7 +57,6 @@ const PathwayLogicWizard = ({ onSave, initialValue }: PathwayLogicWizardProps) =
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) return;
 
-      // Get the latest appointment's priority_pattern
       const { data } = await supabase
         .from('appointments')
         .select('priority_pattern')
@@ -116,7 +114,7 @@ const PathwayLogicWizard = ({ onSave, initialValue }: PathwayLogicWizardProps) =
   };
 
   const resetWizard = () => {
-    setStep('SELECT_ITEM');
+    setStep('SELECT_START');
     setHistory([]);
     setSelectedItem("");
   };
@@ -126,7 +124,6 @@ const PathwayLogicWizard = ({ onSave, initialValue }: PathwayLogicWizardProps) =
     resetWizard();
   };
 
-  // Get specific tips if the selected item is a Cranial Nerve
   const nerveInfo = useMemo(() => {
     if (!selectedItem) return null;
     return CRANIAL_NERVES.find(n => selectedItem.includes(n.name) || selectedItem.includes(n.latinName));
@@ -134,85 +131,73 @@ const PathwayLogicWizard = ({ onSave, initialValue }: PathwayLogicWizardProps) =
 
   const renderStep = () => {
     switch (step) {
-      case 'SELECT_ITEM':
+      case 'SELECT_START':
         return (
-          <div className="space-y-6 animate-in fade-in zoom-in-95 duration-500">
-            <div className="space-y-2">
-              <h3 className="text-xl font-black text-slate-900">1. Select Inhibited Item</h3>
-              <p className="text-sm text-slate-500 font-medium">Choose a finding from your Pathway Assessment to correct.</p>
-            </div>
-            
-            <div className="grid grid-cols-1 gap-4">
-              <Select value={selectedItem} onValueChange={(v) => setSelectedItem(v)}>
-                <SelectTrigger className="h-14 rounded-2xl border-2 border-slate-100 bg-white font-bold text-lg">
-                  <SelectValue placeholder={inhibitedItems.length > 0 ? "Select inhibited finding..." : "No inhibited items found"} />
-                </SelectTrigger>
-                <SelectContent className="rounded-2xl border-none shadow-2xl p-2">
-                  {inhibitedItems.map(item => (
-                    <SelectItem key={item} value={item} className="rounded-xl py-3 font-bold">{item}</SelectItem>
-                  ))}
-                  <SelectItem value="CUSTOM" className="rounded-xl py-3 font-bold text-indigo-600">+ New Correction Entry</SelectItem>
-                </SelectContent>
-              </Select>
-
-              {selectedItem === 'CUSTOM' && (
-                <Input 
-                  placeholder="Enter custom entry point..." 
-                  className="h-12 rounded-xl font-bold border-2 border-indigo-100"
-                  onChange={(e) => setSelectedItem(e.target.value)}
-                />
-              )}
-            </div>
-
-            <Button 
-              disabled={!selectedItem} 
-              onClick={() => goToStep('SELECT_DIRECTION')} 
-              className="w-full h-14 rounded-2xl bg-indigo-600 hover:bg-indigo-700 text-lg font-black shadow-xl shadow-indigo-100"
-            >
-              Continue to Direction <ChevronRight size={20} className="ml-2" />
-            </Button>
-          </div>
-        );
-
-      case 'SELECT_DIRECTION':
-        return (
-          <div className="space-y-8 animate-in fade-in slide-in-from-right-4 duration-300">
-            <div className="p-4 bg-indigo-50 rounded-2xl border border-indigo-100 flex items-center justify-between">
-              <div>
-                <p className="text-[10px] font-black text-indigo-400 uppercase tracking-widest">Correcting</p>
-                <p className="text-lg font-black text-indigo-900">{selectedItem}</p>
+          <div className="space-y-8 animate-in fade-in zoom-in-95 duration-500">
+            <div className="space-y-6">
+              <div className="space-y-2">
+                <h3 className="text-xl font-black text-slate-900">1. Select Finding to Correct</h3>
+                <p className="text-sm text-slate-500 font-medium">Choose an inhibited item or enter a custom entry point.</p>
               </div>
-              <Badge className="bg-indigo-600 text-white border-none font-black text-[8px] uppercase tracking-widest">Priority</Badge>
+              
+              <div className="grid grid-cols-1 gap-4">
+                <Select value={selectedItem} onValueChange={(v) => setSelectedItem(v)}>
+                  <SelectTrigger className="h-14 rounded-2xl border-2 border-slate-100 bg-white font-bold text-lg">
+                    <SelectValue placeholder={inhibitedItems.length > 0 ? "Select inhibited finding..." : "No inhibited items found"} />
+                  </SelectTrigger>
+                  <SelectContent className="rounded-2xl border-none shadow-2xl p-2">
+                    {inhibitedItems.map(item => (
+                      <SelectItem key={item} value={item} className="rounded-xl py-3 font-bold">{item}</SelectItem>
+                    ))}
+                    <SelectItem value="CUSTOM" className="rounded-xl py-3 font-bold text-indigo-600">+ New Correction Entry</SelectItem>
+                  </SelectContent>
+                </Select>
+
+                {selectedItem === 'CUSTOM' && (
+                  <Input 
+                    placeholder="Enter custom entry point..." 
+                    className="h-12 rounded-xl font-bold border-2 border-indigo-100"
+                    onChange={(e) => setSelectedItem(e.target.value)}
+                  />
+                )}
+              </div>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <button 
-                  onClick={() => goToStep('AFFERENT_SELECT' as any)} 
-                  className="p-8 rounded-[2.5rem] border-2 border-blue-100 bg-blue-50/30 hover:border-blue-400 hover:bg-blue-50 transition-all duration-500 text-left group"
-              >
-                <div className="flex items-center justify-between mb-4">
-                  <div className="w-12 h-12 rounded-xl bg-white shadow-md flex items-center justify-center group-hover:bg-blue-600 group-hover:text-white transition-all">
-                    <GitBranch size={24} className="text-blue-600 group-hover:text-white" />
-                  </div>
-                  <Badge className="bg-blue-100 text-blue-700 border-none font-black text-[8px] uppercase tracking-widest">Bottom-Up</Badge>
-                </div>
-                <h3 className="text-2xl font-black text-blue-900 tracking-tight">Afferent</h3>
-                <p className="text-xs font-bold text-blue-700 mt-2">Sensory input issue.</p>
-              </button>
+            <div className="space-y-6">
+              <div className="space-y-2">
+                <h3 className="text-xl font-black text-slate-900">2. Choose Correction Direction</h3>
+                <p className="text-sm text-slate-500 font-medium">Determine if the system needs bottom-up or top-down input.</p>
+              </div>
 
-              <button 
-                  onClick={() => goToStep('EFFERENT_PROCESS')} 
-                  className="p-8 rounded-[2.5rem] border-2 border-purple-100 bg-purple-50/30 hover:border-purple-400 hover:bg-purple-50 transition-all duration-500 text-left group"
-              >
-                <div className="flex items-center justify-between mb-4">
-                  <div className="w-12 h-12 rounded-xl bg-white shadow-md flex items-center justify-center group-hover:bg-purple-600 group-hover:text-white transition-all">
-                    <Sparkles size={24} className="text-purple-600 group-hover:text-white" />
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <button 
+                    onClick={() => goToStep('AFFERENT_SELECT' as any)} 
+                    className="p-8 rounded-[2.5rem] border-2 border-blue-100 bg-blue-50/30 hover:border-blue-400 hover:bg-blue-50 transition-all duration-500 text-left group"
+                >
+                  <div className="flex items-center justify-between mb-4">
+                    <div className="w-12 h-12 rounded-xl bg-white shadow-md flex items-center justify-center group-hover:bg-blue-600 group-hover:text-white transition-all">
+                      <GitBranch size={24} className="text-blue-600 group-hover:text-white" />
+                    </div>
+                    <Badge className="bg-blue-100 text-blue-700 border-none font-black text-[8px] uppercase tracking-widest">Bottom-Up</Badge>
                   </div>
-                  <Badge className="bg-purple-100 text-purple-700 border-none font-black text-[8px] uppercase tracking-widest">Top-Down</Badge>
-                </div>
-                <h3 className="text-2xl font-black text-purple-900 tracking-tight">Efferent</h3>
-                <p className="text-xs font-bold text-purple-700 mt-2">Processing issue.</p>
-              </button>
+                  <h3 className="text-2xl font-black text-blue-900 tracking-tight">Afferent</h3>
+                  <p className="text-xs font-bold text-blue-700 mt-2">Sensory input issue.</p>
+                </button>
+
+                <button 
+                    onClick={() => goToStep('EFFERENT_PROCESS')} 
+                    className="p-8 rounded-[2.5rem] border-2 border-purple-100 bg-purple-50/30 hover:border-purple-400 hover:bg-purple-50 transition-all duration-500 text-left group"
+                >
+                  <div className="flex items-center justify-between mb-4">
+                    <div className="w-12 h-12 rounded-xl bg-white shadow-md flex items-center justify-center group-hover:bg-purple-600 group-hover:text-white transition-all">
+                      <Sparkles size={24} className="text-purple-600 group-hover:text-white" />
+                    </div>
+                    <Badge className="bg-purple-100 text-purple-700 border-none font-black text-[8px] uppercase tracking-widest">Top-Down</Badge>
+                  </div>
+                  <h3 className="text-2xl font-black text-purple-900 tracking-tight">Efferent</h3>
+                  <p className="text-xs font-bold text-purple-700 mt-2">Processing issue.</p>
+                </button>
+              </div>
             </div>
 
             {nerveInfo && (
@@ -227,14 +212,19 @@ const PathwayLogicWizard = ({ onSave, initialValue }: PathwayLogicWizardProps) =
                 </p>
               </div>
             )}
-
-            <Button variant="ghost" onClick={goBack} className="w-full h-12 rounded-xl font-bold text-muted-foreground"><ChevronLeft size={18} className="mr-2" /> Back</Button>
           </div>
         );
 
       case 'AFFERENT_SELECT' as any:
         return (
           <div className="space-y-4 animate-in fade-in slide-in-from-right-4 duration-300">
+            <div className="p-4 bg-indigo-50 rounded-2xl border border-indigo-100 flex items-center justify-between mb-4">
+              <div>
+                <p className="text-[10px] font-black text-indigo-400 uppercase tracking-widest">Correcting</p>
+                <p className="text-lg font-black text-indigo-900">{selectedItem || "General Correction"}</p>
+              </div>
+              <Badge className="bg-blue-600 text-white border-none font-black text-[8px] uppercase tracking-widest">Afferent</Badge>
+            </div>
             {[
               { type: 'Mechanoreceptive', icon: Activity, color: 'blue', step: 'MECHANO_PROCESS', desc: 'Joint and muscle receptor calibration.' },
               { type: 'Vestibular', icon: Eye, color: 'cyan', step: 'VESTIBULAR_PROCESS', desc: 'Balance and visual system integration.' },
@@ -316,7 +306,7 @@ const PathwayLogicWizard = ({ onSave, initialValue }: PathwayLogicWizardProps) =
                     Correct inhibited findings via Afferent or Efferent pathways.
                 </CardDescription>
             </div>
-            {step !== 'SELECT_ITEM' && (
+            {step !== 'SELECT_START' && (
                 <Button variant="ghost" size="sm" onClick={resetWizard} className="text-[10px] font-black uppercase tracking-widest text-muted-foreground hover:text-rose-600">
                     <RefreshCw size={14} className="mr-2" /> Reset Wizard
                 </Button>

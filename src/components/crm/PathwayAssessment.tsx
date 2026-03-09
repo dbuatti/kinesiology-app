@@ -5,10 +5,11 @@ import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { 
-  Brain, Zap, Activity, Shield, Dumbbell, AlertTriangle, ChevronDown, Check, X, Plus, Search, RotateCcw, Layers, ImageIcon
+  Brain, Zap, Activity, Shield, Dumbbell, AlertTriangle, ChevronDown, Check, X, Plus, Search, RotateCcw, Layers, ImageIcon, Baby
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { BRAIN_REFLEX_POINTS, BrainReflexPoint } from '@/data/brain-reflex-data';
+import { PRIMITIVE_REFLEXES } from '@/data/primitive-reflex-data';
 import { MUSCLE_GROUPS } from '@/data/muscle-data';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
@@ -217,10 +218,16 @@ const PathwayAssessment = ({ initialValue, onSave }: PathwayAssessmentProps) => 
         <Switch id="show-images" checked={showImages} onCheckedChange={setShowImages} disabled={loadingImages} />
       </div>
 
-      <AssessmentSection title="Primitive Reflex Assessment" description="Check foundational movement patterns." icon={RotateCcw} {...getCounts('primitiveReflexes')}>
-        <div className="text-center p-12 bg-slate-50 rounded-2xl border-2 border-dashed border-slate-200">
-          <p className="font-bold text-slate-500">Coming Soon</p>
-          <p className="text-sm text-slate-400">Primitive reflex assessment tools will be added here.</p>
+      <AssessmentSection title="Primitive Reflex Assessment" description="Check foundational movement patterns." icon={Baby} {...getCounts('primitiveReflexes')}>
+        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+          {PRIMITIVE_REFLEXES.map(reflex => (
+            <AssessmentItem 
+              key={reflex.id}
+              name={reflex.name}
+              status={results.primitiveReflexes?.[reflex.name]}
+              onSetStatus={(status) => handleSetStatus('primitiveReflexes', reflex.name, status)}
+            />
+          ))}
         </div>
       </AssessmentSection>
 

@@ -23,6 +23,7 @@ import NociceptiveThreatAssessment from './NociceptiveThreatAssessment';
 import EfferentBrainIntegration from './EfferentBrainIntegration';
 import MechanoreceptiveProcess from './MechanoreceptiveProcess';
 import EmotionalIntegrationProcess from './EmotionalIntegrationProcess';
+import CranialNerveProcess from './CranialNerveProcess';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { supabase } from "@/integrations/supabase/client";
@@ -35,6 +36,7 @@ type Step =
   | 'MECHANO_PROCESS'
   | 'VESTIBULAR_PROCESS'
   | 'NOCICEPTIVE_PROCESS'
+  | 'CRANIAL_NERVE_PROCESS'
   | 'EFFERENT_PROCESS'
   | 'EMOTIONS_PROCESS';
 
@@ -184,11 +186,13 @@ const PathwayLogicWizard = ({ onSave, initialValue }: PathwayLogicWizardProps) =
         return (
           <div className="space-y-4 animate-in fade-in slide-in-from-right-4 duration-300">
             {[
+              { type: 'Cranial Nerves', icon: Zap, color: 'amber', step: 'CRANIAL_NERVE_PROCESS', desc: 'Assess and clear brainstem nuclei signaling.' },
               { type: 'Cortical / Subcortical', icon: Brain, color: 'purple', step: 'EFFERENT_PROCESS', desc: 'Integrate higher and lower brain processing.' },
               { type: 'Emotions', icon: Heart, color: 'rose', step: 'EMOTIONS_PROCESS', desc: 'Limbic system and emotional context balancing.' }
             ].map(item => (
               <button key={item.type} onClick={() => goToStep(item.step as Step)} className={cn(
                 "p-8 rounded-[2rem] border-2 transition-all duration-300 text-left group w-full",
+                item.color === 'amber' ? "border-amber-100 dark:border-amber-900/30 bg-amber-50/30 dark:bg-amber-900/10 hover:border-amber-300 dark:hover:border-amber-900/50 hover:bg-amber-50 dark:hover:bg-amber-900/20" :
                 item.color === 'purple' ? "border-purple-100 dark:border-purple-900/30 bg-purple-50/30 dark:bg-purple-900/10 hover:border-purple-300 dark:hover:border-purple-900/50 hover:bg-purple-50 dark:hover:bg-purple-900/20" :
                 "border-rose-100 dark:border-rose-900/30 bg-rose-50/30 dark:bg-rose-900/10 hover:border-rose-300 dark:hover:border-rose-900/50 hover:bg-rose-50 dark:hover:bg-rose-900/20"
               )}>
@@ -196,7 +200,9 @@ const PathwayLogicWizard = ({ onSave, initialValue }: PathwayLogicWizardProps) =
                   <div className="flex items-center gap-5">
                     <div className="w-14 h-14 rounded-2xl bg-card shadow-md flex items-center justify-center group-hover:scale-110 transition-transform">
                       <item.icon size={28} className={cn(
-                        item.color === 'purple' ? "text-purple-600" : "text-rose-600"
+                        item.color === 'amber' ? "text-amber-600" :
+                        item.color === 'purple' ? "text-purple-600" :
+                        "text-rose-600"
                       )} />
                     </div>
                     <div>
@@ -227,6 +233,9 @@ const PathwayLogicWizard = ({ onSave, initialValue }: PathwayLogicWizardProps) =
 
       case 'NOCICEPTIVE_PROCESS':
         return <NociceptiveThreatAssessment onSave={handleSave} onCancel={goBack} />;
+      
+      case 'CRANIAL_NERVE_PROCESS':
+        return <CranialNerveProcess onSave={handleSave} onCancel={goBack} />;
       
       case 'EFFERENT_PROCESS':
         return <EfferentBrainIntegration onSave={handleSave} onCancel={goBack} />;

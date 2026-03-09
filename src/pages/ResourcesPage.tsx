@@ -55,6 +55,7 @@ import LigamentReference from "@/components/crm/LigamentReference";
 import MechanoMastery from "@/components/crm/MechanoMastery";
 import MechanoBible from "@/components/crm/MechanoBible";
 import RightingReflexesAssessment from "@/components/crm/RightingReflexesAssessment";
+import CranialNerveReference from "@/components/crm/CranialNerveReference";
 
 const CATEGORIES = [
   {
@@ -79,6 +80,7 @@ const CATEGORIES = [
     bgColor: "bg-rose-50 dark:bg-rose-900/20",
     borderColor: "border-rose-100 dark:border-rose-900/30",
     items: [
+      { id: "cranial", label: "Cranial Nerves", icon: Zap, desc: "12 nerves, nuclei, and assessment protocols." },
       { id: "brain", label: "Brain Reflexes", icon: Brain, desc: "Challenge specific cortical and subcortical regions." },
       { id: "ligaments", label: "Ligaments", icon: ImageIcon, desc: "Custom reference images for mechanoreceptive work." },
       { id: "cheatsheet", label: "Cheat Sheets", icon: Zap, desc: "Rapid clinical insights for common complaints." },
@@ -276,6 +278,7 @@ const ResourcesPage = () => {
             </TabsContent>
 
             {/* Clinical Reference */}
+            <TabsContent value="cranial"><CranialNerveReference /></TabsContent>
             <TabsContent value="brain"><BrainReflexReference /></TabsContent>
             <TabsContent value="ligaments"><LigamentReference /></TabsContent>
             <TabsContent value="cheatsheet"><ClinicalCheatSheet /></TabsContent>

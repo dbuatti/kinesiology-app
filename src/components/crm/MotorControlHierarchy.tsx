@@ -11,34 +11,21 @@ import {
   Layers, 
   Move,
   ShieldAlert,
-  Info
+  Info,
+  Workflow
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 const HIERARCHY_DATA = [
   {
-    id: 'vestibular',
-    title: 'Vestibular',
-    target: 'Extensors',
-    nerves: ['Cranial Nerve 8 (Pons)'],
-    color: 'bg-emerald-500',
-    lightColor: 'bg-emerald-50',
-    borderColor: 'border-emerald-200',
-    textColor: 'text-emerald-700',
-    targetColor: 'bg-rose-500',
-    targetLight: 'bg-rose-50',
-    targetBorder: 'border-rose-200',
-    targetText: 'text-rose-700'
-  },
-  {
-    id: 'medulla',
-    title: 'Medulla',
+    id: 'midbrain',
+    title: 'Midbrain',
     target: 'Flexors',
-    nerves: ['Cranial Nerves 9, 10, 11, 12'],
-    color: 'bg-purple-500',
-    lightColor: 'bg-purple-50',
-    borderColor: 'border-purple-200',
-    textColor: 'text-purple-700',
+    nerves: ['CN III: Oculomotor', 'CN IV: Trochlear'],
+    color: 'bg-amber-500',
+    lightColor: 'bg-amber-50',
+    borderColor: 'border-amber-200',
+    textColor: 'text-amber-700',
     targetColor: 'bg-blue-400',
     targetLight: 'bg-blue-50',
     targetBorder: 'border-blue-200',
@@ -48,7 +35,7 @@ const HIERARCHY_DATA = [
     id: 'pons',
     title: 'Pons',
     target: 'Extensors',
-    nerves: ['Cranial Nerves 5, 6, 7, 8'],
+    nerves: ['CN V, VI, VII, VIII'],
     color: 'bg-indigo-600',
     lightColor: 'bg-indigo-50',
     borderColor: 'border-indigo-200',
@@ -59,18 +46,32 @@ const HIERARCHY_DATA = [
     targetText: 'text-rose-700'
   },
   {
-    id: 'midbrain',
-    title: 'Midbrain',
+    id: 'medulla',
+    title: 'Medulla',
     target: 'Flexors',
-    nerves: ['Cranial Nerves 3 & 4'],
-    color: 'bg-amber-500',
-    lightColor: 'bg-amber-50',
-    borderColor: 'border-amber-200',
-    textColor: 'text-amber-700',
+    nerves: ['CN IX, X, XI, XII'],
+    color: 'bg-rose-600',
+    lightColor: 'bg-rose-50',
+    borderColor: 'border-rose-200',
+    textColor: 'text-rose-700',
     targetColor: 'bg-blue-400',
     targetLight: 'bg-blue-50',
     targetBorder: 'border-blue-200',
     targetText: 'text-blue-700'
+  },
+  {
+    id: 'vestibular',
+    title: 'Vestibular',
+    target: 'Extensors',
+    nerves: ['CN VIII (Vestibular)'],
+    color: 'bg-emerald-500',
+    lightColor: 'bg-emerald-50',
+    borderColor: 'border-emerald-200',
+    textColor: 'text-emerald-700',
+    targetColor: 'bg-rose-500',
+    targetLight: 'bg-rose-50',
+    targetBorder: 'border-rose-200',
+    targetText: 'text-rose-700'
   }
 ];
 
@@ -128,14 +129,14 @@ const MotorControlHierarchy = () => {
       <Card className="border-none shadow-lg rounded-[2.5rem] bg-slate-900 text-white overflow-hidden">
         <CardContent className="p-8 flex flex-col md:flex-row items-center gap-8">
           <div className="w-20 h-20 rounded-[1.5rem] bg-indigo-600 flex items-center justify-center shrink-0 shadow-2xl shadow-indigo-500/20">
-            <ShieldAlert size={40} className="text-white" />
+            <Workflow size={40} className="text-white" />
           </div>
           <div className="space-y-2">
             <h4 className="text-xl font-black flex items-center gap-2">
               <Info size={20} className="text-indigo-400" /> Clinical Application
             </h4>
             <p className="text-slate-400 font-medium leading-relaxed">
-              Use this hierarchy to isolate brainstem dysfunction. If a client presents with systemic <span className="text-rose-400 font-bold">Extensor inhibition</span>, prioritize screening the <span className="text-white font-bold">Pons</span> and <span className="text-white font-bold">Vestibular</span> pathways. If <span className="text-blue-400 font-bold">Flexors</span> are inhibited, look to the <span className="text-white font-bold">Midbrain</span> or <span className="text-white font-bold">Medulla</span>.
+              Cranial nerves arise from specific nuclei in the brainstem. By assessing the nerves, you are indirectly assessing the health of the <span className="text-white font-bold">Midbrain, Pons, and Medulla</span>. Clearing a single nucleus (e.g. Pons) can often resolve multiple associated nerve dysfunctions in a fractal pattern.
             </p>
           </div>
         </CardContent>

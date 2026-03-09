@@ -5,7 +5,7 @@ import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { 
-  Brain, Zap, Activity, Shield, Dumbbell, AlertTriangle, ChevronDown, Check, X, Plus, Search, RotateCcw, Layers, ImageIcon, Baby, PlayCircle, ShieldAlert
+  Brain, Zap, Activity, Shield, Dumbbell, AlertTriangle, ChevronDown, Check, X, Plus, Search, RotateCcw, Layers, ImageIcon, Baby, PlayCircle, ShieldAlert, ListChecks
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { BRAIN_REFLEX_POINTS, BrainReflexPoint } from '@/data/brain-reflex-data';
@@ -93,9 +93,10 @@ interface AssessmentSectionProps {
   children: React.ReactNode;
   count: number;
   inhibitedCount: number;
+  protocol?: React.ReactNode;
 }
 
-const AssessmentSection = ({ title, description, icon: Icon, children, count, inhibitedCount }: AssessmentSectionProps) => {
+const AssessmentSection = ({ title, description, icon: Icon, children, count, inhibitedCount, protocol }: AssessmentSectionProps) => {
   const [isOpen, setIsOpen] = useState(true);
   return (
     <Collapsible open={isOpen} onOpenChange={setIsOpen}>
@@ -127,7 +128,12 @@ const AssessmentSection = ({ title, description, icon: Icon, children, count, in
           </CardHeader>
         </CollapsibleTrigger>
         <CollapsibleContent>
-          <CardContent className="p-8 pt-0">
+          <CardContent className="p-8 pt-0 space-y-8">
+            {protocol && (
+              <div className="p-6 bg-indigo-50 rounded-3xl border border-indigo-100">
+                {protocol}
+              </div>
+            )}
             {children}
           </CardContent>
         </CollapsibleContent>
@@ -238,7 +244,33 @@ const PathwayAssessment = ({ initialValue, onSave }: PathwayAssessmentProps) => 
         <Switch id="show-images" checked={showImages} onCheckedChange={setShowImages} disabled={loadingImages} />
       </div>
 
-      <AssessmentSection title="Primitive Reflex Assessment" description="Check foundational movement patterns." icon={Baby} {...getCounts('primitiveReflexes')}>
+      <AssessmentSection 
+        title="Primitive Reflex Assessment" 
+        description="Check foundational movement patterns." 
+        icon={Baby} 
+        {...getCounts('primitiveReflexes')}
+        protocol={
+          <div className="space-y-4">
+            <div className="flex items-center gap-2 mb-2">
+              <ListChecks size={18} className="text-indigo-600" />
+              <h4 className="font-black text-indigo-900 text-xs uppercase tracking-widest">4-Step Assessment Protocol</h4>
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+              {[
+                { s: 1, t: "Stimulate", d: "Trigger reflex & test specific muscle pattern." },
+                { s: 2, t: "Switch to IM", d: "Test Indicator Muscle; it should now inhibit." },
+                { s: 3, t: "Find Pathway", d: "Ask for Afferent or Efferent direction." },
+                { s: 4, t: "Correct", d: "Apply correction and immediately re-assess." }
+              ].map(step => (
+                <div key={step.s} className="space-y-1">
+                  <p className="text-[10px] font-black text-indigo-400 uppercase">Step {step.s}: {step.t}</p>
+                  <p className="text-[10px] text-indigo-700 font-medium leading-tight">{step.d}</p>
+                </div>
+              ))}
+            </div>
+          </div>
+        }
+      >
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
           {PRIMITIVE_REFLEXES.map(reflex => (
             <AssessmentItem 

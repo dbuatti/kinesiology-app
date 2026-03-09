@@ -7,14 +7,13 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { 
   Search, 
-  RotateCcw, 
   Zap, 
   Info, 
   Activity, 
-  ShieldAlert,
-  PlayCircle,
   Sparkles,
-  Baby
+  Baby,
+  PlayCircle,
+  ShieldAlert
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
@@ -25,7 +24,8 @@ const PrimitiveReflexReference = () => {
 
   const filteredReflexes = PRIMITIVE_REFLEXES.filter(r => {
     const matchesSearch = r.name.toLowerCase().includes(search.toLowerCase()) || 
-                         r.description.toLowerCase().includes(search.toLowerCase());
+                         r.stimulus.toLowerCase().includes(search.toLowerCase()) ||
+                         r.inhibitionPattern.toLowerCase().includes(search.toLowerCase());
     const matchesCategory = selectedCategory === 'All' || r.category === selectedCategory;
     return matchesSearch && matchesCategory;
   });
@@ -95,22 +95,18 @@ const PrimitiveReflexReference = () => {
               </div>
             </CardHeader>
             <CardContent className="p-8 space-y-6">
-              <p className="text-sm text-slate-600 leading-relaxed font-medium">
-                {reflex.description}
-              </p>
-
               <div className="grid grid-cols-1 gap-4">
                 <div className="p-4 bg-slate-50 rounded-2xl border border-slate-100">
                   <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-1 flex items-center gap-1">
-                    <Activity size={12} /> Assessment
+                    <PlayCircle size={12} className="text-indigo-500" /> Stimulus
                   </p>
-                  <p className="text-sm font-bold text-slate-900">{reflex.assessment}</p>
+                  <p className="text-sm font-bold text-slate-900 leading-relaxed">{reflex.stimulus}</p>
                 </div>
-                <div className="p-4 bg-indigo-50/50 rounded-2xl border border-indigo-100">
-                  <p className="text-[9px] font-black text-indigo-400 uppercase tracking-widest mb-1 flex items-center gap-1">
-                    <Zap size={12} /> Correction
+                <div className="p-4 bg-rose-50 rounded-2xl border border-rose-100">
+                  <p className="text-[9px] font-black text-rose-400 uppercase tracking-widest mb-1 flex items-center gap-1">
+                    <ShieldAlert size={12} /> Inhibition Pattern
                   </p>
-                  <p className="text-sm font-bold text-indigo-900">{reflex.correction}</p>
+                  <p className="text-sm font-bold text-rose-900 leading-relaxed">{reflex.inhibitionPattern}</p>
                 </div>
               </div>
 
@@ -120,8 +116,8 @@ const PrimitiveReflexReference = () => {
                   <p className="text-[9px] font-black text-amber-600 uppercase tracking-widest mb-2 flex items-center gap-2">
                     <Info size={14} /> Clinical Pearl
                   </p>
-                  <p className="text-xs text-amber-900 font-bold leading-relaxed">
-                    {reflex.pearl}
+                  <p className="text-xs text-amber-900 font-bold leading-relaxed italic">
+                    "{reflex.pearl}"
                   </p>
                 </div>
               )}

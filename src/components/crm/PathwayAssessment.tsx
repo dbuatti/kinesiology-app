@@ -5,7 +5,7 @@ import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { 
-  Brain, Zap, Activity, Shield, Dumbbell, AlertTriangle, ChevronDown, Check, X, Plus, Search, RotateCcw, Layers, ImageIcon, Baby
+  Brain, Zap, Activity, Shield, Dumbbell, AlertTriangle, ChevronDown, Check, X, Plus, Search, RotateCcw, Layers, ImageIcon, Baby, PlayCircle, ShieldAlert
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { BRAIN_REFLEX_POINTS, BrainReflexPoint } from '@/data/brain-reflex-data';
@@ -28,9 +28,11 @@ interface AssessmentItemProps {
   onSetStatus: (status: Status) => void;
   imageUrl?: string | null;
   showImage?: boolean;
+  stimulus?: string;
+  inhibitionPattern?: string;
 }
 
-const AssessmentItem = ({ name, status, onSetStatus, imageUrl, showImage }: AssessmentItemProps) => {
+const AssessmentItem = ({ name, status, onSetStatus, imageUrl, showImage, stimulus, inhibitionPattern }: AssessmentItemProps) => {
   return (
     <div className={cn(
       "group relative p-4 rounded-2xl border-2 transition-all",
@@ -38,7 +40,7 @@ const AssessmentItem = ({ name, status, onSetStatus, imageUrl, showImage }: Asse
       status === 'Inhibited' ? "bg-rose-50 border-rose-200" :
       "bg-white border-slate-100 hover:border-indigo-100"
     )}>
-      <div className="flex items-center justify-between">
+      <div className="flex items-center justify-between mb-2">
         <p className="font-bold text-sm text-slate-800">{name}</p>
         {status && (
           <Badge className={cn(
@@ -49,6 +51,24 @@ const AssessmentItem = ({ name, status, onSetStatus, imageUrl, showImage }: Asse
           </Badge>
         )}
       </div>
+
+      {(stimulus || inhibitionPattern) && (
+        <div className="space-y-2 mb-2">
+          {stimulus && (
+            <div className="flex items-start gap-1.5">
+              <PlayCircle size={10} className="text-indigo-400 shrink-0 mt-0.5" />
+              <p className="text-[9px] text-slate-500 leading-tight font-medium">{stimulus}</p>
+            </div>
+          )}
+          {inhibitionPattern && (
+            <div className="flex items-start gap-1.5">
+              <ShieldAlert size={10} className="text-rose-400 shrink-0 mt-0.5" />
+              <p className="text-[9px] text-rose-600/70 leading-tight font-bold">{inhibitionPattern}</p>
+            </div>
+          )}
+        </div>
+      )}
+
       {showImage && imageUrl && (
         <div className="mt-4 aspect-video rounded-lg overflow-hidden border border-slate-200 bg-slate-100">
           <img src={imageUrl} alt={name} className="w-full h-full object-cover" />
@@ -226,6 +246,8 @@ const PathwayAssessment = ({ initialValue, onSave }: PathwayAssessmentProps) => 
               name={reflex.name}
               status={results.primitiveReflexes?.[reflex.name]}
               onSetStatus={(status) => handleSetStatus('primitiveReflexes', reflex.name, status)}
+              stimulus={reflex.stimulus}
+              inhibitionPattern={reflex.inhibitionPattern}
             />
           ))}
         </div>

@@ -3,94 +3,102 @@
 export interface PrimitiveReflex {
   id: string;
   name: string;
-  description: string;
-  assessment: string;
-  correction: string;
-  videoUrl?: string;
   category: 'Foundational' | 'Postural' | 'Tactile';
+  stimulus: string;
+  inhibitionPattern: string;
+  description?: string;
   pearl?: string;
 }
 
 export const PRIMITIVE_REFLEXES: PrimitiveReflex[] = [
   {
-    id: 'moro',
-    name: 'Moro Reflex / Startle',
-    category: 'Foundational',
-    description: 'The "fight or flight" reflex. A primitive response to a sudden change in sensory input.',
-    assessment: 'Sudden head drop (supported) or loud noise. Observe for arm abduction and extension followed by adduction and flexion.',
-    correction: 'Specific integration exercises involving slow, controlled movements and breath work.',
-    pearl: 'If retained, the client may be in a constant state of high SNS arousal.'
-  },
-  {
-    id: 'spinal-galant',
-    name: 'Spinal Galant Reflex',
-    category: 'Postural',
-    description: 'Lateral trunk flexion in response to stimulation of the lumbar region.',
-    assessment: 'Stroke the lower back on one side of the spine. Observe for hip rotation or trunk flexion towards the stimulus.',
-    correction: 'Snow angels or specific floor-based rotational integration.',
-    pearl: 'Often linked to "fidgety" behavior and difficulty sitting still.'
-  },
-  {
-    id: 'atnr',
-    name: 'ATNR (Asymmetrical Tonic Neck Reflex)',
-    category: 'Postural',
-    description: 'The "fencing" reflex. Head rotation triggers limb extension on the face side.',
-    assessment: 'Rotate the head to one side. Observe for extension of the arm/leg on that side and flexion on the opposite side.',
-    correction: 'Cross-crawl variations and specific head-eye-limb coordination drills.',
-    pearl: 'Retained ATNR can interfere with hand-eye coordination and crossing the midline.'
-  },
-  {
-    id: 'stnr',
-    name: 'STNR (Symmetrical Tonic Neck Reflex)',
-    category: 'Postural',
-    description: 'Head flexion/extension triggers symmetrical limb responses.',
-    assessment: 'Flex the head (chin to chest) - arms should flex, legs extend. Extend the head - arms should extend, legs flex.',
-    correction: 'Cat-cow variations and specific quadruped integration drills.',
-    pearl: 'Retained STNR often affects posture and the ability to sit comfortably at a desk.'
-  },
-  {
-    id: 'tlr',
-    name: 'TLR (Tonic Labyrinthine Reflex)',
-    category: 'Foundational',
-    description: 'Head position in space affects overall muscle tone.',
-    assessment: 'Tilt head forward (flexion) - observe for total body flexion. Tilt head back (extension) - observe for total body extension.',
-    correction: 'Prone and supine "superman" or "ball" holds to integrate vestibular-motor maps.',
-    pearl: 'Foundational for balance and spatial orientation.'
-  },
-  {
     id: 'fear-paralysis',
-    name: 'Fear Paralysis Reflex',
+    name: 'Fear Paralysis',
     category: 'Foundational',
-    description: 'A withdrawal reflex that precedes the Moro reflex.',
-    assessment: 'Observe for "freezing" or total body withdrawal in response to unexpected touch or sound.',
-    correction: 'Deep pressure, grounding, and rhythmic rocking protocols.',
+    stimulus: 'Any unexpected stimulus (sound, motion, tap etc).',
+    inhibitionPattern: 'Withdrawal from stimulus or Global inhibition.',
+    description: 'A withdrawal reflex that precedes the Moro reflex. Foundational for all other integration.',
     pearl: 'The most foundational reflex. If not integrated, other reflexes are harder to clear.'
   },
   {
+    id: 'moro',
+    name: 'Moro Reflex',
+    category: 'Foundational',
+    stimulus: 'Gently but suddenly lower head.',
+    inhibitionPattern: 'PMC (Pectoralis Major Clavicular) and neck extensors inhibit.',
+    description: 'The "fight or flight" reflex. A primitive response to a sudden change in sensory input.',
+    pearl: 'If retained, the client may be in a constant state of high SNS arousal.'
+  },
+  {
+    id: 'startle',
+    name: 'Startle Reflex',
+    category: 'Foundational',
+    stimulus: 'Gently but suddenly lower head.',
+    inhibitionPattern: 'Lats, posterior delt and neck flexors inhibit.',
+    description: 'Often confused with Moro, but involves different muscle inhibition patterns.',
+    pearl: 'Check both Moro and Startle if the client is easily overwhelmed by sensory input.'
+  },
+  {
+    id: 'stnr',
+    name: 'STNR (Symmetrical Tonic Neck Righting)',
+    category: 'Postural',
+    stimulus: '1. Neck forward from seated. 2. Tip neck backward from seated.',
+    inhibitionPattern: 'Stim 1: Neck extensors, arm extensors and leg flexors inhibit. Stim 2: Neck flexors, arm flexors and leg extensors inhibit.',
+    description: 'Head position triggers symmetrical limb responses.',
+    pearl: 'Retained STNR often affects posture and the ability to sit comfortably at a desk.'
+  },
+  {
+    id: 'atnr',
+    name: 'ATNR (Asymmetric Tonic Neck Righting)',
+    category: 'Postural',
+    stimulus: 'Turn head and eyes to one side in one movement with head in slight extension.',
+    inhibitionPattern: 'Inhibition of ipsilateral arm and leg flexors, contralateral arm and leg extensors.',
+    description: 'The "fencing" reflex. Head rotation triggers limb extension on the face side.',
+    pearl: 'Retained ATNR can interfere with hand-eye coordination and crossing the midline.'
+  },
+  {
+    id: 'tlr',
+    name: 'TLR (Tonic Labyrinthine)',
+    category: 'Foundational',
+    stimulus: 'With patient in supine, ask patient to actively flex or extend BOTH head and lumbar spine.',
+    inhibitionPattern: 'Flexion: All upper and lower body extensors inhibit. Extension: All upper and lower body flexors inhibit.',
+    description: 'Head position in space affects overall muscle tone.',
+    pearl: 'Foundational for balance and spatial orientation.'
+  },
+  {
+    id: 'spinal-galant',
+    name: 'Spinal Gallant',
+    category: 'Postural',
+    stimulus: 'Stroke along one side of spine from inferior angle of scapula to sacrum.',
+    inhibitionPattern: 'Ipsilateral hip curves up and outwards; inhibition of ipsilateral internal rotators of hip, adductors, hip extensors, and contralateral oblique and QL.',
+    description: 'Lateral trunk flexion in response to stimulation of the lumbar region.',
+    pearl: 'Often linked to "fidgety" behavior and difficulty sitting still.'
+  },
+  {
     id: 'babinski',
-    name: 'Babinski Reflex',
+    name: 'Babinski',
     category: 'Tactile',
+    stimulus: 'Stroke from lateral heel upwards and across towards ball of foot.',
+    inhibitionPattern: 'Toes fan up and out and big toe turns downward; inhibition of toe flexors.',
     description: 'Toe extension in response to stimulation of the sole of the foot.',
-    assessment: 'Stroke the lateral aspect of the sole of the foot. Observe for big toe extension and fanning of other toes.',
-    correction: 'Specific foot-mapping and toe-flexor activation drills.',
     pearl: 'Retained Babinski affects gait and the ability to ground through the feet.'
   },
   {
     id: 'rooting',
     name: 'Rooting Reflex',
     category: 'Tactile',
+    stimulus: 'Stroke side of cheek.',
+    inhibitionPattern: 'Head turns towards stimulus; inhibits ipsilateral SCM, contralateral scalenes, etc.',
     description: 'Head rotation in response to touch on the cheek.',
-    assessment: 'Stroke the cheek near the mouth. Observe for the head turning towards the stimulus.',
-    correction: 'Specific facial and jaw integration exercises.',
     pearl: 'Can affect speech, swallowing, and jaw tension (TMJ).'
   },
   {
     id: 'palmar',
     name: 'Palmar Reflex',
     category: 'Tactile',
+    stimulus: 'Apply pressure to the palm.',
+    inhibitionPattern: 'Involuntary hand grasp; inhibition of finger extensors.',
     description: 'Involuntary hand grasp in response to pressure on the palm.',
-    assessment: 'Apply pressure to the palm. Observe for involuntary finger flexion/grasp.',
-    correction: 'Specific hand-mapping and fine motor integration drills.',
     pearl: 'Retained Palmar reflex can affect handwriting and manual dexterity.'
   }
 ];

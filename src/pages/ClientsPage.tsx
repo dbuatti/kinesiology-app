@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { calculateAge, getStarSign } from "@/utils/crm-utils";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
@@ -40,6 +40,7 @@ const ClientsPage = () => {
   const [open, setOpen] = useState(false);
   const [bookOpen, setBookOpen] = useState(false);
   const [selectedClientId, setSelectedClientId] = useState<string | null>(null);
+  const navigate = useNavigate();
   
   const fetchClients = async () => {
     try {
@@ -241,74 +242,76 @@ const ClientsPage = () => {
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               {filteredClients.map((client) => (
-                <Link key={client.id} to={`/clients/${client.id}`}>
-                  <Card className="hover:shadow-2xl hover:-translate-y-1 transition-all duration-300 border-none shadow-lg rounded-[2rem] overflow-hidden group cursor-pointer bg-card h-full">
-                    <CardContent className="p-8 space-y-6">
-                      <div className="flex items-start justify-between">
-                        <div className="w-16 h-16 rounded-[1.5rem] bg-indigo-600 text-white flex items-center justify-center text-2xl font-black uppercase shadow-xl shadow-indigo-100 dark:shadow-indigo-900/20 group-hover:scale-110 transition-transform">
-                          {client.name.charAt(0)}
-                        </div>
-                        <div className="flex flex-col items-end">
-                          <Badge className="bg-emerald-50 dark:bg-emerald-900/20 text-emerald-700 dark:text-emerald-400 border-none font-black text-[10px] uppercase tracking-widest mb-2">
-                            {client.session_count} Sessions
-                          </Badge>
-                          <div className="flex items-center gap-1 text-[10px] font-black text-muted-foreground uppercase tracking-widest">
-                            <Clock size={12} /> {client.last_session_at ? format(new Date(client.last_session_at), "MMM d") : "Never"}
-                          </div>
+                <Card 
+                  key={client.id} 
+                  className="hover:shadow-2xl hover:-translate-y-1 transition-all duration-300 border-none shadow-lg rounded-[2rem] overflow-hidden group cursor-pointer bg-card h-full"
+                  onClick={() => navigate(`/clients/${client.id}`)}
+                >
+                  <CardContent className="p-8 space-y-6">
+                    <div className="flex items-start justify-between">
+                      <div className="w-16 h-16 rounded-[1.5rem] bg-indigo-600 text-white flex items-center justify-center text-2xl font-black uppercase shadow-xl shadow-indigo-100 dark:shadow-indigo-900/20 group-hover:scale-110 transition-transform">
+                        {client.name.charAt(0)}
+                      </div>
+                      <div className="flex flex-col items-end">
+                        <Badge className="bg-emerald-50 dark:bg-emerald-900/20 text-emerald-700 dark:text-emerald-400 border-none font-black text-[10px] uppercase tracking-widest mb-2">
+                          {client.session_count} Sessions
+                        </Badge>
+                        <div className="flex items-center gap-1 text-[10px] font-black text-muted-foreground uppercase tracking-widest">
+                          <Clock size={12} /> {client.last_session_at ? format(new Date(client.last_session_at), "MMM d") : "Never"}
                         </div>
                       </div>
+                    </div>
 
-                      <div className="space-y-1">
-                        <h3 className="text-2xl font-black text-foreground group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors truncate">{client.name}</h3>
-                        <div className="flex items-center gap-2 text-sm font-bold text-muted-foreground">
-                          {client.born && <span>{calculateAge(client.born)} yrs • {getStarSign(client.born)}</span>}
-                        </div>
+                    <div className="space-y-1">
+                      <h3 className="text-2xl font-black text-foreground group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors truncate">{client.name}</h3>
+                      <div className="flex items-center gap-2 text-sm font-bold text-muted-foreground">
+                        {client.born && <span>{calculateAge(client.born)} yrs • {getStarSign(client.born)}</span>}
                       </div>
+                    </div>
 
-                      <div className="space-y-3 pt-4 border-t border-border">
-                        {client.email && (
-                          <div className="flex items-center justify-between group/contact">
-                            <div className="flex items-center gap-3 text-xs font-bold text-muted-foreground">
-                              <Mail size={14} className="text-indigo-400" /> {client.email}
-                            </div>
-                            <Button variant="ghost" size="icon" className="h-7 w-7 rounded-lg opacity-0 group-hover/contact:opacity-100 transition-opacity" asChild onClick={(e) => e.stopPropagation()}>
-                              <a href={`mailto:${client.email}`}><ExternalLink size={12} /></a>
-                            </Button>
-                          </div>
-                        )}
-                        {client.phone && (
-                          <div className="flex items-center justify-between group/contact">
-                            <div className="flex items-center gap-3 text-xs font-bold text-muted-foreground">
-                              <Phone size={14} className="text-indigo-400" /> {client.phone}
-                            </div>
-                            <Button variant="ghost" size="icon" className="h-7 w-7 rounded-lg opacity-0 group-hover/contact:opacity-100 transition-opacity" asChild onClick={(e) => e.stopPropagation()}>
-                              <a href={`tel:${client.phone}`}><ExternalLink size={12} /></a>
-                            </Button>
-                          </div>
-                        )}
-                        {client.suburbs.length > 0 && (
+                    <div className="space-y-3 pt-4 border-t border-border">
+                      {client.email && (
+                        <div className="flex items-center justify-between group/contact">
                           <div className="flex items-center gap-3 text-xs font-bold text-muted-foreground">
-                            <MapPin size={14} className="text-indigo-400" /> {client.suburbs.join(", ")}
+                            <Mail size={14} className="text-indigo-400" /> {client.email}
                           </div>
-                        )}
-                      </div>
-
-                      <div className="pt-4 flex items-center justify-between">
-                        <Button 
-                          variant="ghost" 
-                          size="sm" 
-                          className="p-0 text-indigo-600 dark:text-indigo-400 font-black text-[10px] uppercase tracking-widest hover:bg-transparent"
-                          onClick={(e) => { e.preventDefault(); e.stopPropagation(); handleQuickBook(client.id); }}
-                        >
-                          <CalendarPlus size={14} className="mr-2" /> Quick Book
-                        </Button>
-                        <div className="w-8 h-8 rounded-full bg-muted flex items-center justify-center text-muted-foreground group-hover:bg-indigo-600 group-hover:text-white transition-all">
-                          <ArrowRight size={16} />
+                          <Button variant="ghost" size="icon" className="h-7 w-7 rounded-lg opacity-0 group-hover/contact:opacity-100 transition-opacity" asChild onClick={(e) => e.stopPropagation()}>
+                            <a href={`mailto:${client.email}`}><ExternalLink size={12} /></a>
+                          </Button>
                         </div>
+                      )}
+                      {client.phone && (
+                        <div className="flex items-center justify-between group/contact">
+                          <div className="flex items-center gap-3 text-xs font-bold text-muted-foreground">
+                            <Phone size={14} className="text-indigo-400" /> {client.phone}
+                          </div>
+                          <Button variant="ghost" size="icon" className="h-7 w-7 rounded-lg opacity-0 group-hover/contact:opacity-100 transition-opacity" asChild onClick={(e) => e.stopPropagation()}>
+                            <a href={`tel:${client.phone}`}><ExternalLink size={12} /></a>
+                          </Button>
+                        </div>
+                      )}
+                      {client.suburbs.length > 0 && (
+                        <div className="flex items-center gap-3 text-xs font-bold text-muted-foreground">
+                          <MapPin size={14} className="text-indigo-400" /> {client.suburbs.join(", ")}
+                        </div>
+                      )}
+                    </div>
+
+                    <div className="pt-4 flex items-center justify-between">
+                      <Button 
+                        variant="ghost" 
+                        size="sm" 
+                        className="p-0 text-indigo-600 dark:text-indigo-400 font-black text-[10px] uppercase tracking-widest hover:bg-transparent"
+                        onClick={(e) => { e.preventDefault(); e.stopPropagation(); handleQuickBook(client.id); }}
+                      >
+                        <CalendarPlus size={14} className="mr-2" /> Quick Book
+                      </Button>
+                      <div className="w-8 h-8 rounded-full bg-muted flex items-center justify-center text-muted-foreground group-hover:bg-indigo-600 group-hover:text-white transition-all">
+                        <ArrowRight size={16} />
                       </div>
-                    </CardContent>
-                  </Card>
-                </Link>
+                    </div>
+                  </CardContent>
+                </Card>
               ))}
             </div>
           )

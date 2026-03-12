@@ -31,6 +31,13 @@ const PreviousSessionInsightsBar = ({ clientId, currentAppointmentId, manualData
     }
 
     const fetchPreviousSession = async () => {
+      // Skip fetch if IDs are placeholders (not valid UUIDs)
+      const isDemoId = clientId.includes('demo') || currentAppointmentId.includes('demo') || currentAppointmentId.includes('00000000');
+      if (isDemoId) {
+        setLoading(false);
+        return;
+      }
+
       try {
         const { data, error } = await supabase
           .from('appointments')
@@ -51,7 +58,7 @@ const PreviousSessionInsightsBar = ({ clientId, currentAppointmentId, manualData
       }
     };
 
-    if (clientId && clientId !== "demo-client-id") fetchPreviousSession();
+    if (clientId) fetchPreviousSession();
     else setLoading(false);
   }, [clientId, currentAppointmentId, manualData]);
 
@@ -155,7 +162,7 @@ const PreviousSessionInsightsBar = ({ clientId, currentAppointmentId, manualData
                   </p>
                 </div>
               </div>
-              <Link to={clientId === 'demo-client-id' ? '#' : `/appointments/${previousSession.id}`} className="block">
+              <Link to={clientId.includes('demo') ? '#' : `/appointments/${previousSession.id}`} className="block">
                 <Button variant="outline" size="sm" className="w-full bg-transparent border-white/20 text-white hover:bg-white/10 rounded-xl text-xs">
                   View Full Previous Session
                 </Button>

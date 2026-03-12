@@ -31,6 +31,13 @@ const PreviousSessionSummary = ({ clientId, currentAppointmentId, manualData }: 
     }
 
     const fetchPreviousSession = async () => {
+      // Skip fetch if IDs are placeholders
+      const isDemoId = clientId.includes('demo') || currentAppointmentId.includes('demo') || currentAppointmentId.includes('00000000');
+      if (isDemoId) {
+        setLoading(false);
+        return;
+      }
+
       try {
         const { data, error } = await supabase
           .from('appointments')
@@ -51,7 +58,7 @@ const PreviousSessionSummary = ({ clientId, currentAppointmentId, manualData }: 
       }
     };
 
-    if (clientId && clientId !== "demo-client-id") fetchPreviousSession();
+    if (clientId) fetchPreviousSession();
     else setLoading(false);
   }, [clientId, currentAppointmentId, manualData]);
 
@@ -88,7 +95,7 @@ const PreviousSessionSummary = ({ clientId, currentAppointmentId, manualData }: 
             </p>
           </div>
         </div>
-        <Link to={clientId === 'demo-client-id' ? '#' : `/appointments/${previousSession.id}`}>
+        <Link to={clientId.includes('demo') ? '#' : `/appointments/${previousSession.id}`}>
           <Button variant="outline" className="rounded-xl border-indigo-200 text-indigo-600 hover:bg-indigo-50">
             <ExternalLink size={16} className="mr-2" /> View Full Session
           </Button>

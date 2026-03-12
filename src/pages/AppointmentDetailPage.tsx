@@ -45,7 +45,7 @@ const AppointmentDetailPage = () => {
   const [copied, setCopied] = useState(false);
   const [cloning, setCloning] = useState(false);
   const [currentTime, setCurrentTime] = useState(new Date());
-  const [showSidebar, setShowSidebar] = useState(true);
+  const [showSidebar, setShowSidebar] = useState(false);
 
   useEffect(() => {
     const timer = setInterval(() => setCurrentTime(new Date()), 60000);

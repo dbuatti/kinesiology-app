@@ -27,7 +27,7 @@ import EmotionAssessment from './EmotionAssessment';
 import PreviousSessionSummary from './PreviousSessionSummary';
 import GaitReflexAssessment from './GaitReflexAssessment';
 import PathwayAssessment from './PathwayAssessment';
-import PathwayLogicWizard from './PathwayLogicWizard';
+import CalibrationTab from './session-tabs/CalibrationTab';
 
 type ActiveView = 'home' | 'kinesiology' | 'muscles' | 'gait' | 'previous';
 
@@ -107,10 +107,7 @@ const SessionContentSwitcher = ({ appointment, onUpdate, saveField }: SessionCon
           </TabsContent>
 
           <TabsContent value="calibration" className="focus-visible:ring-0">
-            <PathwayLogicWizard
-              onSave={(summary) => saveField('modes_balances', summary)}
-              priorityPattern={appointment.priority_pattern}
-            />
+            <CalibrationTab appointment={appointment} saveField={saveField} />
           </TabsContent>
 
           <TabsContent value="reassessment" className="focus-visible:ring-0">

@@ -9,7 +9,7 @@ import {
   ArrowLeft, Mail, Phone, MapPin, Calendar, 
   Loader2, Briefcase, Heart, Baby,
   Activity, Edit3, Trash2, MoreHorizontal, FlaskConical, TrendingUp, Clock, Brain,
-  LayoutDashboard, History, ArrowRight, Copy, Check, Sparkles, Plus
+  LayoutDashboard, History, ArrowRight, Copy, Check, Sparkles, Plus, ListChecks
 } from "lucide-react";
 import { format } from "date-fns";
 import { Client, Appointment } from "@/types/crm";
@@ -35,6 +35,7 @@ import { useRecentClients } from "@/hooks/use-recent-clients";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import ClientProgressTab from "@/components/crm/ClientProgressTab";
 import ClientProfileCard from "@/components/crm/ClientProfileCard";
+import ClinicalTimeline from "@/components/crm/ClinicalTimeline";
 
 const ClientDetailPage = () => {
   const { id } = useParams();
@@ -101,7 +102,6 @@ const ClientDetailPage = () => {
     setAiCopying(true);
 
     const latestApp = appointments[0];
-    const age = client.born ? format(client.born, "yyyy") : 'N/A';
     
     let prompt = `
 I am a Kinesiology practitioner analyzing a client case. Please provide clinical insights based on the following data:
@@ -216,12 +216,15 @@ Please analyze the relationship between the respiratory (BOLT), autonomic (Coher
       </div>
 
       <Tabs value={activeTab} onValueChange={(v) => setSearchParams({ tab: v })} className="w-full">
-        <TabsList className="grid w-full grid-cols-3 h-14 bg-slate-200/50 p-1.5 rounded-2xl mb-8">
+        <TabsList className="grid w-full grid-cols-4 h-14 bg-slate-200/50 p-1.5 rounded-2xl mb-8">
           <TabsTrigger value="overview" className="flex items-center gap-2 data-[state=active]:bg-white data-[state=active]:text-indigo-600 data-[state=active]:shadow-sm rounded-xl h-11 font-black uppercase tracking-wider text-[10px]">
             <LayoutDashboard size={14} /> Overview
           </TabsTrigger>
           <TabsTrigger value="appointments" className="flex items-center gap-2 data-[state=active]:bg-white data-[state=active]:text-indigo-600 data-[state=active]:shadow-sm rounded-xl h-11 font-black uppercase tracking-wider text-[10px]">
             <History size={14} /> Appointments
+          </TabsTrigger>
+          <TabsTrigger value="timeline" className="flex items-center gap-2 data-[state=active]:bg-white data-[state=active]:text-indigo-600 data-[state=active]:shadow-sm rounded-xl h-11 font-black uppercase tracking-wider text-[10px]">
+            <ListChecks size={14} /> Clinical Timeline
           </TabsTrigger>
           <TabsTrigger value="progress" className="flex items-center gap-2 data-[state=active]:bg-white data-[state=active]:text-indigo-600 data-[state=active]:shadow-sm rounded-xl h-11 font-black uppercase tracking-wider text-[10px]">
             <TrendingUp size={14} /> Progress & Protocols
@@ -451,6 +454,10 @@ Please analyze the relationship between the respiratory (BOLT), autonomic (Coher
               </Link>
             ))}
           </div>
+        </TabsContent>
+
+        <TabsContent value="timeline">
+          <ClinicalTimeline appointments={appointments} />
         </TabsContent>
 
         <TabsContent value="progress">

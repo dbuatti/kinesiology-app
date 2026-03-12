@@ -6,16 +6,36 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { 
   Move, Zap, RefreshCw, 
-  Dumbbell, Lightbulb, Sparkles,
-  ChevronRight, Loader2
+  Dumbbell, Lightbulb, 
+  ChevronRight, Loader2,
+  MapPin
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { format } from 'date-fns';
 
 const JOINTS = [
   { 
+    name: "Cranium", 
+    type: "Axial", 
+    region: "Upper",
+    sagittal: "Flexion, Extension",
+    frontal: "Lateral Flexion",
+    transverse: "Rotation",
+    pearl: "Organizes the 'Top-Down' neurological tone. Essential for cranial nerve health."
+  },
+  { 
+    name: "Jaw (TMJ)", 
+    type: "Axial", 
+    region: "Upper",
+    sagittal: "Protrusion, Retraction",
+    frontal: "Lateral Deviation",
+    transverse: "-",
+    pearl: "Deeply connected to the Pelvis and the Vagus nerve (Medulla)."
+  },
+  { 
     name: "Cervical Spine", 
     type: "Axial", 
+    region: "Upper",
     sagittal: "Flexion, Extension",
     frontal: "Lateral Flexion (L/R)",
     transverse: "Rotation (L/R)",
@@ -24,6 +44,7 @@ const JOINTS = [
   { 
     name: "Thoracic Spine", 
     type: "Axial", 
+    region: "Upper",
     sagittal: "Flexion, Extension",
     frontal: "Lateral Flexion (L/R)",
     transverse: "Rotation (L/R)",
@@ -32,30 +53,16 @@ const JOINTS = [
   { 
     name: "Lumbar Spine", 
     type: "Axial", 
+    region: "Lower",
     sagittal: "Flexion, Extension",
     frontal: "Lateral Flexion (L/R)",
     transverse: "Rotation (Minimal)",
     pearl: "Designed for stability. Often compensates for poor hip or thoracic mobility."
   },
   { 
-    name: "Shoulder (GH Joint)", 
-    type: "Appendicular", 
-    sagittal: "Flexion, Extension",
-    frontal: "Abduction, Adduction",
-    transverse: "Internal Rotation, External Rotation",
-    pearl: "Most mobile joint. Slaved to the Scapula and Thoracic spine."
-  },
-  { 
-    name: "Scapula", 
-    type: "Appendicular", 
-    sagittal: "Elevation, Depression",
-    frontal: "Upward/Downward Rotation",
-    transverse: "Protraction, Retraction",
-    pearl: "The foundation of shoulder function. Must glide freely over the ribs."
-  },
-  { 
     name: "Pelvis", 
     type: "Axial", 
+    region: "Lower",
     sagittal: "Anterior Tilt, Posterior Tilt",
     frontal: "Hip Hike (L/R), Pelvic Drop",
     transverse: "Rotation (L/R)",
@@ -64,14 +71,61 @@ const JOINTS = [
   { 
     name: "Sacrum", 
     type: "Axial", 
+    region: "Lower",
     sagittal: "Nutation, Counter-Nutation",
     frontal: "-",
     transverse: "-",
     pearl: "The keystone of the pelvis. Movement is subtle but neurologically vital."
   },
   { 
+    name: "Shoulder (GH Joint)", 
+    type: "Appendicular", 
+    region: "Upper",
+    sagittal: "Flexion, Extension",
+    frontal: "Abduction, Adduction",
+    transverse: "Internal Rotation, External Rotation",
+    pearl: "Most mobile joint. Slaved to the Scapula and Thoracic spine."
+  },
+  { 
+    name: "Scapula", 
+    type: "Appendicular", 
+    region: "Upper",
+    sagittal: "Elevation, Depression",
+    frontal: "Upward/Downward Rotation",
+    transverse: "Protraction, Retraction",
+    pearl: "The foundation of shoulder function. Must glide freely over the ribs."
+  },
+  { 
+    name: "Elbow", 
+    type: "Appendicular", 
+    region: "Upper",
+    sagittal: "Flexion, Extension",
+    frontal: "-",
+    transverse: "Pronation, Supination",
+    pearl: "A hinge joint that allows for complex hand orientation."
+  },
+  { 
+    name: "Wrist", 
+    type: "Appendicular", 
+    region: "Upper",
+    sagittal: "Flexion, Extension",
+    frontal: "Radial/Ulnar Deviation",
+    transverse: "-",
+    pearl: "Essential for fine motor control and upper limb integration."
+  },
+  { 
+    name: "Hand/Fingers", 
+    type: "Appendicular", 
+    region: "Upper",
+    sagittal: "Flexion, Extension",
+    frontal: "Adduction, Abduction",
+    transverse: "-",
+    pearl: "High density of mechanoreceptors. Direct link to the motor cortex."
+  },
+  { 
     name: "Hip", 
     type: "Appendicular", 
+    region: "Lower",
     sagittal: "Flexion, Extension",
     frontal: "Abduction, Adduction",
     transverse: "Internal Rotation, External Rotation",
@@ -80,6 +134,7 @@ const JOINTS = [
   { 
     name: "Knee", 
     type: "Appendicular", 
+    region: "Lower",
     sagittal: "Flexion, Extension",
     frontal: "-",
     transverse: "Tibial Internal/External Rotation",
@@ -88,26 +143,11 @@ const JOINTS = [
   { 
     name: "Foot/Ankle", 
     type: "Appendicular", 
+    region: "Lower",
     sagittal: "Dorsiflexion, Plantar Flexion",
     frontal: "Inversion, Eversion",
     transverse: "Internal Rotation, External Rotation",
     pearl: "Primary source of proprioceptive input for the cerebellum."
-  },
-  { 
-    name: "Wrist", 
-    type: "Appendicular", 
-    sagittal: "Flexion, Extension",
-    frontal: "Radial/Ulnar Deviation",
-    transverse: "-",
-    pearl: "Essential for fine motor control and upper limb integration."
-  },
-  { 
-    name: "Jaw (TMJ)", 
-    type: "Axial", 
-    sagittal: "Protrusion, Retraction",
-    frontal: "Lateral Deviation",
-    transverse: "-",
-    pearl: "Deeply connected to the Pelvis and the Vagus nerve (Medulla)."
   }
 ];
 
@@ -171,9 +211,14 @@ const RandomJointCard = () => {
         </div>
         <div className="flex items-center justify-between relative z-10">
           <div className="space-y-1">
-            <Badge className="bg-white/20 text-white border-none font-black text-[8px] uppercase tracking-widest">
-              Joint of the Day • {joint.type}
-            </Badge>
+            <div className="flex gap-1.5 mb-1">
+              <Badge className="bg-white/20 text-white border-none font-black text-[7px] uppercase tracking-widest">
+                {joint.type}
+              </Badge>
+              <Badge className="bg-white/20 text-white border-none font-black text-[7px] uppercase tracking-widest">
+                {joint.region}
+              </Badge>
+            </div>
             <CardTitle className="text-xl font-black tracking-tight">{joint.name}</CardTitle>
           </div>
           <Button 

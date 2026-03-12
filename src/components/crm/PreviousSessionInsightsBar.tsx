@@ -15,14 +15,21 @@ import { Link } from "react-router-dom";
 interface PreviousSessionInsightsBarProps {
   clientId: string;
   currentAppointmentId: string;
+  manualData?: any;
 }
 
-const PreviousSessionInsightsBar = ({ clientId, currentAppointmentId }: PreviousSessionInsightsBarProps) => {
-  const [previousSession, setPreviousSession] = useState<any>(null);
+const PreviousSessionInsightsBar = ({ clientId, currentAppointmentId, manualData }: PreviousSessionInsightsBarProps) => {
+  const [previousSession, setPreviousSession] = useState<any>(manualData || null);
   const [isOpen, setIsOpen] = useState(false);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(!manualData);
 
   useEffect(() => {
+    if (manualData) {
+      setPreviousSession(manualData);
+      setLoading(false);
+      return;
+    }
+
     const fetchPreviousSession = async () => {
       try {
         const { data, error } = await supabase
@@ -44,8 +51,9 @@ const PreviousSessionInsightsBar = ({ clientId, currentAppointmentId }: Previous
       }
     };
 
-    if (clientId) fetchPreviousSession();
-  }, [clientId, currentAppointmentId]);
+    if (clientId && clientId !== "demo-client-id") fetchPreviousSession();
+    else setLoading(false);
+  }, [clientId, currentAppointmentId, manualData]);
 
   if (loading || !previousSession) return null;
 
@@ -147,7 +155,7 @@ const PreviousSessionInsightsBar = ({ clientId, currentAppointmentId }: Previous
                   </p>
                 </div>
               </div>
-              <Link to={`/appointments/${previousSession.id}`} className="block">
+              <Link to={clientId === 'demo-client-id' ? '#' : `/appointments/${previousSession.id}`} className="block">
                 <Button variant="outline" size="sm" className="w-full bg-transparent border-white/20 text-white hover:bg-white/10 rounded-xl text-xs">
                   View Full Previous Session
                 </Button>

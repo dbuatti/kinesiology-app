@@ -50,6 +50,14 @@ const SessionContentSwitcher = ({ appointment, onUpdate, saveField, history = []
     reassessment: !!appointment.session_north_star
   }), [appointment]);
 
+  // Find the most recent session before the current one
+  const previousSession = useMemo(() => {
+    if (!history || history.length < 2) return null;
+    const sorted = [...history].sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+    const currentIndex = sorted.findIndex(s => s.id === appointment.id);
+    return sorted[currentIndex + 1] || null;
+  }, [history, appointment.id]);
+
   const NavItem = ({ view, label, Icon }: { view: ActiveView, label: string, Icon: React.ElementType }) => (
     <Button
       variant="ghost"
@@ -168,7 +176,11 @@ const SessionContentSwitcher = ({ appointment, onUpdate, saveField, history = []
                 </div>
                 <NeurologicalHistoryTracker appointments={history.length > 0 ? history : [appointment]} />
             </div>
-            <PreviousSessionSummary clientId={appointment.clients.id} currentAppointmentId={appointment.id} />
+            <PreviousSessionSummary 
+              clientId={appointment.clients.id} 
+              currentAppointmentId={appointment.id} 
+              manualData={previousSession}
+            />
           </div>
         )}
       </div>

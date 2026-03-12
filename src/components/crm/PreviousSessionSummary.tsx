@@ -16,13 +16,20 @@ import { cn } from "@/lib/utils";
 interface PreviousSessionSummaryProps {
   clientId: string;
   currentAppointmentId: string;
+  manualData?: any;
 }
 
-const PreviousSessionSummary = ({ clientId, currentAppointmentId }: PreviousSessionSummaryProps) => {
-  const [previousSession, setPreviousSession] = useState<any>(null);
-  const [loading, setLoading] = useState(true);
+const PreviousSessionSummary = ({ clientId, currentAppointmentId, manualData }: PreviousSessionSummaryProps) => {
+  const [previousSession, setPreviousSession] = useState<any>(manualData || null);
+  const [loading, setLoading] = useState(!manualData);
 
   useEffect(() => {
+    if (manualData) {
+      setPreviousSession(manualData);
+      setLoading(false);
+      return;
+    }
+
     const fetchPreviousSession = async () => {
       try {
         const { data, error } = await supabase
@@ -44,8 +51,9 @@ const PreviousSessionSummary = ({ clientId, currentAppointmentId }: PreviousSess
       }
     };
 
-    if (clientId) fetchPreviousSession();
-  }, [clientId, currentAppointmentId]);
+    if (clientId && clientId !== "demo-client-id") fetchPreviousSession();
+    else setLoading(false);
+  }, [clientId, currentAppointmentId, manualData]);
 
   if (loading) {
     return (
@@ -80,7 +88,7 @@ const PreviousSessionSummary = ({ clientId, currentAppointmentId }: PreviousSess
             </p>
           </div>
         </div>
-        <Link to={`/appointments/${previousSession.id}`}>
+        <Link to={clientId === 'demo-client-id' ? '#' : `/appointments/${previousSession.id}`}>
           <Button variant="outline" className="rounded-xl border-indigo-200 text-indigo-600 hover:bg-indigo-50">
             <ExternalLink size={16} className="mr-2" /> View Full Session
           </Button>
@@ -120,7 +128,7 @@ const PreviousSessionSummary = ({ clientId, currentAppointmentId }: PreviousSess
                 {previousSession.bolt_score && (
                   <Badge className={cn(
                     "mt-2",
-                    previousSession.bolt_score >= 25 ? "bg-emerald-500" : "bg-amber-500"
+                    previousSession.bolt_score >= 25 ? "bg-emerald-50" : "bg-amber-500"
                   )}>
                     {previousSession.bolt_score >= 25 ? 'Functional' : 'Below Target'}
                   </Badge>
@@ -132,7 +140,7 @@ const PreviousSessionSummary = ({ clientId, currentAppointmentId }: PreviousSess
                 {previousSession.coherence_score && (
                   <Badge className={cn(
                     "mt-2",
-                    Math.abs(previousSession.coherence_score - Math.round(previousSession.coherence_score)) < 0.01 ? "bg-emerald-500" : "bg-amber-500"
+                    Math.abs(previousSession.coherence_score - Math.round(previousSession.coherence_score)) < 0.01 ? "bg-emerald-50" : "bg-amber-500"
                   )}>
                     {Math.abs(previousSession.coherence_score - Math.round(previousSession.coherence_score)) < 0.01 ? 'Coherent' : 'Discordant'}
                   </Badge>

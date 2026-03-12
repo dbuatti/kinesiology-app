@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 import { Switch } from "@/components/ui/switch";
@@ -38,15 +38,20 @@ import { generateSessionSummary } from "@/utils/summary-generator";
 import BrainstemToneMap from "@/components/crm/BrainstemToneMap";
 import AppointmentContextCards from "@/components/crm/AppointmentContextCards";
 import { TCM_CHANNELS } from "@/data/tcm-channel-data";
+import PreviousSessionInsightsBar from "@/components/crm/PreviousSessionInsightsBar";
 
 const DemoSessionPage = () => {
   const [showSidebar, setShowSidebar] = useState(true);
   
   // Mock history to show the evolution tracker
-  const mockHistory = [
+  const mockHistory = useMemo(() => [
     {
       id: "hist-1",
       date: subDays(new Date(), 14).toISOString(),
+      goal: "Initial assessment of chronic fatigue",
+      issue: "Low energy, poor sleep, brain fog",
+      bolt_score: 12,
+      coherence_score: 2.1,
       priority_pattern: JSON.stringify({
         primitiveReflexes: { "Fear Paralysis": "Inhibited", "Moro Reflex": "Inhibited" },
         cranialNerves: { "CN X: Vagus": "Inhibited" }
@@ -55,15 +60,18 @@ const DemoSessionPage = () => {
     {
       id: "hist-2",
       date: subDays(new Date(), 7).toISOString(),
+      goal: "Integrate foundational reflexes",
+      issue: "Still experiencing brain fog, but sleep improved",
+      bolt_score: 18,
+      coherence_score: 3.5,
       priority_pattern: JSON.stringify({
         primitiveReflexes: { "Fear Paralysis": "Clear", "Moro Reflex": "Inhibited" },
         cranialNerves: { "CN X: Vagus": "Inhibited", "CN V: Trigeminal": "Inhibited" }
       })
     }
-  ];
+  ], []);
 
   const [appointment, setAppointment] = useState<any>({
-    // Using a valid UUID format for the demo ID to prevent DB errors
     id: "00000000-0000-0000-0000-000000000000",
     display_id: "DEMO-001",
     clientId: "demo-client-id",
@@ -149,6 +157,12 @@ const DemoSessionPage = () => {
               </Button>
             </div>
           </div>
+
+          <PreviousSessionInsightsBar 
+            clientId="demo-client-id" 
+            currentAppointmentId={appointment.id} 
+            manualData={mockHistory[1]}
+          />
 
           <div className="grid grid-cols-1 xl:grid-cols-12 gap-8">
             <div className={cn(showSidebar ? "xl:col-span-8" : "xl:col-span-12", "space-y-8 transition-all duration-500")}>

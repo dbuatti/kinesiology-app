@@ -8,16 +8,18 @@ import {
   GraduationCap, Brain, Zap, Activity, 
   Target, BookOpen, Trophy, Sparkles,
   ChevronRight, LayoutGrid, ListChecks,
-  ShieldCheck, Workflow, Lightbulb, CheckCircle2
+  ShieldCheck, Workflow, Lightbulb, CheckCircle2,
+  Book, HelpCircle, ArrowRightLeft, RefreshCw
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import DailyMechanoChallenge from './DailyMechanoChallenge';
 import JointActionExplorer from './JointActionExplorer';
 import MechanoBible from './MechanoBible';
 import RandomJointCard from './RandomJointCard';
+import MechanoTheoryDrills from './MechanoTheoryDrills';
 
 const MechanoMasteryModule = () => {
-  const [activeTab, setActiveTab] = useState<'academy' | 'challenge' | 'explorer' | 'bible'>('academy');
+  const [activeTab, setActiveTab] = useState<'academy' | 'drills' | 'challenge' | 'explorer' | 'bible'>('academy');
 
   const NavButton = ({ id, label, icon: Icon }: any) => (
     <Button
@@ -63,7 +65,8 @@ const MechanoMasteryModule = () => {
       {/* Navigation Tabs */}
       <div className="flex flex-wrap gap-3 p-2 bg-slate-100 rounded-[2rem] border border-slate-200">
         <NavButton id="academy" label="Academy Hub" icon={LayoutGrid} />
-        <NavButton id="challenge" label="Daily Drill" icon={Trophy} />
+        <NavButton id="drills" label="Theory Drills" icon={Brain} />
+        <NavButton id="challenge" label="Daily Case" icon={Trophy} />
         <NavButton id="explorer" label="Joint Explorer" icon={Target} />
         <NavButton id="bible" label="The Bible" icon={BookOpen} />
       </div>
@@ -84,9 +87,14 @@ const MechanoMasteryModule = () => {
                   </CardDescription>
                 </CardHeader>
                 <CardContent className="p-12 pt-0 relative z-10">
-                  <Button onClick={() => setActiveTab('challenge')} className="bg-white text-slate-900 hover:bg-indigo-50 h-14 px-10 rounded-2xl font-black text-xs uppercase tracking-widest shadow-2xl">
-                    Start Today's Drill <ChevronRight size={18} className="ml-2" />
-                  </Button>
+                  <div className="flex flex-wrap gap-4">
+                    <Button onClick={() => setActiveTab('challenge')} className="bg-white text-slate-900 hover:bg-indigo-50 h-14 px-10 rounded-2xl font-black text-xs uppercase tracking-widest shadow-2xl">
+                      Start Today's Case <ChevronRight size={18} className="ml-2" />
+                    </Button>
+                    <Button onClick={() => setActiveTab('drills')} variant="outline" className="bg-transparent border-white/20 text-white hover:bg-white/10 h-14 px-10 rounded-2xl font-black text-xs uppercase tracking-widest">
+                      Theory Drills
+                    </Button>
+                  </div>
                 </CardContent>
               </Card>
 
@@ -129,15 +137,41 @@ const MechanoMasteryModule = () => {
                   </CardContent>
                 </Card>
               </div>
+
+              {/* Clinical Logic Visualizer */}
+              <Card className="border-none shadow-lg rounded-[2.5rem] bg-indigo-50 border-2 border-indigo-100 overflow-hidden">
+                <CardHeader className="p-8">
+                  <CardTitle className="text-2xl font-black flex items-center gap-3 text-indigo-900">
+                    <ArrowRightLeft size={28} className="text-indigo-600" /> Clinical Logic Flow
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="p-8 pt-0">
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4 relative">
+                    {[
+                      { step: "Stimulate", icon: Zap, color: "bg-amber-500", desc: "Aggravate the threat or movement." },
+                      { step: "Localize", icon: Target, color: "bg-indigo-600", desc: "Find the joint and plane of motion." },
+                      { step: "Calibrate", icon: RefreshCw, color: "bg-emerald-600", desc: "Apply the specific correction." }
+                    ].map((item, i) => (
+                      <div key={item.step} className="flex flex-col items-center text-center space-y-3 p-6 bg-white rounded-3xl border border-indigo-100 shadow-sm relative z-10">
+                        <div className={cn("w-12 h-12 rounded-2xl flex items-center justify-center text-white shadow-lg", item.color)}>
+                          <item.icon size={24} />
+                        </div>
+                        <h4 className="font-black text-indigo-900 uppercase tracking-widest text-xs">{item.step}</h4>
+                        <p className="text-xs text-indigo-600/70 font-medium">{item.desc}</p>
+                      </div>
+                    ))}
+                  </div>
+                </CardContent>
+              </Card>
             </div>
 
             <div className="lg:col-span-4 space-y-8">
               <RandomJointCard />
 
-              <Card className="border-none shadow-lg rounded-[2.5rem] bg-indigo-50 border-2 border-indigo-100">
+              <Card className="border-none shadow-lg rounded-[2.5rem] bg-white overflow-hidden">
                 <CardHeader className="p-8">
-                  <CardTitle className="text-xl font-black flex items-center gap-3 text-indigo-900">
-                    <ListChecks size={24} /> Mastery Checklist
+                  <CardTitle className="text-xl font-black flex items-center gap-3 text-slate-900">
+                    <ListChecks size={24} className="text-indigo-600" /> Mastery Checklist
                   </CardTitle>
                 </CardHeader>
                 <CardContent className="p-8 pt-0 space-y-6">
@@ -148,12 +182,12 @@ const MechanoMasteryModule = () => {
                     { label: "Correction Protocols", desc: "Conscious vs Unconscious." }
                   ].map((item, i) => (
                     <div key={i} className="flex gap-4">
-                      <div className="w-6 h-6 rounded-full bg-white border-2 border-indigo-200 flex items-center justify-center shrink-0 mt-1">
+                      <div className="w-6 h-6 rounded-full bg-slate-50 border-2 border-slate-100 flex items-center justify-center shrink-0 mt-1">
                         <div className="w-2 h-2 rounded-full bg-indigo-600" />
                       </div>
                       <div>
-                        <p className="font-black text-sm text-indigo-900">{item.label}</p>
-                        <p className="text-xs text-indigo-600/70 font-medium">{item.desc}</p>
+                        <p className="font-black text-sm text-slate-900">{item.label}</p>
+                        <p className="text-xs text-slate-500 font-medium">{item.desc}</p>
                       </div>
                     </div>
                   ))}
@@ -176,6 +210,7 @@ const MechanoMasteryModule = () => {
           </div>
         )}
 
+        {activeTab === 'drills' && <MechanoTheoryDrills />}
         {activeTab === 'challenge' && <DailyMechanoChallenge />}
         {activeTab === 'explorer' && <JointActionExplorer />}
         {activeTab === 'bible' && <MechanoBible />}

@@ -28,6 +28,7 @@ import { format, subMonths, isToday, subDays, differenceInMinutes, startOfWeek, 
 import { Skeleton } from "@/components/ui/skeleton";
 import { Textarea } from "@/components/ui/textarea";
 import MeridianClock from "@/components/crm/MeridianClock";
+import RandomJointCard from "@/components/crm/RandomJointCard";
 import { AppointmentWithClient } from "@/types/crm";
 import DashboardStats from "@/components/crm/DashboardStats";
 import DailyBriefing from "@/components/crm/DailyBriefing";
@@ -194,7 +195,7 @@ const Index = () => {
   }, []);
 
   if (loading) return (
-    <div className="p-4 md:p-6 max-w-full mx-auto space-y-6">
+    <div className="p-4 md:p-6 max-full mx-auto space-y-6">
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div className="space-y-2"><Skeleton className="h-8 w-48" /><Skeleton className="h-4 w-96" /></div>
       </div>
@@ -431,6 +432,8 @@ const Index = () => {
               )}
 
               <MeridianClock />
+
+              <RandomJointCard />
               
               <UpcomingAppointments />
               
@@ -496,7 +499,7 @@ const Index = () => {
                         <ShieldCheck size={20} className="mr-3" /> Week 3: Releasing Curses
                       </Link>
                     </Button>
-                    <Button variant="outline" className="justify-start h-12 rounded-2xl border-indigo-200 dark:border-indigo-900/30 hover:bg-indigo-100 dark:hover:bg-indigo-900/40 font-black text-[10px] uppercase tracking-widest text-indigo-700 dark:text-indigo-300 shadow-sm" asChild>
+                    <Button variant="outline" className="justify-start h-12 rounded-2xl border-indigo-200 dark:border-indigo-900/30 hover:bg-indigo-100 dark:border-indigo-900/40 font-black text-[10px] uppercase tracking-widest text-indigo-700 dark:text-indigo-300 shadow-sm" asChild>
                       <Link to="/north-star"><Sparkles size={18} className="mr-3 text-indigo-500" /> North Star Worksheet</Link>
                     </Button>
                   </div>

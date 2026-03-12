@@ -22,6 +22,8 @@ interface MuscleTestingTabProps {
   appointmentId: string;
 }
 
+const DEMO_ID = "00000000-0000-0000-0000-000000000000";
+
 const MuscleTestingTab = ({ appointmentId }: MuscleTestingTabProps) => {
   const [results, setResults] = useState<Record<string, MuscleTestResult>>({});
   const [loading, setLoading] = useState(true);
@@ -65,6 +67,11 @@ const MuscleTestingTab = ({ appointmentId }: MuscleTestingTabProps) => {
   }, []);
 
   const fetchMuscleTests = useCallback(async () => {
+    if (appointmentId === DEMO_ID) {
+      setLoading(false);
+      return;
+    }
+
     setLoading(true);
     try {
       const { data, error } = await supabase
@@ -91,6 +98,21 @@ const MuscleTestingTab = ({ appointmentId }: MuscleTestingTabProps) => {
   }, [fetchMuscleTests]);
 
   const handleStatusChange = async (muscleName: string, status: MuscleStatus['value']) => {
+    if (appointmentId === DEMO_ID) {
+      setResults(prev => ({
+        ...prev,
+        [muscleName]: {
+          id: 'demo-' + muscleName,
+          appointment_id: DEMO_ID,
+          muscle_name: muscleName,
+          status: status,
+          created_at: new Date().toISOString()
+        } as MuscleTestResult
+      }));
+      showSuccess(`${muscleName} status updated (Demo Mode)`);
+      return;
+    }
+
     if (saving) return;
     setSaving(true);
 
@@ -139,6 +161,22 @@ const MuscleTestingTab = ({ appointmentId }: MuscleTestingTabProps) => {
   };
 
   const handleQuickLog14 = async () => {
+    if (appointmentId === DEMO_ID) {
+      const newResults = { ...results };
+      PRIMARY_14_MUSCLES.forEach(name => {
+        newResults[name] = {
+          id: 'demo-' + name,
+          appointment_id: DEMO_ID,
+          muscle_name: name,
+          status: 'Normotonic' as const,
+          created_at: new Date().toISOString()
+        } as MuscleTestResult;
+      });
+      setResults(newResults);
+      showSuccess("14 Primary Muscles logged (Demo Mode)!");
+      return;
+    }
+
     if (!confirm("This will log all 14 Primary Muscles as 'Normotonic'. Continue?")) return;
     
     setSaving(true);
@@ -172,6 +210,12 @@ const MuscleTestingTab = ({ appointmentId }: MuscleTestingTabProps) => {
     if (Object.keys(results).length === 0) return;
     if (!confirm("Clear ALL muscle test results for this session?")) return;
 
+    if (appointmentId === DEMO_ID) {
+      setResults({});
+      showSuccess("All muscle tests cleared (Demo Mode).");
+      return;
+    }
+
     setSaving(true);
     try {
       const { error } = await supabase.from("muscle_tests").delete().eq('appointment_id', appointmentId);
@@ -189,6 +233,16 @@ const MuscleTestingTab = ({ appointmentId }: MuscleTestingTabProps) => {
     const result = results[muscleName];
     if (!result) return;
     if (!confirm(`Clear test result for ${muscleName}?`)) return;
+
+    if (appointmentId === DEMO_ID) {
+      setResults(prev => {
+        const newResults = { ...prev };
+        delete newResults[muscleName];
+        return newResults;
+      });
+      showSuccess(`${muscleName} test cleared (Demo Mode).`);
+      return;
+    }
 
     setSaving(true);
     try {

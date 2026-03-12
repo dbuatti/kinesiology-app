@@ -6,7 +6,8 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { showSuccess, showError } from "@/utils/toast";
-import { Loader2, FlaskConical, Activity, RefreshCw } from "lucide-react";
+import { Loader2, FlaskConical, Activity, RefreshCw, Sparkles, UserPlus } from "lucide-react";
+import { subDays } from "date-fns";
 
 const DebugAppointmentPage = () => {
   const [loading, setLoading] = useState(false);
@@ -15,6 +16,82 @@ const DebugAppointmentPage = () => {
   const [heartRate, setHeartRate] = useState<string>("72");
   const [breathRate, setBreathRate] = useState<string>("12");
   const [debugInfo, setDebugInfo] = useState<any>(null);
+
+  const seedDemoData = async () => {
+    setLoading(true);
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) throw new Error("Not authenticated");
+
+      // 1. Create Arthur Dent
+      const { data: client, error: clientError } = await supabase
+        .from('clients')
+        .insert({
+          user_id: user.id,
+          name: "Arthur Dent",
+          born: "1982-05-25",
+          email: "arthur@hitchhikers.guide",
+          pronouns: "He/Him",
+          journal: "History of whiplash and chronic stress. Reports feeling 'unplugged' from his body."
+        })
+        .select()
+        .single();
+
+      if (clientError) throw clientError;
+
+      // 2. Create 3 sessions with evolving patterns
+      const sessions = [
+        {
+          user_id: user.id,
+          client_id: client.id,
+          date: subDays(new Date(), 14).toISOString(),
+          name: "Initial Assessment",
+          tag: "Kinesiology",
+          status: "Completed",
+          bolt_score: 12,
+          priority_pattern: JSON.stringify({
+            primitiveReflexes: { "Fear Paralysis": "Inhibited", "Moro Reflex": "Inhibited" },
+            cranialNerves: { "CN X: Vagus": "Inhibited" }
+          })
+        },
+        {
+          user_id: user.id,
+          client_id: client.id,
+          date: subDays(new Date(), 7).toISOString(),
+          name: "Follow-up Session",
+          tag: "Kinesiology",
+          status: "Completed",
+          bolt_score: 18,
+          priority_pattern: JSON.stringify({
+            primitiveReflexes: { "Fear Paralysis": "Clear", "Moro Reflex": "Inhibited" },
+            cranialNerves: { "CN X: Vagus": "Inhibited", "CN V: Trigeminal": "Inhibited" }
+          })
+        },
+        {
+          user_id: user.id,
+          client_id: client.id,
+          date: new Date().toISOString(),
+          name: "Current Session",
+          tag: "Kinesiology",
+          status: "Scheduled",
+          bolt_score: 22,
+          priority_pattern: JSON.stringify({
+            primitiveReflexes: { "Fear Paralysis": "Clear", "Moro Reflex": "Clear" },
+            cranialNerves: { "CN X: Vagus": "Inhibited", "CN V: Trigeminal": "Clear" }
+          })
+        }
+      ];
+
+      const { error: appError } = await supabase.from('appointments').insert(sessions);
+      if (appError) throw appError;
+
+      showSuccess("Arthur Dent and 3 sessions created! Check the Clients page.");
+    } catch (err: any) {
+      showError(err.message || "Failed to seed data");
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const createTestAppointment = async () => {
     setLoading(true);
@@ -282,16 +359,25 @@ const DebugAppointmentPage = () => {
         <p className="text-slate-500 mt-2">Test procedure auto-tracking functionality</p>
       </div>
 
-      <Card className="border-2 border-amber-200 bg-amber-50">
+      <Card className="border-2 border-indigo-200 bg-indigo-50">
         <CardHeader>
-          <CardTitle className="text-amber-900 flex items-center gap-2">
-            ⚠️ Debug Mode
+          <CardTitle className="text-indigo-900 flex items-center gap-2">
+            <Sparkles size={20} className="text-indigo-600" /> Seed Demo Data
           </CardTitle>
         </CardHeader>
-        <CardContent className="space-y-2 text-sm text-amber-800">
-          <p>This page helps debug the procedure tracking system.</p>
-          <p className="font-bold">Open your browser console (F12) to see detailed logs!</p>
-          <p>All logs start with <code className="bg-amber-100 px-1 rounded">[DEBUG]</code></p>
+        <CardContent className="space-y-4">
+          <p className="text-sm text-indigo-800">
+            This will create a client named <strong>Arthur Dent</strong> and 3 past sessions with evolving neurological findings. 
+            Use this to test the <strong>Neurological Evolution</strong> grid and <strong>Brainstem Tone Map</strong> on the real Clients page.
+          </p>
+          <Button 
+            onClick={seedDemoData}
+            disabled={loading}
+            className="w-full bg-indigo-600 hover:bg-indigo-700 shadow-lg shadow-indigo-200"
+          >
+            {loading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <UserPlus size={18} className="mr-2" />}
+            Seed Arthur Dent & History
+          </Button>
         </CardContent>
       </Card>
 

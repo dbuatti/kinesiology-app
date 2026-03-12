@@ -63,7 +63,8 @@ const DemoSessionPage = () => {
   ];
 
   const [appointment, setAppointment] = useState<any>({
-    id: "demo-session-id",
+    // Using a valid UUID format for the demo ID to prevent DB errors
+    id: "00000000-0000-0000-0000-000000000000",
     display_id: "DEMO-001",
     clientId: "demo-client-id",
     date: new Date(),

@@ -10,6 +10,7 @@ import {
   Brain, Activity
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { format } from 'date-fns';
 
 const JOINTS = [
   { 
@@ -21,12 +22,36 @@ const JOINTS = [
     pearl: "Organizes the head around the horizon. Key for righting reflexes."
   },
   { 
+    name: "Thoracic Spine", 
+    type: "Axial", 
+    sagittal: "Flexion, Extension",
+    frontal: "Lateral Flexion (L/R)",
+    transverse: "Rotation (L/R)",
+    pearl: "Primary site for rotation. Essential for ribcage mobility and breathing."
+  },
+  { 
+    name: "Lumbar Spine", 
+    type: "Axial", 
+    sagittal: "Flexion, Extension",
+    frontal: "Lateral Flexion (L/R)",
+    transverse: "Rotation (Minimal)",
+    pearl: "Designed for stability. Often compensates for poor hip or thoracic mobility."
+  },
+  { 
     name: "Shoulder (GH Joint)", 
     type: "Appendicular", 
     sagittal: "Flexion, Extension",
     frontal: "Abduction, Adduction",
     transverse: "Internal Rotation, External Rotation",
     pearl: "Most mobile joint. Slaved to the Scapula and Thoracic spine."
+  },
+  { 
+    name: "Scapula", 
+    type: "Appendicular", 
+    sagittal: "Elevation, Depression",
+    frontal: "Upward/Downward Rotation",
+    transverse: "Protraction, Retraction",
+    pearl: "The foundation of shoulder function. Must glide freely over the ribs."
   },
   { 
     name: "Pelvis", 
@@ -37,12 +62,20 @@ const JOINTS = [
     pearl: "The 'Engine Room' of gait. Connects the upper and lower kinetic chains."
   },
   { 
-    name: "Foot/Ankle", 
+    name: "Sacrum", 
+    type: "Axial", 
+    sagittal: "Nutation, Counter-Nutation",
+    frontal: "-",
+    transverse: "-",
+    pearl: "The keystone of the pelvis. Movement is subtle but neurologically vital."
+  },
+  { 
+    name: "Hip", 
     type: "Appendicular", 
-    sagittal: "Dorsiflexion, Plantar Flexion",
-    frontal: "Inversion, Eversion",
+    sagittal: "Flexion, Extension",
+    frontal: "Abduction, Adduction",
     transverse: "Internal Rotation, External Rotation",
-    pearl: "Primary source of proprioceptive input for the cerebellum."
+    pearl: "Deep ball-and-socket joint. Essential for power and locomotion."
   },
   { 
     name: "Knee", 
@@ -53,27 +86,82 @@ const JOINTS = [
     pearl: "Stability is key. Often compensates for hip or ankle dysfunction."
   },
   { 
+    name: "Foot/Ankle", 
+    type: "Appendicular", 
+    sagittal: "Dorsiflexion, Plantar Flexion",
+    frontal: "Inversion, Eversion",
+    transverse: "Internal Rotation, External Rotation",
+    pearl: "Primary source of proprioceptive input for the cerebellum."
+  },
+  { 
     name: "Wrist", 
     type: "Appendicular", 
     sagittal: "Flexion, Extension",
     frontal: "Radial/Ulnar Deviation",
     transverse: "-",
     pearl: "Essential for fine motor control and upper limb integration."
+  },
+  { 
+    name: "Jaw (TMJ)", 
+    type: "Axial", 
+    sagittal: "Protrusion, Retraction",
+    frontal: "Lateral Deviation",
+    transverse: "-",
+    pearl: "Deeply connected to the Pelvis and the Vagus nerve (Medulla)."
   }
 ];
+
+const STORAGE_KEY = "antigravity_joint_of_the_day";
 
 const RandomJointCard = () => {
   const [joint, setJoint] = useState(JOINTS[0]);
   const [isRefreshing, setIsRefreshing] = useState(false);
 
-  const refresh = () => {
+  useEffect(() => {
+    const today = format(new Date(), 'yyyy-MM-dd');
+    const stored = localStorage.getItem(STORAGE_KEY);
+    
+    if (stored) {
+      try {
+        const parsed = JSON.parse(stored);
+        if (parsed.date === today) {
+          const foundJoint = JOINTS.find(j => j.name === parsed.jointName);
+          if (foundJoint) {
+            setJoint(foundJoint);
+            return;
+          }
+        }
+      } catch (e) {
+        console.error("Failed to parse stored joint", e);
+      }
+    }
+
+    // If no valid stored joint for today, pick a new one
+    pickNewJoint(today);
+  }, []);
+
+  const pickNewJoint = (dateStr: string) => {
+    const newJoint = JOINTS[Math.floor(Math.random() * JOINTS.length)];
+    setJoint(newJoint);
+    localStorage.setItem(STORAGE_KEY, JSON.stringify({
+      date: dateStr,
+      jointName: newJoint.name
+    }));
+  };
+
+  const handleManualRefresh = () => {
     setIsRefreshing(true);
     setTimeout(() => {
+      const today = format(new Date(), 'yyyy-MM-dd');
       const others = JOINTS.filter(j => j.name !== joint.name);
       const next = others[Math.floor(Math.random() * others.length)];
       setJoint(next);
+      localStorage.setItem(STORAGE_KEY, JSON.stringify({
+        date: today,
+        jointName: next.name
+      }));
       setIsRefreshing(false);
-    }, 3000);
+    }, 1000);
   };
 
   return (
@@ -85,14 +173,14 @@ const RandomJointCard = () => {
         <div className="flex items-center justify-between relative z-10">
           <div className="space-y-1">
             <Badge className="bg-white/20 text-white border-none font-black text-[8px] uppercase tracking-widest">
-              {joint.type} Skeleton
+              Joint of the Day • {joint.type}
             </Badge>
             <CardTitle className="text-xl font-black tracking-tight">{joint.name}</CardTitle>
           </div>
           <Button 
             variant="ghost" 
             size="icon" 
-            onClick={refresh}
+            onClick={handleManualRefresh}
             className={cn(
               "h-10 w-10 rounded-xl text-white hover:bg-white/20 transition-all",
               isRefreshing && "animate-spin"

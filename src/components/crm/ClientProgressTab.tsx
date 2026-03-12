@@ -6,7 +6,7 @@ import {
   TrendingUp, Activity, FlaskConical, Brain, 
   AlertCircle, CheckCircle2, History, Zap, Info,
   ArrowUpRight, ArrowDownRight, LineChart, Plus,
-  LayoutGrid
+  LayoutGrid, Workflow
 } from "lucide-react";
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip as ChartTooltip, ResponsiveContainer } from 'recharts';
 import { format } from "date-fns";
@@ -17,6 +17,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import QuickAssessmentModal from "./QuickAssessmentModal";
 import NeurologicalHistoryTracker from "./NeurologicalHistoryTracker";
+import BrainstemToneMap from "./BrainstemToneMap";
 
 interface ClientProgressTabProps {
   client: any;
@@ -48,6 +49,10 @@ const ClientProgressTab = ({ client, appointments, onRefresh }: ClientProgressTa
         score: app.coherence_score,
         fullDate: format(new Date(app.date), "MMMM d, yyyy")
       }));
+  }, [appointments]);
+
+  const latestApp = useMemo(() => {
+    return [...appointments].sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())[0];
   }, [appointments]);
 
   const latestBolt = boltData[boltData.length - 1]?.score || null;
@@ -90,13 +95,37 @@ const ClientProgressTab = ({ client, appointments, onRefresh }: ClientProgressTa
         </Button>
       </div>
 
-      {/* NEW: Neurological History Tracker */}
+      {/* Brainstem Tone Snapshot */}
+      <div className="space-y-4">
+        <div className="flex items-center justify-between px-2">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-xl bg-purple-600 text-white flex items-center justify-center shadow-lg">
+              <Brain size={20} />
+            </div>
+            <div>
+              <h2 className="text-2xl font-black text-foreground tracking-tight">Current Tone Snapshot</h2>
+              <p className="text-xs text-muted-foreground font-medium">Based on findings from the latest session</p>
+            </div>
+          </div>
+          {latestApp && (
+            <Badge variant="outline" className="font-bold border-border">
+              Last Session: {format(new Date(latestApp.date), "MMM d, yyyy")}
+            </Badge>
+          )}
+        </div>
+        <BrainstemToneMap priorityPattern={latestApp?.priority_pattern || null} />
+      </div>
+
+      {/* Neurological History Tracker */}
       <div className="space-y-4">
         <div className="flex items-center gap-3 px-2">
           <div className="w-10 h-10 rounded-xl bg-indigo-600 text-white flex items-center justify-center shadow-lg">
-            <LayoutGrid size={20} />
+            <Workflow size={20} />
           </div>
-          <h2 className="text-2xl font-black text-foreground tracking-tight">Neurological History</h2>
+          <div>
+            <h2 className="text-2xl font-black text-foreground tracking-tight">Neurological Evolution</h2>
+            <p className="text-xs text-muted-foreground font-medium">Tracking reflex and nerve resolution across all sessions</p>
+          </div>
         </div>
         <NeurologicalHistoryTracker appointments={appointments} />
       </div>

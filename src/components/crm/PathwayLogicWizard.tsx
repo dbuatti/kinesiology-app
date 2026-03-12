@@ -43,20 +43,23 @@ type Step =
 
 interface PathwayLogicWizardProps {
   onSave: (summary: string) => void;
-  onClearItem?: (itemName: string) => void; // New prop to update the tracker
+  onClearItem?: (itemName: string) => void;
   priorityPattern?: string | null;
 }
 
 const PathwayLogicWizard = ({ onSave, onClearItem, priorityPattern }: PathwayLogicWizardProps) => {
   const [step, setStep] = useState<Step>('SELECT_START');
   const [history, setHistory] = useState<Step[]>([]);
-  const [selectedItem, setSelectedItem] = useState<string>("");
+  const [selectedFinding, setSelectedFinding] = useState<string>("");
+  const [customText, setCustomText] = useState<string>("");
   
   const [ligamentImages, setLigamentImages] = useState<Record<string, (string | null)[]>>({});
   const [ligamentModalOpen, setLigamentModalOpen] = useState(false);
   const [actionTableOpen, setActionTableOpen] = useState(false);
 
-  // Parse inhibited items from the priorityPattern prop
+  // The actual item name being corrected
+  const effectiveItem = selectedFinding === 'CUSTOM' ? customText : selectedFinding;
+
   const inhibitedItems = useMemo(() => {
     if (!priorityPattern) return [];
     try {
@@ -107,26 +110,24 @@ const PathwayLogicWizard = ({ onSave, onClearItem, priorityPattern }: PathwayLog
   const resetWizard = () => {
     setStep('SELECT_START');
     setHistory([]);
-    setSelectedItem("");
+    setSelectedFinding("");
+    setCustomText("");
   };
 
   const handleSave = (summary: string) => {
-    // If we have a selected item and the user says it's clear, notify the parent
-    if (selectedItem && selectedItem !== 'CUSTOM' && onClearItem) {
-      onClearItem(selectedItem);
+    if (effectiveItem && selectedFinding !== 'CUSTOM' && onClearItem) {
+      onClearItem(effectiveItem);
     }
     onSave(summary);
     resetWizard();
   };
 
-  // Dynamic Clinical Tip Logic
   const clinicalTip = useMemo(() => {
-    if (!selectedItem || selectedItem === 'CUSTOM') return null;
+    if (!effectiveItem) return null;
 
-    // 1. Check for Primitive Reflexes
     const primitive = PRIMITIVE_REFLEXES.find(r => 
-      selectedItem.toLowerCase().includes(r.name.toLowerCase()) || 
-      r.name.toLowerCase().includes(selectedItem.toLowerCase())
+      effectiveItem.toLowerCase().includes(r.name.toLowerCase()) || 
+      r.name.toLowerCase().includes(effectiveItem.toLowerCase())
     );
 
     if (primitive) {
@@ -142,10 +143,9 @@ const PathwayLogicWizard = ({ onSave, onClearItem, priorityPattern }: PathwayLog
       };
     }
 
-    // 2. Check for Brain Reflex Points (Nerves, Cortical, Subcortical)
     const brainPoint = BRAIN_REFLEX_POINTS.find(p => 
-      selectedItem.toLowerCase().includes(p.name.toLowerCase()) || 
-      p.name.toLowerCase().includes(selectedItem.toLowerCase())
+      effectiveItem.toLowerCase().includes(p.name.toLowerCase()) || 
+      p.name.toLowerCase().includes(effectiveItem.toLowerCase())
     );
 
     if (brainPoint) {
@@ -161,8 +161,7 @@ const PathwayLogicWizard = ({ onSave, onClearItem, priorityPattern }: PathwayLog
       };
     }
 
-    // 3. Check for Muscle Info
-    const muscle = getMuscleInfo(selectedItem);
+    const muscle = getMuscleInfo(effectiveItem);
     if (muscle && muscle.meridian !== 'General') {
       return {
         type: 'Muscle',
@@ -177,7 +176,7 @@ const PathwayLogicWizard = ({ onSave, onClearItem, priorityPattern }: PathwayLog
     }
 
     return null;
-  }, [selectedItem]);
+  }, [effectiveItem]);
 
   const renderStep = () => {
     switch (step) {
@@ -191,7 +190,7 @@ const PathwayLogicWizard = ({ onSave, onClearItem, priorityPattern }: PathwayLog
               </div>
               
               <div className="grid grid-cols-1 gap-4">
-                <Select value={selectedItem} onValueChange={(v) => setSelectedItem(v)}>
+                <Select value={selectedFinding} onValueChange={(v) => setSelectedFinding(v)}>
                   <SelectTrigger className="h-14 rounded-2xl border-2 border-slate-100 bg-white font-bold text-lg">
                     <SelectValue placeholder={inhibitedItems.length > 0 ? "Select inhibited finding..." : "No inhibited items found"} />
                   </SelectTrigger>
@@ -203,11 +202,13 @@ const PathwayLogicWizard = ({ onSave, onClearItem, priorityPattern }: PathwayLog
                   </SelectContent>
                 </Select>
 
-                {selectedItem === 'CUSTOM' && (
+                {selectedFinding === 'CUSTOM' && (
                   <Input 
                     placeholder="Enter custom entry point..." 
-                    className="h-12 rounded-xl font-bold border-2 border-indigo-100"
-                    onChange={(e) => setSelectedItem(e.target.value)}
+                    className="h-12 rounded-xl font-bold border-2 border-indigo-100 animate-in slide-in-from-top-2"
+                    value={customText}
+                    onChange={(e) => setCustomText(e.target.value)}
+                    autoFocus
                   />
                 )}
               </div>
@@ -221,8 +222,12 @@ const PathwayLogicWizard = ({ onSave, onClearItem, priorityPattern }: PathwayLog
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <button 
+                    disabled={!effectiveItem}
                     onClick={() => goToStep('AFFERENT_SELECT')} 
-                    className="p-8 rounded-[2.5rem] border-2 border-blue-100 bg-blue-50/30 hover:border-blue-400 hover:bg-blue-50 transition-all duration-500 text-left group"
+                    className={cn(
+                      "p-8 rounded-[2.5rem] border-2 transition-all duration-500 text-left group",
+                      !effectiveItem ? "opacity-50 cursor-not-allowed border-slate-100 bg-slate-50" : "border-blue-100 bg-blue-50/30 hover:border-blue-400 hover:bg-blue-50"
+                    )}
                 >
                   <div className="flex items-center justify-between mb-4">
                     <div className="w-12 h-12 rounded-xl bg-white shadow-md flex items-center justify-center group-hover:bg-blue-600 group-hover:text-white transition-all">
@@ -235,8 +240,12 @@ const PathwayLogicWizard = ({ onSave, onClearItem, priorityPattern }: PathwayLog
                 </button>
 
                 <button 
+                    disabled={!effectiveItem}
                     onClick={() => goToStep('EFFERENT_SELECT')} 
-                    className="p-8 rounded-[2.5rem] border-2 border-purple-100 bg-purple-50/30 hover:border-purple-400 hover:bg-purple-50 transition-all duration-500 text-left group"
+                    className={cn(
+                      "p-8 rounded-[2.5rem] border-2 transition-all duration-500 text-left group",
+                      !effectiveItem ? "opacity-50 cursor-not-allowed border-slate-100 bg-slate-50" : "border-purple-100 bg-purple-50/30 hover:border-purple-400 hover:bg-purple-50"
+                    )}
                 >
                   <div className="flex items-center justify-between mb-4">
                     <div className="w-12 h-12 rounded-xl bg-white shadow-md flex items-center justify-center group-hover:bg-purple-600 group-hover:text-white transition-all">
@@ -304,7 +313,7 @@ const PathwayLogicWizard = ({ onSave, onClearItem, priorityPattern }: PathwayLog
             <div className="p-4 bg-indigo-50 rounded-2xl border border-indigo-100 flex items-center justify-between mb-4">
               <div>
                 <p className="text-[10px] font-black text-indigo-400 uppercase tracking-widest">Correcting</p>
-                <p className="text-lg font-black text-indigo-900">{selectedItem || "General Correction"}</p>
+                <p className="text-lg font-black text-indigo-900">{effectiveItem || "General Correction"}</p>
               </div>
               <Badge className="bg-blue-600 text-white border-none font-black text-[8px] uppercase tracking-widest">Afferent</Badge>
             </div>
@@ -347,7 +356,7 @@ const PathwayLogicWizard = ({ onSave, onClearItem, priorityPattern }: PathwayLog
             <div className="p-4 bg-indigo-50 rounded-2xl border border-indigo-100 flex items-center justify-between mb-4">
               <div>
                 <p className="text-[10px] font-black text-indigo-400 uppercase tracking-widest">Correcting</p>
-                <p className="text-lg font-black text-indigo-900">{selectedItem || "General Correction"}</p>
+                <p className="text-lg font-black text-indigo-900">{effectiveItem || "General Correction"}</p>
               </div>
               <Badge className="bg-purple-600 text-white border-none font-black text-[8px] uppercase tracking-widest">Efferent</Badge>
             </div>
@@ -397,7 +406,7 @@ const PathwayLogicWizard = ({ onSave, onClearItem, priorityPattern }: PathwayLog
         return <NociceptiveThreatAssessment onSave={handleSave} onCancel={goBack} />;
       
       case 'EFFERENT_PROCESS':
-        return <EfferentBrainIntegration initialEntryPoint={selectedItem} onSave={handleSave} onCancel={goBack} />;
+        return <EfferentBrainIntegration initialEntryPoint={effectiveItem} onSave={handleSave} onCancel={goBack} />;
 
       case 'EMOTIONS_PROCESS':
         return <EmotionalIntegrationProcess onSave={handleSave} onCancel={goBack} />;

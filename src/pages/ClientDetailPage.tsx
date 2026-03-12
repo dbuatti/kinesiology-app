@@ -9,7 +9,7 @@ import {
   ArrowLeft, Mail, Phone, MapPin, Calendar, 
   Loader2, Briefcase, Heart, Baby,
   Activity, Edit3, Trash2, MoreHorizontal, FlaskConical, TrendingUp, Clock, Brain,
-  LayoutDashboard, History, ArrowRight, Copy, Check, Sparkles, Plus
+  LayoutDashboard, History, ArrowRight, Copy, Check, Sparkles, Plus, Link as LinkIcon
 } from "lucide-react";
 import { format } from "date-fns";
 import { Client, Appointment } from "@/types/crm";
@@ -49,6 +49,7 @@ const ClientDetailPage = () => {
   const [editOpen, setEditOpen] = useState(false);
   const [copiedField, setCopiedField] = useState<string | null>(null);
   const [aiCopying, setAiCopying] = useState(false);
+  const [linkCopying, setLinkCopying] = useState(false);
   const { addRecentClient } = useRecentClients();
 
   const fetchClientData = async () => {
@@ -96,12 +97,20 @@ const ClientDetailPage = () => {
     setTimeout(() => setCopiedField(null), 2000);
   };
 
+  const handleCopyOnboardingLink = () => {
+    if (!client) return;
+    setLinkCopying(true);
+    const url = `${window.location.origin}/onboarding/${client.id}`;
+    navigator.clipboard.writeText(url);
+    showSuccess("Onboarding link copied to clipboard!");
+    setTimeout(() => setLinkCopying(false), 2000);
+  };
+
   const handleCopyForAI = () => {
     if (!client) return;
     setAiCopying(true);
 
     const latestApp = appointments[0];
-    const age = client.born ? format(client.born, "yyyy") : 'N/A';
     
     let prompt = `
 I am a Kinesiology practitioner analyzing a client case. Please provide clinical insights based on the following data:
@@ -168,6 +177,15 @@ Please analyze the relationship between the respiratory (BOLT), autonomic (Coher
           </Button>
         </Link>
         <div className="flex gap-2">
+            <Button 
+              variant="outline" 
+              size="sm" 
+              className="bg-emerald-50 border-emerald-100 text-emerald-600 hover:bg-emerald-100 rounded-xl font-bold"
+              onClick={handleCopyOnboardingLink}
+            >
+              {linkCopying ? <Check size={16} className="mr-2" /> : <LinkIcon size={16} className="mr-2" />}
+              Copy Onboarding Link
+            </Button>
             <Button 
               variant="outline" 
               size="sm" 

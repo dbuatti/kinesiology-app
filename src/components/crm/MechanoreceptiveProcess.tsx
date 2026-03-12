@@ -16,29 +16,13 @@ import {
   Info,
   Search,
   ImageIcon,
-  Loader2
+  Loader2,
+  Move
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import CalibrationTimer from './CalibrationTimer';
-
-const JOINT_ACTION_DATA = [
-  { joint: "Cranium", sagittal: "Flexion, Extension", frontal: "Lateral Flexion", transverse: "Rotation", type: "Axial", region: "Upper" },
-  { joint: "Jaw", sagittal: "Protrusion, Retraction", frontal: "Lateral Deviation", transverse: "-", type: "Axial", region: "Upper" },
-  { joint: "Cervical Spine", sagittal: "Flexion, Extension", frontal: "Lateral Flexion", transverse: "Rotation", type: "Axial", region: "Upper" },
-  { joint: "Thoracic Spine", sagittal: "Flexion, Extension", frontal: "Lateral Flexion", transverse: "Rotation", type: "Axial", region: "Upper" },
-  { joint: "Lumbar Spine", sagittal: "Flexion, Extension", frontal: "Lateral Flexion", transverse: "Rotation", type: "Axial", region: "Lower" },
-  { joint: "Pelvis", sagittal: "Anterior Tilt, Posterior Tilt", frontal: "Hike up, Drop down", transverse: "L Rotation, R Rotation", type: "Axial", region: "Lower" },
-  { joint: "Sacrum", sagittal: "Nutation, Counter Nutation", frontal: "-", transverse: "-", type: "Axial", region: "Lower" },
-  { joint: "Hip", sagittal: "Flexion, Extension", frontal: "Adduction, Abduction", transverse: "Internal Rotation, External Rotation", type: "Appendicular", region: "Lower" },
-  { joint: "Knee", sagittal: "Flexion, Extension", frontal: "-", transverse: "Tibial Internal Rotation, Tibial External Rotation", type: "Appendicular", region: "Lower" },
-  { joint: "Foot/Ankle", sagittal: "Dorsiflexion, Plantar Flexion", frontal: "Eversion, Inversion", transverse: "Abduction, Adduction, Internal Rotation, External Rotation", type: "Appendicular", region: "Lower" },
-  { joint: "Shoulder (GH Joint)", sagittal: "Flexion, Extension", frontal: "Adduction, Abduction", transverse: "Internal Rotation, External Rotation", type: "Appendicular", region: "Upper" },
-  { joint: "Scapula", sagittal: "Elevation, Depression", frontal: "Upward Rotation, Downwards Rotation", transverse: "Protraction, Retraction", type: "Appendicular", region: "Upper" },
-  { joint: "Elbow", sagittal: "Flexion, Extension", frontal: "-", transverse: "Pronation (Internal Rotation), Supination (External Rotation)", type: "Appendicular", region: "Upper" },
-  { joint: "Wrist", sagittal: "Flexion, Extension", frontal: "Radial Deviation, Ulnar Deviation", transverse: "-", type: "Appendicular", region: "Upper" },
-  { joint: "Hand/Fingers", sagittal: "Palm Extension, Finger Extension, Palm Flexion, Finger Flexion", frontal: "Finger Adduction, Finger Abduction", transverse: "-", type: "Appendicular", region: "Upper" }
-];
+import { JOINT_ACTION_LIBRARY } from '@/data/joint-action-data';
 
 type MechanoStep = 
   | 'TYPE_SELECT'
@@ -95,7 +79,7 @@ const MechanoreceptiveProcess = ({
   };
 
   const filteredJoints = useMemo(() => {
-    return JOINT_ACTION_DATA.filter(j => 
+    return JOINT_ACTION_LIBRARY.filter(j => 
       j.type === skeletonType && 
       j.region === region
     );
@@ -103,14 +87,25 @@ const MechanoreceptiveProcess = ({
 
   const availableActions = useMemo(() => {
     if (!selectedJoint || !plane) return [];
-    const jointData = JOINT_ACTION_DATA.find(j => j.joint === selectedJoint);
+    const jointData = JOINT_ACTION_LIBRARY.find(j => j.name === selectedJoint);
     if (!jointData) return [];
-    const planeKey = plane.toLowerCase() as keyof typeof jointData;
-    const actionsString = jointData[planeKey];
-    return (typeof actionsString === 'string' && actionsString !== '-') 
-      ? actionsString.split(',').map(s => s.trim()) 
-      : [];
+    
+    const planeKey = plane as keyof typeof jointData.actions;
+    const actions = jointData.actions[planeKey];
+    
+    return actions.filter(a => a.label !== '-');
   }, [selectedJoint, plane]);
+
+  const movementClue = useMemo(() => {
+    if (type !== 'Conscious' || !selectedJoint || !plane || !action) return null;
+    const jointData = JOINT_ACTION_LIBRARY.find(j => j.name === selectedJoint);
+    if (!jointData) return null;
+    
+    const planeKey = plane as keyof typeof jointData.actions;
+    const actionData = jointData.actions[planeKey].find(a => a.label === action);
+    
+    return actionData?.howTo || null;
+  }, [type, selectedJoint, plane, action]);
 
   const handleFinish = () => {
     const detail = type === 'Conscious' 
@@ -213,8 +208,8 @@ const MechanoreceptiveProcess = ({
           <StepHeader title="4. Localize Joint" sub="Select the specific joint from the filtered list." />
           <div className="grid grid-cols-1 gap-2 max-h-[300px] overflow-y-auto p-1 custom-scrollbar">
             {filteredJoints.map(j => (
-              <Button key={j.joint} variant="outline" className="h-12 justify-start px-6 rounded-xl border-slate-100 hover:border-indigo-200 font-bold" onClick={() => { setSelectedJoint(j.joint); goToStep(type === 'Conscious' ? 'CONSCIOUS_ACTION' : 'UNCONSCIOUS_LIGAMENT'); }}>
-                {j.joint}
+              <Button key={j.name} variant="outline" className="h-12 justify-start px-6 rounded-xl border-slate-100 hover:border-indigo-200 font-bold" onClick={() => { setSelectedJoint(j.name); goToStep(type === 'Conscious' ? 'CONSCIOUS_ACTION' : 'UNCONSCIOUS_LIGAMENT'); }}>
+                {j.name}
               </Button>
             ))}
             {filteredJoints.length === 0 && <p className="text-center py-8 text-slate-400 italic">No joints match this hierarchy.</p>}
@@ -250,7 +245,7 @@ const MechanoreceptiveProcess = ({
               <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Action</label>
               <Select value={action} onValueChange={setAction} disabled={!plane || availableActions.length === 0}>
                 <SelectTrigger className="rounded-xl h-12 font-bold"><SelectValue placeholder="Select Action" /></SelectTrigger>
-                <SelectContent>{availableActions.map(a => <SelectItem key={a} value={a}>{a}</SelectItem>)}</SelectContent>
+                <SelectContent>{availableActions.map(a => <SelectItem key={a.label} value={a.label}>{a.label}</SelectItem>)}</SelectContent>
               </Select>
             </div>
           </div>
@@ -317,12 +312,24 @@ const MechanoreceptiveProcess = ({
             <h3 className="text-2xl font-black mb-6 flex items-center gap-3 text-amber-400"><Zap size={28} /> Calibration Phase</h3>
             
             <div className="space-y-6 relative z-10">
-              <div className="p-5 bg-white/10 rounded-2xl border border-white/10 backdrop-blur-sm">
+              <div className="p-5 bg-white/10 rounded-2xl border border-white/10 backdrop-blur-sm space-y-4">
                 <p className="text-lg font-bold leading-tight">
                   {type === 'Conscious' 
                     ? `Perform ${action} in the ${plane} plane.` 
                     : `Stretch the ${ligament} while holding GV16.`}
                 </p>
+                
+                {movementClue && (
+                  <div className="p-4 bg-indigo-500/20 rounded-xl border border-indigo-500/30 flex items-start gap-3 animate-in fade-in slide-in-from-top-1">
+                    <Move size={18} className="text-indigo-300 shrink-0 mt-0.5" />
+                    <div>
+                      <p className="text-[8px] font-black text-indigo-300 uppercase tracking-widest mb-1">Movement Clue</p>
+                      <p className="text-sm font-medium text-indigo-100 leading-relaxed italic">
+                        "{movementClue}"
+                      </p>
+                    </div>
+                  </div>
+                )}
               </div>
               
               <div className="grid grid-cols-1 gap-4">

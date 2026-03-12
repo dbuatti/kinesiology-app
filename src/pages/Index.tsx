@@ -28,7 +28,6 @@ import { format, subMonths, isToday, subDays, differenceInMinutes, startOfWeek, 
 import { Skeleton } from "@/components/ui/skeleton";
 import { Textarea } from "@/components/ui/textarea";
 import MeridianClock from "@/components/crm/MeridianClock";
-import RandomJointCard from "@/components/crm/RandomJointCard";
 import { AppointmentWithClient } from "@/types/crm";
 import DashboardStats from "@/components/crm/DashboardStats";
 import DailyBriefing from "@/components/crm/DailyBriefing";
@@ -432,8 +431,6 @@ const Index = () => {
               )}
 
               <MeridianClock />
-
-              <RandomJointCard />
               
               <UpcomingAppointments />
               

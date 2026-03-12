@@ -14,7 +14,7 @@ import { cn } from '@/lib/utils';
 import DailyMechanoChallenge from './DailyMechanoChallenge';
 import JointActionExplorer from './JointActionExplorer';
 import MechanoBible from './MechanoBible';
-import MechanoMastery from './MechanoMastery';
+import RandomJointCard from './RandomJointCard';
 
 const MechanoMasteryModule = () => {
   const [activeTab, setActiveTab] = useState<'academy' | 'challenge' | 'explorer' | 'bible'>('academy');
@@ -132,6 +132,8 @@ const MechanoMasteryModule = () => {
             </div>
 
             <div className="lg:col-span-4 space-y-8">
+              <RandomJointCard />
+
               <Card className="border-none shadow-lg rounded-[2.5rem] bg-indigo-50 border-2 border-indigo-100">
                 <CardHeader className="p-8">
                   <CardTitle className="text-xl font-black flex items-center gap-3 text-indigo-900">

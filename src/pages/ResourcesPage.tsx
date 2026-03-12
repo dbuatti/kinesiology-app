@@ -58,6 +58,7 @@ import MechanoBible from "@/components/crm/MechanoBible";
 import RightingReflexesAssessment from "@/components/crm/RightingReflexesAssessment";
 import CranialNerveReference from "@/components/crm/CranialNerveReference";
 import PrimitiveReflexReference from "@/components/crm/PrimitiveReflexReference";
+import MechanoMasteryModule from "@/components/crm/MechanoMasteryModule";
 
 const CATEGORIES = [
   {
@@ -68,10 +69,10 @@ const CATEGORIES = [
     bgColor: "bg-indigo-50 dark:bg-indigo-900/20",
     borderColor: "border-indigo-100 dark:border-indigo-900/30",
     items: [
+      { id: "mechano-academy", label: "Mechano Academy", icon: Trophy, desc: "Daily clinical drills and mastery tools." },
       { id: "intention", label: "North Star Process", icon: Compass, desc: "Define your core intention and commitment." },
       { id: "bible", label: "Mechano Bible", icon: BookOpen, desc: "Definitive guide to joints and movement geometry." },
       { id: "theory", label: "FN Theory", icon: Workflow, desc: "Functional Neurology approach and principles." },
-      { id: "foundations", label: "Foundations", icon: ShieldCheck, desc: "The practitioner's journey and accuracy baseline." },
     ]
   },
   {
@@ -112,7 +113,6 @@ const CATEGORIES = [
     bgColor: "bg-amber-50 dark:bg-amber-900/20",
     borderColor: "border-amber-100 dark:border-amber-900/30",
     items: [
-      { id: "mechano", label: "Mechano Mastery", icon: Trophy, desc: "Theory flashcards and clinical simulator." },
       { id: "logic", label: "Clinical Logic", icon: Lightbulb, desc: "The hierarchy of neurological correction." },
       { id: "spinal", label: "Spinal", icon: Move, desc: "Spinal segment and Lovett-Brother associations." },
       { id: "vestibular", label: "Vestibular", icon: Footprints, desc: "Fukuda Step Test and balance protocols." },
@@ -217,8 +217,9 @@ const ResourcesPage = () => {
             </TabsList>
           </div>
 
-          <div className="mt-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
+          <div className="mt-8 animate-in fade-in slide-in-from-bottom-4 duration-700">
             {/* Foundations */}
+            <TabsContent value="mechano-academy"><MechanoMasteryModule /></TabsContent>
             <TabsContent value="intention">
               <Card className="border-none shadow-lg rounded-[2.5rem] bg-indigo-600 text-white overflow-hidden">
                 <CardHeader className="p-10">
@@ -295,7 +296,6 @@ const ResourcesPage = () => {
             <TabsContent value="acupoints"><AcupointReference /></TabsContent>
 
             {/* Practice Tools */}
-            <TabsContent value="mechano"><MechanoMastery /></TabsContent>
             <TabsContent value="logic">
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
                 <Card className="border-none shadow-lg rounded-[3rem] bg-slate-900 dark:bg-slate-950 text-white overflow-hidden relative">

@@ -6,7 +6,8 @@ import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { 
   Loader2, Trash2, MoreHorizontal, History, Printer, Copy, Check, Play,
-  FileText, Zap, Activity, Target, ClipboardList, PanelRightOpen, PanelRightClose
+  FileText, Zap, Activity, Target, ClipboardList, PanelRightOpen, PanelRightClose,
+  Brain
 } from "lucide-react";
 import { format, isToday } from "date-fns";
 import { AppointmentWithClient } from "@/types/crm";
@@ -19,6 +20,8 @@ import SessionContentSwitcher from "@/components/crm/SessionContentSwitcher";
 import PreviousSessionInsightsBar from "@/components/crm/PreviousSessionInsightsBar";
 import AppointmentHeader from "@/components/crm/AppointmentHeader";
 import AppointmentContextCards from "@/components/crm/AppointmentContextCards";
+import BrainstemToneMap from "@/components/crm/BrainstemToneMap";
+import SessionWorksheetTemplate from "@/components/crm/SessionWorksheetTemplate";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -40,7 +43,7 @@ const AppointmentDetailPage = () => {
   const [copied, setCopied] = useState(false);
   const [cloning, setCloning] = useState(false);
   const [currentTime, setCurrentTime] = useState(new Date());
-  const [showSidebar, setShowSidebar] = useState(false);
+  const [showSidebar, setShowSidebar] = useState(true);
 
   useEffect(() => {
     const timer = setInterval(() => setCurrentTime(new Date()), 60000);
@@ -287,7 +290,7 @@ const AppointmentDetailPage = () => {
                 onClick={handlePrint}
               >
                 <Printer size={16} className="mr-2" />
-                Print
+                Print Summary
               </Button>
               <Button 
                 variant="outline" 
@@ -302,7 +305,7 @@ const AppointmentDetailPage = () => {
                   <DropdownMenuTrigger asChild>
                       <Button variant="ghost" size="icon" className="rounded-xl h-10 w-10"><MoreHorizontal size={20} /></Button>
                   </DropdownMenuTrigger>
-                  <DropdownMenuContent align="end" className="rounded-2xl p-2 shadow-2xl border-none">
+                  <DropdownMenuContent align="end" className="rounded-2xl p-2 shadow-2xl border-none bg-card">
                       <DropdownMenuItem className="text-destructive focus:text-destructive rounded-xl py-2.5 px-4 cursor-pointer" onClick={handleDeleteAppointment}>
                           <Trash2 size={16} className="mr-2" /> Delete Appointment
                       </DropdownMenuItem>
@@ -367,6 +370,15 @@ const AppointmentDetailPage = () => {
             {/* Right Column: Clinical Sidebar */}
             {showSidebar && (
               <div className="xl:col-span-4 space-y-8 print:hidden animate-in fade-in slide-in-from-right-4 duration-500">
+                {/* Brainstem Tone Map Integration */}
+                <div className="space-y-4">
+                  <div className="flex items-center gap-2 px-2">
+                    <Brain size={18} className="text-indigo-600" />
+                    <h3 className="text-sm font-black text-slate-400 uppercase tracking-[0.3em]">Brainstem Tone Map</h3>
+                  </div>
+                  <BrainstemToneMap priorityPattern={appointment.priority_pattern} />
+                </div>
+
                 <AppointmentContextCards 
                   appointment={appointment} 
                   currentPeakMeridian={currentPeakMeridian} 
@@ -473,6 +485,9 @@ const AppointmentDetailPage = () => {
               <p className="text-[10px] font-black text-slate-400 uppercase tracking-[0.3em]">Thank you for your commitment to your healing journey.</p>
             </div>
           </div>
+          
+          {/* Printable Blank Worksheet Template */}
+          <SessionWorksheetTemplate clientName={appointment.clients.name} date={appointment.date} />
         </div>
       </AppLayout>
     </>

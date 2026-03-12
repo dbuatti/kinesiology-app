@@ -25,7 +25,8 @@ import {
   LayoutGrid,
   List,
   AlertCircle,
-  Play
+  Play,
+  Printer
 } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -261,33 +262,35 @@ const AppointmentsPage = () => {
                   )}
                 </div>
 
-                {isTodaySession && !isCompleted && (
-                  <div className="flex gap-2 animate-in fade-in slide-in-from-right-2 duration-500">
-                    <Button 
-                      size="sm" 
-                      variant="outline" 
-                      className="h-8 rounded-xl border-indigo-100 dark:border-indigo-900/30 text-indigo-600 dark:text-indigo-400 hover:bg-indigo-50 dark:hover:bg-indigo-900/20 font-black text-[9px] uppercase tracking-widest"
-                      onClick={() => setAssessmentModal({ open: true, type: 'bolt', clientId: app.clients.id, clientName: app.clients.name })}
-                    >
-                      <FlaskConical size={12} className="mr-1" /> Log BOLT
-                    </Button>
-                    <Button 
-                      size="sm" 
-                      variant="outline" 
-                      className="h-8 rounded-xl border-rose-100 dark:border-rose-900/30 text-rose-600 dark:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-900/20 font-black text-[9px] uppercase tracking-widest"
-                      onClick={() => setAssessmentModal({ open: true, type: 'coherence', clientId: app.clients.id, clientName: app.clients.name })}
-                    >
-                      <Activity size={12} className="mr-1" /> Log COH
-                    </Button>
-                    <Button 
-                      size="sm" 
-                      className="h-8 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-black text-[9px] uppercase tracking-widest"
-                      onClick={() => navigate(`/appointments/${app.id}`)}
-                    >
-                      <Play size={12} className="mr-1 fill-current" /> Start
-                    </Button>
-                  </div>
-                )}
+                <div className="flex gap-2">
+                  <Button 
+                    size="sm" 
+                    variant="ghost" 
+                    className="h-8 rounded-xl text-slate-400 hover:text-indigo-600 font-black text-[9px] uppercase tracking-widest"
+                    onClick={() => navigate(`/appointments/${app.id}`)}
+                  >
+                    <Printer size={12} className="mr-1" /> Worksheet
+                  </Button>
+                  {isTodaySession && !isCompleted && (
+                    <div className="flex gap-2 animate-in fade-in slide-in-from-right-2 duration-500">
+                      <Button 
+                        size="sm" 
+                        variant="outline" 
+                        className="h-8 rounded-xl border-indigo-100 dark:border-indigo-900/30 text-indigo-600 dark:text-indigo-400 hover:bg-indigo-50 dark:hover:bg-indigo-900/20 font-black text-[9px] uppercase tracking-widest"
+                        onClick={() => setAssessmentModal({ open: true, type: 'bolt', clientId: app.clients.id, clientName: app.clients.name })}
+                      >
+                        <FlaskConical size={12} className="mr-1" /> Log BOLT
+                      </Button>
+                      <Button 
+                        size="sm" 
+                        className="h-8 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-black text-[9px] uppercase tracking-widest"
+                        onClick={() => navigate(`/appointments/${app.id}`)}
+                      >
+                        <Play size={12} className="mr-1 fill-current" /> Start
+                      </Button>
+                    </div>
+                  )}
+                </div>
               </div>
             </div>
 

@@ -28,6 +28,7 @@ import PreviousSessionSummary from './PreviousSessionSummary';
 import GaitReflexAssessment from './GaitReflexAssessment';
 import PathwayAssessment from './PathwayAssessment';
 import PathwayLogicWizard from './PathwayLogicWizard';
+import NeurologicalHistoryTracker from './NeurologicalHistoryTracker';
 
 type ActiveView = 'home' | 'kinesiology' | 'muscles' | 'gait' | 'previous';
 
@@ -35,9 +36,10 @@ interface SessionContentSwitcherProps {
   appointment: AppointmentWithClient;
   onUpdate: () => void;
   saveField: (field: string, value: any) => Promise<void>;
+  history?: any[]; // Optional history for the tracker
 }
 
-const SessionContentSwitcher = ({ appointment, onUpdate, saveField }: SessionContentSwitcherProps) => {
+const SessionContentSwitcher = ({ appointment, onUpdate, saveField, history = [] }: SessionContentSwitcherProps) => {
   const [activeView, setActiveView] = useState<ActiveView>('home');
   
   const tabStatus = useMemo(() => ({
@@ -136,7 +138,7 @@ const SessionContentSwitcher = ({ appointment, onUpdate, saveField }: SessionCon
         <NavItem view="kinesiology" label="Kinesiology Tools" Icon={Heart} />
         <NavItem view="muscles" label="Muscle Log" Icon={Dumbbell} />
         <NavItem view="gait" label="Gait Integration" Icon={Footprints} />
-        <NavItem view="previous" label="Previous Session" Icon={History} />
+        <NavItem view="previous" label="History & Evolution" Icon={History} />
       </div>
       
       <div className="animate-in fade-in slide-in-from-bottom-2 duration-300">
@@ -156,7 +158,18 @@ const SessionContentSwitcher = ({ appointment, onUpdate, saveField }: SessionCon
           <GaitReflexAssessment appointmentId={appointment.id} initialNotes={appointment.gait_notes} onSaveField={saveField} />
         )}
         {activeView === 'previous' && (
-          <PreviousSessionSummary clientId={appointment.clients.id} currentAppointmentId={appointment.id} />
+          <div className="space-y-12">
+            <div className="space-y-4">
+                <div className="flex items-center gap-3 px-2">
+                    <div className="w-10 h-10 rounded-xl bg-indigo-600 text-white flex items-center justify-center shadow-lg">
+                        <History size={20} />
+                    </div>
+                    <h2 className="text-2xl font-black text-foreground tracking-tight">Neurological Evolution</h2>
+                </div>
+                <NeurologicalHistoryTracker appointments={history.length > 0 ? history : [appointment]} />
+            </div>
+            <PreviousSessionSummary clientId={appointment.clients.id} currentAppointmentId={appointment.id} />
+          </div>
         )}
       </div>
     </div>

@@ -38,6 +38,7 @@ const AppointmentDetailPage = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const [appointment, setAppointment] = useState<AppointmentWithClient | null>(null);
+  const [history, setHistory] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [isFixedHeaderActive, setIsFixedHeaderActive] = useState(false);
   const [copied, setCopied] = useState(false);
@@ -87,10 +88,21 @@ const AppointmentDetailPage = () => {
 
       if (error) throw error;
 
-      setAppointment({
+      const app = {
         ...data,
         date: new Date(data.date),
-      } as unknown as AppointmentWithClient);
+      } as unknown as AppointmentWithClient;
+
+      setAppointment(app);
+
+      // Fetch full history for the tracker
+      const { data: historyData } = await supabase
+        .from('appointments')
+        .select('*')
+        .eq('client_id', app.clients.id)
+        .order('date', { ascending: true });
+      
+      setHistory(historyData || []);
 
     } catch (err) {
       console.error("Error fetching appointment details:", err);
@@ -363,7 +375,12 @@ const AppointmentDetailPage = () => {
               </Card>
 
               <div className="print:hidden">
-                <SessionContentSwitcher appointment={appointment} onUpdate={fetchAppointmentData} saveField={saveField} />
+                <SessionContentSwitcher 
+                  appointment={appointment} 
+                  onUpdate={fetchAppointmentData} 
+                  saveField={saveField} 
+                  history={history}
+                />
               </div>
             </div>
 

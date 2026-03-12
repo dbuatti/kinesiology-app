@@ -7,9 +7,9 @@ import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import { 
   Calendar, Clock, User, Droplets,
-  Copy, Check, History, MoreHorizontal, Star, Play, AlertTriangle, Trash2
+  Copy, Check, History, MoreHorizontal, Star, Play, AlertTriangle, Trash2, Brain, PanelRightClose, PanelRightOpen, ClipboardList
 } from "lucide-react";
-import { format } from "date-fns";
+import { format, subDays } from "date-fns";
 import { showSuccess } from "@/utils/toast";
 import { cn } from "@/lib/utils";
 import EditableField from "@/components/crm/EditableField";
@@ -35,9 +35,33 @@ import Breadcrumbs from "@/components/crm/Breadcrumbs";
 import { Button } from "@/components/ui/button";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { generateSessionSummary } from "@/utils/summary-generator";
+import BrainstemToneMap from "@/components/crm/BrainstemToneMap";
+import AppointmentContextCards from "@/components/crm/AppointmentContextCards";
+import { TCM_CHANNELS } from "@/data/tcm-channel-data";
 
 const DemoSessionPage = () => {
-  // Mock initial data with complex neurological findings
+  const [showSidebar, setShowSidebar] = useState(true);
+  
+  // Mock history to show the evolution tracker
+  const mockHistory = [
+    {
+      id: "hist-1",
+      date: subDays(new Date(), 14).toISOString(),
+      priority_pattern: JSON.stringify({
+        primitiveReflexes: { "Fear Paralysis": "Inhibited", "Moro Reflex": "Inhibited" },
+        cranialNerves: { "CN X: Vagus": "Inhibited" }
+      })
+    },
+    {
+      id: "hist-2",
+      date: subDays(new Date(), 7).toISOString(),
+      priority_pattern: JSON.stringify({
+        primitiveReflexes: { "Fear Paralysis": "Clear", "Moro Reflex": "Inhibited" },
+        cranialNerves: { "CN X: Vagus": "Inhibited", "CN V: Trigeminal": "Inhibited" }
+      })
+    }
+  ];
+
   const [appointment, setAppointment] = useState<any>({
     id: "demo-session-id",
     display_id: "DEMO-001",
@@ -50,8 +74,8 @@ const DemoSessionPage = () => {
     acupoints: "GV20, KI27, BL10",
     notes: "This is a demo session. Findings are pre-populated to show the Brainstem Tone Map and History Tracker.",
     hydrated: true,
-    // Pre-populated inhibited findings for the Tone Map
     priority_pattern: JSON.stringify({
+      primitiveReflexes: { "Fear Paralysis": "Clear", "Moro Reflex": "Clear" },
       cranialNerves: {
         "CN III: Oculomotor": "Inhibited",
         "CN V: Trigeminal": "Inhibited",
@@ -71,22 +95,13 @@ const DemoSessionPage = () => {
     }
   });
 
+  const currentPeakMeridian = TCM_CHANNELS.find(c => c.id === "HT"); // Mock peak
+
   const [isFixedHeaderActive, setIsFixedHeaderActive] = useState(false);
   const [copied, setCopied] = useState(false);
 
   const saveField = async (field: string, value: any) => {
-    console.log(`[Demo Mode] Saving ${field}:`, value);
     setAppointment((prev: any) => ({ ...prev, [field]: value }));
-  };
-
-  const handleStartSession = () => {
-    saveField('date', new Date());
-    showSuccess("Demo session started!");
-  };
-
-  const handleCompleteSession = () => {
-    saveField('status', 'Completed');
-    showSuccess("Demo session marked as Completed!");
   };
 
   const handleCopySummary = () => {
@@ -105,106 +120,81 @@ const DemoSessionPage = () => {
         appointmentDate={appointment.date} 
         status={appointment.status} 
         onFixedHeaderChange={setIsFixedHeaderActive} 
-        onCompleteSession={handleCompleteSession}
       />
       <AppLayout hasFixedHeader={isFixedHeaderActive}>
-        <div className="flex flex-col gap-6">
+        <div className="flex flex-col gap-6 max-w-[1600px] mx-auto">
           <Alert className="bg-amber-50 border-amber-200 rounded-2xl">
             <AlertTriangle className="h-5 w-5 text-amber-600" />
             <AlertDescription className="text-sm text-amber-900 font-bold">
-              DEMO MODE: You are viewing a simulated session for Arthur Dent. Use this to explore the Brainstem Tone Map and History Tracker.
+              DEMO MODE: Explore the Brainstem Tone Map (Sidebar) and Neurological Evolution (History Tab).
             </AlertDescription>
           </Alert>
 
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-            <Breadcrumbs 
-              items={[
-                { label: "Dashboard", path: "/" },
-                { label: "Demo Session" }
-              ]} 
-              className="mb-0"
-            />
+            <Breadcrumbs items={[{ label: "Dashboard", path: "/" }, { label: "Demo Session" }]} className="mb-0" />
             <div className="flex items-center gap-2">
-              {!isFixedHeaderActive && appointment.status === 'Scheduled' && (
-                <Button 
-                  variant="default" 
-                  size="sm" 
-                  className="bg-rose-600 hover:bg-rose-700 text-white rounded-xl shadow-lg shadow-rose-100 h-10 px-6 font-black text-[10px] uppercase tracking-widest"
-                  onClick={handleStartSession}
-                >
-                  <Play size={16} className="mr-2 fill-current" />
-                  Start Demo Session
-                </Button>
-              )}
               <Button 
                 variant="outline" 
                 size="sm" 
-                className="bg-white rounded-xl border-indigo-200 text-indigo-600 hover:bg-indigo-50 h-10 px-4 font-bold text-xs"
-                onClick={handleCopySummary}
+                className={cn("h-10 px-4 font-bold text-xs rounded-xl", showSidebar ? "bg-indigo-600 text-white" : "bg-white")}
+                onClick={() => setShowSidebar(!showSidebar)}
               >
+                {showSidebar ? <PanelRightClose size={16} className="mr-2" /> : <PanelRightOpen size={16} className="mr-2" />}
+                {showSidebar ? "Hide Sidebar" : "Show Sidebar"}
+              </Button>
+              <Button variant="outline" size="sm" className="bg-white rounded-xl border-indigo-200 text-indigo-600 h-10 px-4 font-bold text-xs" onClick={handleCopySummary}>
                 {copied ? <Check size={16} className="mr-2 text-emerald-500" /> : <Copy size={16} className="mr-2" />}
-                {copied ? "Copied!" : "Copy Summary"}
+                Copy Summary
               </Button>
             </div>
           </div>
 
-          <Card className="border-none shadow-xl rounded-[2.5rem] bg-white overflow-hidden">
-            <div className="p-6 border-b border-slate-100 bg-slate-50/30">
-              <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
-                <div className="space-y-3">
-                  <div className="flex flex-wrap items-center gap-3">
-                    <Badge variant="secondary" className="font-bold bg-white border-slate-200 text-slate-600">{appointment.display_id}</Badge>
-                    <Badge className="bg-indigo-600 text-white border-none">{appointment.tag}</Badge>
-                    <Select value={appointment.status} onValueChange={(newStatus) => saveField('status', newStatus)}>
-                      <SelectTrigger className={cn("h-8 w-[130px] text-xs font-bold border-slate-200 shadow-sm bg-white", appointment.status === 'Completed' ? "text-emerald-600" : "text-indigo-600")}>
-                        <SelectValue placeholder="Status" />
-                      </SelectTrigger>
-                      <SelectContent>{APPOINTMENT_STATUSES.map(status => <SelectItem key={status} value={status}>{status}</SelectItem>)}</SelectContent>
-                    </Select>
-                  </div>
-                  <h1 className="text-3xl font-black text-slate-900 tracking-tight">{appointment.clients.name}</h1>
-                  <div className="flex flex-wrap items-center gap-4 text-sm font-medium text-slate-500">
-                    <div className="flex items-center gap-1.5"><Calendar size={16} className="text-indigo-400" /> {format(appointment.date, "EEEE, MMMM d, yyyy")}</div>
-                    <div className="flex items-center gap-1.5"><Clock size={16} className="text-indigo-400" /> {format(appointment.date, "h:mm a")}</div>
-                    {clientBorn && (
-                      <div className="flex items-center gap-3 border-l border-slate-200 pl-4">
-                        <span className="bg-indigo-50 text-indigo-700 px-2 py-0.5 rounded-md text-[10px] font-black uppercase">{calculateAge(clientBorn)} yrs</span>
-                        <span className="flex items-center gap-1 text-amber-600 font-bold text-[10px] uppercase tracking-wider">
-                          <Star size={12} className="fill-amber-500" /> {getStarSign(clientBorn)}
-                        </span>
+          <div className="grid grid-cols-1 xl:grid-cols-12 gap-8">
+            <div className={cn(showSidebar ? "xl:col-span-8" : "xl:col-span-12", "space-y-8 transition-all duration-500")}>
+              <Card className="border-none shadow-xl rounded-[2.5rem] bg-white overflow-hidden">
+                <div className="p-6 border-b border-slate-100 bg-slate-50/30">
+                  <div className="flex items-start gap-5">
+                    <div className="w-16 h-16 rounded-2xl bg-indigo-600 text-white flex items-center justify-center text-2xl font-black shadow-xl">A</div>
+                    <div className="space-y-2">
+                      <div className="flex items-center gap-3">
+                        <Badge variant="secondary" className="font-bold bg-white border-slate-200 text-slate-600">{appointment.display_id}</Badge>
+                        <Badge className="bg-indigo-600 text-white border-none">{appointment.tag}</Badge>
                       </div>
-                    )}
+                      <h1 className="text-3xl font-black text-slate-900">{appointment.clients.name}</h1>
+                      <div className="flex items-center gap-4 text-sm font-medium text-slate-500">
+                        <Calendar size={16} className="text-indigo-400" /> {format(appointment.date, "EEEE, MMMM d")}
+                        {clientBorn && <span className="bg-indigo-50 text-indigo-700 px-2 py-0.5 rounded-md text-[10px] font-black uppercase ml-2">{calculateAge(clientBorn)} yrs</span>}
+                      </div>
+                    </div>
                   </div>
                 </div>
+                <div className="p-8 grid grid-cols-1 md:grid-cols-2 gap-8">
+                  <EditableField field="goal" label="Session Goal" value={appointment.goal} onSave={saveField} className="bg-slate-50/50 p-4 rounded-2xl border border-slate-100" />
+                  <EditableField field="issue" label="Main Concern" value={appointment.issue} onSave={saveField} className="bg-slate-50/50 p-4 rounded-2xl border border-slate-100" />
+                </div>
+              </Card>
 
-                <div className="flex flex-col items-end gap-3">
-                  <div className="flex items-center gap-3 p-3 bg-white rounded-2xl border border-slate-100 shadow-sm">
-                    <div className={cn("w-10 h-10 rounded-full flex items-center justify-center transition-colors", appointment.hydrated ? "bg-emerald-100 text-emerald-600" : "bg-rose-100 text-rose-600")}>
-                      <Droplets size={20} />
-                    </div>
-                    <div className="pr-2">
-                      <Label htmlFor="hydration-toggle" className="text-xs font-bold text-slate-400 uppercase tracking-widest block mb-1">Hydration</Label>
-                      <div className="flex items-center gap-2">
-                        <span className="text-sm font-bold text-slate-700">{appointment.hydrated ? "Passed" : "Needs Attention"}</span>
-                        <Switch id="hydration-toggle" checked={appointment.hydrated || false} onCheckedChange={(checked) => saveField('hydrated', checked)} className="data-[state=checked]:bg-emerald-500" />
-                      </div>
-                    </div>
+              <SessionContentSwitcher 
+                appointment={appointment} 
+                onUpdate={() => {}} 
+                saveField={saveField} 
+                history={[...mockHistory, appointment]} 
+              />
+            </div>
+
+            {showSidebar && (
+              <div className="xl:col-span-4 space-y-8 animate-in fade-in slide-in-from-right-4 duration-500">
+                <div className="space-y-4">
+                  <div className="flex items-center gap-2 px-2">
+                    <Brain size={18} className="text-indigo-600" />
+                    <h3 className="text-sm font-black text-slate-400 uppercase tracking-[0.3em]">Brainstem Tone Map</h3>
                   </div>
+                  <BrainstemToneMap priorityPattern={appointment.priority_pattern} />
                 </div>
+                <AppointmentContextCards appointment={appointment} currentPeakMeridian={currentPeakMeridian} onSaveField={saveField} />
               </div>
-            </div>
-
-            <div className="p-6 grid grid-cols-1 md:grid-cols-2 gap-8">
-              <EditableField field="goal" label="Session Goal" value={appointment.goal} placeholder="What is the primary goal?" onSave={saveField} className="bg-slate-50/50 p-4 rounded-2xl border border-slate-100" />
-              <EditableField field="issue" label="Main Concern / Issue" value={appointment.issue} placeholder="Describe the concern..." onSave={saveField} className="bg-slate-50/50 p-4 rounded-2xl border border-slate-100" />
-            </div>
-          </Card>
-
-          <SessionContentSwitcher 
-            appointment={appointment} 
-            onUpdate={() => console.log("[Demo Mode] Refresh requested")} 
-            saveField={saveField} 
-          />
+            )}
+          </div>
         </div>
       </AppLayout>
     </>

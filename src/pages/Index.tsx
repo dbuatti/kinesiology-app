@@ -213,13 +213,20 @@ const Index = () => {
           <h1 className="text-4xl font-black tracking-tighter text-foreground">Practice Hub</h1>
           <p className="text-muted-foreground font-medium mt-1 text-lg">Welcome back! Here's your clinical overview.</p>
         </div>
-        <div className="flex items-center gap-3 bg-card p-3 rounded-2xl border border-border shadow-sm">
-          <div className="w-10 h-10 bg-indigo-50 dark:bg-indigo-900/20 rounded-xl flex items-center justify-center text-indigo-600 dark:text-indigo-400">
-            <Calendar size={20} />
-          </div>
-          <div className="pr-2">
-            <p className="text-[10px] font-black text-muted-foreground uppercase tracking-widest">Today's Date</p>
-            <p className="text-base font-bold text-foreground">{format(currentTime, "EEEE, MMMM d")}</p>
+        <div className="flex items-center gap-3">
+          <Link to="/demo-session">
+            <Button variant="outline" className="h-12 px-6 rounded-xl font-black text-[10px] uppercase tracking-widest border-indigo-200 text-indigo-600 hover:bg-indigo-50 shadow-sm">
+              <Sparkles size={18} className="mr-2" /> Launch Demo Session
+            </Button>
+          </Link>
+          <div className="flex items-center gap-3 bg-card p-3 rounded-2xl border border-border shadow-sm">
+            <div className="w-10 h-10 bg-indigo-50 dark:bg-indigo-900/20 rounded-xl flex items-center justify-center text-indigo-600 dark:text-indigo-400">
+              <Calendar size={20} />
+            </div>
+            <div className="pr-2">
+              <p className="text-[10px] font-black text-muted-foreground uppercase tracking-widest">Today's Date</p>
+              <p className="text-base font-bold text-foreground">{format(currentTime, "EEEE, MMMM d")}</p>
+            </div>
           </div>
         </div>
       </div>

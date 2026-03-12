@@ -37,7 +37,7 @@ import { Alert, AlertDescription } from "@/components/ui/alert";
 import { generateSessionSummary } from "@/utils/summary-generator";
 
 const DemoSessionPage = () => {
-  // Mock initial data
+  // Mock initial data with complex neurological findings
   const [appointment, setAppointment] = useState<any>({
     id: "demo-session-id",
     display_id: "DEMO-001",
@@ -45,15 +45,29 @@ const DemoSessionPage = () => {
     date: new Date(),
     tag: "Kinesiology",
     status: "Scheduled",
-    goal: "Assess the new UI layout and test component interactions",
-    issue: "Need a safe environment to debug without database side-effects",
-    acupoints: "GV20, KI27",
-    notes: "This is a demo session. Changes made here are stored in local component state only.",
+    goal: "Resolve chronic right-sided neck pain and brain fog",
+    issue: "Client reports 7/10 pain during cervical rotation. History of whiplash 2 years ago.",
+    acupoints: "GV20, KI27, BL10",
+    notes: "This is a demo session. Findings are pre-populated to show the Brainstem Tone Map and History Tracker.",
     hydrated: true,
+    // Pre-populated inhibited findings for the Tone Map
+    priority_pattern: JSON.stringify({
+      cranialNerves: {
+        "CN III: Oculomotor": "Inhibited",
+        "CN V: Trigeminal": "Inhibited",
+        "CN X: Vagus": "Inhibited"
+      },
+      muscles: {
+        "Psoas": "Inhibited",
+        "Supraspinatus": "Inhibited"
+      }
+    }),
+    bolt_score: 18,
+    coherence_score: 4.2,
     clients: {
       id: "demo-client-id",
-      name: "Demo Client",
-      born: "1990-01-01"
+      name: "Arthur Dent",
+      born: "1982-05-25"
     }
   });
 
@@ -98,15 +112,14 @@ const DemoSessionPage = () => {
           <Alert className="bg-amber-50 border-amber-200 rounded-2xl">
             <AlertTriangle className="h-5 w-5 text-amber-600" />
             <AlertDescription className="text-sm text-amber-900 font-bold">
-              DEMO MODE: You are viewing a sandbox session. No data will be saved to the database. 
-              Some deep-nested components (like Muscle Log) may appear empty as they require real database IDs.
+              DEMO MODE: You are viewing a simulated session for Arthur Dent. Use this to explore the Brainstem Tone Map and History Tracker.
             </AlertDescription>
           </Alert>
 
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
             <Breadcrumbs 
               items={[
-                { label: "Debug", path: "/debug" },
+                { label: "Dashboard", path: "/" },
                 { label: "Demo Session" }
               ]} 
               className="mb-0"
@@ -116,7 +129,7 @@ const DemoSessionPage = () => {
                 <Button 
                   variant="default" 
                   size="sm" 
-                  className="bg-rose-600 hover:bg-rose-700 text-white rounded-xl shadow-lg shadow-rose-100"
+                  className="bg-rose-600 hover:bg-rose-700 text-white rounded-xl shadow-lg shadow-rose-100 h-10 px-6 font-black text-[10px] uppercase tracking-widest"
                   onClick={handleStartSession}
                 >
                   <Play size={16} className="mr-2 fill-current" />
@@ -126,26 +139,16 @@ const DemoSessionPage = () => {
               <Button 
                 variant="outline" 
                 size="sm" 
-                className="bg-white rounded-xl border-indigo-200 text-indigo-600 hover:bg-indigo-50"
+                className="bg-white rounded-xl border-indigo-200 text-indigo-600 hover:bg-indigo-50 h-10 px-4 font-bold text-xs"
                 onClick={handleCopySummary}
               >
                 {copied ? <Check size={16} className="mr-2 text-emerald-500" /> : <Copy size={16} className="mr-2" />}
                 {copied ? "Copied!" : "Copy Summary"}
               </Button>
-              <DropdownMenu>
-                  <DropdownMenuTrigger asChild>
-                      <Button variant="ghost" size="icon" className="rounded-xl"><MoreHorizontal size={20} /></Button>
-                  </DropdownMenuTrigger>
-                  <DropdownMenuContent align="end">
-                      <DropdownMenuItem className="text-destructive focus:text-destructive" onClick={() => showSuccess("Deleted (Demo Mode)")}>
-                          <Trash2 size={16} className="mr-2" /> Delete Demo
-                      </DropdownMenuItem>
-                  </DropdownMenuContent>
-              </DropdownMenu>
             </div>
           </div>
 
-          <Card className="border-none shadow-sm rounded-2xl bg-white overflow-hidden">
+          <Card className="border-none shadow-xl rounded-[2.5rem] bg-white overflow-hidden">
             <div className="p-6 border-b border-slate-100 bg-slate-50/30">
               <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
                 <div className="space-y-3">
@@ -159,13 +162,10 @@ const DemoSessionPage = () => {
                       <SelectContent>{APPOINTMENT_STATUSES.map(status => <SelectItem key={status} value={status}>{status}</SelectItem>)}</SelectContent>
                     </Select>
                   </div>
-                  <h1 className="text-3xl font-black text-slate-900 tracking-tight">Demo Practice Session</h1>
+                  <h1 className="text-3xl font-black text-slate-900 tracking-tight">{appointment.clients.name}</h1>
                   <div className="flex flex-wrap items-center gap-4 text-sm font-medium text-slate-500">
                     <div className="flex items-center gap-1.5"><Calendar size={16} className="text-indigo-400" /> {format(appointment.date, "EEEE, MMMM d, yyyy")}</div>
                     <div className="flex items-center gap-1.5"><Clock size={16} className="text-indigo-400" /> {format(appointment.date, "h:mm a")}</div>
-                    <div className="flex items-center gap-1.5 text-indigo-600 font-bold">
-                      <User size={16} /> {appointment.clients.name}
-                    </div>
                     {clientBorn && (
                       <div className="flex items-center gap-3 border-l border-slate-200 pl-4">
                         <span className="bg-indigo-50 text-indigo-700 px-2 py-0.5 rounded-md text-[10px] font-black uppercase">{calculateAge(clientBorn)} yrs</span>

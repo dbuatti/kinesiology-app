@@ -58,6 +58,30 @@ const SessionContentSwitcher = ({ appointment, onUpdate, saveField, history = []
     return sorted[currentIndex + 1] || null;
   }, [history, appointment.id]);
 
+  const handleClearItem = async (itemName: string) => {
+    if (!appointment.priority_pattern) return;
+    
+    try {
+      const pattern = JSON.parse(appointment.priority_pattern);
+      let updated = false;
+
+      // Search through all categories in the JSON to find the item and mark it Clear
+      Object.keys(pattern).forEach(category => {
+        if (pattern[category][itemName]) {
+          pattern[category][itemName] = 'Clear';
+          updated = true;
+        }
+      });
+
+      if (updated) {
+        await saveField('priority_pattern', JSON.stringify(pattern));
+        onUpdate(); // Refresh to update the tracker
+      }
+    } catch (e) {
+      console.error("Failed to update priority pattern JSON", e);
+    }
+  };
+
   const NavItem = ({ view, label, Icon }: { view: ActiveView, label: string, Icon: React.ElementType }) => (
     <Button
       variant="ghost"
@@ -119,6 +143,7 @@ const SessionContentSwitcher = ({ appointment, onUpdate, saveField, history = []
           <TabsContent value="calibration" className="focus-visible:ring-0">
             <PathwayLogicWizard
               onSave={(summary) => saveField('modes_balances', summary)}
+              onClearItem={handleClearItem}
               priorityPattern={appointment.priority_pattern}
             />
           </TabsContent>

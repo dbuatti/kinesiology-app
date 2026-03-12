@@ -43,10 +43,11 @@ type Step =
 
 interface PathwayLogicWizardProps {
   onSave: (summary: string) => void;
+  onClearItem?: (itemName: string) => void; // New prop to update the tracker
   priorityPattern?: string | null;
 }
 
-const PathwayLogicWizard = ({ onSave, priorityPattern }: PathwayLogicWizardProps) => {
+const PathwayLogicWizard = ({ onSave, onClearItem, priorityPattern }: PathwayLogicWizardProps) => {
   const [step, setStep] = useState<Step>('SELECT_START');
   const [history, setHistory] = useState<Step[]>([]);
   const [selectedItem, setSelectedItem] = useState<string>("");
@@ -110,6 +111,10 @@ const PathwayLogicWizard = ({ onSave, priorityPattern }: PathwayLogicWizardProps
   };
 
   const handleSave = (summary: string) => {
+    // If we have a selected item and the user says it's clear, notify the parent
+    if (selectedItem && selectedItem !== 'CUSTOM' && onClearItem) {
+      onClearItem(selectedItem);
+    }
     onSave(summary);
     resetWizard();
   };

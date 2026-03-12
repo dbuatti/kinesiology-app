@@ -7,7 +7,7 @@ import { Badge } from "@/components/ui/badge";
 import { 
   Move, Zap, RefreshCw, 
   Dumbbell, Lightbulb, Sparkles,
-  Brain, Activity
+  ChevronRight, Loader2
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { format } from 'date-fns';
@@ -136,7 +136,6 @@ const RandomJointCard = () => {
       }
     }
 
-    // If no valid stored joint for today, pick a new one
     pickNewJoint(today);
   }, []);
 
@@ -161,7 +160,7 @@ const RandomJointCard = () => {
         jointName: next.name
       }));
       setIsRefreshing(false);
-    }, 1000);
+    }, 600);
   };
 
   return (
@@ -226,6 +225,16 @@ const RandomJointCard = () => {
             "{joint.pearl}"
           </p>
         </div>
+
+        <Button 
+          variant="ghost" 
+          onClick={handleManualRefresh}
+          disabled={isRefreshing}
+          className="w-full h-10 rounded-xl text-[10px] font-black uppercase tracking-widest text-indigo-600 hover:bg-indigo-50 dark:hover:bg-indigo-900/20"
+        >
+          {isRefreshing ? <Loader2 className="animate-spin mr-2" size={14} /> : <ChevronRight className="mr-2" size={14} />}
+          Next Joint
+        </Button>
       </CardContent>
     </Card>
   );

@@ -5,19 +5,22 @@ import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { 
-  Brain, Zap, Activity, Shield, Dumbbell, AlertTriangle, ChevronDown, Check, X, Plus, Search, RotateCcw, Layers, ImageIcon, Baby, PlayCircle, ShieldAlert, ListChecks
+  Brain, Zap, Activity, Shield, Dumbbell, AlertTriangle, ChevronDown, Check, X, Plus, Search, RotateCcw, Layers, ImageIcon, Baby, PlayCircle, ShieldAlert, ListChecks, Info, MousePointer2
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { BRAIN_REFLEX_POINTS, BrainReflexPoint } from '@/data/brain-reflex-data';
-import { PRIMITIVE_REFLEXES } from '@/data/primitive-reflex-data';
+import { PRIMITIVE_REFLEXES, PrimitiveReflex } from '@/data/primitive-reflex-data';
 import { MUSCLE_GROUPS } from '@/data/muscle-data';
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { supabase } from "@/integrations/supabase/client";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
-import { Skeleton } from "@/components/ui/skeleton";
+import { Input } from "@/components/ui/input";
+
+// Modal Imports
+import MuscleInfoModal from "./MuscleInfoModal";
+import BrainReflexModal from "./BrainReflexModal";
+import PrimitiveReflexModal from "./PrimitiveReflexModal";
 
 type Status = 'Clear' | 'Inhibited';
 type AssessmentResults = Record<string, Record<string, Status>>;
@@ -26,20 +29,24 @@ interface AssessmentItemProps {
   name: string;
   status?: Status;
   onSetStatus: (status: Status) => void;
+  onClick: () => void;
   imageUrl?: string | null;
   showImage?: boolean;
   stimulus?: string;
   inhibitionPattern?: string;
 }
 
-const AssessmentItem = ({ name, status, onSetStatus, imageUrl, showImage, stimulus, inhibitionPattern }: AssessmentItemProps) => {
+const AssessmentItem = ({ name, status, onSetStatus, onClick, imageUrl, showImage, stimulus, inhibitionPattern }: AssessmentItemProps) => {
   return (
-    <div className={cn(
-      "group relative p-4 rounded-2xl border-2 transition-all",
-      status === 'Clear' ? "bg-emerald-50 border-emerald-200" :
-      status === 'Inhibited' ? "bg-rose-50 border-rose-200" :
-      "bg-white border-slate-100 hover:border-indigo-100"
-    )}>
+    <div 
+      onClick={onClick}
+      className={cn(
+        "group relative p-4 rounded-2xl border-2 transition-all cursor-pointer",
+        status === 'Clear' ? "bg-emerald-50 border-emerald-200" :
+        status === 'Inhibited' ? "bg-rose-50 border-rose-200" :
+        "bg-white border-slate-100 hover:border-indigo-100 hover:shadow-md"
+      )}
+    >
       <div className="flex items-center justify-between mb-2">
         <p className="font-bold text-sm text-slate-800">{name}</p>
         {status && (
@@ -57,13 +64,13 @@ const AssessmentItem = ({ name, status, onSetStatus, imageUrl, showImage, stimul
           {stimulus && (
             <div className="flex items-start gap-1.5">
               <PlayCircle size={10} className="text-indigo-400 shrink-0 mt-0.5" />
-              <p className="text-[9px] text-slate-500 leading-tight font-medium">{stimulus}</p>
+              <p className="text-[9px] text-slate-500 leading-tight font-medium line-clamp-1">{stimulus}</p>
             </div>
           )}
           {inhibitionPattern && (
             <div className="flex items-start gap-1.5">
               <ShieldAlert size={10} className="text-rose-400 shrink-0 mt-0.5" />
-              <p className="text-[9px] text-rose-600/70 leading-tight font-bold">{inhibitionPattern}</p>
+              <p className="text-[9px] text-rose-600/70 leading-tight font-bold line-clamp-1">{inhibitionPattern}</p>
             </div>
           )}
         </div>
@@ -74,11 +81,16 @@ const AssessmentItem = ({ name, status, onSetStatus, imageUrl, showImage, stimul
           <img src={imageUrl} alt={name} className="w-full h-full object-cover" />
         </div>
       )}
-      <div className="absolute inset-0 bg-slate-900/5 rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2">
-        <Button size="sm" className="bg-emerald-500 hover:bg-emerald-600 rounded-xl h-9" onClick={() => onSetStatus('Clear')}>
+
+      <div className="mt-2 flex items-center gap-1 text-[8px] font-black text-slate-300 uppercase tracking-widest opacity-0 group-hover:opacity-100 transition-opacity">
+        <MousePointer2 size={8} /> Click for info
+      </div>
+
+      <div className="absolute inset-0 bg-slate-900/5 rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2" onClick={(e) => e.stopPropagation()}>
+        <Button size="sm" className="bg-emerald-500 hover:bg-emerald-600 rounded-xl h-9 shadow-lg" onClick={() => onSetStatus('Clear')}>
           <Check size={16} className="mr-1" /> Clear
         </Button>
-        <Button size="sm" className="bg-rose-500 hover:bg-rose-600 rounded-xl h-9" onClick={() => onSetStatus('Inhibited')}>
+        <Button size="sm" className="bg-rose-500 hover:bg-rose-600 rounded-xl h-9 shadow-lg" onClick={() => onSetStatus('Inhibited')}>
           <X size={16} className="mr-1" /> Inhibited
         </Button>
       </div>
@@ -159,6 +171,15 @@ const PathwayAssessment = ({ initialValue, onSave }: PathwayAssessmentProps) => 
   const [customizations, setCustomizations] = useState<Record<string, ReflexImageData>>({});
   const [loadingImages, setLoadingImages] = useState(true);
 
+  // Modal States
+  const [selectedMuscle, setSelectedMuscle] = useState<string | null>(null);
+  const [selectedBrainPoint, setSelectedBrainPoint] = useState<BrainReflexPoint | null>(null);
+  const [selectedReflex, setSelectedReflex] = useState<PrimitiveReflex | null>(null);
+  
+  const [muscleModalOpen, setMuscleModalOpen] = useState(false);
+  const [brainModalOpen, setBrainModalOpen] = useState(false);
+  const [reflexModalOpen, setReflexModalOpen] = useState(false);
+
   useEffect(() => {
     try {
       if (initialValue) {
@@ -220,6 +241,19 @@ const PathwayAssessment = ({ initialValue, onSave }: PathwayAssessmentProps) => 
     return { count, inhibitedCount };
   };
 
+  const handleItemClick = (type: 'muscle' | 'brain' | 'reflex', item: any) => {
+    if (type === 'muscle') {
+      setSelectedMuscle(item);
+      setMuscleModalOpen(true);
+    } else if (type === 'brain') {
+      setSelectedBrainPoint(item);
+      setBrainModalOpen(true);
+    } else if (type === 'reflex') {
+      setSelectedReflex(item);
+      setReflexModalOpen(true);
+    }
+  };
+
   const cranialNerves = BRAIN_REFLEX_POINTS.filter(p => p.category === 'Cranial Nerve');
   const brainZones = BRAIN_REFLEX_POINTS.filter(p => p.category !== 'Cranial Nerve');
 
@@ -278,6 +312,7 @@ const PathwayAssessment = ({ initialValue, onSave }: PathwayAssessmentProps) => 
               name={reflex.name}
               status={results.primitiveReflexes?.[reflex.name]}
               onSetStatus={(status) => handleSetStatus('primitiveReflexes', reflex.name, status)}
+              onClick={() => handleItemClick('reflex', reflex)}
               stimulus={reflex.stimulus}
               inhibitionPattern={reflex.inhibitionPattern}
             />
@@ -295,6 +330,7 @@ const PathwayAssessment = ({ initialValue, onSave }: PathwayAssessmentProps) => 
                 name={nerve.name}
                 status={results.cranialNerves?.[nerve.name]}
                 onSetStatus={(status) => handleSetStatus('cranialNerves', nerve.name, status)}
+                onClick={() => handleItemClick('brain', nerve)}
                 imageUrl={imageUrl}
                 showImage={showImages}
               />
@@ -313,6 +349,7 @@ const PathwayAssessment = ({ initialValue, onSave }: PathwayAssessmentProps) => 
                 name={zone.name}
                 status={results.brainZones?.[zone.name]}
                 onSetStatus={(status) => handleSetStatus('brainZones', zone.name, status)}
+                onClick={() => handleItemClick('brain', zone)}
                 imageUrl={imageUrl}
                 showImage={showImages}
               />
@@ -342,6 +379,7 @@ const PathwayAssessment = ({ initialValue, onSave }: PathwayAssessmentProps) => 
                     name={muscle}
                     status={results.muscles?.[muscle]}
                     onSetStatus={(status) => handleSetStatus('muscles', muscle, status)}
+                    onClick={() => handleItemClick('muscle', muscle)}
                   />
                 ))}
               </div>
@@ -349,6 +387,27 @@ const PathwayAssessment = ({ initialValue, onSave }: PathwayAssessmentProps) => 
           ))}
         </div>
       </AssessmentSection>
+
+      {/* Modals */}
+      <MuscleInfoModal 
+        muscleName={selectedMuscle}
+        open={muscleModalOpen}
+        onOpenChange={setMuscleModalOpen}
+      />
+      
+      <BrainReflexModal 
+        point={selectedBrainPoint}
+        primaryUrl={selectedBrainPoint ? customizations[selectedBrainPoint.id]?.primaryUrl : null}
+        secondaryUrl={selectedBrainPoint ? customizations[selectedBrainPoint.id]?.secondaryUrl : null}
+        open={brainModalOpen}
+        onOpenChange={setBrainModalOpen}
+      />
+
+      <PrimitiveReflexModal 
+        reflex={selectedReflex}
+        open={reflexModalOpen}
+        onOpenChange={setReflexModalOpen}
+      />
     </div>
   );
 };

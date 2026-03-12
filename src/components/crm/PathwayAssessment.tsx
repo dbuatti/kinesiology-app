@@ -5,7 +5,7 @@ import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { 
-  Brain, Zap, Activity, Shield, Dumbbell, AlertTriangle, ChevronDown, Check, X, Plus, Search, RotateCcw, Layers, ImageIcon, Baby, PlayCircle, ShieldAlert, ListChecks, Info, MousePointer2
+  Brain, Zap, Activity, Shield, Dumbbell, AlertTriangle, ChevronDown, Check, X, Plus, Search, RotateCcw, Layers, ImageIcon, Baby, PlayCircle, ShieldAlert, ListChecks, Info, MousePointer2, Maximize2
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { BRAIN_REFLEX_POINTS, BrainReflexPoint } from '@/data/brain-reflex-data';
@@ -41,7 +41,7 @@ const AssessmentItem = ({ name, status, onSetStatus, onClick, imageUrl, showImag
     <div 
       onClick={onClick}
       className={cn(
-        "group relative p-4 rounded-2xl border-2 transition-all cursor-pointer",
+        "group relative p-4 rounded-2xl border-2 transition-all cursor-pointer overflow-hidden",
         status === 'Clear' ? "bg-emerald-50 border-emerald-200" :
         status === 'Inhibited' ? "bg-rose-50 border-rose-200" :
         "bg-white border-slate-100 hover:border-indigo-100 hover:shadow-md"
@@ -82,17 +82,31 @@ const AssessmentItem = ({ name, status, onSetStatus, onClick, imageUrl, showImag
         </div>
       )}
 
-      <div className="mt-2 flex items-center gap-1 text-[8px] font-black text-slate-300 uppercase tracking-widest opacity-0 group-hover:opacity-100 transition-opacity">
+      <div className="mt-2 flex items-center gap-1 text-[8px] font-black text-slate-300 uppercase tracking-widest">
         <MousePointer2 size={8} /> Click for info
       </div>
 
-      <div className="absolute inset-0 bg-slate-900/5 rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2" onClick={(e) => e.stopPropagation()}>
-        <Button size="sm" className="bg-emerald-500 hover:bg-emerald-600 rounded-xl h-9 shadow-lg" onClick={() => onSetStatus('Clear')}>
-          <Check size={16} className="mr-1" /> Clear
-        </Button>
-        <Button size="sm" className="bg-rose-500 hover:bg-rose-600 rounded-xl h-9 shadow-lg" onClick={() => onSetStatus('Inhibited')}>
-          <X size={16} className="mr-1" /> Inhibited
-        </Button>
+      {/* Hover Overlay - No longer stops propagation on the background click */}
+      <div className="absolute inset-0 bg-slate-900/10 backdrop-blur-[1px] opacity-0 group-hover:opacity-100 transition-all duration-300 flex flex-col items-center justify-center gap-3">
+        <div className="flex items-center gap-2">
+          <Button 
+            size="sm" 
+            className="bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl h-9 shadow-lg font-black text-[10px] uppercase tracking-widest" 
+            onClick={(e) => { e.stopPropagation(); onSetStatus('Clear'); }}
+          >
+            <Check size={14} className="mr-1" /> Clear
+          </Button>
+          <Button 
+            size="sm" 
+            className="bg-rose-600 hover:bg-rose-700 text-white rounded-xl h-9 shadow-lg font-black text-[10px] uppercase tracking-widest" 
+            onClick={(e) => { e.stopPropagation(); onSetStatus('Inhibited'); }}
+          >
+            <X size={14} className="mr-1" /> Inhibited
+          </Button>
+        </div>
+        <div className="flex items-center gap-1.5 text-[9px] font-black text-slate-900 bg-white/90 px-3 py-1 rounded-full shadow-sm">
+          <Maximize2 size={10} /> View Clinical Info
+        </div>
       </div>
     </div>
   );

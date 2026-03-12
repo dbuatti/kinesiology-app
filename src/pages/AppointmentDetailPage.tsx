@@ -22,6 +22,7 @@ import AppointmentHeader from "@/components/crm/AppointmentHeader";
 import AppointmentContextCards from "@/components/crm/AppointmentContextCards";
 import BrainstemToneMap from "@/components/crm/BrainstemToneMap";
 import SessionWorksheetTemplate from "@/components/crm/SessionWorksheetTemplate";
+import PathwayFindingsList from "@/components/crm/PathwayFindingsList";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -425,7 +426,7 @@ const AppointmentDetailPage = () => {
                       </div>
                       <div className="flex justify-between items-center text-xs">
                         <span className="text-slate-400 font-bold uppercase">Hydration</span>
-                        <Badge className={cn("border-none text-[8px] font-black", appointment.hydrated ? "bg-emerald-500" : "bg-rose-500")}>
+                        <Badge className={cn("border-none text-[8px] font-black", appointment.hydrated ? "bg-emerald-50" : "bg-rose-500")}>
                           {appointment.hydrated ? 'PASSED' : 'ATTENTION'}
                         </Badge>
                       </div>
@@ -433,9 +434,7 @@ const AppointmentDetailPage = () => {
                     
                     <div className="pt-4 border-t border-slate-100">
                       <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2">Pathway Findings</p>
-                      <p className="text-xs text-slate-600 font-medium leading-relaxed line-clamp-3 italic">
-                        {appointment.priority_pattern || "No pathway data recorded yet."}
-                      </p>
+                      <PathwayFindingsList priorityPattern={appointment.priority_pattern} />
                     </div>
 
                     <Button 
@@ -482,7 +481,7 @@ const AppointmentDetailPage = () => {
               <div className="p-6 border-2 border-slate-100 rounded-2xl space-y-6">
                 <div>
                   <h4 className="text-xs font-black text-indigo-600 uppercase tracking-widest mb-2">Pathway & Patterns</h4>
-                  <p className="text-sm text-slate-700 leading-relaxed">{appointment.priority_pattern || 'No specific pathway notes.'}</p>
+                  <PathwayFindingsList priorityPattern={appointment.priority_pattern} showOnlyInhibited={false} />
                 </div>
                 <div>
                   <h4 className="text-xs font-black text-indigo-600 uppercase tracking-widest mb-2">Corrections Applied</h4>

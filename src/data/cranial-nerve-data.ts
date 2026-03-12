@@ -71,10 +71,10 @@ export const CRANIAL_NERVES: CranialNerve[] = [
     latinName: "Trigeminal",
     nuclei: "Pons",
     toneEffect: "Extensors",
-    reflexPoint: "Hand across mandible (cheek)",
-    functions: ["Face sensation", "Chewing (mastication)"],
-    stimulus: "Light touch to face or soft sound stimulus.",
-    clinicalPearl: "Pons nuclei control extensor tone. Clearing CN V can help reset systemic extensor inhibition.",
+    reflexPoint: "Hand along the jawline (bilateral)",
+    functions: ["Face sensation (3 divisions)", "Chewing", "Soft sound (Tensor Tympani)"],
+    stimulus: "1. Rub through sensory divisions: Ophthalmic (forehead), Maxillary (cheek), Mandibular (jaw). 2. Soft sound stimulus.",
+    clinicalPearl: "The 'negative antidote' to the Vagus nerve. Heavily tied to the sympathetic nervous system and systemic pain neurology. Flaring often leads to increased head and body pain.",
     color: "bg-indigo-500"
   },
   {

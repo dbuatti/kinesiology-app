@@ -22,6 +22,7 @@ import SettingsPage from "./pages/SettingsPage";
 import NorthStarPage from "./pages/NorthStarPage";
 import Week3WorksheetPage from "./pages/Week3WorksheetPage";
 import QuickCalibratePage from "./pages/QuickCalibratePage";
+import OnboardingPage from "./pages/OnboardingPage";
 import Login from "./pages/Login";
 import NotFound from "./pages/NotFound";
 import { AuthProvider, useAuth } from "./components/AuthProvider";
@@ -93,6 +94,7 @@ const App = () => (
           <BrowserRouter>
             <Routes>
               <Route path="/login" element={<Login />} />
+              <Route path="/onboarding/:id" element={<OnboardingPage />} />
               <Route path="/" element={<ProtectedLayout><Index /></ProtectedLayout>} />
               <Route path="/clients" element={<ProtectedLayout><ClientsPage /></ProtectedLayout>} />
               <Route path="/clients/:id" element={<ProtectedLayout><ClientDetailPage /></ProtectedLayout>} />

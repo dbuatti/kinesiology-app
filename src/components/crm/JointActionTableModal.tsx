@@ -10,24 +10,7 @@ import {
 } from "@/components/ui/dialog";
 import { List, Move, Zap, RefreshCw, Info } from "lucide-react";
 import { ScrollArea } from "@/components/ui/scroll-area";
-
-const JOINT_ACTION_DATA = [
-  { joint: "Cranium", sagittal: "Flexion, Extension", frontal: "Lateral Flexion", transverse: "Rotation" },
-  { joint: "Jaw", sagittal: "Protrusion, Retraction", frontal: "Lateral Deviation", transverse: "-" },
-  { joint: "Cervical Spine", sagittal: "Flexion, Extension", frontal: "Lateral Flexion", transverse: "Rotation" },
-  { joint: "Thoracic Spine", sagittal: "Flexion, Extension", frontal: "Lateral Flexion", transverse: "Rotation" },
-  { joint: "Lumbar Spine", sagittal: "Flexion, Extension", frontal: "Lateral Flexion", transverse: "Rotation" },
-  { joint: "Pelvis", sagittal: "Anterior Tilt, Posterior Tilt", frontal: "Hike up, Drop down", transverse: "L Rotation, R Rotation" },
-  { joint: "Sacrum", sagittal: "Nutation, Counter Nutation", frontal: "-", transverse: "-" },
-  { joint: "Hip", sagittal: "Flexion, Extension", frontal: "Adduction, Abduction", transverse: "Internal Rotation, External Rotation" },
-  { joint: "Knee", sagittal: "Flexion, Extension", frontal: "-", transverse: "Tibial Internal Rotation, Tibial External Rotation" },
-  { joint: "Foot/Ankle", sagittal: "Dorsiflexion, Plantar Flexion", frontal: "Eversion, Inversion", transverse: "Abduction, Adduction, Internal Rotation, External Rotation" },
-  { joint: "Shoulder (GH Joint)", sagittal: "Flexion, Extension", frontal: "Adduction, Abduction", transverse: "Internal Rotation, External Rotation" },
-  { joint: "Scapula", sagittal: "Elevation, Depression", frontal: "Upward Rotation, Downwards Rotation", transverse: "Protraction, Retraction" },
-  { joint: "Elbow", sagittal: "Flexion, Extension", frontal: "-", transverse: "Pronation (Internal Rotation), Supination (External Rotation)" },
-  { joint: "Wrist", sagittal: "Flexion, Extension", frontal: "Radial Deviation, Ulnar Deviation", transverse: "-" },
-  { joint: "Hand/Fingers", sagittal: "Palm Extension, Finger Extension, Palm Flexion, Finger Flexion", frontal: "Finger Adduction, Finger Abduction", transverse: "-" }
-];
+import { JOINT_ACTION_LIBRARY } from "@/data/joint-action-data";
 
 interface JointActionTableModalProps {
   open: boolean;
@@ -77,12 +60,18 @@ const JointActionTableModal = ({ open, onOpenChange }: JointActionTableModalProp
                 </tr>
               </thead>
               <tbody className="bg-white">
-                {JOINT_ACTION_DATA.map((row, i) => (
+                {JOINT_ACTION_LIBRARY.map((joint, i) => (
                   <tr key={i} className="border-t border-slate-50 hover:bg-slate-50/50 transition-colors">
-                    <td className="p-4 font-black text-slate-900">{row.joint}</td>
-                    <td className="p-4 text-slate-600 font-medium">{row.sagittal}</td>
-                    <td className="p-4 text-slate-600 font-medium">{row.frontal}</td>
-                    <td className="p-4 text-slate-600 font-medium">{row.transverse}</td>
+                    <td className="p-4 font-black text-slate-900">{joint.name}</td>
+                    <td className="p-4 text-slate-600 font-medium">
+                      {joint.actions.Sagittal.map(a => a.label).join(', ')}
+                    </td>
+                    <td className="p-4 text-slate-600 font-medium">
+                      {joint.actions.Frontal.map(a => a.label).join(', ')}
+                    </td>
+                    <td className="p-4 text-slate-600 font-medium">
+                      {joint.actions.Transverse.map(a => a.label).join(', ')}
+                    </td>
                   </tr>
                 ))}
               </tbody>

@@ -7,154 +7,16 @@ import { Badge } from "@/components/ui/badge";
 import { 
   Move, Zap, RefreshCw, 
   Dumbbell, Lightbulb, 
-  ChevronRight, Loader2,
-  MapPin
+  ChevronRight, Loader2
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { format } from 'date-fns';
-
-const JOINTS = [
-  { 
-    name: "Cranium", 
-    type: "Axial", 
-    region: "Upper",
-    sagittal: "Flexion, Extension",
-    frontal: "Lateral Flexion",
-    transverse: "Rotation",
-    pearl: "Organizes the 'Top-Down' neurological tone. Essential for cranial nerve health."
-  },
-  { 
-    name: "Jaw (TMJ)", 
-    type: "Axial", 
-    region: "Upper",
-    sagittal: "Protrusion, Retraction",
-    frontal: "Lateral Deviation",
-    transverse: "-",
-    pearl: "Deeply connected to the Pelvis and the Vagus nerve (Medulla)."
-  },
-  { 
-    name: "Cervical Spine", 
-    type: "Axial", 
-    region: "Upper",
-    sagittal: "Flexion, Extension",
-    frontal: "Lateral Flexion (L/R)",
-    transverse: "Rotation (L/R)",
-    pearl: "Organizes the head around the horizon. Key for righting reflexes."
-  },
-  { 
-    name: "Thoracic Spine", 
-    type: "Axial", 
-    region: "Upper",
-    sagittal: "Flexion, Extension",
-    frontal: "Lateral Flexion (L/R)",
-    transverse: "Rotation (L/R)",
-    pearl: "Primary site for rotation. Essential for ribcage mobility and breathing."
-  },
-  { 
-    name: "Lumbar Spine", 
-    type: "Axial", 
-    region: "Lower",
-    sagittal: "Flexion, Extension",
-    frontal: "Lateral Flexion (L/R)",
-    transverse: "Rotation (Minimal)",
-    pearl: "Designed for stability. Often compensates for poor hip or thoracic mobility."
-  },
-  { 
-    name: "Pelvis", 
-    type: "Axial", 
-    region: "Lower",
-    sagittal: "Anterior Tilt, Posterior Tilt",
-    frontal: "Hip Hike (L/R), Pelvic Drop",
-    transverse: "Rotation (L/R)",
-    pearl: "The 'Engine Room' of gait. Connects the upper and lower kinetic chains."
-  },
-  { 
-    name: "Sacrum", 
-    type: "Axial", 
-    region: "Lower",
-    sagittal: "Nutation, Counter-Nutation",
-    frontal: "-",
-    transverse: "-",
-    pearl: "The keystone of the pelvis. Movement is subtle but neurologically vital."
-  },
-  { 
-    name: "Shoulder (GH Joint)", 
-    type: "Appendicular", 
-    region: "Upper",
-    sagittal: "Flexion, Extension",
-    frontal: "Abduction, Adduction",
-    transverse: "Internal Rotation, External Rotation",
-    pearl: "Most mobile joint. Slaved to the Scapula and Thoracic spine."
-  },
-  { 
-    name: "Scapula", 
-    type: "Appendicular", 
-    region: "Upper",
-    sagittal: "Elevation, Depression",
-    frontal: "Upward/Downward Rotation",
-    transverse: "Protraction, Retraction",
-    pearl: "The foundation of shoulder function. Must glide freely over the ribs."
-  },
-  { 
-    name: "Elbow", 
-    type: "Appendicular", 
-    region: "Upper",
-    sagittal: "Flexion, Extension",
-    frontal: "-",
-    transverse: "Pronation, Supination",
-    pearl: "A hinge joint that allows for complex hand orientation."
-  },
-  { 
-    name: "Wrist", 
-    type: "Appendicular", 
-    region: "Upper",
-    sagittal: "Flexion, Extension",
-    frontal: "Radial/Ulnar Deviation",
-    transverse: "-",
-    pearl: "Essential for fine motor control and upper limb integration."
-  },
-  { 
-    name: "Hand/Fingers", 
-    type: "Appendicular", 
-    region: "Upper",
-    sagittal: "Flexion, Extension",
-    frontal: "Adduction, Abduction",
-    transverse: "-",
-    pearl: "High density of mechanoreceptors. Direct link to the motor cortex."
-  },
-  { 
-    name: "Hip", 
-    type: "Appendicular", 
-    region: "Lower",
-    sagittal: "Flexion, Extension",
-    frontal: "Abduction, Adduction",
-    transverse: "Internal Rotation, External Rotation",
-    pearl: "Deep ball-and-socket joint. Essential for power and locomotion."
-  },
-  { 
-    name: "Knee", 
-    type: "Appendicular", 
-    region: "Lower",
-    sagittal: "Flexion, Extension",
-    frontal: "-",
-    transverse: "Tibial Internal/External Rotation",
-    pearl: "Stability is key. Often compensates for hip or ankle dysfunction."
-  },
-  { 
-    name: "Foot/Ankle", 
-    type: "Appendicular", 
-    region: "Lower",
-    sagittal: "Dorsiflexion, Plantar Flexion",
-    frontal: "Inversion, Eversion",
-    transverse: "Internal Rotation, External Rotation",
-    pearl: "Primary source of proprioceptive input for the cerebellum."
-  }
-];
+import { JOINT_ACTION_LIBRARY, JointData } from '@/data/joint-action-data';
 
 const STORAGE_KEY = "antigravity_joint_of_the_day";
 
 const RandomJointCard = () => {
-  const [joint, setJoint] = useState(JOINTS[0]);
+  const [joint, setJoint] = useState<JointData>(JOINT_ACTION_LIBRARY[0]);
   const [isRefreshing, setIsRefreshing] = useState(false);
 
   useEffect(() => {
@@ -165,7 +27,7 @@ const RandomJointCard = () => {
       try {
         const parsed = JSON.parse(stored);
         if (parsed.date === today) {
-          const foundJoint = JOINTS.find(j => j.name === parsed.jointName);
+          const foundJoint = JOINT_ACTION_LIBRARY.find(j => j.name === parsed.jointName);
           if (foundJoint) {
             setJoint(foundJoint);
             return;
@@ -180,7 +42,7 @@ const RandomJointCard = () => {
   }, []);
 
   const pickNewJoint = (dateStr: string) => {
-    const newJoint = JOINTS[Math.floor(Math.random() * JOINTS.length)];
+    const newJoint = JOINT_ACTION_LIBRARY[Math.floor(Math.random() * JOINT_ACTION_LIBRARY.length)];
     setJoint(newJoint);
     localStorage.setItem(STORAGE_KEY, JSON.stringify({
       date: dateStr,
@@ -192,7 +54,7 @@ const RandomJointCard = () => {
     setIsRefreshing(true);
     setTimeout(() => {
       const today = format(new Date(), 'yyyy-MM-dd');
-      const others = JOINTS.filter(j => j.name !== joint.name);
+      const others = JOINT_ACTION_LIBRARY.filter(j => j.name !== joint.name);
       const next = others[Math.floor(Math.random() * others.length)];
       setJoint(next);
       localStorage.setItem(STORAGE_KEY, JSON.stringify({
@@ -241,7 +103,9 @@ const RandomJointCard = () => {
               <Zap size={14} className="text-blue-500" />
               <span className="text-[9px] font-black text-blue-600 dark:text-blue-400 uppercase tracking-widest">Sagittal</span>
             </div>
-            <span className="text-xs font-bold text-slate-700 dark:text-slate-300">{joint.sagittal}</span>
+            <span className="text-xs font-bold text-slate-700 dark:text-slate-300">
+              {joint.actions.Sagittal.map(a => a.label).join(', ')}
+            </span>
           </div>
           
           <div className="flex items-center justify-between p-3 bg-emerald-50 dark:bg-emerald-900/20 rounded-xl border border-emerald-100 dark:border-emerald-900/30">
@@ -249,7 +113,9 @@ const RandomJointCard = () => {
               <Move size={14} className="text-emerald-500" />
               <span className="text-[9px] font-black text-emerald-600 dark:text-emerald-400 uppercase tracking-widest">Frontal</span>
             </div>
-            <span className="text-xs font-bold text-slate-700 dark:text-slate-300">{joint.frontal}</span>
+            <span className="text-xs font-bold text-slate-700 dark:text-slate-300">
+              {joint.actions.Frontal.map(a => a.label).join(', ')}
+            </span>
           </div>
 
           <div className="flex items-center justify-between p-3 bg-orange-50 dark:bg-orange-900/20 rounded-xl border border-orange-100 dark:border-orange-900/30">
@@ -257,7 +123,9 @@ const RandomJointCard = () => {
               <RefreshCw size={14} className="text-orange-500" />
               <span className="text-[9px] font-black text-orange-600 dark:text-orange-400 uppercase tracking-widest">Transverse</span>
             </div>
-            <span className="text-xs font-bold text-slate-700 dark:text-slate-300">{joint.transverse}</span>
+            <span className="text-xs font-bold text-slate-700 dark:text-slate-300">
+              {joint.actions.Transverse.map(a => a.label).join(', ')}
+            </span>
           </div>
         </div>
 

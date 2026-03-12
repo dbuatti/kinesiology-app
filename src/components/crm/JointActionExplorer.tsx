@@ -4,187 +4,20 @@ import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { 
   Move, Zap, RefreshCw, 
-  Dumbbell, Search, ChevronRight,
-  Lightbulb, Brain, Activity
+  Search, ChevronRight,
+  Lightbulb, Brain, Activity, Info
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Input } from '@/components/ui/input';
 import { Badge } from "@/components/ui/badge";
 import { ScrollArea } from "@/components/ui/scroll-area";
-
-const JOINTS = [
-  { 
-    name: "Cranium", 
-    type: "Axial", 
-    region: "Upper",
-    actions: {
-      Sagittal: ["Flexion", "Extension"],
-      Frontal: ["Lateral Flexion"],
-      Transverse: ["Rotation"]
-    },
-    pearl: "Organizes the 'Top-Down' neurological tone. Essential for cranial nerve health."
-  },
-  { 
-    name: "Jaw (TMJ)", 
-    type: "Axial", 
-    region: "Upper",
-    actions: {
-      Sagittal: ["Protrusion", "Retraction"],
-      Frontal: ["Lateral Deviation"],
-      Transverse: ["-"]
-    },
-    pearl: "Deeply connected to the Pelvis and the Vagus nerve (Medulla)."
-  },
-  { 
-    name: "Cervical Spine", 
-    type: "Axial", 
-    region: "Upper",
-    actions: {
-      Sagittal: ["Flexion", "Extension"],
-      Frontal: ["Lateral Flexion (L/R)"],
-      Transverse: ["Rotation (L/R)"]
-    },
-    pearl: "Organizes the head around the horizon. Key for righting reflexes."
-  },
-  { 
-    name: "Thoracic Spine", 
-    type: "Axial", 
-    region: "Upper",
-    actions: {
-      Sagittal: ["Flexion", "Extension"],
-      Frontal: ["Lateral Flexion (L/R)"],
-      Transverse: ["Rotation (L/R)"]
-    },
-    pearl: "Primary site for rotation. Essential for ribcage mobility and breathing."
-  },
-  { 
-    name: "Lumbar Spine", 
-    type: "Axial", 
-    region: "Lower",
-    actions: {
-      Sagittal: ["Flexion", "Extension"],
-      Frontal: ["Lateral Flexion (L/R)"],
-      Transverse: ["Rotation (Minimal)"]
-    },
-    pearl: "Designed for stability. Often compensates for poor hip or thoracic mobility."
-  },
-  { 
-    name: "Pelvis", 
-    type: "Axial", 
-    region: "Lower",
-    actions: {
-      Sagittal: ["Anterior Tilt", "Posterior Tilt"],
-      Frontal: ["Hip Hike (L/R)", "Pelvic Drop"],
-      Transverse: ["Rotation (L/R)"]
-    },
-    pearl: "The 'Engine Room' of gait. Connects the upper and lower kinetic chains."
-  },
-  { 
-    name: "Sacrum", 
-    type: "Axial", 
-    region: "Lower",
-    actions: {
-      Sagittal: ["Nutation", "Counter-Nutation"],
-      Frontal: ["-"],
-      Transverse: ["-"]
-    },
-    pearl: "The keystone of the pelvis. Movement is subtle but neurologically vital."
-  },
-  { 
-    name: "Shoulder (GH Joint)", 
-    type: "Appendicular", 
-    region: "Upper",
-    actions: {
-      Sagittal: ["Flexion", "Extension"],
-      Frontal: ["Abduction", "Adduction"],
-      Transverse: ["Internal Rotation", "External Rotation"]
-    },
-    pearl: "Most mobile joint. Slaved to the Scapula and Thoracic spine."
-  },
-  { 
-    name: "Scapula", 
-    type: "Appendicular", 
-    region: "Upper",
-    actions: {
-      Sagittal: ["Elevation", "Depression"],
-      Frontal: ["Upward Rotation", "Downward Rotation"],
-      Transverse: ["Protraction", "Retraction"]
-    },
-    pearl: "The foundation of shoulder function. Must glide freely over the ribs."
-  },
-  { 
-    name: "Elbow", 
-    type: "Appendicular", 
-    region: "Upper",
-    actions: {
-      Sagittal: ["Flexion", "Extension"],
-      Frontal: ["-"],
-      Transverse: ["Pronation", "Supination"]
-    },
-    pearl: "A hinge joint that allows for complex hand orientation."
-  },
-  { 
-    name: "Wrist", 
-    type: "Appendicular", 
-    region: "Upper",
-    actions: {
-      Sagittal: ["Flexion", "Extension"],
-      Frontal: ["Radial Deviation", "Ulnar Deviation"],
-      Transverse: ["-"]
-    },
-    pearl: "Essential for fine motor control and upper limb integration."
-  },
-  { 
-    name: "Hand/Fingers", 
-    type: "Appendicular", 
-    region: "Upper",
-    actions: {
-      Sagittal: ["Palm Extension", "Finger Extension", "Palm Flexion", "Finger Flexion"],
-      Frontal: ["Finger Adduction", "Finger Abduction"],
-      Transverse: ["-"]
-    },
-    pearl: "High density of mechanoreceptors. Direct link to the motor cortex."
-  },
-  { 
-    name: "Hip", 
-    type: "Appendicular", 
-    region: "Lower",
-    actions: {
-      Sagittal: ["Flexion", "Extension"],
-      Frontal: ["Abduction", "Adduction"],
-      Transverse: ["Internal Rotation", "External Rotation"]
-    },
-    pearl: "Deep ball-and-socket joint. Essential for power and locomotion."
-  },
-  { 
-    name: "Knee", 
-    type: "Appendicular", 
-    region: "Lower",
-    actions: {
-      Sagittal: ["Flexion", "Extension"],
-      Frontal: ["-"],
-      Transverse: ["Tibial Internal Rotation", "Tibial External Rotation"]
-    },
-    pearl: "Stability is key. Often compensates for hip or ankle dysfunction."
-  },
-  { 
-    name: "Foot/Ankle", 
-    type: "Appendicular", 
-    region: "Lower",
-    actions: {
-      Sagittal: ["Dorsiflexion", "Plantar Flexion"],
-      Frontal: ["Inversion", "Eversion"],
-      Transverse: ["Internal Rotation", "External Rotation"]
-    },
-    pearl: "Primary source of proprioceptive input for the cerebellum."
-  }
-];
+import { JOINT_ACTION_LIBRARY, JointData } from '@/data/joint-action-data';
 
 const JointActionExplorer = () => {
   const [search, setSearch] = useState("");
-  const [selectedJoint, setSelectedJoint] = useState(JOINTS[0]);
+  const [selectedJoint, setSelectedJoint] = useState<JointData>(JOINT_ACTION_LIBRARY[0]);
 
-  const filtered = JOINTS.filter(j => 
+  const filtered = JOINT_ACTION_LIBRARY.filter(j => 
     j.name.toLowerCase().includes(search.toLowerCase()) ||
     j.type.toLowerCase().includes(search.toLowerCase()) ||
     j.region.toLowerCase().includes(search.toLowerCase())
@@ -262,24 +95,32 @@ const JointActionExplorer = () => {
             </Badge>
           </div>
         </CardHeader>
-        <CardContent className="p-8 space-y-8">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <CardContent className="p-8 space-y-10">
+          {/* Detailed Actions with How-To */}
+          <div className="space-y-8">
             {Object.entries(selectedJoint.actions).map(([plane, actions]) => (
-              <div key={plane} className="space-y-3">
-                <div className="flex items-center gap-2">
-                  {plane === 'Sagittal' ? <Zap size={14} className="text-blue-500" /> :
-                   plane === 'Frontal' ? <Move size={14} className="text-emerald-500" /> :
-                   <RefreshCw size={14} className="text-orange-500" />}
-                  <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-widest">{plane} Plane</h4>
+              <div key={plane} className="space-y-4">
+                <div className="flex items-center gap-2 border-b border-slate-100 pb-2">
+                  {plane === 'Sagittal' ? <Zap size={16} className="text-blue-500" /> :
+                   plane === 'Frontal' ? <Move size={16} className="text-emerald-500" /> :
+                   <RefreshCw size={16} className="text-orange-500" />}
+                  <h4 className="text-xs font-black text-slate-400 uppercase tracking-widest">{plane} Plane Actions</h4>
                 </div>
-                <div className="flex flex-wrap gap-2">
-                  {actions.map(action => (
-                    <Badge key={action} variant="secondary" className={cn(
-                      "border-none font-bold text-[10px] px-3 py-1.5 rounded-lg",
-                      action === '-' ? "bg-slate-50 text-slate-300" : "bg-slate-100 text-slate-700"
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  {actions.map((action, idx) => (
+                    <div key={idx} className={cn(
+                      "p-4 rounded-2xl border-2 transition-all",
+                      action.label === '-' ? "bg-slate-50 border-slate-100 opacity-50" : "bg-white border-slate-50 hover:border-indigo-100 shadow-sm"
                     )}>
-                      {action}
-                    </Badge>
+                      <div className="flex items-center gap-2 mb-2">
+                        <Badge variant="secondary" className="bg-indigo-50 text-indigo-700 border-none font-black text-[10px] uppercase tracking-widest">
+                          {action.label}
+                        </Badge>
+                      </div>
+                      <p className="text-xs text-slate-600 font-medium leading-relaxed">
+                        {action.howTo}
+                      </p>
+                    </div>
                   ))}
                 </div>
               </div>

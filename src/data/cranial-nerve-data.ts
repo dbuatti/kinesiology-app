@@ -49,8 +49,8 @@ export const CRANIAL_NERVES: CranialNerve[] = [
     toneEffect: "Flexors",
     reflexPoint: "Light touch to eyelids",
     functions: ["Most eye movements", "Pupil constriction"],
-    stimulus: "Move eyes up, down, and medially (except lateral/nose-tip).",
-    clinicalPearl: "Midbrain nuclei control flexor tone. Eye movement issues here often correlate with systemic flexor dominance.",
+    stimulus: "Move eye into the midline (bridge of nose), look up, or look down.",
+    clinicalPearl: "Midbrain nuclei control flexor tone. Eye movement issues here often correlate with systemic flexor dominance. Shares a reflex point with CN 4 and 6.",
     color: "bg-amber-500"
   },
   {
@@ -59,10 +59,10 @@ export const CRANIAL_NERVES: CranialNerve[] = [
     latinName: "Trochlear",
     nuclei: "Midbrain",
     toneEffect: "Flexors",
-    reflexPoint: "Light touch to eyes",
+    reflexPoint: "Light touch to eyelids",
     functions: ["Downward and inward eye movement"],
-    stimulus: "Move eyes towards the tip of the nose.",
-    clinicalPearl: "Specific for superior oblique muscle control.",
+    stimulus: "Look at the tip of the nose.",
+    clinicalPearl: "Specific for superior oblique muscle control. Shares a reflex point with CN 3 and 6.",
     color: "bg-amber-600"
   },
   {
@@ -83,10 +83,10 @@ export const CRANIAL_NERVES: CranialNerve[] = [
     latinName: "Abducens",
     nuclei: "Pons",
     toneEffect: "Extensors",
-    reflexPoint: "Light touch to eyes",
+    reflexPoint: "Light touch to eyelids",
     functions: ["Lateral eye movement"],
-    stimulus: "Move eyes laterally (away from the nose).",
-    clinicalPearl: "Controls the lateral rectus muscle.",
+    stimulus: "Look laterally (away from the nose).",
+    clinicalPearl: "Controls the lateral rectus muscle. Shares a reflex point with CN 3 and 4.",
     color: "bg-indigo-600"
   },
   {

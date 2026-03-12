@@ -46,10 +46,11 @@ type Step =
 
 interface EmotionalIntegrationProcessProps {
   onSave: (summary: string) => void;
+  onInhibited?: (summary: string) => void;
   onCancel: () => void;
 }
 
-const EmotionalIntegrationProcess = ({ onSave, onCancel }: EmotionalIntegrationProcessProps) => {
+const EmotionalIntegrationProcess = ({ onSave, onInhibited, onCancel }: EmotionalIntegrationProcessProps) => {
   const [step, setStep] = useState<Step>('INITIAL_TL');
   const [history, setHistory] = useState<Step[]>([]);
   
@@ -81,6 +82,12 @@ const EmotionalIntegrationProcess = ({ onSave, onCancel }: EmotionalIntegrationP
     const timelineDetail = timeline === 'Historic' ? (age ? `Age ${age}` : 'Historic') : (currentStress ? `Current: ${currentStress}` : 'Current');
     const summary = `Emotional Integration: ${selectedEmotion.label} (${selectedOrgan}, ${polarity}) | Timeline: ${timelineDetail} | Eye Position: ${selectedEyePos.label} (${selectedEyePos.pos})`;
     onSave(summary);
+  };
+
+  const handleInhibited = () => {
+    const timelineDetail = timeline === 'Historic' ? (age ? `Age ${age}` : 'Historic') : (currentStress ? `Current: ${currentStress}` : 'Current');
+    const summary = `Emotional Integration (STILL INHIBITED): ${selectedEmotion.label} (${selectedOrgan}, ${polarity}) | Timeline: ${timelineDetail} | Eye Position: ${selectedEyePos.label} (${selectedEyePos.pos})`;
+    onInhibited?.(summary);
   };
 
   const pulsePoint = selectedOrgan ? getPulsePointDescription(selectedOrgan) : null;
@@ -380,7 +387,7 @@ const EmotionalIntegrationProcess = ({ onSave, onCancel }: EmotionalIntegrationP
           </div>
           <div className="grid grid-cols-1 gap-4">
             <Button className="h-16 rounded-2xl bg-emerald-600 hover:bg-emerald-700 text-xl font-black shadow-lg shadow-emerald-100" onClick={handleFinish}>Emotion is Balanced <CheckCircle2 size={24} className="ml-2" /></Button>
-            <Button variant="outline" className="h-16 rounded-2xl border-2 border-rose-200 text-rose-700 hover:bg-orange-50 font-bold text-lg" onClick={() => goToStep('EMOTION_SELECT')}>Still Inhibited - Find New Layer</Button>
+            <Button variant="outline" className="h-16 rounded-2xl border-2 border-rose-200 text-rose-700 hover:bg-orange-50 font-bold text-lg" onClick={handleInhibited}>Still Inhibited - Add Layer</Button>
           </div>
           <Button variant="ghost" onClick={goBack} className="w-full h-12 rounded-xl"><ChevronLeft size={18} className="mr-2" /> Back</Button>
         </div>

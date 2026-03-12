@@ -65,11 +65,12 @@ const PLANES = ["Sagittal", "Frontal", "Transverse"];
 
 interface NociceptiveThreatAssessmentProps {
   onSave: (summary: string) => void;
+  onInhibited?: (summary: string) => void;
   initialValue?: string;
   onCancel?: () => void;
 }
 
-const NociceptiveThreatAssessment = ({ onSave, initialValue, onCancel }: NociceptiveThreatAssessmentProps) => {
+const NociceptiveThreatAssessment = ({ onSave, onInhibited, initialValue, onCancel }: NociceptiveThreatAssessmentProps) => {
   const [layers, setLayers] = useState<Layer[]>([]);
   const [currentStep, setCurrentStep] = useState<Step>('THREAT_DEFINITION');
   const [currentLayer, setCurrentLayer] = useState<Partial<Layer>>({
@@ -86,10 +87,17 @@ const NociceptiveThreatAssessment = ({ onSave, initialValue, onCancel }: Nocicep
   const prevStep = (step: Step) => setCurrentStep(step);
 
   const handleAddLayer = () => {
-    const completedLayer = { ...currentLayer, cleared: true } as Layer;
-    setLayers([...layers, completedLayer]);
-    setCurrentLayer({ id: layers.length + 2, threat: currentLayer.threat, response: null, direction: null, specific: null, cleared: false });
-    setCurrentStep('IM_TEST');
+    const finalLayers = [...layers];
+    if (currentLayer.cleared || currentLayer.response === 'Clear') {
+      finalLayers.push({ ...currentLayer, cleared: true } as Layer);
+    }
+    const summary = finalLayers.map(l => {
+      let detail = l.specific || 'Cleared';
+      if (l.specific === 'Mechanoreceptor' && l.joint) detail = `${l.joint} ${l.plane} ${l.action}`;
+      return `Layer ${l.id}: ${l.threat} (${detail})`;
+    }).join(' -> ');
+    
+    onInhibited?.(`Nociceptive Threat Assessment (STILL INHIBITED): ${summary}`);
   };
 
   const handleFinish = () => {

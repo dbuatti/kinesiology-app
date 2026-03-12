@@ -29,6 +29,7 @@ interface ReflexImages {
 
 interface EfferentBrainIntegrationProps {
   onSave: (summary: string) => void;
+  onInhibited?: (summary: string) => void;
   onCancel?: () => void;
   initialValue?: string;
   initialEntryPoint?: string;
@@ -91,7 +92,7 @@ const ZoneCard = ({ point, images, isSelected, onSelect, isLoading }: {
     );
 };
 
-const EfferentBrainIntegration = ({ onSave, onCancel, initialEntryPoint }: EfferentBrainIntegrationProps) => {
+const EfferentBrainIntegration = ({ onSave, onInhibited, onCancel, initialEntryPoint }: EfferentBrainIntegrationProps) => {
   const [step, setStep] = useState<Step>(initialEntryPoint ? 'COORD_1' : 'ENTRY');
   const [entryPoint, setEntryPoint] = useState(initialEntryPoint || "");
   const [coord1, setCoord1] = useState<Coordinate>({ point: null, side: null });
@@ -143,6 +144,11 @@ const EfferentBrainIntegration = ({ onSave, onCancel, initialEntryPoint }: Effer
     const summary = `Efferent Integration: ${entryPoint} -> ${coord1.side} ${coord1.point?.name} + ${coord2.side} ${coord2.point?.name} via ${method}`;
     onSave(summary);
     setIsComplete(true);
+  };
+
+  const handleInhibited = () => {
+    const summary = `Efferent Integration (STILL INHIBITED): ${entryPoint} -> ${coord1.side} ${coord1.point?.name} + ${coord2.side} ${coord2.point?.name} via ${method}`;
+    onInhibited?.(summary);
   };
 
   const renderCoordinateSelection = (coord: Coordinate, setCoord: (c: Coordinate) => void, next: Step, prev: Step, title: string) => {
@@ -304,7 +310,7 @@ const EfferentBrainIntegration = ({ onSave, onCancel, initialEntryPoint }: Effer
             </div>
             <div className="grid grid-cols-1 gap-2">
               <Button className="h-14 rounded-2xl bg-emerald-600 hover:bg-emerald-700 text-lg font-black shadow-lg" onClick={handleComplete}>Pathway is Clear <CheckCircle2 size={20} className="ml-2" /></Button>
-              <Button variant="outline" className="h-12 rounded-xl border-2 border-indigo-200 text-indigo-700 hover:bg-indigo-50 font-black text-[10px] uppercase tracking-widest" onClick={() => nextStep('COORD_1')}>Still Inhibited - Find New Zones</Button>
+              <Button variant="outline" className="h-12 rounded-xl border-2 border-indigo-200 text-indigo-700 hover:bg-indigo-50 font-black text-[10px] uppercase tracking-widest" onClick={handleInhibited}>Still Inhibited - Add Layer</Button>
             </div>
             <Button variant="ghost" onClick={() => prevStep('CALIBRATE')} className="w-full h-10 rounded-xl font-bold text-xs"><ChevronLeft size={16} className="mr-1" /> Back</Button>
           </div>

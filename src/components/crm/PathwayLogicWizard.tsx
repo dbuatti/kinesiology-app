@@ -122,6 +122,14 @@ const PathwayLogicWizard = ({ onSave, onClearItem, priorityPattern }: PathwayLog
     resetWizard();
   };
 
+  const handleInhibited = (summary: string) => {
+    // We save the attempt but don't clear the item
+    onSave(summary);
+    // Take user back to the initial finding/direction selection
+    setStep('SELECT_START');
+    setHistory([]);
+  };
+
   const clinicalTip = useMemo(() => {
     if (!effectiveItem) return null;
 
@@ -395,6 +403,7 @@ const PathwayLogicWizard = ({ onSave, onClearItem, priorityPattern }: PathwayLog
         return (
           <MechanoreceptiveProcess 
             onSave={handleSave} 
+            onInhibited={handleInhibited}
             onCancel={goBack} 
             ligamentImages={ligamentImages}
             onOpenActionTable={() => setActionTableOpen(true)}
@@ -403,13 +412,13 @@ const PathwayLogicWizard = ({ onSave, onClearItem, priorityPattern }: PathwayLog
         );
 
       case 'NOCICEPTIVE_PROCESS':
-        return <NociceptiveThreatAssessment onSave={handleSave} onCancel={goBack} />;
+        return <NociceptiveThreatAssessment onSave={handleSave} onInhibited={handleInhibited} onCancel={goBack} />;
       
       case 'EFFERENT_PROCESS':
-        return <EfferentBrainIntegration initialEntryPoint={effectiveItem} onSave={handleSave} onCancel={goBack} />;
+        return <EfferentBrainIntegration initialEntryPoint={effectiveItem} onSave={handleSave} onInhibited={handleInhibited} onCancel={goBack} />;
 
       case 'EMOTIONS_PROCESS':
-        return <EmotionalIntegrationProcess onSave={handleSave} onCancel={goBack} />;
+        return <EmotionalIntegrationProcess onSave={handleSave} onInhibited={handleInhibited} onCancel={goBack} />;
 
       case 'VESTIBULAR_PROCESS':
         return (

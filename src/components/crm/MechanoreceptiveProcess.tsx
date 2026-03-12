@@ -37,6 +37,7 @@ type MechanoStep =
 
 interface MechanoreceptiveProcessProps {
   onSave: (summary: string) => void;
+  onInhibited?: (summary: string) => void;
   onCancel: () => void;
   ligamentImages: Record<string, (string | null)[]>;
   onOpenActionTable: () => void;
@@ -45,6 +46,7 @@ interface MechanoreceptiveProcessProps {
 
 const MechanoreceptiveProcess = ({ 
   onSave, 
+  onInhibited,
   onCancel, 
   ligamentImages, 
   onOpenActionTable,
@@ -113,6 +115,14 @@ const MechanoreceptiveProcess = ({
       : ligament;
     const summary = `Mechanoreceptive ${type}: ${side} ${selectedJoint} (${detail})`;
     onSave(summary);
+  };
+
+  const handleInhibited = () => {
+    const detail = type === 'Conscious' 
+      ? `${plane} - ${action}` 
+      : ligament;
+    const summary = `Mechanoreceptive ${type} (STILL INHIBITED): ${side} ${selectedJoint} (${detail})`;
+    onInhibited?.(summary);
   };
 
   const StepHeader = ({ title, sub }: { title: string, sub: string }) => (
@@ -420,7 +430,7 @@ const MechanoreceptiveProcess = ({
           </div>
           <div className="grid grid-cols-1 gap-4">
             <Button className="h-16 rounded-2xl bg-emerald-600 hover:bg-emerald-700 text-xl font-black shadow-lg shadow-emerald-100" onClick={handleFinish}>Pathway is Clear <CheckCircle2 size={24} className="ml-2" /></Button>
-            <Button variant="outline" className="h-16 rounded-2xl border-2 border-indigo-200 text-indigo-700 hover:bg-indigo-50 font-bold text-lg" onClick={() => goToStep('LOCALIZE_SKELETON')}>Still Inhibited - Add Layer</Button>
+            <Button variant="outline" className="h-16 rounded-2xl border-2 border-indigo-200 text-indigo-700 hover:bg-indigo-50 font-bold text-lg" onClick={handleInhibited}>Still Inhibited - Add Layer</Button>
           </div>
           <Button variant="ghost" onClick={goBack} className="w-full h-12 rounded-xl"><ChevronLeft size={18} className="mr-2" /> Back</Button>
         </div>

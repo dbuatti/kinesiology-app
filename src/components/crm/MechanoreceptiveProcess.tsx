@@ -125,46 +125,85 @@ const MechanoreceptiveProcess = ({
   return (
     <div className="space-y-6 animate-in fade-in slide-in-from-right-4 duration-300">
       {step === 'TYPE_SELECT' && (
-        <div className="space-y-6">
-          <div className="p-4 bg-blue-50 border border-blue-100 rounded-2xl text-xs text-blue-800 space-y-2">
-            <p className="font-black uppercase tracking-widest">Diagnostic Check:</p>
-            <p>1. X-pattern facilitates → <span className="font-bold">Mechanoreceptive</span></p>
-            <p>2. TL opposite S1 facilitates → <span className="font-bold">Conscious</span></p>
-            <p>3. TL GV16 facilitates → <span className="font-bold">Unconscious</span></p>
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+          {/* Left Column: Controls */}
+          <div className="lg:col-span-5 space-y-6">
+            <div className="p-5 bg-blue-50 border border-blue-100 rounded-2xl text-xs text-blue-800 space-y-3">
+              <p className="font-black uppercase tracking-widest flex items-center gap-2">
+                <Info size={14} /> Diagnostic Check:
+              </p>
+              <div className="space-y-1.5 font-medium">
+                <p>1. X-pattern facilitates → <span className="font-bold">Mechanoreceptive</span></p>
+                <p>2. TL opposite S1 facilitates → <span className="font-bold">Conscious</span></p>
+                <p>3. TL GV16 facilitates → <span className="font-bold">Unconscious</span></p>
+              </div>
+            </div>
+
+            <div className="space-y-3">
+              <button 
+                onClick={() => { setType('Conscious'); goToStep('LOCALIZE_SKELETON'); }} 
+                className="p-6 rounded-2xl border-2 border-blue-100 bg-blue-50/50 hover:border-blue-300 hover:bg-blue-50 transition-all text-left group w-full shadow-sm"
+              >
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-4">
+                    <div className="w-12 h-12 rounded-xl bg-white shadow-sm flex items-center justify-center group-hover:scale-110 transition-transform">
+                      <Brain size={24} className="text-blue-600" />
+                    </div>
+                    <div>
+                      <p className="font-black text-lg text-slate-900">Conscious</p>
+                      <p className="text-[10px] text-slate-500 uppercase font-black tracking-widest">DCML Pathway</p>
+                    </div>
+                  </div>
+                  <ChevronRight size={20} className="text-slate-300 group-hover:text-blue-600 group-hover:translate-x-1 transition-all" />
+                </div>
+              </button>
+
+              <button 
+                onClick={() => { setType('Unconscious'); goToStep('LOCALIZE_SKELETON'); }} 
+                className="p-6 rounded-2xl border-2 border-emerald-100 bg-emerald-50/50 hover:border-emerald-300 hover:bg-emerald-50 transition-all text-left group w-full shadow-sm"
+              >
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-4">
+                    <div className="w-12 h-12 rounded-xl bg-white shadow-sm flex items-center justify-center group-hover:scale-110 transition-transform">
+                      <Activity size={24} className="text-emerald-600" />
+                    </div>
+                    <div>
+                      <p className="font-black text-lg text-slate-900">Unconscious</p>
+                      <p className="text-[10px] text-slate-500 uppercase font-black tracking-widest">Spinocerebellar Pathway</p>
+                    </div>
+                  </div>
+                  <ChevronRight size={20} className="text-slate-300 group-hover:text-emerald-600 group-hover:translate-x-1 transition-all" />
+                </div>
+              </button>
+            </div>
+            
+            <Button variant="ghost" onClick={onCancel} className="w-full h-12 rounded-xl font-bold text-slate-400 hover:text-slate-600">
+              Cancel Assessment
+            </Button>
           </div>
 
-          <div className="bg-white rounded-3xl border-2 border-slate-100 p-4 overflow-hidden shadow-sm">
-            <img 
-              src="/images/mechanoreceptive/homunculus.png" 
-              alt="Cortical Homunculus Reference" 
-              className="w-full h-auto rounded-2xl"
-            />
-            <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest text-center mt-3">
-              Cortical Homunculus: Sensory & Motor Mapping
-            </p>
-          </div>
-
-          <div className="space-y-3">
-            <button onClick={() => { setType('Conscious'); goToStep('LOCALIZE_SKELETON'); }} className="p-6 rounded-2xl border-2 border-blue-100 bg-blue-50/50 hover:border-blue-300 hover:bg-blue-50 transition-all text-left group w-full">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-4">
-                  <div className="w-10 h-10 rounded-xl bg-white shadow-sm flex items-center justify-center"><Brain size={20} className="text-blue-600" /></div>
-                  <div><p className="font-bold text-slate-900">Conscious</p><p className="text-[10px] text-slate-500 uppercase font-black tracking-widest">DCML Pathway</p></div>
-                </div>
-                <ChevronRight size={20} className="text-slate-300 group-hover:text-blue-600 group-hover:translate-x-1 transition-all" />
+          {/* Right Column: Reference Image */}
+          <div className="lg:col-span-7">
+            <div className="bg-white rounded-[2.5rem] border-2 border-slate-100 p-6 overflow-hidden shadow-sm relative group">
+              <div className="absolute top-4 right-4">
+                <Badge variant="outline" className="bg-white/80 backdrop-blur-sm border-slate-200 text-slate-400 font-black text-[8px] uppercase tracking-widest">
+                  Reference Chart
+                </Badge>
               </div>
-            </button>
-            <button onClick={() => { setType('Unconscious'); goToStep('LOCALIZE_SKELETON'); }} className="p-6 rounded-2xl border-2 border-emerald-100 bg-emerald-50/50 hover:border-emerald-300 hover:bg-emerald-50 transition-all text-left group w-full">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-4">
-                  <div className="w-10 h-10 rounded-xl bg-white shadow-sm flex items-center justify-center"><Activity size={20} className="text-emerald-600" /></div>
-                  <div><p className="font-bold text-slate-900">Unconscious</p><p className="text-[10px] text-slate-500 uppercase font-black tracking-widest">Spinocerebellar Pathway</p></div>
-                </div>
-                <ChevronRight size={20} className="text-slate-300 group-hover:text-emerald-600 group-hover:translate-x-1 transition-all" />
+              <img 
+                src="/images/mechanoreceptive/homunculus.png" 
+                alt="Cortical Homunculus Reference" 
+                className="w-full h-auto rounded-2xl transition-transform duration-700 group-hover:scale-[1.02]"
+              />
+              <div className="mt-4 flex items-center justify-center gap-2">
+                <div className="w-1.5 h-1.5 rounded-full bg-blue-500" />
+                <p className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">
+                  Cortical Homunculus: Sensory & Motor Mapping
+                </p>
+                <div className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
               </div>
-            </button>
+            </div>
           </div>
-          <Button variant="ghost" onClick={onCancel} className="w-full h-12 rounded-xl">Cancel</Button>
         </div>
       )}
 

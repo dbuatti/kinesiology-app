@@ -58,17 +58,16 @@ export function processNeurologicalHistory(appointments: any[]): FindingHistory[
   // Calculate resolutions
   return Object.values(findingsMap).map(finding => {
     const inhibitedDates = finding.history.filter(h => h.status === 'Inhibited');
-    const clearDates = finding.history.filter(h => h.status === 'Clear');
     
     if (inhibitedDates.length > 0) {
       finding.firstInhibited = inhibitedDates[0].date;
-      
-      // It's resolved if the LATEST test was 'Clear'
-      const latestTest = finding.history[finding.history.length - 1];
-      if (latestTest.status === 'Clear') {
-        finding.isResolved = true;
-        finding.lastCleared = latestTest.date;
-      }
+    }
+    
+    // It's resolved if the LATEST test was 'Clear'
+    const latestTest = finding.history[finding.history.length - 1];
+    if (latestTest && latestTest.status === 'Clear') {
+      finding.isResolved = true;
+      finding.lastCleared = latestTest.date;
     }
 
     return finding;

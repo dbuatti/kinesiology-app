@@ -48,7 +48,11 @@ export function calculateBrainstemTone(priorityPattern: string | null): NucleiSt
     Object.values(pattern).forEach((category: any) => {
       Object.entries(category).forEach(([name, status]) => {
         if (status === 'Inhibited') {
-          const mapping = FINDING_TO_NUCLEI[name as string];
+          // Find a key in FINDING_TO_NUCLEI that matches the start of the finding name
+          // This handles "CN I: Olfactory" matching "CN I"
+          const mappingKey = Object.keys(FINDING_TO_NUCLEI).find(key => name.startsWith(key));
+          const mapping = mappingKey ? FINDING_TO_NUCLEI[mappingKey] : null;
+          
           if (mapping) {
             nucleiMap[mapping.nuclei].findings.push(name);
           }

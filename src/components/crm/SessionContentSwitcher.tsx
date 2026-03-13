@@ -136,6 +136,7 @@ const SessionContentSwitcher = ({ appointment, onUpdate, saveField, history = []
           <TabsContent value="pathway" className="focus-visible:ring-0">
             <PathwayAssessment 
               initialValue={appointment.priority_pattern || undefined} 
+              previousValue={previousSession?.priority_pattern || undefined}
               onSave={(s) => saveField('priority_pattern', s)} 
             />
           </TabsContent>

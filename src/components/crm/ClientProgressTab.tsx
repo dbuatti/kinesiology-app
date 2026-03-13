@@ -6,7 +6,7 @@ import {
   TrendingUp, Activity, FlaskConical, Brain, 
   AlertCircle, CheckCircle2, History, Zap, Info,
   ArrowUpRight, ArrowDownRight, LineChart, Plus,
-  LayoutGrid, Workflow
+  LayoutGrid, Workflow, ShieldAlert
 } from "lucide-react";
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip as ChartTooltip, ResponsiveContainer } from 'recharts';
 import { format } from "date-fns";
@@ -18,6 +18,8 @@ import { Button } from "@/components/ui/button";
 import QuickAssessmentModal from "./QuickAssessmentModal";
 import NeurologicalHistoryTracker from "./NeurologicalHistoryTracker";
 import BrainstemToneMap from "./BrainstemToneMap";
+import { processNeurologicalHistory } from "@/utils/neurological-history";
+import { calculateBrainstemTone } from "@/utils/brainstem-logic";
 
 interface ClientProgressTabProps {
   client: any;
@@ -40,6 +42,21 @@ const ClientProgressTab = ({ client, appointments, onRefresh }: ClientProgressTa
       }));
   }, [appointments]);
 
+  const threatTrendData = useMemo(() => {
+    return [...appointments]
+      .filter(app => app.priority_pattern)
+      .reverse()
+      .map(app => {
+        const nuclei = calculateBrainstemTone(app.priority_pattern || null);
+        const totalThreat = nuclei.reduce((sum, n) => sum + n.threatLevel, 0);
+        return {
+          date: format(new Date(app.date), "MMM d"),
+          threat: totalThreat,
+          fullDate: format(new Date(app.date), "MMMM d, yyyy")
+        };
+      });
+  }, [appointments]);
+
   const coherenceData = useMemo(() => {
     return [...appointments]
       .filter(app => app.coherence_score !== null && app.coherence_score !== undefined)
@@ -49,6 +66,13 @@ const ClientProgressTab = ({ client, appointments, onRefresh }: ClientProgressTa
         score: app.coherence_score,
         fullDate: format(new Date(app.date), "MMMM d, yyyy")
       }));
+  }, [appointments]);
+
+  const resolutionRate = useMemo(() => {
+    const history = processNeurologicalHistory(appointments);
+    if (history.length === 0) return 0;
+    const resolved = history.filter(h => h.isResolved).length;
+    return Math.round((resolved / history.length) * 100);
   }, [appointments]);
 
   const latestApp = useMemo(() => {
@@ -76,7 +100,7 @@ const ClientProgressTab = ({ client, appointments, onRefresh }: ClientProgressTa
       {/* Quick Assessment Bar */}
       <div className="flex flex-wrap items-center gap-4 p-4 bg-card rounded-[2rem] border border-border shadow-sm">
         <div className="flex items-center gap-2 px-4 border-r border-border mr-2">
-          <Zap size={18} className="text-amber-500 fill-amber-500" />
+          <Zap size={18} className="text-amber-500 fill-amber-400" />
           <span className="text-xs font-black uppercase tracking-widest text-muted-foreground">Quick Assessment</span>
         </div>
         <Button 
@@ -157,16 +181,11 @@ const ClientProgressTab = ({ client, appointments, onRefresh }: ClientProgressTa
                 </div>
               </div>
 
-              <div className="p-4 rounded-2xl bg-rose-50 dark:bg-rose-900/20 border border-rose-100 dark:border-rose-900/30">
-                <p className="text-[10px] font-black text-rose-600 dark:text-rose-400 uppercase tracking-widest mb-2">Latest Coherence</p>
+              <div className="p-4 rounded-2xl bg-emerald-50 dark:bg-emerald-900/20 border border-emerald-100 dark:border-emerald-900/30">
+                <p className="text-[10px] font-black text-emerald-600 dark:text-emerald-400 uppercase tracking-widest mb-2">Neurological Resolution</p>
                 <div className="flex items-baseline gap-2">
-                  <p className={cn(
-                    "text-4xl font-black",
-                    latestCoh === null ? "text-slate-300" : "text-rose-600"
-                  )}>
-                    {latestCoh !== null ? latestCoh.toFixed(2) : "—"}
-                  </p>
-                  <span className="text-muted-foreground text-sm font-bold">Ratio</span>
+                  <p className="text-4xl font-black text-emerald-600">{resolutionRate}%</p>
+                  <span className="text-muted-foreground text-sm font-bold">Cleared</span>
                 </div>
               </div>
             </div>
@@ -207,40 +226,75 @@ const ClientProgressTab = ({ client, appointments, onRefresh }: ClientProgressTa
                 <CardTitle className="text-lg font-bold flex items-center gap-2">
                   <TrendingUp size={20} className="text-indigo-600" /> Clinical Trends
                 </CardTitle>
-                <CardDescription>Long-term BOLT score progress</CardDescription>
+                <CardDescription>Long-term BOLT and Brainstem Threat progress</CardDescription>
               </div>
               <LineChart size={24} className="text-muted-foreground/30" />
             </div>
           </CardHeader>
-          <CardContent className="p-6">
+          <CardContent className="p-6 space-y-8">
             {boltData.length > 1 ? (
-              <div className="h-[300px] w-full">
-                <ResponsiveContainer width="100%" height="100%">
-                  <AreaChart data={boltData}>
-                    <defs>
-                      <linearGradient id="colorBoltProgress" x1="0" y1="0" x2="0" y2="1">
-                        <stop offset="5%" stopColor="#4f46e5" stopOpacity={0.1}/>
-                        <stop offset="95%" stopColor="#4f46e5" stopOpacity={0}/>
-                      </linearGradient>
-                    </defs>
-                    <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="hsl(var(--border))" />
-                    <XAxis dataKey="date" axisLine={false} tickLine={false} tick={{fontSize: 12, fill: 'hsl(var(--muted-foreground))'}} />
-                    <YAxis axisLine={false} tickLine={false} tick={{fontSize: 12, fill: 'hsl(var(--muted-foreground))'}} />
-                    <ChartTooltip 
-                      contentStyle={{borderRadius: '16px', border: 'none', backgroundColor: 'hsl(var(--card))', boxShadow: '0 20px 25px -5px rgb(0 0 0 / 0.1)'}}
-                      labelStyle={{fontWeight: 'bold', color: 'hsl(var(--foreground))'}}
-                    />
-                    <Area 
-                      type="monotone" 
-                      dataKey="score" 
-                      name="BOLT Score"
-                      stroke="#4f46e5" 
-                      strokeWidth={4} 
-                      fillOpacity={1} 
-                      fill="url(#colorBoltProgress)" 
-                    />
-                  </AreaChart>
-                </ResponsiveContainer>
+              <div className="space-y-8">
+                <div className="h-[200px] w-full">
+                  <p className="text-[10px] font-black text-muted-foreground uppercase tracking-widest mb-4">BOLT Score Trend</p>
+                  <ResponsiveContainer width="100%" height="100%">
+                    <AreaChart data={boltData}>
+                      <defs>
+                        <linearGradient id="colorBoltProgress" x1="0" y1="0" x2="0" y2="1">
+                          <stop offset="5%" stopColor="#4f46e5" stopOpacity={0.1}/>
+                          <stop offset="95%" stopColor="#4f46e5" stopOpacity={0}/>
+                        </linearGradient>
+                      </defs>
+                      <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="hsl(var(--border))" />
+                      <XAxis dataKey="date" axisLine={false} tickLine={false} tick={{fontSize: 10, fill: 'hsl(var(--muted-foreground))'}} />
+                      <YAxis axisLine={false} tickLine={false} tick={{fontSize: 10, fill: 'hsl(var(--muted-foreground))'}} />
+                      <ChartTooltip 
+                        contentStyle={{borderRadius: '16px', border: 'none', backgroundColor: 'hsl(var(--card))', boxShadow: '0 20px 25px -5px rgb(0 0 0 / 0.1)'}}
+                        labelStyle={{fontWeight: 'bold', color: 'hsl(var(--foreground))'}}
+                      />
+                      <Area 
+                        type="monotone" 
+                        dataKey="score" 
+                        name="BOLT Score"
+                        stroke="#4f46e5" 
+                        strokeWidth={4} 
+                        fillOpacity={1} 
+                        fill="url(#colorBoltProgress)" 
+                      />
+                    </AreaChart>
+                  </ResponsiveContainer>
+                </div>
+
+                {threatTrendData.length > 1 && (
+                  <div className="h-[200px] w-full">
+                    <p className="text-[10px] font-black text-muted-foreground uppercase tracking-widest mb-4">Brainstem Threat Trend (Lower is Better)</p>
+                    <ResponsiveContainer width="100%" height="100%">
+                      <AreaChart data={threatTrendData}>
+                        <defs>
+                          <linearGradient id="colorThreat" x1="0" y1="0" x2="0" y2="1">
+                            <stop offset="5%" stopColor="#e11d48" stopOpacity={0.1}/>
+                            <stop offset="95%" stopColor="#e11d48" stopOpacity={0}/>
+                          </linearGradient>
+                        </defs>
+                        <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="hsl(var(--border))" />
+                        <XAxis dataKey="date" axisLine={false} tickLine={false} tick={{fontSize: 10, fill: 'hsl(var(--muted-foreground))'}} />
+                        <YAxis axisLine={false} tickLine={false} tick={{fontSize: 10, fill: 'hsl(var(--muted-foreground))'}} />
+                        <ChartTooltip 
+                          contentStyle={{borderRadius: '16px', border: 'none', backgroundColor: 'hsl(var(--card))', boxShadow: '0 20px 25px -5px rgb(0 0 0 / 0.1)'}}
+                          labelStyle={{fontWeight: 'bold', color: 'hsl(var(--foreground))'}}
+                        />
+                        <Area 
+                          type="monotone" 
+                          dataKey="threat" 
+                          name="Total Threat"
+                          stroke="#e11d48" 
+                          strokeWidth={4} 
+                          fillOpacity={1} 
+                          fill="url(#colorThreat)" 
+                        />
+                      </AreaChart>
+                    </ResponsiveContainer>
+                  </div>
+                )}
               </div>
             ) : (
               <div className="h-[300px] flex flex-col items-center justify-center text-center bg-muted/30 rounded-2xl border-2 border-dashed border-border">

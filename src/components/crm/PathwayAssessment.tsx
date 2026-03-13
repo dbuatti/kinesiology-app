@@ -5,7 +5,7 @@ import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { 
-  Brain, Zap, Activity, Shield, Dumbbell, AlertTriangle, ChevronDown, Check, X, Plus, Search, RotateCcw, Layers, ImageIcon, Baby, PlayCircle, ShieldAlert, ListChecks, Info, MousePointer2, Maximize2
+  Brain, Zap, Activity, Shield, Dumbbell, AlertTriangle, ChevronDown, Check, X, Plus, Search, RotateCcw, Layers, ImageIcon, Baby, PlayCircle, ShieldAlert, ListChecks, Info, MousePointer2, Maximize2, History
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { BRAIN_REFLEX_POINTS, BrainReflexPoint } from '@/data/brain-reflex-data';
@@ -28,6 +28,7 @@ type AssessmentResults = Record<string, Record<string, Status>>;
 interface AssessmentItemProps {
   name: string;
   status?: Status;
+  previousStatus?: Status;
   onSetStatus: (status: Status) => void;
   onClick: () => void;
   imageUrl?: string | null;
@@ -36,7 +37,7 @@ interface AssessmentItemProps {
   inhibitionPattern?: string;
 }
 
-const AssessmentItem = ({ name, status, onSetStatus, onClick, imageUrl, showImage, stimulus, inhibitionPattern }: AssessmentItemProps) => {
+const AssessmentItem = ({ name, status, previousStatus, onSetStatus, onClick, imageUrl, showImage, stimulus, inhibitionPattern }: AssessmentItemProps) => {
   return (
     <div 
       onClick={onClick}
@@ -48,7 +49,20 @@ const AssessmentItem = ({ name, status, onSetStatus, onClick, imageUrl, showImag
       )}
     >
       <div className="flex items-center justify-between mb-2">
-        <p className="font-bold text-sm text-slate-800">{name}</p>
+        <div className="flex flex-col">
+          <p className="font-bold text-sm text-slate-800">{name}</p>
+          {previousStatus && !status && (
+            <div className="flex items-center gap-1 mt-0.5">
+              <History size={8} className="text-slate-400" />
+              <span className={cn(
+                "text-[7px] font-black uppercase tracking-widest",
+                previousStatus === 'Inhibited' ? "text-rose-400" : "text-emerald-400"
+              )}>
+                Last: {previousStatus}
+              </span>
+            </div>
+          )}
+        </div>
         {status && (
           <Badge className={cn(
             "border-none text-white font-black text-[9px] uppercase tracking-widest",
@@ -86,7 +100,6 @@ const AssessmentItem = ({ name, status, onSetStatus, onClick, imageUrl, showImag
         <MousePointer2 size={8} /> Click for info
       </div>
 
-      {/* Hover Overlay - No longer stops propagation on the background click */}
       <div className="absolute inset-0 bg-slate-900/10 backdrop-blur-[1px] opacity-0 group-hover:opacity-100 transition-all duration-300 flex flex-col items-center justify-center gap-3">
         <div className="flex items-center gap-2">
           <Button 
@@ -170,6 +183,7 @@ const AssessmentSection = ({ title, description, icon: Icon, children, count, in
 
 interface PathwayAssessmentProps {
   initialValue?: string;
+  previousValue?: string;
   onSave: (summary: string) => void;
 }
 
@@ -178,12 +192,21 @@ interface ReflexImageData {
   secondaryUrl: string | null;
 }
 
-const PathwayAssessment = ({ initialValue, onSave }: PathwayAssessmentProps) => {
+const PathwayAssessment = ({ initialValue, previousValue, onSave }: PathwayAssessmentProps) => {
   const [results, setResults] = useState<AssessmentResults>({});
   const [muscleSearch, setMuscleSearch] = useState("");
   const [showImages, setShowImages] = useState(true);
   const [customizations, setCustomizations] = useState<Record<string, ReflexImageData>>({});
   const [loadingImages, setLoadingImages] = useState(true);
+
+  const previousResults = useMemo(() => {
+    if (!previousValue) return {};
+    try {
+      return JSON.parse(previousValue);
+    } catch (e) {
+      return {};
+    }
+  }, [previousValue]);
 
   // Modal States
   const [selectedMuscle, setSelectedMuscle] = useState<string | null>(null);
@@ -325,6 +348,7 @@ const PathwayAssessment = ({ initialValue, onSave }: PathwayAssessmentProps) => 
               key={reflex.id}
               name={reflex.name}
               status={results.primitiveReflexes?.[reflex.name]}
+              previousStatus={previousResults.primitiveReflexes?.[reflex.name]}
               onSetStatus={(status) => handleSetStatus('primitiveReflexes', reflex.name, status)}
               onClick={() => handleItemClick('reflex', reflex)}
               stimulus={reflex.stimulus}
@@ -343,6 +367,7 @@ const PathwayAssessment = ({ initialValue, onSave }: PathwayAssessmentProps) => 
                 key={nerve.id}
                 name={nerve.name}
                 status={results.cranialNerves?.[nerve.name]}
+                previousStatus={previousResults.cranialNerves?.[nerve.name]}
                 onSetStatus={(status) => handleSetStatus('cranialNerves', nerve.name, status)}
                 onClick={() => handleItemClick('brain', nerve)}
                 imageUrl={imageUrl}
@@ -362,6 +387,7 @@ const PathwayAssessment = ({ initialValue, onSave }: PathwayAssessmentProps) => 
                 key={zone.id}
                 name={zone.name}
                 status={results.brainZones?.[zone.name]}
+                previousStatus={previousResults.brainZones?.[zone.name]}
                 onSetStatus={(status) => handleSetStatus('brainZones', zone.name, status)}
                 onClick={() => handleItemClick('brain', zone)}
                 imageUrl={imageUrl}
@@ -392,6 +418,7 @@ const PathwayAssessment = ({ initialValue, onSave }: PathwayAssessmentProps) => 
                     key={muscle}
                     name={muscle}
                     status={results.muscles?.[muscle]}
+                    previousStatus={previousResults.muscles?.[muscle]}
                     onSetStatus={(status) => handleSetStatus('muscles', muscle, status)}
                     onClick={() => handleItemClick('muscle', muscle)}
                   />

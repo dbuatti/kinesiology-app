@@ -10,7 +10,7 @@ import {
 import { cn } from '@/lib/utils';
 import { BRAIN_REFLEX_POINTS, BrainReflexPoint } from '@/data/brain-reflex-data';
 import { PRIMITIVE_REFLEXES, PrimitiveReflex } from '@/data/primitive-reflex-data';
-import { MUSCLE_GROUPS } from '@/data/muscle-data';
+import { MUSCLE_GROUPS, MIDLINE_MUSCLES } from '@/data/muscle-data';
 import { Badge } from '@/components/ui/badge';
 import { supabase } from "@/integrations/supabase/client";
 import { Switch } from "@/components/ui/switch";
@@ -27,9 +27,10 @@ type AssessmentResults = Record<string, Record<string, Status>>;
 
 interface AssessmentItemProps {
   name: string;
+  category: string;
   status?: Status;
   previousStatus?: Status;
-  onSetStatus: (status: Status) => void;
+  onSetStatus: (status: Status, side?: 'L' | 'R') => void;
   onQuickCalibrate: () => void;
   onClick: () => void;
   imageUrl?: string | null;
@@ -38,7 +39,11 @@ interface AssessmentItemProps {
   inhibitionPattern?: string;
 }
 
-const AssessmentItem = ({ name, status, previousStatus, onSetStatus, onQuickCalibrate, onClick, imageUrl, showImage, stimulus, inhibitionPattern }: AssessmentItemProps) => {
+const AssessmentItem = ({ name, category, status, previousStatus, onSetStatus, onQuickCalibrate, onClick, imageUrl, showImage, stimulus, inhibitionPattern }: AssessmentItemProps) => {
+  const isMuscle = category === 'muscles';
+  const isMidline = MIDLINE_MUSCLES.includes(name);
+  const isBilateralMuscle = isMuscle && !isMidline;
+
   return (
     <div 
       onClick={onClick}
@@ -113,7 +118,7 @@ const AssessmentItem = ({ name, status, previousStatus, onSetStatus, onQuickCali
       </div>
 
       <div className="absolute inset-0 bg-slate-900/10 backdrop-blur-[1px] opacity-0 group-hover:opacity-100 transition-all duration-300 flex flex-col items-center justify-center gap-3">
-        <div className="flex items-center gap-2">
+        <div className="flex flex-wrap items-center justify-center gap-2 px-2">
           <Button 
             size="sm" 
             className="bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl h-9 shadow-lg font-black text-[10px] uppercase tracking-widest" 
@@ -121,13 +126,33 @@ const AssessmentItem = ({ name, status, previousStatus, onSetStatus, onQuickCali
           >
             <Check size={14} className="mr-1" /> Clear
           </Button>
-          <Button 
-            size="sm" 
-            className="bg-rose-600 hover:bg-rose-700 text-white rounded-xl h-9 shadow-lg font-black text-[10px] uppercase tracking-widest" 
-            onClick={(e) => { e.stopPropagation(); onSetStatus('Inhibited'); }}
-          >
-            <X size={14} className="mr-1" /> Inhibited
-          </Button>
+          
+          {isBilateralMuscle ? (
+            <>
+              <Button 
+                size="sm" 
+                className="bg-rose-600 hover:bg-rose-700 text-white rounded-xl h-9 shadow-lg font-black text-[10px] uppercase tracking-widest" 
+                onClick={(e) => { e.stopPropagation(); onSetStatus('Inhibited', 'L'); }}
+              >
+                L Inhib
+              </Button>
+              <Button 
+                size="sm" 
+                className="bg-rose-600 hover:bg-rose-700 text-white rounded-xl h-9 shadow-lg font-black text-[10px] uppercase tracking-widest" 
+                onClick={(e) => { e.stopPropagation(); onSetStatus('Inhibited', 'R'); }}
+              >
+                R Inhib
+              </Button>
+            </>
+          ) : (
+            <Button 
+              size="sm" 
+              className="bg-rose-600 hover:bg-rose-700 text-white rounded-xl h-9 shadow-lg font-black text-[10px] uppercase tracking-widest" 
+              onClick={(e) => { e.stopPropagation(); onSetStatus('Inhibited'); }}
+            >
+              <X size={14} className="mr-1" /> Inhibited
+            </Button>
+          )}
         </div>
         <div className="flex items-center gap-1.5 text-[9px] font-black text-slate-900 bg-white/90 px-3 py-1 rounded-full shadow-sm">
           <Maximize2 size={10} /> View Clinical Info
@@ -269,15 +294,18 @@ const PathwayAssessment = ({ initialValue, previousValue, onSave, onJumpToCalibr
     fetchCustomizations();
   }, []);
 
-  const handleSetStatus = (category: string, item: string, status: Status) => {
+  const handleSetStatus = (category: string, item: string, status: Status, side?: 'L' | 'R') => {
     const newResults = { ...results };
     if (!newResults[category]) {
       newResults[category] = {};
     }
-    if (newResults[category][item] === status) {
-      delete newResults[category][item];
+
+    const itemName = side ? `${item} (${side})` : item;
+
+    if (newResults[category][itemName] === status) {
+      delete newResults[category][itemName];
     } else {
-      newResults[category][item] = status;
+      newResults[category][itemName] = status;
     }
     setResults(newResults);
     onSave(JSON.stringify(newResults));
@@ -392,6 +420,7 @@ const PathwayAssessment = ({ initialValue, previousValue, onSave, onJumpToCalibr
             <AssessmentItem 
               key={reflex.id}
               name={reflex.name}
+              category="primitiveReflexes"
               status={results.primitiveReflexes?.[reflex.name]}
               previousStatus={previousResults.primitiveReflexes?.[reflex.name]}
               onSetStatus={(status) => handleSetStatus('primitiveReflexes', reflex.name, status)}
@@ -412,6 +441,7 @@ const PathwayAssessment = ({ initialValue, previousValue, onSave, onJumpToCalibr
               <AssessmentItem 
                 key={nerve.id}
                 name={nerve.name}
+                category="cranialNerves"
                 status={results.cranialNerves?.[nerve.name]}
                 previousStatus={previousResults.cranialNerves?.[nerve.name]}
                 onSetStatus={(status) => handleSetStatus('cranialNerves', nerve.name, status)}
@@ -433,6 +463,7 @@ const PathwayAssessment = ({ initialValue, previousValue, onSave, onJumpToCalibr
               <AssessmentItem 
                 key={zone.id}
                 name={zone.name}
+                category="brainZones"
                 status={results.brainZones?.[zone.name]}
                 previousStatus={previousResults.brainZones?.[zone.name]}
                 onSetStatus={(status) => handleSetStatus('brainZones', zone.name, status)}
@@ -465,9 +496,10 @@ const PathwayAssessment = ({ initialValue, previousValue, onSave, onJumpToCalibr
                   <AssessmentItem 
                     key={muscle}
                     name={muscle}
-                    status={results.muscles?.[muscle]}
-                    previousStatus={previousResults.muscles?.[muscle]}
-                    onSetStatus={(status) => handleSetStatus('muscles', muscle, status)}
+                    category="muscles"
+                    status={results.muscles?.[muscle] || results.muscles?.[`${muscle} (L)`] || results.muscles?.[`${muscle} (R)`]}
+                    previousStatus={previousResults.muscles?.[muscle] || previousResults.muscles?.[`${muscle} (L)`] || previousResults.muscles?.[`${muscle} (R)`]}
+                    onSetStatus={(status, side) => handleSetStatus('muscles', muscle, status, side)}
                     onQuickCalibrate={() => handleQuickCalibrate('muscles', muscle)}
                     onClick={() => handleItemClick('muscle', muscle)}
                   />

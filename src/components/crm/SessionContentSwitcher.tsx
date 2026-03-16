@@ -31,6 +31,7 @@ import GaitReflexAssessment from './GaitReflexAssessment';
 import PathwayAssessment from './PathwayAssessment';
 import PathwayLogicWizard from './PathwayLogicWizard';
 import NeurologicalHistoryTracker from './NeurologicalHistoryTracker';
+import { Nuclei } from '@/utils/brainstem-logic';
 
 type ActiveView = 'home' | 'kinesiology' | 'muscles' | 'gait' | 'previous';
 
@@ -39,6 +40,7 @@ interface SessionContentSwitcherProps {
   onUpdate: () => void;
   saveField: (field: string, value: any) => Promise<void>;
   history?: any[];
+  nucleiFilter?: Nuclei | null;
 }
 
 const TABS = [
@@ -49,7 +51,7 @@ const TABS = [
   { id: 'reassessment', label: 'Review', icon: ClipboardCheck }
 ];
 
-const SessionContentSwitcher = ({ appointment, onUpdate, saveField, history = [] }: SessionContentSwitcherProps) => {
+const SessionContentSwitcher = ({ appointment, onUpdate, saveField, history = [], nucleiFilter }: SessionContentSwitcherProps) => {
   const [activeView, setActiveView] = useState<ActiveView>('home');
   const [activeTab, setActiveTab] = useState('baseline');
   const [preselectedFinding, setPreselectedFinding] = useState<string | null>(null);
@@ -71,17 +73,15 @@ const SessionContentSwitcher = ({ appointment, onUpdate, saveField, history = []
   }, [history, appointment.id]);
 
   const scrollToWizard = () => {
-    // Use a longer timeout to ensure tab transition and animations are complete
     setTimeout(() => {
       const element = wizardRef.current;
       const scrollContainer = document.getElementById('main-scroll-container');
       
       if (element && scrollContainer) {
-        const offset = 120; // Account for fixed headers and padding
+        const offset = 120;
         const elementRect = element.getBoundingClientRect();
         const containerRect = scrollContainer.getBoundingClientRect();
         
-        // Calculate position relative to the scroll container
         const relativeTop = elementRect.top - containerRect.top;
         const targetScrollTop = scrollContainer.scrollTop + relativeTop - offset;
 
@@ -211,8 +211,10 @@ const SessionContentSwitcher = ({ appointment, onUpdate, saveField, history = []
             <PathwayAssessment 
               initialValue={appointment.priority_pattern || undefined} 
               previousValue={previousSession?.priority_pattern || undefined}
+              history={history}
               onSave={(s) => saveField('priority_pattern', s)} 
               onJumpToCalibrate={handleJumpToCalibrate}
+              nucleiFilter={nucleiFilter}
             />
             <TabFooter nextLabel="Calibration Wizard" />
           </TabsContent>

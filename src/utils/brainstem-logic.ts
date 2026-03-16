@@ -9,7 +9,7 @@ export interface NucleiStatus {
   toneEffect: 'Flexors' | 'Extensors' | 'None';
 }
 
-const FINDING_TO_NUCLEI: Record<string, { nuclei: Nuclei, tone: 'Flexors' | 'Extensors' | 'None' }> = {
+export const FINDING_TO_NUCLEI: Record<string, { nuclei: Nuclei, tone: 'Flexors' | 'Extensors' | 'None' }> = {
   // Cranial Nerves
   'CN I': { nuclei: 'Cortex', tone: 'None' },
   'CN II': { nuclei: 'Cortex', tone: 'None' },
@@ -48,8 +48,6 @@ export function calculateBrainstemTone(priorityPattern: string | null): NucleiSt
     Object.values(pattern).forEach((category: any) => {
       Object.entries(category).forEach(([name, status]) => {
         if (status === 'Inhibited') {
-          // Find a key in FINDING_TO_NUCLEI that matches the start of the finding name
-          // This handles "CN I: Olfactory" matching "CN I"
           const mappingKey = Object.keys(FINDING_TO_NUCLEI).find(key => name.startsWith(key));
           const mapping = mappingKey ? FINDING_TO_NUCLEI[mappingKey] : null;
           
@@ -60,7 +58,6 @@ export function calculateBrainstemTone(priorityPattern: string | null): NucleiSt
       });
     });
 
-    // Calculate threat level based on number of inhibited findings (capped at 100)
     Object.values(nucleiMap).forEach(n => {
       n.threatLevel = Math.min(n.findings.length * 25, 100);
     });

@@ -5,22 +5,25 @@ import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { 
-  Brain, Zap, Activity, Shield, Dumbbell, AlertTriangle, ChevronDown, Check, X, Plus, Search, RotateCcw, Layers, ImageIcon, Baby, PlayCircle, ShieldAlert, ListChecks, Info, MousePointer2, Maximize2, History, Trash2, Eye, EyeOff
+  Brain, Zap, Activity, Shield, Dumbbell, AlertTriangle, ChevronDown, Check, X, Plus, Search, RotateCcw, Layers, ImageIcon, Baby, PlayCircle, ShieldAlert, ListChecks, Info, MousePointer2, Maximize2, History, Trash2, Eye, EyeOff, Lightbulb, CheckCircle2
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { BRAIN_REFLEX_POINTS, BrainReflexPoint } from '@/data/brain-reflex-data';
 import { PRIMITIVE_REFLEXES, PrimitiveReflex } from '@/data/primitive-reflex-data';
-import { MUSCLE_GROUPS, MIDLINE_MUSCLES } from '@/data/muscle-data';
+import { MUSCLE_GROUPS, MIDLINE_MUSCLES, MuscleStatus } from '@/data/muscle-data';
 import { Badge } from '@/components/ui/badge';
 import { supabase } from "@/integrations/supabase/client";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
+import { processNeurologicalHistory, FindingHistory } from '@/utils/neurological-history';
+import { FINDING_TO_NUCLEI, Nuclei } from '@/utils/brainstem-logic';
 
 // Modal Imports
 import MuscleInfoModal from "./MuscleInfoModal";
 import BrainReflexModal from "./BrainReflexModal";
 import PrimitiveReflexModal from "./PrimitiveReflexModal";
+import ClinicalReasoningModal from "./ClinicalReasoningModal";
 
 type Status = 'Clear' | 'Inhibited';
 type AssessmentResults = Record<string, Record<string, Status>>;
@@ -29,9 +32,10 @@ interface AssessmentItemProps {
   name: string;
   category: string;
   status?: Status;
-  previousStatus?: Status;
+  history?: FindingHistory;
   onSetStatus: (status: Status, side?: 'L' | 'R') => void;
   onQuickCalibrate: () => void;
+  onShowLogic: () => void;
   onClick: () => void;
   imageUrl?: string | null;
   showImage?: boolean;
@@ -39,10 +43,16 @@ interface AssessmentItemProps {
   inhibitionPattern?: string;
 }
 
-const AssessmentItem = ({ name, category, status, previousStatus, onSetStatus, onQuickCalibrate, onClick, imageUrl, showImage, stimulus, inhibitionPattern }: AssessmentItemProps) => {
+const AssessmentItem = ({ name, category, status, history, onSetStatus, onQuickCalibrate, onShowLogic, onClick, imageUrl, showImage, stimulus, inhibitionPattern }: AssessmentItemProps) => {
   const isMuscle = category === 'muscles';
   const isMidline = MIDLINE_MUSCLES.includes(name);
   const isBilateralMuscle = isMuscle && !isMidline;
+
+  // Get last 3 session results for the trend indicator
+  const trend = useMemo(() => {
+    if (!history) return [];
+    return history.history.slice(-3).map(h => h.status);
+  }, [history]);
 
   return (
     <div 
@@ -76,15 +86,18 @@ const AssessmentItem = ({ name, category, status, previousStatus, onSetStatus, o
             status === 'Inhibited' ? "text-rose-900" : "text-slate-800"
           )}>{name}</p>
           
-          {previousStatus && !status && (
-            <div className="flex items-center gap-1 mt-1">
-              <History size={10} className="text-slate-400" />
-              <span className={cn(
-                "text-[8px] font-black uppercase tracking-widest",
-                previousStatus === 'Inhibited' ? "text-rose-400" : "text-emerald-400"
-              )}>
-                Last: {previousStatus}
-              </span>
+          {trend.length > 0 && (
+            <div className="flex items-center gap-1 mt-1.5">
+              <span className="text-[7px] font-black text-slate-400 uppercase tracking-widest mr-1">Trend:</span>
+              {trend.map((s, i) => (
+                <div 
+                  key={i} 
+                  className={cn(
+                    "w-1.5 h-1.5 rounded-full",
+                    s === 'Clear' ? "bg-emerald-400" : s === 'Inhibited' ? "bg-rose-400" : "bg-slate-200"
+                  )} 
+                />
+              ))}
             </div>
           )}
         </div>
@@ -165,12 +178,21 @@ const AssessmentItem = ({ name, category, status, previousStatus, onSetStatus, o
             </Button>
           )}
         </div>
-        <div className="flex items-center gap-1.5 text-[9px] font-black text-slate-900 bg-white/95 px-4 py-1.5 rounded-full shadow-lg border border-slate-100">
-          <Maximize2 size={12} className="text-indigo-500" /> View Details
+        <div className="flex gap-2">
+          <div className="flex items-center gap-1.5 text-[9px] font-black text-slate-900 bg-white/95 px-4 py-1.5 rounded-full shadow-lg border border-slate-100">
+            <Maximize2 size={12} className="text-indigo-500" /> View Details
+          </div>
+          {status === 'Inhibited' && (
+            <button 
+              onClick={(e) => { e.stopPropagation(); onShowLogic(); }}
+              className="flex items-center gap-1.5 text-[9px] font-black text-amber-700 bg-amber-50 px-4 py-1.5 rounded-full shadow-lg border border-amber-200 hover:bg-amber-100 transition-colors"
+            >
+              <Lightbulb size={12} className="text-amber-500" /> Logic
+            </button>
+          )}
         </div>
       </div>
       
-      {/* Inhibited Pulse Effect */}
       {status === 'Inhibited' && (
         <div className="absolute bottom-0 left-0 w-full h-1 bg-rose-500 animate-pulse" />
       )}
@@ -186,9 +208,10 @@ interface AssessmentSectionProps {
   count: number;
   inhibitedCount: number;
   protocol?: React.ReactNode;
+  onClearAll?: () => void;
 }
 
-const AssessmentSection = ({ title, description, icon: Icon, children, count, inhibitedCount, protocol }: AssessmentSectionProps) => {
+const AssessmentSection = ({ title, description, icon: Icon, children, count, inhibitedCount, protocol, onClearAll }: AssessmentSectionProps) => {
   const [isOpen, setIsOpen] = useState(true);
   return (
     <Collapsible open={isOpen} onOpenChange={setIsOpen}>
@@ -217,8 +240,20 @@ const AssessmentSection = ({ title, description, icon: Icon, children, count, in
                     </Badge>
                   </div>
                 )}
-                <div className="w-10 h-10 rounded-full bg-slate-100 flex items-center justify-center text-slate-400">
-                  <ChevronDown className={cn("h-6 w-6 transition-transform duration-300", isOpen && "rotate-180")} />
+                <div className="flex items-center gap-2" onClick={(e) => e.stopPropagation()}>
+                  {onClearAll && (
+                    <Button 
+                      variant="ghost" 
+                      size="sm" 
+                      onClick={onClearAll}
+                      className="h-8 text-[9px] font-black uppercase tracking-widest text-indigo-600 hover:bg-indigo-50 rounded-lg"
+                    >
+                      <CheckCircle2 size={14} className="mr-1.5" /> Mark All Clear
+                    </Button>
+                  )}
+                  <div className="w-10 h-10 rounded-full bg-slate-100 flex items-center justify-center text-slate-400">
+                    <ChevronDown className={cn("h-6 w-6 transition-transform duration-300", isOpen && "rotate-180")} />
+                  </div>
                 </div>
               </div>
             </div>
@@ -242,8 +277,10 @@ const AssessmentSection = ({ title, description, icon: Icon, children, count, in
 interface PathwayAssessmentProps {
   initialValue?: string;
   previousValue?: string;
+  history?: any[];
   onSave: (summary: string) => void;
   onJumpToCalibrate?: (itemName: string) => void;
+  nucleiFilter?: Nuclei | null;
 }
 
 interface ReflexImageData {
@@ -251,7 +288,7 @@ interface ReflexImageData {
   secondaryUrl: string | null;
 }
 
-const PathwayAssessment = ({ initialValue, previousValue, onSave, onJumpToCalibrate }: PathwayAssessmentProps) => {
+const PathwayAssessment = ({ initialValue, previousValue, history = [], onSave, onJumpToCalibrate, nucleiFilter }: PathwayAssessmentProps) => {
   const [results, setResults] = useState<AssessmentResults>({});
   const [muscleSearch, setMuscleSearch] = useState("");
   const [showImages, setShowImages] = useState(true);
@@ -259,14 +296,7 @@ const PathwayAssessment = ({ initialValue, previousValue, onSave, onJumpToCalibr
   const [customizations, setCustomizations] = useState<Record<string, ReflexImageData>>({});
   const [loadingImages, setLoadingImages] = useState(true);
 
-  const previousResults = useMemo(() => {
-    if (!previousValue) return {};
-    try {
-      return JSON.parse(previousValue);
-    } catch (e) {
-      return {};
-    }
-  }, [previousValue]);
+  const processedHistory = useMemo(() => processNeurologicalHistory(history), [history]);
 
   const [selectedMuscle, setSelectedMuscle] = useState<string | null>(null);
   const [selectedBrainPoint, setSelectedBrainPoint] = useState<BrainReflexPoint | null>(null);
@@ -275,6 +305,10 @@ const PathwayAssessment = ({ initialValue, previousValue, onSave, onJumpToCalibr
   const [muscleModalOpen, setMuscleModalOpen] = useState(false);
   const [brainModalOpen, setBrainModalOpen] = useState(false);
   const [reflexModalOpen, setReflexModalOpen] = useState(false);
+
+  const [logicMuscle, setLogicMuscle] = useState<string | null>(null);
+  const [logicStatus, setLogicStatus] = useState<MuscleStatus['value'] | null>(null);
+  const [logicModalOpen, setLogicModalOpen] = useState(false);
 
   useEffect(() => {
     try {
@@ -333,6 +367,18 @@ const PathwayAssessment = ({ initialValue, previousValue, onSave, onJumpToCalibr
     onSave(JSON.stringify(newResults));
   };
 
+  const handleClearSection = (category: string, items: string[]) => {
+    const newResults = { ...results };
+    if (!newResults[category]) newResults[category] = {};
+    
+    items.forEach(item => {
+      newResults[category][item] = 'Clear';
+    });
+    
+    setResults(newResults);
+    onSave(JSON.stringify(newResults));
+  };
+
   const handleClearAll = () => {
     if (!confirm("Clear all findings for this session?")) return;
     setResults({});
@@ -348,6 +394,12 @@ const PathwayAssessment = ({ initialValue, previousValue, onSave, onJumpToCalibr
     if (onJumpToCalibrate) {
       onJumpToCalibrate(item);
     }
+  };
+
+  const handleShowLogic = (name: string, status: Status) => {
+    setLogicMuscle(name);
+    setLogicStatus(status === 'Inhibited' ? 'Inhibition' : 'Normotonic');
+    setLogicModalOpen(true);
   };
 
   const getCounts = (category: string) => {
@@ -370,6 +422,11 @@ const PathwayAssessment = ({ initialValue, previousValue, onSave, onJumpToCalibr
     }
   };
 
+  const isItemInNuclei = (name: string, nuclei: Nuclei) => {
+    const mappingKey = Object.keys(FINDING_TO_NUCLEI).find(key => name.startsWith(key));
+    return mappingKey && FINDING_TO_NUCLEI[mappingKey].nuclei === nuclei;
+  };
+
   const cranialNerves = BRAIN_REFLEX_POINTS.filter(p => p.category === 'Cranial Nerve');
   const brainZones = BRAIN_REFLEX_POINTS.filter(p => p.category !== 'Cranial Nerve');
 
@@ -380,6 +437,8 @@ const PathwayAssessment = ({ initialValue, previousValue, onSave, onJumpToCalibr
         const matchesSearch = m.toLowerCase().includes(muscleSearch.toLowerCase());
         if (!matchesSearch) return false;
         
+        if (nucleiFilter && !isItemInNuclei(m, nucleiFilter)) return false;
+
         if (showOnlyInhibited) {
           return results.muscles?.[m] === 'Inhibited' || 
                  results.muscles?.[`${m} (L)`] === 'Inhibited' || 
@@ -393,7 +452,7 @@ const PathwayAssessment = ({ initialValue, previousValue, onSave, onJumpToCalibr
       }
     });
     return filtered;
-  }, [muscleSearch, showOnlyInhibited, results.muscles]);
+  }, [muscleSearch, showOnlyInhibited, results.muscles, nucleiFilter]);
 
   const totalFindings = Object.values(results).reduce((acc, curr) => acc + Object.keys(curr).length, 0);
 
@@ -426,16 +485,23 @@ const PathwayAssessment = ({ initialValue, previousValue, onSave, onJumpToCalibr
           </div>
         </div>
 
-        {totalFindings > 0 && (
-          <Button 
-            variant="ghost" 
-            size="sm" 
-            onClick={handleClearAll}
-            className="h-9 text-[10px] font-black uppercase tracking-widest text-rose-600 hover:bg-rose-50 rounded-xl border border-rose-100"
-          >
-            <Trash2 size={14} className="mr-2" /> Clear All Findings
-          </Button>
-        )}
+        <div className="flex items-center gap-3">
+          {nucleiFilter && (
+            <Badge className="bg-indigo-600 text-white border-none font-black text-[10px] uppercase tracking-widest px-3 py-1">
+              Filter: {nucleiFilter}
+            </Badge>
+          )}
+          {totalFindings > 0 && (
+            <Button 
+              variant="ghost" 
+              size="sm" 
+              onClick={handleClearAll}
+              className="h-9 text-[10px] font-black uppercase tracking-widest text-rose-600 hover:bg-rose-50 rounded-xl border border-rose-100"
+            >
+              <Trash2 size={14} className="mr-2" /> Clear All Findings
+            </Button>
+          )}
+        </div>
       </div>
 
       {/* Primitive Reflexes */}
@@ -444,6 +510,7 @@ const PathwayAssessment = ({ initialValue, previousValue, onSave, onJumpToCalibr
         description="Check foundational movement patterns." 
         icon={Baby} 
         {...getCounts('primitiveReflexes')}
+        onClearAll={() => handleClearSection('primitiveReflexes', PRIMITIVE_REFLEXES.map(r => r.name))}
         protocol={
           <div className="space-y-4">
             <div className="flex items-center gap-2 mb-2">
@@ -467,15 +534,19 @@ const PathwayAssessment = ({ initialValue, previousValue, onSave, onJumpToCalibr
         }
       >
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-          {PRIMITIVE_REFLEXES.filter(r => !showOnlyInhibited || results.primitiveReflexes?.[r.name] === 'Inhibited').map(reflex => (
+          {PRIMITIVE_REFLEXES
+            .filter(r => !showOnlyInhibited || results.primitiveReflexes?.[r.name] === 'Inhibited')
+            .filter(r => !nucleiFilter || isItemInNuclei(r.name, nucleiFilter))
+            .map(reflex => (
             <AssessmentItem 
               key={reflex.id}
               name={reflex.name}
               category="primitiveReflexes"
               status={results.primitiveReflexes?.[reflex.name]}
-              previousStatus={previousResults.primitiveReflexes?.[reflex.name]}
+              history={processedHistory.find(h => h.name === reflex.name)}
               onSetStatus={(status) => handleSetStatus('primitiveReflexes', reflex.name, status)}
               onQuickCalibrate={() => handleQuickCalibrate('primitiveReflexes', reflex.name)}
+              onShowLogic={() => handleShowLogic(reflex.name, results.primitiveReflexes?.[reflex.name] || 'Clear')}
               onClick={() => handleItemClick('reflex', reflex)}
               stimulus={reflex.stimulus}
               inhibitionPattern={reflex.inhibitionPattern}
@@ -490,9 +561,18 @@ const PathwayAssessment = ({ initialValue, previousValue, onSave, onJumpToCalibr
       </AssessmentSection>
 
       {/* Cranial Nerves */}
-      <AssessmentSection title="Cranial Nerve Assessment" description="Test direct pathways from the brainstem." icon={Activity} {...getCounts('cranialNerves')}>
+      <AssessmentSection 
+        title="Cranial Nerve Assessment" 
+        description="Test direct pathways from the brainstem." 
+        icon={Activity} 
+        {...getCounts('cranialNerves')}
+        onClearAll={() => handleClearSection('cranialNerves', cranialNerves.map(n => n.name))}
+      >
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-          {cranialNerves.filter(n => !showOnlyInhibited || results.cranialNerves?.[n.name] === 'Inhibited').map(nerve => {
+          {cranialNerves
+            .filter(n => !showOnlyInhibited || results.cranialNerves?.[n.name] === 'Inhibited')
+            .filter(n => !nucleiFilter || isItemInNuclei(n.name, nucleiFilter))
+            .map(nerve => {
             const imageUrl = customizations[nerve.id]?.secondaryUrl || customizations[nerve.id]?.primaryUrl;
             return (
               <AssessmentItem 
@@ -500,9 +580,10 @@ const PathwayAssessment = ({ initialValue, previousValue, onSave, onJumpToCalibr
                 name={nerve.name}
                 category="cranialNerves"
                 status={results.cranialNerves?.[nerve.name]}
-                previousStatus={previousResults.cranialNerves?.[nerve.name]}
+                history={processedHistory.find(h => h.name === nerve.name)}
                 onSetStatus={(status) => handleSetStatus('cranialNerves', nerve.name, status)}
                 onQuickCalibrate={() => handleQuickCalibrate('cranialNerves', nerve.name)}
+                onShowLogic={() => handleShowLogic(nerve.name, results.cranialNerves?.[nerve.name] || 'Clear')}
                 onClick={() => handleItemClick('brain', nerve)}
                 imageUrl={imageUrl}
                 showImage={showImages}
@@ -518,9 +599,18 @@ const PathwayAssessment = ({ initialValue, previousValue, onSave, onJumpToCalibr
       </AssessmentSection>
 
       {/* Brain Zones */}
-      <AssessmentSection title="Brain Zone Assessment" description="Challenge specific cortical and subcortical regions." icon={Brain} {...getCounts('brainZones')}>
+      <AssessmentSection 
+        title="Brain Zone Assessment" 
+        description="Challenge specific cortical and subcortical regions." 
+        icon={Brain} 
+        {...getCounts('brainZones')}
+        onClearAll={() => handleClearSection('brainZones', brainZones.map(z => z.name))}
+      >
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-          {brainZones.filter(z => !showOnlyInhibited || results.brainZones?.[z.name] === 'Inhibited').map(zone => {
+          {brainZones
+            .filter(z => !showOnlyInhibited || results.brainZones?.[z.name] === 'Inhibited')
+            .filter(z => !nucleiFilter || isItemInNuclei(z.name, nucleiFilter))
+            .map(zone => {
             const imageUrl = customizations[zone.id]?.secondaryUrl || customizations[zone.id]?.primaryUrl;
             return (
               <AssessmentItem 
@@ -528,9 +618,10 @@ const PathwayAssessment = ({ initialValue, previousValue, onSave, onJumpToCalibr
                 name={zone.name}
                 category="brainZones"
                 status={results.brainZones?.[zone.name]}
-                previousStatus={previousResults.brainZones?.[zone.name]}
+                history={processedHistory.find(h => h.name === zone.name)}
                 onSetStatus={(status) => handleSetStatus('brainZones', zone.name, status)}
                 onQuickCalibrate={() => handleQuickCalibrate('brainZones', zone.name)}
+                onShowLogic={() => handleShowLogic(zone.name, results.brainZones?.[zone.name] || 'Clear')}
                 onClick={() => handleItemClick('brain', zone)}
                 imageUrl={imageUrl}
                 showImage={showImages}
@@ -571,9 +662,10 @@ const PathwayAssessment = ({ initialValue, previousValue, onSave, onJumpToCalibr
                     name={muscle}
                     category="muscles"
                     status={results.muscles?.[muscle] || results.muscles?.[`${muscle} (L)`] || results.muscles?.[`${muscle} (R)`]}
-                    previousStatus={previousResults.muscles?.[muscle] || previousResults.muscles?.[`${muscle} (L)`] || previousResults.muscles?.[`${muscle} (R)`]}
+                    history={processedHistory.find(h => h.name === muscle)}
                     onSetStatus={(status, side) => handleSetStatus('muscles', muscle, status, side)}
                     onQuickCalibrate={() => handleQuickCalibrate('muscles', muscle)}
+                    onShowLogic={() => handleShowLogic(muscle, results.muscles?.[muscle] || 'Clear')}
                     onClick={() => handleItemClick('muscle', muscle)}
                   />
                 ))}
@@ -593,6 +685,12 @@ const PathwayAssessment = ({ initialValue, previousValue, onSave, onJumpToCalibr
       <MuscleInfoModal muscleName={selectedMuscle} open={muscleModalOpen} onOpenChange={setMuscleModalOpen} />
       <BrainReflexModal point={selectedBrainPoint} primaryUrl={selectedBrainPoint ? customizations[selectedBrainPoint.id]?.primaryUrl : null} secondaryUrl={selectedBrainPoint ? customizations[selectedBrainPoint.id]?.secondaryUrl : null} open={brainModalOpen} onOpenChange={setBrainModalOpen} />
       <PrimitiveReflexModal reflex={selectedReflex} open={reflexModalOpen} onOpenChange={setReflexModalOpen} />
+      <ClinicalReasoningModal 
+        muscleName={logicMuscle} 
+        status={logicStatus} 
+        open={logicModalOpen} 
+        onOpenChange={setLogicModalOpen} 
+      />
     </div>
   );
 };

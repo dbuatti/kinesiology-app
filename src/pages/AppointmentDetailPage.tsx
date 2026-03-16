@@ -34,6 +34,7 @@ import { Button } from "@/components/ui/button";
 import { TCM_CHANNELS } from "@/data/tcm-channel-data";
 import { generateSessionSummary } from "@/utils/summary-generator";
 import { Badge } from "@/components/ui/badge";
+import { Nuclei } from "@/utils/brainstem-logic";
 
 const AppointmentDetailPage = () => {
   const { id } = useParams<{ id: string }>();
@@ -46,6 +47,7 @@ const AppointmentDetailPage = () => {
   const [cloning, setCloning] = useState(false);
   const [currentTime, setCurrentTime] = useState(new Date());
   const [showSidebar, setShowSidebar] = useState(false);
+  const [nucleiFilter, setNucleiFilter] = useState<Nuclei | null>(null);
 
   useEffect(() => {
     const timer = setInterval(() => setCurrentTime(new Date()), 60000);
@@ -102,7 +104,6 @@ const AppointmentDetailPage = () => {
         .eq('client_id', app.clients.id)
         .order('date', { ascending: true });
       
-      // Map history data to ensure date strings are converted to Date objects
       setHistory((historyData || []).map(h => ({ ...h, date: new Date(h.date) })));
 
     } catch (err) {
@@ -377,6 +378,7 @@ const AppointmentDetailPage = () => {
                   onUpdate={fetchAppointmentData} 
                   saveField={saveField} 
                   history={history}
+                  nucleiFilter={nucleiFilter}
                 />
               </div>
             </div>
@@ -388,7 +390,11 @@ const AppointmentDetailPage = () => {
                     <Brain size={18} className="text-indigo-600" />
                     <h3 className="text-sm font-black text-slate-400 uppercase tracking-[0.3em]">Brainstem Tone Map</h3>
                   </div>
-                  <BrainstemToneMap priorityPattern={appointment.priority_pattern} />
+                  <BrainstemToneMap 
+                    priorityPattern={appointment.priority_pattern} 
+                    activeFilter={nucleiFilter}
+                    onSelectNuclei={setNucleiFilter}
+                  />
                 </div>
 
                 <AppointmentContextCards 

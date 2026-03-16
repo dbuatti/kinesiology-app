@@ -87,16 +87,16 @@ const AssessmentItem = ({
         "bg-white border-slate-100 hover:border-indigo-200 hover:shadow-lg"
       )}
     >
-      {/* Quick Calibrate Action */}
-      <button
-        onClick={(e) => { e.stopPropagation(); onQuickCalibrate(); }}
-        className={cn(
-          "absolute top-3 right-3 w-8 h-8 rounded-xl flex items-center justify-center shadow-lg transition-all z-30",
-          hasInhibition ? "bg-amber-500 text-white scale-110" : "bg-slate-100 text-slate-400 hover:bg-amber-400 hover:text-white"
-        )}
-      >
-        <Zap size={14} className={cn(hasInhibition && "fill-current")} />
-      </button>
+      {/* Quick Calibrate Action - Only visible when inhibited */}
+      {hasInhibition && (
+        <button
+          onClick={(e) => { e.stopPropagation(); onQuickCalibrate(); }}
+          className="absolute top-3 right-3 w-8 h-8 rounded-xl flex items-center justify-center shadow-lg transition-all z-30 bg-amber-500 text-white scale-110 hover:scale-125 hover:bg-amber-600 animate-in zoom-in duration-300"
+          title="Correct this inhibition"
+        >
+          <Zap size={14} className="fill-current" />
+        </button>
+      )}
 
       <div className="flex items-start justify-between mb-3 pr-8">
         <div className="flex flex-col min-w-0">
@@ -454,11 +454,7 @@ const PathwayAssessment = ({ initialValue, previousValue, history = [], onSave, 
   };
 
   const handleQuickCalibrate = (category: string, item: string) => {
-    const newResults = { ...results };
-    if (!newResults[category]) newResults[category] = {};
-    newResults[category][item] = 'Inhibited';
-    setResults(newResults);
-    onSave(JSON.stringify(newResults));
+    // The item is already inhibited if the button is visible
     if (onJumpToCalibrate) {
       onJumpToCalibrate(item);
     }

@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useRef, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { 
   Home, 
@@ -53,6 +53,7 @@ const SessionContentSwitcher = ({ appointment, onUpdate, saveField, history = []
   const [activeView, setActiveView] = useState<ActiveView>('home');
   const [activeTab, setActiveTab] = useState('baseline');
   const [preselectedFinding, setPreselectedFinding] = useState<string | null>(null);
+  const wizardRef = useRef<HTMLDivElement>(null);
   
   const tabStatus = useMemo(() => ({
     baseline: !!(appointment.bolt_score || appointment.coherence_score || appointment.sagittal_plane_notes || appointment.fakuda_notes || appointment.lymphatic_priority_zone),
@@ -64,16 +65,39 @@ const SessionContentSwitcher = ({ appointment, onUpdate, saveField, history = []
 
   const previousSession = useMemo(() => {
     if (!history || history.length < 2) return null;
-    const sorted = [...history].sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+    const sorted = [...history].sort((a, b) => b.date.getTime() - a.date.getTime());
     const currentIndex = sorted.findIndex(s => s.id === appointment.id);
     return sorted[currentIndex + 1] || null;
   }, [history, appointment.id]);
 
+  const scrollToWizard = () => {
+    setTimeout(() => {
+      if (wizardRef.current) {
+        const offset = 100; // Account for fixed headers
+        const bodyRect = document.body.getBoundingClientRect().top;
+        const elementRect = wizardRef.current.getBoundingClientRect().top;
+        const elementPosition = elementRect - bodyRect;
+        const offsetPosition = elementPosition - offset;
+
+        const scrollContainer = document.querySelector('main') || window;
+        scrollContainer.scrollTo({
+          top: offsetPosition,
+          behavior: 'smooth'
+        });
+      }
+    }, 100);
+  };
+
   const handleNextTab = () => {
     const currentIndex = TABS.findIndex(t => t.id === activeTab);
     if (currentIndex < TABS.length - 1) {
-      setActiveTab(TABS[currentIndex + 1].id);
-      window.scrollTo({ top: 0, behavior: 'smooth' });
+      const nextTabId = TABS[currentIndex + 1].id;
+      setActiveTab(nextTabId);
+      if (nextTabId === 'calibration') {
+        scrollToWizard();
+      } else {
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      }
     }
   };
 
@@ -100,7 +124,7 @@ const SessionContentSwitcher = ({ appointment, onUpdate, saveField, history = []
   const handleJumpToCalibrate = (itemName: string) => {
     setPreselectedFinding(itemName);
     setActiveTab('calibration');
-    window.scrollTo({ top: 0, behavior: 'smooth' });
+    scrollToWizard();
   };
 
   const NavItem = ({ view, label, Icon }: { view: ActiveView, label: string, Icon: React.ElementType }) => (
@@ -145,7 +169,10 @@ const SessionContentSwitcher = ({ appointment, onUpdate, saveField, history = []
 
   const renderHomeView = () => (
     <div className="space-y-10">
-      <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+      <Tabs value={activeTab} onValueChange={(v) => {
+        setActiveTab(v);
+        if (v === 'calibration') scrollToWizard();
+      }} className="w-full">
         <TabsList className="grid w-full grid-cols-5 h-16 bg-muted/50 p-1.5 rounded-[1.5rem]">
           {TABS.map((tab, i) => (
             <TabsTrigger 
@@ -185,12 +212,14 @@ const SessionContentSwitcher = ({ appointment, onUpdate, saveField, history = []
           </TabsContent>
 
           <TabsContent value="calibration" className="focus-visible:ring-0">
-            <PathwayLogicWizard
-              onSave={(summary) => saveField('modes_balances', summary)}
-              onClearItem={handleClearItem}
-              priorityPattern={appointment.priority_pattern}
-              initialFinding={preselectedFinding}
-            />
+            <div ref={wizardRef}>
+              <PathwayLogicWizard
+                onSave={(summary) => saveField('modes_balances', summary)}
+                onClearItem={handleClearItem}
+                priorityPattern={appointment.priority_pattern}
+                initialFinding={preselectedFinding}
+              />
+            </div>
             <TabFooter nextLabel="Session Review" />
           </TabsContent>
 

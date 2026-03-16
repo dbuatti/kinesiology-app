@@ -24,7 +24,7 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import { format } from "date-fns";
-import AppLayout from "@/components/crm/AppLayout";
+import AppLayout from "@/components/shared/AppLayout";
 import { cn } from "@/lib/utils";
 
 interface ClientWithStats extends Client {
@@ -94,7 +94,7 @@ const ClientsPage = () => {
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-6">
           <div>
             <h1 className="text-4xl font-black tracking-tight text-foreground">Clients</h1>
-            <p className="text-muted-foreground font-medium mt-1">Manage your kinesiology client database and history.</p>
+            <p className="text-muted-foreground font-medium mt-1 text-lg">Manage your kinesiology client database and history.</p>
           </div>
           <Dialog open={open} onOpenChange={setOpen}>
             <DialogTrigger asChild>

@@ -15,7 +15,7 @@ import {
   FileText
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
-import AppLayout from '@/components/crm/AppLayout';
+import AppLayout from '@/components/shared/AppLayout';
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent } from "@/components/ui/card";
 import { format } from "date-fns";

@@ -55,6 +55,7 @@ import { Input } from "@/components/ui/input";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import CalendarView from "@/components/crm/CalendarView";
 import QuickAssessmentModal from "@/components/crm/QuickAssessmentModal";
+import AppLayout from "@/components/shared/AppLayout";
 
 interface AppointmentWithClient extends Appointment {
   clients: { name: string; id: string; latest_bolt?: number | null };
@@ -363,178 +364,180 @@ const AppointmentsPage = () => {
   };
 
   return (
-    <div className="p-4 md:p-8 max-w-full mx-auto space-y-10">
-      <Breadcrumbs items={[{ label: "Appointments" }]} />
-      
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-6">
-        <div>
-          <h1 className="text-4xl font-black tracking-tight text-foreground">Appointments</h1>
-          <p className="text-muted-foreground font-medium mt-1">View and manage upcoming and past clinical sessions</p>
-        </div>
-        <div className="flex items-center gap-3">
-          <div className="flex items-center gap-1 bg-muted p-1 rounded-xl">
-            <Button 
-              variant={viewMode === 'list' ? 'default' : 'ghost'} 
-              size="sm" 
-              onClick={() => setViewMode('list')}
-              className={cn("rounded-lg h-9 px-4 font-bold text-xs uppercase tracking-widest", viewMode === 'list' ? "bg-card text-indigo-600 shadow-sm hover:bg-card" : "text-muted-foreground")}
-            >
-              <List size={16} className="mr-2" /> List
-            </Button>
-            <Button 
-              variant={viewMode === 'calendar' ? 'default' : 'ghost'} 
-              size="sm" 
-              onClick={() => setViewMode('calendar')}
-              className={cn("rounded-lg h-9 px-4 font-bold text-xs uppercase tracking-widest", viewMode === 'calendar' ? "bg-card text-indigo-600 shadow-sm hover:bg-card" : "text-muted-foreground")}
-            >
-              <LayoutGrid size={16} className="mr-2" /> Calendar
-            </Button>
-          </div>
-          <Dialog open={open} onOpenChange={setOpen}>
-            <DialogTrigger asChild>
-              <Button className="bg-indigo-600 hover:bg-indigo-700 shadow-xl shadow-indigo-100 dark:shadow-indigo-900/20 rounded-2xl h-12 px-8 font-black text-xs uppercase tracking-widest">
-                <Plus size={20} className="mr-2" /> New Appointment
-              </Button>
-            </DialogTrigger>
-            <DialogContent className="sm:max-w-[500px] rounded-[2rem]">
-              <DialogHeader>
-                <DialogTitle className="text-2xl font-black">Schedule New Appointment</DialogTitle>
-              </DialogHeader>
-              <AppointmentForm 
-                onSuccess={() => {
-                  setOpen(false);
-                  fetchAppointments();
-                }} 
-              />
-            </DialogContent>
-          </Dialog>
-        </div>
-      </div>
-
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-        <Card className="border-none shadow-sm bg-card rounded-2xl p-4 flex items-center gap-4">
-          <div className="w-10 h-10 rounded-xl bg-rose-50 dark:bg-rose-900/20 text-rose-600 dark:text-rose-400 flex items-center justify-center">
-            <Zap size={20} className="fill-current" />
-          </div>
-          <div>
-            <p className="text-[10px] font-black text-muted-foreground uppercase tracking-widest">Today</p>
-            <p className="text-xl font-black text-foreground">{stats.today}</p>
-          </div>
-        </Card>
-        <Card className="border-none shadow-sm bg-card rounded-2xl p-4 flex items-center gap-4">
-          <div className="w-10 h-10 rounded-xl bg-indigo-50 dark:bg-indigo-900/20 text-indigo-600 dark:text-indigo-400 flex items-center justify-center">
-            <CalendarDays size={20} />
-          </div>
-          <div>
-            <p className="text-[10px] font-black text-muted-foreground uppercase tracking-widest">This Month</p>
-            <p className="text-xl font-black text-foreground">{stats.month}</p>
-          </div>
-        </Card>
-        <Card className="border-none shadow-sm bg-card rounded-2xl p-4 flex items-center gap-4">
-          <div className="w-10 h-10 rounded-xl bg-amber-50 dark:bg-amber-900/20 text-amber-600 dark:text-amber-400 flex items-center justify-center">
-            <CircleDashed size={20} />
-          </div>
-          <div>
-            <p className="text-[10px] font-black text-muted-foreground uppercase tracking-widest">Scheduled</p>
-            <p className="text-xl font-black text-foreground">{stats.pending}</p>
-          </div>
-        </Card>
-        <Card className="border-none shadow-sm bg-card rounded-2xl p-4 flex items-center gap-4">
-          <div className="w-10 h-10 rounded-xl bg-emerald-50 dark:bg-emerald-900/20 text-emerald-600 dark:text-emerald-400 flex items-center justify-center">
-            <CheckCircle size={20} />
-          </div>
-          <div>
-            <p className="text-[10px] font-black text-muted-foreground uppercase tracking-widest">Completed</p>
-            <p className="text-xl font-black text-foreground">{stats.completed}</p>
-          </div>
-        </Card>
-      </div>
-
-      <div className="flex flex-col md:flex-row gap-4 items-center justify-between">
-        <div className="relative w-full max-w-md">
-          <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground" size={18} />
-          <Input 
-            placeholder="Search by client name or tag..." 
-            className="pl-12 bg-card border-border h-12 rounded-2xl shadow-sm font-medium focus:ring-2 focus:ring-indigo-500"
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-          />
-        </div>
+    <AppLayout>
+      <div className="space-y-10">
+        <Breadcrumbs items={[{ label: "Appointments" }]} />
         
-        <Tabs value={statusFilter} onValueChange={setStatusFilter} className="w-full md:w-auto">
-          <TabsList className="grid grid-cols-3 h-12 bg-muted p-1 rounded-xl">
-            <TabsTrigger value="all" className="rounded-lg text-[10px] font-black uppercase tracking-widest">All</TabsTrigger>
-            <TabsTrigger value="Scheduled" className="rounded-lg text-[10px] font-black uppercase tracking-widest">Scheduled</TabsTrigger>
-            <TabsTrigger value="Completed" className="rounded-lg text-[10px] font-black uppercase tracking-widest">Completed</TabsTrigger>
-          </TabsList>
-        </Tabs>
-      </div>
-
-      {loading ? (
-        <div className="p-24 flex flex-col items-center justify-center gap-6">
-          <Loader2 className="animate-spin text-indigo-500" size={48} />
-          <p className="text-muted-foreground font-bold uppercase tracking-widest text-xs">Loading your schedule...</p>
-        </div>
-      ) : viewMode === 'calendar' ? (
-        <CalendarView appointments={filteredAppointments} />
-      ) : (
-        <div className="space-y-16">
-          {todaySessions.length > 0 && (
-            <div className="space-y-6">
-              <div className="flex items-center gap-4 px-2">
-                <div className="w-12 h-12 rounded-2xl bg-rose-100 dark:bg-rose-900/30 flex items-center justify-center text-rose-600 dark:text-rose-400 flex-shrink-0 shadow-sm">
-                  <Zap size={24} className="fill-current" />
-                </div>
-                <h2 className="text-2xl font-black text-foreground tracking-tight">Today's Sessions</h2>
-                <div className="flex-1 h-[2px] bg-rose-100 dark:bg-rose-900/30 rounded-full opacity-50" />
-              </div>
-              <div className="grid gap-6">
-                {todaySessions.map(app => <AppointmentCard key={app.id} app={app} />)}
-              </div>
-            </div>
-          )}
-
-          {grouped.map(([month, apps]) => (
-            <div key={month} className="space-y-6">
-              <div className="flex items-center gap-4 px-2">
-                <div className="w-12 h-12 rounded-2xl bg-indigo-100 dark:bg-indigo-900/30 flex items-center justify-center text-indigo-600 dark:text-indigo-400 flex-shrink-0 shadow-sm">
-                  <CalendarIcon size={24} />
-                </div>
-                <h2 className="text-2xl font-black text-foreground tracking-tight">{month}</h2>
-                <div className="flex-1 h-[2px] bg-border rounded-full opacity-50" />
-              </div>
-              <div className="grid gap-6">
-                {apps.map(app => <AppointmentCard key={app.id} app={app} />)}
-              </div>
-            </div>
-          ))}
-
-          {filteredAppointments.length === 0 && (
-            <div className="text-center py-32 bg-muted/30 rounded-[3rem] border-2 border-dashed border-border">
-              <div className="w-20 h-20 bg-card rounded-3xl flex items-center justify-center mx-auto mb-6 shadow-xl">
-                <CalendarIcon className="text-muted-foreground" size={40} />
-              </div>
-              <p className="text-foreground font-black text-xl">No appointments found</p>
-              <p className="text-muted-foreground mt-2 mb-8 font-medium">Try adjusting your search or schedule a new session.</p>
-              <Button variant="outline" className="h-12 px-8 border-border hover:bg-card rounded-2xl font-bold" onClick={() => { setSearch(""); setStatusFilter("all"); setOpen(true); }}>
-                Schedule First Session
+        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-6">
+          <div>
+            <h1 className="text-4xl font-black tracking-tight text-foreground">Appointments</h1>
+            <p className="text-muted-foreground font-medium mt-1">View and manage upcoming and past clinical sessions</p>
+          </div>
+          <div className="flex items-center gap-3">
+            <div className="flex items-center gap-1 bg-muted p-1 rounded-xl">
+              <Button 
+                variant={viewMode === 'list' ? 'default' : 'ghost'} 
+                size="sm" 
+                onClick={() => setViewMode('list')}
+                className={cn("rounded-lg h-9 px-4 font-bold text-xs uppercase tracking-widest", viewMode === 'list' ? "bg-card text-indigo-600 shadow-sm hover:bg-card" : "text-muted-foreground")}
+              >
+                <List size={16} className="mr-2" /> List
+              </Button>
+              <Button 
+                variant={viewMode === 'calendar' ? 'default' : 'ghost'} 
+                size="sm" 
+                onClick={() => setViewMode('calendar')}
+                className={cn("rounded-lg h-9 px-4 font-bold text-xs uppercase tracking-widest", viewMode === 'calendar' ? "bg-card text-indigo-600 shadow-sm hover:bg-card" : "text-muted-foreground")}
+              >
+                <LayoutGrid size={16} className="mr-2" /> Calendar
               </Button>
             </div>
-          )}
+            <Dialog open={open} onOpenChange={setOpen}>
+              <DialogTrigger asChild>
+                <Button className="bg-indigo-600 hover:bg-indigo-700 shadow-xl shadow-indigo-100 dark:shadow-indigo-900/20 rounded-2xl h-12 px-8 font-black text-xs uppercase tracking-widest">
+                  <Plus size={20} className="mr-2" /> New Appointment
+                </Button>
+              </DialogTrigger>
+              <DialogContent className="sm:max-w-[500px] rounded-[2rem]">
+                <DialogHeader>
+                  <DialogTitle className="text-2xl font-black">Schedule New Appointment</DialogTitle>
+                </DialogHeader>
+                <AppointmentForm 
+                  onSuccess={() => {
+                    setOpen(false);
+                    fetchAppointments();
+                  }} 
+                />
+              </DialogContent>
+            </Dialog>
+          </div>
         </div>
-      )}
 
-      {assessmentModal && (
-        <QuickAssessmentModal 
-          open={assessmentModal.open}
-          onOpenChange={(open) => !open && setAssessmentModal(null)}
-          clientId={assessmentModal.clientId}
-          clientName={assessmentModal.clientName}
-          type={assessmentModal.type}
-          onComplete={fetchAppointments}
-        />
-      )}
-    </div>
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+          <Card className="border-none shadow-sm bg-card rounded-2xl p-4 flex items-center gap-4">
+            <div className="w-10 h-10 rounded-xl bg-rose-50 dark:bg-rose-900/20 text-rose-600 dark:text-rose-400 flex items-center justify-center">
+              <Zap size={20} className="fill-current" />
+            </div>
+            <div>
+              <p className="text-[10px] font-black text-muted-foreground uppercase tracking-widest">Today</p>
+              <p className="text-xl font-black text-foreground">{stats.today}</p>
+            </div>
+          </Card>
+          <Card className="border-none shadow-sm bg-card rounded-2xl p-4 flex items-center gap-4">
+            <div className="w-10 h-10 rounded-xl bg-indigo-50 dark:bg-indigo-900/20 text-indigo-600 dark:text-indigo-400 flex items-center justify-center">
+              <CalendarDays size={20} />
+            </div>
+            <div>
+              <p className="text-[10px] font-black text-muted-foreground uppercase tracking-widest">This Month</p>
+              <p className="text-xl font-black text-foreground">{stats.month}</p>
+            </div>
+          </Card>
+          <Card className="border-none shadow-sm bg-card rounded-2xl p-4 flex items-center gap-4">
+            <div className="w-10 h-10 rounded-xl bg-amber-50 dark:bg-amber-900/20 text-amber-600 dark:text-amber-400 flex items-center justify-center">
+              <CircleDashed size={20} />
+            </div>
+            <div>
+              <p className="text-[10px] font-black text-muted-foreground uppercase tracking-widest">Scheduled</p>
+              <p className="text-xl font-black text-foreground">{stats.pending}</p>
+            </div>
+          </Card>
+          <Card className="border-none shadow-sm bg-card rounded-2xl p-4 flex items-center gap-4">
+            <div className="w-10 h-10 rounded-xl bg-emerald-50 dark:bg-emerald-900/20 text-emerald-600 dark:text-emerald-400 flex items-center justify-center">
+              <CheckCircle size={20} />
+            </div>
+            <div>
+              <p className="text-[10px] font-black text-muted-foreground uppercase tracking-widest">Completed</p>
+              <p className="text-xl font-black text-foreground">{stats.completed}</p>
+            </div>
+          </Card>
+        </div>
+
+        <div className="flex flex-col md:flex-row gap-4 items-center justify-between">
+          <div className="relative w-full max-w-md">
+            <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground" size={18} />
+            <Input 
+              placeholder="Search by client name or tag..." 
+              className="pl-12 bg-card border-border h-12 rounded-2xl shadow-sm font-medium focus:ring-2 focus:ring-indigo-500"
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+            />
+          </div>
+          
+          <Tabs value={statusFilter} onValueChange={setStatusFilter} className="w-full md:w-auto">
+            <TabsList className="grid grid-cols-3 h-12 bg-muted p-1 rounded-xl">
+              <TabsTrigger value="all" className="rounded-lg text-[10px] font-black uppercase tracking-widest">All</TabsTrigger>
+              <TabsTrigger value="Scheduled" className="rounded-lg text-[10px] font-black uppercase tracking-widest">Scheduled</TabsTrigger>
+              <TabsTrigger value="Completed" className="rounded-lg text-[10px] font-black uppercase tracking-widest">Completed</TabsTrigger>
+            </TabsList>
+          </Tabs>
+        </div>
+
+        {loading ? (
+          <div className="p-24 flex flex-col items-center justify-center gap-6">
+            <Loader2 className="animate-spin text-indigo-500" size={48} />
+            <p className="text-muted-foreground font-bold uppercase tracking-widest text-xs">Loading your schedule...</p>
+          </div>
+        ) : viewMode === 'calendar' ? (
+          <CalendarView appointments={filteredAppointments} />
+        ) : (
+          <div className="space-y-16">
+            {todaySessions.length > 0 && (
+              <div className="space-y-6">
+                <div className="flex items-center gap-4 px-2">
+                  <div className="w-12 h-12 rounded-2xl bg-rose-100 dark:bg-rose-900/30 flex items-center justify-center text-rose-600 dark:text-rose-400 flex-shrink-0 shadow-sm">
+                    <Zap size={24} className="fill-current" />
+                  </div>
+                  <h2 className="text-2xl font-black text-foreground tracking-tight">Today's Sessions</h2>
+                  <div className="flex-1 h-[2px] bg-rose-100 dark:bg-rose-900/30 rounded-full opacity-50" />
+                </div>
+                <div className="grid gap-6">
+                  {todaySessions.map(app => <AppointmentCard key={app.id} app={app} />)}
+                </div>
+              </div>
+            )}
+
+            {grouped.map(([month, apps]) => (
+              <div key={month} className="space-y-6">
+                <div className="flex items-center gap-4 px-2">
+                  <div className="w-12 h-12 rounded-2xl bg-indigo-100 dark:bg-indigo-900/30 flex items-center justify-center text-indigo-600 dark:text-indigo-400 flex-shrink-0 shadow-sm">
+                    <CalendarIcon size={24} />
+                  </div>
+                  <h2 className="text-2xl font-black text-foreground tracking-tight">{month}</h2>
+                  <div className="flex-1 h-[2px] bg-border rounded-full opacity-50" />
+                </div>
+                <div className="grid gap-6">
+                  {apps.map(app => <AppointmentCard key={app.id} app={app} />)}
+                </div>
+              </div>
+            ))}
+
+            {filteredAppointments.length === 0 && (
+              <div className="text-center py-32 bg-muted/30 rounded-[3rem] border-2 border-dashed border-border">
+                <div className="w-20 h-20 bg-card rounded-3xl flex items-center justify-center mx-auto mb-6 shadow-xl">
+                  <CalendarIcon className="text-muted-foreground" size={40} />
+                </div>
+                <p className="text-foreground font-black text-xl">No appointments found</p>
+                <p className="text-muted-foreground mt-2 mb-8 font-medium">Try adjusting your search or schedule a new session.</p>
+                <Button variant="outline" className="h-12 px-8 border-border hover:bg-card rounded-2xl font-bold" onClick={() => { setSearch(""); setStatusFilter("all"); setOpen(true); }}>
+                  Schedule First Session
+                </Button>
+              </div>
+            )}
+          </div>
+        )}
+
+        {assessmentModal && (
+          <QuickAssessmentModal 
+            open={assessmentModal.open}
+            onOpenChange={(open) => !open && setAssessmentModal(null)}
+            clientId={assessmentModal.clientId}
+            clientName={assessmentModal.clientName}
+            type={assessmentModal.type}
+            onComplete={fetchAppointments}
+          />
+        )}
+      </div>
+    </AppLayout>
   );
 };
 

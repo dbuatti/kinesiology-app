@@ -15,7 +15,7 @@ import { showSuccess, showError } from "@/utils/toast";
 import { cn } from "@/lib/utils";
 import EditableField from "@/components/shared/EditableField";
 import SessionTimer from "@/components/crm/SessionTimer";
-import AppLayout from "@/components/crm/AppLayout";
+import AppLayout from "@/components/shared/AppLayout";
 import SessionContentSwitcher from "@/components/crm/SessionContentSwitcher";
 import PreviousSessionInsightsBar from "@/components/crm/PreviousSessionInsightsBar";
 import AppointmentHeader from "@/components/crm/AppointmentHeader";
@@ -250,8 +250,8 @@ const AppointmentDetailPage = () => {
         onFixedHeaderChange={setIsFixedHeaderActive} 
         onCompleteSession={handleCompleteSession}
       />
-      <AppLayout hasFixedHeader={isFixedHeaderActive}>
-        <div className="flex flex-col gap-8 print:p-0 max-w-[1600px] mx-auto">
+      <AppLayout variant="wide" hasFixedHeader={isFixedHeaderActive}>
+        <div className="flex flex-col gap-8 print:p-0">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 print:hidden">
             <Breadcrumbs 
               items={[

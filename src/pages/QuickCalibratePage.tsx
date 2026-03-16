@@ -1,7 +1,7 @@
 "use client";
 
 import React from "react";
-import AppLayout from "@/components/crm/AppLayout";
+import AppLayout from "@/components/shared/AppLayout";
 import Breadcrumbs from "@/components/shared/Breadcrumbs";
 import PathwayLogicWizard from "@/components/crm/PathwayLogicWizard";
 import { Zap, ShieldCheck, Info } from "lucide-react";
@@ -10,7 +10,7 @@ import { MadeWithDyad } from "@/components/made-with-dyad";
 
 const QuickCalibratePage = () => {
   return (
-    <AppLayout fullWidth>
+    <AppLayout variant="full">
       <div className="space-y-8 w-full">
         <Breadcrumbs 
           items={[

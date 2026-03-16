@@ -155,10 +155,10 @@ export const CRANIAL_NERVES: CranialNerve[] = [
     latinName: "Hypoglossal",
     nuclei: "Medulla",
     toneEffect: "Flexors",
-    reflexPoint: "Sulcus under chin",
+    reflexPoint: "Sulcus under the chin",
     functions: ["Tongue movement"],
-    stimulus: "Move tongue in various directions.",
-    clinicalPearl: "Nuclei located deep in the medulla.",
+    stimulus: "1. Test reflex point under the chin. 2. If inhibited, push tongue straight out, then move it right, left, up, and down to identify the dysfunctional direction.",
+    clinicalPearl: "Primary control of the tongue. Key component of the Medial Longitudinal Fasciculus (MLF) alongside the eyes, jaw, and inner ear for balance. Vital for midline stability and arises from the Medulla.",
     color: "bg-rose-800"
   }
 ];

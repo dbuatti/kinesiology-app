@@ -143,10 +143,10 @@ export const CRANIAL_NERVES: CranialNerve[] = [
     latinName: "Accessory",
     nuclei: "Medulla",
     toneEffect: "Flexors",
-    reflexPoint: "Posterior ramus of jaw",
+    reflexPoint: "SCM and Upper Trapezius muscle bellies",
     functions: ["SCM and Trapezius control"],
-    stimulus: "Shrug shoulders or rotate head against resistance.",
-    clinicalPearl: "Unique as it has both cranial and spinal roots.",
+    stimulus: "1. Tap SCM and contralateral Upper Trapezius bellies simultaneously and test IM. 2. Alternatively, activate both muscles (shrug + head rotation) and test. Logic: L Accessory = L SCM + R Trap; R Accessory = R SCM + L Trap.",
+    clinicalPearl: "Closely linked with CN 9 and 10 in the Medulla. SCM and Trapezius have dual innervation (Accessory + C2/C3). Key player in head, neck, shoulder, visual, and even pelvic issues.",
     color: "bg-rose-700"
   },
   {

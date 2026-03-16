@@ -35,7 +35,8 @@ import {
   CheckCircle2,
   Baby,
   Palette,
-  FileText
+  FileText,
+  Volume2
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -85,6 +86,7 @@ const CATEGORIES = [
     borderColor: "border-purple-100 dark:border-purple-900/30",
     items: [
       { id: "north-star", label: "North Star", icon: Compass, desc: "Define your core intention and commitment.", path: "/resources/worksheets/north-star" },
+      { id: "inner-awareness", label: "Inner Awareness", icon: ShieldCheck, desc: "Daily practice for sovereignty and state.", path: "/resources/worksheets/inner-awareness" },
       { id: "week-3", label: "Week 3: Curses", icon: ShieldCheck, desc: "Releasing generational trauma imprints.", path: "/resources/worksheets/week-3" },
       { id: "fear-creativity", label: "Fear & Creativity", icon: Palette, desc: "Awareness of fear in the body and mind.", path: "/resources/worksheets/fear-creativity" },
     ]

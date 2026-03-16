@@ -32,6 +32,7 @@ import SettingsPage from "./pages/SettingsPage";
 import NorthStarPage from "./pages/NorthStarPage";
 import Week3WorksheetPage from "./pages/Week3WorksheetPage";
 import FearCreativityWorksheetPage from "./pages/FearCreativityWorksheetPage";
+import InnerAwarenessWorksheetPage from "./pages/InnerAwarenessWorksheetPage";
 import QuickCalibratePage from "./pages/QuickCalibratePage";
 import NotFound from "./pages/NotFound";
 
@@ -86,6 +87,7 @@ const AppRoutes = () => {
           <Route path="/resources/worksheets/north-star" element={<PageTransition><NorthStarPage /></PageTransition>} />
           <Route path="/resources/worksheets/week-3" element={<PageTransition><Week3WorksheetPage /></PageTransition>} />
           <Route path="/resources/worksheets/fear-creativity" element={<PageTransition><FearCreativityWorksheetPage /></PageTransition>} />
+          <Route path="/resources/worksheets/inner-awareness" element={<PageTransition><InnerAwarenessWorksheetPage /></PageTransition>} />
           
           {/* System */}
           <Route path="/settings" element={<PageTransition><SettingsPage /></PageTransition>} />

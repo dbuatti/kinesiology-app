@@ -22,7 +22,10 @@ import {
   ChevronDown,
   ChevronUp,
   UserPlus,
-  Workflow
+  Workflow,
+  Database,
+  Bug,
+  Sparkles
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import SearchBar from "./SearchBar";
@@ -60,29 +63,39 @@ const Sidebar = ({ onHide }: SidebarProps) => {
   const [helpOpen, setHelpOpen] = useState(false);
   const [clientDialogOpen, setClientDialogOpen] = useState(false);
   const [appDialogOpen, setAppDialogOpen] = useState(false);
+  
+  const [clinicalOpen, setClinicalOpen] = useState(true);
   const [practiceOpen, setPracticeOpen] = useState(true);
-  const [resourcesOpen, setResourcesOpen] = useState(true);
+  const [resourcesOpen, setResourcesOpen] = useState(false);
+  const [systemOpen, setSystemOpen] = useState(false);
   
   const activeSession = useActiveSession();
   const { practiceHealth } = usePracticeStats();
   const { recentClients } = useRecentClients();
   
-  const coreNavItems = [
+  const clinicalItems = [
     { label: "Dashboard", icon: LayoutDashboard, path: "/", shortcut: "⌘D" },
     { label: "Clients", icon: Users, path: "/clients", shortcut: "⌘1" },
     { label: "Appointments", icon: Calendar, path: "/appointments", shortcut: "⌘2" },
     { label: "Oversight", icon: TrendingUp, path: "/oversight", shortcut: "⌘O" },
   ];
 
-  const practiceNavItems = [
-    { label: "Quick Calibrate", icon: Zap, path: "/quick-calibrate", shortcut: "⌘Q" },
-    { label: "Self Practice", icon: Heart, path: "/self-practice", shortcut: "⌘S" },
-    { label: "Procedures", icon: Target, path: "/procedures", shortcut: "⌘P" },
+  const practiceItems = [
+    { label: "Quick Calibrate", icon: Zap, path: "/practice/calibrate", shortcut: "⌘Q" },
+    { label: "Self Practice", icon: Heart, path: "/practice/self", shortcut: "⌘S" },
+    { label: "Procedures", icon: Target, path: "/practice/procedures", shortcut: "⌘P" },
   ];
 
-  const resourceNavItems = [
-    { label: "North Star", icon: Compass, path: "/north-star", shortcut: "⌘N" },
-    { label: "Resources", icon: BookOpen, path: "/resources", shortcut: "⌘R" },
+  const resourceItems = [
+    { label: "Knowledge Base", icon: BookOpen, path: "/resources", shortcut: "⌘R" },
+    { label: "North Star", icon: Compass, path: "/resources/worksheets/north-star", shortcut: "⌘N" },
+  ];
+
+  const systemItems = [
+    { label: "Settings", icon: Settings, path: "/settings" },
+    { label: "Data Import", icon: Database, path: "/settings/import" },
+    { label: "Demo Session", icon: Sparkles, path: "/settings/demo" },
+    { label: "Debug", icon: Bug, path: "/settings/debug" },
   ];
 
   useEffect(() => {
@@ -92,12 +105,12 @@ const Sidebar = ({ onHide }: SidebarProps) => {
           case 'd': e.preventDefault(); navigate('/'); break;
           case '1': e.preventDefault(); navigate('/clients'); break;
           case '2': e.preventDefault(); navigate('/appointments'); break;
-          case 'n': e.preventDefault(); navigate('/north-star'); break;
+          case 'n': e.preventDefault(); navigate('/resources/worksheets/north-star'); break;
           case 'o': e.preventDefault(); navigate('/oversight'); break;
-          case 's': e.preventDefault(); navigate('/self-practice'); break;
-          case 'p': e.preventDefault(); navigate('/procedures'); break;
+          case 's': e.preventDefault(); navigate('/practice/self'); break;
+          case 'p': e.preventDefault(); navigate('/practice/procedures'); break;
           case 'r': e.preventDefault(); navigate('/resources'); break;
-          case 'q': e.preventDefault(); navigate('/quick-calibrate'); break;
+          case 'q': e.preventDefault(); navigate('/practice/calibrate'); break;
           case '/': e.preventDefault(); setHelpOpen(true); break;
           case '[': e.preventDefault(); onHide?.(); break;
         }
@@ -124,15 +137,15 @@ const Sidebar = ({ onHide }: SidebarProps) => {
       <Link
         to={item.path}
         className={cn(
-          "flex items-center justify-between gap-2 px-3 py-2.5 rounded-xl transition-all duration-300 group",
+          "flex items-center justify-between gap-2 px-3 py-2 rounded-xl transition-all duration-300 group",
           isActive 
             ? "bg-indigo-600 text-white shadow-lg shadow-indigo-600/20" 
             : "text-muted-foreground hover:text-foreground hover:bg-accent/50"
         )}
       >
         <div className="flex items-center gap-3">
-          <item.icon size={18} className={cn("transition-all duration-300", isActive ? "text-white" : "text-muted-foreground group-hover:text-indigo-500")} />
-          <span className="font-bold text-[11px] uppercase tracking-widest">{item.label}</span>
+          <item.icon size={16} className={cn("transition-all duration-300", isActive ? "text-white" : "text-muted-foreground group-hover:text-indigo-500")} />
+          <span className="font-bold text-[10px] uppercase tracking-widest">{item.label}</span>
         </div>
         {item.shortcut && (
           <kbd className={cn(
@@ -159,6 +172,28 @@ const Sidebar = ({ onHide }: SidebarProps) => {
       </Tooltip>
     );
   };
+
+  const NavGroup = ({ title, icon: Icon, isOpen, onToggle, items }: any) => (
+    <div className="space-y-1">
+      <button
+        onClick={onToggle}
+        className="flex items-center justify-between w-full px-3 py-2 rounded-lg text-muted-foreground hover:text-foreground hover:bg-accent/50 transition-all group"
+      >
+        <div className="flex items-center gap-3">
+          <Icon size={16} className="text-muted-foreground group-hover:text-indigo-500" />
+          <span className="text-[9px] font-black uppercase tracking-[0.3em]">{title}</span>
+        </div>
+        {isOpen ? <ChevronUp size={12} /> : <ChevronDown size={12} />}
+      </button>
+      {isOpen && (
+        <div className="space-y-1 pl-1 animate-in fade-in slide-in-from-top-1 duration-300">
+          {items.map((item: any) => (
+            <NavItem key={item.path} item={item} />
+          ))}
+        </div>
+      )}
+    </div>
+  );
 
   return (
     <div className="hidden lg:flex w-64 bg-card dark:bg-slate-950 text-foreground min-h-screen p-4 flex-col gap-6 sticky top-0 h-screen overflow-y-auto border-r border-border shadow-2xl">
@@ -209,64 +244,15 @@ const Sidebar = ({ onHide }: SidebarProps) => {
         </Button>
       </div>
       
-      <div className="space-y-6 flex-1">
-        {/* Core Navigation */}
-        <nav className="space-y-1">
-          <div className="px-3 mb-2">
-            <p className="text-[9px] font-black text-muted-foreground uppercase tracking-[0.3em]">Core</p>
-          </div>
-          {coreNavItems.map((item) => (
-            <NavItem key={item.path} item={item} />
-          ))}
-        </nav>
-
-        {/* Practice Section */}
-        <div className="space-y-1">
-          <button
-            onClick={() => setPracticeOpen(!practiceOpen)}
-            className="flex items-center justify-between w-full px-3 py-2 rounded-lg text-muted-foreground hover:text-foreground hover:bg-accent/50 transition-all group"
-          >
-            <div className="flex items-center gap-3">
-              <Zap size={16} className="text-muted-foreground group-hover:text-amber-500" />
-              <span className="text-[9px] font-black uppercase tracking-[0.3em]">Practice</span>
-            </div>
-            {practiceOpen ? <ChevronUp size={12} /> : <ChevronDown size={12} />}
-          </button>
-          
-          {practiceOpen && (
-            <div className="space-y-1 pl-1 animate-in fade-in slide-in-from-top-1 duration-300">
-              {practiceNavItems.map((item) => (
-                <NavItem key={item.path} item={item} />
-              ))}
-            </div>
-          )}
-        </div>
-
-        {/* Resources Section */}
-        <div className="space-y-1">
-          <button
-            onClick={() => setResourcesOpen(!resourcesOpen)}
-            className="flex items-center justify-between w-full px-3 py-2 rounded-lg text-muted-foreground hover:text-foreground hover:bg-accent/50 transition-all group"
-          >
-            <div className="flex items-center gap-3">
-              <BookOpen size={16} className="text-muted-foreground group-hover:text-indigo-500" />
-              <span className="text-[9px] font-black uppercase tracking-[0.3em]">Resources</span>
-            </div>
-            {resourcesOpen ? <ChevronUp size={12} /> : <ChevronDown size={12} />}
-          </button>
-          
-          {resourcesOpen && (
-            <div className="space-y-1 pl-1 animate-in fade-in slide-in-from-top-1 duration-300">
-              {resourceNavItems.map((item) => (
-                <NavItem key={item.path} item={item} />
-              ))}
-            </div>
-          )}
-        </div>
+      <div className="space-y-4 flex-1">
+        <NavGroup title="Clinical" icon={Workflow} isOpen={clinicalOpen} onToggle={() => setClinicalOpen(!clinicalOpen)} items={clinicalItems} />
+        <NavGroup title="Practice" icon={Zap} isOpen={practiceOpen} onToggle={() => setPracticeOpen(!practiceOpen)} items={practiceItems} />
+        <NavGroup title="Resources" icon={BookOpen} isOpen={resourcesOpen} onToggle={() => setResourcesOpen(!resourcesOpen)} items={resourceItems} />
+        <NavGroup title="System" icon={Settings} isOpen={systemOpen} onToggle={() => setSystemOpen(!systemOpen)} items={systemItems} />
 
         {/* Active Session Indicator */}
         {activeSession && (
-          <div className="px-1">
+          <div className="px-1 pt-2">
             <Link 
               to={`/appointments/${activeSession.id}`}
               className="flex items-center gap-3 px-4 py-4 bg-indigo-600 rounded-2xl text-white shadow-xl shadow-indigo-600/30 hover:bg-indigo-700 transition-all duration-500 group relative overflow-hidden"
@@ -351,21 +337,6 @@ const Sidebar = ({ onHide }: SidebarProps) => {
             </TooltipContent>
           </Tooltip>
         </div>
-
-        <Tooltip>
-          <TooltipTrigger asChild>
-            <Link 
-              to="/settings"
-              className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-muted-foreground hover:text-foreground hover:bg-accent transition-all duration-300 group"
-            >
-              <Settings size={18} className="group-hover:text-indigo-500 transition-colors" />
-              <span className="font-bold text-[10px] uppercase tracking-widest">Settings</span>
-            </Link>
-          </TooltipTrigger>
-          <TooltipContent side="right" className="rounded-xl font-bold text-xs">
-            <p>Account & preferences</p>
-          </TooltipContent>
-        </Tooltip>
 
         <Tooltip>
           <TooltipTrigger asChild>

@@ -46,11 +46,11 @@ const QuickActions = () => {
       }
       if ((e.metaKey || e.ctrlKey) && e.key === 'p') {
         e.preventDefault();
-        navigate('/procedures');
+        navigate('/practice/procedures');
       }
       if ((e.metaKey || e.ctrlKey) && e.key === 'q') {
         e.preventDefault();
-        navigate('/quick-calibrate');
+        navigate('/practice/calibrate');
       }
       if ((e.metaKey || e.ctrlKey) && e.key === '/') {
         e.preventDefault();
@@ -85,7 +85,7 @@ const QuickActions = () => {
                 </div>
                 
                 <DropdownMenuItem 
-                  onClick={() => { navigate("/quick-calibrate"); setIsOpen(false); }} 
+                  onClick={() => { navigate("/practice/calibrate"); setIsOpen(false); }} 
                   className="rounded-xl py-3 px-4 cursor-pointer group"
                 >
                   <div className="w-10 h-10 rounded-xl bg-amber-50 flex items-center justify-center mr-3 group-hover:bg-amber-100 transition-colors">
@@ -137,7 +137,7 @@ const QuickActions = () => {
                 <DropdownMenuSeparator className="my-2" />
 
                 <DropdownMenuItem 
-                  onClick={() => { navigate("/procedures"); setIsOpen(false); }} 
+                  onClick={() => { navigate("/practice/procedures"); setIsOpen(false); }} 
                   className="rounded-xl py-3 px-4 cursor-pointer group"
                 >
                   <div className="w-10 h-10 rounded-xl bg-emerald-50 flex items-center justify-center mr-3 group-hover:bg-emerald-100 transition-colors">
@@ -153,7 +153,7 @@ const QuickActions = () => {
                 </DropdownMenuItem>
 
                 <DropdownMenuItem 
-                  onClick={() => { navigate("/import"); setIsOpen(false); }} 
+                  onClick={() => { navigate("/settings/import"); setIsOpen(false); }} 
                   className="rounded-xl py-3 px-4 cursor-pointer"
                 >
                   <Upload size={20} className="mr-3 text-slate-500" />

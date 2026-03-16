@@ -99,22 +99,35 @@ const AnimatedRoutes = () => {
         <AnimatePresence mode="wait">
           <Routes location={location} key={location.pathname}>
             <Route path="/" element={<PageTransition><Index /></PageTransition>} />
+            
+            {/* Clinical Hub */}
             <Route path="/clients" element={<PageTransition><ClientsPage /></PageTransition>} />
             <Route path="/clients/:id" element={<PageTransition><ClientDetailPage /></PageTransition>} />
             <Route path="/appointments" element={<PageTransition><AppointmentsPage /></PageTransition>} />
             <Route path="/appointments/:id" element={<PageTransition><AppointmentDetailPage /></PageTransition>} />
             <Route path="/oversight" element={<PageTransition><ClinicalOversightPage /></PageTransition>} />
-            <Route path="/import" element={<PageTransition><ImportPage /></PageTransition>} />
-            <Route path="/procedures" element={<PageTransition><ProceduresPage /></PageTransition>} />
+            
+            {/* Practice Lab */}
+            <Route path="/practice">
+              <Route path="calibrate" element={<PageTransition><QuickCalibratePage /></PageTransition>} />
+              <Route path="self" element={<PageTransition><SelfPracticePage /></PageTransition>} />
+              <Route path="procedures" element={<PageTransition><ProceduresPage /></PageTransition>} />
+            </Route>
+
+            {/* Knowledge Base */}
             <Route path="/resources" element={<PageTransition><ResourcesPage /></PageTransition>} />
-            <Route path="/self-practice" element={<PageTransition><SelfPracticePage /></PageTransition>} />
-            <Route path="/north-star" element={<PageTransition><NorthStarPage /></PageTransition>} />
-            <Route path="/week-3-worksheet" element={<PageTransition><Week3WorksheetPage /></PageTransition>} />
-            <Route path="/fear-creativity-worksheet" element={<PageTransition><FearCreativityWorksheetPage /></PageTransition>} />
-            <Route path="/quick-calibrate" element={<PageTransition><QuickCalibratePage /></PageTransition>} />
-            <Route path="/debug" element={<PageTransition><DebugAppointmentPage /></PageTransition>} />
-            <Route path="/demo-session" element={<PageTransition><DemoSessionPage /></PageTransition>} />
+            <Route path="/resources/worksheets">
+              <Route path="north-star" element={<PageTransition><NorthStarPage /></PageTransition>} />
+              <Route path="week-3" element={<PageTransition><Week3WorksheetPage /></PageTransition>} />
+              <Route path="fear-creativity" element={<PageTransition><FearCreativityWorksheetPage /></PageTransition>} />
+            </Route>
+            
+            {/* System & Settings */}
             <Route path="/settings" element={<PageTransition><SettingsPage /></PageTransition>} />
+            <Route path="/settings/import" element={<PageTransition><ImportPage /></PageTransition>} />
+            <Route path="/settings/debug" element={<PageTransition><DebugAppointmentPage /></PageTransition>} />
+            <Route path="/settings/demo" element={<PageTransition><DemoSessionPage /></PageTransition>} />
+            
             <Route path="*" element={<NotFound />} />
           </Routes>
         </AnimatePresence>

@@ -34,7 +34,8 @@ import {
   Timer,
   CheckCircle2,
   Baby,
-  Palette
+  Palette,
+  FileText
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -71,10 +72,21 @@ const CATEGORIES = [
     borderColor: "border-indigo-100 dark:border-indigo-900/30",
     items: [
       { id: "mechano-academy", label: "Mechano Academy", icon: Trophy, desc: "Daily clinical drills and mastery tools." },
-      { id: "intention", label: "North Star Process", icon: Compass, desc: "Define your core intention and commitment." },
-      { id: "fear-creativity", label: "Fear & Creativity", icon: Palette, desc: "Awareness of fear in the body and mind." },
       { id: "bible", label: "Mechano Bible", icon: BookOpen, desc: "Definitive guide to joints and movement geometry." },
       { id: "theory", label: "FN Theory", icon: Workflow, desc: "Functional Neurology approach and principles." },
+    ]
+  },
+  {
+    id: "worksheets",
+    label: "Worksheets",
+    icon: FileText,
+    color: "text-purple-600",
+    bgColor: "bg-purple-50 dark:bg-purple-900/20",
+    borderColor: "border-purple-100 dark:border-purple-900/30",
+    items: [
+      { id: "north-star", label: "North Star", icon: Compass, desc: "Define your core intention and commitment.", path: "/resources/worksheets/north-star" },
+      { id: "week-3", label: "Week 3: Curses", icon: ShieldCheck, desc: "Releasing generational trauma imprints.", path: "/resources/worksheets/week-3" },
+      { id: "fear-creativity", label: "Fear & Creativity", icon: Palette, desc: "Awareness of fear in the body and mind.", path: "/resources/worksheets/fear-creativity" },
     ]
   },
   {
@@ -146,7 +158,7 @@ const ResourcesPage = () => {
           <Badge className="bg-indigo-100 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-400 border-indigo-200 dark:border-indigo-900/50 font-black text-[10px] uppercase tracking-[0.3em] px-4 py-1 mb-2">
             Integrated Healer
           </Badge>
-          <h1 className="text-4xl font-black tracking-tight text-foreground">Resources & Exercises</h1>
+          <h1 className="text-4xl font-black tracking-tight text-foreground">Knowledge Base</h1>
           <p className="text-muted-foreground font-medium mt-1 text-lg">Tools for your transformation journey and clinical practice.</p>
         </div>
         {activeTab !== "hub" && (
@@ -174,27 +186,31 @@ const ResourcesPage = () => {
 
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
                 {category.items.map((item) => (
-                  <Card 
+                  <Link 
                     key={item.id} 
-                    className="border-none shadow-md rounded-[2rem] bg-card hover:shadow-xl hover:-translate-y-1 transition-all duration-300 group cursor-pointer overflow-hidden"
-                    onClick={() => handleTabChange(item.id)}
+                    to={(item as any).path || `/resources?tab=${item.id}`}
+                    className="block"
                   >
-                    <CardContent className="p-8 space-y-4">
-                      <div className={cn(
-                        "w-12 h-12 rounded-2xl flex items-center justify-center transition-all duration-500 group-hover:scale-110 shadow-sm",
-                        category.bgColor, category.color
-                      )}>
-                        <item.icon size={24} />
-                      </div>
-                      <div>
-                        <h3 className="text-lg font-black text-foreground group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors">{item.label}</h3>
-                        <p className="text-xs text-muted-foreground font-medium mt-1 leading-relaxed">{item.desc}</p>
-                      </div>
-                      <div className="pt-2 flex items-center text-[10px] font-black uppercase tracking-widest text-muted-foreground group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors">
-                        Open Tool <ChevronRight size={12} className="ml-1 group-hover:translate-x-1 transition-transform" />
-                      </div>
-                    </CardContent>
-                  </Card>
+                    <Card 
+                      className="border-none shadow-md rounded-[2rem] bg-card hover:shadow-xl hover:-translate-y-1 transition-all duration-300 group cursor-pointer overflow-hidden h-full"
+                    >
+                      <CardContent className="p-8 space-y-4">
+                        <div className={cn(
+                          "w-12 h-12 rounded-2xl flex items-center justify-center transition-all duration-500 group-hover:scale-110 shadow-sm",
+                          category.bgColor, category.color
+                        )}>
+                          <item.icon size={24} />
+                        </div>
+                        <div>
+                          <h3 className="text-lg font-black text-foreground group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors">{item.label}</h3>
+                          <p className="text-xs text-muted-foreground font-medium mt-1 leading-relaxed">{item.desc}</p>
+                        </div>
+                        <div className="pt-2 flex items-center text-[10px] font-black uppercase tracking-widest text-muted-foreground group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors">
+                          Open Tool <ChevronRight size={12} className="ml-1 group-hover:translate-x-1 transition-transform" />
+                        </div>
+                      </CardContent>
+                    </Card>
+                  </Link>
                 ))}
               </div>
             </div>
@@ -222,87 +238,8 @@ const ResourcesPage = () => {
           <div className="mt-8 animate-in fade-in slide-in-from-bottom-4 duration-700">
             {/* Foundations */}
             <TabsContent value="mechano-academy"><MechanoMasteryModule /></TabsContent>
-            <TabsContent value="intention">
-              <Card className="border-none shadow-lg rounded-[2.5rem] bg-indigo-600 text-white overflow-hidden">
-                <CardHeader className="p-10">
-                  <div className="flex items-center gap-4 mb-4">
-                    <div className="w-16 h-16 bg-white/10 backdrop-blur-md rounded-2xl flex items-center justify-center border border-white/20">
-                      <Compass size={32} className="text-indigo-300" />
-                    </div>
-                    <div>
-                      <CardTitle className="text-3xl font-black">North Star Worksheet</CardTitle>
-                      <CardDescription className="text-indigo-200 text-lg mt-1">Define your core intention and commitment.</CardDescription>
-                    </div>
-                  </div>
-                </CardHeader>
-                <CardContent className="p-10 pt-0">
-                  <p className="text-indigo-100 mb-6 font-medium">This interactive worksheet is a dedicated space for deep reflection. Click below to open the worksheet in a full-page view.</p>
-                  <Button asChild className="bg-white text-indigo-600 hover:bg-indigo-50 h-12 px-8 rounded-xl font-bold">
-                    <Link to="/north-star">Open North Star Worksheet <ArrowRight className="ml-2" size={16} /></Link>
-                  </Button>
-                </CardContent>
-              </Card>
-            </TabsContent>
-            <TabsContent value="fear-creativity">
-              <Card className="border-none shadow-lg rounded-[2.5rem] bg-rose-600 text-white overflow-hidden">
-                <CardHeader className="p-10">
-                  <div className="flex items-center gap-4 mb-4">
-                    <div className="w-16 h-16 bg-white/10 backdrop-blur-md rounded-2xl flex items-center justify-center border border-white/20">
-                      <Palette size={32} className="text-rose-300" />
-                    </div>
-                    <div>
-                      <CardTitle className="text-3xl font-black">Fear & Creativity Awareness</CardTitle>
-                      <CardDescription className="text-rose-200 text-lg mt-1">Uncover how fear manifests in your body and mind.</CardDescription>
-                    </div>
-                  </div>
-                </CardHeader>
-                <CardContent className="p-10 pt-0">
-                  <p className="text-rose-100 mb-6 font-medium">This interactive worksheet helps you identify creative blocks and somatic tension patterns. Click below to open the full worksheet.</p>
-                  <Button asChild className="bg-white text-rose-600 hover:bg-rose-50 h-12 px-8 rounded-xl font-bold">
-                    <Link to="/fear-creativity-worksheet">Open Fear & Creativity Worksheet <ArrowRight className="ml-2" size={16} /></Link>
-                  </Button>
-                </CardContent>
-              </Card>
-            </TabsContent>
             <TabsContent value="bible"><MechanoBible /></TabsContent>
             <TabsContent value="theory"><FnTheory /></TabsContent>
-            <TabsContent value="foundations">
-              <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-                <Card className="lg:col-span-2 border-none shadow-lg rounded-[2.5rem] bg-card overflow-hidden">
-                  <div className="bg-indigo-600 p-8 text-white">
-                    <h3 className="text-2xl font-black flex items-center gap-3"><ShieldCheck size={28} /> The Practitioner's Journey</h3>
-                    <p className="text-indigo-100 mt-2 font-medium">Understanding the evolution of clinical accuracy and muscle testing.</p>
-                  </div>
-                  <CardContent className="p-8 space-y-8">
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                      <div className="p-6 bg-muted rounded-3xl border border-border text-center space-y-2">
-                        <p className="text-[10px] font-black text-muted-foreground uppercase tracking-widest">2 Years Experience</p>
-                        <p className="text-5xl font-black text-indigo-600 dark:text-indigo-400">65%</p>
-                        <p className="text-sm font-bold text-foreground">Accuracy Baseline</p>
-                      </div>
-                      <div className="p-6 bg-indigo-50 dark:bg-indigo-900/20 rounded-3xl border border-indigo-100 dark:border-indigo-900/30 text-center space-y-2">
-                        <p className="text-[10px] font-black text-indigo-400 uppercase tracking-widest">5+ Years Experience</p>
-                        <p className="text-5xl font-black text-indigo-600 dark:text-indigo-400">95%</p>
-                        <p className="text-sm font-bold text-foreground">Clinical Mastery</p>
-                      </div>
-                    </div>
-                    <div className="p-6 bg-amber-50 dark:bg-amber-900/10 rounded-3xl border border-amber-100 dark:border-amber-900/30">
-                      <h4 className="font-bold text-amber-900 dark:text-amber-100 mb-2 flex items-center gap-2"><Info size={18} /> Practitioner Insight</h4>
-                      <p className="text-sm text-amber-800 dark:text-amber-200 leading-relaxed italic font-medium">"I always second guess myself, even after 12 years. You have no idea the biases going on in your mind. Stay loose in the saddle and respond to what is happening in front of you."</p>
-                    </div>
-                  </CardContent>
-                </Card>
-                <Card className="border-none shadow-lg rounded-[2.5rem] bg-slate-900 dark:bg-slate-950 text-white overflow-hidden">
-                  <CardHeader className="p-8"><CardTitle className="text-xl font-black flex items-center gap-3"><Brain size={24} className="text-purple-400" /> Neurological Hierarchy</CardTitle></CardHeader>
-                  <CardContent className="p-8 pt-0 space-y-6">
-                    <div className="space-y-4">
-                      <div className="p-4 bg-white/5 rounded-2xl border border-white/10"><p className="text-xs font-black text-purple-400 uppercase tracking-widest mb-2">The Rule of Action</p><p className="text-lg font-bold leading-tight">"Joints act, muscles and tissues react."</p></div>
-                      <p className="text-sm text-slate-400 leading-relaxed font-medium">Joint actions are more important than muscles and fascia. They are "slaves" to the joint. The cerebellum is always paying attention to the joint action first.</p>
-                    </div>
-                  </CardContent>
-                </Card>
-              </div>
-            </TabsContent>
 
             {/* Clinical Reference */}
             <TabsContent value="primitive"><PrimitiveReflexReference /></TabsContent>

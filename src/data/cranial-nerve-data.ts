@@ -131,10 +131,10 @@ export const CRANIAL_NERVES: CranialNerve[] = [
     latinName: "Vagus",
     nuclei: "Medulla",
     toneEffect: "Flexors",
-    reflexPoint: "Occiput-Atlas joint",
-    functions: ["Autonomic control", "Heart rate", "Digestion"],
-    stimulus: "Swallowing, humming, or 'Aaah' sound.",
-    clinicalPearl: "The 'King' of the parasympathetic nervous system. Essential for complex autoimmune cases.",
+    reflexPoint: "Occiput (Vagal reflex)",
+    functions: ["Autonomic control", "Heart rate", "Digestion", "Ventral/Dorsal Vagal states"],
+    stimulus: "1. Test Vagal reflex point at the occiput. 2. If inhibited, touch skin at occiput to lateralize (L/R). 3. Perform swallowing, humming, or 'Aaah' sound.",
+    clinicalPearl: "The 'King' of the parasympathetic nervous system. Arises from the dorsal motor nucleus and nucleus tractus solitarius in the medulla. Includes the myelinated Ventral Vagus and unmyelinated Dorsal Vagus. Often addressed in initial SNS reset protocols.",
     color: "bg-rose-600"
   },
   {

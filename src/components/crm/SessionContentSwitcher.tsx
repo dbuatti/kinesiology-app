@@ -65,7 +65,8 @@ const SessionContentSwitcher = ({ appointment, onUpdate, saveField, history = []
 
   const previousSession = useMemo(() => {
     if (!history || history.length < 2) return null;
-    const sorted = [...history].sort((a, b) => b.date.getTime() - a.date.getTime());
+    // Ensure dates are Date objects for sorting
+    const sorted = [...history].sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
     const currentIndex = sorted.findIndex(s => s.id === appointment.id);
     return sorted[currentIndex + 1] || null;
   }, [history, appointment.id]);

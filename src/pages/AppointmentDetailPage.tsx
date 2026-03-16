@@ -102,7 +102,8 @@ const AppointmentDetailPage = () => {
         .eq('client_id', app.clients.id)
         .order('date', { ascending: true });
       
-      setHistory(historyData || []);
+      // Map history data to ensure date strings are converted to Date objects
+      setHistory((historyData || []).map(h => ({ ...h, date: new Date(h.date) })));
 
     } catch (err) {
       console.error("Error fetching appointment details:", err);
@@ -418,7 +419,7 @@ const AppointmentDetailPage = () => {
                       </div>
                       <div className="flex justify-between items-center text-xs">
                         <span className="text-slate-400 font-bold uppercase">Hydration</span>
-                        <Badge className={cn("border-none text-[8px] font-black", appointment.hydrated ? "bg-emerald-50" : "bg-rose-500")}>
+                        <Badge className={cn("border-none text-[8px] font-black", appointment.hydrated ? "bg-emerald-50" : "bg-rose-50")}>
                           {appointment.hydrated ? 'PASSED' : 'ATTENTION'}
                         </Badge>
                       </div>

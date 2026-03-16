@@ -14,7 +14,7 @@ import { showSuccess } from "@/utils/toast";
 import { cn } from "@/lib/utils";
 import EditableField from "@/components/shared/EditableField";
 import SessionTimer from "@/components/crm/SessionTimer";
-import AppLayout from "@/components/shared/AppLayout";
+import AppLayout from "@/components/crm/AppLayout";
 import SessionContentSwitcher from "@/components/crm/SessionContentSwitcher";
 import { calculateAge, getStarSign } from "@/utils/crm-utils";
 import {

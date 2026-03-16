@@ -15,7 +15,7 @@ import { showSuccess, showError } from "@/utils/toast";
 import { cn } from "@/lib/utils";
 import EditableField from "@/components/shared/EditableField";
 import SessionTimer from "@/components/crm/SessionTimer";
-import AppLayout from "@/components/shared/AppLayout";
+import AppLayout from "@/components/crm/AppLayout";
 import SessionContentSwitcher from "@/components/crm/SessionContentSwitcher";
 import PreviousSessionInsightsBar from "@/components/crm/PreviousSessionInsightsBar";
 import AppointmentHeader from "@/components/crm/AppointmentHeader";

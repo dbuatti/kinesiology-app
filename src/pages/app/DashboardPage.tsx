@@ -31,7 +31,7 @@ import MeridianClock from "@/components/crm/MeridianClock";
 import { AppointmentWithClient } from "@/types/crm";
 import DashboardStats from "@/components/crm/DashboardStats";
 import DailyBriefing from "@/components/crm/DailyBriefing";
-import AppLayout from "@/components/shared/AppLayout";
+import AppLayout from "@/components/crm/AppLayout";
 import { cn } from "@/lib/utils";
 
 const SCRATCHPAD_KEY = "antigravity_practitioner_scratchpad";

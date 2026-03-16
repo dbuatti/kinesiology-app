@@ -55,7 +55,7 @@ import { Input } from "@/components/ui/input";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import CalendarView from "@/components/crm/CalendarView";
 import QuickAssessmentModal from "@/components/crm/QuickAssessmentModal";
-import AppLayout from "@/components/shared/AppLayout";
+import AppLayout from "@/components/crm/AppLayout";
 
 interface AppointmentWithClient extends Appointment {
   clients: { name: string; id: string; latest_bolt?: number | null };

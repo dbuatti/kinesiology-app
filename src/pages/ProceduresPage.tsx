@@ -24,7 +24,7 @@ import { fetchLatestProcedureScores, LatestProcedureScores } from "@/utils/proce
 import ProcedureCard from "@/components/crm/ProcedureCard";
 import Breadcrumbs from "@/components/shared/Breadcrumbs";
 import { Progress } from "@/components/ui/progress";
-import AppLayout from "@/components/shared/AppLayout";
+import AppLayout from "@/components/crm/AppLayout";
 
 const ICON_OPTIONS = [
   { value: 'flask', label: 'Flask', icon: FlaskConical },

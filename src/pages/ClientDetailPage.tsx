@@ -35,7 +35,7 @@ import { useRecentClients } from "@/hooks/use-recent-clients";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import ClientProgressTab from "@/components/crm/ClientProgressTab";
 import ClientProfileCard from "@/components/crm/ClientProfileCard";
-import AppLayout from "@/components/shared/AppLayout";
+import AppLayout from "@/components/crm/AppLayout";
 
 const ClientDetailPage = () => {
   const { id } = useParams();

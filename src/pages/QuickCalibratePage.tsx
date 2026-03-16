@@ -1,7 +1,7 @@
 "use client";
 
 import React from "react";
-import AppLayout from "@/components/shared/AppLayout";
+import AppLayout from "@/components/crm/AppLayout";
 import Breadcrumbs from "@/components/shared/Breadcrumbs";
 import PathwayLogicWizard from "@/components/crm/PathwayLogicWizard";
 import { Zap, ShieldCheck, Info } from "lucide-react";

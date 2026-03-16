@@ -52,6 +52,17 @@ export const PRIMARY_14_MUSCLES = [
   'Teres Minor', 'Anterior Deltoid', 'Pectoralis Major (Sternal)', 'Serratus Anterior', 'Middle Trapezius'
 ];
 
+// Muscles that are tested on the midline and don't need L/R separation
+export const MIDLINE_MUSCLES = [
+  'Diaphragm',
+  'Transverse Abdominals',
+  'Pelvic Floor (Anterior)',
+  'Pelvic Floor (Posterior)',
+  'Multifidi',
+  'Sacrospinalis',
+  'Erector Spinae'
+];
+
 export const MUSCLE_GROUPS: Record<string, string[]> = {
   'Intrinsic Stabilisation': [
     'Transverse Abdominals',

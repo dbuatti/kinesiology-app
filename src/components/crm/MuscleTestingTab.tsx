@@ -6,7 +6,7 @@ import { Loader2, RotateCcw, Zap, Sparkles, Trash2, Filter, Clock } from "lucide
 import { cn } from "@/lib/utils";
 import { supabase } from "@/integrations/supabase/client";
 import { showSuccess, showError } from "@/utils/toast";
-import { MUSCLE_GROUPS, PRIMARY_14_MUSCLES, MuscleStatus } from "@/data/muscle-data";
+import { MUSCLE_GROUPS, PRIMARY_14_MUSCLES, MuscleStatus, MIDLINE_MUSCLES } from "@/data/muscle-data";
 import { MuscleTestResult } from "@/types/crm";
 import MuscleInfoModal from "./MuscleInfoModal";
 import ClinicalReasoningModal from "./ClinicalReasoningModal";
@@ -97,26 +97,28 @@ const MuscleTestingTab = ({ appointmentId }: MuscleTestingTabProps) => {
     fetchMuscleTests();
   }, [fetchMuscleTests]);
 
-  const handleStatusChange = async (muscleName: string, status: MuscleStatus['value']) => {
+  const handleStatusChange = async (muscleName: string, status: MuscleStatus['value'], side?: 'L' | 'R') => {
+    const dbMuscleName = side ? `${muscleName} (${side})` : muscleName;
+
     if (appointmentId === DEMO_ID) {
       setResults(prev => ({
         ...prev,
-        [muscleName]: {
-          id: 'demo-' + muscleName,
+        [dbMuscleName]: {
+          id: 'demo-' + dbMuscleName,
           appointment_id: DEMO_ID,
-          muscle_name: muscleName,
+          muscle_name: dbMuscleName,
           status: status,
           created_at: new Date().toISOString()
         } as MuscleTestResult
       }));
-      showSuccess(`${muscleName} status updated (Demo Mode)`);
+      showSuccess(`${dbMuscleName} status updated (Demo Mode)`);
       return;
     }
 
     if (saving) return;
     setSaving(true);
 
-    const existingResult = results[muscleName];
+    const existingResult = results[dbMuscleName];
     const user = (await supabase.auth.getUser()).data.user;
     if (!user) {
       showError("User not authenticated.");
@@ -127,7 +129,7 @@ const MuscleTestingTab = ({ appointmentId }: MuscleTestingTabProps) => {
     const payload = {
       user_id: user.id,
       appointment_id: appointmentId,
-      muscle_name: muscleName,
+      muscle_name: dbMuscleName,
       status: status,
     };
 
@@ -151,10 +153,10 @@ const MuscleTestingTab = ({ appointmentId }: MuscleTestingTabProps) => {
         newResult = data as MuscleTestResult;
       }
       
-      setResults(prev => ({ ...prev, [muscleName]: newResult }));
-      showSuccess(`${muscleName} status updated to ${status}`);
+      setResults(prev => ({ ...prev, [dbMuscleName]: newResult }));
+      showSuccess(`${dbMuscleName} status updated to ${status}`);
     } catch (error: any) {
-      showError(error.message || `Failed to update ${muscleName} status.`);
+      showError(error.message || `Failed to update ${dbMuscleName} status.`);
     } finally {
       setSaving(false);
     }
@@ -164,34 +166,42 @@ const MuscleTestingTab = ({ appointmentId }: MuscleTestingTabProps) => {
     if (appointmentId === DEMO_ID) {
       const newResults = { ...results };
       PRIMARY_14_MUSCLES.forEach(name => {
-        newResults[name] = {
-          id: 'demo-' + name,
-          appointment_id: DEMO_ID,
-          muscle_name: name,
-          status: 'Normotonic' as const,
-          created_at: new Date().toISOString()
-        } as MuscleTestResult;
+        const isMidline = MIDLINE_MUSCLES.includes(name);
+        if (isMidline) {
+          newResults[name] = { id: 'demo-' + name, appointment_id: DEMO_ID, muscle_name: name, status: 'Normotonic', created_at: new Date().toISOString() } as MuscleTestResult;
+        } else {
+          newResults[`${name} (L)`] = { id: 'demo-' + name + '-L', appointment_id: DEMO_ID, muscle_name: `${name} (L)`, status: 'Normotonic', created_at: new Date().toISOString() } as MuscleTestResult;
+          newResults[`${name} (R)`] = { id: 'demo-' + name + '-R', appointment_id: DEMO_ID, muscle_name: `${name} (R)`, status: 'Normotonic', created_at: new Date().toISOString() } as MuscleTestResult;
+        }
       });
       setResults(newResults);
       showSuccess("14 Primary Muscles logged (Demo Mode)!");
       return;
     }
 
-    if (!confirm("This will log all 14 Primary Muscles as 'Normotonic'. Continue?")) return;
+    if (!confirm("This will log all 14 Primary Muscles (Bilateral) as 'Normotonic'. Continue?")) return;
     
     setSaving(true);
     try {
       const user = (await supabase.auth.getUser()).data.user;
       if (!user) throw new Error("Not authenticated");
 
-      const inserts = PRIMARY_14_MUSCLES.map(name => ({
-        user_id: user.id,
-        appointment_id: appointmentId,
-        muscle_name: name,
-        status: 'Normotonic' as const
-      }));
+      const inserts: any[] = [];
+      const namesToDelete: string[] = [];
 
-      await supabase.from('muscle_tests').delete().eq('appointment_id', appointmentId).in('muscle_name', PRIMARY_14_MUSCLES);
+      PRIMARY_14_MUSCLES.forEach(name => {
+        const isMidline = MIDLINE_MUSCLES.includes(name);
+        if (isMidline) {
+          inserts.push({ user_id: user.id, appointment_id: appointmentId, muscle_name: name, status: 'Normotonic' });
+          namesToDelete.push(name);
+        } else {
+          inserts.push({ user_id: user.id, appointment_id: appointmentId, muscle_name: `${name} (L)`, status: 'Normotonic' });
+          inserts.push({ user_id: user.id, appointment_id: appointmentId, muscle_name: `${name} (R)`, status: 'Normotonic' });
+          namesToDelete.push(`${name} (L)`, `${name} (R)`);
+        }
+      });
+
+      await supabase.from('muscle_tests').delete().eq('appointment_id', appointmentId).in('muscle_name', namesToDelete);
       const { data, error } = await supabase.from('muscle_tests').insert(inserts).select();
       if (error) throw error;
 
@@ -229,18 +239,19 @@ const MuscleTestingTab = ({ appointmentId }: MuscleTestingTabProps) => {
     }
   };
 
-  const handleClearMuscle = async (muscleName: string) => {
-    const result = results[muscleName];
+  const handleClearMuscle = async (muscleName: string, side?: 'L' | 'R') => {
+    const dbMuscleName = side ? `${muscleName} (${side})` : muscleName;
+    const result = results[dbMuscleName];
     if (!result) return;
-    if (!confirm(`Clear test result for ${muscleName}?`)) return;
+    if (!confirm(`Clear test result for ${dbMuscleName}?`)) return;
 
     if (appointmentId === DEMO_ID) {
       setResults(prev => {
         const newResults = { ...prev };
-        delete newResults[muscleName];
+        delete newResults[dbMuscleName];
         return newResults;
       });
-      showSuccess(`${muscleName} test cleared (Demo Mode).`);
+      showSuccess(`${dbMuscleName} test cleared (Demo Mode).`);
       return;
     }
 
@@ -250,12 +261,12 @@ const MuscleTestingTab = ({ appointmentId }: MuscleTestingTabProps) => {
       if (error) throw error;
       setResults(prev => {
         const newResults = { ...prev };
-        delete newResults[muscleName];
+        delete newResults[dbMuscleName];
         return newResults;
       });
-      showSuccess(`${muscleName} test cleared.`);
+      showSuccess(`${dbMuscleName} test cleared.`);
     } catch (error: any) {
-      showError(`Failed to clear ${muscleName} test.`);
+      showError(`Failed to clear ${dbMuscleName} test.`);
     } finally {
       setSaving(false);
     }
@@ -266,8 +277,12 @@ const MuscleTestingTab = ({ appointmentId }: MuscleTestingTabProps) => {
     Object.entries(MUSCLE_GROUPS).forEach(([group, muscles]) => {
       const matchingMuscles = muscles.filter(m => {
         const matchesSearch = m.toLowerCase().includes(searchTerm.toLowerCase());
-        const isTested = !!results[m];
-        const isDysfunctional = isTested && results[m].status !== 'Normotonic';
+        
+        const isTested = !!(results[m] || results[`${m} (L)`] || results[`${m} (R)`]);
+        const isDysfunctional = (results[m]?.status && results[m].status !== 'Normotonic') || 
+                                (results[`${m} (L)`]?.status && results[`${m} (L)`].status !== 'Normotonic') ||
+                                (results[`${m} (R)`]?.status && results[`${m} (R)`].status !== 'Normotonic');
+
         let matchesMeridian = true;
         if (meridianFilter !== "all") {
           const channel = getChannelByMuscle(m);
@@ -284,7 +299,14 @@ const MuscleTestingTab = ({ appointmentId }: MuscleTestingTabProps) => {
   }, [searchTerm, meridianFilter, showOnlyTested, showOnlyDysfunctional, results]);
 
   const totalMusclesCount = useMemo(() => Object.values(MUSCLE_GROUPS).reduce((acc, curr) => acc + curr.length, 0), []);
-  const testedCount = Object.keys(results).length;
+  const testedCount = useMemo(() => {
+    const uniqueMuscles = new Set<string>();
+    Object.keys(results).forEach(key => {
+      const baseName = key.replace(/ \([LR]\)$/, '');
+      uniqueMuscles.add(baseName);
+    });
+    return uniqueMuscles.size;
+  }, [results]);
 
   if (loading) {
     return (
@@ -368,7 +390,7 @@ const MuscleTestingTab = ({ appointmentId }: MuscleTestingTabProps) => {
         {Object.keys(filteredGroups).length === 0 && (
           <div className="text-center py-20 bg-slate-50 rounded-[3rem] border-2 border-dashed border-slate-200">
             <div className="mx-auto w-16 h-16 bg-white rounded-2xl flex items-center justify-center mb-4 shadow-sm"><Filter className="text-slate-300" size={24} /></div>
-            <p className="text-slate-900 font-black text-lg">No muscles match your filters</p>
+            <p className="text-slate-900 font-black text-xl">No muscles match your filters</p>
             <Button variant="link" onClick={() => { setShowOnlyTested(false); setShowOnlyDysfunctional(false); setSearchTerm(""); setMeridianFilter("all"); }} className="mt-4 text-indigo-600 font-bold">Reset All Filters</Button>
           </div>
         )}

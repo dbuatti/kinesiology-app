@@ -18,57 +18,89 @@ import {
   Loader2,
   Palette,
   Zap,
-  ShieldCheck
+  ShieldCheck,
+  ChevronLeft,
+  Edit3
 } from 'lucide-react';
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { cn } from "@/lib/utils";
 
-const FearCreativityWorksheet = () => {
+interface FearCreativityWorksheetProps {
+  submissionId?: string | null;
+  onBack?: () => void;
+}
+
+const FearCreativityWorksheet = ({ submissionId, onBack }: FearCreativityWorksheetProps) => {
+  const [title, setTitle] = useState('New Reflection');
   const [answers, setAnswers] = useState<Record<string, string>>({});
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(!!submissionId);
   const [saving, setSaving] = useState(false);
   const [userId, setUserId] = useState<string | null>(null);
+  const [localId, setLocalId] = useState<string | null>(submissionId || null);
 
   useEffect(() => {
     const fetchData = async () => {
       const { data: { user } } = await supabase.auth.getUser();
       if (user) {
         setUserId(user.id);
-        const { data, error } = await supabase
-          .from('fear_creativity_worksheets')
-          .select('*')
-          .eq('user_id', user.id)
-          .maybeSingle();
+        if (localId) {
+          const { data, error } = await supabase
+            .from('fear_creativity_submissions')
+            .select('*')
+            .eq('id', localId)
+            .single();
 
-        if (data) {
-          setAnswers(data.form_data || {});
+          if (data) {
+            setAnswers(data.form_data || {});
+            setTitle(data.title || 'Untitled Reflection');
+          }
         }
       }
       setLoading(false);
     };
 
     fetchData();
-  }, []);
+  }, [localId]);
 
   const handleSave = async (silent = false) => {
     if (!userId) return;
     
     if (!silent) setSaving(true);
     try {
-      const { error } = await supabase
-        .from('fear_creativity_worksheets')
-        .upsert({
-          user_id: userId,
-          form_data: answers,
-          updated_at: new Date().toISOString()
-        }, { onConflict: 'user_id' });
+      const payload = {
+        user_id: userId,
+        title: title,
+        form_data: answers,
+        updated_at: new Date().toISOString()
+      };
 
-      if (error) throw error;
+      let result;
+      if (localId) {
+        result = await supabase
+          .from('fear_creativity_submissions')
+          .update(payload)
+          .eq('id', localId)
+          .select()
+          .single();
+      } else {
+        result = await supabase
+          .from('fear_creativity_submissions')
+          .insert(payload)
+          .select()
+          .single();
+      }
+
+      if (result.error) throw result.error;
+      
+      if (!localId && result.data) {
+        setLocalId(result.data.id);
+      }
+
       if (!silent) toast.success("Progress saved successfully.");
     } catch (error: any) {
       console.error("Error saving worksheet:", error);
-      if (!silent) toast.error("Failed to save progress. Ensure the database table exists.");
+      if (!silent) toast.error("Failed to save progress.");
     } finally {
       if (!silent) setSaving(false);
     }
@@ -139,9 +171,18 @@ const FearCreativityWorksheet = () => {
             <Heart className="w-6 h-6" />
           </div>
 
-          <h1 className="text-4xl font-bold tracking-tight text-slate-900 sm:text-5xl">
-            Fear & Creativity Awareness
-          </h1>
+          <div className="max-w-md mx-auto group relative">
+            <Input 
+              value={title}
+              onChange={(e) => setTitle(e.target.value)}
+              className="text-4xl font-bold tracking-tight text-slate-900 sm:text-5xl text-center border-none bg-transparent focus:ring-0 h-auto p-0 mb-2"
+              placeholder="Reflection Title"
+            />
+            <div className="absolute -right-8 top-1/2 -translate-y-1/2 opacity-0 group-hover:opacity-100 transition-opacity">
+              <Edit3 size={16} className="text-slate-300" />
+            </div>
+          </div>
+          
           <p className="text-xl text-rose-600 font-medium">Integrated Healer Program</p>
           <p className="max-w-2xl mx-auto text-slate-500 italic">
             "Create awareness of how fear manifests in the body, mind, and creativity."

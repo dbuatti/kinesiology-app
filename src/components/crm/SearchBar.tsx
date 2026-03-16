@@ -154,7 +154,7 @@ const SearchBar = () => {
             id: proc.id,
             title: proc.name,
             subtitle: "Protocol / Procedure",
-            path: `/procedures`,
+            path: `/practice/procedures`,
           });
         });
       }
@@ -176,7 +176,7 @@ const SearchBar = () => {
   const quickActions: SearchResult[] = [
     { type: "action", id: "new-client", title: "Add New Client", subtitle: "Create a new client profile", path: "/clients" },
     { type: "action", id: "book-session", title: "Book New Session", subtitle: "Schedule an appointment", path: "/appointments" },
-    { type: "action", id: "import-data", title: "Import CSV Data", subtitle: "Bulk upload appointments", path: "/import" },
+    { type: "action", id: "import-data", title: "Import CSV Data", subtitle: "Bulk upload appointments", path: "/settings/import" },
     { type: "action", id: "settings", title: "Settings", subtitle: "Manage account and preferences", path: "/settings" },
   ];
 

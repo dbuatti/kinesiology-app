@@ -50,10 +50,10 @@ const MobileNav = () => {
     { label: "Clients", icon: Users, path: "/clients" },
     { label: "Appointments", icon: Calendar, path: "/appointments" },
     { label: "Oversight", icon: TrendingUp, path: "/oversight" },
-    { label: "Quick Calibrate", icon: Zap, path: "/quick-calibrate" },
-    { label: "Self Practice", icon: Heart, path: "/self-practice" },
-    { label: "Procedures", icon: Target, path: "/procedures" },
-    { label: "North Star", icon: Compass, path: "/north-star" },
+    { label: "Quick Calibrate", icon: Zap, path: "/practice/calibrate" },
+    { label: "Self Practice", icon: Heart, path: "/practice/self" },
+    { label: "Procedures", icon: Target, path: "/practice/procedures" },
+    { label: "North Star", icon: Compass, path: "/resources/worksheets/north-star" },
     { label: "Resources", icon: BookOpen, path: "/resources" },
   ];
 

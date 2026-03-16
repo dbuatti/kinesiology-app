@@ -24,7 +24,7 @@ const MainLayout = () => {
       <MobileNav />
       {isSidebarVisible && <Sidebar onHide={() => setIsSidebarVisible(false)} />}
       
-      <main className="flex-1 flex flex-col overflow-auto relative">
+      <main id="main-scroll-container" className="flex-1 flex flex-col overflow-auto relative">
         {!isSidebarVisible && (
           <div className="hidden lg:block fixed top-6 left-6 z-50">
             <Button 

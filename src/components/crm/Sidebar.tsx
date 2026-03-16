@@ -212,7 +212,7 @@ const Sidebar = ({ onHide }: SidebarProps) => {
   );
 
   return (
-    <div className="hidden lg:flex w-64 bg-card dark:bg-slate-950 text-foreground min-h-screen p-4 flex-col gap-6 sticky top-0 h-screen overflow-y-auto border-r border-border shadow-2xl">
+    <div className="hidden lg:flex w-64 bg-card dark:bg-slate-950 text-foreground min-h-screen p-4 flex-col gap-6 sticky top-0 h-screen overflow-y-auto border-r border-border shadow-2xl z-[60]">
       <div className="flex items-center justify-between px-2 py-2">
         <div className="flex items-center gap-3">
           <div className="w-10 h-10 bg-indigo-600 rounded-xl flex items-center justify-center font-black text-xl text-white shadow-2xl shadow-indigo-500/40 transition-transform hover:scale-105">A</div>

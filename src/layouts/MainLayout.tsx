@@ -26,7 +26,7 @@ const MainLayout = () => {
       
       <main id="main-scroll-container" className="flex-1 flex flex-col overflow-auto relative">
         {!isSidebarVisible && (
-          <div className="hidden lg:block fixed top-6 left-6 z-50">
+          <div className="hidden lg:block fixed top-6 left-6 z-[60]">
             <Button 
               variant="outline" 
               size="icon" 

@@ -32,7 +32,7 @@ import { cn } from "@/lib/utils";
 import SearchBar from "./SearchBar";
 import { supabase } from "@/integrations/supabase/client";
 import { showSuccess } from "@/utils/toast";
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect, useMemo, useRef } from "react";
 import HelpModal from "./HelpModal";
 import { useRecentClients } from "@/hooks/use-recent-clients";
 import { useActiveSession } from "@/hooks/useActiveSession";
@@ -65,39 +65,51 @@ const Sidebar = ({ onHide }: SidebarProps) => {
   const [clientDialogOpen, setClientDialogOpen] = useState(false);
   const [appDialogOpen, setAppDialogOpen] = useState(false);
   
-  // Derive initial open states from current path to prevent flashing/collapsing on load
-  const [opsOpen, setOpsOpen] = useState(() => 
-    location.pathname === "/" || 
-    location.pathname.startsWith("/appointments") || 
-    location.pathname.startsWith("/clients")
-  );
-  const [labOpen, setLabOpen] = useState(() => 
-    location.pathname.startsWith("/practice/calibrate") || 
-    location.pathname.startsWith("/practice/procedures") || 
-    location.pathname.startsWith("/oversight")
-  );
-  const [libraryOpen, setLibraryOpen] = useState(() => 
-    location.pathname.startsWith("/resources") || 
-    location.pathname.startsWith("/practice/self")
-  );
+  // Debug logging for component lifecycle
+  const renderCount = useRef(0);
+  useEffect(() => {
+    renderCount.current++;
+    console.log(`[Sidebar] Render #${renderCount.current} - Path: ${location.pathname}`);
+  });
+
+  // Initial state derivation
+  const isOpsPath = (path: string) => path === "/" || path.startsWith("/appointments") || path.startsWith("/clients");
+  const isLabPath = (path: string) => path.startsWith("/practice/calibrate") || path.startsWith("/practice/procedures") || path.startsWith("/oversight");
+  const isLibraryPath = (path: string) => path.startsWith("/resources") || path.startsWith("/practice/self");
+
+  const [opsOpen, setOpsOpen] = useState(() => isOpsPath(location.pathname));
+  const [labOpen, setLabOpen] = useState(() => isLabPath(location.pathname));
+  const [libraryOpen, setLibraryOpen] = useState(() => isLibraryPath(location.pathname));
   
   const activeSession = useActiveSession();
   const { practiceHealth } = usePracticeStats();
   const { recentClients } = useRecentClients();
   
-  // Automatically expand the correct section when the path changes
+  // Track the last path to only auto-expand when the section actually changes
+  const lastPathRef = useRef(location.pathname);
+
   useEffect(() => {
     const path = location.pathname;
-    if (path === "/" || path.startsWith("/appointments") || path.startsWith("/clients")) {
+    if (path === lastPathRef.current) return;
+
+    console.log(`[Sidebar] Path changed from ${lastPathRef.current} to ${path}`);
+    
+    // Only auto-expand if we move INTO a section that isn't already open
+    if (isOpsPath(path) && !opsOpen) {
+      console.log("[Sidebar] Auto-expanding Operations");
       setOpsOpen(true);
     }
-    if (path.startsWith("/practice/calibrate") || path.startsWith("/practice/procedures") || path.startsWith("/oversight")) {
+    if (isLabPath(path) && !labOpen) {
+      console.log("[Sidebar] Auto-expanding Clinical Lab");
       setLabOpen(true);
     }
-    if (path.startsWith("/resources") || path.startsWith("/practice/self")) {
+    if (isLibraryPath(path) && !libraryOpen) {
+      console.log("[Sidebar] Auto-expanding Library");
       setLibraryOpen(true);
     }
-  }, [location.pathname]);
+
+    lastPathRef.current = path;
+  }, [location.pathname, opsOpen, labOpen, libraryOpen]);
 
   const opsItems = [
     { label: "Dashboard", icon: LayoutDashboard, path: "/", shortcut: "⌘D" },
@@ -196,7 +208,10 @@ const Sidebar = ({ onHide }: SidebarProps) => {
   const NavGroup = ({ title, icon: Icon, isOpen, onToggle, items }: any) => (
     <div className="space-y-1">
       <button
-        onClick={onToggle}
+        onClick={() => {
+          console.log(`[Sidebar] Manually toggling ${title} to ${!isOpen}`);
+          onToggle();
+        }}
         className="flex items-center justify-between w-full px-3 py-2 rounded-lg text-muted-foreground hover:text-foreground hover:bg-accent/50 transition-all group"
       >
         <div className="flex items-center gap-3">

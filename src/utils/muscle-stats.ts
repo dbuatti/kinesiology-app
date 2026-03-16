@@ -8,7 +8,7 @@ export interface MuscleStat {
 }
 
 export async function fetchMusclePracticeStats(): Promise<MuscleStat[]> {
-  // Fetch all muscle tests for the current user, joining with clients to filter out self-practice (handling NULL values)
+  // Fetch all muscle tests for the current user, joining with clients to filter out self-practice
   const { data, error } = await supabase
     .from('muscle_tests')
     .select(`
@@ -34,13 +34,15 @@ export async function fetchMusclePracticeStats(): Promise<MuscleStat[]> {
   const statsMap: Record<string, { total: number, nonNormotonic: number }> = {};
 
   data.forEach(test => {
-    const name = test.muscle_name;
-    if (!statsMap[name]) {
-      statsMap[name] = { total: 0, nonNormotonic: 0 };
+    // Strip the (L) or (R) suffix for aggregated statistics
+    const baseName = test.muscle_name.replace(/ \([LR]\)$/, '');
+    
+    if (!statsMap[baseName]) {
+      statsMap[baseName] = { total: 0, nonNormotonic: 0 };
     }
-    statsMap[name].total += 1;
+    statsMap[baseName].total += 1;
     if (test.status !== 'Normotonic') {
-      statsMap[name].nonNormotonic += 1;
+      statsMap[baseName].nonNormotonic += 1;
     }
   });
 

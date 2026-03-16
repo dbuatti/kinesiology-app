@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect, useMemo, useRef } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { Card, CardHeader, CardTitle, CardContent, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
@@ -32,7 +32,10 @@ type AssessmentResults = Record<string, Record<string, Status>>;
 interface AssessmentItemProps {
   name: string;
   category: string;
-  status?: Status;
+  statusL?: Status;
+  statusR?: Status;
+  statusMidline?: Status;
+  isLateralized: boolean;
   history?: FindingHistory;
   onSetStatus: (status: Status, side?: 'L' | 'R') => void;
   onQuickCalibrate: () => void;
@@ -44,28 +47,43 @@ interface AssessmentItemProps {
   inhibitionPattern?: string;
 }
 
-const AssessmentItem = ({ name, category, status, history, onSetStatus, onQuickCalibrate, onShowLogic, onClick, imageUrl, showImage, stimulus, inhibitionPattern }: AssessmentItemProps) => {
-  const isMuscle = category === 'muscles';
-  const isMidline = MIDLINE_MUSCLES.includes(name);
-  const isBilateralMuscle = isMuscle && !isMidline;
+const AssessmentItem = ({ 
+  name, 
+  category, 
+  statusL, 
+  statusR, 
+  statusMidline, 
+  isLateralized,
+  history, 
+  onSetStatus, 
+  onQuickCalibrate, 
+  onShowLogic, 
+  onClick, 
+  imageUrl, 
+  showImage, 
+  stimulus, 
+  inhibitionPattern 
+}: AssessmentItemProps) => {
+  const trend = useMemo(() => {
+    if (!history) return [];
+    return history.history.slice(-3).map(h => h.status);
+  }, [history]);
 
   const nucleiInfo = useMemo(() => {
     const mappingKey = Object.keys(FINDING_TO_NUCLEI).find(key => name.startsWith(key));
     return mappingKey ? FINDING_TO_NUCLEI[mappingKey] : null;
   }, [name]);
 
-  const trend = useMemo(() => {
-    if (!history) return [];
-    return history.history.slice(-3).map(h => h.status);
-  }, [history]);
+  const hasInhibition = statusL === 'Inhibited' || statusR === 'Inhibited' || statusMidline === 'Inhibited';
+  const isFullyClear = (isLateralized ? (statusL === 'Clear' && statusR === 'Clear') : statusMidline === 'Clear');
 
   return (
     <div 
       onClick={onClick}
       className={cn(
         "group relative p-4 rounded-3xl border-2 transition-all cursor-pointer overflow-hidden h-full flex flex-col",
-        status === 'Clear' ? "bg-emerald-50/30 border-emerald-100 hover:border-emerald-200" :
-        status === 'Inhibited' ? "bg-rose-50 border-rose-300 shadow-md ring-1 ring-rose-200 animate-in fade-in zoom-in-95" :
+        isFullyClear ? "bg-emerald-50/30 border-emerald-100 hover:border-emerald-200" :
+        hasInhibition ? "bg-rose-50 border-rose-300 shadow-md ring-1 ring-rose-200 animate-in fade-in zoom-in-95" :
         "bg-white border-slate-100 hover:border-indigo-200 hover:shadow-lg"
       )}
     >
@@ -74,17 +92,17 @@ const AssessmentItem = ({ name, category, status, history, onSetStatus, onQuickC
         onClick={(e) => { e.stopPropagation(); onQuickCalibrate(); }}
         className={cn(
           "absolute top-3 right-3 w-8 h-8 rounded-xl flex items-center justify-center shadow-lg transition-all z-30",
-          status === 'Inhibited' ? "bg-amber-500 text-white scale-110" : "bg-slate-100 text-slate-400 hover:bg-amber-400 hover:text-white"
+          hasInhibition ? "bg-amber-500 text-white scale-110" : "bg-slate-100 text-slate-400 hover:bg-amber-400 hover:text-white"
         )}
       >
-        <Zap size={14} className={cn(status === 'Inhibited' && "fill-current")} />
+        <Zap size={14} className={cn(hasInhibition && "fill-current")} />
       </button>
 
       <div className="flex items-start justify-between mb-3 pr-8">
         <div className="flex flex-col min-w-0">
           <p className={cn(
             "font-black text-sm leading-tight truncate",
-            status === 'Inhibited' ? "text-rose-900" : "text-slate-800"
+            hasInhibition ? "text-rose-900" : "text-slate-800"
           )}>{name}</p>
           
           <div className="flex items-center gap-2 mt-1.5">
@@ -132,17 +150,35 @@ const AssessmentItem = ({ name, category, status, history, onSetStatus, onQuickC
         </div>
       )}
 
-      <div className="mt-auto flex items-center justify-between pt-3 border-t border-slate-50">
-        <div className="flex items-center gap-1 text-[8px] font-black text-slate-300 uppercase tracking-widest group-hover:text-indigo-400 transition-colors">
-          <Info size={10} /> Details
-        </div>
-        {status && (
-          <Badge className={cn(
-            "border-none text-white font-black text-[8px] uppercase tracking-widest px-2 py-0.5 rounded-md",
-            status === 'Clear' ? "bg-emerald-500" : "bg-rose-600"
-          )}>
-            {status}
-          </Badge>
+      <div className="mt-auto flex flex-wrap gap-1.5 pt-3 border-t border-slate-50">
+        {isLateralized ? (
+          <>
+            {statusL && (
+              <Badge className={cn(
+                "border-none text-white font-black text-[7px] uppercase tracking-widest px-1.5 py-0.5 rounded-md",
+                statusL === 'Clear' ? "bg-emerald-500" : "bg-rose-600"
+              )}>
+                L: {statusL}
+              </Badge>
+            )}
+            {statusR && (
+              <Badge className={cn(
+                "border-none text-white font-black text-[7px] uppercase tracking-widest px-1.5 py-0.5 rounded-md",
+                statusR === 'Clear' ? "bg-emerald-500" : "bg-rose-600"
+              )}>
+                R: {statusR}
+              </Badge>
+            )}
+          </>
+        ) : (
+          statusMidline && (
+            <Badge className={cn(
+              "border-none text-white font-black text-[7px] uppercase tracking-widest px-1.5 py-0.5 rounded-md",
+              statusMidline === 'Clear' ? "bg-emerald-500" : "bg-rose-600"
+            )}>
+              {statusMidline}
+            </Badge>
+          )
         )}
       </div>
 
@@ -157,7 +193,7 @@ const AssessmentItem = ({ name, category, status, history, onSetStatus, onQuickC
             <Check size={16} className="mr-1.5" /> Clear
           </Button>
           
-          {isBilateralMuscle ? (
+          {isLateralized ? (
             <div className="flex gap-1">
               <Button 
                 size="sm" 
@@ -188,7 +224,7 @@ const AssessmentItem = ({ name, category, status, history, onSetStatus, onQuickC
           <div className="flex items-center gap-1.5 text-[9px] font-black text-slate-900 bg-white/95 px-4 py-1.5 rounded-full shadow-lg border border-slate-100">
             <Maximize2 size={12} className="text-indigo-500" /> View Details
           </div>
-          {status === 'Inhibited' && (
+          {hasInhibition && (
             <button 
               onClick={(e) => { e.stopPropagation(); onShowLogic(); }}
               className="flex items-center gap-1.5 text-[9px] font-black text-amber-700 bg-amber-50 px-4 py-1.5 rounded-full shadow-lg border border-amber-200 hover:bg-amber-100 transition-colors"
@@ -199,7 +235,7 @@ const AssessmentItem = ({ name, category, status, history, onSetStatus, onQuickC
         </div>
       </div>
       
-      {status === 'Inhibited' && (
+      {hasInhibition && (
         <div className="absolute bottom-0 left-0 w-full h-1 bg-rose-500 animate-pulse" />
       )}
     </div>
@@ -517,6 +553,11 @@ const PathwayAssessment = ({ initialValue, previousValue, history = [], onSave, 
     }
   };
 
+  const isLateralizedReflex = (name: string) => {
+    const lateralized = ['ATNR', 'Spinal Galant', 'Babinski', 'Rooting', 'Palmar'];
+    return lateralized.some(l => name.includes(l));
+  };
+
   return (
     <div className="space-y-8">
       {/* Global Controls & Category Nav */}
@@ -687,16 +728,19 @@ const PathwayAssessment = ({ initialValue, previousValue, history = [], onSave, 
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
           {PRIMITIVE_REFLEXES
             .filter(r => filterBySearch(r.name))
-            .filter(r => !showOnlyInhibited || results.primitiveReflexes?.[r.name] === 'Inhibited')
+            .filter(r => !showOnlyInhibited || results.primitiveReflexes?.[r.name] === 'Inhibited' || results.primitiveReflexes?.[`${r.name} (L)`] === 'Inhibited' || results.primitiveReflexes?.[`${r.name} (R)`] === 'Inhibited')
             .filter(r => !nucleiFilter || isItemInNuclei(r.name, nucleiFilter))
             .map(reflex => (
             <AssessmentItem 
               key={reflex.id}
               name={reflex.name}
               category="primitiveReflexes"
-              status={results.primitiveReflexes?.[reflex.name]}
+              statusL={results.primitiveReflexes?.[`${reflex.name} (L)`]}
+              statusR={results.primitiveReflexes?.[`${reflex.name} (R)`]}
+              statusMidline={results.primitiveReflexes?.[reflex.name]}
+              isLateralized={isLateralizedReflex(reflex.name)}
               history={processedHistory.find(h => h.name === reflex.name)}
-              onSetStatus={(status) => handleSetStatus('primitiveReflexes', reflex.name, status)}
+              onSetStatus={(status, side) => handleSetStatus('primitiveReflexes', reflex.name, status, side)}
               onQuickCalibrate={() => handleQuickCalibrate('primitiveReflexes', reflex.name)}
               onShowLogic={() => handleShowLogic(reflex.name, results.primitiveReflexes?.[reflex.name] || 'Clear')}
               onClick={() => handleItemClick('reflex', reflex)}
@@ -719,7 +763,7 @@ const PathwayAssessment = ({ initialValue, previousValue, history = [], onSave, 
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
           {cranialNerves
             .filter(n => filterBySearch(n.name))
-            .filter(n => !showOnlyInhibited || results.cranialNerves?.[n.name] === 'Inhibited')
+            .filter(n => !showOnlyInhibited || results.cranialNerves?.[n.name] === 'Inhibited' || results.cranialNerves?.[`${n.name} (L)`] === 'Inhibited' || results.cranialNerves?.[`${n.name} (R)`] === 'Inhibited')
             .filter(n => !nucleiFilter || isItemInNuclei(n.name, nucleiFilter))
             .map(nerve => {
             const imageUrl = customizations[nerve.id]?.secondaryUrl || customizations[nerve.id]?.primaryUrl;
@@ -728,9 +772,12 @@ const PathwayAssessment = ({ initialValue, previousValue, history = [], onSave, 
                 key={nerve.id}
                 name={nerve.name}
                 category="cranialNerves"
-                status={results.cranialNerves?.[nerve.name]}
+                statusL={results.cranialNerves?.[`${nerve.name} (L)`]}
+                statusR={results.cranialNerves?.[`${nerve.name} (R)`]}
+                statusMidline={results.cranialNerves?.[nerve.name]}
+                isLateralized={nerve.lateralization !== 'Bilateral' && nerve.lateralization !== 'Mixed'}
                 history={processedHistory.find(h => h.name === nerve.name)}
-                onSetStatus={(status) => handleSetStatus('cranialNerves', nerve.name, status)}
+                onSetStatus={(status, side) => handleSetStatus('cranialNerves', nerve.name, status, side)}
                 onQuickCalibrate={() => handleQuickCalibrate('cranialNerves', nerve.name)}
                 onShowLogic={() => handleShowLogic(nerve.name, results.cranialNerves?.[nerve.name] || 'Clear')}
                 onClick={() => handleItemClick('brain', nerve)}
@@ -754,7 +801,7 @@ const PathwayAssessment = ({ initialValue, previousValue, history = [], onSave, 
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
           {brainZones
             .filter(z => filterBySearch(z.name))
-            .filter(z => !showOnlyInhibited || results.brainZones?.[z.name] === 'Inhibited')
+            .filter(z => !showOnlyInhibited || results.brainZones?.[z.name] === 'Inhibited' || results.brainZones?.[`${z.name} (L)`] === 'Inhibited' || results.brainZones?.[`${z.name} (R)`] === 'Inhibited')
             .filter(z => !nucleiFilter || isItemInNuclei(z.name, nucleiFilter))
             .map(zone => {
             const imageUrl = customizations[zone.id]?.secondaryUrl || customizations[zone.id]?.primaryUrl;
@@ -763,9 +810,12 @@ const PathwayAssessment = ({ initialValue, previousValue, history = [], onSave, 
                 key={zone.id}
                 name={zone.name}
                 category="brainZones"
-                status={results.brainZones?.[zone.name]}
+                statusL={results.brainZones?.[`${zone.name} (L)`]}
+                statusR={results.brainZones?.[`${zone.name} (R)`]}
+                statusMidline={results.brainZones?.[zone.name]}
+                isLateralized={zone.lateralization !== 'Bilateral' && zone.lateralization !== 'Mixed'}
                 history={processedHistory.find(h => h.name === zone.name)}
-                onSetStatus={(status) => handleSetStatus('brainZones', zone.name, status)}
+                onSetStatus={(status, side) => handleSetStatus('brainZones', zone.name, status, side)}
                 onQuickCalibrate={() => handleQuickCalibrate('brainZones', zone.name)}
                 onShowLogic={() => handleShowLogic(zone.name, results.brainZones?.[zone.name] || 'Clear')}
                 onClick={() => handleItemClick('brain', zone)}
@@ -792,7 +842,10 @@ const PathwayAssessment = ({ initialValue, previousValue, history = [], onSave, 
                     key={muscle}
                     name={muscle}
                     category="muscles"
-                    status={results.muscles?.[muscle] || results.muscles?.[`${muscle} (L)`] || results.muscles?.[`${muscle} (R)`]}
+                    statusL={results.muscles?.[`${muscle} (L)`]}
+                    statusR={results.muscles?.[`${muscle} (R)`]}
+                    statusMidline={results.muscles?.[muscle]}
+                    isLateralized={!MIDLINE_MUSCLES.includes(muscle)}
                     history={processedHistory.find(h => h.name === muscle)}
                     onSetStatus={(status, side) => handleSetStatus('muscles', muscle, status, side)}
                     onQuickCalibrate={() => handleQuickCalibrate('muscles', muscle)}

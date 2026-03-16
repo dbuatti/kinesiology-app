@@ -230,12 +230,8 @@ const PathwayLogicWizard = ({ onSave, onClearItem, priorityPattern }: PathwayLog
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <button 
-                    disabled={!effectiveItem}
                     onClick={() => goToStep('AFFERENT_SELECT')} 
-                    className={cn(
-                      "p-8 rounded-[2.5rem] border-2 transition-all duration-500 text-left group",
-                      !effectiveItem ? "opacity-50 cursor-not-allowed border-slate-100 bg-slate-50" : "border-blue-100 bg-blue-50/30 hover:border-blue-400 hover:bg-blue-50"
-                    )}
+                    className="p-8 rounded-[2.5rem] border-2 transition-all duration-500 text-left group border-blue-100 bg-blue-50/30 hover:border-blue-400 hover:bg-blue-50"
                 >
                   <div className="flex items-center justify-between mb-4">
                     <div className="w-12 h-12 rounded-xl bg-white shadow-md flex items-center justify-center group-hover:bg-blue-600 group-hover:text-white transition-all">
@@ -248,12 +244,8 @@ const PathwayLogicWizard = ({ onSave, onClearItem, priorityPattern }: PathwayLog
                 </button>
 
                 <button 
-                    disabled={!effectiveItem}
                     onClick={() => goToStep('EFFERENT_SELECT')} 
-                    className={cn(
-                      "p-8 rounded-[2.5rem] border-2 transition-all duration-500 text-left group",
-                      !effectiveItem ? "opacity-50 cursor-not-allowed border-slate-100 bg-slate-50" : "border-purple-100 bg-purple-50/30 hover:border-purple-400 hover:bg-purple-50"
-                    )}
+                    className="p-8 rounded-[2.5rem] border-2 transition-all duration-500 text-left group border-purple-100 bg-purple-50/30 hover:border-purple-400 hover:bg-purple-50"
                 >
                   <div className="flex items-center justify-between mb-4">
                     <div className="w-12 h-12 rounded-xl bg-white shadow-md flex items-center justify-center group-hover:bg-purple-600 group-hover:text-white transition-all">

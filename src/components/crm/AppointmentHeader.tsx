@@ -13,7 +13,8 @@ import {
   FlaskConical, 
   Activity,
   User,
-  ChevronRight
+  ChevronRight,
+  TrendingUp
 } from "lucide-react";
 import { format, isToday } from "date-fns";
 import { cn } from "@/lib/utils";
@@ -107,6 +108,22 @@ const AppointmentHeader = ({ appointment, onSaveField, onUpdate }: AppointmentHe
         </div>
 
         <div className="flex flex-wrap items-center gap-3 lg:justify-end">
+          {/* Vitals Snapshot in Header */}
+          <div className="flex items-center gap-2 mr-4">
+            {appointment.bolt_score && (
+              <div className="flex flex-col items-center px-3 py-1 bg-indigo-50 dark:bg-indigo-900/20 rounded-xl border border-indigo-100 dark:border-indigo-900/30">
+                <span className="text-[7px] font-black text-indigo-400 uppercase tracking-widest">BOLT</span>
+                <span className="text-sm font-black text-indigo-600 dark:text-indigo-400">{appointment.bolt_score}s</span>
+              </div>
+            )}
+            {appointment.coherence_score && (
+              <div className="flex flex-col items-center px-3 py-1 bg-rose-50 dark:bg-rose-900/20 rounded-xl border border-rose-100 dark:border-rose-900/30">
+                <span className="text-[7px] font-black text-rose-400 uppercase tracking-widest">COH</span>
+                <span className="text-sm font-black text-rose-600 dark:text-rose-400">{appointment.coherence_score.toFixed(1)}</span>
+              </div>
+            )}
+          </div>
+
           {isSessionToday && appointment.status !== 'Completed' && (
             <div className="flex gap-1.5 mr-1">
               <Button 

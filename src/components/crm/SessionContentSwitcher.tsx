@@ -13,7 +13,9 @@ import {
   Zap,
   Target,
   RefreshCw,
-  ClipboardCheck
+  ClipboardCheck,
+  ArrowRight,
+  CheckCircle2
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { AppointmentWithClient } from '@/types/crm';
@@ -36,8 +38,16 @@ interface SessionContentSwitcherProps {
   appointment: AppointmentWithClient;
   onUpdate: () => void;
   saveField: (field: string, value: any) => Promise<void>;
-  history?: any[]; // Optional history for the tracker
+  history?: any[];
 }
+
+const TABS = [
+  { id: 'baseline', label: 'Baseline', icon: Activity },
+  { id: 'sympathetic', label: 'SNS Reset', icon: Zap },
+  { id: 'pathway', label: 'Pathway', icon: GitBranch },
+  { id: 'calibration', label: 'Calibrate', icon: Target },
+  { id: 'reassessment', label: 'Review', icon: ClipboardCheck }
+];
 
 const SessionContentSwitcher = ({ appointment, onUpdate, saveField, history = [] }: SessionContentSwitcherProps) => {
   const [activeView, setActiveView] = useState<ActiveView>('home');
@@ -52,7 +62,6 @@ const SessionContentSwitcher = ({ appointment, onUpdate, saveField, history = []
     reassessment: !!appointment.session_north_star
   }), [appointment]);
 
-  // Find the most recent session before the current one
   const previousSession = useMemo(() => {
     if (!history || history.length < 2) return null;
     const sorted = [...history].sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
@@ -60,24 +69,28 @@ const SessionContentSwitcher = ({ appointment, onUpdate, saveField, history = []
     return sorted[currentIndex + 1] || null;
   }, [history, appointment.id]);
 
+  const handleNextTab = () => {
+    const currentIndex = TABS.findIndex(t => t.id === activeTab);
+    if (currentIndex < TABS.length - 1) {
+      setActiveTab(TABS[currentIndex + 1].id);
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+  };
+
   const handleClearItem = async (itemName: string) => {
     if (!appointment.priority_pattern) return;
-    
     try {
       const pattern = JSON.parse(appointment.priority_pattern);
       let updated = false;
-
-      // Search through all categories in the JSON to find the item and mark it Clear
       Object.keys(pattern).forEach(category => {
         if (pattern[category][itemName]) {
           pattern[category][itemName] = 'Clear';
           updated = true;
         }
       });
-
       if (updated) {
         await saveField('priority_pattern', JSON.stringify(pattern));
-        onUpdate(); // Refresh to update the tracker
+        onUpdate();
       }
     } catch (e) {
       console.error("Failed to update priority pattern JSON", e);
@@ -87,7 +100,6 @@ const SessionContentSwitcher = ({ appointment, onUpdate, saveField, history = []
   const handleJumpToCalibrate = (itemName: string) => {
     setPreselectedFinding(itemName);
     setActiveTab('calibration');
-    // Manually scroll to top since tab changes don't trigger route-based scroll reset
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
@@ -107,17 +119,35 @@ const SessionContentSwitcher = ({ appointment, onUpdate, saveField, history = []
     </Button>
   );
 
+  const TabFooter = ({ nextLabel }: { nextLabel?: string }) => (
+    <div className="mt-12 pt-8 border-t border-border flex items-center justify-between">
+      <div className="flex items-center gap-2 text-[10px] font-black text-muted-foreground uppercase tracking-widest">
+        {tabStatus[activeTab as keyof typeof tabStatus] ? (
+          <span className="flex items-center gap-1.5 text-emerald-600">
+            <CheckCircle2 size={14} /> Section Complete
+          </span>
+        ) : (
+          <span className="flex items-center gap-1.5">
+            <Activity size={14} /> Section in Progress
+          </span>
+        )}
+      </div>
+      {nextLabel && (
+        <Button 
+          onClick={handleNextTab}
+          className="bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl h-12 px-8 font-black text-xs uppercase tracking-widest shadow-lg shadow-indigo-100"
+        >
+          Next: {nextLabel} <ArrowRight size={18} className="ml-2" />
+        </Button>
+      )}
+    </div>
+  );
+
   const renderHomeView = () => (
     <div className="space-y-10">
       <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
         <TabsList className="grid w-full grid-cols-5 h-16 bg-muted/50 p-1.5 rounded-[1.5rem]">
-          {[
-            { id: 'baseline', label: 'Baseline', icon: Activity },
-            { id: 'sympathetic', label: 'SNS Reset', icon: Zap },
-            { id: 'pathway', label: 'Pathway', icon: GitBranch },
-            { id: 'calibration', label: 'Calibrate', icon: Target },
-            { id: 'reassessment', label: 'Review', icon: ClipboardCheck }
-          ].map((tab, i) => (
+          {TABS.map((tab, i) => (
             <TabsTrigger 
               key={tab.id} 
               value={tab.id} 
@@ -136,10 +166,12 @@ const SessionContentSwitcher = ({ appointment, onUpdate, saveField, history = []
         <div className="mt-8 animate-in fade-in slide-in-from-bottom-2 duration-500">
           <TabsContent value="baseline" className="focus-visible:ring-0">
             <BaselineTab appointment={appointment} onUpdate={onUpdate} saveField={saveField} />
+            <TabFooter nextLabel="SNS Reset" />
           </TabsContent>
 
           <TabsContent value="sympathetic" className="focus-visible:ring-0">
             <SympatheticTab appointment={appointment} onUpdate={onUpdate} saveField={saveField} />
+            <TabFooter nextLabel="Pathway Assessment" />
           </TabsContent>
 
           <TabsContent value="pathway" className="focus-visible:ring-0">
@@ -149,6 +181,7 @@ const SessionContentSwitcher = ({ appointment, onUpdate, saveField, history = []
               onSave={(s) => saveField('priority_pattern', s)} 
               onJumpToCalibrate={handleJumpToCalibrate}
             />
+            <TabFooter nextLabel="Calibration Wizard" />
           </TabsContent>
 
           <TabsContent value="calibration" className="focus-visible:ring-0">
@@ -158,6 +191,7 @@ const SessionContentSwitcher = ({ appointment, onUpdate, saveField, history = []
               priorityPattern={appointment.priority_pattern}
               initialFinding={preselectedFinding}
             />
+            <TabFooter nextLabel="Session Review" />
           </TabsContent>
 
           <TabsContent value="reassessment" className="focus-visible:ring-0">
@@ -170,6 +204,7 @@ const SessionContentSwitcher = ({ appointment, onUpdate, saveField, history = []
               onSave={saveField} 
               className="bg-card p-8 rounded-[2.5rem] border border-border shadow-sm min-h-[400px]" 
             />
+            <TabFooter />
           </TabsContent>
         </div>
       </Tabs>

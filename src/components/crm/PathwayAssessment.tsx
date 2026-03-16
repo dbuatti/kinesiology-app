@@ -5,7 +5,7 @@ import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { 
-  Brain, Zap, Activity, Shield, Dumbbell, AlertTriangle, ChevronDown, Check, X, Plus, Search, RotateCcw, Layers, ImageIcon, Baby, PlayCircle, ShieldAlert, ListChecks, Info, MousePointer2, Maximize2, History
+  Brain, Zap, Activity, Shield, Dumbbell, AlertTriangle, ChevronDown, Check, X, Plus, Search, RotateCcw, Layers, ImageIcon, Baby, PlayCircle, ShieldAlert, ListChecks, Info, MousePointer2, Maximize2, History, Trash2
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { BRAIN_REFLEX_POINTS, BrainReflexPoint } from '@/data/brain-reflex-data';
@@ -49,7 +49,6 @@ const AssessmentItem = ({ name, status, previousStatus, onSetStatus, onQuickCali
         "bg-white border-slate-100 hover:border-indigo-100 hover:shadow-md"
       )}
     >
-      {/* Quick Calibrate Button (Yellow Circle) */}
       <button
         onClick={(e) => {
           e.stopPropagation();
@@ -222,7 +221,6 @@ const PathwayAssessment = ({ initialValue, previousValue, onSave, onJumpToCalibr
     }
   }, [previousValue]);
 
-  // Modal States
   const [selectedMuscle, setSelectedMuscle] = useState<string | null>(null);
   const [selectedBrainPoint, setSelectedBrainPoint] = useState<BrainReflexPoint | null>(null);
   const [selectedReflex, setSelectedReflex] = useState<PrimitiveReflex | null>(null);
@@ -285,15 +283,18 @@ const PathwayAssessment = ({ initialValue, previousValue, onSave, onJumpToCalibr
     onSave(JSON.stringify(newResults));
   };
 
+  const handleClearAll = () => {
+    if (!confirm("Clear all findings for this session?")) return;
+    setResults({});
+    onSave("");
+  };
+
   const handleQuickCalibrate = (category: string, item: string) => {
-    // 1. Mark as inhibited
     const newResults = { ...results };
     if (!newResults[category]) newResults[category] = {};
     newResults[category][item] = 'Inhibited';
     setResults(newResults);
     onSave(JSON.stringify(newResults));
-
-    // 2. Trigger jump to calibration tab
     if (onJumpToCalibrate) {
       onJumpToCalibrate(item);
     }
@@ -333,14 +334,30 @@ const PathwayAssessment = ({ initialValue, previousValue, onSave, onJumpToCalibr
     return filtered;
   }, [muscleSearch]);
 
+  const totalFindings = Object.values(results).reduce((acc, curr) => acc + Object.keys(curr).length, 0);
+
   return (
     <div className="space-y-8">
-      <div className="flex items-center justify-end gap-3 p-3 bg-slate-100 rounded-2xl border border-slate-200">
-        <ImageIcon size={16} className="text-slate-500" />
-        <Label htmlFor="show-images" className="text-xs font-bold text-slate-600 uppercase tracking-wider">
-          Preview Reflex Images
-        </Label>
-        <Switch id="show-images" checked={showImages} onCheckedChange={setShowImages} disabled={loadingImages} />
+      <div className="flex items-center justify-between p-3 bg-slate-100 rounded-2xl border border-slate-200">
+        <div className="flex items-center gap-2">
+          {totalFindings > 0 && (
+            <Button 
+              variant="ghost" 
+              size="sm" 
+              onClick={handleClearAll}
+              className="h-8 text-[10px] font-black uppercase tracking-widest text-rose-600 hover:bg-rose-50 rounded-xl"
+            >
+              <Trash2 size={14} className="mr-1.5" /> Clear All Findings
+            </Button>
+          )}
+        </div>
+        <div className="flex items-center gap-3">
+          <ImageIcon size={16} className="text-slate-500" />
+          <Label htmlFor="show-images" className="text-xs font-bold text-slate-600 uppercase tracking-wider">
+            Preview Reflex Images
+          </Label>
+          <Switch id="show-images" checked={showImages} onCheckedChange={setShowImages} disabled={loadingImages} />
+        </div>
       </div>
 
       <AssessmentSection 
@@ -461,26 +478,9 @@ const PathwayAssessment = ({ initialValue, previousValue, onSave, onJumpToCalibr
         </div>
       </AssessmentSection>
 
-      {/* Modals */}
-      <MuscleInfoModal 
-        muscleName={selectedMuscle}
-        open={muscleModalOpen}
-        onOpenChange={setMuscleModalOpen}
-      />
-      
-      <BrainReflexModal 
-        point={selectedBrainPoint}
-        primaryUrl={selectedBrainPoint ? customizations[selectedBrainPoint.id]?.primaryUrl : null}
-        secondaryUrl={selectedBrainPoint ? customizations[selectedBrainPoint.id]?.secondaryUrl : null}
-        open={brainModalOpen}
-        onOpenChange={setBrainModalOpen}
-      />
-
-      <PrimitiveReflexModal 
-        reflex={selectedReflex}
-        open={reflexModalOpen}
-        onOpenChange={setReflexModalOpen}
-      />
+      <MuscleInfoModal muscleName={selectedMuscle} open={muscleModalOpen} onOpenChange={setMuscleModalOpen} />
+      <BrainReflexModal point={selectedBrainPoint} primaryUrl={selectedBrainPoint ? customizations[selectedBrainPoint.id]?.primaryUrl : null} secondaryUrl={selectedBrainPoint ? customizations[selectedBrainPoint.id]?.secondaryUrl : null} open={brainModalOpen} onOpenChange={setBrainModalOpen} />
+      <PrimitiveReflexModal reflex={selectedReflex} open={reflexModalOpen} onOpenChange={setReflexModalOpen} />
     </div>
   );
 };

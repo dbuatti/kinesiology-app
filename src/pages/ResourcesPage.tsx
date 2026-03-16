@@ -33,7 +33,8 @@ import {
   Eye,
   Timer,
   CheckCircle2,
-  Baby
+  Baby,
+  Palette
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -71,6 +72,7 @@ const CATEGORIES = [
     items: [
       { id: "mechano-academy", label: "Mechano Academy", icon: Trophy, desc: "Daily clinical drills and mastery tools." },
       { id: "intention", label: "North Star Process", icon: Compass, desc: "Define your core intention and commitment." },
+      { id: "fear-creativity", label: "Fear & Creativity", icon: Palette, desc: "Awareness of fear in the body and mind." },
       { id: "bible", label: "Mechano Bible", icon: BookOpen, desc: "Definitive guide to joints and movement geometry." },
       { id: "theory", label: "FN Theory", icon: Workflow, desc: "Functional Neurology approach and principles." },
     ]
@@ -237,6 +239,27 @@ const ResourcesPage = () => {
                   <p className="text-indigo-100 mb-6 font-medium">This interactive worksheet is a dedicated space for deep reflection. Click below to open the worksheet in a full-page view.</p>
                   <Button asChild className="bg-white text-indigo-600 hover:bg-indigo-50 h-12 px-8 rounded-xl font-bold">
                     <Link to="/north-star">Open North Star Worksheet <ArrowRight className="ml-2" size={16} /></Link>
+                  </Button>
+                </CardContent>
+              </Card>
+            </TabsContent>
+            <TabsContent value="fear-creativity">
+              <Card className="border-none shadow-lg rounded-[2.5rem] bg-rose-600 text-white overflow-hidden">
+                <CardHeader className="p-10">
+                  <div className="flex items-center gap-4 mb-4">
+                    <div className="w-16 h-16 bg-white/10 backdrop-blur-md rounded-2xl flex items-center justify-center border border-white/20">
+                      <Palette size={32} className="text-rose-300" />
+                    </div>
+                    <div>
+                      <CardTitle className="text-3xl font-black">Fear & Creativity Awareness</CardTitle>
+                      <CardDescription className="text-rose-200 text-lg mt-1">Uncover how fear manifests in your body and mind.</CardDescription>
+                    </div>
+                  </div>
+                </CardHeader>
+                <CardContent className="p-10 pt-0">
+                  <p className="text-rose-100 mb-6 font-medium">This interactive worksheet helps you identify creative blocks and somatic tension patterns. Click below to open the full worksheet.</p>
+                  <Button asChild className="bg-white text-rose-600 hover:bg-rose-50 h-12 px-8 rounded-xl font-bold">
+                    <Link to="/fear-creativity-worksheet">Open Fear & Creativity Worksheet <ArrowRight className="ml-2" size={16} /></Link>
                   </Button>
                 </CardContent>
               </Card>

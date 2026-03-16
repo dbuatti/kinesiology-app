@@ -21,6 +21,7 @@ import DemoSessionPage from "./pages/DemoSessionPage";
 import SettingsPage from "./pages/SettingsPage";
 import NorthStarPage from "./pages/NorthStarPage";
 import Week3WorksheetPage from "./pages/Week3WorksheetPage";
+import FearCreativityWorksheetPage from "./pages/FearCreativityWorksheetPage";
 import QuickCalibratePage from "./pages/QuickCalibratePage";
 import OnboardingPage from "./pages/OnboardingPage";
 import Login from "./pages/Login";
@@ -107,6 +108,7 @@ const App = () => (
               <Route path="/self-practice" element={<ProtectedLayout><SelfPracticePage /></ProtectedLayout>} />
               <Route path="/north-star" element={<ProtectedLayout><NorthStarPage /></ProtectedLayout>} />
               <Route path="/week-3-worksheet" element={<ProtectedLayout><Week3WorksheetPage /></ProtectedLayout>} />
+              <Route path="/fear-creativity-worksheet" element={<ProtectedLayout><FearCreativityWorksheetPage /></ProtectedLayout>} />
               <Route path="/quick-calibrate" element={<ProtectedLayout><QuickCalibratePage /></ProtectedLayout>} />
               <Route path="/debug" element={<ProtectedLayout><DebugAppointmentPage /></ProtectedLayout>} />
               <Route path="/demo-session" element={<ProtectedLayout><DemoSessionPage /></ProtectedLayout>} />

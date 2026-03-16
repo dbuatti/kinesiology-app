@@ -57,5 +57,21 @@ export const CLINICAL_COMPLAINTS: ClinicalComplaint[] = [
     priorityMeridians: ["Kidney", "San Jiao", "Pericardium"],
     reflexPoints: ["Adrenal NV", "Thymus", "K27"],
     insights: "Classic 'Triple Warmer' (San Jiao) dominance. The body is stuck in a survival loop. Prioritize Vagus Nerve stimulation and Kidney essence (Jing) support."
+  },
+  {
+    complaint: "Cold Feet (Chronic/Systemic)",
+    category: "Physiological",
+    priorityMuscles: ["Psoas", "Popliteus", "Gastrocnemius"],
+    priorityMeridians: ["Spleen", "Kidney", "Bladder"],
+    reflexPoints: ["Hypothalamus", "Thyroid", "Adrenal Pulse"],
+    insights: "Usually a systemic circulatory or metabolic issue. Check Hypothalamus (temperature regulation) against other brain areas. In TCM, often linked to Spleen deficiency."
+  },
+  {
+    complaint: "Vertigo (Limbic/Anxiety-Driven)",
+    category: "Neurological",
+    priorityMuscles: ["SCM", "Upper Trapezius", "Deep Neck Flexors"],
+    priorityMeridians: ["Central", "Governing", "Kidney"],
+    reflexPoints: ["GV16 (Cerebellum)", "Limbic System", "CN VIII"],
+    insights: "Shared pathways between the vestibular and limbic systems. If positional tests are clear but symptoms persist, prioritize emotional integration and SNS down-regulation. 'Letting Go' (David Hawkins) is a recommended resource."
   }
 ];

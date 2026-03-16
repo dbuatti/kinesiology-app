@@ -1,7 +1,7 @@
 "use client";
 
 import React from "react";
-import { AlertTriangle } from "lucide-react";
+import { AlertTriangle, Zap } from "lucide-react";
 import { MUSCLE_TEST_ASSISTANCE } from "@/data/muscle-data";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
@@ -22,6 +22,17 @@ const MuscleTestAssistanceCard = () => {
               <p className="text-xs text-slate-300 font-medium leading-relaxed">{step.details}</p>
             </div>
           ))}
+          
+          {/* NEW: Cramp Hack from transcript */}
+          <div className="p-4 bg-amber-500/10 rounded-2xl border border-amber-500/30 hover:bg-amber-500/20 transition-all">
+            <div className="flex items-center gap-2 mb-1">
+              <Zap size={14} className="text-amber-400" />
+              <h4 className="font-black text-xs text-amber-400 uppercase tracking-wider">Instant Cramp Hack</h4>
+            </div>
+            <p className="text-xs text-slate-300 font-medium leading-relaxed">
+              Go to the muscle belly spindles. Chop <span className="text-white font-bold">Inwards</span>, then <span className="text-white font-bold">Outwards</span>, then Inwards, then Outwards. Usually switches off the cramp in seconds.
+            </p>
+          </div>
         </div>
       </CardContent>
     </Card>

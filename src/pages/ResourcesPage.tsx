@@ -36,7 +36,9 @@ import {
   Baby,
   Palette,
   FileText,
-  Volume2
+  Volume2,
+  Calculator,
+  Wind
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -62,6 +64,9 @@ import RightingReflexesAssessment from "@/components/crm/RightingReflexesAssessm
 import CranialNerveReference from "@/components/crm/CranialNerveReference";
 import PrimitiveReflexReference from "@/components/crm/PrimitiveReflexReference";
 import MechanoMasteryModule from "@/components/crm/MechanoMasteryModule";
+import CranialNerveHomeworkTool from "@/components/crm/CranialNerveHomeworkTool";
+import BrainstemBreathingReference from "@/components/crm/BrainstemBreathingReference";
+import AppLayout from "@/components/crm/AppLayout";
 
 const CATEGORIES = [
   {
@@ -129,6 +134,8 @@ const CATEGORIES = [
     bgColor: "bg-amber-50 dark:bg-amber-900/20",
     borderColor: "border-amber-100 dark:border-amber-900/30",
     items: [
+      { id: "rehab-calc", label: "Rehab Calc", icon: Calculator, desc: "Calculate 70% threshold for nerve homework." },
+      { id: "brainstem-breath", label: "Brainstem Breath", icon: Wind, desc: "Breathing patterns for Midbrain, Pons, Medulla." },
       { id: "logic", label: "Clinical Logic", icon: Lightbulb, desc: "The hierarchy of neurological correction." },
       { id: "spinal", label: "Spinal", icon: Move, desc: "Spinal segment and Lovett-Brother associations." },
       { id: "vestibular", label: "Vestibular", icon: Footprints, desc: "Fukuda Step Test and balance protocols." },
@@ -152,301 +159,305 @@ const ResourcesPage = () => {
   };
 
   return (
-    <div className="p-4 md:p-8 max-w-full mx-auto space-y-8">
-      <Breadcrumbs items={[{ label: "Resources" }]} />
+    <AppLayout>
+      <div className="p-4 md:p-8 max-w-full mx-auto space-y-8">
+        <Breadcrumbs items={[{ label: "Resources" }]} />
 
-      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
-        <div>
-          <Badge className="bg-indigo-100 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-400 border-indigo-200 dark:border-indigo-900/50 font-black text-[10px] uppercase tracking-[0.3em] px-4 py-1 mb-2">
-            Integrated Healer
-          </Badge>
-          <h1 className="text-4xl font-black tracking-tight text-foreground">Knowledge Base</h1>
-          <p className="text-muted-foreground font-medium mt-1 text-lg">Tools for your transformation journey and clinical practice.</p>
+        <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+          <div>
+            <Badge className="bg-indigo-100 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-400 border-indigo-200 dark:border-indigo-900/50 font-black text-[10px] uppercase tracking-[0.3em] px-4 py-1 mb-2">
+              Integrated Healer
+            </Badge>
+            <h1 className="text-4xl font-black tracking-tight text-foreground">Knowledge Base</h1>
+            <p className="text-muted-foreground font-medium mt-1 text-lg">Tools for your transformation journey and clinical practice.</p>
+          </div>
+          {activeTab !== "hub" && (
+            <Button 
+              variant="outline" 
+              onClick={() => handleTabChange("hub")}
+              className="rounded-xl border-border bg-card hover:bg-muted font-bold text-xs uppercase tracking-widest h-12 px-6"
+            >
+              <LayoutGrid size={18} className="mr-2" /> Back to Hub
+            </Button>
+          )}
         </div>
-        {activeTab !== "hub" && (
-          <Button 
-            variant="outline" 
-            onClick={() => handleTabChange("hub")}
-            className="rounded-xl border-border bg-card hover:bg-muted font-bold text-xs uppercase tracking-widest h-12 px-6"
-          >
-            <LayoutGrid size={18} className="mr-2" /> Back to Hub
-          </Button>
-        )}
-      </div>
 
-      {activeTab === "hub" ? (
-        <div className="space-y-12 animate-in fade-in slide-in-from-bottom-4 duration-700">
-          {CATEGORIES.map((category) => (
-            <div key={category.id} className="space-y-6">
-              <div className="flex items-center gap-3 px-2">
-                <div className={cn("w-10 h-10 rounded-xl flex items-center justify-center shadow-sm", category.bgColor, category.color)}>
-                  <category.icon size={20} />
+        {activeTab === "hub" ? (
+          <div className="space-y-12 animate-in fade-in slide-in-from-bottom-4 duration-700">
+            {CATEGORIES.map((category) => (
+              <div key={category.id} className="space-y-6">
+                <div className="flex items-center gap-3 px-2">
+                  <div className={cn("w-10 h-10 rounded-xl flex items-center justify-center shadow-sm", category.bgColor, category.color)}>
+                    <category.icon size={20} />
+                  </div>
+                  <h2 className="text-2xl font-black text-foreground tracking-tight">{category.label}</h2>
+                  <div className="flex-1 h-[2px] bg-border rounded-full ml-4" />
                 </div>
-                <h2 className="text-2xl font-black text-foreground tracking-tight">{category.label}</h2>
-                <div className="flex-1 h-[2px] bg-border rounded-full ml-4" />
-              </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-                {category.items.map((item) => (
-                  <Link 
-                    key={item.id} 
-                    to={(item as any).path || `/resources?tab=${item.id}`}
-                    className="block"
-                  >
-                    <Card 
-                      className="border-none shadow-md rounded-[2rem] bg-card hover:shadow-xl hover:-translate-y-1 transition-all duration-300 group cursor-pointer overflow-hidden h-full"
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                  {category.items.map((item) => (
+                    <Link 
+                      key={item.id} 
+                      to={(item as any).path || `/resources?tab=${item.id}`}
+                      className="block"
                     >
-                      <CardContent className="p-8 space-y-4">
-                        <div className={cn(
-                          "w-12 h-12 rounded-2xl flex items-center justify-center transition-all duration-500 group-hover:scale-110 shadow-sm",
-                          category.bgColor, category.color
-                        )}>
-                          <item.icon size={24} />
-                        </div>
-                        <div>
-                          <h3 className="text-lg font-black text-foreground group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors">{item.label}</h3>
-                          <p className="text-xs text-muted-foreground font-medium mt-1 leading-relaxed">{item.desc}</p>
-                        </div>
-                        <div className="pt-2 flex items-center text-[10px] font-black uppercase tracking-widest text-muted-foreground group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors">
-                          Open Tool <ChevronRight size={12} className="ml-1 group-hover:translate-x-1 transition-transform" />
-                        </div>
+                      <Card 
+                        className="border-none shadow-md rounded-[2rem] bg-card hover:shadow-xl hover:-translate-y-1 transition-all duration-300 group cursor-pointer overflow-hidden h-full"
+                      >
+                        <CardContent className="p-8 space-y-4">
+                          <div className={cn(
+                            "w-12 h-12 rounded-2xl flex items-center justify-center transition-all duration-500 group-hover:scale-110 shadow-sm",
+                            category.bgColor, category.color
+                          )}>
+                            <item.icon size={24} />
+                          </div>
+                          <div>
+                            <h3 className="text-lg font-black text-foreground group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors">{item.label}</h3>
+                            <p className="text-xs text-muted-foreground font-medium mt-1 leading-relaxed">{item.desc}</p>
+                          </div>
+                          <div className="pt-2 flex items-center text-[10px] font-black uppercase tracking-widest text-muted-foreground group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors">
+                            Open Tool <ChevronRight size={12} className="ml-1 group-hover:translate-x-1 transition-transform" />
+                          </div>
+                        </CardContent>
+                      </Card>
+                    </Link>
+                  ))}
+                </div>
+              </div>
+            ))}
+          </div>
+        ) : (
+          <Tabs value={activeTab} onValueChange={handleTabChange} className="w-full">
+            <div className="overflow-x-auto pb-4">
+              <TabsList className={cn(
+                "flex w-max h-auto p-1.5 rounded-2xl gap-1",
+                activeCategory?.bgColor || "bg-muted"
+              )}>
+                {activeCategory?.items.map((item) => (
+                  <TabsTrigger 
+                    key={item.id} 
+                    value={item.id} 
+                    className="rounded-xl py-2.5 px-6 data-[state=active]:bg-card data-[state=active]:text-indigo-600 dark:data-[state=active]:text-indigo-400 data-[state=active]:shadow-sm font-bold text-xs uppercase tracking-widest"
+                  >
+                    <item.icon size={16} className="mr-2" /> {item.label}
+                  </TabsTrigger>
+                ))}
+              </TabsList>
+            </div>
+
+            <div className="mt-8 animate-in fade-in slide-in-from-bottom-4 duration-700">
+              {/* Foundations */}
+              <TabsContent value="mechano-academy"><MechanoMasteryModule /></TabsContent>
+              <TabsContent value="bible"><MechanoBible /></TabsContent>
+              <TabsContent value="theory"><FnTheory /></TabsContent>
+
+              {/* Clinical Reference */}
+              <TabsContent value="primitive"><PrimitiveReflexReference /></TabsContent>
+              <TabsContent value="cranial"><CranialNerveReference /></TabsContent>
+              <TabsContent value="brain"><BrainReflexReference /></TabsContent>
+              <TabsContent value="ligaments"><LigamentReference /></TabsContent>
+              <TabsContent value="cheatsheet"><ClinicalCheatSheet /></TabsContent>
+              <TabsContent value="video"><VideoLibrary /></TabsContent>
+
+              {/* TCM & Meridians */}
+              <TabsContent value="clock"><MeridianClock /></TabsContent>
+              <TabsContent value="elements"><FiveElementCycle /></TabsContent>
+              <TabsContent value="channels"><TcmChannelReference /></TabsContent>
+              <TabsContent value="acupoints"><AcupointReference /></TabsContent>
+
+              {/* Practice Tools */}
+              <TabsContent value="rehab-calc"><CranialNerveHomeworkTool /></TabsContent>
+              <TabsContent value="brainstem-breath"><BrainstemBreathingReference /></TabsContent>
+              <TabsContent value="logic">
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                  <Card className="border-none shadow-lg rounded-[3rem] bg-slate-900 dark:bg-slate-950 text-white overflow-hidden relative">
+                    <div className="absolute top-0 right-0 p-10 opacity-10"><Lightbulb size={150} /></div>
+                    <CardHeader className="p-10">
+                      <CardTitle className="text-3xl font-black flex items-center gap-4"><Zap size={32} className="text-amber-400" /> The Hierarchy of Correction</CardTitle>
+                      <CardDescription className="text-slate-400 text-lg font-medium mt-2">Clinical reasoning follows a specific neurological order to ensure lasting results.</CardDescription>
+                    </CardHeader>
+                    <CardContent className="p-10 pt-0 space-y-4 relative z-10">
+                      <div className="space-y-4">
+                        {[
+                          { step: 1, title: "Safety First", desc: "Address SNS dominance (Harmonic Rocking, Diaphragm) before deep work." },
+                          { step: 2, title: "Foundations", desc: "Check Primitive Reflexes and Cranial Nerves. They are the brain's OS." },
+                          { step: 3, title: "Input (Afferent)", desc: "Calibrate Mechanoreceptors and Vestibular systems to clear 'threat'." },
+                          { step: 4, title: "Output (Efferent)", desc: "Integrate Cortical and Subcortical processing for motor control." }
+                        ].map((item) => (
+                          <div key={item.step} className="flex gap-5 p-5 bg-white/5 rounded-2xl border border-white/10">
+                            <span className="w-10 h-10 rounded-full bg-indigo-600 flex items-center justify-center font-black text-lg shrink-0">{item.step}</span>
+                            <div><h4 className="font-black text-indigo-300 uppercase tracking-widest text-xs mb-1">{item.title}</h4><p className="text-sm text-slate-300 font-medium leading-relaxed">{item.desc}</p></div>
+                          </div>
+                        ))}
+                      </div>
+                    </CardContent>
+                  </Card>
+                  <div className="space-y-8">
+                    <Card className="border-none shadow-lg rounded-[2.5rem] bg-card overflow-hidden">
+                      <CardHeader className="bg-indigo-50 dark:bg-indigo-900/20 p-8"><CardTitle className="text-xl font-black flex items-center gap-3 text-indigo-900 dark:text-indigo-100"><ShieldAlert size={24} /> Contralateral vs Ipsilateral</CardTitle></CardHeader>
+                      <CardContent className="p-8 space-y-6">
+                        <div className="p-5 bg-muted/30 rounded-2xl border border-border"><h4 className="font-black text-indigo-600 dark:text-indigo-400 text-xs uppercase tracking-widest mb-2">Cortical Logic (Contralateral)</h4><p className="text-sm text-muted-foreground leading-relaxed font-medium">The <strong>Cortex</strong> (PFC, M1, S1) controls the opposite side of the body. If the left side is dysfunctional, check the right cortex.</p></div>
+                        <div className="p-5 bg-muted/30 rounded-2xl border border-border"><h4 className="font-black text-rose-600 dark:text-rose-400 text-xs uppercase tracking-widest mb-2">Subcortical Logic (Ipsilateral)</h4><p className="text-sm text-muted-foreground leading-relaxed font-medium">The <strong>Brainstem & Cerebellum</strong> control the same side of the body. If the left side is dysfunctional, check the left cerebellum.</p></div>
                       </CardContent>
                     </Card>
-                  </Link>
-                ))}
-              </div>
-            </div>
-          ))}
-        </div>
-      ) : (
-        <Tabs value={activeTab} onValueChange={handleTabChange} className="w-full">
-          <div className="overflow-x-auto pb-4">
-            <TabsList className={cn(
-              "flex w-max h-auto p-1.5 rounded-2xl gap-1",
-              activeCategory?.bgColor || "bg-muted"
-            )}>
-              {activeCategory?.items.map((item) => (
-                <TabsTrigger 
-                  key={item.id} 
-                  value={item.id} 
-                  className="rounded-xl py-2.5 px-6 data-[state=active]:bg-card data-[state=active]:text-indigo-600 dark:data-[state=active]:text-indigo-400 data-[state=active]:shadow-sm font-bold text-xs uppercase tracking-widest"
-                >
-                  <item.icon size={16} className="mr-2" /> {item.label}
-                </TabsTrigger>
-              ))}
-            </TabsList>
-          </div>
-
-          <div className="mt-8 animate-in fade-in slide-in-from-bottom-4 duration-700">
-            {/* Foundations */}
-            <TabsContent value="mechano-academy"><MechanoMasteryModule /></TabsContent>
-            <TabsContent value="bible"><MechanoBible /></TabsContent>
-            <TabsContent value="theory"><FnTheory /></TabsContent>
-
-            {/* Clinical Reference */}
-            <TabsContent value="primitive"><PrimitiveReflexReference /></TabsContent>
-            <TabsContent value="cranial"><CranialNerveReference /></TabsContent>
-            <TabsContent value="brain"><BrainReflexReference /></TabsContent>
-            <TabsContent value="ligaments"><LigamentReference /></TabsContent>
-            <TabsContent value="cheatsheet"><ClinicalCheatSheet /></TabsContent>
-            <TabsContent value="video"><VideoLibrary /></TabsContent>
-
-            {/* TCM & Meridians */}
-            <TabsContent value="clock"><MeridianClock /></TabsContent>
-            <TabsContent value="elements"><FiveElementCycle /></TabsContent>
-            <TabsContent value="channels"><TcmChannelReference /></TabsContent>
-            <TabsContent value="acupoints"><AcupointReference /></TabsContent>
-
-            {/* Practice Tools */}
-            <TabsContent value="logic">
-              <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-                <Card className="border-none shadow-lg rounded-[3rem] bg-slate-900 dark:bg-slate-950 text-white overflow-hidden relative">
-                  <div className="absolute top-0 right-0 p-10 opacity-10"><Lightbulb size={150} /></div>
-                  <CardHeader className="p-10">
-                    <CardTitle className="text-3xl font-black flex items-center gap-4"><Zap size={32} className="text-amber-400" /> The Hierarchy of Correction</CardTitle>
-                    <CardDescription className="text-slate-400 text-lg font-medium mt-2">Clinical reasoning follows a specific neurological order to ensure lasting results.</CardDescription>
-                  </CardHeader>
-                  <CardContent className="p-10 pt-0 space-y-4 relative z-10">
-                    <div className="space-y-4">
-                      {[
-                        { step: 1, title: "Safety First", desc: "Address SNS dominance (Harmonic Rocking, Diaphragm) before deep work." },
-                        { step: 2, title: "Foundations", desc: "Check Primitive Reflexes and Cranial Nerves. They are the brain's OS." },
-                        { step: 3, title: "Input (Afferent)", desc: "Calibrate Mechanoreceptors and Vestibular systems to clear 'threat'." },
-                        { step: 4, title: "Output (Efferent)", desc: "Integrate Cortical and Subcortical processing for motor control." }
-                      ].map((item) => (
-                        <div key={item.step} className="flex gap-5 p-5 bg-white/5 rounded-2xl border border-white/10">
-                          <span className="w-10 h-10 rounded-full bg-indigo-600 flex items-center justify-center font-black text-lg shrink-0">{item.step}</span>
-                          <div><h4 className="font-black text-indigo-300 uppercase tracking-widest text-xs mb-1">{item.title}</h4><p className="text-sm text-slate-300 font-medium leading-relaxed">{item.desc}</p></div>
-                        </div>
-                      ))}
+                  </div>
+                </div>
+              </TabsContent>
+              <TabsContent value="spinal"><SpinalSegmentReference /></TabsContent>
+              <TabsContent value="vestibular">
+                <Card className="border-none shadow-lg rounded-3xl overflow-hidden bg-card">
+                  <div className="bg-gradient-to-r from-emerald-600 to-teal-600 p-8 text-white">
+                    <div className="flex items-center gap-4 mb-4">
+                      <div className="w-14 h-14 bg-white/20 backdrop-blur-md rounded-2xl flex items-center justify-center"><Footprints size={32} /></div>
+                      <div><CardTitle className="text-3xl font-black">Fukuda Step Test</CardTitle></div>
+                    </div>
+                    <p className="text-emerald-50 text-lg max-w-2xl leading-relaxed font-medium">Examines labyrinthine function by triggering vestibulospinal reflexes.</p>
+                  </div>
+                  <CardContent className="p-8">
+                    <div className="grid grid-cols-1 lg:grid-cols-3 gap-12">
+                      <div className="lg:col-span-2 space-y-10">
+                        <section className="space-y-4">
+                          <h3 className="text-xl font-bold text-foreground flex items-center gap-2"><Info size={20} className="text-emerald-600" /> Purpose & Context</h3>
+                          <p className="text-muted-foreground leading-relaxed font-medium">The Unterberger (Fukuda) test is best implemented as a diagnostic method to isolate <strong>peripheral labyrinthine dysfunction</strong>.</p>
+                        </section>
+                      </div>
                     </div>
                   </CardContent>
                 </Card>
-                <div className="space-y-8">
-                  <Card className="border-none shadow-lg rounded-[2.5rem] bg-card overflow-hidden">
-                    <CardHeader className="bg-indigo-50 dark:bg-indigo-900/20 p-8"><CardTitle className="text-xl font-black flex items-center gap-3 text-indigo-900 dark:text-indigo-100"><ShieldAlert size={24} /> Contralateral vs Ipsilateral</CardTitle></CardHeader>
-                    <CardContent className="p-8 space-y-6">
-                      <div className="p-5 bg-muted/30 rounded-2xl border border-border"><h4 className="font-black text-indigo-600 dark:text-indigo-400 text-xs uppercase tracking-widest mb-2">Cortical Logic (Contralateral)</h4><p className="text-sm text-muted-foreground leading-relaxed font-medium">The <strong>Cortex</strong> (PFC, M1, S1) controls the opposite side of the body. If the left side is dysfunctional, check the right cortex.</p></div>
-                      <div className="p-5 bg-muted/30 rounded-2xl border border-border"><h4 className="font-black text-rose-600 dark:text-rose-400 text-xs uppercase tracking-widest mb-2">Subcortical Logic (Ipsilateral)</h4><p className="text-sm text-muted-foreground leading-relaxed font-medium">The <strong>Brainstem & Cerebellum</strong> control the same side of the body. If the left side is dysfunctional, check the left cerebellum.</p></div>
-                    </CardContent>
-                  </Card>
-                </div>
-              </div>
-            </TabsContent>
-            <TabsContent value="spinal"><SpinalSegmentReference /></TabsContent>
-            <TabsContent value="vestibular">
-              <Card className="border-none shadow-lg rounded-3xl overflow-hidden bg-card">
-                <div className="bg-gradient-to-r from-emerald-600 to-teal-600 p-8 text-white">
-                  <div className="flex items-center gap-4 mb-4">
-                    <div className="w-14 h-14 bg-white/20 backdrop-blur-md rounded-2xl flex items-center justify-center"><Footprints size={32} /></div>
-                    <div><CardTitle className="text-3xl font-black">Fukuda Step Test</CardTitle></div>
-                  </div>
-                  <p className="text-emerald-50 text-lg max-w-2xl leading-relaxed font-medium">Examines labyrinthine function by triggering vestibulospinal reflexes.</p>
-                </div>
-                <CardContent className="p-8">
-                  <div className="grid grid-cols-1 lg:grid-cols-3 gap-12">
-                    <div className="lg:col-span-2 space-y-10">
-                      <section className="space-y-4">
-                        <h3 className="text-xl font-bold text-foreground flex items-center gap-2"><Info size={20} className="text-emerald-600" /> Purpose & Context</h3>
-                        <p className="text-muted-foreground leading-relaxed font-medium">The Unterberger (Fukuda) test is best implemented as a diagnostic method to isolate <strong>peripheral labyrinthine dysfunction</strong>.</p>
-                      </section>
+              </TabsContent>
+              <TabsContent value="lymphatic">
+                <Card className="border-none shadow-lg rounded-3xl overflow-hidden bg-card">
+                  <div className="bg-gradient-to-r from-blue-600 to-cyan-600 p-8 text-white">
+                    <div className="flex items-center gap-4 mb-4">
+                      <div className="w-14 h-14 bg-white/20 backdrop-blur-md rounded-2xl flex items-center justify-center"><Droplets size={32} /></div>
+                      <div><CardTitle className="text-3xl font-black">Lymphatic System Assessment</CardTitle></div>
                     </div>
+                    <p className="text-blue-50 text-lg max-w-2xl leading-relaxed font-medium">"Drainage Precedes Supply" — Addressing lymphatic stasis to reduce neural inflammation.</p>
                   </div>
-                </CardContent>
-              </Card>
-            </TabsContent>
-            <TabsContent value="lymphatic">
-              <Card className="border-none shadow-lg rounded-3xl overflow-hidden bg-card">
-                <div className="bg-gradient-to-r from-blue-600 to-cyan-600 p-8 text-white">
-                  <div className="flex items-center gap-4 mb-4">
-                    <div className="w-14 h-14 bg-white/20 backdrop-blur-md rounded-2xl flex items-center justify-center"><Droplets size={32} /></div>
-                    <div><CardTitle className="text-3xl font-black">Lymphatic System Assessment</CardTitle></div>
-                  </div>
-                  <p className="text-blue-50 text-lg max-w-2xl leading-relaxed font-medium">"Drainage Precedes Supply" — Addressing lymphatic stasis to reduce neural inflammation.</p>
-                </div>
-                <CardContent className="p-8">
-                  <div className="grid grid-cols-1 lg:grid-cols-3 gap-12">
-                    <div className="lg:col-span-2 space-y-10">
-                      <section className="space-y-4">
-                        <h3 className="text-xl font-bold text-foreground flex items-center gap-2"><Info size={20} className="text-blue-600" /> Philosophy & Theory</h3>
-                        <p className="text-muted-foreground leading-relaxed font-medium">The lymphatic system is the body's primary waste removal network.</p>
-                      </section>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-            </TabsContent>
-            <TabsContent value="postural">
-              <div className="space-y-12">
-                <Card className="border-none shadow-2xl rounded-[3.5rem] bg-slate-900 text-white overflow-hidden relative">
-                  <div className="absolute top-0 right-0 p-12 opacity-5"><RefreshCw size={200} /></div>
-                  <CardHeader className="p-12 relative z-10">
-                    <div className="flex items-center gap-5 mb-4">
-                      <div className="w-16 h-16 bg-white/10 backdrop-blur-md rounded-2xl flex items-center justify-center border border-white/20">
-                        <RefreshCw size={32} className="text-blue-400" />
-                      </div>
-                      <div>
-                        <CardTitle className="text-4xl font-black tracking-tight">Postural Righting Reflexes</CardTitle>
-                        <CardDescription className="text-slate-400 text-xl font-medium mt-2">
-                          The Horizon of the Nervous System
-                        </CardDescription>
+                  <CardContent className="p-8">
+                    <div className="grid grid-cols-1 lg:grid-cols-3 gap-12">
+                      <div className="lg:col-span-2 space-y-10">
+                        <section className="space-y-4">
+                          <h3 className="text-xl font-bold text-foreground flex items-center gap-2"><Info size={20} className="text-blue-600" /> Philosophy & Theory</h3>
+                          <p className="text-muted-foreground leading-relaxed font-medium">The lymphatic system is the body's primary waste removal network.</p>
+                        </section>
                       </div>
                     </div>
-                  </CardHeader>
+                  </CardContent>
                 </Card>
-
-                <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-                  <Card className="lg:col-span-2 border-none shadow-lg rounded-[2.5rem] bg-card overflow-hidden">
-                    <CardHeader className="p-8 bg-indigo-50 dark:bg-indigo-900/20">
-                      <h3 className="text-2xl font-black flex items-center gap-3 text-indigo-900 dark:text-indigo-100">
-                        <Info size={28} /> Theory & Clinical Significance
-                      </h3>
-                    </CardHeader>
-                    <CardContent className="p-8 space-y-8">
-                      <div className="space-y-4">
-                        <p className="text-lg font-medium text-muted-foreground leading-relaxed">
-                          Righting reflexes are the "next lot" of reflexes that take over once primitive reflexes integrate (usually around 1-2 years). They represent the architecture of the nervous system's ability to organize the head around the eyes and the horizon.
-                        </p>
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                          <div className="p-6 bg-blue-50 dark:bg-blue-900/20 rounded-3xl border border-blue-100 dark:border-blue-900/30">
-                            <h4 className="font-black text-blue-900 dark:text-blue-100 flex items-center gap-2 mb-2">
-                              <Eye size={18} /> Ocular Righting
-                            </h4>
-                            <p className="text-sm text-blue-800 dark:text-blue-200 font-medium">
-                              The ability to keep the head level using visual input. Tested with eyes open on a distant target.
-                            </p>
-                          </div>
-                          <div className="p-6 bg-emerald-50 dark:bg-emerald-900/20 rounded-3xl border border-emerald-100 dark:border-emerald-900/30">
-                            <h4 className="font-black text-emerald-900 dark:text-emerald-100 flex items-center gap-2 mb-2">
-                              <Activity size={18} /> Labyrinthine Righting
-                            </h4>
-                            <p className="text-sm text-emerald-800 dark:text-emerald-200 font-medium">
-                              The vestibular system's ability to organize the head without vision. Tested with eyes closed.
-                            </p>
-                          </div>
+              </TabsContent>
+              <TabsContent value="postural">
+                <div className="space-y-12">
+                  <Card className="border-none shadow-2xl rounded-[3.5rem] bg-slate-900 text-white overflow-hidden relative">
+                    <div className="absolute top-0 right-0 p-12 opacity-5"><RefreshCw size={200} /></div>
+                    <CardHeader className="p-12 relative z-10">
+                      <div className="flex items-center gap-5 mb-4">
+                        <div className="w-16 h-16 bg-white/10 backdrop-blur-md rounded-2xl flex items-center justify-center border border-white/20">
+                          <RefreshCw size={32} className="text-blue-400" />
+                        </div>
+                        <div>
+                          <CardTitle className="text-4xl font-black tracking-tight">Postural Righting Reflexes</CardTitle>
+                          <CardDescription className="text-slate-400 text-xl font-medium mt-2">
+                            The Horizon of the Nervous System
+                          </CardDescription>
                         </div>
                       </div>
-
-                      <div className="p-6 bg-amber-50 dark:bg-amber-900/10 rounded-3xl border border-amber-100 dark:border-amber-900/30">
-                        <h4 className="font-bold text-amber-900 dark:text-amber-100 mb-2 flex items-center gap-2">
-                          <ShieldAlert size={18} /> When to Assess?
-                        </h4>
-                        <p className="text-sm text-amber-800 dark:text-amber-200 leading-relaxed font-medium">
-                          Prioritize these reflexes in cases of chronic head, neck, shoulder, or back pain that is non-responsive to standard rehab. Also critical for clients experiencing vertigo or motion sickness.
-                        </p>
-                      </div>
-                    </CardContent>
+                    </CardHeader>
                   </Card>
 
-                  <Card className="border-none shadow-lg rounded-[2.5rem] bg-slate-900 dark:bg-slate-950 text-white overflow-hidden">
-                    <CardHeader className="p-8">
-                      <CardTitle className="text-xl font-black flex items-center gap-3">
-                        <Zap size={24} className="text-amber-400" /> Correction Logic
-                      </CardTitle>
-                    </CardHeader>
-                    <CardContent className="p-8 pt-0 space-y-6">
-                      <div className="space-y-4">
-                        <div className="p-4 bg-white/5 rounded-2xl border border-white/10">
-                          <p className="text-xs font-black text-amber-400 uppercase tracking-widest mb-2">The Hierarchy</p>
-                          <p className="text-sm font-bold leading-tight">Primitive → Postural → Fine Motor</p>
-                        </div>
-                        <p className="text-sm text-slate-400 leading-relaxed font-medium">
-                          If a righting reflex is dysfunctional, it is typically an <strong>Afferent (Mechanoreceptive)</strong> priority.
-                        </p>
-                        <div className="space-y-3">
-                          <p className="text-[10px] font-black text-slate-500 uppercase tracking-widest">Required Tools</p>
-                          <div className="flex items-center gap-3 p-3 bg-white/5 rounded-xl border border-white/10">
-                            <Timer size={16} className="text-indigo-400" />
-                            <span className="text-xs font-bold">128Hz Tuning Fork</span>
+                  <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                    <Card className="lg:col-span-2 border-none shadow-lg rounded-[2.5rem] bg-card overflow-hidden">
+                      <CardHeader className="p-8 bg-indigo-50 dark:bg-indigo-900/20">
+                        <h3 className="text-2xl font-black flex items-center gap-3 text-indigo-900 dark:text-indigo-100">
+                          <Info size={28} /> Theory & Clinical Significance
+                        </h3>
+                      </CardHeader>
+                      <CardContent className="p-8 space-y-8">
+                        <div className="space-y-4">
+                          <p className="text-lg font-medium text-muted-foreground leading-relaxed">
+                            Righting reflexes are the "next lot" of reflexes that take over once primitive reflexes integrate (usually around 1-2 years). They represent the architecture of the nervous system's ability to organize the head around the eyes and the horizon.
+                          </p>
+                          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <div className="p-6 bg-blue-50 dark:bg-blue-900/20 rounded-3xl border border-blue-100 dark:border-blue-900/30">
+                              <h4 className="font-black text-blue-900 dark:text-blue-100 flex items-center gap-2 mb-2">
+                                <Eye size={18} /> Ocular Righting
+                              </h4>
+                              <p className="text-sm text-blue-800 dark:text-blue-200 font-medium">
+                                The ability to keep the head level using visual input. Tested with eyes open on a distant target.
+                              </p>
+                            </div>
+                            <div className="p-6 bg-emerald-50 dark:bg-emerald-900/20 rounded-3xl border border-emerald-100 dark:border-emerald-900/30">
+                              <h4 className="font-black text-emerald-900 dark:text-emerald-100 flex items-center gap-2 mb-2">
+                                <Activity size={18} /> Labyrinthine Righting
+                              </h4>
+                              <p className="text-sm text-emerald-800 dark:text-emerald-200 font-medium">
+                                The vestibular system's ability to organize the head without vision. Tested with eyes closed.
+                              </p>
+                            </div>
                           </div>
                         </div>
-                        <div className="pt-4 border-t border-white/10">
-                          <p className="text-xs text-slate-400 italic">"Clearing the primitive reflexes first often clears the righting reflexes automatically."</p>
-                        </div>
-                      </div>
-                    </CardContent>
-                  </Card>
-                </div>
 
-                <div className="max-w-4xl mx-auto">
-                  <div className="flex items-center gap-3 mb-6 px-4">
-                    <div className="w-10 h-10 rounded-xl bg-indigo-600 text-white flex items-center justify-center shadow-lg">
-                      <Target size={20} />
-                    </div>
-                    <h3 className="text-2xl font-black text-foreground">Interactive Assessment Tool</h3>
+                        <div className="p-6 bg-amber-50 dark:bg-amber-900/10 rounded-3xl border border-amber-100 dark:border-amber-900/30">
+                          <h4 className="font-bold text-amber-900 dark:text-amber-100 mb-2 flex items-center gap-2">
+                            <ShieldAlert size={18} /> When to Assess?
+                          </h4>
+                          <p className="text-sm text-amber-800 dark:text-amber-200 leading-relaxed font-medium">
+                            Prioritize these reflexes in cases of chronic head, neck, shoulder, or back pain that is non-responsive to standard rehab. Also critical for clients experiencing vertigo or motion sickness.
+                          </p>
+                        </div>
+                      </CardContent>
+                    </Card>
+
+                    <Card className="border-none shadow-lg rounded-[2.5rem] bg-slate-900 dark:bg-slate-950 text-white overflow-hidden">
+                      <CardHeader className="p-8">
+                        <CardTitle className="text-xl font-black flex items-center gap-3">
+                          <Zap size={24} className="text-amber-400" /> Correction Logic
+                        </CardTitle>
+                      </CardHeader>
+                      <CardContent className="p-8 pt-0 space-y-6">
+                        <div className="space-y-4">
+                          <div className="p-4 bg-white/5 rounded-2xl border border-white/10">
+                            <p className="text-xs font-black text-amber-400 uppercase tracking-widest mb-2">The Hierarchy</p>
+                            <p className="text-sm font-bold leading-tight">Primitive → Postural → Fine Motor</p>
+                          </div>
+                          <p className="text-sm text-slate-400 leading-relaxed font-medium">
+                            If a righting reflex is dysfunctional, it is typically an <strong>Afferent (Mechanoreceptive)</strong> priority.
+                          </p>
+                          <div className="space-y-3">
+                            <p className="text-[10px] font-black text-slate-500 uppercase tracking-widest">Required Tools</p>
+                            <div className="flex items-center gap-3 p-3 bg-white/5 rounded-xl border border-white/10">
+                              <Timer size={16} className="text-indigo-400" />
+                              <span className="text-xs font-bold">128Hz Tuning Fork</span>
+                            </div>
+                          </div>
+                          <div className="pt-4 border-t border-white/10">
+                            <p className="text-xs text-slate-400 italic">"Clearing the primitive reflexes first often clears the righting reflexes automatically."</p>
+                          </div>
+                        </div>
+                      </CardContent>
+                    </Card>
                   </div>
-                  <RightingReflexesAssessment 
-                    appointmentId="temp" 
-                    initialNotes={null} 
-                    onUpdate={() => {}} 
-                  />
+
+                  <div className="max-w-4xl mx-auto">
+                    <div className="flex items-center gap-3 mb-6 px-4">
+                      <div className="w-10 h-10 rounded-xl bg-indigo-600 text-white flex items-center justify-center shadow-lg">
+                        <Target size={20} />
+                      </div>
+                      <h3 className="text-2xl font-black text-foreground">Interactive Assessment Tool</h3>
+                    </div>
+                    <RightingReflexesAssessment 
+                      appointmentId="temp" 
+                      initialNotes={null} 
+                      onUpdate={() => {}} 
+                    />
+                  </div>
                 </div>
-              </div>
-            </TabsContent>
-          </div>
-        </Tabs>
-      )}
-    </div>
+              </TabsContent>
+            </div>
+          </Tabs>
+        )}
+      </div>
+    </AppLayout>
   );
 };
 

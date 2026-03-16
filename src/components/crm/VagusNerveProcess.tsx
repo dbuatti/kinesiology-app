@@ -26,7 +26,7 @@ import {
   MousePointer2,
   Hand
 } from 'lucide-react';
-import EditableField from './EditableField';
+import EditableField from '@/components/shared/EditableField';
 import { cn } from '@/lib/utils';
 import { VAGUS_ASSOCIATIONS, VAGAL_FUNCTIONS, HAND_REFLEXOLOGY, VAGAL_GLANDS } from '@/data/vagus-data';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -120,7 +120,7 @@ const VagusNerveProcess = ({ appointmentId, initialNotes, onSaveField, onUpdate 
   const formatTime = (seconds: number) => {
     const mins = Math.floor(seconds / 60);
     const secs = seconds % 60;
-    return `${mins}:${secs.toString().padStart(2, '0')}`;
+    return \`\${mins}:\${secs.toString().padStart(2, '0')}\`;
   };
 
   const handleShowMuscleInfo = (muscleName: string) => {
@@ -200,21 +200,21 @@ const VagusNerveProcess = ({ appointmentId, initialNotes, onSaveField, onUpdate 
       }
       const branchLabel = branch.charAt(0).toUpperCase() + branch.slice(1);
       const shifts = selectedShifts.map(s => SHIFT_SIGNS.find(ss => ss.id === s)?.label).join(', ');
-      summary = `${stimHeader}\n- Branch: ${branchLabel}\n- Shifts: ${shifts || 'None observed'}\n- Duration: ${60 - timeLeft}s`;
+      summary = \`\${stimHeader}\\n- Branch: \${branchLabel}\\n- Shifts: \${shifts || 'None observed'}\\n- Duration: \${60 - timeLeft}s\`;
     } else {
       if (initialNotes?.includes(screenHeader)) {
         if (!confirm("A screen & reset summary already exists. Append another?")) return;
       }
       const assoc = VAGUS_ASSOCIATIONS.find(a => a.spinalSegment === selectedAssociation);
-      const reflexLabel = reflexPoint === 'Auricular' ? `Auricular (${auricularSide})` : 'Occiput (Both)';
+      const reflexLabel = reflexPoint === 'Auricular' ? \`Auricular (\${auricularSide})\` : 'Occiput (Both)';
       const challengeLabel = challengeType === 'hand' 
-        ? `Organ Pulse: ${pulseSide} Hand (${pulseDepth}) - ${selectedOrgan}`
-        : `Gland Challenge: ${selectedGland} (${VAGAL_GLANDS.find(g => g.name === selectedGland)?.reflex})`;
+        ? \`Organ Pulse: \${pulseSide} Hand (\${pulseDepth}) - \${selectedOrgan}\`
+        : \`Gland Challenge: \${selectedGland} (\${VAGAL_GLANDS.find(g => g.name === selectedGland)?.reflex})\`;
       
-      summary = `${screenHeader}\n- Reflex Point: ${reflexLabel}\n- Dysfunctional Function: ${selectedFunction}\n- ${challengeLabel}\n- Polarity: ${polarity || 'Not set'}\n- Associated Spinal: ${selectedAssociation} (${partnerInfo?.currentOrgan})\n- Muscle: ${assoc?.muscle}\n- Lovett-Brother: ${assoc?.reciprocatingSegment} (${partnerInfo?.partnerOrgan}) - ${partnerInfo?.partnerMuscle}\n- Correction: ${breathingPattern} for ${30 - correctionTime}s\n- Status: ${isCleared ? 'Cleared/Balanced' : 'In Progress'}`;
+      summary = \`\${screenHeader}\\n- Reflex Point: \${reflexLabel}\\n- Dysfunctional Function: \${selectedFunction}\\n- \${challengeLabel}\\n- Polarity: \${polarity || 'Not set'}\\n- Associated Spinal: \${selectedAssociation} (\${partnerInfo?.currentOrgan})\\n- Muscle: \${assoc?.muscle}\\n- Lovett-Brother: \${assoc?.reciprocatingSegment} (\${partnerInfo?.partnerOrgan}) - \${partnerInfo?.partnerMuscle}\\n- Correction: \${breathingPattern} for \${30 - correctionTime}s\\n- Status: \${isCleared ? 'Cleared/Balanced' : 'In Progress'}\`;
     }
     
-    const currentNotes = initialNotes ? `${initialNotes}\n\n${summary}` : summary;
+    const currentNotes = initialNotes ? \`\${initialNotes}\\n\\n\${summary}\` : summary;
     await onSaveField('vagus_nerve_notes', currentNotes);
     onUpdate();
   };
@@ -455,7 +455,7 @@ const VagusNerveProcess = ({ appointmentId, initialNotes, onSaveField, onUpdate 
                       variant="outline" 
                       className={cn(
                         "h-16 flex-col gap-1 rounded-2xl border-2 transition-all",
-                        polarity === 'Energy IN' ? "border-rose-600 bg-rose-50 text-rose-700" : "border-slate-100 hover:border-rose-200"
+                        polarity === 'Energy IN' ? "border-rose-600 bg-rose-50 text-rose-700" : "border-slate-100 hover:border-blue-200"
                       )}
                       onClick={() => setPolarity('Energy IN')}
                     >
@@ -471,7 +471,7 @@ const VagusNerveProcess = ({ appointmentId, initialNotes, onSaveField, onUpdate 
                   </label>
                   <Select value={selectedAssociation} onValueChange={setSelectedAssociation}>
                     <SelectTrigger className="rounded-xl border-slate-200 h-11 font-bold">
-                      <SelectValue placeholder={(selectedOrgan || selectedGland) ? `Select segment for ${selectedOrgan || selectedGland}...` : "Find associated spinal segment..."} />
+                      <SelectValue placeholder={(selectedOrgan || selectedGland) ? \`Select segment for \${selectedOrgan || selectedGland}...\` : "Find associated spinal segment..."} />
                     </SelectTrigger>
                     <SelectContent className="max-h-[300px]">
                       {filteredAssociations.map(a => (
@@ -529,7 +529,7 @@ const VagusNerveProcess = ({ appointmentId, initialNotes, onSaveField, onUpdate 
                         <p className="text-xs font-black text-emerald-900 uppercase tracking-tight">Practitioner Hand Instruction:</p>
                       </div>
                       <p className="text-sm font-bold text-emerald-800 leading-relaxed">
-                        Use your <span className="underline decoration-emerald-400 underline-offset-4">{polarity === 'Energy OUT' ? 'LEFT' : 'RIGHT'}</span> hand to hold the {challengeType === 'hand' ? `${selectedOrgan} pulse point` : `${selectedGland} reflex`}.
+                        Use your <span className="underline decoration-emerald-400 underline-offset-4">{polarity === 'Energy OUT' ? 'LEFT' : 'RIGHT'}</span> hand to hold the {challengeType === 'hand' ? \`\${selectedOrgan} pulse point\` : \`\${selectedGland} reflex\`}.
                       </p>
                     </div>
 

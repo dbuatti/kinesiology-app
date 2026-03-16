@@ -5,7 +5,7 @@ import SympatheticDownRegulation from '../SympatheticDownRegulation';
 import T1SympatheticReset from '../T1SympatheticReset';
 import DiaphragmReset from '../DiaphragmReset';
 import VagusNerveProcess from '../VagusNerveProcess';
-import EditableField from '../EditableField';
+import EditableField from '@/components/shared/EditableField';
 import { AppointmentWithClient } from '@/types/crm';
 
 interface SympatheticTabProps {

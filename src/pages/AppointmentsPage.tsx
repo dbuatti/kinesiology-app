@@ -50,7 +50,7 @@ import { showSuccess, showError } from "@/utils/toast";
 import { Link, useNavigate } from "react-router-dom";
 import { cn } from "@/lib/utils";
 import { APPOINTMENT_STATUSES } from "@/data/appointment-data";
-import Breadcrumbs from "@/components/crm/Breadcrumbs";
+import Breadcrumbs from "@/components/shared/Breadcrumbs";
 import { Input } from "@/components/ui/input";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import CalendarView from "@/components/crm/CalendarView";
@@ -76,13 +76,13 @@ const AppointmentsPage = () => {
     try {
       const { data, error } = await supabase
         .from('appointments')
-        .select(`
+        .select(\`
           *,
           clients (
             id,
             name
           )
-        `)
+        \`)
         .order('date', { ascending: false });
 
       if (error) throw error;
@@ -127,7 +127,7 @@ const AppointmentsPage = () => {
 
       if (error) throw error;
       
-      showSuccess(`Status updated to ${newStatus}`);
+      showSuccess(\`Status updated to \${newStatus}\`);
       fetchAppointments();
     } catch (err: any) {
       showError(err.message || "Failed to update status");
@@ -210,7 +210,7 @@ const AppointmentsPage = () => {
               <div className="flex items-start justify-between">
                 <div className="space-y-2">
                   <div className="flex items-center gap-3">
-                    <Link to={`/appointments/${app.id}`} className="font-black text-2xl text-foreground hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors">
+                    <Link to={\`/appointments/\${app.id}\`} className="font-black text-2xl text-foreground hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors">
                       {app.clients?.name}
                     </Link>
                     {isTodaySession && (
@@ -267,7 +267,7 @@ const AppointmentsPage = () => {
                     size="sm" 
                     variant="ghost" 
                     className="h-8 rounded-xl text-slate-400 hover:text-indigo-600 font-black text-[9px] uppercase tracking-widest"
-                    onClick={() => navigate(`/appointments/${app.id}`)}
+                    onClick={() => navigate(\`/appointments/\${app.id}\`)}
                   >
                     <Printer size={12} className="mr-1" /> Worksheet
                   </Button>
@@ -284,7 +284,7 @@ const AppointmentsPage = () => {
                       <Button 
                         size="sm" 
                         className="h-8 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-black text-[9px] uppercase tracking-widest"
-                        onClick={() => navigate(`/appointments/${app.id}`)}
+                        onClick={() => navigate(\`/appointments/\${app.id}\`)}
                       >
                         <Play size={12} className="mr-1 fill-current" /> Start
                       </Button>
@@ -334,7 +334,7 @@ const AppointmentsPage = () => {
                   </DropdownMenuTrigger>
                   <DropdownMenuContent align="end" className="rounded-2xl p-2 shadow-2xl border-none bg-card">
                     <DropdownMenuItem asChild className="rounded-xl py-2.5 px-4 cursor-pointer">
-                      <Link to={`/appointments/${app.id}`} className="flex items-center gap-3">
+                      <Link to={\`/appointments/\${app.id}\`} className="flex items-center gap-3">
                         <ExternalLink size={16} className="text-indigo-500" /> View Details
                       </Link>
                     </DropdownMenuItem>

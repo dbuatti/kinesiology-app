@@ -13,7 +13,7 @@ import { cn } from "@/lib/utils";
 import { supabase } from "@/integrations/supabase/client";
 import { showSuccess, showError } from "@/utils/toast";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import EditableField from "./EditableField";
+import EditableField from "@/components/shared/EditableField";
 
 interface T1SympatheticResetProps {
   appointmentId: string;

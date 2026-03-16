@@ -15,7 +15,7 @@ import { format, isToday, startOfToday, differenceInDays } from "date-fns";
 import { Link, useSearchParams } from "react-router-dom";
 import { cn } from "@/lib/utils";
 import { showSuccess, showError } from "@/utils/toast";
-import Breadcrumbs from "@/components/crm/Breadcrumbs";
+import Breadcrumbs from "@/components/shared/Breadcrumbs";
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip as ChartTooltip, ResponsiveContainer } from 'recharts';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import ClientProgressTab from "@/components/crm/ClientProgressTab";
@@ -245,7 +245,7 @@ const SelfPracticePage = () => {
                     <ResponsiveContainer width="100%" height="100%">
                       <AreaChart data={boltTrendData}>
                         <defs>
-                          <linearGradient id="colorBolt" x1="0" y1="0" x2="0" y2="1">
+                          <linearGradient id="colorBolt" x1="0" x1="0" x2="0" y2="1">
                             <stop offset="5%" stopColor="#e11d48" stopOpacity={0.1}/>
                             <stop offset="95%" stopColor="#e11d48" stopOpacity={0}/>
                           </linearGradient>

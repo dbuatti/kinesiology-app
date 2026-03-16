@@ -13,7 +13,7 @@ import { format, isToday } from "date-fns";
 import { AppointmentWithClient } from "@/types/crm";
 import { showSuccess, showError } from "@/utils/toast";
 import { cn } from "@/lib/utils";
-import EditableField from "@/components/crm/EditableField";
+import EditableField from "@/components/shared/EditableField";
 import SessionTimer from "@/components/crm/SessionTimer";
 import AppLayout from "@/components/crm/AppLayout";
 import SessionContentSwitcher from "@/components/crm/SessionContentSwitcher";
@@ -29,7 +29,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import Breadcrumbs from "@/components/crm/Breadcrumbs";
+import Breadcrumbs from "@/components/shared/Breadcrumbs";
 import { Button } from "@/components/ui/button";
 import { TCM_CHANNELS } from "@/data/tcm-channel-data";
 import { generateSessionSummary } from "@/utils/summary-generator";
@@ -96,7 +96,6 @@ const AppointmentDetailPage = () => {
 
       setAppointment(app);
 
-      // Fetch full history for the tracker
       const { data: historyData } = await supabase
         .from('appointments')
         .select('*')
@@ -253,7 +252,6 @@ const AppointmentDetailPage = () => {
       />
       <AppLayout hasFixedHeader={isFixedHeaderActive}>
         <div className="flex flex-col gap-8 print:p-0 max-w-[1600px] mx-auto">
-          {/* Top Action Bar */}
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 print:hidden">
             <Breadcrumbs 
               items={[
@@ -327,7 +325,6 @@ const AppointmentDetailPage = () => {
             </div>
           </div>
 
-          {/* Print Header */}
           <div className="print:block hidden mb-8">
             <div className="flex items-center justify-between border-b-2 border-indigo-600 pb-4">
               <div>
@@ -346,9 +343,7 @@ const AppointmentDetailPage = () => {
             currentAppointmentId={appointment.id} 
           />
 
-          {/* Main Command Center Layout */}
           <div className="grid grid-cols-1 xl:grid-cols-12 gap-8">
-            {/* Left Column: Main Session Flow */}
             <div className={cn(showSidebar ? "xl:col-span-8" : "xl:col-span-12", "space-y-8 transition-all duration-500")}>
               <Card className="border-none shadow-xl rounded-[2.5rem] bg-white overflow-hidden">
                 <AppointmentHeader appointment={appointment} onSaveField={saveField} onUpdate={fetchAppointmentData} />
@@ -385,10 +380,8 @@ const AppointmentDetailPage = () => {
               </div>
             </div>
 
-            {/* Right Column: Clinical Sidebar */}
             {showSidebar && (
               <div className="xl:col-span-4 space-y-8 print:hidden animate-in fade-in slide-in-from-right-4 duration-500">
-                {/* Brainstem Tone Map Integration */}
                 <div className="space-y-4">
                   <div className="flex items-center gap-2 px-2">
                     <Brain size={18} className="text-indigo-600" />
@@ -403,7 +396,6 @@ const AppointmentDetailPage = () => {
                   onSaveField={saveField} 
                 />
 
-                {/* Live Summary Preview */}
                 <Card className="border-none shadow-lg rounded-[2.5rem] bg-white overflow-hidden">
                   <CardHeader className="bg-slate-50/50 border-b border-slate-100">
                     <CardTitle className="text-sm font-black text-slate-400 uppercase tracking-[0.3em] flex items-center gap-2">
@@ -450,7 +442,6 @@ const AppointmentDetailPage = () => {
             )}
           </div>
 
-          {/* Print Layout (Hidden on Screen) */}
           <div className="hidden print:block space-y-8">
             <div className="grid grid-cols-2 gap-8">
               <div className="p-6 bg-slate-50 rounded-2xl border border-slate-100">
@@ -502,7 +493,6 @@ const AppointmentDetailPage = () => {
             </div>
           </div>
           
-          {/* Printable Blank Worksheet Template */}
           <SessionWorksheetTemplate clientName={appointment.clients.name} date={appointment.date} />
         </div>
       </AppLayout>

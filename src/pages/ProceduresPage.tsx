@@ -22,7 +22,7 @@ import { cn } from "@/lib/utils";
 import MusclePracticeStats from "@/components/crm/MusclePracticeStats";
 import { fetchLatestProcedureScores, LatestProcedureScores } from "@/utils/procedure-stats";
 import ProcedureCard from "@/components/crm/ProcedureCard";
-import Breadcrumbs from "@/components/crm/Breadcrumbs";
+import Breadcrumbs from "@/components/shared/Breadcrumbs";
 import { Progress } from "@/components/ui/progress";
 
 const ICON_OPTIONS = [

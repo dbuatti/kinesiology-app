@@ -63,12 +63,10 @@ const VagusNerveProcess = ({ appointmentId, initialNotes, onSaveField, onUpdate 
   const [isActive, setIsActive] = useState(false);
   const [selectedShifts, setSelectedShifts] = useState<string[]>([]);
   
-  // Screen Mode State
   const [reflexPoint, setReflexPoint] = useState<string>("Occiput");
   const [auricularSide, setAuricularSide] = useState<string>("Left");
   const [selectedFunction, setSelectedFunction] = useState<string>("");
   
-  // Step 3: Organ/Gland Level
   const [challengeType, setChallengeType] = useState<'hand' | 'gland'>('hand');
   const [pulseSide, setPulseSide] = useState<"Right" | "Left">("Right");
   const [pulseDepth, setPulseDepth] = useState<"Light" | "Deep">("Light");
@@ -82,7 +80,6 @@ const VagusNerveProcess = ({ appointmentId, initialNotes, onSaveField, onUpdate 
   const [isCorrectionActive, setIsCorrectionActive] = useState(false);
   const [isCleared, setIsCleared] = useState(false);
 
-  // Muscle Info Modal State
   const [selectedMuscleForInfo, setSelectedMuscleForInfo] = useState<string | null>(null);
   const [infoModalOpen, setInfoModalOpen] = useState(false);
 
@@ -120,7 +117,7 @@ const VagusNerveProcess = ({ appointmentId, initialNotes, onSaveField, onUpdate 
   const formatTime = (seconds: number) => {
     const mins = Math.floor(seconds / 60);
     const secs = seconds % 60;
-    return \`\${mins}:\${secs.toString().padStart(2, '0')}\`;
+    return `${mins}:${secs.toString().padStart(2, '0')}`;
   };
 
   const handleShowMuscleInfo = (muscleName: string) => {
@@ -128,7 +125,6 @@ const VagusNerveProcess = ({ appointmentId, initialNotes, onSaveField, onUpdate 
     setInfoModalOpen(true);
   };
 
-  // Filter associations based on selected organ or gland
   const filteredAssociations = useMemo(() => {
     const target = challengeType === 'hand' ? selectedOrgan : selectedGland;
     if (!target) return VAGUS_ASSOCIATIONS;
@@ -141,7 +137,6 @@ const VagusNerveProcess = ({ appointmentId, initialNotes, onSaveField, onUpdate 
     });
   }, [selectedOrgan, selectedGland, challengeType]);
 
-  // Auto-select if only one association matches
   useEffect(() => {
     if (filteredAssociations.length === 1) {
       setSelectedAssociation(filteredAssociations[0].spinalSegment);
@@ -195,26 +190,20 @@ const VagusNerveProcess = ({ appointmentId, initialNotes, onSaveField, onUpdate 
     const screenHeader = "VAGUS SCREEN & RESET:";
 
     if (mode === 'stimulation') {
-      if (initialNotes?.includes(stimHeader)) {
-        if (!confirm("A stimulation summary already exists. Append another?")) return;
-      }
       const branchLabel = branch.charAt(0).toUpperCase() + branch.slice(1);
       const shifts = selectedShifts.map(s => SHIFT_SIGNS.find(ss => ss.id === s)?.label).join(', ');
-      summary = \`\${stimHeader}\\n- Branch: \${branchLabel}\\n- Shifts: \${shifts || 'None observed'}\\n- Duration: \${60 - timeLeft}s\`;
+      summary = `${stimHeader}\n- Branch: ${branchLabel}\n- Shifts: ${shifts || 'None observed'}\n- Duration: ${60 - timeLeft}s`;
     } else {
-      if (initialNotes?.includes(screenHeader)) {
-        if (!confirm("A screen & reset summary already exists. Append another?")) return;
-      }
       const assoc = VAGUS_ASSOCIATIONS.find(a => a.spinalSegment === selectedAssociation);
-      const reflexLabel = reflexPoint === 'Auricular' ? \`Auricular (\${auricularSide})\` : 'Occiput (Both)';
+      const reflexLabel = reflexPoint === 'Auricular' ? `Auricular (${auricularSide})` : 'Occiput (Both)';
       const challengeLabel = challengeType === 'hand' 
-        ? \`Organ Pulse: \${pulseSide} Hand (\${pulseDepth}) - \${selectedOrgan}\`
-        : \`Gland Challenge: \${selectedGland} (\${VAGAL_GLANDS.find(g => g.name === selectedGland)?.reflex})\`;
+        ? `Organ Pulse: ${pulseSide} Hand (${pulseDepth}) - ${selectedOrgan}`
+        : `Gland Challenge: ${selectedGland} (${VAGAL_GLANDS.find(g => g.name === selectedGland)?.reflex})`;
       
-      summary = \`\${screenHeader}\\n- Reflex Point: \${reflexLabel}\\n- Dysfunctional Function: \${selectedFunction}\\n- \${challengeLabel}\\n- Polarity: \${polarity || 'Not set'}\\n- Associated Spinal: \${selectedAssociation} (\${partnerInfo?.currentOrgan})\\n- Muscle: \${assoc?.muscle}\\n- Lovett-Brother: \${assoc?.reciprocatingSegment} (\${partnerInfo?.partnerOrgan}) - \${partnerInfo?.partnerMuscle}\\n- Correction: \${breathingPattern} for \${30 - correctionTime}s\\n- Status: \${isCleared ? 'Cleared/Balanced' : 'In Progress'}\`;
+      summary = `${screenHeader}\n- Reflex Point: ${reflexLabel}\n- Dysfunctional Function: ${selectedFunction}\n- ${challengeLabel}\n- Polarity: ${polarity || 'Not set'}\n- Associated Spinal: ${selectedAssociation} (${partnerInfo?.currentOrgan})\n- Muscle: ${assoc?.muscle}\n- Lovett-Brother: ${assoc?.reciprocatingSegment} (${partnerInfo?.partnerOrgan}) - ${partnerInfo?.partnerMuscle}\n- Correction: ${breathingPattern} for ${30 - correctionTime}s\n- Status: ${isCleared ? 'Cleared/Balanced' : 'In Progress'}`;
     }
     
-    const currentNotes = initialNotes ? \`\${initialNotes}\\n\\n\${summary}\` : summary;
+    const currentNotes = initialNotes ? `${initialNotes}\n\n${summary}` : summary;
     await onSaveField('vagus_nerve_notes', currentNotes);
     onUpdate();
   };
@@ -343,7 +332,6 @@ const VagusNerveProcess = ({ appointmentId, initialNotes, onSaveField, onUpdate 
                   </div>
                 </div>
 
-                {/* Step 3: Organ / Gland Challenge */}
                 <div className="space-y-4 p-6 bg-slate-50 rounded-[2rem] border border-slate-100">
                   <div className="flex items-center justify-between mb-2">
                     <label className="text-xs font-black uppercase tracking-widest text-slate-400 flex items-center gap-2">
@@ -471,7 +459,7 @@ const VagusNerveProcess = ({ appointmentId, initialNotes, onSaveField, onUpdate 
                   </label>
                   <Select value={selectedAssociation} onValueChange={setSelectedAssociation}>
                     <SelectTrigger className="rounded-xl border-slate-200 h-11 font-bold">
-                      <SelectValue placeholder={(selectedOrgan || selectedGland) ? \`Select segment for \${selectedOrgan || selectedGland}...\` : "Find associated spinal segment..."} />
+                      <SelectValue placeholder={(selectedOrgan || selectedGland) ? `Select segment for ${selectedOrgan || selectedGland}...` : "Find associated spinal segment..."} />
                     </SelectTrigger>
                     <SelectContent className="max-h-[300px]">
                       {filteredAssociations.map(a => (
@@ -529,7 +517,7 @@ const VagusNerveProcess = ({ appointmentId, initialNotes, onSaveField, onUpdate 
                         <p className="text-xs font-black text-emerald-900 uppercase tracking-tight">Practitioner Hand Instruction:</p>
                       </div>
                       <p className="text-sm font-bold text-emerald-800 leading-relaxed">
-                        Use your <span className="underline decoration-emerald-400 underline-offset-4">{polarity === 'Energy OUT' ? 'LEFT' : 'RIGHT'}</span> hand to hold the {challengeType === 'hand' ? \`\${selectedOrgan} pulse point\` : \`\${selectedGland} reflex\`}.
+                        Use your <span className="underline decoration-emerald-400 underline-offset-4">{polarity === 'Energy OUT' ? 'LEFT' : 'RIGHT'}</span> hand to hold the {challengeType === 'hand' ? `${selectedOrgan} pulse point` : `${selectedGland} reflex`}.
                       </p>
                     </div>
 

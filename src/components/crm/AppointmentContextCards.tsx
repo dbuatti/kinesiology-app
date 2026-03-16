@@ -6,7 +6,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Zap, ExternalLink } from "lucide-react";
 import { cn } from "@/lib/utils";
-import EditableField from "./EditableField";
+import EditableField from "@/components/shared/EditableField";
 import QuickAcupointSelector from "./QuickAcupointSelector";
 import { AppointmentWithClient } from "@/types/crm";
 

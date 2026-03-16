@@ -5,6 +5,7 @@ import { Outlet } from 'react-router-dom';
 import Sidebar from '@/components/crm/Sidebar';
 import MobileNav from '@/components/crm/MobileNav';
 import QuickActions from '@/components/crm/QuickActions';
+import AppFooter from '@/components/crm/AppFooter';
 import { Button } from '@/components/ui/button';
 import { PanelLeftOpen } from 'lucide-react';
 import { cn } from '@/lib/utils';
@@ -24,7 +25,7 @@ const MainLayout = () => {
       <MobileNav />
       {isSidebarVisible && <Sidebar onHide={() => setIsSidebarVisible(false)} />}
       
-      <main className="flex-1 overflow-auto relative">
+      <main className="flex-1 flex flex-col overflow-auto relative">
         {!isSidebarVisible && (
           <div className="hidden lg:block fixed top-6 left-6 z-50">
             <Button 
@@ -37,9 +38,10 @@ const MainLayout = () => {
             </Button>
           </div>
         )}
-        <div className="p-0">
+        <div className="flex-1 p-0">
           <Outlet />
         </div>
+        <AppFooter />
       </main>
       <QuickActions />
     </div>

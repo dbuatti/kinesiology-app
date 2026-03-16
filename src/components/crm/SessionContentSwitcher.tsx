@@ -19,7 +19,7 @@ import { cn } from '@/lib/utils';
 import { AppointmentWithClient } from '@/types/crm';
 import BaselineTab from './session-tabs/BaselineTab';
 import SympatheticTab from './session-tabs/SympatheticTab';
-import EditableField from './EditableField';
+import EditableField from '@/components/shared/EditableField';
 import LuscherColourAssessment from './LuscherColourAssessment';
 import MuscleTestingTab from './MuscleTestingTab';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';

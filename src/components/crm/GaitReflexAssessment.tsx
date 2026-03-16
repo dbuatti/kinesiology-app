@@ -4,7 +4,7 @@ import React, { useState, useMemo } from "react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Footprints, Zap, Eye, Move, CheckCircle2, XCircle, MousePointer2, FileText } from "lucide-react";
 import { cn } from "@/lib/utils";
-import EditableField from "./EditableField";
+import EditableField from "@/components/shared/EditableField";
 import { Button } from "@/components/ui/button";
 
 type TestStatus = 'normal' | 'abnormal';

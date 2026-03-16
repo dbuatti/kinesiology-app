@@ -13,7 +13,7 @@ import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Link } from "react-router-dom";
-import Breadcrumbs from "@/components/crm/Breadcrumbs";
+import Breadcrumbs from "@/components/shared/Breadcrumbs";
 import { cn } from "@/lib/utils";
 import DataIntegrityCheck from "@/components/crm/DataIntegrityCheck";
 import FollowUpTracker from "@/components/crm/FollowUpTracker";

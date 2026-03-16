@@ -8,7 +8,6 @@ import {
   Target, 
   LogOut, 
   HelpCircle, 
-  Clock, 
   Zap, 
   BookOpen, 
   Heart, 
@@ -25,7 +24,8 @@ import {
   Workflow,
   Database,
   Bug,
-  Sparkles
+  Sparkles,
+  PlusCircle
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import SearchBar from "./SearchBar";
@@ -64,38 +64,30 @@ const Sidebar = ({ onHide }: SidebarProps) => {
   const [clientDialogOpen, setClientDialogOpen] = useState(false);
   const [appDialogOpen, setAppDialogOpen] = useState(false);
   
-  const [clinicalOpen, setClinicalOpen] = useState(true);
-  const [practiceOpen, setPracticeOpen] = useState(true);
-  const [resourcesOpen, setResourcesOpen] = useState(false);
-  const [systemOpen, setSystemOpen] = useState(false);
+  const [opsOpen, setOpsOpen] = useState(true);
+  const [labOpen, setLabOpen] = useState(true);
+  const [libraryOpen, setLibraryOpen] = useState(false);
   
   const activeSession = useActiveSession();
   const { practiceHealth } = usePracticeStats();
   const { recentClients } = useRecentClients();
   
-  const clinicalItems = [
+  const opsItems = [
     { label: "Dashboard", icon: LayoutDashboard, path: "/", shortcut: "⌘D" },
-    { label: "Clients", icon: Users, path: "/clients", shortcut: "⌘1" },
     { label: "Appointments", icon: Calendar, path: "/appointments", shortcut: "⌘2" },
+    { label: "Clients", icon: Users, path: "/clients", shortcut: "⌘1" },
+  ];
+
+  const labItems = [
+    { label: "Quick Calibrate", icon: Zap, path: "/practice/calibrate", shortcut: "⌘Q" },
+    { label: "Procedures", icon: Target, path: "/practice/procedures", shortcut: "⌘P" },
     { label: "Oversight", icon: TrendingUp, path: "/oversight", shortcut: "⌘O" },
   ];
 
-  const practiceItems = [
-    { label: "Quick Calibrate", icon: Zap, path: "/practice/calibrate", shortcut: "⌘Q" },
-    { label: "Self Practice", icon: Heart, path: "/practice/self", shortcut: "⌘S" },
-    { label: "Procedures", icon: Target, path: "/practice/procedures", shortcut: "⌘P" },
-  ];
-
-  const resourceItems = [
+  const libraryItems = [
     { label: "Knowledge Base", icon: BookOpen, path: "/resources", shortcut: "⌘R" },
-    { label: "North Star", icon: Compass, path: "/resources/worksheets/north-star", shortcut: "⌘N" },
-  ];
-
-  const systemItems = [
-    { label: "Settings", icon: Settings, path: "/settings" },
-    { label: "Data Import", icon: Database, path: "/settings/import" },
-    { label: "Demo Session", icon: Sparkles, path: "/settings/demo" },
-    { label: "Debug", icon: Bug, path: "/settings/debug" },
+    { label: "Worksheets", icon: Compass, path: "/resources/worksheets/north-star", shortcut: "⌘N" },
+    { label: "Self Practice", icon: Heart, path: "/practice/self", shortcut: "⌘S" },
   ];
 
   useEffect(() => {
@@ -105,6 +97,7 @@ const Sidebar = ({ onHide }: SidebarProps) => {
           case 'd': e.preventDefault(); navigate('/'); break;
           case '1': e.preventDefault(); navigate('/clients'); break;
           case '2': e.preventDefault(); navigate('/appointments'); break;
+          case 'b': e.preventDefault(); setAppDialogOpen(true); break;
           case 'n': e.preventDefault(); navigate('/resources/worksheets/north-star'); break;
           case 'o': e.preventDefault(); navigate('/oversight'); break;
           case 's': e.preventDefault(); navigate('/practice/self'); break;
@@ -144,7 +137,7 @@ const Sidebar = ({ onHide }: SidebarProps) => {
         )}
       >
         <div className="flex items-center gap-3">
-          <item.icon size={16} className={cn("transition-all duration-300", isActive ? "text-white" : "text-muted-foreground group-hover:text-indigo-500")} />
+          <item.icon size={16} className={cn("transition-all duration-300", isActive ? "text-white" : "text-muted-foreground group-hover:text-indigo-50")} />
           <span className="font-bold text-[10px] uppercase tracking-widest">{item.label}</span>
         </div>
         {item.shortcut && (
@@ -227,28 +220,24 @@ const Sidebar = ({ onHide }: SidebarProps) => {
         <SearchBar />
       </div>
 
-      {/* Quick Actions */}
-      <div className="px-1 space-y-2">
-        <Button 
-          onClick={() => setClientDialogOpen(true)}
-          variant="outline"
-          className="w-full justify-start bg-accent/30 border-border text-foreground hover:bg-accent rounded-xl h-10 font-bold text-[10px] uppercase tracking-wider"
-        >
-          <UserPlus size={16} className="mr-3" /> New Client
-        </Button>
+      {/* Primary CTA: Book Session */}
+      <div className="px-1">
         <Button 
           onClick={() => setAppDialogOpen(true)}
-          className="w-full justify-start bg-rose-600 hover:bg-rose-700 text-white rounded-xl h-10 font-bold text-[10px] uppercase tracking-wider shadow-lg shadow-rose-600/20"
+          className="w-full justify-center bg-rose-600 hover:bg-rose-700 text-white rounded-2xl h-12 font-black text-[11px] uppercase tracking-[0.2em] shadow-xl shadow-rose-600/20 group"
         >
-          <CalendarPlus size={16} className="mr-3" /> Book Session
+          <PlusCircle size={18} className="mr-3 group-hover:rotate-90 transition-transform duration-500" /> 
+          Book Session
+          <kbd className="ml-auto pointer-events-none inline-flex h-4 select-none items-center gap-1 rounded border border-rose-400 bg-rose-700 px-1 font-mono text-[8px] font-black text-rose-100">
+            ⌘B
+          </kbd>
         </Button>
       </div>
       
       <div className="space-y-4 flex-1">
-        <NavGroup title="Clinical" icon={Workflow} isOpen={clinicalOpen} onToggle={() => setClinicalOpen(!clinicalOpen)} items={clinicalItems} />
-        <NavGroup title="Practice" icon={Zap} isOpen={practiceOpen} onToggle={() => setPracticeOpen(!practiceOpen)} items={practiceItems} />
-        <NavGroup title="Resources" icon={BookOpen} isOpen={resourcesOpen} onToggle={() => setResourcesOpen(!resourcesOpen)} items={resourceItems} />
-        <NavGroup title="System" icon={Settings} isOpen={systemOpen} onToggle={() => setSystemOpen(!systemOpen)} items={systemItems} />
+        <NavGroup title="Operations" icon={LayoutDashboard} isOpen={opsOpen} onToggle={() => setOpsOpen(!opsOpen)} items={opsItems} />
+        <NavGroup title="Clinical Lab" icon={Zap} isOpen={labOpen} onToggle={() => setLabOpen(!labOpen)} items={labItems} />
+        <NavGroup title="Library" icon={BookOpen} isOpen={libraryOpen} onToggle={() => setLibraryOpen(!libraryOpen)} items={libraryItems} />
 
         {/* Active Session Indicator */}
         {activeSession && (

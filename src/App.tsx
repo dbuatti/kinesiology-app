@@ -2,7 +2,7 @@ import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
+import { BrowserRouter, Routes, Route, Navigate, useLocation } from "react-router-dom";
 import Sidebar from "./components/crm/Sidebar";
 import MobileNav from "./components/crm/MobileNav";
 import QuickActions from "./components/crm/QuickActions";
@@ -31,10 +31,13 @@ import { ThemeProvider } from "./components/theme-provider";
 import { Loader2, PanelLeftOpen } from "lucide-react";
 import { useState, useEffect } from "react";
 import { Button } from "./components/ui/button";
+import PageTransition from "./components/crm/PageTransition";
+import { AnimatePresence } from "framer-motion";
 
 const queryClient = new QueryClient();
 
-const ProtectedLayout = ({ children }: { children: React.ReactNode }) => {
+const AnimatedRoutes = () => {
+  const location = useLocation();
   const { session } = useAuth();
   const [isSidebarVisible, setIsSidebarVisible] = useState(() => {
     const saved = localStorage.getItem("antigravity_sidebar_visible");
@@ -58,7 +61,22 @@ const ProtectedLayout = ({ children }: { children: React.ReactNode }) => {
     );
   }
 
-  if (!session) return <Navigate to="/login" replace />;
+  if (!session && location.pathname !== "/login" && !location.pathname.startsWith("/onboarding/")) {
+    return <Navigate to="/login" replace />;
+  }
+
+  const isPublicRoute = location.pathname === "/login" || location.pathname.startsWith("/onboarding/");
+
+  if (isPublicRoute) {
+    return (
+      <AnimatePresence mode="wait">
+        <Routes location={location} key={location.pathname}>
+          <Route path="/login" element={<PageTransition><Login /></PageTransition>} />
+          <Route path="/onboarding/:id" element={<PageTransition><OnboardingPage /></PageTransition>} />
+        </Routes>
+      </AnimatePresence>
+    );
+  }
 
   return (
     <div className="flex flex-col lg:flex-row min-h-screen bg-background">
@@ -78,7 +96,28 @@ const ProtectedLayout = ({ children }: { children: React.ReactNode }) => {
             </Button>
           </div>
         )}
-        {children}
+        <AnimatePresence mode="wait">
+          <Routes location={location} key={location.pathname}>
+            <Route path="/" element={<PageTransition><Index /></PageTransition>} />
+            <Route path="/clients" element={<PageTransition><ClientsPage /></PageTransition>} />
+            <Route path="/clients/:id" element={<PageTransition><ClientDetailPage /></PageTransition>} />
+            <Route path="/appointments" element={<PageTransition><AppointmentsPage /></PageTransition>} />
+            <Route path="/appointments/:id" element={<PageTransition><AppointmentDetailPage /></PageTransition>} />
+            <Route path="/oversight" element={<PageTransition><ClinicalOversightPage /></PageTransition>} />
+            <Route path="/import" element={<PageTransition><ImportPage /></PageTransition>} />
+            <Route path="/procedures" element={<PageTransition><ProceduresPage /></PageTransition>} />
+            <Route path="/resources" element={<PageTransition><ResourcesPage /></PageTransition>} />
+            <Route path="/self-practice" element={<PageTransition><SelfPracticePage /></PageTransition>} />
+            <Route path="/north-star" element={<PageTransition><NorthStarPage /></PageTransition>} />
+            <Route path="/week-3-worksheet" element={<PageTransition><Week3WorksheetPage /></PageTransition>} />
+            <Route path="/fear-creativity-worksheet" element={<PageTransition><FearCreativityWorksheetPage /></PageTransition>} />
+            <Route path="/quick-calibrate" element={<PageTransition><QuickCalibratePage /></PageTransition>} />
+            <Route path="/debug" element={<PageTransition><DebugAppointmentPage /></PageTransition>} />
+            <Route path="/demo-session" element={<PageTransition><DemoSessionPage /></PageTransition>} />
+            <Route path="/settings" element={<PageTransition><SettingsPage /></PageTransition>} />
+            <Route path="*" element={<NotFound />} />
+          </Routes>
+        </AnimatePresence>
       </main>
       <QuickActions />
     </div>
@@ -93,28 +132,7 @@ const App = () => (
           <Toaster />
           <Sonner />
           <BrowserRouter>
-            <Routes>
-              <Route path="/login" element={<Login />} />
-              <Route path="/onboarding/:id" element={<OnboardingPage />} />
-              <Route path="/" element={<ProtectedLayout><Index /></ProtectedLayout>} />
-              <Route path="/clients" element={<ProtectedLayout><ClientsPage /></ProtectedLayout>} />
-              <Route path="/clients/:id" element={<ProtectedLayout><ClientDetailPage /></ProtectedLayout>} />
-              <Route path="/appointments" element={<ProtectedLayout><AppointmentsPage /></ProtectedLayout>} />
-              <Route path="/appointments/:id" element={<ProtectedLayout><AppointmentDetailPage /></ProtectedLayout>} />
-              <Route path="/oversight" element={<ProtectedLayout><ClinicalOversightPage /></ProtectedLayout>} />
-              <Route path="/import" element={<ProtectedLayout><ImportPage /></ProtectedLayout>} />
-              <Route path="/procedures" element={<ProtectedLayout><ProceduresPage /></ProtectedLayout>} />
-              <Route path="/resources" element={<ProtectedLayout><ResourcesPage /></ProtectedLayout>} />
-              <Route path="/self-practice" element={<ProtectedLayout><SelfPracticePage /></ProtectedLayout>} />
-              <Route path="/north-star" element={<ProtectedLayout><NorthStarPage /></ProtectedLayout>} />
-              <Route path="/week-3-worksheet" element={<ProtectedLayout><Week3WorksheetPage /></ProtectedLayout>} />
-              <Route path="/fear-creativity-worksheet" element={<ProtectedLayout><FearCreativityWorksheetPage /></ProtectedLayout>} />
-              <Route path="/quick-calibrate" element={<ProtectedLayout><QuickCalibratePage /></ProtectedLayout>} />
-              <Route path="/debug" element={<ProtectedLayout><DebugAppointmentPage /></ProtectedLayout>} />
-              <Route path="/demo-session" element={<ProtectedLayout><DemoSessionPage /></ProtectedLayout>} />
-              <Route path="/settings" element={<ProtectedLayout><SettingsPage /></ProtectedLayout>} />
-              <Route path="*" element={<NotFound />} />
-            </Routes>
+            <AnimatedRoutes />
           </BrowserRouter>
         </AuthProvider>
       </TooltipProvider>

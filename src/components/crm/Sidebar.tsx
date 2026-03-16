@@ -124,15 +124,15 @@ const Sidebar = ({ onHide }: SidebarProps) => {
       <Link
         to={item.path}
         className={cn(
-          "flex items-center justify-between gap-2 px-3 py-2 rounded-xl transition-all duration-300 group",
+          "flex items-center justify-between gap-2 px-3 py-2.5 rounded-xl transition-all duration-300 group",
           isActive 
             ? "bg-indigo-600 text-white shadow-lg shadow-indigo-600/20" 
-            : "text-muted-foreground hover:text-foreground hover:bg-accent"
+            : "text-muted-foreground hover:text-foreground hover:bg-accent/50"
         )}
       >
-        <div className="flex items-center gap-2.5">
-          <item.icon size={16} className={cn("transition-all duration-300", isActive ? "text-white" : "text-muted-foreground group-hover:text-foreground")} />
-          <span className="font-bold text-[10px] uppercase tracking-widest">{item.label}</span>
+        <div className="flex items-center gap-3">
+          <item.icon size={18} className={cn("transition-all duration-300", isActive ? "text-white" : "text-muted-foreground group-hover:text-indigo-500")} />
+          <span className="font-bold text-[11px] uppercase tracking-widest">{item.label}</span>
         </div>
         {item.shortcut && (
           <kbd className={cn(
@@ -193,27 +193,27 @@ const Sidebar = ({ onHide }: SidebarProps) => {
       </div>
 
       {/* Quick Actions */}
-      <div className="px-1 space-y-1.5">
+      <div className="px-1 space-y-2">
         <Button 
           onClick={() => setClientDialogOpen(true)}
           variant="outline"
-          className="w-full justify-start bg-accent/50 border-border text-foreground hover:bg-accent rounded-xl h-9 font-bold text-[10px] uppercase tracking-wider"
+          className="w-full justify-start bg-accent/30 border-border text-foreground hover:bg-accent rounded-xl h-10 font-bold text-[10px] uppercase tracking-wider"
         >
-          <UserPlus size={16} className="mr-2.5" /> New Client
+          <UserPlus size={16} className="mr-3" /> New Client
         </Button>
         <Button 
           onClick={() => setAppDialogOpen(true)}
-          className="w-full justify-start bg-rose-600 hover:bg-rose-700 text-white rounded-xl h-9 font-bold text-[10px] uppercase tracking-wider shadow-lg shadow-rose-600/20"
+          className="w-full justify-start bg-rose-600 hover:bg-rose-700 text-white rounded-xl h-10 font-bold text-[10px] uppercase tracking-wider shadow-lg shadow-rose-600/20"
         >
-          <CalendarPlus size={16} className="mr-2.5" /> Book Session
+          <CalendarPlus size={16} className="mr-3" /> Book Session
         </Button>
       </div>
       
-      <div className="space-y-5 flex-1">
+      <div className="space-y-6 flex-1">
         {/* Core Navigation */}
-        <nav className="space-y-0.5">
-          <div className="px-2 mb-2">
-            <p className="text-[8px] font-black text-muted-foreground uppercase tracking-[0.3em]">Core</p>
+        <nav className="space-y-1">
+          <div className="px-3 mb-2">
+            <p className="text-[9px] font-black text-muted-foreground uppercase tracking-[0.3em]">Core</p>
           </div>
           {coreNavItems.map((item) => (
             <NavItem key={item.path} item={item} />
@@ -221,20 +221,20 @@ const Sidebar = ({ onHide }: SidebarProps) => {
         </nav>
 
         {/* Practice Section */}
-        <div className="space-y-0.5">
+        <div className="space-y-1">
           <button
             onClick={() => setPracticeOpen(!practiceOpen)}
-            className="flex items-center justify-between w-full px-3 py-1.5 rounded-lg text-muted-foreground hover:text-foreground hover:bg-accent transition-all group"
+            className="flex items-center justify-between w-full px-3 py-2 rounded-lg text-muted-foreground hover:text-foreground hover:bg-accent/50 transition-all group"
           >
-            <div className="flex items-center gap-2">
-              <Zap size={14} className="text-muted-foreground group-hover:text-foreground" />
-              <span className="text-[8px] font-black uppercase tracking-[0.3em]">Practice</span>
+            <div className="flex items-center gap-3">
+              <Zap size={16} className="text-muted-foreground group-hover:text-amber-500" />
+              <span className="text-[9px] font-black uppercase tracking-[0.3em]">Practice</span>
             </div>
             {practiceOpen ? <ChevronUp size={12} /> : <ChevronDown size={12} />}
           </button>
           
           {practiceOpen && (
-            <div className="space-y-0.5 pl-1 animate-in fade-in slide-in-from-top-1 duration-300">
+            <div className="space-y-1 pl-1 animate-in fade-in slide-in-from-top-1 duration-300">
               {practiceNavItems.map((item) => (
                 <NavItem key={item.path} item={item} />
               ))}
@@ -243,20 +243,20 @@ const Sidebar = ({ onHide }: SidebarProps) => {
         </div>
 
         {/* Resources Section */}
-        <div className="space-y-0.5">
+        <div className="space-y-1">
           <button
             onClick={() => setResourcesOpen(!resourcesOpen)}
-            className="flex items-center justify-between w-full px-3 py-1.5 rounded-lg text-muted-foreground hover:text-foreground hover:bg-accent transition-all group"
+            className="flex items-center justify-between w-full px-3 py-2 rounded-lg text-muted-foreground hover:text-foreground hover:bg-accent/50 transition-all group"
           >
-            <div className="flex items-center gap-2">
-              <BookOpen size={14} className="text-muted-foreground group-hover:text-foreground" />
-              <span className="text-[8px] font-black uppercase tracking-[0.3em]">Resources</span>
+            <div className="flex items-center gap-3">
+              <BookOpen size={16} className="text-muted-foreground group-hover:text-indigo-500" />
+              <span className="text-[9px] font-black uppercase tracking-[0.3em]">Resources</span>
             </div>
             {resourcesOpen ? <ChevronUp size={12} /> : <ChevronDown size={12} />}
           </button>
           
           {resourcesOpen && (
-            <div className="space-y-0.5 pl-1 animate-in fade-in slide-in-from-top-1 duration-300">
+            <div className="space-y-1 pl-1 animate-in fade-in slide-in-from-top-1 duration-300">
               {resourceNavItems.map((item) => (
                 <NavItem key={item.path} item={item} />
               ))}
@@ -269,54 +269,54 @@ const Sidebar = ({ onHide }: SidebarProps) => {
           <div className="px-1">
             <Link 
               to={`/appointments/${activeSession.id}`}
-              className="flex items-center gap-3 px-4 py-3 bg-indigo-600 rounded-2xl text-white shadow-xl shadow-indigo-600/30 hover:bg-indigo-700 transition-all duration-500 group relative overflow-hidden"
+              className="flex items-center gap-3 px-4 py-4 bg-indigo-600 rounded-2xl text-white shadow-xl shadow-indigo-600/30 hover:bg-indigo-700 transition-all duration-500 group relative overflow-hidden"
             >
               <div className="absolute inset-0 bg-white/10 animate-pulse" />
               <div className="relative z-10 flex items-center gap-3">
                 <div className="relative">
-                  <div className="w-8 h-8 bg-white/20 rounded-lg flex items-center justify-center">
-                    <Zap size={16} className="fill-white" />
+                  <div className="w-9 h-9 bg-white/20 rounded-xl flex items-center justify-center">
+                    <Zap size={18} className="fill-white" />
                   </div>
-                  <span className="absolute -top-0.5 -right-0.5 w-2 h-2 bg-white rounded-full animate-ping" />
+                  <span className="absolute -top-0.5 -right-0.5 w-2.5 h-2.5 bg-white rounded-full animate-ping" />
                 </div>
                 <div className="flex flex-col min-w-0">
-                  <span className="text-[8px] font-black uppercase tracking-0.2em opacity-80 truncate">{activeSession.clientName}</span>
-                  <span className="text-[10px] font-black">{activeSession.stage}</span>
+                  <span className="text-[9px] font-black uppercase tracking-0.2em opacity-80 truncate">{activeSession.clientName}</span>
+                  <span className="text-[11px] font-black">{activeSession.stage}</span>
                 </div>
               </div>
-              <ArrowRight size={14} className="ml-auto group-hover:translate-x-1 transition-transform shrink-0" />
+              <ArrowRight size={16} className="ml-auto group-hover:translate-x-1 transition-transform shrink-0" />
             </Link>
           </div>
         )}
 
         {/* Practice Health */}
-        <div className="px-3 py-3 bg-muted/50 rounded-2xl border border-border mx-1 space-y-2">
+        <div className="px-4 py-4 bg-muted/30 rounded-2xl border border-border mx-1 space-y-3">
           <div className="flex items-center justify-between">
-            <p className="text-[8px] font-black text-muted-foreground uppercase tracking-[0.2em] flex items-center gap-1.5">
-              <ShieldCheck size={10} className="text-emerald-500" /> Health
+            <p className="text-[9px] font-black text-muted-foreground uppercase tracking-[0.2em] flex items-center gap-2">
+              <ShieldCheck size={12} className="text-emerald-500" /> Health
             </p>
-            <span className="text-[9px] font-black text-emerald-500">{practiceHealth}%</span>
+            <span className="text-[10px] font-black text-emerald-500">{practiceHealth}%</span>
           </div>
-          <Progress value={practiceHealth} className="h-1 bg-muted [&>div]:bg-emerald-500" />
+          <Progress value={practiceHealth} className="h-1.5 bg-muted [&>div]:bg-emerald-500" />
         </div>
 
         {/* Recent Clients */}
         {recentClients.length > 0 && (
           <div className="px-1 space-y-2">
-            <div className="px-2">
-              <p className="text-[8px] font-black text-muted-foreground uppercase tracking-[0.3em] flex items-center gap-1.5">
-                <Clock size={10} /> Recent
+            <div className="px-3">
+              <p className="text-[9px] font-black text-muted-foreground uppercase tracking-[0.3em] flex items-center gap-2">
+                <Clock size={12} /> Recent
               </p>
             </div>
-            <div className="flex flex-col gap-0.5">
+            <div className="flex flex-col gap-1">
               {recentClients.map(client => (
                 <Tooltip key={client.id}>
                   <TooltipTrigger asChild>
                     <Link 
                       to={`/clients/${client.id}`}
-                      className="flex items-center gap-2.5 text-xs text-muted-foreground hover:text-indigo-400 transition-all duration-300 py-2 px-3 rounded-lg hover:bg-accent truncate group"
+                      className="flex items-center gap-3 text-xs text-muted-foreground hover:text-indigo-500 transition-all duration-300 py-2 px-3 rounded-xl hover:bg-accent/50 truncate group"
                     >
-                      <div className="w-6 h-6 rounded-lg bg-muted border border-border flex items-center justify-center text-[8px] font-black group-hover:border-indigo-500/40 transition-all">
+                      <div className="w-7 h-7 rounded-lg bg-muted border border-border flex items-center justify-center text-[9px] font-black group-hover:border-indigo-500/40 transition-all">
                         {client.name.charAt(0)}
                       </div>
                       <span className="truncate font-bold text-[11px]">{client.name}</span>
@@ -333,16 +333,16 @@ const Sidebar = ({ onHide }: SidebarProps) => {
       </div>
       
       {/* Footer Actions */}
-      <div className="mt-auto pt-4 border-t border-border space-y-0.5">
+      <div className="mt-auto pt-4 border-t border-border space-y-1">
         <div className="flex items-center justify-between px-3 mb-2">
           <ModeToggle />
           <Tooltip>
             <TooltipTrigger asChild>
               <button 
                 onClick={() => setHelpOpen(true)}
-                className="flex items-center justify-center h-9 w-9 rounded-xl text-muted-foreground hover:text-foreground hover:bg-accent transition-all duration-300 group"
+                className="flex items-center justify-center h-10 w-10 rounded-xl text-muted-foreground hover:text-foreground hover:bg-accent transition-all duration-300 group"
               >
-                <HelpCircle size={18} className="group-hover:text-amber-400 transition-colors" />
+                <HelpCircle size={20} className="group-hover:text-amber-400 transition-colors" />
               </button>
             </TooltipTrigger>
             <TooltipContent side="right" className="rounded-xl font-bold text-xs">
@@ -356,9 +356,9 @@ const Sidebar = ({ onHide }: SidebarProps) => {
           <TooltipTrigger asChild>
             <Link 
               to="/settings"
-              className="flex items-center gap-2.5 px-3 py-2 rounded-lg text-muted-foreground hover:text-foreground hover:bg-accent transition-all duration-300 group"
+              className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-muted-foreground hover:text-foreground hover:bg-accent transition-all duration-300 group"
             >
-              <Settings size={16} className="group-hover:text-indigo-400 transition-colors" />
+              <Settings size={18} className="group-hover:text-indigo-500 transition-colors" />
               <span className="font-bold text-[10px] uppercase tracking-widest">Settings</span>
             </Link>
           </TooltipTrigger>
@@ -371,9 +371,9 @@ const Sidebar = ({ onHide }: SidebarProps) => {
           <TooltipTrigger asChild>
             <div 
               onClick={handleSignOut}
-              className="flex items-center gap-2.5 px-3 py-2 rounded-lg text-muted-foreground hover:text-rose-400 hover:bg-accent transition-all duration-300 cursor-pointer group"
+              className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-muted-foreground hover:text-rose-500 hover:bg-accent transition-all duration-300 cursor-pointer group"
             >
-              <LogOut size={16} className="group-hover:text-rose-400 transition-colors" />
+              <LogOut size={18} className="group-hover:text-rose-500 transition-colors" />
               <span className="font-bold text-[10px] uppercase tracking-widest">Sign Out</span>
             </div>
           </TooltipTrigger>

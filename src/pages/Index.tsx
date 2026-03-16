@@ -207,8 +207,8 @@ const Index = () => {
   const hasData = stats.clients > 0 || stats.appointments > 0;
 
   return (
-    <div className="p-4 md:p-8 max-w-full mx-auto space-y-8">
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+    <div className="p-4 md:p-8 max-w-full mx-auto space-y-10">
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
         <div>
           <h1 className="text-4xl font-black tracking-tighter text-foreground">Practice Hub</h1>
           <p className="text-muted-foreground font-medium mt-1 text-lg">Welcome back! Here's your clinical overview.</p>

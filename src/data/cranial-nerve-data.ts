@@ -85,8 +85,8 @@ export const CRANIAL_NERVES: CranialNerve[] = [
     toneEffect: "Extensors",
     reflexPoint: "Light touch to eyelids",
     functions: ["Lateral eye movement"],
-    stimulus: "Look laterally (away from the nose).",
-    clinicalPearl: "Controls the lateral rectus muscle. Shares a reflex point with CN 3 and 4.",
+    stimulus: "Look laterally (away from the nose) with the eye corresponding to the eyelid reflex.",
+    clinicalPearl: "Shares a reflex point (eyelids) with CN 3 and 4. If the eyelid reflex indicates, isolate CN 6 by testing lateral eye movement. Unlike CN 3 and 4 (Midbrain), the Abducens nuclei are located in the Pons.",
     color: "bg-indigo-600"
   },
   {
@@ -95,10 +95,10 @@ export const CRANIAL_NERVES: CranialNerve[] = [
     latinName: "Facial",
     nuclei: "Pons",
     toneEffect: "Extensors",
-    reflexPoint: "Hand along temporal / TMJ area",
-    functions: ["Facial expression", "Taste (anterior tongue)"],
-    stimulus: "Squeeze eyes shut or make exaggerated facial expressions.",
-    clinicalPearl: "Essential for social engagement and emotional expression.",
+    reflexPoint: "Temporal line / Sphenoid area",
+    functions: ["Facial expression", "Taste (anterior tongue)", "Motor response to sound"],
+    stimulus: "1. Squeeze eye shut on the side of the reflex. 2. Loud sound challenge (observe for facial contortion/startle).",
+    clinicalPearl: "Motor control of the face. High relationship to loud sounds; a contorted face is a protective reflex. Stress often leads to low facial nerve tone. Relevant for Bell's Palsy cases. Differentiate from Trigeminal (sensory) and Startle reflex.",
     color: "bg-indigo-700"
   },
   {

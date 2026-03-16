@@ -152,7 +152,7 @@ const AppointmentForm = ({ onSuccess, initialClientId }: AppointmentFormProps) =
             <FormItem>
               <FormLabel>Appointment Title (Optional)</FormLabel>
               <FormControl>
-                <Input placeholder="e.g. Initial Session" {...field} />
+                <Input placeholder="e.g. Initial Session" {...field} className="input-standard" />
               </FormControl>
               <FormMessage />
             </FormItem>
@@ -172,7 +172,7 @@ const AppointmentForm = ({ onSuccess, initialClientId }: AppointmentFormProps) =
                       <Button
                         variant={"outline"}
                         className={cn(
-                          "w-full pl-3 text-left font-normal",
+                          "w-full pl-3 text-left font-normal h-12 rounded-xl border-2 border-slate-100",
                           !field.value && "text-muted-foreground"
                         )}
                       >
@@ -206,7 +206,7 @@ const AppointmentForm = ({ onSuccess, initialClientId }: AppointmentFormProps) =
               <FormItem>
                 <FormLabel>Time</FormLabel>
                 <FormControl>
-                  <Input type="time" {...field} />
+                  <Input type="time" {...field} className="input-standard" />
                 </FormControl>
                 <FormMessage />
               </FormItem>
@@ -223,7 +223,7 @@ const AppointmentForm = ({ onSuccess, initialClientId }: AppointmentFormProps) =
                 <FormLabel>Type</FormLabel>
                 <Select onValueChange={field.onChange} defaultValue={field.value}>
                   <FormControl>
-                    <SelectTrigger>
+                    <SelectTrigger className="h-12 rounded-xl border-2 border-slate-100">
                       <SelectValue placeholder="Select type" />
                     </SelectTrigger>
                   </FormControl>
@@ -246,7 +246,7 @@ const AppointmentForm = ({ onSuccess, initialClientId }: AppointmentFormProps) =
                 <FormLabel>Status</FormLabel>
                 <Select onValueChange={field.onChange} defaultValue={field.value}>
                   <FormControl>
-                    <SelectTrigger>
+                    <SelectTrigger className="h-12 rounded-xl border-2 border-slate-100">
                       <SelectValue placeholder="Select status" />
                     </SelectTrigger>
                   </FormControl>
@@ -269,7 +269,7 @@ const AppointmentForm = ({ onSuccess, initialClientId }: AppointmentFormProps) =
             <FormItem>
               <FormLabel>Goal</FormLabel>
               <FormControl>
-                <Input placeholder="What is the goal for this session?" {...field} />
+                <Input placeholder="What is the goal for this session?" {...field} className="input-standard" />
               </FormControl>
               <FormMessage />
             </FormItem>
@@ -285,7 +285,7 @@ const AppointmentForm = ({ onSuccess, initialClientId }: AppointmentFormProps) =
               <FormControl>
                 <Textarea 
                   placeholder="Describe the main concern..." 
-                  className="resize-none"
+                  className="resize-none rounded-xl border-2 border-slate-100 min-h-[100px]"
                   {...field} 
                 />
               </FormControl>
@@ -294,7 +294,7 @@ const AppointmentForm = ({ onSuccess, initialClientId }: AppointmentFormProps) =
           )}
         />
 
-        <Button type="submit" className="w-full bg-indigo-600 hover:bg-indigo-700 h-11 rounded-xl shadow-lg shadow-indigo-100" disabled={submitting}>
+        <Button type="submit" className="w-full bg-indigo-600 hover:bg-indigo-700 h-12 rounded-xl font-bold interactive-lift shadow-indigo-100" disabled={submitting}>
           {submitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
           Schedule Appointment
         </Button>

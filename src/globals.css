@@ -13,7 +13,7 @@
     --popover: 0 0% 100%;
     --popover-foreground: 222.2 84% 4.9%;
 
-    --primary: 243.4 75.4% 58.6%; /* Indigo 600 */
+    --primary: 243.4 75.4% 58.6%;
     --primary-foreground: 210 40% 98%;
 
     --secondary: 210 40% 96.1%;
@@ -22,36 +22,35 @@
     --muted: 214.3 31.8% 91.4%;
     --muted-foreground: 215.4 16.3% 46.9%;
 
-    --accent: 243 100% 97%; /* Indigo 50 */
+    --accent: 243 100% 97%;
     --accent-foreground: 243.4 75.4% 58.6%;
 
-    --destructive: 346.8 77.2% 49.8%; /* Rose 600 */
+    --destructive: 0 84.2% 60.2%;
     --destructive-foreground: 210 40% 98%;
-
-    --success: 142.1 70.6% 45.3%; /* Emerald 600 */
-    --success-foreground: 210 40% 98%;
-
-    --warning: 37.9 92.1% 50.2%; /* Amber 600 */
-    --warning-foreground: 210 40% 98%;
 
     --border: 214.3 31.8% 91.4%;
     --input: 214.3 31.8% 91.4%;
     --ring: 243.4 75.4% 58.6%;
 
-    --radius: 1.5rem; /* Standardized to 24px (3xl) */
+    /* Standardized Radii */
+    --radius-sm: 0.5rem;
+    --radius-md: 0.75rem;
+    --radius-lg: 1rem;
+    --radius-xl: 1.5rem;
+    --radius-2xl: 2rem;
   }
 
   .dark {
     --background: 222.2 84% 4.9%;
     --foreground: 210 40% 98%;
 
-    --card: 222.2 84% 6.9%;
+    --card: 222.2 84% 4.9%;
     --card-foreground: 210 40% 98%;
 
     --popover: 222.2 84% 4.9%;
     --popover-foreground: 210 40% 98%;
 
-    --primary: 243.4 75.4% 58.6%;
+    --primary: 210 40% 98%;
     --primary-foreground: 222.2 47.4% 11.2%;
 
     --secondary: 217.2 32.6% 17.5%;
@@ -63,18 +62,12 @@
     --accent: 217.2 32.6% 17.5%;
     --accent-foreground: 210 40% 98%;
 
-    --destructive: 346.8 77.2% 49.8%;
+    --destructive: 0 62.8% 30.6%;
     --destructive-foreground: 210 40% 98%;
-
-    --success: 142.1 70.6% 45.3%;
-    --success-foreground: 210 40% 98%;
-
-    --warning: 37.9 92.1% 50.2%;
-    --warning-foreground: 210 40% 98%;
 
     --border: 217.2 32.6% 17.5%;
     --input: 217.2 32.6% 17.5%;
-    --ring: 243.4 75.4% 58.6%;
+    --ring: 212.7 26.8% 83.9%;
   }
 }
 
@@ -82,13 +75,23 @@
   * {
     @apply border-border;
   }
-
   body {
     @apply bg-background text-foreground antialiased;
     font-feature-settings: "cv02", "cv03", "cv04", "cv11";
   }
 }
 
-.glass-card {
-  @apply bg-white/80 dark:bg-slate-900/80 backdrop-blur-md border border-white/20 dark:border-slate-800/20 shadow-xl;
+@layer components {
+  /* Global Interactive Classes */
+  .interactive-lift {
+    @apply transition-all duration-300 hover:-translate-y-0.5 hover:shadow-lg active:translate-y-0 active:shadow-sm;
+  }
+  
+  .input-standard {
+    @apply h-12 rounded-xl border-2 border-slate-100 bg-white px-4 font-medium transition-all focus:border-primary focus:ring-0 dark:bg-slate-900 dark:border-slate-800;
+  }
+
+  .card-standard {
+    @apply rounded-[2rem] border-none bg-white shadow-xl shadow-slate-200/50 dark:bg-slate-900 dark:shadow-none;
+  }
 }

@@ -1,11 +1,11 @@
 "use client";
 
 import React, { useState, useEffect, useMemo } from 'react';
-import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
+import { Card, CardHeader, CardTitle, CardContent, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { 
-  Brain, Zap, Activity, Shield, Dumbbell, AlertTriangle, ChevronDown, Check, X, Plus, Search, RotateCcw, Layers, ImageIcon, Baby, PlayCircle, ShieldAlert, ListChecks, Info, MousePointer2, Maximize2, History, Trash2, Eye, EyeOff, Lightbulb, CheckCircle2
+  Brain, Zap, Activity, Shield, Dumbbell, AlertTriangle, ChevronDown, Check, X, Plus, Search, RotateCcw, Layers, ImageIcon, Baby, PlayCircle, ShieldAlert, ListChecks, Info, MousePointer2, Maximize2, History, Trash2, Eye, EyeOff, Lightbulb, CheckCircle2, ArrowRight, RefreshCw
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { BRAIN_REFLEX_POINTS, BrainReflexPoint } from '@/data/brain-reflex-data';
@@ -18,6 +18,7 @@ import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { processNeurologicalHistory, FindingHistory } from '@/utils/neurological-history';
 import { FINDING_TO_NUCLEI, Nuclei } from '@/utils/brainstem-logic';
+import { showSuccess, showError } from "@/utils/toast";
 
 // Modal Imports
 import MuscleInfoModal from "./MuscleInfoModal";
@@ -290,7 +291,7 @@ interface ReflexImageData {
 
 const PathwayAssessment = ({ initialValue, previousValue, history = [], onSave, onJumpToCalibrate, nucleiFilter }: PathwayAssessmentProps) => {
   const [results, setResults] = useState<AssessmentResults>({});
-  const [muscleSearch, setMuscleSearch] = useState("");
+  const [globalSearch, setGlobalSearch] = useState("");
   const [showImages, setShowImages] = useState(true);
   const [showOnlyInhibited, setShowOnlyInhibited] = useState(false);
   const [customizations, setCustomizations] = useState<Record<string, ReflexImageData>>({});
@@ -385,6 +386,31 @@ const PathwayAssessment = ({ initialValue, previousValue, history = [], onSave, 
     onSave("");
   };
 
+  const handleSyncPrevious = () => {
+    if (!previousValue) return;
+    if (!confirm("Sync unresolved findings from previous session? This will merge with current results.")) return;
+    
+    try {
+      const prev = JSON.parse(previousValue);
+      const newResults = { ...results };
+      
+      Object.entries(prev).forEach(([category, items]: [string, any]) => {
+        if (!newResults[category]) newResults[category] = {};
+        Object.entries(items).forEach(([name, status]) => {
+          if (status === 'Inhibited') {
+            newResults[category][name] = 'Inhibited';
+          }
+        });
+      });
+      
+      setResults(newResults);
+      onSave(JSON.stringify(newResults));
+      showSuccess("Synced unresolved findings from previous session.");
+    } catch (e) {
+      showError("Failed to sync previous session data.");
+    }
+  };
+
   const handleQuickCalibrate = (category: string, item: string) => {
     const newResults = { ...results };
     if (!newResults[category]) newResults[category] = {};
@@ -427,18 +453,36 @@ const PathwayAssessment = ({ initialValue, previousValue, history = [], onSave, 
     return mappingKey && FINDING_TO_NUCLEI[mappingKey].nuclei === nuclei;
   };
 
+  const inhibitedSummary = useMemo(() => {
+    const summary: { name: string; category: string; catKey: string }[] = [];
+    Object.entries(results).forEach(([catKey, items]) => {
+      Object.entries(items).forEach(([name, status]) => {
+        if (status === 'Inhibited') {
+          summary.push({ 
+            name, 
+            category: catKey.replace(/([A-Z])/g, ' $1').trim(),
+            catKey
+          });
+        }
+      });
+    });
+    return summary;
+  }, [results]);
+
   const cranialNerves = BRAIN_REFLEX_POINTS.filter(p => p.category === 'Cranial Nerve');
   const brainZones = BRAIN_REFLEX_POINTS.filter(p => p.category !== 'Cranial Nerve');
+
+  const filterBySearch = (name: string) => {
+    if (!globalSearch) return true;
+    return name.toLowerCase().includes(globalSearch.toLowerCase());
+  };
 
   const filteredMuscleGroups = useMemo(() => {
     const filtered: Record<string, string[]> = {};
     Object.entries(MUSCLE_GROUPS).forEach(([group, muscles]) => {
       const matchingMuscles = muscles.filter(m => {
-        const matchesSearch = m.toLowerCase().includes(muscleSearch.toLowerCase());
-        if (!matchesSearch) return false;
-        
+        if (!filterBySearch(m)) return false;
         if (nucleiFilter && !isItemInNuclei(m, nucleiFilter)) return false;
-
         if (showOnlyInhibited) {
           return results.muscles?.[m] === 'Inhibited' || 
                  results.muscles?.[`${m} (L)`] === 'Inhibited' || 
@@ -446,13 +490,10 @@ const PathwayAssessment = ({ initialValue, previousValue, history = [], onSave, 
         }
         return true;
       });
-      
-      if (matchingMuscles.length > 0) {
-        filtered[group] = matchingMuscles;
-      }
+      if (matchingMuscles.length > 0) filtered[group] = matchingMuscles;
     });
     return filtered;
-  }, [muscleSearch, showOnlyInhibited, results.muscles, nucleiFilter]);
+  }, [globalSearch, showOnlyInhibited, results.muscles, nucleiFilter]);
 
   const totalFindings = Object.values(results).reduce((acc, curr) => acc + Object.keys(curr).length, 0);
 
@@ -486,6 +527,16 @@ const PathwayAssessment = ({ initialValue, previousValue, history = [], onSave, 
         </div>
 
         <div className="flex items-center gap-3">
+          {previousValue && (
+            <Button 
+              variant="outline" 
+              size="sm" 
+              onClick={handleSyncPrevious}
+              className="h-9 text-[10px] font-black uppercase tracking-widest border-indigo-200 text-indigo-600 hover:bg-indigo-50 rounded-xl"
+            >
+              <RefreshCw size={14} className="mr-2" /> Sync Unresolved
+            </Button>
+          )}
           {nucleiFilter && (
             <Badge className="bg-indigo-600 text-white border-none font-black text-[10px] uppercase tracking-widest px-3 py-1">
               Filter: {nucleiFilter}
@@ -503,6 +554,64 @@ const PathwayAssessment = ({ initialValue, previousValue, history = [], onSave, 
           )}
         </div>
       </div>
+
+      {/* Global Search */}
+      <div className="relative max-w-2xl mx-auto">
+        <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" size={20} />
+        <Input 
+          placeholder="Global Search (e.g. Moro, Vagus, Psoas, M1)..." 
+          className="pl-12 bg-white border-slate-200 rounded-2xl h-14 shadow-lg font-medium focus:ring-2 focus:ring-indigo-500"
+          value={globalSearch}
+          onChange={(e) => setGlobalSearch(e.target.value)}
+        />
+      </div>
+
+      {/* Inhibited Summary (Priority List) */}
+      {inhibitedSummary.length > 0 && (
+        <Card className="border-none shadow-xl rounded-[2.5rem] bg-rose-50 dark:bg-rose-950/10 border-2 border-rose-200 dark:border-rose-900/30 overflow-hidden animate-in slide-in-from-top-4 duration-500">
+          <CardHeader className="p-8 pb-4">
+            <div className="flex items-center justify-between">
+              <CardTitle className="text-xl font-black flex items-center gap-3 text-rose-900 dark:text-rose-100">
+                <AlertTriangle size={24} className="text-rose-600" /> Priority Findings
+              </CardTitle>
+              <Badge className="bg-rose-600 text-white border-none font-black text-[10px] uppercase tracking-widest px-3 py-1 rounded-full">
+                {inhibitedSummary.length} Active
+              </Badge>
+            </div>
+            <CardDescription className="text-rose-700 dark:text-rose-300 font-medium">Findings requiring calibration in this session.</CardDescription>
+          </CardHeader>
+          <CardContent className="p-8 pt-0">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+              {inhibitedSummary.map((item, idx) => (
+                <div key={idx} className="p-4 bg-white dark:bg-slate-900 rounded-2xl border border-rose-200 dark:border-rose-900/30 flex items-center justify-between group hover:shadow-md transition-all">
+                  <div className="min-w-0">
+                    <p className="font-black text-sm text-slate-900 dark:text-slate-100 truncate">{item.name}</p>
+                    <p className="text-[8px] font-black text-rose-500 uppercase tracking-widest">{item.category}</p>
+                  </div>
+                  <div className="flex gap-1">
+                    <Button 
+                      variant="ghost" 
+                      size="icon" 
+                      className="h-8 w-8 rounded-xl text-amber-500 hover:bg-amber-50"
+                      onClick={() => handleQuickCalibrate(item.catKey, item.name)}
+                    >
+                      <Zap size={16} className="fill-current" />
+                    </Button>
+                    <Button 
+                      variant="ghost" 
+                      size="icon" 
+                      className="h-8 w-8 rounded-xl text-emerald-500 hover:bg-emerald-50"
+                      onClick={() => handleSetStatus(item.catKey, item.name, 'Clear')}
+                    >
+                      <Check size={16} />
+                    </Button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+      )}
 
       {/* Primitive Reflexes */}
       <AssessmentSection 
@@ -535,6 +644,7 @@ const PathwayAssessment = ({ initialValue, previousValue, history = [], onSave, 
       >
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
           {PRIMITIVE_REFLEXES
+            .filter(r => filterBySearch(r.name))
             .filter(r => !showOnlyInhibited || results.primitiveReflexes?.[r.name] === 'Inhibited')
             .filter(r => !nucleiFilter || isItemInNuclei(r.name, nucleiFilter))
             .map(reflex => (
@@ -552,11 +662,6 @@ const PathwayAssessment = ({ initialValue, previousValue, history = [], onSave, 
               inhibitionPattern={reflex.inhibitionPattern}
             />
           ))}
-          {showOnlyInhibited && getCounts('primitiveReflexes').inhibitedCount === 0 && (
-            <div className="col-span-full py-12 text-center bg-slate-50 rounded-3xl border-2 border-dashed border-slate-200">
-              <p className="text-sm font-bold text-slate-400 uppercase tracking-widest">No inhibited reflexes found</p>
-            </div>
-          )}
         </div>
       </AssessmentSection>
 
@@ -570,6 +675,7 @@ const PathwayAssessment = ({ initialValue, previousValue, history = [], onSave, 
       >
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
           {cranialNerves
+            .filter(n => filterBySearch(n.name))
             .filter(n => !showOnlyInhibited || results.cranialNerves?.[n.name] === 'Inhibited')
             .filter(n => !nucleiFilter || isItemInNuclei(n.name, nucleiFilter))
             .map(nerve => {
@@ -590,11 +696,6 @@ const PathwayAssessment = ({ initialValue, previousValue, history = [], onSave, 
               />
             );
           })}
-          {showOnlyInhibited && getCounts('cranialNerves').inhibitedCount === 0 && (
-            <div className="col-span-full py-12 text-center bg-slate-50 rounded-3xl border-2 border-dashed border-slate-200">
-              <p className="text-sm font-bold text-slate-400 uppercase tracking-widest">No inhibited nerves found</p>
-            </div>
-          )}
         </div>
       </AssessmentSection>
 
@@ -608,6 +709,7 @@ const PathwayAssessment = ({ initialValue, previousValue, history = [], onSave, 
       >
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
           {brainZones
+            .filter(z => filterBySearch(z.name))
             .filter(z => !showOnlyInhibited || results.brainZones?.[z.name] === 'Inhibited')
             .filter(z => !nucleiFilter || isItemInNuclei(z.name, nucleiFilter))
             .map(zone => {
@@ -628,27 +730,12 @@ const PathwayAssessment = ({ initialValue, previousValue, history = [], onSave, 
               />
             );
           })}
-          {showOnlyInhibited && getCounts('brainZones').inhibitedCount === 0 && (
-            <div className="col-span-full py-12 text-center bg-slate-50 rounded-3xl border-2 border-dashed border-slate-200">
-              <p className="text-sm font-bold text-slate-400 uppercase tracking-widest">No inhibited zones found</p>
-            </div>
-          )}
         </div>
       </AssessmentSection>
 
       {/* Muscles */}
       <AssessmentSection title="Muscle Assessment" description="Log individual muscle facilitation/inhibition." icon={Dumbbell} {...getCounts('muscles')}>
         <div className="space-y-8">
-          <div className="relative max-w-md">
-            <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
-            <Input 
-              placeholder="Search muscles..." 
-              className="pl-12 bg-slate-50 border-slate-200 h-12 rounded-2xl shadow-inner font-medium"
-              value={muscleSearch}
-              onChange={(e) => setMuscleSearch(e.target.value)}
-            />
-          </div>
-          
           {Object.entries(filteredMuscleGroups).map(([group, muscles]) => (
             <div key={group} className="space-y-4">
               <div className="flex items-center gap-3 px-2">
@@ -672,15 +759,17 @@ const PathwayAssessment = ({ initialValue, previousValue, history = [], onSave, 
               </div>
             </div>
           ))}
-          
-          {Object.keys(filteredMuscleGroups).length === 0 && (
-            <div className="py-20 text-center bg-slate-50 rounded-[2.5rem] border-2 border-dashed border-slate-200">
-              <Dumbbell size={40} className="mx-auto text-slate-200 mb-4" />
-              <p className="text-sm font-bold text-slate-400 uppercase tracking-widest">No muscles match your search or focus</p>
-            </div>
-          )}
         </div>
       </AssessmentSection>
+
+      {/* Global Empty State */}
+      {totalFindings === 0 && globalSearch && (
+        <div className="py-32 text-center bg-slate-50 rounded-[3rem] border-2 border-dashed border-slate-200">
+          <Search size={48} className="mx-auto text-slate-200 mb-4" />
+          <p className="text-lg font-black text-slate-900">No findings match "{globalSearch}"</p>
+          <Button variant="link" onClick={() => setGlobalSearch("")} className="mt-2 text-indigo-600 font-bold">Clear Search</Button>
+        </div>
+      )}
 
       <MuscleInfoModal muscleName={selectedMuscle} open={muscleModalOpen} onOpenChange={setMuscleModalOpen} />
       <BrainReflexModal point={selectedBrainPoint} primaryUrl={selectedBrainPoint ? customizations[selectedBrainPoint.id]?.primaryUrl : null} secondaryUrl={selectedBrainPoint ? customizations[selectedBrainPoint.id]?.secondaryUrl : null} open={brainModalOpen} onOpenChange={setBrainModalOpen} />

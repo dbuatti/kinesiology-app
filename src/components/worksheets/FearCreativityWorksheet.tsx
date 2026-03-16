@@ -258,7 +258,38 @@ const FearCreativityWorksheet = ({ submissionId, onBack }: FearCreativityWorkshe
                   />
                 </div>
 
+                {/* Bridge Questions */}
+                <div className="flex flex-wrap items-center gap-x-2 gap-y-4 text-lg leading-relaxed pt-4 border-t border-slate-100">
+                  <span className="font-medium text-slate-700">When I stay in this pattern, the cost to my creativity is</span>
+                  <Input 
+                    className="w-full h-10 border-b-2 border-t-0 border-x-0 rounded-none focus:ring-0 bg-transparent font-bold text-indigo-600"
+                    placeholder="[The cost/impact]"
+                    value={answers.q_bridge_1 || ''}
+                    onChange={(e) => handleInputChange('q_bridge_1', e.target.value)}
+                  />
+                </div>
+
                 <div className="flex flex-wrap items-center gap-x-2 gap-y-4 text-lg leading-relaxed">
+                  <span className="font-medium text-slate-700">What I actually need in those moments is</span>
+                  <Input 
+                    className="w-full h-10 border-b-2 border-t-0 border-x-0 rounded-none focus:ring-0 bg-transparent font-bold text-indigo-600"
+                    placeholder="[The underlying need]"
+                    value={answers.q_bridge_2 || ''}
+                    onChange={(e) => handleInputChange('q_bridge_2', e.target.value)}
+                  />
+                </div>
+
+                <div className="flex flex-wrap items-center gap-x-2 gap-y-4 text-lg leading-relaxed">
+                  <span className="font-medium text-slate-700">I give myself permission to</span>
+                  <Input 
+                    className="w-full h-10 border-b-2 border-t-0 border-x-0 rounded-none focus:ring-0 bg-transparent font-bold text-indigo-600"
+                    placeholder="[New permission/belief]"
+                    value={answers.q_bridge_3 || ''}
+                    onChange={(e) => handleInputChange('q_bridge_3', e.target.value)}
+                  />
+                </div>
+
+                <div className="flex flex-wrap items-center gap-x-2 gap-y-4 text-lg leading-relaxed pt-4 border-t border-slate-100">
                   <span className="font-medium text-slate-700">Next time I feel tense, I will soothe myself by</span>
                   <Input 
                     className="w-full h-10 border-b-2 border-t-0 border-x-0 rounded-none focus:ring-0 bg-transparent font-bold text-indigo-600"

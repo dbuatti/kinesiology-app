@@ -30,6 +30,7 @@ interface AssessmentItemProps {
   status?: Status;
   previousStatus?: Status;
   onSetStatus: (status: Status) => void;
+  onQuickCalibrate: () => void;
   onClick: () => void;
   imageUrl?: string | null;
   showImage?: boolean;
@@ -37,7 +38,7 @@ interface AssessmentItemProps {
   inhibitionPattern?: string;
 }
 
-const AssessmentItem = ({ name, status, previousStatus, onSetStatus, onClick, imageUrl, showImage, stimulus, inhibitionPattern }: AssessmentItemProps) => {
+const AssessmentItem = ({ name, status, previousStatus, onSetStatus, onQuickCalibrate, onClick, imageUrl, showImage, stimulus, inhibitionPattern }: AssessmentItemProps) => {
   return (
     <div 
       onClick={onClick}
@@ -48,7 +49,19 @@ const AssessmentItem = ({ name, status, previousStatus, onSetStatus, onClick, im
         "bg-white border-slate-100 hover:border-indigo-100 hover:shadow-md"
       )}
     >
-      <div className="flex items-center justify-between mb-2">
+      {/* Quick Calibrate Button (Yellow Circle) */}
+      <button
+        onClick={(e) => {
+          e.stopPropagation();
+          onQuickCalibrate();
+        }}
+        className="absolute top-2 right-2 w-6 h-6 rounded-full bg-amber-400 text-white flex items-center justify-center shadow-sm hover:bg-amber-500 hover:scale-110 transition-all z-30"
+        title="Quick Calibrate"
+      >
+        <Zap size={12} className="fill-current" />
+      </button>
+
+      <div className="flex items-center justify-between mb-2 pr-6">
         <div className="flex flex-col">
           <p className="font-bold text-sm text-slate-800">{name}</p>
           {previousStatus && !status && (
@@ -185,6 +198,7 @@ interface PathwayAssessmentProps {
   initialValue?: string;
   previousValue?: string;
   onSave: (summary: string) => void;
+  onJumpToCalibrate?: (itemName: string) => void;
 }
 
 interface ReflexImageData {
@@ -192,7 +206,7 @@ interface ReflexImageData {
   secondaryUrl: string | null;
 }
 
-const PathwayAssessment = ({ initialValue, previousValue, onSave }: PathwayAssessmentProps) => {
+const PathwayAssessment = ({ initialValue, previousValue, onSave, onJumpToCalibrate }: PathwayAssessmentProps) => {
   const [results, setResults] = useState<AssessmentResults>({});
   const [muscleSearch, setMuscleSearch] = useState("");
   const [showImages, setShowImages] = useState(true);
@@ -269,6 +283,20 @@ const PathwayAssessment = ({ initialValue, previousValue, onSave }: PathwayAsses
     }
     setResults(newResults);
     onSave(JSON.stringify(newResults));
+  };
+
+  const handleQuickCalibrate = (category: string, item: string) => {
+    // 1. Mark as inhibited
+    const newResults = { ...results };
+    if (!newResults[category]) newResults[category] = {};
+    newResults[category][item] = 'Inhibited';
+    setResults(newResults);
+    onSave(JSON.stringify(newResults));
+
+    // 2. Trigger jump to calibration tab
+    if (onJumpToCalibrate) {
+      onJumpToCalibrate(item);
+    }
   };
 
   const getCounts = (category: string) => {
@@ -350,6 +378,7 @@ const PathwayAssessment = ({ initialValue, previousValue, onSave }: PathwayAsses
               status={results.primitiveReflexes?.[reflex.name]}
               previousStatus={previousResults.primitiveReflexes?.[reflex.name]}
               onSetStatus={(status) => handleSetStatus('primitiveReflexes', reflex.name, status)}
+              onQuickCalibrate={() => handleQuickCalibrate('primitiveReflexes', reflex.name)}
               onClick={() => handleItemClick('reflex', reflex)}
               stimulus={reflex.stimulus}
               inhibitionPattern={reflex.inhibitionPattern}
@@ -369,6 +398,7 @@ const PathwayAssessment = ({ initialValue, previousValue, onSave }: PathwayAsses
                 status={results.cranialNerves?.[nerve.name]}
                 previousStatus={previousResults.cranialNerves?.[nerve.name]}
                 onSetStatus={(status) => handleSetStatus('cranialNerves', nerve.name, status)}
+                onQuickCalibrate={() => handleQuickCalibrate('cranialNerves', nerve.name)}
                 onClick={() => handleItemClick('brain', nerve)}
                 imageUrl={imageUrl}
                 showImage={showImages}
@@ -389,6 +419,7 @@ const PathwayAssessment = ({ initialValue, previousValue, onSave }: PathwayAsses
                 status={results.brainZones?.[zone.name]}
                 previousStatus={previousResults.brainZones?.[zone.name]}
                 onSetStatus={(status) => handleSetStatus('brainZones', zone.name, status)}
+                onQuickCalibrate={() => handleQuickCalibrate('brainZones', zone.name)}
                 onClick={() => handleItemClick('brain', zone)}
                 imageUrl={imageUrl}
                 showImage={showImages}
@@ -420,6 +451,7 @@ const PathwayAssessment = ({ initialValue, previousValue, onSave }: PathwayAsses
                     status={results.muscles?.[muscle]}
                     previousStatus={previousResults.muscles?.[muscle]}
                     onSetStatus={(status) => handleSetStatus('muscles', muscle, status)}
+                    onQuickCalibrate={() => handleQuickCalibrate('muscles', muscle)}
                     onClick={() => handleItemClick('muscle', muscle)}
                   />
                 ))}

@@ -41,6 +41,8 @@ interface SessionContentSwitcherProps {
 
 const SessionContentSwitcher = ({ appointment, onUpdate, saveField, history = [] }: SessionContentSwitcherProps) => {
   const [activeView, setActiveView] = useState<ActiveView>('home');
+  const [activeTab, setActiveTab] = useState('baseline');
+  const [preselectedFinding, setPreselectedFinding] = useState<string | null>(null);
   
   const tabStatus = useMemo(() => ({
     baseline: !!(appointment.bolt_score || appointment.coherence_score || appointment.sagittal_plane_notes || appointment.fakuda_notes || appointment.lymphatic_priority_zone),
@@ -82,6 +84,11 @@ const SessionContentSwitcher = ({ appointment, onUpdate, saveField, history = []
     }
   };
 
+  const handleJumpToCalibrate = (itemName: string) => {
+    setPreselectedFinding(itemName);
+    setActiveTab('calibration');
+  };
+
   const NavItem = ({ view, label, Icon }: { view: ActiveView, label: string, Icon: React.ElementType }) => (
     <Button
       variant="ghost"
@@ -100,7 +107,7 @@ const SessionContentSwitcher = ({ appointment, onUpdate, saveField, history = []
 
   const renderHomeView = () => (
     <div className="space-y-10">
-      <Tabs defaultValue="baseline" className="w-full">
+      <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
         <TabsList className="grid w-full grid-cols-5 h-16 bg-muted/50 p-1.5 rounded-[1.5rem]">
           {[
             { id: 'baseline', label: 'Baseline', icon: Activity },
@@ -138,6 +145,7 @@ const SessionContentSwitcher = ({ appointment, onUpdate, saveField, history = []
               initialValue={appointment.priority_pattern || undefined} 
               previousValue={previousSession?.priority_pattern || undefined}
               onSave={(s) => saveField('priority_pattern', s)} 
+              onJumpToCalibrate={handleJumpToCalibrate}
             />
           </TabsContent>
 
@@ -146,6 +154,7 @@ const SessionContentSwitcher = ({ appointment, onUpdate, saveField, history = []
               onSave={(summary) => saveField('modes_balances', summary)}
               onClearItem={handleClearItem}
               priorityPattern={appointment.priority_pattern}
+              initialFinding={preselectedFinding}
             />
           </TabsContent>
 

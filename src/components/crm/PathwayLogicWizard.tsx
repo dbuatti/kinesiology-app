@@ -45,9 +45,10 @@ interface PathwayLogicWizardProps {
   onSave: (summary: string) => void;
   onClearItem?: (itemName: string) => void;
   priorityPattern?: string | null;
+  initialFinding?: string | null;
 }
 
-const PathwayLogicWizard = ({ onSave, onClearItem, priorityPattern }: PathwayLogicWizardProps) => {
+const PathwayLogicWizard = ({ onSave, onClearItem, priorityPattern, initialFinding }: PathwayLogicWizardProps) => {
   const [step, setStep] = useState<Step>('SELECT_START');
   const [history, setHistory] = useState<Step[]>([]);
   const [selectedFinding, setSelectedFinding] = useState<string>("");
@@ -56,6 +57,13 @@ const PathwayLogicWizard = ({ onSave, onClearItem, priorityPattern }: PathwayLog
   const [ligamentImages, setLigamentImages] = useState<Record<string, (string | null)[]>>({});
   const [ligamentModalOpen, setLigamentModalOpen] = useState(false);
   const [actionTableOpen, setActionTableOpen] = useState(false);
+
+  // Handle initial finding from parent
+  useEffect(() => {
+    if (initialFinding) {
+      setSelectedFinding(initialFinding);
+    }
+  }, [initialFinding]);
 
   // The actual item name being corrected
   const effectiveItem = selectedFinding === 'CUSTOM' ? customText : selectedFinding;

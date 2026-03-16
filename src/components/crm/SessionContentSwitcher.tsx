@@ -87,6 +87,8 @@ const SessionContentSwitcher = ({ appointment, onUpdate, saveField, history = []
   const handleJumpToCalibrate = (itemName: string) => {
     setPreselectedFinding(itemName);
     setActiveTab('calibration');
+    // Manually scroll to top since tab changes don't trigger route-based scroll reset
+    window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
   const NavItem = ({ view, label, Icon }: { view: ActiveView, label: string, Icon: React.ElementType }) => (

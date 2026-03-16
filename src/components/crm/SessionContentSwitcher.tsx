@@ -65,39 +65,72 @@ const SessionContentSwitcher = ({ appointment, onUpdate, saveField, history = []
 
   const previousSession = useMemo(() => {
     if (!history || history.length < 2) return null;
-    // Ensure dates are Date objects for sorting
     const sorted = [...history].sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
     const currentIndex = sorted.findIndex(s => s.id === appointment.id);
     return sorted[currentIndex + 1] || null;
   }, [history, appointment.id]);
 
   const scrollToWizard = () => {
+    console.log("[SessionSwitcher] scrollToWizard triggered");
+    
+    // Use a slightly longer timeout to ensure the tab content has rendered
     setTimeout(() => {
-      if (wizardRef.current) {
+      const element = wizardRef.current;
+      if (!element) {
+        console.warn("[SessionSwitcher] wizardRef.current is null - element not found in DOM yet");
+        return;
+      }
+
+      const scrollContainer = document.querySelector('main');
+      console.log("[SessionSwitcher] Scroll container found:", !!scrollContainer);
+
+      if (scrollContainer) {
         const offset = 100; // Account for fixed headers
+        const elementPosition = element.getBoundingClientRect().top;
+        const containerPosition = scrollContainer.getBoundingClientRect().top;
+        const relativePosition = elementPosition - containerPosition;
+        const finalScrollTop = scrollContainer.scrollTop + relativePosition - offset;
+
+        console.log("[SessionSwitcher] Scrolling to:", {
+          elementTop: elementPosition,
+          containerTop: containerPosition,
+          relative: relativePosition,
+          currentScroll: scrollContainer.scrollTop,
+          targetScroll: finalScrollTop
+        });
+
+        scrollContainer.scrollTo({
+          top: finalScrollTop,
+          behavior: 'smooth'
+        });
+      } else {
+        console.log("[SessionSwitcher] Falling back to window scroll");
+        const offset = 100;
         const bodyRect = document.body.getBoundingClientRect().top;
-        const elementRect = wizardRef.current.getBoundingClientRect().top;
+        const elementRect = element.getBoundingClientRect().top;
         const elementPosition = elementRect - bodyRect;
         const offsetPosition = elementPosition - offset;
 
-        const scrollContainer = document.querySelector('main') || window;
-        scrollContainer.scrollTo({
+        window.scrollTo({
           top: offsetPosition,
           behavior: 'smooth'
         });
       }
-    }, 100);
+    }, 150);
   };
 
   const handleNextTab = () => {
     const currentIndex = TABS.findIndex(t => t.id === activeTab);
     if (currentIndex < TABS.length - 1) {
       const nextTabId = TABS[currentIndex + 1].id;
+      console.log("[SessionSwitcher] Navigating to next tab:", nextTabId);
       setActiveTab(nextTabId);
       if (nextTabId === 'calibration') {
         scrollToWizard();
       } else {
-        window.scrollTo({ top: 0, behavior: 'smooth' });
+        const scrollContainer = document.querySelector('main');
+        if (scrollContainer) scrollContainer.scrollTo({ top: 0, behavior: 'smooth' });
+        else window.scrollTo({ top: 0, behavior: 'smooth' });
       }
     }
   };
@@ -123,6 +156,7 @@ const SessionContentSwitcher = ({ appointment, onUpdate, saveField, history = []
   };
 
   const handleJumpToCalibrate = (itemName: string) => {
+    console.log("[SessionSwitcher] Jumping to calibrate for finding:", itemName);
     setPreselectedFinding(itemName);
     setActiveTab('calibration');
     scrollToWizard();
@@ -171,6 +205,7 @@ const SessionContentSwitcher = ({ appointment, onUpdate, saveField, history = []
   const renderHomeView = () => (
     <div className="space-y-10">
       <Tabs value={activeTab} onValueChange={(v) => {
+        console.log("[SessionSwitcher] Tab changed to:", v);
         setActiveTab(v);
         if (v === 'calibration') scrollToWizard();
       }} className="w-full">

@@ -39,7 +39,6 @@ import NotFound from "./pages/NotFound";
 const queryClient = new QueryClient();
 
 const AppRoutes = () => {
-  const location = useLocation();
   const { session } = useAuth();
 
   if (session === undefined) {
@@ -56,49 +55,47 @@ const AppRoutes = () => {
   }
 
   return (
-    <AnimatePresence mode="wait">
-      <Routes location={location} key={location.pathname}>
-        {/* Public Routes */}
-        <Route element={<AuthLayout />}>
-          <Route path="/login" element={<PageTransition><LoginPage /></PageTransition>} />
-          <Route path="/onboarding/:id" element={<PageTransition><OnboardingPage /></PageTransition>} />
-        </Route>
+    <Routes>
+      {/* Public Routes */}
+      <Route element={<AuthLayout />}>
+        <Route path="/login" element={<PageTransition><LoginPage /></PageTransition>} />
+        <Route path="/onboarding/:id" element={<PageTransition><OnboardingPage /></PageTransition>} />
+      </Route>
 
-        {/* Protected App Routes */}
-        <Route 
-          element={session ? <MainLayout /> : <Navigate to="/login" replace />}
-        >
-          <Route path="/" element={<PageTransition><DashboardPage /></PageTransition>} />
-          
-          {/* Clinical Hub */}
-          <Route path="/clients" element={<PageTransition><ClientsPage /></PageTransition>} />
-          <Route path="/clients/:id" element={<PageTransition><ClientDetailPage /></PageTransition>} />
-          <Route path="/appointments" element={<PageTransition><AppointmentsPage /></PageTransition>} />
-          <Route path="/appointments/:id" element={<PageTransition><AppointmentDetailPage /></PageTransition>} />
-          <Route path="/oversight" element={<PageTransition><ClinicalOversightPage /></PageTransition>} />
-          
-          {/* Practice Lab */}
-          <Route path="/practice/calibrate" element={<PageTransition><QuickCalibratePage /></PageTransition>} />
-          <Route path="/practice/self" element={<PageTransition><SelfPracticePage /></PageTransition>} />
-          <Route path="/practice/procedures" element={<PageTransition><ProceduresPage /></PageTransition>} />
+      {/* Protected App Routes */}
+      <Route 
+        element={session ? <MainLayout /> : <Navigate to="/login" replace />}
+      >
+        <Route path="/" element={<DashboardPage />} />
+        
+        {/* Clinical Hub */}
+        <Route path="/clients" element={<ClientsPage />} />
+        <Route path="/clients/:id" element={<ClientDetailPage />} />
+        <Route path="/appointments" element={<AppointmentsPage />} />
+        <Route path="/appointments/:id" element={<AppointmentDetailPage />} />
+        <Route path="/oversight" element={<ClinicalOversightPage />} />
+        
+        {/* Practice Lab */}
+        <Route path="/practice/calibrate" element={<QuickCalibratePage />} />
+        <Route path="/practice/self" element={<SelfPracticePage />} />
+        <Route path="/practice/procedures" element={<ProceduresPage />} />
 
-          {/* Knowledge Base */}
-          <Route path="/resources" element={<PageTransition><ResourcesPage /></PageTransition>} />
-          <Route path="/resources/worksheets/north-star" element={<PageTransition><NorthStarPage /></PageTransition>} />
-          <Route path="/resources/worksheets/week-3" element={<PageTransition><Week3WorksheetPage /></PageTransition>} />
-          <Route path="/resources/worksheets/fear-creativity" element={<PageTransition><FearCreativityWorksheetPage /></PageTransition>} />
-          <Route path="/resources/worksheets/inner-awareness" element={<PageTransition><InnerAwarenessWorksheetPage /></PageTransition>} />
-          
-          {/* System */}
-          <Route path="/settings" element={<PageTransition><SettingsPage /></PageTransition>} />
-          <Route path="/settings/import" element={<PageTransition><ImportPage /></PageTransition>} />
-          <Route path="/settings/debug" element={<PageTransition><DebugAppointmentPage /></PageTransition>} />
-          <Route path="/settings/demo" element={<PageTransition><DemoSessionPage /></PageTransition>} />
-        </Route>
+        {/* Knowledge Base */}
+        <Route path="/resources" element={<ResourcesPage />} />
+        <Route path="/resources/worksheets/north-star" element={<NorthStarPage />} />
+        <Route path="/resources/worksheets/week-3" element={<Week3WorksheetPage />} />
+        <Route path="/resources/worksheets/fear-creativity" element={<FearCreativityWorksheetPage />} />
+        <Route path="/resources/worksheets/inner-awareness" element={<InnerAwarenessWorksheetPage />} />
+        
+        {/* System */}
+        <Route path="/settings" element={<SettingsPage />} />
+        <Route path="/settings/import" element={<ImportPage />} />
+        <Route path="/settings/debug" element={<DebugAppointmentPage />} />
+        <Route path="/settings/demo" element={<DemoSessionPage />} />
+      </Route>
 
-        <Route path="*" element={<NotFound />} />
-      </Routes>
-    </AnimatePresence>
+      <Route path="*" element={<NotFound />} />
+    </Routes>
   );
 };
 

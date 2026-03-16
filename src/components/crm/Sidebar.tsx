@@ -65,51 +65,41 @@ const Sidebar = ({ onHide }: SidebarProps) => {
   const [clientDialogOpen, setClientDialogOpen] = useState(false);
   const [appDialogOpen, setAppDialogOpen] = useState(false);
   
-  // Debug logging for component lifecycle
-  const renderCount = useRef(0);
-  useEffect(() => {
-    renderCount.current++;
-    console.log(`[Sidebar] Render #${renderCount.current} - Path: ${location.pathname}`);
-  });
-
-  // Initial state derivation
+  // Helper to check paths
   const isOpsPath = (path: string) => path === "/" || path.startsWith("/appointments") || path.startsWith("/clients");
   const isLabPath = (path: string) => path.startsWith("/practice/calibrate") || path.startsWith("/practice/procedures") || path.startsWith("/oversight");
   const isLibraryPath = (path: string) => path.startsWith("/resources") || path.startsWith("/practice/self");
 
-  const [opsOpen, setOpsOpen] = useState(() => isOpsPath(location.pathname));
-  const [labOpen, setLabOpen] = useState(() => isLabPath(location.pathname));
-  const [libraryOpen, setLibraryOpen] = useState(() => isLibraryPath(location.pathname));
+  // Persistent state for menu groups
+  const [opsOpen, setOpsOpen] = useState(() => {
+    const saved = localStorage.getItem("sidebar_ops_open");
+    return saved !== null ? JSON.parse(saved) : isOpsPath(location.pathname);
+  });
+  const [labOpen, setLabOpen] = useState(() => {
+    const saved = localStorage.getItem("sidebar_lab_open");
+    return saved !== null ? JSON.parse(saved) : isLabPath(location.pathname);
+  });
+  const [libraryOpen, setLibraryOpen] = useState(() => {
+    const saved = localStorage.getItem("sidebar_library_open");
+    return saved !== null ? JSON.parse(saved) : isLibraryPath(location.pathname);
+  });
+
+  // Sync state to localStorage
+  useEffect(() => { localStorage.setItem("sidebar_ops_open", JSON.stringify(opsOpen)); }, [opsOpen]);
+  useEffect(() => { localStorage.setItem("sidebar_lab_open", JSON.stringify(labOpen)); }, [labOpen]);
+  useEffect(() => { localStorage.setItem("sidebar_library_open", JSON.stringify(libraryOpen)); }, [libraryOpen]);
   
   const activeSession = useActiveSession();
   const { practiceHealth } = usePracticeStats();
   const { recentClients } = useRecentClients();
   
-  // Track the last path to only auto-expand when the section actually changes
-  const lastPathRef = useRef(location.pathname);
-
+  // Auto-expand when navigating to a new section
   useEffect(() => {
     const path = location.pathname;
-    if (path === lastPathRef.current) return;
-
-    console.log(`[Sidebar] Path changed from ${lastPathRef.current} to ${path}`);
-    
-    // Only auto-expand if we move INTO a section that isn't already open
-    if (isOpsPath(path) && !opsOpen) {
-      console.log("[Sidebar] Auto-expanding Operations");
-      setOpsOpen(true);
-    }
-    if (isLabPath(path) && !labOpen) {
-      console.log("[Sidebar] Auto-expanding Clinical Lab");
-      setLabOpen(true);
-    }
-    if (isLibraryPath(path) && !libraryOpen) {
-      console.log("[Sidebar] Auto-expanding Library");
-      setLibraryOpen(true);
-    }
-
-    lastPathRef.current = path;
-  }, [location.pathname, opsOpen, labOpen, libraryOpen]);
+    if (isOpsPath(path)) setOpsOpen(true);
+    if (isLabPath(path)) setLabOpen(true);
+    if (isLibraryPath(path)) setLibraryOpen(true);
+  }, [location.pathname]);
 
   const opsItems = [
     { label: "Dashboard", icon: LayoutDashboard, path: "/", shortcut: "⌘D" },
@@ -208,10 +198,7 @@ const Sidebar = ({ onHide }: SidebarProps) => {
   const NavGroup = ({ title, icon: Icon, isOpen, onToggle, items }: any) => (
     <div className="space-y-1">
       <button
-        onClick={() => {
-          console.log(`[Sidebar] Manually toggling ${title} to ${!isOpen}`);
-          onToggle();
-        }}
+        onClick={onToggle}
         className="flex items-center justify-between w-full px-3 py-2 rounded-lg text-muted-foreground hover:text-foreground hover:bg-accent/50 transition-all group"
       >
         <div className="flex items-center gap-3">

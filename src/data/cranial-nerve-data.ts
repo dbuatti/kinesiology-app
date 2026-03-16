@@ -119,10 +119,10 @@ export const CRANIAL_NERVES: CranialNerve[] = [
     latinName: "Glossopharyngeal",
     nuclei: "Medulla",
     toneEffect: "Flexors",
-    reflexPoint: "GB21 (top of shoulder)",
+    reflexPoint: "Middle of the tongue (client's thumb/finger)",
     functions: ["Swallowing", "Taste (posterior tongue)"],
     stimulus: "Perform a swallow or hum.",
-    clinicalPearl: "Medulla nuclei control flexor tone. Works closely with the Vagus nerve.",
+    clinicalPearl: "The first cranial nerve directly related to the Medulla. Works in a tight neurological cluster with CN 10 (Vagus) and CN 11 (Accessory); dysfunction in one often crosses over to the others.",
     color: "bg-rose-500"
   },
   {

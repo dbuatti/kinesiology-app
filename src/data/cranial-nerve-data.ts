@@ -107,10 +107,10 @@ export const CRANIAL_NERVES: CranialNerve[] = [
     latinName: "Vestibulocochlear",
     nuclei: "Pons",
     toneEffect: "Extensors",
-    reflexPoint: "Finger in ear canal",
-    functions: ["Hearing", "Balance"],
-    stimulus: "Click fingers near ear or move head in various planes.",
-    clinicalPearl: "Located at the ponto-medullary junction. Primary focus for dizziness and vertigo.",
+    reflexPoint: "Edge of the ear canal (light touch)",
+    functions: ["Hearing (Cochlear)", "Balance/Head Position (Vestibular)"],
+    stimulus: "1. Test reflex point at edge of ear canal. 2. If inhibited, delineate: Cochlear (click fingers near ear) vs. Vestibular (Head Up, Down, Rotate L/R, Tilt L/R).",
+    clinicalPearl: "Arises from the pontomedullary junction. A highly powerful nerve frequently involved in head injuries, anxiety, and gut dysfunction. It is common for multiple head positions to show up during the vestibular assessment.",
     color: "bg-indigo-800"
   },
   {

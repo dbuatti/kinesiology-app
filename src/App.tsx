@@ -6,6 +6,7 @@ import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { AuthProvider, useAuth } from "./components/AuthProvider";
 import { ThemeProvider } from "./components/theme-provider";
 import { Loader2 } from "lucide-react";
+import ScrollToTop from "./components/shared/ScrollToTop";
 
 // Layouts
 import MainLayout from "./layouts/MainLayout";
@@ -105,6 +106,7 @@ const App = () => (
           <Toaster />
           <Sonner />
           <BrowserRouter>
+            <ScrollToTop />
             <AppRoutes />
           </BrowserRouter>
         </AuthProvider>

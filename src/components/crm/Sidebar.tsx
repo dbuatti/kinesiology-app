@@ -13,18 +13,12 @@ import {
   Heart, 
   TrendingUp,
   ArrowRight,
-  CalendarPlus,
   Settings,
   ShieldCheck,
   PanelLeftClose,
   Compass,
   ChevronDown,
   ChevronUp,
-  UserPlus,
-  Workflow,
-  Database,
-  Bug,
-  Sparkles,
   PlusCircle,
   Clock
 } from "lucide-react";
@@ -32,7 +26,7 @@ import { cn } from "@/lib/utils";
 import SearchBar from "./SearchBar";
 import { supabase } from "@/integrations/supabase/client";
 import { showSuccess } from "@/utils/toast";
-import { useState, useEffect, useMemo, useRef } from "react";
+import { useState, useEffect, useRef } from "react";
 import HelpModal from "./HelpModal";
 import { useRecentClients } from "@/hooks/use-recent-clients";
 import { useActiveSession } from "@/hooks/useActiveSession";

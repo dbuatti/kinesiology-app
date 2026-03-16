@@ -1,18 +1,15 @@
 "use client";
 
 import React, { useState, useEffect } from 'react';
-import { Outlet, useLocation } from 'react-router-dom';
+import { Outlet } from 'react-router-dom';
 import Sidebar from '@/components/crm/Sidebar';
 import MobileNav from '@/components/crm/MobileNav';
 import QuickActions from '@/components/crm/QuickActions';
 import AppFooter from '@/components/crm/AppFooter';
 import { Button } from '@/components/ui/button';
 import { PanelLeftOpen } from 'lucide-react';
-import { cn } from '@/lib/utils';
-import { AnimatePresence, motion } from 'framer-motion';
 
 const MainLayout = () => {
-  const location = useLocation();
   const [isSidebarVisible, setIsSidebarVisible] = useState(() => {
     const saved = localStorage.getItem("antigravity_sidebar_visible");
     return saved !== null ? JSON.parse(saved) : true;
@@ -42,17 +39,7 @@ const MainLayout = () => {
         )}
         
         <div className="flex-1 p-0">
-          <AnimatePresence mode="wait">
-            <motion.div
-              key={location.pathname}
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -10 }}
-              transition={{ duration: 0.3, ease: "easeOut" }}
-            >
-              <Outlet />
-            </motion.div>
-          </AnimatePresence>
+          <Outlet />
         </div>
         
         <AppFooter />

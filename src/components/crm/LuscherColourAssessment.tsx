@@ -8,13 +8,12 @@ import {
 } from "@/components/ui/collapsible";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
-import { ChevronDown, Palette, Info, RotateCcw, Flower, Zap } from "lucide-react";
+import { ChevronDown, Palette, Info, RotateCcw, Flower, Zap, BookOpen, Sparkles } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Badge } from "@/components/ui/badge";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { LUSCHER_COLORS, LUSCHER_COMBINATIONS, LuscherCombinationResult } from "@/data/luscher-data";
 import { showSuccess, showError } from "@/utils/toast";
-import { supabase } from "@/integrations/supabase/client";
 
 interface LuscherColourAssessmentProps {
   appointmentId: string;
@@ -241,25 +240,47 @@ const LuscherColourAssessment = ({
 
             {/* Results Display */}
             {result && (
-              <Card className="border-2 border-violet-500 shadow-lg rounded-2xl bg-white">
-                <CardHeader className="bg-violet-600 rounded-t-2xl p-4">
+              <Card className="border-2 border-violet-500 shadow-lg rounded-2xl bg-white overflow-hidden">
+                <CardHeader className="bg-violet-600 p-4">
                   <CardTitle className="text-2xl font-bold text-white flex items-center gap-3">
                     <Flower size={24} /> {result.bachFlower}
                   </CardTitle>
                   <CardDescription className="text-violet-200">Recommended Bach Flower Essence</CardDescription>
                 </CardHeader>
-                <CardContent className="p-6 space-y-4">
-                  <div className="space-y-2">
-                    <h4 className="text-sm font-bold text-slate-400 uppercase tracking-widest flex items-center gap-2">
-                      <Zap size={16} className="text-violet-500" /> Qualities
-                    </h4>
-                    <p className="text-lg font-semibold text-slate-800 leading-relaxed">{result.qualities}</p>
+                <CardContent className="p-6 space-y-6">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div className="space-y-2">
+                      <h4 className="text-sm font-bold text-slate-400 uppercase tracking-widest flex items-center gap-2">
+                        <Zap size={16} className="text-violet-500" /> Qualities
+                      </h4>
+                      <p className="text-lg font-semibold text-slate-800 leading-relaxed">{result.qualities}</p>
+                    </div>
+                    <div className="space-y-2">
+                      <h4 className="text-sm font-bold text-slate-400 uppercase tracking-widest flex items-center gap-2">
+                        <Palette size={16} className="text-violet-500" /> Pattern
+                      </h4>
+                      <p className="text-sm text-slate-700 leading-relaxed">{result.pattern}</p>
+                    </div>
                   </div>
-                  <div className="space-y-2 pt-4 border-t border-slate-100">
-                    <h4 className="text-sm font-bold text-slate-400 uppercase tracking-widest flex items-center gap-2">
-                      <Palette size={16} className="text-violet-500" /> Pattern
-                    </h4>
-                    <p className="text-sm text-slate-700 leading-relaxed">{result.pattern}</p>
+
+                  <div className="pt-6 border-t border-slate-100 space-y-6">
+                    <div className="p-5 bg-violet-50 rounded-2xl border border-violet-100">
+                      <h4 className="text-sm font-bold text-violet-600 uppercase tracking-widest flex items-center gap-2 mb-2">
+                        <BookOpen size={16} /> The Lesson
+                      </h4>
+                      <p className="text-base font-medium text-slate-800 leading-relaxed">
+                        {result.lesson}
+                      </p>
+                    </div>
+
+                    <div className="p-5 bg-emerald-50 rounded-2xl border border-emerald-100">
+                      <h4 className="text-sm font-bold text-emerald-600 uppercase tracking-widest flex items-center gap-2 mb-2">
+                        <Sparkles size={16} /> Affirmation
+                      </h4>
+                      <p className="text-lg font-bold text-emerald-900 italic leading-relaxed">
+                        "{result.affirmation}"
+                      </p>
+                    </div>
                   </div>
                 </CardContent>
               </Card>

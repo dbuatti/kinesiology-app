@@ -5,7 +5,7 @@ import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { 
-  Brain, Zap, Activity, Shield, Dumbbell, AlertTriangle, ChevronDown, Check, X, Plus, Search, RotateCcw, Layers, ImageIcon, Baby, PlayCircle, ShieldAlert, ListChecks, Info, MousePointer2, Maximize2, History, Trash2
+  Brain, Zap, Activity, Shield, Dumbbell, AlertTriangle, ChevronDown, Check, X, Plus, Search, RotateCcw, Layers, ImageIcon, Baby, PlayCircle, ShieldAlert, ListChecks, Info, MousePointer2, Maximize2, History, Trash2, Eye, EyeOff
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { BRAIN_REFLEX_POINTS, BrainReflexPoint } from '@/data/brain-reflex-data';
@@ -48,31 +48,39 @@ const AssessmentItem = ({ name, category, status, previousStatus, onSetStatus, o
     <div 
       onClick={onClick}
       className={cn(
-        "group relative p-4 rounded-2xl border-2 transition-all cursor-pointer overflow-hidden",
-        status === 'Clear' ? "bg-emerald-50 border-emerald-200" :
-        status === 'Inhibited' ? "bg-rose-50 border-rose-200" :
-        "bg-white border-slate-100 hover:border-indigo-100 hover:shadow-md"
+        "group relative p-4 rounded-2xl border-2 transition-all cursor-pointer overflow-hidden h-full flex flex-col",
+        status === 'Clear' ? "bg-emerald-50/30 border-emerald-100 hover:border-emerald-200" :
+        status === 'Inhibited' ? "bg-rose-50 border-rose-300 shadow-md ring-1 ring-rose-200 animate-in fade-in zoom-in-95" :
+        "bg-white border-slate-100 hover:border-indigo-200 hover:shadow-md"
       )}
     >
+      {/* Quick Calibrate Action */}
       <button
         onClick={(e) => {
           e.stopPropagation();
           onQuickCalibrate();
         }}
-        className="absolute top-2 right-2 w-6 h-6 rounded-full bg-amber-400 text-white flex items-center justify-center shadow-sm hover:bg-amber-500 hover:scale-110 transition-all z-30"
+        className={cn(
+          "absolute top-2 right-2 w-7 h-7 rounded-full flex items-center justify-center shadow-lg transition-all z-30",
+          status === 'Inhibited' ? "bg-amber-500 text-white scale-110" : "bg-slate-100 text-slate-400 hover:bg-amber-400 hover:text-white"
+        )}
         title="Quick Calibrate"
       >
-        <Zap size={12} className="fill-current" />
+        <Zap size={14} className={cn(status === 'Inhibited' && "fill-current")} />
       </button>
 
-      <div className="flex items-center justify-between mb-2 pr-6">
-        <div className="flex flex-col">
-          <p className="font-bold text-sm text-slate-800">{name}</p>
+      <div className="flex items-start justify-between mb-3 pr-6">
+        <div className="flex flex-col min-w-0">
+          <p className={cn(
+            "font-black text-sm leading-tight truncate",
+            status === 'Inhibited' ? "text-rose-900" : "text-slate-800"
+          )}>{name}</p>
+          
           {previousStatus && !status && (
-            <div className="flex items-center gap-1 mt-0.5">
-              <History size={8} className="text-slate-400" />
+            <div className="flex items-center gap-1 mt-1">
+              <History size={10} className="text-slate-400" />
               <span className={cn(
-                "text-[7px] font-black uppercase tracking-widest",
+                "text-[8px] font-black uppercase tracking-widest",
                 previousStatus === 'Inhibited' ? "text-rose-400" : "text-emerald-400"
               )}>
                 Last: {previousStatus}
@@ -80,84 +88,92 @@ const AssessmentItem = ({ name, category, status, previousStatus, onSetStatus, o
             </div>
           )}
         </div>
-        {status && (
-          <Badge className={cn(
-            "border-none text-white font-black text-[9px] uppercase tracking-widest",
-            status === 'Clear' ? "bg-emerald-500" : "bg-rose-500"
-          )}>
-            {status}
-          </Badge>
-        )}
       </div>
 
       {(stimulus || inhibitionPattern) && (
-        <div className="space-y-2 mb-2">
+        <div className="space-y-2 mb-3 flex-1">
           {stimulus && (
             <div className="flex items-start gap-1.5">
-              <PlayCircle size={10} className="text-indigo-400 shrink-0 mt-0.5" />
-              <p className="text-[9px] text-slate-500 leading-tight font-medium line-clamp-1">{stimulus}</p>
+              <PlayCircle size={12} className="text-indigo-400 shrink-0 mt-0.5" />
+              <p className="text-[10px] text-slate-500 leading-tight font-medium line-clamp-2">{stimulus}</p>
             </div>
           )}
           {inhibitionPattern && (
             <div className="flex items-start gap-1.5">
-              <ShieldAlert size={10} className="text-rose-400 shrink-0 mt-0.5" />
-              <p className="text-[9px] text-rose-600/70 leading-tight font-bold line-clamp-1">{inhibitionPattern}</p>
+              <ShieldAlert size={12} className="text-rose-400 shrink-0 mt-0.5" />
+              <p className="text-[10px] text-rose-600/70 leading-tight font-bold line-clamp-2">{inhibitionPattern}</p>
             </div>
           )}
         </div>
       )}
 
       {showImage && imageUrl && (
-        <div className="mt-4 aspect-video rounded-lg overflow-hidden border border-slate-200 bg-slate-100">
+        <div className="mt-2 mb-3 aspect-video rounded-xl overflow-hidden border border-slate-200 bg-slate-100 shadow-inner">
           <img src={imageUrl} alt={name} className="w-full h-full object-cover" />
         </div>
       )}
 
-      <div className="mt-2 flex items-center gap-1 text-[8px] font-black text-slate-300 uppercase tracking-widest">
-        <MousePointer2 size={8} /> Click for info
+      <div className="mt-auto flex items-center justify-between">
+        <div className="flex items-center gap-1 text-[8px] font-black text-slate-300 uppercase tracking-widest group-hover:text-indigo-400 transition-colors">
+          <Info size={10} /> Clinical Info
+        </div>
+        {status && (
+          <Badge className={cn(
+            "border-none text-white font-black text-[8px] uppercase tracking-widest px-2 py-0.5 rounded-md",
+            status === 'Clear' ? "bg-emerald-500" : "bg-rose-600"
+          )}>
+            {status}
+          </Badge>
+        )}
       </div>
 
-      <div className="absolute inset-0 bg-slate-900/10 backdrop-blur-[1px] opacity-0 group-hover:opacity-100 transition-all duration-300 flex flex-col items-center justify-center gap-3">
+      {/* Hover Overlay Actions */}
+      <div className="absolute inset-0 bg-slate-900/5 backdrop-blur-[1px] opacity-0 group-hover:opacity-100 transition-all duration-300 flex flex-col items-center justify-center gap-3">
         <div className="flex flex-wrap items-center justify-center gap-2 px-2">
           <Button 
             size="sm" 
-            className="bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl h-9 shadow-lg font-black text-[10px] uppercase tracking-widest" 
+            className="bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl h-10 px-4 shadow-xl font-black text-[10px] uppercase tracking-widest border-none" 
             onClick={(e) => { e.stopPropagation(); onSetStatus('Clear'); }}
           >
-            <Check size={14} className="mr-1" /> Clear
+            <Check size={16} className="mr-1.5" /> Clear
           </Button>
           
           {isBilateralMuscle ? (
-            <>
+            <div className="flex gap-1">
               <Button 
                 size="sm" 
-                className="bg-rose-600 hover:bg-rose-700 text-white rounded-xl h-9 shadow-lg font-black text-[10px] uppercase tracking-widest" 
+                className="bg-rose-600 hover:bg-rose-700 text-white rounded-xl h-10 px-3 shadow-xl font-black text-[10px] uppercase tracking-widest border-none" 
                 onClick={(e) => { e.stopPropagation(); onSetStatus('Inhibited', 'L'); }}
               >
                 L Inhib
               </Button>
               <Button 
                 size="sm" 
-                className="bg-rose-600 hover:bg-rose-700 text-white rounded-xl h-9 shadow-lg font-black text-[10px] uppercase tracking-widest" 
+                className="bg-rose-600 hover:bg-rose-700 text-white rounded-xl h-10 px-3 shadow-xl font-black text-[10px] uppercase tracking-widest border-none" 
                 onClick={(e) => { e.stopPropagation(); onSetStatus('Inhibited', 'R'); }}
               >
                 R Inhib
               </Button>
-            </>
+            </div>
           ) : (
             <Button 
               size="sm" 
-              className="bg-rose-600 hover:bg-rose-700 text-white rounded-xl h-9 shadow-lg font-black text-[10px] uppercase tracking-widest" 
+              className="bg-rose-600 hover:bg-rose-700 text-white rounded-xl h-10 px-4 shadow-xl font-black text-[10px] uppercase tracking-widest border-none" 
               onClick={(e) => { e.stopPropagation(); onSetStatus('Inhibited'); }}
             >
-              <X size={14} className="mr-1" /> Inhibited
+              <X size={16} className="mr-1.5" /> Inhibited
             </Button>
           )}
         </div>
-        <div className="flex items-center gap-1.5 text-[9px] font-black text-slate-900 bg-white/90 px-3 py-1 rounded-full shadow-sm">
-          <Maximize2 size={10} /> View Clinical Info
+        <div className="flex items-center gap-1.5 text-[9px] font-black text-slate-900 bg-white/95 px-4 py-1.5 rounded-full shadow-lg border border-slate-100">
+          <Maximize2 size={12} className="text-indigo-500" /> View Details
         </div>
       </div>
+      
+      {/* Inhibited Pulse Effect */}
+      {status === 'Inhibited' && (
+        <div className="absolute bottom-0 left-0 w-full h-1 bg-rose-500 animate-pulse" />
+      )}
     </div>
   );
 };
@@ -180,7 +196,7 @@ const AssessmentSection = ({ title, description, icon: Icon, children, count, in
         <CollapsibleTrigger asChild>
           <CardHeader className="p-8 cursor-pointer hover:bg-slate-50/50 transition-colors">
             <div className="flex items-center justify-between">
-              <div className="flex items-center gap-4">
+              <div className="flex items-center gap-5">
                 <div className="w-14 h-14 rounded-2xl bg-indigo-100 text-indigo-600 flex items-center justify-center shadow-sm">
                   <Icon size={28} />
                 </div>
@@ -192,8 +208,13 @@ const AssessmentSection = ({ title, description, icon: Icon, children, count, in
               <div className="flex items-center gap-4">
                 {count > 0 && (
                   <div className="flex gap-2">
-                    <Badge className="bg-emerald-50 text-emerald-600 border-emerald-100 font-bold">{count - inhibitedCount} Clear</Badge>
-                    <Badge className="bg-rose-50 text-rose-600 border-rose-100 font-bold">{inhibitedCount} Inhibited</Badge>
+                    <Badge className="bg-emerald-50 text-emerald-600 border-emerald-100 font-black text-[10px] uppercase tracking-widest px-3 py-1">{count - inhibitedCount} Clear</Badge>
+                    <Badge className={cn(
+                      "border-none font-black text-[10px] uppercase tracking-widest px-3 py-1",
+                      inhibitedCount > 0 ? "bg-rose-600 text-white shadow-md" : "bg-slate-100 text-slate-400"
+                    )}>
+                      {inhibitedCount} Inhibited
+                    </Badge>
                   </div>
                 )}
                 <div className="w-10 h-10 rounded-full bg-slate-100 flex items-center justify-center text-slate-400">
@@ -206,7 +227,7 @@ const AssessmentSection = ({ title, description, icon: Icon, children, count, in
         <CollapsibleContent>
           <CardContent className="p-8 pt-0 space-y-8">
             {protocol && (
-              <div className="p-6 bg-indigo-50 rounded-3xl border border-indigo-100">
+              <div className="p-6 bg-indigo-50/50 rounded-3xl border border-indigo-100">
                 {protocol}
               </div>
             )}
@@ -234,6 +255,7 @@ const PathwayAssessment = ({ initialValue, previousValue, onSave, onJumpToCalibr
   const [results, setResults] = useState<AssessmentResults>({});
   const [muscleSearch, setMuscleSearch] = useState("");
   const [showImages, setShowImages] = useState(true);
+  const [showOnlyInhibited, setShowOnlyInhibited] = useState(false);
   const [customizations, setCustomizations] = useState<Record<string, ReflexImageData>>({});
   const [loadingImages, setLoadingImages] = useState(true);
 
@@ -354,40 +376,69 @@ const PathwayAssessment = ({ initialValue, previousValue, onSave, onJumpToCalibr
   const filteredMuscleGroups = useMemo(() => {
     const filtered: Record<string, string[]> = {};
     Object.entries(MUSCLE_GROUPS).forEach(([group, muscles]) => {
-      const matchingMuscles = muscles.filter(m => m.toLowerCase().includes(muscleSearch.toLowerCase()));
+      const matchingMuscles = muscles.filter(m => {
+        const matchesSearch = m.toLowerCase().includes(muscleSearch.toLowerCase());
+        if (!matchesSearch) return false;
+        
+        if (showOnlyInhibited) {
+          return results.muscles?.[m] === 'Inhibited' || 
+                 results.muscles?.[`${m} (L)`] === 'Inhibited' || 
+                 results.muscles?.[`${m} (R)`] === 'Inhibited';
+        }
+        return true;
+      });
+      
       if (matchingMuscles.length > 0) {
         filtered[group] = matchingMuscles;
       }
     });
     return filtered;
-  }, [muscleSearch]);
+  }, [muscleSearch, showOnlyInhibited, results.muscles]);
 
   const totalFindings = Object.values(results).reduce((acc, curr) => acc + Object.keys(curr).length, 0);
 
   return (
     <div className="space-y-8">
-      <div className="flex items-center justify-between p-3 bg-slate-100 rounded-2xl border border-slate-200">
-        <div className="flex items-center gap-2">
-          {totalFindings > 0 && (
-            <Button 
-              variant="ghost" 
-              size="sm" 
-              onClick={handleClearAll}
-              className="h-8 text-[10px] font-black uppercase tracking-widest text-rose-600 hover:bg-rose-50 rounded-xl"
-            >
-              <Trash2 size={14} className="mr-1.5" /> Clear All Findings
-            </Button>
-          )}
+      {/* Global Controls */}
+      <div className="flex flex-wrap items-center justify-between gap-4 p-4 bg-slate-100 rounded-[2rem] border border-slate-200 shadow-inner">
+        <div className="flex items-center gap-4">
+          <div className="flex items-center gap-2 px-4 border-r border-slate-200">
+            <Layers size={18} className="text-indigo-600" />
+            <span className="text-[10px] font-black uppercase tracking-widest text-slate-500">Session View</span>
+          </div>
+          
+          <div className="flex items-center gap-6">
+            <div className="flex items-center gap-3">
+              <Switch id="focus-mode" checked={showOnlyInhibited} onCheckedChange={setShowOnlyInhibited} className="data-[state=checked]:bg-rose-600" />
+              <Label htmlFor="focus-mode" className="text-xs font-black text-slate-600 uppercase tracking-wider cursor-pointer flex items-center gap-2">
+                {showOnlyInhibited ? <EyeOff size={14} className="text-rose-500" /> : <Eye size={14} className="text-indigo-500" />}
+                Show Only Inhibited
+              </Label>
+            </div>
+
+            <div className="flex items-center gap-3">
+              <Switch id="show-images" checked={showImages} onCheckedChange={setShowImages} disabled={loadingImages} />
+              <Label htmlFor="show-images" className="text-xs font-black text-slate-600 uppercase tracking-wider cursor-pointer flex items-center gap-2">
+                <ImageIcon size={14} className="text-indigo-500" />
+                Reflex Previews
+              </Label>
+            </div>
+          </div>
         </div>
-        <div className="flex items-center gap-3">
-          <ImageIcon size={16} className="text-slate-500" />
-          <Label htmlFor="show-images" className="text-xs font-bold text-slate-600 uppercase tracking-wider">
-            Preview Reflex Images
-          </Label>
-          <Switch id="show-images" checked={showImages} onCheckedChange={setShowImages} disabled={loadingImages} />
-        </div>
+
+        {totalFindings > 0 && (
+          <Button 
+            variant="ghost" 
+            size="sm" 
+            onClick={handleClearAll}
+            className="h-9 text-[10px] font-black uppercase tracking-widest text-rose-600 hover:bg-rose-50 rounded-xl border border-rose-100"
+          >
+            <Trash2 size={14} className="mr-2" /> Clear All Findings
+          </Button>
+        )}
       </div>
 
+      {/* Primitive Reflexes */}
       <AssessmentSection 
         title="Primitive Reflex Assessment" 
         description="Check foundational movement patterns." 
@@ -416,7 +467,7 @@ const PathwayAssessment = ({ initialValue, previousValue, onSave, onJumpToCalibr
         }
       >
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-          {PRIMITIVE_REFLEXES.map(reflex => (
+          {PRIMITIVE_REFLEXES.filter(r => !showOnlyInhibited || results.primitiveReflexes?.[r.name] === 'Inhibited').map(reflex => (
             <AssessmentItem 
               key={reflex.id}
               name={reflex.name}
@@ -430,12 +481,18 @@ const PathwayAssessment = ({ initialValue, previousValue, onSave, onJumpToCalibr
               inhibitionPattern={reflex.inhibitionPattern}
             />
           ))}
+          {showOnlyInhibited && getCounts('primitiveReflexes').inhibitedCount === 0 && (
+            <div className="col-span-full py-12 text-center bg-slate-50 rounded-3xl border-2 border-dashed border-slate-200">
+              <p className="text-sm font-bold text-slate-400 uppercase tracking-widest">No inhibited reflexes found</p>
+            </div>
+          )}
         </div>
       </AssessmentSection>
 
+      {/* Cranial Nerves */}
       <AssessmentSection title="Cranial Nerve Assessment" description="Test direct pathways from the brainstem." icon={Activity} {...getCounts('cranialNerves')}>
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-          {cranialNerves.map(nerve => {
+          {cranialNerves.filter(n => !showOnlyInhibited || results.cranialNerves?.[n.name] === 'Inhibited').map(nerve => {
             const imageUrl = customizations[nerve.id]?.secondaryUrl || customizations[nerve.id]?.primaryUrl;
             return (
               <AssessmentItem 
@@ -452,12 +509,18 @@ const PathwayAssessment = ({ initialValue, previousValue, onSave, onJumpToCalibr
               />
             );
           })}
+          {showOnlyInhibited && getCounts('cranialNerves').inhibitedCount === 0 && (
+            <div className="col-span-full py-12 text-center bg-slate-50 rounded-3xl border-2 border-dashed border-slate-200">
+              <p className="text-sm font-bold text-slate-400 uppercase tracking-widest">No inhibited nerves found</p>
+            </div>
+          )}
         </div>
       </AssessmentSection>
 
+      {/* Brain Zones */}
       <AssessmentSection title="Brain Zone Assessment" description="Challenge specific cortical and subcortical regions." icon={Brain} {...getCounts('brainZones')}>
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-          {brainZones.map(zone => {
+          {brainZones.filter(z => !showOnlyInhibited || results.brainZones?.[z.name] === 'Inhibited').map(zone => {
             const imageUrl = customizations[zone.id]?.secondaryUrl || customizations[zone.id]?.primaryUrl;
             return (
               <AssessmentItem 
@@ -474,24 +537,34 @@ const PathwayAssessment = ({ initialValue, previousValue, onSave, onJumpToCalibr
               />
             );
           })}
+          {showOnlyInhibited && getCounts('brainZones').inhibitedCount === 0 && (
+            <div className="col-span-full py-12 text-center bg-slate-50 rounded-3xl border-2 border-dashed border-slate-200">
+              <p className="text-sm font-bold text-slate-400 uppercase tracking-widest">No inhibited zones found</p>
+            </div>
+          )}
         </div>
       </AssessmentSection>
 
+      {/* Muscles */}
       <AssessmentSection title="Muscle Assessment" description="Log individual muscle facilitation/inhibition." icon={Dumbbell} {...getCounts('muscles')}>
-        <div className="space-y-6">
-          <div className="relative">
+        <div className="space-y-8">
+          <div className="relative max-w-md">
             <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
             <Input 
               placeholder="Search muscles..." 
-              className="pl-12 bg-slate-100 border-slate-200 h-12 rounded-2xl shadow-inner"
+              className="pl-12 bg-slate-50 border-slate-200 h-12 rounded-2xl shadow-inner font-medium"
               value={muscleSearch}
               onChange={(e) => setMuscleSearch(e.target.value)}
             />
           </div>
+          
           {Object.entries(filteredMuscleGroups).map(([group, muscles]) => (
-            <div key={group}>
-              <h4 className="text-sm font-black text-slate-400 uppercase tracking-widest mb-3">{group}</h4>
-              <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+            <div key={group} className="space-y-4">
+              <div className="flex items-center gap-3 px-2">
+                <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-[0.3em]">{group}</h4>
+                <div className="flex-1 h-px bg-slate-100" />
+              </div>
+              <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
                 {muscles.map(muscle => (
                   <AssessmentItem 
                     key={muscle}
@@ -507,6 +580,13 @@ const PathwayAssessment = ({ initialValue, previousValue, onSave, onJumpToCalibr
               </div>
             </div>
           ))}
+          
+          {Object.keys(filteredMuscleGroups).length === 0 && (
+            <div className="py-20 text-center bg-slate-50 rounded-[2.5rem] border-2 border-dashed border-slate-200">
+              <Dumbbell size={40} className="mx-auto text-slate-200 mb-4" />
+              <p className="text-sm font-bold text-slate-400 uppercase tracking-widest">No muscles match your search or focus</p>
+            </div>
+          )}
         </div>
       </AssessmentSection>
 

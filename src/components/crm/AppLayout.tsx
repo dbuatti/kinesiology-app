@@ -12,9 +12,9 @@ interface AppLayoutProps {
 const AppLayout = ({ children, hasFixedHeader = false, fullWidth = false }: AppLayoutProps) => {
   return (
     <div className={cn(
-      fullWidth ? "p-6 max-w-none mx-auto space-y-6" : "p-3 md:p-6 max-w-full mx-auto space-y-6",
-      // If SessionTimer is active, add top padding to prevent content overlap
-      hasFixedHeader ? "pt-[80px]" : "pt-3 md:pt-6"
+      "w-full min-h-screen bg-background transition-all duration-500",
+      fullWidth ? "px-6 py-8" : "max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8",
+      hasFixedHeader ? "pt-24" : "pt-8"
     )}>
       {children}
     </div>

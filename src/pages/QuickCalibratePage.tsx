@@ -2,7 +2,7 @@
 
 import React from "react";
 import AppLayout from "@/components/crm/AppLayout";
-import Breadcrumbs from "@/components/crm/Breadcrumbs";
+import Breadcrumbs from "@/components/shared/Breadcrumbs";
 import PathwayLogicWizard from "@/components/crm/PathwayLogicWizard";
 import { Zap, ShieldCheck, Info } from "lucide-react";
 import { Alert, AlertDescription } from "@/components/ui/alert";

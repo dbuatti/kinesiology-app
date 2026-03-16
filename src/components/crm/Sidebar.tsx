@@ -25,7 +25,8 @@ import {
   Database,
   Bug,
   Sparkles,
-  PlusCircle
+  PlusCircle,
+  Clock
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import SearchBar from "./SearchBar";
@@ -346,7 +347,7 @@ const Sidebar = ({ onHide }: SidebarProps) => {
       <HelpModal open={helpOpen} onOpenChange={setHelpOpen} />
       
       <Dialog open={clientDialogOpen} onOpenChange={setClientDialogOpen}>
-        <DialogContent className="sm:max-w-[550px] rounded-[2.5rem] p-8">
+        <DialogContent className="sm:max-w-[550px] rounded-[2rem] p-8">
           <DialogHeader className="mb-4">
             <DialogTitle className="text-2xl font-black tracking-tight">Add New Client</DialogTitle>
           </DialogHeader>

@@ -12,7 +12,7 @@ import {
 import { format, subDays } from "date-fns";
 import { showSuccess } from "@/utils/toast";
 import { cn } from "@/lib/utils";
-import EditableField from "@/components/crm/EditableField";
+import EditableField from "@/components/shared/EditableField";
 import SessionTimer from "@/components/crm/SessionTimer";
 import AppLayout from "@/components/crm/AppLayout";
 import SessionContentSwitcher from "@/components/crm/SessionContentSwitcher";
@@ -31,7 +31,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import Breadcrumbs from "@/components/crm/Breadcrumbs";
+import Breadcrumbs from "@/components/shared/Breadcrumbs";
 import { Button } from "@/components/ui/button";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { generateSessionSummary } from "@/utils/summary-generator";

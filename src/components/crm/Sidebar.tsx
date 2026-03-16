@@ -32,7 +32,7 @@ import { cn } from "@/lib/utils";
 import SearchBar from "./SearchBar";
 import { supabase } from "@/integrations/supabase/client";
 import { showSuccess } from "@/utils/toast";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import HelpModal from "./HelpModal";
 import { useRecentClients } from "@/hooks/use-recent-clients";
 import { useActiveSession } from "@/hooks/useActiveSession";
@@ -65,14 +65,40 @@ const Sidebar = ({ onHide }: SidebarProps) => {
   const [clientDialogOpen, setClientDialogOpen] = useState(false);
   const [appDialogOpen, setAppDialogOpen] = useState(false);
   
-  const [opsOpen, setOpsOpen] = useState(true);
-  const [labOpen, setLabOpen] = useState(true);
-  const [libraryOpen, setLibraryOpen] = useState(false);
+  // Derive initial open states from current path to prevent flashing/collapsing on load
+  const [opsOpen, setOpsOpen] = useState(() => 
+    location.pathname === "/" || 
+    location.pathname.startsWith("/appointments") || 
+    location.pathname.startsWith("/clients")
+  );
+  const [labOpen, setLabOpen] = useState(() => 
+    location.pathname.startsWith("/practice/calibrate") || 
+    location.pathname.startsWith("/practice/procedures") || 
+    location.pathname.startsWith("/oversight")
+  );
+  const [libraryOpen, setLibraryOpen] = useState(() => 
+    location.pathname.startsWith("/resources") || 
+    location.pathname.startsWith("/practice/self")
+  );
   
   const activeSession = useActiveSession();
   const { practiceHealth } = usePracticeStats();
   const { recentClients } = useRecentClients();
   
+  // Automatically expand the correct section when the path changes
+  useEffect(() => {
+    const path = location.pathname;
+    if (path === "/" || path.startsWith("/appointments") || path.startsWith("/clients")) {
+      setOpsOpen(true);
+    }
+    if (path.startsWith("/practice/calibrate") || path.startsWith("/practice/procedures") || path.startsWith("/oversight")) {
+      setLabOpen(true);
+    }
+    if (path.startsWith("/resources") || path.startsWith("/practice/self")) {
+      setLibraryOpen(true);
+    }
+  }, [location.pathname]);
+
   const opsItems = [
     { label: "Dashboard", icon: LayoutDashboard, path: "/", shortcut: "⌘D" },
     { label: "Appointments", icon: Calendar, path: "/appointments", shortcut: "⌘2" },

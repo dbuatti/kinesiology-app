@@ -125,3 +125,24 @@ export const EYE_POSITIONS = [
     prompt: 'Visualize the scenario you are imagining or projecting.'
   },
 ];
+
+export const SIGNS_OF_SHIFT = [
+  "Yawning", "Sighing", "Swallowing", "Gurgling", "Salivation", "Tearing", "Deep Breath"
+];
+
+export const FINGER_POLARITIES = {
+  Left: [
+    { name: 'Thumb', type: 'Neutral' },
+    { name: 'Index', type: 'Energy OUT (-)' },
+    { name: 'Middle', type: 'Energy IN (+)' },
+    { name: 'Ring', type: 'Energy OUT (-)' },
+    { name: 'Pinky', type: 'Energy IN (+)' },
+  ],
+  Right: [
+    { name: 'Thumb', type: 'Neutral' },
+    { name: 'Index', type: 'Energy IN (+)' },
+    { name: 'Middle', type: 'Energy OUT (-)' },
+    { name: 'Ring', type: 'Energy IN (+)' },
+    { name: 'Pinky', type: 'Energy OUT (-)' },
+  ]
+};

@@ -19,17 +19,20 @@ import {
   Brain,
   Eye,
   Activity,
-  Hand
+  Hand,
+  ShieldCheck,
+  Volume2
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Badge } from '@/components/ui/badge';
-import { PRIMARY_EMOTIONS, EYE_POSITIONS } from '@/data/emotion-data';
+import { PRIMARY_EMOTIONS, EYE_POSITIONS, SIGNS_OF_SHIFT } from '@/data/emotion-data';
 import { Button } from '@/components/ui/button';
 import CalibrationTimer from './CalibrationTimer';
 import PulsePointReference from './PulsePointReference';
 
 type Step = 
   | 'INITIAL_TL' 
+  | 'PERMISSION_CHECK'
   | 'TIMELINE_SELECT' 
   | 'TIMELINE_AGE'
   | 'EMOTION_SELECT' 
@@ -37,6 +40,7 @@ type Step =
   | 'POLARITY_SELECT' 
   | 'EYE_POSITION' 
   | 'CORRECTION' 
+  | 'POSITIVE_UPLOAD'
   | 'REASSESS';
 
 interface EmotionalIntegrationProcessProps {
@@ -52,12 +56,13 @@ const EmotionalIntegrationProcess = ({ onSave, onInhibited, onCancel }: Emotiona
   const [timeline, setTimeline] = useState<'Current' | 'Historic' | null>(null);
   const [age, setAge] = useState('');
   const [months, setMonths] = useState('');
-  const [context, setContext] = useState('');
+  const [observedShifts, setObservedShifts] = useState<string[]>([]);
   
   const [selectedEmotion, setSelectedEmotion] = useState<any>(null);
   const [selectedOrgan, setSelectedOrgan] = useState('');
   const [polarity, setPolarity] = useState<'Energy IN' | 'Energy OUT' | null>(null);
   const [selectedEyePos, setSelectedEyePos] = useState<any>(null);
+  const [positiveState, setPositiveState] = useState('');
 
   const goToStep = (next: Step) => {
     setHistory([...history, step]);
@@ -74,9 +79,18 @@ const EmotionalIntegrationProcess = ({ onSave, onInhibited, onCancel }: Emotiona
     }
   };
 
+  const toggleShift = (shift: string) => {
+    setObservedShifts(prev => 
+      prev.includes(shift) ? prev.filter(s => s !== shift) : [...prev, shift]
+    );
+  };
+
   const handleFinish = () => {
     const timelineDetail = timeline === 'Historic' ? `Age ${age}${months ? ` (${months}m)` : ''}` : 'Current';
-    const summary = `Emotional Integration: ${selectedEmotion.label} (${selectedOrgan}, ${polarity}) | Timeline: ${timelineDetail} | Eye Position: ${selectedEyePos.label} (${selectedEyePos.pos})`;
+    const shiftsDetail = observedShifts.length > 0 ? ` | Shifts: ${observedShifts.join(', ')}` : '';
+    const positiveDetail = positiveState ? ` | Positive Upload: ${positiveState}` : '';
+    
+    const summary = `Emotional Integration: ${selectedEmotion.label} (${selectedOrgan}, ${polarity}) | Timeline: ${timelineDetail} | Eye Position: ${selectedEyePos.label} (${selectedEyePos.pos})${shiftsDetail}${positiveDetail}`;
     onSave(summary);
   };
 
@@ -113,8 +127,37 @@ const EmotionalIntegrationProcess = ({ onSave, onInhibited, onCancel }: Emotiona
           </div>
           <div className="flex gap-3">
             <Button variant="ghost" onClick={onCancel} className="flex-1 h-12 rounded-xl">Cancel</Button>
-            <Button onClick={() => goToStep('TIMELINE_SELECT')} className="flex-[2] h-12 rounded-xl bg-rose-600 hover:bg-rose-700 font-bold shadow-lg shadow-rose-100">
+            <Button onClick={() => goToStep('PERMISSION_CHECK')} className="flex-[2] h-12 rounded-xl bg-rose-600 hover:bg-rose-700 font-bold shadow-lg shadow-rose-100">
               Indicator Change <ChevronRight size={18} className="ml-2" />
+            </Button>
+          </div>
+        </div>
+      )}
+
+      {step === 'PERMISSION_CHECK' && (
+        <div className="space-y-6">
+          <div className="bg-indigo-900 text-white p-8 rounded-[2.5rem] shadow-2xl text-center space-y-8 relative overflow-hidden">
+            <div className="absolute top-0 right-0 p-8 opacity-10"><ShieldCheck size={150} /></div>
+            <div className="relative z-10 space-y-4">
+              <div className="w-20 h-20 rounded-full bg-white/10 backdrop-blur-md flex items-center justify-center mx-auto border border-white/20">
+                <ShieldCheck size={40} className="text-indigo-300" />
+              </div>
+              <h3 className="text-3xl font-black tracking-tight">2. Permission to Correct</h3>
+              <p className="text-indigo-200 text-lg font-medium max-w-md mx-auto">
+                "This can be quite big, but it's quite quick and very powerful. Do we have permission to correct this?"
+              </p>
+            </div>
+            <div className="p-6 bg-white/5 rounded-3xl border border-white/10 relative z-10">
+              <p className="text-sm font-bold text-indigo-300 uppercase tracking-widest mb-2">Clinical Safety</p>
+              <p className="text-xs text-slate-400 leading-relaxed">
+                Always check for permission when working with deep emotional layers. If denied, perform <strong>Harmonic Rocking</strong> first to down-regulate the system.
+              </p>
+            </div>
+          </div>
+          <div className="flex gap-3">
+            <Button variant="ghost" onClick={goBack} className="flex-1 h-12 rounded-xl"><ChevronLeft size={18} className="mr-2" /> Back</Button>
+            <Button onClick={() => goToStep('TIMELINE_SELECT')} className="flex-[2] h-12 rounded-xl bg-indigo-600 hover:bg-indigo-700 font-bold shadow-lg">
+              Permission Granted <ChevronRight size={18} className="ml-2" />
             </Button>
           </div>
         </div>
@@ -122,7 +165,7 @@ const EmotionalIntegrationProcess = ({ onSave, onInhibited, onCancel }: Emotiona
 
       {step === 'TIMELINE_SELECT' && (
         <div className="space-y-6">
-          <StepHeader title="2. Identify Timeline" sub="Is this emotional stress current or historic?" />
+          <StepHeader title="3. Identify Timeline" sub="Is this emotional stress current or historic?" />
           <div className="grid grid-cols-1 gap-4">
             <Button 
               variant="outline" 
@@ -160,7 +203,7 @@ const EmotionalIntegrationProcess = ({ onSave, onInhibited, onCancel }: Emotiona
 
       {step === 'TIMELINE_AGE' && (
         <div className="space-y-6">
-          <StepHeader title="3. Timeline Regression" sub="Challenge the system for the specific age of origin." />
+          <StepHeader title="4. Timeline Regression" sub="Challenge the system for the specific age of origin." />
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
               <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Age</label>
@@ -185,7 +228,7 @@ const EmotionalIntegrationProcess = ({ onSave, onInhibited, onCancel }: Emotiona
 
       {step === 'EMOTION_SELECT' && (
         <div className="space-y-6">
-          <StepHeader title="4. Primary Emotion" sub="Challenge for the priority primary emotion." />
+          <StepHeader title="5. Primary Emotion" sub="Challenge for the priority primary emotion." />
           <div className="grid grid-cols-1 gap-3">
             {PRIMARY_EMOTIONS.map(emotion => (
               <Button 
@@ -213,7 +256,7 @@ const EmotionalIntegrationProcess = ({ onSave, onInhibited, onCancel }: Emotiona
 
       {step === 'ORGAN_SELECT' && (
         <div className="space-y-6">
-          <StepHeader title="5. Priority Organ" sub={`Which organ is holding the ${selectedEmotion.label}?`} />
+          <StepHeader title="6. Priority Organ" sub={`Which organ is holding the ${selectedEmotion.label}?`} />
           <div className="grid grid-cols-1 gap-3">
             {selectedEmotion.organs.map((organ: string) => (
               <Button 
@@ -241,7 +284,7 @@ const EmotionalIntegrationProcess = ({ onSave, onInhibited, onCancel }: Emotiona
 
       {step === 'POLARITY_SELECT' && (
         <div className="space-y-6">
-          <StepHeader title="6. Energy Polarity" sub="Challenge: Is the priority Energy IN or Energy OUT?" />
+          <StepHeader title="7. Energy Polarity" sub="Challenge: Is the priority Energy IN or Energy OUT?" />
           <div className="grid grid-cols-2 gap-4">
             <Button 
               variant="outline" 
@@ -261,7 +304,7 @@ const EmotionalIntegrationProcess = ({ onSave, onInhibited, onCancel }: Emotiona
               variant="outline" 
               className={cn(
                 "h-40 flex-col gap-3 rounded-3xl border-2 transition-all",
-                polarity === 'Energy IN' ? "border-rose-600 bg-rose-50 text-rose-700" : "border-slate-100 hover:border-blue-200"
+                polarity === 'Energy IN' ? "border-rose-600 bg-rose-50 text-rose-700" : "border-slate-100 hover:border-rose-200"
               )}
               onClick={() => { setPolarity('Energy IN'); goToStep('EYE_POSITION'); }}
             >
@@ -278,7 +321,7 @@ const EmotionalIntegrationProcess = ({ onSave, onInhibited, onCancel }: Emotiona
 
       {step === 'EYE_POSITION' && (
         <div className="space-y-6">
-          <StepHeader title="7. Priority Eye Position" sub="Identify the sensory access point for the stress." />
+          <StepHeader title="8. Priority Eye Position" sub="Identify the sensory access point for the stress." />
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             {EYE_POSITIONS.map(pos => (
               <Button 
@@ -352,6 +395,24 @@ const EmotionalIntegrationProcess = ({ onSave, onInhibited, onCancel }: Emotiona
                 <PulsePointReference organ={selectedOrgan} />
               </div>
 
+              <div className="space-y-4 pt-4 border-t border-white/10">
+                <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Observe for Shifts:</p>
+                <div className="flex flex-wrap gap-2">
+                  {SIGNS_OF_SHIFT.map(shift => (
+                    <Badge 
+                      key={shift} 
+                      onClick={() => toggleShift(shift)}
+                      className={cn(
+                        "cursor-pointer transition-all border-none font-black text-[8px] uppercase tracking-widest px-2 py-1",
+                        observedShifts.includes(shift) ? "bg-emerald-500 text-white" : "bg-white/10 text-slate-400 hover:bg-white/20"
+                      )}
+                    >
+                      {shift}
+                    </Badge>
+                  ))}
+                </div>
+              </div>
+
               <div className="pt-4">
                 <CalibrationTimer duration={180} />
                 <p className="text-[10px] text-slate-400 text-center mt-2 italic">Wait for a parasympathetic response (sigh, yawn, gurgle).</p>
@@ -360,7 +421,51 @@ const EmotionalIntegrationProcess = ({ onSave, onInhibited, onCancel }: Emotiona
           </div>
           <div className="flex gap-3">
             <Button variant="ghost" onClick={goBack} className="flex-1 h-12 rounded-xl"><ChevronLeft size={18} className="mr-2" /> Back</Button>
-            <Button onClick={() => goToStep('REASSESS')} className="flex-[2] h-12 rounded-xl bg-rose-600 hover:bg-rose-700 font-bold shadow-lg">Correction Applied <ChevronRight size={18} className="ml-2" /></Button>
+            <Button onClick={() => goToStep('POSITIVE_UPLOAD')} className="flex-[2] h-12 rounded-xl bg-rose-600 hover:bg-rose-700 font-bold shadow-lg">Correction Applied <ChevronRight size={18} className="ml-2" /></Button>
+          </div>
+        </div>
+      )}
+
+      {step === 'POSITIVE_UPLOAD' && (
+        <div className="space-y-6">
+          <div className="bg-emerald-900 text-white p-8 rounded-[2.5rem] shadow-2xl relative overflow-hidden">
+            <div className="absolute top-0 right-0 p-8 opacity-10 pointer-events-none"><Sparkles size={150} /></div>
+            <h3 className="text-2xl font-black mb-6 flex items-center gap-3 text-emerald-400"><Sparkles size={28} /> Positive Integration</h3>
+            
+            <div className="space-y-6 relative z-10">
+              <div className="p-6 bg-white/10 rounded-3xl border border-white/10 backdrop-blur-sm space-y-4">
+                <p className="text-lg font-bold leading-tight">
+                  "Now that we've cleared the negative, let's upload the positive state."
+                </p>
+                <div className="space-y-2">
+                  <label className="text-[10px] font-black text-emerald-400 uppercase tracking-widest">What is the opposite state?</label>
+                  <Input 
+                    placeholder="e.g. Feeling Great, Confident, Safe..." 
+                    className="bg-white/5 border-white/20 text-white font-bold h-12 rounded-xl"
+                    value={positiveState}
+                    onChange={(e) => setPositiveState(e.target.value)}
+                  />
+                </div>
+              </div>
+
+              <div className="p-5 bg-indigo-600 text-white rounded-2xl shadow-lg space-y-3">
+                <div className="flex items-center gap-2">
+                  <Target size={20} className="text-indigo-300" />
+                  <p className="text-[10px] font-black uppercase tracking-widest">The Process</p>
+                </div>
+                <p className="text-sm font-bold leading-relaxed">
+                  Maintain the same eye position ({selectedEyePos.pos}) and hold the points. Focus entirely on the feeling of <span className="underline decoration-emerald-400 underline-offset-4">{positiveState || 'the positive state'}</span>.
+                </p>
+              </div>
+
+              <div className="pt-4">
+                <CalibrationTimer duration={60} />
+              </div>
+            </div>
+          </div>
+          <div className="flex gap-3">
+            <Button variant="ghost" onClick={goBack} className="flex-1 h-12 rounded-xl"><ChevronLeft size={18} className="mr-2" /> Back</Button>
+            <Button onClick={() => goToStep('REASSESS')} className="flex-[2] h-12 rounded-xl bg-emerald-600 hover:bg-emerald-700 font-bold shadow-lg">Upload Complete <ChevronRight size={18} className="ml-2" /></Button>
           </div>
         </div>
       )}
@@ -376,7 +481,7 @@ const EmotionalIntegrationProcess = ({ onSave, onInhibited, onCancel }: Emotiona
             <Button className="h-16 rounded-2xl bg-emerald-600 hover:bg-emerald-700 text-xl font-black shadow-lg shadow-emerald-100" onClick={handleFinish}>Emotion is Integrated <CheckCircle2 size={24} className="ml-2" /></Button>
             <Button variant="outline" className="h-16 rounded-2xl border-2 border-rose-200 text-rose-700 hover:bg-orange-50 font-bold text-lg" onClick={handleInhibited}>Still Inhibited - Add Layer</Button>
           </div>
-          <Button variant="ghost" onClick={goBack} className="w-full h-12 rounded-xl"><ChevronLeft size={18} className="mr-2" /> Back</Button>
+          <Button variant="ghost" onClick={() => goToStep('POSITIVE_UPLOAD')} className="w-full h-12 rounded-xl"><ChevronLeft size={18} className="mr-2" /> Back</Button>
         </div>
       )}
     </div>

@@ -68,6 +68,8 @@ import CranialNerveHomeworkTool from "@/components/crm/CranialNerveHomeworkTool"
 import BrainstemBreathingReference from "@/components/crm/BrainstemBreathingReference";
 import AppLayout from "@/components/crm/AppLayout";
 import PulsePointReference from "@/components/crm/PulsePointReference";
+import HandPolarityReference from "@/components/crm/HandPolarityReference";
+import { SIGNS_OF_SHIFT } from "@/data/emotion-data";
 
 const CATEGORIES = [
   {
@@ -297,14 +299,14 @@ const ResourcesPage = () => {
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                           {[
                             { s: 1, t: "ESR Indicator Check", d: "Hold forehead points (GB14) to see if the system is ready." },
-                            { s: 2, t: "Timeline Selection", d: "Determine if the stress is Current or Historic." },
-                            { s: 3, t: "Timeline Regression", d: "Narrow down the specific age and month of origin." },
-                            { s: 4, t: "Primary Emotion", d: "Identify the core feeling (Hurt, Worry, Sadness, Fear, Anger)." },
-                            { s: 5, t: "Priority Organ", d: "Find the organ acting as a surrogate for the charge." },
-                            { s: 6, t: "Energy Polarity", d: "Challenge for Energy IN (+) or Energy OUT (-)." },
-                            { s: 7, t: "Eye Position", d: "Identify the sensory access point (NLP logic)." },
-                            { s: 8, t: "Correction", d: "Hold ESR + Pulse Point + Eye Position + Replay Stress." },
-                            { s: 9, t: "Re-assessment", d: "Wait for parasympathetic shift and re-test indicators." }
+                            { s: 2, t: "Permission Check", d: "Always ask for permission before starting deep emotional work." },
+                            { s: 3, t: "Timeline Selection", d: "Determine if the stress is Current or Historic." },
+                            { s: 4, t: "Timeline Regression", d: "Narrow down the specific age and month of origin." },
+                            { s: 5, t: "Primary Emotion", d: "Identify the core feeling (Hurt, Worry, Sadness, Fear, Anger)." },
+                            { s: 6, t: "Priority Organ", d: "Find the organ acting as a surrogate for the charge." },
+                            { s: 7, t: "Energy Polarity", d: "Challenge for Energy IN (+) or Energy OUT (-)." },
+                            { s: 8, t: "Eye Position", d: "Identify the sensory access point (NLP logic)." },
+                            { s: 9, t: "Correction & Upload", d: "Hold ESR + Pulse Point + Eye Position + Replay Stress + Positive Upload." }
                           ].map(step => (
                             <div key={step.s} className="flex gap-4 p-4 bg-slate-50 dark:bg-slate-900 rounded-2xl border border-slate-100 dark:border-slate-800">
                               <span className="w-8 h-8 rounded-full bg-rose-600 text-white flex items-center justify-center font-black text-xs shrink-0">{step.s}</span>
@@ -320,6 +322,7 @@ const ResourcesPage = () => {
 
                     <div className="space-y-8">
                       <PulsePointReference />
+                      <HandPolarityReference />
                       
                       <Card className="border-none shadow-lg rounded-[2.5rem] bg-indigo-900 text-white overflow-hidden">
                         <CardHeader className="p-8 pb-4">
@@ -334,7 +337,7 @@ const ResourcesPage = () => {
                           <div className="pt-4 border-t border-white/10">
                             <p className="text-[10px] font-black text-indigo-400 uppercase tracking-widest mb-2">Signs of Shift</p>
                             <div className="flex flex-wrap gap-2">
-                              {['Yawning', 'Sighing', 'Gurgling', 'Tearing'].map(s => (
+                              {SIGNS_OF_SHIFT.map(s => (
                                 <Badge key={s} className="bg-white/10 text-white border-none text-[8px] font-black uppercase">{s}</Badge>
                               ))}
                             </div>

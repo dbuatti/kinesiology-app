@@ -11,32 +11,27 @@ import {
   Zap, 
   RefreshCw, 
   Sparkles,
-  Users,
   Clock,
   Target,
   Wind,
   Info,
-  Layers,
-  MessageSquare,
   History,
   Brain,
   Eye,
   Activity,
-  Timer,
-  Pause,
-  Play,
   Hand
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Badge } from '@/components/ui/badge';
 import { PRIMARY_EMOTIONS, EYE_POSITIONS } from '@/data/emotion-data';
-import { getPulsePointDescription } from '@/data/vagus-data';
 import { Button } from '@/components/ui/button';
 import CalibrationTimer from './CalibrationTimer';
+import PulsePointReference from './PulsePointReference';
 
 type Step = 
   | 'INITIAL_TL' 
   | 'TIMELINE_SELECT' 
+  | 'TIMELINE_AGE'
   | 'EMOTION_SELECT' 
   | 'ORGAN_SELECT' 
   | 'POLARITY_SELECT' 
@@ -56,7 +51,8 @@ const EmotionalIntegrationProcess = ({ onSave, onInhibited, onCancel }: Emotiona
   
   const [timeline, setTimeline] = useState<'Current' | 'Historic' | null>(null);
   const [age, setAge] = useState('');
-  const [currentStress, setCurrentStress] = useState('');
+  const [months, setMonths] = useState('');
+  const [context, setContext] = useState('');
   
   const [selectedEmotion, setSelectedEmotion] = useState<any>(null);
   const [selectedOrgan, setSelectedOrgan] = useState('');
@@ -79,18 +75,23 @@ const EmotionalIntegrationProcess = ({ onSave, onInhibited, onCancel }: Emotiona
   };
 
   const handleFinish = () => {
-    const timelineDetail = timeline === 'Historic' ? (age ? `Age ${age}` : 'Historic') : (currentStress ? `Current: ${currentStress}` : 'Current');
+    const timelineDetail = timeline === 'Historic' ? `Age ${age}${months ? ` (${months}m)` : ''}` : 'Current';
     const summary = `Emotional Integration: ${selectedEmotion.label} (${selectedOrgan}, ${polarity}) | Timeline: ${timelineDetail} | Eye Position: ${selectedEyePos.label} (${selectedEyePos.pos})`;
     onSave(summary);
   };
 
   const handleInhibited = () => {
-    const timelineDetail = timeline === 'Historic' ? (age ? `Age ${age}` : 'Historic') : (currentStress ? `Current: ${currentStress}` : 'Current');
+    const timelineDetail = timeline === 'Historic' ? `Age ${age}${months ? ` (${months}m)` : ''}` : 'Current';
     const summary = `Emotional Integration (STILL INHIBITED): ${selectedEmotion.label} (${selectedOrgan}, ${polarity}) | Timeline: ${timelineDetail} | Eye Position: ${selectedEyePos.label} (${selectedEyePos.pos})`;
     onInhibited?.(summary);
   };
 
-  const pulsePoint = selectedOrgan ? getPulsePointDescription(selectedOrgan) : null;
+  const StepHeader = ({ title, sub }: { title: string, sub: string }) => (
+    <div className="space-y-2 mb-6">
+      <h3 className="text-xl font-black text-slate-900">{title}</h3>
+      <p className="text-sm text-slate-500 font-medium">{sub}</p>
+    </div>
+  );
 
   return (
     <div className="space-y-6 animate-in fade-in slide-in-from-right-4 duration-300">
@@ -101,19 +102,19 @@ const EmotionalIntegrationProcess = ({ onSave, onInhibited, onCancel }: Emotiona
               <Brain size={40} className="text-rose-600" />
             </div>
             <div className="space-y-2">
-              <h3 className="text-2xl font-black text-rose-900">1. Frontal Lobe Check</h3>
-              <p className="text-rose-700 font-medium">Ask client or practitioner to TL over Frontal Lobe (ESR) reflex points.</p>
+              <h3 className="text-2xl font-black text-rose-900">1. ESR Indicator Check</h3>
+              <p className="text-rose-700 font-medium">Hold ESR points (Gallbladder 14) on the forehead.</p>
             </div>
             <div className="p-4 bg-white/60 rounded-2xl border border-rose-200">
               <p className="text-sm font-bold text-rose-900">
-                If the indicator muscle <span className="text-rose-600 underline">inhibits</span>, Emotional Correction is indicated.
+                If the indicator muscle <span className="text-rose-600 underline">inhibits</span>, or a weak muscle <span className="text-emerald-600 underline">locks</span>, Emotional Integration is indicated.
               </p>
             </div>
           </div>
           <div className="flex gap-3">
             <Button variant="ghost" onClick={onCancel} className="flex-1 h-12 rounded-xl">Cancel</Button>
             <Button onClick={() => goToStep('TIMELINE_SELECT')} className="flex-[2] h-12 rounded-xl bg-rose-600 hover:bg-rose-700 font-bold shadow-lg shadow-rose-100">
-              Muscle Inhibited <ChevronRight size={18} className="ml-2" />
+              Indicator Change <ChevronRight size={18} className="ml-2" />
             </Button>
           </div>
         </div>
@@ -121,80 +122,70 @@ const EmotionalIntegrationProcess = ({ onSave, onInhibited, onCancel }: Emotiona
 
       {step === 'TIMELINE_SELECT' && (
         <div className="space-y-6">
-          <div className="space-y-2">
-            <h3 className="text-xl font-black text-slate-900">2. Identify Timeline</h3>
-            <p className="text-sm text-slate-500 font-medium">Is this emotional priority current or historic?</p>
-          </div>
+          <StepHeader title="2. Identify Timeline" sub="Is this emotional stress current or historic?" />
           <div className="grid grid-cols-1 gap-4">
-            <div className="space-y-4">
-              <Button 
-                variant="outline" 
-                className={cn(
-                  "h-20 w-full justify-between px-8 rounded-2xl border-2 transition-all group",
-                  timeline === 'Current' ? "border-rose-600 bg-rose-50 text-rose-700" : "border-slate-100 hover:border-rose-200"
-                )}
-                onClick={() => setTimeline('Current')}
-              >
-                <div className="text-left">
-                  <div className="font-black text-lg">Current</div>
-                  <div className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Known stress or pattern</div>
-                </div>
-                <Zap size={24} className={timeline === 'Current' ? "text-rose-600" : "text-slate-300"} />
-              </Button>
-              {timeline === 'Current' && (
-                <Input 
-                  placeholder="Describe current stress (optional)..." 
-                  className="h-12 rounded-xl font-bold border-2 border-rose-100 animate-in slide-in-from-top-2"
-                  value={currentStress}
-                  onChange={(e) => setCurrentStress(e.target.value)}
-                />
+            <Button 
+              variant="outline" 
+              className={cn(
+                "h-20 w-full justify-between px-8 rounded-2xl border-2 transition-all group",
+                timeline === 'Current' ? "border-rose-600 bg-rose-50 text-rose-700" : "border-slate-100 hover:border-rose-200"
               )}
-            </div>
+              onClick={() => { setTimeline('Current'); goToStep('EMOTION_SELECT'); }}
+            >
+              <div className="text-left">
+                <div className="font-black text-lg">Current</div>
+                <div className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Known stress or pattern</div>
+              </div>
+              <Zap size={24} className={timeline === 'Current' ? "text-rose-600" : "text-slate-300"} />
+            </Button>
 
-            <div className="space-y-4">
-              <Button 
-                variant="outline" 
-                className={cn(
-                  "h-20 w-full justify-between px-8 rounded-2xl border-2 transition-all group",
-                  timeline === 'Historic' ? "border-rose-600 bg-rose-50 text-rose-700" : "border-slate-100 hover:border-rose-200"
-                )}
-                onClick={() => setTimeline('Historic')}
-              >
-                <div className="text-left">
-                  <div className="font-black text-lg">Historic</div>
-                  <div className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Past event or trauma</div>
-                </div>
-                <History size={24} className={timeline === 'Historic' ? "text-rose-600" : "text-slate-300"} />
-              </Button>
-              {timeline === 'Historic' && (
-                <Input 
-                  placeholder="What age did this happen (optional)?" 
-                  className="h-12 rounded-xl font-bold border-2 border-rose-100 animate-in slide-in-from-top-2"
-                  value={age}
-                  onChange={(e) => setAge(e.target.value)}
-                />
+            <Button 
+              variant="outline" 
+              className={cn(
+                "h-20 w-full justify-between px-8 rounded-2xl border-2 transition-all group",
+                timeline === 'Historic' ? "border-rose-600 bg-rose-50 text-rose-700" : "border-slate-100 hover:border-rose-200"
               )}
+              onClick={() => { setTimeline('Historic'); goToStep('TIMELINE_AGE'); }}
+            >
+              <div className="text-left">
+                <div className="font-black text-lg">Historic</div>
+                <div className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Past event or trauma</div>
+              </div>
+              <History size={24} className={timeline === 'Historic' ? "text-rose-600" : "text-slate-300"} />
+            </Button>
+          </div>
+          <Button variant="ghost" onClick={goBack} className="w-full h-12 rounded-xl"><ChevronLeft size={18} className="mr-2" /> Back</Button>
+        </div>
+      )}
+
+      {step === 'TIMELINE_AGE' && (
+        <div className="space-y-6">
+          <StepHeader title="3. Timeline Regression" sub="Challenge the system for the specific age of origin." />
+          <div className="grid grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Age</label>
+              <Input type="number" placeholder="e.g. 5" className="h-14 rounded-2xl text-xl font-black text-center" value={age} onChange={(e) => setAge(e.target.value)} />
             </div>
+            <div className="space-y-2">
+              <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Months (Optional)</label>
+              <Input type="number" placeholder="e.g. 4" className="h-14 rounded-2xl text-xl font-black text-center" value={months} onChange={(e) => setMonths(e.target.value)} />
+            </div>
+          </div>
+          <div className="p-4 bg-indigo-50 rounded-2xl border border-indigo-100">
+            <p className="text-xs text-indigo-900 font-medium leading-relaxed">
+              <strong>Tip:</strong> Challenge in blocks (1-10, 10-20) then narrow down to the specific year and month.
+            </p>
           </div>
           <div className="flex gap-3">
             <Button variant="ghost" onClick={goBack} className="flex-1 h-12 rounded-xl"><ChevronLeft size={18} className="mr-2" /> Back</Button>
-            <Button 
-              disabled={!timeline} 
-              onClick={() => goToStep('EMOTION_SELECT')} 
-              className="flex-[2] h-12 rounded-xl bg-rose-600 hover:bg-rose-700 font-bold shadow-lg"
-            >
-              Continue <ChevronRight size={18} className="ml-2" />
-            </Button>
+            <Button disabled={!age} onClick={() => goToStep('EMOTION_SELECT')} className="flex-[2] h-12 rounded-xl bg-rose-600 hover:bg-rose-700 font-bold shadow-lg">Continue <ChevronRight size={18} className="ml-2" /></Button>
           </div>
         </div>
       )}
 
       {step === 'EMOTION_SELECT' && (
         <div className="space-y-6">
-          <div className="space-y-2">
-            <h3 className="text-xl font-black text-slate-900">3. Primary Emotion</h3>
-            <p className="text-sm text-slate-500 font-medium">Challenge for the priority primary emotion.</p>
-          </div>
+          <StepHeader title="4. Primary Emotion" sub="Challenge for the priority primary emotion." />
           <div className="grid grid-cols-1 gap-3">
             {PRIMARY_EMOTIONS.map(emotion => (
               <Button 
@@ -209,7 +200,10 @@ const EmotionalIntegrationProcess = ({ onSave, onInhibited, onCancel }: Emotiona
                 <div className={cn("w-10 h-10 rounded-xl flex items-center justify-center text-white shadow-sm", emotion.color)}>
                   <Heart size={20} className="fill-current" />
                 </div>
-                <span className="font-black text-lg text-slate-900">{emotion.label}</span>
+                <div className="text-left">
+                  <span className="font-black text-lg text-slate-900 block">{emotion.label}</span>
+                  <span className="text-[8px] font-black text-slate-400 uppercase tracking-widest">{emotion.element} Element</span>
+                </div>
               </Button>
             ))}
           </div>
@@ -219,10 +213,7 @@ const EmotionalIntegrationProcess = ({ onSave, onInhibited, onCancel }: Emotiona
 
       {step === 'ORGAN_SELECT' && (
         <div className="space-y-6">
-          <div className="space-y-2">
-            <h3 className="text-xl font-black text-slate-900">4. Priority Organ</h3>
-            <p className="text-sm text-slate-500 font-medium">Which organ is holding the {selectedEmotion.label}?</p>
-          </div>
+          <StepHeader title="5. Priority Organ" sub={`Which organ is holding the ${selectedEmotion.label}?`} />
           <div className="grid grid-cols-1 gap-3">
             {selectedEmotion.organs.map((organ: string) => (
               <Button 
@@ -239,16 +230,18 @@ const EmotionalIntegrationProcess = ({ onSave, onInhibited, onCancel }: Emotiona
               </Button>
             ))}
           </div>
+          <div className="p-6 bg-amber-50 rounded-[2rem] border-2 border-amber-100">
+            <p className="text-xs text-amber-800 font-medium leading-relaxed italic">
+              "The organ acts as a surrogate for the emotional charge. Clearing the organ clears the circuit."
+            </p>
+          </div>
           <Button variant="ghost" onClick={goBack} className="w-full h-12 rounded-xl"><ChevronLeft size={18} className="mr-2" /> Back</Button>
         </div>
       )}
 
       {step === 'POLARITY_SELECT' && (
         <div className="space-y-6">
-          <div className="space-y-2">
-            <h3 className="text-xl font-black text-slate-900">5. Energy Polarity</h3>
-            <p className="text-sm text-slate-500 font-medium">Challenge: Is the priority Energy IN or Energy OUT?</p>
-          </div>
+          <StepHeader title="6. Energy Polarity" sub="Challenge: Is the priority Energy IN or Energy OUT?" />
           <div className="grid grid-cols-2 gap-4">
             <Button 
               variant="outline" 
@@ -285,10 +278,7 @@ const EmotionalIntegrationProcess = ({ onSave, onInhibited, onCancel }: Emotiona
 
       {step === 'EYE_POSITION' && (
         <div className="space-y-6">
-          <div className="space-y-2">
-            <h3 className="text-xl font-black text-slate-900">6. Priority Eye Position</h3>
-            <p className="text-sm text-slate-500 font-medium">Identify the sensory access point for the stress.</p>
-          </div>
+          <StepHeader title="7. Priority Eye Position" sub="Identify the sensory access point for the stress." />
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             {EYE_POSITIONS.map(pos => (
               <Button 
@@ -319,55 +309,52 @@ const EmotionalIntegrationProcess = ({ onSave, onInhibited, onCancel }: Emotiona
             <h3 className="text-2xl font-black mb-6 flex items-center gap-3 text-rose-400"><Sparkles size={28} /> Emotional Correction</h3>
             
             <div className="space-y-6 relative z-10">
-              <div className="grid grid-cols-1 gap-4">
-                <div className="p-5 bg-white/10 rounded-2xl border border-white/10 backdrop-blur-sm space-y-4">
-                  <p className="text-sm font-black uppercase tracking-widest text-rose-400">Hold Simultaneously:</p>
-                  <ul className="space-y-2 text-sm font-bold">
-                    <li className="flex items-center gap-2"><CheckCircle2 size={16} className="text-rose-500" /> Frontal Lobe (ESR)</li>
-                    <li className="flex items-center gap-2"><CheckCircle2 size={16} className="text-rose-500" /> Occipital Lobe</li>
-                    <li className="flex items-center gap-2"><CheckCircle2 size={16} className="text-rose-500" /> Eye Position: <span className="text-rose-400">{selectedEyePos.pos}</span></li>
-                    <li className="flex items-center gap-2"><CheckCircle2 size={16} className="text-rose-500" /> {selectedOrgan} Reflex ({polarity})</li>
-                  </ul>
+              <div className="p-6 bg-white/10 rounded-3xl border border-white/10 backdrop-blur-sm space-y-4">
+                <div className="flex items-center justify-between">
+                  <p className="text-sm font-black uppercase tracking-widest text-rose-400">The Context</p>
+                  <Badge className="bg-rose-600 text-white border-none font-black text-[10px] uppercase tracking-widest">
+                    {timeline === 'Historic' ? `Age ${age}` : 'Current'}
+                  </Badge>
                 </div>
+                <p className="text-xl font-black leading-tight">
+                  {selectedEmotion.label} ({selectedOrgan})
+                </p>
+                <p className="text-sm text-slate-300 font-medium italic">
+                  "{selectedEmotion.insight}"
+                </p>
+              </div>
 
-                {pulsePoint && (
-                  <div className="p-6 bg-indigo-50 rounded-[2rem] border-2 border-indigo-200 flex items-start gap-5 animate-in fade-in slide-in-from-top-2">
-                    <div className="w-12 h-12 rounded-2xl bg-indigo-600 text-white flex items-center justify-center shrink-0 shadow-lg">
-                      <Hand size={24} />
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <div className="space-y-4">
+                  <div className="p-5 bg-indigo-600 text-white rounded-2xl shadow-lg space-y-3">
+                    <div className="flex items-center gap-2">
+                      <Target size={20} className="text-indigo-300" />
+                      <p className="text-[10px] font-black uppercase tracking-widest">The Process</p>
                     </div>
-                    <div className="space-y-2">
-                      <p className="text-[10px] font-black text-indigo-600 uppercase tracking-[0.2em] mb-1">Pulse Point Locator</p>
-                      <div className="space-y-1">
-                        <p className="text-lg font-black text-indigo-900 leading-tight">
-                          Practitioner: <span className="text-rose-600 underline decoration-rose-200 underline-offset-4">{polarity === 'Energy OUT' ? 'LEFT' : 'RIGHT'}</span> Hand
-                        </p>
-                        <p className="text-sm font-bold text-indigo-700">
-                          Client: {pulsePoint.hand} Wrist • {pulsePoint.position}
-                        </p>
-                      </div>
-                      <Badge className="bg-indigo-200 text-indigo-800 border-none font-black text-[9px] uppercase tracking-widest px-2 py-0.5">
-                        Depth: {pulsePoint.depth}
-                      </Badge>
-                    </div>
+                    <p className="text-sm font-bold leading-relaxed">
+                      {selectedEyePos.prompt}
+                    </p>
+                    <p className="text-xs text-indigo-100 opacity-80">
+                      Replay the stress over and over while holding the points.
+                    </p>
                   </div>
-                )}
 
-                <div className="p-5 bg-indigo-600 text-white rounded-2xl shadow-lg">
-                  <div className="flex items-start gap-3">
-                    <Target size={20} className="shrink-0 mt-0.5" />
-                    <div>
-                      <p className="text-[10px] font-black uppercase tracking-widest opacity-70 mb-1">The Process</p>
-                      <p className="text-sm font-bold leading-relaxed">
-                        Ask client to work with the <span className="underline">{selectedEyePos.label.split(' ')[0]}</span> sense and replay the stress over and over.
-                      </p>
-                    </div>
+                  <div className="p-5 bg-white/5 rounded-2xl border border-white/10 space-y-3">
+                    <p className="text-[10px] font-black uppercase tracking-widest text-slate-400">Hold Simultaneously:</p>
+                    <ul className="space-y-2 text-xs font-bold">
+                      <li className="flex items-center gap-2"><CheckCircle2 size={14} className="text-rose-500" /> Frontal Lobe (ESR)</li>
+                      <li className="flex items-center gap-2"><CheckCircle2 size={14} className="text-rose-500" /> Eye Position: <span className="text-rose-400">{selectedEyePos.pos}</span></li>
+                      <li className="flex items-center gap-2"><CheckCircle2 size={14} className="text-rose-500" /> {selectedOrgan} Pulse Point</li>
+                    </ul>
                   </div>
                 </div>
 
-                <div className="pt-4">
-                  <CalibrationTimer duration={180} />
-                  <p className="text-[10px] text-slate-400 text-center mt-2 italic">Correction typically takes 1-5 minutes.</p>
-                </div>
+                <PulsePointReference organ={selectedOrgan} />
+              </div>
+
+              <div className="pt-4">
+                <CalibrationTimer duration={180} />
+                <p className="text-[10px] text-slate-400 text-center mt-2 italic">Wait for a parasympathetic response (sigh, yawn, gurgle).</p>
               </div>
             </div>
           </div>
@@ -383,10 +370,10 @@ const EmotionalIntegrationProcess = ({ onSave, onInhibited, onCancel }: Emotiona
           <div className="bg-emerald-50 p-8 rounded-[2.5rem] border-2 border-emerald-100 text-center">
             <div className="w-20 h-20 rounded-full bg-white shadow-sm flex items-center justify-center mx-auto mb-6"><RefreshCw size={48} className="text-emerald-500" /></div>
             <h3 className="text-2xl font-black text-emerald-900 mb-2">Final Re-assessment</h3>
-            <p className="text-emerald-700 font-medium">Wait for a <span className="font-black">Parasympathetic Response</span> (sigh, yawn, gurgle), then re-test the IM.</p>
+            <p className="text-emerald-700 font-medium">Re-challenge the ESR points and the original stimulus.</p>
           </div>
           <div className="grid grid-cols-1 gap-4">
-            <Button className="h-16 rounded-2xl bg-emerald-600 hover:bg-emerald-700 text-xl font-black shadow-lg shadow-emerald-100" onClick={handleFinish}>Emotion is Balanced <CheckCircle2 size={24} className="ml-2" /></Button>
+            <Button className="h-16 rounded-2xl bg-emerald-600 hover:bg-emerald-700 text-xl font-black shadow-lg shadow-emerald-100" onClick={handleFinish}>Emotion is Integrated <CheckCircle2 size={24} className="ml-2" /></Button>
             <Button variant="outline" className="h-16 rounded-2xl border-2 border-rose-200 text-rose-700 hover:bg-orange-50 font-bold text-lg" onClick={handleInhibited}>Still Inhibited - Add Layer</Button>
           </div>
           <Button variant="ghost" onClick={goBack} className="w-full h-12 rounded-xl"><ChevronLeft size={18} className="mr-2" /> Back</Button>

@@ -38,7 +38,8 @@ import {
   FileText,
   Volume2,
   Calculator,
-  Wind
+  Wind,
+  Hand
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -58,15 +59,15 @@ import VideoLibrary from "@/components/crm/VideoLibrary";
 import BrainReflexReference from "@/components/crm/BrainReflexReference";
 import FnTheory from "@/components/crm/FnTheory";
 import LigamentReference from "@/components/crm/LigamentReference";
-import MechanoMastery from "@/components/crm/MechanoMastery";
+import MechanoMasteryModule from "@/components/crm/MechanoMasteryModule";
 import MechanoBible from "@/components/crm/MechanoBible";
 import RightingReflexesAssessment from "@/components/crm/RightingReflexesAssessment";
 import CranialNerveReference from "@/components/crm/CranialNerveReference";
 import PrimitiveReflexReference from "@/components/crm/PrimitiveReflexReference";
-import MechanoMasteryModule from "@/components/crm/MechanoMasteryModule";
 import CranialNerveHomeworkTool from "@/components/crm/CranialNerveHomeworkTool";
 import BrainstemBreathingReference from "@/components/crm/BrainstemBreathingReference";
 import AppLayout from "@/components/crm/AppLayout";
+import PulsePointReference from "@/components/crm/PulsePointReference";
 
 const CATEGORIES = [
   {
@@ -134,11 +135,11 @@ const CATEGORIES = [
     bgColor: "bg-amber-50 dark:bg-amber-900/20",
     borderColor: "border-amber-100 dark:border-amber-900/30",
     items: [
+      { id: "emotional-theory", label: "Emotional Theory", icon: Heart, desc: "The 9-step Neuro-Emotional hierarchy." },
       { id: "rehab-calc", label: "Rehab Calc", icon: Calculator, desc: "Calculate 70% threshold for nerve homework." },
       { id: "brainstem-breath", label: "Brainstem Breath", icon: Wind, desc: "Breathing patterns for Midbrain, Pons, Medulla." },
       { id: "logic", label: "Clinical Logic", icon: Lightbulb, desc: "The hierarchy of neurological correction." },
       { id: "spinal", label: "Spinal", icon: Move, desc: "Spinal segment and Lovett-Brother associations." },
-      { id: "vestibular", label: "Vestibular", icon: Footprints, desc: "Fukuda Step Test and balance protocols." },
       { id: "lymphatic", label: "Lymphatic", icon: Droplets, desc: "Drainage protocols and counterstrain points." },
       { id: "postural", label: "Postural Reflexes", icon: RefreshCw, desc: "Ocular and Labyrinthine righting reflexes." },
     ]
@@ -266,6 +267,84 @@ const ResourcesPage = () => {
               <TabsContent value="acupoints"><AcupointReference /></TabsContent>
 
               {/* Practice Tools */}
+              <TabsContent value="emotional-theory">
+                <div className="space-y-12">
+                  <Card className="border-none shadow-2xl rounded-[3.5rem] bg-slate-900 text-white overflow-hidden relative">
+                    <div className="absolute top-0 right-0 p-12 opacity-5"><Heart size={200} /></div>
+                    <CardHeader className="p-12 relative z-10">
+                      <div className="flex items-center gap-5 mb-4">
+                        <div className="w-16 h-16 bg-rose-600 rounded-2xl flex items-center justify-center shadow-2xl shadow-rose-500/40">
+                          <Heart size={32} className="text-white" />
+                        </div>
+                        <div>
+                          <CardTitle className="text-4xl font-black tracking-tight">Neuro-Emotional Integration</CardTitle>
+                          <CardDescription className="text-slate-400 text-xl font-medium mt-2">
+                            Remapping the physiological association to emotional stress.
+                          </CardDescription>
+                        </div>
+                      </div>
+                    </CardHeader>
+                  </Card>
+
+                  <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                    <Card className="lg:col-span-2 border-none shadow-lg rounded-[2.5rem] bg-card overflow-hidden">
+                      <CardHeader className="p-8 bg-rose-50 dark:bg-rose-900/20">
+                        <h3 className="text-2xl font-black flex items-center gap-3 text-rose-900 dark:text-rose-100">
+                          <Info size={28} /> The 9-Step Hierarchy
+                        </h3>
+                      </CardHeader>
+                      <CardContent className="p-8 space-y-6">
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                          {[
+                            { s: 1, t: "ESR Indicator Check", d: "Hold forehead points (GB14) to see if the system is ready." },
+                            { s: 2, t: "Timeline Selection", d: "Determine if the stress is Current or Historic." },
+                            { s: 3, t: "Timeline Regression", d: "Narrow down the specific age and month of origin." },
+                            { s: 4, t: "Primary Emotion", d: "Identify the core feeling (Hurt, Worry, Sadness, Fear, Anger)." },
+                            { s: 5, t: "Priority Organ", d: "Find the organ acting as a surrogate for the charge." },
+                            { s: 6, t: "Energy Polarity", d: "Challenge for Energy IN (+) or Energy OUT (-)." },
+                            { s: 7, t: "Eye Position", d: "Identify the sensory access point (NLP logic)." },
+                            { s: 8, t: "Correction", d: "Hold ESR + Pulse Point + Eye Position + Replay Stress." },
+                            { s: 9, t: "Re-assessment", d: "Wait for parasympathetic shift and re-test indicators." }
+                          ].map(step => (
+                            <div key={step.s} className="flex gap-4 p-4 bg-slate-50 dark:bg-slate-900 rounded-2xl border border-slate-100 dark:border-slate-800">
+                              <span className="w-8 h-8 rounded-full bg-rose-600 text-white flex items-center justify-center font-black text-xs shrink-0">{step.s}</span>
+                              <div>
+                                <h4 className="font-black text-slate-900 dark:text-slate-100 text-xs uppercase tracking-tight">{step.t}</h4>
+                                <p className="text-[10px] text-slate-500 font-medium leading-tight mt-1">{step.d}</p>
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      </CardContent>
+                    </Card>
+
+                    <div className="space-y-8">
+                      <PulsePointReference />
+                      
+                      <Card className="border-none shadow-lg rounded-[2.5rem] bg-indigo-900 text-white overflow-hidden">
+                        <CardHeader className="p-8 pb-4">
+                          <CardTitle className="text-xl font-black flex items-center gap-3">
+                            <Brain size={24} className="text-indigo-400" /> Why it Works
+                          </CardTitle>
+                        </CardHeader>
+                        <CardContent className="p-8 pt-0 space-y-4">
+                          <p className="text-sm text-slate-300 leading-relaxed">
+                            "Talk therapy often fails because it doesn't go to the depths of the physiology to clear the circuit. We are bringing blood flow back to the <strong>Frontal Lobe</strong> while remapping the <strong>Limbic</strong> response."
+                          </p>
+                          <div className="pt-4 border-t border-white/10">
+                            <p className="text-[10px] font-black text-indigo-400 uppercase tracking-widest mb-2">Signs of Shift</p>
+                            <div className="flex flex-wrap gap-2">
+                              {['Yawning', 'Sighing', 'Gurgling', 'Tearing'].map(s => (
+                                <Badge key={s} className="bg-white/10 text-white border-none text-[8px] font-black uppercase">{s}</Badge>
+                              ))}
+                            </div>
+                          </div>
+                        </CardContent>
+                      </Card>
+                    </div>
+                  </div>
+                </div>
+              </TabsContent>
               <TabsContent value="rehab-calc"><CranialNerveHomeworkTool /></TabsContent>
               <TabsContent value="brainstem-breath"><BrainstemBreathingReference /></TabsContent>
               <TabsContent value="logic">
@@ -304,27 +383,6 @@ const ResourcesPage = () => {
                 </div>
               </TabsContent>
               <TabsContent value="spinal"><SpinalSegmentReference /></TabsContent>
-              <TabsContent value="vestibular">
-                <Card className="border-none shadow-lg rounded-3xl overflow-hidden bg-card">
-                  <div className="bg-gradient-to-r from-emerald-600 to-teal-600 p-8 text-white">
-                    <div className="flex items-center gap-4 mb-4">
-                      <div className="w-14 h-14 bg-white/20 backdrop-blur-md rounded-2xl flex items-center justify-center"><Footprints size={32} /></div>
-                      <div><CardTitle className="text-3xl font-black">Fukuda Step Test</CardTitle></div>
-                    </div>
-                    <p className="text-emerald-50 text-lg max-w-2xl leading-relaxed font-medium">Examines labyrinthine function by triggering vestibulospinal reflexes.</p>
-                  </div>
-                  <CardContent className="p-8">
-                    <div className="grid grid-cols-1 lg:grid-cols-3 gap-12">
-                      <div className="lg:col-span-2 space-y-10">
-                        <section className="space-y-4">
-                          <h3 className="text-xl font-bold text-foreground flex items-center gap-2"><Info size={20} className="text-emerald-600" /> Purpose & Context</h3>
-                          <p className="text-muted-foreground leading-relaxed font-medium">The Unterberger (Fukuda) test is best implemented as a diagnostic method to isolate <strong>peripheral labyrinthine dysfunction</strong>.</p>
-                        </section>
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
-              </TabsContent>
               <TabsContent value="lymphatic">
                 <Card className="border-none shadow-lg rounded-3xl overflow-hidden bg-card">
                   <div className="bg-gradient-to-r from-blue-600 to-cyan-600 p-8 text-white">

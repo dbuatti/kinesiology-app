@@ -20,7 +20,8 @@ import {
   ChevronDown,
   ChevronUp,
   PlusCircle,
-  Clock
+  Clock,
+  DollarSign
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import SearchBar from "./SearchBar";
@@ -261,6 +262,12 @@ const Sidebar = ({ onHide }: SidebarProps) => {
         <NavGroup title="Operations" icon={LayoutDashboard} isOpen={opsOpen} onToggle={() => setOpsOpen(!opsOpen)} items={opsItems} />
         <NavGroup title="Clinical Lab" icon={Zap} isOpen={labOpen} onToggle={() => setLabOpen(!labOpen)} items={labItems} />
         <NavGroup title="Library" icon={BookOpen} isOpen={libraryOpen} onToggle={() => setLibraryOpen(!libraryOpen)} items={libraryItems} />
+
+        {/* Finance Section */}
+        <div className="space-y-1">
+          <p className="text-[9px] font-black text-slate-400 uppercase tracking-[0.3em] px-3 mb-1">Finances</p>
+          <NavItem item={{ label: "Import Finances", icon: DollarSign, path: "/settings/finances" }} />
+        </div>
 
         {/* Active Session Indicator */}
         {activeSession && (

@@ -21,7 +21,6 @@ import ClientDetailPage from "./pages/ClientDetailPage";
 import AppointmentsPage from "./pages/AppointmentsPage";
 import AppointmentDetailPage from "./pages/AppointmentDetailPage";
 import ImportPage from "./pages/ImportPage";
-import FinanceImportPage from "./pages/FinanceImportPage";
 import ProceduresPage from "./pages/ProceduresPage";
 import ResourcesPage from "./pages/ResourcesPage";
 import SelfPracticePage from "./pages/SelfPracticePage";
@@ -90,7 +89,6 @@ const AppRoutes = () => {
         {/* System */}
         <Route path="/settings" element={<SettingsPage />} />
         <Route path="/settings/import" element={<ImportPage />} />
-        <Route path="/settings/finances" element={<FinanceImportPage />} />
         <Route path="/settings/debug" element={<DebugAppointmentPage />} />
         <Route path="/settings/demo" element={<DemoSessionPage />} />
       </Route>

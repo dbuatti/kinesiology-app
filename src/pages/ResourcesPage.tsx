@@ -39,7 +39,8 @@ import {
   Volume2,
   Calculator,
   Wind,
-  Hand
+  Hand,
+  ExternalLink
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -148,6 +149,8 @@ const CATEGORIES = [
   }
 ];
 
+const PEACE_METHOD_URL = "https://functional-neuro-health.notion.site/Functional-Neuro-Health-The-PEACE-Method-28beacafb4a88026b9a9ccdefa4e1de9";
+
 const ResourcesPage = () => {
   const [searchParams, setSearchParams] = useSearchParams();
   const activeTab = searchParams.get("tab") || "hub";
@@ -187,6 +190,53 @@ const ResourcesPage = () => {
 
         {activeTab === "hub" ? (
           <div className="space-y-12 animate-in fade-in slide-in-from-bottom-4 duration-700">
+            {/* PEACE Method Featured Resource */}
+            <a href={PEACE_METHOD_URL} target="_blank" rel="noopener noreferrer" className="block group">
+              <Card className="border-none shadow-2xl rounded-[3rem] bg-gradient-to-br from-indigo-600 via-purple-600 to-rose-600 text-white overflow-hidden relative cursor-pointer hover:shadow-3xl hover:-translate-y-1 transition-all duration-500">
+                <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(255,255,255,0.15),transparent_50%)]" />
+                <div className="absolute top-0 right-0 p-12 opacity-10 group-hover:opacity-20 transition-opacity">
+                  <BookOpen size={200} />
+                </div>
+                <CardContent className="p-10 md:p-14 relative z-10">
+                  <div className="flex flex-col md:flex-row md:items-center justify-between gap-8">
+                    <div className="space-y-6 flex-1">
+                      <div className="flex flex-wrap items-center gap-3">
+                        <Badge className="bg-white/20 text-white border-white/30 font-black text-[10px] uppercase tracking-[0.3em] px-4 py-1.5 backdrop-blur-sm">
+                          Mastery Edition
+                        </Badge>
+                        <Badge className="bg-amber-400/20 text-amber-200 border-amber-400/30 font-black text-[10px] uppercase tracking-[0.3em] px-4 py-1.5 backdrop-blur-sm">
+                          2025 Gold Standard
+                        </Badge>
+                      </div>
+                      <div className="space-y-3">
+                        <h2 className="text-4xl md:text-5xl font-black tracking-tighter leading-none">
+                          The PEACE Method
+                        </h2>
+                        <p className="text-xl md:text-2xl font-medium text-white/80 max-w-2xl leading-relaxed">
+                          Living Practitioner Reference Guide — your single source of truth for the FNH clinical framework.
+                        </p>
+                      </div>
+                      <div className="flex flex-wrap gap-4 pt-2">
+                        {["P — Preliminary", "E — Ease", "A — Align", "C — Correct", "E — Embed"].map((step) => (
+                          <span key={step} className="text-[10px] font-black uppercase tracking-widest text-white/60 bg-white/10 px-3 py-1.5 rounded-lg backdrop-blur-sm">
+                            {step}
+                          </span>
+                        ))}
+                      </div>
+                    </div>
+                    <div className="flex flex-col items-center gap-4 md:items-end">
+                      <div className="w-20 h-20 rounded-3xl bg-white/20 backdrop-blur-md flex items-center justify-center border border-white/30 shadow-2xl group-hover:scale-110 group-hover:rotate-3 transition-all duration-500">
+                        <ExternalLink size={36} className="text-white" />
+                      </div>
+                      <span className="text-[10px] font-black uppercase tracking-[0.3em] text-white/60 group-hover:text-white transition-colors">
+                        Open in Notion →
+                      </span>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            </a>
+
             {CATEGORIES.map((category) => (
               <div key={category.id} className="space-y-6">
                 <div className="flex items-center gap-3 px-2">

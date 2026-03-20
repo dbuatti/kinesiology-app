@@ -797,7 +797,7 @@ const PathwayAssessment = ({ initialValue, previousValue, history = [], onSave, 
                 statusL={results.cranialNerves?.[`${nerve.name} (L)`]}
                 statusR={results.cranialNerves?.[`${nerve.name} (R)`]}
                 statusMidline={results.cranialNerves?.[nerve.name]}
-                isLateralized={nerve.lateralization !== 'Bilateral' && nerve.lateralization !== 'Mixed'}
+                isLateralized={true}
                 history={processedHistory.find(h => h.name === nerve.name)}
                 onSetStatus={(status, side) => handleSetStatus('cranialNerves', nerve.name, status, side)}
                 onQuickCalibrate={() => handleQuickCalibrate('cranialNerves', nerve.name)}

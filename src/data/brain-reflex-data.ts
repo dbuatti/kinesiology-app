@@ -180,7 +180,8 @@ const MAPPED_CRANIAL_NERVES: BrainReflexPoint[] = CRANIAL_NERVES.map(nerve => ({
   category: 'Cranial Nerve',
   location: nerve.reflexPoint,
   stimulus: nerve.stimulus,
-  lateralization: nerve.id === 1 ? 'Bilateral' : nerve.id === 2 ? 'Contralateral' : 'Ipsilateral',
+  // All cranial nerves are paired and can be lateralized in testing
+  lateralization: nerve.id === 2 ? 'Contralateral' : 'Ipsilateral',
   pearl: nerve.clinicalPearl,
   nuclei: nerve.nuclei,
   toneEffect: nerve.toneEffect

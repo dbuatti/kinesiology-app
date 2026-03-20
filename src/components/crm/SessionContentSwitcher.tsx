@@ -15,7 +15,8 @@ import {
   RefreshCw,
   ClipboardCheck,
   ArrowRight,
-  CheckCircle2
+  CheckCircle2,
+  ShieldCheck
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { AppointmentWithClient } from '@/types/crm';
@@ -44,11 +45,11 @@ interface SessionContentSwitcherProps {
 }
 
 const TABS = [
-  { id: 'baseline', label: 'Baseline', icon: Activity },
-  { id: 'sympathetic', label: 'SNS Reset', icon: Zap },
-  { id: 'pathway', label: 'Pathway', icon: GitBranch },
-  { id: 'calibration', label: 'Calibrate', icon: Target },
-  { id: 'reassessment', label: 'Review', icon: ClipboardCheck }
+  { id: 'baseline', label: 'P — Preliminary', icon: Activity, sub: 'Baseline & Vitals' },
+  { id: 'sympathetic', label: 'E — Ease', icon: Zap, sub: 'SNS Down-regulation' },
+  { id: 'pathway', label: 'A — Align', icon: GitBranch, sub: 'Pathway Assessment' },
+  { id: 'calibration', label: 'C — Correct', icon: Target, sub: 'Calibration Wizard' },
+  { id: 'reassessment', label: 'E — Embed', icon: ClipboardCheck, sub: 'Review & Homework' }
 ];
 
 const SessionContentSwitcher = ({ appointment, onUpdate, saveField, history = [], nucleiFilter }: SessionContentSwitcherProps) => {
@@ -175,20 +176,44 @@ const SessionContentSwitcher = ({ appointment, onUpdate, saveField, history = []
 
   const renderHomeView = () => (
     <div className="space-y-10">
+      <div className="flex items-center justify-between px-2">
+        <div className="flex items-center gap-3">
+          <div className="w-10 h-10 rounded-xl bg-indigo-600 text-white flex items-center justify-center shadow-lg">
+            <ShieldCheck size={20} />
+          </div>
+          <div>
+            <h2 className="text-xl font-black text-slate-900">The PEACE Method</h2>
+            <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">2025 Gold Standard Framework</p>
+          </div>
+        </div>
+        <div className="flex gap-1">
+          {TABS.map((tab) => (
+            <div 
+              key={tab.id} 
+              className={cn(
+                "w-8 h-1.5 rounded-full transition-all duration-500",
+                (tabStatus as any)[tab.id] ? "bg-emerald-500" : activeTab === tab.id ? "bg-indigo-600" : "bg-slate-200"
+              )} 
+            />
+          ))}
+        </div>
+      </div>
+
       <Tabs value={activeTab} onValueChange={(v) => {
         setActiveTab(v);
         if (v === 'calibration') scrollToWizard();
       }} className="w-full">
-        <TabsList className="grid w-full grid-cols-5 h-16 bg-muted/50 p-1.5 rounded-[1.5rem]">
+        <TabsList className="grid w-full grid-cols-5 h-20 bg-muted/50 p-1.5 rounded-[1.5rem]">
           {TABS.map((tab, i) => (
             <TabsTrigger 
               key={tab.id} 
               value={tab.id} 
-              className="flex items-center gap-2 data-[state=active]:bg-card data-[state=active]:text-indigo-600 data-[state=active]:shadow-sm rounded-xl h-13 text-[10px] font-black uppercase tracking-wider relative transition-all"
+              className="flex flex-col items-center justify-center gap-1 data-[state=active]:bg-card data-[state=active]:text-indigo-600 data-[state=active]:shadow-sm rounded-xl h-17 text-[10px] font-black uppercase tracking-wider relative transition-all"
             >
-              <tab.icon size={14} className={cn((tabStatus as any)[tab.id] ? "text-indigo-500" : "text-muted-foreground")} />
-              <span className="hidden sm:inline">{i + 1}. {tab.label}</span>
-              <span className="sm:hidden">{i + 1}</span>
+              <tab.icon size={16} className={cn((tabStatus as any)[tab.id] ? "text-indigo-500" : "text-muted-foreground")} />
+              <span className="hidden sm:inline text-[9px]">{tab.label}</span>
+              <span className="sm:hidden">{tab.label.split(' ')[0]}</span>
+              <span className="hidden lg:inline text-[7px] opacity-50 font-bold">{tab.sub}</span>
               {(tabStatus as any)[tab.id] && (
                 <span className="absolute top-2 right-2 w-2 h-2 bg-emerald-500 rounded-full border-2 border-background shadow-sm" />
               )}
@@ -199,12 +224,12 @@ const SessionContentSwitcher = ({ appointment, onUpdate, saveField, history = []
         <div className="mt-8 animate-in fade-in slide-in-from-bottom-2 duration-500">
           <TabsContent value="baseline" className="focus-visible:ring-0">
             <BaselineTab appointment={appointment} onUpdate={onUpdate} saveField={saveField} />
-            <TabFooter nextLabel="SNS Reset" />
+            <TabFooter nextLabel="E — Ease" />
           </TabsContent>
 
           <TabsContent value="sympathetic" className="focus-visible:ring-0">
             <SympatheticTab appointment={appointment} onUpdate={onUpdate} saveField={saveField} />
-            <TabFooter nextLabel="Pathway Assessment" />
+            <TabFooter nextLabel="A — Align" />
           </TabsContent>
 
           <TabsContent value="pathway" className="focus-visible:ring-0">
@@ -216,7 +241,7 @@ const SessionContentSwitcher = ({ appointment, onUpdate, saveField, history = []
               onJumpToCalibrate={handleJumpToCalibrate}
               nucleiFilter={nucleiFilter}
             />
-            <TabFooter nextLabel="Calibration Wizard" />
+            <TabFooter nextLabel="C — Correct" />
           </TabsContent>
 
           <TabsContent value="calibration" className="focus-visible:ring-0">
@@ -228,7 +253,7 @@ const SessionContentSwitcher = ({ appointment, onUpdate, saveField, history = []
                 initialFinding={preselectedFinding}
               />
             </div>
-            <TabFooter nextLabel="Session Review" />
+            <TabFooter nextLabel="E — Embed" />
           </TabsContent>
 
           <TabsContent value="reassessment" className="focus-visible:ring-0">
@@ -251,7 +276,7 @@ const SessionContentSwitcher = ({ appointment, onUpdate, saveField, history = []
   return (
     <div className="space-y-8">
       <div className="flex items-center gap-2 overflow-x-auto pb-2 bg-muted/30 p-2 rounded-2xl border border-border/50 no-scrollbar">
-        <NavItem view="home" label="Session Flow" Icon={Home} />
+        <NavItem view="home" label="PEACE Flow" Icon={Home} />
         <NavItem view="kinesiology" label="Kinesiology Tools" Icon={Heart} />
         <NavItem view="muscles" label="Muscle Log" Icon={Dumbbell} />
         <NavItem view="gait" label="Gait Integration" Icon={Footprints} />

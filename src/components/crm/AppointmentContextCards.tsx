@@ -1,10 +1,10 @@
 "use client";
 
 import React from "react";
-import { Card, CardContent } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Zap, ExternalLink } from "lucide-react";
+import { Zap, ExternalLink, Clock, Target, ShieldAlert, Activity, Brain, Heart, Home, Sparkles } from "lucide-react";
 import { cn } from "@/lib/utils";
 import EditableField from "@/components/shared/EditableField";
 import QuickAcupointSelector from "./QuickAcupointSelector";
@@ -16,9 +16,70 @@ interface AppointmentContextCardsProps {
   onSaveField: (field: string, value: any) => Promise<void>;
 }
 
+const SESSION_STAGES = [
+  { name: "Goal Setting", time: "15m", icon: Target, color: "text-indigo-500" },
+  { name: "Activation", time: "15m", icon: Zap, color: "text-blue-500" },
+  { name: "Correction", time: "20m", icon: Activity, color: "text-emerald-500" },
+  { name: "Challenge", time: "5m", icon: ShieldAlert, color: "text-amber-500" },
+  { name: "Home Reinforcement", time: "5m", icon: Home, color: "text-rose-500" },
+];
+
 const AppointmentContextCards = ({ appointment, currentPeakMeridian, onSaveField }: AppointmentContextCardsProps) => {
   return (
     <div className="space-y-8">
+      {/* Session Strategy Card */}
+      <Card className="border-none shadow-lg rounded-[2.5rem] bg-slate-900 text-white overflow-hidden">
+        <CardHeader className="p-6 pb-2">
+          <CardTitle className="text-sm font-black uppercase tracking-[0.3em] text-slate-500 flex items-center gap-2">
+            <Clock size={16} /> Session Strategy (60m)
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="p-6 pt-0 space-y-4">
+          <div className="grid grid-cols-1 gap-2">
+            {SESSION_STAGES.map((stage) => (
+              <div key={stage.name} className="flex items-center justify-between p-2.5 bg-white/5 rounded-xl border border-white/10 group hover:bg-white/10 transition-all">
+                <div className="flex items-center gap-3">
+                  <stage.icon size={14} className={stage.color} />
+                  <span className="text-[11px] font-bold text-slate-300">{stage.name}</span>
+                </div>
+                <Badge variant="outline" className="border-white/20 text-white font-black text-[8px] uppercase tracking-widest">
+                  {stage.time}
+                </Badge>
+              </div>
+            ))}
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Practitioner Quick Reference */}
+      <Card className="border-none shadow-lg rounded-[2.5rem] bg-indigo-50 border-2 border-indigo-100 overflow-hidden">
+        <CardHeader className="p-6 pb-2">
+          <CardTitle className="text-sm font-black uppercase tracking-[0.3em] text-indigo-600 flex items-center gap-2">
+            <Sparkles size={16} /> Quick Reference
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="p-6 pt-0 space-y-4">
+          <div className="space-y-3">
+            <div className="p-3 bg-white rounded-2xl border border-indigo-200 shadow-sm">
+              <p className="text-[8px] font-black text-indigo-400 uppercase tracking-widest mb-1">Instant Cramp Hack</p>
+              <p className="text-[10px] font-bold text-slate-700 leading-relaxed">
+                Chop muscle spindles <span className="text-indigo-600">Inwards</span>, then <span className="text-indigo-600">Outwards</span> (x2).
+              </p>
+            </div>
+            <div className="p-3 bg-white rounded-2xl border border-indigo-200 shadow-sm">
+              <p className="text-[8px] font-black text-indigo-400 uppercase tracking-widest mb-1">IM Not Unlocking?</p>
+              <div className="flex flex-wrap gap-1 mt-1">
+                {["Hydration", "ESR", "Cross Crawls", "K27s"].map(step => (
+                  <Badge key={step} variant="secondary" className="bg-indigo-50 text-indigo-700 border-none text-[7px] font-black uppercase">
+                    {step}
+                  </Badge>
+                ))}
+              </div>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+
       {currentPeakMeridian && (
         <Card className={cn(
           "border-none shadow-xl rounded-[2.5rem] text-white overflow-hidden relative group",

@@ -1,12 +1,13 @@
 "use client";
 
 import { useState, useEffect, useMemo } from "react";
-import { useParams, useRouter } from "next/navigation"; // ← fixed for Next.js App Router
+import { useParams, useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import {
-  Loader2, Trash2, Printer, Copy, Check, Play, Brain,
-  PanelRightOpen, PanelRightClose, ClipboardList,
+import { 
+  Loader2, Trash2, MoreHorizontal, History, Printer, Copy, Check, Play,
+  FileText, Zap, Activity, Target, ClipboardList, PanelRightOpen, PanelRightClose,
+  Brain
 } from "lucide-react";
 import { format, isToday } from "date-fns";
 import { AppointmentWithClient } from "@/types/crm";
@@ -23,364 +24,395 @@ import BrainstemToneMap from "@/components/crm/BrainstemToneMap";
 import SessionWorksheetTemplate from "@/components/crm/SessionWorksheetTemplate";
 import PathwayFindingsList from "@/components/crm/PathwayFindingsList";
 import WeeklyFocusBanner from "@/components/crm/WeeklyFocusBanner";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import Breadcrumbs from "@/components/shared/Breadcrumbs";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
 import { TCM_CHANNELS } from "@/data/tcm-channel-data";
 import { generateSessionSummary } from "@/utils/summary-generator";
+import { Badge } from "@/components/ui/badge";
 import { Nuclei } from "@/utils/brainstem-logic";
 
 const AppointmentDetailPage = () => {
   const { id } = useParams<{ id: string }>();
-  const router = useRouter();
-
+  const navigate = useNavigate();
   const [appointment, setAppointment] = useState<AppointmentWithClient | null>(null);
   const [history, setHistory] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
-  const [fixedHeader, setFixedHeader] = useState(false);
+  const [isFixedHeaderActive, setIsFixedHeaderActive] = useState(false);
   const [copied, setCopied] = useState(false);
   const [cloning, setCloning] = useState(false);
-  const [now, setNow] = useState(new Date());
-  const [sidebarOpen, setSidebarOpen] = useState(false);
-  const [selectedNucleus, setSelectedNucleus] = useState<Nuclei | null>(null);
+  const [currentTime, setCurrentTime] = useState(new Date());
+  const [showSidebar, setShowSidebar] = useState(false);
+  const [nucleiFilter, setNucleiFilter] = useState<Nuclei | null>(null);
 
-  // ── Live clock for meridian ───────────────────────────────────────────────
   useEffect(() => {
-    const t = setInterval(() => setNow(new Date()), 60000);
-    return () => clearInterval(t);
+    const timer = setInterval(() => setCurrentTime(new Date()), 60000);
+    return () => clearInterval(timer);
   }, []);
 
-  const currentPeakMeridian = useMemo(() => {
-    const h = now.getHours();
+  const currentPeakMeridian = (() => {
+    const hour = currentTime.getHours();
     return TCM_CHANNELS.find(c => {
       if (c.peakTime === 'None') return false;
-      const [startStr, endStr] = c.peakTime.toLowerCase().split('-').map(s => s.trim());
-      const parse = (s: string) => {
-        let hr = parseInt(s);
-        if (s.includes('pm') && hr !== 12) hr += 12;
-        if (s.includes('am') && hr === 12) hr = 0;
-        return hr;
+      const parts = c.peakTime.toLowerCase().split('-').map(p => p.trim());
+      const parseHour = (s: string) => {
+        const h = parseInt(s);
+        if (s.includes('pm') && h !== 12) return h + 12;
+        if (s.includes('am') && h === 12) return 0;
+        return h;
       };
-      const start = parse(startStr);
-      const end = parse(endStr);
-      return start > end ? (h >= start || h < end) : (h >= start && h < end);
-    }) ?? null;
-  }, [now]);
+      const start = parseHour(parts[0]);
+      const end = parseHour(parts[1]);
+      if (start > end) return hour >= start || hour < end;
+      return hour >= start && hour < end;
+    });
+  })();
 
-  // ── Data fetching ─────────────────────────────────────────────────────────
-  const loadData = async () => {
+  const fetchAppointmentData = async () => {
     if (!id) return;
     setLoading(true);
     try {
       const { data, error } = await supabase
         .from('appointments')
-        .select('*, clients!inner(id, name, born)')
+        .select(`
+          *,
+          clients (
+            id,
+            name,
+            born
+          )
+        `)
         .eq('id', id)
         .single();
 
       if (error) throw error;
 
-      const appt = { ...data, date: new Date(data.date) } as AppointmentWithClient;
-      setAppointment(appt);
+      const app = {
+        ...data,
+        date: new Date(data.date),
+      } as unknown as AppointmentWithClient;
 
-      const { data: hist } = await supabase
+      setAppointment(app);
+
+      const { data: historyData } = await supabase
         .from('appointments')
         .select('*')
-        .eq('client_id', appt.clients.id)
+        .eq('client_id', app.clients.id)
         .order('date', { ascending: true });
+      
+      setHistory((historyData || []).map(h => ({ ...h, date: new Date(h.date) })));
 
-      setHistory((hist ?? []).map(h => ({ ...h, date: new Date(h.date) })));
     } catch (err) {
-      console.error(err);
-      showError("Could not load session data");
+      console.error("Error fetching appointment details:", err);
+      showError("Failed to load appointment details.");
     } finally {
       setLoading(false);
     }
   };
 
-  useEffect(() => { loadData(); }, [id]);
-
-  // Real-time updates
   useEffect(() => {
     if (!id) return;
-    const ch = supabase
-      .channel(`appt-detail-${id}`)
-      .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'appointments', filter: `id=eq.${id}` },
-        payload => {
-          setAppointment(prev => {
-            if (!prev) return null;
-            const next = { ...payload.new };
-            if (typeof next.date === 'string') next.date = new Date(next.date);
-            return { ...prev, ...next } as AppointmentWithClient;
-          });
-        })
+    const channel = supabase
+      .channel(`appointment-${id}`)
+      .on('postgres_changes', { 
+        event: 'UPDATE', 
+        schema: 'public', 
+        table: 'appointments', 
+        filter: `id=eq.${id}` 
+      }, (payload) => {
+        setAppointment((prev) => {
+          if (!prev) return prev;
+          const updatedData = { ...payload.new };
+          if (updatedData.date && typeof updatedData.date === 'string') {
+            updatedData.date = new Date(updatedData.date);
+          }
+          return { ...prev, ...updatedData } as AppointmentWithClient;
+        });
+      })
       .subscribe();
-
-    return () => { supabase.removeChannel(ch); };
+    return () => { supabase.removeChannel(channel); };
   }, [id]);
 
-  // ── Actions ───────────────────────────────────────────────────────────────
-  const save = async (field: string, value: any) => {
+  const saveField = async (field: string, value: string | boolean | null | string[]) => {
     if (!id || !appointment) return;
-    const val = Array.isArray(value) ? value : (typeof value === 'string' ? (value.trim() || null) : value);
+    
+    const normalized = Array.isArray(value) 
+      ? value 
+      : (typeof value === 'string' ? (value.trim() === '' ? null : value.trim()) : value);
 
     try {
-      const { error } = await supabase.from('appointments').update({ [field]: val }).eq('id', id);
+      const { error } = await supabase
+        .from('appointments')
+        .update({ [field]: normalized })
+        .eq('id', id);
+
       if (error) throw error;
-      setAppointment(p => p ? { ...p, [field]: val } as any : null);
-    } catch (err) {
-      console.error(err);
-      showError(`Could not save ${field}`);
+      
+      setAppointment(prev => prev ? { ...prev, [field]: normalized } as AppointmentWithClient : null);
+    } catch (err: any) {
+      console.error(`Silent save failed for ${field}:`, err);
+      showError(`Failed to save ${field}`);
     }
   };
 
-  const startSession = async () => {
-    if (!appointment) return;
-    await save('date', new Date().toISOString());
-    showSuccess("Session started");
+  const handleJumpToCalibrate = (itemName: string) => {
+    const event = new CustomEvent('jump-to-calibrate', { detail: { itemName } });
+    window.dispatchEvent(event);
   };
 
-  const completeSession = async () => {
-    await save('status', 'Completed');
-    showSuccess("Session completed");
+  const handleStartSession = async () => {
+    if (!appointment) return;
+    const now = new Date();
+    await saveField('date', now.toISOString());
+    showSuccess("Session started! Timer is now active.");
   };
 
-  const copySummary = () => {
+  const handleCompleteSession = async () => {
     if (!appointment) return;
-    navigator.clipboard.writeText(generateSessionSummary(appointment));
+    await saveField('status', 'Completed');
+    showSuccess("Session marked as Completed!");
+  };
+
+  const handleClonePrevious = async () => {
+    if (!appointment || !id) return;
+    setCloning(true);
+    try {
+      const { data: previous, error } = await supabase
+        .from('appointments')
+        .select('goal, issue, acupoints, priority_pattern')
+        .eq('client_id', appointment.clients.id)
+        .neq('id', id)
+        .order('date', { ascending: false })
+        .limit(1)
+        .single();
+
+      if (error) {
+        if (error.code === 'PGRST116') {
+          showError("No previous sessions found for this client.");
+        } else {
+          throw error;
+        }
+        return;
+      }
+
+      if (previous) {
+        await supabase.from('appointments').update({
+          goal: previous.goal,
+          issue: previous.issue,
+          acupoints: previous.acupoints,
+          priority_pattern: previous.priority_pattern
+        }).eq('id', id);
+        
+        showSuccess("Cloned data from previous session.");
+        fetchAppointmentData();
+      }
+    } catch (err: any) {
+      showError("Failed to clone previous session data.");
+    } finally {
+      setCloning(false);
+    }
+  };
+
+  const handlePrint = () => {
+    window.print();
+  };
+
+  const handleCopySummary = () => {
+    if (!appointment) return;
+    const summary = generateSessionSummary(appointment);
+    navigator.clipboard.writeText(summary);
     setCopied(true);
-    showSuccess("Summary copied");
-    setTimeout(() => setCopied(false), 2400);
+    showSuccess("Detailed session summary copied to clipboard!");
+    setTimeout(() => setCopied(false), 3000);
   };
 
-  const print = () => window.print();
+  const handleDeleteAppointment = async () => {
+    if (!id || !confirm("Are you sure you want to delete this appointment?")) return;
+    try {
+      const { error } = await supabase.from('appointments').delete().eq('id', id);
+      if (error) throw error;
+      showSuccess("Appointment deleted successfully");
+      navigate('/appointments');
+    } catch (err: any) {
+      showError(err.message || "Failed to delete appointment");
+    }
+  };
 
-  if (loading) {
-    return (
-      <div className="min-h-[80vh] grid place-items-center">
-        <Loader2 className="h-14 w-14 animate-spin text-violet-500/70" />
-      </div>
-    );
-  }
+  useEffect(() => { fetchAppointmentData(); }, [id]);
 
-  if (!appointment) {
-    return (
-      <div className="min-h-[80vh] grid place-items-center text-muted-foreground">
-        Session not found
-      </div>
-    );
-  }
+  if (loading) return <div className="flex min-h-screen items-center justify-center"><Loader2 className="animate-spin text-indigo-500" size={48} /></div>;
+  if (!appointment) return <div className="p-12 text-center">Appointment not found</div>;
 
-  const today = isToday(appointment.date);
-  const canStart = today && appointment.status === 'Scheduled' && !fixedHeader;
+  const isSessionToday = isToday(appointment.date);
 
   return (
     <>
-      <SessionTimer
-        appointmentDate={appointment.date}
-        status={appointment.status}
-        onFixedHeaderChange={setFixedHeader}
-        onCompleteSession={completeSession}
+      <SessionTimer 
+        appointmentDate={appointment.date} 
+        status={appointment.status} 
+        onFixedHeaderChange={setIsFixedHeaderActive} 
+        onCompleteSession={handleCompleteSession}
       />
+      <AppLayout variant="wide" hasFixedHeader={isFixedHeaderActive}>
+        <div className="flex flex-col gap-8 print:p-0">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 print:hidden">
+            <Breadcrumbs 
+              items={[
+                { label: "Appointments", path: "/appointments" },
+                { label: appointment.name || "Session Details" }
+              ]} 
+              className="mb-0"
+            />
+            {isSessionToday && !isFixedHeaderActive && appointment.status === 'Scheduled' && (
+              <Button 
+                variant="default" 
+                size="sm" 
+                className="bg-rose-600 hover:bg-rose-700 text-white rounded-xl shadow-lg shadow-rose-100 h-10 px-6 font-black text-[10px] uppercase tracking-widest"
+                onClick={handleStartSession}
+              >
+                <Play size={16} className="mr-2 fill-current" />
+                Start Session
+              </Button>
+            )}
+          </div>
 
-      <AppLayout variant="wide" hasFixedHeader={fixedHeader}>
-        <div className="mx-auto max-w-[1480px] px-4 sm:px-6 lg:px-8 pb-20 print:p-0 print:max-w-none">
-          {/* ── Top bar ──────────────────────────────────────────────────────── */}
-          <div className="sticky top-0 z-30 -mx-4 sm:-mx-6 lg:-mx-8 px-4 sm:px-6 lg:px-8 pt-4 pb-6 bg-gradient-to-b from-background/80 to-background/40 backdrop-blur-xl border-b print:hidden">
-            <div className="flex items-center justify-between gap-4">
-              <Breadcrumbs
-                items={[
-                  { label: "Sessions", path: "/appointments" },
-                  { label: appointment.clients?.name || "Session" }
-                ]}
-              />
-
-              <div className="flex items-center gap-3">
-                {canStart && (
-                  <Button
-                    onClick={startSession}
-                    className={cn(
-                      "bg-gradient-to-r from-rose-500 to-rose-600",
-                      "hover:from-rose-600 hover:to-rose-700",
-                      "shadow-lg shadow-rose-500/20",
-                      "rounded-full px-6 h-10 font-semibold tracking-tight"
-                    )}
-                  >
-                    <Play className="mr-2 h-4 w-4 fill-current" />
-                    Begin Session
-                  </Button>
-                )}
-
-                <Button
-                  variant="outline"
-                  size="icon"
-                  className="rounded-full border-muted-foreground/30"
-                  onClick={() => setSidebarOpen(!sidebarOpen)}
-                >
-                  {sidebarOpen ? <PanelRightClose /> : <PanelRightOpen />}
-                </Button>
+          <div className="print:block hidden mb-8">
+            <div className="flex items-center justify-between border-b-2 border-indigo-600 pb-4">
+              <div>
+                <h1 className="text-3xl font-black text-slate-900">Session Summary</h1>
+                <p className="text-slate-500 font-bold">Antigravity Kinesiology Practice</p>
+              </div>
+              <div className="text-right">
+                <p className="text-sm font-black text-indigo-600 uppercase tracking-widest">{format(appointment.date, "MMMM d, yyyy")}</p>
+                <p className="text-xs text-slate-400">ID: {appointment.display_id || appointment.id.slice(0,8)}</p>
               </div>
             </div>
           </div>
 
-          {/* ── Weekly banner + history bar ─────────────────────────────────── */}
-          <div className="pt-10 print:pt-0 space-y-8">
-            <WeeklyFocusBanner
-              appointmentId={appointment.id}
-              priorityPattern={appointment.priority_pattern}
-              onSaveField={save}
-            />
+          <WeeklyFocusBanner 
+            appointmentId={appointment.id}
+            priorityPattern={appointment.priority_pattern}
+            onSaveField={saveField}
+            onJumpToCalibrate={handleJumpToCalibrate}
+          />
 
-            <PreviousSessionInsightsBar
-              clientId={appointment.clients.id}
-              currentAppointmentId={appointment.id}
-            />
-          </div>
+          <PreviousSessionInsightsBar 
+            clientId={appointment.clients.id} 
+            currentAppointmentId={appointment.id} 
+          />
 
-          {/* ── Main content ────────────────────────────────────────────────── */}
-          <div className="mt-10 grid grid-cols-1 xl:grid-cols-12 gap-8">
-            {/* Left / Main area */}
-            <div className={cn(
-              "col-span-full transition-all duration-500 ease-out",
-              sidebarOpen && "xl:col-span-8"
-            )}>
-              <div className="space-y-8">
-                {/* Header Card */}
-                <Card className={cn(
-                  "border-none shadow-xl rounded-3xl overflow-hidden",
-                  "bg-gradient-to-b from-white to-slate-50/60",
-                  "backdrop-blur-sm"
-                )}>
-                  <AppointmentHeader
-                    appointment={appointment}
-                    onSaveField={save}
-                    onUpdate={loadData}
+          <div className="grid grid-cols-1 xl:grid-cols-12 gap-8">
+            <div className={cn(showSidebar ? "xl:col-span-8" : "xl:col-span-12", "space-y-8 transition-all duration-500")}>
+              <Card className="border-none shadow-xl rounded-[2.5rem] bg-white overflow-hidden">
+                <AppointmentHeader appointment={appointment} onSaveField={saveField} onUpdate={fetchAppointmentData} />
+
+                <div className="p-8 grid grid-cols-1 md:grid-cols-2 gap-8">
+                  <EditableField 
+                    key={`goal-${appointment.id}`} 
+                    field="goal" 
+                    label="Session Goal" 
+                    value={appointment.goal} 
+                    placeholder="What is the primary goal for this balance?" 
+                    onSave={saveField} 
+                    className="bg-slate-50/50 p-6 rounded-[2rem] border border-slate-100" 
                   />
-
-                  <CardContent className="p-8 pt-2 grid md:grid-cols-2 gap-8">
-                    <EditableField
-                      field="goal"
-                      label="Intention for this session"
-                      value={appointment.goal ?? ""}
-                      placeholder="What is the highest outcome you are holding for this balance?"
-                      onSave={save}
-                      className="min-h-[140px] rounded-2xl bg-white/60 backdrop-blur-sm border border-slate-200/60 shadow-sm focus-within:shadow-md transition-shadow"
-                    />
-
-                    <EditableField
-                      field="issue"
-                      label="Primary Concern"
-                      value={appointment.issue ?? ""}
-                      placeholder="What is asking for attention today?"
-                      onSave={save}
-                      className="min-h-[140px] rounded-2xl bg-white/60 backdrop-blur-sm border border-slate-200/60 shadow-sm focus-within:shadow-md transition-shadow"
-                    />
-                  </CardContent>
-                </Card>
-
-                {/* Content sections */}
-                <div className="print:hidden">
-                  <SessionContentSwitcher
-                    appointment={appointment}
-                    onUpdate={loadData}
-                    saveField={save}
-                    history={history}
-                    nucleiFilter={selectedNucleus}
-                    showSidebar={sidebarOpen}
-                    onToggleSidebar={() => setSidebarOpen(!sidebarOpen)}
-                    onClonePrevious={() => {/* ... */}}
-                    onPrint={print}
-                    onCopySummary={copySummary}
-                    onDelete={() => {/* ... */}}
-                    onStartSession={startSession}
-                    isCloning={cloning}
-                    isCopied={copied}
+                  <EditableField 
+                    key={`issue-${appointment.id}`} 
+                    field="issue" 
+                    label="Main Concern / Issue" 
+                    value={appointment.issue} 
+                    placeholder="Describe the client's main concern..." 
+                    onSave={saveField} 
+                    className="bg-slate-50/50 p-6 rounded-[2rem] border border-slate-100" 
                   />
                 </div>
+              </Card>
+
+              <div className="print:hidden">
+                <SessionContentSwitcher 
+                  appointment={appointment} 
+                  onUpdate={fetchAppointmentData} 
+                  saveField={saveField} 
+                  history={history}
+                  nucleiFilter={nucleiFilter}
+                  // Action Props
+                  showSidebar={showSidebar}
+                  onToggleSidebar={() => setShowSidebar(!showSidebar)}
+                  onClonePrevious={handleClonePrevious}
+                  onPrint={handlePrint}
+                  onCopySummary={handleCopySummary}
+                  onDelete={handleDeleteAppointment}
+                  onStartSession={handleStartSession}
+                  isCloning={cloning}
+                  isCopied={copied}
+                />
               </div>
             </div>
 
-            {/* ── Right Sidebar ─────────────────────────────────────────────── */}
-            {sidebarOpen && (
-              <div className={cn(
-                "col-span-full xl:col-span-4 space-y-8",
-                "animate-in slide-in-from-right-6 fade-in duration-500",
-                "print:hidden"
-              )}>
-                {/* Brainstem Map */}
-                <div className="space-y-5">
-                  <div className="flex items-center gap-3 px-1">
-                    <Brain className="h-5 w-5 text-violet-600" />
-                    <h3 className="text-sm font-semibold tracking-tight text-muted-foreground uppercase">
-                      Brainstem Tone
-                    </h3>
+            {showSidebar && (
+              <div className="xl:col-span-4 space-y-8 print:hidden animate-in fade-in slide-in-from-right-4 duration-500">
+                <div className="space-y-4">
+                  <div className="flex items-center gap-2 px-2">
+                    <Brain size={18} className="text-indigo-600" />
+                    <h3 className="text-sm font-black text-slate-400 uppercase tracking-[0.3em]">Brainstem Tone Map</h3>
                   </div>
-                  <BrainstemToneMap
-                    priorityPattern={appointment.priority_pattern}
-                    activeFilter={selectedNucleus}
-                    onSelectNuclei={setSelectedNucleus}
+                  <BrainstemToneMap 
+                    priorityPattern={appointment.priority_pattern} 
+                    activeFilter={nucleiFilter}
+                    onSelectNuclei={setNucleiFilter}
                   />
                 </div>
 
-                <AppointmentContextCards
-                  appointment={appointment}
-                  currentPeakMeridian={currentPeakMeridian}
-                  onSaveField={save}
+                <AppointmentContextCards 
+                  appointment={appointment} 
+                  currentPeakMeridian={currentPeakMeridian} 
+                  onSaveField={saveField} 
                 />
 
-                {/* Live Summary Card */}
-                <Card className={cn(
-                  "rounded-3xl border-none shadow-lg",
-                  "bg-gradient-to-b from-white/80 to-slate-50/40 backdrop-blur-md"
-                )}>
-                  <CardHeader className="pb-3 border-b border-slate-100/60">
-                    <CardTitle className="text-sm font-semibold tracking-tight flex items-center gap-2 text-muted-foreground">
-                      <ClipboardList className="h-4 w-4 text-violet-600" />
-                      Live Summary
+                <Card className="border-none shadow-lg rounded-[2.5rem] bg-white overflow-hidden">
+                  <CardHeader className="bg-slate-50/50 border-b border-slate-100">
+                    <CardTitle className="text-sm font-black text-slate-400 uppercase tracking-[0.3em] flex items-center gap-2">
+                      <ClipboardList size={16} className="text-indigo-500" /> Live Summary
                     </CardTitle>
                   </CardHeader>
-                  <CardContent className="p-6 space-y-6 text-sm">
-                    <div className="space-y-4">
-                      {[
-                        { label: "BOLT", value: appointment.bolt_score ? `${appointment.bolt_score}s` : '—', color: "indigo" },
-                        { label: "Coherence", value: appointment.coherence_score?.toFixed(2) ?? '—', color: "rose" },
-                        {
-                          label: "Hydration",
-                          value: (
-                            <Badge variant="outline" className={cn(
-                              "text-[10px] font-bold px-3 py-0.5",
-                              appointment.hydrated ? "bg-emerald-50 text-emerald-700 border-emerald-200" : "bg-rose-50 text-rose-700 border-rose-200"
-                            )}>
-                              {appointment.hydrated ? "Optimal" : "Needs support"}
-                            </Badge>
-                          ),
-                          color: ""
-                        },
-                      ].map(item => (
-                        <div key={item.label} className="flex justify-between items-center">
-                          <span className="text-muted-foreground font-medium">{item.label}</span>
-                          <span className={cn("font-semibold", item.color && `text-${item.color}-600`)}>
-                            {item.value}
-                          </span>
-                        </div>
-                      ))}
+                  <CardContent className="p-6 space-y-4">
+                    <div className="space-y-3">
+                      <div className="flex justify-between items-center text-xs">
+                        <span className="text-slate-400 font-bold uppercase">BOLT</span>
+                        <span className={cn("font-black", appointment.bolt_score ? "text-indigo-600" : "text-slate-300")}>
+                          {appointment.bolt_score ? `${appointment.bolt_score}s` : '—'}
+                        </span>
+                      </div>
+                      <div className="flex justify-between items-center text-xs">
+                        <span className="text-slate-400 font-bold uppercase">Coherence</span>
+                        <span className={cn("font-black", appointment.coherence_score ? "text-rose-600" : "text-slate-300")}>
+                          {appointment.coherence_score ? appointment.coherence_score.toFixed(2) : '—'}
+                        </span>
+                      </div>
+                      <div className="flex justify-between items-center text-xs">
+                        <span className="text-slate-400 font-bold uppercase">Hydration</span>
+                        <Badge className={cn("border-none text-[8px] font-black", appointment.hydrated ? "bg-emerald-50" : "bg-rose-50")}>
+                          {appointment.hydrated ? 'PASSED' : 'ATTENTION'}
+                        </Badge>
+                      </div>
                     </div>
-
-                    <div className="pt-4 border-t border-slate-100/60">
-                      <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-3">
-                        Pathway Patterns
-                      </p>
+                    
+                    <div className="pt-4 border-t border-slate-100">
+                      <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2">Pathway Findings</p>
                       <PathwayFindingsList priorityPattern={appointment.priority_pattern} />
                     </div>
 
-                    <Button
-                      variant="secondary"
-                      size="sm"
-                      className="w-full rounded-xl h-10 text-xs font-semibold tracking-wide"
-                      onClick={copySummary}
+                    <Button 
+                      variant="ghost" 
+                      className="w-full text-[10px] font-black uppercase tracking-widest text-indigo-600 hover:bg-indigo-50 h-9 rounded-xl"
+                      onClick={handleCopySummary}
                     >
-                      {copied ? <Check className="mr-2 h-4 w-4" /> : <Copy className="mr-2 h-4 w-4" />}
-                      {copied ? "Copied" : "Copy Full Summary"}
+                      <Copy size={12} className="mr-2" /> Copy Full Summary
                     </Button>
                   </CardContent>
                 </Card>
@@ -388,93 +420,58 @@ const AppointmentDetailPage = () => {
             )}
           </div>
 
-          {/* ── PRINT ONLY CONTENT ───────────────────────────────────────────── */}
-          <div className="hidden print:block mt-12 space-y-10">
-            {/* Header */}
-            <div className="border-b-2 border-violet-800 pb-6 mb-10">
-              <div className="flex justify-between items-end">
-                <div>
-                  <h1 className="text-4xl font-bold text-slate-900">Session Summary</h1>
-                  <p className="mt-1 text-slate-600 font-medium">Antigravity Kinesiology</p>
-                </div>
-                <div className="text-right">
-                  <p className="text-xl font-bold text-violet-800">{format(appointment.date, "MMMM d, yyyy")}</p>
-                  <p className="text-sm text-slate-500 mt-1">ID: {appointment.display_id || id?.slice(0,8)}</p>
-                </div>
-              </div>
-            </div>
-
-            {/* Key metrics */}
+          <div className="hidden print:block space-y-8">
             <div className="grid grid-cols-2 gap-8">
-              <div className="p-6 border rounded-xl">
-                <h3 className="text-sm uppercase tracking-wider text-slate-500 font-semibold mb-5">Key Metrics</h3>
-                <dl className="space-y-4">
-                  <div className="flex justify-between">
-                    <dt className="text-slate-600">BOLT Score</dt>
-                    <dd className="font-bold text-indigo-700">{appointment.bolt_score ? `${appointment.bolt_score}s` : '—'}</dd>
+              <div className="p-6 bg-slate-50 rounded-2xl border border-slate-100">
+                <h3 className="text-xs font-black text-slate-400 uppercase tracking-widest mb-4">Key Assessments</h3>
+                <div className="space-y-4">
+                  <div className="flex justify-between items-center">
+                    <span className="text-sm font-bold text-slate-600">BOLT Score</span>
+                    <span className="text-lg font-black text-indigo-600">{appointment.bolt_score ? `${appointment.bolt_score}s` : 'N/A'}</span>
                   </div>
-                  <div className="flex justify-between">
-                    <dt className="text-slate-600">Coherence</dt>
-                    <dd className="font-bold text-rose-600">{appointment.coherence_score?.toFixed(2) ?? '—'}</dd>
+                  <div className="flex justify-between items-center">
+                    <span className="text-sm font-bold text-slate-600">Coherence Ratio</span>
+                    <span className="text-lg font-black text-rose-600">{appointment.coherence_score ? appointment.coherence_score.toFixed(2) : 'N/A'}</span>
                   </div>
-                  <div className="flex justify-between">
-                    <dt className="text-slate-600">Hydration</dt>
-                    <dd className={cn(
-                      "font-bold",
-                      appointment.hydrated ? "text-emerald-600" : "text-rose-600"
-                    )}>
-                      {appointment.hydrated ? "Optimal" : "Attention needed"}
-                    </dd>
-                  </div>
-                </dl>
-              </div>
-
-              <div className="p-6 border rounded-xl">
-                <h3 className="text-sm uppercase tracking-wider text-slate-500 font-semibold mb-5">Acupoints</h3>
-                <p className="whitespace-pre-line leading-relaxed">
-                  {appointment.acupoints || "No points recorded."}
-                </p>
-              </div>
-            </div>
-
-            {/* Findings & Notes */}
-            <div className="space-y-10">
-              <div>
-                <h3 className="text-lg font-semibold mb-4">Findings & Corrections</h3>
-                <div className="p-6 border rounded-xl space-y-6">
-                  <div>
-                    <h4 className="font-medium text-violet-700 mb-2">Primary Patterns</h4>
-                    <PathwayFindingsList priorityPattern={appointment.priority_pattern} showOnlyInhibited={false} />
-                  </div>
-                  <div>
-                    <h4 className="font-medium text-violet-700 mb-2">Corrections & Modes</h4>
-                    <p className="whitespace-pre-line text-slate-700 leading-relaxed">
-                      {appointment.modes_balances || "—"}
-                    </p>
+                  <div className="flex justify-between items-center">
+                    <span className="text-sm font-bold text-slate-600">Hydration Status</span>
+                    <span className={cn("text-sm font-black", appointment.hydrated ? "text-emerald-600" : "text-rose-600")}>{appointment.hydrated ? 'PASSED' : 'NEEDS ATTENTION'}</span>
                   </div>
                 </div>
               </div>
+              <div className="p-6 bg-slate-50 rounded-2xl border border-slate-100">
+                <h3 className="text-xs font-black text-slate-400 uppercase tracking-widest mb-4">Acupoints Used</h3>
+                <p className="text-sm font-bold text-slate-800 leading-relaxed">{appointment.acupoints || 'No specific points recorded.'}</p>
+              </div>
+            </div>
 
-              <div>
-                <h3 className="text-lg font-semibold mb-4">Practitioner Notes & Recommendations</h3>
-                <div className="p-6 bg-violet-50/40 border border-violet-100 rounded-xl">
-                  <p className="whitespace-pre-line leading-relaxed text-slate-800">
-                    {appointment.session_north_star || appointment.notes || "No notes recorded."}
-                  </p>
+            <div className="space-y-4">
+              <h3 className="text-xs font-black text-slate-400 uppercase tracking-widest">Session Findings & Corrections</h3>
+              <div className="p-6 border-2 border-slate-100 rounded-2xl space-y-6">
+                <div>
+                  <h4 className="text-xs font-black text-indigo-600 uppercase tracking-widest mb-2">Pathway & Patterns</h4>
+                  <PathwayFindingsList priorityPattern={appointment.priority_pattern} showOnlyInhibited={false} />
+                </div>
+                <div>
+                  <h4 className="text-xs font-black text-indigo-600 uppercase tracking-widest mb-2">Corrections Applied</h4>
+                  <p className="text-sm text-slate-700 leading-relaxed">{appointment.modes_balances || 'No correction notes.'}</p>
                 </div>
               </div>
             </div>
 
-            <div className="pt-16 text-center text-sm text-slate-400 italic">
-              In service of your highest healing path • Thank you for your presence
+            <div className="space-y-4">
+              <h3 className="text-xs font-black text-slate-400 uppercase tracking-widest">Practitioner Notes & Homework</h3>
+              <div className="p-6 bg-indigo-50/30 border-2 border-indigo-100 rounded-2xl">
+                <p className="text-sm text-slate-800 leading-relaxed whitespace-pre-wrap">{appointment.session_north_star || appointment.notes || 'No specific homework recorded.'}</p>
+              </div>
+            </div>
+
+            <div className="pt-12 text-center border-t border-slate-100">
+              <p className="text-[10px] font-black text-slate-400 uppercase tracking-[0.3em]">Thank you for your commitment to your healing journey.</p>
             </div>
           </div>
-
-          {/* Hidden worksheet for print / export */}
-          <SessionWorksheetTemplate
-            clientName={appointment.clients.name}
-            date={appointment.date}
-          />
+          
+          <SessionWorksheetTemplate clientName={appointment.clients.name} date={appointment.date} />
         </div>
       </AppLayout>
     </>

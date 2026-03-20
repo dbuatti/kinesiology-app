@@ -39,7 +39,8 @@ const ClinicalReasoningModal = ({ muscleName, status, open, onOpenChange }: Clin
   
   const lovettPartner = useMemo(() => {
     if (!muscleName) return null;
-    const association = VAGUS_ASSOCIATIONS.find(a => a.muscle.toLowerCase() === muscleName.toLowerCase());
+    const baseName = muscleName.replace(/ \([LR]\)$/, '');
+    const association = VAGUS_ASSOCIATIONS.find(a => a.muscle.toLowerCase() === baseName.toLowerCase());
     if (!association) return null;
     const partnerAssoc = VAGUS_ASSOCIATIONS.find(a => a.spinalSegment === association.reciprocatingSegment);
     return {

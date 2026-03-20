@@ -6,7 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { showSuccess, showError } from "@/utils/toast";
-import { Loader2, FlaskConical, Activity, RefreshCw, Sparkles, UserPlus } from "lucide-react";
+import { Loader2, FlaskConical, Activity, RefreshCw, Sparkles, UserPlus, Trash2, AlertTriangle } from "lucide-react";
 import { subDays } from "date-fns";
 
 const DebugAppointmentPage = () => {
@@ -16,6 +16,26 @@ const DebugAppointmentPage = () => {
   const [heartRate, setHeartRate] = useState<string>("72");
   const [breathRate, setBreathRate] = useState<string>("12");
   const [debugInfo, setDebugInfo] = useState<any>(null);
+
+  const cleanupTransverseAbdominals = async () => {
+    if (!confirm("This will permanently delete ALL test records for 'Transverse Abdominals' across all clients and sessions. This cannot be undone. Proceed?")) return;
+    
+    setLoading(true);
+    try {
+      const { error } = await supabase
+        .from('muscle_tests')
+        .delete()
+        .eq('muscle_name', 'Transverse Abdominals');
+
+      if (error) throw error;
+
+      showSuccess("All 'Transverse Abdominals' records have been wiped from the database.");
+    } catch (err: any) {
+      showError(err.message || "Failed to cleanup data");
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const seedDemoData = async () => {
     setLoading(true);
@@ -98,17 +118,9 @@ const DebugAppointmentPage = () => {
     setDebugInfo(null);
 
     try {
-      console.log("[DEBUG] Getting user...");
       const { data: { user }, error: userError } = await supabase.auth.getUser();
-      
-      if (userError || !user) {
-        throw new Error("User not authenticated");
-      }
+      if (userError || !user) throw new Error("User not authenticated");
 
-      console.log("[DEBUG] User ID:", user.id);
-
-      // Get first client
-      console.log("[DEBUG] Fetching clients...");
       const { data: clients, error: clientError } = await supabase
         .from('clients')
         .select('id')
@@ -119,10 +131,7 @@ const DebugAppointmentPage = () => {
       }
 
       const clientId = clients[0].id;
-      console.log("[DEBUG] Using client ID:", clientId);
 
-      // Create test appointment
-      console.log("[DEBUG] Creating test appointment...");
       const { data: appointment, error: appointmentError } = await supabase
         .from('appointments')
         .insert({
@@ -138,24 +147,12 @@ const DebugAppointmentPage = () => {
         .select()
         .single();
 
-      if (appointmentError) {
-        console.error("[DEBUG] Error creating appointment:", appointmentError);
-        throw appointmentError;
-      }
+      if (appointmentError) throw appointmentError;
 
-      console.log("[DEBUG] Test appointment created:", appointment);
       setTestAppointmentId(appointment.id);
-      
-      setDebugInfo({
-        step: "created",
-        appointmentId: appointment.id,
-        userId: user.id,
-        clientId: clientId
-      });
-
-      showSuccess("Test appointment created! ID: " + appointment.id.slice(0, 8));
+      setDebugInfo({ step: "created", appointmentId: appointment.id, userId: user.id, clientId: clientId });
+      showSuccess("Test appointment created!");
     } catch (error: any) {
-      console.error("[DEBUG] Error:", error);
       showError(error.message || "Failed to create test appointment");
     } finally {
       setLoading(false);
@@ -163,60 +160,16 @@ const DebugAppointmentPage = () => {
   };
 
   const testBoltScore = async () => {
-    if (!testAppointmentId) {
-      showError("Create a test appointment first");
-      return;
-    }
-
+    if (!testAppointmentId) return;
     setLoading(true);
-
     try {
-      console.log("[DEBUG] Updating BOLT score to:", boltScore);
-      
-      const { data: before, error: beforeError } = await supabase
-        .from('appointments')
-        .select('bolt_score, user_id')
-        .eq('id', testAppointmentId)
-        .single();
-
-      console.log("[DEBUG] Before update:", before);
-
-      const { data, error } = await supabase
+      const { error } = await supabase
         .from('appointments')
         .update({ bolt_score: parseInt(boltScore) })
-        .eq('id', testAppointmentId)
-        .select();
-
-      if (error) {
-        console.error("[DEBUG] Error updating BOLT score:", error);
-        throw error;
-      }
-
-      console.log("[DEBUG] Update result:", data);
-
-      // Wait a bit for trigger to fire
-      await new Promise(resolve => setTimeout(resolve, 1000));
-
-      // Check if procedure was created
-      const { data: { user } } = await supabase.auth.getUser();
-      const { data: procedures, error: procError } = await supabase
-        .from('procedures')
-        .select('*')
-        .eq('user_id', user!.id)
-        .ilike('name', '%bolt%');
-
-      console.log("[DEBUG] BOLT procedures found:", procedures);
-
-      setDebugInfo({
-        step: "bolt_updated",
-        boltScore: parseInt(boltScore),
-        proceduresFound: procedures?.length || 0,
-        procedures: procedures
-      });
-
-      showSuccess("BOLT score updated! Check console and procedures.");
+        .eq('id', testAppointmentId);
+      if (error) throw error;
+      showSuccess("BOLT score updated!");
     } catch (error: any) {
-      console.error("[DEBUG] Error:", error);
       showError(error.message || "Failed to update BOLT score");
     } finally {
       setLoading(false);
@@ -224,70 +177,18 @@ const DebugAppointmentPage = () => {
   };
 
   const testCoherenceScore = async () => {
-    if (!testAppointmentId) {
-      showError("Create a test appointment first");
-      return;
-    }
-
+    if (!testAppointmentId) return;
     setLoading(true);
-
     try {
       const hr = parseInt(heartRate);
       const br = parseInt(breathRate);
-      const coherenceScore = hr / br;
-
-      console.log("[DEBUG] Updating coherence - HR:", hr, "BR:", br, "Score:", coherenceScore);
-
-      const { data: before, error: beforeError } = await supabase
+      const { error } = await supabase
         .from('appointments')
-        .select('coherence_score, heart_rate, breath_rate, user_id')
-        .eq('id', testAppointmentId)
-        .single();
-
-      console.log("[DEBUG] Before update:", before);
-
-      const { data, error } = await supabase
-        .from('appointments')
-        .update({ 
-          heart_rate: hr,
-          breath_rate: br,
-          coherence_score: coherenceScore 
-        })
-        .eq('id', testAppointmentId)
-        .select();
-
-      if (error) {
-        console.error("[DEBUG] Error updating coherence:", error);
-        throw error;
-      }
-
-      console.log("[DEBUG] Update result:", data);
-
-      // Wait a bit for trigger to fire
-      await new Promise(resolve => setTimeout(resolve, 1000));
-
-      // Check if procedure was created
-      const { data: { user } } = await supabase.auth.getUser();
-      const { data: procedures, error: procError } = await supabase
-        .from('procedures')
-        .select('*')
-        .eq('user_id', user!.id)
-        .ilike('name', '%coherence%');
-
-      console.log("[DEBUG] Coherence procedures found:", procedures);
-
-      setDebugInfo({
-        step: "coherence_updated",
-        heartRate: hr,
-        breathRate: br,
-        coherenceScore: coherenceScore,
-        proceduresFound: procedures?.length || 0,
-        procedures: procedures
-      });
-
-      showSuccess("Coherence score updated! Check console and procedures.");
+        .update({ heart_rate: hr, breath_rate: br, coherence_score: hr / br })
+        .eq('id', testAppointmentId);
+      if (error) throw error;
+      showSuccess("Coherence score updated!");
     } catch (error: any) {
-      console.error("[DEBUG] Error:", error);
       showError(error.message || "Failed to update coherence score");
     } finally {
       setLoading(false);
@@ -296,28 +197,13 @@ const DebugAppointmentPage = () => {
 
   const checkProcedures = async () => {
     setLoading(true);
-
     try {
       const { data: { user } } = await supabase.auth.getUser();
-      
-      const { data: allProcedures, error } = await supabase
-        .from('procedures')
-        .select('*')
-        .eq('user_id', user!.id);
-
+      const { data: allProcedures, error } = await supabase.from('procedures').select('*').eq('user_id', user!.id);
       if (error) throw error;
-
-      console.log("[DEBUG] All procedures:", allProcedures);
-
-      setDebugInfo({
-        step: "procedures_check",
-        totalProcedures: allProcedures?.length || 0,
-        procedures: allProcedures
-      });
-
+      setDebugInfo({ step: "procedures_check", totalProcedures: allProcedures?.length || 0, procedures: allProcedures });
       showSuccess(`Found ${allProcedures?.length || 0} procedures`);
     } catch (error: any) {
-      console.error("[DEBUG] Error:", error);
       showError(error.message || "Failed to check procedures");
     } finally {
       setLoading(false);
@@ -325,27 +211,14 @@ const DebugAppointmentPage = () => {
   };
 
   const deleteTestAppointment = async () => {
-    if (!testAppointmentId) {
-      showError("No test appointment to delete");
-      return;
-    }
-
+    if (!testAppointmentId) return;
     setLoading(true);
-
     try {
-      const { error } = await supabase
-        .from('appointments')
-        .delete()
-        .eq('id', testAppointmentId);
-
-      if (error) throw error;
-
-      console.log("[DEBUG] Test appointment deleted");
+      await supabase.from('appointments').delete().eq('id', testAppointmentId);
       setTestAppointmentId("");
       setDebugInfo(null);
       showSuccess("Test appointment deleted");
     } catch (error: any) {
-      console.error("[DEBUG] Error:", error);
       showError(error.message || "Failed to delete test appointment");
     } finally {
       setLoading(false);
@@ -354,44 +227,71 @@ const DebugAppointmentPage = () => {
 
   return (
     <div className="p-4 md:p-8 max-w-full mx-auto space-y-8">
-      <div>
-        <h1 className="text-3xl font-bold tracking-tight text-slate-900">🔧 Debug Procedures</h1>
-        <p className="text-slate-500 mt-2">Test procedure auto-tracking functionality</p>
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-3xl font-bold tracking-tight text-slate-900">🔧 Debug & Admin</h1>
+          <p className="text-slate-500 mt-2">System maintenance and testing tools.</p>
+        </div>
       </div>
 
-      <Card className="border-2 border-indigo-200 bg-indigo-50">
-        <CardHeader>
-          <CardTitle className="text-indigo-900 flex items-center gap-2">
-            <Sparkles size={20} className="text-indigo-600" /> Seed Demo Data
-          </CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <p className="text-sm text-indigo-800">
-            This will create a client named <strong>Arthur Dent</strong> and 3 past sessions with evolving neurological findings. 
-            Use this to test the <strong>Neurological Evolution</strong> grid and <strong>Brainstem Tone Map</strong> on the real Clients page.
-          </p>
-          <Button 
-            onClick={seedDemoData}
-            disabled={loading}
-            className="w-full bg-indigo-600 hover:bg-indigo-700 shadow-lg shadow-indigo-200"
-          >
-            {loading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <UserPlus size={18} className="mr-2" />}
-            Seed Arthur Dent & History
-          </Button>
-        </CardContent>
-      </Card>
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+        <Card className="border-2 border-rose-200 bg-rose-50">
+          <CardHeader>
+            <CardTitle className="text-rose-900 flex items-center gap-2">
+              <Trash2 size={20} className="text-rose-600" /> Clinical Data Cleanup
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <p className="text-sm text-rose-800">
+              Use these tools to remove specific data points from your history. This is useful if you've logged items for testing purposes and want to reset your mastery stats.
+            </p>
+            <div className="p-4 bg-white rounded-xl border border-rose-200 space-y-4">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="font-bold text-slate-900">Transverse Abdominals</p>
+                  <p className="text-xs text-slate-500">Wipe all muscle test logs for this component.</p>
+                </div>
+                <Button 
+                  variant="destructive" 
+                  size="sm" 
+                  onClick={cleanupTransverseAbdominals}
+                  disabled={loading}
+                  className="rounded-xl font-bold"
+                >
+                  {loading ? <Loader2 className="animate-spin" size={16} /> : "Reset Data"}
+                </Button>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card className="border-2 border-indigo-200 bg-indigo-50">
+          <CardHeader>
+            <CardTitle className="text-indigo-900 flex items-center gap-2">
+              <Sparkles size={20} className="text-indigo-600" /> Seed Demo Data
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <p className="text-sm text-indigo-800">
+              Create a client named <strong>Arthur Dent</strong> and 3 past sessions with evolving neurological findings to test the evolution grid.
+            </p>
+            <Button 
+              onClick={seedDemoData}
+              disabled={loading}
+              className="w-full bg-indigo-600 hover:bg-indigo-700 shadow-lg shadow-indigo-200"
+            >
+              {loading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <UserPlus size={18} className="mr-2" />}
+              Seed Arthur Dent & History
+            </Button>
+          </CardContent>
+        </Card>
+      </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <Card>
-          <CardHeader>
-            <CardTitle className="text-lg">Step 1: Create Test Appointment</CardTitle>
-          </CardHeader>
+          <CardHeader><CardTitle className="text-lg">Step 1: Create Test Appointment</CardTitle></CardHeader>
           <CardContent className="space-y-4">
-            <Button 
-              onClick={createTestAppointment}
-              disabled={loading || !!testAppointmentId}
-              className="w-full bg-indigo-600 hover:bg-indigo-700"
-            >
+            <Button onClick={createTestAppointment} disabled={loading || !!testAppointmentId} className="w-full bg-indigo-600 hover:bg-indigo-700">
               {loading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
               Create Test Appointment
             </Button>
@@ -405,135 +305,39 @@ const DebugAppointmentPage = () => {
         </Card>
 
         <Card>
-          <CardHeader>
-            <CardTitle className="text-lg flex items-center gap-2">
-              <FlaskConical size={20} className="text-indigo-500" />
-              Step 2: Test BOLT Score
-            </CardTitle>
-          </CardHeader>
+          <CardHeader><CardTitle className="text-lg flex items-center gap-2"><FlaskConical size={20} className="text-indigo-500" /> Step 2: Test BOLT Score</CardTitle></CardHeader>
           <CardContent className="space-y-4">
-            <div>
-              <Label htmlFor="boltScore">BOLT Score (seconds)</Label>
-              <Input
-                id="boltScore"
-                type="number"
-                value={boltScore}
-                onChange={(e) => setBoltScore(e.target.value)}
-                placeholder="30"
-              />
-            </div>
-            <Button 
-              onClick={testBoltScore}
-              disabled={loading || !testAppointmentId}
-              className="w-full bg-indigo-600 hover:bg-indigo-700"
-            >
-              {loading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
-              Update BOLT Score
-            </Button>
+            <div><Label htmlFor="boltScore">BOLT Score (seconds)</Label><Input id="boltScore" type="number" value={boltScore} onChange={(e) => setBoltScore(e.target.value)} /></div>
+            <Button onClick={testBoltScore} disabled={loading || !testAppointmentId} className="w-full bg-indigo-600 hover:bg-indigo-700">Update BOLT Score</Button>
           </CardContent>
         </Card>
 
         <Card>
-          <CardHeader>
-            <CardTitle className="text-lg flex items-center gap-2">
-              <Activity size={20} className="text-rose-500" />
-              Step 3: Test Coherence
-            </CardTitle>
-          </CardHeader>
+          <CardHeader><CardTitle className="text-lg flex items-center gap-2"><Activity size={20} className="text-rose-500" /> Step 3: Test Coherence</CardTitle></CardHeader>
           <CardContent className="space-y-4">
             <div className="grid grid-cols-2 gap-3">
-              <div>
-                <Label htmlFor="heartRate">Heart Rate</Label>
-                <Input
-                  id="heartRate"
-                  type="number"
-                  value={heartRate}
-                  onChange={(e) => setHeartRate(e.target.value)}
-                  placeholder="72"
-                />
-              </div>
-              <div>
-                <Label htmlFor="breathRate">Breath Rate</Label>
-                <Input
-                  id="breathRate"
-                  type="number"
-                  value={breathRate}
-                  onChange={(e) => setBreathRate(e.target.value)}
-                  placeholder="12"
-                />
-              </div>
+              <div><Label htmlFor="heartRate">Heart Rate</Label><Input id="heartRate" type="number" value={heartRate} onChange={(e) => setHeartRate(e.target.value)} /></div>
+              <div><Label htmlFor="breathRate">Breath Rate</Label><Input id="breathRate" type="number" value={breathRate} onChange={(e) => setBreathRate(e.target.value)} /></div>
             </div>
-            <Button 
-              onClick={testCoherenceScore}
-              disabled={loading || !testAppointmentId}
-              className="w-full bg-rose-600 hover:bg-rose-700"
-            >
-              {loading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
-              Update Coherence Score
-            </Button>
+            <Button onClick={testCoherenceScore} disabled={loading || !testAppointmentId} className="w-full bg-rose-600 hover:bg-rose-700">Update Coherence Score</Button>
           </CardContent>
         </Card>
 
         <Card>
-          <CardHeader>
-            <CardTitle className="text-lg">Step 4: Check Results</CardTitle>
-          </CardHeader>
+          <CardHeader><CardTitle className="text-lg">Step 4: Check Results</CardTitle></CardHeader>
           <CardContent className="space-y-4">
-            <Button 
-              onClick={checkProcedures}
-              disabled={loading}
-              className="w-full bg-emerald-600 hover:bg-emerald-700"
-            >
-              {loading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <RefreshCw className="mr-2 h-4 w-4" />}
-              Check All Procedures
-            </Button>
-            {testAppointmentId && (
-              <Button 
-                onClick={deleteTestAppointment}
-                disabled={loading}
-                variant="destructive"
-                className="w-full"
-              >
-                Delete Test Appointment
-              </Button>
-            )}
+            <Button onClick={checkProcedures} disabled={loading} className="w-full bg-emerald-600 hover:bg-emerald-700"><RefreshCw className="mr-2 h-4 w-4" /> Check All Procedures</Button>
+            {testAppointmentId && <Button onClick={deleteTestAppointment} disabled={loading} variant="destructive" className="w-full">Delete Test Appointment</Button>}
           </CardContent>
         </Card>
       </div>
 
       {debugInfo && (
         <Card className="border-2 border-blue-200 bg-blue-50">
-          <CardHeader>
-            <CardTitle className="text-blue-900 flex items-center gap-2">
-              📊 Debug Info
-              <Badge className="bg-blue-600">{debugInfo.step}</Badge>
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <pre className="bg-white p-4 rounded-lg overflow-auto text-xs border border-blue-200">
-              {JSON.stringify(debugInfo, null, 2)}
-            </pre>
-          </CardContent>
+          <CardHeader><CardTitle className="text-blue-900 flex items-center gap-2">📊 Debug Info <Badge className="bg-blue-600">{debugInfo.step}</Badge></CardTitle></CardHeader>
+          <CardContent><pre className="bg-white p-4 rounded-lg overflow-auto text-xs border border-blue-200">{JSON.stringify(debugInfo, null, 2)}</pre></CardContent>
         </Card>
       )}
-
-      <Card className="border-slate-200">
-        <CardHeader>
-          <CardTitle className="text-lg">📝 Instructions</CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-3 text-sm text-slate-700">
-          <ol className="list-decimal list-inside space-y-2">
-            <li><strong>Open browser console</strong> (F12 or right-click → Inspect → Console)</li>
-            <li><strong>Create test appointment</strong> - This creates a dummy appointment</li>
-            <li><strong>Test BOLT score</strong> - Updates the appointment with a BOLT score</li>
-            <li><strong>Test Coherence</strong> - Updates the appointment with coherence data</li>
-            <li><strong>Check procedures</strong> - See if procedures were auto-created</li>
-            <li><strong>Check console logs</strong> - Look for [DEBUG] messages</li>
-            <li><strong>Go to Procedures page</strong> - Verify procedures appear there</li>
-            <li><strong>Clean up</strong> - Delete the test appointment when done</li>
-          </ol>
-        </CardContent>
-      </Card>
     </div>
   );
 };

@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect, useMemo } from "react";
+import React, { useState, useEffect, useMemo, useRef, useCallback } from "react";
 import {
   Dialog,
   DialogContent,
@@ -28,10 +28,21 @@ import {
   Layers,
   ArrowRightLeft,
   PlayCircle,
-  FileText
+  FileText,
+  Upload,
+  X,
+  Loader2,
+  Plus,
+  Target,
+  ImageIcon
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
+import { supabase } from "@/integrations/supabase/client";
+import { showSuccess, showError } from "@/utils/toast";
+
+const BUCKET_NAME = 'muscle-images';
 
 interface MuscleInfoModalProps {
   muscleName: string | null;
@@ -39,22 +50,226 @@ interface MuscleInfoModalProps {
   onOpenChange: (open: boolean) => void;
 }
 
+const MuscleImageZone = ({ 
+  muscleName, 
+  type,
+  currentUrl, 
+  onUploadComplete 
+}: { 
+  muscleName: string; 
+  type: 'primary' | 'secondary';
+  currentUrl?: string | null; 
+  onUploadComplete: (url: string | null) => void 
+}) => {
+  const [isDragging, setIsDragging] = useState(false);
+  const [isUploading, setIsUploading] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const handleUpload = async (file: File) => {
+    if (!file.type.startsWith('image/')) {
+      showError("Please upload an image file.");
+      return;
+    }
+
+    setIsUploading(true);
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) throw new Error("User not authenticated");
+
+      const fileExt = file.name.split('.').pop() || 'png';
+      const filePath = `${user.id}/${muscleName.replace(/\s+/g, '_')}_${type}.${fileExt}`;
+
+      const { error: uploadError } = await supabase.storage
+        .from(BUCKET_NAME)
+        .upload(filePath, file, { 
+          upsert: true,
+          contentType: file.type
+        });
+
+      if (uploadError) throw uploadError;
+
+      const { data: { publicUrl } } = supabase.storage
+        .from(BUCKET_NAME)
+        .getPublicUrl(filePath);
+
+      const cacheBustedUrl = `${publicUrl}?t=${Date.now()}`;
+      const dbField = type === 'primary' ? 'image_url' : 'secondary_image_url';
+
+      const { error: dbError } = await supabase
+        .from('muscle_customizations')
+        .upsert({
+          user_id: user.id,
+          muscle_name: muscleName,
+          [dbField]: publicUrl 
+        }, { 
+          onConflict: 'user_id,muscle_name' 
+        });
+
+      if (dbError) throw dbError;
+
+      onUploadComplete(cacheBustedUrl);
+      showSuccess(`${type === 'primary' ? 'Main' : 'Secondary'} image updated!`);
+    } catch (error: any) {
+      console.error("[MuscleImageZone] Upload error:", error);
+      showError(error.message || "Failed to upload image.");
+    } finally {
+      setIsUploading(false);
+    }
+  };
+
+  const handleRemove = async (e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (!confirm(`Remove this ${type} image?`)) return;
+
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
+
+      const dbField = type === 'primary' ? 'image_url' : 'secondary_image_url';
+
+      const { error } = await supabase
+        .from('muscle_customizations')
+        .update({ [dbField]: null })
+        .eq('user_id', user.id)
+        .eq('muscle_name', muscleName);
+
+      if (error) throw error;
+
+      onUploadComplete(null);
+      showSuccess("Image removed.");
+    } catch (error) {
+      console.error("[MuscleImageZone] Remove error:", error);
+      showError("Failed to remove image.");
+    }
+  };
+
+  const onDrop = useCallback((e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDragging(false);
+    const file = e.dataTransfer.files?.[0];
+    if (file) handleUpload(file);
+  }, [muscleName, type]);
+
+  const isPrimary = type === 'primary';
+
+  return (
+    <div 
+      onDragOver={(e) => { e.preventDefault(); e.stopPropagation(); setIsDragging(true); }}
+      onDragLeave={(e) => { e.preventDefault(); e.stopPropagation(); setIsDragging(false); }}
+      onDrop={onDrop}
+      onClick={(e) => { e.stopPropagation(); fileInputRef.current?.click(); }}
+      className={cn(
+        "relative group/image transition-all duration-300 flex flex-col items-center justify-center overflow-hidden outline-none cursor-pointer",
+        "aspect-video rounded-2xl border-2 border-dashed",
+        currentUrl ? "border-transparent" : "border-slate-200 bg-slate-50/50 hover:border-indigo-400 hover:bg-indigo-50/30",
+        isDragging && "border-indigo-600 bg-indigo-100/80 scale-[1.02] ring-4 ring-indigo-500/20",
+        isUploading && "opacity-50 pointer-events-none"
+      )}
+    >
+      <input 
+        type="file" 
+        ref={fileInputRef} 
+        className="hidden" 
+        accept="image/*" 
+        onChange={(e) => {
+          const file = e.target.files?.[0];
+          if (file) handleUpload(file);
+        }}
+      />
+      
+      {currentUrl ? (
+        <>
+          <img 
+            key={currentUrl} 
+            src={currentUrl} 
+            alt="Muscle Reference" 
+            className="w-full h-full object-cover" 
+          />
+          <div className="absolute inset-0 bg-black/40 opacity-0 group-hover/image:opacity-100 transition-opacity flex items-center justify-center gap-2">
+            <div className="flex flex-col items-center gap-2">
+              <div className="flex gap-2">
+                <Button variant="secondary" size="icon" className="rounded-xl h-8 w-8 shadow-lg">
+                  <Upload size={14} />
+                </Button>
+                <Button variant="destructive" size="icon" className="rounded-xl h-8 w-8 shadow-lg" onClick={handleRemove}>
+                  <X size={14} />
+                </Button>
+              </div>
+              <p className="text-[8px] font-black text-white uppercase tracking-widest">Click to Change</p>
+            </div>
+          </div>
+        </>
+      ) : (
+        <div className="text-center p-3 space-y-2">
+          {isUploading ? (
+            <Loader2 className="mx-auto text-indigo-500 animate-spin" size={24} />
+          ) : (
+            <>
+              <div className="w-10 h-10 rounded-xl bg-white shadow-sm border border-slate-100 flex items-center justify-center mx-auto text-slate-400 group-hover/image:text-indigo-600 group-hover/image:scale-110 transition-all">
+                <Plus size={20} />
+              </div>
+              <p className="font-black text-slate-500 uppercase tracking-widest text-[9px]">
+                {isPrimary ? "Add Main Image" : "Add Secondary Image"}
+              </p>
+            </>
+          )}
+        </div>
+      )}
+    </div>
+  );
+};
+
 const MuscleInfoModal = ({ muscleName, open, onOpenChange }: MuscleInfoModalProps) => {
   const [currentTime, setCurrentTime] = useState(new Date().getHours());
+  const [customImages, setCustomImages] = useState<{ primaryUrl: string | null, secondaryUrl: string | null }>({ primaryUrl: null, secondaryUrl: null });
+  const [loadingImages, setLoadingImages] = useState(false);
 
   useEffect(() => {
-    if (open) {
+    if (open && muscleName) {
       setCurrentTime(new Date().getHours());
+      fetchCustomizations();
     }
-  }, [open]);
+  }, [open, muscleName]);
+
+  const fetchCustomizations = async () => {
+    if (!muscleName) return;
+    setLoadingImages(true);
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
+      
+      const baseName = muscleName.replace(/ \([LR]\)$/, '');
+      const { data } = await supabase
+        .from('muscle_customizations')
+        .select('image_url, secondary_image_url')
+        .eq('user_id', user.id)
+        .eq('muscle_name', baseName)
+        .maybeSingle();
+      
+      if (data) {
+        const timestamp = Date.now();
+        setCustomImages({
+          primaryUrl: data.image_url ? `${data.image_url}?t=${timestamp}` : null,
+          secondaryUrl: data.secondary_image_url ? `${data.secondary_image_url}?t=${timestamp}` : null
+        });
+      } else {
+        setCustomImages({ primaryUrl: null, secondaryUrl: null });
+      }
+    } catch (err) {
+      console.error("Failed to fetch muscle customizations:", err);
+    } finally {
+      setLoadingImages(false);
+    }
+  };
 
   const info = useMemo(() => muscleName ? getMuscleInfo(muscleName) : null, [muscleName]);
   const channel = useMemo(() => info?.meridian ? getChannelByName(info.meridian) : undefined, [info]);
 
-  // Find Lovett-Brother Partner
   const lovettPartner = useMemo(() => {
     if (!muscleName) return null;
-    const association = VAGUS_ASSOCIATIONS.find(a => a.muscle.toLowerCase() === muscleName.toLowerCase());
+    const baseName = muscleName.replace(/ \([LR]\)$/, '');
+    const association = VAGUS_ASSOCIATIONS.find(a => a.muscle.toLowerCase() === baseName.toLowerCase());
     if (!association) return null;
     
     const partnerAssoc = VAGUS_ASSOCIATIONS.find(a => a.spinalSegment === association.reciprocatingSegment);
@@ -78,7 +293,7 @@ const MuscleInfoModal = ({ muscleName, open, onOpenChange }: MuscleInfoModalProp
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[750px] rounded-[2.5rem] overflow-hidden p-0 border-none shadow-2xl">
+      <DialogContent className="sm:max-w-[800px] max-h-[95vh] rounded-[2.5rem] overflow-hidden p-0 border-none shadow-2xl">
         <DialogHeader className="p-0">
           <div className={cn("p-8 text-white transition-colors relative", channel ? channel.color.split(' ')[0] : "bg-indigo-600")}>
             {isPeak && (
@@ -111,6 +326,25 @@ const MuscleInfoModal = ({ muscleName, open, onOpenChange }: MuscleInfoModalProp
         </DialogHeader>
 
         <div className="p-8 space-y-10 max-h-[70vh] overflow-y-auto">
+          {/* Image Customization Section */}
+          <section className="space-y-4">
+            <SectionHeader icon={ImageIcon} title="Reference Images" color="text-indigo-600" />
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <MuscleImageZone 
+                muscleName={info.name} 
+                type="primary" 
+                currentUrl={customImages.primaryUrl} 
+                onUploadComplete={(url) => setCustomImages(prev => ({ ...prev, primaryUrl: url }))} 
+              />
+              <MuscleImageZone 
+                muscleName={info.name} 
+                type="secondary" 
+                currentUrl={customImages.secondaryUrl} 
+                onUploadComplete={(url) => setCustomImages(prev => ({ ...prev, secondaryUrl: url }))} 
+              />
+            </div>
+          </section>
+
           {/* Educational Content: Description & Video */}
           {(info.description || info.videoUrl) && (
             <section className="space-y-6 animate-in fade-in slide-in-from-top-2 duration-500">
@@ -141,6 +375,14 @@ const MuscleInfoModal = ({ muscleName, open, onOpenChange }: MuscleInfoModalProp
             </section>
           )}
 
+          {/* Testing Position - Highlighted */}
+          <section className="p-6 bg-amber-50 rounded-[2rem] border-2 border-amber-100 space-y-3">
+            <SectionHeader icon={Target} title="Testing Position" color="text-amber-600" />
+            <p className="text-base font-bold text-amber-900 leading-relaxed">
+              {info.testingPosition}
+            </p>
+          </section>
+
           {/* Lovett-Brother Partner */}
           {lovettPartner && (
             <section>
@@ -160,9 +402,6 @@ const MuscleInfoModal = ({ muscleName, open, onOpenChange }: MuscleInfoModalProp
                   <p className="text-[10px] font-bold text-rose-600">{lovettPartner.partnerMuscle}</p>
                 </div>
               </div>
-              <p className="text-[10px] text-rose-700 font-medium mt-2 italic text-center">
-                Dysfunction in {muscleName} often reciprocates in the {lovettPartner.partnerMuscle}.
-              </p>
             </section>
           )}
 
@@ -298,14 +537,6 @@ const MuscleInfoModal = ({ muscleName, open, onOpenChange }: MuscleInfoModalProp
           <section className="space-y-4 pt-6 border-t border-slate-100">
             <SectionHeader icon={Info} title="Testing & Reflexes" color="text-slate-400" />
             <div className="space-y-4">
-              {info.testingPosition && (
-                <div>
-                  <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-2">Testing Position</p>
-                  <p className="text-xs text-slate-600 font-medium leading-relaxed italic">
-                    {info.testingPosition}
-                  </p>
-                </div>
-              )}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 {info.neurolymphatic && (
                   <div>

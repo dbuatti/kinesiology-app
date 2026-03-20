@@ -22,6 +22,32 @@ export interface MuscleInfo {
 }
 
 export const MUSCLE_INFO_DETAILS: Record<string, MuscleInfo> = {
+  'Sternocleidomastoid (SCM)': {
+    name: 'Sternocleidomastoid (SCM)',
+    brainstemControl: 'Medulla (CN XI)',
+    clinicalIndications: 'Neck pain, headaches, torticollis, balance issues, visual tracking difficulties.',
+    function: 'Flexes the neck, rotates head to opposite side, tilts head to same side.',
+    meridian: 'Stomach',
+    myotome: 'C2, C3',
+    nerveSupply: 'Accessory Nerve (CN XI) and C2-C3 spinal nerves',
+    organGland: 'Sinuses / Stomach',
+    spinalFixation: 'C2-C3',
+    testingPosition: 'Client supine. Drop the head down (flexion) and rotate the head away from the side being tested. Practitioner applies pressure to the temporal area, pushing the head back towards the table and into rotation.',
+    description: 'A key muscle for head orientation and a major player in the Medulla-driven flexor tone chain.'
+  },
+  'Upper Trapezius': {
+    name: 'Upper Trapezius',
+    brainstemControl: 'Medulla (CN XI)',
+    clinicalIndications: 'Shoulder tension, "carrying the weight of the world", shallow breathing, neck stiffness.',
+    function: 'Elevates the scapula, rotates the head to the opposite side.',
+    meridian: 'Lung',
+    myotome: 'C3, C4',
+    nerveSupply: 'Accessory Nerve (CN XI) and C3-C4 spinal nerves',
+    organGland: 'Lung / Eyes',
+    spinalFixation: 'C3-C4',
+    testingPosition: 'Client seated or supine. Shrug the shoulder up towards the ear and rotate the head away. Practitioner attempts to pull the shoulder and head apart. Alternate: Test as an indicator by lifting the shoulder girdle and testing for lock.',
+    description: 'The primary "stress" muscle. Closely linked to the Lung meridian and the body\'s ability to take in Qi and release grief.'
+  },
   'Psoas': {
     name: 'Psoas',
     brainstemControl: 'Medulla, Midbrain',
@@ -34,7 +60,6 @@ export const MUSCLE_INFO_DETAILS: Record<string, MuscleInfo> = {
     spinalFixation: 'T10-T1',
     testingPosition: 'Client supine, leg flexed to 45°, abducted and externally rotated. Pressure applied into extension and slight adduction.',
     description: 'The "Muscle of the Soul". Deeply connected to the fight-or-flight response and diaphragmatic breathing.',
-    videoUrl: 'https://www.youtube.com/embed/dQw4w9WgXcQ'
   },
   'Gluteus Medius': {
     name: 'Gluteus Medius',
@@ -75,8 +100,16 @@ export const MUSCLE_INFO_DETAILS: Record<string, MuscleInfo> = {
 };
 
 export const getMuscleInfo = (name: string): MuscleInfo => {
-  return MUSCLE_INFO_DETAILS[name] || {
-    name,
+  // Handle cases where the name might have (L) or (R)
+  const baseName = name.replace(/ \([LR]\)$/, '');
+  
+  // Try exact match first, then try to find the base name within the keys
+  if (MUSCLE_INFO_DETAILS[baseName]) return MUSCLE_INFO_DETAILS[baseName];
+  
+  const foundKey = Object.keys(MUSCLE_INFO_DETAILS).find(k => k.includes(baseName) || baseName.includes(k));
+  
+  return foundKey ? MUSCLE_INFO_DETAILS[foundKey] : {
+    name: baseName,
     meridian: 'General',
     organGland: 'General',
     testingPosition: 'Standard muscle testing protocol applies.',

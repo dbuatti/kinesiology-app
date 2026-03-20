@@ -26,7 +26,9 @@ import {
   List,
   AlertCircle,
   Play,
-  Printer
+  Printer,
+  Copy,
+  FileText
 } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -56,6 +58,7 @@ import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import CalendarView from "@/components/crm/CalendarView";
 import QuickAssessmentModal from "@/components/crm/QuickAssessmentModal";
 import AppLayout from "@/components/crm/AppLayout";
+import { formatAppointmentQuickInfo } from "@/utils/summary-generator";
 
 interface AppointmentWithClient extends Appointment {
   clients: { name: string; id: string; latest_bolt?: number | null };
@@ -149,6 +152,12 @@ const AppointmentsPage = () => {
     } catch (err: any) {
       showError(err.message || "Failed to delete appointment");
     }
+  };
+
+  const handleCopyQuickInfo = (app: any) => {
+    const info = formatAppointmentQuickInfo(app);
+    navigator.clipboard.writeText(info);
+    showSuccess("Quick info copied!");
   };
 
   useEffect(() => {
@@ -336,6 +345,12 @@ const AppointmentsPage = () => {
                       <Link to={`/appointments/${app.id}`} className="flex items-center gap-3">
                         <ExternalLink size={16} className="text-indigo-500" /> View Details
                       </Link>
+                    </DropdownMenuItem>
+                    <DropdownMenuItem 
+                      className="rounded-xl py-2.5 px-4 cursor-pointer flex items-center gap-3"
+                      onClick={() => handleCopyQuickInfo(app)}
+                    >
+                      <Copy size={16} className="text-slate-500" /> Copy Quick Info
                     </DropdownMenuItem>
                     <DropdownMenuSeparator className="my-2" />
                     <DropdownMenuItem 

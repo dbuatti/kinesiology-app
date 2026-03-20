@@ -36,6 +36,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import ClientProgressTab from "@/components/crm/ClientProgressTab";
 import ClientProfileCard from "@/components/crm/ClientProfileCard";
 import AppLayout from "@/components/crm/AppLayout";
+import { generateAICasePrompt, formatAppointmentQuickInfo } from "@/utils/summary-generator";
 
 const ClientDetailPage = () => {
   const { id } = useParams();
@@ -108,31 +109,18 @@ const ClientDetailPage = () => {
   };
 
   const handleCopyForAI = () => {
-    if (!client) return;
+    if (!client || appointments.length === 0) return;
     setAiCopying(true);
-
-    const latestApp = appointments[0];
-    
-    let prompt = `
-I am a Kinesiology practitioner analyzing a client case. Please provide clinical insights based on the following data:
-
-CLIENT PROFILE:
-- Name: ${client.name}
-- History: ${client.journal || 'N/A'}
-
-LATEST SESSION FINDINGS (${latestApp ? format(latestApp.date, "MMM d, yyyy") : 'No sessions'}):
-- Goal: ${latestApp?.goal || 'N/A'}
-- Primary Issue: ${latestApp?.issue || 'N/A'}
-- BOLT Score: ${latestApp?.bolt_score ? `${latestApp.bolt_score}s` : 'N/A'}
-- Coherence: ${latestApp?.coherence_score ? latestApp.coherence_score.toFixed(2) : 'N/A'}
-- Acupoints Used: ${latestApp?.acupoints || 'N/A'}
-
-Please analyze the relationship between the respiratory (BOLT), autonomic (Coherence), and emotional findings.
-`;
-
-    navigator.clipboard.writeText(prompt.trim());
-    showSuccess("Case data formatted and copied for AI analysis!");
+    const prompt = generateAICasePrompt(client, appointments);
+    navigator.clipboard.writeText(prompt);
+    showSuccess("Deep case data formatted and copied for AI analysis!");
     setTimeout(() => setAiCopying(false), 2000);
+  };
+
+  const handleCopyQuickInfo = (app: any) => {
+    const info = formatAppointmentQuickInfo(app);
+    navigator.clipboard.writeText(info);
+    showSuccess("Appointment info copied!");
   };
 
   const handleDeleteClient = async () => {
@@ -389,29 +377,39 @@ Please analyze the relationship between the respiratory (BOLT), autonomic (Coher
 
                 <div className="grid gap-4">
                   {appointments.slice(0, 3).map(app => (
-                    <Link key={app.id} to={`/appointments/${app.id}`}>
-                      <Card className="hover:shadow-md transition-all border-slate-200 bg-white group rounded-2xl overflow-hidden cursor-pointer">
-                        <CardContent className="p-6">
-                          <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-                            <div className="space-y-3">
-                              <div className="flex items-center gap-3">
-                                <Badge variant="secondary" className="font-bold bg-slate-100 text-slate-600">{(app as any).display_id || app.id.slice(0,8)}</Badge>
-                                <span className="font-bold text-lg text-slate-900 group-hover:text-indigo-600 transition-colors">{app.name || format(app.date, "MMM d, yyyy")}</span>
-                              </div>
-                              <div className="flex items-center gap-4 text-sm text-slate-500 font-medium">
-                                <span className="flex items-center gap-1.5"><Calendar size={14} className="text-indigo-500" /> {format(app.date, "MMM d")}</span>
-                                <span className={cn(
-                                    "px-2 py-0.5 rounded-full text-xs font-bold",
-                                    app.status === 'Completed' ? "bg-emerald-50 text-emerald-600" : "bg-slate-100 text-slate-600"
-                                )}>
-                                  {app.status}
-                                </span>
+                    <div key={app.id} className="relative group">
+                      <Link to={`/appointments/${app.id}`}>
+                        <Card className="hover:shadow-md transition-all border-slate-200 bg-white group rounded-2xl overflow-hidden cursor-pointer">
+                          <CardContent className="p-6">
+                            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+                              <div className="space-y-3">
+                                <div className="flex items-center gap-3">
+                                  <Badge variant="secondary" className="font-bold bg-slate-100 text-slate-600">{(app as any).display_id || app.id.slice(0,8)}</Badge>
+                                  <span className="font-bold text-lg text-slate-900 group-hover:text-indigo-600 transition-colors">{app.name || format(app.date, "MMM d, yyyy")}</span>
+                                </div>
+                                <div className="flex items-center gap-4 text-sm text-slate-500 font-medium">
+                                  <span className="flex items-center gap-1.5"><Calendar size={14} className="text-indigo-500" /> {format(app.date, "MMM d")}</span>
+                                  <span className={cn(
+                                      "px-2 py-0.5 rounded-full text-xs font-bold",
+                                      app.status === 'Completed' ? "bg-emerald-50 text-emerald-600" : "bg-slate-100 text-slate-600"
+                                  )}>
+                                    {app.status}
+                                  </span>
+                                </div>
                               </div>
                             </div>
-                          </div>
-                        </CardContent>
-                      </Card>
-                    </Link>
+                          </CardContent>
+                        </Card>
+                      </Link>
+                      <Button 
+                        variant="ghost" 
+                        size="icon" 
+                        className="absolute top-4 right-4 h-8 w-8 rounded-xl opacity-0 group-hover:opacity-100 transition-opacity text-slate-400 hover:text-indigo-600 hover:bg-indigo-50"
+                        onClick={(e) => { e.preventDefault(); e.stopPropagation(); handleCopyQuickInfo(app); }}
+                      >
+                        <Copy size={14} />
+                      </Button>
+                    </div>
                   ))}
                 </div>
               </div>
@@ -444,31 +442,41 @@ Please analyze the relationship between the respiratory (BOLT), autonomic (Coher
 
             <div className="grid gap-4">
               {appointments.map(app => (
-                <Link key={app.id} to={`/appointments/${app.id}`}>
-                  <Card className="hover:shadow-md transition-all border-slate-200 bg-white group rounded-2xl overflow-hidden cursor-pointer">
-                    <CardContent className="p-6">
-                      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-                        <div className="space-y-3">
-                          <div className="flex items-center gap-3">
-                            <Badge variant="secondary" className="font-bold bg-slate-100 text-slate-600">{(app as any).display_id || app.id.slice(0,8)}</Badge>
-                            <span className="font-bold text-lg text-slate-900 group-hover:text-indigo-600 transition-colors">{app.name || format(app.date, "MMM d, yyyy")}</span>
-                            <Badge className="bg-indigo-50 text-indigo-700 hover:bg-indigo-100 border-none">{app.tag}</Badge>
-                          </div>
-                          <div className="flex items-center gap-4 text-sm text-slate-500 font-medium">
-                            <span className="flex items-center gap-1.5"><Calendar size={14} className="text-indigo-500" /> {format(app.date, "EEEE, MMM d")}</span>
-                            <span className="flex items-center gap-1.5"><Clock size={14} className="text-indigo-500" /> {format(app.date, "h:mm a")}</span>
-                            <span className={cn(
-                                "px-2 py-0.5 rounded-full text-xs font-bold",
-                                app.status === 'Completed' ? "bg-emerald-50 text-emerald-600" : "bg-slate-100 text-slate-600"
-                            )}>
-                              {app.status}
-                            </span>
+                <div key={app.id} className="relative group">
+                  <Link to={`/appointments/${app.id}`}>
+                    <Card className="hover:shadow-md transition-all border-slate-200 bg-white group rounded-2xl overflow-hidden cursor-pointer">
+                      <CardContent className="p-6">
+                        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+                          <div className="space-y-3">
+                            <div className="flex items-center gap-3">
+                              <Badge variant="secondary" className="font-bold bg-slate-100 text-slate-600">{(app as any).display_id || app.id.slice(0,8)}</Badge>
+                              <span className="font-bold text-lg text-slate-900 group-hover:text-indigo-600 transition-colors">{app.name || format(app.date, "MMM d, yyyy")}</span>
+                              <Badge className="bg-indigo-50 text-indigo-700 hover:bg-indigo-100 border-none">{app.tag}</Badge>
+                            </div>
+                            <div className="flex items-center gap-4 text-sm text-slate-500 font-medium">
+                              <span className="flex items-center gap-1.5"><Calendar size={14} className="text-indigo-500" /> {format(app.date, "EEEE, MMM d")}</span>
+                              <span className="flex items-center gap-1.5"><Clock size={14} className="text-indigo-500" /> {format(app.date, "h:mm a")}</span>
+                              <span className={cn(
+                                  "px-2 py-0.5 rounded-full text-xs font-bold",
+                                  app.status === 'Completed' ? "bg-emerald-50 text-emerald-600" : "bg-slate-100 text-slate-600"
+                              )}>
+                                {app.status}
+                              </span>
+                            </div>
                           </div>
                         </div>
-                      </div>
-                    </CardContent>
-                  </Card>
-                </Link>
+                      </CardContent>
+                    </Card>
+                  </Link>
+                  <Button 
+                    variant="ghost" 
+                    size="icon" 
+                    className="absolute top-4 right-4 h-8 w-8 rounded-xl opacity-0 group-hover:opacity-100 transition-opacity text-slate-400 hover:text-indigo-600 hover:bg-indigo-50"
+                    onClick={(e) => { e.preventDefault(); e.stopPropagation(); handleCopyQuickInfo(app); }}
+                  >
+                    <Copy size={14} />
+                  </Button>
+                </div>
               ))}
             </div>
           </TabsContent>

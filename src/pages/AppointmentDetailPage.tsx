@@ -8,7 +8,8 @@ import {
   Loader2, Trash2, MoreHorizontal, History, Printer, Copy, Check, Play,
   FileText, Zap, Activity, Target, ClipboardList, PanelRightOpen, PanelRightClose,
   Brain,
-  ShieldCheck
+  ShieldCheck,
+  Sparkles
 } from "lucide-react";
 import { format, isToday } from "date-fns";
 import { AppointmentWithClient } from "@/types/crm";
@@ -34,7 +35,7 @@ import {
 import Breadcrumbs from "@/components/shared/Breadcrumbs";
 import { Button } from "@/components/ui/button";
 import { TCM_CHANNELS } from "@/data/tcm-channel-data";
-import { generateSessionSummary } from "@/utils/summary-generator";
+import { generateSessionSummary, generateAICasePrompt, formatAppointmentQuickInfo } from "@/utils/summary-generator";
 import { Badge } from "@/components/ui/badge";
 import { Nuclei } from "@/utils/brainstem-logic";
 
@@ -46,6 +47,7 @@ const AppointmentDetailPage = () => {
   const [loading, setLoading] = useState(true);
   const [isFixedHeaderActive, setIsFixedHeaderActive] = useState(false);
   const [copied, setCopied] = useState(false);
+  const [aiCopying, setAiCopying] = useState(false);
   const [cloning, setCloning] = useState(false);
   const [currentTime, setCurrentTime] = useState(new Date());
   const [showSidebar, setShowSidebar] = useState(false);
@@ -85,7 +87,8 @@ const AppointmentDetailPage = () => {
           clients (
             id,
             name,
-            born
+            born,
+            journal
           )
         `)
         .eq('id', id)
@@ -232,6 +235,22 @@ const AppointmentDetailPage = () => {
     setTimeout(() => setCopied(false), 3000);
   };
 
+  const handleCopyForAI = () => {
+    if (!appointment) return;
+    setAiCopying(true);
+    const prompt = generateAICasePrompt(appointment.clients, [appointment]);
+    navigator.clipboard.writeText(prompt);
+    showSuccess("Deep case data formatted and copied for AI analysis!");
+    setTimeout(() => setAiCopying(false), 3000);
+  };
+
+  const handleCopyQuickInfo = () => {
+    if (!appointment) return;
+    const info = formatAppointmentQuickInfo(appointment);
+    navigator.clipboard.writeText(info);
+    showSuccess("Quick info copied!");
+  };
+
   const handleDeleteAppointment = async () => {
     if (!id || !confirm("Are you sure you want to delete this appointment?")) return;
     try {
@@ -269,17 +288,28 @@ const AppointmentDetailPage = () => {
               ]} 
               className="mb-0"
             />
-            {isSessionToday && !isFixedHeaderActive && appointment.status === 'Scheduled' && (
+            <div className="flex items-center gap-2">
               <Button 
-                variant="default" 
+                variant="outline" 
                 size="sm" 
-                className="bg-rose-600 hover:bg-rose-700 text-white rounded-xl shadow-lg shadow-rose-100 h-10 px-6 font-black text-[10px] uppercase tracking-widest"
-                onClick={handleStartSession}
+                className="bg-indigo-50 border-indigo-100 text-indigo-600 hover:bg-indigo-100 rounded-xl font-bold h-10 px-4"
+                onClick={handleCopyForAI}
               >
-                <Play size={16} className="mr-2 fill-current" />
-                Start Session
+                {aiCopying ? <Check size={16} className="mr-2 text-emerald-500" /> : <Sparkles size={16} className="mr-2" />}
+                Copy for AI
               </Button>
-            )}
+              {isSessionToday && !isFixedHeaderActive && appointment.status === 'Scheduled' && (
+                <Button 
+                  variant="default" 
+                  size="sm" 
+                  className="bg-rose-600 hover:bg-rose-700 text-white rounded-xl shadow-lg shadow-rose-100 h-10 px-6 font-black text-[10px] uppercase tracking-widest"
+                  onClick={handleStartSession}
+                >
+                  <Play size={16} className="mr-2 fill-current" />
+                  Start Session
+                </Button>
+              )}
+            </div>
           </div>
 
           <div className="print:block hidden mb-8">
@@ -420,13 +450,22 @@ const AppointmentDetailPage = () => {
                       <PathwayFindingsList priorityPattern={appointment.priority_pattern} />
                     </div>
 
-                    <Button 
-                      variant="ghost" 
-                      className="w-full text-[10px] font-black uppercase tracking-widest text-indigo-600 hover:bg-indigo-50 h-9 rounded-xl"
-                      onClick={handleCopySummary}
-                    >
-                      <Copy size={12} className="mr-2" /> Copy Full Summary
-                    </Button>
+                    <div className="flex flex-col gap-2">
+                      <Button 
+                        variant="ghost" 
+                        className="w-full text-[10px] font-black uppercase tracking-widest text-indigo-600 hover:bg-indigo-50 h-9 rounded-xl"
+                        onClick={handleCopySummary}
+                      >
+                        <Copy size={12} className="mr-2" /> Copy Full Summary
+                      </Button>
+                      <Button 
+                        variant="ghost" 
+                        className="w-full text-[10px] font-black uppercase tracking-widest text-slate-500 hover:bg-slate-100 h-9 rounded-xl"
+                        onClick={handleCopyQuickInfo}
+                      >
+                        <FileText size={12} className="mr-2" /> Copy Quick Info
+                      </Button>
+                    </div>
                   </CardContent>
                 </Card>
               </div>

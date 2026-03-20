@@ -104,7 +104,7 @@ export const PRIMITIVE_REFLEXES: PrimitiveReflex[] = [
     developmentalWindow: "Birth to 9 months",
     stimulus: 'Stroke along one side of lumbar spine.',
     inhibitionPattern: 'Same side Glute inhibits; Opposite side QL inhibits.',
-    howTo: 'Client prone. Stroke skin in a "C" curve from the spine outwards along the lumbar erectors. Test same-side Glute.',
+    howTo: 'Client prone. Stroke skin in a "C" curve from the spine outwards along the lumbar erectors. Test same-side Glute and opposite-side QL.',
     description: 'Lateral trunk flexion in response to lumbar stimulation.',
     pearl: 'Linked to bedwetting and concentration issues. In adults, manifests as functional scoliosis.',
     clinicalSigns: ['Bedwetting', 'Concentration issues', 'Functional scoliosis', 'Lower back pain', 'Fidgeting in chairs'],

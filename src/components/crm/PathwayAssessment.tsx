@@ -493,6 +493,20 @@ const PathwayAssessment = ({ initialValue, previousValue, history = [], onSave, 
     return summary;
   }, [results]);
 
+  const fractalAlert = useMemo(() => {
+    const inhibited = results.primitiveReflexes || {};
+    if (inhibited['Fear Paralysis'] === 'Inhibited') {
+      return { title: "Fear Paralysis Active", desc: "This is the Master Reflex. It is likely driving Moro and Startle. Clear this first to potentially resolve the whole chain." };
+    }
+    if (inhibited['Moro Reflex'] === 'Inhibited' || inhibited['Moro Reflex (L)'] === 'Inhibited' || inhibited['Moro Reflex (R)'] === 'Inhibited') {
+      return { title: "Moro Reflex Active", desc: "Moro is tied to TLR, ATNR, and STNR. Check these for automatic resolution after correcting Moro." };
+    }
+    if (inhibited['Rooting Reflex'] === 'Inhibited' || inhibited['Rooting Reflex (L)'] === 'Inhibited' || inhibited['Rooting Reflex (R)'] === 'Inhibited') {
+      return { title: "Rooting Reflex Active", desc: "Often tied to Sucking and Palmar reflexes. Check for TMJ and neck stability issues." };
+    }
+    return null;
+  }, [results.primitiveReflexes]);
+
   const cranialNerves = BRAIN_REFLEX_POINTS.filter(p => p.category === 'Cranial Nerve');
   const brainZones = BRAIN_REFLEX_POINTS.filter(p => p.category !== 'Cranial Nerve');
 
@@ -628,6 +642,17 @@ const PathwayAssessment = ({ initialValue, previousValue, history = [], onSave, 
         />
       </div>
 
+      {fractalAlert && (
+        <Alert className="bg-indigo-900 text-white border-none rounded-[2rem] shadow-xl relative overflow-hidden animate-in zoom-in-95 duration-500">
+          <div className="absolute top-0 right-0 p-4 opacity-10"><Zap size={80} /></div>
+          <Zap className="h-5 w-5 text-amber-400 fill-amber-400" />
+          <AlertDescription className="text-sm font-bold leading-relaxed relative z-10">
+            <span className="text-amber-400 uppercase tracking-widest text-[10px] block mb-1">Fractal Logic Detected</span>
+            <strong>{fractalAlert.title}:</strong> {fractalAlert.desc}
+          </AlertDescription>
+        </Alert>
+      )}
+
       {inhibitedSummary.length > 0 && (
         <Card className="border-none shadow-xl rounded-[2.5rem] bg-rose-50 dark:bg-rose-950/10 border-2 border-rose-200 dark:border-rose-900/30 overflow-hidden animate-in slide-in-from-top-4 duration-500">
           <CardHeader className="p-8 pb-4">
@@ -672,17 +697,6 @@ const PathwayAssessment = ({ initialValue, previousValue, history = [], onSave, 
             </div>
           </CardContent>
         </Card>
-      )}
-
-      {/* Fractal Logic Alert */}
-      {getCounts('primitiveReflexes').inhibitedCount > 0 && (
-        <Alert className="bg-indigo-900 text-white border-none rounded-[2rem] shadow-xl relative overflow-hidden">
-          <div className="absolute top-0 right-0 p-4 opacity-10"><Zap size={80} /></div>
-          <Zap className="h-5 w-5 text-amber-400 fill-amber-400" />
-          <AlertDescription className="text-sm font-bold leading-relaxed relative z-10">
-            <strong>Fractal Logic:</strong> Correcting the highest level reflex (Fear Paralysis or Moro) can often clear 3-4 other reflexes in one go. Clear the priority first, then re-assess the whole lot.
-          </AlertDescription>
-        </Alert>
       )}
 
       <AssessmentSection 

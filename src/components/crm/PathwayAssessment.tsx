@@ -87,7 +87,6 @@ const AssessmentItem = ({
         "bg-white border-slate-100 hover:border-indigo-200 hover:shadow-lg"
       )}
     >
-      {/* Quick Calibrate Action - Only visible when inhibited */}
       {hasInhibition && (
         <button
           onClick={(e) => { e.stopPropagation(); onQuickCalibrate(); }}
@@ -182,7 +181,6 @@ const AssessmentItem = ({
         )}
       </div>
 
-      {/* Hover Overlay Actions */}
       <div className="absolute inset-0 bg-slate-900/5 backdrop-blur-[1px] opacity-0 group-hover:opacity-100 transition-all duration-300 flex flex-col items-center justify-center gap-3">
         <div className="flex flex-wrap items-center justify-center gap-2 px-2">
           <Button 
@@ -224,20 +222,8 @@ const AssessmentItem = ({
           <div className="flex items-center gap-1.5 text-[9px] font-black text-slate-900 bg-white/95 px-4 py-1.5 rounded-full shadow-lg border border-slate-100">
             <Maximize2 size={12} className="text-indigo-500" /> View Details
           </div>
-          {hasInhibition && (
-            <button 
-              onClick={(e) => { e.stopPropagation(); onShowLogic(); }}
-              className="flex items-center gap-1.5 text-[9px] font-black text-amber-700 bg-amber-50 px-4 py-1.5 rounded-full shadow-lg border border-amber-200 hover:bg-amber-100 transition-colors"
-            >
-              <Lightbulb size={12} className="text-amber-500" /> Logic
-            </button>
-          )}
         </div>
       </div>
-      
-      {hasInhibition && (
-        <div className="absolute bottom-0 left-0 w-full h-1 bg-rose-500 animate-pulse" />
-      )}
     </div>
   );
 };
@@ -454,7 +440,6 @@ const PathwayAssessment = ({ initialValue, previousValue, history = [], onSave, 
   };
 
   const handleQuickCalibrate = (category: string, item: string) => {
-    // The item is already inhibited if the button is visible
     if (onJumpToCalibrate) {
       onJumpToCalibrate(item);
     }
@@ -556,7 +541,6 @@ const PathwayAssessment = ({ initialValue, previousValue, history = [], onSave, 
 
   return (
     <div className="space-y-8">
-      {/* Global Controls & Category Nav */}
       <div className="sticky top-0 z-40 space-y-4 bg-background/80 backdrop-blur-md pb-4 pt-2">
         <div className="flex flex-wrap items-center justify-between gap-4 p-4 bg-slate-100 rounded-[2rem] border border-slate-200 shadow-inner">
           <div className="flex items-center gap-4">
@@ -633,7 +617,6 @@ const PathwayAssessment = ({ initialValue, previousValue, history = [], onSave, 
         </div>
       </div>
 
-      {/* Global Search */}
       <div className="relative max-w-2xl mx-auto">
         <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" size={20} />
         <Input 
@@ -644,7 +627,6 @@ const PathwayAssessment = ({ initialValue, previousValue, history = [], onSave, 
         />
       </div>
 
-      {/* Inhibited Summary (Priority List) */}
       {inhibitedSummary.length > 0 && (
         <Card className="border-none shadow-xl rounded-[2.5rem] bg-rose-50 dark:bg-rose-950/10 border-2 border-rose-200 dark:border-rose-900/30 overflow-hidden animate-in slide-in-from-top-4 duration-500">
           <CardHeader className="p-8 pb-4">
@@ -691,7 +673,6 @@ const PathwayAssessment = ({ initialValue, previousValue, history = [], onSave, 
         </Card>
       )}
 
-      {/* Primitive Reflexes */}
       <AssessmentSection 
         id="primitive"
         title="Primitive Reflex Assessment" 
@@ -747,7 +728,6 @@ const PathwayAssessment = ({ initialValue, previousValue, history = [], onSave, 
         </div>
       </AssessmentSection>
 
-      {/* Cranial Nerves */}
       <AssessmentSection 
         id="cranial"
         title="Cranial Nerve Assessment" 
@@ -785,7 +765,6 @@ const PathwayAssessment = ({ initialValue, previousValue, history = [], onSave, 
         </div>
       </AssessmentSection>
 
-      {/* Brain Zones */}
       <AssessmentSection 
         id="brain"
         title="Brain Zone Assessment" 
@@ -823,7 +802,6 @@ const PathwayAssessment = ({ initialValue, previousValue, history = [], onSave, 
         </div>
       </AssessmentSection>
 
-      {/* Muscles */}
       <AssessmentSection id="muscles" title="Muscle Assessment" description="Log individual muscle facilitation/inhibition." icon={Dumbbell} {...getCounts('muscles')}>
         <div className="space-y-8">
           {Object.entries(filteredMuscleGroups).map(([group, muscles]) => (
@@ -855,7 +833,6 @@ const PathwayAssessment = ({ initialValue, previousValue, history = [], onSave, 
         </div>
       </AssessmentSection>
 
-      {/* Global Empty State */}
       {totalFindings === 0 && globalSearch && (
         <div className="py-32 text-center bg-slate-50 rounded-[3rem] border-2 border-dashed border-slate-200">
           <Search size={48} className="mx-auto text-slate-200 mb-4" />

@@ -149,13 +149,13 @@ const SessionContentSwitcher = ({ appointment, onUpdate, saveField, history = []
       variant="ghost"
       onClick={() => setActiveView(view)}
       className={cn(
-        "h-11 px-5 rounded-xl transition-all font-black text-[10px] uppercase tracking-widest",
+        "h-12 px-6 rounded-2xl transition-all font-black text-[10px] uppercase tracking-widest",
         activeView === view 
-          ? "bg-card text-indigo-600 shadow-sm border border-border" 
-          : "text-muted-foreground hover:bg-accent hover:text-foreground"
+          ? "bg-white text-indigo-600 shadow-sm border border-slate-100" 
+          : "text-slate-500 hover:bg-white/50 hover:text-slate-900"
       )}
     >
-      <Icon size={16} className="mr-2" />
+      <Icon size={18} className="mr-3" />
       {label}
     </Button>
   );
@@ -186,29 +186,6 @@ const SessionContentSwitcher = ({ appointment, onUpdate, saveField, history = []
 
   const renderHomeView = () => (
     <div className="space-y-10">
-      <div className="flex items-center justify-between px-2">
-        <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-xl bg-indigo-600 text-white flex items-center justify-center shadow-lg">
-            <ShieldCheck size={20} />
-          </div>
-          <div>
-            <h2 className="text-xl font-black text-slate-900">The PEACE Method</h2>
-            <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">2025 Gold Standard Framework</p>
-          </div>
-        </div>
-        <div className="flex gap-1">
-          {TABS.map((tab) => (
-            <div 
-              key={tab.id} 
-              className={cn(
-                "w-8 h-1.5 rounded-full transition-all duration-500",
-                (tabStatus as any)[tab.id] ? "bg-emerald-500" : activeTab === tab.id ? "bg-indigo-600" : "bg-slate-200"
-              )} 
-            />
-          ))}
-        </div>
-      </div>
-
       <Tabs value={activeTab} onValueChange={(v) => {
         setActiveTab(v);
         if (v === 'calibration') scrollToWizard();
@@ -291,7 +268,8 @@ const SessionContentSwitcher = ({ appointment, onUpdate, saveField, history = []
 
   return (
     <div className="space-y-8">
-      <div className="flex items-center justify-between bg-muted/30 p-2 rounded-2xl border border-border/50">
+      {/* Main Navigation Bar */}
+      <div className="flex items-center justify-between bg-slate-100/80 backdrop-blur-sm p-2 rounded-[2rem] border border-slate-200 shadow-sm">
         <div className="flex items-center gap-2 overflow-x-auto no-scrollbar">
           <NavItem view="home" label="PEACE Flow" Icon={Home} />
           <NavItem view="previous" label="History & Evolution" Icon={History} />
@@ -302,16 +280,19 @@ const SessionContentSwitcher = ({ appointment, onUpdate, saveField, history = []
             <Button
               variant="ghost"
               className={cn(
-                "h-11 px-5 rounded-xl transition-all font-black text-[10px] uppercase tracking-widest",
-                isToolActive ? "bg-card text-indigo-600 shadow-sm border border-border" : "text-muted-foreground hover:bg-accent"
+                "h-12 px-6 rounded-2xl transition-all font-black text-[10px] uppercase tracking-widest",
+                isToolActive ? "bg-white text-indigo-600 shadow-sm border border-slate-100" : "text-slate-500 hover:bg-white/50 hover:text-slate-900"
               )}
             >
-              <Wrench size={16} className="mr-2" />
+              <Wrench size={18} className="mr-3" />
               Clinical Tools
               <ChevronDown size={14} className="ml-2 opacity-50" />
             </Button>
           </DropdownMenuTrigger>
-          <DropdownMenuContent align="end" className="w-56 p-2 rounded-2xl border-none shadow-2xl bg-card">
+          <DropdownMenuContent align="end" className="w-64 p-2 rounded-2xl border-none shadow-2xl bg-card">
+            <div className="px-3 py-2 mb-1">
+              <p className="text-[9px] font-black text-slate-400 uppercase tracking-[0.3em]">Specialized Tools</p>
+            </div>
             <DropdownMenuItem 
               onClick={() => setActiveView('kinesiology')}
               className={cn("rounded-xl py-3 px-4 cursor-pointer", activeView === 'kinesiology' && "bg-indigo-50 text-indigo-600 font-black")}

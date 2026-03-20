@@ -27,7 +27,8 @@ import {
   Trash2,
   Play,
   Loader2,
-  Check
+  Check,
+  StickyNote
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { AppointmentWithClient } from '@/types/crm';
@@ -51,6 +52,12 @@ import {
   DropdownMenuTrigger,
   DropdownMenuSeparator,
 } from "@/components/ui/dropdown-menu";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 
 type ActiveView = 'home' | 'kinesiology' | 'muscles' | 'gait' | 'previous';
 
@@ -99,6 +106,7 @@ const SessionContentSwitcher = ({
   const [activeView, setActiveView] = useState<ActiveView>('home');
   const [activeTab, setActiveTab] = useState('baseline');
   const [preselectedFinding, setPreselectedFinding] = useState<string | null>(null);
+  const [noteDialogOpen, setNoteDialogOpen] = useState(false);
   const wizardRef = useRef<HTMLDivElement>(null);
   
   const tabStatus = useMemo(() => ({
@@ -108,6 +116,11 @@ const SessionContentSwitcher = ({
     calibration: !!appointment.modes_balances,
     reassessment: !!appointment.session_north_star
   }), [appointment]);
+
+  const progressPercent = useMemo(() => {
+    const completed = Object.values(tabStatus).filter(Boolean).length;
+    return Math.round((completed / TABS.length) * 100);
+  }, [tabStatus]);
 
   const scrollToWizard = () => {
     setTimeout(() => {
@@ -351,8 +364,32 @@ const SessionContentSwitcher = ({
           </DropdownMenu>
         </div>
 
+        {/* Session Progress Indicator */}
+        <div className="hidden lg:flex items-center gap-3 px-4 border-x border-slate-200">
+          <div className="flex flex-col items-end">
+            <span className="text-[8px] font-black text-slate-400 uppercase tracking-widest">Session Progress</span>
+            <span className="text-[10px] font-black text-indigo-600">{progressPercent}%</span>
+          </div>
+          <div className="w-24 h-1.5 bg-slate-200 rounded-full overflow-hidden">
+            <div 
+              className="h-full bg-indigo-600 transition-all duration-700 ease-out" 
+              style={{ width: `${progressPercent}%` }}
+            />
+          </div>
+        </div>
+
         {/* Action Group */}
         <div className="flex items-center gap-1.5 w-full md:w-auto justify-end">
+          <Button 
+            variant="ghost" 
+            size="sm" 
+            className="h-9 px-3 font-bold text-[10px] uppercase tracking-widest rounded-xl text-slate-500 hover:text-indigo-600 hover:bg-white"
+            onClick={() => setNoteDialogOpen(true)}
+          >
+            <StickyNote size={14} className="mr-1.5" />
+            Quick Note
+          </Button>
+
           <Button 
             variant="outline" 
             size="sm" 
@@ -450,6 +487,36 @@ const SessionContentSwitcher = ({
           </div>
         )}
       </div>
+
+      <Dialog open={noteDialogOpen} onOpenChange={setNoteDialogOpen}>
+        <DialogContent className="sm:max-w-[500px] rounded-[2rem]">
+          <DialogHeader>
+            <DialogTitle className="text-2xl font-black flex items-center gap-3">
+              <div className="w-10 h-10 rounded-xl bg-amber-500 text-white flex items-center justify-center shadow-lg">
+                <StickyNote size={24} />
+              </div>
+              Quick Session Note
+            </DialogTitle>
+          </DialogHeader>
+          <div className="py-4">
+            <EditableField 
+              field="notes" 
+              label="General Session Notes" 
+              value={appointment.notes} 
+              multiline 
+              placeholder="Jot down a quick observation..." 
+              onSave={saveField} 
+              className="bg-slate-50 p-6 rounded-2xl border border-slate-100"
+            />
+            <p className="text-[10px] text-slate-400 mt-4 text-center italic">
+              This note is saved to the general session notes field.
+            </p>
+          </div>
+          <div className="flex justify-end">
+            <Button onClick={() => setNoteDialogOpen(false)} className="rounded-xl font-bold">Close</Button>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };

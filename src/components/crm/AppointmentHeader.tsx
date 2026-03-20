@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useMemo } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
@@ -14,7 +14,9 @@ import {
   Activity,
   User,
   ChevronRight,
-  TrendingUp
+  TrendingUp,
+  ShieldAlert,
+  Brain
 } from "lucide-react";
 import { format, isToday } from "date-fns";
 import { cn } from "@/lib/utils";
@@ -29,6 +31,7 @@ import {
 import { APPOINTMENT_STATUSES } from "@/data/appointment-data";
 import { AppointmentWithClient } from "@/types/crm";
 import QuickAssessmentModal from "./QuickAssessmentModal";
+import { calculateBrainstemTone } from "@/utils/brainstem-logic";
 
 interface AppointmentHeaderProps {
   appointment: AppointmentWithClient;
@@ -40,6 +43,11 @@ const AppointmentHeader = ({ appointment, onSaveField, onUpdate }: AppointmentHe
   const [assessmentModal, setAssessmentModal] = useState<{ open: boolean; type: 'bolt' | 'coherence' } | null>(null);
   const clientBorn = appointment.clients.born ? new Date(appointment.clients.born) : null;
   const isSessionToday = isToday(appointment.date);
+
+  const neuralLoad = useMemo(() => {
+    const nuclei = calculateBrainstemTone(appointment.priority_pattern || null);
+    return Math.round(nuclei.reduce((sum, n) => sum + n.threatLevel, 0) / 4);
+  }, [appointment.priority_pattern]);
 
   return (
     <div className="p-6 border-b border-border bg-card">
@@ -108,7 +116,23 @@ const AppointmentHeader = ({ appointment, onSaveField, onUpdate }: AppointmentHe
         </div>
 
         <div className="flex flex-wrap items-center gap-3 lg:justify-end">
-          {/* Vitals Snapshot in Header */}
+          {/* Neural Load Indicator */}
+          <div className={cn(
+            "flex items-center gap-3 px-4 py-2 rounded-2xl border-2 transition-all duration-500",
+            neuralLoad > 50 ? "bg-rose-50 border-rose-200 text-rose-700" : "bg-emerald-50 border-emerald-200 text-emerald-700"
+          )}>
+            <div className={cn(
+              "w-8 h-8 rounded-xl flex items-center justify-center text-white shadow-sm",
+              neuralLoad > 50 ? "bg-rose-600" : "bg-emerald-600"
+            )}>
+              <ShieldAlert size={18} />
+            </div>
+            <div>
+              <p className="text-[8px] font-black uppercase tracking-widest opacity-60">Neural Load</p>
+              <p className="text-lg font-black leading-none">{neuralLoad}%</p>
+            </div>
+          </div>
+
           <div className="flex items-center gap-2 mr-4">
             {appointment.bolt_score && (
               <div className="flex flex-col items-center px-3 py-1 bg-indigo-50 dark:bg-indigo-900/20 rounded-xl border border-indigo-100 dark:border-indigo-900/30">

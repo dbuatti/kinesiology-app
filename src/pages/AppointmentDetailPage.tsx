@@ -7,7 +7,8 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { 
   Loader2, Trash2, MoreHorizontal, History, Printer, Copy, Check, Play,
   FileText, Zap, Activity, Target, ClipboardList, PanelRightOpen, PanelRightClose,
-  Brain
+  Brain,
+  ShieldCheck
 } from "lucide-react";
 import { format, isToday } from "date-fns";
 import { AppointmentWithClient } from "@/types/crm";
@@ -311,25 +312,37 @@ const AppointmentDetailPage = () => {
               <Card className="border-none shadow-xl rounded-[2.5rem] bg-white overflow-hidden">
                 <AppointmentHeader appointment={appointment} onSaveField={saveField} onUpdate={fetchAppointmentData} />
 
-                <div className="p-8 grid grid-cols-1 md:grid-cols-2 gap-8">
-                  <EditableField 
-                    key={`goal-${appointment.id}`} 
-                    field="goal" 
-                    label="Session Goal" 
-                    value={appointment.goal} 
-                    placeholder="What is the primary goal for this balance?" 
-                    onSave={saveField} 
-                    className="bg-slate-50/50 p-6 rounded-[2rem] border border-slate-100" 
-                  />
-                  <EditableField 
-                    key={`issue-${appointment.id}`} 
-                    field="issue" 
-                    label="Main Concern / Issue" 
-                    value={appointment.issue} 
-                    placeholder="Describe the client's main concern..." 
-                    onSave={saveField} 
-                    className="bg-slate-50/50 p-6 rounded-[2rem] border border-slate-100" 
-                  />
+                <div className="p-8 grid grid-cols-1 md:grid-cols-2 gap-8 bg-slate-50/30">
+                  <div className="space-y-2">
+                    <div className="flex items-center gap-2 px-2">
+                      <Target size={14} className="text-indigo-500" />
+                      <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Clinical Intake</span>
+                    </div>
+                    <EditableField 
+                      key={`goal-${appointment.id}`} 
+                      field="goal" 
+                      label="Session Goal" 
+                      value={appointment.goal} 
+                      placeholder="What is the primary goal for this balance?" 
+                      onSave={saveField} 
+                      className="bg-white p-6 rounded-[2rem] border border-slate-100 shadow-sm" 
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <div className="flex items-center gap-2 px-2">
+                      <ClipboardList size={14} className="text-rose-500" />
+                      <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Primary Concern</span>
+                    </div>
+                    <EditableField 
+                      key={`issue-${appointment.id}`} 
+                      field="issue" 
+                      label="Main Concern / Issue" 
+                      value={appointment.issue} 
+                      placeholder="Describe the client's main concern..." 
+                      onSave={saveField} 
+                      className="bg-white p-6 rounded-[2rem] border border-slate-100 shadow-sm" 
+                    />
+                  </div>
                 </div>
               </Card>
 

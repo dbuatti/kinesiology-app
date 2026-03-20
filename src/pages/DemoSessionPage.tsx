@@ -42,7 +42,8 @@ import PreviousSessionInsightsBar from "@/components/crm/PreviousSessionInsights
 import WeeklyFocusBanner from "@/components/crm/WeeklyFocusBanner";
 
 const DemoSessionPage = () => {
-  const [showSidebar, setShowSidebar] = useState(true);
+  // Changed to false by default
+  const [showSidebar, setShowSidebar] = useState(false);
   
   // Mock history to show the evolution tracker
   const mockHistory = useMemo(() => [
@@ -151,7 +152,7 @@ const DemoSessionPage = () => {
               <Button 
                 variant="outline" 
                 size="sm" 
-                className={cn("h-10 px-4 font-bold text-xs rounded-xl", showSidebar ? "bg-indigo-600 text-white" : "bg-white")}
+                className={cn("h-10 px-4 font-bold text-xs rounded-xl transition-all", showSidebar ? "bg-indigo-600 text-white border-indigo-600" : "bg-white border-slate-200 text-slate-600 hover:bg-slate-50")}
                 onClick={() => setShowSidebar(!showSidebar)}
               >
                 {showSidebar ? <PanelRightClose size={16} className="mr-2" /> : <PanelRightOpen size={16} className="mr-2" />}

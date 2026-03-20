@@ -87,10 +87,9 @@ const WeeklyFocusBanner = ({ appointmentId, priorityPattern, onSaveField, onJump
       if (!(parsed as any)[category]) (parsed as any)[category] = {};
       (parsed as any)[category][item] = status;
 
-      if (status === 'Clear') {
-        setCelebratingItem(item);
-        setTimeout(() => setCelebratingItem(null), 2000);
-      }
+      // Celebrate any interaction that marks it as practiced
+      setCelebratingItem(item);
+      setTimeout(() => setCelebratingItem(null), 2000);
 
       await onSaveField('priority_pattern', JSON.stringify(parsed));
       setOpenPopover(null);
@@ -109,12 +108,16 @@ const WeeklyFocusBanner = ({ appointmentId, priorityPattern, onSaveField, onJump
   if (!isVisible || items.length === 0) return null;
 
   const isInteractive = !!appointmentId && !!onSaveField;
+  
+  // Count as practiced if status is anything other than 'Not Tested'
+  const practicedCount = Object.values(itemStatuses).filter(s => s !== 'Not Tested').length;
+  const isAllPracticed = practicedCount === items.length && items.length > 0;
 
   return (
     <div className="w-full mb-6 animate-in slide-in-from-top-4 duration-700 print:hidden">
       <div className={cn(
         "bg-indigo-600 text-white rounded-[2rem] p-4 shadow-xl shadow-indigo-200 dark:shadow-indigo-900/20 border-2 border-indigo-400/30 relative overflow-hidden group transition-all duration-500",
-        Object.values(itemStatuses).every(s => s === 'Clear') && items.length > 0 && "bg-emerald-600 border-emerald-400/30 shadow-emerald-200"
+        isAllPracticed && "bg-emerald-600 border-emerald-400/30 shadow-emerald-200"
       )}>
         <div className="absolute top-0 right-0 p-4 opacity-10 group-hover:scale-110 transition-transform duration-700">
           <Trophy size={60} />
@@ -199,7 +202,7 @@ const WeeklyFocusBanner = ({ appointmentId, priorityPattern, onSaveField, onJump
             <div className="hidden lg:flex items-center gap-2 px-3 py-1 bg-white/10 rounded-full border border-white/10">
               <Sparkles size={12} className="text-amber-300" />
               <span className="text-[8px] font-black uppercase tracking-widest text-indigo-100">
-                {Object.values(itemStatuses).filter(s => s === 'Clear').length} / {items.length} Complete
+                {practicedCount} / {items.length} Practiced
               </span>
             </div>
           </div>

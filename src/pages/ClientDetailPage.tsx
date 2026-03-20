@@ -36,7 +36,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import ClientProgressTab from "@/components/crm/ClientProgressTab";
 import ClientProfileCard from "@/components/crm/ClientProfileCard";
 import AppLayout from "@/components/crm/AppLayout";
-import { generateAICasePrompt, formatAppointmentQuickInfo } from "@/utils/summary-generator";
+import { generateAICasePrompt, generateSessionSummary } from "@/utils/summary-generator";
 
 const ClientDetailPage = () => {
   const { id } = useParams();
@@ -117,10 +117,13 @@ const ClientDetailPage = () => {
     setTimeout(() => setAiCopying(false), 2000);
   };
 
-  const handleCopyQuickInfo = (app: any) => {
-    const info = formatAppointmentQuickInfo(app);
-    navigator.clipboard.writeText(info);
-    showSuccess("Appointment info copied!");
+  const handleCopyFullSummary = (app: any) => {
+    if (!client) return;
+    // Merge appointment with client context for the generator
+    const fullApp = { ...app, clients: client };
+    const summary = generateSessionSummary(fullApp);
+    navigator.clipboard.writeText(summary);
+    showSuccess("Full session summary copied!");
   };
 
   const handleDeleteClient = async () => {
@@ -248,7 +251,7 @@ const ClientDetailPage = () => {
                   <CardContent className="space-y-4">
                     {client.occupation && (
                       <div className="flex items-center gap-3 text-sm p-2 rounded-lg hover:bg-slate-50 transition-colors">
-                        <div className="w-8 h-8 rounded-lg bg-slate-100 flex items-center justify-center text-slate-500">
+                        <div className="w-8 h-8 rounded-lg bg-slate-100 flex items-center justify-center text-slate-50">
                           <Briefcase size={16} />
                         </div>
                         <span className="text-slate-700">{client.occupation}</span>
@@ -256,7 +259,7 @@ const ClientDetailPage = () => {
                     )}
                     {client.marital_status && (
                       <div className="flex items-center gap-3 text-sm p-2 rounded-lg hover:bg-slate-50 transition-colors">
-                        <div className="w-8 h-8 rounded-lg bg-slate-100 flex items-center justify-center text-slate-500">
+                        <div className="w-8 h-8 rounded-lg bg-slate-100 flex items-center justify-center text-slate-50">
                           <Heart size={16} />
                         </div>
                         <span className="text-slate-700">{client.marital_status}</span>
@@ -264,7 +267,7 @@ const ClientDetailPage = () => {
                     )}
                     {client.children && (
                       <div className="flex items-center gap-3 text-sm p-2 rounded-lg hover:bg-slate-50 transition-colors">
-                        <div className="w-8 h-8 rounded-lg bg-slate-100 flex items-center justify-center text-slate-500">
+                        <div className="w-8 h-8 rounded-lg bg-slate-100 flex items-center justify-center text-slate-50">
                           <Baby size={16} />
                         </div>
                         <span className="text-slate-700">Children: {client.children}</span>
@@ -273,7 +276,7 @@ const ClientDetailPage = () => {
                     <hr className="border-slate-100" />
                     <div className="flex items-center justify-between group/contact p-2 rounded-lg hover:bg-slate-50 transition-colors">
                       <div className="flex items-center gap-3 text-sm">
-                        <div className="w-8 h-8 rounded-lg bg-slate-100 flex items-center justify-center text-slate-500">
+                        <div className="w-8 h-8 rounded-lg bg-slate-100 flex items-center justify-center text-slate-50">
                             <Mail size={16} />
                         </div>
                         <span className="text-slate-700">{client.email || 'No email'}</span>
@@ -286,7 +289,7 @@ const ClientDetailPage = () => {
                     </div>
                     <div className="flex items-center justify-between group/contact p-2 rounded-lg hover:bg-slate-50 transition-colors">
                       <div className="flex items-center gap-3 text-sm">
-                        <div className="w-8 h-8 rounded-lg bg-slate-100 flex items-center justify-center text-slate-500">
+                        <div className="w-8 h-8 rounded-lg bg-slate-100 flex items-center justify-center text-slate-50">
                             <Phone size={16} />
                         </div>
                         <span className="text-slate-700">{client.phone || 'No phone'}</span>
@@ -298,7 +301,7 @@ const ClientDetailPage = () => {
                       )}
                     </div>
                     <div className="flex items-center gap-3 text-sm p-2 rounded-lg hover:bg-slate-50 transition-colors">
-                      <div className="w-8 h-8 rounded-lg bg-slate-100 flex items-center justify-center text-slate-500">
+                      <div className="w-8 h-8 rounded-lg bg-slate-100 flex items-center justify-center text-slate-50">
                           <MapPin size={16} />
                       </div>
                       <div className="flex gap-1 flex-wrap text-slate-700">
@@ -405,7 +408,7 @@ const ClientDetailPage = () => {
                         variant="ghost" 
                         size="icon" 
                         className="absolute top-4 right-4 h-8 w-8 rounded-xl opacity-0 group-hover:opacity-100 transition-opacity text-slate-400 hover:text-indigo-600 hover:bg-indigo-50"
-                        onClick={(e) => { e.preventDefault(); e.stopPropagation(); handleCopyQuickInfo(app); }}
+                        onClick={(e) => { e.preventDefault(); e.stopPropagation(); handleCopyFullSummary(app); }}
                       >
                         <Copy size={14} />
                       </Button>
@@ -472,7 +475,7 @@ const ClientDetailPage = () => {
                     variant="ghost" 
                     size="icon" 
                     className="absolute top-4 right-4 h-8 w-8 rounded-xl opacity-0 group-hover:opacity-100 transition-opacity text-slate-400 hover:text-indigo-600 hover:bg-indigo-50"
-                    onClick={(e) => { e.preventDefault(); e.stopPropagation(); handleCopyQuickInfo(app); }}
+                    onClick={(e) => { e.preventDefault(); e.stopPropagation(); handleCopyFullSummary(app); }}
                   >
                     <Copy size={14} />
                   </Button>

@@ -4,6 +4,35 @@ import { format } from "date-fns";
 import { AppointmentWithClient } from "@/types/crm";
 
 /**
+ * Helper to format the priority pattern JSON into a readable string
+ */
+const formatPriorityPattern = (patternStr: string | null | undefined): string => {
+  if (!patternStr || patternStr === "{}" || patternStr === "") return 'None recorded';
+  
+  try {
+    const pattern = JSON.parse(patternStr);
+    const lines: string[] = [];
+    
+    Object.entries(pattern).forEach(([category, items]: [string, any]) => {
+      // Format category name (e.g., primitiveReflexes -> Primitive Reflexes)
+      const categoryName = category.charAt(0).toUpperCase() + category.slice(1).replace(/([A-Z])/g, ' $1');
+      
+      const entries = Object.entries(items)
+        .map(([name, status]) => `${name} [${status}]`)
+        .join(', ');
+      
+      if (entries) {
+        lines.push(`  * ${categoryName}: ${entries}`);
+      }
+    });
+    
+    return lines.length > 0 ? '\n' + lines.join('\n') : 'None recorded';
+  } catch (e) {
+    return patternStr; // Fallback to raw if parsing fails
+  }
+};
+
+/**
  * Generates a high-detail clinical summary of the entire appointment.
  */
 export const generateSessionSummary = (appointment: AppointmentWithClient): string => {
@@ -62,7 +91,9 @@ export const generateSessionSummary = (appointment: AppointmentWithClient): stri
 
   if (appointment.priority_pattern || appointment.modes_balances) {
     summary += `[6] PATHWAY & CORRECTIONS\n`;
-    if (appointment.priority_pattern) summary += `- Findings: ${appointment.priority_pattern}\n`;
+    if (appointment.priority_pattern) {
+      summary += `- Findings: ${formatPriorityPattern(appointment.priority_pattern)}\n`;
+    }
     if (appointment.modes_balances) summary += `- Corrections Applied: ${appointment.modes_balances}\n`;
     summary += `\n`;
   }

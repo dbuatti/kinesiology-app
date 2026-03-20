@@ -71,7 +71,7 @@ const MuscleTestCard = ({
                 variant="ghost" 
                 size="sm" 
                 onClick={() => onShowLogic(muscle, result.status)}
-                className="h-6 px-2 rounded-lg text-amber-600 hover:bg-amber-50 font-black text-[8px] uppercase tracking-widest"
+                className="h-6 px-2 rounded-xl text-amber-600 hover:bg-amber-50 font-black text-[8px] uppercase tracking-widest"
               >
                 <Lightbulb size={10} className="mr-1" /> Logic
               </Button>
@@ -81,7 +81,7 @@ const MuscleTestCard = ({
                 variant="ghost"
                 size="icon"
                 onClick={() => onClear(muscle, side)}
-                className="h-6 w-6 text-slate-300 hover:text-rose-500 hover:bg-rose-50 rounded-lg transition-all"
+                className="h-6 w-6 text-slate-300 hover:text-rose-500 hover:bg-rose-50 rounded-xl transition-all"
                 disabled={disabled}
               >
                 <RotateCcw size={12} />
@@ -90,7 +90,7 @@ const MuscleTestCard = ({
           </div>
         </div>
 
-        <div className="flex p-1 bg-slate-100/50 dark:bg-slate-900/50 rounded-xl border border-slate-100 dark:border-slate-800">
+        <div className="flex p-1 bg-slate-100/50 dark:bg-slate-900/50 rounded-2xl border border-slate-100 dark:border-slate-800">
           {MUSCLE_STATUSES.map(status => {
             const isSelected = result?.status === status.value;
             const StatusIcon = status.icon;
@@ -104,7 +104,7 @@ const MuscleTestCard = ({
                 onClick={() => onStatusChange(muscle, status.value, side)}
                 disabled={disabled}
                 className={cn(
-                  "flex-1 flex flex-col items-center justify-center py-2.5 gap-1 rounded-lg transition-all duration-300 group/btn",
+                  "flex-1 flex flex-col items-center justify-center py-2.5 gap-1 rounded-xl transition-all duration-300 group/btn",
                   isSelected 
                     ? cn("shadow-md scale-[1.02] z-10 text-white", activeColorClass)
                     : "text-slate-400 hover:text-slate-600 hover:bg-white dark:hover:bg-slate-800"

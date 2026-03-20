@@ -82,7 +82,7 @@ const AssessmentItem = ({
     <div 
       onClick={onClick}
       className={cn(
-        "group relative p-4 rounded-3xl border-2 transition-all cursor-pointer overflow-hidden h-full flex flex-col",
+        "group relative p-4 rounded-[2rem] border-2 transition-all cursor-pointer overflow-hidden h-full flex flex-col",
         isFullyClear ? "bg-emerald-50/30 border-emerald-100 hover:border-emerald-200" :
         hasInhibition ? "bg-rose-50 border-rose-300 shadow-md ring-1 ring-rose-200 animate-in fade-in zoom-in-95" :
         "bg-white border-slate-100 hover:border-indigo-200 hover:shadow-lg"
@@ -108,7 +108,7 @@ const AssessmentItem = ({
           <div className="flex items-center gap-2 mt-1.5">
             {nucleiInfo && (
               <Badge variant="outline" className={cn(
-                "text-[7px] font-black uppercase tracking-widest px-1.5 py-0 border-none",
+                "text-[7px] font-black uppercase tracking-widest px-1.5 py-0 border-none rounded-full",
                 nucleiInfo.nuclei === 'Midbrain' ? "bg-amber-100 text-amber-700" :
                 nucleiInfo.nuclei === 'Pons' ? "bg-indigo-100 text-indigo-700" :
                 nucleiInfo.nuclei === 'Medulla' ? "bg-rose-100 text-rose-700" : "bg-purple-100 text-purple-700"
@@ -261,9 +261,9 @@ const AssessmentSection = ({ id, title, description, icon: Icon, children, count
               <div className="flex items-center gap-4">
                 {count > 0 && (
                   <div className="flex gap-2">
-                    <Badge className="bg-emerald-50 text-emerald-600 border-emerald-100 font-black text-[10px] uppercase tracking-widest px-3 py-1">{count - inhibitedCount} Clear</Badge>
+                    <Badge className="bg-emerald-50 text-emerald-600 border-emerald-100 font-black text-[10px] uppercase tracking-widest px-3 py-1 rounded-full">{count - inhibitedCount} Clear</Badge>
                     <Badge className={cn(
-                      "border-none font-black text-[10px] uppercase tracking-widest px-3 py-1",
+                      "border-none font-black text-[10px] uppercase tracking-widest px-3 py-1 rounded-full",
                       inhibitedCount > 0 ? "bg-rose-600 text-white shadow-md" : "bg-slate-100 text-slate-400"
                     )}>
                       {inhibitedCount} Inhibited
@@ -276,7 +276,7 @@ const AssessmentSection = ({ id, title, description, icon: Icon, children, count
                       variant="ghost" 
                       size="sm" 
                       onClick={onClearAll}
-                      className="h-8 text-[9px] font-black uppercase tracking-widest text-indigo-600 hover:bg-indigo-50 rounded-lg"
+                      className="h-8 text-[9px] font-black uppercase tracking-widest text-indigo-600 hover:bg-indigo-50 rounded-xl"
                     >
                       <CheckCircle2 size={14} className="mr-1.5" /> Mark All Clear
                     </Button>
@@ -292,7 +292,7 @@ const AssessmentSection = ({ id, title, description, icon: Icon, children, count
         <CollapsibleContent>
           <CardContent className="p-8 pt-0 space-y-8">
             {protocol && (
-              <div className="p-6 bg-indigo-50/50 rounded-3xl border border-indigo-100">
+              <div className="p-6 bg-indigo-50/50 rounded-[2rem] border border-indigo-100">
                 {protocol}
               </div>
             )}
@@ -615,7 +615,7 @@ const PathwayAssessment = ({ initialValue, previousValue, history = [], onSave, 
               </Button>
             )}
             {nucleiFilter && (
-              <Badge className="bg-indigo-600 text-white border-none font-black text-[10px] uppercase tracking-widest px-3 py-1">
+              <Badge className="bg-indigo-600 text-white border-none font-black text-[10px] uppercase tracking-widest px-3 py-1 rounded-full">
                 Filter: {nucleiFilter}
               </Badge>
             )}
@@ -643,7 +643,7 @@ const PathwayAssessment = ({ initialValue, previousValue, history = [], onSave, 
               <cat.icon size={18} className={cn("mr-3 transition-transform group-hover:scale-110", cat.color)} />
               <span className="font-black text-[10px] uppercase tracking-widest mr-3">{cat.label}</span>
               {cat.count > 0 && (
-                <Badge className="bg-rose-600 text-white border-none font-black text-[10px] h-5 min-w-[20px] flex items-center justify-center px-1">
+                <Badge className="bg-rose-600 text-white border-none font-black text-[10px] h-5 min-w-[20px] flex items-center justify-center px-1 rounded-full">
                   {cat.count}
                 </Badge>
               )}
@@ -885,7 +885,7 @@ const PathwayAssessment = ({ initialValue, previousValue, history = [], onSave, 
       </AssessmentSection>
 
       {totalFindings === 0 && globalSearch && (
-        <div className="py-32 text-center bg-slate-50 rounded-[3rem] border-2 border-dashed border-slate-200">
+        <div className="py-32 text-center bg-slate-50 rounded-[3rem] border-2 border-dashed border-border">
           <Search size={48} className="mx-auto text-slate-200 mb-4" />
           <p className="text-lg font-black text-slate-900">No findings match "{globalSearch}"</p>
           <Button variant="link" onClick={() => setGlobalSearch("")} className="mt-2 text-indigo-600 font-bold">Clear Search</Button>

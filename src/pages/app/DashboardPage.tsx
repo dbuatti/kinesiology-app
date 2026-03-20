@@ -198,10 +198,10 @@ const Index = () => {
     <AppLayout>
       <div className="space-y-6">
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-          <div className="space-y-2"><Skeleton className="h-8 w-48" /><Skeleton className="h-4 w-96" /></div>
+          <div className="space-y-2"><Skeleton className="h-8 w-48 rounded-xl" /><Skeleton className="h-4 w-96 rounded-xl" /></div>
         </div>
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-          {[1, 2, 3, 4].map((i) => <Skeleton key={i} className="h-28 w-full rounded-2xl" />)}
+          {[1, 2, 3, 4].map((i) => <Skeleton key={i} className="h-28 w-full rounded-[2rem]" />)}
         </div>
       </div>
     </AppLayout>
@@ -219,11 +219,11 @@ const Index = () => {
           </div>
           <div className="flex items-center gap-3">
             <Link to="/settings/demo">
-              <Button variant="outline" className="h-12 px-6 rounded-xl font-black text-[10px] uppercase tracking-widest border-indigo-200 text-indigo-600 hover:bg-indigo-50 shadow-sm">
+              <Button variant="outline" className="h-12 px-6 rounded-2xl font-black text-[10px] uppercase tracking-widest border-indigo-200 text-indigo-600 hover:bg-indigo-50 shadow-sm">
                 <Sparkles size={18} className="mr-2" /> Launch Demo Session
               </Button>
             </Link>
-            <div className="flex items-center gap-3 bg-card p-3 rounded-2xl border border-border shadow-sm">
+            <div className="flex items-center gap-3 bg-card p-3 rounded-[1.5rem] border border-border shadow-sm">
               <div className="w-10 h-10 bg-indigo-50 dark:bg-indigo-900/20 rounded-xl flex items-center justify-center text-indigo-600 dark:text-indigo-400">
                 <Calendar size={20} />
               </div>
@@ -236,17 +236,17 @@ const Index = () => {
         </div>
 
         {!hasData ? (
-          <div className="text-center py-20 bg-gradient-to-br from-indigo-50 to-blue-50 dark:from-indigo-950/20 dark:to-blue-950/20 rounded-[2.5rem] border-2 border-dashed border-indigo-200 dark:border-indigo-800">
+          <div className="text-center py-20 bg-gradient-to-br from-indigo-50 to-blue-50 dark:from-indigo-950/20 dark:to-blue-950/20 rounded-[3rem] border-2 border-dashed border-indigo-200 dark:border-indigo-800">
             <div className="mx-auto w-16 h-16 bg-card rounded-2xl flex items-center justify-center mb-6 shadow-xl">
               <Sparkles className="text-indigo-500" size={32} />
             </div>
             <h2 className="text-2xl font-black text-foreground mb-2">Welcome to Antigravity CRM!</h2>
             <p className="text-muted-foreground max-w-md mx-auto mb-8 text-base font-medium">Start building your kinesiology practice by adding your first client and scheduling sessions.</p>
             <div className="flex gap-3 justify-center">
-              <Button className="bg-indigo-600 hover:bg-indigo-700 h-12 px-8 rounded-xl font-black text-xs uppercase tracking-widest shadow-xl shadow-indigo-200" onClick={() => setClientDialogOpen(true)}>
+              <Button className="bg-indigo-600 hover:bg-indigo-700 h-12 px-8 rounded-2xl font-black text-xs uppercase tracking-widest shadow-xl shadow-indigo-200" onClick={() => setClientDialogOpen(true)}>
                 <UserPlus size={20} className="mr-2" /> Add First Client
               </Button>
-              <Button variant="outline" className="h-12 px-8 rounded-xl font-black text-xs uppercase tracking-widest border-border bg-card" onClick={() => setAppDialogOpen(true)}>
+              <Button variant="outline" className="h-12 px-8 rounded-2xl font-black text-xs uppercase tracking-widest border-border bg-card" onClick={() => setAppDialogOpen(true)}>
                 <Calendar size={20} className="mr-2" /> Schedule Session
               </Button>
             </div>
@@ -257,7 +257,7 @@ const Index = () => {
 
             {/* Clinical Pulse Row */}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-              <Card className="border-none shadow-md rounded-[2rem] bg-indigo-900 text-white overflow-hidden relative group">
+              <Card className="border-none shadow-md rounded-[2.5rem] bg-indigo-900 text-white overflow-hidden relative group">
                 <div className="absolute top-0 right-0 p-6 opacity-10 group-hover:scale-110 transition-transform duration-700"><Activity size={80} /></div>
                 <CardContent className="p-6 flex items-center gap-5 relative z-10">
                   <div className="w-12 h-12 rounded-2xl bg-white/10 backdrop-blur-md flex items-center justify-center border border-white/10">
@@ -270,7 +270,7 @@ const Index = () => {
                   </div>
                 </CardContent>
               </Card>
-              <Card className="border-none shadow-md rounded-[2rem] bg-emerald-600 text-white overflow-hidden relative group">
+              <Card className="border-none shadow-md rounded-[2.5rem] bg-emerald-600 text-white overflow-hidden relative group">
                 <div className="absolute top-0 right-0 p-6 opacity-10 group-hover:scale-110 transition-transform duration-700"><Wind size={80} /></div>
                 <CardContent className="p-6 flex items-center gap-5 relative z-10">
                   <div className="w-12 h-12 rounded-2xl bg-white/10 backdrop-blur-md flex items-center justify-center border border-white/10">
@@ -283,7 +283,7 @@ const Index = () => {
                   </div>
                 </CardContent>
               </Card>
-              <Card className="border-none shadow-md rounded-[2rem] bg-rose-600 text-white overflow-hidden relative group">
+              <Card className="border-none shadow-md rounded-[2.5rem] bg-rose-600 text-white overflow-hidden relative group">
                 <div className="absolute top-0 right-0 p-6 opacity-10 group-hover:scale-110 transition-transform duration-700"><Heart size={80} /></div>
                 <CardContent className="p-6 flex items-center gap-5 relative z-10">
                   <div className="w-12 h-12 rounded-2xl bg-white/10 backdrop-blur-md flex items-center justify-center border border-white/10">
@@ -306,7 +306,7 @@ const Index = () => {
                 <DailyBriefing todaySessions={todaySessions} activeSession={activeSession} />
                 
                 {priorityClients.length > 0 && (
-                  <Card className="border-none shadow-lg rounded-[2.5rem] bg-rose-50 dark:bg-rose-950/10 border-2 border-rose-100 dark:border-rose-900/30 overflow-hidden">
+                  <Card className="border-none shadow-lg rounded-[3rem] bg-rose-50 dark:bg-rose-950/10 border-2 border-rose-100 dark:border-rose-900/30 overflow-hidden">
                     <CardHeader className="p-8 pb-4">
                       <div className="flex items-center justify-between">
                         <CardTitle className="text-xl font-black flex items-center gap-3 text-rose-900 dark:text-rose-100">
@@ -323,7 +323,7 @@ const Index = () => {
                     <CardContent className="p-8 pt-0 space-y-3">
                       {priorityClients.map(pc => (
                         <Link key={pc.id} to={`/appointments/${pc.appointment.id}`}>
-                          <div className="p-5 bg-card rounded-2xl border border-rose-200 dark:border-rose-900/30 flex items-center justify-between group hover:shadow-md transition-all duration-300">
+                          <div className="p-5 bg-card rounded-[2rem] border border-rose-200 dark:border-rose-900/30 flex items-center justify-between group hover:shadow-md transition-all duration-300">
                             <div className="flex items-center gap-4">
                               <div className="w-10 h-10 rounded-xl bg-rose-100 dark:bg-rose-900/40 text-rose-600 dark:text-rose-400 flex items-center justify-center font-black text-lg">
                                 {pc.name.charAt(0)}
@@ -351,7 +351,7 @@ const Index = () => {
                   </Card>
                 )}
 
-                <Card className="border-none shadow-lg rounded-[2.5rem] overflow-hidden bg-card">
+                <Card className="border-none shadow-lg rounded-[3rem] overflow-hidden bg-card">
                   <CardHeader className="p-8 pb-0">
                     <CardTitle className="text-2xl font-black tracking-tight">Session Activity</CardTitle>
                     <CardDescription className="font-medium text-lg mt-1">Volume of appointments over the last 6 months</CardDescription>
@@ -378,7 +378,7 @@ const Index = () => {
                   </CardContent>
                 </Card>
 
-                <Card className="border-none shadow-lg rounded-[2.5rem] bg-amber-50 dark:bg-amber-950/10 border border-amber-100 dark:border-amber-900/30 overflow-hidden">
+                <Card className="border-none shadow-lg rounded-[3rem] bg-amber-50 dark:bg-amber-950/10 border border-amber-100 dark:border-amber-900/30 overflow-hidden">
                   <CardHeader className="p-8 pb-4">
                     <CardTitle className="text-2xl font-black flex items-center gap-3 text-amber-900 dark:text-amber-100">
                       <StickyNote size={28} className="text-amber-600" /> Practitioner Scratchpad

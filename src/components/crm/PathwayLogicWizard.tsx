@@ -242,10 +242,10 @@ const PathwayLogicWizard = ({ onSave, onClearItem, priorityPattern, initialFindi
                     className="p-8 rounded-[2.5rem] border-2 transition-all duration-500 text-left group border-blue-100 bg-blue-50/30 hover:border-blue-400 hover:bg-blue-50"
                 >
                   <div className="flex items-center justify-between mb-4">
-                    <div className="w-12 h-12 rounded-xl bg-white shadow-md flex items-center justify-center group-hover:bg-blue-600 group-hover:text-white transition-all">
+                    <div className="w-12 h-12 rounded-2xl bg-white shadow-md flex items-center justify-center group-hover:bg-blue-600 group-hover:text-white transition-all">
                       <GitBranch size={24} className="text-blue-600 group-hover:text-white" />
                     </div>
-                    <Badge className="bg-blue-100 text-blue-700 border-none font-black text-[8px] uppercase tracking-widest">Bottom-Up</Badge>
+                    <Badge className="bg-blue-100 text-blue-700 border-none font-black text-[8px] uppercase tracking-widest rounded-full">Bottom-Up</Badge>
                   </div>
                   <h3 className="text-2xl font-black text-blue-900 tracking-tight">Afferent</h3>
                   <p className="text-xs font-bold text-blue-700 mt-2">Sensory input issue.</p>
@@ -256,10 +256,10 @@ const PathwayLogicWizard = ({ onSave, onClearItem, priorityPattern, initialFindi
                     className="p-8 rounded-[2.5rem] border-2 transition-all duration-500 text-left group border-purple-100 bg-purple-50/30 hover:border-purple-400 hover:bg-purple-50"
                 >
                   <div className="flex items-center justify-between mb-4">
-                    <div className="w-12 h-12 rounded-xl bg-white shadow-md flex items-center justify-center group-hover:bg-purple-600 group-hover:text-white transition-all">
+                    <div className="w-12 h-12 rounded-2xl bg-white shadow-md flex items-center justify-center group-hover:bg-purple-600 group-hover:text-white transition-all">
                       <Sparkles size={24} className="text-purple-600 group-hover:text-white" />
                     </div>
-                    <Badge className="bg-purple-100 text-purple-700 border-none font-black text-[8px] uppercase tracking-widest">Top-Down</Badge>
+                    <Badge className="bg-purple-100 text-purple-700 border-none font-black text-[8px] uppercase tracking-widest rounded-full">Top-Down</Badge>
                   </div>
                   <h3 className="text-2xl font-black text-purple-900 tracking-tight">Efferent</h3>
                   <p className="text-xs font-bold text-purple-700 mt-2">Processing issue.</p>
@@ -275,10 +275,10 @@ const PathwayLogicWizard = ({ onSave, onClearItem, priorityPattern, initialFindi
                     <h4 className="font-black text-amber-900 text-sm uppercase tracking-widest">Clinical Insight: {clinicalTip.title}</h4>
                   </div>
                   <div className="flex gap-2">
-                    <Badge variant="outline" className="bg-white border-amber-200 text-amber-700 font-black text-[8px] uppercase tracking-widest">
+                    <Badge variant="outline" className="bg-white border-amber-200 text-amber-700 font-black text-[8px] uppercase tracking-widest rounded-full">
                       {clinicalTip.type}
                     </Badge>
-                    <Badge className="bg-amber-600 text-white border-none font-black text-[8px] uppercase tracking-widest">
+                    <Badge className="bg-amber-600 text-white border-none font-black text-[8px] uppercase tracking-widest rounded-full">
                       {clinicalTip.logic}
                     </Badge>
                   </div>
@@ -323,7 +323,7 @@ const PathwayLogicWizard = ({ onSave, onClearItem, priorityPattern, initialFindi
                 <p className="text-[10px] font-black text-indigo-400 uppercase tracking-widest">Correcting</p>
                 <p className="text-lg font-black text-indigo-900">{effectiveItem || "General Correction"}</p>
               </div>
-              <Badge className="bg-blue-600 text-white border-none font-black text-[8px] uppercase tracking-widest">Afferent</Badge>
+              <Badge className="bg-blue-600 text-white border-none font-black text-[8px] uppercase tracking-widest rounded-full">Afferent</Badge>
             </div>
             {[
               { type: 'Mechanoreceptive', icon: Activity, color: 'blue', step: 'MECHANO_PROCESS', desc: 'Joint and muscle receptor calibration.' },
@@ -338,7 +338,7 @@ const PathwayLogicWizard = ({ onSave, onClearItem, priorityPattern, initialFindi
               )}>
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-4">
-                    <div className="w-12 h-12 rounded-xl bg-card shadow-sm flex items-center justify-center group-hover:scale-110 transition-transform">
+                    <div className="w-12 h-12 rounded-2xl bg-card shadow-sm flex items-center justify-center group-hover:scale-110 transition-transform">
                       <item.icon size={24} className={cn(
                         item.color === 'blue' ? "text-blue-600" :
                         item.color === 'cyan' ? "text-cyan-600" :
@@ -354,7 +354,7 @@ const PathwayLogicWizard = ({ onSave, onClearItem, priorityPattern, initialFindi
                 </div>
               </button>
             ))}
-            <Button variant="ghost" onClick={goBack} className="w-full h-12 rounded-xl font-bold text-muted-foreground"><ChevronLeft size={18} className="mr-2" /> Back</Button>
+            <Button variant="ghost" onClick={goBack} className="w-full h-12 rounded-2xl font-bold text-muted-foreground"><ChevronLeft size={18} className="mr-2" /> Back</Button>
           </div>
         );
 
@@ -366,7 +366,7 @@ const PathwayLogicWizard = ({ onSave, onClearItem, priorityPattern, initialFindi
                 <p className="text-[10px] font-black text-indigo-400 uppercase tracking-widest">Correcting</p>
                 <p className="text-lg font-black text-indigo-900">{effectiveItem || "General Correction"}</p>
               </div>
-              <Badge className="bg-purple-600 text-white border-none font-black text-[8px] uppercase tracking-widest">Efferent</Badge>
+              <Badge className="bg-purple-600 text-white border-none font-black text-[8px] uppercase tracking-widest rounded-full">Efferent</Badge>
             </div>
             {[
               { type: 'Brain Integration', icon: Brain, color: 'purple', step: 'EFFERENT_PROCESS', desc: 'Cortical and subcortical zone pairing.' },
@@ -379,7 +379,7 @@ const PathwayLogicWizard = ({ onSave, onClearItem, priorityPattern, initialFindi
               )}>
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-4">
-                    <div className="w-12 h-12 rounded-xl bg-card shadow-sm flex items-center justify-center group-hover:scale-110 transition-transform">
+                    <div className="w-12 h-12 rounded-2xl bg-card shadow-sm flex items-center justify-center group-hover:scale-110 transition-transform">
                       <item.icon size={24} className={cn(
                         item.color === 'purple' ? "text-purple-600" :
                         item.color === 'rose' ? "text-rose-600" :
@@ -395,7 +395,7 @@ const PathwayLogicWizard = ({ onSave, onClearItem, priorityPattern, initialFindi
                 </div>
               </button>
             ))}
-            <Button variant="ghost" onClick={goBack} className="w-full h-12 rounded-xl font-bold text-muted-foreground"><ChevronLeft size={18} className="mr-2" /> Back</Button>
+            <Button variant="ghost" onClick={goBack} className="w-full h-12 rounded-2xl font-bold text-muted-foreground"><ChevronLeft size={18} className="mr-2" /> Back</Button>
           </div>
         );
 
@@ -428,7 +428,7 @@ const PathwayLogicWizard = ({ onSave, onClearItem, priorityPattern, initialFindi
             </div>
             <p className="font-black text-xl text-foreground">Coming Soon</p>
             <p className="text-sm font-medium text-muted-foreground mt-2">Vestibular assessment tools will be added here.</p>
-            <Button variant="outline" onClick={goBack} className="mt-8 rounded-xl h-12 px-8 border-border font-bold"><ChevronLeft size={18} className="mr-2" /> Back</Button>
+            <Button variant="outline" onClick={goBack} className="mt-8 rounded-2xl h-12 px-8 border-border font-bold"><ChevronLeft size={18} className="mr-2" /> Back</Button>
           </div>
         );
 
@@ -449,7 +449,7 @@ const PathwayLogicWizard = ({ onSave, onClearItem, priorityPattern, initialFindi
                 </CardDescription>
             </div>
             {step !== 'SELECT_START' && (
-                <Button variant="ghost" size="sm" onClick={resetWizard} className="text-[10px] font-black uppercase tracking-widest text-muted-foreground hover:text-rose-600">
+                <Button variant="ghost" size="sm" onClick={resetWizard} className="text-[10px] font-black uppercase tracking-widest text-muted-foreground hover:text-rose-600 rounded-xl">
                     <RefreshCw size={14} className="mr-2" /> Reset Wizard
                 </Button>
             )}

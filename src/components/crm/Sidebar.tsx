@@ -195,7 +195,7 @@ const Sidebar = ({ onHide }: SidebarProps) => {
     <div className="space-y-1">
       <button
         onClick={onToggle}
-        className="flex items-center justify-between w-full px-3 py-2 rounded-lg text-muted-foreground hover:text-foreground hover:bg-accent/50 transition-all group"
+        className="flex items-center justify-between w-full px-3 py-2 rounded-xl text-muted-foreground hover:text-foreground hover:bg-accent/50 transition-all group"
       >
         <div className="flex items-center gap-3">
           <Icon size={16} className="text-muted-foreground group-hover:text-indigo-500" />
@@ -229,7 +229,7 @@ const Sidebar = ({ onHide }: SidebarProps) => {
               variant="ghost" 
               size="icon" 
               onClick={onHide}
-              className="text-muted-foreground hover:text-foreground hover:bg-accent rounded-lg h-8 w-8"
+              className="text-muted-foreground hover:text-foreground hover:bg-accent rounded-xl h-8 w-8"
             >
               <PanelLeftClose size={18} />
             </Button>
@@ -321,7 +321,7 @@ const Sidebar = ({ onHide }: SidebarProps) => {
                       to={`/clients/${client.id}`}
                       className="flex items-center gap-3 text-xs text-muted-foreground hover:text-indigo-500 transition-all duration-300 py-2 px-3 rounded-xl hover:bg-accent/50 truncate group"
                     >
-                      <div className="w-7 h-7 rounded-lg bg-muted border border-border flex items-center justify-center text-[9px] font-black group-hover:border-indigo-500/40 transition-all">
+                      <div className="w-7 h-7 rounded-xl bg-muted border border-border flex items-center justify-center text-[9px] font-black group-hover:border-indigo-500/40 transition-all">
                         {client.name.charAt(0)}
                       </div>
                       <span className="truncate font-bold text-[11px]">{client.name}</span>
@@ -392,7 +392,7 @@ const Sidebar = ({ onHide }: SidebarProps) => {
       <HelpModal open={helpOpen} onOpenChange={setHelpOpen} />
       
       <Dialog open={clientDialogOpen} onOpenChange={setClientDialogOpen}>
-        <DialogContent className="sm:max-w-[550px] rounded-[2rem] p-8">
+        <DialogContent className="sm:max-w-[550px] rounded-[2.5rem] p-8">
           <DialogHeader className="mb-4">
             <DialogTitle className="text-2xl font-black tracking-tight">Add New Client</DialogTitle>
           </DialogHeader>

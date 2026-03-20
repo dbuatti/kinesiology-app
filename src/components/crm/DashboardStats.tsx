@@ -22,7 +22,7 @@ const DashboardStats = ({ stats }: DashboardStatsProps) => {
   return (
     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
       {/* Clients Stat */}
-      <Card className="border-none shadow-lg rounded-3xl bg-card overflow-hidden group hover:shadow-xl transition-all duration-500">
+      <Card className="border-none shadow-lg rounded-[2rem] bg-card overflow-hidden group hover:shadow-xl transition-all duration-500">
         <CardContent className="p-6 flex items-center gap-5">
           <div className="w-14 h-14 rounded-2xl bg-primary/10 text-primary flex items-center justify-center shrink-0 group-hover:scale-110 transition-transform shadow-sm">
             <Users size={28} />
@@ -41,7 +41,7 @@ const DashboardStats = ({ stats }: DashboardStatsProps) => {
       </Card>
 
       {/* Sessions Stat */}
-      <Card className="border-none shadow-lg rounded-3xl bg-card overflow-hidden group hover:shadow-xl transition-all duration-500">
+      <Card className="border-none shadow-lg rounded-[2rem] bg-card overflow-hidden group hover:shadow-xl transition-all duration-500">
         <CardContent className="p-6 flex items-center gap-5">
           <div className="w-14 h-14 rounded-2xl bg-warning/10 text-warning flex items-center justify-center shrink-0 group-hover:scale-110 transition-transform shadow-sm">
             <Calendar size={28} />
@@ -57,7 +57,7 @@ const DashboardStats = ({ stats }: DashboardStatsProps) => {
       </Card>
 
       {/* BOLT Stat */}
-      <Card className="border-none shadow-lg rounded-3xl bg-card overflow-hidden group hover:shadow-xl transition-all duration-500">
+      <Card className="border-none shadow-lg rounded-[2rem] bg-card overflow-hidden group hover:shadow-xl transition-all duration-500">
         <CardContent className="p-6 flex items-center gap-5">
           <div className="w-14 h-14 rounded-2xl bg-success/10 text-success flex items-center justify-center shrink-0 group-hover:scale-110 transition-transform shadow-sm">
             <FlaskConical size={28} />
@@ -66,7 +66,7 @@ const DashboardStats = ({ stats }: DashboardStatsProps) => {
             <p className="text-[10px] font-black text-muted-foreground uppercase tracking-widest">Avg BOLT</p>
             <p className="text-3xl font-black text-foreground tracking-tight">{stats.avgBolt}s</p>
             <div className="flex items-center gap-1 mt-1">
-              <Badge variant="outline" className="h-4 px-1.5 text-[8px] font-black border-success/20 text-success uppercase">
+              <Badge variant="outline" className="h-4 px-1.5 text-[8px] font-black border-success/20 text-success uppercase rounded-full">
                 Functional
               </Badge>
             </div>
@@ -76,7 +76,7 @@ const DashboardStats = ({ stats }: DashboardStatsProps) => {
 
       {/* Alerts Stat */}
       <Card className={cn(
-        "border-none shadow-lg rounded-3xl overflow-hidden group hover:shadow-xl transition-all duration-500",
+        "border-none shadow-lg rounded-[2rem] overflow-hidden group hover:shadow-xl transition-all duration-500",
         stats.imperativeAlerts > 0 ? "bg-destructive text-destructive-foreground" : "bg-card"
       )}>
         <CardContent className="p-6 flex items-center gap-5">

@@ -31,12 +31,12 @@ const JointActionExplorer = () => {
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={16} />
           <Input 
             placeholder="Search 15 joints..." 
-            className="pl-10 h-11 rounded-xl border-slate-200 bg-white"
+            className="pl-10 h-11 rounded-2xl border-slate-200 bg-white"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
           />
         </div>
-        <ScrollArea className="h-[600px] pr-4">
+        <ScrollArea className="h-[600px] pr-4 rounded-2xl">
           <div className="space-y-2">
             {filtered.map(joint => (
               <button
@@ -54,13 +54,13 @@ const JointActionExplorer = () => {
                     <p className="font-black text-sm">{joint.name}</p>
                     <div className="flex gap-1 mt-1">
                       <Badge className={cn(
-                        "border-none font-black text-[6px] uppercase tracking-widest px-1.5 py-0",
+                        "border-none font-black text-[6px] uppercase tracking-widest px-1.5 py-0 rounded-full",
                         selectedJoint.name === joint.name ? "bg-white/20 text-white" : "bg-slate-100 text-slate-400"
                       )}>
                         {joint.type}
                       </Badge>
                       <Badge className={cn(
-                        "border-none font-black text-[6px] uppercase tracking-widest px-1.5 py-0",
+                        "border-none font-black text-[6px] uppercase tracking-widest px-1.5 py-0 rounded-full",
                         selectedJoint.name === joint.name ? "bg-white/20 text-white" : "bg-slate-100 text-slate-400"
                       )}>
                         {joint.region}
@@ -76,7 +76,7 @@ const JointActionExplorer = () => {
       </div>
 
       {/* Detail View */}
-      <Card className="lg:col-span-8 border-none shadow-xl rounded-[2.5rem] bg-white overflow-hidden">
+      <Card className="lg:col-span-8 border-none shadow-xl rounded-[3rem] bg-white overflow-hidden">
         <CardHeader className="bg-slate-50 border-b border-slate-100 p-8">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-4">
@@ -90,7 +90,7 @@ const JointActionExplorer = () => {
                 </CardDescription>
               </div>
             </div>
-            <Badge className="bg-indigo-100 text-indigo-700 border-none font-black text-[10px] uppercase tracking-widest px-3 py-1">
+            <Badge className="bg-indigo-100 text-indigo-700 border-none font-black text-[10px] uppercase tracking-widest px-3 py-1 rounded-full">
               Clinical Reference
             </Badge>
           </div>
@@ -113,7 +113,7 @@ const JointActionExplorer = () => {
                       action.label === '-' ? "bg-slate-50 border-slate-100 opacity-50" : "bg-white border-slate-50 hover:border-indigo-100 shadow-sm"
                     )}>
                       <div className="flex items-center gap-2 mb-2">
-                        <Badge variant="secondary" className="bg-indigo-50 text-indigo-700 border-none font-black text-[10px] uppercase tracking-widest">
+                        <Badge variant="secondary" className="bg-indigo-50 text-indigo-700 border-none font-black text-[10px] uppercase tracking-widest rounded-full">
                           {action.label}
                         </Badge>
                       </div>
@@ -140,7 +140,7 @@ const JointActionExplorer = () => {
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div className="p-5 bg-slate-900 text-white rounded-3xl space-y-3">
+            <div className="p-5 bg-slate-900 text-white rounded-[2rem] space-y-3">
               <div className="flex items-center gap-2 text-blue-400">
                 <Brain size={16} />
                 <span className="text-[10px] font-black uppercase tracking-widest">Conscious Logic</span>
@@ -149,7 +149,7 @@ const JointActionExplorer = () => {
                 Hold <span className="text-white font-bold">Contralateral S1</span>. Perform 30-40% isometric hold in the restricted action for 60s.
               </p>
             </div>
-            <div className="p-5 bg-slate-900 text-white rounded-3xl space-y-3">
+            <div className="p-5 bg-slate-900 text-white rounded-[2rem] space-y-3">
               <div className="flex items-center gap-2 text-emerald-400">
                 <Activity size={16} />
                 <span className="text-[10px] font-black uppercase tracking-widest">Unconscious Logic</span>

@@ -44,7 +44,7 @@ const DailyMechanoChallenge = () => {
 
   return (
     <div className="space-y-6 animate-in fade-in duration-700">
-      <Card className="border-none shadow-2xl rounded-[2.5rem] bg-slate-900 text-white overflow-hidden relative">
+      <Card className="border-none shadow-2xl rounded-[3rem] bg-slate-900 text-white overflow-hidden relative">
         <div className="absolute top-0 right-0 p-8 opacity-10"><Target size={120} /></div>
         <CardHeader className="p-8">
           <div className="flex items-center gap-4 mb-2">
@@ -52,20 +52,20 @@ const DailyMechanoChallenge = () => {
               <Sparkles size={20} className="text-amber-400" />
             </div>
             <div>
-              <Badge className="bg-indigo-500/20 text-indigo-300 border-indigo-500/30 font-black text-[8px] uppercase tracking-widest mb-1">Daily Drill</Badge>
+              <Badge className="bg-indigo-500/20 text-indigo-300 border-indigo-500/30 font-black text-[8px] uppercase tracking-widest mb-1 rounded-full">Daily Drill</Badge>
               <CardTitle className="text-2xl font-black">Clinical Case Study</CardTitle>
             </div>
           </div>
         </CardHeader>
         <CardContent className="p-8 pt-0 space-y-8 relative z-10">
           <div className="space-y-4">
-            <div className="p-6 bg-white/5 rounded-3xl border border-white/10">
+            <div className="p-6 bg-white/5 rounded-[2rem] border border-white/10">
               <p className="text-[10px] font-black text-indigo-400 uppercase tracking-widest mb-2">The Symptom</p>
               <p className="text-xl font-bold leading-tight">"{currentCase.symptom}"</p>
               <p className="text-sm text-slate-400 mt-2 font-medium italic">History: {currentCase.history}</p>
             </div>
 
-            <div className="p-6 bg-amber-500/10 rounded-3xl border border-amber-500/20">
+            <div className="p-6 bg-amber-500/10 rounded-[2rem] border border-amber-500/20">
               <p className="text-[10px] font-black text-amber-400 uppercase tracking-widest mb-2 flex items-center gap-2">
                 <ShieldAlert size={14} /> Diagnostic Clue
               </p>
@@ -148,7 +148,7 @@ const DailyMechanoChallenge = () => {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="p-4 bg-white/5 rounded-2xl border border-white/10">
                   <p className="text-[8px] font-black text-slate-500 uppercase tracking-widest mb-1">Correct Pathway</p>
-                  <Badge className={cn("border-none font-black", currentCase.correctPath === 'Conscious' ? "bg-blue-600" : "bg-emerald-600")}>
+                  <Badge className={cn("border-none font-black rounded-full", currentCase.correctPath === 'Conscious' ? "bg-blue-600" : "bg-emerald-600")}>
                     {currentCase.correctPath}
                   </Badge>
                 </div>
@@ -160,7 +160,7 @@ const DailyMechanoChallenge = () => {
 
               <Button 
                 onClick={generateNewCase}
-                className="w-full h-12 rounded-xl bg-indigo-600 hover:bg-indigo-700 font-black text-[10px] uppercase tracking-widest"
+                className="w-full h-12 rounded-2xl bg-indigo-600 hover:bg-indigo-700 font-black text-[10px] uppercase tracking-widest"
               >
                 <RefreshCw size={16} className="mr-2" /> Next Case Study
               </Button>

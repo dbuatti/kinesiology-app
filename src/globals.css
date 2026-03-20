@@ -32,12 +32,8 @@
     --input: 214.3 31.8% 91.4%;
     --ring: 243.4 75.4% 58.6%;
 
-    /* Standardized Radii */
-    --radius-sm: 0.5rem;
-    --radius-md: 0.75rem;
-    --radius-lg: 1rem;
-    --radius-xl: 1.5rem;
-    --radius-2xl: 2rem;
+    /* Standardized Radii - Generous and consistent */
+    --radius: 1rem;
   }
 
   .dark {
@@ -79,10 +75,21 @@
     @apply bg-background text-foreground antialiased;
     font-feature-settings: "cv02", "cv03", "cv04", "cv11";
   }
+
+  /* Rounded Scrollbars */
+  ::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+  }
+  ::-webkit-scrollbar-track {
+    @apply bg-transparent;
+  }
+  ::-webkit-scrollbar-thumb {
+    @apply bg-muted-foreground/20 rounded-full hover:bg-muted-foreground/40 transition-colors;
+  }
 }
 
 @layer components {
-  /* Global Interactive Classes */
   .interactive-lift {
     @apply transition-all duration-300 hover:-translate-y-0.5 hover:shadow-lg active:translate-y-0 active:shadow-sm;
   }
@@ -92,6 +99,6 @@
   }
 
   .card-standard {
-    @apply rounded-[2rem] border-none bg-white shadow-xl shadow-slate-200/50 dark:bg-slate-900 dark:shadow-none;
+    @apply rounded-[2.5rem] border-none bg-white shadow-xl shadow-slate-200/50 dark:bg-slate-900 dark:shadow-none;
   }
 }

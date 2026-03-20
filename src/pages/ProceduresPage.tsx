@@ -7,7 +7,9 @@ import {
   Activity, Zap, 
   Trophy, Sparkles, Search,
   GraduationCap, ShieldCheck,
-  AlertCircle, RefreshCw
+  AlertCircle, RefreshCw,
+  Lightbulb,
+  ArrowRight
 } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
@@ -59,7 +61,18 @@ const ProceduresPage = () => {
     const novices = stats.filter(s => s.masteryLevel === 'Novice').length;
     const totalLogs = stats.reduce((sum, s) => sum + s.count, 0);
     
-    return { total, masters, novices, totalLogs };
+    // Calculate practice priorities
+    const priorities = [...stats]
+      .sort((a, b) => {
+        // Prioritize Novice items first
+        if (a.masteryLevel === 'Novice' && b.masteryLevel !== 'Novice') return -1;
+        if (b.masteryLevel === 'Novice' && a.masteryLevel !== 'Novice') return 1;
+        // Then sort by dysfunction rate
+        return b.dysfunctionRate - a.dysfunctionRate;
+      })
+      .slice(0, 3);
+
+    return { total, masters, novices, totalLogs, priorities };
   }, [stats]);
 
   if (loading) return (
@@ -87,6 +100,48 @@ const ProceduresPage = () => {
             <RefreshCw size={18} className="mr-2" /> Refresh Data
           </Button>
         </div>
+
+        {/* Practice Priority Suggestion */}
+        {summary.priorities.length > 0 && (
+          <Card className="border-none shadow-xl rounded-[2.5rem] bg-indigo-50 dark:bg-indigo-950/20 border-2 border-indigo-100 dark:border-indigo-900/30 overflow-hidden animate-in fade-in slide-in-from-top-4 duration-700">
+            <CardHeader className="p-8 pb-4">
+              <div className="flex items-center justify-between">
+                <CardTitle className="text-xl font-black flex items-center gap-3 text-indigo-900 dark:text-indigo-100">
+                  <Lightbulb size={24} className="text-amber-500" /> Focus on this this week
+                </CardTitle>
+                <Badge className="bg-indigo-600 text-white border-none font-black text-[10px] uppercase tracking-widest px-3 py-1 rounded-full">
+                  Study Priority
+                </Badge>
+              </div>
+              <CardDescription className="text-indigo-700 dark:text-indigo-300 font-medium text-base mt-1">
+                Based on your clinical logs, these components require more practice or have high dysfunction rates.
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="p-8 pt-0">
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                {summary.priorities.map((item) => (
+                  <div key={item.id} className="p-5 bg-white dark:bg-slate-900 rounded-2xl border border-indigo-100 dark:border-indigo-900/30 flex items-center justify-between group hover:shadow-md transition-all">
+                    <div className="min-w-0">
+                      <p className="font-black text-sm text-slate-900 dark:text-slate-100 truncate">{item.name}</p>
+                      <div className="flex items-center gap-2 mt-1">
+                        <Badge variant="outline" className={cn(
+                          "text-[8px] font-black uppercase border-none px-1.5 py-0",
+                          item.masteryLevel === 'Novice' ? "bg-rose-50 text-rose-600" : "bg-indigo-50 text-indigo-600"
+                        )}>
+                          {item.masteryLevel}
+                        </Badge>
+                        <span className="text-[8px] font-bold text-slate-400 uppercase">{item.count} Logs</span>
+                      </div>
+                    </div>
+                    <div className="w-8 h-8 rounded-lg bg-slate-50 dark:bg-slate-800 flex items-center justify-center text-slate-400 group-hover:text-indigo-600 transition-all">
+                      <ArrowRight size={16} />
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
+        )}
 
         {/* Mastery Overview Cards */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">

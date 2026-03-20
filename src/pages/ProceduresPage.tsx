@@ -9,7 +9,8 @@ import {
   GraduationCap, ShieldCheck,
   AlertCircle, RefreshCw,
   Lightbulb,
-  ArrowRight
+  ArrowRight,
+  FilterX
 } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
@@ -61,12 +62,12 @@ const ProceduresPage = () => {
     const novices = stats.filter(s => s.masteryLevel === 'Novice').length;
     const totalLogs = stats.reduce((sum, s) => sum + s.count, 0);
     
-    // Calculate practice priorities
+    // Calculate practice priorities (items with 0 logs or high dysfunction)
     const priorities = [...stats]
       .sort((a, b) => {
-        // Prioritize Novice items first
-        if (a.masteryLevel === 'Novice' && b.masteryLevel !== 'Novice') return -1;
-        if (b.masteryLevel === 'Novice' && a.masteryLevel !== 'Novice') return 1;
+        // Prioritize items with 0 logs first
+        if (a.count === 0 && b.count > 0) return -1;
+        if (b.count === 0 && a.count > 0) return 1;
         // Then sort by dysfunction rate
         return b.dysfunctionRate - a.dysfunctionRate;
       })
@@ -126,9 +127,9 @@ const ProceduresPage = () => {
                       <div className="flex items-center gap-2 mt-1">
                         <Badge variant="outline" className={cn(
                           "text-[8px] font-black uppercase border-none px-1.5 py-0",
-                          item.masteryLevel === 'Novice' ? "bg-rose-50 text-rose-600" : "bg-indigo-50 text-indigo-600"
+                          item.count === 0 ? "bg-rose-50 text-rose-600" : "bg-indigo-50 text-indigo-600"
                         )}>
-                          {item.masteryLevel}
+                          {item.count === 0 ? 'Unpracticed' : item.masteryLevel}
                         </Badge>
                         <span className="text-[8px] font-bold text-slate-400 uppercase">{item.count} Logs</span>
                       </div>
@@ -150,7 +151,7 @@ const ProceduresPage = () => {
             <CardContent className="p-6 space-y-1 relative z-10">
               <p className="text-[10px] font-black text-indigo-300 uppercase tracking-widest">Total Components</p>
               <p className="text-4xl font-black">{summary.total}</p>
-              <p className="text-xs text-indigo-200 font-medium">Tracked across all sessions</p>
+              <p className="text-xs text-indigo-200 font-medium">Registry of all loggable items</p>
             </CardContent>
           </Card>
           <Card className="border-none shadow-lg rounded-3xl bg-emerald-600 text-white overflow-hidden relative group">
@@ -164,9 +165,9 @@ const ProceduresPage = () => {
           <Card className="border-none shadow-lg rounded-3xl bg-rose-600 text-white overflow-hidden relative group">
             <div className="absolute top-0 right-0 p-6 opacity-10 group-hover:scale-110 transition-transform duration-700"><AlertCircle size={80} /></div>
             <CardContent className="p-6 space-y-1 relative z-10">
-              <p className="text-[10px] font-black text-rose-200 uppercase tracking-widest">Novice Items</p>
+              <p className="text-[10px] font-black text-rose-200 uppercase tracking-widest">Unpracticed Items</p>
               <p className="text-4xl font-black">{summary.novices}</p>
-              <p className="text-xs text-rose-100 font-medium">Priority for practice</p>
+              <p className="text-xs text-rose-100 font-medium">Items with 0-2 logs</p>
             </CardContent>
           </Card>
           <Card className="border-none shadow-lg rounded-3xl bg-card overflow-hidden relative group">
@@ -270,7 +271,7 @@ const ProceduresPage = () => {
           <div className="absolute top-0 right-0 p-12 opacity-10"><GraduationCap size={200} /></div>
           <div className="relative z-10 grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
             <div className="space-y-6">
-              <Badge className="bg-indigo-500 text-white border-none font-black text-[10px] uppercase tracking-[0.3em] px-4 py-1">Clinical Philosophy</Badge>
+              <Badge className="bg-indigo-50 text-white border-none font-black text-[10px] uppercase tracking-[0.3em] px-4 py-1">Clinical Philosophy</Badge>
               <h2 className="text-4xl font-black tracking-tight leading-tight">The Path to Mastery is <br/>Paved with Repetition.</h2>
               <p className="text-indigo-200 text-lg font-medium leading-relaxed">
                 "2 years experience ≈ 65% accuracy. 5+ years ≈ 95% clinical mastery. This dashboard tracks your journey to that 95% threshold by ensuring no reflex or muscle is left unpracticed."

@@ -23,6 +23,7 @@ import AppointmentContextCards from "@/components/crm/AppointmentContextCards";
 import BrainstemToneMap from "@/components/crm/BrainstemToneMap";
 import SessionWorksheetTemplate from "@/components/crm/SessionWorksheetTemplate";
 import PathwayFindingsList from "@/components/crm/PathwayFindingsList";
+import WeeklyFocusBanner from "@/components/crm/WeeklyFocusBanner";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -339,6 +340,8 @@ const AppointmentDetailPage = () => {
               </div>
             </div>
           </div>
+
+          <WeeklyFocusBanner />
 
           <PreviousSessionInsightsBar 
             clientId={appointment.clients.id} 

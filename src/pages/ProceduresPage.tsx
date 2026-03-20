@@ -10,20 +10,24 @@ import {
   AlertCircle, RefreshCw,
   Lightbulb,
   ArrowRight,
-  FilterX
+  FilterX,
+  CheckCircle2
 } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { fetchMasteryStats, MasteryStat, MasteryCategory } from "@/utils/mastery-stats";
+import { setWeeklyFocus } from "@/utils/weekly-focus";
 import MasteryItemCard from "@/components/crm/MasteryItemCard";
 import Breadcrumbs from "@/components/shared/Breadcrumbs";
 import AppLayout from "@/components/crm/AppLayout";
 import { cn } from "@/lib/utils";
+import { showSuccess, showError } from "@/utils/toast";
 
 const ProceduresPage = () => {
   const [stats, setStats] = useState<MasteryStat[]>([]);
   const [loading, setLoading] = useState(true);
+  const [committing, setCommitting] = useState(false);
   const [search, setSearch] = useState("");
   const [activeCategory, setActiveCategory] = useState<MasteryCategory | 'All'>('All');
   const [sortBy, setSortBy] = useState<'most' | 'least' | 'dysfunction'>('most');
@@ -76,6 +80,19 @@ const ProceduresPage = () => {
     return { total, masters, novices, totalLogs, priorities };
   }, [stats]);
 
+  const handleCommitFocus = async () => {
+    setCommitting(true);
+    try {
+      const items = summary.priorities.map(p => p.name);
+      await setWeeklyFocus(items);
+      showSuccess("Weekly focus committed! You'll see these reminders in your sessions.");
+    } catch (err) {
+      showError("Failed to save weekly focus.");
+    } finally {
+      setCommitting(false);
+    }
+  };
+
   if (loading) return (
     <div className="flex min-h-screen items-center justify-center">
       <Loader2 className="animate-spin text-indigo-500" size={48} />
@@ -106,17 +123,29 @@ const ProceduresPage = () => {
         {summary.priorities.length > 0 && (
           <Card className="border-none shadow-xl rounded-[2.5rem] bg-indigo-50 dark:bg-indigo-950/20 border-2 border-indigo-100 dark:border-indigo-900/30 overflow-hidden animate-in fade-in slide-in-from-top-4 duration-700">
             <CardHeader className="p-8 pb-4">
-              <div className="flex items-center justify-between">
-                <CardTitle className="text-xl font-black flex items-center gap-3 text-indigo-900 dark:text-indigo-100">
-                  <Lightbulb size={24} className="text-amber-500" /> Focus on this this week
-                </CardTitle>
-                <Badge className="bg-indigo-600 text-white border-none font-black text-[10px] uppercase tracking-widest px-3 py-1 rounded-full">
-                  Study Priority
-                </Badge>
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                <div className="space-y-1">
+                  <div className="flex items-center gap-3">
+                    <CardTitle className="text-xl font-black flex items-center gap-3 text-indigo-900 dark:text-indigo-100">
+                      <Lightbulb size={24} className="text-amber-500" /> Focus on this this week
+                    </CardTitle>
+                    <Badge className="bg-indigo-600 text-white border-none font-black text-[10px] uppercase tracking-widest px-3 py-1 rounded-full">
+                      Study Priority
+                    </Badge>
+                  </div>
+                  <CardDescription className="text-indigo-700 dark:text-indigo-300 font-medium text-base mt-1">
+                    Based on your clinical logs, these components require more practice or have high dysfunction rates.
+                  </CardDescription>
+                </div>
+                <Button 
+                  onClick={handleCommitFocus}
+                  disabled={committing}
+                  className="bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl h-12 px-8 font-black text-xs uppercase tracking-widest shadow-lg shadow-indigo-200"
+                >
+                  {committing ? <Loader2 className="mr-2 animate-spin" /> : <CheckCircle2 size={18} className="mr-2" />}
+                  Commit to this Focus
+                </Button>
               </div>
-              <CardDescription className="text-indigo-700 dark:text-indigo-300 font-medium text-base mt-1">
-                Based on your clinical logs, these components require more practice or have high dysfunction rates.
-              </CardDescription>
             </CardHeader>
             <CardContent className="p-8 pt-0">
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">

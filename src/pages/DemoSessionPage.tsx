@@ -39,6 +39,7 @@ import BrainstemToneMap from "@/components/crm/BrainstemToneMap";
 import AppointmentContextCards from "@/components/crm/AppointmentContextCards";
 import { TCM_CHANNELS } from "@/data/tcm-channel-data";
 import PreviousSessionInsightsBar from "@/components/crm/PreviousSessionInsightsBar";
+import WeeklyFocusBanner from "@/components/crm/WeeklyFocusBanner";
 
 const DemoSessionPage = () => {
   const [showSidebar, setShowSidebar] = useState(true);
@@ -157,6 +158,8 @@ const DemoSessionPage = () => {
               </Button>
             </div>
           </div>
+
+          <WeeklyFocusBanner />
 
           <PreviousSessionInsightsBar 
             clientId="demo-client-id" 

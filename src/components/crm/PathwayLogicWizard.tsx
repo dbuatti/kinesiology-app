@@ -62,6 +62,7 @@ const PathwayLogicWizard = ({ onSave, onClearItem, priorityPattern, initialFindi
   useEffect(() => {
     if (initialFinding) {
       setSelectedFinding(initialFinding);
+      setStep('SELECT_START'); // Ensure we are at the start to see the selection
     }
   }, [initialFinding]);
 
@@ -69,21 +70,29 @@ const PathwayLogicWizard = ({ onSave, onClearItem, priorityPattern, initialFindi
   const effectiveItem = selectedFinding === 'CUSTOM' ? customText : selectedFinding;
 
   const inhibitedItems = useMemo(() => {
-    if (!priorityPattern) return [];
-    try {
-      const parsed = JSON.parse(priorityPattern);
-      const items: string[] = [];
-      Object.entries(parsed).forEach(([category, values]: [string, any]) => {
-        Object.entries(values).forEach(([name, status]) => {
-          if (status === 'Inhibited') items.push(name);
+    const items = new Set<string>();
+    
+    // Add items from the priority pattern
+    if (priorityPattern) {
+      try {
+        const parsed = JSON.parse(priorityPattern);
+        Object.values(parsed).forEach((category: any) => {
+          Object.entries(category).forEach(([name, status]) => {
+            if (status === 'Inhibited') items.add(name);
+          });
         });
-      });
-      return items;
-    } catch (e) {
-      console.error("Failed to parse priority pattern", e);
-      return [];
+      } catch (e) {
+        console.error("Failed to parse priority pattern", e);
+      }
     }
-  }, [priorityPattern]);
+
+    // Always include the initialFinding if it exists, even if not in pattern
+    if (initialFinding && initialFinding !== 'CUSTOM') {
+      items.add(initialFinding);
+    }
+
+    return Array.from(items);
+  }, [priorityPattern, initialFinding]);
 
   useEffect(() => {
     const fetchLigamentImages = async () => {
@@ -131,9 +140,7 @@ const PathwayLogicWizard = ({ onSave, onClearItem, priorityPattern, initialFindi
   };
 
   const handleInhibited = (summary: string) => {
-    // We save the attempt but don't clear the item
     onSave(summary);
-    // Take user back to the initial finding/direction selection
     setStep('SELECT_START');
     setHistory([]);
   };

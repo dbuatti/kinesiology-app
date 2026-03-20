@@ -67,12 +67,13 @@ const SessionContentSwitcher = ({ appointment, onUpdate, saveField, history = []
   }), [appointment]);
 
   const scrollToWizard = () => {
+    // Use a slightly longer delay to ensure the tab content has rendered
     setTimeout(() => {
       const element = wizardRef.current;
       const scrollContainer = document.getElementById('main-scroll-container');
       
       if (element && scrollContainer) {
-        const offset = 120;
+        const offset = 100; // Adjusted offset for better framing
         const elementRect = element.getBoundingClientRect();
         const containerRect = scrollContainer.getBoundingClientRect();
         
@@ -84,16 +85,22 @@ const SessionContentSwitcher = ({ appointment, onUpdate, saveField, history = []
           behavior: 'smooth'
         });
       }
-    }, 300);
+    }, 150);
   };
 
   useEffect(() => {
     const handleJump = (e: any) => {
       const { itemName } = e.detail;
+      // Set finding first
       setPreselectedFinding(itemName);
+      // Switch view and tab
       setActiveView('home');
       setActiveTab('calibration');
+      // Scroll
       scrollToWizard();
+      
+      // Clear the pre-selection after a delay so it can be triggered again for the same item
+      setTimeout(() => setPreselectedFinding(null), 1000);
     };
 
     window.addEventListener('jump-to-calibrate', handleJump);

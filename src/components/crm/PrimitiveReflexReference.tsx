@@ -25,12 +25,14 @@ import {
   ShieldCheck,
   ArrowRight,
   Clock,
-  Brain
+  Brain,
+  Maximize2
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 import { supabase } from "@/integrations/supabase/client";
 import { showSuccess, showError } from "@/utils/toast";
+import PrimitiveReflexModal from "./PrimitiveReflexModal";
 
 const BUCKET_NAME = 'reflex-images';
 
@@ -217,6 +219,8 @@ const PrimitiveReflexReference = () => {
   const [selectedCategory, setSelectedCategory] = useState<string | 'All'>('All');
   const [customizations, setCustomizations] = useState<Record<string, ReflexImageData>>({});
   const [loadingImages, setLoadingImages] = useState(true);
+  const [selectedReflex, setSelectedReflex] = useState<PrimitiveReflex | null>(null);
+  const [modalOpen, setModalOpen] = useState(false);
 
   useEffect(() => {
     const fetchCustomizations = async () => {
@@ -258,6 +262,11 @@ const PrimitiveReflexReference = () => {
         }
       };
     });
+  };
+
+  const handleCardClick = (reflex: PrimitiveReflex) => {
+    setSelectedReflex(reflex);
+    setModalOpen(true);
   };
 
   const filteredReflexes = PRIMITIVE_REFLEXES.filter(r => {
@@ -383,13 +392,22 @@ const PrimitiveReflexReference = () => {
             const data = customizations[reflex.id] || { primaryUrl: null, secondaryUrl: null };
 
             return (
-              <Card key={reflex.id} className="border-none shadow-lg rounded-[2.5rem] bg-white hover:shadow-2xl transition-all group overflow-hidden">
+              <Card 
+                key={reflex.id} 
+                className="border-none shadow-lg rounded-[2.5rem] bg-white hover:shadow-2xl transition-all group overflow-hidden cursor-pointer"
+                onClick={() => handleCardClick(reflex)}
+              >
                 <CardHeader className={cn(
                   "pb-6 border-b transition-colors relative",
                   reflex.category === 'Foundational' ? "bg-indigo-50/50 border-indigo-100" :
                   reflex.category === 'Postural' ? "bg-emerald-50/50 border-emerald-100" :
                   "bg-amber-50/50 border-amber-100"
                 )}>
+                  <div className="absolute top-4 right-4 opacity-0 group-hover:opacity-100 transition-opacity">
+                    <div className="w-8 h-8 rounded-full bg-white/80 backdrop-blur-sm flex items-center justify-center text-slate-400 shadow-sm">
+                      <Maximize2 size={14} />
+                    </div>
+                  </div>
                   <div className="flex items-start justify-between">
                     <div className="space-y-1">
                       <div className="flex gap-2 mb-2">
@@ -418,7 +436,7 @@ const PrimitiveReflexReference = () => {
                 </CardHeader>
                 <CardContent className="p-8 space-y-6">
                   {/* Images Section */}
-                  <div className="relative group/container">
+                  <div className="relative group/container" onClick={(e) => e.stopPropagation()}>
                     <ReflexImageZone 
                       reflexId={reflex.id} 
                       type="primary"
@@ -446,13 +464,13 @@ const PrimitiveReflexReference = () => {
                       <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-1 flex items-center gap-1">
                         <PlayCircle size={12} className="text-indigo-500" /> Stimulus
                       </p>
-                      <p className="text-sm font-bold text-slate-900 leading-relaxed">{reflex.stimulus}</p>
+                      <p className="text-sm font-bold text-slate-900 leading-relaxed line-clamp-2">{reflex.stimulus}</p>
                     </div>
                     <div className="p-4 bg-rose-50 rounded-2xl border border-rose-100">
                       <p className="text-[9px] font-black text-rose-400 uppercase tracking-widest mb-1 flex items-center gap-1">
                         <ShieldAlert size={12} /> Inhibition Pattern
                       </p>
-                      <p className="text-sm font-bold text-rose-900 leading-relaxed">{reflex.inhibitionPattern}</p>
+                      <p className="text-sm font-bold text-rose-900 leading-relaxed line-clamp-2">{reflex.inhibitionPattern}</p>
                     </div>
                   </div>
 
@@ -462,7 +480,7 @@ const PrimitiveReflexReference = () => {
                       <p className="text-[9px] font-black text-amber-600 uppercase tracking-widest mb-2 flex items-center gap-2">
                         <Info size={14} /> Clinical Pearl
                       </p>
-                      <p className="text-xs text-amber-900 font-bold leading-relaxed italic">
+                      <p className="text-xs text-amber-900 font-bold leading-relaxed italic line-clamp-2">
                         "{reflex.pearl}"
                       </p>
                     </div>
@@ -473,6 +491,12 @@ const PrimitiveReflexReference = () => {
           })}
         </div>
       </div>
+
+      <PrimitiveReflexModal 
+        reflex={selectedReflex}
+        open={modalOpen}
+        onOpenChange={setModalOpen}
+      />
     </div>
   );
 };

@@ -32,6 +32,7 @@ import { AppointmentWithClient } from "@/types/crm";
 import DashboardStats from "@/components/crm/DashboardStats";
 import DailyBriefing from "@/components/crm/DailyBriefing";
 import AppLayout from "@/components/crm/AppLayout";
+import PractitionerGrounding from "@/components/crm/PractitionerGrounding";
 import { cn } from "@/lib/utils";
 
 const SCRATCHPAD_KEY = "antigravity_practitioner_scratchpad";
@@ -253,6 +254,8 @@ const Index = () => {
           </div>
         ) : (
           <>
+            <PractitionerGrounding />
+
             {/* Clinical Pulse Row */}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
               <Card className="border-none shadow-md rounded-[2rem] bg-indigo-900 text-white overflow-hidden relative group">

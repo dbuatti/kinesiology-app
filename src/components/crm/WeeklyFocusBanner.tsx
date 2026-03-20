@@ -26,6 +26,7 @@ const WeeklyFocusBanner = ({ appointmentId, priorityPattern, onSaveField, onJump
   const [items, setItems] = useState<string[]>([]);
   const [isVisible, setIsVisible] = useState(false);
   const [celebratingItem, setCelebratingItem] = useState<string | null>(null);
+  const [openPopover, setOpenPopover] = useState<string | null>(null);
 
   const loadFocus = async () => {
     try {
@@ -56,6 +57,7 @@ const WeeklyFocusBanner = ({ appointmentId, priorityPattern, onSaveField, onJump
         let foundStatus: any = 'Not Tested';
         Object.values(parsed).forEach((category: any) => {
           if (category[item]) foundStatus = category[item];
+          // Check for lateralized versions
           if (category[`${item} (L)`] === 'Inhibited' || category[`${item} (R)`] === 'Inhibited') foundStatus = 'Inhibited';
           if (category[`${item} (L)`] === 'Clear' && category[`${item} (R)`] === 'Clear') foundStatus = 'Clear';
         });
@@ -68,18 +70,22 @@ const WeeklyFocusBanner = ({ appointmentId, priorityPattern, onSaveField, onJump
   }, [items, priorityPattern]);
 
   const handleSetStatus = async (item: string, status: 'Clear' | 'Inhibited') => {
-    if (!onSaveField || !priorityPattern) return;
+    if (!onSaveField) return;
 
     try {
-      const parsed = JSON.parse(priorityPattern || "{}");
+      // Handle null or empty string patterns
+      let parsed = {};
+      if (priorityPattern && priorityPattern.trim() !== "") {
+        parsed = JSON.parse(priorityPattern);
+      }
       
       // Determine category
       let category = 'muscles';
       if (PRIMITIVE_REFLEXES.some(r => r.name === item)) category = 'primitiveReflexes';
       else if (BRAIN_REFLEX_POINTS.some(p => p.name.startsWith(item))) category = 'cranialNerves';
 
-      if (!parsed[category]) parsed[category] = {};
-      parsed[category][item] = status;
+      if (!(parsed as any)[category]) (parsed as any)[category] = {};
+      (parsed as any)[category][item] = status;
 
       if (status === 'Clear') {
         setCelebratingItem(item);
@@ -87,8 +93,16 @@ const WeeklyFocusBanner = ({ appointmentId, priorityPattern, onSaveField, onJump
       }
 
       await onSaveField('priority_pattern', JSON.stringify(parsed));
+      setOpenPopover(null);
     } catch (e) {
       console.error("Failed to update status from banner", e);
+    }
+  };
+
+  const handleCalibrate = (item: string) => {
+    if (onJumpToCalibrate) {
+      onJumpToCalibrate(item);
+      setOpenPopover(null);
     }
   };
 
@@ -100,7 +114,7 @@ const WeeklyFocusBanner = ({ appointmentId, priorityPattern, onSaveField, onJump
     <div className="w-full mb-6 animate-in slide-in-from-top-4 duration-700 print:hidden">
       <div className={cn(
         "bg-indigo-600 text-white rounded-[2rem] p-4 shadow-xl shadow-indigo-200 dark:shadow-indigo-900/20 border-2 border-indigo-400/30 relative overflow-hidden group transition-all duration-500",
-        Object.values(itemStatuses).every(s => s === 'Clear') && "bg-emerald-600 border-emerald-400/30 shadow-emerald-200"
+        Object.values(itemStatuses).every(s => s === 'Clear') && items.length > 0 && "bg-emerald-600 border-emerald-400/30 shadow-emerald-200"
       )}>
         <div className="absolute top-0 right-0 p-4 opacity-10 group-hover:scale-110 transition-transform duration-700">
           <Trophy size={60} />
@@ -128,7 +142,11 @@ const WeeklyFocusBanner = ({ appointmentId, priorityPattern, onSaveField, onJump
                   );
 
                   return (
-                    <Popover key={item}>
+                    <Popover 
+                      key={item} 
+                      open={openPopover === item} 
+                      onOpenChange={(open) => setOpenPopover(open ? item : null)}
+                    >
                       <PopoverTrigger asChild>
                         <button className={cn(
                           "flex items-center gap-2 px-3 py-1 rounded-xl transition-all hover:scale-105 border-2",
@@ -143,20 +161,20 @@ const WeeklyFocusBanner = ({ appointmentId, priorityPattern, onSaveField, onJump
                           <ChevronDown size={12} className="opacity-50" />
                         </button>
                       </PopoverTrigger>
-                      <PopoverContent className="w-56 p-2 rounded-2xl border-none shadow-2xl bg-slate-900 text-white">
+                      <PopoverContent className="w-56 p-2 rounded-2xl border-none shadow-2xl bg-slate-900 text-white z-[100]">
                         <div className="space-y-1">
                           <p className="text-[8px] font-black uppercase tracking-widest text-slate-500 px-3 py-1">Quick Register</p>
                           <Button 
                             variant="ghost" 
                             className="w-full justify-start h-10 rounded-xl hover:bg-emerald-500/20 hover:text-emerald-400 font-bold text-xs"
-                            onClick={() => handleSetStatus(item, 'Clear')}
+                            onClick={(e) => { e.stopPropagation(); handleSetStatus(item, 'Clear'); }}
                           >
                             <CheckCircle2 size={16} className="mr-3" /> Mark as Clear
                           </Button>
                           <Button 
                             variant="ghost" 
                             className="w-full justify-start h-10 rounded-xl hover:bg-rose-500/20 hover:text-rose-400 font-bold text-xs"
-                            onClick={() => handleSetStatus(item, 'Inhibited')}
+                            onClick={(e) => { e.stopPropagation(); handleSetStatus(item, 'Inhibited'); }}
                           >
                             <AlertCircle size={16} className="mr-3" /> Mark as Inhibited
                           </Button>
@@ -164,7 +182,7 @@ const WeeklyFocusBanner = ({ appointmentId, priorityPattern, onSaveField, onJump
                           <Button 
                             variant="ghost" 
                             className="w-full justify-start h-10 rounded-xl hover:bg-indigo-500/20 hover:text-indigo-400 font-bold text-xs"
-                            onClick={() => onJumpToCalibrate?.(item)}
+                            onClick={(e) => { e.stopPropagation(); handleCalibrate(item); }}
                           >
                             <Zap size={16} className="mr-3" /> Calibrate Finding
                           </Button>

@@ -6,7 +6,7 @@ CREATE TABLE IF NOT EXISTS public.weekly_focus (
 );
 
 ALTER TABLE public.weekly_focus ENABLE ROW LEVEL SECURITY;
-
+DROP POLICY IF EXISTS "Users can manage their own weekly focus" ON public.weekly_focus;
 CREATE POLICY "Users can manage their own weekly focus" 
 ON public.weekly_focus FOR ALL 
 USING (auth.uid() = user_id);
@@ -19,7 +19,7 @@ CREATE TABLE IF NOT EXISTS public.north_star_intentions (
 );
 
 ALTER TABLE public.north_star_intentions ENABLE ROW LEVEL SECURITY;
-
+DROP POLICY IF EXISTS "Users can manage their own north star" ON public.north_star_intentions;
 CREATE POLICY "Users can manage their own north star" 
 ON public.north_star_intentions FOR ALL 
 USING (auth.uid() = user_id);
@@ -35,7 +35,7 @@ CREATE TABLE IF NOT EXISTS public.fear_creativity_submissions (
 );
 
 ALTER TABLE public.fear_creativity_submissions ENABLE ROW LEVEL SECURITY;
-
+DROP POLICY IF EXISTS "Users can manage their own fear creativity submissions" ON public.fear_creativity_submissions;
 CREATE POLICY "Users can manage their own fear creativity submissions" 
 ON public.fear_creativity_submissions FOR ALL 
 USING (auth.uid() = user_id);
@@ -53,7 +53,7 @@ CREATE TABLE IF NOT EXISTS public.inner_awareness_submissions (
 );
 
 ALTER TABLE public.inner_awareness_submissions ENABLE ROW LEVEL SECURITY;
-
+DROP POLICY IF EXISTS "Users can manage their own inner awareness submissions" ON public.inner_awareness_submissions;
 CREATE POLICY "Users can manage their own inner awareness submissions" 
 ON public.inner_awareness_submissions FOR ALL 
 USING (auth.uid() = user_id);
@@ -68,7 +68,7 @@ CREATE TABLE IF NOT EXISTS public.week3_worksheets (
 );
 
 ALTER TABLE public.week3_worksheets ENABLE ROW LEVEL SECURITY;
-
+DROP POLICY IF EXISTS "Users can manage their own week 3 worksheets" ON public.week3_worksheets;
 CREATE POLICY "Users can manage their own week 3 worksheets" 
 ON public.week3_worksheets FOR ALL 
 USING (auth.uid() = user_id);
@@ -83,7 +83,7 @@ CREATE TABLE IF NOT EXISTS public.brain_reflex_customizations (
 );
 
 ALTER TABLE public.brain_reflex_customizations ENABLE ROW LEVEL SECURITY;
-
+DROP POLICY IF EXISTS "Users can manage their own reflex images" ON public.brain_reflex_customizations;
 CREATE POLICY "Users can manage their own reflex images" 
 ON public.brain_reflex_customizations FOR ALL 
 USING (auth.uid() = user_id);
@@ -98,7 +98,7 @@ CREATE TABLE IF NOT EXISTS public.muscle_customizations (
 );
 
 ALTER TABLE public.muscle_customizations ENABLE ROW LEVEL SECURITY;
-
+DROP POLICY IF EXISTS "Users can manage their own muscle images" ON public.muscle_customizations;
 CREATE POLICY "Users can manage their own muscle images" 
 ON public.muscle_customizations FOR ALL 
 USING (auth.uid() = user_id);
@@ -113,7 +113,7 @@ CREATE TABLE IF NOT EXISTS public.ligament_images (
 );
 
 ALTER TABLE public.ligament_images ENABLE ROW LEVEL SECURITY;
-
+DROP POLICY IF EXISTS "Users can manage their own ligament images" ON public.ligament_images;
 CREATE POLICY "Users can manage their own ligament images" 
 ON public.ligament_images FOR ALL 
 USING (auth.uid() = user_id);

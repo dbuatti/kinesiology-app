@@ -23,7 +23,7 @@ const MuscleTestAssistanceCard = () => {
             </div>
           ))}
           
-          {/* NEW: Cramp Hack from transcript */}
+          {/* Instant Cramp Hack from transcript */}
           <div className="p-4 bg-amber-500/10 rounded-2xl border border-amber-500/30 hover:bg-amber-500/20 transition-all">
             <div className="flex items-center gap-2 mb-1">
               <Zap size={14} className="text-amber-400" />

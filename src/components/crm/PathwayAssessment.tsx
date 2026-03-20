@@ -19,6 +19,7 @@ import { Input } from "@/components/ui/input";
 import { processNeurologicalHistory, FindingHistory } from '@/utils/neurological-history';
 import { FINDING_TO_NUCLEI, Nuclei } from '@/utils/brainstem-logic';
 import { showSuccess, showError } from "@/utils/toast";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 
 // Modal Imports
 import MuscleInfoModal from "./MuscleInfoModal";
@@ -671,6 +672,17 @@ const PathwayAssessment = ({ initialValue, previousValue, history = [], onSave, 
             </div>
           </CardContent>
         </Card>
+      )}
+
+      {/* Fractal Logic Alert */}
+      {getCounts('primitiveReflexes').inhibitedCount > 0 && (
+        <Alert className="bg-indigo-900 text-white border-none rounded-[2rem] shadow-xl relative overflow-hidden">
+          <div className="absolute top-0 right-0 p-4 opacity-10"><Zap size={80} /></div>
+          <Zap className="h-5 w-5 text-amber-400 fill-amber-400" />
+          <AlertDescription className="text-sm font-bold leading-relaxed relative z-10">
+            <strong>Fractal Logic:</strong> Correcting the highest level reflex (Fear Paralysis or Moro) can often clear 3-4 other reflexes in one go. Clear the priority first, then re-assess the whole lot.
+          </AlertDescription>
+        </Alert>
       )}
 
       <AssessmentSection 

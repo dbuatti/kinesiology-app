@@ -28,7 +28,7 @@ export const PRIMITIVE_REFLEXES: PrimitiveReflex[] = [
     category: 'Foundational',
     hierarchyLevel: 2,
     stimulus: 'Quick drop of the head back into extension (Vestibular challenge).',
-    inhibitionPattern: 'Upper body flexors (Pec Major Clavicular) and neck extensors inhibit; Lower body extensors inhibit.',
+    inhibitionPattern: 'Upper body flexors (Pec Major Clavicular) and lower body extensors (Glutes) inhibit.',
     description: 'The "Fight or Flight" reflex. Activated during the first breath. Mutually exclusive with the Startle reflex.',
     pearl: 'Stage 1 is extension/inhale; Stage 2 is flexion/ball. Retained Moro keeps the system in a high neural load, making life "harder" and requiring constant compensation.'
   },
@@ -49,7 +49,7 @@ export const PRIMITIVE_REFLEXES: PrimitiveReflex[] = [
     stimulus: 'Supine: Head into extension (Flexors inhibit) or Head into flexion (Extensors inhibit).',
     inhibitionPattern: 'Extension: Upper/Lower flexors inhibit. Flexion: Upper/Lower extensors inhibit.',
     description: 'Head position in space affects overall muscle tone via the vestibular system (inner ear).',
-    pearl: 'Essential for sensory mapping of the neck. Retained TLR often manifests as sleep issues (triggering when head tilts back) or "somersaulting" sensations.'
+    pearl: 'Essential for sensory mapping of the neck. Retained TLR often manifests as sleep issues (triggering when head tilts back) or "somersaulting" sensations when lying down.'
   },
   {
     id: 'atnr',
@@ -58,7 +58,7 @@ export const PRIMITIVE_REFLEXES: PrimitiveReflex[] = [
     stimulus: 'Tilt head back slightly and turn to one side.',
     inhibitionPattern: 'Ipsilateral (same side) flexors inhibit; Contralateral (opposite side) extensors (Glutes) inhibit.',
     description: 'The "Fencing" reflex. Integrates eyes, hands, and environment. Crucial for crossing the midline.',
-    pearl: 'Huge impact on gait, scoliosis patterns, and left/right brain integration. If the brain can\'t integrate left/right, it affects the ability to withstand stress.'
+    pearl: 'Huge impact on gait and vision. A classic clinical sign is getting tired quickly when reading. If the brain can\'t integrate left/right, it affects the ability to withstand stress.'
   },
   {
     id: 'stnr',
@@ -74,7 +74,7 @@ export const PRIMITIVE_REFLEXES: PrimitiveReflex[] = [
     name: 'Spinal Galant',
     category: 'Postural',
     stimulus: 'Prone: Stroke along one side of lumbar spine in a "C" curve (towards spine and out).',
-    inhibitionPattern: 'Same side Glute inhibits; Opposite side QL inhibits.',
+    inhibitionPattern: 'Same side Glute inhibits; Opposite side QL (Quadratus Lumborum) inhibits.',
     description: 'Lateral trunk flexion in response to lumbar stimulation. Related to the lumbar plexus.',
     pearl: 'Linked to bedwetting and concentration issues in children. In adults, it manifests as functional scoliosis or chronic one-sided low back pain.'
   },
@@ -94,7 +94,7 @@ export const PRIMITIVE_REFLEXES: PrimitiveReflex[] = [
     stimulus: 'Stroke the side of the cheek.',
     inhibitionPattern: 'Same side SCM (Sternocleidomastoid) inhibits.',
     description: 'Directs the newborn towards the nipple. Initiates head rotation.',
-    pearl: 'Massive effect on neck/shoulder stability. Often shows up in cases of torticollis, cervical dystonia, or chronic TMJ tension.'
+    pearl: 'Massive effect on neck/shoulder stability. Often shows up in cases of torticollis, cervical dystonia, or chronic TMJ tension. Correction is often bottom-up (vestibular).'
   },
   {
     id: 'palmar',

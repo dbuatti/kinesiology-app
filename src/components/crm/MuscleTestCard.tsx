@@ -94,8 +94,6 @@ const MuscleTestCard = ({
           {MUSCLE_STATUSES.map(status => {
             const isSelected = result?.status === status.value;
             const StatusIcon = status.icon;
-            
-            // Extract base color class for active state
             const activeColorClass = status.color.split(' ')[0].replace('text-', 'bg-');
             
             return (
@@ -131,7 +129,6 @@ const MuscleTestCard = ({
           : "bg-white border-slate-100 hover:border-indigo-100 hover:shadow-lg"
       )}
     >
-      {/* Background Accent for Tested Muscles */}
       {(currentResultL || currentResultR || currentResultMidline) && (
         <div className="absolute top-0 right-0 p-8 opacity-[0.03] pointer-events-none">
           <CheckCircle2 size={120} className="text-indigo-600" />

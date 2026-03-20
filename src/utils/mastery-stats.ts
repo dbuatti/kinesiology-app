@@ -38,87 +38,40 @@ export async function fetchMasteryStats(): Promise<MasteryStat[]> {
     return 'Novice';
   };
 
-  // --- 1. Pre-populate with ALL possible items ---
-
-  // Add all Muscles
+  // 1. Pre-populate with ALL possible items
   Object.values(MUSCLE_GROUPS).flat().forEach(name => {
     statsMap[name] = {
-      id: name,
-      name,
-      category: 'Muscles',
-      count: 0,
-      dysfunctionCount: 0,
-      dysfunctionRate: 0,
-      lastLogged: null,
-      masteryLevel: 'Novice'
+      id: name, name, category: 'Muscles', count: 0, dysfunctionCount: 0, dysfunctionRate: 0, lastLogged: null, masteryLevel: 'Novice'
     };
   });
 
-  // Add all Primitive Reflexes
   PRIMITIVE_REFLEXES.forEach(reflex => {
     statsMap[reflex.name] = {
-      id: reflex.name,
-      name: reflex.name,
-      category: 'Reflexes',
-      count: 0,
-      dysfunctionCount: 0,
-      dysfunctionRate: 0,
-      lastLogged: null,
-      masteryLevel: 'Novice'
+      id: reflex.name, name: reflex.name, category: 'Reflexes', count: 0, dysfunctionCount: 0, dysfunctionRate: 0, lastLogged: null, masteryLevel: 'Novice'
     };
   });
 
-  // Add all Brain Zones & Cranial Nerves
   BRAIN_REFLEX_POINTS.forEach(point => {
-    // Standardize name to match how it's logged (usually just the name part)
     const name = point.name.includes(':') ? point.name.split(':')[0].trim() : point.name;
     statsMap[name] = {
-      id: name,
-      name,
-      category: point.category === 'Cranial Nerve' ? 'Brain Zones' : 'Brain Zones', // Grouping for UI
-      count: 0,
-      dysfunctionCount: 0,
-      dysfunctionRate: 0,
-      lastLogged: null,
-      masteryLevel: 'Novice'
+      id: name, name, category: 'Brain Zones', count: 0, dysfunctionCount: 0, dysfunctionRate: 0, lastLogged: null, masteryLevel: 'Novice'
     };
   });
 
-  // Add all Techniques
   TECHNIQUES.forEach(tech => {
     statsMap[tech.name] = {
-      id: tech.name,
-      name: tech.name,
-      category: 'Techniques',
-      count: 0,
-      dysfunctionCount: 0,
-      dysfunctionRate: 0,
-      lastLogged: null,
-      masteryLevel: 'Novice'
+      id: tech.name, name: tech.name, category: 'Techniques', count: 0, dysfunctionCount: 0, dysfunctionRate: 0, lastLogged: null, masteryLevel: 'Novice'
     };
   });
 
-  // --- 2. Fetch and process actual database logs ---
+  // 2. Fetch user-specific logs
+  const [muscleRes, appRes] = await Promise.all([
+    supabase.from('muscle_tests').select('muscle_name, status, created_at').eq('user_id', user.id),
+    supabase.from('appointments').select('date, priority_pattern, harmonic_rocking_notes, t1_reset_notes, diaphragm_reset_notes, vagus_nerve_notes, gait_notes, lymphatic_notes').eq('user_id', user.id)
+  ]);
 
-  const { data: muscleTests } = await supabase
-    .from('muscle_tests')
-    .select('muscle_name, status, created_at');
-
-  const { data: appointments } = await supabase
-    .from('appointments')
-    .select(`
-      date, 
-      priority_pattern, 
-      harmonic_rocking_notes, 
-      t1_reset_notes, 
-      diaphragm_reset_notes, 
-      vagus_nerve_notes, 
-      gait_notes, 
-      lymphatic_notes
-    `);
-
-  // Update Muscle counts
-  muscleTests?.forEach(test => {
+  // Process Muscle Tests
+  muscleRes.data?.forEach(test => {
     const name = test.muscle_name.replace(/ \([LR]\)$/, '');
     if (statsMap[name]) {
       statsMap[name].count++;
@@ -129,17 +82,15 @@ export async function fetchMasteryStats(): Promise<MasteryStat[]> {
     }
   });
 
-  // Update Reflexes and Brain Zones from priority_pattern
-  appointments?.forEach(app => {
+  // Process Patterns & Techniques
+  appRes.data?.forEach(app => {
     if (app.priority_pattern) {
       try {
         const pattern = JSON.parse(app.priority_pattern);
         Object.values(pattern).forEach((items: any) => {
           Object.entries(items).forEach(([name, status]) => {
             const cleanName = name.replace(/ \([LR]\)$/, '');
-            // Try to find exact match or partial match (for CNs)
             const matchKey = Object.keys(statsMap).find(k => cleanName.startsWith(k));
-            
             if (matchKey && statsMap[matchKey]) {
               statsMap[matchKey].count++;
               if (status === 'Inhibited') statsMap[matchKey].dysfunctionCount++;
@@ -149,12 +100,9 @@ export async function fetchMasteryStats(): Promise<MasteryStat[]> {
             }
           });
         });
-      } catch (e) {
-        console.error("Error parsing pattern for stats", e);
-      }
+      } catch (e) {}
     }
 
-    // Update Techniques
     TECHNIQUES.forEach(tech => {
       if ((app as any)[tech.key]) {
         if (statsMap[tech.name]) {
@@ -167,7 +115,6 @@ export async function fetchMasteryStats(): Promise<MasteryStat[]> {
     });
   });
 
-  // Final calculation of rates and levels
   return Object.values(statsMap).map(s => ({
     ...s,
     dysfunctionRate: s.count > 0 ? Math.round((s.dysfunctionCount / s.count) * 100) : 0,

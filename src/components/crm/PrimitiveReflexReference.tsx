@@ -21,7 +21,11 @@ import {
   Loader2,
   Plus,
   Target,
-  ImageIcon
+  ImageIcon,
+  ShieldCheck,
+  ArrowRight,
+  Clock,
+  Brain
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
@@ -279,22 +283,34 @@ const PrimitiveReflexReference = () => {
               </div>
               <div>
                 <CardTitle className="text-3xl font-black">The Base Language of the Brain</CardTitle>
-                <CardDescription className="text-slate-400 text-lg font-medium mt-1">Understanding Primitive Reflexes in Clinical Practice.</CardDescription>
+                <CardDescription className="text-slate-400 text-lg font-medium mt-1">Neonatal Survival Reflexes & Development.</CardDescription>
               </div>
             </div>
           </CardHeader>
-          <CardContent className="p-10 pt-0 space-y-6 relative z-10">
-            <p className="text-slate-300 leading-relaxed font-medium">
-              Primitive reflexes are the foundational OS of the nervous system. They set up our movement and postural patterns, directly affecting cognitive and emotional development. While they typically disappear as the brain matures, retained reflexes can cause long-term physical and emotional health challenges.
-            </p>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div className="p-5 bg-white/5 rounded-2xl border border-white/10">
-                <h4 className="font-black text-indigo-400 text-xs uppercase tracking-widest mb-2">Sensory-Motor Role</h4>
-                <p className="text-xs text-slate-400 leading-relaxed">Essential for navigating the world and developing complex motor skills.</p>
+          <CardContent className="p-10 pt-0 space-y-8 relative z-10">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div className="space-y-4">
+                <p className="text-slate-300 leading-relaxed font-medium">
+                  Primitive reflexes are the foundational OS of the nervous system. They should be inhibited by the nervous system at around <span className="text-white font-bold">2 to 4 months of age</span>.
+                </p>
+                <div className="p-4 bg-white/5 rounded-2xl border border-white/10">
+                  <h4 className="font-black text-indigo-400 text-[10px] uppercase tracking-widest mb-2">The "Safe Mode"</h4>
+                  <p className="text-xs text-slate-400 leading-relaxed">When the system is under high threat, it "grabs" these reflexes as a safe mode to deal with stress.</p>
+                </div>
               </div>
-              <div className="p-5 bg-white/5 rounded-2xl border border-white/10">
-                <h4 className="font-black text-rose-400 text-xs uppercase tracking-widest mb-2">Retained Reflexes</h4>
-                <p className="text-xs text-slate-400 leading-relaxed">Dis-inhibited reflexes often correlate with chronic health and emotional issues.</p>
+              <div className="space-y-4">
+                <div className="p-5 bg-indigo-600/20 rounded-2xl border border-indigo-500/30">
+                  <h4 className="font-black text-indigo-300 text-xs uppercase tracking-widest mb-2 flex items-center gap-2">
+                    <Zap size={14} /> Fractal Logic
+                  </h4>
+                  <p className="text-xs text-indigo-100 leading-relaxed">
+                    "If you correct the highest level reflex (e.g. Moro), you can often knock out 3-4 others in one go because they are cascaded together."
+                  </p>
+                </div>
+                <div className="flex items-center gap-3 p-4 bg-white/5 rounded-2xl border border-white/10">
+                  <Clock size={20} className="text-amber-400" />
+                  <p className="text-xs text-slate-400 font-medium">Integration usually takes <span className="text-white font-bold">1-3 corrections</span> to permanently turn off.</p>
+                </div>
               </div>
             </div>
           </CardContent>
@@ -303,26 +319,31 @@ const PrimitiveReflexReference = () => {
         <Card className="border-none shadow-lg rounded-[2.5rem] bg-indigo-50 border-2 border-indigo-100 overflow-hidden">
           <CardHeader className="p-8 pb-4">
             <CardTitle className="text-xl font-black flex items-center gap-3 text-indigo-900">
-              <ListChecks size={24} className="text-indigo-600" /> Assessment Process
+              <ListChecks size={24} className="text-indigo-600" /> Clinical Strategy
             </CardTitle>
           </CardHeader>
-          <CardContent className="p-8 pt-0 space-y-4">
-            {[
-              { step: 1, title: "Stimulate & Assess", desc: "Trigger the reflex and test the specific muscle pattern." },
-              { step: 2, title: "Switch to IM", desc: "Test a clear Indicator Muscle; it should now inhibit." },
-              { step: 3, title: "Find Pathway", desc: "Ask for Afferent or Efferent correction direction." },
-              { step: 4, title: "Correct & Re-test", desc: "Apply correction and immediately re-assess the reflex." }
-            ].map((item) => (
-              <div key={item.step} className="flex gap-4 items-start">
-                <span className="w-7 h-7 rounded-full bg-indigo-600 text-white flex items-center justify-center font-black text-[10px] shrink-0 mt-0.5">{item.step}</span>
-                <div>
-                  <h5 className="font-black text-indigo-900 text-xs uppercase tracking-tight">{item.title}</h5>
-                  <p className="text-[10px] text-indigo-700 font-medium leading-tight">{item.desc}</p>
+          <CardContent className="p-8 pt-0 space-y-6">
+            <div className="space-y-4">
+              {[
+                { step: 1, title: "Map the System", desc: "In the first 1-2 sessions, map out all active reflexes." },
+                { step: 2, title: "Correct Priority", desc: "Dive into the highest level (usually Fear Paralysis or Moro)." },
+                { step: 3, title: "Re-assess Cluster", desc: "Check how many others cleared automatically via fractal logic." },
+                { step: 4, title: "Follow-up", desc: "Re-assess in the next session; 8/10 times they remain integrated." }
+              ].map((item) => (
+                <div key={item.step} className="flex gap-4 items-start">
+                  <span className="w-7 h-7 rounded-full bg-indigo-600 text-white flex items-center justify-center font-black text-[10px] shrink-0 mt-0.5">{item.step}</span>
+                  <div>
+                    <h5 className="font-black text-indigo-900 text-xs uppercase tracking-tight">{item.title}</h5>
+                    <p className="text-[10px] text-indigo-700 font-medium leading-tight">{item.desc}</p>
+                  </div>
                 </div>
-              </div>
-            ))}
+              ))}
+            </div>
             <div className="pt-4 border-t border-indigo-200">
-              <p className="text-[10px] text-indigo-600 font-bold italic">"Usually 1-3 corrections are needed to re-integrate the reflex."</p>
+              <div className="flex items-center gap-2 text-indigo-600">
+                <ShieldCheck size={16} />
+                <p className="text-[10px] font-bold uppercase tracking-widest">Permanent Integration</p>
+              </div>
             </div>
           </CardContent>
         </Card>

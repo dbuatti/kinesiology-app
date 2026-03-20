@@ -19,7 +19,9 @@ import {
   CheckCircle2,
   Workflow,
   ListChecks,
-  ArrowRight
+  ArrowRight,
+  Eye,
+  Move
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -46,7 +48,7 @@ const PrimitiveReflexModal = ({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[650px] max-h-[95vh] rounded-[2.5rem] overflow-hidden p-0 border-none shadow-2xl">
+      <DialogContent className="sm:max-w-[700px] max-h-[95vh] rounded-[2.5rem] overflow-hidden p-0 border-none shadow-2xl">
         <DialogHeader className="p-0">
           <div className={cn(
             "p-8 text-white transition-colors relative",
@@ -94,6 +96,28 @@ const PrimitiveReflexModal = ({
               </p>
             </div>
           </div>
+
+          {reflex.name === 'Rooting Reflex' && (
+            <div className="p-6 bg-amber-50 rounded-3xl border-2 border-amber-200 space-y-4">
+              <SectionHeader icon={Zap} title="Correction Spotlight: Vestibular/Ocular" color="text-amber-600" />
+              <div className="space-y-3">
+                <p className="text-xs font-bold text-amber-900 leading-relaxed">
+                  Example correction from demonstration:
+                </p>
+                <div className="grid grid-cols-1 gap-2">
+                  <div className="flex items-center gap-3 p-3 bg-white/60 rounded-xl border border-amber-200">
+                    <Eye size={16} className="text-amber-600" />
+                    <p className="text-[10px] font-bold text-amber-900">Eyes UP then DOWN while holding reflex point.</p>
+                  </div>
+                  <div className="flex items-center gap-3 p-3 bg-white/60 rounded-xl border border-amber-200">
+                    <Move size={16} className="text-amber-600" />
+                    <p className="text-[10px] font-bold text-amber-900">Tilt head back + Nasal breathing.</p>
+                  </div>
+                </div>
+                <p className="text-[10px] text-amber-700 italic">"Once you find the actual functional cause, it turns off straight away."</p>
+              </div>
+            </div>
+          )}
 
           {reflex.fractalPartners && reflex.fractalPartners.length > 0 && (
             <section className="p-6 bg-slate-50 rounded-2xl border border-slate-200">

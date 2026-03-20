@@ -20,7 +20,9 @@ import {
   ChevronDown,
   ChevronUp,
   PlusCircle,
-  Clock
+  Clock,
+  Eye,
+  EyeOff
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import SearchBar from "./SearchBar";
@@ -31,6 +33,7 @@ import HelpModal from "./HelpModal";
 import { useRecentClients } from "@/hooks/use-recent-clients";
 import { useActiveSession } from "@/hooks/useActiveSession";
 import { usePracticeStats } from "@/hooks/usePracticeStats";
+import { usePrivacyMode } from "@/hooks/use-privacy-mode";
 import {
   Dialog,
   DialogContent,
@@ -58,13 +61,12 @@ const Sidebar = ({ onHide }: SidebarProps) => {
   const [helpOpen, setHelpOpen] = useState(false);
   const [clientDialogOpen, setClientDialogOpen] = useState(false);
   const [appDialogOpen, setAppDialogOpen] = useState(false);
+  const { isPrivate, togglePrivacy } = usePrivacyMode();
   
-  // Helper to check paths
   const isOpsPath = (path: string) => path === "/" || path.startsWith("/appointments") || path.startsWith("/clients");
   const isLabPath = (path: string) => path.startsWith("/practice/calibrate") || path.startsWith("/practice/procedures") || path.startsWith("/oversight");
   const isLibraryPath = (path: string) => path.startsWith("/resources") || path.startsWith("/practice/self");
 
-  // Persistent state for menu groups
   const [opsOpen, setOpsOpen] = useState(() => {
     const saved = localStorage.getItem("sidebar_ops_open");
     return saved !== null ? JSON.parse(saved) : isOpsPath(location.pathname);
@@ -78,7 +80,6 @@ const Sidebar = ({ onHide }: SidebarProps) => {
     return saved !== null ? JSON.parse(saved) : isLibraryPath(location.pathname);
   });
 
-  // Sync state to localStorage
   useEffect(() => { localStorage.setItem("sidebar_ops_open", JSON.stringify(opsOpen)); }, [opsOpen]);
   useEffect(() => { localStorage.setItem("sidebar_lab_open", JSON.stringify(labOpen)); }, [labOpen]);
   useEffect(() => { localStorage.setItem("sidebar_library_open", JSON.stringify(libraryOpen)); }, [libraryOpen]);
@@ -87,7 +88,6 @@ const Sidebar = ({ onHide }: SidebarProps) => {
   const { practiceHealth } = usePracticeStats();
   const { recentClients } = useRecentClients();
   
-  // Auto-expand when navigating to a new section
   useEffect(() => {
     const path = location.pathname;
     if (isOpsPath(path)) setOpsOpen(true);
@@ -127,6 +127,7 @@ const Sidebar = ({ onHide }: SidebarProps) => {
           case 'p': e.preventDefault(); navigate('/practice/procedures'); break;
           case 'r': e.preventDefault(); navigate('/resources'); break;
           case 'q': e.preventDefault(); navigate('/practice/calibrate'); break;
+          case 'h': e.preventDefault(); togglePrivacy(); break;
           case '/': e.preventDefault(); setHelpOpen(true); break;
           case '[': e.preventDefault(); onHide?.(); break;
         }
@@ -134,7 +135,7 @@ const Sidebar = ({ onHide }: SidebarProps) => {
     };
     document.addEventListener('keydown', handleKeyDown);
     return () => document.removeEventListener('keydown', handleKeyDown);
-  }, [navigate, onHide]);
+  }, [navigate, onHide, togglePrivacy]);
 
   const handleSignOut = async () => {
     try {
@@ -243,7 +244,6 @@ const Sidebar = ({ onHide }: SidebarProps) => {
         <SearchBar />
       </div>
 
-      {/* Primary CTA: Book Session */}
       <div className="px-1">
         <Button 
           onClick={() => setAppDialogOpen(true)}
@@ -262,7 +262,6 @@ const Sidebar = ({ onHide }: SidebarProps) => {
         <NavGroup title="Clinical Lab" icon={Zap} isOpen={labOpen} onToggle={() => setLabOpen(!labOpen)} items={labItems} />
         <NavGroup title="Library" icon={BookOpen} isOpen={libraryOpen} onToggle={() => setLibraryOpen(!libraryOpen)} items={libraryItems} />
 
-        {/* Active Session Indicator */}
         {activeSession && (
           <div className="px-1 pt-2">
             <Link 
@@ -287,7 +286,6 @@ const Sidebar = ({ onHide }: SidebarProps) => {
           </div>
         )}
 
-        {/* Practice Health */}
         <div className="px-4 py-4 bg-muted/30 rounded-2xl border border-border mx-1 space-y-3">
           <div className="flex items-center justify-between">
             <p className="text-[9px] font-black text-muted-foreground uppercase tracking-[0.2em] flex items-center gap-2">
@@ -298,7 +296,6 @@ const Sidebar = ({ onHide }: SidebarProps) => {
           <Progress value={practiceHealth} className="h-1.5 bg-muted [&>div]:bg-emerald-500" />
         </div>
 
-        {/* Recent Clients */}
         {recentClients.length > 0 && (
           <div className="px-1 space-y-2">
             <div className="px-3">
@@ -330,10 +327,26 @@ const Sidebar = ({ onHide }: SidebarProps) => {
         )}
       </div>
       
-      {/* Footer Actions */}
       <div className="mt-auto pt-4 border-t border-border space-y-1">
         <div className="flex items-center justify-between px-3 mb-2">
           <ModeToggle />
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <button 
+                onClick={togglePrivacy}
+                className={cn(
+                  "flex items-center justify-center h-10 w-10 rounded-xl transition-all duration-300 group",
+                  isPrivate ? "bg-rose-500 text-white shadow-lg shadow-rose-500/20" : "text-muted-foreground hover:text-foreground hover:bg-accent"
+                )}
+              >
+                {isPrivate ? <EyeOff size={20} /> : <Eye size={20} />}
+              </button>
+            </TooltipTrigger>
+            <TooltipContent side="right" className="rounded-xl font-bold text-xs">
+              <p>{isPrivate ? "Disable Privacy Mode" : "Enable Privacy Mode"}</p>
+              <p className="text-[10px] text-slate-400 mt-1">⌘H</p>
+            </TooltipContent>
+          </Tooltip>
           <Tooltip>
             <TooltipTrigger asChild>
               <button 

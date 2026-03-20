@@ -4,9 +4,11 @@ import React, { useState, useEffect, useRef, useLayoutEffect, useCallback } from
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { cn } from "@/lib/utils";
-import { Loader2, Edit3, CheckCircle2, AlertCircle, Sparkles, Copy, Check } from "lucide-react";
+import { Loader2, Edit3, CheckCircle2, AlertCircle, Sparkles, Copy, Check, EyeOff } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
 import { showSuccess } from "@/utils/toast";
+import { usePrivacyMode } from "@/hooks/use-privacy-mode";
 
 type InputElement = HTMLInputElement | HTMLTextAreaElement;
 
@@ -40,6 +42,7 @@ const EditableField = ({
   const [showSaved, setShowSaved] = useState(false);
   const [hasError, setHasError] = useState(false);
   const [isCopied, setIsCopied] = useState(false);
+  const { isPrivate } = usePrivacyMode();
   
   const inputRef = useRef<InputElement>(null);
   const debounceTimer = useRef<NodeJS.Timeout | null>(null);
@@ -140,6 +143,10 @@ const EditableField = ({
   const isEmpty = !localValue && !isFocused;
   const InputComponent = multiline ? Textarea : Input as React.ElementType<any>;
 
+  // Determine if this field should be blurred in privacy mode
+  const isSensitive = ['goal', 'issue', 'journal', 'notes', 'additional_notes', 'session_north_star'].includes(field.toLowerCase());
+  const shouldBlur = isPrivate && isSensitive && !isFocused;
+
   return (
     <div 
       className={cn(
@@ -159,12 +166,19 @@ const EditableField = ({
       }}
     >
       <div className="flex items-center justify-between mb-2 h-4">
-        <p className={cn(
-          "font-black uppercase text-[8px] tracking-[0.2em] transition-colors",
-          isFocused ? "text-indigo-600" : hasError ? "text-rose-600" : "text-muted-foreground"
-        )}>
-          {label}
-        </p>
+        <div className="flex items-center gap-2">
+          <p className={cn(
+            "font-black uppercase text-[8px] tracking-[0.2em] transition-colors",
+            isFocused ? "text-indigo-600" : hasError ? "text-rose-600" : "text-muted-foreground"
+          )}>
+            {label}
+          </p>
+          {isPrivate && isSensitive && (
+            <Badge variant="outline" className="h-3 px-1 text-[6px] font-black uppercase border-rose-200 text-rose-400">
+              <EyeOff size={6} className="mr-0.5" /> Private
+            </Badge>
+          )}
+        </div>
         <div className="flex items-center gap-1.5 min-w-[50px] justify-end">
           {isSaving && (
             <div className="flex items-center gap-1 text-[8px] font-black text-indigo-600 animate-pulse">
@@ -228,8 +242,9 @@ const EditableField = ({
           </div>
         ) : (
           <p className={cn(
-            "text-sm leading-relaxed whitespace-pre-wrap min-h-[20px]",
-            isEmpty ? "text-muted-foreground/50 italic font-medium" : "text-foreground font-bold"
+            "text-sm leading-relaxed whitespace-pre-wrap min-h-[20px] transition-all duration-500",
+            isEmpty ? "text-muted-foreground/50 italic font-medium" : "text-foreground font-bold",
+            shouldBlur && "blur-md select-none opacity-40"
           )}>
             {isEmpty ? placeholder : localValue}
           </p>

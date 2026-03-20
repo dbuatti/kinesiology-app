@@ -16,6 +16,7 @@ import { cn } from "@/lib/utils";
 import { supabase } from "@/integrations/supabase/client";
 import MuscleInfoModal from "./MuscleInfoModal";
 import MuscleOfTheDay from "./MuscleOfTheDay";
+import MuscleRegionFilter from "./MuscleRegionFilter";
 import { TCM_CHANNELS } from "@/data/tcm-channel-data";
 
 const MuscleReference = () => {
@@ -102,7 +103,7 @@ const MuscleReference = () => {
       <MuscleOfTheDay onViewDetails={handleMuscleClick} />
 
       {/* Controls Section */}
-      <div className="space-y-6">
+      <div className="space-y-8">
         <div className="flex flex-col md:flex-row gap-4">
           <div className="relative flex-1">
             <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
@@ -138,30 +139,9 @@ const MuscleReference = () => {
           </div>
         </div>
 
-        <div className="flex flex-wrap gap-2 overflow-x-auto pb-2 no-scrollbar">
-          <Button 
-            variant={selectedGroup === 'All' ? "default" : "outline"}
-            onClick={() => setSelectedGroup('All')}
-            className={cn(
-              "rounded-xl h-10 px-6 font-black text-[9px] uppercase tracking-widest whitespace-nowrap",
-              selectedGroup === 'All' ? "bg-slate-900" : "border-slate-200 bg-white"
-            )}
-          >
-            All Groups
-          </Button>
-          {Object.keys(MUSCLE_GROUPS).map(group => (
-            <Button 
-              key={group}
-              variant={selectedGroup === group ? "default" : "outline"}
-              onClick={() => setSelectedGroup(group)}
-              className={cn(
-                "rounded-xl h-10 px-6 font-black text-[9px] uppercase tracking-widest whitespace-nowrap transition-all",
-                selectedGroup === group ? "bg-slate-900 shadow-lg" : "border-slate-200 bg-white hover:bg-slate-50"
-              )}
-            >
-              {group}
-            </Button>
-          ))}
+        <div className="space-y-4">
+          <p className="text-[10px] font-black text-slate-400 uppercase tracking-[0.3em] px-2">Filter by Body Region</p>
+          <MuscleRegionFilter activeRegion={selectedGroup} onRegionChange={setSelectedGroup} />
         </div>
       </div>
 

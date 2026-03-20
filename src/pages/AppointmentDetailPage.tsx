@@ -161,8 +161,6 @@ const AppointmentDetailPage = () => {
   };
 
   const handleJumpToCalibrate = (itemName: string) => {
-    // This will be handled by the SessionContentSwitcher which has the ref to the wizard
-    // We can use a custom event or just let the switcher handle it if we pass the prop down
     const event = new CustomEvent('jump-to-calibrate', { detail: { itemName } });
     window.dispatchEvent(event);
   };
@@ -270,69 +268,17 @@ const AppointmentDetailPage = () => {
               ]} 
               className="mb-0"
             />
-            <div className="flex items-center gap-2">
+            {isSessionToday && !isFixedHeaderActive && appointment.status === 'Scheduled' && (
               <Button 
-                variant="outline" 
+                variant="default" 
                 size="sm" 
-                className={cn(
-                  "h-10 px-4 font-bold text-xs rounded-xl transition-all",
-                  showSidebar ? "bg-indigo-600 text-white border-indigo-600" : "bg-white border-slate-200 text-slate-600 hover:bg-slate-50"
-                )}
-                onClick={() => setShowSidebar(!showSidebar)}
+                className="bg-rose-600 hover:bg-rose-700 text-white rounded-xl shadow-lg shadow-rose-100 h-10 px-6 font-black text-[10px] uppercase tracking-widest"
+                onClick={handleStartSession}
               >
-                {showSidebar ? <PanelRightClose size={16} className="mr-2" /> : <PanelRightOpen size={16} className="mr-2" />}
-                {showSidebar ? "Hide Sidebar" : "Show Sidebar"}
+                <Play size={16} className="mr-2 fill-current" />
+                Start Session
               </Button>
-              {isSessionToday && !isFixedHeaderActive && appointment.status === 'Scheduled' && (
-                <Button 
-                  variant="default" 
-                  size="sm" 
-                  className="bg-rose-600 hover:bg-rose-700 text-white rounded-xl shadow-lg shadow-rose-100 h-10 px-6 font-black text-[10px] uppercase tracking-widest"
-                  onClick={handleStartSession}
-                >
-                  <Play size={16} className="mr-2 fill-current" />
-                  Start Session
-                </Button>
-              )}
-              <Button 
-                variant="outline" 
-                size="sm" 
-                className="bg-white rounded-xl border-slate-200 text-slate-600 hover:bg-slate-50 h-10 px-4 font-bold text-xs"
-                onClick={handleClonePrevious}
-                disabled={cloning}
-              >
-                {cloning ? <Loader2 size={16} className="mr-2 animate-spin" /> : <History size={16} className="mr-2" />}
-                Clone Previous
-              </Button>
-              <Button 
-                variant="outline" 
-                size="sm" 
-                className="bg-white rounded-xl border-indigo-200 text-indigo-600 hover:bg-indigo-50 h-10 px-4 font-bold text-xs"
-                onClick={handlePrint}
-              >
-                <Printer size={16} className="mr-2" />
-                Print Summary
-              </Button>
-              <Button 
-                variant="outline" 
-                size="sm" 
-                className="bg-white rounded-xl border-indigo-200 text-indigo-600 hover:bg-indigo-50 h-10 px-4 font-bold text-xs"
-                onClick={handleCopySummary}
-              >
-                {copied ? <Check size={16} className="mr-2 text-emerald-500" /> : <Copy size={16} className="mr-2" />}
-                {copied ? "Copied!" : "Copy Summary"}
-              </Button>
-              <DropdownMenu>
-                  <DropdownMenuTrigger asChild>
-                      <Button variant="ghost" size="icon" className="rounded-xl h-10 w-10"><MoreHorizontal size={20} /></Button>
-                  </DropdownMenuTrigger>
-                  <DropdownMenuContent align="end" className="rounded-2xl p-2 shadow-2xl border-none bg-card">
-                      <DropdownMenuItem className="text-destructive focus:text-destructive rounded-xl py-2.5 px-4 cursor-pointer" onClick={handleDeleteAppointment}>
-                          <Trash2 size={16} className="mr-2" /> Delete Appointment
-                      </DropdownMenuItem>
-                  </DropdownMenuContent>
-              </DropdownMenu>
-            </div>
+            )}
           </div>
 
           <div className="print:block hidden mb-8">
@@ -394,6 +340,16 @@ const AppointmentDetailPage = () => {
                   saveField={saveField} 
                   history={history}
                   nucleiFilter={nucleiFilter}
+                  // Action Props
+                  showSidebar={showSidebar}
+                  onToggleSidebar={() => setShowSidebar(!showSidebar)}
+                  onClonePrevious={handleClonePrevious}
+                  onPrint={handlePrint}
+                  onCopySummary={handleCopySummary}
+                  onDelete={handleDeleteAppointment}
+                  onStartSession={handleStartSession}
+                  isCloning={cloning}
+                  isCopied={copied}
                 />
               </div>
             </div>

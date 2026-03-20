@@ -208,6 +208,13 @@ const DemoSessionPage = () => {
                 onUpdate={() => {}} 
                 saveField={saveField} 
                 history={[...mockHistory, appointment]} 
+                showSidebar={showSidebar}
+                onToggleSidebar={() => setShowSidebar(!showSidebar)}
+                onClonePrevious={() => showSuccess("Clone simulated (Demo Mode)")}
+                onPrint={() => window.print()}
+                onCopySummary={handleCopySummary}
+                onDelete={() => showSuccess("Delete simulated (Demo Mode)")}
+                isCopied={copied}
               />
             </div>
 

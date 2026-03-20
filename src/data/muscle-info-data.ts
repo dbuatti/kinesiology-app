@@ -19,6 +19,7 @@ export interface MuscleInfo {
   neurovascular?: string;
   description?: string;
   videoUrl?: string;
+  pearl?: string; // Added for specific clinical insights
 }
 
 export const MUSCLE_INFO_DETAILS: Record<string, MuscleInfo> = {
@@ -33,6 +34,7 @@ export const MUSCLE_INFO_DETAILS: Record<string, MuscleInfo> = {
     organGland: 'Sinuses / Stomach',
     spinalFixation: 'C2-C3',
     testingPosition: 'Client supine. Drop the head down (flexion) and rotate the head away from the side being tested. Practitioner applies pressure to the temporal area, pushing the head back towards the table and into rotation.',
+    pearl: 'After testing, "squeeze through here" (the muscle belly and associated NL points) to check for immediate neurological shift or tenderness.',
     description: 'A key muscle for head orientation and a major player in the Medulla-driven flexor tone chain.'
   },
   'Upper Trapezius': {
@@ -45,7 +47,8 @@ export const MUSCLE_INFO_DETAILS: Record<string, MuscleInfo> = {
     nerveSupply: 'Accessory Nerve (CN XI) and C3-C4 spinal nerves',
     organGland: 'Lung / Eyes',
     spinalFixation: 'C3-C4',
-    testingPosition: 'Client seated or supine. Shrug the shoulder up towards the ear and rotate the head away. Practitioner attempts to pull the shoulder and head apart. Alternate: Test as an indicator by lifting the shoulder girdle and testing for lock.',
+    testingPosition: 'Primary: Shrug shoulder up, rotate head away, bring them together; practitioner pulls apart. Alternate: Lift the shoulder girdle vertically and test for lock.',
+    pearl: 'The alternate vertical lift method allows you to test the Upper Trapezius "like an indicator" to check general system integrity.',
     description: 'The primary "stress" muscle. Closely linked to the Lung meridian and the body\'s ability to take in Qi and release grief.'
   },
   'Psoas': {
@@ -100,14 +103,9 @@ export const MUSCLE_INFO_DETAILS: Record<string, MuscleInfo> = {
 };
 
 export const getMuscleInfo = (name: string): MuscleInfo => {
-  // Handle cases where the name might have (L) or (R)
   const baseName = name.replace(/ \([LR]\)$/, '');
-  
-  // Try exact match first, then try to find the base name within the keys
   if (MUSCLE_INFO_DETAILS[baseName]) return MUSCLE_INFO_DETAILS[baseName];
-  
   const foundKey = Object.keys(MUSCLE_INFO_DETAILS).find(k => k.includes(baseName) || baseName.includes(k));
-  
   return foundKey ? MUSCLE_INFO_DETAILS[foundKey] : {
     name: baseName,
     meridian: 'General',

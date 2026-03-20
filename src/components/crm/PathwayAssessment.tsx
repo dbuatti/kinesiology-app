@@ -324,6 +324,7 @@ const PathwayAssessment = ({ initialValue, previousValue, history = [], onSave, 
   const [showImages, setShowImages] = useState(true);
   const [showOnlyInhibited, setShowOnlyInhibited] = useState(false);
   const [customizations, setCustomizations] = useState<Record<string, ReflexImageData>>({});
+  const [muscleCustomizations, setMuscleCustomizations] = useState<Record<string, ReflexImageData>>({});
   const [loadingImages, setLoadingImages] = useState(true);
 
   const processedHistory = useMemo(() => processNeurologicalHistory(history), [history]);
@@ -357,20 +358,39 @@ const PathwayAssessment = ({ initialValue, previousValue, history = [], onSave, 
       try {
         const { data: { user } } = await supabase.auth.getUser();
         if (!user) return;
-        const { data } = await supabase
+
+        // Fetch Brain/Nerve customizations
+        const { data: brainData } = await supabase
           .from('brain_reflex_customizations')
           .select('reflex_id, image_url, secondary_image_url')
           .eq('user_id', user.id);
         
-        const mapping: Record<string, ReflexImageData> = {};
-        data?.forEach(item => { 
+        const brainMapping: Record<string, ReflexImageData> = {};
+        brainData?.forEach(item => { 
           const timestamp = Date.now();
-          mapping[item.reflex_id] = {
+          brainMapping[item.reflex_id] = {
             primaryUrl: item.image_url ? `${item.image_url}?t=${timestamp}` : null,
             secondaryUrl: item.secondary_image_url ? `${item.secondary_image_url}?t=${timestamp}` : null
           };
         });
-        setCustomizations(mapping);
+        setCustomizations(brainMapping);
+
+        // Fetch Muscle customizations
+        const { data: muscleData } = await supabase
+          .from('muscle_customizations')
+          .select('muscle_name, image_url, secondary_image_url')
+          .eq('user_id', user.id);
+        
+        const muscleMapping: Record<string, ReflexImageData> = {};
+        muscleData?.forEach(item => {
+          const timestamp = Date.now();
+          muscleMapping[item.muscle_name] = {
+            primaryUrl: item.image_url ? `${item.image_url}?t=${timestamp}` : null,
+            secondaryUrl: item.secondary_image_url ? `${item.secondary_image_url}?t=${timestamp}` : null
+          };
+        });
+        setMuscleCustomizations(muscleMapping);
+
       } catch (err) {
         console.error("Failed to fetch customizations:", err);
       } finally {
@@ -604,7 +624,7 @@ const PathwayAssessment = ({ initialValue, previousValue, history = [], onSave, 
                 variant="ghost" 
                 size="sm" 
                 onClick={handleClearAll}
-                className="h-9 text-[10px] font-black uppercase tracking-widest text-rose-600 hover:bg-rose-50 rounded-xl border border-rose-100"
+                className="h-9 font-black text-[10px] uppercase tracking-widest text-rose-600 hover:bg-rose-50 rounded-xl border border-rose-100"
               >
                 <Trash2 size={14} className="mr-2" /> Clear All Findings
               </Button>
@@ -837,22 +857,27 @@ const PathwayAssessment = ({ initialValue, previousValue, history = [], onSave, 
                 <div className="flex-1 h-px bg-slate-100" />
               </div>
               <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-                {muscles.map(muscle => (
-                  <AssessmentItem 
-                    key={muscle}
-                    name={muscle}
-                    category="muscles"
-                    statusL={results.muscles?.[`${muscle} (L)`]}
-                    statusR={results.muscles?.[`${muscle} (R)`]}
-                    statusMidline={results.muscles?.[muscle]}
-                    isLateralized={!MIDLINE_MUSCLES.includes(muscle)}
-                    history={processedHistory.find(h => h.name === muscle)}
-                    onSetStatus={(status, side) => handleSetStatus('muscles', muscle, status, side)}
-                    onQuickCalibrate={() => handleQuickCalibrate('muscles', muscle)}
-                    onShowLogic={() => handleShowLogic(muscle, results.muscles?.[muscle] || 'Clear')}
-                    onClick={() => handleItemClick('muscle', muscle)}
-                  />
-                ))}
+                {muscles.map(muscle => {
+                  const imageUrl = muscleCustomizations[muscle]?.primaryUrl;
+                  return (
+                    <AssessmentItem 
+                      key={muscle}
+                      name={muscle}
+                      category="muscles"
+                      statusL={results.muscles?.[`${muscle} (L)`]}
+                      statusR={results.muscles?.[`${muscle} (R)`]}
+                      statusMidline={results.muscles?.[muscle]}
+                      isLateralized={!MIDLINE_MUSCLES.includes(muscle)}
+                      history={processedHistory.find(h => h.name === muscle)}
+                      onSetStatus={(status, side) => handleSetStatus('muscles', muscle, status, side)}
+                      onQuickCalibrate={() => handleQuickCalibrate('muscles', muscle)}
+                      onShowLogic={() => handleShowLogic(muscle, results.muscles?.[muscle] || 'Clear')}
+                      onClick={() => handleItemClick('muscle', muscle)}
+                      imageUrl={imageUrl}
+                      showImage={showImages}
+                    />
+                  );
+                })}
               </div>
             </div>
           ))}

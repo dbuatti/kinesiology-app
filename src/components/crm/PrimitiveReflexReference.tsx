@@ -26,13 +26,15 @@ import {
   ArrowRight,
   Clock,
   Brain,
-  Maximize2
+  Maximize2,
+  LayoutGrid
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 import { supabase } from "@/integrations/supabase/client";
 import { showSuccess, showError } from "@/utils/toast";
 import PrimitiveReflexModal from "./PrimitiveReflexModal";
+import PrimitiveDevelopmentLadder from "./PrimitiveDevelopmentLadder";
 
 const BUCKET_NAME = 'reflex-images';
 
@@ -296,7 +298,9 @@ const PrimitiveReflexReference = () => {
               </div>
             </div>
           </CardHeader>
-          <CardContent className="p-10 pt-0 space-y-8 relative z-10">
+          <CardContent className="p-10 pt-0 space-y-10 relative z-10">
+            <PrimitiveDevelopmentLadder />
+
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div className="space-y-4">
                 <p className="text-slate-300 leading-relaxed font-medium">
@@ -348,10 +352,22 @@ const PrimitiveReflexReference = () => {
                 </div>
               ))}
             </div>
-            <div className="pt-4 border-t border-indigo-200">
-              <div className="flex items-center gap-2 text-indigo-600">
-                <ShieldCheck size={16} />
-                <p className="text-[10px] font-bold uppercase tracking-widest">Permanent Integration</p>
+            
+            <div className="pt-6 border-t border-indigo-200 space-y-4">
+              <h4 className="text-[10px] font-black text-indigo-400 uppercase tracking-widest">Fractal Chains</h4>
+              <div className="space-y-2">
+                <div className="p-3 bg-white rounded-xl border border-indigo-100">
+                  <p className="text-[9px] font-black text-slate-400 uppercase mb-1">Master Chain</p>
+                  <p className="text-[10px] font-bold text-indigo-900">Fear Paralysis → Moro → Startle</p>
+                </div>
+                <div className="p-3 bg-white rounded-xl border border-indigo-100">
+                  <p className="text-[9px] font-black text-slate-400 uppercase mb-1">Gait Chain</p>
+                  <p className="text-[10px] font-bold text-indigo-900">ATNR → Babinski → Palmar</p>
+                </div>
+                <div className="p-3 bg-white rounded-xl border border-indigo-100">
+                  <p className="text-[9px] font-black text-slate-400 uppercase mb-1">Oral Chain</p>
+                  <p className="text-[10px] font-bold text-indigo-900">Rooting → Sucking</p>
+                </div>
               </div>
             </div>
           </CardContent>
@@ -474,15 +490,16 @@ const PrimitiveReflexReference = () => {
                     </div>
                   </div>
 
-                  {reflex.pearl && (
-                    <div className="p-5 bg-amber-50 rounded-3xl border border-amber-100 relative overflow-hidden">
-                      <div className="absolute top-0 right-0 p-4 opacity-10"><Sparkles size={40} className="text-amber-600" /></div>
-                      <p className="text-[9px] font-black text-amber-600 uppercase tracking-widest mb-2 flex items-center gap-2">
-                        <Info size={14} /> Clinical Pearl
-                      </p>
-                      <p className="text-xs text-amber-900 font-bold leading-relaxed italic line-clamp-2">
-                        "{reflex.pearl}"
-                      </p>
+                  {reflex.clinicalSigns && reflex.clinicalSigns.length > 0 && (
+                    <div className="space-y-2">
+                      <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest">Clinical Signs</p>
+                      <div className="flex flex-wrap gap-1.5">
+                        {reflex.clinicalSigns.map(sign => (
+                          <Badge key={sign} variant="secondary" className="bg-slate-100 text-slate-600 border-none text-[8px] font-bold">
+                            {sign}
+                          </Badge>
+                        ))}
+                      </div>
                     </div>
                   )}
                 </CardContent>

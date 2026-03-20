@@ -21,7 +21,9 @@ import {
   ListChecks,
   ArrowRight,
   Eye,
-  Move
+  Move,
+  Clock,
+  Activity
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -48,7 +50,7 @@ const PrimitiveReflexModal = ({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[700px] max-h-[95vh] rounded-[2.5rem] overflow-hidden p-0 border-none shadow-2xl">
+      <DialogContent className="sm:max-w-[750px] max-h-[95vh] rounded-[2.5rem] overflow-hidden p-0 border-none shadow-2xl">
         <DialogHeader className="p-0">
           <div className={cn(
             "p-8 text-white transition-colors relative",
@@ -97,6 +99,27 @@ const PrimitiveReflexModal = ({
             </div>
           </div>
 
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+            <section className="space-y-4">
+              <SectionHeader icon={Activity} title="Clinical Signs" color="text-slate-600" />
+              <div className="flex flex-wrap gap-2">
+                {reflex.clinicalSigns?.map(sign => (
+                  <Badge key={sign} variant="outline" className="bg-slate-50 border-slate-200 text-slate-700 font-bold text-[10px] uppercase tracking-widest px-3 py-1">
+                    {sign}
+                  </Badge>
+                ))}
+              </div>
+            </section>
+
+            <section className="space-y-4">
+              <SectionHeader icon={Clock} title="Developmental Window" color="text-slate-600" />
+              <div className="p-4 bg-slate-50 rounded-2xl border border-slate-100">
+                <p className="text-sm font-bold text-slate-900">{reflex.developmentalWindow}</p>
+                <p className="text-[10px] text-slate-500 mt-1">Should be inhibited by the nervous system during this period.</p>
+              </div>
+            </section>
+          </div>
+
           {reflex.name === 'Rooting Reflex' && (
             <div className="p-6 bg-amber-50 rounded-3xl border-2 border-amber-200 space-y-4">
               <SectionHeader icon={Zap} title="Correction Spotlight: Vestibular/Ocular" color="text-amber-600" />
@@ -120,17 +143,18 @@ const PrimitiveReflexModal = ({
           )}
 
           {reflex.fractalPartners && reflex.fractalPartners.length > 0 && (
-            <section className="p-6 bg-slate-50 rounded-2xl border border-slate-200">
-              <SectionHeader icon={Workflow} title="Fractal Partners" color="text-slate-500" />
-              <div className="flex flex-wrap gap-2">
+            <section className="p-6 bg-indigo-900 text-white rounded-2xl shadow-xl relative overflow-hidden">
+              <div className="absolute top-0 right-0 p-4 opacity-10"><Workflow size={80} /></div>
+              <SectionHeader icon={Workflow} title="Fractal Partners" color="text-indigo-300" />
+              <div className="flex flex-wrap gap-2 relative z-10">
                 {reflex.fractalPartners.map(partner => (
-                  <Badge key={partner} variant="secondary" className="bg-white border-slate-200 text-slate-600 font-bold text-[10px] uppercase tracking-widest px-3 py-1">
+                  <Badge key={partner} className="bg-white/10 text-white border-white/20 font-black text-[10px] uppercase tracking-widest px-3 py-1">
                     {partner}
                   </Badge>
                 ))}
               </div>
-              <p className="text-[10px] text-slate-400 mt-3 italic">
-                Clearing the highest level reflex in a cluster often integrates the partners automatically.
+              <p className="text-[10px] text-indigo-200 mt-4 italic relative z-10">
+                "If you correct the highest level reflex, you can knock out 3-4 others in one go because they are cascaded together."
               </p>
             </section>
           )}

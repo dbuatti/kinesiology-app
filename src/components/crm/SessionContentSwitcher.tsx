@@ -181,6 +181,15 @@ const SessionContentSwitcher = ({
           pattern[category][itemName] = 'Clear';
           updated = true;
         }
+        // Check for lateralized versions
+        if (pattern[category][`${itemName} (L)`]) {
+          pattern[category][`${itemName} (L)`] = 'Clear';
+          updated = true;
+        }
+        if (pattern[category][`${itemName} (R)`]) {
+          pattern[category][`${itemName} (R)`] = 'Clear';
+          updated = true;
+        }
       });
       if (updated) {
         await saveField('priority_pattern', JSON.stringify(pattern));

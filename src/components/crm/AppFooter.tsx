@@ -84,9 +84,6 @@ const AppFooter = () => {
           <div className="flex items-center gap-6">
             <a href="#" className="text-[10px] font-bold text-muted-foreground hover:text-foreground uppercase tracking-widest">Privacy Policy</a>
             <a href="#" className="text-[10px] font-bold text-muted-foreground hover:text-foreground uppercase tracking-widest">Terms of Service</a>
-            <a href="https://www.dyad.sh/" target="_blank" rel="noopener noreferrer" className="text-[10px] font-bold text-slate-400 hover:text-indigo-600 uppercase tracking-widest">
-              Made with Dyad
-            </a>
           </div>
         </div>
       </div>

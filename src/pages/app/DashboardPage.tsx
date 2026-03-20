@@ -12,7 +12,6 @@ import {
   CheckCircle2, Zap, FlaskConical, Brain, Wind, StickyNote, Timer,
   ArrowRight, AlertCircle, TrendingUp, Clock, ShieldCheck, Heart
 } from "lucide-react";
-import { MadeWithDyad } from "@/components/made-with-dyad";
 import {
   Dialog,
   DialogContent,
@@ -527,8 +526,6 @@ const Index = () => {
             <AppointmentForm onSuccess={() => { setAppDialogOpen(false); fetchDashboardData(); }} />
           </DialogContent>
         </Dialog>
-        
-        <MadeWithDyad />
       </div>
     </AppLayout>
   );

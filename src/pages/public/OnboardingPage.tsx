@@ -8,7 +8,6 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Loader2, Sparkles, Heart, CheckCircle2, ArrowRight, ShieldCheck } from "lucide-react";
 import PublicOnboardingForm from "@/components/crm/PublicOnboardingForm";
-import { MadeWithDyad } from "@/components/made-with-dyad";
 import { cn } from "@/lib/utils";
 
 const OnboardingPage = () => {
@@ -151,7 +150,6 @@ const OnboardingPage = () => {
               <span className="text-[10px] font-black uppercase tracking-widest">SSL Secure</span>
             </div>
           </div>
-          <MadeWithDyad />
         </div>
       </div>
     </div>

@@ -6,7 +6,6 @@ import Breadcrumbs from "@/components/shared/Breadcrumbs";
 import PathwayLogicWizard from "@/components/crm/PathwayLogicWizard";
 import { Zap, ShieldCheck, Info } from "lucide-react";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { MadeWithDyad } from "@/components/made-with-dyad";
 
 const QuickCalibratePage = () => {
   return (
@@ -56,8 +55,6 @@ const QuickCalibratePage = () => {
             Always ensure the system is in a receptive state before applying deep neurological corrections. If the IM remains inhibited after 3 layers, check for SNS dominance.
           </p>
         </div>
-        
-        <MadeWithDyad />
       </div>
     </AppLayout>
   );

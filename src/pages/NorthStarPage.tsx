@@ -4,7 +4,6 @@ import React from "react";
 import AppLayout from "@/components/crm/AppLayout";
 import Breadcrumbs from "@/components/shared/Breadcrumbs";
 import InteractiveIntentionWorksheet from "@/components/crm/InteractiveIntentionWorksheet";
-import { MadeWithDyad } from "@/components/made-with-dyad";
 
 const NorthStarPage = () => {
   return (
@@ -18,8 +17,6 @@ const NorthStarPage = () => {
         />
         
         <InteractiveIntentionWorksheet />
-        
-        <MadeWithDyad />
       </div>
     </AppLayout>
   );

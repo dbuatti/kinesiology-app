@@ -16,7 +16,10 @@ import {
   ClipboardCheck,
   ArrowRight,
   CheckCircle2,
-  ShieldCheck
+  ShieldCheck,
+  ChevronDown,
+  MoreHorizontal,
+  Wrench
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { AppointmentWithClient } from '@/types/crm';
@@ -33,6 +36,12 @@ import PathwayAssessment from './PathwayAssessment';
 import PathwayLogicWizard from './PathwayLogicWizard';
 import NeurologicalHistoryTracker from './NeurologicalHistoryTracker';
 import { Nuclei } from '@/utils/brainstem-logic';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 
 type ActiveView = 'home' | 'kinesiology' | 'muscles' | 'gait' | 'previous';
 
@@ -67,13 +76,12 @@ const SessionContentSwitcher = ({ appointment, onUpdate, saveField, history = []
   }), [appointment]);
 
   const scrollToWizard = () => {
-    // Use a slightly longer delay to ensure the tab content has rendered
     setTimeout(() => {
       const element = wizardRef.current;
       const scrollContainer = document.getElementById('main-scroll-container');
       
       if (element && scrollContainer) {
-        const offset = 100; // Adjusted offset for better framing
+        const offset = 100;
         const elementRect = element.getBoundingClientRect();
         const containerRect = scrollContainer.getBoundingClientRect();
         
@@ -91,15 +99,10 @@ const SessionContentSwitcher = ({ appointment, onUpdate, saveField, history = []
   useEffect(() => {
     const handleJump = (e: any) => {
       const { itemName } = e.detail;
-      // Set finding first
       setPreselectedFinding(itemName);
-      // Switch view and tab
       setActiveView('home');
       setActiveTab('calibration');
-      // Scroll
       scrollToWizard();
-      
-      // Clear the pre-selection after a delay so it can be triggered again for the same item
       setTimeout(() => setPreselectedFinding(null), 1000);
     };
 
@@ -284,14 +287,54 @@ const SessionContentSwitcher = ({ appointment, onUpdate, saveField, history = []
     </div>
   );
 
+  const isToolActive = ['kinesiology', 'muscles', 'gait'].includes(activeView);
+
   return (
     <div className="space-y-8">
-      <div className="flex items-center gap-2 overflow-x-auto pb-2 bg-muted/30 p-2 rounded-2xl border border-border/50 no-scrollbar">
-        <NavItem view="home" label="PEACE Flow" Icon={Home} />
-        <NavItem view="kinesiology" label="Kinesiology Tools" Icon={Heart} />
-        <NavItem view="muscles" label="Muscle Log" Icon={Dumbbell} />
-        <NavItem view="gait" label="Gait Integration" Icon={Footprints} />
-        <NavItem view="previous" label="History & Evolution" Icon={History} />
+      <div className="flex items-center justify-between bg-muted/30 p-2 rounded-2xl border border-border/50">
+        <div className="flex items-center gap-2 overflow-x-auto no-scrollbar">
+          <NavItem view="home" label="PEACE Flow" Icon={Home} />
+          <NavItem view="previous" label="History & Evolution" Icon={History} />
+        </div>
+
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button
+              variant="ghost"
+              className={cn(
+                "h-11 px-5 rounded-xl transition-all font-black text-[10px] uppercase tracking-widest",
+                isToolActive ? "bg-card text-indigo-600 shadow-sm border border-border" : "text-muted-foreground hover:bg-accent"
+              )}
+            >
+              <Wrench size={16} className="mr-2" />
+              Clinical Tools
+              <ChevronDown size={14} className="ml-2 opacity-50" />
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end" className="w-56 p-2 rounded-2xl border-none shadow-2xl bg-card">
+            <DropdownMenuItem 
+              onClick={() => setActiveView('kinesiology')}
+              className={cn("rounded-xl py-3 px-4 cursor-pointer", activeView === 'kinesiology' && "bg-indigo-50 text-indigo-600 font-black")}
+            >
+              <Heart size={16} className="mr-3 text-rose-500" />
+              Kinesiology Tools
+            </DropdownMenuItem>
+            <DropdownMenuItem 
+              onClick={() => setActiveView('muscles')}
+              className={cn("rounded-xl py-3 px-4 cursor-pointer", activeView === 'muscles' && "bg-indigo-50 text-indigo-600 font-black")}
+            >
+              <Dumbbell size={16} className="mr-3 text-indigo-500" />
+              Muscle Log
+            </DropdownMenuItem>
+            <DropdownMenuItem 
+              onClick={() => setActiveView('gait')}
+              className={cn("rounded-xl py-3 px-4 cursor-pointer", activeView === 'gait' && "bg-indigo-50 text-indigo-600 font-black")}
+            >
+              <Footprints size={16} className="mr-3 text-emerald-500" />
+              Gait Integration
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
       </div>
       
       <div className="animate-in fade-in slide-in-from-bottom-2 duration-300">

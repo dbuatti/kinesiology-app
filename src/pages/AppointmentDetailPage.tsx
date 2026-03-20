@@ -160,6 +160,13 @@ const AppointmentDetailPage = () => {
     }
   };
 
+  const handleJumpToCalibrate = (itemName: string) => {
+    // This will be handled by the SessionContentSwitcher which has the ref to the wizard
+    // We can use a custom event or just let the switcher handle it if we pass the prop down
+    const event = new CustomEvent('jump-to-calibrate', { detail: { itemName } });
+    window.dispatchEvent(event);
+  };
+
   const handleStartSession = async () => {
     if (!appointment) return;
     const now = new Date();
@@ -341,7 +348,12 @@ const AppointmentDetailPage = () => {
             </div>
           </div>
 
-          <WeeklyFocusBanner />
+          <WeeklyFocusBanner 
+            appointmentId={appointment.id}
+            priorityPattern={appointment.priority_pattern}
+            onSaveField={saveField}
+            onJumpToCalibrate={handleJumpToCalibrate}
+          />
 
           <PreviousSessionInsightsBar 
             clientId={appointment.clients.id} 

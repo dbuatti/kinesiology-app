@@ -66,13 +66,6 @@ const SessionContentSwitcher = ({ appointment, onUpdate, saveField, history = []
     reassessment: !!appointment.session_north_star
   }), [appointment]);
 
-  const previousSession = useMemo(() => {
-    if (!history || history.length < 2) return null;
-    const sorted = [...history].sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
-    const currentIndex = sorted.findIndex(s => s.id === appointment.id);
-    return sorted[currentIndex + 1] || null;
-  }, [history, appointment.id]);
-
   const scrollToWizard = () => {
     setTimeout(() => {
       const element = wizardRef.current;
@@ -93,6 +86,19 @@ const SessionContentSwitcher = ({ appointment, onUpdate, saveField, history = []
       }
     }, 300);
   };
+
+  useEffect(() => {
+    const handleJump = (e: any) => {
+      const { itemName } = e.detail;
+      setPreselectedFinding(itemName);
+      setActiveView('home');
+      setActiveTab('calibration');
+      scrollToWizard();
+    };
+
+    window.addEventListener('jump-to-calibrate', handleJump);
+    return () => window.removeEventListener('jump-to-calibrate', handleJump);
+  }, []);
 
   const handleNextTab = () => {
     const currentIndex = TABS.findIndex(t => t.id === activeTab);
@@ -126,12 +132,6 @@ const SessionContentSwitcher = ({ appointment, onUpdate, saveField, history = []
     } catch (e) {
       console.error("Failed to update priority pattern JSON", e);
     }
-  };
-
-  const handleJumpToCalibrate = (itemName: string) => {
-    setPreselectedFinding(itemName);
-    setActiveTab('calibration');
-    scrollToWizard();
   };
 
   const NavItem = ({ view, label, Icon }: { view: ActiveView, label: string, Icon: React.ElementType }) => (
@@ -235,10 +235,14 @@ const SessionContentSwitcher = ({ appointment, onUpdate, saveField, history = []
           <TabsContent value="pathway" className="focus-visible:ring-0">
             <PathwayAssessment 
               initialValue={appointment.priority_pattern || undefined} 
-              previousValue={previousSession?.priority_pattern || undefined}
+              previousValue={history.length > 1 ? history[1]?.priority_pattern : undefined}
               history={history}
               onSave={(s) => saveField('priority_pattern', s)} 
-              onJumpToCalibrate={handleJumpToCalibrate}
+              onJumpToCalibrate={(itemName) => {
+                setPreselectedFinding(itemName);
+                setActiveTab('calibration');
+                scrollToWizard();
+              }}
               nucleiFilter={nucleiFilter}
             />
             <TabFooter nextLabel="C — Correct" />
@@ -313,7 +317,7 @@ const SessionContentSwitcher = ({ appointment, onUpdate, saveField, history = []
             <PreviousSessionSummary 
               clientId={appointment.clients.id} 
               currentAppointmentId={appointment.id} 
-              manualData={previousSession}
+              manualData={history.length > 1 ? history[1] : null}
             />
           </div>
         )}

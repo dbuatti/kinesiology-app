@@ -114,6 +114,11 @@ const DemoSessionPage = () => {
     setAppointment((prev: any) => ({ ...prev, [field]: value }));
   };
 
+  const handleJumpToCalibrate = (itemName: string) => {
+    const event = new CustomEvent('jump-to-calibrate', { detail: { itemName } });
+    window.dispatchEvent(event);
+  };
+
   const handleCopySummary = () => {
     const summary = generateSessionSummary(appointment);
     navigator.clipboard.writeText(summary);
@@ -159,7 +164,12 @@ const DemoSessionPage = () => {
             </div>
           </div>
 
-          <WeeklyFocusBanner />
+          <WeeklyFocusBanner 
+            appointmentId={appointment.id}
+            priorityPattern={appointment.priority_pattern}
+            onSaveField={saveField}
+            onJumpToCalibrate={handleJumpToCalibrate}
+          />
 
           <PreviousSessionInsightsBar 
             clientId="demo-client-id" 

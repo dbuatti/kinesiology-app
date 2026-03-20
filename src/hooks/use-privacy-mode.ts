@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from 'react';
+import { toast } from "sonner";
 
 const STORAGE_KEY = 'antigravity_privacy_mode';
 
@@ -21,7 +22,22 @@ export function usePrivacyMode() {
     }
   }, [isPrivate]);
 
-  const togglePrivacy = () => setIsPrivate(!isPrivate);
+  const togglePrivacy = () => {
+    const newState = !isPrivate;
+    setIsPrivate(newState);
+    
+    if (newState) {
+      toast.success("Privacy Mode Enabled", {
+        description: "Sensitive client data is now blurred.",
+        duration: 3000,
+      });
+    } else {
+      toast.info("Privacy Mode Disabled", {
+        description: "Client data is now visible.",
+        duration: 3000,
+      });
+    }
+  };
 
   return { isPrivate, togglePrivacy };
 }

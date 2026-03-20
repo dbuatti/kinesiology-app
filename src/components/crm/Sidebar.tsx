@@ -22,7 +22,8 @@ import {
   PlusCircle,
   Clock,
   Eye,
-  EyeOff
+  EyeOff,
+  Lock
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import SearchBar from "./SearchBar";
@@ -239,6 +240,15 @@ const Sidebar = ({ onHide }: SidebarProps) => {
           </TooltipContent>
         </Tooltip>
       </div>
+
+      {isPrivate && (
+        <div className="px-1 animate-in slide-in-from-top-2 duration-500">
+          <div className="flex items-center gap-2 px-3 py-2 bg-rose-500/10 border border-rose-500/20 rounded-xl text-rose-600 dark:text-rose-400">
+            <Lock size={14} className="shrink-0" />
+            <span className="text-[9px] font-black uppercase tracking-widest">Privacy Mode Active</span>
+          </div>
+        </div>
+      )}
 
       <div className="px-1">
         <SearchBar />

@@ -15,6 +15,7 @@ export interface TcmChannel {
   color: string;
   hexColor: string; // For visualizations
   balancingTips: string[];
+  clinicalPearl?: string;
 }
 
 export const TCM_CHANNELS: TcmChannel[] = [
@@ -196,7 +197,8 @@ export const TCM_CHANNELS: TcmChannel[] = [
     description: "The 'General'. Ensures the smooth flow of Qi throughout the body. Stores blood and opens to the eyes.",
     color: "bg-emerald-500 text-white",
     hexColor: "#10b981",
-    balancingTips: ["Deep sleep", "Detoxification", "Practice flexibility"]
+    balancingTips: ["Healing Sound: 'SHU' (whispered)", "Hold Liver Pulse Point", "Practice Self-Acceptance"],
+    clinicalPearl: "Suppressed or repressed anger is a primary driver of chronic pain, migraines, and skin eruptions. The antidote is self-compassion."
   },
   {
     id: "CV",

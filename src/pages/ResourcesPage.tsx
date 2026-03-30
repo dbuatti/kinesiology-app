@@ -100,6 +100,7 @@ const CATEGORIES = [
       { id: "inner-awareness", label: "Inner Awareness", icon: ShieldCheck, desc: "Daily practice for sovereignty and state.", path: "/resources/worksheets/inner-awareness" },
       { id: "week-3", label: "Week 3: Curses", icon: ShieldCheck, desc: "Releasing generational trauma imprints.", path: "/resources/worksheets/week-3" },
       { id: "fear-creativity", label: "Fear & Creativity", icon: Palette, desc: "Awareness of fear in the body and mind.", path: "/resources/worksheets/fear-creativity" },
+      { id: "anger-flow", label: "Anger & Flow", icon: RefreshCw, desc: "Week 8: Reclaiming expression and self-acceptance.", path: "/resources/worksheets/anger-flow" },
     ]
   },
   {

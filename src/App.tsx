@@ -32,6 +32,7 @@ import NorthStarPage from "./pages/NorthStarPage";
 import Week3WorksheetPage from "./pages/Week3WorksheetPage";
 import FearCreativityWorksheetPage from "./pages/FearCreativityWorksheetPage";
 import InnerAwarenessWorksheetPage from "./pages/InnerAwarenessWorksheetPage";
+import AngerFlowWorksheetPage from "./pages/AngerFlowWorksheetPage";
 import QuickCalibratePage from "./pages/QuickCalibratePage";
 import NotFound from "./pages/NotFound";
 
@@ -85,6 +86,7 @@ const AppRoutes = () => {
         <Route path="/resources/worksheets/week-3" element={<Week3WorksheetPage />} />
         <Route path="/resources/worksheets/fear-creativity" element={<FearCreativityWorksheetPage />} />
         <Route path="/resources/worksheets/inner-awareness" element={<InnerAwarenessWorksheetPage />} />
+        <Route path="/resources/worksheets/anger-flow" element={<AngerFlowWorksheetPage />} />
         
         {/* System */}
         <Route path="/settings" element={<SettingsPage />} />

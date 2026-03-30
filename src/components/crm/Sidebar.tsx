@@ -24,7 +24,8 @@ import {
   Eye,
   EyeOff,
   Lock,
-  FileText
+  FileText,
+  ExternalLink
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import SearchBar from "./SearchBar";
@@ -111,6 +112,7 @@ const Sidebar = ({ onHide }: SidebarProps) => {
 
   const libraryItems = [
     { label: "PEACE Framework", icon: ShieldCheck, path: "/peace-framework", shortcut: "⌘F" },
+    { label: "Notion Manual", icon: ExternalLink, path: "https://www.notion.so/", isExternal: true },
     { label: "Knowledge Base", icon: BookOpen, path: "/resources", shortcut: "⌘R" },
     { label: "Worksheets", icon: FileText, path: "/resources/worksheets", shortcut: "⌘N" },
     { label: "Self Practice", icon: Heart, path: "/practice/self", shortcut: "⌘S" },
@@ -152,20 +154,19 @@ const Sidebar = ({ onHide }: SidebarProps) => {
   };
 
   const NavItem = ({ item, tooltip = true }: { item: any, tooltip?: boolean }) => {
-    const isActive = location.pathname === item.path || (item.path !== "/" && location.pathname.startsWith(item.path));
+    const isActive = !item.isExternal && (location.pathname === item.path || (item.path !== "/" && location.pathname.startsWith(item.path)));
     
-    const linkContent = (
-      <Link
-        to={item.path}
-        className={cn(
-          "flex items-center justify-between gap-2 px-3 py-2 rounded-xl transition-all duration-300 group",
-          isActive 
-            ? "bg-indigo-600 text-white shadow-lg shadow-indigo-600/20" 
-            : "text-muted-foreground hover:text-foreground hover:bg-accent/50"
-        )}
-      >
+    const className = cn(
+      "flex items-center justify-between gap-2 px-3 py-2 rounded-xl transition-all duration-300 group",
+      isActive 
+        ? "bg-indigo-600 text-white shadow-lg shadow-indigo-600/20" 
+        : "text-muted-foreground hover:text-foreground hover:bg-accent/50"
+    );
+
+    const content = (
+      <>
         <div className="flex items-center gap-3">
-          <item.icon size={16} className={cn("transition-all duration-300", isActive ? "text-white" : "text-muted-foreground group-hover:text-indigo-50")} />
+          <item.icon size={16} className={cn("transition-all duration-300", isActive ? "text-white" : "text-muted-foreground group-hover:text-indigo-500")} />
           <span className="font-bold text-[10px] uppercase tracking-widest">{item.label}</span>
         </div>
         {item.shortcut && (
@@ -176,6 +177,16 @@ const Sidebar = ({ onHide }: SidebarProps) => {
             {item.shortcut}
           </kbd>
         )}
+      </>
+    );
+
+    const linkContent = item.isExternal ? (
+      <a href={item.path} target="_blank" rel="noopener noreferrer" className={className}>
+        {content}
+      </a>
+    ) : (
+      <Link to={item.path} className={className}>
+        {content}
       </Link>
     );
 
@@ -189,6 +200,7 @@ const Sidebar = ({ onHide }: SidebarProps) => {
         <TooltipContent side="right" className="rounded-xl font-bold text-xs">
           <p>{item.label}</p>
           {item.shortcut && <p className="text-[10px] text-slate-400 mt-1">{item.shortcut}</p>}
+          {item.isExternal && <p className="text-[10px] text-slate-400 mt-1">Opens in new tab</p>}
         </TooltipContent>
       </Tooltip>
     );

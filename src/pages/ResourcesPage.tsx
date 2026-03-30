@@ -153,8 +153,6 @@ const CATEGORIES = [
   }
 ];
 
-const PEACE_METHOD_URL = "https://functional-neuro-health.notion.site/Functional-Neuro-Health-The-PEACE-Method-28beacafb4a88026b9a9ccdefa4e1de9";
-
 const ResourcesPage = () => {
   const [searchParams, setSearchParams] = useSearchParams();
   const activeTab = searchParams.get("tab") || "hub";
@@ -195,7 +193,7 @@ const ResourcesPage = () => {
         {activeTab === "hub" ? (
           <div className="space-y-12 animate-in fade-in slide-in-from-bottom-4 duration-700">
             {/* PEACE Method Featured Resource */}
-            <a href={PEACE_METHOD_URL} target="_blank" rel="noopener noreferrer" className="block group">
+            <Link to="/peace-framework" className="block group">
               <Card className="border-none shadow-2xl rounded-[3rem] bg-gradient-to-br from-indigo-600 via-purple-600 to-rose-600 text-white overflow-hidden relative cursor-pointer hover:shadow-3xl hover:-translate-y-1 transition-all duration-500">
                 <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(255,255,255,0.15),transparent_50%)]" />
                 <div className="absolute top-0 right-0 p-12 opacity-10 group-hover:opacity-20 transition-opacity">
@@ -209,7 +207,7 @@ const ResourcesPage = () => {
                           Mastery Edition
                         </Badge>
                         <Badge className="bg-amber-400/20 text-amber-200 border-amber-400/30 font-black text-[10px] uppercase tracking-[0.3em] px-4 py-1.5 backdrop-blur-sm">
-                          2025 Gold Standard
+                          2026 Gold Standard
                         </Badge>
                       </div>
                       <div className="space-y-3">
@@ -230,16 +228,16 @@ const ResourcesPage = () => {
                     </div>
                     <div className="flex flex-col items-center gap-4 md:items-end">
                       <div className="w-20 h-20 rounded-3xl bg-white/20 backdrop-blur-md flex items-center justify-center border border-white/30 shadow-2xl group-hover:scale-110 group-hover:rotate-3 transition-all duration-500">
-                        <ExternalLink size={36} className="text-white" />
+                        <ArrowRight size={36} className="text-white" />
                       </div>
                       <span className="text-[10px] font-black uppercase tracking-[0.3em] text-white/60 group-hover:text-white transition-colors">
-                        Open in Notion →
+                        View Framework →
                       </span>
                     </div>
                   </div>
                 </CardContent>
               </Card>
-            </a>
+            </Link>
 
             {CATEGORIES.map((category) => (
               <div key={category.id} className="space-y-6">

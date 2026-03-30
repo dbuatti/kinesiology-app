@@ -13,11 +13,11 @@ import {
   CommandList,
   CommandSeparator,
 } from "@/components/ui/command";
-import { Search, User, Calendar, Target, Zap, Clock, Trash2, UserPlus, CalendarPlus, Upload, Settings, Layers } from "lucide-react";
+import { Search, User, Calendar, Target, Zap, Clock, Trash2, UserPlus, CalendarPlus, Upload, Settings, Layers, ShieldCheck } from "lucide-react";
 import { format } from "date-fns";
 
 interface SearchResult {
-  type: "client" | "appointment" | "procedure" | "action" | "channel";
+  type: "client" | "appointment" | "procedure" | "action" | "channel" | "page";
   id: string;
   title: string;
   subtitle?: string;
@@ -106,6 +106,17 @@ const SearchBar = () => {
       ]);
 
       const searchResults: SearchResult[] = [];
+
+      // Check for exact pages
+      if ("peace framework".includes(query.toLowerCase())) {
+        searchResults.push({
+          type: "page",
+          id: "peace-framework",
+          title: "The PEACE Framework",
+          subtitle: "Clinical Methodology Guide",
+          path: "/peace-framework"
+        });
+      }
 
       // Search TCM Channels (Local Data)
       const matchingChannels = TCM_CHANNELS.filter(c => 
@@ -261,6 +272,24 @@ const SearchBar = () => {
 
           {results.length > 0 && (
             <>
+              <CommandGroup heading="Pages & Views">
+                {results
+                  .filter((r) => r.type === "page")
+                  .map((result) => (
+                    <CommandItem
+                      key={result.id}
+                      onSelect={() => handleSelect(result)}
+                    >
+                      <ShieldCheck size={16} className="mr-2 text-indigo-500" />
+                      <div className="flex flex-col">
+                        <span className="font-medium">{result.title}</span>
+                        <span className="text-xs text-slate-500">
+                          {result.subtitle}
+                        </span>
+                      </div>
+                    </CommandItem>
+                  ))}
+              </CommandGroup>
               <CommandGroup heading="Meridians & Channels">
                 {results
                   .filter((r) => r.type === "channel")

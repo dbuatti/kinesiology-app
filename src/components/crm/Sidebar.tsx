@@ -67,7 +67,7 @@ const Sidebar = ({ onHide }: SidebarProps) => {
   
   const isOpsPath = (path: string) => path === "/" || path.startsWith("/appointments") || path.startsWith("/clients");
   const isLabPath = (path: string) => path.startsWith("/practice/calibrate") || path.startsWith("/practice/procedures") || path.startsWith("/oversight");
-  const isLibraryPath = (path: string) => path.startsWith("/resources") || path.startsWith("/practice/self");
+  const isLibraryPath = (path: string) => path.startsWith("/resources") || path.startsWith("/practice/self") || path.startsWith("/peace-framework");
 
   const [opsOpen, setOpsOpen] = useState(() => {
     const saved = localStorage.getItem("sidebar_ops_open");
@@ -110,6 +110,7 @@ const Sidebar = ({ onHide }: SidebarProps) => {
   ];
 
   const libraryItems = [
+    { label: "PEACE Framework", icon: ShieldCheck, path: "/peace-framework", shortcut: "⌘F" },
     { label: "Knowledge Base", icon: BookOpen, path: "/resources", shortcut: "⌘R" },
     { label: "Worksheets", icon: FileText, path: "/resources/worksheets", shortcut: "⌘N" },
     { label: "Self Practice", icon: Heart, path: "/practice/self", shortcut: "⌘S" },
@@ -129,6 +130,7 @@ const Sidebar = ({ onHide }: SidebarProps) => {
           case 'p': e.preventDefault(); navigate('/practice/procedures'); break;
           case 'r': e.preventDefault(); navigate('/resources'); break;
           case 'q': e.preventDefault(); navigate('/practice/calibrate'); break;
+          case 'f': e.preventDefault(); navigate('/peace-framework'); break;
           case 'h': e.preventDefault(); togglePrivacy(); break;
           case '/': e.preventDefault(); setHelpOpen(true); break;
           case '[': e.preventDefault(); onHide?.(); break;

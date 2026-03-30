@@ -35,6 +35,7 @@ import FearCreativityWorksheetPage from "./pages/FearCreativityWorksheetPage";
 import InnerAwarenessWorksheetPage from "./pages/InnerAwarenessWorksheetPage";
 import AngerFlowWorksheetPage from "./pages/AngerFlowWorksheetPage";
 import QuickCalibratePage from "./pages/QuickCalibratePage";
+import PEACEFrameworkPage from "./pages/PEACEFrameworkPage";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -83,6 +84,7 @@ const AppRoutes = () => {
 
         {/* Knowledge Base */}
         <Route path="/resources" element={<ResourcesPage />} />
+        <Route path="/peace-framework" element={<PEACEFrameworkPage />} />
         <Route path="/resources/worksheets" element={<WorksheetsHubPage />} />
         <Route path="/resources/worksheets/north-star" element={<NorthStarPage />} />
         <Route path="/resources/worksheets/week-3" element={<Week3WorksheetPage />} />

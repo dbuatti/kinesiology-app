@@ -192,68 +192,96 @@ const ResourcesPage = () => {
 
         {activeTab === "hub" ? (
           <div className="space-y-12 animate-in fade-in slide-in-from-bottom-4 duration-700">
-            {/* Header Cards (Side by Side) */}
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            {/* Header Cards (Side by Side - 3 columns) */}
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
               <Link to="/peace-framework" className="block group h-full">
                 <Card className="h-full border-none shadow-2xl rounded-[3rem] bg-gradient-to-br from-indigo-600 via-purple-600 to-rose-600 text-white overflow-hidden relative cursor-pointer hover:shadow-3xl hover:-translate-y-1 transition-all duration-500">
                   <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(255,255,255,0.15),transparent_50%)]" />
                   <div className="absolute top-0 right-0 p-8 opacity-10 group-hover:opacity-20 transition-opacity">
-                    <Workflow size={150} />
+                    <Workflow size={120} />
                   </div>
                   <CardContent className="p-8 relative z-10 flex flex-col justify-between h-full">
                     <div className="space-y-4">
                       <Badge className="bg-white/20 text-white border-white/30 font-black text-[10px] uppercase tracking-[0.3em] px-3 py-1 backdrop-blur-sm">
-                        Internal App Feature
+                        Internal
                       </Badge>
                       <h2 className="text-3xl font-black tracking-tighter leading-none">
                         The PEACE Method
                       </h2>
-                      <p className="text-lg font-medium text-white/80 leading-relaxed max-w-sm">
+                      <p className="text-sm font-medium text-white/80 leading-relaxed">
                         The central organising framework and clinical hierarchy of Functional Neuro Health.
                       </p>
                     </div>
                     <div className="flex items-center justify-between mt-8">
                       <div className="flex gap-2">
                         {["P", "E", "A", "C", "E"].map((letter) => (
-                          <span key={letter} className="w-8 h-8 rounded-full bg-white/10 flex items-center justify-center font-black text-sm text-white/80">
+                          <span key={letter} className="w-6 h-6 rounded-full bg-white/10 flex items-center justify-center font-black text-xs text-white/80">
                             {letter}
                           </span>
                         ))}
                       </div>
-                      <div className="w-12 h-12 rounded-2xl bg-white/20 backdrop-blur-md flex items-center justify-center border border-white/30 shadow-lg group-hover:scale-110 group-hover:rotate-3 transition-all duration-500">
-                        <ArrowRight size={24} className="text-white" />
+                      <div className="w-10 h-10 rounded-2xl bg-white/20 backdrop-blur-md flex items-center justify-center border border-white/30 shadow-lg group-hover:scale-110 group-hover:rotate-3 transition-all duration-500">
+                        <ArrowRight size={20} className="text-white" />
                       </div>
                     </div>
                   </CardContent>
                 </Card>
               </Link>
 
-              <a href="https://www.notion.so/" target="_blank" rel="noopener noreferrer" className="block group h-full">
+              <a href="https://functional-neuro-health.notion.site/Functional-Neuro-Health-The-PEACE-Method-28beacafb4a88026b9a9ccdefa4e1de9" target="_blank" rel="noopener noreferrer" className="block group h-full">
                 <Card className="h-full border-none shadow-xl rounded-[3rem] bg-slate-900 text-white overflow-hidden relative cursor-pointer hover:shadow-2xl hover:-translate-y-1 transition-all duration-500">
                   <div className="absolute inset-0 bg-gradient-to-br from-slate-800/50 to-transparent" />
                   <div className="absolute top-0 right-0 p-8 opacity-10 group-hover:opacity-20 transition-opacity">
-                    <BookOpen size={150} />
+                    <BookOpen size={120} />
                   </div>
                   <CardContent className="p-8 relative z-10 flex flex-col justify-between h-full">
                     <div className="space-y-4">
                       <Badge className="bg-amber-500/20 text-amber-200 border-amber-500/30 font-black text-[10px] uppercase tracking-[0.3em] px-3 py-1 backdrop-blur-sm">
-                        External Resource
+                        External
                       </Badge>
                       <h2 className="text-3xl font-black tracking-tighter leading-none text-slate-100">
-                        FNH Living Manual
+                        FNH Notion Manual
                       </h2>
-                      <p className="text-lg font-medium text-slate-400 leading-relaxed max-w-sm">
+                      <p className="text-sm font-medium text-slate-400 leading-relaxed">
                         Access the full external Notion database containing all legacy notes, videos, and documentation.
                       </p>
                     </div>
                     <div className="flex items-center justify-between mt-8">
-                      <div className="flex gap-2">
-                        <span className="px-3 py-1.5 rounded-lg bg-white/5 border border-white/10 text-[10px] font-black uppercase tracking-widest text-slate-300">
-                          Notion Workspace
-                        </span>
+                      <span className="px-3 py-1.5 rounded-lg bg-white/5 border border-white/10 text-[10px] font-black uppercase tracking-widest text-slate-300">
+                        Notion
+                      </span>
+                      <div className="w-10 h-10 rounded-2xl bg-white/10 backdrop-blur-md flex items-center justify-center border border-white/20 shadow-lg group-hover:scale-110 group-hover:-translate-y-1 group-hover:translate-x-1 transition-all duration-500">
+                        <ExternalLink size={20} className="text-white" />
                       </div>
-                      <div className="w-12 h-12 rounded-2xl bg-white/10 backdrop-blur-md flex items-center justify-center border border-white/20 shadow-lg group-hover:scale-110 group-hover:-translate-y-1 group-hover:translate-x-1 transition-all duration-500">
-                        <ExternalLink size={24} className="text-white" />
+                    </div>
+                  </CardContent>
+                </Card>
+              </a>
+
+              <a href="https://fnhrefapp-ggs6ojfk.manus.space/brain-zones" target="_blank" rel="noopener noreferrer" className="block group h-full">
+                <Card className="h-full border-none shadow-xl rounded-[3rem] bg-cyan-950 text-white overflow-hidden relative cursor-pointer hover:shadow-2xl hover:-translate-y-1 transition-all duration-500">
+                  <div className="absolute inset-0 bg-gradient-to-br from-cyan-900/50 to-transparent" />
+                  <div className="absolute top-0 right-0 p-8 opacity-10 group-hover:opacity-20 transition-opacity">
+                    <Brain size={120} />
+                  </div>
+                  <CardContent className="p-8 relative z-10 flex flex-col justify-between h-full">
+                    <div className="space-y-4">
+                      <Badge className="bg-cyan-500/20 text-cyan-200 border-cyan-500/30 font-black text-[10px] uppercase tracking-[0.3em] px-3 py-1 backdrop-blur-sm">
+                        External Tool
+                      </Badge>
+                      <h2 className="text-3xl font-black tracking-tighter leading-none text-slate-100">
+                        FNH Reference App
+                      </h2>
+                      <p className="text-sm font-medium text-cyan-100/70 leading-relaxed">
+                        The original, simplified Brain Zone Reference and clinical pathways tool by Nick Moss.
+                      </p>
+                    </div>
+                    <div className="flex items-center justify-between mt-8">
+                      <span className="px-3 py-1.5 rounded-lg bg-white/5 border border-white/10 text-[10px] font-black uppercase tracking-widest text-cyan-200">
+                        Brain Zones
+                      </span>
+                      <div className="w-10 h-10 rounded-2xl bg-white/10 backdrop-blur-md flex items-center justify-center border border-white/20 shadow-lg group-hover:scale-110 group-hover:-translate-y-1 group-hover:translate-x-1 transition-all duration-500">
+                        <ExternalLink size={20} className="text-white" />
                       </div>
                     </div>
                   </CardContent>

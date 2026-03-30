@@ -112,7 +112,8 @@ const Sidebar = ({ onHide }: SidebarProps) => {
 
   const libraryItems = [
     { label: "PEACE Framework", icon: ShieldCheck, path: "/peace-framework", shortcut: "⌘F" },
-    { label: "Notion Manual", icon: ExternalLink, path: "https://www.notion.so/", isExternal: true },
+    { label: "FNH Notion Manual", icon: ExternalLink, path: "https://functional-neuro-health.notion.site/Functional-Neuro-Health-The-PEACE-Method-28beacafb4a88026b9a9ccdefa4e1de9", isExternal: true },
+    { label: "FNH Reference App", icon: ExternalLink, path: "https://fnhrefapp-ggs6ojfk.manus.space/brain-zones", isExternal: true },
     { label: "Knowledge Base", icon: BookOpen, path: "/resources", shortcut: "⌘R" },
     { label: "Worksheets", icon: FileText, path: "/resources/worksheets", shortcut: "⌘N" },
     { label: "Self Practice", icon: Heart, path: "/practice/self", shortcut: "⌘S" },

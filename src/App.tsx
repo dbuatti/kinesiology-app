@@ -28,6 +28,7 @@ import ClinicalOversightPage from "./pages/ClinicalOversightPage";
 import DebugAppointmentPage from "./pages/DebugAppointmentPage";
 import DemoSessionPage from "./pages/DemoSessionPage";
 import SettingsPage from "./pages/SettingsPage";
+import WorksheetsHubPage from "./pages/WorksheetsHubPage";
 import NorthStarPage from "./pages/NorthStarPage";
 import Week3WorksheetPage from "./pages/Week3WorksheetPage";
 import FearCreativityWorksheetPage from "./pages/FearCreativityWorksheetPage";
@@ -82,6 +83,7 @@ const AppRoutes = () => {
 
         {/* Knowledge Base */}
         <Route path="/resources" element={<ResourcesPage />} />
+        <Route path="/resources/worksheets" element={<WorksheetsHubPage />} />
         <Route path="/resources/worksheets/north-star" element={<NorthStarPage />} />
         <Route path="/resources/worksheets/week-3" element={<Week3WorksheetPage />} />
         <Route path="/resources/worksheets/fear-creativity" element={<FearCreativityWorksheetPage />} />

@@ -17,7 +17,8 @@ import {
   UserPlus,
   CalendarPlus,
   Zap,
-  HelpCircle
+  HelpCircle,
+  FileText
 } from "lucide-react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { cn } from "@/lib/utils";
@@ -53,7 +54,7 @@ const MobileNav = () => {
     { label: "Quick Calibrate", icon: Zap, path: "/practice/calibrate" },
     { label: "Self Practice", icon: Heart, path: "/practice/self" },
     { label: "Procedures", icon: Target, path: "/practice/procedures" },
-    { label: "North Star", icon: Compass, path: "/resources/worksheets/north-star" },
+    { label: "Worksheets", icon: FileText, path: "/resources/worksheets" },
     { label: "Resources", icon: BookOpen, path: "/resources" },
   ];
 

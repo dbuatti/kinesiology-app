@@ -23,7 +23,8 @@ import {
   Clock,
   Eye,
   EyeOff,
-  Lock
+  Lock,
+  FileText
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import SearchBar from "./SearchBar";
@@ -110,7 +111,7 @@ const Sidebar = ({ onHide }: SidebarProps) => {
 
   const libraryItems = [
     { label: "Knowledge Base", icon: BookOpen, path: "/resources", shortcut: "⌘R" },
-    { label: "Worksheets", icon: Compass, path: "/resources/worksheets/north-star", shortcut: "⌘N" },
+    { label: "Worksheets", icon: FileText, path: "/resources/worksheets", shortcut: "⌘N" },
     { label: "Self Practice", icon: Heart, path: "/practice/self", shortcut: "⌘S" },
   ];
 
@@ -122,7 +123,7 @@ const Sidebar = ({ onHide }: SidebarProps) => {
           case '1': e.preventDefault(); navigate('/clients'); break;
           case '2': e.preventDefault(); navigate('/appointments'); break;
           case 'b': e.preventDefault(); setAppDialogOpen(true); break;
-          case 'n': e.preventDefault(); navigate('/resources/worksheets/north-star'); break;
+          case 'n': e.preventDefault(); navigate('/resources/worksheets'); break;
           case 'o': e.preventDefault(); navigate('/oversight'); break;
           case 's': e.preventDefault(); navigate('/practice/self'); break;
           case 'p': e.preventDefault(); navigate('/practice/procedures'); break;

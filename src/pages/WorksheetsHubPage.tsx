@@ -13,13 +13,15 @@ import {
   Heart,
   Brain,
   Zap,
-  CheckCircle2
+  CheckCircle2,
+  PlayCircle
 } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import AppLayout from "@/components/crm/AppLayout";
 import Breadcrumbs from "@/components/shared/Breadcrumbs";
 import { cn } from "@/lib/utils";
+import { Button } from "@/components/ui/button";
 
 const WORKSHEETS = [
   {
@@ -70,7 +72,8 @@ const WORKSHEETS = [
     path: "/resources/worksheets/anger-flow",
     color: "text-emerald-600",
     bgColor: "bg-emerald-50 dark:bg-emerald-900/20",
-    category: "Program Content"
+    category: "Program Content",
+    videoUrl: "https://share.descript.com/view/gDxcvRrEKGw?t=448.630353&autoplay=1"
   }
 ];
 
@@ -99,41 +102,52 @@ const WorksheetsHubPage = () => {
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {WORKSHEETS.map((ws) => (
-            <Link key={ws.id} to={ws.path} className="block group">
-              <Card className="border-none shadow-md rounded-[2.5rem] bg-card hover:shadow-xl hover:-translate-y-1 transition-all duration-300 h-full overflow-hidden">
-                <CardContent className="p-8 space-y-6">
-                  <div className="flex items-start justify-between">
-                    <div className={cn(
-                      "w-14 h-14 rounded-2xl flex items-center justify-center transition-all duration-500 group-hover:scale-110 shadow-sm",
-                      ws.bgColor, ws.color
-                    )}>
-                      <ws.icon size={28} />
+            <div key={ws.id} className="flex flex-col h-full">
+              <Link to={ws.path} className="block group flex-1">
+                <Card className="border-none shadow-md rounded-[2.5rem] bg-card hover:shadow-xl hover:-translate-y-1 transition-all duration-300 h-full overflow-hidden">
+                  <CardContent className="p-8 space-y-6">
+                    <div className="flex items-start justify-between">
+                      <div className={cn(
+                        "w-14 h-14 rounded-2xl flex items-center justify-center transition-all duration-500 group-hover:scale-110 shadow-sm",
+                        ws.bgColor, ws.color
+                      )}>
+                        <ws.icon size={28} />
+                      </div>
+                      <Badge variant="secondary" className="bg-muted text-muted-foreground border-none font-black text-[8px] uppercase tracking-widest px-2 py-0.5 rounded-full">
+                        {ws.category}
+                      </Badge>
                     </div>
-                    <Badge variant="secondary" className="bg-muted text-muted-foreground border-none font-black text-[8px] uppercase tracking-widest px-2 py-0.5 rounded-full">
-                      {ws.category}
-                    </Badge>
-                  </div>
-                  
-                  <div className="space-y-2">
-                    <h3 className="text-xl font-black text-foreground group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors">
-                      {ws.label}
-                    </h3>
-                    <p className="text-sm text-muted-foreground font-medium leading-relaxed">
-                      {ws.desc}
-                    </p>
-                  </div>
+                    
+                    <div className="space-y-2">
+                      <h3 className="text-xl font-black text-foreground group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors">
+                        {ws.label}
+                      </h3>
+                      <p className="text-sm text-muted-foreground font-medium leading-relaxed">
+                        {ws.desc}
+                      </p>
+                    </div>
 
-                  <div className="pt-4 flex items-center justify-between border-t border-border">
-                    <span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground group-hover:text-indigo-600 transition-colors">
-                      Open Worksheet
-                    </span>
-                    <div className="w-8 h-8 rounded-xl bg-muted flex items-center justify-center text-muted-foreground group-hover:bg-indigo-600 group-hover:text-white transition-all">
-                      <ChevronRight size={18} />
+                    <div className="pt-4 flex items-center justify-between border-t border-border">
+                      <span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground group-hover:text-indigo-600 transition-colors">
+                        Open Worksheet
+                      </span>
+                      <div className="w-8 h-8 rounded-xl bg-muted flex items-center justify-center text-muted-foreground group-hover:bg-indigo-600 group-hover:text-white transition-all">
+                        <ChevronRight size={18} />
+                      </div>
                     </div>
-                  </div>
-                </CardContent>
-              </Card>
-            </Link>
+                  </CardContent>
+                </Card>
+              </Link>
+              {ws.videoUrl && (
+                <div className="mt-3 px-4">
+                  <Button variant="ghost" size="sm" asChild className="w-full rounded-xl h-9 text-[10px] font-black uppercase tracking-widest text-indigo-600 hover:bg-indigo-50">
+                    <a href={ws.videoUrl} target="_blank" rel="noopener noreferrer">
+                      <PlayCircle size={14} className="mr-2" /> Watch Lesson Recording
+                    </a>
+                  </Button>
+                </div>
+              )}
+            </div>
           ))}
         </div>
 

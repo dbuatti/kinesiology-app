@@ -22,7 +22,9 @@ import {
   Volume2,
   Target,
   Activity,
-  ArrowRight
+  ArrowRight,
+  PlayCircle,
+  ExternalLink
 } from 'lucide-react';
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
@@ -32,6 +34,8 @@ interface AngerFlowWorksheetProps {
   submissionId?: string | null;
   onBack?: () => void;
 }
+
+const LESSON_URL = "https://share.descript.com/view/gDxcvRrEKGw?t=448.630353&autoplay=1";
 
 const AngerFlowWorksheet = ({ submissionId, onBack }: AngerFlowWorksheetProps) => {
   const [title, setTitle] = useState('Week 8: Anger & Flow');
@@ -109,6 +113,11 @@ const AngerFlowWorksheet = ({ submissionId, onBack }: AngerFlowWorksheetProps) =
         {/* Header */}
         <div className="text-center space-y-4 relative">
           <div className="absolute right-0 top-0 flex gap-2 print:hidden">
+            <Button variant="outline" size="sm" asChild className="border-emerald-200 text-emerald-700 hover:bg-emerald-50">
+              <a href={LESSON_URL} target="_blank" rel="noopener noreferrer">
+                <PlayCircle size={16} className="mr-2" /> Watch Lesson
+              </a>
+            </Button>
             <Button variant="outline" size="sm" onClick={() => handleSave()} disabled={saving} className="flex items-center gap-2 border-slate-200">
               {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />} Save
             </Button>

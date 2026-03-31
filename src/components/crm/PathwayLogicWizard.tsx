@@ -25,6 +25,7 @@ import NociceptiveThreatAssessment from './NociceptiveThreatAssessment';
 import EfferentBrainIntegration from './EfferentBrainIntegration';
 import MechanoreceptiveProcess from './MechanoreceptiveProcess';
 import EmotionalIntegrationProcess from './EmotionalIntegrationProcess';
+import VestibularProcess from './VestibularProcess';
 import { supabase } from "@/integrations/supabase/client";
 import JointActionTableModal from './JointActionTableModal';
 import { BRAIN_REFLEX_POINTS } from '@/data/brain-reflex-data';
@@ -428,16 +429,7 @@ const PathwayLogicWizard = ({ onSave, onClearItem, priorityPattern, initialFindi
         return <EmotionalIntegrationProcess onSave={handleSave} onInhibited={handleInhibited} onCancel={goBack} />;
 
       case 'VESTIBULAR_PROCESS':
-        return (
-          <div className="text-center py-20 bg-muted/30 rounded-[3rem] border-2 border-dashed border-border animate-in fade-in">
-            <div className="w-20 h-20 rounded-3xl bg-card shadow-xl flex items-center justify-center mx-auto mb-6">
-                <Sparkles size={40} className="text-muted-foreground" />
-            </div>
-            <p className="font-black text-xl text-foreground">Coming Soon</p>
-            <p className="text-sm font-medium text-muted-foreground mt-2">Vestibular assessment tools will be added here.</p>
-            <Button variant="outline" onClick={goBack} className="mt-8 rounded-2xl h-12 px-8 border-border font-bold"><ChevronLeft size={18} className="mr-2" /> Back</Button>
-          </div>
-        );
+        return <VestibularProcess onSave={handleSave} onInhibited={handleInhibited} onCancel={goBack} />;
 
       default:
         return null;

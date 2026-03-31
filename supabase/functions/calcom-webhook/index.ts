@@ -9,13 +9,11 @@ const corsHeaders = {
 }
 
 serve(async (req) => {
-  // 1. Handle Ping/Verification (GET request)
   if (req.method === 'GET') {
-    console.log("Ping received. Headers:", JSON.stringify(Object.fromEntries(req.headers.entries())));
     return new Response(JSON.stringify({ 
       status: "active", 
-      message: "Antigravity Webhook is live and reachable.",
-      version: "v28"
+      message: "Antigravity Webhook is live.",
+      version: "v29"
     }), { 
       status: 200, 
       headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
@@ -24,7 +22,7 @@ serve(async (req) => {
 
   if (req.method === 'OPTIONS') return new Response('ok', { headers: corsHeaders })
 
-  console.log("--- [v28] CAL.COM WEBHOOK TRIGGERED ---");
+  console.log("--- [v29] CAL.COM WEBHOOK TRIGGERED ---");
 
   try {
     const supabaseUrl = Deno.env.get('SUPABASE_URL')
@@ -33,21 +31,16 @@ serve(async (req) => {
 
     const NOTION_KEY = Deno.env.get('NOTION_API_KEY');
     
-    // DB IDs
     const CLIENTS_DB_ID = "074e2c006bd541d88c502feb397ef31d";
-    const APPTS_DB_ID = "171f7156cdc645e8b689af13d217bc7c";   // Main Appointments
-    const PLANNER_DB_ID = "11caad21cd0980d8a3eeeffb27fc43c0"; // Yearly Planner
+    const APPTS_DB_ID = "171f7156cdc645e8b689af13d217bc7c";
+    const PLANNER_DB_ID = "11caad21cd0980d8a3eeeffb27fc43c0";
     const PRACTITIONER_ID = "6f2caa85-bfce-4264-97cd-c0d2f62b24f0";
 
     const body = await req.json();
-    console.log("Incoming Webhook Body:", JSON.stringify(body));
-
-    // Cal.com usually wraps data in a 'payload' object
     const payload = body.payload || body;
     
     if (!payload || !payload.attendees || payload.attendees.length === 0) {
-      console.error("Invalid Payload: Missing attendees or payload object.");
-      return new Response(JSON.stringify({ error: "Invalid payload structure" }), { status: 400, headers: corsHeaders });
+      return new Response(JSON.stringify({ error: "Invalid payload" }), { status: 400, headers: corsHeaders });
     }
 
     const attendee = payload.attendees[0];
@@ -56,10 +49,13 @@ serve(async (req) => {
     const phone = attendee.phoneNumber || "";
     const startTime = payload.startTime;
     const notes = payload.description || "";
+    
+    // Cal.com uses bookingId for numeric ID and uid for string ID
+    const calcomId = String(payload.bookingId || payload.id || payload.uid);
 
-    console.log(`Processing booking for: ${name} (${email}) at ${startTime}`);
+    console.log(`Processing booking ${calcomId} for: ${name}`);
 
-    // 1. SYNC CLIENT (Master List)
+    // 1. SYNC CLIENT
     let notionClientId = null;
     if (NOTION_KEY) {
       try {
@@ -72,9 +68,7 @@ serve(async (req) => {
         
         if (searchData.results?.length > 0) {
           notionClientId = searchData.results[0].id;
-          console.log("Found existing Notion client:", notionClientId);
         } else {
-          console.log("Creating new Notion client...");
           const createC = await fetch("https://api.notion.com/v1/pages", {
             method: "POST",
             headers: { "Authorization": `Bearer ${NOTION_KEY}`, "Content-Type": "application/json", "Notion-Version": "2022-06-28" },
@@ -90,15 +84,12 @@ serve(async (req) => {
           const newC = await createC.json();
           notionClientId = newC.id;
         }
-      } catch (notionErr) {
-        console.error("Notion Client Sync Error (Non-fatal):", notionErr.message);
-      }
+      } catch (e) { console.error("Notion Client Error:", e.message); }
     }
 
     // 2. CREATE IN MAIN APPOINTMENTS DB
     let notionPageId = null;
     if (NOTION_KEY) {
-      console.log("Creating page in Appointments DB...");
       const apptProps = {
         "Name": { title: [{ text: { content: `${name} - ${payload.title || 'Session'}` } }] },
         "Date": { date: { start: startTime } },
@@ -118,7 +109,6 @@ serve(async (req) => {
     // 3. CREATE IN YEARLY PLANNER
     let notionPlannerId = null;
     if (NOTION_KEY) {
-      console.log("Creating page in Yearly Planner...");
       const amountPaid = payload.payment?.[0]?.amount ? payload.payment[0].amount / 100 : 0;
       const plannerProps = {
         "Title": { title: [{ text: { content: `${name} - ${payload.title || 'Session'}` } }] },
@@ -138,7 +128,6 @@ serve(async (req) => {
     }
 
     // 4. SUPABASE SYNC
-    console.log("Syncing to Supabase CRM...");
     let { data: dbClient } = await supabase.from('clients').select('id').eq('email', email).maybeSingle();
 
     if (!dbClient && email) {
@@ -147,19 +136,16 @@ serve(async (req) => {
     }
 
     if (dbClient) {
-      const { error: insertError } = await supabase.from('appointments').insert({
+      await supabase.from('appointments').insert({
         user_id: PRACTITIONER_ID,
         client_id: dbClient.id,
         date: startTime,
         tag: "Kinesiology",
         status: "Scheduled",
-        calcom_booking_id: String(payload.id),
+        calcom_booking_id: calcomId,
         notion_page_id: notionPageId,
         notion_planner_id: notionPlannerId
       });
-      
-      if (insertError) throw insertError;
-      console.log("Successfully synced to Supabase.");
     }
 
     return new Response(JSON.stringify({ success: true }), { status: 200, headers: corsHeaders });

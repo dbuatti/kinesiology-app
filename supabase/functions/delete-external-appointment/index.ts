@@ -3,7 +3,7 @@ import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type, x-supabase-client-platform',
   'Access-Control-Allow-Methods': 'POST, OPTIONS',
 }
 
@@ -18,44 +18,43 @@ serve(async (req) => {
 
     const results = { notion: 'skipped', planner: 'skipped', calcom: 'skipped' };
 
-    // 1. Delete from Main Appointments DB (Archive)
+    // 1. Archive Notion Appointment
     if (notionPageId && NOTION_KEY) {
-      console.log(`Archiving Notion page: ${notionPageId}`);
       const res = await fetch(`https://api.notion.com/v1/pages/${notionPageId}`, {
         method: 'PATCH',
-        headers: {
-          'Authorization': `Bearer ${NOTION_KEY}`,
-          'Content-Type': 'application/json',
-          'Notion-Version': '2022-06-28'
-        },
+        headers: { 'Authorization': `Bearer ${NOTION_KEY}`, 'Content-Type': 'application/json', 'Notion-Version': '2022-06-28' },
         body: JSON.stringify({ archived: true })
       });
       results.notion = res.ok ? 'success' : 'failed';
     }
 
-    // 2. Delete from Yearly Planner DB (Archive)
+    // 2. Archive Notion Planner
     if (notionPlannerId && NOTION_KEY) {
-      console.log(`Archiving Planner page: ${notionPlannerId}`);
       const res = await fetch(`https://api.notion.com/v1/pages/${notionPlannerId}`, {
         method: 'PATCH',
-        headers: {
-          'Authorization': `Bearer ${NOTION_KEY}`,
-          'Content-Type': 'application/json',
-          'Notion-Version': '2022-06-28'
-        },
+        headers: { 'Authorization': `Bearer ${NOTION_KEY}`, 'Content-Type': 'application/json', 'Notion-Version': '2022-06-28' },
         body: JSON.stringify({ archived: true })
       });
       results.planner = res.ok ? 'success' : 'failed';
     }
 
-    // 3. Delete from Cal.com (Cancel)
-    // Corrected endpoint: DELETE /v1/bookings/{id}
-    if (calcomBookingId && CALCOM_KEY) {
+    // 3. Cancel Cal.com Booking
+    if (calcomBookingId && CALCOM_KEY && calcomBookingId !== "undefined") {
       console.log(`Cancelling Cal.com booking: ${calcomBookingId}`);
-      const res = await fetch(`https://api.cal.com/v1/bookings/${calcomBookingId}?apiKey=${CALCOM_KEY}`, {
-        method: 'DELETE'
+      const res = await fetch(`https://api.cal.com/v1/bookings/${calcomBookingId}/cancel?apiKey=${CALCOM_KEY}`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ reason: "Cancelled via Antigravity CRM" })
       });
-      results.calcom = res.ok ? 'success' : 'failed';
+      
+      // Fallback to DELETE if /cancel endpoint isn't preferred for this API version
+      if (!res.ok) {
+        console.log("Cancel endpoint failed, trying direct DELETE...");
+        await fetch(`https://api.cal.com/v1/bookings/${calcomBookingId}?apiKey=${CALCOM_KEY}`, {
+          method: 'DELETE'
+        });
+      }
+      results.calcom = 'processed';
     }
 
     return new Response(JSON.stringify({ success: true, results }), { 

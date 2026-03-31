@@ -11,10 +11,11 @@ const corsHeaders = {
 serve(async (req) => {
   // 1. Handle Ping/Verification (GET request)
   if (req.method === 'GET') {
+    console.log("Ping received. Headers:", JSON.stringify(Object.fromEntries(req.headers.entries())));
     return new Response(JSON.stringify({ 
       status: "active", 
       message: "Antigravity Webhook is live and reachable.",
-      version: "v27"
+      version: "v28"
     }), { 
       status: 200, 
       headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
@@ -23,7 +24,7 @@ serve(async (req) => {
 
   if (req.method === 'OPTIONS') return new Response('ok', { headers: corsHeaders })
 
-  console.log("--- [v27] CAL.COM WEBHOOK TRIGGERED ---");
+  console.log("--- [v28] CAL.COM WEBHOOK TRIGGERED ---");
 
   try {
     const supabaseUrl = Deno.env.get('SUPABASE_URL')

@@ -19,7 +19,7 @@ const SettingsPage = () => {
   // Derived from the client config
   const projectRef = "xebtjnvfkroiplyzftas";
   const anonKey = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InhlYnRqbnZma3JvaXBseXpmdGFzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njk1MDM2MjcsImV4cCI6MjA4NTA3OTYyN30.9qBYKHjW4nRK6E0In8ffSDLV7HJm925pr_4dSE_2IDs";
-  const webhookUrl = `https://${projectRef}.supabase.co/functions/v1/calcom-webhook?apikey=${anonKey}`;
+  const webhookUrl = `https://${projectRef}.supabase.co/functions/v1/calcom-webhook`;
 
   const handleSignOut = async () => {
     try {
@@ -41,16 +41,28 @@ const SettingsPage = () => {
   const handleTestWebhook = async () => {
     setTesting(true);
     try {
-      // We use the URL that already contains the apikey query param
-      const response = await fetch(webhookUrl);
+      // We must pass the apikey in the headers to avoid 401 Unauthorized
+      const response = await fetch(webhookUrl, {
+        method: 'GET',
+        headers: {
+          'apikey': anonKey,
+          'Authorization': `Bearer ${anonKey}`
+        }
+      });
+      
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+      
       const data = await response.json();
       if (data.status === 'active') {
         showSuccess("Webhook is live and reachable!");
       } else {
-        throw new Error("Unexpected response");
+        throw new Error("Unexpected response format");
       }
-    } catch (err) {
-      showError("Could not reach webhook. Ensure it is deployed in Supabase.");
+    } catch (err: any) {
+      console.error("Webhook test failed:", err);
+      showError(`Connection failed (${err.message}). Ensure the function is deployed.`);
     } finally {
       setTesting(false);
     }
@@ -138,7 +150,7 @@ const SettingsPage = () => {
           </CardHeader>
           <CardContent className="space-y-6">
             <div className="space-y-3">
-              <p className="text-sm font-bold text-slate-700">Your Webhook URL (includes API Key):</p>
+              <p className="text-sm font-bold text-slate-700">Your Webhook URL:</p>
               <div className="flex gap-2">
                 <div className="flex-1 bg-slate-50 border border-slate-200 rounded-xl px-4 py-2 text-xs font-mono text-slate-600 truncate flex items-center">
                   {webhookUrl}
@@ -168,7 +180,10 @@ const SettingsPage = () => {
                 <li>Go to your <strong>Cal.com Dashboard</strong>.</li>
                 <li>Navigate to <strong>Settings {" > "} Webhooks</strong>.</li>
                 <li>Click <strong>Add New Webhook</strong>.</li>
-                <li>Paste the <strong>full URL</strong> above (including the apikey part) into the <strong>Subscriber URL</strong> field.</li>
+                <li>Paste the URL above into the <strong>Subscriber URL</strong> field.</li>
+                <li>
+                  <strong>Crucial:</strong> In the "Secret" field or as a custom header, you must provide the Supabase API Key if Cal.com allows it. If not, append <code>?apikey=YOUR_ANON_KEY</code> to the URL.
+                </li>
                 <li>Select <strong>Booking Created</strong> as the event trigger.</li>
                 <li>Click <strong>Save</strong>.</li>
               </ol>
@@ -185,9 +200,9 @@ const SettingsPage = () => {
             <div className="p-4 bg-rose-50 rounded-xl border border-rose-100 flex items-start gap-3">
               <ShieldAlert size={18} className="text-rose-600 shrink-0 mt-0.5" />
               <div className="space-y-1">
-                <p className="text-[10px] font-black text-rose-600 uppercase tracking-widest">Troubleshooting</p>
+                <p className="text-[10px] font-black text-rose-600 uppercase tracking-widest">Troubleshooting 401 Errors</p>
                 <p className="text-xs text-rose-800 leading-relaxed">
-                  If you see a <strong>401 error</strong> in Cal.com logs, it means the <code>apikey</code> parameter is missing or incorrect in the URL. Always use the full URL provided above.
+                  A 401 error means Supabase is blocking the request. Ensure you are passing the <code>apikey</code> either in the headers or as a query parameter in the URL.
                 </p>
               </div>
             </div>

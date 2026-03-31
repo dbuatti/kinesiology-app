@@ -49,9 +49,10 @@ serve(async (req) => {
     }
 
     // 3. Delete from Cal.com (Cancel)
+    // Corrected endpoint: DELETE /v1/bookings/{id}
     if (calcomBookingId && CALCOM_KEY) {
       console.log(`Cancelling Cal.com booking: ${calcomBookingId}`);
-      const res = await fetch(`https://api.cal.com/v1/bookings/${calcomBookingId}/cancel?apiKey=${CALCOM_KEY}`, {
+      const res = await fetch(`https://api.cal.com/v1/bookings/${calcomBookingId}?apiKey=${CALCOM_KEY}`, {
         method: 'DELETE'
       });
       results.calcom = res.ok ? 'success' : 'failed';

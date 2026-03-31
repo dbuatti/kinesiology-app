@@ -99,7 +99,7 @@ const OnboardingPage = () => {
 
   return (
     <div className="min-h-screen bg-slate-50 py-8 px-4 md:py-20 md:px-6">
-      <div className="max-w-7xl mx-auto space-y-8 md:space-y-10">
+      <div className="max-w-screen-2xl mx-auto space-y-8 md:space-y-10">
         <div className="text-center space-y-4">
           <div className="w-12 h-12 md:w-16 md:h-16 bg-indigo-600 rounded-xl md:rounded-2xl flex items-center justify-center text-white font-black text-xl md:text-2xl shadow-2xl mx-auto mb-4 md:mb-6">
             A
@@ -132,7 +132,7 @@ const OnboardingPage = () => {
           </CardHeader>
           <CardContent className="p-6 md:p-10 pt-2 md:pt-6">
             <PublicOnboardingForm 
-              clientId={client.id} 
+              clientId={id!} 
               initialData={client} 
               onSuccess={() => setSubmitted(true)} 
             />

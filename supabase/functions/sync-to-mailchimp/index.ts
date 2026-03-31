@@ -8,6 +8,9 @@ const corsHeaders = {
 }
 
 serve(async (req) => {
+  // Unique Version ID to verify deployment success
+  console.log("--- EDGE FUNCTION VERSION: v11-FINAL-CHECK ---");
+
   if (req.method === 'OPTIONS') {
     return new Response('ok', { headers: corsHeaders })
   }
@@ -15,39 +18,34 @@ serve(async (req) => {
   try {
     const { record } = await req.json()
     
-    const apiKey = Deno.env.get('MAILCHIMP_API_KEY')
-    const listId = Deno.env.get('MAILCHIMP_LIST_ID')
-    const audienceId = Deno.env.get('MAILCHIMP_AUDIENCE_ID')
+    const MAILCHIMP_API_KEY = Deno.env.get('MAILCHIMP_API_KEY')
+    const MAILCHIMP_LIST_ID = Deno.env.get('MAILCHIMP_LIST_ID') || Deno.env.get('MAILCHIMP_AUDIENCE_ID')
     
-    const MAILCHIMP_API_KEY = apiKey
-    const MAILCHIMP_LIST_ID = listId || audienceId
+    // Log exactly what the function sees (masked for safety)
+    console.log("Environment Check:");
+    console.log("- API Key detected:", !!MAILCHIMP_API_KEY);
+    if (MAILCHIMP_API_KEY) {
+      console.log("- API Key suffix:", "..." + MAILCHIMP_API_KEY.slice(-4));
+    }
     
-    // Log partial info for verification
-    console.log("Secret Verification:");
-    console.log("- API Key exists:", !!MAILCHIMP_API_KEY);
-    if (MAILCHIMP_API_KEY) console.log("- API Key starts with:", MAILCHIMP_API_KEY.substring(0, 3) + "...");
-    
-    console.log("- List ID exists:", !!MAILCHIMP_LIST_ID);
-    if (MAILCHIMP_LIST_ID) console.log("- List ID starts with:", MAILCHIMP_LIST_ID.substring(0, 3) + "...");
-
-    if (!MAILCHIMP_API_KEY) {
-      throw new Error('MAILCHIMP_API_KEY is missing from Supabase Secrets.')
+    console.log("- List ID detected:", !!MAILCHIMP_LIST_ID);
+    if (MAILCHIMP_LIST_ID) {
+      console.log("- List ID value being used:", MAILCHIMP_LIST_ID);
     }
 
-    if (!MAILCHIMP_LIST_ID) {
-      throw new Error('MAILCHIMP_LIST_ID (or MAILCHIMP_AUDIENCE_ID) is missing from Supabase Secrets.')
+    if (!MAILCHIMP_API_KEY || !MAILCHIMP_LIST_ID) {
+      throw new Error(`Missing Secrets. API_KEY: ${!!MAILCHIMP_API_KEY}, LIST_ID: ${!!MAILCHIMP_LIST_ID}`)
     }
 
     const keyParts = MAILCHIMP_API_KEY.split('-')
     if (keyParts.length < 2) {
-      throw new Error(`Invalid API Key format. Expected 'key-datacenter' (e.g. abc-us20).`)
+      throw new Error(`Invalid API Key format. Expected 'key-datacenter'.`)
     }
 
     const DATACENTER = keyParts[1]
     const email = record.email
     
     if (!email) {
-      console.log("Sync skipped: No email address for record", record.id);
       return new Response(JSON.stringify({ message: 'No email provided' }), { 
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
         status: 200 
@@ -71,7 +69,7 @@ serve(async (req) => {
 
     const url = `https://${DATACENTER}.api.mailchimp.com/3.0/lists/${MAILCHIMP_LIST_ID}/members`
     
-    console.log(`Attempting to sync ${email} to list ${MAILCHIMP_LIST_ID} on ${DATACENTER}`);
+    console.log(`Requesting Mailchimp API: ${url}`);
 
     const response = await fetch(url, {
       method: 'POST',
@@ -85,7 +83,7 @@ serve(async (req) => {
     const result = await response.json()
 
     if (!response.ok && result.title === "Member Exists") {
-      console.log(`Member ${email} already exists in Mailchimp.`);
+      console.log(`Member ${email} already exists.`);
       return new Response(JSON.stringify({ message: 'Member already exists' }), { 
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
         status: 200 
@@ -93,18 +91,18 @@ serve(async (req) => {
     }
 
     if (!response.ok) {
-      console.error("Mailchimp API Error Response:", result);
+      console.error("Mailchimp Error:", result);
       throw new Error(result.detail || result.title || 'Mailchimp API error')
     }
 
-    console.log(`Successfully synced ${email} to Mailchimp.`);
+    console.log(`Successfully synced ${email}`);
     return new Response(JSON.stringify({ success: true }), { 
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       status: 200 
     })
 
   } catch (error) {
-    console.error("Function Execution Error:", error.message)
+    console.error("Execution Error:", error.message)
     return new Response(JSON.stringify({ error: error.message }), { 
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       status: 400 

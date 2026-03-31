@@ -13,12 +13,12 @@ import {
   Mic, Brain, Target, Laptop, AlertTriangle, Lightbulb, 
   CheckCircle2, Workflow, Clock, Sparkles, Link as LinkIcon, Send,
   BookOpen, Wand2, Copy, Check, User, Activity, History, Mail,
-  Trophy, ArrowRight, Star, ExternalLink, MessageSquare
+  Trophy, ArrowRight, Star, ExternalLink, MessageSquare, Code
 } from "lucide-react";
 import AppLayout from "@/components/crm/AppLayout";
 import Breadcrumbs from "@/components/shared/Breadcrumbs";
 import { cn } from "@/lib/utils";
-import { showSuccess } from "@/utils/toast";
+import { showSuccess, showError } from "@/utils/toast";
 import { format } from "date-fns";
 
 const CLAUDE_MARKETING_CHAT = "https://claude.ai/chat/e4805343-71a0-48fc-a1e0-4d2dde541a88";
@@ -33,6 +33,7 @@ const MarketingEnginePage = () => {
   const [customStory, setCustomStory] = useState("");
   const [customInsight, setCustomInsight] = useState("");
   const [copied, setCopied] = useState(false);
+  const [templateCopied, setTemplateCopied] = useState(false);
 
   useEffect(() => {
     const fetchWins = async () => {
@@ -98,6 +99,19 @@ Please provide the final output ready to be reviewed.`;
     setTimeout(() => setCopied(false), 2000);
   };
 
+  const handleCopyTemplate = async () => {
+    try {
+      const response = await fetch('/kit-template.html');
+      const text = await response.text();
+      navigator.clipboard.writeText(text);
+      setTemplateCopied(true);
+      showSuccess("HTML Template copied! Paste into Kit Email Templates.");
+      setTimeout(() => setTemplateCopied(false), 2000);
+    } catch (err) {
+      showError("Failed to load template file.");
+    }
+  };
+
   return (
     <AppLayout>
       <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-700 pb-20">
@@ -136,12 +150,15 @@ Please provide the final output ready to be reviewed.`;
         </div>
 
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-          <TabsList className="grid w-full grid-cols-2 h-14 bg-muted p-1.5 rounded-2xl mb-8">
+          <TabsList className="grid w-full grid-cols-3 h-14 bg-muted p-1.5 rounded-2xl mb-8">
             <TabsTrigger value="guide" className="flex items-center gap-2 rounded-xl h-11 font-black uppercase tracking-wider text-[10px]">
               <BookOpen size={14} /> The OS Guide
             </TabsTrigger>
             <TabsTrigger value="studio" className="flex items-center gap-2 rounded-xl h-11 font-black uppercase tracking-wider text-[10px]">
               <Wand2 size={14} /> Prompt Studio
+            </TabsTrigger>
+            <TabsTrigger value="templates" className="flex items-center gap-2 rounded-xl h-11 font-black uppercase tracking-wider text-[10px]">
+              <Code size={14} /> Template Studio
             </TabsTrigger>
           </TabsList>
 
@@ -314,20 +331,6 @@ Please provide the final output ready to be reviewed.`;
                     </div>
                   </CardContent>
                 </Card>
-
-                <Card className="border-none shadow-lg rounded-2xl bg-indigo-50 border border-indigo-100">
-                  <CardContent className="p-6 flex items-center justify-between">
-                    <div className="flex items-center gap-3">
-                      <MessageSquare size={20} className="text-indigo-600" />
-                      <span className="text-sm font-bold text-indigo-900">Claude Marketing Chat</span>
-                    </div>
-                    <Button variant="ghost" size="sm" asChild className="text-indigo-600 hover:bg-indigo-100 font-black text-[10px] uppercase tracking-widest">
-                      <a href={CLAUDE_MARKETING_CHAT} target="_blank" rel="noopener noreferrer">
-                        Open <ExternalLink size={12} className="ml-1.5" />
-                      </a>
-                    </Button>
-                  </CardContent>
-                </Card>
               </div>
 
               {/* Output */}
@@ -357,6 +360,83 @@ Please provide the final output ready to be reviewed.`;
                   <CardContent className="p-6 flex-1">
                     <div className="h-full bg-slate-950 rounded-2xl border border-slate-800 p-6 overflow-y-auto font-mono text-sm text-emerald-50 leading-relaxed whitespace-pre-wrap">
                       {generatedPrompt}
+                    </div>
+                  </CardContent>
+                </Card>
+              </div>
+            </div>
+          </TabsContent>
+
+          <TabsContent value="templates" className="mt-0">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+              <Card className="border-none shadow-lg rounded-[2.5rem] bg-white overflow-hidden">
+                <CardHeader className="p-8 bg-indigo-50 border-b border-indigo-100">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-4">
+                      <div className="w-12 h-12 rounded-2xl bg-indigo-600 text-white flex items-center justify-center shadow-lg">
+                        <Code size={24} />
+                      </div>
+                      <div>
+                        <CardTitle className="text-xl font-black">Kit HTML Template</CardTitle>
+                        <CardDescription className="font-medium">The "Antigravity Clinical Standard" layout.</CardDescription>
+                      </div>
+                    </div>
+                    <Button 
+                      onClick={handleCopyTemplate}
+                      className={cn(
+                        "h-10 px-6 rounded-xl font-black text-[10px] uppercase tracking-widest transition-all",
+                        templateCopied ? "bg-emerald-50 text-white" : "bg-indigo-600 text-white hover:bg-indigo-700"
+                      )}
+                    >
+                      {templateCopied ? <Check size={16} className="mr-2" /> : <Copy size={16} className="mr-2" />}
+                      Copy HTML
+                    </Button>
+                  </div>
+                </CardHeader>
+                <CardContent className="p-8 space-y-6">
+                  <div className="p-4 bg-slate-50 rounded-2xl border border-slate-100">
+                    <h4 className="text-xs font-black text-slate-900 uppercase tracking-widest mb-2">How to use:</h4>
+                    <ol className="text-xs text-slate-600 space-y-2 list-decimal pl-4 font-medium">
+                      <li>Copy the HTML code using the button above.</li>
+                      <li>In Kit, go to <strong>Send {" > "} Email Templates</strong>.</li>
+                      <li>Click <strong>+ New Email Template</strong> and select <strong>HTML</strong>.</li>
+                      <li>Paste the code and save it as "Antigravity Standard".</li>
+                    </ol>
+                  </div>
+                  <div className="aspect-[4/3] bg-slate-100 rounded-2xl border-2 border-dashed border-slate-200 flex items-center justify-center text-slate-400">
+                    <div className="text-center">
+                      <Laptop size={48} className="mx-auto mb-3 opacity-20" />
+                      <p className="text-xs font-bold">Template Preview (Visual)</p>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+
+              <div className="space-y-6">
+                <Card className="border-none shadow-lg rounded-[2.5rem] bg-slate-900 text-white overflow-hidden">
+                  <CardHeader className="p-8">
+                    <CardTitle className="text-xl font-black flex items-center gap-3">
+                      <Sparkles size={24} className="text-amber-400" /> Why a Custom Template?
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent className="p-8 pt-0 space-y-6">
+                    <p className="text-slate-400 font-medium leading-relaxed">
+                      Standard email templates are often cluttered. The Antigravity template is designed for **high-readability** and **authority**.
+                    </p>
+                    <div className="grid grid-cols-1 gap-3">
+                      {[
+                        { label: "Minimalist Design", desc: "Focuses the reader on your clinical insight." },
+                        { label: "Mobile Optimized", desc: "Looks perfect on every device." },
+                        { label: "Brand Consistency", desc: "Matches the professional look of your CRM." }
+                      ].map(item => (
+                        <div key={item.label} className="flex items-start gap-3 p-4 bg-white/5 rounded-2xl border border-white/10">
+                          <CheckCircle2 size={18} className="text-emerald-400 shrink-0 mt-0.5" />
+                          <div>
+                            <p className="font-bold text-sm">{item.label}</p>
+                            <p className="text-xs text-slate-500">{item.desc}</p>
+                          </div>
+                        </div>
+                      ))}
                     </div>
                   </CardContent>
                 </Card>

@@ -18,7 +18,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Slider } from "@/components/ui/slider";
-import { Loader2, CheckCircle2, Sparkles, Heart, ShieldAlert, Activity, Zap, User } from "lucide-react";
+import { Loader2, CheckCircle2, Sparkles, Heart, ShieldAlert, Activity, Zap, User, Mail } from "lucide-react";
 import { showSuccess, showError } from "@/utils/toast";
 import { Client } from "@/types/crm";
 import { cn } from "@/lib/utils";
@@ -33,7 +33,6 @@ const formSchema = z.object({
   occupation: z.string().optional(),
   marital_status: z.string().optional(),
   children: z.string().optional(),
-  // New Fields
   emergency_contact_name: z.string().optional(),
   emergency_contact_phone: z.string().optional(),
   medications_supplements: z.string().optional(),
@@ -52,6 +51,7 @@ interface PublicOnboardingFormProps {
 
 const PublicOnboardingForm = ({ clientId, initialData, onSuccess }: PublicOnboardingFormProps) => {
   const [submitting, setSubmitting] = useState(false);
+  const [syncStatus, setSyncStatus] = useState<'idle' | 'syncing' | 'done'>('idle');
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -104,12 +104,24 @@ const PublicOnboardingForm = ({ clientId, initialData, onSuccess }: PublicOnboar
         referral_source: values.referral_source || null,
       };
 
+      // 1. Update Database
       const { error } = await supabase
         .from("clients")
         .update(payload)
         .eq('id', clientId);
 
       if (error) throw error;
+
+      // 2. Trigger Kit Sync
+      setSyncStatus('syncing');
+      try {
+        await supabase.functions.invoke('sync-to-kit', {
+          body: { record: { ...payload, id: clientId } }
+        });
+        setSyncStatus('done');
+      } catch (syncErr) {
+        console.error("Background sync failed, but data was saved.");
+      }
 
       showSuccess("Thank you! Your details have been updated.");
       onSuccess();
@@ -381,7 +393,7 @@ const PublicOnboardingForm = ({ clientId, initialData, onSuccess }: PublicOnboar
             {submitting ? (
               <>
                 <Loader2 className="mr-2 h-6 w-6 animate-spin" />
-                Saving Your Profile...
+                {syncStatus === 'syncing' ? 'Syncing to Marketing...' : 'Saving Your Profile...'}
               </>
             ) : (
               <>

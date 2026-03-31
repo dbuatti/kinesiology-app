@@ -28,12 +28,14 @@ import {
   Play,
   Loader2,
   Check,
-  StickyNote
+  StickyNote,
+  UserCircle
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { AppointmentWithClient } from '@/types/crm';
 import BaselineTab from './session-tabs/BaselineTab';
 import SympatheticTab from './session-tabs/SympatheticTab';
+import ClientContextTab from './session-tabs/ClientContextTab';
 import EditableField from '@/components/shared/EditableField';
 import LuscherColourAssessment from './LuscherColourAssessment';
 import MuscleTestingTab from './MuscleTestingTab';
@@ -59,7 +61,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 
-type ActiveView = 'home' | 'kinesiology' | 'muscles' | 'gait' | 'previous';
+type ActiveView = 'home' | 'kinesiology' | 'muscles' | 'gait' | 'previous' | 'context';
 
 interface SessionContentSwitcherProps {
   appointment: AppointmentWithClient;
@@ -67,7 +69,6 @@ interface SessionContentSwitcherProps {
   saveField: (field: string, value: any) => Promise<void>;
   history?: any[];
   nucleiFilter?: Nuclei | null;
-  // Action Props
   showSidebar: boolean;
   onToggleSidebar: () => void;
   onClonePrevious: () => void;
@@ -181,7 +182,6 @@ const SessionContentSwitcher = ({
           pattern[category][itemName] = 'Clear';
           updated = true;
         }
-        // Check for lateralized versions
         if (pattern[category][`${itemName} (L)`]) {
           pattern[category][`${itemName} (L)`] = 'Clear';
           updated = true;
@@ -320,7 +320,7 @@ const SessionContentSwitcher = ({
     </div>
   );
 
-  const isToolActive = ['kinesiology', 'muscles', 'gait'].includes(activeView);
+  const isToolActive = ['kinesiology', 'muscles', 'gait', 'context'].includes(activeView);
 
   return (
     <div className="space-y-8">
@@ -348,6 +348,13 @@ const SessionContentSwitcher = ({
               <div className="px-3 py-2 mb-1">
                 <p className="text-[9px] font-black text-slate-400 uppercase tracking-[0.3em]">Specialized Tools</p>
               </div>
+              <DropdownMenuItem 
+                onClick={() => setActiveView('context')}
+                className={cn("rounded-xl py-3 px-4 cursor-pointer", activeView === 'context' && "bg-indigo-50 text-indigo-600 font-black")}
+              >
+                <UserCircle size={16} className="mr-3 text-indigo-500" />
+                Client Context (Onboarding)
+              </DropdownMenuItem>
               <DropdownMenuItem 
                 onClick={() => setActiveView('kinesiology')}
                 className={cn("rounded-xl py-3 px-4 cursor-pointer", activeView === 'kinesiology' && "bg-indigo-50 text-indigo-600 font-black")}
@@ -463,6 +470,7 @@ const SessionContentSwitcher = ({
       
       <div className="animate-in fade-in slide-in-from-bottom-2 duration-300">
         {activeView === 'home' && renderHomeView()}
+        {activeView === 'context' && <ClientContextTab client={appointment.clients} />}
         {activeView === 'kinesiology' && (
           <div className="space-y-8">
             <LuscherColourAssessment appointmentId={appointment.id} initialColor1={appointment.luscher_color_1} initialColor2={appointment.luscher_color_2} onSaveColors={(c1, c2) => { saveField('luscher_color_1', c1); return saveField('luscher_color_2', c2); }} />

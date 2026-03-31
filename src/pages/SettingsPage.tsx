@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
-import { Settings, User, LogOut, Upload, Database, Download, Mail, Loader2, RefreshCw, ExternalLink, Zap, Info, Calendar, Copy, Check, ShieldAlert, Link as LinkIcon, FileText, ListChecks } from "lucide-react";
+import { Settings, User, LogOut, Upload, Database, Download, Mail, Loader2, RefreshCw, ExternalLink, Zap, Info, Calendar, Copy, Check, ShieldAlert, Link as LinkIcon, FileText, ListChecks, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
 import { showSuccess, showError } from "@/utils/toast";
@@ -18,7 +18,6 @@ const SettingsPage = () => {
   const projectRef = "xebtjnvfkroiplyzftas";
   const webhookUrl = `https://${projectRef}.supabase.co/functions/v1/calcom-webhook`;
   
-  // Simplified base URL for manual lookup
   const onboardingWelcomeUrl = `${window.location.origin}/onboarding/welcome`;
   const kitLink = `${onboardingWelcomeUrl}?email={{{ email }}}`;
 
@@ -139,20 +138,26 @@ const SettingsPage = () => {
 
             <div className="p-6 bg-white/5 rounded-3xl border border-white/10 space-y-4">
               <div className="flex items-center gap-2">
-                <ListChecks size={18} className="text-emerald-400" />
-                <h4 className="text-sm font-bold">Cal.com Free Tier Setup Guide</h4>
+                <Sparkles size={18} className="text-amber-400" />
+                <h4 className="text-sm font-bold">Kit Automation Setup (Recommended)</h4>
               </div>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                 <div className="space-y-2">
-                  <p className="text-xs font-bold text-indigo-300 uppercase">Step 1: Booking Question</p>
+                  <p className="text-xs font-bold text-indigo-300 uppercase">1. Create a Form</p>
                   <p className="text-[11px] text-slate-300 leading-relaxed">
-                    Add a required checkbox question in Cal.com. Label it: "I agree to complete my clinical history form at the link in the description."
+                    Create a new "Inline" form in Kit. Copy the ID from the URL (e.g., <code className="bg-black/20 px-1">7421053</code>).
                   </p>
                 </div>
                 <div className="space-y-2">
-                  <p className="text-xs font-bold text-indigo-300 uppercase">Step 2: Event Description</p>
+                  <p className="text-xs font-bold text-indigo-300 uppercase">2. Set Secrets</p>
                   <p className="text-[11px] text-slate-300 leading-relaxed">
-                    Paste the link into your Event Description. It will automatically appear in the confirmation email and calendar invite.
+                    Add <code className="bg-black/20 px-1">KIT_API_KEY</code> and <code className="bg-black/20 px-1">KIT_FORM_ID</code> to your Supabase secrets.
+                  </p>
+                </div>
+                <div className="space-y-2">
+                  <p className="text-xs font-bold text-indigo-300 uppercase">3. Visual Automation</p>
+                  <p className="text-[11px] text-slate-300 leading-relaxed">
+                    Trigger: "Joins Form". Action: "Email Sequence". Use the Kit link above in your email.
                   </p>
                 </div>
               </div>

@@ -10,20 +10,23 @@ const corsHeaders = {
 
 serve(async (req) => {
   if (req.method === 'GET') {
-    return new Response(JSON.stringify({ status: "active", version: "v33" }), { 
+    return new Response(JSON.stringify({ status: "active", version: "v34" }), { 
       status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
     });
   }
 
   if (req.method === 'OPTIONS') return new Response('ok', { headers: corsHeaders })
 
-  console.log("--- [v33] CAL.COM WEBHOOK FULL DELETE ---");
+  console.log("--- [v34] CAL.COM WEBHOOK + KIT SYNC START ---");
 
   try {
     const supabaseUrl = Deno.env.get('SUPABASE_URL')
     const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')
     const supabase = createClient(supabaseUrl, supabaseKey)
+    
     const NOTION_KEY = Deno.env.get('NOTION_API_KEY');
+    const KIT_API_KEY = Deno.env.get('KIT_API_KEY');
+    const KIT_FORM_ID = Deno.env.get('KIT_FORM_ID'); // The ID of the Kit form to trigger automation
     
     const CLIENTS_DB_ID = "074e2c006bd541d88c502feb397ef31d";
     const APPTS_DB_ID = "171f7156cdc645e8b689af13d217bc7c";
@@ -52,13 +55,12 @@ serve(async (req) => {
             await fetch(`https://api.notion.com/v1/pages/${appointment.notion_planner_id}`, { method: 'PATCH', headers: notionHeaders, body: JSON.stringify({ archived: true }) });
           }
         }
-        // Full Delete from CRM
         await supabase.from('appointments').delete().eq('id', appointment.id);
       }
       return new Response(JSON.stringify({ success: true, action: 'deleted' }), { status: 200, headers: corsHeaders });
     }
 
-    // Creation logic remains the same...
+    // 1. Extract Data
     const attendee = payload.attendees[0];
     const name = String(attendee.name || "Unknown Client").trim();
     const email = String(attendee.email || "").toLowerCase().trim();
@@ -66,6 +68,32 @@ serve(async (req) => {
     const startTime = payload.startTime;
     const notes = payload.description || "";
 
+    // 2. Sync to Kit (Triggering the Onboarding Email)
+    if (KIT_API_KEY && KIT_FORM_ID) {
+      console.log(`Triggering Kit Automation for ${email}...`);
+      try {
+        const kitRes = await fetch(`https://api.convertkit.com/v3/forms/${KIT_FORM_ID}/subscribe`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            api_key: KIT_API_KEY,
+            email: email,
+            first_name: name.split(' ')[0],
+            tags: ["New Booking"] 
+          })
+        });
+        if (!kitRes.ok) {
+          const kitError = await kitRes.json();
+          console.error("Kit API Error:", kitError);
+        } else {
+          console.log("Successfully triggered Kit automation.");
+        }
+      } catch (e) {
+        console.error("Failed to call Kit API:", e.message);
+      }
+    }
+
+    // 3. Notion Sync (Clients)
     let notionClientId = null;
     if (NOTION_KEY) {
       const searchRes = await fetch(`https://api.notion.com/v1/databases/${CLIENTS_DB_ID}/query`, {
@@ -90,6 +118,7 @@ serve(async (req) => {
       }
     }
 
+    // 4. Notion Sync (Appointments & Planner)
     let notionPageId = null;
     if (NOTION_KEY) {
       const apptProps = { "Name": { title: [{ text: { content: `${name} - ${payload.title || 'Session'}` } }] }, "Date": { date: { start: startTime } }, "Notes": { rich_text: [{ text: { content: notes } }] } };
@@ -109,6 +138,7 @@ serve(async (req) => {
       notionPlannerId = plannerData.id;
     }
 
+    // 5. Supabase CRM Sync
     let { data: dbClient } = await supabase.from('clients').select('id').eq('email', email).maybeSingle();
     if (!dbClient && email) {
       const { data: newDbC } = await supabase.from('clients').insert({ user_id: PRACTITIONER_ID, name, email, phone }).select().single();

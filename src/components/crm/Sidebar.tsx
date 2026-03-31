@@ -26,7 +26,8 @@ import {
   Lock,
   FileText,
   ExternalLink,
-  Mic
+  Mic,
+  Sparkles
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import SearchBar from "./SearchBar";
@@ -156,22 +157,22 @@ const Sidebar = ({ onHide }: SidebarProps) => {
     const isActive = !item.isExternal && (location.pathname === item.path || (item.path !== "/" && location.pathname.startsWith(item.path)));
     
     const className = cn(
-      "flex items-center justify-between gap-2 px-3 py-2 rounded-xl transition-all duration-300 group",
+      "flex items-center justify-between gap-2 px-3 py-2 rounded-xl transition-all duration-500 group",
       isActive 
-        ? "bg-indigo-600 text-white shadow-lg shadow-indigo-600/20" 
-        : "text-muted-foreground hover:text-foreground hover:bg-accent/50"
+        ? "bg-primary text-white shadow-lg shadow-primary/20" 
+        : "text-muted-foreground hover:text-primary hover:bg-muted"
     );
 
     const content = (
       <>
         <div className="flex items-center gap-3">
-          <item.icon size={16} className={cn("transition-all duration-300", isActive ? "text-white" : "text-muted-foreground group-hover:text-indigo-500")} />
+          <item.icon size={16} className={cn("transition-all duration-500", isActive ? "text-white" : "text-muted-foreground group-hover:text-accent")} />
           <span className="font-bold text-[10px] uppercase tracking-widest">{item.label}</span>
         </div>
         {item.shortcut && (
           <kbd className={cn(
             "hidden xl:inline-flex h-4 select-none items-center gap-1 rounded border px-1 font-mono text-[8px] font-black opacity-0 group-hover:opacity-100 transition-all duration-300",
-            isActive ? "border-indigo-400 bg-indigo-700 text-indigo-100" : "border-border bg-muted text-muted-foreground"
+            isActive ? "border-primary/40 bg-primary/20 text-primary" : "border-border bg-muted text-muted-foreground"
           )}>
             {item.shortcut}
           </kbd>
@@ -209,10 +210,10 @@ const Sidebar = ({ onHide }: SidebarProps) => {
     <div className="space-y-1">
       <button
         onClick={onToggle}
-        className="flex items-center justify-between w-full px-3 py-2 rounded-xl text-muted-foreground hover:text-foreground hover:bg-accent/50 transition-all group"
+        className="flex items-center justify-between w-full px-3 py-2 rounded-xl text-muted-foreground hover:text-primary hover:bg-muted transition-all group"
       >
         <div className="flex items-center gap-3">
-          <Icon size={16} className="text-muted-foreground group-hover:text-indigo-500" />
+          <Icon size={16} className="text-muted-foreground group-hover:text-accent" />
           <span className="text-[9px] font-black uppercase tracking-[0.3em]">{title}</span>
         </div>
         {isOpen ? <ChevronUp size={12} /> : <ChevronDown size={12} />}
@@ -228,13 +229,13 @@ const Sidebar = ({ onHide }: SidebarProps) => {
   );
 
   return (
-    <div className="hidden lg:flex w-64 bg-card dark:bg-slate-950 text-foreground min-h-screen p-4 flex-col gap-6 sticky top-0 h-screen overflow-y-auto border-r border-border shadow-2xl z-[60]">
+    <div className="hidden lg:flex w-64 bg-white dark:bg-slate-950 text-foreground min-h-screen p-4 flex-col gap-6 sticky top-0 h-screen overflow-y-auto border-r border-secondary/30 shadow-2xl z-[60]">
       <div className="flex items-center justify-between px-2 py-2">
         <div className="flex items-center gap-3">
-          <div className="w-10 h-10 bg-indigo-600 rounded-xl flex items-center justify-center font-black text-xl text-white shadow-2xl shadow-indigo-500/40 transition-transform hover:scale-105">A</div>
+          <div className="w-10 h-10 bg-primary rounded-xl flex items-center justify-center font-black text-xl text-white shadow-2xl shadow-primary/20 transition-transform hover:scale-105">✦</div>
           <div>
-            <h1 className="text-lg font-black tracking-tight">Antigravity</h1>
-            <p className="text-[8px] text-muted-foreground uppercase font-black tracking-[0.2em]">Kinesiology CRM</p>
+            <h1 className="text-lg font-serif font-bold tracking-tight leading-none">Resonance</h1>
+            <p className="text-[8px] text-muted-foreground uppercase font-black tracking-[0.2em] mt-1">Kinesiology CRM</p>
           </div>
         </div>
         <Tooltip>
@@ -243,7 +244,7 @@ const Sidebar = ({ onHide }: SidebarProps) => {
               variant="ghost" 
               size="icon" 
               onClick={onHide}
-              className="text-muted-foreground hover:text-foreground hover:bg-accent rounded-xl h-8 w-8"
+              className="text-muted-foreground hover:text-primary hover:bg-muted rounded-xl h-8 w-8"
             >
               <PanelLeftClose size={18} />
             </Button>
@@ -271,11 +272,11 @@ const Sidebar = ({ onHide }: SidebarProps) => {
       <div className="px-1">
         <Button 
           onClick={() => setAppDialogOpen(true)}
-          className="w-full justify-center bg-rose-600 hover:bg-rose-700 text-white rounded-2xl h-12 font-black text-[11px] uppercase tracking-[0.2em] shadow-xl shadow-rose-600/20 group"
+          className="w-full justify-center bg-accent hover:bg-accent/90 text-white rounded-2xl h-12 font-black text-[11px] uppercase tracking-[0.2em] shadow-xl shadow-accent/20 group"
         >
           <PlusCircle size={18} className="mr-3 group-hover:rotate-90 transition-transform duration-500" /> 
           Book Session
-          <kbd className="ml-auto pointer-events-none inline-flex h-4 select-none items-center gap-1 rounded border border-rose-400 bg-rose-700 px-1 font-mono text-[8px] font-black text-rose-100">
+          <kbd className="ml-auto pointer-events-none inline-flex h-4 select-none items-center gap-1 rounded border border-white/20 bg-white/10 px-1 font-mono text-[8px] font-black text-white">
             ⌘B
           </kbd>
         </Button>
@@ -290,7 +291,7 @@ const Sidebar = ({ onHide }: SidebarProps) => {
           <div className="px-1 pt-2">
             <Link 
               to={`/appointments/${activeSession.id}`}
-              className="flex items-center gap-3 px-4 py-4 bg-indigo-600 rounded-2xl text-white shadow-xl shadow-indigo-600/30 hover:bg-indigo-700 transition-all duration-500 group relative overflow-hidden"
+              className="flex items-center gap-3 px-4 py-4 bg-primary rounded-2xl text-white shadow-xl shadow-primary/30 hover:bg-primary/90 transition-all duration-500 group relative overflow-hidden"
             >
               <div className="absolute inset-0 bg-white/10 animate-pulse" />
               <div className="relative z-10 flex items-center gap-3">
@@ -310,14 +311,14 @@ const Sidebar = ({ onHide }: SidebarProps) => {
           </div>
         )}
 
-        <div className="px-4 py-4 bg-muted/30 rounded-2xl border border-border mx-1 space-y-3">
+        <div className="px-4 py-4 bg-muted rounded-2xl border border-secondary/30 mx-1 space-y-3">
           <div className="flex items-center justify-between">
             <p className="text-[9px] font-black text-muted-foreground uppercase tracking-[0.2em] flex items-center gap-2">
               <ShieldCheck size={12} className="text-emerald-500" /> Health
             </p>
             <span className="text-[10px] font-black text-emerald-500">{practiceHealth}%</span>
           </div>
-          <Progress value={practiceHealth} className="h-1.5 bg-muted [&>div]:bg-emerald-500" />
+          <Progress value={practiceHealth} className="h-1.5 bg-white/50 [&>div]:bg-emerald-500" />
         </div>
 
         {recentClients.length > 0 && (
@@ -333,9 +334,9 @@ const Sidebar = ({ onHide }: SidebarProps) => {
                   <TooltipTrigger asChild>
                     <Link 
                       to={`/clients/${client.id}`}
-                      className="flex items-center gap-3 text-xs text-muted-foreground hover:text-indigo-500 transition-all duration-300 py-2 px-3 rounded-xl hover:bg-accent/50 truncate group"
+                      className="flex items-center gap-3 text-xs text-muted-foreground hover:text-primary transition-all duration-300 py-2 px-3 rounded-xl hover:bg-muted truncate group"
                     >
-                      <div className="w-7 h-7 rounded-xl bg-muted border border-border flex items-center justify-center text-[9px] font-black group-hover:border-indigo-500/40 transition-all">
+                      <div className="w-7 h-7 rounded-xl bg-muted border border-border flex items-center justify-center text-[9px] font-black group-hover:border-primary/40 transition-all">
                         {client.name.charAt(0)}
                       </div>
                       <span className="truncate font-bold text-[11px]">{client.name}</span>
@@ -360,7 +361,7 @@ const Sidebar = ({ onHide }: SidebarProps) => {
                 onClick={togglePrivacy}
                 className={cn(
                   "flex items-center justify-center h-10 w-10 rounded-xl transition-all duration-300 group",
-                  isPrivate ? "bg-rose-500 text-white shadow-lg shadow-rose-500/20" : "text-muted-foreground hover:text-foreground hover:bg-accent"
+                  isPrivate ? "bg-rose-500 text-white shadow-lg shadow-rose-500/20" : "text-muted-foreground hover:text-primary hover:bg-muted"
                 )}
               >
                 {isPrivate ? <EyeOff size={20} /> : <Eye size={20} />}
@@ -375,7 +376,7 @@ const Sidebar = ({ onHide }: SidebarProps) => {
             <TooltipTrigger asChild>
               <button 
                 onClick={() => setHelpOpen(true)}
-                className="flex items-center justify-center h-10 w-10 rounded-xl text-muted-foreground hover:text-foreground hover:bg-accent transition-all duration-300 group"
+                className="flex items-center justify-center h-10 w-10 rounded-xl text-muted-foreground hover:text-primary hover:bg-muted transition-all duration-300 group"
               >
                 <HelpCircle size={20} className="group-hover:text-amber-400 transition-colors" />
               </button>
@@ -391,7 +392,7 @@ const Sidebar = ({ onHide }: SidebarProps) => {
           <TooltipTrigger asChild>
             <div 
               onClick={handleSignOut}
-              className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-muted-foreground hover:text-rose-500 hover:bg-accent transition-all duration-300 cursor-pointer group"
+              className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-muted-foreground hover:text-rose-500 hover:bg-muted transition-all duration-300 cursor-pointer group"
             >
               <LogOut size={18} className="group-hover:text-rose-500 transition-colors" />
               <span className="font-bold text-[10px] uppercase tracking-widest">Sign Out</span>
@@ -406,7 +407,7 @@ const Sidebar = ({ onHide }: SidebarProps) => {
       <HelpModal open={helpOpen} onOpenChange={setHelpOpen} />
       
       <Dialog open={clientDialogOpen} onOpenChange={setClientDialogOpen}>
-        <DialogContent className="sm:max-w-[550px] rounded-[2.5rem] p-8">
+        <DialogContent className="sm:max-w-[550px] rounded-[3rem] p-8">
           <DialogHeader className="mb-4">
             <DialogTitle className="text-2xl font-black tracking-tight">Add New Client</DialogTitle>
           </DialogHeader>
@@ -415,7 +416,7 @@ const Sidebar = ({ onHide }: SidebarProps) => {
       </Dialog>
 
       <Dialog open={appDialogOpen} onOpenChange={setAppDialogOpen}>
-        <DialogContent className="sm:max-w-[550px] rounded-[2.5rem] p-8">
+        <DialogContent className="sm:max-w-[550px] rounded-[3rem] p-8">
           <DialogHeader className="mb-4">
             <DialogTitle className="text-2xl font-black tracking-tight">Schedule New Session</DialogTitle>
           </DialogHeader>

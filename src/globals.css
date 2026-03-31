@@ -4,66 +4,63 @@
 
 @layer base {
   :root {
-    --background: 210 40% 98%;
-    --foreground: 222.2 84% 4.9%;
+    /* Resonance Kinesiology Palette */
+    --background: 30 20% 99%; /* Cream #FDFCFB */
+    --foreground: 222 53% 15%; /* Darker Indigo for text */
 
     --card: 0 0% 100%;
-    --card-foreground: 222.2 84% 4.9%;
+    --card-foreground: 222 53% 15%;
 
     --popover: 0 0% 100%;
-    --popover-foreground: 222.2 84% 4.9%;
+    --popover-foreground: 222 53% 15%;
 
-    --primary: 243.4 75.4% 58.6%;
-    --primary-foreground: 210 40% 98%;
+    --primary: 222 53% 25%; /* Deep Indigo #1E3261 */
+    --primary-foreground: 30 20% 99%;
 
-    --secondary: 210 40% 96.1%;
-    --secondary-foreground: 222.2 47.4% 11.2%;
+    --secondary: 231 89% 82%; /* Periwinkle #A5B4FC */
+    --secondary-foreground: 222 53% 25%;
 
-    --muted: 214.3 31.8% 91.4%;
-    --muted-foreground: 215.4 16.3% 46.9%;
+    --accent: 332 55% 62%; /* Resonance Pink #D46A9B */
+    --accent-foreground: 0 0% 100%;
 
-    --accent: 243 100% 97%;
-    --accent-foreground: 243.4 75.4% 58.6%;
+    --muted: 204 94% 94%; /* Sky #E0F2FE */
+    --muted-foreground: 215 25% 40%;
 
     --destructive: 0 84.2% 60.2%;
     --destructive-foreground: 210 40% 98%;
 
-    --border: 214.3 31.8% 91.4%;
-    --input: 214.3 31.8% 91.4%;
-    --ring: 243.4 75.4% 58.6%;
+    --border: 231 89% 92%;
+    --input: 231 89% 92%;
+    --ring: 332 55% 62%;
 
-    /* Standardized Radii - Generous and consistent */
-    --radius: 1rem;
+    --radius: 1.5rem;
   }
 
   .dark {
-    --background: 222.2 84% 4.9%;
-    --foreground: 210 40% 98%;
+    --background: 222 53% 5%;
+    --foreground: 30 20% 99%;
 
-    --card: 222.2 84% 4.9%;
-    --card-foreground: 210 40% 98%;
+    --card: 222 53% 8%;
+    --card-foreground: 30 20% 99%;
 
-    --popover: 222.2 84% 4.9%;
-    --popover-foreground: 210 40% 98%;
+    --popover: 222 53% 8%;
+    --popover-foreground: 30 20% 99%;
 
-    --primary: 210 40% 98%;
-    --primary-foreground: 222.2 47.4% 11.2%;
+    --primary: 332 55% 62%;
+    --primary-foreground: 222 53% 5%;
 
-    --secondary: 217.2 32.6% 17.5%;
-    --secondary-foreground: 210 40% 98%;
+    --secondary: 222 53% 15%;
+    --secondary-foreground: 332 55% 62%;
 
-    --muted: 217.2 32.6% 17.5%;
+    --accent: 231 89% 82%;
+    --accent-foreground: 222 53% 5%;
+
+    --muted: 222 53% 12%;
     --muted-foreground: 215 20.2% 65.1%;
 
-    --accent: 217.2 32.6% 17.5%;
-    --accent-foreground: 210 40% 98%;
-
-    --destructive: 0 62.8% 30.6%;
-    --destructive-foreground: 210 40% 98%;
-
-    --border: 217.2 32.6% 17.5%;
-    --input: 217.2 32.6% 17.5%;
-    --ring: 212.7 26.8% 83.9%;
+    --border: 222 53% 15%;
+    --input: 222 53% 15%;
+    --ring: 332 55% 62%;
   }
 }
 
@@ -73,7 +70,14 @@
   }
   body {
     @apply bg-background text-foreground antialiased;
-    font-feature-settings: "cv02", "cv03", "cv04", "cv11";
+    font-family: 'Inter', sans-serif;
+    font-weight: 300;
+    line-height: 1.8;
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    font-family: 'Playfair Display', serif;
+    @apply font-bold tracking-wider;
   }
 
   /* Rounded Scrollbars */
@@ -85,20 +89,24 @@
     @apply bg-transparent;
   }
   ::-webkit-scrollbar-thumb {
-    @apply bg-muted-foreground/20 rounded-full hover:bg-muted-foreground/40 transition-colors;
+    @apply bg-primary/10 rounded-full hover:bg-primary/20 transition-colors;
   }
 }
 
 @layer components {
   .interactive-lift {
-    @apply transition-all duration-300 hover:-translate-y-0.5 hover:shadow-lg active:translate-y-0 active:shadow-sm;
+    @apply transition-all duration-500 hover:-translate-y-1 hover:shadow-2xl active:translate-y-0 active:shadow-sm;
   }
   
   .input-standard {
-    @apply h-12 rounded-xl border-2 border-slate-100 bg-white px-4 font-medium transition-all focus:border-primary focus:ring-0 dark:bg-slate-900 dark:border-slate-800;
+    @apply h-12 rounded-2xl border-2 border-secondary/30 bg-white px-4 font-medium transition-all focus:border-accent focus:ring-0 dark:bg-slate-900 dark:border-slate-800;
   }
 
   .card-standard {
-    @apply rounded-[2.5rem] border-none bg-white shadow-xl shadow-slate-200/50 dark:bg-slate-900 dark:shadow-none;
+    @apply rounded-[3rem] border-none bg-white shadow-2xl shadow-primary/5 dark:bg-slate-900 dark:shadow-none;
+  }
+
+  .resonance-gradient {
+    @apply bg-gradient-to-br from-[#1E3261] via-[#1E3261] to-[#D46A9B];
   }
 }

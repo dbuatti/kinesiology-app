@@ -216,39 +216,39 @@ const Index = () => {
       <div className="space-y-10">
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
           <div>
-            <h1 className="text-4xl font-black tracking-tighter text-foreground">Practice Hub</h1>
+            <h1 className="text-4xl font-black tracking-tighter text-primary">Practice Hub</h1>
             <p className="text-muted-foreground font-medium mt-1 text-lg">Welcome back! Here's your clinical overview.</p>
           </div>
           <div className="flex items-center gap-3">
             <Link to="/settings/demo">
-              <Button variant="outline" className="h-12 px-6 rounded-2xl font-black text-[10px] uppercase tracking-widest border-indigo-200 text-indigo-600 hover:bg-indigo-50 shadow-sm">
+              <Button variant="outline" className="h-12 px-6 rounded-2xl font-black text-[10px] uppercase tracking-widest border-secondary text-primary hover:bg-muted shadow-sm">
                 <Sparkles size={18} className="mr-2" /> Launch Demo Session
               </Button>
             </Link>
-            <div className="flex items-center gap-3 bg-card p-3 rounded-[1.5rem] border border-border shadow-sm">
-              <div className="w-10 h-10 bg-indigo-50 dark:bg-indigo-900/20 rounded-xl flex items-center justify-center text-indigo-600 dark:text-indigo-400">
+            <div className="flex items-center gap-3 bg-white p-3 rounded-[1.5rem] border border-secondary/30 shadow-sm">
+              <div className="w-10 h-10 bg-muted rounded-xl flex items-center justify-center text-primary">
                 <Calendar size={20} />
               </div>
               <div className="pr-2">
                 <p className="text-[10px] font-black text-muted-foreground uppercase tracking-widest">Today's Date</p>
-                <p className="text-base font-bold text-foreground">{format(currentTime, "EEEE, MMMM d")}</p>
+                <p className="text-base font-bold text-primary">{format(currentTime, "EEEE, MMMM d")}</p>
               </div>
             </div>
           </div>
         </div>
 
         {!hasData ? (
-          <div className="text-center py-20 bg-gradient-to-br from-indigo-50 to-blue-50 dark:from-indigo-950/20 dark:to-blue-950/20 rounded-[3rem] border-2 border-dashed border-indigo-200 dark:border-indigo-800">
-            <div className="mx-auto w-16 h-16 bg-card rounded-2xl flex items-center justify-center mb-6 shadow-xl">
-              <Sparkles className="text-indigo-500" size={32} />
+          <div className="text-center py-20 bg-gradient-to-br from-muted to-white rounded-[3rem] border-2 border-dashed border-secondary">
+            <div className="mx-auto w-16 h-16 bg-white rounded-2xl flex items-center justify-center mb-6 shadow-xl">
+              <Sparkles className="text-accent" size={32} />
             </div>
-            <h2 className="text-2xl font-black text-foreground mb-2">Welcome to Antigravity CRM!</h2>
+            <h2 className="text-2xl font-black text-primary mb-2">Welcome to Resonance!</h2>
             <p className="text-muted-foreground max-w-md mx-auto mb-8 text-base font-medium">Start building your kinesiology practice by adding your first client and scheduling sessions.</p>
             <div className="flex gap-3 justify-center">
-              <Button className="bg-indigo-600 hover:bg-indigo-700 h-12 px-8 rounded-2xl font-black text-xs uppercase tracking-widest shadow-xl shadow-indigo-200" onClick={() => setClientDialogOpen(true)}>
+              <Button className="bg-primary hover:bg-primary/90 h-12 px-8 rounded-2xl font-black text-xs uppercase tracking-widest shadow-xl shadow-primary/20" onClick={() => setClientDialogOpen(true)}>
                 <UserPlus size={20} className="mr-2" /> Add First Client
               </Button>
-              <Button variant="outline" className="h-12 px-8 rounded-2xl font-black text-xs uppercase tracking-widest border-border bg-card" onClick={() => setAppDialogOpen(true)}>
+              <Button variant="outline" className="h-12 px-8 rounded-2xl font-black text-xs uppercase tracking-widest border-border bg-white" onClick={() => setAppDialogOpen(true)}>
                 <Calendar size={20} className="mr-2" /> Schedule Session
               </Button>
             </div>
@@ -259,42 +259,45 @@ const Index = () => {
 
             {/* Clinical Pulse Row */}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-              <Card className="border-none shadow-md rounded-[2.5rem] bg-indigo-900 text-white overflow-hidden relative group">
+              <Card className="border-none shadow-md rounded-[3rem] bg-primary text-white overflow-hidden relative group">
+                <div className="absolute inset-0 bg-gradient-to-br from-white/10 to-transparent" />
                 <div className="absolute top-0 right-0 p-6 opacity-10 group-hover:scale-110 transition-transform duration-700"><Activity size={80} /></div>
-                <CardContent className="p-6 flex items-center gap-5 relative z-10">
+                <CardContent className="p-8 flex items-center gap-5 relative z-10">
                   <div className="w-12 h-12 rounded-2xl bg-white/10 backdrop-blur-md flex items-center justify-center border border-white/10">
-                    <Activity size={24} className="text-indigo-300" />
+                    <Activity size={24} className="text-secondary" />
                   </div>
                   <div>
-                    <p className="text-[10px] font-black text-indigo-300 uppercase tracking-widest">Clinical Pulse</p>
+                    <p className="text-[10px] font-black text-secondary uppercase tracking-widest">Clinical Pulse</p>
                     <p className="text-2xl font-black">Autonomic Sync</p>
-                    <p className="text-xs text-indigo-200 font-medium mt-1">Avg Coherence: {stats.avgCoherence.toFixed(2)}</p>
+                    <p className="text-xs text-white/70 font-medium mt-1">Avg Coherence: {stats.avgCoherence.toFixed(2)}</p>
                   </div>
                 </CardContent>
               </Card>
-              <Card className="border-none shadow-md rounded-[2.5rem] bg-emerald-600 text-white overflow-hidden relative group">
+              <Card className="border-none shadow-md rounded-[3rem] bg-emerald-600 text-white overflow-hidden relative group">
+                <div className="absolute inset-0 bg-gradient-to-br from-white/10 to-transparent" />
                 <div className="absolute top-0 right-0 p-6 opacity-10 group-hover:scale-110 transition-transform duration-700"><Wind size={80} /></div>
-                <CardContent className="p-6 flex items-center gap-5 relative z-10">
+                <CardContent className="p-8 flex items-center gap-5 relative z-10">
                   <div className="w-12 h-12 rounded-2xl bg-white/10 backdrop-blur-md flex items-center justify-center border border-white/10">
                     <Wind size={24} className="text-emerald-200" />
                   </div>
                   <div>
                     <p className="text-[10px] font-black text-emerald-200 uppercase tracking-widest">Respiratory Health</p>
                     <p className="text-2xl font-black">CO2 Tolerance</p>
-                    <p className="text-xs text-emerald-100 font-medium mt-1">Avg BOLT: {stats.avgBolt}s</p>
+                    <p className="text-xs text-white/70 font-medium mt-1">Avg BOLT: {stats.avgBolt}s</p>
                   </div>
                 </CardContent>
               </Card>
-              <Card className="border-none shadow-md rounded-[2.5rem] bg-rose-600 text-white overflow-hidden relative group">
+              <Card className="border-none shadow-md rounded-[3rem] bg-accent text-white overflow-hidden relative group">
+                <div className="absolute inset-0 bg-gradient-to-br from-white/10 to-transparent" />
                 <div className="absolute top-0 right-0 p-6 opacity-10 group-hover:scale-110 transition-transform duration-700"><Heart size={80} /></div>
-                <CardContent className="p-6 flex items-center gap-5 relative z-10">
+                <CardContent className="p-8 flex items-center gap-5 relative z-10">
                   <div className="w-12 h-12 rounded-2xl bg-white/10 backdrop-blur-md flex items-center justify-center border border-white/10">
-                    <Heart size={24} className="text-rose-200" />
+                    <Heart size={24} className="text-white" />
                   </div>
                   <div>
-                    <p className="text-[10px] font-black text-rose-200 uppercase tracking-widest">Practice Load</p>
+                    <p className="text-[10px] font-black text-white/80 uppercase tracking-widest">Practice Load</p>
                     <p className="text-2xl font-black">Active Cases</p>
-                    <p className="text-xs text-rose-100 font-medium mt-1">{stats.sessionsThisWeek} sessions this week</p>
+                    <p className="text-xs text-white/70 font-medium mt-1">{stats.sessionsThisWeek} sessions this week</p>
                   </div>
                 </CardContent>
               </Card>
@@ -308,13 +311,13 @@ const Index = () => {
                 <DailyBriefing todaySessions={todaySessions} activeSession={activeSession} />
                 
                 {pendingOnboarding.length > 0 && (
-                  <Card className="border-none shadow-lg rounded-[3rem] bg-indigo-50 dark:bg-indigo-950/10 border-2 border-indigo-100 dark:border-indigo-900/30 overflow-hidden">
+                  <Card className="border-none shadow-xl rounded-[3rem] bg-muted/30 border-2 border-secondary/30 overflow-hidden">
                     <CardHeader className="p-8 pb-4">
                       <div className="flex items-center justify-between">
-                        <CardTitle className="text-xl font-black flex items-center gap-3 text-indigo-900 dark:text-indigo-100">
-                          <ClipboardCheck size={24} className="text-indigo-600" /> Recent Onboarding
+                        <CardTitle className="text-xl font-black flex items-center gap-3 text-primary">
+                          <ClipboardCheck size={24} className="text-accent" /> Recent Onboarding
                         </CardTitle>
-                        <Badge className="bg-indigo-600 text-white border-none font-black text-[10px] uppercase tracking-widest px-3 py-1 rounded-full">
+                        <Badge className="bg-accent text-white border-none font-black text-[10px] uppercase tracking-widest px-3 py-1 rounded-full">
                           New Submissions
                         </Badge>
                       </div>
@@ -322,19 +325,19 @@ const Index = () => {
                     <CardContent className="p-8 pt-0 space-y-3">
                       {pendingOnboarding.map(client => (
                         <Link key={client.id} to={`/clients/${client.id}`}>
-                          <div className="p-5 bg-card rounded-[2rem] border border-indigo-200 dark:border-indigo-900/30 flex items-center justify-between group hover:shadow-md transition-all duration-300">
+                          <div className="p-5 bg-white rounded-[2rem] border border-secondary/30 flex items-center justify-between group hover:shadow-md transition-all duration-300">
                             <div className="flex items-center gap-4">
-                              <div className="w-10 h-10 rounded-xl bg-indigo-100 dark:bg-indigo-900/40 text-indigo-600 dark:text-indigo-400 flex items-center justify-center font-black text-lg">
+                              <div className="w-10 h-10 rounded-xl bg-muted text-primary flex items-center justify-center font-black text-lg">
                                 {client.name.charAt(0)}
                               </div>
                               <div>
-                                <p className={cn("font-black text-lg text-foreground group-hover:text-indigo-600 transition-colors", isPrivate && "blur-sm")}>{client.name}</p>
+                                <p className={cn("font-black text-lg text-foreground group-hover:text-accent transition-colors", isPrivate && "blur-sm")}>{client.name}</p>
                                 <p className="text-xs font-bold text-muted-foreground flex items-center gap-1.5 mt-1">
-                                  <Clock size={14} className="text-indigo-400" /> Updated {formatDistanceToNow(new Date(client.created_at), { addSuffix: true })}
+                                  <Clock size={14} className="text-accent" /> Updated {formatDistanceToNow(new Date(client.created_at), { addSuffix: true })}
                                 </p>
                               </div>
                             </div>
-                            <div className="w-10 h-10 rounded-xl bg-indigo-50 dark:bg-indigo-900/20 text-indigo-400 flex items-center justify-center group-hover:bg-indigo-600 group-hover:text-white transition-all">
+                            <div className="w-10 h-10 rounded-xl bg-muted text-primary flex items-center justify-center group-hover:bg-primary group-hover:text-white transition-all">
                               <ArrowRight size={20} />
                             </div>
                           </div>
@@ -345,7 +348,7 @@ const Index = () => {
                 )}
 
                 {priorityClients.length > 0 && (
-                  <Card className="border-none shadow-lg rounded-[3rem] bg-rose-50 dark:bg-rose-950/10 border-2 border-rose-100 dark:border-rose-900/30 overflow-hidden">
+                  <Card className="border-none shadow-lg rounded-[3rem] bg-rose-50 dark:bg-rose-950/10 border-2 border-rose-200 dark:border-rose-900/30 overflow-hidden">
                     <CardHeader className="p-8 pb-4">
                       <div className="flex items-center justify-between">
                         <CardTitle className="text-xl font-black flex items-center gap-3 text-rose-900 dark:text-rose-100">
@@ -362,7 +365,7 @@ const Index = () => {
                     <CardContent className="p-8 pt-0 space-y-3">
                       {priorityClients.map(pc => (
                         <Link key={pc.id} to={`/appointments/${pc.appointment.id}`}>
-                          <div className="p-5 bg-card rounded-[2rem] border border-rose-200 dark:border-rose-900/30 flex items-center justify-between group hover:shadow-md transition-all duration-300">
+                          <div className="p-5 bg-white dark:bg-slate-900 rounded-[2rem] border border-rose-200 dark:border-rose-900/30 flex items-center justify-between group hover:shadow-md transition-all duration-300">
                             <div className="flex items-center gap-4">
                               <div className="w-10 h-10 rounded-xl bg-rose-100 dark:bg-rose-900/40 text-rose-600 dark:text-rose-400 flex items-center justify-center font-black text-lg">
                                 {pc.name.charAt(0)}
@@ -390,7 +393,7 @@ const Index = () => {
                   </Card>
                 )}
 
-                <Card className="border-none shadow-lg rounded-[3rem] overflow-hidden bg-card">
+                <Card className="border-none shadow-xl rounded-[3rem] overflow-hidden bg-white">
                   <CardHeader className="p-8 pb-0">
                     <CardTitle className="text-2xl font-black tracking-tight">Session Activity</CardTitle>
                     <CardDescription className="font-medium text-lg mt-1">Volume of appointments over the last 6 months</CardDescription>
@@ -400,8 +403,8 @@ const Index = () => {
                       <AreaChart data={chartData}>
                         <defs>
                           <linearGradient id="colorSessions" x1="0" y1="0" x2="0" y2="1">
-                            <stop offset="5%" stopColor="#4f46e5" stopOpacity={0.15}/>
-                            <stop offset="95%" stopColor="#4f46e5" stopOpacity={0}/>
+                            <stop offset="5%" stopColor="#1E3261" stopOpacity={0.15}/>
+                            <stop offset="95%" stopColor="#1E3261" stopOpacity={0}/>
                           </linearGradient>
                         </defs>
                         <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="hsl(var(--border))" />
@@ -411,13 +414,13 @@ const Index = () => {
                           contentStyle={{borderRadius: '20px', border: 'none', backgroundColor: 'hsl(var(--card))', boxShadow: '0 20px 25px -5px rgb(0 0 0 / 0.1)', padding: '15px'}}
                           labelStyle={{fontWeight: 900, color: 'hsl(var(--foreground))', marginBottom: '5px', fontSize: '14px'}}
                         />
-                        <Area type="monotone" dataKey="sessions" stroke="#4f46e5" strokeWidth={5} fillOpacity={1} fill="url(#colorSessions)" />
+                        <Area type="monotone" dataKey="sessions" stroke="#1E3261" strokeWidth={5} fillOpacity={1} fill="url(#colorSessions)" />
                       </AreaChart>
                     </ResponsiveContainer>
                   </CardContent>
                 </Card>
 
-                <Card className="border-none shadow-lg rounded-[3rem] bg-amber-50 dark:bg-amber-950/10 border border-amber-100 dark:border-amber-900/30 overflow-hidden">
+                <Card className="border-none shadow-xl rounded-[3rem] bg-amber-50 dark:bg-amber-950/10 border border-amber-100 dark:border-amber-900/30 overflow-hidden">
                   <CardHeader className="p-8 pb-4">
                     <CardTitle className="text-2xl font-black flex items-center gap-3 text-amber-900 dark:text-amber-100">
                       <StickyNote size={28} className="text-amber-600" /> Practitioner Scratchpad
@@ -430,7 +433,7 @@ const Index = () => {
                         <button 
                           key={tag}
                           onClick={() => handleScratchpadChange(scratchpad ? `${scratchpad}\n[${tag}] ` : `[${tag}] `)}
-                          className="px-3 py-1.5 rounded-xl bg-card border border-amber-200 dark:border-amber-900/30 text-[10px] font-black uppercase tracking-widest text-amber-600 hover:bg-amber-100 dark:hover:bg-amber-900/20 transition-colors"
+                          className="px-3 py-1.5 rounded-xl bg-white border border-amber-200 dark:border-amber-900/30 text-[10px] font-black uppercase tracking-widest text-amber-600 hover:bg-amber-100 dark:hover:bg-amber-900/20 transition-colors"
                         >
                           + {tag}
                         </button>
@@ -440,7 +443,7 @@ const Index = () => {
                       value={scratchpad}
                       onChange={(e) => handleScratchpadChange(e.target.value)}
                       placeholder="Type something here..."
-                      className="min-h-[200px] bg-card/70 border-amber-200 dark:border-amber-900/30 focus:ring-amber-500 focus:border-amber-500 resize-none text-amber-900 dark:text-amber-100 placeholder:text-amber-300 dark:placeholder:text-amber-800 rounded-[2rem] p-8 text-xl font-medium leading-relaxed shadow-inner"
+                      className="min-h-[200px] bg-white/70 border-amber-200 dark:border-amber-900/30 focus:ring-amber-500 focus:border-amber-500 resize-none text-amber-900 dark:text-amber-100 placeholder:text-amber-300 dark:placeholder:text-amber-800 rounded-[2rem] p-8 text-xl font-medium leading-relaxed shadow-inner"
                     />
                     <div className="flex items-center justify-end gap-2 mt-4 text-[10px] font-black text-amber-600 uppercase tracking-[0.3em]">
                       <CheckCircle2 size={14} /> {lastSaved ? `Last saved at ${lastSaved}` : 'Auto-saved to browser'}
@@ -457,25 +460,26 @@ const Index = () => {
                 
                 <RecentActivity />
 
-                <Card className="border-none shadow-lg rounded-[2rem] bg-indigo-900 text-white overflow-hidden relative">
+                <Card className="border-none shadow-xl rounded-[3rem] bg-primary text-white overflow-hidden relative">
+                  <div className="absolute inset-0 bg-gradient-to-br from-white/10 to-transparent" />
                   <div className="absolute top-0 right-0 p-8 opacity-10 pointer-events-none"><Wind size={120} /></div>
                   <CardHeader className="p-8">
                     <CardTitle className="text-2xl font-black flex items-center gap-3">
-                      <Wind size={28} className="text-teal-400" /> Clinical Focus
+                      <Wind size={28} className="text-secondary" /> Clinical Focus
                     </CardTitle>
                   </CardHeader>
                   <CardContent className="p-8 pt-0 space-y-6">
                     <div className="p-5 bg-white/10 rounded-2xl border border-white/10 shadow-inner">
-                      <p className="text-[10px] font-black text-indigo-300 uppercase tracking-widest mb-2">Practice Goal</p>
+                      <p className="text-[10px] font-black text-secondary uppercase tracking-widest mb-2">Practice Goal</p>
                       <p className="text-lg font-bold leading-snug">Improve practice-wide BOLT scores by 15% this quarter.</p>
                     </div>
                     <div className="space-y-4">
                       <div className="flex items-center justify-between text-[10px] font-black uppercase tracking-widest">
-                        <span className="text-indigo-300">Quarterly Progress</span>
-                        <span className="text-teal-400">68%</span>
+                        <span className="text-secondary">Quarterly Progress</span>
+                        <span className="text-white">68%</span>
                       </div>
                       <div className="h-2.5 bg-white/10 rounded-full overflow-hidden shadow-inner">
-                        <div className="h-full bg-teal-400 rounded-full shadow-lg" style={{ width: '68%' }} />
+                        <div className="h-full bg-white rounded-full shadow-lg" style={{ width: '68%' }} />
                       </div>
                     </div>
                     <Button variant="outline" className="w-full bg-transparent border-white/20 text-white hover:bg-white/10 rounded-2xl font-black text-[10px] uppercase tracking-[0.2em] h-12 shadow-lg" asChild>
@@ -484,41 +488,41 @@ const Index = () => {
                   </CardContent>
                 </Card>
 
-                <Card className="border-none shadow-lg rounded-[2rem] bg-card overflow-hidden">
+                <Card className="border-none shadow-xl rounded-[3rem] bg-white overflow-hidden">
                   <CardHeader className="p-8">
-                    <CardTitle className="text-2xl font-black flex items-center gap-3 text-foreground">
-                      <Brain size={28} className="text-purple-600" /> Protocol Mastery
+                    <CardTitle className="text-2xl font-black flex items-center gap-3 text-primary">
+                      <Brain size={28} className="text-accent" /> Protocol Mastery
                     </CardTitle>
                   </CardHeader>
                   <CardContent className="p-8 pt-0 space-y-4">
                     <p className="text-base text-muted-foreground font-medium leading-relaxed">Keep your skills sharp by practicing protocols.</p>
                     <div className="grid grid-cols-1 gap-3">
-                      <Button variant="outline" className="justify-start h-12 rounded-2xl border-border hover:bg-accent font-black text-[10px] uppercase tracking-widest text-foreground shadow-sm" asChild>
-                        <Link to="/practice/self"><FlaskConical size={18} className="mr-3 text-indigo-500" /> Practice BOLT Test</Link>
+                      <Button variant="outline" className="justify-start h-12 rounded-2xl border-secondary/30 hover:bg-muted font-black text-[10px] uppercase tracking-widest text-primary shadow-sm" asChild>
+                        <Link to="/practice/self"><FlaskConical size={18} className="mr-3 text-primary" /> Practice BOLT Test</Link>
                       </Button>
-                      <Button variant="outline" className="justify-start h-12 rounded-2xl border-border hover:bg-accent font-black text-[10px] uppercase tracking-widest text-foreground shadow-sm" asChild>
-                        <Link to="/practice/self"><Activity size={18} className="mr-3 text-rose-500" /> Practice Coherence</Link>
+                      <Button variant="outline" className="justify-start h-12 rounded-2xl border-secondary/30 hover:bg-muted font-black text-[10px] uppercase tracking-widest text-primary shadow-sm" asChild>
+                        <Link to="/practice/self"><Activity size={18} className="mr-3 text-accent" /> Practice Coherence</Link>
                       </Button>
                     </div>
                   </CardContent>
                 </Card>
 
-                <Card className="border-none shadow-lg rounded-[2rem] bg-indigo-50 dark:bg-indigo-950/20 border border-indigo-100 dark:border-indigo-900/30 overflow-hidden">
+                <Card className="border-none shadow-xl rounded-[3rem] bg-muted/30 border border-secondary/30 overflow-hidden">
                   <CardHeader className="p-8">
-                    <CardTitle className="text-2xl font-black flex items-center gap-3 text-indigo-900 dark:text-indigo-100">
-                      <Sparkles size={28} className="text-indigo-600" /> Program Resources
+                    <CardTitle className="text-2xl font-black flex items-center gap-3 text-primary">
+                      <Sparkles size={28} className="text-accent" /> Program Resources
                     </CardTitle>
                   </CardHeader>
                   <CardContent className="p-8 pt-0 space-y-4">
-                    <p className="text-base text-indigo-700 dark:text-indigo-300 font-medium leading-relaxed">Access your weekly worksheets and materials.</p>
+                    <p className="text-base text-primary/70 font-medium leading-relaxed">Access your weekly worksheets and materials.</p>
                     <div className="grid grid-cols-1 gap-3">
-                      <Button className="justify-start h-14 rounded-2xl bg-indigo-600 hover:bg-indigo-700 font-black text-[10px] uppercase tracking-widest text-white shadow-lg shadow-indigo-200" asChild>
+                      <Button className="justify-start h-14 rounded-2xl bg-primary hover:bg-primary/90 font-black text-[10px] uppercase tracking-widest text-white shadow-xl shadow-primary/20" asChild>
                         <Link to="/resources/worksheets/week-3">
                           <ShieldCheck size={20} className="mr-3" /> Week 3: Releasing Curses
                         </Link>
                       </Button>
-                      <Button variant="outline" className="justify-start h-12 rounded-2xl border-indigo-200 dark:border-indigo-900/30 hover:bg-indigo-100 dark:border-indigo-900/40 font-black text-[10px] uppercase tracking-widest text-indigo-700 dark:text-indigo-300 shadow-sm" asChild>
-                        <Link to="/resources/worksheets/north-star"><Sparkles size={18} className="mr-3 text-indigo-500" /> North Star Worksheet</Link>
+                      <Button variant="outline" className="justify-start h-12 rounded-2xl border-secondary/30 hover:bg-white font-black text-[10px] uppercase tracking-widest text-primary shadow-sm" asChild>
+                        <Link to="/resources/worksheets/north-star"><Sparkles size={18} className="mr-3 text-accent" /> North Star Worksheet</Link>
                       </Button>
                     </div>
                   </CardContent>
@@ -529,14 +533,14 @@ const Index = () => {
         )}
 
         <Dialog open={clientDialogOpen} onOpenChange={setClientDialogOpen}>
-          <DialogContent className="sm:max-w-[550px] rounded-[2.5rem] p-8">
+          <DialogContent className="sm:max-w-[550px] rounded-[3rem] p-8">
             <DialogHeader className="mb-4"><DialogTitle className="text-2xl font-black tracking-tight">Add New Client</DialogTitle></DialogHeader>
             <ClientForm onSuccess={() => { setClientDialogOpen(false); fetchDashboardData(); }} />
           </DialogContent>
         </Dialog>
 
         <Dialog open={appDialogOpen} onOpenChange={setAppDialogOpen}>
-          <DialogContent className="sm:max-w-[500px] rounded-[2.5rem] p-8">
+          <DialogContent className="sm:max-w-[500px] rounded-[3rem] p-8">
             <DialogHeader className="mb-4"><DialogTitle className="text-2xl font-black tracking-tight">Schedule New Session</DialogTitle></DialogHeader>
             <AppointmentForm onSuccess={() => { setAppDialogOpen(false); fetchDashboardData(); }} />
           </DialogContent>

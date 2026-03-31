@@ -42,11 +42,11 @@ const OnboardingPage = () => {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex flex-col items-center justify-center bg-slate-50 p-6">
-        <div className="w-16 h-16 bg-indigo-600 rounded-2xl flex items-center justify-center text-white font-black text-2xl shadow-2xl animate-bounce mb-6">
-          A
+      <div className="min-h-screen flex flex-col items-center justify-center bg-background p-6">
+        <div className="w-16 h-16 bg-primary rounded-2xl flex items-center justify-center text-white font-black text-2xl shadow-3xl animate-bounce mb-6">
+          ✦
         </div>
-        <div className="flex items-center gap-2 text-slate-400 font-black text-[10px] uppercase tracking-[0.3em]">
+        <div className="flex items-center gap-2 text-muted-foreground font-black text-[10px] uppercase tracking-[0.3em]">
           <Loader2 className="animate-spin" size={14} /> Preparing Your Form
         </div>
       </div>
@@ -55,13 +55,13 @@ const OnboardingPage = () => {
 
   if (error) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-slate-50 p-6">
-        <Card className="max-w-md w-full border-none shadow-2xl rounded-2xl md:rounded-[2.5rem] p-6 md:p-8 text-center">
+      <div className="min-h-screen flex items-center justify-center bg-background p-6">
+        <Card className="max-w-md w-full border-none shadow-3xl rounded-[3rem] p-8 text-center bg-white">
           <div className="w-16 h-16 bg-rose-50 rounded-2xl flex items-center justify-center mx-auto mb-6 text-rose-500">
             <Sparkles size={32} />
           </div>
-          <h2 className="text-xl md:text-2xl font-black text-slate-900 mb-2">Link Expired or Invalid</h2>
-          <p className="text-sm md:text-base text-slate-500 font-medium mb-8">{error}</p>
+          <h2 className="text-2xl font-serif font-bold text-primary mb-2">Link Expired or Invalid</h2>
+          <p className="text-base text-muted-foreground font-medium mb-8">{error}</p>
           <Link to="/">
             <Button variant="outline" className="rounded-xl h-12 px-8 font-bold w-full md:w-auto">Return Home</Button>
           </Link>
@@ -72,23 +72,23 @@ const OnboardingPage = () => {
 
   if (submitted) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-slate-50 p-4 md:p-6">
-        <Card className="max-w-2xl w-full border-none shadow-2xl rounded-2xl md:rounded-[3rem] overflow-hidden animate-in zoom-in-95 duration-500">
-          <div className="bg-emerald-600 p-8 md:p-12 text-center text-white relative">
+      <div className="min-h-screen flex items-center justify-center bg-background p-6">
+        <Card className="max-w-2xl w-full border-none shadow-3xl rounded-[4rem] overflow-hidden animate-in zoom-in-95 duration-700 bg-white">
+          <div className="bg-emerald-600 p-12 text-center text-white relative">
             <div className="absolute top-0 right-0 p-8 opacity-10 hidden md:block"><Sparkles size={120} /></div>
-            <div className="w-16 h-16 md:w-20 md:h-20 bg-white/20 backdrop-blur-md rounded-2xl md:rounded-[2rem] flex items-center justify-center mx-auto mb-6 shadow-xl border border-white/20">
-              <CheckCircle2 size={40} />
+            <div className="w-20 md:w-24 md:h-24 bg-white/20 backdrop-blur-md rounded-[2rem] flex items-center justify-center mx-auto mb-6 shadow-xl border border-white/20">
+              <CheckCircle2 size={48} />
             </div>
-            <h2 className="text-2xl md:text-3xl font-black tracking-tight mb-2">All Set, {client.name.split(' ')[0]}!</h2>
-            <p className="text-emerald-100 font-medium text-base md:text-lg">Your information has been securely updated.</p>
+            <h2 className="text-3xl md:text-4xl font-serif font-bold tracking-tight mb-2">All Set, {client.name.split(' ')[0]}!</h2>
+            <p className="text-emerald-100 font-medium text-lg md:text-xl">Your information has been securely updated.</p>
           </div>
-          <CardContent className="p-6 md:p-10 text-center space-y-6">
-            <p className="text-sm md:text-base text-slate-600 font-medium leading-relaxed">
+          <CardContent className="p-10 md:p-16 text-center space-y-8">
+            <p className="text-lg text-muted-foreground font-medium leading-relaxed">
               Thank you for taking the time to complete your onboarding. This helps me prepare for your upcoming sessions and ensures I have the most accurate context for your healing journey.
             </p>
             <div className="pt-4">
-              <div className="inline-flex items-center gap-2 px-4 py-2 bg-slate-100 rounded-full text-[10px] font-black text-slate-500 uppercase tracking-widest">
-                <ShieldCheck size={14} className="text-emerald-500" /> Securely Encrypted
+              <div className="inline-flex items-center gap-2 px-6 py-3 bg-muted rounded-full text-[10px] font-black text-muted-foreground uppercase tracking-widest">
+                <ShieldCheck size={16} className="text-emerald-500" /> Securely Encrypted & Private
               </div>
             </div>
           </CardContent>
@@ -98,39 +98,39 @@ const OnboardingPage = () => {
   }
 
   return (
-    <div className="min-h-screen bg-slate-50 py-8 px-4 md:py-20 md:px-6">
-      <div className="max-w-screen-2xl mx-auto space-y-8 md:space-y-10">
-        <div className="text-center space-y-4">
-          <div className="w-12 h-12 md:w-16 md:h-16 bg-indigo-600 rounded-xl md:rounded-2xl flex items-center justify-center text-white font-black text-xl md:text-2xl shadow-2xl mx-auto mb-4 md:mb-6">
-            A
+    <div className="min-h-screen bg-background py-12 px-6 md:py-24">
+      <div className="max-w-4xl mx-auto space-y-12">
+        <div className="text-center space-y-6">
+          <div className="w-16 h-16 md:w-20 md:h-20 bg-primary rounded-[2rem] flex items-center justify-center text-white font-black text-2xl md:text-3xl shadow-3xl mx-auto mb-8">
+            ✦
           </div>
-          <Badge className="bg-indigo-100 text-indigo-600 border-none font-black text-[9px] md:text-[10px] uppercase tracking-[0.3em] px-4 py-1">
+          <Badge className="bg-muted text-primary border-none font-black text-[10px] uppercase tracking-[0.4em] px-6 py-2 rounded-full">
             Client Onboarding
           </Badge>
-          <h1 className="text-3xl md:text-4xl font-black tracking-tight text-slate-900">Welcome, {client.name}</h1>
-          <p className="text-sm md:text-lg text-slate-500 font-medium max-w-xl mx-auto">
+          <h1 className="text-4xl md:text-6xl font-serif font-bold tracking-tighter text-primary">Welcome, {client.name}</h1>
+          <p className="text-lg md:text-xl text-muted-foreground font-medium max-w-2xl mx-auto leading-relaxed">
             Please take a moment to review and complete your profile details before our next session.
           </p>
         </div>
 
-        <Card className="border-none shadow-2xl rounded-2xl md:rounded-[3rem] bg-white overflow-hidden">
-          <CardHeader className="p-6 md:p-10 pb-0">
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-xl bg-rose-50 text-rose-600 flex items-center justify-center shrink-0">
-                  <Heart size={20} className="fill-current" />
+        <Card className="border-none shadow-3xl rounded-[4rem] bg-white overflow-hidden">
+          <CardHeader className="p-10 md:p-16 pb-0">
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-10">
+              <div className="flex items-center gap-4">
+                <div className="w-12 h-12 rounded-2xl bg-rose-50 text-accent flex items-center justify-center shrink-0 shadow-sm">
+                  <Heart size={24} className="fill-current" />
                 </div>
-                <CardTitle className="text-lg md:text-xl font-black">Personal Details</CardTitle>
+                <CardTitle className="text-2xl font-serif font-bold text-primary">Personal Details</CardTitle>
               </div>
-              <div className="flex flex-col md:items-end gap-1">
-                <p className="text-[9px] md:text-[10px] font-black text-slate-400 uppercase tracking-widest">Step 1 of 1</p>
-                <div className="w-full md:w-24 h-1.5 bg-slate-100 rounded-full overflow-hidden">
-                  <div className="h-full bg-indigo-600 w-full" />
+              <div className="flex flex-col md:items-end gap-2">
+                <p className="text-[10px] font-black text-muted-foreground uppercase tracking-widest">Clinical Intake Form</p>
+                <div className="w-full md:w-32 h-2 bg-muted rounded-full overflow-hidden">
+                  <div className="h-full bg-accent w-full" />
                 </div>
               </div>
             </div>
           </CardHeader>
-          <CardContent className="p-6 md:p-10 pt-2 md:pt-6">
+          <CardContent className="p-10 md:p-16 pt-0">
             <PublicOnboardingForm 
               clientId={id!} 
               initialData={client} 
@@ -139,17 +139,20 @@ const OnboardingPage = () => {
           </CardContent>
         </Card>
 
-        <div className="flex flex-col items-center gap-6 pt-4">
-          <div className="flex flex-wrap justify-center items-center gap-6 md:gap-8 opacity-40 grayscale">
-            <div className="flex items-center gap-2">
-              <ShieldCheck size={16} />
-              <span className="text-[9px] md:text-[10px] font-black uppercase tracking-widest">HIPAA Compliant</span>
+        <div className="flex flex-col items-center gap-8 pt-8">
+          <div className="flex flex-wrap justify-center items-center gap-10 opacity-30 grayscale">
+            <div className="flex items-center gap-3">
+              <ShieldCheck size={20} />
+              <span className="text-[10px] font-black uppercase tracking-widest">HIPAA Compliant</span>
             </div>
-            <div className="flex items-center gap-2">
-              <CheckCircle2 size={16} />
-              <span className="text-[9px] md:text-[10px] font-black uppercase tracking-widest">SSL Secure</span>
+            <div className="flex items-center gap-3">
+              <CheckCircle2 size={20} />
+              <span className="text-[10px] font-black uppercase tracking-widest">SSL Secure</span>
             </div>
           </div>
+          <p className="text-[10px] font-black text-muted-foreground uppercase tracking-[0.3em] italic">
+            "The deeper you work, the higher you rise."
+          </p>
         </div>
       </div>
     </div>

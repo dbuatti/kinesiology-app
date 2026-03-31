@@ -9,7 +9,7 @@ const corsHeaders = {
 }
 
 serve(async (req) => {
-  console.log("--- [v4] CAL.COM WEBHOOK START ---");
+  console.log("--- [v5] CAL.COM WEBHOOK START ---");
 
   if (req.method === 'OPTIONS') {
     return new Response('ok', { headers: corsHeaders })
@@ -19,11 +19,19 @@ serve(async (req) => {
     const supabaseUrl = Deno.env.get('SUPABASE_URL')
     const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')
     
-    // Initialize with service_role to bypass RLS and auth headers
+    if (!supabaseUrl || !supabaseServiceKey) {
+      throw new Error("Missing environment variables: SUPABASE_URL or SUPABASE_SERVICE_ROLE_KEY");
+    }
+
+    // Create client with explicit headers to avoid picking up 'Authorization' from the incoming request
     const supabase = createClient(supabaseUrl, supabaseServiceKey, {
+      global: {
+        headers: {
+          Authorization: `Bearer ${supabaseServiceKey}`,
+        },
+      },
       auth: {
-        autoRefreshToken: false,
-        persistSession: false
+        persistSession: false,
       }
     })
 
@@ -35,39 +43,67 @@ serve(async (req) => {
     }
 
     const attendee = payload.attendees[0]
-    const email = attendee.email
-    const name = attendee.name
+    const email = String(attendee.email).toLowerCase().trim()
+    const name = String(attendee.name).trim()
     const startTime = payload.startTime
-    const title = payload.title || "Kinesiology Session"
-    const description = payload.description || ""
+    const title = String(payload.title || "Kinesiology Session")
+    const description = String(payload.description || "")
     
     let amountPaid = 0;
     if (payload.payment && payload.payment.length > 0) {
       amountPaid = payload.payment[0].amount / 100; 
     }
 
-    // Get the practitioner (owner) - using admin API
+    // Get the practitioner (owner)
     const { data: users, error: userError } = await supabase.auth.admin.listUsers()
     if (userError || !users.users.length) throw new Error("Could not find practitioner user");
     
     const userId = users.users[0].id;
 
-    // 1. Upsert Client
-    console.log(`Upserting client: ${email} for user ${userId}`);
-    const { data: client, error: clientError } = await supabase
+    // 1. Manual Check for Client (Avoids 'upsert' conflict issues)
+    console.log(`Checking for client: ${email} for user ${userId}`);
+    
+    let { data: client, error: fetchError } = await supabase
       .from('clients')
-      .upsert({
-        user_id: userId,
-        name: String(name),
-        email: String(email),
-        phone: attendee.phoneNumber ? String(attendee.phoneNumber) : null,
-      }, { onConflict: 'user_id,email' })
-      .select()
-      .single()
+      .select('id')
+      .eq('user_id', userId)
+      .eq('email', email)
+      .maybeSingle();
 
-    if (clientError) {
-      console.error("STEP 1 FAILED:", clientError);
-      throw new Error(`Client Sync Error: ${clientError.message}`);
+    if (fetchError) {
+      console.error("Fetch Client Error:", fetchError);
+      throw new Error(`Client Lookup Failed: ${fetchError.message}`);
+    }
+
+    if (client) {
+      console.log(`Updating existing client: ${client.id}`);
+      const { error: updateError } = await supabase
+        .from('clients')
+        .update({
+          name: name,
+          phone: attendee.phoneNumber ? String(attendee.phoneNumber) : null,
+        })
+        .eq('id', client.id);
+      
+      if (updateError) throw updateError;
+    } else {
+      console.log(`Creating new client for: ${email}`);
+      const { data: newClient, error: insertError } = await supabase
+        .from('clients')
+        .insert({
+          user_id: userId,
+          name: name,
+          email: email,
+          phone: attendee.phoneNumber ? String(attendee.phoneNumber) : null,
+        })
+        .select()
+        .single();
+      
+      if (insertError) {
+        console.error("Insert Client Error:", insertError);
+        throw insertError;
+      }
+      client = newClient;
     }
 
     // 2. Create Appointment
@@ -77,16 +113,16 @@ serve(async (req) => {
       .insert({
         user_id: userId,
         client_id: client.id,
-        name: String(title),
+        name: title,
         date: startTime,
         tag: "Kinesiology",
         status: "Scheduled",
-        issue: String(description),
+        issue: description,
         notes: `Booked via Cal.com. Paid: $${amountPaid}. UID: ${payload.uid}`
       })
 
     if (appError) {
-      console.error("STEP 2 FAILED:", appError);
+      console.error("Appointment Insert Error:", appError);
       throw new Error(`Appointment Creation Error: ${appError.message}`);
     }
 

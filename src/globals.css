@@ -4,9 +4,9 @@
 
 @layer base {
   :root {
-    /* Refined Resonance Palette */
-    --background: 210 40% 98%; /* Very subtle cool white #F8FAFC */
-    --foreground: 222 47% 11%; /* Deepest Indigo for text */
+    /* Refined Resonance Palette - Modern Clinical */
+    --background: 210 40% 98%; /* Crisp Off-White #F8FAFC */
+    --foreground: 222 47% 11%; /* Deep Navy-Slate for text #0F172A */
 
     --card: 0 0% 100%;
     --card-foreground: 222 47% 11%;
@@ -14,13 +14,13 @@
     --popover: 0 0% 100%;
     --popover-foreground: 222 47% 11%;
 
-    --primary: 222 53% 25%; /* Deep Indigo #1E3261 */
+    --primary: 234 89% 15%; /* Midnight Indigo #0F1133 - The Anchor */
     --primary-foreground: 210 40% 98%;
 
-    --secondary: 226 100% 97%; /* Very light periwinkle */
-    --secondary-foreground: 222 53% 25%;
+    --secondary: 226 30% 94%; /* Soft Indigo-Grey for subtle backgrounds */
+    --secondary-foreground: 234 89% 15%;
 
-    --accent: 332 55% 62%; /* Resonance Pink #D46A9B */
+    --accent: 330 70% 45%; /* Matured Resonance Rose #C2185B - The Spark */
     --accent-foreground: 0 0% 100%;
 
     --muted: 210 40% 96.1%;
@@ -29,11 +29,17 @@
     --destructive: 0 84.2% 60.2%;
     --destructive-foreground: 210 40% 98%;
 
+    --success: 160 84% 39%; /* Clinical Emerald */
+    --success-foreground: 210 40% 98%;
+
+    --warning: 38 92% 50%; /* Clinical Amber */
+    --warning-foreground: 210 40% 98%;
+
     --border: 214.3 31.8% 91.4%;
     --input: 214.3 31.8% 91.4%;
-    --ring: 222 53% 25%;
+    --ring: 234 89% 15%;
 
-    --radius: 1.25rem;
+    --radius: 1.5rem; /* Slightly more rounded for a premium feel */
   }
 
   .dark {
@@ -52,7 +58,7 @@
     --secondary: 222 47% 11%;
     --secondary-foreground: 210 40% 98%;
 
-    --accent: 332 55% 62%;
+    --accent: 330 70% 55%;
     --accent-foreground: 210 40% 98%;
 
     --muted: 222 47% 11%;
@@ -83,14 +89,19 @@
 
 @layer components {
   .interactive-lift {
-    @apply transition-all duration-300 hover:-translate-y-0.5 hover:shadow-xl active:translate-y-0 active:shadow-sm;
+    @apply transition-all duration-500 hover:-translate-y-1 hover:shadow-2xl active:translate-y-0 active:shadow-sm;
   }
   
   .card-standard {
-    @apply rounded-[2rem] border-none bg-white shadow-xl shadow-primary/5 dark:bg-slate-900 dark:shadow-none;
+    @apply rounded-[2.5rem] border-none bg-white shadow-xl shadow-primary/5 dark:bg-slate-900 dark:shadow-none;
   }
 
   .resonance-gradient {
-    @apply bg-gradient-to-br from-[#1E3261] to-[#D46A9B];
+    @apply bg-gradient-to-br from-[#0F1133] to-[#C2185B];
+  }
+  
+  /* Privacy Mode Blurring */
+  .privacy-mode-active .blur-sensitive {
+    @apply blur-md select-none opacity-40 transition-all duration-500;
   }
 }

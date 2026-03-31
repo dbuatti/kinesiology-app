@@ -172,7 +172,7 @@ const Sidebar = ({ onHide }: SidebarProps) => {
       "flex items-center justify-between gap-2 px-3 py-2 rounded-xl transition-all duration-500 group",
       isActive 
         ? "bg-primary text-white shadow-lg shadow-primary/20" 
-        : "text-muted-foreground hover:text-primary hover:bg-muted"
+        : "text-muted-foreground hover:text-primary hover:bg-secondary"
     );
 
     const content = (
@@ -222,7 +222,7 @@ const Sidebar = ({ onHide }: SidebarProps) => {
     <div className="space-y-1">
       <button
         onClick={onToggle}
-        className="flex items-center justify-between w-full px-3 py-2 rounded-xl text-muted-foreground hover:text-primary hover:bg-muted transition-all group"
+        className="flex items-center justify-between w-full px-3 py-2 rounded-xl text-muted-foreground hover:text-primary hover:bg-secondary transition-all group"
       >
         <div className="flex items-center gap-3">
           <Icon size={16} className="text-muted-foreground group-hover:text-accent" />
@@ -246,20 +246,18 @@ const Sidebar = ({ onHide }: SidebarProps) => {
         <div className="flex items-center gap-3">
           <div className="w-10 h-10 bg-primary rounded-xl flex items-center justify-center font-black text-xl text-white shadow-2xl shadow-primary/20 transition-transform hover:scale-105">✦</div>
           <div>
-            <h1 className="text-lg font-serif font-bold tracking-tight leading-none">Resonance</h1>
+            <h1 className="text-lg font-bold tracking-tight leading-none">Resonance</h1>
             <p className="text-[8px] text-muted-foreground uppercase font-black tracking-[0.2em] mt-1">Kinesiology CRM</p>
           </div>
         </div>
         <Tooltip>
           <TooltipTrigger asChild>
-            <Button 
-              variant="ghost" 
-              size="icon" 
+            <button 
               onClick={onHide}
-              className="text-muted-foreground hover:text-primary hover:bg-muted rounded-xl h-8 w-8"
+              className="text-muted-foreground hover:text-primary hover:bg-secondary rounded-xl h-8 w-8 flex items-center justify-center transition-colors"
             >
               <PanelLeftClose size={18} />
-            </Button>
+            </button>
           </TooltipTrigger>
           <TooltipContent side="right" className="rounded-xl font-bold text-xs">
             <p>Hide Sidebar</p>
@@ -324,7 +322,7 @@ const Sidebar = ({ onHide }: SidebarProps) => {
           </div>
         )}
 
-        <div className="px-4 py-4 bg-muted rounded-2xl border border-secondary/30 mx-1 space-y-3">
+        <div className="px-4 py-4 bg-secondary rounded-2xl border border-secondary/30 mx-1 space-y-3">
           <div className="flex items-center justify-between">
             <p className="text-[9px] font-black text-muted-foreground uppercase tracking-[0.2em] flex items-center gap-2">
               <ShieldCheck size={12} className="text-emerald-500" /> Health
@@ -347,9 +345,9 @@ const Sidebar = ({ onHide }: SidebarProps) => {
                   <TooltipTrigger asChild>
                     <Link 
                       to={`/clients/${client.id}`}
-                      className="flex items-center gap-3 text-xs text-muted-foreground hover:text-primary transition-all duration-300 py-2 px-3 rounded-xl hover:bg-muted truncate group"
+                      className="flex items-center gap-3 text-xs text-muted-foreground hover:text-primary transition-all duration-300 py-2 px-3 rounded-xl hover:bg-secondary truncate group"
                     >
-                      <div className="w-7 h-7 rounded-xl bg-muted border border-border flex items-center justify-center text-[9px] font-black group-hover:border-primary/40 transition-all">
+                      <div className="w-7 h-7 rounded-xl bg-secondary border border-border flex items-center justify-center text-[9px] font-black group-hover:border-primary/40 transition-all">
                         {client.name.charAt(0)}
                       </div>
                       <span className="truncate font-bold text-[11px]">{client.name}</span>
@@ -374,7 +372,7 @@ const Sidebar = ({ onHide }: SidebarProps) => {
                 onClick={togglePrivacy}
                 className={cn(
                   "flex items-center justify-center h-10 w-10 rounded-xl transition-all duration-300 group",
-                  isPrivate ? "bg-rose-500 text-white shadow-lg shadow-rose-500/20" : "text-muted-foreground hover:text-primary hover:bg-muted"
+                  isPrivate ? "bg-rose-500 text-white shadow-lg shadow-rose-500/20" : "text-muted-foreground hover:text-primary hover:bg-secondary"
                 )}
               >
                 {isPrivate ? <EyeOff size={20} /> : <Eye size={20} />}
@@ -389,7 +387,7 @@ const Sidebar = ({ onHide }: SidebarProps) => {
             <TooltipTrigger asChild>
               <button 
                 onClick={() => setHelpOpen(true)}
-                className="flex items-center justify-center h-10 w-10 rounded-xl text-muted-foreground hover:text-primary hover:bg-muted transition-all duration-300 group"
+                className="flex items-center justify-center h-10 w-10 rounded-xl text-muted-foreground hover:text-primary hover:bg-secondary transition-all duration-300 group"
               >
                 <HelpCircle size={20} className="group-hover:text-amber-400 transition-colors" />
               </button>
@@ -405,7 +403,7 @@ const Sidebar = ({ onHide }: SidebarProps) => {
           <TooltipTrigger asChild>
             <div 
               onClick={handleSignOut}
-              className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-muted-foreground hover:text-rose-500 hover:bg-muted transition-all duration-300 cursor-pointer group"
+              className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-muted-foreground hover:text-rose-500 hover:bg-secondary transition-all duration-300 cursor-pointer group"
             >
               <LogOut size={18} className="group-hover:text-rose-500 transition-colors" />
               <span className="font-bold text-[10px] uppercase tracking-widest">Sign Out</span>

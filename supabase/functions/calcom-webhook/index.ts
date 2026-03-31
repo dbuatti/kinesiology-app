@@ -9,7 +9,7 @@ const corsHeaders = {
 }
 
 serve(async (req) => {
-  console.log("--- [v5] CAL.COM WEBHOOK START ---");
+  console.log("--- [v6] CAL.COM WEBHOOK START ---");
 
   if (req.method === 'OPTIONS') {
     return new Response('ok', { headers: corsHeaders })
@@ -23,15 +23,11 @@ serve(async (req) => {
       throw new Error("Missing environment variables: SUPABASE_URL or SUPABASE_SERVICE_ROLE_KEY");
     }
 
-    // Create client with explicit headers to avoid picking up 'Authorization' from the incoming request
+    // Create a clean client. Do NOT pass the incoming request's headers.
     const supabase = createClient(supabaseUrl, supabaseServiceKey, {
-      global: {
-        headers: {
-          Authorization: `Bearer ${supabaseServiceKey}`,
-        },
-      },
       auth: {
         persistSession: false,
+        autoRefreshToken: false,
       }
     })
 
@@ -56,36 +52,46 @@ serve(async (req) => {
 
     // Get the practitioner (owner)
     const { data: users, error: userError } = await supabase.auth.admin.listUsers()
-    if (userError || !users.users.length) throw new Error("Could not find practitioner user");
+    if (userError) {
+      console.error("Auth Admin Error:", userError);
+      throw new Error(`Auth Admin Failed: ${userError.message}`);
+    }
+    if (!users.users.length) throw new Error("No users found in project");
     
     const userId = users.users[0].id;
+    console.log(`Practitioner User ID: ${userId}`);
 
-    // 1. Manual Check for Client (Avoids 'upsert' conflict issues)
-    console.log(`Checking for client: ${email} for user ${userId}`);
+    // 1. Manual Check for Client
+    console.log(`Checking for client: ${email}`);
     
-    let { data: client, error: fetchError } = await supabase
+    const { data: existingClients, error: fetchError } = await supabase
       .from('clients')
       .select('id')
       .eq('user_id', userId)
       .eq('email', email)
-      .maybeSingle();
+      .limit(1);
 
     if (fetchError) {
       console.error("Fetch Client Error:", fetchError);
       throw new Error(`Client Lookup Failed: ${fetchError.message}`);
     }
 
-    if (client) {
-      console.log(`Updating existing client: ${client.id}`);
+    let clientId;
+    if (existingClients && existingClients.length > 0) {
+      clientId = existingClients[0].id;
+      console.log(`Updating existing client: ${clientId}`);
       const { error: updateError } = await supabase
         .from('clients')
         .update({
           name: name,
           phone: attendee.phoneNumber ? String(attendee.phoneNumber) : null,
         })
-        .eq('id', client.id);
+        .eq('id', clientId);
       
-      if (updateError) throw updateError;
+      if (updateError) {
+        console.error("Update Client Error:", updateError);
+        throw updateError;
+      }
     } else {
       console.log(`Creating new client for: ${email}`);
       const { data: newClient, error: insertError } = await supabase
@@ -95,6 +101,7 @@ serve(async (req) => {
           name: name,
           email: email,
           phone: attendee.phoneNumber ? String(attendee.phoneNumber) : null,
+          suburbs: [] // Explicitly send empty array to avoid JSON default issues
         })
         .select()
         .single();
@@ -103,16 +110,16 @@ serve(async (req) => {
         console.error("Insert Client Error:", insertError);
         throw insertError;
       }
-      client = newClient;
+      clientId = newClient.id;
     }
 
     // 2. Create Appointment
-    console.log(`Creating appointment for client: ${client.id}`);
+    console.log(`Creating appointment for client: ${clientId}`);
     const { error: appError } = await supabase
       .from('appointments')
       .insert({
         user_id: userId,
-        client_id: client.id,
+        client_id: clientId,
         name: title,
         date: startTime,
         tag: "Kinesiology",

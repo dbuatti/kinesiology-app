@@ -136,7 +136,7 @@ const SettingsPage = () => {
               </div>
               <ol className="text-xs text-amber-800 space-y-2 list-decimal pl-4 font-medium">
                 <li>Go to your <strong>Cal.com Dashboard</strong>.</li>
-                <li>Navigate to <strong>Settings > Webhooks</strong>.</li>
+                <li>Navigate to <strong>Settings {" > "} Webhooks</strong>.</li>
                 <li>Click <strong>Add New Webhook</strong>.</li>
                 <li>Paste the URL above into the <strong>Subscriber URL</strong> field.</li>
                 <li>Select <strong>Booking Created</strong> as the event trigger.</li>

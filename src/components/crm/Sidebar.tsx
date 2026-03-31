@@ -417,7 +417,7 @@ const Sidebar = ({ onHide }: SidebarProps) => {
       </Dialog>
 
       <Dialog open={appDialogOpen} onOpenChange={setAppDialogOpen}>
-        <DialogContent className="sm:max-w-[500px] rounded-[2.5rem] p-8">
+        <DialogContent className="sm:max-w-[550px] rounded-[2.5rem] p-8">
           <DialogHeader className="mb-4">
             <DialogTitle className="text-2xl font-black tracking-tight">Schedule New Session</DialogTitle>
           </DialogHeader>

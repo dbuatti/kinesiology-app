@@ -140,7 +140,7 @@ const ProceduresPage = () => {
                 <Button 
                   onClick={handleCommitFocus}
                   disabled={committing}
-                  className="bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl h-12 px-8 font-black text-xs uppercase tracking-widest shadow-lg shadow-indigo-200"
+                  className="bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl h-12 px-8 font-black text-xs uppercase tracking-widest shadow-lg shadow-indigo-100"
                 >
                   {committing ? <Loader2 className="mr-2 animate-spin" /> : <CheckCircle2 size={18} className="mr-2" />}
                   Commit to this Focus

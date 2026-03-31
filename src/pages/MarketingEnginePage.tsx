@@ -12,12 +12,14 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { 
   Mic, Brain, Target, Laptop, AlertTriangle, Lightbulb, 
   CheckCircle2, Workflow, Clock, Sparkles, Link as LinkIcon, Send,
-  BookOpen, Wand2, Copy, Check, User, Activity, History, Mail
+  BookOpen, Wand2, Copy, Check, User, Activity, History, Mail,
+  Trophy, ArrowRight, Star
 } from "lucide-react";
 import AppLayout from "@/components/crm/AppLayout";
 import Breadcrumbs from "@/components/shared/Breadcrumbs";
 import { cn } from "@/lib/utils";
 import { showSuccess } from "@/utils/toast";
+import { format } from "date-fns";
 
 const MarketingEnginePage = () => {
   const [activeTab, setActiveTab] = useState("guide");
@@ -32,6 +34,7 @@ const MarketingEnginePage = () => {
 
   useEffect(() => {
     const fetchWins = async () => {
+      // Fetch completed sessions with significant BOLT improvements or detailed notes
       const { data } = await supabase
         .from('appointments')
         .select('id, goal, issue, bolt_score, date, clients(name)')
@@ -58,7 +61,7 @@ const MarketingEnginePage = () => {
     }
 
     const formatInstruction = 
-      outputFormat === "kit_broadcast" ? "Create a high-value Kit (ConvertKit) Broadcast email. Include 3 variations of a compelling subject line. Use a personal, one-to-one tone. Format with plenty of white space for readability in the Kit editor." :
+      outputFormat === "kit_broadcast" ? "Create a high-value Kit (ConvertKit) Broadcast email. Include 3 variations of a compelling subject line. Use a personal, one-to-one tone. Format with plenty of white space for readability in the Kit editor. Ensure the content fits perfectly into the 'Antigravity Clinical Standard' HTML template." :
       outputFormat === "3_emails" ? "Create a 3-part Kit sequence (Monday: Story/Hook, Wednesday: Value/Education, Friday: Offer/Call to Action). Include engaging subject lines and preview text for each." :
       outputFormat === "linkedin" ? "Create an engaging LinkedIn post formatted with short, punchy paragraphs. Start with a strong hook, deliver the value, and end with the call to action." :
       "Create a 5-slide Instagram carousel script. Slide 1: Hook, Slides 2-4: Value/Education, Slide 5: Call to Action.";
@@ -128,8 +131,43 @@ Please provide the final output ready to be reviewed.`;
           </TabsList>
 
           <TabsContent value="guide" className="space-y-12 mt-0">
+            {/* Wins Vault Section */}
+            <div className="space-y-6">
+              <div className="flex items-center justify-between px-2">
+                <h2 className="text-2xl font-black flex items-center gap-3 text-slate-900">
+                  <Trophy size={24} className="text-amber-500" /> The Wins Vault
+                </h2>
+                <Badge variant="outline" className="font-bold border-amber-200 text-amber-600">
+                  {recentWins.length} Potential Stories
+                </Badge>
+              </div>
+              
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {recentWins.map(win => (
+                  <Card key={win.id} className="border-none shadow-md rounded-[2rem] bg-card hover:shadow-xl transition-all group cursor-pointer" onClick={() => { setSelectedWin(win.id); setActiveTab('studio'); }}>
+                    <CardContent className="p-6 space-y-4">
+                      <div className="flex items-start justify-between">
+                        <div className="w-10 h-10 rounded-xl bg-amber-50 flex items-center justify-center text-amber-600 group-hover:bg-amber-500 group-hover:text-white transition-all">
+                          <Star size={20} className="fill-current" />
+                        </div>
+                        <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">{format(new Date(win.date), "MMM d")}</span>
+                      </div>
+                      <div>
+                        <p className="text-[10px] font-black text-indigo-600 uppercase tracking-widest mb-1">{win.clients?.name}</p>
+                        <h3 className="font-black text-lg text-slate-900 line-clamp-2 leading-tight">{win.issue}</h3>
+                      </div>
+                      <div className="pt-4 border-t border-slate-50 flex items-center justify-between">
+                        <span className="text-[10px] font-black uppercase tracking-widest text-slate-400 group-hover:text-indigo-600 transition-colors">Create Content</span>
+                        <ArrowRight size={16} className="text-slate-300 group-hover:text-indigo-600 group-hover:translate-x-1 transition-all" />
+                      </div>
+                    </CardContent>
+                  </Card>
+                ))}
+              </div>
+            </div>
+
             {/* Strategic Foundation */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-8 pt-8 border-t border-slate-200">
               <div className="space-y-6">
                 <h2 className="text-2xl font-black flex items-center gap-3 text-slate-900">
                   <LinkIcon size={24} className="text-indigo-600" /> Renting vs. Owning
@@ -175,35 +213,6 @@ Please provide the final output ready to be reviewed.`;
                     </ol>
                   </CardContent>
                 </Card>
-              </div>
-            </div>
-
-            {/* The 4-Phase Workflow */}
-            <div className="space-y-8 pt-8 border-t border-slate-200">
-              <div className="text-center space-y-4 max-w-2xl mx-auto">
-                <h2 className="text-4xl font-black text-slate-900">The 4-Phase Workflow</h2>
-                <p className="text-slate-500 font-medium text-lg">Transform a 20-minute walk into a week's worth of content.</p>
-              </div>
-
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-                {[
-                  { step: 1, time: "15 mins", title: "Voice Capture", icon: Mic, color: "text-blue-600", bg: "bg-blue-50", border: "border-blue-200", desc: "Speak a story/insight to Claude on a walk." },
-                  { step: 2, time: "Instant", title: "AI Generation", icon: Workflow, color: "text-purple-600", bg: "bg-purple-50", border: "border-purple-200", desc: "Use the Prompt Studio to format the output." },
-                  { step: 3, time: "15 mins", title: "Refinement", icon: Laptop, color: "text-emerald-600", bg: "bg-emerald-50", border: "border-emerald-200", desc: "Restore human precision and voice alignment." },
-                  { step: 4, time: "10 mins", title: "Distribution", icon: Send, color: "text-rose-600", bg: "bg-rose-50", border: "border-rose-200", desc: "Schedule in Kit or LinkedIn." }
-                ].map((phase) => (
-                  <Card key={phase.step} className={cn("border-2 shadow-lg rounded-3xl relative overflow-hidden", phase.border)}>
-                    <div className="absolute top-0 right-0 p-4 opacity-5"><phase.icon size={80} /></div>
-                    <CardHeader className={cn("pb-4", phase.bg)}>
-                      <div className="flex justify-between items-start mb-2">
-                        <span className={cn("w-8 h-8 rounded-full flex items-center justify-center font-black text-white", phase.color.replace('text', 'bg'))}>{phase.step}</span>
-                        <Badge variant="outline" className={cn("bg-white font-black text-[10px] uppercase tracking-widest", phase.color)}><Clock size={12} className="mr-1" /> {phase.time}</Badge>
-                      </div>
-                      <CardTitle className={cn("text-xl font-black", phase.color)}>{phase.title}</CardTitle>
-                    </CardHeader>
-                    <CardContent className="pt-4"><p className="font-medium text-slate-600 text-sm">{phase.desc}</p></CardContent>
-                  </Card>
-                ))}
               </div>
             </div>
           </TabsContent>

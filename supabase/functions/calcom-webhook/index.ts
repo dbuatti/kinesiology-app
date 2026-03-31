@@ -9,7 +9,7 @@ const corsHeaders = {
 }
 
 serve(async (req) => {
-  console.log("--- [v9] CAL.COM WEBHOOK START ---");
+  console.log("--- [v10] HARDENED WEBHOOK START ---");
 
   if (req.method === 'OPTIONS') {
     return new Response('ok', { headers: corsHeaders })
@@ -18,24 +18,24 @@ serve(async (req) => {
   try {
     const supabaseUrl = Deno.env.get('SUPABASE_URL')
     const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')
-    
-    // Explicitly create a clean client to avoid header inheritance
+
+    // V10 FIX: Use a custom fetch to FORCE-KILL any inherited headers from the request
     const supabase = createClient(supabaseUrl, supabaseServiceKey, {
-      auth: {
-        persistSession: false,
-        autoRefreshToken: false,
-        detectSessionInUrl: false
-      },
       global: {
-        headers: { Authorization: `Bearer ${supabaseServiceKey}` }
-      }
+        fetch: (url, options) => {
+          const newHeaders = new Headers(options?.headers);
+          newHeaders.set('Authorization', `Bearer ${supabaseServiceKey}`);
+          newHeaders.set('apikey', supabaseServiceKey);
+          return fetch(url, { ...options, headers: newHeaders });
+        },
+      },
+      auth: { persistSession: false }
     })
 
     const body = await req.json()
     const { triggerEvent, payload } = body
 
     if (triggerEvent !== 'BOOKING_CREATED') {
-      console.log(`Ignored event: ${triggerEvent}`);
       return new Response(JSON.stringify({ message: 'Ignored' }), { status: 200, headers: corsHeaders });
     }
 
@@ -43,78 +43,55 @@ serve(async (req) => {
     const email = String(attendee.email).toLowerCase().trim()
     const name = String(attendee.name || "Unknown").trim()
 
-    // Get your User ID (Practitioner)
+    // 1. Get Practitioner ID
     const { data: userData, error: userError } = await supabase.auth.admin.listUsers()
-    if (userError || !userData.users.length) throw new Error("Could not find practitioner user");
+    if (userError) throw new Error(`User List Error: ${userError.message}`);
     const userId = userData.users[0].id;
 
-    // 1. Process Client
-    const { data: existingClient, error: fetchError } = await supabase
+    // 2. Process Client
+    const { data: existingClient } = await supabase
       .from('clients')
       .select('id')
       .eq('user_id', userId)
       .eq('email', email)
       .maybeSingle();
 
-    if (fetchError) throw new Error(`Client Lookup Error: ${fetchError.message}`);
-
     let clientId;
-
     if (existingClient) {
       clientId = existingClient.id;
-      console.log(`Updating existing client: ${clientId}`);
       await supabase.from('clients').update({ name }).eq('id', clientId);
     } else {
-      const insertPayload = {
-        user_id: userId,
-        name: name,
-        email: email
-      };
-      
-      console.log("Attempting Client Insert with payload:", JSON.stringify(insertPayload));
-      
       const { data: newClient, error: insertError } = await supabase
         .from('clients')
-        .insert(insertPayload)
+        .insert({ user_id: userId, name, email })
         .select()
         .single();
       
-      if (insertError) {
-        console.error("DB Client Insert Error Details:", insertError);
-        throw insertError;
-      }
+      if (insertError) throw insertError;
       clientId = newClient.id;
     }
 
-    // 2. Create Appointment
-    const appPayload = {
-      user_id: userId,
-      client_id: clientId,
-      name: payload.title || "Session",
-      date: payload.startTime,
-      status: "Scheduled",
-      notes: `Cal.com UID: ${payload.uid}`
-    };
-
-    console.log("Attempting Appointment Insert with payload:", JSON.stringify(appPayload));
-
+    // 3. Create Appointment
     const { error: appError } = await supabase
       .from('appointments')
-      .insert(appPayload);
+      .insert({
+        user_id: userId,
+        client_id: clientId,
+        name: payload.title || "Session",
+        date: payload.startTime,
+        status: "Scheduled",
+        notes: `Cal.com UID: ${payload.uid}`
+      })
 
-    if (appError) {
-      console.error("DB Appointment Insert Error Details:", appError);
-      throw appError;
-    }
+    if (appError) throw appError;
 
-    console.log("--- [v9] WEBHOOK SUCCESS ---");
-    return new Response(JSON.stringify({ success: true }), { 
+    return new Response(JSON.stringify({ success: true, version: "v10" }), { 
       status: 200, 
       headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
     });
 
   } catch (error) {
-    console.error("V9 Critical Error:", error.message);
+    console.error("V10 Critical Error:", error.message);
     return new Response(JSON.stringify({ error: error.message }), { 
       status: 400, 
       headers: { ...corsHeaders, 'Content-Type': 'application/json' } 

@@ -16,6 +16,7 @@ import AuthLayout from "./layouts/AuthLayout";
 import DashboardPage from "./pages/app/DashboardPage";
 import LoginPage from "./pages/auth/LoginPage";
 import OnboardingPage from "./pages/public/OnboardingPage";
+import OnboardingLookupPage from "./pages/public/OnboardingLookupPage";
 import ClientsPage from "./pages/ClientsPage";
 import ClientDetailPage from "./pages/ClientDetailPage";
 import AppointmentsPage from "./pages/AppointmentsPage";
@@ -62,6 +63,7 @@ const AppRoutes = () => {
       {/* Public Routes */}
       <Route element={<AuthLayout />}>
         <Route path="/login" element={<LoginPage />} />
+        <Route path="/onboarding/welcome" element={<OnboardingLookupPage />} />
         <Route path="/onboarding/:id" element={<OnboardingPage />} />
       </Route>
 

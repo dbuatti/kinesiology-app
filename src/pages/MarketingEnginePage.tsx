@@ -13,13 +13,15 @@ import {
   Mic, Brain, Target, Laptop, AlertTriangle, Lightbulb, 
   CheckCircle2, Workflow, Clock, Sparkles, Link as LinkIcon, Send,
   BookOpen, Wand2, Copy, Check, User, Activity, History, Mail,
-  Trophy, ArrowRight, Star
+  Trophy, ArrowRight, Star, ExternalLink, MessageSquare
 } from "lucide-react";
 import AppLayout from "@/components/crm/AppLayout";
 import Breadcrumbs from "@/components/shared/Breadcrumbs";
 import { cn } from "@/lib/utils";
 import { showSuccess } from "@/utils/toast";
 import { format } from "date-fns";
+
+const CLAUDE_MARKETING_CHAT = "https://claude.ai/chat/e4805343-71a0-48fc-a1e0-4d2dde541a88";
 
 const MarketingEnginePage = () => {
   const [activeTab, setActiveTab] = useState("guide");
@@ -34,7 +36,6 @@ const MarketingEnginePage = () => {
 
   useEffect(() => {
     const fetchWins = async () => {
-      // Fetch completed sessions with significant BOLT improvements or detailed notes
       const { data } = await supabase
         .from('appointments')
         .select('id, goal, issue, bolt_score, date, clients(name)')
@@ -113,10 +114,24 @@ Please provide the final output ready to be reviewed.`;
             <Badge className="bg-emerald-500/20 text-emerald-300 border-emerald-500/30 font-black text-[10px] uppercase tracking-[0.3em] px-4 py-1">
               Business Operating System
             </Badge>
-            <h1 className="text-4xl md:text-5xl font-black tracking-tighter leading-tight">The AI Marketing Engine</h1>
-            <p className="text-lg text-slate-300 font-medium max-w-2xl leading-relaxed">
-              Transform clinical wins and raw thoughts into distribution-ready assets for your Kit newsletter.
-            </p>
+            <div className="flex flex-col md:flex-row md:items-center justify-between w-full gap-6">
+              <div className="space-y-2">
+                <h1 className="text-4xl md:text-5xl font-black tracking-tighter leading-tight">The AI Marketing Engine</h1>
+                <p className="text-lg text-slate-300 font-medium max-w-2xl leading-relaxed">
+                  Transform clinical wins and raw thoughts into distribution-ready assets for your Kit newsletter.
+                </p>
+              </div>
+              <Button 
+                asChild
+                className="bg-white text-slate-950 hover:bg-emerald-50 h-14 px-8 rounded-2xl font-black text-xs uppercase tracking-widest shadow-xl shrink-0"
+              >
+                <a href={CLAUDE_MARKETING_CHAT} target="_blank" rel="noopener noreferrer">
+                  <MessageSquare size={18} className="mr-2 text-emerald-600" />
+                  Launch Claude Marketing Chat
+                  <ExternalLink size={14} className="ml-2 opacity-50" />
+                </a>
+              </Button>
+            </div>
           </div>
         </div>
 
@@ -297,6 +312,20 @@ Please provide the final output ready to be reviewed.`;
                         </SelectContent>
                       </Select>
                     </div>
+                  </CardContent>
+                </Card>
+
+                <Card className="border-none shadow-lg rounded-2xl bg-indigo-50 border border-indigo-100">
+                  <CardContent className="p-6 flex items-center justify-between">
+                    <div className="flex items-center gap-3">
+                      <MessageSquare size={20} className="text-indigo-600" />
+                      <span className="text-sm font-bold text-indigo-900">Claude Marketing Chat</span>
+                    </div>
+                    <Button variant="ghost" size="sm" asChild className="text-indigo-600 hover:bg-indigo-100 font-black text-[10px] uppercase tracking-widest">
+                      <a href={CLAUDE_MARKETING_CHAT} target="_blank" rel="noopener noreferrer">
+                        Open <ExternalLink size={12} className="ml-1.5" />
+                      </a>
+                    </Button>
                   </CardContent>
                 </Card>
               </div>

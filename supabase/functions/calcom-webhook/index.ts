@@ -60,14 +60,14 @@ async function sendGmail(accessToken: string, from: string, to: string, subject:
 
 serve(async (req) => {
   if (req.method === 'GET') {
-    return new Response(JSON.stringify({ status: "active", provider: "gmail", version: "v35" }), { 
+    return new Response(JSON.stringify({ status: "active", provider: "gmail", version: "v36" }), { 
       status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
     });
   }
 
   if (req.method === 'OPTIONS') return new Response('ok', { headers: corsHeaders })
 
-  console.log("--- [v35] CAL.COM WEBHOOK + GMAIL SYNC START ---");
+  console.log("--- [v36] CAL.COM WEBHOOK + GMAIL SYNC START ---");
 
   try {
     const supabaseUrl = Deno.env.get('SUPABASE_URL')
@@ -135,17 +135,54 @@ serve(async (req) => {
         const onboardingUrl = `https://kinesiology-app.vercel.app/onboarding/${dbClient.id}`;
         
         const htmlBody = `
-          <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; color: #1e293b;">
-            <h2 style="color: #4f46e5;">Welcome to Functional Neuro Health</h2>
-            <p>Hi ${name.split(' ')[0]},</p>
-            <p>Thanks for booking your session! To help us prepare and get the most out of our time together, please complete your clinical onboarding form before we meet.</p>
-            <div style="margin: 30px 0;">
-              <a href="${onboardingUrl}" style="background-color: #4f46e5; color: white; padding: 14px 24px; text-decoration: none; border-radius: 12px; font-weight: bold; display: inline-block;">Complete My Onboarding Form</a>
+          <!DOCTYPE html>
+          <html>
+          <head>
+            <style>
+              body { margin: 0; padding: 0; background-color: #f8fafc; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; }
+              .wrapper { width: 100%; background-color: #f8fafc; padding: 40px 0; }
+              .container { max-width: 600px; margin: 0 auto; background-color: #ffffff; border-radius: 24px; overflow: hidden; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1); }
+              .header { background-color: #4f46e5; padding: 40px; text-align: center; color: #ffffff; }
+              .logo { font-size: 24px; font-weight: 900; letter-spacing: -0.05em; text-transform: uppercase; }
+              .logo-icon { background-color: rgba(255,255,255,0.2); padding: 8px 12px; border-radius: 12px; margin-right: 8px; }
+              .content { padding: 40px; line-height: 1.6; color: #334155; }
+              .button { display: inline-block; background-color: #4f46e5; color: #ffffff !important; padding: 16px 32px; border-radius: 14px; text-decoration: none; font-weight: bold; font-size: 14px; text-transform: uppercase; letter-spacing: 0.1em; margin: 20px 0; }
+              .footer { padding: 40px; text-align: center; color: #94a3b8; font-size: 12px; }
+            </style>
+          </head>
+          <body>
+            <div class="wrapper">
+              <div class="container">
+                <div class="header">
+                  <div class="logo"><span class="logo-icon">A</span> Antigravity</div>
+                  <div style="font-size: 10px; font-weight: bold; letter-spacing: 0.2em; margin-top: 10px; text-transform: uppercase; opacity: 0.8;">Functional Neuro Health</div>
+                </div>
+                <div class="content">
+                  <h2 style="color: #0f172a; margin-top: 0;">Action Required: Your Onboarding Form</h2>
+                  <p>Hi ${name.split(' ')[0]},</p>
+                  <p>Thanks for booking your session! To help us prepare and get the most out of our time together, please complete your clinical onboarding form before we meet.</p>
+                  <div style="text-align: center;">
+                    <a href="${onboardingUrl}" class="button">Complete My Onboarding Form</a>
+                  </div>
+                  <p style="font-size: 13px; color: #64748b; margin-top: 30px;">
+                    If the button doesn't work, copy and paste this link into your browser:<br/>
+                    <a href="${onboardingUrl}" style="color: #4f46e5;">${onboardingUrl}</a>
+                  </p>
+                </div>
+                <div style="padding: 0 40px 40px 40px;">
+                  <div style="border-top: 1px solid #f1f5f9; padding-top: 20px;">
+                    <div style="font-weight: 800; color: #0f172a; font-size: 14px;">Daniele Buatti</div>
+                    <div style="color: #94a3b8; font-size: 12px; font-weight: 600;">Integrated Healer & Practitioner</div>
+                  </div>
+                </div>
+              </div>
+              <div class="footer">
+                <p>"The deeper you work, the higher you rise."</p>
+                <p>© ${new Date().getFullYear()} Antigravity Kinesiology</p>
+              </div>
             </div>
-            <p style="font-size: 14px; color: #64748b;">If the button doesn't work, copy and paste this link: <br/> ${onboardingUrl}</p>
-            <hr style="border: none; border-top: 1px solid #e2e8f0; margin: 30px 0;" />
-            <p style="font-size: 12px; color: #94a3b8;">"The deeper you work, the higher you rise."</p>
-          </div>
+          </body>
+          </html>
         `;
 
         await sendGmail(accessToken, SENDER_EMAIL, email, "Action Required: Your Onboarding Form", htmlBody);

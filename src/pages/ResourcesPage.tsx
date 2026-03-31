@@ -214,8 +214,8 @@ const ResourcesPage = () => {
                     </div>
                     <div className="flex items-center justify-between mt-8">
                       <div className="flex gap-2">
-                        {["P", "E", "A", "C", "E"].map((letter) => (
-                          <span key={letter} className="w-6 h-6 rounded-full bg-white/10 flex items-center justify-center font-black text-xs text-white/80">
+                        {["P", "E", "A", "C", "E"].map((letter, idx) => (
+                          <span key={`${letter}-${idx}`} className="w-6 h-6 rounded-full bg-white/10 flex items-center justify-center font-black text-xs text-white/80">
                             {letter}
                           </span>
                         ))}
@@ -395,7 +395,7 @@ const ResourcesPage = () => {
                     <Card className="lg:col-span-2 border-none shadow-lg rounded-[2.5rem] bg-card overflow-hidden">
                       <CardHeader className="p-8 bg-rose-50 dark:bg-rose-900/20">
                         <h3 className="text-2xl font-black flex items-center gap-3 text-rose-900 dark:text-rose-100">
-                          <Info size={28} /> The 9-Step Hierarchy
+                          <Info size={28} /> {`The 9-Step Hierarchy`}
                         </h3>
                       </CardHeader>
                       <CardContent className="p-8 space-y-6">
@@ -435,7 +435,7 @@ const ResourcesPage = () => {
                         </CardHeader>
                         <CardContent className="p-8 pt-0 space-y-4">
                           <p className="text-sm text-slate-300 leading-relaxed">
-                            "Talk therapy often fails because it doesn't go to the depths of the physiology to clear the circuit. We are bringing blood flow back to the <strong>Frontal Lobe</strong> while remapping the <strong>Limbic</strong> response."
+                            {`"Talk therapy often fails because it doesn't go to the depths of the physiology to clear the circuit. We are bringing blood flow back to the Frontal Lobe while remapping the Limbic response."`}
                           </p>
                           <div className="pt-4 border-t border-white/10">
                             <p className="text-[10px] font-black text-indigo-400 uppercase tracking-widest mb-2">Signs of Shift</p>
@@ -481,8 +481,8 @@ const ResourcesPage = () => {
                     <Card className="border-none shadow-lg rounded-[2.5rem] bg-card overflow-hidden">
                       <CardHeader className="bg-indigo-50 dark:bg-indigo-900/20 p-8"><CardTitle className="text-xl font-black flex items-center gap-3 text-indigo-900 dark:text-indigo-100"><ShieldAlert size={24} /> Contralateral vs Ipsilateral</CardTitle></CardHeader>
                       <CardContent className="p-8 space-y-6">
-                        <div className="p-5 bg-muted/30 rounded-2xl border border-border"><h4 className="font-black text-indigo-600 dark:text-indigo-400 text-xs uppercase tracking-widest mb-2">Cortical Logic (Contralateral)</h4><p className="text-sm text-muted-foreground leading-relaxed font-medium">The <strong>Cortex</strong> (PFC, M1, S1) controls the opposite side of the body. If the left side is dysfunctional, check the right cortex.</p></div>
-                        <div className="p-5 bg-muted/30 rounded-2xl border border-border"><h4 className="font-black text-rose-600 dark:text-rose-400 text-xs uppercase tracking-widest mb-2">Subcortical Logic (Ipsilateral)</h4><p className="text-sm text-muted-foreground leading-relaxed font-medium">The <strong>Brainstem & Cerebellum</strong> control the same side of the body. If the left side is dysfunctional, check the left cerebellum.</p></div>
+                        <div className="p-5 bg-muted/30 rounded-2xl border border-border"><h4 className="font-black text-indigo-600 dark:text-indigo-400 text-xs uppercase tracking-widest mb-2">Cortical Logic (Contralateral)</h4><p className="text-sm text-muted-foreground leading-relaxed font-medium">{`The Cortex (PFC, M1, S1) controls the opposite side of the body. If the left side is dysfunctional, check the right cortex.`}</p></div>
+                        <div className="p-5 bg-muted/30 rounded-2xl border border-border"><h4 className="font-black text-rose-600 dark:text-rose-400 text-xs uppercase tracking-widest mb-2">Subcortical Logic (Ipsilateral)</h4><p className="text-sm text-muted-foreground leading-relaxed font-medium">{`The Brainstem & Cerebellum control the same side of the body. If the left side is dysfunctional, check the left cerebellum.`}</p></div>
                       </CardContent>
                     </Card>
                   </div>
@@ -496,14 +496,14 @@ const ResourcesPage = () => {
                       <div className="w-14 h-14 bg-white/20 backdrop-blur-md rounded-2xl flex items-center justify-center"><Droplets size={32} /></div>
                       <div><CardTitle className="text-3xl font-black">Lymphatic System Assessment</CardTitle></div>
                     </div>
-                    <p className="text-blue-50 text-lg max-w-2xl leading-relaxed font-medium">"Drainage Precedes Supply" — Addressing lymphatic stasis to reduce neural inflammation.</p>
+                    <p className="text-blue-50 text-lg max-w-2xl leading-relaxed font-medium">{`"Drainage Precedes Supply" — Addressing lymphatic stasis to reduce neural inflammation.`}</p>
                   </div>
                   <CardContent className="p-8">
                     <div className="grid grid-cols-1 lg:grid-cols-3 gap-12">
                       <div className="lg:col-span-2 space-y-10">
                         <section className="space-y-4">
                           <h3 className="text-xl font-bold text-foreground flex items-center gap-2"><Info size={20} className="text-blue-600" /> Philosophy & Theory</h3>
-                          <p className="text-muted-foreground leading-relaxed font-medium">The lymphatic system is the body's primary waste removal network.</p>
+                          <p className="text-muted-foreground leading-relaxed font-medium">{`The lymphatic system is the body's primary waste removal network.`}</p>
                         </section>
                       </div>
                     </div>
@@ -539,7 +539,7 @@ const ResourcesPage = () => {
                       <CardContent className="p-8 space-y-8">
                         <div className="space-y-4">
                           <p className="text-lg font-medium text-muted-foreground leading-relaxed">
-                            Righting reflexes are the "next lot" of reflexes that take over once primitive reflexes integrate (usually around 1-2 years). They represent the architecture of the nervous system's ability to organize the head around the eyes and the horizon.
+                            {`Righting reflexes are the "next lot" of reflexes that take over once primitive reflexes integrate (usually around 1-2 years). They represent the architecture of the nervous system's ability to organize the head around the eyes and the horizon.`}
                           </p>
                           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                             <div className="p-6 bg-blue-50 dark:bg-blue-900/20 rounded-3xl border border-blue-100 dark:border-blue-900/30">
@@ -595,7 +595,7 @@ const ResourcesPage = () => {
                             </div>
                           </div>
                           <div className="pt-4 border-t border-white/10">
-                            <p className="text-xs text-slate-400 italic">"Clearing the primitive reflexes first often clears the righting reflexes automatically."</p>
+                            <p className="text-xs text-slate-400 italic">{`"Clearing the primitive reflexes first often clears the righting reflexes automatically."`}</p>
                           </div>
                         </div>
                       </CardContent>

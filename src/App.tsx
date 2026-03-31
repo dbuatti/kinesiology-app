@@ -38,6 +38,7 @@ import AngerFlowWorksheetPage from "./pages/AngerFlowWorksheetPage";
 import QuickCalibratePage from "./pages/QuickCalibratePage";
 import PEACEFrameworkPage from "./pages/PEACEFrameworkPage";
 import MarketingEnginePage from "./pages/MarketingEnginePage";
+import BusinessHubPage from "./pages/BusinessHubPage";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -95,7 +96,8 @@ const AppRoutes = () => {
         <Route path="/resources/worksheets/inner-awareness" element={<InnerAwarenessWorksheetPage />} />
         <Route path="/resources/worksheets/anger-flow" element={<AngerFlowWorksheetPage />} />
         
-        {/* Business Tools - Hidden from main nav */}
+        {/* Business Tools */}
+        <Route path="/business" element={<BusinessHubPage />} />
         <Route path="/business/marketing-engine" element={<MarketingEnginePage />} />
 
         {/* System */}

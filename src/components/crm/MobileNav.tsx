@@ -18,7 +18,8 @@ import {
   CalendarPlus,
   Zap,
   HelpCircle,
-  FileText
+  FileText,
+  Briefcase
 } from "lucide-react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { cn } from "@/lib/utils";
@@ -56,6 +57,7 @@ const MobileNav = () => {
     { label: "Procedures", icon: Target, path: "/practice/procedures" },
     { label: "Worksheets", icon: FileText, path: "/resources/worksheets" },
     { label: "Resources", icon: BookOpen, path: "/resources" },
+    { label: "Business Hub", icon: Briefcase, path: "/business" },
   ];
 
   const handleSignOut = async () => {

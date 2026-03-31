@@ -8,12 +8,14 @@ const corsHeaders = {
   'Access-Control-Allow-Methods': 'POST, OPTIONS',
 }
 
+// The new Notion Database ID provided by the user
+const NOTION_DATABASE_ID = "171f7156cdc645e8b689af13d217bc7c";
+
 async function syncToNotion(appointmentData: any) {
   const NOTION_KEY = Deno.env.get('NOTION_API_KEY')
-  const DATABASE_ID = Deno.env.get('NOTION_DATABASE_ID')
 
-  if (!NOTION_KEY || !DATABASE_ID) {
-    console.error("--- NOTION SYNC SKIPPED: Missing NOTION_API_KEY or NOTION_DATABASE_ID in Supabase Secrets ---")
+  if (!NOTION_KEY) {
+    console.error("--- NOTION SYNC SKIPPED: Missing NOTION_API_KEY in Supabase Secrets ---")
     return
   }
 
@@ -36,7 +38,7 @@ async function syncToNotion(appointmentData: any) {
   }
 
   try {
-    console.log(`Attempting to sync to Notion database: ${DATABASE_ID.substring(0, 5)}...`);
+    console.log(`Attempting to sync to Notion database: ${NOTION_DATABASE_ID.substring(0, 5)}...`);
     const response = await fetch('https://api.notion.com/v1/pages', {
       method: 'POST',
       headers: {
@@ -45,7 +47,7 @@ async function syncToNotion(appointmentData: any) {
         'Notion-Version': '2022-06-28'
       },
       body: JSON.stringify({
-        parent: { database_id: DATABASE_ID },
+        parent: { database_id: NOTION_DATABASE_ID },
         properties: properties
       })
     })
@@ -64,16 +66,15 @@ async function syncToNotion(appointmentData: any) {
 
 async function deleteFromNotion(calcomUid: string) {
   const NOTION_KEY = Deno.env.get('NOTION_API_KEY')
-  const DATABASE_ID = Deno.env.get('NOTION_DATABASE_ID')
 
-  if (!NOTION_KEY || !DATABASE_ID) {
+  if (!NOTION_KEY) {
     console.error("--- NOTION DELETE SKIPPED: Missing Secrets ---")
     return
   }
 
   try {
     // 1. Search for the page in the database that contains the Calcom UID in the Notes property
-    const searchResponse = await fetch(`https://api.notion.com/v1/databases/${DATABASE_ID}/query`, {
+    const searchResponse = await fetch(`https://api.notion.com/v1/databases/${NOTION_DATABASE_ID}/query`, {
       method: 'POST',
       headers: {
         'Authorization': `Bearer ${NOTION_KEY}`,
@@ -120,7 +121,7 @@ async function deleteFromNotion(calcomUid: string) {
 }
 
 serve(async (req) => {
-  console.log("--- [v16] CAL.COM WEBHOOK START ---");
+  console.log("--- [v17] CAL.COM WEBHOOK START ---");
 
   if (req.method === 'OPTIONS') return new Response('ok', { headers: corsHeaders })
 
@@ -148,7 +149,6 @@ serve(async (req) => {
       console.log(`Processing cancellation for UID: ${calcomUid}`);
 
       // 1. Find and delete from Supabase
-      // We search the notes field where we store the UID
       const { data: appToDelete } = await supabase
         .from('appointments')
         .select('id')
@@ -252,7 +252,7 @@ serve(async (req) => {
     });
 
   } catch (error) {
-    console.error("V16 Error:", error.message);
+    console.error("V17 Error:", error.message);
     return new Response(JSON.stringify({ error: error.message }), { 
       status: 400, 
       headers: { ...corsHeaders, 'Content-Type': 'application/json' } 

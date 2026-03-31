@@ -7,6 +7,9 @@ const corsHeaders = {
   'Access-Control-Allow-Methods': 'POST, OPTIONS',
 }
 
+// The new Notion Database ID provided by the user
+const NOTION_DATABASE_ID = "171f7156cdc645e8b689af13d217bc7c";
+
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
     return new Response('ok', { headers: corsHeaders })
@@ -16,10 +19,9 @@ serve(async (req) => {
     const { appointment } = await req.json()
     
     const NOTION_KEY = Deno.env.get('NOTION_API_KEY')
-    const DATABASE_ID = Deno.env.get('NOTION_DATABASE_ID')
 
-    if (!NOTION_KEY || !DATABASE_ID) {
-      throw new Error("Missing Notion Secrets in Supabase.")
+    if (!NOTION_KEY) {
+      throw new Error("Missing NOTION_API_KEY in Supabase Secrets.")
     }
 
     // Map CRM fields to your Notion Database properties
@@ -63,7 +65,7 @@ serve(async (req) => {
         'Notion-Version': '2022-06-28'
       },
       body: JSON.stringify({
-        parent: { database_id: DATABASE_ID },
+        parent: { database_id: NOTION_DATABASE_ID },
         properties: properties
       })
     })

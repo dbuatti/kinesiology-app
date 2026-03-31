@@ -12,7 +12,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { 
   Mic, Brain, Target, Laptop, AlertTriangle, Lightbulb, 
   CheckCircle2, Workflow, Clock, Sparkles, Link as LinkIcon, Send,
-  BookOpen, Wand2, Copy, Check, User, Activity, History
+  BookOpen, Wand2, Copy, Check, User, Activity, History, Mail
 } from "lucide-react";
 import AppLayout from "@/components/crm/AppLayout";
 import Breadcrumbs from "@/components/shared/Breadcrumbs";
@@ -23,7 +23,7 @@ const MarketingEnginePage = () => {
   const [activeTab, setActiveTab] = useState("guide");
   const [recentWins, setRecentWins] = useState<any[]>([]);
   const [selectedWin, setSelectedWin] = useState<string>("custom");
-  const [outputFormat, setOutputFormat] = useState("3_emails");
+  const [outputFormat, setOutputFormat] = useState("kit_broadcast");
   const [cta, setCta] = useState("book_session");
   
   const [customStory, setCustomStory] = useState("");
@@ -58,13 +58,14 @@ const MarketingEnginePage = () => {
     }
 
     const formatInstruction = 
-      outputFormat === "3_emails" ? "Create a 3-part email sequence (Monday: Story/Hook, Wednesday: Value/Education, Friday: Offer/Call to Action). Include engaging subject lines and preview text for each." :
+      outputFormat === "kit_broadcast" ? "Create a high-value Kit (ConvertKit) Broadcast email. Include 3 variations of a compelling subject line. Use a personal, one-to-one tone. Format with plenty of white space for readability in the Kit editor." :
+      outputFormat === "3_emails" ? "Create a 3-part Kit sequence (Monday: Story/Hook, Wednesday: Value/Education, Friday: Offer/Call to Action). Include engaging subject lines and preview text for each." :
       outputFormat === "linkedin" ? "Create an engaging LinkedIn post formatted with short, punchy paragraphs. Start with a strong hook, deliver the value, and end with the call to action." :
       "Create a 5-slide Instagram carousel script. Slide 1: Hook, Slides 2-4: Value/Education, Slide 5: Call to Action.";
 
     const ctaInstruction = 
       cta === "book_session" ? "Encourage the reader to book an initial kinesiology assessment to identify their own nervous system blocks." :
-      cta === "reply" ? "Ask the reader to reply to the email/post with their biggest current struggle related to this topic." :
+      cta === "reply" ? "Ask the reader to reply to this email with their biggest current struggle related to this topic." :
       "Direct the reader to check out my latest resource or worksheet on this topic.";
 
     return `Act as an expert copywriter for a functional neurology and kinesiology practice. I want to share a clinical insight to educate my audience, demonstrate authority, and build trust.
@@ -111,7 +112,7 @@ Please provide the final output ready to be reviewed.`;
             </Badge>
             <h1 className="text-4xl md:text-5xl font-black tracking-tighter leading-tight">The AI Marketing Engine</h1>
             <p className="text-lg text-slate-300 font-medium max-w-2xl leading-relaxed">
-              Transform clinical wins and raw thoughts into distribution-ready assets.
+              Transform clinical wins and raw thoughts into distribution-ready assets for your Kit newsletter.
             </p>
           </div>
         </div>
@@ -147,7 +148,7 @@ Please provide the final output ready to be reviewed.`;
                   </Card>
                   <Card className="border-2 border-emerald-100 shadow-sm bg-emerald-50/50">
                     <CardHeader className="pb-2">
-                      <CardTitle className="text-lg font-black text-emerald-900">Owned Land (Email List)</CardTitle>
+                      <CardTitle className="text-lg font-black text-emerald-900">Owned Land (Kit Email List)</CardTitle>
                     </CardHeader>
                     <CardContent className="text-sm font-medium text-emerald-800 space-y-2">
                       <ul className="list-disc pl-4 space-y-1">
@@ -169,8 +170,8 @@ Please provide the final output ready to be reviewed.`;
                     <ol className="space-y-4">
                       <li className="flex items-center gap-3"><span className="w-8 h-8 rounded-full bg-indigo-800 flex items-center justify-center font-black">1</span> <strong>Capture attention</strong> (social)</li>
                       <li className="flex items-center gap-3"><span className="w-8 h-8 rounded-full bg-indigo-800 flex items-center justify-center font-black">2</span> <strong>Build trust</strong> (story, value)</li>
-                      <li className="flex items-center gap-3"><span className="w-8 h-8 rounded-full bg-indigo-800 flex items-center justify-center font-black">3</span> <strong>Redirect</strong> → email list</li>
-                      <li className="flex items-center gap-3"><span className="w-8 h-8 rounded-full bg-indigo-800 flex items-center justify-center font-black">4</span> <strong>Nurture deeply</strong> (email)</li>
+                      <li className="flex items-center gap-3"><span className="w-8 h-8 rounded-full bg-indigo-800 flex items-center justify-center font-black">3</span> <strong>Redirect</strong> → Kit email list</li>
+                      <li className="flex items-center gap-3"><span className="w-8 h-8 rounded-full bg-indigo-800 flex items-center justify-center font-black">4</span> <strong>Nurture deeply</strong> (Kit Broadcasts)</li>
                     </ol>
                   </CardContent>
                 </Card>
@@ -189,7 +190,7 @@ Please provide the final output ready to be reviewed.`;
                   { step: 1, time: "15 mins", title: "Voice Capture", icon: Mic, color: "text-blue-600", bg: "bg-blue-50", border: "border-blue-200", desc: "Speak a story/insight to Claude on a walk." },
                   { step: 2, time: "Instant", title: "AI Generation", icon: Workflow, color: "text-purple-600", bg: "bg-purple-50", border: "border-purple-200", desc: "Use the Prompt Studio to format the output." },
                   { step: 3, time: "15 mins", title: "Refinement", icon: Laptop, color: "text-emerald-600", bg: "bg-emerald-50", border: "border-emerald-200", desc: "Restore human precision and voice alignment." },
-                  { step: 4, time: "10 mins", title: "Distribution", icon: Send, color: "text-rose-600", bg: "bg-rose-50", border: "border-rose-200", desc: "Schedule in Mailchimp or LinkedIn." }
+                  { step: 4, time: "10 mins", title: "Distribution", icon: Send, color: "text-rose-600", bg: "bg-rose-50", border: "border-rose-200", desc: "Schedule in Kit or LinkedIn." }
                 ].map((phase) => (
                   <Card key={phase.step} className={cn("border-2 shadow-lg rounded-3xl relative overflow-hidden", phase.border)}>
                     <div className="absolute top-0 right-0 p-4 opacity-5"><phase.icon size={80} /></div>
@@ -203,43 +204,6 @@ Please provide the final output ready to be reviewed.`;
                     <CardContent className="pt-4"><p className="font-medium text-slate-600 text-sm">{phase.desc}</p></CardContent>
                   </Card>
                 ))}
-              </div>
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-8 pt-8">
-              <Card className="border-none shadow-xl rounded-[3rem] bg-amber-50 border-2 border-amber-100">
-                <CardHeader className="p-8 pb-4">
-                  <CardTitle className="text-xl font-black flex items-center gap-3 text-amber-900">
-                    <AlertTriangle size={24} className="text-amber-600" /> Common Pitfalls
-                  </CardTitle>
-                </CardHeader>
-                <CardContent className="p-8 pt-0 space-y-4">
-                  {[
-                    { title: "Over-editing", desc: "Kills momentum. Don't rewrite everything." },
-                    { title: "Skipping walks", desc: "Removes your best creative source." },
-                    { title: "No Call-To-Action", desc: "Emails that lead nowhere don't convert." }
-                  ].map((p, i) => (
-                    <div key={i} className="flex gap-3">
-                      <div className="w-1.5 h-1.5 rounded-full bg-amber-500 mt-2 shrink-0" />
-                      <div>
-                        <p className="font-bold text-amber-900 text-sm">{p.title}</p>
-                        <p className="text-xs text-amber-700 font-medium">{p.desc}</p>
-                      </div>
-                    </div>
-                  ))}
-                </CardContent>
-              </Card>
-
-              <div className="p-8 bg-indigo-50 rounded-[3rem] border-2 border-indigo-100 flex items-start gap-6">
-                <div className="w-16 h-16 rounded-2xl bg-indigo-600 text-white flex items-center justify-center shrink-0 shadow-xl">
-                  <Brain size={32} />
-                </div>
-                <div className="space-y-3">
-                  <h3 className="text-xl font-black text-indigo-900">Training Your AI</h3>
-                  <p className="text-sm text-indigo-800 font-medium leading-relaxed">
-                    The quality of your AI equals the quality of your feedback loop. Reduce editing time over weeks by explicitly feeding it your history (past emails, posts, notes) and defining your style. Each time you edit, you are training it.
-                  </p>
-                </div>
               </div>
             </div>
           </TabsContent>
@@ -296,18 +260,6 @@ Please provide the final output ready to be reviewed.`;
                       </div>
                     )}
 
-                    {selectedWin !== "custom" && (
-                      <div className="p-4 bg-indigo-50 rounded-xl border border-indigo-100 animate-in slide-in-from-top-2 duration-300 space-y-2">
-                        <p className="text-[10px] font-black text-indigo-400 uppercase tracking-widest flex items-center gap-1">
-                          <History size={12} /> Extracted Context
-                        </p>
-                        <p className="text-sm font-bold text-indigo-900 line-clamp-2">
-                          "{recentWins.find(w => w.id === selectedWin)?.issue}"
-                        </p>
-                        <Badge className="bg-indigo-200 text-indigo-800 border-none text-[8px] font-black uppercase">Identity Hidden</Badge>
-                      </div>
-                    )}
-
                     <div className="space-y-3 pt-4 border-t border-slate-100">
                       <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest">2. Output Format</label>
                       <Select value={outputFormat} onValueChange={setOutputFormat}>
@@ -315,7 +267,8 @@ Please provide the final output ready to be reviewed.`;
                           <SelectValue />
                         </SelectTrigger>
                         <SelectContent>
-                          <SelectItem value="3_emails">3-Part Email Sequence</SelectItem>
+                          <SelectItem value="kit_broadcast">Single Kit Broadcast</SelectItem>
+                          <SelectItem value="3_emails">3-Part Kit Sequence</SelectItem>
                           <SelectItem value="linkedin">LinkedIn Post</SelectItem>
                           <SelectItem value="instagram">Instagram Carousel Script</SelectItem>
                         </SelectContent>
@@ -330,7 +283,7 @@ Please provide the final output ready to be reviewed.`;
                         </SelectTrigger>
                         <SelectContent>
                           <SelectItem value="book_session">Book a Session</SelectItem>
-                          <SelectItem value="reply">Reply with Struggle</SelectItem>
+                          <SelectItem value="reply">Reply to Email</SelectItem>
                           <SelectItem value="resource">Download Resource</SelectItem>
                         </SelectContent>
                       </Select>

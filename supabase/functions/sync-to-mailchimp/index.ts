@@ -15,27 +15,24 @@ serve(async (req) => {
   try {
     const { record } = await req.json()
     
-    const MAILCHIMP_API_KEY = Deno.env.get('MAILCHIMP_API_KEY')
-    // Check both common names for the list ID
-    const MAILCHIMP_LIST_ID = Deno.env.get('MAILCHIMP_LIST_ID') || Deno.env.get('MAILCHIMP_AUDIENCE_ID')
+    const apiKey = Deno.env.get('MAILCHIMP_API_KEY')
+    const listId = Deno.env.get('MAILCHIMP_LIST_ID')
+    const audienceId = Deno.env.get('MAILCHIMP_AUDIENCE_ID')
     
-    console.log("Validation Check - API Key present:", !!MAILCHIMP_API_KEY);
-    console.log("Validation Check - List ID present:", !!MAILCHIMP_LIST_ID);
+    const MAILCHIMP_API_KEY = apiKey
+    const MAILCHIMP_LIST_ID = listId || audienceId
     
-    if (!MAILCHIMP_API_KEY) {
-      throw new Error('MAILCHIMP_API_KEY is missing from Supabase Secrets.')
-    }
+    console.log("Secret Validation:");
+    console.log("- API Key found:", !!MAILCHIMP_API_KEY);
+    console.log("- List ID found:", !!listId);
+    console.log("- Audience ID found:", !!audienceId);
     
-    if (MAILCHIMP_API_KEY.includes('your_real_key')) {
-      throw new Error('MAILCHIMP_API_KEY still contains placeholder text.')
-    }
-
-    if (!MAILCHIMP_LIST_ID) {
-      throw new Error('MAILCHIMP_LIST_ID (or MAILCHIMP_AUDIENCE_ID) is missing from Supabase Secrets.')
+    if (!MAILCHIMP_API_KEY || MAILCHIMP_API_KEY.includes('your_real_key')) {
+      throw new Error('MAILCHIMP_API_KEY is missing or invalid in Supabase Secrets.')
     }
 
-    if (MAILCHIMP_LIST_ID.includes('your_real_audience_id')) {
-      throw new Error('MAILCHIMP_LIST_ID still contains placeholder text.')
+    if (!MAILCHIMP_LIST_ID || MAILCHIMP_LIST_ID.includes('your_real_audience_id')) {
+      throw new Error('MAILCHIMP_LIST_ID (or MAILCHIMP_AUDIENCE_ID) is missing or invalid in Supabase Secrets.')
     }
 
     const keyParts = MAILCHIMP_API_KEY.split('-')
@@ -47,6 +44,7 @@ serve(async (req) => {
     const email = record.email
     
     if (!email) {
+      console.log("Sync skipped: No email address for record", record.id);
       return new Response(JSON.stringify({ message: 'No email provided' }), { 
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
         status: 200 
@@ -70,6 +68,8 @@ serve(async (req) => {
 
     const url = `https://${DATACENTER}.api.mailchimp.com/3.0/lists/${MAILCHIMP_LIST_ID}/members`
     
+    console.log(`Attempting to sync ${email} to list ${MAILCHIMP_LIST_ID} on ${DATACENTER}`);
+
     const response = await fetch(url, {
       method: 'POST',
       headers: {
@@ -82,6 +82,7 @@ serve(async (req) => {
     const result = await response.json()
 
     if (!response.ok && result.title === "Member Exists") {
+      console.log(`Member ${email} already exists in Mailchimp.`);
       return new Response(JSON.stringify({ message: 'Member already exists' }), { 
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
         status: 200 
@@ -89,16 +90,18 @@ serve(async (req) => {
     }
 
     if (!response.ok) {
+      console.error("Mailchimp API Error Response:", result);
       throw new Error(result.detail || result.title || 'Mailchimp API error')
     }
 
+    console.log(`Successfully synced ${email} to Mailchimp.`);
     return new Response(JSON.stringify({ success: true }), { 
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       status: 200 
     })
 
   } catch (error) {
-    console.error("Function Error:", error.message)
+    console.error("Function Execution Error:", error.message)
     return new Response(JSON.stringify({ error: error.message }), { 
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       status: 400 

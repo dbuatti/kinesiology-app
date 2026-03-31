@@ -16,23 +16,31 @@ serve(async (req) => {
     const { record } = await req.json()
     
     const MAILCHIMP_API_KEY = Deno.env.get('MAILCHIMP_API_KEY')
-    const MAILCHIMP_LIST_ID = Deno.env.get('MAILCHIMP_LIST_ID')
+    // Check both common names for the list ID
+    const MAILCHIMP_LIST_ID = Deno.env.get('MAILCHIMP_LIST_ID') || Deno.env.get('MAILCHIMP_AUDIENCE_ID')
     
-    // Debugging logs (Safe versions)
-    console.log("Debug - API Key exists:", !!MAILCHIMP_API_KEY);
-    console.log("Debug - List ID value:", MAILCHIMP_LIST_ID);
+    console.log("Validation Check - API Key present:", !!MAILCHIMP_API_KEY);
+    console.log("Validation Check - List ID present:", !!MAILCHIMP_LIST_ID);
     
-    if (!MAILCHIMP_API_KEY || MAILCHIMP_API_KEY.includes('your_real_key')) {
-      throw new Error('MAILCHIMP_API_KEY is missing or still set to placeholder in Supabase Secrets')
+    if (!MAILCHIMP_API_KEY) {
+      throw new Error('MAILCHIMP_API_KEY is missing from Supabase Secrets.')
+    }
+    
+    if (MAILCHIMP_API_KEY.includes('your_real_key')) {
+      throw new Error('MAILCHIMP_API_KEY still contains placeholder text.')
     }
 
-    if (!MAILCHIMP_LIST_ID || MAILCHIMP_LIST_ID.includes('your_real_audience_id')) {
-      throw new Error('MAILCHIMP_LIST_ID is missing or still set to placeholder in Supabase Secrets')
+    if (!MAILCHIMP_LIST_ID) {
+      throw new Error('MAILCHIMP_LIST_ID (or MAILCHIMP_AUDIENCE_ID) is missing from Supabase Secrets.')
+    }
+
+    if (MAILCHIMP_LIST_ID.includes('your_real_audience_id')) {
+      throw new Error('MAILCHIMP_LIST_ID still contains placeholder text.')
     }
 
     const keyParts = MAILCHIMP_API_KEY.split('-')
     if (keyParts.length < 2) {
-      throw new Error(`Invalid API Key format. Expected 'key-datacenter' (e.g. abc-us20), got: ${MAILCHIMP_API_KEY.substring(0, 5)}...`)
+      throw new Error(`Invalid API Key format. Expected 'key-datacenter' (e.g. abc-us20).`)
     }
 
     const DATACENTER = keyParts[1]
@@ -61,8 +69,7 @@ serve(async (req) => {
     }
 
     const url = `https://${DATACENTER}.api.mailchimp.com/3.0/lists/${MAILCHIMP_LIST_ID}/members`
-    console.log(`Syncing ${email} to: ${url}`)
-
+    
     const response = await fetch(url, {
       method: 'POST',
       headers: {

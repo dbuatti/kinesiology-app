@@ -38,8 +38,7 @@ serve(async (req) => {
       results.planner = res.ok ? 'success' : 'failed';
     }
 
-    // 3. Cancel Cal.com Booking
-    // Standard Cal.com API v1 uses DELETE for cancellation
+    // 3. Cancel Cal.com Booking (Primary: DELETE)
     if (calcomBookingId && CALCOM_KEY && calcomBookingId !== "undefined") {
       console.log(`Cancelling Cal.com booking: ${calcomBookingId}`);
       
@@ -50,8 +49,7 @@ serve(async (req) => {
       if (res.ok) {
         results.calcom = 'success';
       } else {
-        // Fallback to /cancel endpoint if DELETE fails
-        console.log("Direct DELETE failed, trying /cancel endpoint...");
+        console.log("Direct DELETE failed, trying /cancel endpoint as fallback...");
         const cancelRes = await fetch(`https://api.cal.com/v1/bookings/${calcomBookingId}/cancel?apiKey=${CALCOM_KEY}`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },

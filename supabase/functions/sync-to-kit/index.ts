@@ -1,10 +1,17 @@
+// @ts-nocheck
 // supabase/functions/sync-to-kit/index.ts
-import { corsHeaders } from 'https://esm.sh/@supabase/supabase-js@2/cors';   // Recommended way in 2026
+import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
+
+const corsHeaders = {
+  'Access-Control-Allow-Origin': '*',
+  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type, x-supabase-client-platform',
+  'Access-Control-Allow-Methods': 'POST, OPTIONS',
+}
 
 const KIT_API_KEY = Deno.env.get('KIT_API_KEY');
 
-Deno.serve(async (req: Request) => {
-  console.log("--- [v4] KIT SYNC START ---");
+serve(async (req: Request) => {
+  console.log("--- [v5] KIT SYNC START ---");
 
   // Handle preflight OPTIONS request (CORS)
   if (req.method === 'OPTIONS') {

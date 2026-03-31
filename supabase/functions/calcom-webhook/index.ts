@@ -4,7 +4,8 @@ import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type, x-supabase-client-platform',
+  'Access-Control-Allow-Methods': 'POST, OPTIONS',
 }
 
 serve(async (req) => {
@@ -36,19 +37,14 @@ serve(async (req) => {
     const title = payload.title || "Kinesiology Session"
     const description = payload.description || ""
     
-    // Extract payment amount (Cal.com sends this in cents/smallest unit usually)
-    // We'll try to find it in the payload
     let amountPaid = 0;
     if (payload.payment && payload.payment.length > 0) {
-      // Cal.com payment object usually has 'amount'
       amountPaid = payload.payment[0].amount / 100; 
     }
 
-    // 1. Find the Practitioner User
     const { data: userData } = await supabase.auth.admin.listUsers()
     const userId = userData.users[0].id
 
-    // 2. Upsert Client in CRM
     const { data: client, error: clientError } = await supabase
       .from('clients')
       .upsert({
@@ -62,7 +58,6 @@ serve(async (req) => {
 
     if (clientError) throw clientError
 
-    // 3. Create Appointment in CRM
     await supabase
       .from('appointments')
       .insert({
@@ -76,7 +71,6 @@ serve(async (req) => {
         notes: `Booked via Cal.com. Paid: $${amountPaid}. UID: ${payload.uid}`
       })
 
-    // 4. SYNC TO NOTION IMMEDIATELY
     if (NOTION_KEY && NOTION_DATABASE_ID) {
       console.log("Syncing to Notion...");
       

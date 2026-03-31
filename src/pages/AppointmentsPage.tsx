@@ -28,7 +28,8 @@ import {
   Play,
   Printer,
   Copy,
-  FileText
+  FileText,
+  ChevronRight
 } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -64,10 +65,15 @@ interface AppointmentWithClient extends Appointment {
   clients: { name: string; id: string; latest_bolt?: number | null };
 }
 
+const PAGE_SIZE = 15;
+
 const AppointmentsPage = () => {
   const navigate = useNavigate();
   const [appointments, setAppointments] = useState<AppointmentWithClient[]>([]);
   const [loading, setLoading] = useState(true);
+  const [loadingMore, setLoadingMore] = useState(false);
+  const [displayLimit, setDisplayLimit] = useState(PAGE_SIZE);
+  const [totalCount, setTotalCount] = useState(0);
   const [open, setOpen] = useState(false);
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState<string>("all");
@@ -75,8 +81,19 @@ const AppointmentsPage = () => {
   
   const [assessmentModal, setAssessmentModal] = useState<{ open: boolean; type: 'bolt' | 'coherence'; clientId: string; clientName: string } | null>(null);
 
-  const fetchAppointments = async () => {
+  const fetchAppointments = async (limit: number = PAGE_SIZE) => {
+    if (limit === PAGE_SIZE) setLoading(true);
+    else setLoadingMore(true);
+
     try {
+      // 1. Get total count for "Load More" logic
+      const { count } = await supabase
+        .from('appointments')
+        .select('*', { count: 'exact', head: true });
+      
+      setTotalCount(count || 0);
+
+      // 2. Fetch limited appointments
       const { data, error } = await supabase
         .from('appointments')
         .select(`
@@ -86,10 +103,12 @@ const AppointmentsPage = () => {
             name
           )
         `)
-        .order('date', { ascending: false });
+        .order('date', { ascending: false })
+        .limit(limit);
 
       if (error) throw error;
 
+      // 3. Fetch latest BOLT scores for high-risk badges
       const { data: clientScores } = await supabase
         .from('appointments')
         .select('client_id, bolt_score, date')
@@ -117,7 +136,14 @@ const AppointmentsPage = () => {
       console.error("Error fetching appointments:", err);
     } finally {
       setLoading(false);
+      setLoadingMore(false);
     }
+  };
+
+  const handleLoadMore = () => {
+    const newLimit = displayLimit + PAGE_SIZE;
+    setDisplayLimit(newLimit);
+    fetchAppointments(newLimit);
   };
 
   const updateStatus = async (id: string, newStatus: string) => {
@@ -130,7 +156,7 @@ const AppointmentsPage = () => {
       if (error) throw error;
       
       showSuccess(`Status updated to ${newStatus}`);
-      fetchAppointments();
+      fetchAppointments(displayLimit);
     } catch (err: any) {
       showError(err.message || "Failed to update status");
     }
@@ -140,7 +166,6 @@ const AppointmentsPage = () => {
     if (!confirm("Are you sure you want to delete this appointment? It will also be removed from Notion and Cal.com if linked.")) return;
 
     try {
-      // 1. Call external cleanup function
       if (app.notion_page_id || app.notion_planner_id || app.calcom_booking_id) {
         await supabase.functions.invoke('delete-external-appointment', {
           body: { 
@@ -151,7 +176,6 @@ const AppointmentsPage = () => {
         });
       }
 
-      // 2. Delete local record
       const { error } = await supabase
         .from('appointments')
         .delete()
@@ -160,7 +184,7 @@ const AppointmentsPage = () => {
       if (error) throw error;
       
       showSuccess("Appointment deleted from all platforms.");
-      fetchAppointments();
+      fetchAppointments(displayLimit);
     } catch (err: any) {
       showError(err.message || "Failed to delete appointment");
     }
@@ -173,7 +197,7 @@ const AppointmentsPage = () => {
   };
 
   useEffect(() => {
-    fetchAppointments();
+    fetchAppointments(PAGE_SIZE);
   }, []);
 
   const filteredAppointments = useMemo(() => {
@@ -209,7 +233,6 @@ const AppointmentsPage = () => {
     const hasBolt = app.bolt_score !== null && app.bolt_score !== undefined;
     const hasCoherence = app.coherence_score !== null && app.coherence_score !== undefined;
     const hasCogs = app.sagittal_plane_notes || app.frontal_plane_notes || app.transverse_plane_notes;
-    const hasAnyAssessment = hasBolt || hasCoherence || hasCogs;
     const isCompleted = app.status === 'Completed';
     const isTodaySession = isToday(app.date);
     const isHighRisk = app.clients.latest_bolt !== null && app.clients.latest_bolt! < 25;
@@ -432,7 +455,7 @@ const AppointmentsPage = () => {
                 <AppointmentForm 
                   onSuccess={() => {
                     setOpen(false);
-                    fetchAppointments();
+                    fetchAppointments(displayLimit);
                   }} 
                 />
               </DialogContent>
@@ -550,6 +573,24 @@ const AppointmentsPage = () => {
                 </Button>
               </div>
             )}
+
+            {appointments.length < totalCount && (
+              <div className="flex justify-center pt-8">
+                <Button 
+                  onClick={handleLoadMore} 
+                  disabled={loadingMore}
+                  variant="outline"
+                  className="h-14 px-10 rounded-2xl font-black text-xs uppercase tracking-widest border-indigo-100 text-indigo-600 hover:bg-indigo-50 shadow-lg"
+                >
+                  {loadingMore ? (
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  ) : (
+                    <ChevronDown size={18} className="mr-2" />
+                  )}
+                  {loadingMore ? "Loading..." : `Load More Sessions (${totalCount - appointments.length} remaining)`}
+                </Button>
+              </div>
+            )}
           </div>
         )}
 
@@ -560,7 +601,7 @@ const AppointmentsPage = () => {
             clientId={assessmentModal.clientId}
             clientName={assessmentModal.clientName}
             type={assessmentModal.type}
-            onComplete={fetchAppointments}
+            onComplete={() => fetchAppointments(displayLimit)}
           />
         )}
       </div>

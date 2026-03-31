@@ -10,7 +10,8 @@ import {
   Brain,
   ShieldCheck,
   Sparkles,
-  Share
+  Share,
+  Link as LinkIcon
 } from "lucide-react";
 import { format, isToday } from "date-fns";
 import { AppointmentWithClient } from "@/types/crm";
@@ -49,6 +50,7 @@ const AppointmentDetailPage = () => {
   const [loading, setLoading] = useState(true);
   const [isFixedHeaderActive, setIsFixedHeaderActive] = useState(false);
   const [copied, setCopied] = useState(false);
+  const [linkCopying, setLinkCopying] = useState(false);
   const [aiCopying, setAiCopying] = useState(false);
   const [cloning, setCloning] = useState(false);
   const [syncingNotion, setSyncingNotion] = useState(false);
@@ -178,7 +180,6 @@ const AppointmentDetailPage = () => {
 
       if (error) throw error;
       
-      // Save both IDs returned from the function
       const updates: any = {};
       if (data.id && !appointment.notion_page_id) updates.notion_page_id = data.id;
       if (data.plannerId && !appointment.notion_planner_id) updates.notion_planner_id = data.plannerId;
@@ -194,6 +195,15 @@ const AppointmentDetailPage = () => {
     } finally {
       setSyncingNotion(false);
     }
+  };
+
+  const handleCopyOnboardingLink = () => {
+    if (!appointment) return;
+    setLinkCopying(true);
+    const url = `${window.location.origin}/onboarding/${appointment.clients.id}`;
+    navigator.clipboard.writeText(url);
+    showSuccess("Onboarding link copied!");
+    setTimeout(() => setLinkCopying(false), 2000);
   };
 
   const handleJumpToCalibrate = (itemName: string) => {
@@ -288,7 +298,6 @@ const AppointmentDetailPage = () => {
     
     setDeleting(true);
     try {
-      // 1. Call external cleanup function
       if (appointment.notion_page_id || appointment.notion_planner_id || appointment.calcom_booking_id) {
         await supabase.functions.invoke('delete-external-appointment', {
           body: { 
@@ -299,7 +308,6 @@ const AppointmentDetailPage = () => {
         });
       }
 
-      // 2. Delete local record
       const { error } = await supabase.from('appointments').delete().eq('id', id);
       if (error) throw error;
 
@@ -341,21 +349,21 @@ const AppointmentDetailPage = () => {
               <Button 
                 variant="outline" 
                 size="sm" 
+                className="bg-emerald-50 border-emerald-100 text-emerald-600 hover:bg-emerald-100 rounded-xl font-bold h-10 px-4"
+                onClick={handleCopyOnboardingLink}
+              >
+                {linkCopying ? <Check size={16} className="mr-2" /> : <LinkIcon size={16} className="mr-2" />}
+                Onboarding Link
+              </Button>
+              <Button 
+                variant="outline" 
+                size="sm" 
                 className="bg-white border-slate-200 text-slate-600 hover:bg-slate-50 rounded-xl font-bold h-10 px-4"
                 onClick={handleSyncToNotion}
                 disabled={syncingNotion}
               >
                 {syncingNotion ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Share size={16} className="mr-2" />}
                 Sync to Notion
-              </Button>
-              <Button 
-                variant="outline" 
-                size="sm" 
-                className="bg-indigo-50 border-indigo-100 text-indigo-600 hover:bg-indigo-100 rounded-xl font-bold h-10 px-4"
-                onClick={handleCopyForAI}
-              >
-                {aiCopying ? <Check size={16} className="mr-2 text-emerald-500" /> : <Sparkles size={16} className="mr-2" />}
-                Copy for AI
               </Button>
               {isSessionToday && !isFixedHeaderActive && appointment.status === 'Scheduled' && (
                 <Button 
@@ -442,7 +450,6 @@ const AppointmentDetailPage = () => {
                   saveField={saveField} 
                   history={history}
                   nucleiFilter={nucleiFilter}
-                  // Action Props
                   showSidebar={showSidebar}
                   onToggleSidebar={() => setShowSidebar(!showSidebar)}
                   onClonePrevious={handleClonePrevious}

@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
-import { Settings, User, LogOut, Upload, Database, Download, Mail, Loader2, RefreshCw, ExternalLink, Zap, Info, Calendar, Copy, Check, ShieldAlert } from "lucide-react";
+import { Settings, User, LogOut, Upload, Database, Download, Mail, Loader2, RefreshCw, ExternalLink, Zap, Info, Calendar, Copy, Check, ShieldAlert, Link as LinkIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
 import { showSuccess, showError } from "@/utils/toast";
@@ -13,59 +13,20 @@ const SettingsPage = () => {
   const navigate = useNavigate();
   const [exporting, setExporting] = useState<'mailchimp' | 'kit' | null>(null);
   const [syncing, setSyncing] = useState<'mailchimp' | 'kit' | null>(null);
-  const [copied, setCopied] = useState(false);
-  const [testing, setTesting] = useState(false);
+  const [copied, setCopied] = useState<string | null>(null);
 
-  // Derived from the client config
   const projectRef = "xebtjnvfkroiplyzftas";
-  const anonKey = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InhlYnRqbnZma3JvaXBseXpmdGFzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njk1MDM2MjcsImV4cCI6MjA4NTA3OTYyN30.9qBYKHjW4nRK6E0In8ffSDLV7HJm925pr_4dSE_2IDs";
   const webhookUrl = `https://${projectRef}.supabase.co/functions/v1/calcom-webhook`;
+  
+  const onboardingBaseUrl = `${window.location.origin}/onboarding/welcome?email=`;
+  const calcomLink = `${onboardingBaseUrl}{email}`;
+  const kitLink = `${onboardingBaseUrl}{{{ email }}}`;
 
-  const handleSignOut = async () => {
-    try {
-      await supabase.auth.signOut();
-      showSuccess("Signed out successfully");
-      navigate('/login');
-    } catch (error) {
-      console.error("Error signing out:", error);
-    }
-  };
-
-  const handleCopyWebhook = () => {
-    navigator.clipboard.writeText(webhookUrl);
-    setCopied(true);
-    showSuccess("Webhook URL copied!");
-    setTimeout(() => setCopied(false), 2000);
-  };
-
-  const handleTestWebhook = async () => {
-    setTesting(true);
-    try {
-      // We must pass the apikey in the headers to avoid 401 Unauthorized
-      const response = await fetch(webhookUrl, {
-        method: 'GET',
-        headers: {
-          'apikey': anonKey,
-          'Authorization': `Bearer ${anonKey}`
-        }
-      });
-      
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
-      
-      const data = await response.json();
-      if (data.status === 'active') {
-        showSuccess("Webhook is live and reachable!");
-      } else {
-        throw new Error("Unexpected response format");
-      }
-    } catch (err: any) {
-      console.error("Webhook test failed:", err);
-      showError(`Connection failed (${err.message}). Ensure the function is deployed.`);
-    } finally {
-      setTesting(false);
-    }
+  const handleCopy = (text: string, id: string) => {
+    navigator.clipboard.writeText(text);
+    setCopied(id);
+    showSuccess("Link copied!");
+    setTimeout(() => setCopied(null), 2000);
   };
 
   const handleExport = async (provider: 'mailchimp' | 'kit') => {
@@ -77,17 +38,15 @@ const SettingsPage = () => {
         .or('is_practitioner.eq.false,is_practitioner.is.null');
 
       if (error) throw error;
-      if (!data || data.length === 0) {
-        showError("No clients found to export.");
-        return;
-      }
 
-      if (provider === 'mailchimp') exportClientsToMailchimpCSV(data);
-      else exportClientsToKitCSV(data);
-      
-      showSuccess(`Exported ${data.length} contacts for ${provider === 'kit' ? 'Kit' : 'Mailchimp'}.`);
+      if (provider === 'mailchimp') {
+        exportClientsToMailchimpCSV(data || []);
+      } else {
+        exportClientsToKitCSV(data || []);
+      }
+      showSuccess(`Exported ${data?.length || 0} clients for ${provider}`);
     } catch (err: any) {
-      showError(err.message || "Failed to export contacts.");
+      showError(err.message || "Export failed");
     } finally {
       setExporting(null);
     }
@@ -95,8 +54,6 @@ const SettingsPage = () => {
 
   const handleManualSync = async (provider: 'mailchimp' | 'kit') => {
     setSyncing(provider);
-    const functionName = provider === 'kit' ? 'sync-to-kit' : 'sync-to-mailchimp';
-    
     try {
       const { data: clients, error: fetchError } = await supabase
         .from('clients')
@@ -105,22 +62,31 @@ const SettingsPage = () => {
 
       if (fetchError) throw fetchError;
 
+      const functionName = provider === 'mailchimp' ? 'sync-to-mailchimp' : 'sync-to-kit';
+      
       let successCount = 0;
       for (const client of (clients || [])) {
-        if (!client.email) continue;
-        
         const { error: syncError } = await supabase.functions.invoke(functionName, {
           body: { record: client }
         });
-        
         if (!syncError) successCount++;
       }
 
-      showSuccess(`Successfully synced ${successCount} contacts to ${provider === 'kit' ? 'Kit' : 'Mailchimp'}.`);
+      showSuccess(`Successfully synced ${successCount} clients to ${provider}`);
     } catch (err: any) {
-      showError(`Manual sync failed. Ensure the ${provider} Edge Function is deployed and secrets are set.`);
+      showError(err.message || "Sync failed");
     } finally {
       setSyncing(null);
+    }
+  };
+
+  const handleSignOut = async () => {
+    try {
+      await supabase.auth.signOut();
+      showSuccess("Signed out successfully");
+      navigate('/login');
+    } catch (error) {
+      console.error("Error signing out:", error);
     }
   };
 
@@ -137,16 +103,50 @@ const SettingsPage = () => {
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        {/* Cal.com Integration */}
+        <Card className="border-none shadow-lg rounded-2xl bg-indigo-900 text-white md:col-span-2 overflow-hidden relative">
+          <div className="absolute top-0 right-0 p-8 opacity-10"><LinkIcon size={120} /></div>
+          <CardHeader>
+            <CardTitle className="text-xl flex items-center gap-2">
+              <LinkIcon size={20} className="text-indigo-400" /> Onboarding Automation
+            </CardTitle>
+            <CardDescription className="text-indigo-200">Use these links in your booking tools to gather client details automatically.</CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-6 relative z-10">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              <div className="p-5 bg-white/5 rounded-2xl border border-white/10 space-y-3">
+                <div className="flex items-center justify-between">
+                  <p className="text-[10px] font-black uppercase tracking-widest text-indigo-300">For Cal.com Instructions</p>
+                  <Button variant="ghost" size="icon" className="h-8 w-8 text-indigo-300 hover:text-white" onClick={() => handleCopy(calcomLink, 'cal')}>
+                    {copied === 'cal' ? <Check size={16} /> : <Copy size={16} />}
+                  </Button>
+                </div>
+                <p className="text-xs font-mono bg-black/20 p-3 rounded-lg break-all">{calcomLink}</p>
+                <p className="text-[10px] text-indigo-200 italic">Paste this into "Confirmation Page Instructions" in Cal.com.</p>
+              </div>
+
+              <div className="p-5 bg-white/5 rounded-2xl border border-white/10 space-y-3">
+                <div className="flex items-center justify-between">
+                  <p className="text-[10px] font-black uppercase tracking-widest text-indigo-300">For Kit (ConvertKit) Emails</p>
+                  <Button variant="ghost" size="icon" className="h-8 w-8 text-indigo-300 hover:text-white" onClick={() => handleCopy(kitLink, 'kit')}>
+                    {copied === 'kit' ? <Check size={16} /> : <Copy size={16} />}
+                  </Button>
+                </div>
+                <p className="text-xs font-mono bg-black/20 p-3 rounded-lg break-all">{kitLink}</p>
+                <p className="text-[10px] text-indigo-200 italic">Use this in your "Welcome" automation in Kit.</p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
         <Card className="border-none shadow-lg rounded-2xl bg-white border-t-4 border-amber-500">
           <CardHeader>
             <div className="flex items-center justify-between">
               <CardTitle className="text-xl flex items-center gap-2">
-                <Calendar size={20} className="text-amber-500" /> Cal.com Integration
+                <Calendar size={20} className="text-amber-500" /> Cal.com Webhook
               </CardTitle>
               <Badge className="bg-amber-100 text-amber-700 border-none">Automation</Badge>
             </div>
-            <CardDescription>Automatically sync bookings to your CRM.</CardDescription>
+            <CardDescription>Sync bookings to your CRM automatically.</CardDescription>
           </CardHeader>
           <CardContent className="space-y-6">
             <div className="space-y-3">
@@ -155,20 +155,10 @@ const SettingsPage = () => {
                 <div className="flex-1 bg-slate-50 border border-slate-200 rounded-xl px-4 py-2 text-xs font-mono text-slate-600 truncate flex items-center">
                   {webhookUrl}
                 </div>
-                <Button variant="outline" size="icon" className="rounded-xl shrink-0" onClick={handleCopyWebhook}>
-                  {copied ? <Check size={16} className="text-emerald-500" /> : <Copy size={16} />}
+                <Button variant="outline" size="icon" className="rounded-xl shrink-0" onClick={() => handleCopy(webhookUrl, 'web')}>
+                  {copied === 'web' ? <Check size={16} className="text-emerald-500" /> : <Copy size={16} />}
                 </Button>
               </div>
-              <Button 
-                variant="ghost" 
-                size="sm" 
-                onClick={handleTestWebhook} 
-                disabled={testing}
-                className="text-[10px] font-black uppercase tracking-widest text-indigo-600 hover:bg-indigo-50"
-              >
-                {testing ? <Loader2 className="mr-2 animate-spin" size={12} /> : <RefreshCw size={12} className="mr-2" />}
-                Test Connection
-              </Button>
             </div>
 
             <div className="p-4 bg-amber-50 rounded-xl border border-amber-100 space-y-3">
@@ -177,39 +167,15 @@ const SettingsPage = () => {
                 <p className="text-[10px] font-black text-amber-600 uppercase tracking-widest">Setup Instructions</p>
               </div>
               <ol className="text-xs text-amber-800 space-y-2 list-decimal pl-4 font-medium">
-                <li>Go to your <strong>Cal.com Dashboard</strong>.</li>
-                <li>Navigate to <strong>Settings {" > "} Webhooks</strong>.</li>
-                <li>Click <strong>Add New Webhook</strong>.</li>
-                <li>Paste the URL above into the <strong>Subscriber URL</strong> field.</li>
-                <li>
-                  <strong>Crucial:</strong> In the "Secret" field or as a custom header, you must provide the Supabase API Key if Cal.com allows it. If not, append <code>?apikey=YOUR_ANON_KEY</code> to the URL.
-                </li>
-                <li>Select <strong>Booking Created</strong> as the event trigger.</li>
+                <li>Go to <strong>Cal.com Settings {" > "} Webhooks</strong>.</li>
+                <li>Paste the URL above into <strong>Subscriber URL</strong>.</li>
+                <li>Select <strong>Booking Created</strong> and <strong>Booking Cancelled</strong>.</li>
                 <li>Click <strong>Save</strong>.</li>
               </ol>
-              <a 
-                href="https://app.cal.com/settings/developer/webhooks" 
-                target="_blank" 
-                rel="noopener noreferrer"
-                className="text-[10px] font-bold text-amber-600 flex items-center gap-1 hover:underline pt-1"
-              >
-                Open Cal.com Webhooks <ExternalLink size={10} />
-              </a>
-            </div>
-
-            <div className="p-4 bg-rose-50 rounded-xl border border-rose-100 flex items-start gap-3">
-              <ShieldAlert size={18} className="text-rose-600 shrink-0 mt-0.5" />
-              <div className="space-y-1">
-                <p className="text-[10px] font-black text-rose-600 uppercase tracking-widest">Troubleshooting 401 Errors</p>
-                <p className="text-xs text-rose-800 leading-relaxed">
-                  A 401 error means Supabase is blocking the request. Ensure you are passing the <code>apikey</code> either in the headers or as a query parameter in the URL.
-                </p>
-              </div>
             </div>
           </CardContent>
         </Card>
 
-        {/* Kit Integration Card */}
         <Card className="border-none shadow-lg rounded-2xl bg-white border-t-4 border-indigo-600">
           <CardHeader>
             <div className="flex items-center justify-between">
@@ -241,68 +207,24 @@ const SettingsPage = () => {
                 Sync Existing to Kit
               </Button>
             </div>
-            
-            <div className="p-4 bg-indigo-50 rounded-xl border border-indigo-100 space-y-2">
-              <div className="flex items-center gap-2">
-                <Info size={14} className="text-indigo-600" />
-                <p className="text-[10px] font-black text-indigo-600 uppercase tracking-widest">Setup Required</p>
-              </div>
-              <p className="text-xs text-indigo-800 leading-relaxed">
-                1. Get your <strong>API Secret</strong> from Kit Settings.<br/>
-                2. Set it as <code>KIT_API_SECRET</code> in your Supabase project secrets.
-              </p>
-              <a 
-                href="https://app.kit.com/user/edit#api" 
-                target="_blank" 
-                rel="noopener noreferrer"
-                className="text-[10px] font-bold text-indigo-600 flex items-center gap-1 hover:underline"
-              >
-                Open Kit API Settings <ExternalLink size={10} />
-              </a>
-            </div>
           </CardContent>
         </Card>
 
-        <Card className="border-none shadow-lg rounded-2xl bg-white">
+        <Card className="border-none shadow-lg rounded-2xl bg-white border-t-4 border-rose-600">
           <CardHeader>
             <CardTitle className="text-xl flex items-center gap-2">
-              <User size={20} className="text-indigo-500" /> Account
+              <User size={20} className="text-rose-600" /> Account
             </CardTitle>
-            <CardDescription>Manage your profile information and authentication.</CardDescription>
+            <CardDescription>Manage your session and security.</CardDescription>
           </CardHeader>
-          <CardContent className="space-y-4">
-            <p className="text-sm text-slate-600">
-              Currently, only sign-out functionality is available here. Profile management features will be added soon.
-            </p>
+          <CardContent>
             <Button 
               variant="destructive" 
               onClick={handleSignOut}
-              className="w-full rounded-xl h-11 font-bold"
+              className="w-full h-11 rounded-xl font-bold"
             >
               <LogOut size={18} className="mr-2" /> Sign Out
             </Button>
-          </CardContent>
-        </Card>
-
-        <Card className="border-none shadow-lg rounded-2xl bg-white">
-          <CardHeader>
-            <CardTitle className="text-xl flex items-center gap-2">
-              <Database size={20} className="text-emerald-500" /> Data Management
-            </CardTitle>
-            <CardDescription>Import and export your practice data.</CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="grid grid-cols-1 gap-3">
-              <Button 
-                asChild
-                variant="outline"
-                className="w-full h-11 rounded-xl border-slate-200 font-bold justify-start"
-              >
-                <Link to="/settings/import">
-                  <Upload size={18} className="mr-3 text-emerald-500" /> Import Appointment Data
-                </Link>
-              </Button>
-            </div>
           </CardContent>
         </Card>
       </div>

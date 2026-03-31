@@ -102,7 +102,7 @@ const Index = () => {
         supabase.from('clients').select('*', { count: 'exact', head: true }).or('is_practitioner.eq.false,is_practitioner.is.null').gte('created_at', thirtyDaysAgo),
         supabase.from('appointments').select('*, clients!inner(is_practitioner)', { count: 'exact', head: true }).or('is_practitioner.eq.false,is_practitioner.is.null', { foreignTable: 'clients' }).gte('date', thirtyDaysAgo),
         supabase.from('clients').select('id, name, appointments(bolt_score, date)').or('is_practitioner.eq.false,is_practitioner.is.null'),
-        supabase.from('clients').select('id, name, updated_at').or('is_practitioner.eq.false,is_practitioner.is.null').order('updated_at', { ascending: false }).limit(3)
+        supabase.from('clients').select('id, name, created_at').or('is_practitioner.eq.false,is_practitioner.is.null').order('created_at', { ascending: false }).limit(3)
       ]);
 
       setPendingOnboarding(recentOnboarding || []);
@@ -330,7 +330,7 @@ const Index = () => {
                               <div>
                                 <p className={cn("font-black text-lg text-foreground group-hover:text-indigo-600 transition-colors", isPrivate && "blur-sm")}>{client.name}</p>
                                 <p className="text-xs font-bold text-muted-foreground flex items-center gap-1.5 mt-1">
-                                  <Clock size={14} className="text-indigo-400" /> Updated {formatDistanceToNow(new Date(client.updated_at), { addSuffix: true })}
+                                  <Clock size={14} className="text-indigo-400" /> Updated {formatDistanceToNow(new Date(client.created_at), { addSuffix: true })}
                                 </p>
                               </div>
                             </div>

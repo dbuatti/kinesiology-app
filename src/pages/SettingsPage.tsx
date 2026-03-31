@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
-import { Settings, User, LogOut, Upload, Database, Download, Mail, Loader2, RefreshCw, ExternalLink, Zap, Info, Calendar, Copy, Check, ShieldAlert, Link as LinkIcon, FileText, ListChecks, Sparkles } from "lucide-react";
+import { Settings, User, LogOut, Upload, Database, Download, Mail, Loader2, RefreshCw, ExternalLink, Zap, Info, Calendar, Copy, Check, ShieldAlert, Link as LinkIcon, FileText, ListChecks, Sparkles, Brain, CheckCircle2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
 import { showSuccess, showError } from "@/utils/toast";
@@ -18,65 +18,11 @@ const SettingsPage = () => {
   const projectRef = "xebtjnvfkroiplyzftas";
   const webhookUrl = `https://${projectRef}.supabase.co/functions/v1/calcom-webhook`;
   
-  const onboardingWelcomeUrl = `${window.location.origin}/onboarding/welcome`;
-  const kitLink = `${onboardingWelcomeUrl}?email={{{ email }}}`;
-
   const handleCopy = (text: string, id: string) => {
     navigator.clipboard.writeText(text);
     setCopied(id);
     showSuccess("Copied to clipboard!");
     setTimeout(() => setCopied(null), 2000);
-  };
-
-  const handleExport = async (provider: 'mailchimp' | 'kit') => {
-    setExporting(provider);
-    try {
-      const { data, error } = await supabase
-        .from('clients')
-        .select('*')
-        .or('is_practitioner.eq.false,is_practitioner.is.null');
-
-      if (error) throw error;
-
-      if (provider === 'mailchimp') {
-        exportClientsToMailchimpCSV(data || []);
-      } else {
-        exportClientsToKitCSV(data || []);
-      }
-      showSuccess(`Exported ${data?.length || 0} clients for ${provider}`);
-    } catch (err: any) {
-      showError(err.message || "Export failed");
-    } finally {
-      setExporting(null);
-    }
-  };
-
-  const handleManualSync = async (provider: 'mailchimp' | 'kit') => {
-    setSyncing(provider);
-    try {
-      const { data: clients, error: fetchError } = await supabase
-        .from('clients')
-        .select('*')
-        .or('is_practitioner.eq.false,is_practitioner.is.null');
-
-      if (fetchError) throw fetchError;
-
-      const functionName = provider === 'mailchimp' ? 'sync-to-mailchimp' : 'sync-to-kit';
-      
-      let successCount = 0;
-      for (const client of (clients || [])) {
-        const { error: syncError } = await supabase.functions.invoke(functionName, {
-          body: { record: client }
-        });
-        if (!syncError) successCount++;
-      }
-
-      showSuccess(`Successfully synced ${successCount} clients to ${provider}`);
-    } catch (err: any) {
-      showError(err.message || "Sync failed");
-    } finally {
-      setSyncing(null);
-    }
   };
 
   const handleSignOut = async () => {
@@ -102,64 +48,55 @@ const SettingsPage = () => {
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        {/* Onboarding Automation Helper */}
-        <Card className="border-none shadow-lg rounded-2xl bg-indigo-900 text-white md:col-span-2 overflow-hidden relative">
-          <div className="absolute top-0 right-0 p-8 opacity-10"><LinkIcon size={120} /></div>
+        {/* Gmail API Automation Helper */}
+        <Card className="border-none shadow-lg rounded-2xl bg-slate-900 text-white md:col-span-2 overflow-hidden relative">
+          <div className="absolute top-0 right-0 p-8 opacity-10"><Mail size={120} /></div>
           <CardHeader>
             <CardTitle className="text-xl flex items-center gap-2">
-              <LinkIcon size={20} className="text-indigo-400" /> Onboarding Automation
+              <Mail size={20} className="text-indigo-400" /> Gmail Onboarding Automation
             </CardTitle>
-            <CardDescription className="text-indigo-200">Use these links in your booking tools to gather client details automatically.</CardDescription>
+            <CardDescription className="text-slate-400">Send professional onboarding emails directly from your Gmail account.</CardDescription>
           </CardHeader>
           <CardContent className="space-y-8 relative z-10">
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-              <div className="p-5 bg-white/5 rounded-2xl border border-white/10 space-y-3">
-                <div className="flex items-center justify-between">
-                  <p className="text-[10px] font-black uppercase tracking-widest text-indigo-300">For Cal.com (Free Tier)</p>
-                  <Button variant="ghost" size="icon" className="h-8 w-8 text-indigo-300 hover:text-white" onClick={() => handleCopy(onboardingWelcomeUrl, 'cal')}>
-                    {copied === 'cal' ? <Check size={16} /> : <Copy size={16} />}
-                  </Button>
-                </div>
-                <p className="text-xs font-mono bg-black/20 p-3 rounded-lg break-all">{onboardingWelcomeUrl}</p>
-                <p className="text-[10px] text-indigo-200 italic">Paste this into your Event Description or Booking Questions.</p>
-              </div>
-
-              <div className="p-5 bg-white/5 rounded-2xl border border-white/10 space-y-3">
-                <div className="flex items-center justify-between">
-                  <p className="text-[10px] font-black uppercase tracking-widest text-indigo-300">For Kit (ConvertKit) Emails</p>
-                  <Button variant="ghost" size="icon" className="h-8 w-8 text-indigo-300 hover:text-white" onClick={() => handleCopy(kitLink, 'kit')}>
-                    {copied === 'kit' ? <Check size={16} /> : <Copy size={16} />}
-                  </Button>
-                </div>
-                <p className="text-xs font-mono bg-black/20 p-3 rounded-lg break-all">{kitLink}</p>
-                <p className="text-[10px] text-indigo-200 italic">Use this in your "Welcome" automation in Kit.</p>
-              </div>
-            </div>
-
-            <div className="p-6 bg-white/5 rounded-3xl border border-white/10 space-y-4">
+            <div className="p-6 bg-white/5 rounded-3xl border border-white/10 space-y-6">
               <div className="flex items-center gap-2">
                 <Sparkles size={18} className="text-amber-400" />
-                <h4 className="text-sm font-bold">Kit Automation Setup (Recommended)</h4>
+                <h4 className="text-sm font-bold">Gmail API Setup Guide</h4>
               </div>
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                <div className="space-y-2">
-                  <p className="text-xs font-bold text-indigo-300 uppercase">1. Create a Form</p>
-                  <p className="text-[11px] text-slate-300 leading-relaxed">
-                    Create a new "Inline" form in Kit. Copy the ID from the URL (e.g., <code className="bg-black/20 px-1">7421053</code>).
-                  </p>
+              
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                <div className="space-y-4">
+                  <div className="space-y-2">
+                    <p className="text-xs font-bold text-indigo-300 uppercase">1. Google Cloud Console</p>
+                    <p className="text-[11px] text-slate-300 leading-relaxed">
+                      Create a project in Google Cloud Console. Enable the <strong>Gmail API</strong>. Create OAuth 2.0 credentials (Web Application).
+                    </p>
+                  </div>
+                  <div className="space-y-2">
+                    <p className="text-xs font-bold text-indigo-300 uppercase">2. Get Refresh Token</p>
+                    <p className="text-[11px] text-slate-300 leading-relaxed">
+                      Use the OAuth Playground to authorize the <code className="bg-black/20 px-1">https://www.googleapis.com/auth/gmail.send</code> scope and generate a Refresh Token.
+                    </p>
+                  </div>
                 </div>
-                <div className="space-y-2">
-                  <p className="text-xs font-bold text-indigo-300 uppercase">2. Set Secrets</p>
-                  <p className="text-[11px] text-slate-300 leading-relaxed">
-                    Add <code className="bg-black/20 px-1">KIT_API_KEY</code> and <code className="bg-black/20 px-1">KIT_FORM_ID</code> to your Supabase secrets.
-                  </p>
+
+                <div className="space-y-4">
+                  <p className="text-xs font-bold text-indigo-300 uppercase">3. Set Supabase Secrets</p>
+                  <div className="grid grid-cols-1 gap-2">
+                    {["GMAIL_CLIENT_ID", "GMAIL_CLIENT_SECRET", "GMAIL_REFRESH_TOKEN", "GMAIL_USER_EMAIL"].map(secret => (
+                      <div key={secret} className="flex items-center justify-between p-2 bg-black/20 rounded-lg border border-white/5">
+                        <code className="text-[10px] text-emerald-400">{secret}</code>
+                        <CheckCircle2 size={12} className="text-slate-600" />
+                      </div>
+                    ))}
+                  </div>
                 </div>
-                <div className="space-y-2">
-                  <p className="text-xs font-bold text-indigo-300 uppercase">3. Visual Automation</p>
-                  <p className="text-[11px] text-slate-300 leading-relaxed">
-                    Trigger: "Joins Form". Action: "Email Sequence". Use the Kit link above in your email.
-                  </p>
-                </div>
+              </div>
+
+              <div className="pt-4 border-t border-white/10">
+                <p className="text-[10px] text-slate-400 italic">
+                  Once configured, every new Cal.com booking will trigger a personalized email from your address containing the client's unique onboarding link.
+                </p>
               </div>
             </div>
           </CardContent>
@@ -199,40 +136,6 @@ const SettingsPage = () => {
                 <li>Select <strong>Booking Created</strong> and <strong>Booking Cancelled</strong>.</li>
                 <li>Click <strong>Save</strong>.</li>
               </ol>
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card className="border-none shadow-lg rounded-2xl bg-white border-t-4 border-indigo-600">
-          <CardHeader>
-            <div className="flex items-center justify-between">
-              <CardTitle className="text-xl flex items-center gap-2">
-                <Zap size={20} className="text-indigo-600" /> Kit Integration
-              </CardTitle>
-              <Badge className="bg-indigo-100 text-indigo-700 border-none">Active</Badge>
-            </div>
-            <CardDescription>Sync your clients to Kit (formerly ConvertKit).</CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="grid grid-cols-1 gap-3">
-              <Button 
-                onClick={() => handleExport('kit')}
-                disabled={!!exporting}
-                variant="outline"
-                className="w-full h-11 rounded-xl border-slate-200 font-bold justify-start"
-              >
-                {exporting === 'kit' ? <Loader2 className="mr-3 animate-spin" /> : <Download size={18} className="mr-3 text-indigo-600" />}
-                Export CSV for Kit
-              </Button>
-
-              <Button 
-                onClick={() => handleManualSync('kit')}
-                disabled={!!syncing}
-                className="w-full h-11 rounded-xl bg-indigo-600 hover:bg-indigo-700 font-bold shadow-lg shadow-indigo-100"
-              >
-                {syncing === 'kit' ? <Loader2 className="mr-3 animate-spin" /> : <RefreshCw size={18} className="mr-3" />}
-                Sync Existing to Kit
-              </Button>
             </div>
           </CardContent>
         </Card>

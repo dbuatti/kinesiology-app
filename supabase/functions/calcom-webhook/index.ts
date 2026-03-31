@@ -8,16 +8,66 @@ const corsHeaders = {
   'Access-Control-Allow-Methods': 'POST, OPTIONS, GET',
 }
 
+// Helper to get Gmail Access Token using Refresh Token
+async function getGmailAccessToken(clientId: string, clientSecret: string, refreshToken: string) {
+  const response = await fetch("https://oauth2.googleapis.com/token", {
+    method: "POST",
+    headers: { "Content-Type": "application/x-www-form-urlencoded" },
+    body: new URLSearchParams({
+      client_id: clientId,
+      client_secret: clientSecret,
+      refresh_token: refreshToken,
+      grant_type: "refresh_token",
+    }),
+  });
+  const data = await response.json();
+  return data.access_token;
+}
+
+// Helper to send email via Gmail API
+async function sendGmail(accessToken: string, from: string, to: string, subject: string, htmlBody: string) {
+  const utf8Subject = `=?utf-8?B?${btoa(unescape(encodeURIComponent(subject)))}?=`;
+  const messageParts = [
+    `From: ${from}`,
+    `To: ${to}`,
+    `Content-Type: text/html; charset=utf-8`,
+    `MIME-Version: 1.0`,
+    `Subject: ${utf8Subject}`,
+    ``,
+    htmlBody,
+  ];
+  const message = messageParts.join('\n');
+
+  // Base64url encode the message
+  const encodedMessage = btoa(unescape(encodeURIComponent(message)))
+    .replace(/\+/g, '-')
+    .replace(/\//g, '_')
+    .replace(/=+$/, '');
+
+  const response = await fetch(
+    `https://gmail.googleapis.com/gmail/v1/users/me/messages/send`,
+    {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ raw: encodedMessage }),
+    }
+  );
+  return response.json();
+}
+
 serve(async (req) => {
   if (req.method === 'GET') {
-    return new Response(JSON.stringify({ status: "active", version: "v34" }), { 
+    return new Response(JSON.stringify({ status: "active", provider: "gmail", version: "v35" }), { 
       status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
     });
   }
 
   if (req.method === 'OPTIONS') return new Response('ok', { headers: corsHeaders })
 
-  console.log("--- [v34] CAL.COM WEBHOOK + KIT SYNC START ---");
+  console.log("--- [v35] CAL.COM WEBHOOK + GMAIL SYNC START ---");
 
   try {
     const supabaseUrl = Deno.env.get('SUPABASE_URL')
@@ -25,8 +75,10 @@ serve(async (req) => {
     const supabase = createClient(supabaseUrl, supabaseKey)
     
     const NOTION_KEY = Deno.env.get('NOTION_API_KEY');
-    const KIT_API_KEY = Deno.env.get('KIT_API_KEY');
-    const KIT_FORM_ID = Deno.env.get('KIT_FORM_ID'); // The ID of the Kit form to trigger automation
+    const GMAIL_CLIENT_ID = Deno.env.get('GMAIL_CLIENT_ID');
+    const GMAIL_CLIENT_SECRET = Deno.env.get('GMAIL_CLIENT_SECRET');
+    const GMAIL_REFRESH_TOKEN = Deno.env.get('GMAIL_REFRESH_TOKEN');
+    const SENDER_EMAIL = Deno.env.get('GMAIL_USER_EMAIL');
     
     const CLIENTS_DB_ID = "074e2c006bd541d88c502feb397ef31d";
     const APPTS_DB_ID = "171f7156cdc645e8b689af13d217bc7c";
@@ -68,32 +120,42 @@ serve(async (req) => {
     const startTime = payload.startTime;
     const notes = payload.description || "";
 
-    // 2. Sync to Kit (Triggering the Onboarding Email)
-    if (KIT_API_KEY && KIT_FORM_ID) {
-      console.log(`Triggering Kit Automation for ${email}...`);
+    // 2. Supabase CRM Sync (Create client first to get ID for onboarding link)
+    let { data: dbClient } = await supabase.from('clients').select('id').eq('email', email).maybeSingle();
+    if (!dbClient && email) {
+      const { data: newDbC } = await supabase.from('clients').insert({ user_id: PRACTITIONER_ID, name, email, phone }).select().single();
+      dbClient = newDbC;
+    }
+
+    // 3. Send Gmail Onboarding Email
+    if (GMAIL_CLIENT_ID && GMAIL_CLIENT_SECRET && GMAIL_REFRESH_TOKEN && dbClient) {
+      console.log(`Sending Gmail Onboarding to ${email}...`);
       try {
-        const kitRes = await fetch(`https://api.convertkit.com/v3/forms/${KIT_FORM_ID}/subscribe`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            api_key: KIT_API_KEY,
-            email: email,
-            first_name: name.split(' ')[0],
-            tags: ["New Booking"] 
-          })
-        });
-        if (!kitRes.ok) {
-          const kitError = await kitRes.json();
-          console.error("Kit API Error:", kitError);
-        } else {
-          console.log("Successfully triggered Kit automation.");
-        }
+        const accessToken = await getGmailAccessToken(GMAIL_CLIENT_ID, GMAIL_CLIENT_SECRET, GMAIL_REFRESH_TOKEN);
+        const onboardingUrl = `https://kinesiology-app.vercel.app/onboarding/${dbClient.id}`;
+        
+        const htmlBody = `
+          <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; color: #1e293b;">
+            <h2 style="color: #4f46e5;">Welcome to Functional Neuro Health</h2>
+            <p>Hi ${name.split(' ')[0]},</p>
+            <p>Thanks for booking your session! To help us prepare and get the most out of our time together, please complete your clinical onboarding form before we meet.</p>
+            <div style="margin: 30px 0;">
+              <a href="${onboardingUrl}" style="background-color: #4f46e5; color: white; padding: 14px 24px; text-decoration: none; border-radius: 12px; font-weight: bold; display: inline-block;">Complete My Onboarding Form</a>
+            </div>
+            <p style="font-size: 14px; color: #64748b;">If the button doesn't work, copy and paste this link: <br/> ${onboardingUrl}</p>
+            <hr style="border: none; border-top: 1px solid #e2e8f0; margin: 30px 0;" />
+            <p style="font-size: 12px; color: #94a3b8;">"The deeper you work, the higher you rise."</p>
+          </div>
+        `;
+
+        await sendGmail(accessToken, SENDER_EMAIL, email, "Action Required: Your Onboarding Form", htmlBody);
+        console.log("Gmail sent successfully.");
       } catch (e) {
-        console.error("Failed to call Kit API:", e.message);
+        console.error("Failed to send Gmail:", e.message);
       }
     }
 
-    // 3. Notion Sync (Clients)
+    // 4. Notion Sync (Clients)
     let notionClientId = null;
     if (NOTION_KEY) {
       const searchRes = await fetch(`https://api.notion.com/v1/databases/${CLIENTS_DB_ID}/query`, {
@@ -118,7 +180,7 @@ serve(async (req) => {
       }
     }
 
-    // 4. Notion Sync (Appointments & Planner)
+    // 5. Notion Sync (Appointments & Planner)
     let notionPageId = null;
     if (NOTION_KEY) {
       const apptProps = { "Name": { title: [{ text: { content: `${name} - ${payload.title || 'Session'}` } }] }, "Date": { date: { start: startTime } }, "Notes": { rich_text: [{ text: { content: notes } }] } };
@@ -138,13 +200,7 @@ serve(async (req) => {
       notionPlannerId = plannerData.id;
     }
 
-    // 5. Supabase CRM Sync
-    let { data: dbClient } = await supabase.from('clients').select('id').eq('email', email).maybeSingle();
-    if (!dbClient && email) {
-      const { data: newDbC } = await supabase.from('clients').insert({ user_id: PRACTITIONER_ID, name, email, phone }).select().single();
-      dbClient = newDbC;
-    }
-
+    // 6. Final Supabase Appointment Sync
     if (dbClient) {
       await supabase.from('appointments').insert({
         user_id: PRACTITIONER_ID,

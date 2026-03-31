@@ -9,7 +9,7 @@ const corsHeaders = {
 }
 
 serve(async (req) => {
-  console.log("--- [v12] CLEAN-ROOM WEBHOOK START ---");
+  console.log("--- [v13] THE FINAL PUSH START ---");
 
   if (req.method === 'OPTIONS') return new Response('ok', { headers: corsHeaders })
 
@@ -17,91 +17,91 @@ serve(async (req) => {
     const supabaseUrl = Deno.env.get('SUPABASE_URL')
     const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')
 
-    /**
-     * V12 CORE FIX: 
-     * We create the client using a custom fetch that effectively strips 
-     * the "Bearer" token from the incoming request context.
-     */
+    // Using your actual ID from the logs to bypass the 'listUsers' call entirely
+    const PRACTITIONER_ID = "6f2caa85-bfce-4264-97cd-c0d2f62b24f0";
+
+    // V13 FIX: We create a client that strictly refuses to touch the request headers
     const supabase = createClient(supabaseUrl, supabaseServiceKey, {
       global: {
-        fetch: (url, options) => {
-          const headers = new Headers(options?.headers);
-          // Force set the correct Service Role key
-          headers.set('Authorization', `Bearer ${supabaseServiceKey}`);
-          headers.set('apikey', supabaseServiceKey);
-          return fetch(url, { ...options, headers });
+        headers: {
+          Authorization: `Bearer ${supabaseServiceKey}`,
+          apikey: supabaseServiceKey,
         },
       },
+      auth: {
+        persistSession: false,
+        autoRefreshToken: false,
+        detectSessionInUrl: false
+      }
     })
 
     const body = await req.json()
-    const { triggerEvent, payload } = body
+    const { payload } = body
 
-    if (triggerEvent !== 'BOOKING_CREATED') {
-      return new Response(JSON.stringify({ message: 'Ignored' }), { status: 200, headers: corsHeaders });
+    if (!payload || !payload.attendees) {
+       return new Response(JSON.stringify({ error: "Missing payload" }), { status: 400, headers: corsHeaders });
     }
 
     const attendee = payload.attendees[0]
     const email = String(attendee.email).toLowerCase().trim()
-    const name = String(attendee.name || "Unknown").trim()
-    
-    // Use the known User ID for your account to minimize lookups
-    const userId = "6f2caa85-bfce-4264-97cd-c0d2f62b24f0";
+    const name = String(attendee.name).trim()
 
-    // 1. Process Client
-    console.log(`Checking client: ${email}`);
-    const { data: existingClient, error: fetchError } = await supabase
+    // 1. Check for Client - Using a raw select to avoid any library magic
+    console.log(`Searching for: ${email}`);
+    const { data: client, error: searchError } = await supabase
       .from('clients')
       .select('id')
-      .eq('user_id', userId)
       .eq('email', email)
+      .eq('user_id', PRACTITIONER_ID)
       .maybeSingle();
 
-    if (fetchError) throw fetchError;
+    if (searchError) throw new Error(`Search Fail: ${searchError.message}`);
 
     let clientId;
-    if (existingClient) {
-      clientId = existingClient.id;
-      await supabase.from('clients').update({ name }).eq('id', clientId);
+    if (client) {
+      clientId = client.id;
+      console.log(`Found existing client: ${clientId}`);
     } else {
-      console.log("Inserting new client...");
+      console.log("Creating new client record...");
       const { data: newClient, error: insertError } = await supabase
         .from('clients')
         .insert({
-          user_id: userId,
+          user_id: PRACTITIONER_ID,
           name: name,
-          email: email
+          email: email,
+          // Explicitly leaving out everything else
         })
-        .select()
+        .select('id')
         .single();
       
-      if (insertError) throw insertError;
+      if (insertError) {
+        console.error("DEBUG - Raw Insert Error:", insertError);
+        throw insertError;
+      }
       clientId = newClient.id;
     }
 
     // 2. Create Appointment
-    console.log(`Creating appointment for: ${clientId}`);
     const { error: appError } = await supabase
       .from('appointments')
       .insert({
-        user_id: userId,
+        user_id: PRACTITIONER_ID,
         client_id: clientId,
-        name: payload.title || "Kinesiology Session",
+        name: payload.title || "Session",
         date: payload.startTime,
         status: "Scheduled",
-        notes: `Cal.com booking. UID: ${payload.uid}`
-      })
+        notes: `Cal.com auto-sync. UID: ${payload.uid}`
+      });
 
     if (appError) throw appError;
 
-    console.log("--- WEBHOOK SUCCESS ---");
-    return new Response(JSON.stringify({ success: true, clientId }), { 
+    return new Response(JSON.stringify({ success: true, version: 13 }), { 
       status: 200, 
       headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
     });
 
   } catch (error) {
-    console.error("V12 Final Error:", error.message);
+    console.error("V13 CRITICAL:", error.message);
     return new Response(JSON.stringify({ error: error.message }), { 
       status: 400, 
       headers: { ...corsHeaders, 'Content-Type': 'application/json' } 

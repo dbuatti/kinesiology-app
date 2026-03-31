@@ -13,17 +13,20 @@ import {
   Mic, Brain, Target, Laptop, AlertTriangle, Lightbulb, 
   CheckCircle2, Workflow, Clock, Sparkles, Link as LinkIcon, Send,
   BookOpen, Wand2, Copy, Check, User, Activity, History, Mail,
-  Trophy, ArrowRight, Star, ExternalLink, MessageSquare, Code
+  Trophy, ArrowRight, Star, ExternalLink, MessageSquare, Code,
+  EyeOff
 } from "lucide-react";
 import AppLayout from "@/components/crm/AppLayout";
 import Breadcrumbs from "@/components/shared/Breadcrumbs";
 import { cn } from "@/lib/utils";
 import { showSuccess, showError } from "@/utils/toast";
 import { format } from "date-fns";
+import { usePrivacyMode } from "@/hooks/use-privacy-mode";
 
 const CLAUDE_MARKETING_CHAT = "https://claude.ai/chat/e4805343-71a0-48fc-a1e0-4d2dde541a88";
 
 const MarketingEnginePage = () => {
+  const { isPrivate } = usePrivacyMode();
   const [activeTab, setActiveTab] = useState("guide");
   const [recentWins, setRecentWins] = useState<any[]>([]);
   const [selectedWin, setSelectedWin] = useState<string>("custom");
@@ -163,15 +166,50 @@ Please provide the final output ready to be reviewed.`;
           </TabsList>
 
           <TabsContent value="guide" className="space-y-12 mt-0">
+            {/* Thought Catcher Section */}
+            <Card className="border-none shadow-xl rounded-[2.5rem] bg-emerald-50 dark:bg-emerald-950/10 border-2 border-emerald-100 dark:border-emerald-900/30 overflow-hidden">
+              <CardHeader className="p-8 pb-4">
+                <CardTitle className="text-2xl font-black flex items-center gap-3 text-emerald-900 dark:text-emerald-100">
+                  <Mic size={28} className="text-emerald-600" /> The Thought Catcher
+                </CardTitle>
+                <CardDescription className="text-emerald-700 dark:text-emerald-300 font-medium text-lg">
+                  Capture raw insights or voice-to-text ideas for future content.
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="p-8 pt-0 space-y-6">
+                <Textarea 
+                  placeholder="Paste a raw voice memo transcript or type a quick clinical insight here..."
+                  className="min-h-[150px] bg-white dark:bg-slate-900 border-emerald-200 dark:border-emerald-900/30 focus:ring-emerald-500 rounded-[2rem] p-8 text-xl font-medium leading-relaxed shadow-inner"
+                  value={customStory}
+                  onChange={(e) => setCustomStory(e.target.value)}
+                />
+                <div className="flex justify-end">
+                  <Button 
+                    onClick={() => setActiveTab('studio')}
+                    className="bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl h-12 px-8 font-black text-xs uppercase tracking-widest shadow-lg"
+                  >
+                    Process with AI <ArrowRight size={18} className="ml-2" />
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
+
             {/* Wins Vault Section */}
             <div className="space-y-6">
               <div className="flex items-center justify-between px-2">
                 <h2 className="text-2xl font-black flex items-center gap-3 text-slate-900">
                   <Trophy size={24} className="text-amber-500" /> The Wins Vault
                 </h2>
-                <Badge variant="outline" className="font-bold border-amber-200 text-amber-600">
-                  {recentWins.length} Potential Stories
-                </Badge>
+                <div className="flex items-center gap-3">
+                  {isPrivate && (
+                    <Badge variant="outline" className="h-6 px-2 text-[8px] font-black uppercase border-rose-200 text-rose-400">
+                      <EyeOff size={10} className="mr-1" /> Private
+                    </Badge>
+                  )}
+                  <Badge variant="outline" className="font-bold border-amber-200 text-amber-600">
+                    {recentWins.length} Potential Stories
+                  </Badge>
+                </div>
               </div>
               
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -185,7 +223,7 @@ Please provide the final output ready to be reviewed.`;
                         <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">{format(new Date(win.date), "MMM d")}</span>
                       </div>
                       <div>
-                        <p className="text-[10px] font-black text-indigo-600 uppercase tracking-widest mb-1">{win.clients?.name}</p>
+                        <p className={cn("text-[10px] font-black text-indigo-600 uppercase tracking-widest mb-1", isPrivate && "blur-sm")}>{win.clients?.name}</p>
                         <h3 className="font-black text-lg text-slate-900 line-clamp-2 leading-tight">{win.issue}</h3>
                       </div>
                       <div className="pt-4 border-t border-slate-50 flex items-center justify-between">

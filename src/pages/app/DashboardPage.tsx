@@ -10,7 +10,8 @@ import {
   Calendar, Activity, Loader2,
   Plus, UserPlus, Sparkles,
   CheckCircle2, Zap, FlaskConical, Brain, Wind, StickyNote, Timer,
-  ArrowRight, AlertCircle, TrendingUp, Clock, ShieldCheck, Heart
+  ArrowRight, AlertCircle, TrendingUp, Clock, ShieldCheck, Heart,
+  ClipboardCheck, EyeOff
 } from "lucide-react";
 import {
   Dialog,
@@ -33,11 +34,13 @@ import DailyBriefing from "@/components/crm/DailyBriefing";
 import AppLayout from "@/components/crm/AppLayout";
 import PractitionerGrounding from "@/components/crm/PractitionerGrounding";
 import { cn } from "@/lib/utils";
+import { usePrivacyMode } from "@/hooks/use-privacy-mode";
 
 const SCRATCHPAD_KEY = "antigravity_practitioner_scratchpad";
 const SCRATCHPAD_TIME_KEY = "antigravity_practitioner_scratchpad_time";
 
 const Index = () => {
+  const { isPrivate } = usePrivacyMode();
   const [stats, setStats] = useState({ 
     clients: 0, 
     appointments: 0,
@@ -50,7 +53,7 @@ const Index = () => {
   });
   const [todaySessions, setTodaySessions] = useState<AppointmentWithClient[]>([]);
   const [activeSession, setActiveSession] = useState<AppointmentWithClient | null>(null);
-  const [nextSession, setNextSession] = useState<AppointmentWithClient | null>(null);
+  const [pendingOnboarding, setPendingOnboarding] = useState<any[]>([]);
   const [priorityClients, setPriorityClients] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [clientDialogOpen, setClientDialogOpen] = useState(false);
@@ -90,15 +93,19 @@ const Index = () => {
         { data: allAppsRaw },
         { count: newClientsCount },
         { count: recentAppsCount },
-        { data: clinicalClients }
+        { data: clinicalClients },
+        { data: recentOnboarding }
       ] = await Promise.all([
         supabase.from('clients').select('*', { count: 'exact', head: true }).or('is_practitioner.eq.false,is_practitioner.is.null'),
         supabase.from('appointments').select('*, clients!inner(is_practitioner)', { count: 'exact', head: true }).or('is_practitioner.eq.false,is_practitioner.is.null', { foreignTable: 'clients' }),
         supabase.from('appointments').select('*, clients!inner(name, is_practitioner)').or('is_practitioner.eq.false,is_practitioner.is.null', { foreignTable: 'clients' }).order('date', { ascending: true }),
         supabase.from('clients').select('*', { count: 'exact', head: true }).or('is_practitioner.eq.false,is_practitioner.is.null').gte('created_at', thirtyDaysAgo),
         supabase.from('appointments').select('*, clients!inner(is_practitioner)', { count: 'exact', head: true }).or('is_practitioner.eq.false,is_practitioner.is.null', { foreignTable: 'clients' }).gte('date', thirtyDaysAgo),
-        supabase.from('clients').select('id, name, appointments(bolt_score, date)').or('is_practitioner.eq.false,is_practitioner.is.null')
+        supabase.from('clients').select('id, name, appointments(bolt_score, date)').or('is_practitioner.eq.false,is_practitioner.is.null'),
+        supabase.from('clients').select('id, name, updated_at').or('is_practitioner.eq.false,is_practitioner.is.null').order('updated_at', { ascending: false }).limit(3)
       ]);
+
+      setPendingOnboarding(recentOnboarding || []);
 
       const allApps = (allAppsRaw || []).map(a => ({
         ...a,
@@ -163,11 +170,6 @@ const Index = () => {
         return diff >= 0 && diff < 60 && app.status !== 'Completed';
       });
       setActiveSession(active || null);
-
-      const upcoming = today
-        .filter(app => app.date > now && app.status === 'Scheduled')
-        .sort((a, b) => a.date.getTime() - b.date.getTime())[0];
-      setNextSession(upcoming || null);
 
       const months = Array.from({ length: 6 }).map((_, i) => {
         const d = subMonths(new Date(), 5 - i);
@@ -305,6 +307,43 @@ const Index = () => {
               <div className="lg:col-span-8 space-y-8">
                 <DailyBriefing todaySessions={todaySessions} activeSession={activeSession} />
                 
+                {pendingOnboarding.length > 0 && (
+                  <Card className="border-none shadow-lg rounded-[3rem] bg-indigo-50 dark:bg-indigo-950/10 border-2 border-indigo-100 dark:border-indigo-900/30 overflow-hidden">
+                    <CardHeader className="p-8 pb-4">
+                      <div className="flex items-center justify-between">
+                        <CardTitle className="text-xl font-black flex items-center gap-3 text-indigo-900 dark:text-indigo-100">
+                          <ClipboardCheck size={24} className="text-indigo-600" /> Recent Onboarding
+                        </CardTitle>
+                        <Badge className="bg-indigo-600 text-white border-none font-black text-[10px] uppercase tracking-widest px-3 py-1 rounded-full">
+                          New Submissions
+                        </Badge>
+                      </div>
+                    </CardHeader>
+                    <CardContent className="p-8 pt-0 space-y-3">
+                      {pendingOnboarding.map(client => (
+                        <Link key={client.id} to={`/clients/${client.id}`}>
+                          <div className="p-5 bg-card rounded-[2rem] border border-indigo-200 dark:border-indigo-900/30 flex items-center justify-between group hover:shadow-md transition-all duration-300">
+                            <div className="flex items-center gap-4">
+                              <div className="w-10 h-10 rounded-xl bg-indigo-100 dark:bg-indigo-900/40 text-indigo-600 dark:text-indigo-400 flex items-center justify-center font-black text-lg">
+                                {client.name.charAt(0)}
+                              </div>
+                              <div>
+                                <p className={cn("font-black text-lg text-foreground group-hover:text-indigo-600 transition-colors", isPrivate && "blur-sm")}>{client.name}</p>
+                                <p className="text-xs font-bold text-muted-foreground flex items-center gap-1.5 mt-1">
+                                  <Clock size={14} className="text-indigo-400" /> Updated {formatDistanceToNow(new Date(client.updated_at), { addSuffix: true })}
+                                </p>
+                              </div>
+                            </div>
+                            <div className="w-10 h-10 rounded-xl bg-indigo-50 dark:bg-indigo-900/20 text-indigo-400 flex items-center justify-center group-hover:bg-indigo-600 group-hover:text-white transition-all">
+                              <ArrowRight size={20} />
+                            </div>
+                          </div>
+                        </Link>
+                      ))}
+                    </CardContent>
+                  </Card>
+                )}
+
                 {priorityClients.length > 0 && (
                   <Card className="border-none shadow-lg rounded-[3rem] bg-rose-50 dark:bg-rose-950/10 border-2 border-rose-100 dark:border-rose-900/30 overflow-hidden">
                     <CardHeader className="p-8 pb-4">
@@ -329,7 +368,7 @@ const Index = () => {
                                 {pc.name.charAt(0)}
                               </div>
                               <div>
-                                <p className="font-black text-lg text-foreground group-hover:text-rose-600 transition-colors">{pc.name}</p>
+                                <p className={cn("font-black text-lg text-foreground group-hover:text-rose-600 transition-colors", isPrivate && "blur-sm")}>{pc.name}</p>
                                 <p className="text-xs font-bold text-muted-foreground flex items-center gap-1.5 mt-1">
                                   <Clock size={14} className="text-rose-400" /> {format(new Date(pc.appointment.date), "h:mm a")}
                                 </p>
@@ -412,30 +451,6 @@ const Index = () => {
 
               {/* Sidebar Column */}
               <div className="lg:col-span-4 space-y-8">
-                {nextSession && (
-                  <Card className="border-none shadow-lg rounded-[2rem] bg-indigo-600 text-white overflow-hidden animate-in zoom-in-95 duration-500">
-                    <CardContent className="p-6 flex items-center justify-between">
-                      <div className="flex items-center gap-4">
-                        <div className="w-12 h-12 rounded-2xl bg-white/20 flex items-center justify-center shadow-inner">
-                          <Timer size={24} className="animate-pulse" />
-                        </div>
-                        <div>
-                          <p className="text-[10px] font-black uppercase tracking-[0.3em] opacity-80">Next Session In</p>
-                          <h3 className="text-2xl font-black tracking-tight">
-                            {formatDistanceToNow(nextSession.date)}
-                          </h3>
-                          <p className="text-xs font-bold opacity-90 mt-1">Client: {nextSession.clients?.name}</p>
-                        </div>
-                      </div>
-                      <Link to={`/appointments/${nextSession.id}`}>
-                        <Button size="icon" className="w-10 h-10 rounded-xl bg-white text-indigo-600 hover:bg-indigo-50 shadow-lg">
-                          <ArrowRight size={20} />
-                        </Button>
-                      </Link>
-                    </CardContent>
-                  </Card>
-                )}
-
                 <MeridianClock />
                 
                 <UpcomingAppointments />

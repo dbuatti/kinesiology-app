@@ -22,17 +22,20 @@ serve(async (req) => {
     const MAILCHIMP_API_KEY = apiKey
     const MAILCHIMP_LIST_ID = listId || audienceId
     
-    console.log("Secret Validation:");
-    console.log("- API Key found:", !!MAILCHIMP_API_KEY);
-    console.log("- List ID found:", !!listId);
-    console.log("- Audience ID found:", !!audienceId);
+    // Log partial info for verification
+    console.log("Secret Verification:");
+    console.log("- API Key exists:", !!MAILCHIMP_API_KEY);
+    if (MAILCHIMP_API_KEY) console.log("- API Key starts with:", MAILCHIMP_API_KEY.substring(0, 3) + "...");
     
-    if (!MAILCHIMP_API_KEY || MAILCHIMP_API_KEY.includes('your_real_key')) {
-      throw new Error('MAILCHIMP_API_KEY is missing or invalid in Supabase Secrets.')
+    console.log("- List ID exists:", !!MAILCHIMP_LIST_ID);
+    if (MAILCHIMP_LIST_ID) console.log("- List ID starts with:", MAILCHIMP_LIST_ID.substring(0, 3) + "...");
+
+    if (!MAILCHIMP_API_KEY) {
+      throw new Error('MAILCHIMP_API_KEY is missing from Supabase Secrets.')
     }
 
-    if (!MAILCHIMP_LIST_ID || MAILCHIMP_LIST_ID.includes('your_real_audience_id')) {
-      throw new Error('MAILCHIMP_LIST_ID (or MAILCHIMP_AUDIENCE_ID) is missing or invalid in Supabase Secrets.')
+    if (!MAILCHIMP_LIST_ID) {
+      throw new Error('MAILCHIMP_LIST_ID (or MAILCHIMP_AUDIENCE_ID) is missing from Supabase Secrets.')
     }
 
     const keyParts = MAILCHIMP_API_KEY.split('-')

@@ -73,7 +73,7 @@ const OnboardingPage = () => {
   if (submitted) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-slate-50 p-4 md:p-6">
-        <Card className="max-w-lg w-full border-none shadow-2xl rounded-2xl md:rounded-[3rem] overflow-hidden animate-in zoom-in-95 duration-500">
+        <Card className="max-w-2xl w-full border-none shadow-2xl rounded-2xl md:rounded-[3rem] overflow-hidden animate-in zoom-in-95 duration-500">
           <div className="bg-emerald-600 p-8 md:p-12 text-center text-white relative">
             <div className="absolute top-0 right-0 p-8 opacity-10 hidden md:block"><Sparkles size={120} /></div>
             <div className="w-16 h-16 md:w-20 md:h-20 bg-white/20 backdrop-blur-md rounded-2xl md:rounded-[2rem] flex items-center justify-center mx-auto mb-6 shadow-xl border border-white/20">
@@ -99,7 +99,7 @@ const OnboardingPage = () => {
 
   return (
     <div className="min-h-screen bg-slate-50 py-8 px-4 md:py-20 md:px-6">
-      <div className="max-w-5xl mx-auto space-y-8 md:space-y-10">
+      <div className="max-w-7xl mx-auto space-y-8 md:space-y-10">
         <div className="text-center space-y-4">
           <div className="w-12 h-12 md:w-16 md:h-16 bg-indigo-600 rounded-xl md:rounded-2xl flex items-center justify-center text-white font-black text-xl md:text-2xl shadow-2xl mx-auto mb-4 md:mb-6">
             A

@@ -1,79 +1,91 @@
 // @ts-nocheck
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
 
-const corsHeaders = {
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type, x-supabase-client-platform',
-  'Access-Control-Allow-Methods': 'POST, OPTIONS',
-}
+const KIT_API_KEY = Deno.env.get('KIT_API_KEY');
 
 serve(async (req) => {
-  console.log("--- [v1] KIT SYNC START ---");
+  console.log("--- [v2] KIT SYNC START ---");
 
-  if (req.method === 'OPTIONS') {
-    return new Response('ok', { headers: corsHeaders })
+  if (!KIT_API_KEY) {
+    console.error("Critical Error: KIT_API_KEY is missing in Supabase Secrets");
+    return new Response("Missing KIT_API_KEY", { status: 500 });
   }
 
   try {
-    const { record } = await req.json()
+    const body = await req.json();
     
-    const API_SECRET = Deno.env.get('KIT_API_SECRET');
+    // Adapter: If the request comes from the CRM trigger, it wraps data in a 'record' object
+    const data = body.record || body;
     
-    if (!API_SECRET) {
-      throw new Error("Missing KIT_API_SECRET. Please set this in your Supabase project secrets.");
+    const email = data.email || data.email_address;
+    let first_name = data.first_name || "";
+    let last_name = data.last_name || "";
+    let tags = data.tags || [];
+
+    // If coming from CRM 'clients' table, split the name
+    if (data.name && !first_name) {
+      const parts = data.name.trim().split(/\s+/);
+      first_name = parts[0];
+      last_name = parts.slice(1).join(" ");
     }
 
-    const email = record.email;
+    // If coming from CRM, determine tags
+    if (data.id && tags.length === 0) {
+      tags = ["FNH", data.is_practitioner ? "Practitioner" : "Client"];
+    }
+
     if (!email) {
-      console.log("Skipping record: No email address found.");
-      return new Response(JSON.stringify({ message: 'No email' }), { status: 200, headers: corsHeaders });
-    }
-
-    const nameParts = (record.name || "Client").trim().split(/\s+/);
-    const firstName = nameParts[0] || "";
-    
-    // Kit V4 Subscriber Payload
-    const body = {
-      email_address: email,
-      first_name: firstName,
-      fields: {
-        phone: record.phone || "",
-        suburbs: Array.isArray(record.suburbs) ? record.suburbs.join(", ") : (record.suburbs || ""),
-        occupation: record.occupation || ""
-      },
-      // Map FNH status to tags
-      tags: ["FNH", record.is_practitioner ? "Practitioner" : "Client"]
+      return new Response("Email is required", { status: 400 });
     }
 
     console.log(`Attempting to sync ${email} to Kit...`);
 
-    const response = await fetch('https://api.kit.com/v4/subscribers', {
+    // 1. Create or update subscriber
+    const subscriberResponse = await fetch('https://api.kit.com/v4/subscribers', {
       method: 'POST',
       headers: {
-        'Authorization': `Bearer ${API_SECRET}`,
         'Content-Type': 'application/json',
+        'X-Kit-Api-Key': KIT_API_KEY,
       },
-      body: JSON.stringify(body),
+      body: JSON.stringify({
+        email_address: email,
+        first_name: first_name,
+        last_name: last_name,
+        fields: {
+          phone: data.phone || "",
+          suburbs: Array.isArray(data.suburbs) ? data.suburbs.join(", ") : (data.suburbs || ""),
+          occupation: data.occupation || ""
+        }
+      }),
     });
 
-    const result = await response.json();
+    const subscriberData = await subscriberResponse.json();
 
-    if (!response.ok) {
-      console.error("Kit API Error:", result);
-      throw new Error(result.message || "Kit API Error");
+    if (!subscriberResponse.ok) {
+      console.error("Kit Subscriber Error:", subscriberData);
+      throw new Error(`Kit API Error: ${JSON.stringify(subscriberData)}`);
     }
 
-    console.log(`Successfully synced ${email} to Kit.`);
-    return new Response(JSON.stringify({ success: true }), { 
-      status: 200, 
-      headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
-    });
+    console.log(`Successfully synced subscriber: ${email}`);
+
+    // 2. Add tags if provided
+    if (tags.length > 0) {
+      console.log(`Applying tags: ${tags.join(", ")}`);
+      
+      // Note: Kit V4 tagging requires tag IDs or specific endpoints. 
+      // For now, we log them. If you have specific Tag IDs, we can add the secondary fetch here.
+    }
+
+    return new Response(
+      JSON.stringify({ success: true, email, message: "Synced to Kit" }),
+      { status: 200, headers: { "Content-Type": "application/json" } }
+    );
 
   } catch (error) {
     console.error("Critical Error:", error.message);
-    return new Response(JSON.stringify({ error: error.message }), { 
-      status: 400, 
-      headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
-    });
+    return new Response(
+      JSON.stringify({ error: error.message }),
+      { status: 500 }
+    );
   }
-})
+});

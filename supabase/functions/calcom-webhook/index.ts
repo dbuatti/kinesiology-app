@@ -9,7 +9,7 @@ const corsHeaders = {
 }
 
 serve(async (req) => {
-  console.log("--- [v23] FINANCE DB MAPPING FIX ---");
+  console.log("--- [v24] DOUBLE DB SYNC (APPTS + PLANNER) START ---");
 
   if (req.method === 'OPTIONS') return new Response('ok', { headers: corsHeaders })
 
@@ -19,8 +19,11 @@ serve(async (req) => {
     const supabase = createClient(supabaseUrl, supabaseKey)
 
     const NOTION_KEY = Deno.env.get('NOTION_API_KEY');
+    
+    // DB IDs
     const CLIENTS_DB_ID = "074e2c006bd541d88c502feb397ef31d";
-    const FINANCE_DB_ID = "11caad21cd0980d8a3eeeffb27fc43c0"; 
+    const APPTS_DB_ID = "171f7156cdc645e8b689af13d217bc7c";   // The one with "Client"
+    const PLANNER_DB_ID = "11caad21cd0980d8a3eeeffb27fc43c0"; // The one with "Client (Kin)"
     const PRACTITIONER_ID = "6f2caa85-bfce-4264-97cd-c0d2f62b24f0";
 
     const body = await req.json();
@@ -30,15 +33,15 @@ serve(async (req) => {
     const email = String(attendee.email).toLowerCase().trim();
     const phone = attendee.phoneNumber || "";
     const startTime = payload.startTime;
+    const notes = payload.description || "";
 
-    // 1. NOTION CLIENT SYNC
+    // 1. SYNC CLIENT (Master List)
     let notionClientId = null;
     const searchRes = await fetch(`https://api.notion.com/v1/databases/${CLIENTS_DB_ID}/query`, {
       method: "POST",
       headers: { "Authorization": `Bearer ${NOTION_KEY}`, "Content-Type": "application/json", "Notion-Version": "2022-06-28" },
       body: JSON.stringify({ filter: { property: "Name", title: { equals: name } } })
     });
-    
     const searchData = await searchRes.json();
     if (searchData.results?.length > 0) {
       notionClientId = searchData.results[0].id;
@@ -48,52 +51,54 @@ serve(async (req) => {
         headers: { "Authorization": `Bearer ${NOTION_KEY}`, "Content-Type": "application/json", "Notion-Version": "2022-06-28" },
         body: JSON.stringify({
           parent: { database_id: CLIENTS_DB_ID },
-          properties: {
-            "Name": { title: [{ text: { content: name } }] },
-            "Email": { email: email },
-            "Phone": phone ? { phone_number: phone } : undefined
-          }
+          properties: { "Name": { title: [{ text: { content: name } }] }, "Email": { email: email }, "Phone": phone ? { phone_number: phone } : undefined }
         })
       });
       const newC = await createC.json();
       notionClientId = newC.id;
     }
 
-    // 2. CREATE FINANCE ENTRY (Database: 11caad21...)
+    // 2. CREATE IN APPOINTMENTS DB (171f7156...)
+    console.log("Creating page in Appointments DB...");
+    const apptProps = {
+      "Name": { title: [{ text: { content: `${name} - ${payload.title}` } }] },
+      "Date": { date: { start: startTime } },
+      "Additional Notes": { rich_text: [{ text: { content: notes } }] }
+    };
+    if (notionClientId) apptProps["Client"] = { relation: [{ id: notionClientId }] };
+
+    const apptRes = await fetch("https://api.notion.com/v1/pages", {
+      method: "POST",
+      headers: { "Authorization": `Bearer ${NOTION_KEY}`, "Content-Type": "application/json", "Notion-Version": "2022-06-28" },
+      body: JSON.stringify({ parent: { database_id: APPTS_DB_ID }, properties: apptProps })
+    });
+
+    // 3. CREATE IN YEARLY PLANNER (11caad21...)
+    console.log("Creating page in Yearly Planner...");
     const amountPaid = payload.payment?.[0]?.amount ? payload.payment[0].amount / 100 : 0;
-    
-    const financeProps = {
+    const plannerProps = {
       "Title": { title: [{ text: { content: `${name} - ${payload.title}` } }] },
       "Date": { date: { start: startTime } },
       "Dollars": { number: amountPaid },
       "Project": { select: { name: "Kinesiology" } }
     };
+    if (notionClientId) plannerProps["Client (Kin)"] = { relation: [{ id: notionClientId }] };
 
-    // FIXED: Corrected property name to "Client (Kin)"
-    if (notionClientId) {
-      financeProps["Client (Kin)"] = { relation: [{ id: notionClientId }] };
-    }
-
-    const financeRes = await fetch("https://api.notion.com/v1/pages", {
+    const plannerRes = await fetch("https://api.notion.com/v1/pages", {
       method: "POST",
       headers: { "Authorization": `Bearer ${NOTION_KEY}`, "Content-Type": "application/json", "Notion-Version": "2022-06-28" },
-      body: JSON.stringify({ parent: { database_id: FINANCE_DB_ID }, properties: financeProps })
+      body: JSON.stringify({ parent: { database_id: PLANNER_DB_ID }, properties: plannerProps })
     });
 
-    const financeData = await financeRes.json();
-    if (!financeRes.ok) {
-      console.error("FINANCE DB ERROR:", JSON.stringify(financeData));
-      throw new Error(`Finance Sync Failed: ${financeData.message}`);
-    }
-    const notionPageId = financeData.id;
+    const plannerData = await plannerRes.json();
+    if (!plannerRes.ok) throw new Error(`Planner Sync Failed: ${plannerData.message}`);
 
-    // 3. SUPABASE SYNC
+    // 4. SUPABASE RECORD (Linking to the Planner Page ID)
     let { data: dbClient } = await supabase.from('clients').select('id').eq('email', email).maybeSingle();
     if (!dbClient) {
       const { data: newDbC } = await supabase.from('clients').insert({ user_id: PRACTITIONER_ID, name, email, phone }).select().single();
       dbClient = newDbC;
     }
-
     await supabase.from('appointments').insert({
       user_id: PRACTITIONER_ID,
       client_id: dbClient.id,
@@ -101,14 +106,14 @@ serve(async (req) => {
       tag: "Kinesiology",
       status: "Scheduled",
       calcom_booking_id: String(payload.id),
-      notion_page_id: notionPageId
+      notion_page_id: plannerData.id // Stores the finance page ID
     });
 
-    console.log("--- SYNC SUCCESSFUL ---");
+    console.log("--- SUCCESS: ALL THREE DATABASES SYNCED ---");
     return new Response(JSON.stringify({ success: true }), { status: 200, headers: corsHeaders });
 
   } catch (error) {
-    console.error("V23 Error:", error.message);
+    console.error("V24 Error:", error.message);
     return new Response(JSON.stringify({ error: error.message }), { status: 400, headers: corsHeaders });
   }
 })

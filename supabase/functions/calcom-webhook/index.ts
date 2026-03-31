@@ -9,7 +9,7 @@ const corsHeaders = {
 }
 
 serve(async (req) => {
-  console.log("--- [v6] CAL.COM WEBHOOK START ---");
+  console.log("--- [v7] CAL.COM WEBHOOK START ---");
 
   if (req.method === 'OPTIONS') {
     return new Response('ok', { headers: corsHeaders })
@@ -23,13 +23,8 @@ serve(async (req) => {
       throw new Error("Missing environment variables: SUPABASE_URL or SUPABASE_SERVICE_ROLE_KEY");
     }
 
-    // Create a clean client. Do NOT pass the incoming request's headers.
-    const supabase = createClient(supabaseUrl, supabaseServiceKey, {
-      auth: {
-        persistSession: false,
-        autoRefreshToken: false,
-      }
-    })
+    // Create a clean client with no extra auth config to avoid header pollution
+    const supabase = createClient(supabaseUrl, supabaseServiceKey)
 
     const body = await req.json()
     const { triggerEvent, payload } = body
@@ -52,11 +47,7 @@ serve(async (req) => {
 
     // Get the practitioner (owner)
     const { data: users, error: userError } = await supabase.auth.admin.listUsers()
-    if (userError) {
-      console.error("Auth Admin Error:", userError);
-      throw new Error(`Auth Admin Failed: ${userError.message}`);
-    }
-    if (!users.users.length) throw new Error("No users found in project");
+    if (userError || !users.users.length) throw new Error("Could not find practitioner user");
     
     const userId = users.users[0].id;
     console.log(`Practitioner User ID: ${userId}`);
@@ -88,12 +79,10 @@ serve(async (req) => {
         })
         .eq('id', clientId);
       
-      if (updateError) {
-        console.error("Update Client Error:", updateError);
-        throw updateError;
-      }
+      if (updateError) throw updateError;
     } else {
       console.log(`Creating new client for: ${email}`);
+      // We omit 'suburbs' here to let the DB handle the default value
       const { data: newClient, error: insertError } = await supabase
         .from('clients')
         .insert({
@@ -101,7 +90,6 @@ serve(async (req) => {
           name: name,
           email: email,
           phone: attendee.phoneNumber ? String(attendee.phoneNumber) : null,
-          suburbs: [] // Explicitly send empty array to avoid JSON default issues
         })
         .select()
         .single();

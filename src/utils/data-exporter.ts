@@ -4,9 +4,10 @@ import { format } from "date-fns";
 
 /**
  * Exports an array of client objects to a CSV file formatted for Mailchimp.
+ * Follows the 'Tags' and 'Custom Fields' logic for seamless import.
  */
 export function exportClientsToMailchimpCSV(clients: any[]) {
-  // Mailchimp standard headers
+  // Mailchimp standard headers + Custom FNH fields
   const headers = [
     "Email Address",
     "First Name",
@@ -14,19 +15,27 @@ export function exportClientsToMailchimpCSV(clients: any[]) {
     "Phone Number",
     "Suburbs",
     "Birthday",
-    "Occupation"
+    "Occupation",
+    "Tags",
+    "FNH_Status"
   ];
 
   const rows = clients.map(client => {
-    // Split name into first and last
+    // 1. Split name into first and last
     const nameParts = (client.name || "").trim().split(/\s+/);
     const firstName = nameParts[0] || "";
     const lastName = nameParts.length > 1 ? nameParts.slice(1).join(" ") : "";
     
-    // Mailchimp birthday format is usually MM/DD
+    // 2. Format birthday (MM/DD)
     const birthday = client.born ? format(new Date(client.born), "MM/dd") : "";
     
-    // Join suburbs array
+    // 3. Handle Tags (Comma separated)
+    const tags = client.is_practitioner ? "FNH, Practitioner" : "FNH, Client";
+    
+    // 4. Handle Custom Status
+    const fnhStatus = client.is_practitioner ? "Practitioner" : "Active Client";
+
+    // 5. Join suburbs array
     const suburbs = Array.isArray(client.suburbs) ? client.suburbs.join(", ") : (client.suburbs || "");
 
     const rowData = [
@@ -36,7 +45,9 @@ export function exportClientsToMailchimpCSV(clients: any[]) {
       client.phone || "",
       suburbs,
       birthday,
-      client.occupation || ""
+      client.occupation || "",
+      tags,
+      fnhStatus
     ];
 
     // Escape quotes and join with commas
@@ -58,7 +69,7 @@ export function exportClientsToMailchimpCSV(clients: any[]) {
   const timestamp = format(new Date(), "yyyy-MM-dd");
   
   link.setAttribute("href", url);
-  link.setAttribute("download", `mailchimp_export_${timestamp}.csv`);
+  link.setAttribute("download", `fnh_mailchimp_export_${timestamp}.csv`);
   link.style.visibility = 'hidden';
   document.body.appendChild(link);
   link.click();

@@ -89,6 +89,15 @@ export interface Client {
   journal?: string;
   created_at?: string;
   is_practitioner?: boolean;
+  // New Clinical Fields
+  emergency_contact_name?: string;
+  emergency_contact_phone?: string;
+  medications_supplements?: string;
+  current_stress_level?: number;
+  sleep_quality?: string;
+  digestive_health?: string;
+  medical_history?: string;
+  referral_source?: string;
 }
 
 export interface AppointmentWithClient extends Appointment {

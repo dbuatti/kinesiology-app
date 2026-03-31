@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
-import { Settings, User, LogOut, Upload, Database, Download, Mail, Loader2 } from "lucide-react";
+import { Settings, User, LogOut, Upload, Database, Download, Mail, Loader2, RefreshCw } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
 import { showSuccess, showError } from "@/utils/toast";
@@ -10,6 +10,7 @@ import { exportClientsToMailchimpCSV } from "@/utils/data-exporter";
 const SettingsPage = () => {
   const navigate = useNavigate();
   const [exporting, setExporting] = useState(false);
+  const [syncing, setSyncing] = useState(false);
 
   const handleSignOut = async () => {
     try {
@@ -30,7 +31,6 @@ const SettingsPage = () => {
         .or('is_practitioner.eq.false,is_practitioner.is.null');
 
       if (error) throw error;
-
       if (!data || data.length === 0) {
         showError("No clients found to export.");
         return;
@@ -42,6 +42,35 @@ const SettingsPage = () => {
       showError(err.message || "Failed to export contacts.");
     } finally {
       setExporting(false);
+    }
+  };
+
+  const handleManualSync = async () => {
+    setSyncing(true);
+    try {
+      const { data: clients, error: fetchError } = await supabase
+        .from('clients')
+        .select('*')
+        .or('is_practitioner.eq.false,is_practitioner.is.null');
+
+      if (fetchError) throw fetchError;
+
+      let successCount = 0;
+      for (const client of (clients || [])) {
+        if (!client.email) continue;
+        
+        const { error: syncError } = await supabase.functions.invoke('sync-to-mailchimp', {
+          body: { record: client }
+        });
+        
+        if (!syncError) successCount++;
+      }
+
+      showSuccess(`Successfully synced ${successCount} contacts to Mailchimp.`);
+    } catch (err: any) {
+      showError("Manual sync failed. Ensure the Edge Function is deployed and secrets are set.");
+    } finally {
+      setSyncing(false);
     }
   };
 
@@ -101,14 +130,20 @@ const SettingsPage = () => {
               <Button 
                 onClick={handleExport}
                 disabled={exporting}
+                variant="outline"
+                className="w-full h-11 rounded-xl border-slate-200 font-bold justify-start"
+              >
+                {exporting ? <Loader2 className="mr-3 animate-spin" /> : <Download size={18} className="mr-3 text-indigo-500" />}
+                Export CSV for Mailchimp
+              </Button>
+
+              <Button 
+                onClick={handleManualSync}
+                disabled={syncing}
                 className="w-full h-11 rounded-xl bg-indigo-600 hover:bg-indigo-700 font-bold shadow-lg shadow-indigo-100"
               >
-                {exporting ? (
-                  <Loader2 size={18} className="mr-3 animate-spin" />
-                ) : (
-                  <Download size={18} className="mr-3" />
-                )}
-                Export for Mailchimp
+                {syncing ? <Loader2 className="mr-3 animate-spin" /> : <RefreshCw size={18} className="mr-3" />}
+                Sync Existing to Mailchimp
               </Button>
             </div>
             <div className="p-4 bg-indigo-50 rounded-xl border border-indigo-100">
@@ -117,7 +152,7 @@ const SettingsPage = () => {
                 <p className="text-[10px] font-black text-indigo-600 uppercase tracking-widest">Automation Tip</p>
               </div>
               <p className="text-xs text-indigo-800 leading-relaxed">
-                To automate this, connect your Supabase database to Mailchimp via <strong>Zapier</strong>. New clients will sync automatically.
+                To automate this, set up a <strong>Database Webhook</strong> in your Supabase Dashboard to trigger the <code>sync-to-mailchimp</code> function on every new client.
               </p>
             </div>
           </CardContent>

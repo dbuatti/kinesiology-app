@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
-import { Settings, User, LogOut, Upload, Database, Download, Mail, Loader2, RefreshCw, ExternalLink, Zap, Info, Calendar, Copy, Check } from "lucide-react";
+import { Settings, User, LogOut, Upload, Database, Download, Mail, Loader2, RefreshCw, ExternalLink, Zap, Info, Calendar, Copy, Check, ShieldAlert } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
 import { showSuccess, showError } from "@/utils/toast";
@@ -14,6 +14,7 @@ const SettingsPage = () => {
   const [exporting, setExporting] = useState<'mailchimp' | 'kit' | null>(null);
   const [syncing, setSyncing] = useState<'mailchimp' | 'kit' | null>(null);
   const [copied, setCopied] = useState(false);
+  const [testing, setTesting] = useState(false);
 
   // Derived from the client config
   const projectRef = "xebtjnvfkroiplyzftas";
@@ -34,6 +35,23 @@ const SettingsPage = () => {
     setCopied(true);
     showSuccess("Webhook URL copied!");
     setTimeout(() => setCopied(false), 2000);
+  };
+
+  const handleTestWebhook = async () => {
+    setTesting(true);
+    try {
+      const response = await fetch(webhookUrl);
+      const data = await response.json();
+      if (data.status === 'active') {
+        showSuccess("Webhook is live and reachable!");
+      } else {
+        throw new Error("Unexpected response");
+      }
+    } catch (err) {
+      showError("Could not reach webhook. Ensure it is deployed in Supabase.");
+    } finally {
+      setTesting(false);
+    }
   };
 
   const handleExport = async (provider: 'mailchimp' | 'kit') => {
@@ -127,6 +145,16 @@ const SettingsPage = () => {
                   {copied ? <Check size={16} className="text-emerald-500" /> : <Copy size={16} />}
                 </Button>
               </div>
+              <Button 
+                variant="ghost" 
+                size="sm" 
+                onClick={handleTestWebhook} 
+                disabled={testing}
+                className="text-[10px] font-black uppercase tracking-widest text-indigo-600 hover:bg-indigo-50"
+              >
+                {testing ? <Loader2 className="mr-2 animate-spin" size={12} /> : <RefreshCw size={12} className="mr-2" />}
+                Test Connection
+              </Button>
             </div>
 
             <div className="p-4 bg-amber-50 rounded-xl border border-amber-100 space-y-3">
@@ -150,6 +178,16 @@ const SettingsPage = () => {
               >
                 Open Cal.com Webhooks <ExternalLink size={10} />
               </a>
+            </div>
+
+            <div className="p-4 bg-rose-50 rounded-xl border border-rose-100 flex items-start gap-3">
+              <ShieldAlert size={18} className="text-rose-600 shrink-0 mt-0.5" />
+              <div className="space-y-1">
+                <p className="text-[10px] font-black text-rose-600 uppercase tracking-widest">Troubleshooting</p>
+                <p className="text-xs text-rose-800 leading-relaxed">
+                  If bookings aren't appearing, check the <strong>Logs</strong> in your Cal.com Webhook settings. It will show if the request failed or timed out.
+                </p>
+              </div>
             </div>
           </CardContent>
         </Card>

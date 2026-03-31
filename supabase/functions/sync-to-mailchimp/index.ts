@@ -8,12 +8,8 @@ const corsHeaders = {
 }
 
 serve(async (req) => {
-  // This handles the browser's security "preflight" check
   if (req.method === 'OPTIONS') {
-    return new Response('ok', { 
-      status: 200,
-      headers: corsHeaders 
-    })
+    return new Response('ok', { headers: corsHeaders })
   }
 
   try {
@@ -22,21 +18,20 @@ serve(async (req) => {
     const MAILCHIMP_API_KEY = Deno.env.get('MAILCHIMP_API_KEY')
     const MAILCHIMP_LIST_ID = Deno.env.get('MAILCHIMP_LIST_ID')
     
-    if (!MAILCHIMP_API_KEY || !MAILCHIMP_LIST_ID) {
-      throw new Error('Missing Mailchimp configuration in Supabase Secrets')
+    if (!MAILCHIMP_API_KEY || MAILCHIMP_API_KEY.includes('your_real_key')) {
+      throw new Error('Invalid or missing MAILCHIMP_API_KEY in Supabase Secrets')
     }
 
     const DATACENTER = MAILCHIMP_API_KEY.split('-')[1]
     const email = record.email
     
     if (!email) {
-      return new Response(JSON.stringify({ message: 'No email provided, skipping' }), { 
+      return new Response(JSON.stringify({ message: 'No email provided' }), { 
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
         status: 200 
       })
     }
 
-    // Prepare data
     const nameParts = (record.name || "Client").trim().split(/\s+/)
     const firstName = nameParts[0] || ""
     const lastName = nameParts.length > 1 ? nameParts.slice(1).join(" ") : ""
@@ -52,11 +47,14 @@ serve(async (req) => {
       tags: ["FNH", record.is_practitioner ? "Practitioner" : "Client"]
     }
 
-    // Add to Mailchimp (using PUT to upsert)
+    console.log(`Attempting to sync ${email} to list ${MAILCHIMP_LIST_ID} on ${DATACENTER}`)
+
+    // Using POST to add a new member. 
+    // Note: If member exists, Mailchimp returns 400 "Member Exists".
     const response = await fetch(
-      `https://${DATACENTER}.api.mailchimp.com/3.0/lists/${MAILCHIMP_LIST_ID}/members/${btoa(email.toLowerCase())}`,
+      `https://${DATACENTER}.api.mailchimp.com/3.0/lists/${MAILCHIMP_LIST_ID}/members`,
       {
-        method: 'PUT',
+        method: 'POST',
         headers: {
           Authorization: `apikey ${MAILCHIMP_API_KEY}`,
           'Content-Type': 'application/json',
@@ -67,12 +65,26 @@ serve(async (req) => {
 
     const result = await response.json()
 
-    return new Response(JSON.stringify(result), { 
+    // If the error is just that they already exist, we treat it as a success
+    if (!response.ok && result.title === "Member Exists") {
+      return new Response(JSON.stringify({ message: 'Member already exists, sync skipped' }), { 
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        status: 200 
+      })
+    }
+
+    if (!response.ok) {
+      console.error("Mailchimp Error Details:", result)
+      throw new Error(result.detail || result.title || 'Mailchimp API error')
+    }
+
+    return new Response(JSON.stringify({ success: true, data: result }), { 
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-      status: response.ok ? 200 : 400 
+      status: 200 
     })
 
   } catch (error) {
+    console.error("Function Error:", error.message)
     return new Response(JSON.stringify({ error: error.message }), { 
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       status: 400 

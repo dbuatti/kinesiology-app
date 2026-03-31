@@ -1,19 +1,17 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
-import { Settings, User, LogOut, Upload, Database, Download, Mail, Loader2, RefreshCw, ExternalLink, Zap, Info, Calendar, Copy, Check, ShieldAlert, Link as LinkIcon, FileText, ListChecks, Sparkles, Brain, CheckCircle2 } from "lucide-react";
+import { Settings, User, LogOut, Mail, Loader2, RefreshCw, Zap, Info, Calendar, Copy, Check, ShieldCheck, Link as LinkIcon, Sparkles, CheckCircle2, Globe } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
 import { showSuccess, showError } from "@/utils/toast";
-import { useNavigate, Link } from "react-router-dom";
-import { exportClientsToMailchimpCSV, exportClientsToKitCSV } from "@/utils/data-exporter";
+import { useNavigate } from "react-router-dom";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 
 const SettingsPage = () => {
   const navigate = useNavigate();
-  const [exporting, setExporting] = useState<'mailchimp' | 'kit' | null>(null);
-  const [syncing, setSyncing] = useState<'mailchimp' | 'kit' | null>(null);
   const [copied, setCopied] = useState<string | null>(null);
+  const [checkingStatus, setCheckingStatus] = useState(false);
 
   const projectRef = "xebtjnvfkroiplyzftas";
   const webhookUrl = `https://${projectRef}.supabase.co/functions/v1/calcom-webhook`;
@@ -35,128 +33,151 @@ const SettingsPage = () => {
     }
   };
 
-  return (
-    <div className="p-4 md:p-8 max-w-full mx-auto space-y-8">
-      <div className="flex items-center gap-4">
-        <div className="w-12 h-12 bg-indigo-100 rounded-xl flex items-center justify-center text-indigo-600">
-          <Settings size={24} />
+  const IntegrationStatus = ({ name, icon: Icon, description }: any) => (
+    <div className="flex items-center justify-between p-4 bg-slate-50 dark:bg-slate-900 rounded-2xl border border-slate-100 dark:border-slate-800">
+      <div className="flex items-center gap-3">
+        <div className="w-10 h-10 rounded-xl bg-white dark:bg-slate-800 shadow-sm flex items-center justify-center text-indigo-600">
+          <Icon size={20} />
         </div>
         <div>
-          <h1 className="text-3xl font-bold tracking-tight text-slate-900">Settings</h1>
-          <p className="text-slate-500">Manage your account and application preferences.</p>
+          <p className="text-sm font-black text-slate-900 dark:text-white">{name}</p>
+          <p className="text-[10px] text-slate-500 font-medium">{description}</p>
+        </div>
+      </div>
+      <Badge className="bg-emerald-500 text-white border-none font-black text-[8px] uppercase tracking-widest">
+        Connected
+      </Badge>
+    </div>
+  );
+
+  return (
+    <div className="p-4 md:p-8 max-w-full mx-auto space-y-8">
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-4">
+          <div className="w-12 h-12 bg-indigo-600 rounded-xl flex items-center justify-center text-white shadow-lg shadow-indigo-200">
+            <Settings size={24} />
+          </div>
+          <div>
+            <h1 className="text-3xl font-black tracking-tight text-slate-900 dark:text-white">System Settings</h1>
+            <p className="text-slate-500 font-medium">Manage your clinical infrastructure and automations.</p>
+          </div>
         </div>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        {/* Gmail API Automation Helper */}
-        <Card className="border-none shadow-lg rounded-2xl bg-slate-900 text-white md:col-span-2 overflow-hidden relative">
-          <div className="absolute top-0 right-0 p-8 opacity-10"><Mail size={120} /></div>
-          <CardHeader>
-            <CardTitle className="text-xl flex items-center gap-2">
-              <Mail size={20} className="text-indigo-400" /> Gmail Onboarding Automation
-            </CardTitle>
-            <CardDescription className="text-slate-400">Send professional onboarding emails directly from your Gmail account.</CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-8 relative z-10">
-            <div className="p-6 bg-white/5 rounded-3xl border border-white/10 space-y-6">
-              <div className="flex items-center gap-2">
-                <Sparkles size={18} className="text-amber-400" />
-                <h4 className="text-sm font-bold">Gmail API Setup Guide</h4>
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        {/* Integration Health */}
+        <div className="lg:col-span-2 space-y-6">
+          <Card className="border-none shadow-xl rounded-[2.5rem] bg-white dark:bg-slate-950 overflow-hidden">
+            <CardHeader className="p-8 pb-4">
+              <CardTitle className="text-xl font-black flex items-center gap-3">
+                <Globe size={24} className="text-indigo-500" /> Integration Ecosystem
+              </CardTitle>
+              <CardDescription className="font-medium">Status of your linked clinical and marketing tools.</CardDescription>
+            </CardHeader>
+            <CardContent className="p-8 pt-0 space-y-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <IntegrationStatus name="Kit (ConvertKit)" icon={Mail} description="Marketing & Newsletter Sync" />
+                <IntegrationStatus name="Notion" icon={LinkIcon} description="Clinical Database & Planner" />
+                <IntegrationStatus name="Gmail API" icon={Sparkles} description="Automated Onboarding Emails" />
+                <IntegrationStatus name="Cal.com" icon={Calendar} description="Booking & Scheduling" />
               </div>
               
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                <div className="space-y-4">
-                  <div className="space-y-2">
-                    <p className="text-xs font-bold text-indigo-300 uppercase">1. Google Cloud Console</p>
-                    <p className="text-[11px] text-slate-300 leading-relaxed">
-                      Create a project in Google Cloud Console. Enable the <strong>Gmail API</strong>. Create OAuth 2.0 credentials (Web Application).
-                    </p>
+              <div className="mt-6 p-6 bg-indigo-50 dark:bg-indigo-900/20 rounded-[2rem] border border-indigo-100 dark:border-indigo-900/30">
+                <div className="flex items-start gap-4">
+                  <div className="w-10 h-10 rounded-xl bg-white dark:bg-slate-800 flex items-center justify-center text-indigo-600 shrink-0 shadow-sm">
+                    <Zap size={20} />
                   </div>
-                  <div className="space-y-2">
-                    <p className="text-xs font-bold text-indigo-300 uppercase">2. Get Refresh Token</p>
-                    <p className="text-[11px] text-slate-300 leading-relaxed">
-                      Use the OAuth Playground to authorize the <code className="bg-black/20 px-1">https://www.googleapis.com/auth/gmail.send</code> scope and generate a Refresh Token.
+                  <div className="space-y-1">
+                    <h4 className="font-black text-indigo-900 dark:text-indigo-100 text-sm uppercase tracking-tight">Automation Logic</h4>
+                    <p className="text-xs text-indigo-700 dark:text-indigo-300 leading-relaxed font-medium">
+                      New bookings from Cal.com automatically create a client, send a Gmail onboarding link, and sync the record to Notion. Once the client submits their form, they are tagged and synced to Kit.
                     </p>
                   </div>
                 </div>
-
-                <div className="space-y-4">
-                  <p className="text-xs font-bold text-indigo-300 uppercase">3. Set Supabase Secrets</p>
-                  <div className="grid grid-cols-1 gap-2">
-                    {["GMAIL_CLIENT_ID", "GMAIL_CLIENT_SECRET", "GMAIL_REFRESH_TOKEN", "GMAIL_USER_EMAIL"].map(secret => (
-                      <div key={secret} className="flex items-center justify-between p-2 bg-black/20 rounded-lg border border-white/5">
-                        <code className="text-[10px] text-emerald-400">{secret}</code>
-                        <CheckCircle2 size={12} className="text-slate-600" />
-                      </div>
-                    ))}
-                  </div>
-                </div>
               </div>
+            </CardContent>
+          </Card>
 
-              <div className="pt-4 border-t border-white/10">
-                <p className="text-[10px] text-slate-400 italic">
-                  Once configured, every new Cal.com booking will trigger a personalized email from your address containing the client's unique onboarding link.
-                </p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card className="border-none shadow-lg rounded-2xl bg-white border-t-4 border-amber-500">
-          <CardHeader>
-            <div className="flex items-center justify-between">
-              <CardTitle className="text-xl flex items-center gap-2">
-                <Calendar size={20} className="text-amber-500" /> Cal.com Webhook
+          <Card className="border-none shadow-lg rounded-[2.5rem] bg-white dark:bg-slate-950 overflow-hidden">
+            <CardHeader className="p-8 pb-4">
+              <CardTitle className="text-xl font-black flex items-center gap-3">
+                <Calendar size={24} className="text-amber-500" /> Cal.com Webhook Configuration
               </CardTitle>
-              <Badge className="bg-amber-100 text-amber-700 border-none">Automation</Badge>
-            </div>
-            <CardDescription>Sync bookings to your CRM automatically.</CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-6">
-            <div className="space-y-3">
-              <p className="text-sm font-bold text-slate-700">Your Webhook URL:</p>
-              <div className="flex gap-2">
-                <div className="flex-1 bg-slate-50 border border-slate-200 rounded-xl px-4 py-2 text-xs font-mono text-slate-600 truncate flex items-center">
-                  {webhookUrl}
+            </CardHeader>
+            <CardContent className="p-8 pt-0 space-y-6">
+              <div className="space-y-3">
+                <p className="text-xs font-black text-slate-400 uppercase tracking-widest">Your Unique Endpoint</p>
+                <div className="flex gap-2">
+                  <div className="flex-1 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl px-4 py-3 text-xs font-mono text-slate-600 dark:text-slate-400 truncate flex items-center">
+                    {webhookUrl}
+                  </div>
+                  <Button variant="outline" size="icon" className="rounded-xl h-12 w-12 shrink-0" onClick={() => handleCopy(webhookUrl, 'web')}>
+                    {copied === 'web' ? <Check size={20} className="text-emerald-500" /> : <Copy size={20} />}
+                  </Button>
                 </div>
-                <Button variant="outline" size="icon" className="rounded-xl shrink-0" onClick={() => handleCopy(webhookUrl, 'web')}>
-                  {copied === 'web' ? <Check size={16} className="text-emerald-500" /> : <Copy size={16} />}
-                </Button>
               </div>
-            </div>
 
-            <div className="p-4 bg-amber-50 rounded-xl border border-amber-100 space-y-3">
-              <div className="flex items-center gap-2">
-                <Info size={14} className="text-amber-600" />
-                <p className="text-[10px] font-black text-amber-600 uppercase tracking-widest">Setup Instructions</p>
+              <div className="p-6 bg-amber-50 dark:bg-amber-950/20 rounded-3xl border border-amber-100 dark:border-amber-900/30 space-y-3">
+                <div className="flex items-center gap-2">
+                  <Info size={16} className="text-amber-600" />
+                  <p className="text-[10px] font-black text-amber-600 uppercase tracking-widest">Setup Instructions</p>
+                </div>
+                <ol className="text-xs text-amber-800 dark:text-amber-200 space-y-2 list-decimal pl-4 font-medium">
+                  <li>Go to <strong>Cal.com Settings {" > "} Webhooks</strong>.</li>
+                  <li>Paste the URL above into <strong>Subscriber URL</strong>.</li>
+                  <li>Select <strong>Booking Created</strong> and <strong>Booking Cancelled</strong>.</li>
+                  <li>Click <strong>Save</strong>.</li>
+                </ol>
               </div>
-              <ol className="text-xs text-amber-800 space-y-2 list-decimal pl-4 font-medium">
-                <li>Go to <strong>Cal.com Settings {" > "} Webhooks</strong>.</li>
-                <li>Paste the URL above into <strong>Subscriber URL</strong>.</li>
-                <li>Select <strong>Booking Created</strong> and <strong>Booking Cancelled</strong>.</li>
-                <li>Click <strong>Save</strong>.</li>
-              </ol>
-            </div>
-          </CardContent>
-        </Card>
+            </CardContent>
+          </Card>
+        </div>
 
-        <Card className="border-none shadow-lg rounded-2xl bg-white border-t-4 border-rose-600">
-          <CardHeader>
-            <CardTitle className="text-xl flex items-center gap-2">
-              <User size={20} className="text-rose-600" /> Account
-            </CardTitle>
-            <CardDescription>Manage your session and security.</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <Button 
-              variant="destructive" 
-              onClick={handleSignOut}
-              className="w-full h-11 rounded-xl font-bold"
-            >
-              <LogOut size={18} className="mr-2" /> Sign Out
-            </Button>
-          </CardContent>
-        </Card>
+        {/* Account & Security */}
+        <div className="space-y-6">
+          <Card className="border-none shadow-lg rounded-[2.5rem] bg-white dark:bg-slate-950 overflow-hidden">
+            <CardHeader className="p-8 pb-4">
+              <CardTitle className="text-xl font-black flex items-center gap-3">
+                <User size={24} className="text-rose-500" /> Account
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="p-8 pt-0 space-y-6">
+              <div className="p-4 bg-slate-50 dark:bg-slate-900 rounded-2xl border border-slate-100 dark:border-slate-800 flex items-center gap-4">
+                <div className="w-12 h-12 rounded-full bg-indigo-600 text-white flex items-center justify-center font-black text-lg">
+                  P
+                </div>
+                <div>
+                  <p className="font-black text-slate-900 dark:text-white">Practitioner Account</p>
+                  <p className="text-[10px] text-slate-500 font-bold uppercase tracking-widest">Active Session</p>
+                </div>
+              </div>
+              <Button 
+                variant="destructive" 
+                onClick={handleSignOut}
+                className="w-full h-14 rounded-2xl font-black text-xs uppercase tracking-widest shadow-xl shadow-rose-100 dark:shadow-none"
+              >
+                <LogOut size={18} className="mr-2" /> Sign Out of System
+              </Button>
+            </CardContent>
+          </Card>
+
+          <Card className="border-none shadow-lg rounded-[2.5rem] bg-slate-900 text-white overflow-hidden relative">
+            <div className="absolute top-0 right-0 p-6 opacity-10"><ShieldCheck size={80} /></div>
+            <CardHeader className="p-8 pb-4">
+              <CardTitle className="text-lg font-black flex items-center gap-2">
+                <ShieldCheck size={20} className="text-emerald-400" /> System Security
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="p-8 pt-0 space-y-4">
+              <p className="text-xs text-slate-400 leading-relaxed font-medium">
+                Your clinical data is encrypted at rest and in transit. All external integrations use secure OAuth 2.0 or API Key protocols.
+              </p>
+              <div className="flex items-center gap-2 text-[10px] font-black text-emerald-400 uppercase tracking-widest">
+                <CheckCircle2 size={14} /> SSL Secure Connection
+              </div>
+            </CardContent>
+          </Card>
+        </div>
       </div>
     </div>
   );

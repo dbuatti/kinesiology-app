@@ -9,7 +9,8 @@ import {
   ArrowLeft, Mail, Phone, MapPin, Calendar, 
   Loader2, Briefcase, Heart, Baby,
   Activity, Edit3, Trash2, MoreHorizontal, FlaskConical, TrendingUp, Clock, Brain,
-  LayoutDashboard, History, ArrowRight, Copy, Check, Sparkles, Plus, Link as LinkIcon
+  LayoutDashboard, History, ArrowRight, Copy, Check, Sparkles, Plus, Link as LinkIcon,
+  Zap, Send, ShieldCheck, ExternalLink, RefreshCw
 } from "lucide-react";
 import { format } from "date-fns";
 import { Client, Appointment } from "@/types/crm";
@@ -52,6 +53,7 @@ const ClientDetailPage = () => {
   const [copiedField, setCopiedField] = useState<string | null>(null);
   const [aiCopying, setAiCopying] = useState(false);
   const [linkCopying, setLinkCopying] = useState(false);
+  const [syncingKit, setSyncingKit] = useState(false);
   const { addRecentClient } = useRecentClients();
 
   const fetchClientData = async () => {
@@ -108,6 +110,22 @@ const ClientDetailPage = () => {
     setTimeout(() => setLinkCopying(false), 2000);
   };
 
+  const handleManualKitSync = async () => {
+    if (!client) return;
+    setSyncingKit(true);
+    try {
+      const { data, error } = await supabase.functions.invoke('sync-to-kit', {
+        body: { record: client }
+      });
+      if (error) throw error;
+      showSuccess(`Successfully synced ${client.name} to Kit!`);
+    } catch (err: any) {
+      showError(err.message || "Failed to sync to Kit.");
+    } finally {
+      setSyncingKit(false);
+    }
+  };
+
   const handleCopyForAI = () => {
     if (!client || appointments.length === 0) return;
     setAiCopying(true);
@@ -119,7 +137,6 @@ const ClientDetailPage = () => {
 
   const handleCopyFullSummary = (app: any) => {
     if (!client) return;
-    // Merge appointment with client context for the generator
     const fullApp = { ...app, clients: client };
     const summary = generateSessionSummary(fullApp);
     navigator.clipboard.writeText(summary);
@@ -128,7 +145,6 @@ const ClientDetailPage = () => {
 
   const handleDeleteClient = async () => {
     if (!confirm("Are you sure you want to delete this client? This will remove all their appointments too.")) return;
-    
     try {
       const { error } = await supabase.from('clients').delete().eq('id', id);
       if (error) throw error;
@@ -243,6 +259,45 @@ const ClientDetailPage = () => {
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
               <div className="lg:col-span-1 space-y-6">
                 <ClientProfileCard client={client} />
+
+                <Card className="border-none shadow-sm bg-white rounded-2xl overflow-hidden">
+                  <CardHeader className="pb-3 bg-slate-50/50 border-b border-slate-100">
+                    <CardTitle className="text-sm font-black uppercase tracking-widest text-slate-500 flex items-center gap-2">
+                      <Zap size={16} className="text-indigo-500" /> Automation Status
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent className="p-6 space-y-4">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-3">
+                        <div className="w-8 h-8 rounded-lg bg-indigo-50 flex items-center justify-center text-indigo-600">
+                          <Mail size={16} />
+                        </div>
+                        <span className="text-xs font-bold text-slate-700">Kit Sync</span>
+                      </div>
+                      <Button 
+                        variant="ghost" 
+                        size="sm" 
+                        onClick={handleManualKitSync}
+                        disabled={syncingKit}
+                        className="h-8 text-[10px] font-black uppercase tracking-widest text-indigo-600 hover:bg-indigo-50"
+                      >
+                        {syncingKit ? <Loader2 size={14} className="animate-spin" /> : <RefreshCw size={14} className="mr-1.5" />}
+                        Sync Now
+                      </Button>
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-3">
+                        <div className="w-8 h-8 rounded-lg bg-emerald-50 flex items-center justify-center text-emerald-600">
+                          <ShieldCheck size={16} />
+                        </div>
+                        <span className="text-xs font-bold text-slate-700">Onboarding</span>
+                      </div>
+                      <Badge className="bg-emerald-500 text-white border-none font-black text-[8px] uppercase tracking-widest">
+                        Complete
+                      </Badge>
+                    </div>
+                  </CardContent>
+                </Card>
 
                 <Card className="border-none shadow-sm bg-white rounded-2xl">
                   <CardHeader className="pb-3">

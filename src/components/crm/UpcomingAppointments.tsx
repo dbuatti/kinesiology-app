@@ -5,15 +5,17 @@ import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Calendar, Clock, Loader2, ArrowRight } from "lucide-react";
+import { Calendar, Clock, Loader2, ArrowRight, EyeOff } from "lucide-react";
 import { Link } from "react-router-dom";
 import { format, isToday, isTomorrow } from "date-fns";
 import { cn } from "@/lib/utils";
 import { AppointmentWithClient } from "@/types/crm";
+import { usePrivacyMode } from "@/hooks/use-privacy-mode";
 
 const UpcomingAppointments = () => {
   const [appointments, setAppointments] = useState<AppointmentWithClient[]>([]);
   const [loading, setLoading] = useState(true);
+  const { isPrivate } = usePrivacyMode();
 
   useEffect(() => {
     const fetchUpcoming = async () => {
@@ -75,11 +77,18 @@ const UpcomingAppointments = () => {
 
   return (
     <Card className="border-none shadow-sm rounded-2xl bg-card">
-      <CardHeader>
-        <CardTitle className="text-lg font-bold flex items-center gap-2">
-          <Calendar size={20} className="text-indigo-500" />
-          Upcoming Sessions
-        </CardTitle>
+      <CardHeader className="pb-2">
+        <div className="flex items-center justify-between">
+          <CardTitle className="text-lg font-bold flex items-center gap-2">
+            <Calendar size={20} className="text-indigo-500" />
+            Upcoming Sessions
+          </CardTitle>
+          {isPrivate && (
+            <Badge variant="outline" className="h-5 px-1.5 text-[7px] font-black uppercase border-rose-200 text-rose-400">
+              <EyeOff size={8} className="mr-1" /> Private
+            </Badge>
+          )}
+        </div>
       </CardHeader>
       <CardContent>
         <div className="space-y-3">
@@ -115,10 +124,16 @@ const UpcomingAppointments = () => {
                       {format(appointment.date, "h:mm a")}
                     </span>
                   </div>
-                  <p className="font-black text-sm text-foreground group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors truncate">
+                  <p className={cn(
+                    "font-black text-sm text-foreground group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors truncate",
+                    isPrivate && "blur-sm select-none"
+                  )}>
                     {appointment.clients.name}
                   </p>
-                  <p className="text-xs text-muted-foreground truncate">
+                  <p className={cn(
+                    "text-xs text-muted-foreground truncate",
+                    isPrivate && "blur-[2px] select-none"
+                  )}>
                     {appointment.name || appointment.tag}
                   </p>
                 </div>

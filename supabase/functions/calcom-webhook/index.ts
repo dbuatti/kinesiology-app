@@ -13,7 +13,7 @@ serve(async (req) => {
     return new Response(JSON.stringify({ 
       status: "active", 
       message: "Antigravity Webhook is live.",
-      version: "v31"
+      version: "v32"
     }), { 
       status: 200, 
       headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
@@ -22,7 +22,7 @@ serve(async (req) => {
 
   if (req.method === 'OPTIONS') return new Response('ok', { headers: corsHeaders })
 
-  console.log("--- [v31] CAL.COM WEBHOOK TRIGGERED ---");
+  console.log("--- [v32] CAL.COM WEBHOOK TRIGGERED ---");
 
   try {
     const supabaseUrl = Deno.env.get('SUPABASE_URL')
@@ -64,7 +64,9 @@ serve(async (req) => {
             'Notion-Version': '2022-06-28' 
           };
 
+          // Archive Main Appointment DB entry
           if (appointment.notion_page_id) {
+            console.log(`Archiving Notion Appointment: ${appointment.notion_page_id}`);
             await fetch(`https://api.notion.com/v1/pages/${appointment.notion_page_id}`, {
               method: 'PATCH',
               headers: notionHeaders,
@@ -72,7 +74,9 @@ serve(async (req) => {
             });
           }
 
+          // Archive Yearly Planner DB entry
           if (appointment.notion_planner_id) {
+            console.log(`Archiving Notion Planner: ${appointment.notion_planner_id}`);
             await fetch(`https://api.notion.com/v1/pages/${appointment.notion_planner_id}`, {
               method: 'PATCH',
               headers: notionHeaders,
@@ -81,6 +85,7 @@ serve(async (req) => {
           }
         }
 
+        // Update CRM Status
         await supabase
           .from('appointments')
           .update({ status: 'Cancelled' })

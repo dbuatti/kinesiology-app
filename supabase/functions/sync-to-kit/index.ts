@@ -11,7 +11,7 @@ const corsHeaders = {
 const KIT_API_KEY = Deno.env.get('KIT_API_SECRET') || Deno.env.get('KIT_API_KEY');
 
 serve(async (req: Request) => {
-  console.log("--- [v8] KIT SYNC START ---");
+  console.log("--- [v9] KIT SYNC START ---");
 
   if (req.method === 'OPTIONS') {
     return new Response('ok', { headers: corsHeaders });
@@ -40,6 +40,7 @@ serve(async (req: Request) => {
       );
     }
 
+    // Split full name into first and last for Kit
     const nameParts = (record.name || "Client").trim().split(/\s+/);
     const first_name = nameParts[0] || "";
     const last_name = nameParts.length > 1 ? nameParts.slice(1).join(" ") : "";
@@ -56,6 +57,9 @@ serve(async (req: Request) => {
         email_address: email,
         first_name,
         last_name,
+        fields: {
+          occupation: record.occupation || ""
+        }
       }),
     });
 
@@ -73,7 +77,7 @@ serve(async (req: Request) => {
       );
     }
 
-    console.log(`✅ Successfully synced: ${email}`);
+    console.log(`✅ Successfully synced: ${email} (Occupation: ${record.occupation || 'N/A'})`);
 
     return new Response(
       JSON.stringify({ success: true, email, message: "Synced to Kit" }),

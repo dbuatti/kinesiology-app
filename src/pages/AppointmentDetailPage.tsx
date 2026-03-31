@@ -178,14 +178,19 @@ const AppointmentDetailPage = () => {
 
       if (error) throw error;
       
-      // Save the returned Notion Page ID if we don't have it
-      if (data.id && !appointment.notion_page_id) {
-        await saveField('notion_page_id', data.id);
+      // Save both IDs returned from the function
+      const updates: any = {};
+      if (data.id && !appointment.notion_page_id) updates.notion_page_id = data.id;
+      if (data.plannerId && !appointment.notion_planner_id) updates.notion_planner_id = data.plannerId;
+
+      if (Object.keys(updates).length > 0) {
+        await supabase.from('appointments').update(updates).eq('id', id);
+        setAppointment(prev => prev ? { ...prev, ...updates } : null);
       }
       
-      showSuccess("Session synced to Notion successfully!");
+      showSuccess("Session synced to both Notion databases!");
     } catch (err: any) {
-      showError(err.message || "Failed to sync to Notion. Check your secrets.");
+      showError(err.message || "Failed to sync to Notion.");
     } finally {
       setSyncingNotion(false);
     }

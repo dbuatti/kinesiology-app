@@ -7,79 +7,56 @@ const corsHeaders = {
   'Access-Control-Allow-Methods': 'POST, OPTIONS',
 }
 
-// The new Notion Database ID provided by the user
-const NOTION_DATABASE_ID = "171f7156cdc645e8b689af13d217bc7c";
+const MAIN_DB_ID = "171f7156cdc645e8b689af13d217bc7c";
+const PLANNER_DB_ID = "11caad21cd0980d8a3eeeffb27fc43c0";
 
 serve(async (req) => {
-  if (req.method === 'OPTIONS') {
-    return new Response('ok', { headers: corsHeaders })
-  }
+  if (req.method === 'OPTIONS') return new Response('ok', { headers: corsHeaders })
 
   try {
     const { appointment } = await req.json()
-    
     const NOTION_KEY = Deno.env.get('NOTION_API_KEY')
 
-    if (!NOTION_KEY) {
-      throw new Error("Missing NOTION_API_KEY in Supabase Secrets.")
+    if (!NOTION_KEY) throw new Error("Missing NOTION_API_KEY in Supabase Secrets.")
+
+    // 1. Create in Main Appointments DB
+    const mainProps = {
+      "Name": { title: [{ text: { content: appointment.name || `Session with ${appointment.clients.name}` } }] },
+      "Date": { date: { start: appointment.date } },
+      "Goal": { rich_text: [{ text: { content: appointment.goal || "" } }] },
+      "Issue": { multi_select: [{ name: appointment.tag || "Kinesiology" }] },
+      "Notes": { rich_text: [{ text: { content: `${appointment.issue ? `ISSUE: ${appointment.issue}\n\n` : ''}${appointment.notes || ""}` } }] },
+      "🎛️ Modes & Balances": { rich_text: [{ text: { content: appointment.modes_balances || "" } }] },
+      "🔺 Acupoints": { rich_text: [{ text: { content: appointment.acupoints || "" } }] }
     }
 
-    // Map CRM fields to your Notion Database properties
-    const properties = {
-      "Name": {
-        "title": [{ "text": { "content": appointment.name || `Session with ${appointment.clients.name}` } }]
-      },
-      "Date": {
-        "date": { "start": appointment.date }
-      },
-      "Goal": {
-        "rich_text": [{ "text": { "content": appointment.goal || "" } }]
-      },
-      // FIX: Formatting 'Issue' as multi_select to match Notion DB type
-      "Issue": {
-        "multi_select": [{ "name": appointment.tag || "Kinesiology" }]
-      },
-      // Detailed issue description is moved to Notes to avoid multi_select character limits
-      "Notes": {
-        "rich_text": [{ "text": { "content": `${appointment.issue ? `ISSUE: ${appointment.issue}\n\n` : ''}${appointment.notes || ""}` } }]
-      },
-      "🎛️ Modes & Balances": {
-        "rich_text": [{ "text": { "content": appointment.modes_balances || "" } }]
-      },
-      "🔺 Acupoints": {
-        "rich_text": [{ "text": { "content": appointment.acupoints || "" } }]
-      }
-    }
-
-    // Add numeric scores if they exist
-    if (appointment.bolt_score) {
-      properties["BOLT Score"] = { "number": appointment.bolt_score }
-    }
-    if (appointment.coherence_score) {
-      properties["Coherence"] = { "number": appointment.coherence_score }
-    }
-
-    const response = await fetch('https://api.notion.com/v1/pages', {
+    const mainRes = await fetch('https://api.notion.com/v1/pages', {
       method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${NOTION_KEY}`,
-        'Content-Type': 'application/json',
-        'Notion-Version': '2022-06-28'
-      },
-      body: JSON.stringify({
-        parent: { database_id: NOTION_DATABASE_ID },
-        properties: properties
-      })
+      headers: { 'Authorization': `Bearer ${NOTION_KEY}`, 'Content-Type': 'application/json', 'Notion-Version': '2022-06-28' },
+      body: JSON.stringify({ parent: { database_id: MAIN_DB_ID }, properties: mainProps })
     })
+    const mainData = await mainRes.json()
 
-    const result = await response.json()
-
-    if (!response.ok) {
-      console.error("Notion API Error:", result)
-      throw new Error(result.message || "Notion Sync Failed")
+    // 2. Create in Yearly Planner DB
+    const plannerProps = {
+      "Title": { title: [{ text: { content: appointment.name || `Session with ${appointment.clients.name}` } }] },
+      "Date": { date: { start: appointment.date } },
+      "Project": { select: { name: "Kinesiology" } }
     }
 
-    return new Response(JSON.stringify({ success: true, url: result.url }), { 
+    const plannerRes = await fetch('https://api.notion.com/v1/pages', {
+      method: 'POST',
+      headers: { 'Authorization': `Bearer ${NOTION_KEY}`, 'Content-Type': 'application/json', 'Notion-Version': '2022-06-28' },
+      body: JSON.stringify({ parent: { database_id: PLANNER_DB_ID }, properties: plannerProps })
+    })
+    const plannerData = await plannerRes.json()
+
+    return new Response(JSON.stringify({ 
+      success: true, 
+      id: mainData.id, 
+      plannerId: plannerData.id,
+      url: mainData.url 
+    }), { 
       status: 200, 
       headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
     })

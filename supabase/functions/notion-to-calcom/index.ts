@@ -9,7 +9,7 @@ const corsHeaders = {
 }
 
 serve(async (req) => {
-  console.log("--- [v2] NOTION TO CAL.COM SYNC START ---");
+  console.log("--- [v3] NOTION TO CAL.COM SYNC START ---");
 
   if (req.method === 'OPTIONS') return new Response('ok', { headers: corsHeaders })
 
@@ -21,72 +21,55 @@ serve(async (req) => {
     const NOTION_KEY = Deno.env.get('NOTION_API_KEY')
     const CALCOM_KEY = Deno.env.get('CALCOM_API_KEY')
 
-    if (!CALCOM_KEY) throw new Error("Missing CALCOM_API_KEY in Supabase secrets.");
-
     const body = await req.json();
-    console.log("Full Webhook Body:", JSON.stringify(body));
-
-    // Robust ID extraction to handle different Notion webhook formats
     const notionPageId = body.data?.id || body.id || body.page_id || body.source?.page_id;
 
     if (!notionPageId) {
-      console.error("FAILED: No Notion Page ID found in payload keys:", Object.keys(body));
-      return new Response(JSON.stringify({ 
-        error: "Missing Notion Page ID",
-        received_keys: Object.keys(body)
-      }), { status: 400, headers: corsHeaders });
+      return new Response(JSON.stringify({ error: "Missing Notion Page ID" }), { status: 400, headers: corsHeaders });
     }
-
-    console.log(`Searching for appointment with Notion Page ID: ${notionPageId}`);
 
     // 1. Find the appointment in Supabase
     const { data: appointment, error: fetchError } = await supabase
       .from('appointments')
-      .select('id, calcom_booking_id, notion_planner_id')
+      .select('id, calcom_booking_id, notion_planner_id, notion_page_id')
       .eq('notion_page_id', notionPageId)
       .single();
 
     if (fetchError || !appointment) {
-      console.log("No matching appointment found in Supabase for this Notion ID.");
       return new Response(JSON.stringify({ message: "No matching record found in CRM" }), { status: 200, headers: corsHeaders });
     }
 
-    // 2. Archive the page in the Yearly Planner DB if it exists
-    if (appointment.notion_planner_id && NOTION_KEY) {
-      console.log(`Archiving Yearly Planner page: ${appointment.notion_planner_id}`);
-      await fetch(`https://api.notion.com/v1/pages/${appointment.notion_planner_id}`, {
+    // 2. Archive BOTH pages in Notion
+    const archivePromises = [];
+    if (appointment.notion_page_id && NOTION_KEY) {
+      archivePromises.push(fetch(`https://api.notion.com/v1/pages/${appointment.notion_page_id}`, {
         method: 'PATCH',
-        headers: {
-          'Authorization': `Bearer ${NOTION_KEY}`,
-          'Content-Type': 'application/json',
-          'Notion-Version': '2022-06-28'
-        },
+        headers: { 'Authorization': `Bearer ${NOTION_KEY}`, 'Content-Type': 'application/json', 'Notion-Version': '2022-06-28' },
         body: JSON.stringify({ archived: true })
-      });
+      }));
     }
+    if (appointment.notion_planner_id && NOTION_KEY) {
+      archivePromises.push(fetch(`https://api.notion.com/v1/pages/${appointment.notion_planner_id}`, {
+        method: 'PATCH',
+        headers: { 'Authorization': `Bearer ${NOTION_KEY}`, 'Content-Type': 'application/json', 'Notion-Version': '2022-06-28' },
+        body: JSON.stringify({ archived: true })
+      }));
+    }
+    await Promise.all(archivePromises);
 
     // 3. Cancel on Cal.com
-    if (appointment.calcom_booking_id) {
-      console.log(`Cancelling Cal.com booking: ${appointment.calcom_booking_id}`);
-      const calRes = await fetch(`https://api.cal.com/v1/bookings/${appointment.calcom_booking_id}/cancel?apiKey=${CALCOM_KEY}`, {
+    if (appointment.calcom_booking_id && CALCOM_KEY) {
+      await fetch(`https://api.cal.com/v1/bookings/${appointment.calcom_booking_id}/cancel?apiKey=${CALCOM_KEY}`, {
         method: 'DELETE'
       });
-      console.log(`Cal.com response status: ${calRes.status}`);
     }
 
     // 4. Update Supabase Status
-    const { error: updateError } = await supabase
-      .from('appointments')
-      .update({ status: 'Cancelled' })
-      .eq('id', appointment.id);
+    await supabase.from('appointments').update({ status: 'Cancelled' }).eq('id', appointment.id);
 
-    if (updateError) throw updateError;
-
-    console.log("SUCCESS: Cal.com cancelled, Planner archived, and CRM updated.");
     return new Response(JSON.stringify({ success: true }), { status: 200, headers: corsHeaders });
 
   } catch (error) {
-    console.error("Critical Error:", error.message);
     return new Response(JSON.stringify({ error: error.message }), { status: 400, headers: corsHeaders });
   }
 })

@@ -8,7 +8,7 @@ const corsHeaders = {
 }
 
 serve(async (req) => {
-  console.log("--- CAL.COM WEBHOOK RECEIVED ---");
+  console.log("--- CAL.COM TO NOTION AUTOMATION START ---");
 
   if (req.method === 'OPTIONS') {
     return new Response('ok', { headers: corsHeaders })
@@ -17,42 +17,44 @@ serve(async (req) => {
   try {
     const supabaseUrl = Deno.env.get('SUPABASE_URL')
     const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')
+    const NOTION_KEY = Deno.env.get('NOTION_API_KEY')
+    const NOTION_DATABASE_ID = Deno.env.get('NOTION_DATABASE_ID')
+    
     const supabase = createClient(supabaseUrl, supabaseServiceKey)
 
     const body = await req.json()
     const { triggerEvent, payload } = body
 
-    // We only care about new bookings
     if (triggerEvent !== 'BOOKING_CREATED') {
-      console.log(`Ignoring event: ${triggerEvent}`);
-      return new Response(JSON.stringify({ message: 'Ignored' }), { status: 200, headers: corsHeaders });
+      return new Response(JSON.stringify({ message: 'Ignored event type' }), { status: 200, headers: corsHeaders });
     }
 
     const attendee = payload.attendees[0]
     const email = attendee.email
     const name = attendee.name
     const startTime = payload.startTime
-    const endTime = payload.endTime
-    const title = payload.title || "Cal.com Booking"
+    const title = payload.title || "Kinesiology Session"
     const description = payload.description || ""
     
-    // 1. Find the User ID (Practitioner)
-    // In a multi-user system, we'd match by organizer email. 
-    // For now, we'll assume the primary user who owns the project.
-    const { data: userData, error: userError } = await supabase.auth.admin.listUsers()
-    if (userError || !userData.users.length) throw new Error("Could not find practitioner user")
+    // Extract payment amount (Cal.com sends this in cents/smallest unit usually)
+    // We'll try to find it in the payload
+    let amountPaid = 0;
+    if (payload.payment && payload.payment.length > 0) {
+      // Cal.com payment object usually has 'amount'
+      amountPaid = payload.payment[0].amount / 100; 
+    }
+
+    // 1. Find the Practitioner User
+    const { data: userData } = await supabase.auth.admin.listUsers()
     const userId = userData.users[0].id
 
-    console.log(`Processing booking for ${name} (${email}) at ${startTime}`);
-
-    // 2. Upsert Client
+    // 2. Upsert Client in CRM
     const { data: client, error: clientError } = await supabase
       .from('clients')
       .upsert({
         user_id: userId,
         name: name,
         email: email,
-        // Phone might be in responses or payload
         phone: attendee.phoneNumber || null,
       }, { onConflict: 'user_id,email' })
       .select()
@@ -60,8 +62,8 @@ serve(async (req) => {
 
     if (clientError) throw clientError
 
-    // 3. Create Appointment
-    const { error: appError } = await supabase
+    // 3. Create Appointment in CRM
+    await supabase
       .from('appointments')
       .insert({
         user_id: userId,
@@ -71,20 +73,59 @@ serve(async (req) => {
         tag: "Kinesiology",
         status: "Scheduled",
         issue: description,
-        notes: `Booked via Cal.com. UID: ${payload.uid}`
+        notes: `Booked via Cal.com. Paid: $${amountPaid}. UID: ${payload.uid}`
       })
 
-    if (appError) throw appError
+    // 4. SYNC TO NOTION IMMEDIATELY
+    if (NOTION_KEY && NOTION_DATABASE_ID) {
+      console.log("Syncing to Notion...");
+      
+      const notionProperties = {
+        "Name": {
+          "title": [{ "text": { "content": `${name} - ${title}` } }]
+        },
+        "Date": {
+          "date": { "start": startTime }
+        },
+        "Project": {
+          "select": { "name": "Kinesiology" }
+        },
+        "Amount": {
+          "number": amountPaid
+        },
+        "Client": {
+          "rich_text": [{ "text": { "content": name } }]
+        }
+      };
 
-    console.log("Successfully synced Cal.com booking to CRM.");
-    
+      const notionResponse = await fetch('https://api.notion.com/v1/pages', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${NOTION_KEY}`,
+          'Content-Type': 'application/json',
+          'Notion-Version': '2022-06-28'
+        },
+        body: JSON.stringify({
+          parent: { database_id: NOTION_DATABASE_ID },
+          properties: notionProperties
+        })
+      });
+
+      if (!notionResponse.ok) {
+        const errorData = await notionResponse.json();
+        console.error("Notion Sync Error:", errorData);
+      } else {
+        console.log("Successfully synced to Notion.");
+      }
+    }
+
     return new Response(JSON.stringify({ success: true }), { 
       status: 200, 
       headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
     });
 
   } catch (error) {
-    console.error("Webhook Error:", error.message);
+    console.error("Critical Webhook Error:", error.message);
     return new Response(JSON.stringify({ error: error.message }), { 
       status: 400, 
       headers: { ...corsHeaders, 'Content-Type': 'application/json' } 

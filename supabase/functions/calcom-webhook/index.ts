@@ -13,7 +13,7 @@ serve(async (req) => {
     return new Response(JSON.stringify({ 
       status: "active", 
       message: "Antigravity Webhook is live.",
-      version: "v29"
+      version: "v30"
     }), { 
       status: 200, 
       headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
@@ -22,7 +22,7 @@ serve(async (req) => {
 
   if (req.method === 'OPTIONS') return new Response('ok', { headers: corsHeaders })
 
-  console.log("--- [v29] CAL.COM WEBHOOK TRIGGERED ---");
+  console.log("--- [v30] CAL.COM WEBHOOK TRIGGERED ---");
 
   try {
     const supabaseUrl = Deno.env.get('SUPABASE_URL')
@@ -37,10 +37,72 @@ serve(async (req) => {
     const PRACTITIONER_ID = "6f2caa85-bfce-4264-97cd-c0d2f62b24f0";
 
     const body = await req.json();
+    const triggerEvent = body.triggerEvent;
     const payload = body.payload || body;
     
-    if (!payload || !payload.attendees || payload.attendees.length === 0) {
+    if (!payload) {
       return new Response(JSON.stringify({ error: "Invalid payload" }), { status: 400, headers: corsHeaders });
+    }
+
+    // Cal.com uses bookingId for numeric ID and uid for string ID
+    const calcomId = String(payload.bookingId || payload.id || payload.uid);
+
+    // HANDLE CANCELLATION / REJECTION
+    if (triggerEvent === 'BOOKING_CANCELLED' || triggerEvent === 'BOOKING_REJECTED') {
+      console.log(`Processing CANCELLATION for booking ${calcomId}`);
+      
+      // 1. Find the appointment in Supabase
+      const { data: appointment } = await supabase
+        .from('appointments')
+        .select('id, notion_page_id, notion_planner_id')
+        .eq('calcom_booking_id', calcomId)
+        .maybeSingle();
+
+      if (appointment) {
+        // 2. Archive in Notion if IDs exist
+        if (NOTION_KEY) {
+          const notionHeaders = { 
+            'Authorization': `Bearer ${NOTION_KEY}`, 
+            'Content-Type': 'application/json', 
+            'Notion-Version': '2022-06-28' 
+          };
+
+          if (appointment.notion_page_id) {
+            console.log(`Archiving Notion Page: ${appointment.notion_page_id}`);
+            await fetch(`https://api.notion.com/v1/pages/${appointment.notion_page_id}`, {
+              method: 'PATCH',
+              headers: notionHeaders,
+              body: JSON.stringify({ archived: true })
+            });
+          }
+
+          if (appointment.notion_planner_id) {
+            console.log(`Archiving Notion Planner Entry: ${appointment.notion_planner_id}`);
+            await fetch(`https://api.notion.com/v1/pages/${appointment.notion_planner_id}`, {
+              method: 'PATCH',
+              headers: notionHeaders,
+              body: JSON.stringify({ archived: true })
+            });
+          }
+        }
+
+        // 3. Update Supabase status
+        await supabase
+          .from('appointments')
+          .update({ status: 'Cancelled' })
+          .eq('id', appointment.id);
+          
+        console.log(`Successfully processed cancellation for ${appointment.id}`);
+      } else {
+        console.log(`No matching appointment found for Cal.com ID: ${calcomId}`);
+      }
+
+      return new Response(JSON.stringify({ success: true, action: 'cancelled' }), { status: 200, headers: corsHeaders });
+    }
+
+    // HANDLE CREATION (Default logic)
+    if (!payload.attendees || payload.attendees.length === 0) {
+      return new Response(JSON.stringify({ error: "No attendees in payload" }), { status: 400, headers: corsHeaders });
     }
 
     const attendee = payload.attendees[0];
@@ -49,11 +111,8 @@ serve(async (req) => {
     const phone = attendee.phoneNumber || "";
     const startTime = payload.startTime;
     const notes = payload.description || "";
-    
-    // Cal.com uses bookingId for numeric ID and uid for string ID
-    const calcomId = String(payload.bookingId || payload.id || payload.uid);
 
-    console.log(`Processing booking ${calcomId} for: ${name}`);
+    console.log(`Processing CREATION for: ${name}`);
 
     // 1. SYNC CLIENT
     let notionClientId = null;
@@ -148,7 +207,7 @@ serve(async (req) => {
       });
     }
 
-    return new Response(JSON.stringify({ success: true }), { status: 200, headers: corsHeaders });
+    return new Response(JSON.stringify({ success: true, action: 'created' }), { status: 200, headers: corsHeaders });
 
   } catch (error) {
     console.error("Critical Webhook Error:", error.message);

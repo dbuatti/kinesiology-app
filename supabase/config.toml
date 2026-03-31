@@ -1,2 +1,9 @@
-[project]
-id = "xebtjnvfkroiplyzftas"
+[api]
+port = 54321
+external_url = "http://localhost:54321"
+
+[db]
+port = 54322
+
+[auth]
+enabled = true

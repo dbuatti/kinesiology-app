@@ -9,7 +9,7 @@ const corsHeaders = {
 }
 
 serve(async (req) => {
-  console.log("--- [v2] CAL.COM TO NOTION AUTOMATION START ---");
+  console.log("--- [v3] CAL.COM WEBHOOK START ---");
 
   if (req.method === 'OPTIONS') {
     return new Response('ok', { headers: corsHeaders })
@@ -18,12 +18,12 @@ serve(async (req) => {
   try {
     const supabaseUrl = Deno.env.get('SUPABASE_URL')
     const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')
-    const NOTION_KEY = Deno.env.get('NOTION_API_KEY')
-    const NOTION_DATABASE_ID = Deno.env.get('NOTION_DATABASE_ID')
     
     const supabase = createClient(supabaseUrl, supabaseServiceKey)
 
     const body = await req.json()
+    console.log("Payload received:", JSON.stringify(body, null, 2));
+
     const { triggerEvent, payload } = body
 
     if (triggerEvent !== 'BOOKING_CREATED') {
@@ -43,15 +43,15 @@ serve(async (req) => {
       amountPaid = payload.payment[0].amount / 100; 
     }
 
-    // Get the owner of the project (the practitioner)
-    // We assume the first user in the auth table is the practitioner for this single-user setup
+    // Get the practitioner (owner)
     const { data: users, error: userError } = await supabase.auth.admin.listUsers()
     if (userError || !users.users.length) throw new Error("Could not find practitioner user");
     
     const userId = users.users[0].id;
-    console.log(`Processing booking for User: ${userId}`);
+    console.log(`Target User ID: ${userId}`);
 
-    // 1. Upsert Client (Requires the unique constraint we just added)
+    // 1. Upsert Client
+    console.log(`Upserting client: ${email}`);
     const { data: client, error: clientError } = await supabase
       .from('clients')
       .upsert({
@@ -64,11 +64,12 @@ serve(async (req) => {
       .single()
 
     if (clientError) {
-      console.error("Client Upsert Error:", clientError);
-      throw clientError;
+      console.error("STEP 1 FAILED (Client Upsert):", clientError);
+      throw new Error(`Client Sync Error: ${clientError.message}`);
     }
 
     // 2. Create Appointment
+    console.log(`Creating appointment for client: ${client.id}`);
     const { error: appError } = await supabase
       .from('appointments')
       .insert({
@@ -78,65 +79,23 @@ serve(async (req) => {
         date: startTime,
         tag: "Kinesiology",
         status: "Scheduled",
-        issue: description,
+        issue: String(description), // Force to string
         notes: `Booked via Cal.com. Paid: $${amountPaid}. UID: ${payload.uid}`
       })
 
     if (appError) {
-      console.error("Appointment Insert Error:", appError);
-      throw appError;
+      console.error("STEP 2 FAILED (Appointment Insert):", appError);
+      throw new Error(`Appointment Creation Error: ${appError.message}`);
     }
 
-    // 3. Sync to Notion
-    if (NOTION_KEY && NOTION_DATABASE_ID) {
-      console.log("Syncing to Notion...");
-      
-      const notionProperties = {
-        "Name": {
-          "title": [{ "text": { "content": `${name} - ${title}` } }]
-        },
-        "Date": {
-          "date": { "start": startTime }
-        },
-        "Goal": {
-          "rich_text": [{ "text": { "content": title } }]
-        },
-        "Issue": {
-          "rich_text": [{ "text": { "content": description } }]
-        },
-        "Client": {
-          "rich_text": [{ "text": { "content": name } }]
-        }
-      };
-
-      const notionResponse = await fetch('https://api.notion.com/v1/pages', {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${NOTION_KEY}`,
-          'Content-Type': 'application/json',
-          'Notion-Version': '2022-06-28'
-        },
-        body: JSON.stringify({
-          parent: { database_id: NOTION_DATABASE_ID },
-          properties: notionProperties
-        })
-      });
-
-      if (!notionResponse.ok) {
-        const errorData = await notionResponse.json();
-        console.error("Notion Sync Error:", errorData);
-      } else {
-        console.log("Successfully synced to Notion.");
-      }
-    }
-
+    console.log("--- WEBHOOK SUCCESS ---");
     return new Response(JSON.stringify({ success: true }), { 
       status: 200, 
       headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
     });
 
   } catch (error) {
-    console.error("Critical Webhook Error:", error.message);
+    console.error("CRITICAL ERROR:", error.message);
     return new Response(JSON.stringify({ error: error.message }), { 
       status: 400, 
       headers: { ...corsHeaders, 'Content-Type': 'application/json' } 

@@ -5,8 +5,6 @@ import { useSearchParams, Link } from "react-router-dom";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { 
   BookOpen, 
-  Footprints, 
-  Brain, 
   Activity, 
   Info, 
   ArrowRight, 
@@ -41,7 +39,11 @@ import {
   Wind,
   Hand,
   ExternalLink,
-  Dumbbell
+  Dumbbell,
+  Briefcase,
+  Mic,
+  MessageSquare,
+  Brain
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -101,6 +103,20 @@ const CATEGORIES = [
       { id: "week-3", label: "Week 3: Curses", icon: ShieldCheck, desc: "Releasing generational trauma imprints.", path: "/resources/worksheets/week-3" },
       { id: "fear-creativity", label: "Fear & Creativity", icon: Palette, desc: "Awareness of fear in the body and mind.", path: "/resources/worksheets/fear-creativity" },
       { id: "anger-flow", label: "Anger & Flow", icon: RefreshCw, desc: "Week 8: Reclaiming expression and self-acceptance.", path: "/resources/worksheets/anger-flow" },
+    ]
+  },
+  {
+    id: "business",
+    label: "Business & Growth",
+    icon: Briefcase,
+    color: "text-emerald-600",
+    bgColor: "bg-emerald-50 dark:bg-emerald-900/20",
+    borderColor: "border-emerald-100 dark:border-emerald-900/30",
+    items: [
+      { id: "marketing-engine", label: "Marketing Engine", icon: Mic, desc: "AI-powered content distribution workflow.", path: "/business/marketing-engine" },
+      { id: "claude", label: "Claude Assistant", icon: MessageSquare, desc: "Business & Marketing AI Assistant.", path: "https://claude.ai/chat/e4805343-71a0-48fc-a1e0-4d2dde541a88", isExternal: true },
+      { id: "gemini", label: "Gemini Assistant", icon: Sparkles, desc: "Google AI Business Assistant.", path: "https://gemini.google.com/app/5d5d4bcde141a99a", isExternal: true },
+      { id: "insight-timer", label: "Insight Timer", icon: Volume2, desc: "Teacher development and audio library.", path: "https://teacher.insighttimer.com/login?next=%2Faudio%3Flibraryitem%3DNhUOPacb0145IEvUBJCf%26sortBy%3Dnewest%26sort_direction%3Ddesc", isExternal: true },
     ]
   },
   {
@@ -300,12 +316,9 @@ const ResourcesPage = () => {
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-                  {category.items.map((item) => (
-                    <Link 
-                      key={item.id} 
-                      to={(item as any).path || `/resources?tab=${item.id}`}
-                      className="block"
-                    >
+                  {category.items.map((item) => {
+                    const isExternal = (item as any).isExternal;
+                    const content = (
                       <Card 
                         className="border-none shadow-md rounded-[2rem] bg-card hover:shadow-xl hover:-translate-y-1 transition-all duration-300 group cursor-pointer overflow-hidden h-full"
                       >
@@ -321,12 +334,27 @@ const ResourcesPage = () => {
                             <p className="text-xs text-muted-foreground font-medium mt-1 leading-relaxed">{item.desc}</p>
                           </div>
                           <div className="pt-2 flex items-center text-[10px] font-black uppercase tracking-widest text-muted-foreground group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors">
-                            Open Tool <ChevronRight size={12} className="ml-1 group-hover:translate-x-1 transition-transform" />
+                            {isExternal ? 'Open External' : 'Open Tool'} 
+                            {isExternal ? <ExternalLink size={12} className="ml-1" /> : <ChevronRight size={12} className="ml-1 group-hover:translate-x-1 transition-transform" />}
                           </div>
                         </CardContent>
                       </Card>
-                    </Link>
-                  ))}
+                    );
+
+                    return isExternal ? (
+                      <a key={item.id} href={(item as any).path} target="_blank" rel="noopener noreferrer" className="block">
+                        {content}
+                      </a>
+                    ) : (
+                      <Link 
+                        key={item.id} 
+                        to={(item as any).path || `/resources?tab=${item.id}`}
+                        className="block"
+                      >
+                        {content}
+                      </Link>
+                    );
+                  })}
                 </div>
               </div>
             ))}

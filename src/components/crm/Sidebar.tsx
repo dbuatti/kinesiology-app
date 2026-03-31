@@ -12,7 +12,7 @@ import {
   BookOpen, 
   Heart, 
   TrendingUp,
-  ArrowRight,
+  ArrowRight, 
   Settings,
   ShieldCheck,
   PanelLeftClose,
@@ -25,7 +25,8 @@ import {
   EyeOff,
   Lock,
   FileText,
-  ExternalLink
+  ExternalLink,
+  Mic
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import SearchBar from "./SearchBar";
@@ -68,7 +69,7 @@ const Sidebar = ({ onHide }: SidebarProps) => {
   
   const isOpsPath = (path: string) => path === "/" || path.startsWith("/appointments") || path.startsWith("/clients");
   const isLabPath = (path: string) => path.startsWith("/practice/calibrate") || path.startsWith("/practice/procedures") || path.startsWith("/oversight");
-  const isLibraryPath = (path: string) => path.startsWith("/resources") || path.startsWith("/practice/self") || path.startsWith("/peace-framework");
+  const isLibraryPath = (path: string) => path.startsWith("/resources") || path.startsWith("/practice/self") || path.startsWith("/peace-framework") || path.startsWith("/business");
 
   const [opsOpen, setOpsOpen] = useState(() => {
     const saved = localStorage.getItem("sidebar_ops_open");
@@ -112,8 +113,7 @@ const Sidebar = ({ onHide }: SidebarProps) => {
 
   const libraryItems = [
     { label: "PEACE Framework", icon: ShieldCheck, path: "/peace-framework" },
-    { label: "FNH Notion Manual", icon: ExternalLink, path: "https://functional-neuro-health.notion.site/Functional-Neuro-Health-The-PEACE-Method-28beacafb4a88026b9a9ccdefa4e1de9", isExternal: true },
-    { label: "FNH Reference App", icon: ExternalLink, path: "https://fnhrefapp-ggs6ojfk.manus.space/brain-zones", isExternal: true },
+    { label: "Marketing Engine", icon: Mic, path: "/business/marketing-engine" },
     { label: "Knowledge Base", icon: BookOpen, path: "/resources" },
     { label: "Worksheets", icon: FileText, path: "/resources/worksheets", shortcut: "⌘N" },
     { label: "Self Practice", icon: Heart, path: "/practice/self", shortcut: "⌘S" },

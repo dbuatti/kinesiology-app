@@ -14,7 +14,7 @@ import {
   CheckCircle2, Workflow, Clock, Sparkles, Link as LinkIcon, Send,
   BookOpen, Wand2, Copy, Check, User, Activity, History, Mail,
   Trophy, ArrowRight, Star, ExternalLink, MessageSquare, Code,
-  EyeOff
+  EyeOff, Volume2
 } from "lucide-react";
 import AppLayout from "@/components/crm/AppLayout";
 import Breadcrumbs from "@/components/shared/Breadcrumbs";
@@ -24,6 +24,8 @@ import { format } from "date-fns";
 import { usePrivacyMode } from "@/hooks/use-privacy-mode";
 
 const CLAUDE_MARKETING_CHAT = "https://claude.ai/chat/e4805343-71a0-48fc-a1e0-4d2dde541a88";
+const GEMINI_BUSINESS_CHAT = "https://gemini.google.com/app/5d5d4bcde141a99a";
+const INSIGHT_TIMER_PORTAL = "https://teacher.insighttimer.com/login?next=%2Faudio%3Flibraryitem%3DNhUOPacb0145IEvUBJCf%26sortBy%3Dnewest%26sort_direction%3Ddesc";
 
 const MarketingEnginePage = () => {
   const { isPrivate } = usePrivacyMode();
@@ -138,16 +140,35 @@ Please provide the final output ready to be reviewed.`;
                   Transform clinical wins and raw thoughts into distribution-ready assets for your Kit newsletter.
                 </p>
               </div>
-              <Button 
-                asChild
-                className="bg-white text-slate-950 hover:bg-emerald-50 h-14 px-8 rounded-2xl font-black text-xs uppercase tracking-widest shadow-xl shrink-0"
-              >
-                <a href={CLAUDE_MARKETING_CHAT} target="_blank" rel="noopener noreferrer">
-                  <MessageSquare size={18} className="mr-2 text-emerald-600" />
-                  Launch Claude Marketing Chat
-                  <ExternalLink size={14} className="ml-2 opacity-50" />
-                </a>
-              </Button>
+              <div className="flex flex-wrap gap-3 shrink-0">
+                <Button 
+                  asChild
+                  className="bg-white text-slate-950 hover:bg-emerald-50 h-14 px-6 rounded-2xl font-black text-[10px] uppercase tracking-widest shadow-xl"
+                >
+                  <a href={CLAUDE_MARKETING_CHAT} target="_blank" rel="noopener noreferrer">
+                    <MessageSquare size={18} className="mr-2 text-emerald-600" />
+                    Claude
+                  </a>
+                </Button>
+                <Button 
+                  asChild
+                  className="bg-white text-slate-950 hover:bg-emerald-50 h-14 px-6 rounded-2xl font-black text-[10px] uppercase tracking-widest shadow-xl"
+                >
+                  <a href={GEMINI_BUSINESS_CHAT} target="_blank" rel="noopener noreferrer">
+                    <Sparkles size={18} className="mr-2 text-blue-600" />
+                    Gemini
+                  </a>
+                </Button>
+                <Button 
+                  asChild
+                  className="bg-white text-slate-950 hover:bg-emerald-50 h-14 px-6 rounded-2xl font-black text-[10px] uppercase tracking-widest shadow-xl"
+                >
+                  <a href={INSIGHT_TIMER_PORTAL} target="_blank" rel="noopener noreferrer">
+                    <Volume2 size={18} className="mr-2 text-indigo-600" />
+                    Insight Timer
+                  </a>
+                </Button>
+              </div>
             </div>
           </div>
         </div>

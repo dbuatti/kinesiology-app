@@ -8,10 +8,11 @@ const corsHeaders = {
   'Access-Control-Allow-Methods': 'POST, OPTIONS',
 }
 
-const KIT_API_KEY = Deno.env.get('KIT_API_KEY');
+// Support both naming conventions for the secret
+const KIT_API_KEY = Deno.env.get('KIT_API_SECRET') || Deno.env.get('KIT_API_KEY');
 
 serve(async (req: Request) => {
-  console.log("--- [v5] KIT SYNC START ---");
+  console.log("--- [v6] KIT SYNC START ---");
 
   // Handle preflight OPTIONS request (CORS)
   if (req.method === 'OPTIONS') {
@@ -19,9 +20,9 @@ serve(async (req: Request) => {
   }
 
   if (!KIT_API_KEY) {
-    console.error("Critical Error: KIT_API_KEY is missing");
+    console.error("Critical Error: KIT_API_SECRET is missing in Supabase secrets");
     return new Response(
-      JSON.stringify({ error: "KIT_API_KEY is missing in secrets" }),
+      JSON.stringify({ error: "KIT_API_SECRET is missing in secrets" }),
       { 
         status: 500, 
         headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
@@ -31,9 +32,13 @@ serve(async (req: Request) => {
 
   try {
     const body = await req.json().catch(() => ({}));
-    const { email, first_name = "", last_name = "" } = body;
+    
+    // The frontend sends { record: client }. We handle both wrapped and unwrapped.
+    const record = body.record || body;
+    const email = record.email;
 
     if (!email) {
+      console.log("Skipping: No email provided in payload", body);
       return new Response(
         JSON.stringify({ error: "email is required" }),
         { 
@@ -42,6 +47,11 @@ serve(async (req: Request) => {
         }
       );
     }
+
+    // Split name into first and last for Kit
+    const nameParts = (record.name || "Client").trim().split(/\s+/);
+    const first_name = nameParts[0] || "";
+    const last_name = nameParts.length > 1 ? nameParts.slice(1).join(" ") : "";
 
     console.log(`Attempting to sync ${email} to Kit...`);
 

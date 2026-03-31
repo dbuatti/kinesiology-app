@@ -136,18 +136,30 @@ const AppointmentsPage = () => {
     }
   };
 
-  const deleteAppointment = async (id: string) => {
-    if (!confirm("Are you sure you want to delete this appointment?")) return;
+  const deleteAppointment = async (app: AppointmentWithClient) => {
+    if (!confirm("Are you sure you want to delete this appointment? It will also be removed from Notion and Cal.com if linked.")) return;
 
     try {
+      // 1. Call external cleanup function
+      if (app.notion_page_id || app.notion_planner_id || app.calcom_booking_id) {
+        await supabase.functions.invoke('delete-external-appointment', {
+          body: { 
+            notionPageId: app.notion_page_id, 
+            notionPlannerId: app.notion_planner_id,
+            calcomBookingId: app.calcom_booking_id 
+          }
+        });
+      }
+
+      // 2. Delete local record
       const { error } = await supabase
         .from('appointments')
         .delete()
-        .eq('id', id);
+        .eq('id', app.id);
 
       if (error) throw error;
       
-      showSuccess("Appointment deleted");
+      showSuccess("Appointment deleted from all platforms.");
       fetchAppointments();
     } catch (err: any) {
       showError(err.message || "Failed to delete appointment");
@@ -355,7 +367,7 @@ const AppointmentsPage = () => {
                     <DropdownMenuSeparator className="my-2" />
                     <DropdownMenuItem 
                       className="text-destructive focus:text-destructive rounded-xl py-2.5 px-4 cursor-pointer flex items-center gap-3"
-                      onClick={() => deleteAppointment(app.id)}
+                      onClick={() => deleteAppointment(app)}
                     >
                       <Trash2 size={16} /> Delete Session
                     </DropdownMenuItem>

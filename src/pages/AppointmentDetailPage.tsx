@@ -284,10 +284,11 @@ const AppointmentDetailPage = () => {
     setDeleting(true);
     try {
       // 1. Call external cleanup function
-      if (appointment.notion_page_id || appointment.calcom_booking_id) {
+      if (appointment.notion_page_id || appointment.notion_planner_id || appointment.calcom_booking_id) {
         await supabase.functions.invoke('delete-external-appointment', {
           body: { 
             notionPageId: appointment.notion_page_id, 
+            notionPlannerId: appointment.notion_planner_id,
             calcomBookingId: appointment.calcom_booking_id 
           }
         });

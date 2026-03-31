@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
-import { Settings, User, LogOut, Upload, Database, Download, Mail, Loader2, RefreshCw, ExternalLink, Zap, Info, Calendar, Copy, Check, ShieldAlert, Link as LinkIcon } from "lucide-react";
+import { Settings, User, LogOut, Upload, Database, Download, Mail, Loader2, RefreshCw, ExternalLink, Zap, Info, Calendar, Copy, Check, ShieldAlert, Link as LinkIcon, FileText } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
 import { showSuccess, showError } from "@/utils/toast";
@@ -22,10 +22,19 @@ const SettingsPage = () => {
   const calcomLink = `${onboardingBaseUrl}{email}`;
   const kitLink = `${onboardingBaseUrl}{{{ email }}}`;
 
+  const workflowTemplate = `Hi {ATTENDEE_NAME},
+
+Thank you for booking your FNH Assessment.
+
+To ensure we make the most of our time together, please complete your clinical history and onboarding form here:
+${calcomLink}
+
+I look forward to seeing you soon.`;
+
   const handleCopy = (text: string, id: string) => {
     navigator.clipboard.writeText(text);
     setCopied(id);
-    showSuccess("Link copied!");
+    showSuccess("Copied to clipboard!");
     setTimeout(() => setCopied(null), 2000);
   };
 
@@ -115,13 +124,13 @@ const SettingsPage = () => {
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
               <div className="p-5 bg-white/5 rounded-2xl border border-white/10 space-y-3">
                 <div className="flex items-center justify-between">
-                  <p className="text-[10px] font-black uppercase tracking-widest text-indigo-300">For Cal.com Instructions</p>
+                  <p className="text-[10px] font-black uppercase tracking-widest text-indigo-300">For Cal.com Workflows</p>
                   <Button variant="ghost" size="icon" className="h-8 w-8 text-indigo-300 hover:text-white" onClick={() => handleCopy(calcomLink, 'cal')}>
                     {copied === 'cal' ? <Check size={16} /> : <Copy size={16} />}
                   </Button>
                 </div>
                 <p className="text-xs font-mono bg-black/20 p-3 rounded-lg break-all">{calcomLink}</p>
-                <p className="text-[10px] text-indigo-200 italic">Paste this into "Confirmation Page Instructions" in Cal.com.</p>
+                <p className="text-[10px] text-indigo-200 italic">Use this URL in your Cal.com Workflow email.</p>
               </div>
 
               <div className="p-5 bg-white/5 rounded-2xl border border-white/10 space-y-3">
@@ -134,6 +143,22 @@ const SettingsPage = () => {
                 <p className="text-xs font-mono bg-black/20 p-3 rounded-lg break-all">{kitLink}</p>
                 <p className="text-[10px] text-indigo-200 italic">Use this in your "Welcome" automation in Kit.</p>
               </div>
+            </div>
+
+            <div className="p-6 bg-white/5 rounded-3xl border border-white/10 space-y-4">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <FileText size={18} className="text-indigo-300" />
+                  <h4 className="text-sm font-bold">Cal.com Workflow Email Template</h4>
+                </div>
+                <Button variant="outline" size="sm" className="bg-white/10 border-white/20 text-white hover:bg-white/20 h-8" onClick={() => handleCopy(workflowTemplate, 'template')}>
+                  {copied === 'template' ? <Check size={14} className="mr-2" /> : <Copy size={14} className="mr-2" />}
+                  Copy Template
+                </Button>
+              </div>
+              <pre className="text-[10px] font-mono bg-black/30 p-4 rounded-xl text-indigo-100 whitespace-pre-wrap leading-relaxed">
+                {workflowTemplate}
+              </pre>
             </div>
           </CardContent>
         </Card>

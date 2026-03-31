@@ -9,7 +9,7 @@ const corsHeaders = {
 }
 
 serve(async (req) => {
-  console.log("--- [v7] CAL.COM WEBHOOK START ---");
+  console.log("--- [v8] CAL.COM WEBHOOK START ---");
 
   if (req.method === 'OPTIONS') {
     return new Response('ok', { headers: corsHeaders })
@@ -23,8 +23,17 @@ serve(async (req) => {
       throw new Error("Missing environment variables: SUPABASE_URL or SUPABASE_SERVICE_ROLE_KEY");
     }
 
-    // Create a clean client with no extra auth config to avoid header pollution
-    const supabase = createClient(supabaseUrl, supabaseServiceKey)
+    /**
+     * FIX: Initialize the client with explicit auth settings to prevent 
+     * it from inheriting the "Bearer" token from the incoming request.
+     */
+    const supabase = createClient(supabaseUrl, supabaseServiceKey, {
+      auth: {
+        persistSession: false,
+        autoRefreshToken: false,
+        detectSessionInUrl: false
+      }
+    })
 
     const body = await req.json()
     const { triggerEvent, payload } = body
@@ -50,11 +59,8 @@ serve(async (req) => {
     if (userError || !users.users.length) throw new Error("Could not find practitioner user");
     
     const userId = users.users[0].id;
-    console.log(`Practitioner User ID: ${userId}`);
 
     // 1. Manual Check for Client
-    console.log(`Checking for client: ${email}`);
-    
     const { data: existingClients, error: fetchError } = await supabase
       .from('clients')
       .select('id')
@@ -62,10 +68,7 @@ serve(async (req) => {
       .eq('email', email)
       .limit(1);
 
-    if (fetchError) {
-      console.error("Fetch Client Error:", fetchError);
-      throw new Error(`Client Lookup Failed: ${fetchError.message}`);
-    }
+    if (fetchError) throw new Error(`Client Lookup Failed: ${fetchError.message}`);
 
     let clientId;
     if (existingClients && existingClients.length > 0) {
@@ -82,7 +85,6 @@ serve(async (req) => {
       if (updateError) throw updateError;
     } else {
       console.log(`Creating new client for: ${email}`);
-      // We omit 'suburbs' here to let the DB handle the default value
       const { data: newClient, error: insertError } = await supabase
         .from('clients')
         .insert({
@@ -90,14 +92,13 @@ serve(async (req) => {
           name: name,
           email: email,
           phone: attendee.phoneNumber ? String(attendee.phoneNumber) : null,
+          // We explicitly pass an empty array for suburbs to avoid JSON syntax errors
+          suburbs: [] 
         })
         .select()
         .single();
       
-      if (insertError) {
-        console.error("Insert Client Error:", insertError);
-        throw insertError;
-      }
+      if (insertError) throw insertError;
       clientId = newClient.id;
     }
 
@@ -113,13 +114,16 @@ serve(async (req) => {
         tag: "Kinesiology",
         status: "Scheduled",
         issue: description,
-        notes: `Booked via Cal.com. Paid: $${amountPaid}. UID: ${payload.uid}`
+        notes: `Booked via Cal.com. Paid: $${amountPaid}. UID: ${payload.uid}`,
+        // Option B: Wrapping potential JSON data in an object
+        metadata: { 
+          calcom_uid: payload.uid,
+          source: "webhook_v8",
+          received_at: new Date().toISOString()
+        }
       })
 
-    if (appError) {
-      console.error("Appointment Insert Error:", appError);
-      throw new Error(`Appointment Creation Error: ${appError.message}`);
-    }
+    if (appError) throw new Error(`Appointment Creation Error: ${appError.message}`);
 
     console.log("--- WEBHOOK SUCCESS ---");
     return new Response(JSON.stringify({ success: true }), { 

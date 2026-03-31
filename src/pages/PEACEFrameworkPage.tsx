@@ -69,7 +69,7 @@ const PEACEFrameworkPage = () => {
               { letter: 'C', name: 'Correct', desc: 'Facilitate the primary change. This is where the system resets and re-organises itself.', icon: Zap, color: 'text-emerald-600', bg: 'bg-emerald-50' },
               { letter: 'E', name: 'Embed', desc: 'Stabilise and integrate so change becomes lasting transformation. Vital for structural and primitive reflex work.', icon: ShieldCheck, color: 'text-blue-600', bg: 'bg-blue-50' },
             ].map((step) => (
-              <Card key={step.letter} className="border-none shadow-lg rounded-[2.5rem] bg-white overflow-hidden group hover:-translate-y-1 transition-all">
+              <Card key={step.name} className="border-none shadow-lg rounded-[2.5rem] bg-white overflow-hidden group hover:-translate-y-1 transition-all">
                 <CardHeader className={`${step.bg} p-6 border-b border-slate-50 relative overflow-hidden`}>
                   <div className="absolute -right-4 -bottom-4 opacity-10"><step.icon size={100} /></div>
                   <div className={cn("text-5xl font-black mb-2 opacity-20 group-hover:opacity-100 transition-opacity", step.color)}>

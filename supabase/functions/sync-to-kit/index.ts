@@ -11,7 +11,7 @@ const corsHeaders = {
 const KIT_API_KEY = Deno.env.get('KIT_API_SECRET') || Deno.env.get('KIT_API_KEY');
 
 serve(async (req: Request) => {
-  console.log("--- [v7] KIT SYNC START ---");
+  console.log("--- [v8] KIT SYNC START ---");
 
   if (req.method === 'OPTIONS') {
     return new Response('ok', { headers: corsHeaders });
@@ -20,7 +20,7 @@ serve(async (req: Request) => {
   if (!KIT_API_KEY) {
     console.error("Critical Error: KIT_API_SECRET is missing in Supabase secrets.");
     return new Response(
-      JSON.stringify({ error: "Configuration Error: KIT_API_SECRET is missing in Supabase secrets." }),
+      JSON.stringify({ error: "Configuration Error: KIT_API_SECRET is missing in Supabase project secrets." }),
       { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );
   }
@@ -44,7 +44,7 @@ serve(async (req: Request) => {
     const first_name = nameParts[0] || "";
     const last_name = nameParts.length > 1 ? nameParts.slice(1).join(" ") : "";
 
-    console.log(`Syncing ${email} to Kit...`);
+    console.log(`Syncing ${email} to Kit using key starting with: ${KIT_API_KEY.substring(0, 6)}...`);
 
     const response = await fetch("https://api.kit.com/v4/subscribers", {
       method: "POST",
@@ -65,7 +65,7 @@ serve(async (req: Request) => {
       console.error("Kit API Error Response:", JSON.stringify(result));
       return new Response(
         JSON.stringify({ 
-          error: "Kit API rejected the request", 
+          error: "Kit API rejected the request. This usually means the API Secret is invalid.", 
           details: result,
           status: response.status 
         }),

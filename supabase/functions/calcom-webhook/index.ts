@@ -60,14 +60,14 @@ async function sendGmail(accessToken: string, from: string, to: string, subject:
 
 serve(async (req) => {
   if (req.method === 'GET') {
-    return new Response(JSON.stringify({ status: "active", provider: "gmail", version: "v36" }), { 
+    return new Response(JSON.stringify({ status: "active", provider: "gmail", version: "v37" }), { 
       status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
     });
   }
 
   if (req.method === 'OPTIONS') return new Response('ok', { headers: corsHeaders })
 
-  console.log("--- [v36] CAL.COM WEBHOOK + GMAIL SYNC START ---");
+  console.log("[calcom-webhook] Processing webhook...");
 
   try {
     const supabaseUrl = Deno.env.get('SUPABASE_URL')
@@ -120,65 +120,69 @@ serve(async (req) => {
     const startTime = payload.startTime;
     const notes = payload.description || "";
 
-    // 2. Supabase CRM Sync (Create client first to get ID for onboarding link)
+    // 2. Supabase CRM Sync
     let { data: dbClient } = await supabase.from('clients').select('id').eq('email', email).maybeSingle();
     if (!dbClient && email) {
       const { data: newDbC } = await supabase.from('clients').insert({ user_id: PRACTITIONER_ID, name, email, phone }).select().single();
       dbClient = newDbC;
     }
 
-    // 3. Send Gmail Onboarding Email
+    // 3. Send Gmail Onboarding Email with Resonance Branding
     if (GMAIL_CLIENT_ID && GMAIL_CLIENT_SECRET && GMAIL_REFRESH_TOKEN && dbClient) {
-      console.log(`Sending Gmail Onboarding to ${email}...`);
+      console.log(`[calcom-webhook] Sending Resonance Onboarding to ${email}...`);
       try {
         const accessToken = await getGmailAccessToken(GMAIL_CLIENT_ID, GMAIL_CLIENT_SECRET, GMAIL_REFRESH_TOKEN);
-        const onboardingUrl = `https://kinesiology-app.vercel.app/onboarding/${dbClient.id}`;
+        const onboardingUrl = `https://resonance-kinesiology.vercel.app/onboarding/${dbClient.id}`;
         
         const htmlBody = `
           <!DOCTYPE html>
           <html>
           <head>
             <style>
-              body { margin: 0; padding: 0; background-color: #f8fafc; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; }
-              .wrapper { width: 100%; background-color: #f8fafc; padding: 40px 0; }
-              .container { max-width: 600px; margin: 0 auto; background-color: #ffffff; border-radius: 24px; overflow: hidden; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1); }
-              .header { background-color: #4f46e5; padding: 40px; text-align: center; color: #ffffff; }
-              .logo { font-size: 24px; font-weight: 900; letter-spacing: -0.05em; text-transform: uppercase; }
-              .logo-icon { background-color: rgba(255,255,255,0.2); padding: 8px 12px; border-radius: 12px; margin-right: 8px; }
-              .content { padding: 40px; line-height: 1.6; color: #334155; }
-              .button { display: inline-block; background-color: #4f46e5; color: #ffffff !important; padding: 16px 32px; border-radius: 14px; text-decoration: none; font-weight: bold; font-size: 14px; text-transform: uppercase; letter-spacing: 0.1em; margin: 20px 0; }
-              .footer { padding: 40px; text-align: center; color: #94a3b8; font-size: 12px; }
+              body { margin: 0; padding: 0; background-color: #FDFCFB; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; }
+              .wrapper { width: 100%; background-color: #FDFCFB; padding: 40px 0; }
+              .container { max-width: 600px; margin: 0 auto; background-color: #ffffff; border-radius: 40px; overflow: hidden; border: 1px solid #E0F2FE; box-shadow: 0 20px 40px -10px rgba(30, 50, 97, 0.05); }
+              .top-bar { height: 6px; background-color: #D46A9B; width: 100%; }
+              .header { padding: 56px 40px 40px 40px; text-align: center; }
+              .logo { color: #1E3261; font-size: 28px; font-weight: 700; letter-spacing: 0.02em; }
+              .sub-logo { color: #D46A9B; font-size: 11px; font-weight: 900; letter-spacing: 0.4em; margin-top: 16px; text-transform: uppercase; opacity: 0.8; }
+              .content { padding: 0 56px 48px 56px; line-height: 1.8; font-size: 17px; color: #334155; font-weight: 300; }
+              .button-container { text-align: center; padding: 20px 0; }
+              .button { display: inline-block; background-color: #1E3261; color: #ffffff !important; padding: 18px 40px; border-radius: 100px; text-decoration: none; font-weight: 700; font-size: 15px; letter-spacing: 0.05em; box-shadow: 0 12px 20px -5px rgba(30, 50, 97, 0.25); }
+              .signature { padding: 0 56px 56px 56px; border-top: 1px solid #F1F5F9; margin-top: 20px; padding-top: 32px; }
+              .sig-name { font-weight: 700; color: #1E3261; font-size: 20px; margin-bottom: 4px; }
+              .sig-title { color: #D46A9B; font-size: 12px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.15em; }
+              .footer { padding: 48px 20px; text-align: center; color: #64748b; font-size: 13px; }
             </style>
           </head>
           <body>
             <div class="wrapper">
               <div class="container">
+                <div class="top-bar"></div>
                 <div class="header">
-                  <div class="logo"><span class="logo-icon">A</span> Antigravity</div>
-                  <div style="font-size: 10px; font-weight: bold; letter-spacing: 0.2em; margin-top: 10px; text-transform: uppercase; opacity: 0.8;">Functional Neuro Health</div>
+                  <div class="logo">✦ Resonance Kinesiology</div>
+                  <div class="sub-logo">Neuro-Somatic Support</div>
                 </div>
                 <div class="content">
-                  <h2 style="color: #0f172a; margin-top: 0;">Action Required: Your Onboarding Form</h2>
+                  <h2 style="color: #1E3261; margin-top: 0; font-size: 24px;">Welcome to Resonance</h2>
                   <p>Hi ${name.split(' ')[0]},</p>
-                  <p>Thanks for booking your session! To help me prepare and get the most out of our time together, please complete your clinical onboarding form before we meet.</p>
-                  <div style="text-align: center;">
-                    <a href="${onboardingUrl}" class="button">Complete My Onboarding Form</a>
+                  <p>Thank you for booking your session. To help me prepare and ensure we get the most out of our time together, please complete your clinical onboarding form before we meet.</p>
+                  <div class="button-container">
+                    <a href="${onboardingUrl}" class="button">Complete Onboarding Form</a>
                   </div>
-                  <p style="font-size: 13px; color: #64748b; margin-top: 30px;">
-                    If the button doesn't work, copy and paste this link into your browser:<br/>
-                    <a href="${onboardingUrl}" style="color: #4f46e5;">${onboardingUrl}</a>
+                  <p style="font-size: 13px; color: #94a3b8; margin-top: 30px;">
+                    If the button doesn't work, you can copy this link:<br/>
+                    <a href="${onboardingUrl}" style="color: #D46A9B;">${onboardingUrl}</a>
                   </p>
                 </div>
-                <div style="padding: 0 40px 40px 40px;">
-                  <div style="border-top: 1px solid #f1f5f9; padding-top: 20px;">
-                    <div style="font-weight: 800; color: #0f172a; font-size: 14px;">Daniele Buatti</div>
-                    <div style="color: #94a3b8; font-size: 12px; font-weight: 600;">Integrated Healer & Practitioner</div>
-                  </div>
+                <div class="signature">
+                  <div class="sig-name">Daniele Buatti</div>
+                  <div class="sig-title">Neuro-Somatic Kinesiologist</div>
                 </div>
               </div>
               <div class="footer">
-                <p>"The deeper you work, the higher you rise."</p>
-                <p>© ${new Date().getFullYear()} Antigravity Kinesiology</p>
+                <p style="font-style: italic; font-size: 18px; color: #1E3261; margin-bottom: 24px;">"Come home to your body."</p>
+                <p>© ${new Date().getFullYear()} Resonance Kinesiology</p>
               </div>
             </div>
           </body>
@@ -186,9 +190,9 @@ serve(async (req) => {
         `;
 
         await sendGmail(accessToken, SENDER_EMAIL, email, "Action Required: Your Onboarding Form", htmlBody);
-        console.log("Gmail sent successfully.");
+        console.log("[calcom-webhook] Gmail sent successfully.");
       } catch (e) {
-        console.error("Failed to send Gmail:", e.message);
+        console.error("[calcom-webhook] Failed to send Gmail:", e.message);
       }
     }
 
@@ -253,7 +257,7 @@ serve(async (req) => {
 
     return new Response(JSON.stringify({ success: true, action: 'created' }), { status: 200, headers: corsHeaders });
   } catch (error) {
-    console.error("Critical Webhook Error:", error.message);
+    console.error("[calcom-webhook] Critical Error:", error.message);
     return new Response(JSON.stringify({ error: error.message }), { status: 400, headers: corsHeaders });
   }
 })

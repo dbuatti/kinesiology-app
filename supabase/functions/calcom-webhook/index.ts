@@ -62,8 +62,65 @@ async function syncToNotion(appointmentData: any) {
   }
 }
 
+async function deleteFromNotion(calcomUid: string) {
+  const NOTION_KEY = Deno.env.get('NOTION_API_KEY')
+  const DATABASE_ID = Deno.env.get('NOTION_DATABASE_ID')
+
+  if (!NOTION_KEY || !DATABASE_ID) {
+    console.error("--- NOTION DELETE SKIPPED: Missing Secrets ---")
+    return
+  }
+
+  try {
+    // 1. Search for the page in the database that contains the Calcom UID in the Notes property
+    const searchResponse = await fetch(`https://api.notion.com/v1/databases/${DATABASE_ID}/query`, {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${NOTION_KEY}`,
+        'Content-Type': 'application/json',
+        'Notion-Version': '2022-06-28'
+      },
+      body: JSON.stringify({
+        filter: {
+          property: "Notes",
+          rich_text: {
+            contains: calcomUid
+          }
+        }
+      })
+    })
+
+    const searchResult = await searchResponse.json();
+
+    if (searchResult.results && searchResult.results.length > 0) {
+      const pageId = searchResult.results[0].id;
+      
+      // 2. Archive (delete) the found page
+      const deleteResponse = await fetch(`https://api.notion.com/v1/pages/${pageId}`, {
+        method: 'PATCH',
+        headers: {
+          'Authorization': `Bearer ${NOTION_KEY}`,
+          'Content-Type': 'application/json',
+          'Notion-Version': '2022-06-28'
+        },
+        body: JSON.stringify({ archived: true })
+      })
+
+      if (deleteResponse.ok) {
+        console.log(`--- NOTION DELETE SUCCESS: Archived page ${pageId} ---`);
+      } else {
+        console.error("Notion Delete Error:", await deleteResponse.text());
+      }
+    } else {
+      console.log("--- NOTION DELETE: No matching page found for UID ---");
+    }
+  } catch (err) {
+    console.error("Critical error during Notion deletion:", err.message);
+  }
+}
+
 serve(async (req) => {
-  console.log("--- [v15] CAL.COM WEBHOOK START ---");
+  console.log("--- [v16] CAL.COM WEBHOOK START ---");
 
   if (req.method === 'OPTIONS') return new Response('ok', { headers: corsHeaders })
 
@@ -85,6 +142,37 @@ serve(async (req) => {
     const body = await req.json()
     const { triggerEvent, payload } = body
 
+    // HANDLE CANCELLATIONS
+    if (triggerEvent === 'BOOKING_CANCELLED') {
+      const calcomUid = payload.uid;
+      console.log(`Processing cancellation for UID: ${calcomUid}`);
+
+      // 1. Find and delete from Supabase
+      // We search the notes field where we store the UID
+      const { data: appToDelete } = await supabase
+        .from('appointments')
+        .select('id')
+        .ilike('notes', `%${calcomUid}%`)
+        .maybeSingle();
+
+      if (appToDelete) {
+        const { error: deleteError } = await supabase
+          .from('appointments')
+          .delete()
+          .eq('id', appToDelete.id);
+        
+        if (!deleteError) {
+          console.log(`Deleted appointment ${appToDelete.id} from Supabase`);
+        }
+      }
+
+      // 2. Delete from Notion
+      await deleteFromNotion(calcomUid);
+
+      return new Response(JSON.stringify({ success: true, message: 'Cancelled' }), { status: 200, headers: corsHeaders });
+    }
+
+    // HANDLE CREATIONS
     if (triggerEvent !== 'BOOKING_CREATED') {
       return new Response(JSON.stringify({ message: 'Ignored' }), { status: 200, headers: corsHeaders });
     }
@@ -164,7 +252,7 @@ serve(async (req) => {
     });
 
   } catch (error) {
-    console.error("V15 Error:", error.message);
+    console.error("V16 Error:", error.message);
     return new Response(JSON.stringify({ error: error.message }), { 
       status: 400, 
       headers: { ...corsHeaders, 'Content-Type': 'application/json' } 

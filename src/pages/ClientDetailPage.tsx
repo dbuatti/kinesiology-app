@@ -53,6 +53,7 @@ const ClientDetailPage = () => {
   const [copiedField, setCopiedField] = useState<string | null>(null);
   const [aiCopying, setAiCopying] = useState(false);
   const [linkCopying, setLinkCopying] = useState(false);
+  const [sendingEmail, setSendingEmail] = useState(false);
   const [syncingKit, setSyncingKit] = useState(false);
   const { addRecentClient } = useRecentClients();
 
@@ -108,6 +109,22 @@ const ClientDetailPage = () => {
     navigator.clipboard.writeText(url);
     showSuccess("Onboarding link copied to clipboard!");
     setTimeout(() => setLinkCopying(false), 2000);
+  };
+
+  const handleSendOnboardingEmail = async () => {
+    if (!client) return;
+    setSendingEmail(true);
+    try {
+      const { error } = await supabase.functions.invoke('send-manual-onboarding', {
+        body: { clientId: client.id }
+      });
+      if (error) throw error;
+      showSuccess(`Onboarding email sent to ${client.email}!`);
+    } catch (err: any) {
+      showError(err.message || "Failed to send onboarding email.");
+    } finally {
+      setSendingEmail(false);
+    }
   };
 
   const handleManualKitSync = async () => {
@@ -189,11 +206,21 @@ const ClientDetailPage = () => {
               <Button 
                 variant="outline" 
                 size="sm" 
+                className="bg-indigo-50 border-indigo-100 text-indigo-600 hover:bg-indigo-100 rounded-xl font-bold"
+                onClick={handleSendOnboardingEmail}
+                disabled={sendingEmail || !client.email}
+              >
+                {sendingEmail ? <Loader2 size={16} className="mr-2 animate-spin" /> : <Send size={16} className="mr-2" />}
+                Send Onboarding Email
+              </Button>
+              <Button 
+                variant="outline" 
+                size="sm" 
                 className="bg-emerald-50 border-emerald-100 text-emerald-600 hover:bg-emerald-100 rounded-xl font-bold"
                 onClick={handleCopyOnboardingLink}
               >
                 {linkCopying ? <Check size={16} className="mr-2" /> : <LinkIcon size={16} className="mr-2" />}
-                Copy Onboarding Link
+                Copy Link
               </Button>
               <Button 
                 variant="outline" 

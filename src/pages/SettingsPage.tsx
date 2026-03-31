@@ -1,16 +1,17 @@
 import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
-import { Settings, User, LogOut, Upload, Database, Download, Mail, Loader2, RefreshCw } from "lucide-react";
+import { Settings, User, LogOut, Upload, Database, Download, Mail, Loader2, RefreshCw, ExternalLink, Zap, Info } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
 import { showSuccess, showError } from "@/utils/toast";
 import { useNavigate, Link } from "react-router-dom";
-import { exportClientsToMailchimpCSV } from "@/utils/data-exporter";
+import { exportClientsToMailchimpCSV, exportClientsToKitCSV } from "@/utils/data-exporter";
+import { Badge } from "@/components/ui/badge";
 
 const SettingsPage = () => {
   const navigate = useNavigate();
-  const [exporting, setExporting] = useState(false);
-  const [syncing, setSyncing] = useState(false);
+  const [exporting, setExporting] = useState<'mailchimp' | 'kit' | null>(null);
+  const [syncing, setSyncing] = useState<'mailchimp' | 'kit' | null>(null);
 
   const handleSignOut = async () => {
     try {
@@ -22,8 +23,8 @@ const SettingsPage = () => {
     }
   };
 
-  const handleExport = async () => {
-    setExporting(true);
+  const handleExport = async (provider: 'mailchimp' | 'kit') => {
+    setExporting(provider);
     try {
       const { data, error } = await supabase
         .from('clients')
@@ -36,17 +37,21 @@ const SettingsPage = () => {
         return;
       }
 
-      exportClientsToMailchimpCSV(data);
-      showSuccess(`Exported ${data.length} contacts for Mailchimp.`);
+      if (provider === 'mailchimp') exportClientsToMailchimpCSV(data);
+      else exportClientsToKitCSV(data);
+      
+      showSuccess(`Exported ${data.length} contacts for ${provider === 'kit' ? 'Kit' : 'Mailchimp'}.`);
     } catch (err: any) {
       showError(err.message || "Failed to export contacts.");
     } finally {
-      setExporting(false);
+      setExporting(null);
     }
   };
 
-  const handleManualSync = async () => {
-    setSyncing(true);
+  const handleManualSync = async (provider: 'mailchimp' | 'kit') => {
+    setSyncing(provider);
+    const functionName = provider === 'kit' ? 'sync-to-kit' : 'sync-to-mailchimp';
+    
     try {
       const { data: clients, error: fetchError } = await supabase
         .from('clients')
@@ -59,18 +64,18 @@ const SettingsPage = () => {
       for (const client of (clients || [])) {
         if (!client.email) continue;
         
-        const { error: syncError } = await supabase.functions.invoke('sync-to-mailchimp', {
+        const { error: syncError } = await supabase.functions.invoke(functionName, {
           body: { record: client }
         });
         
         if (!syncError) successCount++;
       }
 
-      showSuccess(`Successfully synced ${successCount} contacts to Mailchimp.`);
+      showSuccess(`Successfully synced ${successCount} contacts to ${provider === 'kit' ? 'Kit' : 'Mailchimp'}.`);
     } catch (err: any) {
-      showError("Manual sync failed. Ensure the Edge Function is deployed and secrets are set.");
+      showError(`Manual sync failed. Ensure the ${provider} Edge Function is deployed and secrets are set.`);
     } finally {
-      setSyncing(false);
+      setSyncing(null);
     }
   };
 
@@ -126,34 +131,93 @@ const SettingsPage = () => {
                   <Upload size={18} className="mr-3 text-emerald-500" /> Import Appointment Data
                 </Link>
               </Button>
+            </div>
+          </CardContent>
+        </Card>
 
+        {/* Kit Integration Card */}
+        <Card className="border-none shadow-lg rounded-2xl bg-white border-t-4 border-indigo-600">
+          <CardHeader>
+            <div className="flex items-center justify-between">
+              <CardTitle className="text-xl flex items-center gap-2">
+                <Zap size={20} className="text-indigo-600" /> Kit Integration
+              </CardTitle>
+              <Badge className="bg-indigo-100 text-indigo-700 border-none">New</Badge>
+            </div>
+            <CardDescription>Sync your clients to Kit (formerly ConvertKit).</CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="grid grid-cols-1 gap-3">
               <Button 
-                onClick={handleExport}
-                disabled={exporting}
+                onClick={() => handleExport('kit')}
+                disabled={!!exporting}
                 variant="outline"
                 className="w-full h-11 rounded-xl border-slate-200 font-bold justify-start"
               >
-                {exporting ? <Loader2 className="mr-3 animate-spin" /> : <Download size={18} className="mr-3 text-indigo-500" />}
+                {exporting === 'kit' ? <Loader2 className="mr-3 animate-spin" /> : <Download size={18} className="mr-3 text-indigo-600" />}
+                Export CSV for Kit
+              </Button>
+
+              <Button 
+                onClick={() => handleManualSync('kit')}
+                disabled={!!syncing}
+                className="w-full h-11 rounded-xl bg-indigo-600 hover:bg-indigo-700 font-bold shadow-lg shadow-indigo-100"
+              >
+                {syncing === 'kit' ? <Loader2 className="mr-3 animate-spin" /> : <RefreshCw size={18} className="mr-3" />}
+                Sync Existing to Kit
+              </Button>
+            </div>
+            
+            <div className="p-4 bg-indigo-50 rounded-xl border border-indigo-100 space-y-2">
+              <div className="flex items-center gap-2">
+                <Info size={14} className="text-indigo-600" />
+                <p className="text-[10px] font-black text-indigo-600 uppercase tracking-widest">Setup Required</p>
+              </div>
+              <p className="text-xs text-indigo-800 leading-relaxed">
+                1. Get your <strong>API Secret</strong> from Kit Settings.<br/>
+                2. Set it as <code>KIT_API_SECRET</code> in your Supabase project secrets.
+              </p>
+              <a 
+                href="https://app.kit.com/user/edit#api" 
+                target="_blank" 
+                rel="noopener noreferrer"
+                className="text-[10px] font-bold text-indigo-600 flex items-center gap-1 hover:underline"
+              >
+                Open Kit API Settings <ExternalLink size={10} />
+              </a>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Legacy Mailchimp Card */}
+        <Card className="border-none shadow-lg rounded-2xl bg-white opacity-80">
+          <CardHeader>
+            <CardTitle className="text-xl flex items-center gap-2">
+              <Mail size={20} className="text-slate-500" /> Mailchimp (Legacy)
+            </CardTitle>
+            <CardDescription>Legacy sync for Mailchimp audiences.</CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="grid grid-cols-1 gap-3">
+              <Button 
+                onClick={() => handleExport('mailchimp')}
+                disabled={!!exporting}
+                variant="outline"
+                className="w-full h-11 rounded-xl border-slate-200 font-bold justify-start"
+              >
+                {exporting === 'mailchimp' ? <Loader2 className="mr-3 animate-spin" /> : <Download size={18} className="mr-3 text-slate-500" />}
                 Export CSV for Mailchimp
               </Button>
 
               <Button 
-                onClick={handleManualSync}
-                disabled={syncing}
-                className="w-full h-11 rounded-xl bg-indigo-600 hover:bg-indigo-700 font-bold shadow-lg shadow-indigo-100"
+                onClick={() => handleManualSync('mailchimp')}
+                disabled={!!syncing}
+                variant="ghost"
+                className="w-full h-11 rounded-xl font-bold text-slate-500"
               >
-                {syncing ? <Loader2 className="mr-3 animate-spin" /> : <RefreshCw size={18} className="mr-3" />}
-                Sync Existing to Mailchimp
+                {syncing === 'mailchimp' ? <Loader2 className="mr-3 animate-spin" /> : <RefreshCw size={18} className="mr-3" />}
+                Sync to Mailchimp
               </Button>
-            </div>
-            <div className="p-4 bg-indigo-50 rounded-xl border border-indigo-100">
-              <div className="flex items-center gap-2 mb-1">
-                <Mail size={14} className="text-indigo-600" />
-                <p className="text-[10px] font-black text-indigo-600 uppercase tracking-widest">Automation Tip</p>
-              </div>
-              <p className="text-xs text-indigo-800 leading-relaxed">
-                To automate this, set up a <strong>Database Webhook</strong> in your Supabase Dashboard to trigger the <code>sync-to-mailchimp</code> function on every new client.
-              </p>
             </div>
           </CardContent>
         </Card>

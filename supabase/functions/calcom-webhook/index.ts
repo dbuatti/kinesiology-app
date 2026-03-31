@@ -9,18 +9,15 @@ const corsHeaders = {
 }
 
 serve(async (req) => {
-  console.log("--- [v13] THE FINAL PUSH START ---");
+  console.log("--- [v14] CAL.COM WEBHOOK START ---");
 
   if (req.method === 'OPTIONS') return new Response('ok', { headers: corsHeaders })
 
   try {
     const supabaseUrl = Deno.env.get('SUPABASE_URL')
     const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')
-
-    // Using your actual ID from the logs to bypass the 'listUsers' call entirely
     const PRACTITIONER_ID = "6f2caa85-bfce-4264-97cd-c0d2f62b24f0";
 
-    // V13 FIX: We create a client that strictly refuses to touch the request headers
     const supabase = createClient(supabaseUrl, supabaseServiceKey, {
       global: {
         headers: {
@@ -28,56 +25,51 @@ serve(async (req) => {
           apikey: supabaseServiceKey,
         },
       },
-      auth: {
-        persistSession: false,
-        autoRefreshToken: false,
-        detectSessionInUrl: false
-      }
+      auth: { persistSession: false }
     })
 
     const body = await req.json()
-    const { payload } = body
+    const { triggerEvent, payload } = body
 
-    if (!payload || !payload.attendees) {
-       return new Response(JSON.stringify({ error: "Missing payload" }), { status: 400, headers: corsHeaders });
+    if (triggerEvent !== 'BOOKING_CREATED') {
+      return new Response(JSON.stringify({ message: 'Ignored' }), { status: 200, headers: corsHeaders });
     }
 
     const attendee = payload.attendees[0]
     const email = String(attendee.email).toLowerCase().trim()
     const name = String(attendee.name).trim()
+    const phone = attendee.phoneNumber ? String(attendee.phoneNumber) : null
+    
+    let amountPaid = 0;
+    if (payload.payment && payload.payment.length > 0) {
+      amountPaid = payload.payment[0].amount / 100; 
+    }
 
-    // 1. Check for Client - Using a raw select to avoid any library magic
-    console.log(`Searching for: ${email}`);
-    const { data: client, error: searchError } = await supabase
+    // 1. Manage Client
+    const { data: client } = await supabase
       .from('clients')
       .select('id')
       .eq('email', email)
       .eq('user_id', PRACTITIONER_ID)
       .maybeSingle();
 
-    if (searchError) throw new Error(`Search Fail: ${searchError.message}`);
-
     let clientId;
     if (client) {
       clientId = client.id;
-      console.log(`Found existing client: ${clientId}`);
+      await supabase.from('clients').update({ name, phone }).eq('id', clientId);
     } else {
-      console.log("Creating new client record...");
       const { data: newClient, error: insertError } = await supabase
         .from('clients')
         .insert({
           user_id: PRACTITIONER_ID,
           name: name,
           email: email,
-          // Explicitly leaving out everything else
+          phone: phone
         })
-        .select('id')
+        .select()
         .single();
       
-      if (insertError) {
-        console.error("DEBUG - Raw Insert Error:", insertError);
-        throw insertError;
-      }
+      if (insertError) throw insertError;
       clientId = newClient.id;
     }
 
@@ -87,21 +79,24 @@ serve(async (req) => {
       .insert({
         user_id: PRACTITIONER_ID,
         client_id: clientId,
-        name: payload.title || "Session",
+        name: payload.title || "Kinesiology Session",
         date: payload.startTime,
+        tag: "Kinesiology",
         status: "Scheduled",
-        notes: `Cal.com auto-sync. UID: ${payload.uid}`
-      });
+        issue: payload.description || "",
+        notes: `Booked via Cal.com. Paid: $${amountPaid}. UID: ${payload.uid}`
+      })
 
     if (appError) throw appError;
 
-    return new Response(JSON.stringify({ success: true, version: 13 }), { 
+    console.log("--- WEBHOOK SUCCESS ---");
+    return new Response(JSON.stringify({ success: true }), { 
       status: 200, 
       headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
     });
 
   } catch (error) {
-    console.error("V13 CRITICAL:", error.message);
+    console.error("V14 Error:", error.message);
     return new Response(JSON.stringify({ error: error.message }), { 
       status: 400, 
       headers: { ...corsHeaders, 'Content-Type': 'application/json' } 

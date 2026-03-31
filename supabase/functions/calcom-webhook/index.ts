@@ -29,11 +29,13 @@ async function syncToNotion(appointmentData: any) {
     "Goal": {
       "rich_text": [{ "text": { "content": appointmentData.goal || "" } }]
     },
+    // FIX: Formatting 'Issue' as multi_select to match Notion DB type
     "Issue": {
-      "rich_text": [{ "text": { "content": appointmentData.issue || "" } }]
+      "multi_select": [{ "name": appointmentData.tag || "Kinesiology" }]
     },
+    // Detailed issue description is moved to Notes to avoid multi_select character limits
     "Notes": {
-      "rich_text": [{ "text": { "content": appointmentData.notes || "" } }]
+      "rich_text": [{ "text": { "content": `${appointmentData.issue ? `ISSUE: ${appointmentData.issue}\n\n` : ''}${appointmentData.notes || ""}` } }]
     }
   }
 
@@ -121,7 +123,7 @@ async function deleteFromNotion(calcomUid: string) {
 }
 
 serve(async (req) => {
-  console.log("--- [v17] CAL.COM WEBHOOK START ---");
+  console.log("--- [v18] CAL.COM WEBHOOK START ---");
 
   if (req.method === 'OPTIONS') return new Response('ok', { headers: corsHeaders })
 
@@ -240,6 +242,7 @@ serve(async (req) => {
     await syncToNotion({
       name: appointmentName,
       date: appointmentDate,
+      tag: "Kinesiology",
       goal: "New Booking (Cal.com)",
       issue: appointmentIssue,
       notes: appointmentNotes
@@ -252,7 +255,7 @@ serve(async (req) => {
     });
 
   } catch (error) {
-    console.error("V17 Error:", error.message);
+    console.error("V18 Error:", error.message);
     return new Response(JSON.stringify({ error: error.message }), { 
       status: 400, 
       headers: { ...corsHeaders, 'Content-Type': 'application/json' } 

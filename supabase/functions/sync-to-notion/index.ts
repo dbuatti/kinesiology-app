@@ -35,11 +35,13 @@ serve(async (req) => {
       "Goal": {
         "rich_text": [{ "text": { "content": appointment.goal || "" } }]
       },
+      // FIX: Formatting 'Issue' as multi_select to match Notion DB type
       "Issue": {
-        "rich_text": [{ "text": { "content": appointment.issue || "" } }]
+        "multi_select": [{ "name": appointment.tag || "Kinesiology" }]
       },
+      // Detailed issue description is moved to Notes to avoid multi_select character limits
       "Notes": {
-        "rich_text": [{ "text": { "content": appointment.notes || "" } }]
+        "rich_text": [{ "text": { "content": `${appointment.issue ? `ISSUE: ${appointment.issue}\n\n` : ''}${appointment.notes || ""}` } }]
       },
       "🎛️ Modes & Balances": {
         "rich_text": [{ "text": { "content": appointment.modes_balances || "" } }]

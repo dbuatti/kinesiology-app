@@ -10,25 +10,19 @@ const corsHeaders = {
 
 serve(async (req) => {
   if (req.method === 'GET') {
-    return new Response(JSON.stringify({ 
-      status: "active", 
-      message: "Antigravity Webhook is live.",
-      version: "v32"
-    }), { 
-      status: 200, 
-      headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
+    return new Response(JSON.stringify({ status: "active", version: "v33" }), { 
+      status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
     });
   }
 
   if (req.method === 'OPTIONS') return new Response('ok', { headers: corsHeaders })
 
-  console.log("--- [v32] CAL.COM WEBHOOK TRIGGERED ---");
+  console.log("--- [v33] CAL.COM WEBHOOK FULL DELETE ---");
 
   try {
     const supabaseUrl = Deno.env.get('SUPABASE_URL')
     const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')
     const supabase = createClient(supabaseUrl, supabaseKey)
-
     const NOTION_KEY = Deno.env.get('NOTION_API_KEY');
     
     const CLIENTS_DB_ID = "074e2c006bd541d88c502feb397ef31d";
@@ -39,17 +33,9 @@ serve(async (req) => {
     const body = await req.json();
     const triggerEvent = body.triggerEvent;
     const payload = body.payload || body;
-    
-    if (!payload) {
-      return new Response(JSON.stringify({ error: "Invalid payload" }), { status: 400, headers: corsHeaders });
-    }
-
     const calcomId = String(payload.bookingId || payload.id || payload.uid);
 
-    // HANDLE CANCELLATION / REJECTION
     if (triggerEvent === 'BOOKING_CANCELLED' || triggerEvent === 'BOOKING_REJECTED') {
-      console.log(`Processing CANCELLATION for booking ${calcomId}`);
-      
       const { data: appointment } = await supabase
         .from('appointments')
         .select('id, notion_page_id, notion_planner_id')
@@ -58,50 +44,21 @@ serve(async (req) => {
 
       if (appointment) {
         if (NOTION_KEY) {
-          const notionHeaders = { 
-            'Authorization': `Bearer ${NOTION_KEY}`, 
-            'Content-Type': 'application/json', 
-            'Notion-Version': '2022-06-28' 
-          };
-
-          // Archive Main Appointment DB entry
+          const notionHeaders = { 'Authorization': `Bearer ${NOTION_KEY}`, 'Content-Type': 'application/json', 'Notion-Version': '2022-06-28' };
           if (appointment.notion_page_id) {
-            console.log(`Archiving Notion Appointment: ${appointment.notion_page_id}`);
-            await fetch(`https://api.notion.com/v1/pages/${appointment.notion_page_id}`, {
-              method: 'PATCH',
-              headers: notionHeaders,
-              body: JSON.stringify({ archived: true })
-            });
+            await fetch(`https://api.notion.com/v1/pages/${appointment.notion_page_id}`, { method: 'PATCH', headers: notionHeaders, body: JSON.stringify({ archived: true }) });
           }
-
-          // Archive Yearly Planner DB entry
           if (appointment.notion_planner_id) {
-            console.log(`Archiving Notion Planner: ${appointment.notion_planner_id}`);
-            await fetch(`https://api.notion.com/v1/pages/${appointment.notion_planner_id}`, {
-              method: 'PATCH',
-              headers: notionHeaders,
-              body: JSON.stringify({ archived: true })
-            });
+            await fetch(`https://api.notion.com/v1/pages/${appointment.notion_planner_id}`, { method: 'PATCH', headers: notionHeaders, body: JSON.stringify({ archived: true }) });
           }
         }
-
-        // Update CRM Status
-        await supabase
-          .from('appointments')
-          .update({ status: 'Cancelled' })
-          .eq('id', appointment.id);
-          
-        console.log(`Successfully processed cancellation for ${appointment.id}`);
+        // Full Delete from CRM
+        await supabase.from('appointments').delete().eq('id', appointment.id);
       }
-
-      return new Response(JSON.stringify({ success: true, action: 'cancelled' }), { status: 200, headers: corsHeaders });
+      return new Response(JSON.stringify({ success: true, action: 'deleted' }), { status: 200, headers: corsHeaders });
     }
 
-    // HANDLE CREATION
-    if (!payload.attendees || payload.attendees.length === 0) {
-      return new Response(JSON.stringify({ error: "No attendees in payload" }), { status: 400, headers: corsHeaders });
-    }
-
+    // Creation logic remains the same...
     const attendee = payload.attendees[0];
     const name = String(attendee.name || "Unknown Client").trim();
     const email = String(attendee.email || "").toLowerCase().trim();
@@ -109,83 +66,50 @@ serve(async (req) => {
     const startTime = payload.startTime;
     const notes = payload.description || "";
 
-    console.log(`Processing CREATION for booking ${calcomId}: ${name}`);
-
-    // 1. SYNC CLIENT
     let notionClientId = null;
     if (NOTION_KEY) {
-      try {
-        const searchRes = await fetch(`https://api.notion.com/v1/databases/${CLIENTS_DB_ID}/query`, {
-          method: "POST",
-          headers: { "Authorization": `Bearer ${NOTION_KEY}`, "Content-Type": "application/json", "Notion-Version": "2022-06-28" },
-          body: JSON.stringify({ filter: { property: "Name", title: { equals: name } } })
-        });
-        const searchData = await searchRes.json();
-        
-        if (searchData.results?.length > 0) {
-          notionClientId = searchData.results[0].id;
-        } else {
-          const createC = await fetch("https://api.notion.com/v1/pages", {
-            method: "POST",
-            headers: { "Authorization": `Bearer ${NOTION_KEY}`, "Content-Type": "application/json", "Notion-Version": "2022-06-28" },
-            body: JSON.stringify({
-              parent: { database_id: CLIENTS_DB_ID },
-              properties: { 
-                "Name": { title: [{ text: { content: name } }] }, 
-                "Email": email ? { email: email } : undefined, 
-                "Phone": phone ? { phone_number: phone } : undefined 
-              }
-            })
-          });
-          const newC = await createC.json();
-          notionClientId = newC.id;
-        }
-      } catch (e) { console.error("Notion Client Error:", e.message); }
-    }
-
-    // 2. CREATE IN MAIN APPOINTMENTS DB
-    let notionPageId = null;
-    if (NOTION_KEY) {
-      const apptProps = {
-        "Name": { title: [{ text: { content: `${name} - ${payload.title || 'Session'}` } }] },
-        "Date": { date: { start: startTime } },
-        "Notes": { rich_text: [{ text: { content: notes } }] }
-      };
-      if (notionClientId) apptProps["Client"] = { relation: [{ id: notionClientId }] };
-
-      const apptRes = await fetch("https://api.notion.com/v1/pages", {
+      const searchRes = await fetch(`https://api.notion.com/v1/databases/${CLIENTS_DB_ID}/query`, {
         method: "POST",
         headers: { "Authorization": `Bearer ${NOTION_KEY}`, "Content-Type": "application/json", "Notion-Version": "2022-06-28" },
-        body: JSON.stringify({ parent: { database_id: APPTS_DB_ID }, properties: apptProps })
+        body: JSON.stringify({ filter: { property: "Name", title: { equals: name } } })
       });
+      const searchData = await searchRes.json();
+      if (searchData.results?.length > 0) {
+        notionClientId = searchData.results[0].id;
+      } else {
+        const createC = await fetch("https://api.notion.com/v1/pages", {
+          method: "POST",
+          headers: { "Authorization": `Bearer ${NOTION_KEY}`, "Content-Type": "application/json", "Notion-Version": "2022-06-28" },
+          body: JSON.stringify({
+            parent: { database_id: CLIENTS_DB_ID },
+            properties: { "Name": { title: [{ text: { content: name } }] }, "Email": email ? { email: email } : undefined, "Phone": phone ? { phone_number: phone } : undefined }
+          })
+        });
+        const newC = await createC.json();
+        notionClientId = newC.id;
+      }
+    }
+
+    let notionPageId = null;
+    if (NOTION_KEY) {
+      const apptProps = { "Name": { title: [{ text: { content: `${name} - ${payload.title || 'Session'}` } }] }, "Date": { date: { start: startTime } }, "Notes": { rich_text: [{ text: { content: notes } }] } };
+      if (notionClientId) apptProps["Client"] = { relation: [{ id: notionClientId }] };
+      const apptRes = await fetch("https://api.notion.com/v1/pages", { method: "POST", headers: { "Authorization": `Bearer ${NOTION_KEY}`, "Content-Type": "application/json", "Notion-Version": "2022-06-28" }, body: JSON.stringify({ parent: { database_id: APPTS_DB_ID }, properties: apptProps }) });
       const apptData = await apptRes.json();
       notionPageId = apptData.id;
     }
 
-    // 3. CREATE IN YEARLY PLANNER
     let notionPlannerId = null;
     if (NOTION_KEY) {
       const amountPaid = payload.payment?.[0]?.amount ? payload.payment[0].amount / 100 : 0;
-      const plannerProps = {
-        "Title": { title: [{ text: { content: `${name} - ${payload.title || 'Session'}` } }] },
-        "Date": { date: { start: startTime } },
-        "Dollars": { number: amountPaid },
-        "Project": { select: { name: "Kinesiology" } }
-      };
+      const plannerProps = { "Title": { title: [{ text: { content: `${name} - ${payload.title || 'Session'}` } }] }, "Date": { date: { start: startTime } }, "Dollars": { number: amountPaid }, "Project": { select: { name: "Kinesiology" } } };
       if (notionClientId) plannerProps["Client (Kin)"] = { relation: [{ id: notionClientId }] };
-
-      const plannerRes = await fetch("https://api.notion.com/v1/pages", {
-        method: "POST",
-        headers: { "Authorization": `Bearer ${NOTION_KEY}`, "Content-Type": "application/json", "Notion-Version": "2022-06-28" },
-        body: JSON.stringify({ parent: { database_id: PLANNER_DB_ID }, properties: plannerProps })
-      });
+      const plannerRes = await fetch("https://api.notion.com/v1/pages", { method: "POST", headers: { "Authorization": `Bearer ${NOTION_KEY}`, "Content-Type": "application/json", "Notion-Version": "2022-06-28" }, body: JSON.stringify({ parent: { database_id: PLANNER_DB_ID }, properties: plannerProps }) });
       const plannerData = await plannerRes.json();
       notionPlannerId = plannerData.id;
     }
 
-    // 4. SUPABASE SYNC
     let { data: dbClient } = await supabase.from('clients').select('id').eq('email', email).maybeSingle();
-
     if (!dbClient && email) {
       const { data: newDbC } = await supabase.from('clients').insert({ user_id: PRACTITIONER_ID, name, email, phone }).select().single();
       dbClient = newDbC;
@@ -205,7 +129,6 @@ serve(async (req) => {
     }
 
     return new Response(JSON.stringify({ success: true, action: 'created' }), { status: 200, headers: corsHeaders });
-
   } catch (error) {
     console.error("Critical Webhook Error:", error.message);
     return new Response(JSON.stringify({ error: error.message }), { status: 400, headers: corsHeaders });

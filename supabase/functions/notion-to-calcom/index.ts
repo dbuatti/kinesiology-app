@@ -11,7 +11,7 @@ const corsHeaders = {
 serve(async (req) => {
   if (req.method === 'OPTIONS') return new Response('ok', { headers: corsHeaders })
 
-  console.log("--- [v4] NOTION TO CAL.COM SYNC START ---");
+  console.log("--- [v5] NOTION TO CAL.COM FULL DELETE START ---");
 
   try {
     const supabaseUrl = Deno.env.get('SUPABASE_URL')
@@ -26,8 +26,6 @@ serve(async (req) => {
     }
 
     const body = await req.json().catch(() => ({}));
-    console.log("Incoming Notion Payload:", JSON.stringify(body));
-
     const rawId = body.data?.id || body.id || body.page_id || body.source?.page_id;
 
     if (!rawId) {
@@ -38,18 +36,15 @@ serve(async (req) => {
     
     const { data: appointment, error: dbError } = await supabase
       .from('appointments')
-      .select('id, calcom_booking_id, notion_planner_id, notion_page_id, clients(name)')
+      .select('id, calcom_booking_id, notion_planner_id, notion_page_id')
       .eq('notion_page_id', notionPageId)
       .maybeSingle();
 
     if (dbError) throw dbError;
 
     if (!appointment) {
-      console.log("No matching appointment found in Supabase.");
       return new Response(JSON.stringify({ message: "No record found" }), { status: 200, headers: corsHeaders });
     }
-
-    console.log(`Processing cancellation for: ${appointment.clients?.name}`);
 
     // 1. Archive Notion Planner
     if (appointment.notion_planner_id) {
@@ -60,28 +55,17 @@ serve(async (req) => {
       });
     }
 
-    // 2. Cancel Cal.com Booking (Primary: DELETE)
+    // 2. Delete Cal.com Booking
     if (appointment.calcom_booking_id && appointment.calcom_booking_id !== "undefined") {
-      console.log(`Cancelling Cal.com booking: ${appointment.calcom_booking_id}`);
-      
-      const calRes = await fetch(`https://api.cal.com/v1/bookings/${appointment.calcom_booking_id}?apiKey=${CALCOM_KEY}`, {
+      await fetch(`https://api.cal.com/v1/bookings/${appointment.calcom_booking_id}?apiKey=${CALCOM_KEY}`, {
         method: 'DELETE'
       });
-
-      if (!calRes.ok) {
-        console.log("Direct DELETE failed, trying /cancel endpoint as fallback...");
-        await fetch(`https://api.cal.com/v1/bookings/${appointment.calcom_booking_id}/cancel?apiKey=${CALCOM_KEY}`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ reason: "Cancelled via Notion Sync" })
-        });
-      }
     }
 
-    // 3. Update Supabase
-    await supabase.from('appointments').update({ status: 'Cancelled' }).eq('id', appointment.id);
+    // 3. Full Delete from Supabase CRM
+    await supabase.from('appointments').delete().eq('id', appointment.id);
 
-    return new Response(JSON.stringify({ success: true }), { status: 200, headers: corsHeaders });
+    return new Response(JSON.stringify({ success: true, action: 'deleted' }), { status: 200, headers: corsHeaders });
   } catch (error) {
     console.error("Sync Error:", error.message);
     return new Response(JSON.stringify({ error: error.message }), { status: 400, headers: corsHeaders });

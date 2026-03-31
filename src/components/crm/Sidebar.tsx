@@ -111,7 +111,7 @@ const Sidebar = ({ onHide }: SidebarProps) => {
   ];
 
   const libraryItems = [
-    { label: "PEACE Framework", icon: ShieldCheck, path: "/peace-framework", shortcut: "⌘F" },
+    { label: "PEACE Framework", icon: ShieldCheck, path: "/peace-framework" },
     { label: "FNH Notion Manual", icon: ExternalLink, path: "https://functional-neuro-health.notion.site/Functional-Neuro-Health-The-PEACE-Method-28beacafb4a88026b9a9ccdefa4e1de9", isExternal: true },
     { label: "FNH Reference App", icon: ExternalLink, path: "https://fnhrefapp-ggs6ojfk.manus.space/brain-zones", isExternal: true },
     { label: "Knowledge Base", icon: BookOpen, path: "/resources" },
@@ -132,7 +132,6 @@ const Sidebar = ({ onHide }: SidebarProps) => {
           case 's': e.preventDefault(); navigate('/practice/self'); break;
           case 'p': e.preventDefault(); navigate('/practice/procedures'); break;
           case 'q': e.preventDefault(); navigate('/practice/calibrate'); break;
-          case 'f': e.preventDefault(); navigate('/peace-framework'); break;
           case 'h': e.preventDefault(); togglePrivacy(); break;
           case '/': e.preventDefault(); setHelpOpen(true); break;
           case '[': e.preventDefault(); onHide?.(); break;

@@ -3,7 +3,7 @@ import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type, x-supabase-client-platform',
   'Access-Control-Allow-Methods': 'POST, OPTIONS',
 }
 
@@ -38,8 +38,8 @@ serve(async (req) => {
 
     // Prepare data
     const nameParts = (record.name || "Client").trim().split(/\s+/)
-    const firstName = nameParts[0]
-    const lastName = nameParts.slice(1).join(" ")
+    const firstName = nameParts[0] || ""
+    const lastName = nameParts.length > 1 ? nameParts.slice(1).join(" ") : ""
 
     const body = {
       email_address: email,

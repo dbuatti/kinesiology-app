@@ -160,7 +160,7 @@ serve(async (req) => {
                 <div class="content">
                   <h2 style="color: #0f172a; margin-top: 0;">Action Required: Your Onboarding Form</h2>
                   <p>Hi ${name.split(' ')[0]},</p>
-                  <p>Thanks for booking your session! To help us prepare and get the most out of our time together, please complete your clinical onboarding form before we meet.</p>
+                  <p>Thanks for booking your session! To help me prepare and get the most out of our time together, please complete your clinical onboarding form before we meet.</p>
                   <div style="text-align: center;">
                     <a href="${onboardingUrl}" class="button">Complete My Onboarding Form</a>
                   </div>

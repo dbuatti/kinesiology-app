@@ -84,7 +84,7 @@ const OnboardingPage = () => {
           </div>
           <CardContent className="p-6 md:p-10 text-center space-y-6">
             <p className="text-sm md:text-base text-slate-600 font-medium leading-relaxed">
-              Thank you for taking the time to complete your onboarding. This helps us prepare for your upcoming sessions and ensures we have the most accurate context for your healing journey.
+              Thank you for taking the time to complete your onboarding. This helps me prepare for your upcoming sessions and ensures I have the most accurate context for your healing journey.
             </p>
             <div className="pt-4">
               <div className="inline-flex items-center gap-2 px-4 py-2 bg-slate-100 rounded-full text-[10px] font-black text-slate-500 uppercase tracking-widest">

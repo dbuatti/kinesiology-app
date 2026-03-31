@@ -52,6 +52,7 @@ const AppointmentDetailPage = () => {
   const [aiCopying, setAiCopying] = useState(false);
   const [cloning, setCloning] = useState(false);
   const [syncingNotion, setSyncingNotion] = useState(false);
+  const [deleting, setDeleting] = useState(false);
   const [currentTime, setCurrentTime] = useState(new Date());
   const [showSidebar, setShowSidebar] = useState(false);
   const [nucleiFilter, setNucleiFilter] = useState<Nuclei | null>(null);
@@ -176,6 +177,12 @@ const AppointmentDetailPage = () => {
       });
 
       if (error) throw error;
+      
+      // Save the returned Notion Page ID if we don't have it
+      if (data.id && !appointment.notion_page_id) {
+        await saveField('notion_page_id', data.id);
+      }
+      
       showSuccess("Session synced to Notion successfully!");
     } catch (err: any) {
       showError(err.message || "Failed to sync to Notion. Check your secrets.");
@@ -272,14 +279,30 @@ const AppointmentDetailPage = () => {
   };
 
   const handleDeleteAppointment = async () => {
-    if (!id || !confirm("Are you sure you want to delete this appointment?")) return;
+    if (!id || !appointment || !confirm("Are you sure you want to delete this appointment? It will also be removed from Notion and Cal.com if linked.")) return;
+    
+    setDeleting(true);
     try {
+      // 1. Call external cleanup function
+      if (appointment.notion_page_id || appointment.calcom_booking_id) {
+        await supabase.functions.invoke('delete-external-appointment', {
+          body: { 
+            notionPageId: appointment.notion_page_id, 
+            calcomBookingId: appointment.calcom_booking_id 
+          }
+        });
+      }
+
+      // 2. Delete local record
       const { error } = await supabase.from('appointments').delete().eq('id', id);
       if (error) throw error;
-      showSuccess("Appointment deleted successfully");
+
+      showSuccess("Appointment deleted from all platforms.");
       navigate('/appointments');
     } catch (err: any) {
       showError(err.message || "Failed to delete appointment");
+    } finally {
+      setDeleting(false);
     }
   };
 

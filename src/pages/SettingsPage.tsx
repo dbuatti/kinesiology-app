@@ -18,9 +18,9 @@ const SettingsPage = () => {
   const projectRef = "xebtjnvfkroiplyzftas";
   const webhookUrl = `https://${projectRef}.supabase.co/functions/v1/calcom-webhook`;
   
-  const onboardingBaseUrl = `${window.location.origin}/onboarding/welcome?email=`;
-  const calcomLink = `${onboardingBaseUrl}{email}`;
-  const kitLink = `${onboardingBaseUrl}{{{ email }}}`;
+  // Simplified base URL for manual lookup
+  const onboardingWelcomeUrl = `${window.location.origin}/onboarding/welcome`;
+  const kitLink = `${onboardingWelcomeUrl}?email={{{ email }}}`;
 
   const handleCopy = (text: string, id: string) => {
     navigator.clipboard.writeText(text);
@@ -116,13 +116,13 @@ const SettingsPage = () => {
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
               <div className="p-5 bg-white/5 rounded-2xl border border-white/10 space-y-3">
                 <div className="flex items-center justify-between">
-                  <p className="text-[10px] font-black uppercase tracking-widest text-indigo-300">For Cal.com</p>
-                  <Button variant="ghost" size="icon" className="h-8 w-8 text-indigo-300 hover:text-white" onClick={() => handleCopy(calcomLink, 'cal')}>
+                  <p className="text-[10px] font-black uppercase tracking-widest text-indigo-300">For Cal.com (Free Tier)</p>
+                  <Button variant="ghost" size="icon" className="h-8 w-8 text-indigo-300 hover:text-white" onClick={() => handleCopy(onboardingWelcomeUrl, 'cal')}>
                     {copied === 'cal' ? <Check size={16} /> : <Copy size={16} />}
                   </Button>
                 </div>
-                <p className="text-xs font-mono bg-black/20 p-3 rounded-lg break-all">{calcomLink}</p>
-                <p className="text-[10px] text-indigo-200 italic">Use this in Booking Questions or Event Description.</p>
+                <p className="text-xs font-mono bg-black/20 p-3 rounded-lg break-all">{onboardingWelcomeUrl}</p>
+                <p className="text-[10px] text-indigo-200 italic">Paste this into your Event Description or Booking Questions.</p>
               </div>
 
               <div className="p-5 bg-white/5 rounded-2xl border border-white/10 space-y-3">

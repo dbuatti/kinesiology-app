@@ -39,22 +39,26 @@ serve(async (req) => {
     }
 
     // 3. Cancel Cal.com Booking
+    // Standard Cal.com API v1 uses DELETE for cancellation
     if (calcomBookingId && CALCOM_KEY && calcomBookingId !== "undefined") {
       console.log(`Cancelling Cal.com booking: ${calcomBookingId}`);
-      const res = await fetch(`https://api.cal.com/v1/bookings/${calcomBookingId}/cancel?apiKey=${CALCOM_KEY}`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ reason: "Cancelled via Antigravity CRM" })
+      
+      const res = await fetch(`https://api.cal.com/v1/bookings/${calcomBookingId}?apiKey=${CALCOM_KEY}`, {
+        method: 'DELETE'
       });
       
-      // Fallback to DELETE if /cancel endpoint isn't preferred for this API version
-      if (!res.ok) {
-        console.log("Cancel endpoint failed, trying direct DELETE...");
-        await fetch(`https://api.cal.com/v1/bookings/${calcomBookingId}?apiKey=${CALCOM_KEY}`, {
-          method: 'DELETE'
+      if (res.ok) {
+        results.calcom = 'success';
+      } else {
+        // Fallback to /cancel endpoint if DELETE fails
+        console.log("Direct DELETE failed, trying /cancel endpoint...");
+        const cancelRes = await fetch(`https://api.cal.com/v1/bookings/${calcomBookingId}/cancel?apiKey=${CALCOM_KEY}`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ reason: "Cancelled via Antigravity CRM" })
         });
+        results.calcom = cancelRes.ok ? 'success' : 'failed';
       }
-      results.calcom = 'processed';
     }
 
     return new Response(JSON.stringify({ success: true, results }), { 

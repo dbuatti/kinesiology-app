@@ -13,7 +13,7 @@ serve(async (req) => {
     return new Response(JSON.stringify({ 
       status: "active", 
       message: "Antigravity Webhook is live.",
-      version: "v30"
+      version: "v31"
     }), { 
       status: 200, 
       headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
@@ -22,7 +22,7 @@ serve(async (req) => {
 
   if (req.method === 'OPTIONS') return new Response('ok', { headers: corsHeaders })
 
-  console.log("--- [v30] CAL.COM WEBHOOK TRIGGERED ---");
+  console.log("--- [v31] CAL.COM WEBHOOK TRIGGERED ---");
 
   try {
     const supabaseUrl = Deno.env.get('SUPABASE_URL')
@@ -44,14 +44,12 @@ serve(async (req) => {
       return new Response(JSON.stringify({ error: "Invalid payload" }), { status: 400, headers: corsHeaders });
     }
 
-    // Cal.com uses bookingId for numeric ID and uid for string ID
     const calcomId = String(payload.bookingId || payload.id || payload.uid);
 
     // HANDLE CANCELLATION / REJECTION
     if (triggerEvent === 'BOOKING_CANCELLED' || triggerEvent === 'BOOKING_REJECTED') {
       console.log(`Processing CANCELLATION for booking ${calcomId}`);
       
-      // 1. Find the appointment in Supabase
       const { data: appointment } = await supabase
         .from('appointments')
         .select('id, notion_page_id, notion_planner_id')
@@ -59,7 +57,6 @@ serve(async (req) => {
         .maybeSingle();
 
       if (appointment) {
-        // 2. Archive in Notion if IDs exist
         if (NOTION_KEY) {
           const notionHeaders = { 
             'Authorization': `Bearer ${NOTION_KEY}`, 
@@ -68,7 +65,6 @@ serve(async (req) => {
           };
 
           if (appointment.notion_page_id) {
-            console.log(`Archiving Notion Page: ${appointment.notion_page_id}`);
             await fetch(`https://api.notion.com/v1/pages/${appointment.notion_page_id}`, {
               method: 'PATCH',
               headers: notionHeaders,
@@ -77,7 +73,6 @@ serve(async (req) => {
           }
 
           if (appointment.notion_planner_id) {
-            console.log(`Archiving Notion Planner Entry: ${appointment.notion_planner_id}`);
             await fetch(`https://api.notion.com/v1/pages/${appointment.notion_planner_id}`, {
               method: 'PATCH',
               headers: notionHeaders,
@@ -86,21 +81,18 @@ serve(async (req) => {
           }
         }
 
-        // 3. Update Supabase status
         await supabase
           .from('appointments')
           .update({ status: 'Cancelled' })
           .eq('id', appointment.id);
           
         console.log(`Successfully processed cancellation for ${appointment.id}`);
-      } else {
-        console.log(`No matching appointment found for Cal.com ID: ${calcomId}`);
       }
 
       return new Response(JSON.stringify({ success: true, action: 'cancelled' }), { status: 200, headers: corsHeaders });
     }
 
-    // HANDLE CREATION (Default logic)
+    // HANDLE CREATION
     if (!payload.attendees || payload.attendees.length === 0) {
       return new Response(JSON.stringify({ error: "No attendees in payload" }), { status: 400, headers: corsHeaders });
     }
@@ -112,7 +104,7 @@ serve(async (req) => {
     const startTime = payload.startTime;
     const notes = payload.description || "";
 
-    console.log(`Processing CREATION for: ${name}`);
+    console.log(`Processing CREATION for booking ${calcomId}: ${name}`);
 
     // 1. SYNC CLIENT
     let notionClientId = null;

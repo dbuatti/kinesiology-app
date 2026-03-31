@@ -1,28 +1,53 @@
 // @ts-nocheck
 // supabase/functions/sync-to-kit/index.ts
-// Kit.com sync - v2 (March 2026)
-// Handles both direct calls and database triggers
+// Kit.com sync - v3 (March 2026)
+// Robust JSON parsing and method validation
 
 const KIT_API_KEY = Deno.env.get('KIT_API_KEY');
 
 Deno.serve(async (req: Request) => {
-  console.log("--- [v2] KIT SYNC START ---");
+  console.log("--- [v3] KIT SYNC START ---");
 
   if (!KIT_API_KEY) {
-    console.error("Critical Error: KIT_API_KEY is missing in Supabase Secrets");
-    return new Response(JSON.stringify({ error: "KIT_API_KEY missing" }), { 
-      status: 500,
-      headers: { "Content-Type": "application/json" }
-    });
+    console.error("Critical Error: KIT_API_KEY is missing");
+    return new Response(
+      JSON.stringify({ error: "KIT_API_KEY is missing in secrets" }),
+      { status: 500, headers: { "Content-Type": "application/json" } }
+    );
+  }
+
+  // Handle non-POST requests gracefully (e.g. when testing in dashboard)
+  if (req.method !== "POST") {
+    return new Response(
+      JSON.stringify({ error: "Method not allowed. Use POST with JSON body." }),
+      { status: 405, headers: { "Content-Type": "application/json" } }
+    );
   }
 
   try {
-    const body = await req.json();
+    let data;
     
-    // Adapter: Handle both direct payloads and Supabase trigger 'record' payloads
-    const data = body.record || body;
-    
+    // Safely parse JSON body with fallback
+    try {
+      const body = await req.json();
+      // Adapter: Handle both direct payloads and Supabase trigger 'record' payloads
+      data = body.record || body;
+    } catch (jsonError) {
+      console.error("JSON Parse Error:", jsonError);
+      return new Response(
+        JSON.stringify({ error: "Invalid JSON body. Send { \"email\": \"user@example.com\" }" }),
+        { status: 400, headers: { "Content-Type": "application/json" } }
+      );
+    }
+
     const email = data.email || data.email_address;
+    if (!email) {
+      return new Response(
+        JSON.stringify({ error: "email is required" }),
+        { status: 400, headers: { "Content-Type": "application/json" } }
+      );
+    }
+
     let first_name = data.first_name || "";
     let last_name = data.last_name || "";
     
@@ -33,16 +58,8 @@ Deno.serve(async (req: Request) => {
       last_name = parts.slice(1).join(" ");
     }
 
-    if (!email) {
-      return new Response(JSON.stringify({ error: "Email is required" }), { 
-        status: 400,
-        headers: { "Content-Type": "application/json" }
-      });
-    }
-
     console.log(`Attempting to sync ${email} to Kit...`);
 
-    // 1. Create or update subscriber (Kit API does upsert automatically)
     const response = await fetch("https://api.kit.com/v4/subscribers", {
       method: "POST",
       headers: {
@@ -65,29 +82,23 @@ Deno.serve(async (req: Request) => {
 
     if (!response.ok) {
       console.error("Kit API Error:", result);
-      return new Response(JSON.stringify({ error: result }), { 
-        status: response.status,
-        headers: { "Content-Type": "application/json" }
-      });
+      return new Response(
+        JSON.stringify({ error: "Kit API failed", details: result }),
+        { status: response.status, headers: { "Content-Type": "application/json" } }
+      );
     }
 
     console.log(`✅ Successfully synced subscriber: ${email}`);
 
-    // 2. Tagging Logic
-    // Note: In Kit V4, you typically need the Tag ID. 
-    // For now, we log that the subscriber is ready for tagging.
-    // If you have specific Tag IDs, we can add a second fetch here to apply them.
-    
     return new Response(
       JSON.stringify({ 
         success: true, 
         email, 
-        message: "Synced to Kit",
-        details: "Subscriber created/updated. Ensure Tags are configured in Kit automation rules." 
+        message: "Successfully added/updated in Kit" 
       }),
       { 
-        status: 200,
-        headers: { "Content-Type": "application/json" }
+        status: 200, 
+        headers: { "Content-Type": "application/json" } 
       }
     );
 

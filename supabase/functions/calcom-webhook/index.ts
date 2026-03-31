@@ -132,7 +132,7 @@ serve(async (req) => {
       console.log(`[calcom-webhook] Sending Resonance Onboarding to ${email}...`);
       try {
         const accessToken = await getGmailAccessToken(GMAIL_CLIENT_ID, GMAIL_CLIENT_SECRET, GMAIL_REFRESH_TOKEN);
-        const onboardingUrl = `https://resonance-kinesiology.vercel.app/onboarding/${dbClient.id}`;
+        const onboardingUrl = `https://kinesiology-app.vercel.app/onboarding/${dbClient.id}`;
         
         const htmlBody = `
           <!DOCTYPE html>

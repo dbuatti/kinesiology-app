@@ -8,8 +8,62 @@ const corsHeaders = {
   'Access-Control-Allow-Methods': 'POST, OPTIONS',
 }
 
+async function syncToNotion(appointmentData: any) {
+  const NOTION_KEY = Deno.env.get('NOTION_API_KEY')
+  const DATABASE_ID = Deno.env.get('NOTION_DATABASE_ID')
+
+  if (!NOTION_KEY || !DATABASE_ID) {
+    console.error("--- NOTION SYNC SKIPPED: Missing NOTION_API_KEY or NOTION_DATABASE_ID in Supabase Secrets ---")
+    return
+  }
+
+  const properties = {
+    "Name": {
+      "title": [{ "text": { "content": appointmentData.name } }]
+    },
+    "Date": {
+      "date": { "start": appointmentData.date }
+    },
+    "Goal": {
+      "rich_text": [{ "text": { "content": appointmentData.goal || "" } }]
+    },
+    "Issue": {
+      "rich_text": [{ "text": { "content": appointmentData.issue || "" } }]
+    },
+    "Notes": {
+      "rich_text": [{ "text": { "content": appointmentData.notes || "" } }]
+    }
+  }
+
+  try {
+    console.log(`Attempting to sync to Notion database: ${DATABASE_ID.substring(0, 5)}...`);
+    const response = await fetch('https://api.notion.com/v1/pages', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${NOTION_KEY}`,
+        'Content-Type': 'application/json',
+        'Notion-Version': '2022-06-28'
+      },
+      body: JSON.stringify({
+        parent: { database_id: DATABASE_ID },
+        properties: properties
+      })
+    })
+
+    const result = await response.json();
+
+    if (!response.ok) {
+      console.error("Notion API Error:", JSON.stringify(result));
+    } else {
+      console.log("--- NOTION SYNC SUCCESS ---");
+    }
+  } catch (err) {
+    console.error("Critical error during Notion sync:", err.message);
+  }
+}
+
 serve(async (req) => {
-  console.log("--- [v14] CAL.COM WEBHOOK START ---");
+  console.log("--- [v15] CAL.COM WEBHOOK START ---");
 
   if (req.method === 'OPTIONS') return new Response('ok', { headers: corsHeaders })
 
@@ -73,21 +127,35 @@ serve(async (req) => {
       clientId = newClient.id;
     }
 
-    // 2. Create Appointment
+    // 2. Create Appointment in Supabase
+    const appointmentName = payload.title || `Session with ${name}`;
+    const appointmentDate = payload.startTime;
+    const appointmentIssue = payload.description || "";
+    const appointmentNotes = `Booked via Cal.com. Paid: $${amountPaid}. UID: ${payload.uid}`;
+
     const { error: appError } = await supabase
       .from('appointments')
       .insert({
         user_id: PRACTITIONER_ID,
         client_id: clientId,
-        name: payload.title || "Kinesiology Session",
-        date: payload.startTime,
+        name: appointmentName,
+        date: appointmentDate,
         tag: "Kinesiology",
         status: "Scheduled",
-        issue: payload.description || "",
-        notes: `Booked via Cal.com. Paid: $${amountPaid}. UID: ${payload.uid}`
+        issue: appointmentIssue,
+        notes: appointmentNotes
       })
 
     if (appError) throw appError;
+
+    // 3. Sync to Notion
+    await syncToNotion({
+      name: appointmentName,
+      date: appointmentDate,
+      goal: "New Booking (Cal.com)",
+      issue: appointmentIssue,
+      notes: appointmentNotes
+    });
 
     console.log("--- WEBHOOK SUCCESS ---");
     return new Response(JSON.stringify({ success: true }), { 
@@ -96,7 +164,7 @@ serve(async (req) => {
     });
 
   } catch (error) {
-    console.error("V14 Error:", error.message);
+    console.error("V15 Error:", error.message);
     return new Response(JSON.stringify({ error: error.message }), { 
       status: 400, 
       headers: { ...corsHeaders, 'Content-Type': 'application/json' } 

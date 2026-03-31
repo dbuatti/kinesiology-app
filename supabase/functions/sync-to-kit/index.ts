@@ -7,51 +7,52 @@ const corsHeaders = {
   'Access-Control-Allow-Methods': 'POST, OPTIONS',
 }
 
-// Kit V4 requires the API SECRET (not the public key)
-const KIT_API_KEY = Deno.env.get('KIT_API_SECRET') || Deno.env.get('KIT_API_KEY');
+// Kit V4 requires the API SECRET
+const KIT_API_SECRET = Deno.env.get('KIT_API_SECRET');
 
 serve(async (req: Request) => {
-  console.log("--- [v9] KIT SYNC START ---");
+  console.log("--- [v10] KIT SYNC START ---");
 
+  // Handle CORS preflight
   if (req.method === 'OPTIONS') {
     return new Response('ok', { headers: corsHeaders });
   }
 
-  if (!KIT_API_KEY) {
-    console.error("Critical Error: KIT_API_SECRET is missing in Supabase secrets.");
-    return new Response(
-      JSON.stringify({ error: "Configuration Error: KIT_API_SECRET is missing in Supabase project secrets." }),
-      { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-    );
-  }
-
   try {
+    if (!KIT_API_SECRET) {
+      console.error("Configuration Error: KIT_API_SECRET is not set in Supabase secrets.");
+      return new Response(
+        JSON.stringify({ 
+          error: "Missing API Secret", 
+          message: "Please run 'supabase secrets set KIT_API_SECRET=your_secret' in your terminal or add it via the Supabase Dashboard." 
+        }),
+        { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
     const body = await req.json().catch(() => ({}));
-    console.log("Incoming Payload:", JSON.stringify(body));
-    
     const record = body.record || body;
     const email = record.email;
 
     if (!email) {
-      console.error("Validation Error: No email provided in record.");
       return new Response(
-        JSON.stringify({ error: "Email is required for Kit sync." }),
+        JSON.stringify({ error: "Validation Error", message: "Email is required for Kit sync." }),
         { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
 
-    // Split full name into first and last for Kit
     const nameParts = (record.name || "Client").trim().split(/\s+/);
     const first_name = nameParts[0] || "";
     const last_name = nameParts.length > 1 ? nameParts.slice(1).join(" ") : "";
 
-    console.log(`Syncing ${email} to Kit using key starting with: ${KIT_API_KEY.substring(0, 6)}...`);
+    console.log(`Attempting to sync ${email} to Kit...`);
 
+    // Kit V4 uses X-Kit-Api-Key header for the Secret Key
     const response = await fetch("https://api.kit.com/v4/subscribers", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        "X-Kit-Api-Key": KIT_API_KEY,
+        "X-Kit-Api-Key": KIT_API_SECRET,
       },
       body: JSON.stringify({
         email_address: email,
@@ -66,28 +67,29 @@ serve(async (req: Request) => {
     const result = await response.json();
 
     if (!response.ok) {
-      console.error("Kit API Error Response:", JSON.stringify(result));
+      console.error(`Kit API Error (${response.status}):`, JSON.stringify(result));
+      // Pass through the 401 if Kit returns it, but ensure CORS headers are attached
       return new Response(
         JSON.stringify({ 
-          error: "Kit API rejected the request. This usually means the API Secret is invalid.", 
+          error: "Kit API Rejected Request", 
           details: result,
-          status: response.status 
+          hint: response.status === 401 ? "Your KIT_API_SECRET is likely invalid or expired." : "Check the details object for more info."
         }),
-        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        { status: response.status, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
 
-    console.log(`✅ Successfully synced: ${email} (Occupation: ${record.occupation || 'N/A'})`);
+    console.log(`✅ Successfully synced: ${email}`);
 
     return new Response(
-      JSON.stringify({ success: true, email, message: "Synced to Kit" }),
+      JSON.stringify({ success: true, message: "Synced to Kit" }),
       { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );
 
   } catch (error: any) {
     console.error("Critical Edge Function Error:", error.message);
     return new Response(
-      JSON.stringify({ error: error.message || "Internal Server Error" }),
+      JSON.stringify({ error: "Internal Server Error", message: error.message }),
       { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );
   }

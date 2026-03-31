@@ -9,7 +9,7 @@ const corsHeaders = {
 }
 
 serve(async (req) => {
-  console.log("--- CAL.COM TO NOTION AUTOMATION START ---");
+  console.log("--- [v2] CAL.COM TO NOTION AUTOMATION START ---");
 
   if (req.method === 'OPTIONS') {
     return new Response('ok', { headers: corsHeaders })
@@ -27,6 +27,7 @@ serve(async (req) => {
     const { triggerEvent, payload } = body
 
     if (triggerEvent !== 'BOOKING_CREATED') {
+      console.log(`Ignoring event type: ${triggerEvent}`);
       return new Response(JSON.stringify({ message: 'Ignored event type' }), { status: 200, headers: corsHeaders });
     }
 
@@ -42,9 +43,15 @@ serve(async (req) => {
       amountPaid = payload.payment[0].amount / 100; 
     }
 
-    const { data: userData } = await supabase.auth.admin.listUsers()
-    const userId = userData.users[0].id
+    // Get the owner of the project (the practitioner)
+    // We assume the first user in the auth table is the practitioner for this single-user setup
+    const { data: users, error: userError } = await supabase.auth.admin.listUsers()
+    if (userError || !users.users.length) throw new Error("Could not find practitioner user");
+    
+    const userId = users.users[0].id;
+    console.log(`Processing booking for User: ${userId}`);
 
+    // 1. Upsert Client (Requires the unique constraint we just added)
     const { data: client, error: clientError } = await supabase
       .from('clients')
       .upsert({
@@ -56,9 +63,13 @@ serve(async (req) => {
       .select()
       .single()
 
-    if (clientError) throw clientError
+    if (clientError) {
+      console.error("Client Upsert Error:", clientError);
+      throw clientError;
+    }
 
-    await supabase
+    // 2. Create Appointment
+    const { error: appError } = await supabase
       .from('appointments')
       .insert({
         user_id: userId,
@@ -71,6 +82,12 @@ serve(async (req) => {
         notes: `Booked via Cal.com. Paid: $${amountPaid}. UID: ${payload.uid}`
       })
 
+    if (appError) {
+      console.error("Appointment Insert Error:", appError);
+      throw appError;
+    }
+
+    // 3. Sync to Notion
     if (NOTION_KEY && NOTION_DATABASE_ID) {
       console.log("Syncing to Notion...");
       
@@ -81,11 +98,11 @@ serve(async (req) => {
         "Date": {
           "date": { "start": startTime }
         },
-        "Project": {
-          "select": { "name": "Kinesiology" }
+        "Goal": {
+          "rich_text": [{ "text": { "content": title } }]
         },
-        "Amount": {
-          "number": amountPaid
+        "Issue": {
+          "rich_text": [{ "text": { "content": description } }]
         },
         "Client": {
           "rich_text": [{ "text": { "content": name } }]

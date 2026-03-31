@@ -19,7 +19,6 @@ export default {
     },
     extend: {
       fontFamily: {
-        serif: ["Playfair Display", "serif"],
         sans: ["Inter", "sans-serif"],
       },
       colors: {
@@ -71,7 +70,7 @@ export default {
         sm: "calc(var(--radius) - 4px)",
       },
       boxShadow: {
-        '3xl': '0 35px 60px -15px rgba(30, 50, 97, 0.3)',
+        '3xl': '0 35px 60px -15px rgba(30, 50, 97, 0.2)',
       }
     },
   },

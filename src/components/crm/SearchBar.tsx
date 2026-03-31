@@ -13,7 +13,7 @@ import {
   CommandList,
   CommandSeparator,
 } from "@/components/ui/command";
-import { Search, User, Calendar, Target, Zap, Clock, Trash2, UserPlus, CalendarPlus, Upload, Settings, Layers, ShieldCheck } from "lucide-react";
+import { Search, User, Calendar, Target, Zap, Clock, Trash2, UserPlus, CalendarPlus, Upload, Settings, Layers, ShieldCheck, Mic } from "lucide-react";
 import { format } from "date-fns";
 
 interface SearchResult {
@@ -115,6 +115,16 @@ const SearchBar = () => {
           title: "The PEACE Framework",
           subtitle: "Clinical Methodology Guide",
           path: "/peace-framework"
+        });
+      }
+
+      if ("marketing ai business voice".includes(query.toLowerCase())) {
+        searchResults.push({
+          type: "page",
+          id: "marketing-engine",
+          title: "AI Marketing Engine",
+          subtitle: "Voice to Notion Workflow",
+          path: "/business/marketing-engine"
         });
       }
 
@@ -280,7 +290,7 @@ const SearchBar = () => {
                       key={result.id}
                       onSelect={() => handleSelect(result)}
                     >
-                      <ShieldCheck size={16} className="mr-2 text-indigo-500" />
+                      {result.id === 'marketing-engine' ? <Mic size={16} className="mr-2 text-emerald-500" /> : <ShieldCheck size={16} className="mr-2 text-indigo-500" />}
                       <div className="flex flex-col">
                         <span className="font-medium">{result.title}</span>
                         <span className="text-xs text-slate-500">

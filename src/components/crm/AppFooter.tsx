@@ -9,7 +9,8 @@ import {
   Sparkles, 
   HelpCircle, 
   ShieldCheck,
-  ExternalLink
+  ExternalLink,
+  Mic
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
@@ -60,7 +61,10 @@ const AppFooter = () => {
             <nav className="flex flex-col gap-2">
               <Link to="/resources" className="text-xs font-bold text-slate-500 hover:text-indigo-600 transition-colors">Knowledge Base</Link>
               <Link to="/resources/worksheets/north-star" className="text-xs font-bold text-slate-500 hover:text-indigo-600 transition-colors">North Star Worksheet</Link>
-              <a href="#" className="text-xs font-bold text-slate-500 hover:text-indigo-600 transition-colors flex items-center gap-1">
+              <Link to="/business/marketing-engine" className="text-xs font-bold text-slate-500 hover:text-emerald-600 transition-colors flex items-center gap-2 group">
+                 <Mic size={14} className="group-hover:scale-110 transition-transform" /> AI Marketing Engine
+              </Link>
+              <a href="#" className="text-xs font-bold text-slate-500 hover:text-indigo-600 transition-colors flex items-center gap-1 mt-2">
                 Community Forum <ExternalLink size={10} />
               </a>
             </nav>

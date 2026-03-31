@@ -9,7 +9,7 @@ const corsHeaders = {
 }
 
 serve(async (req) => {
-  console.log("--- [v22] FINANCE DB SYNC START ---");
+  console.log("--- [v23] FINANCE DB MAPPING FIX ---");
 
   if (req.method === 'OPTIONS') return new Response('ok', { headers: corsHeaders })
 
@@ -20,7 +20,7 @@ serve(async (req) => {
 
     const NOTION_KEY = Deno.env.get('NOTION_API_KEY');
     const CLIENTS_DB_ID = "074e2c006bd541d88c502feb397ef31d";
-    const FINANCE_DB_ID = "11caad21cd0980d8a3eeeffb27fc43c0"; // DB with Dollars/Project
+    const FINANCE_DB_ID = "11caad21cd0980d8a3eeeffb27fc43c0"; 
     const PRACTITIONER_ID = "6f2caa85-bfce-4264-97cd-c0d2f62b24f0";
 
     const body = await req.json();
@@ -33,7 +33,6 @@ serve(async (req) => {
 
     // 1. NOTION CLIENT SYNC
     let notionClientId = null;
-    console.log(`Searching for client: ${name}`);
     const searchRes = await fetch(`https://api.notion.com/v1/databases/${CLIENTS_DB_ID}/query`, {
       method: "POST",
       headers: { "Authorization": `Bearer ${NOTION_KEY}`, "Content-Type": "application/json", "Notion-Version": "2022-06-28" },
@@ -44,7 +43,6 @@ serve(async (req) => {
     if (searchData.results?.length > 0) {
       notionClientId = searchData.results[0].id;
     } else {
-      console.log("Creating new client in Notion...");
       const createC = await fetch("https://api.notion.com/v1/pages", {
         method: "POST",
         headers: { "Authorization": `Bearer ${NOTION_KEY}`, "Content-Type": "application/json", "Notion-Version": "2022-06-28" },
@@ -61,8 +59,7 @@ serve(async (req) => {
       notionClientId = newC.id;
     }
 
-    // 2. CREATE FINANCE ENTRY
-    console.log("Creating entry in Finance Database...");
+    // 2. CREATE FINANCE ENTRY (Database: 11caad21...)
     const amountPaid = payload.payment?.[0]?.amount ? payload.payment[0].amount / 100 : 0;
     
     const financeProps = {
@@ -72,9 +69,9 @@ serve(async (req) => {
       "Project": { select: { name: "Kinesiology" } }
     };
 
-    // FIXED: Corrected property name to "Client"
+    // FIXED: Corrected property name to "Client (Kin)"
     if (notionClientId) {
-      financeProps["Client"] = { relation: [{ id: notionClientId }] };
+      financeProps["Client (Kin)"] = { relation: [{ id: notionClientId }] };
     }
 
     const financeRes = await fetch("https://api.notion.com/v1/pages", {
@@ -89,7 +86,6 @@ serve(async (req) => {
       throw new Error(`Finance Sync Failed: ${financeData.message}`);
     }
     const notionPageId = financeData.id;
-    console.log("Finance Page Created:", notionPageId);
 
     // 3. SUPABASE SYNC
     let { data: dbClient } = await supabase.from('clients').select('id').eq('email', email).maybeSingle();
@@ -108,11 +104,11 @@ serve(async (req) => {
       notion_page_id: notionPageId
     });
 
-    console.log("--- SYNC COMPLETE ---");
+    console.log("--- SYNC SUCCESSFUL ---");
     return new Response(JSON.stringify({ success: true }), { status: 200, headers: corsHeaders });
 
   } catch (error) {
-    console.error("V22 Error:", error.message);
+    console.error("V23 Error:", error.message);
     return new Response(JSON.stringify({ error: error.message }), { status: 400, headers: corsHeaders });
   }
 })

@@ -95,16 +95,16 @@ const PublicOnboardingForm = ({ clientId, initialData, onSuccess }: PublicOnboar
 
   return (
     <Form {...form}>
-      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6 md:space-y-8">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-5 md:gap-6">
           <FormField
             control={form.control}
             name="name"
             render={({ field }) => (
               <FormItem>
-                <FormLabel className="text-sm font-bold">Full Name</FormLabel>
+                <FormLabel className="text-xs md:text-sm font-bold">Full Name</FormLabel>
                 <FormControl>
-                  <Input placeholder="Your Name" {...field} className="h-12 rounded-xl border-slate-200" />
+                  <Input placeholder="Your Name" {...field} className="h-12 md:h-14 rounded-xl border-slate-200 text-base" />
                 </FormControl>
                 <FormMessage />
               </FormItem>
@@ -116,9 +116,9 @@ const PublicOnboardingForm = ({ clientId, initialData, onSuccess }: PublicOnboar
             name="pronouns"
             render={({ field }) => (
               <FormItem>
-                <FormLabel className="text-sm font-bold">Pronouns</FormLabel>
+                <FormLabel className="text-xs md:text-sm font-bold">Pronouns</FormLabel>
                 <FormControl>
-                  <Input placeholder="e.g. They/Them, She/Her" {...field} className="h-12 rounded-xl border-slate-200" />
+                  <Input placeholder="e.g. They/Them, She/Her" {...field} className="h-12 md:h-14 rounded-xl border-slate-200 text-base" />
                 </FormControl>
                 <FormMessage />
               </FormItem>
@@ -130,9 +130,9 @@ const PublicOnboardingForm = ({ clientId, initialData, onSuccess }: PublicOnboar
             name="email"
             render={({ field }) => (
               <FormItem>
-                <FormLabel className="text-sm font-bold">Email Address</FormLabel>
+                <FormLabel className="text-xs md:text-sm font-bold">Email Address</FormLabel>
                 <FormControl>
-                  <Input type="email" placeholder="email@example.com" {...field} className="h-12 rounded-xl border-slate-200" />
+                  <Input type="email" placeholder="email@example.com" {...field} className="h-12 md:h-14 rounded-xl border-slate-200 text-base" />
                 </FormControl>
                 <FormMessage />
               </FormItem>
@@ -144,9 +144,9 @@ const PublicOnboardingForm = ({ clientId, initialData, onSuccess }: PublicOnboar
             name="phone"
             render={({ field }) => (
               <FormItem>
-                <FormLabel className="text-sm font-bold">Phone Number</FormLabel>
+                <FormLabel className="text-xs md:text-sm font-bold">Phone Number</FormLabel>
                 <FormControl>
-                  <Input placeholder="0400 000 000" {...field} className="h-12 rounded-xl border-slate-200" />
+                  <Input placeholder="0400 000 000" {...field} className="h-12 md:h-14 rounded-xl border-slate-200 text-base" />
                 </FormControl>
                 <FormMessage />
               </FormItem>
@@ -158,9 +158,9 @@ const PublicOnboardingForm = ({ clientId, initialData, onSuccess }: PublicOnboar
             name="born"
             render={({ field }) => (
               <FormItem>
-                <FormLabel className="text-sm font-bold">Date of Birth</FormLabel>
+                <FormLabel className="text-xs md:text-sm font-bold">Date of Birth</FormLabel>
                 <FormControl>
-                  <Input type="date" {...field} className="h-12 rounded-xl border-slate-200" />
+                  <Input type="date" {...field} className="h-12 md:h-14 rounded-xl border-slate-200 text-base" />
                 </FormControl>
                 <FormMessage />
               </FormItem>
@@ -172,9 +172,9 @@ const PublicOnboardingForm = ({ clientId, initialData, onSuccess }: PublicOnboar
             name="suburbs"
             render={({ field }) => (
               <FormItem>
-                <FormLabel className="text-sm font-bold">Suburb(s)</FormLabel>
+                <FormLabel className="text-xs md:text-sm font-bold">Suburb(s)</FormLabel>
                 <FormControl>
-                  <Input placeholder="e.g. Brunswick, Fitzroy" {...field} className="h-12 rounded-xl border-slate-200" />
+                  <Input placeholder="e.g. Brunswick, Fitzroy" {...field} className="h-12 md:h-14 rounded-xl border-slate-200 text-base" />
                 </FormControl>
                 <FormDescription className="text-[10px]">Comma separated if multiple</FormDescription>
                 <FormMessage />
@@ -187,9 +187,9 @@ const PublicOnboardingForm = ({ clientId, initialData, onSuccess }: PublicOnboar
             name="occupation"
             render={({ field }) => (
               <FormItem>
-                <FormLabel className="text-sm font-bold">Occupation</FormLabel>
+                <FormLabel className="text-xs md:text-sm font-bold">Occupation</FormLabel>
                 <FormControl>
-                  <Input placeholder="What do you do?" {...field} className="h-12 rounded-xl border-slate-200" />
+                  <Input placeholder="What do you do?" {...field} className="h-12 md:h-14 rounded-xl border-slate-200 text-base" />
                 </FormControl>
                 <FormMessage />
               </FormItem>
@@ -201,9 +201,9 @@ const PublicOnboardingForm = ({ clientId, initialData, onSuccess }: PublicOnboar
             name="marital_status"
             render={({ field }) => (
               <FormItem>
-                <FormLabel className="text-sm font-bold">Marital Status</FormLabel>
+                <FormLabel className="text-xs md:text-sm font-bold">Marital Status</FormLabel>
                 <FormControl>
-                  <Input placeholder="Single, Married, etc." {...field} className="h-12 rounded-xl border-slate-200" />
+                  <Input placeholder="Single, Married, etc." {...field} className="h-12 md:h-14 rounded-xl border-slate-200 text-base" />
                 </FormControl>
                 <FormMessage />
               </FormItem>
@@ -216,19 +216,19 @@ const PublicOnboardingForm = ({ clientId, initialData, onSuccess }: PublicOnboar
           name="children"
           render={({ field }) => (
             <FormItem>
-              <FormLabel className="text-sm font-bold">Children</FormLabel>
+              <FormLabel className="text-xs md:text-sm font-bold">Children</FormLabel>
               <FormControl>
-                <Input placeholder="e.g. 2 children (ages 4 and 7)" {...field} className="h-12 rounded-xl border-slate-200" />
+                <Input placeholder="e.g. 2 children (ages 4 and 7)" {...field} className="h-12 md:h-14 rounded-xl border-slate-200 text-base" />
               </FormControl>
               <FormMessage />
             </FormItem>
           )}
         />
 
-        <div className="pt-6">
+        <div className="pt-4 md:pt-6">
           <Button 
             type="submit" 
-            className="w-full bg-indigo-600 hover:bg-indigo-700 h-14 rounded-2xl font-black text-sm uppercase tracking-widest shadow-xl shadow-indigo-100" 
+            className="w-full bg-indigo-600 hover:bg-indigo-700 h-14 md:h-16 rounded-2xl font-black text-sm md:text-base uppercase tracking-widest shadow-xl shadow-indigo-100" 
             disabled={submitting}
           >
             {submitting ? (
@@ -243,7 +243,7 @@ const PublicOnboardingForm = ({ clientId, initialData, onSuccess }: PublicOnboar
               </>
             )}
           </Button>
-          <p className="text-center text-[10px] text-slate-400 mt-4 font-medium uppercase tracking-widest">
+          <p className="text-center text-[9px] md:text-[10px] text-slate-400 mt-4 font-medium uppercase tracking-widest">
             Your data is stored securely and only visible to your practitioner.
           </p>
         </div>

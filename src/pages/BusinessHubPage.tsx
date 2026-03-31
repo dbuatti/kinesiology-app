@@ -53,31 +53,6 @@ const MARKETING_TOOLS = [
   }
 ];
 
-const LEADERSHIP_TOOLS = [
-  {
-    id: "insight-timer",
-    label: "Insight Timer Portal",
-    desc: "Connect with the world through guided meditations and teacher insights.",
-    icon: Volume2,
-    path: "https://teacher.insighttimer.com/login?next=%2Faudio%3Flibraryitem%3DNhUOPacb0145IEvUBJCf%26sortBy%3Dnewest%26sort_direction%3Ddesc",
-    color: "text-purple-600",
-    bgColor: "bg-purple-50 dark:bg-purple-900/20",
-    category: "Teacher",
-    isExternal: true
-  },
-  {
-    id: "choir",
-    label: "Resonance Choir",
-    desc: "Community connection through song. Your platform for collective resonance.",
-    icon: Music,
-    path: "https://resonance-with-daniele.vercel.app/",
-    color: "text-rose-600",
-    bgColor: "bg-rose-50 dark:bg-rose-900/20",
-    category: "Leader",
-    isExternal: true
-  }
-];
-
 const AI_PARTNERS = [
   {
     id: "claude",
@@ -99,6 +74,31 @@ const AI_PARTNERS = [
     color: "text-blue-600",
     bgColor: "bg-blue-50 dark:bg-blue-900/20",
     category: "AI Partner",
+    isExternal: true
+  }
+];
+
+const LEADERSHIP_TOOLS = [
+  {
+    id: "insight-timer",
+    label: "Insight Timer Portal",
+    desc: "Connect with the world through guided meditations and teacher insights.",
+    icon: Volume2,
+    path: "https://teacher.insighttimer.com/login?next=%2Faudio%3Flibraryitem%3DNhUOPacb0145IEvUBJCf%26sortBy%3Dnewest%26sort_direction%3Ddesc",
+    color: "text-purple-600",
+    bgColor: "bg-purple-50 dark:bg-purple-900/20",
+    category: "Teacher",
+    isExternal: true
+  },
+  {
+    id: "choir",
+    label: "Resonance Choir",
+    desc: "Community connection through song. Your platform for collective resonance.",
+    icon: Music,
+    path: "https://resonance-with-daniele.vercel.app/",
+    color: "text-rose-600",
+    bgColor: "bg-rose-50 dark:bg-rose-900/20",
+    category: "Leader",
     isExternal: true
   }
 ];
@@ -200,21 +200,7 @@ const BusinessHubPage = () => {
           </CardContent>
         </Card>
 
-        {/* Section: Teacher & Leader Development */}
-        <div className="space-y-6">
-          <div className="flex items-center gap-3 px-2">
-            <div className="w-10 h-10 rounded-xl bg-purple-50 text-purple-600 flex items-center justify-center shadow-sm">
-              <Users size={20} />
-            </div>
-            <h2 className="text-2xl font-black text-foreground tracking-tight">Teacher & Leader Development</h2>
-            <div className="flex-1 h-[2px] bg-border rounded-full ml-4" />
-          </div>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-            {LEADERSHIP_TOOLS.map(tool => <ToolCard key={tool.id} tool={tool} />)}
-          </div>
-        </div>
-
-        {/* Section: Marketing & Distribution */}
+        {/* Section: Marketing & Distribution (Primary Priority) */}
         <div className="space-y-6">
           <div className="flex items-center gap-3 px-2">
             <div className="w-10 h-10 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center shadow-sm">
@@ -228,7 +214,7 @@ const BusinessHubPage = () => {
           </div>
         </div>
 
-        {/* Section: AI Strategy Partners */}
+        {/* Section: AI Strategy Partners (Secondary Priority) */}
         <div className="space-y-6">
           <div className="flex items-center gap-3 px-2">
             <div className="w-10 h-10 rounded-xl bg-indigo-50 text-indigo-600 flex items-center justify-center shadow-sm">
@@ -239,6 +225,20 @@ const BusinessHubPage = () => {
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
             {AI_PARTNERS.map(tool => <ToolCard key={tool.id} tool={tool} />)}
+          </div>
+        </div>
+
+        {/* Section: Teacher & Leader Development (Lower Priority) */}
+        <div className="space-y-6 pt-8 border-t border-border">
+          <div className="flex items-center gap-3 px-2">
+            <div className="w-10 h-10 rounded-xl bg-purple-50 text-purple-600 flex items-center justify-center shadow-sm">
+              <Users size={20} />
+            </div>
+            <h2 className="text-2xl font-black text-foreground tracking-tight opacity-60">Teacher & Leader Development</h2>
+            <div className="flex-1 h-[2px] bg-border rounded-full ml-4 opacity-30" />
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 opacity-80 hover:opacity-100 transition-opacity">
+            {LEADERSHIP_TOOLS.map(tool => <ToolCard key={tool.id} tool={tool} />)}
           </div>
         </div>
 

@@ -17,56 +17,58 @@ serve(async (req) => {
     const supabaseUrl = Deno.env.get('SUPABASE_URL')
     const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')
     const supabase = createClient(supabaseUrl, supabaseKey)
+    
+    const NOTION_KEY = Deno.env.get('NOTION_API_KEY')
     const CALCOM_KEY = Deno.env.get('CALCOM_API_KEY')
 
     if (!CALCOM_KEY) throw new Error("Missing CALCOM_API_KEY in Supabase secrets.");
 
-    // Notion Automations send the page ID in the payload
     const body = await req.json();
     const notionPageId = body.data?.id || body.id;
 
-    if (!notionPageId) throw new Error("No Notion Page ID provided in webhook payload.");
+    if (!notionPageId) throw new Error("No Notion Page ID provided.");
 
-    console.log(`Searching for appointment linked to Notion Page: ${notionPageId}`);
-
-    // 1. Find the appointment in Supabase to get the Cal.com ID
+    // 1. Find the appointment in Supabase
     const { data: appointment, error: fetchError } = await supabase
       .from('appointments')
-      .select('id, calcom_booking_id, status')
+      .select('id, calcom_booking_id, notion_planner_id')
       .eq('notion_page_id', notionPageId)
       .single();
 
     if (fetchError || !appointment) {
-      console.log("No matching appointment found in Supabase. It might have been created manually in Notion.");
+      console.log("No matching appointment found in Supabase.");
       return new Response(JSON.stringify({ message: "No matching record" }), { status: 200, headers: corsHeaders });
     }
 
-    if (!appointment.calcom_booking_id) {
-      console.log("Appointment found, but has no Cal.com booking ID to cancel.");
-      return new Response(JSON.stringify({ message: "No Cal.com ID" }), { status: 200, headers: corsHeaders });
+    // 2. Archive the page in the Yearly Planner DB if it exists
+    if (appointment.notion_planner_id && NOTION_KEY) {
+      console.log(`Archiving Yearly Planner page: ${appointment.notion_planner_id}`);
+      await fetch(`https://api.notion.com/v1/pages/${appointment.notion_planner_id}`, {
+        method: 'PATCH',
+        headers: {
+          'Authorization': `Bearer ${NOTION_KEY}`,
+          'Content-Type': 'application/json',
+          'Notion-Version': '2022-06-28'
+        },
+        body: JSON.stringify({ archived: true })
+      });
     }
 
-    // 2. Cancel on Cal.com
-    console.log(`Cancelling Cal.com booking: ${appointment.calcom_booking_id}`);
-    const calResponse = await fetch(`https://api.cal.com/v1/bookings/${appointment.calcom_booking_id}/cancel?apiKey=${CALCOM_KEY}`, {
-      method: 'DELETE'
-    });
-
-    if (!calResponse.ok) {
-      const errorData = await calResponse.json();
-      console.error("Cal.com API Error:", errorData);
-      // We continue anyway to update the local DB status
+    // 3. Cancel on Cal.com
+    if (appointment.calcom_booking_id) {
+      console.log(`Cancelling Cal.com booking: ${appointment.calcom_booking_id}`);
+      await fetch(`https://api.cal.com/v1/bookings/${appointment.calcom_booking_id}/cancel?apiKey=${CALCOM_KEY}`, {
+        method: 'DELETE'
+      });
     }
 
-    // 3. Update Supabase Status
-    const { error: updateError } = await supabase
+    // 4. Update Supabase Status
+    await supabase
       .from('appointments')
       .update({ status: 'Cancelled' })
       .eq('id', appointment.id);
 
-    if (updateError) throw updateError;
-
-    console.log("SUCCESS: Cal.com cancelled and CRM updated.");
+    console.log("SUCCESS: Cal.com cancelled, Planner archived, and CRM updated.");
     return new Response(JSON.stringify({ success: true }), { status: 200, headers: corsHeaders });
 
   } catch (error) {

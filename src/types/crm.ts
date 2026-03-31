@@ -23,6 +23,7 @@ export interface Appointment {
   acupoints: string;
   // External Tracking
   notion_page_id?: string | null;
+  notion_planner_id?: string | null;
   calcom_booking_id?: string | null;
   // New CSV fields
   name?: string;

@@ -9,7 +9,7 @@ const corsHeaders = {
 }
 
 serve(async (req) => {
-  console.log("--- [v24] DOUBLE DB SYNC (APPTS + PLANNER) START ---");
+  console.log("--- [v25] DOUBLE DB SYNC + DETAILED LOGGING START ---");
 
   if (req.method === 'OPTIONS') return new Response('ok', { headers: corsHeaders })
 
@@ -93,27 +93,65 @@ serve(async (req) => {
     const plannerData = await plannerRes.json();
     if (!plannerRes.ok) throw new Error(`Planner Sync Failed: ${plannerData.message}`);
 
-    // 4. SUPABASE RECORD (Linking to the Planner Page ID)
-    let { data: dbClient } = await supabase.from('clients').select('id').eq('email', email).maybeSingle();
-    if (!dbClient) {
-      const { data: newDbC } = await supabase.from('clients').insert({ user_id: PRACTITIONER_ID, name, email, phone }).select().single();
-      dbClient = newDbC;
-    }
-    await supabase.from('appointments').insert({
-      user_id: PRACTITIONER_ID,
-      client_id: dbClient.id,
-      date: startTime,
-      tag: "Kinesiology",
-      status: "Scheduled",
-      calcom_booking_id: String(payload.id),
-      notion_page_id: plannerData.id // Stores the finance page ID
-    });
+    // 4. SUPABASE SYNC WITH DETAILED LOGGING
+    console.log("Step 4: Starting Supabase Sync...");
 
+    // Check/Create Client in Supabase
+    let { data: dbClient, error: clientError } = await supabase
+      .from('clients')
+      .select('id')
+      .eq('email', email)
+      .maybeSingle();
+
+    if (clientError) {
+      console.error("SUPABASE CLIENT SEARCH ERROR:", clientError.message);
+    }
+
+    if (!dbClient) {
+      console.log(`Client ${email} not found in Supabase. Creating...`);
+      const { data: newDbC, error: createError } = await supabase
+        .from('clients')
+        .insert({ user_id: PRACTITIONER_ID, name, email, phone })
+        .select()
+        .single();
+        
+      if (createError) {
+        console.error("SUPABASE CLIENT CREATION ERROR:", createError.message);
+        throw createError;
+      }
+      dbClient = newDbC;
+      console.log("New Supabase Client created with ID:", dbClient.id);
+    } else {
+      console.log("Existing Supabase Client found with ID:", dbClient.id);
+    }
+
+    // Create Appointment in Supabase
+    console.log("Inserting Appointment into Supabase...");
+    const { data: apptRecord, error: apptError } = await supabase
+      .from('appointments')
+      .insert({
+        user_id: PRACTITIONER_ID,
+        client_id: dbClient.id,
+        date: startTime,
+        tag: "Kinesiology",
+        status: "Scheduled",
+        calcom_booking_id: String(payload.id),
+        notion_page_id: plannerData.id // The ID from the Yearly Planner DB
+      })
+      .select();
+
+    if (apptError) {
+      console.error("SUPABASE APPOINTMENT INSERT ERROR:", apptError.message);
+      throw apptError;
+    }
+
+    console.log("SUPABASE SUCCESS: Appointment record created:", JSON.stringify(apptRecord));
     console.log("--- SUCCESS: ALL THREE DATABASES SYNCED ---");
+    
     return new Response(JSON.stringify({ success: true }), { status: 200, headers: corsHeaders });
 
   } catch (error) {
-    console.error("V24 Error:", error.message);
+    console.error("V25 Error:", error.message);
     return new Response(JSON.stringify({ error: error.message }), { status: 400, headers: corsHeaders });
   }
 })

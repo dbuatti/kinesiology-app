@@ -9,7 +9,8 @@ import {
   FileText, Zap, Activity, Target, ClipboardList, PanelRightOpen, PanelRightClose,
   Brain,
   ShieldCheck,
-  Sparkles
+  Sparkles,
+  Share
 } from "lucide-react";
 import { format, isToday } from "date-fns";
 import { AppointmentWithClient } from "@/types/crm";
@@ -31,6 +32,7 @@ import {
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
+  DropdownMenuSeparator,
 } from "@/components/ui/dropdown-menu";
 import Breadcrumbs from "@/components/shared/Breadcrumbs";
 import { Button } from "@/components/ui/button";
@@ -49,6 +51,7 @@ const AppointmentDetailPage = () => {
   const [copied, setCopied] = useState(false);
   const [aiCopying, setAiCopying] = useState(false);
   const [cloning, setCloning] = useState(false);
+  const [syncingNotion, setSyncingNotion] = useState(false);
   const [currentTime, setCurrentTime] = useState(new Date());
   const [showSidebar, setShowSidebar] = useState(false);
   const [nucleiFilter, setNucleiFilter] = useState<Nuclei | null>(null);
@@ -161,6 +164,23 @@ const AppointmentDetailPage = () => {
     } catch (err: any) {
       console.error(`Silent save failed for ${field}:`, err);
       showError(`Failed to save ${field}`);
+    }
+  };
+
+  const handleSyncToNotion = async () => {
+    if (!appointment) return;
+    setSyncingNotion(true);
+    try {
+      const { data, error } = await supabase.functions.invoke('sync-to-notion', {
+        body: { appointment }
+      });
+
+      if (error) throw error;
+      showSuccess("Session synced to Notion successfully!");
+    } catch (err: any) {
+      showError(err.message || "Failed to sync to Notion. Check your secrets.");
+    } finally {
+      setSyncingNotion(false);
     }
   };
 
@@ -292,6 +312,16 @@ const AppointmentDetailPage = () => {
               <Button 
                 variant="outline" 
                 size="sm" 
+                className="bg-white border-slate-200 text-slate-600 hover:bg-slate-50 rounded-xl font-bold h-10 px-4"
+                onClick={handleSyncToNotion}
+                disabled={syncingNotion}
+              >
+                {syncingNotion ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Share size={16} className="mr-2" />}
+                Sync to Notion
+              </Button>
+              <Button 
+                variant="outline" 
+                size="sm" 
                 className="bg-indigo-50 border-indigo-100 text-indigo-600 hover:bg-indigo-100 rounded-xl font-bold h-10 px-4"
                 onClick={handleCopyForAI}
               >
@@ -411,11 +441,7 @@ const AppointmentDetailPage = () => {
                   />
                 </div>
 
-                <AppointmentContextCards 
-                  appointment={appointment} 
-                  currentPeakMeridian={currentPeakMeridian} 
-                  onSaveField={saveField} 
-                />
+                <AppointmentContextCards appointment={appointment} currentPeakMeridian={currentPeakMeridian} onSaveField={saveField} />
 
                 <Card className="border-none shadow-lg rounded-[2.5rem] bg-white overflow-hidden">
                   <CardHeader className="bg-slate-50/50 border-b border-slate-100">

@@ -17,7 +17,8 @@ import {
   Info,
   Settings2,
   Copy,
-  Check
+  Check,
+  Ban
 } from "lucide-react";
 import { format, addWeeks, startOfToday, endOfDay } from "date-fns";
 import { supabase } from "@/integrations/supabase/client";
@@ -28,6 +29,7 @@ import { Input } from "@/components/ui/input";
 
 const CalcomSlotsView = () => {
   const [loading, setLoading] = useState(false);
+  const [blockingDate, setBlockingDate] = useState<string | null>(null);
   const [slots, setSlots] = useState<Record<string, any[]>>({});
   const [error, setError] = useState<string | null>(null);
   const [weeks, setWeeks] = useState(4);
@@ -74,6 +76,36 @@ const CalcomSlotsView = () => {
       setError(err.message || "An unexpected error occurred.");
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleBlockDay = async (date: string) => {
+    if (!confirm(`Are you sure you want to block off ${format(new Date(date), "EEEE, MMMM do")}? This will mark you as unavailable in Cal.com.`)) return;
+
+    setBlockingDate(date);
+    try {
+      const { data, error: invokeError } = await supabase.functions.invoke('manage-calcom-availability', {
+        body: { 
+          action: 'block-day',
+          date: date
+        }
+      });
+
+      if (invokeError) throw invokeError;
+      
+      if (data.status === 'error') {
+        showError(data.message);
+        return;
+      }
+
+      showSuccess(`Day blocked: ${date}`);
+      // Refresh slots to show the change
+      fetchSlots();
+    } catch (err: any) {
+      console.error("Failed to block day:", err);
+      showError(err.message || "Failed to block day.");
+    } finally {
+      setBlockingDate(null);
     }
   };
 
@@ -203,9 +235,21 @@ const CalcomSlotsView = () => {
                       </CardDescription>
                     </div>
                   </div>
-                  <Badge className="bg-emerald-50 text-emerald-600 border-none font-black text-[8px] uppercase tracking-widest">
-                    {slots[date].length} Slots
-                  </Badge>
+                  <div className="flex flex-col items-end gap-2">
+                    <Badge className="bg-emerald-50 text-emerald-600 border-none font-black text-[8px] uppercase tracking-widest">
+                      {slots[date].length} Slots
+                    </Badge>
+                    <Button 
+                      variant="ghost" 
+                      size="sm" 
+                      className="h-6 px-2 text-[8px] font-black uppercase tracking-widest text-rose-500 hover:bg-rose-50 hover:text-rose-600 rounded-md"
+                      onClick={() => handleBlockDay(date)}
+                      disabled={blockingDate === date}
+                    >
+                      {blockingDate === date ? <Loader2 size={10} className="animate-spin mr-1" /> : <Ban size={10} className="mr-1" />}
+                      Block Day
+                    </Button>
+                  </div>
                 </div>
               </CardHeader>
               <CardContent className="p-6">
@@ -243,7 +287,7 @@ const CalcomSlotsView = () => {
         <div className="space-y-2">
           <h4 className="text-xl font-black text-indigo-400">Practitioner Note</h4>
           <p className="text-slate-300 font-medium leading-relaxed italic">
-            "This view shows your live availability as seen by clients. Use this to quickly confirm openings when talking to a client without leaving the CRM."
+            "This view shows your live availability as seen by clients. Use the 'Block Day' button to quickly mark yourself as unavailable for a specific date without leaving the CRM."
           </p>
         </div>
       </div>

@@ -9,7 +9,7 @@ const corsHeaders = {
 serve(async (req) => {
   if (req.method === 'OPTIONS') return new Response('ok', { headers: corsHeaders })
 
-  console.log("--- [get-calcom-slots] v3 WITH OOO SYNC ---");
+  console.log("--- [get-calcom-slots] v4 TIMEZONE ROBUST ---");
 
   try {
     let { start, end, eventTypeId, timeZone } = await req.json()
@@ -31,10 +31,12 @@ serve(async (req) => {
     slotsUrl.searchParams.set('eventTypeId', targetEventTypeId)
     if (timeZone) slotsUrl.searchParams.set('timeZone', timeZone)
 
+    console.log(`Fetching slots for Event: ${targetEventTypeId} in TZ: ${timeZone || 'UTC'}`);
+
     const slotsResponse = await fetch(slotsUrl.toString(), { method: 'GET', headers })
     const slotsData = await slotsResponse.json()
     
-    // 2. Fetch Out-of-Office Blocks (to cross-reference)
+    // 2. Fetch Out-of-Office Blocks
     const oooResponse = await fetch('https://api.cal.com/v2/me/ooo', { method: 'GET', headers })
     const oooData = await oooResponse.json()
 
@@ -48,10 +50,25 @@ serve(async (req) => {
       })
     }
 
+    // 3. Robust Date Matching (Timezone Aware)
+    // We map OOO entries to the local date they represent for the user
+    const blockedDates = (oooData.data || []).map(entry => {
+      const date = new Date(entry.start);
+      // Format to YYYY-MM-DD in the user's specific timezone
+      return new Intl.DateTimeFormat('en-CA', {
+        timeZone: timeZone || 'UTC',
+        year: 'numeric',
+        month: '2-digit',
+        day: '2-digit'
+      }).format(date);
+    });
+
+    console.log(`Detected ${blockedDates.length} OOO blocks. Localized dates:`, blockedDates);
+
     return new Response(JSON.stringify({
       status: 'success',
       data: slotsData.data.slots,
-      blockedDates: (oooData.data || []).map(entry => entry.start.split('T')[0])
+      blockedDates: blockedDates
     }), { 
       status: 200, 
       headers: { ...corsHeaders, 'Content-Type': 'application/json' } 

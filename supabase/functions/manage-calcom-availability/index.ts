@@ -26,38 +26,49 @@ serve(async (req) => {
 
     let scheduleId = providedScheduleId;
 
-    // 1. If no scheduleId is provided, try to find it via the eventTypeId
+    // 1. Try to find schedule via Event Type
     if (!scheduleId && eventTypeId) {
-      console.log(`Fetching event type ${eventTypeId} to find its schedule...`);
+      console.log(`Fetching event type ${eventTypeId}...`);
       const etRes = await fetch(`https://api.cal.com/v2/event-types/${eventTypeId}`, { headers });
       const etData = await etRes.json();
       
-      if (etData.status === 'success' && etData.data?.scheduleId) {
-        scheduleId = etData.data.scheduleId;
-        console.log(`Found Schedule ID from Event Type: ${scheduleId}`);
+      console.log("Event Type Response Status:", etRes.status);
+      console.log("Event Type Data:", JSON.stringify(etData));
+
+      if (etData.status === 'success') {
+        scheduleId = etData.data?.scheduleId || etData.data?.schedule?.id;
+        if (scheduleId) console.log(`Found Schedule ID: ${scheduleId}`);
       }
     }
 
-    // 2. Fallback: Fetch all schedules and take the first one
+    // 2. Fallback: Fetch all schedules
     if (!scheduleId) {
-      console.log("Fetching all schedules as fallback...");
+      console.log("Fetching all schedules...");
       const schedulesRes = await fetch('https://api.cal.com/v2/schedules', { headers });
       const schedulesData = await schedulesRes.json();
       
+      console.log("Schedules Response Status:", schedulesRes.status);
+      console.log("Schedules Data:", JSON.stringify(schedulesData));
+
       if (schedulesData.status === 'success' && schedulesData.data?.length > 0) {
-        scheduleId = schedulesData.data[0].id;
-        console.log(`Using first available Schedule ID: ${scheduleId}`);
-      } else {
-        throw new Error("No schedules found in your Cal.com account. Please ensure you have an availability schedule set up.");
+        // Try to find a schedule named 'Work' or 'Default', otherwise take the first one
+        const preferred = schedulesData.data.find(s => s.name?.toLowerCase().includes('work') || s.isDefault);
+        scheduleId = preferred ? preferred.id : schedulesData.data[0].id;
+        console.log(`Selected Schedule ID: ${scheduleId}`);
       }
     }
 
+    if (!scheduleId) {
+      throw new Error("Could not identify a valid Schedule ID. Please check your Cal.com account.");
+    }
+
     // 3. Fetch current schedule to manage overrides
+    console.log(`Fetching schedule details for ID: ${scheduleId}`);
     const scheduleRes = await fetch(`https://api.cal.com/v2/schedules/${scheduleId}`, { headers });
     const scheduleData = await scheduleRes.json();
     
     if (scheduleData.status !== 'success') {
-      throw new Error(`Failed to fetch schedule details: ${scheduleData.message}`);
+      throw new Error(`Failed to fetch schedule: ${scheduleData.message}`);
     }
 
     const currentOverrides = scheduleData.data.overrides || [];
@@ -72,9 +83,9 @@ serve(async (req) => {
     } else if (action === 'unblock-day') {
       console.log(`Unblocking day: ${date}`);
       newOverrides = currentOverrides.filter(o => o.date !== date);
-    } else {
-      throw new Error(`Unsupported action: ${action}`);
     }
+
+    console.log("Sending update with overrides:", JSON.stringify(newOverrides));
 
     const updateRes = await fetch(`https://api.cal.com/v2/schedules/${scheduleId}`, {
       method: 'PATCH',
@@ -83,6 +94,7 @@ serve(async (req) => {
     });
 
     const updateData = await updateRes.json();
+    console.log("Update Response:", JSON.stringify(updateData));
 
     if (updateData.status !== 'success') {
       throw new Error(`Failed to update schedule: ${updateData.message}`);

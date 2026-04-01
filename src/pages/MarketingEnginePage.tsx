@@ -107,10 +107,15 @@ Please provide the final output ready to be reviewed.`;
   const handleCopyTemplate = async () => {
     try {
       const response = await fetch('/kit-template.html');
-      const text = await response.text();
-      navigator.clipboard.writeText(text);
+      let text = await response.text();
+      
+      // Robustly strip any script tags that might have been injected by Vite/Dev tools
+      // to prevent Kit.com from blocking the paste action
+      text = text.replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, "");
+      
+      navigator.clipboard.writeText(text.trim());
       setTemplateCopied(true);
-      showSuccess("HTML Template copied! Paste into Kit Email Templates.");
+      showSuccess("Clean HTML Template copied!");
       setTimeout(() => setTemplateCopied(false), 2000);
     } catch (err) {
       showError("Failed to load template file.");

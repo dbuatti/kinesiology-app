@@ -10,10 +10,10 @@ const corsHeaders = {
 serve(async (req) => {
   if (req.method === 'OPTIONS') return new Response('ok', { headers: corsHeaders })
 
-  console.log("--- [manage-calcom-availability] v2 MIGRATION START ---");
+  console.log("--- [manage-calcom-availability] v2 DEEP DISCOVERY START ---");
 
   try {
-    const { action, date, eventTypeId, scheduleId: providedScheduleId } = await req.json()
+    const { action, date, eventTypeId: providedEventTypeId, scheduleId: providedScheduleId } = await req.json()
     const CALCOM_KEY = Deno.env.get('CALCOM_API_KEY')
 
     if (!CALCOM_KEY) throw new Error("Missing CALCOM_API_KEY in Supabase Secrets.")
@@ -24,69 +24,74 @@ serve(async (req) => {
       'Content-Type': 'application/json',
     };
 
+    // --- DISCOVERY PHASE ---
+    console.log("[v2] Running Discovery...");
+    
+    // 1. Check User/Me
+    const meRes = await fetch('https://api.cal.com/v2/me', { headers });
+    const meData = await meRes.json();
+    console.log(`[v2] /me Status: ${meRes.status}`, JSON.stringify(meData));
+
+    // 2. List Event Types
+    const etsRes = await fetch('https://api.cal.com/v2/event-types', { headers });
+    const etsData = await etsRes.json();
+    console.log(`[v2] /event-types Status: ${etsRes.status}`, JSON.stringify(etsData));
+
+    // 3. List Schedules
+    const schedsRes = await fetch('https://api.cal.com/v2/schedules', { headers });
+    const schedsData = await schedsRes.json();
+    console.log(`[v2] /schedules Status: ${schedsRes.status}`, JSON.stringify(schedsData));
+
+    // --- RESOLUTION PHASE ---
     let scheduleId = providedScheduleId;
 
-    // 1. Try to find schedule via Event Type (v2)
-    if (!scheduleId && eventTypeId) {
-      console.log(`[v2] Fetching event type ${eventTypeId}...`);
-      const etRes = await fetch(`https://api.cal.com/v2/event-types/${eventTypeId}`, { headers });
-      const etData = await etRes.json();
+    // Try to find schedule from event types if not provided
+    if (!scheduleId && etsData.status === 'success' && etsData.data?.length > 0) {
+      // If we have a specific event type ID we're looking for
+      const targetEt = providedEventTypeId 
+        ? etsData.data.find(et => String(et.id) === String(providedEventTypeId))
+        : etsData.data[0];
       
-      if (etRes.ok && etData.data?.scheduleId) {
-        scheduleId = etData.data.scheduleId;
-        console.log(`[v2] Found Schedule ID from Event Type: ${scheduleId}`);
-      } else {
-        console.log(`[v2] Event Type lookup failed or no scheduleId found. Status: ${etRes.status}`);
+      if (targetEt?.scheduleId) {
+        scheduleId = targetEt.scheduleId;
+        console.log(`[v2] Resolved Schedule ID from Event Type: ${scheduleId}`);
       }
     }
 
-    // 2. Fallback: Fetch all schedules (v2)
-    if (!scheduleId) {
-      console.log("[v2] Fetching all schedules...");
-      const schedulesRes = await fetch('https://api.cal.com/v2/schedules', { headers });
-      const schedulesData = await schedulesRes.json();
-      
-      if (schedulesRes.ok && schedulesData.data?.length > 0) {
-        console.log("Available v2 Schedules:", JSON.stringify(schedulesData.data.map(s => ({ id: s.id, name: s.name }))));
-        
-        const preferred = schedulesData.data.find(s => s.name?.toLowerCase().includes('work') || s.isDefault);
-        scheduleId = preferred ? preferred.id : schedulesData.data[0].id;
-        console.log(`[v2] Selected Schedule ID: ${scheduleId}`);
-      }
+    // Fallback to first available schedule
+    if (!scheduleId && schedsData.status === 'success' && schedsData.data?.length > 0) {
+      scheduleId = schedsData.data[0].id;
+      console.log(`[v2] Resolved Schedule ID from Schedules List: ${scheduleId}`);
     }
 
     if (!scheduleId) {
-      throw new Error("Could not identify a valid v2 Schedule ID. Please ensure you have a schedule created in Cal.com.");
+      throw new Error(`Could not find a valid Schedule ID. v2 API returned: Schedules(${schedsRes.status}), EventTypes(${etsRes.status}). Check logs for details.`);
     }
 
-    // 3. Fetch current schedule (v2)
+    // --- EXECUTION PHASE ---
     console.log(`[v2] Fetching schedule details for ID: ${scheduleId}`);
     const scheduleRes = await fetch(`https://api.cal.com/v2/schedules/${scheduleId}`, { headers });
     const scheduleData = await scheduleRes.json();
     
     if (!scheduleRes.ok) {
-      throw new Error(`Failed to fetch v2 schedule: ${JSON.stringify(scheduleData)}`);
+      throw new Error(`Failed to fetch v2 schedule ${scheduleId}: ${JSON.stringify(scheduleData)}`);
     }
 
-    // v2 uses 'overrides' array
     const currentOverrides = scheduleData.data.overrides || [];
     let newOverrides = [];
 
     if (action === 'block-day') {
       console.log(`[v2] Blocking day: ${date}`);
-      // In v2, an empty slots array for a date blocks it
       newOverrides = [
         ...currentOverrides.filter(o => o.date !== date),
         { date: date, slots: [] }
       ];
     } else if (action === 'unblock-day') {
       console.log(`[v2] Unblocking day: ${date}`);
-      // Remove the override to return to default availability
       newOverrides = currentOverrides.filter(o => o.date !== date);
     }
 
     console.log("[v2] Sending update...");
-
     const updateRes = await fetch(`https://api.cal.com/v2/schedules/${scheduleId}`, {
       method: 'PATCH',
       headers,
@@ -101,14 +106,14 @@ serve(async (req) => {
 
     return new Response(JSON.stringify({ 
       success: true, 
-      message: `Day ${date} ${action === 'block-day' ? 'blocked' : 'unblocked'} successfully via v2 API.` 
+      message: `Day ${date} ${action === 'block-day' ? 'blocked' : 'unblocked'} successfully.` 
     }), { 
       status: 200, 
       headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
     });
 
   } catch (error) {
-    console.error("v2 Migration Error:", error.message);
+    console.error("v2 Discovery Error:", error.message);
     return new Response(JSON.stringify({ status: 'error', message: error.message }), { 
       status: 200, 
       headers: { ...corsHeaders, 'Content-Type': 'application/json' } 

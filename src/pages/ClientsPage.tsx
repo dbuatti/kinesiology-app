@@ -6,7 +6,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { Plus, Search, Loader2, UserPlus, Activity, CalendarPlus, Clock, LayoutGrid, List, Mail, Phone, MapPin, ArrowRight, ExternalLink } from "lucide-react";
+import { Plus, Search, Loader2, UserPlus, Activity, CalendarPlus, Clock, LayoutGrid, List, Mail, Phone, MapPin, ArrowRight, ExternalLink, FlaskConical } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import {
   Dialog,
@@ -30,6 +30,7 @@ import { cn } from "@/lib/utils";
 interface ClientWithStats extends Client {
   session_count: number;
   last_session_at: string | null;
+  latest_bolt: number | null;
 }
 
 const ClientsPage = () => {
@@ -46,7 +47,7 @@ const ClientsPage = () => {
     try {
       const { data, error } = await supabase
         .from('clients')
-        .select('*, appointments(date)')
+        .select('*, appointments(date, bolt_score)')
         .or('is_practitioner.eq.false,is_practitioner.is.null')
         .order('name', { ascending: true });
       
@@ -56,12 +57,17 @@ const ClientsPage = () => {
         const sortedApps = (c.appointments || [])
           .sort((a: any, b: any) => new Date(b.date).getTime() - new Date(a.date).getTime());
         
+        const latestBoltApp = (c.appointments || [])
+          .filter((a: any) => a.bolt_score !== null)
+          .sort((a: any, b: any) => new Date(b.date).getTime() - new Date(a.date).getTime())[0];
+
         return {
           ...c,
           born: c.born ? new Date(c.born) : null,
           suburbs: c.suburbs || [],
           session_count: c.appointments?.length || 0,
-          last_session_at: sortedApps.length > 0 ? sortedApps[0].date : null
+          last_session_at: sortedApps.length > 0 ? sortedApps[0].date : null,
+          latest_bolt: latestBoltApp ? latestBoltApp.bolt_score : null
         };
       }) as unknown as ClientWithStats[];
       
@@ -269,6 +275,22 @@ const ClientsPage = () => {
                       </div>
                     </div>
 
+                    <div className="grid grid-cols-2 gap-3">
+                      <div className={cn(
+                        "p-3 rounded-2xl border flex flex-col items-center text-center",
+                        client.latest_bolt === null ? "bg-muted/30 border-border" : (client.latest_bolt >= 25 ? "bg-emerald-50 dark:bg-emerald-900/20 border-emerald-100 dark:border-emerald-900/30" : "bg-rose-100 dark:bg-rose-900/30 border-rose-200 dark:border-rose-900/50")
+                      )}>
+                        <FlaskConical size={14} className={cn("mb-1", client.latest_bolt === null ? "text-muted-foreground" : (client.latest_bolt >= 25 ? "text-emerald-600" : "text-rose-600"))} />
+                        <p className="text-[8px] font-black uppercase tracking-widest opacity-60">Latest BOLT</p>
+                        <p className="text-lg font-black">{client.latest_bolt !== null ? `${client.latest_bolt}s` : "—"}</p>
+                      </div>
+                      <div className="p-3 rounded-2xl border border-border bg-muted/30 flex flex-col items-center text-center">
+                        <Activity size={14} className="mb-1 text-indigo-500" />
+                        <p className="text-[8px] font-black uppercase tracking-widest opacity-60">Sessions</p>
+                        <p className="text-lg font-black">{client.session_count}</p>
+                      </div>
+                    </div>
+
                     <div className="space-y-3 pt-4 border-t border-border">
                       {client.email && (
                         <div className="flex items-center justify-between group/contact">
@@ -288,11 +310,6 @@ const ClientsPage = () => {
                           <Button variant="ghost" size="icon" className="h-7 w-7 rounded-lg opacity-0 group-hover/contact:opacity-100 transition-opacity" asChild onClick={(e) => e.stopPropagation()}>
                             <a href={`tel:${client.phone}`}><ExternalLink size={12} /></a>
                           </Button>
-                        </div>
-                      )}
-                      {client.suburbs.length > 0 && (
-                        <div className="flex items-center gap-3 text-xs font-bold text-muted-foreground">
-                          <MapPin size={14} className="text-indigo-400" /> {client.suburbs.join(", ")}
                         </div>
                       )}
                     </div>

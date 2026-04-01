@@ -10,7 +10,7 @@ const corsHeaders = {
 serve(async (req) => {
   if (req.method === 'OPTIONS') return new Response('ok', { headers: corsHeaders })
 
-  console.log("--- [manage-calcom-availability] START ---");
+  console.log("--- [manage-calcom-availability] v1 START ---");
 
   try {
     const { action, date, eventTypeId, scheduleId: providedScheduleId } = await req.json()
@@ -18,86 +18,81 @@ serve(async (req) => {
 
     if (!CALCOM_KEY) throw new Error("Missing CALCOM_API_KEY in Supabase Secrets.")
 
-    const headers = {
-      'Authorization': `Bearer ${CALCOM_KEY}`,
-      'cal-api-version': '2024-09-04',
-      'Content-Type': 'application/json',
-    };
-
     let scheduleId = providedScheduleId;
 
-    // 1. Try to find schedule via Event Type
+    // 1. Try to find schedule via Event Type (v1)
     if (!scheduleId && eventTypeId) {
-      console.log(`Fetching event type ${eventTypeId}...`);
-      const etRes = await fetch(`https://api.cal.com/v2/event-types/${eventTypeId}`, { headers });
+      console.log(`[v1] Fetching event type ${eventTypeId}...`);
+      const etRes = await fetch(`https://api.cal.com/v1/event-types/${eventTypeId}?apiKey=${CALCOM_KEY}`);
       const etData = await etRes.json();
       
-      console.log("Event Type Response Status:", etRes.status);
-      console.log("Event Type Data:", JSON.stringify(etData));
-
-      if (etData.status === 'success') {
-        scheduleId = etData.data?.scheduleId || etData.data?.schedule?.id;
-        if (scheduleId) console.log(`Found Schedule ID: ${scheduleId}`);
+      if (etRes.ok && etData.eventType?.scheduleId) {
+        scheduleId = etData.eventType.scheduleId;
+        console.log(`[v1] Found Schedule ID from Event Type: ${scheduleId}`);
+      } else {
+        console.log(`[v1] Could not find schedule via event type. Status: ${etRes.status}`);
       }
     }
 
-    // 2. Fallback: Fetch all schedules
+    // 2. Fallback: Fetch all schedules (v1)
     if (!scheduleId) {
-      console.log("Fetching all schedules...");
-      const schedulesRes = await fetch('https://api.cal.com/v2/schedules', { headers });
+      console.log("[v1] Fetching all schedules...");
+      const schedulesRes = await fetch(`https://api.cal.com/v1/schedules?apiKey=${CALCOM_KEY}`);
       const schedulesData = await schedulesRes.json();
       
-      console.log("Schedules Response Status:", schedulesRes.status);
-      console.log("Schedules Data:", JSON.stringify(schedulesData));
-
-      if (schedulesData.status === 'success' && schedulesData.data?.length > 0) {
-        // Try to find a schedule named 'Work' or 'Default', otherwise take the first one
-        const preferred = schedulesData.data.find(s => s.name?.toLowerCase().includes('work') || s.isDefault);
-        scheduleId = preferred ? preferred.id : schedulesData.data[0].id;
-        console.log(`Selected Schedule ID: ${scheduleId}`);
+      if (schedulesRes.ok && schedulesData.schedules?.length > 0) {
+        // Log all IDs to help the user find the right one
+        console.log("Available Schedules:", JSON.stringify(schedulesData.schedules.map(s => ({ id: s.id, name: s.name }))));
+        
+        const preferred = schedulesData.schedules.find(s => s.name?.toLowerCase().includes('work') || s.isDefault);
+        scheduleId = preferred ? preferred.id : schedulesData.schedules[0].id;
+        console.log(`[v1] Selected Schedule ID: ${scheduleId}`);
       }
     }
 
     if (!scheduleId) {
-      throw new Error("Could not identify a valid Schedule ID. Please check your Cal.com account.");
+      throw new Error("Could not identify a valid Schedule ID. Check Supabase logs for 'Available Schedules' list.");
     }
 
-    // 3. Fetch current schedule to manage overrides
-    console.log(`Fetching schedule details for ID: ${scheduleId}`);
-    const scheduleRes = await fetch(`https://api.cal.com/v2/schedules/${scheduleId}`, { headers });
+    // 3. Fetch current schedule (v1)
+    console.log(`[v1] Fetching schedule details for ID: ${scheduleId}`);
+    const scheduleRes = await fetch(`https://api.cal.com/v1/schedules/${scheduleId}?apiKey=${CALCOM_KEY}`);
     const scheduleData = await scheduleRes.json();
     
-    if (scheduleData.status !== 'success') {
-      throw new Error(`Failed to fetch schedule: ${scheduleData.message}`);
+    if (!scheduleRes.ok) {
+      throw new Error(`Failed to fetch schedule: ${JSON.stringify(scheduleData)}`);
     }
 
-    const currentOverrides = scheduleData.data.overrides || [];
-    let newOverrides = [];
+    // v1 uses 'availability' array for overrides/slots
+    // We need to find existing overrides for this date
+    const currentAvailability = scheduleData.schedule.availability || [];
+    let newAvailability = [];
 
     if (action === 'block-day') {
-      console.log(`Blocking day: ${date}`);
-      newOverrides = [
-        ...currentOverrides.filter(o => o.date !== date),
-        { date: date, slots: [] }
+      console.log(`[v1] Blocking day: ${date}`);
+      // Remove any existing availability for this date and add a "blocked" entry (no slots)
+      newAvailability = [
+        ...currentAvailability.filter(a => a.date !== date),
+        { date: date, startTime: "00:00:00", endTime: "00:00:00" } // v1 blocking style
       ];
     } else if (action === 'unblock-day') {
-      console.log(`Unblocking day: ${date}`);
-      newOverrides = currentOverrides.filter(o => o.date !== date);
+      console.log(`[v1] Unblocking day: ${date}`);
+      // Simply remove the date-specific override to return to default
+      newAvailability = currentAvailability.filter(a => a.date !== date);
     }
 
-    console.log("Sending update with overrides:", JSON.stringify(newOverrides));
+    console.log("[v1] Sending update...");
 
-    const updateRes = await fetch(`https://api.cal.com/v2/schedules/${scheduleId}`, {
+    const updateRes = await fetch(`https://api.cal.com/v1/schedules/${scheduleId}?apiKey=${CALCOM_KEY}`, {
       method: 'PATCH',
-      headers,
-      body: JSON.stringify({ overrides: newOverrides })
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ availability: newAvailability })
     });
 
     const updateData = await updateRes.json();
-    console.log("Update Response:", JSON.stringify(updateData));
 
-    if (updateData.status !== 'success') {
-      throw new Error(`Failed to update schedule: ${updateData.message}`);
+    if (!updateRes.ok) {
+      throw new Error(`Failed to update schedule: ${JSON.stringify(updateData)}`);
     }
 
     return new Response(JSON.stringify({ 

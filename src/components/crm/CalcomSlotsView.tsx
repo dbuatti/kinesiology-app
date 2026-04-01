@@ -20,19 +20,22 @@ import { format, addWeeks, startOfToday, endOfDay } from "date-fns";
 import { supabase } from "@/integrations/supabase/client";
 import { cn } from "@/lib/utils";
 import { showSuccess, showError } from "@/utils/toast";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 
 const CalcomSlotsView = () => {
   const [loading, setLoading] = useState(false);
   const [slots, setSlots] = useState<Record<string, any[]>>({});
+  const [error, setError] = useState<string | null>(null);
   const [weeks, setWeeks] = useState(4);
 
   const fetchSlots = async () => {
     setLoading(true);
+    setError(null);
     try {
       const start = startOfToday().toISOString();
       const end = endOfDay(addWeeks(new Date(), weeks)).toISOString();
       
-      const { data, error } = await supabase.functions.invoke('get-calcom-slots', {
+      const { data, error: invokeError } = await supabase.functions.invoke('get-calcom-slots', {
         body: { 
           start, 
           end,
@@ -40,14 +43,20 @@ const CalcomSlotsView = () => {
         }
       });
 
-      if (error) throw error;
-      if (data.status === 'error') throw new Error(data.message);
+      if (invokeError) throw invokeError;
+      
+      if (data.status === 'error') {
+        setError(data.message);
+        return;
+      }
 
       setSlots(data.data || {});
-      showSuccess("Availability updated.");
+      if (Object.keys(data.data || {}).length > 0) {
+        showSuccess("Availability updated.");
+      }
     } catch (err: any) {
       console.error("Failed to fetch slots:", err);
-      showError(err.message || "Failed to load availability. Check your API key.");
+      setError(err.message || "An unexpected error occurred.");
     } finally {
       setLoading(false);
     }
@@ -91,6 +100,18 @@ const CalcomSlotsView = () => {
           Refresh Live
         </Button>
       </div>
+
+      {error && (
+        <Alert variant="destructive" className="bg-rose-50 border-rose-200 rounded-2xl">
+          <AlertCircle className="h-5 w-5 text-rose-600" />
+          <AlertDescription className="text-sm text-rose-900 font-bold">
+            Error: {error}
+            <p className="mt-2 text-xs font-medium text-rose-700">
+              Ensure your CALCOM_API_KEY is set in Supabase Secrets and that you have active event types in Cal.com.
+            </p>
+          </AlertDescription>
+        </Alert>
+      )}
 
       {loading && Object.keys(slots).length === 0 ? (
         <div className="py-20 flex flex-col items-center justify-center gap-4">
@@ -137,7 +158,7 @@ const CalcomSlotsView = () => {
             </Card>
           ))}
         </div>
-      ) : (
+      ) : !loading && (
         <div className="text-center py-32 bg-slate-50 rounded-[3rem] border-2 border-dashed border-slate-200">
           <div className="w-20 h-20 bg-white rounded-3xl flex items-center justify-center mx-auto mb-6 shadow-xl">
             <CalendarDays size={40} className="text-slate-200" />

@@ -20,7 +20,8 @@ import {
   Check,
   Ban,
   Unlock,
-  Hash
+  Hash,
+  ShieldAlert
 } from "lucide-react";
 import { format, addWeeks, startOfToday, endOfDay } from "date-fns";
 import { supabase } from "@/integrations/supabase/client";
@@ -245,20 +246,26 @@ const CalcomSlotsView = () => {
 
             return (
               <Card key={date} className={cn(
-                "border-none shadow-md rounded-[2rem] overflow-hidden group hover:shadow-xl transition-all",
-                isBlocked ? "bg-slate-50 opacity-80" : "bg-white"
+                "border-none shadow-md rounded-[2rem] overflow-hidden group hover:shadow-xl transition-all duration-500",
+                isBlocked ? "bg-slate-50/80 dark:bg-slate-900/50 border-2 border-dashed border-slate-200 dark:border-slate-800" : "bg-white dark:bg-slate-950"
               )}>
-                <CardHeader className="bg-slate-50 border-b border-slate-100 p-6">
+                <CardHeader className={cn(
+                  "border-b transition-colors p-6",
+                  isBlocked ? "bg-slate-100/50 dark:bg-slate-900/80 border-slate-200 dark:border-slate-800" : "bg-slate-50/50 dark:bg-slate-900/30 border-slate-100 dark:border-slate-900"
+                )}>
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-3">
                       <div className={cn(
-                        "w-10 h-10 rounded-xl flex items-center justify-center shadow-lg",
-                        isBlocked ? "bg-slate-400" : "bg-indigo-600"
+                        "w-10 h-10 rounded-xl flex items-center justify-center shadow-lg transition-all duration-500",
+                        isBlocked ? "bg-slate-400 scale-95" : "bg-indigo-600"
                       )}>
-                        <Calendar size={20} className="text-white" />
+                        {isBlocked ? <Ban size={20} className="text-white" /> : <Calendar size={20} className="text-white" />}
                       </div>
                       <div>
-                        <CardTitle className="text-lg font-black text-slate-900">
+                        <CardTitle className={cn(
+                          "text-lg font-black",
+                          isBlocked ? "text-slate-500" : "text-slate-900 dark:text-white"
+                        )}>
                           {format(new Date(date), "EEEE")}
                         </CardTitle>
                         <CardDescription className="font-bold text-[10px] uppercase tracking-widest text-indigo-600">
@@ -268,27 +275,29 @@ const CalcomSlotsView = () => {
                     </div>
                     <div className="flex flex-col items-end gap-2">
                       <Badge className={cn(
-                        "border-none font-black text-[8px] uppercase tracking-widest",
-                        isBlocked ? "bg-slate-200 text-slate-500" : "bg-emerald-50 text-emerald-600"
+                        "border-none font-black text-[8px] uppercase tracking-widest px-3 py-1 rounded-full shadow-sm",
+                        isBlocked ? "bg-rose-100 text-rose-600 dark:bg-rose-900/30 dark:text-rose-400" : "bg-emerald-50 text-emerald-600 dark:bg-emerald-900/30 dark:text-emerald-400"
                       )}>
-                        {daySlots.length} Slots
+                        {isBlocked ? "Blocked" : `${daySlots.length} Slots`}
                       </Badge>
                       <Button 
                         variant="ghost" 
                         size="sm" 
                         className={cn(
-                          "h-6 px-2 text-[8px] font-black uppercase tracking-widest rounded-md",
-                          isBlocked ? "text-emerald-600 hover:bg-emerald-50" : "text-rose-500 hover:bg-rose-50"
+                          "h-7 px-3 text-[9px] font-black uppercase tracking-widest rounded-lg transition-all",
+                          isBlocked 
+                            ? "bg-emerald-600 text-white hover:bg-emerald-700 shadow-md shadow-emerald-100 dark:shadow-none" 
+                            : "text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-900/20 opacity-0 group-hover:opacity-100"
                         )}
                         onClick={() => handleToggleBlock(date, isBlocked)}
                         disabled={processingDate === date}
                       >
                         {processingDate === date ? (
-                          <Loader2 size={10} className="animate-spin mr-1" />
+                          <Loader2 size={12} className="animate-spin mr-1.5" />
                         ) : isBlocked ? (
-                          <Unlock size={10} className="mr-1" />
+                          <Unlock size={12} className="mr-1.5" />
                         ) : (
-                          <Ban size={10} className="mr-1" />
+                          <Ban size={12} className="mr-1.5" />
                         )}
                         {isBlocked ? "Unblock Day" : "Block Day"}
                       </Button>
@@ -297,18 +306,23 @@ const CalcomSlotsView = () => {
                 </CardHeader>
                 <CardContent className="p-6">
                   {isBlocked ? (
-                    <div className="py-8 text-center space-y-2">
-                      <Ban size={24} className="mx-auto text-slate-300" />
-                      <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">No Availability</p>
+                    <div className="py-10 text-center space-y-3 animate-in fade-in zoom-in-95 duration-500">
+                      <div className="w-12 h-12 rounded-full bg-rose-50 dark:bg-rose-900/20 flex items-center justify-center mx-auto">
+                        <ShieldAlert size={24} className="text-rose-400" />
+                      </div>
+                      <div>
+                        <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Manual Override</p>
+                        <p className="text-xs font-bold text-slate-500 mt-1">This day is currently blocked <br/>across all event types.</p>
+                      </div>
                     </div>
                   ) : (
                     <div className="grid grid-cols-2 gap-2">
                       {daySlots.map((slot, idx) => (
                         <div 
                           key={idx} 
-                          className="flex items-center justify-center p-2.5 rounded-xl bg-slate-50 border border-slate-100 text-xs font-black text-slate-700 hover:bg-indigo-50 hover:border-indigo-200 hover:text-indigo-600 transition-all cursor-default"
+                          className="flex items-center justify-center p-2.5 rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-100 dark:border-slate-800 text-xs font-black text-slate-700 dark:text-slate-300 hover:bg-indigo-50 dark:hover:bg-indigo-900/30 hover:border-indigo-200 dark:hover:border-indigo-800 hover:text-indigo-600 dark:hover:text-indigo-400 transition-all cursor-default group/slot"
                         >
-                          <Clock size={12} className="mr-2 opacity-40" />
+                          <Clock size={12} className="mr-2 opacity-40 group-hover/slot:opacity-100 transition-opacity" />
                           {format(new Date(slot.time || slot.start), "h:mm a")}
                         </div>
                       ))}
@@ -320,11 +334,12 @@ const CalcomSlotsView = () => {
           })}
         </div>
       ) : !loading && (
-        <div className="text-center py-32 bg-slate-50 rounded-[3rem] border-2 border-dashed border-slate-200">
-          <div className="w-20 h-20 bg-white rounded-3xl flex items-center justify-center mx-auto mb-6 shadow-xl">
-            <CalendarDays size={40} className="text-slate-200" />
+        <div className="text-center py-32 bg-slate-50 dark:bg-slate-900/30 rounded-[3rem] border-2 border-dashed border-slate-200 dark:border-slate-800">
+          <div className="w-20 h-20 bg-white dark:bg-slate-800 rounded-3xl flex items-center justify-center mx-auto mb-6 shadow-xl">
+            <CalendarDays size={40} className="text-slate-200 dark:text-slate-700" />
           </div>
-          <h3 className="text-xl font-black text-xl font-black text-slate-900">No availability found</h3>
+          <h3 className="text-xl font-black text-slate-900 dark:text-white">No availability found</h3>
+          <p className="text-slate-500 mt-2">Try adjusting your lookahead range or check your Cal.com settings.</p>
         </div>
       )}
     </div>

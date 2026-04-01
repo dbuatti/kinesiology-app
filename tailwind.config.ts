@@ -29,12 +29,12 @@ export default {
         background: "hsl(var(--background))",
         foreground: "hsl(var(--foreground))",
         primary: {
-          DEFAULT: "#1E3261", // Deep Indigo
-          foreground: "#FDFCFB",
+          DEFAULT: "hsl(var(--primary))",
+          foreground: "hsl(var(--primary-foreground))",
         },
         secondary: {
-          DEFAULT: "#A5B4FC", // Periwinkle
-          foreground: "#1E3261",
+          DEFAULT: "hsl(var(--secondary))",
+          foreground: "hsl(var(--secondary-foreground))",
         },
         destructive: {
           DEFAULT: "hsl(var(--destructive))",
@@ -53,8 +53,8 @@ export default {
           foreground: "hsl(var(--muted-foreground))",
         },
         accent: {
-          DEFAULT: "#D46A9B", // Resonance Pink
-          foreground: "#FDFCFB",
+          DEFAULT: "hsl(var(--accent))",
+          foreground: "hsl(var(--accent-foreground))",
         },
         popover: {
           DEFAULT: "hsl(var(--popover))",
@@ -65,12 +65,12 @@ export default {
           foreground: "hsl(var(--card-foreground))",
         },
         sky: {
-          DEFAULT: "#E0F2FE",
-          foreground: "#1E3261",
+          DEFAULT: "hsl(var(--sky))",
+          foreground: "hsl(var(--sky-foreground))",
         },
         cream: {
-          DEFAULT: "#FDFCFB",
-          foreground: "#1E3261",
+          DEFAULT: "hsl(var(--cream))",
+          foreground: "hsl(var(--cream-foreground))",
         }
       },
       borderRadius: {

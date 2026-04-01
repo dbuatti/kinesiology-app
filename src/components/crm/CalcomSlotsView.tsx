@@ -29,7 +29,10 @@ const CalcomSlotsView = () => {
   const [slots, setSlots] = useState<Record<string, any[]>>({});
   const [error, setError] = useState<string | null>(null);
   const [weeks, setWeeks] = useState(4);
-  const [eventTypeId, setEventTypeId] = useState<string>(() => localStorage.getItem('calcom_preferred_event_id') || "");
+  // Defaulting to your specific event ID: 4279898
+  const [eventTypeId, setEventTypeId] = useState<string>(() => 
+    localStorage.getItem('calcom_preferred_event_id') || "4279898"
+  );
 
   const fetchSlots = async () => {
     setLoading(true);
@@ -105,9 +108,9 @@ const CalcomSlotsView = () => {
               </div>
             </div>
             <div className="space-y-2">
-              <label className="text-[10px] font-bold text-slate-500 uppercase ml-1">Event Type ID (Optional)</label>
+              <label className="text-[10px] font-bold text-slate-500 uppercase ml-1">Event Type ID</label>
               <Input 
-                placeholder="Auto-detecting..." 
+                placeholder="e.g. 4279898" 
                 value={eventTypeId}
                 onChange={(e) => setEventTypeId(e.target.value)}
                 className="h-10 rounded-xl bg-muted/50 border-none font-bold text-xs"

@@ -10,7 +10,7 @@ const corsHeaders = {
 serve(async (req) => {
   if (req.method === 'OPTIONS') return new Response('ok', { headers: corsHeaders })
 
-  console.log("--- [manage-calcom-availability] v1.3 DEEP LOGGING ---");
+  console.log("--- [manage-calcom-availability] v1.4 WRAPPED PAYLOAD ---");
 
   try {
     const { action, date, scheduleId: providedScheduleId } = await req.json()
@@ -28,7 +28,7 @@ serve(async (req) => {
 
     if (!getRes.ok) throw new Error(`Fetch failed: ${JSON.stringify(getData)}`);
 
-    // Log the current state so we can see if the date already exists
+    // The API returns nested schedule data; we need to extract existing overrides correctly
     const currentOverrides = getData.schedule?.overrides || [];
     console.log("CURRENT OVERRIDES IN CAL.COM:", JSON.stringify(currentOverrides));
 
@@ -37,11 +37,10 @@ serve(async (req) => {
     if (action === 'block-day') {
       console.log(`ACTION: Blocking ${date}`);
       
-      // We send both 'timeSlots' and 'slots' as empty arrays. 
-      // In Cal.com v1, an override with NO slots = a blocked day.
+      // We send an override with an empty slots array. 
+      // In Cal.com v1, Date + Empty Slots = Unavailable.
       const blockEntry = { 
         date: date, 
-        timeSlots: [], 
         slots: [] 
       };
 
@@ -54,18 +53,25 @@ serve(async (req) => {
       newOverrides = currentOverrides.filter(o => o.date !== date);
     }
 
-    // 3. The Update Request
-    console.log("SENDING NEW OVERRIDES LIST:", JSON.stringify(newOverrides));
+    // 3. The Update Request - CRITICAL: Wrapped in a 'schedule' key
+    // Your logs showed the API expects the payload to match the response structure.
+    const payload = {
+      schedule: {
+        overrides: newOverrides
+      }
+    };
+
+    console.log("SENDING WRAPPED PAYLOAD:", JSON.stringify(payload));
 
     const updateRes = await fetch(`https://api.cal.com/v1/schedules/${targetId}?apiKey=${CALCOM_KEY}`, {
       method: 'PATCH',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ overrides: newOverrides })
+      body: JSON.stringify(payload)
     });
 
     const updateData = await updateRes.json();
 
-    // 4. DEEP LOGGING: See the actual response structure
+    // 4. LOGGING: Verify the return contains the new overrides
     console.log("CAL.COM API STATUS:", updateRes.status);
     console.log("CAL.COM API RESPONSE:", JSON.stringify(updateData));
 
@@ -73,7 +79,6 @@ serve(async (req) => {
       throw new Error(`Update failed: ${updateData.message || JSON.stringify(updateData)}`);
     }
 
-    // Check if the update actually took effect in the response
     const finalOverrides = updateData.schedule?.overrides || [];
     console.log(`SUCCESS: Schedule now has ${finalOverrides.length} overrides.`);
 

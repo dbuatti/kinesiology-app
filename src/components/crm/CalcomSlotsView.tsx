@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -23,7 +23,7 @@ import {
   Hash,
   ShieldAlert
 } from "lucide-react";
-import { format, addWeeks, startOfToday, endOfDay } from "date-fns";
+import { format, addWeeks, startOfToday, endOfDay, eachDayOfInterval, addDays } from "date-fns";
 import { supabase } from "@/integrations/supabase/client";
 import { cn } from "@/lib/utils";
 import { showSuccess, showError } from "@/utils/toast";
@@ -46,6 +46,13 @@ const CalcomSlotsView = () => {
   const [scheduleId, setScheduleId] = useState<string>(() => 
     localStorage.getItem('calcom_preferred_schedule_id') || "1387833"
   );
+
+  // Generate a continuous list of dates based on the lookahead range
+  const dateRange = useMemo(() => {
+    const start = startOfToday();
+    const end = addDays(start, (weeks * 7) - 1);
+    return eachDayOfInterval({ start, end }).map(d => format(d, 'yyyy-MM-dd'));
+  }, [weeks]);
 
   const fetchSlots = async () => {
     setLoading(true);
@@ -73,9 +80,7 @@ const CalcomSlotsView = () => {
       setSlots(data.data || {});
       setBlockedDates(data.blockedDates || []);
       
-      if (Object.keys(data.data || {}).length > 0 || data.blockedDates?.length > 0) {
-        showSuccess("Availability updated.");
-      }
+      showSuccess("Availability updated.");
       
       if (eventTypeId) localStorage.setItem('calcom_preferred_event_id', eventTypeId);
       if (scheduleId) localStorage.setItem('calcom_preferred_schedule_id', scheduleId);
@@ -124,20 +129,28 @@ const CalcomSlotsView = () => {
   };
 
   const handleCopyAll = () => {
-    const dates = Object.keys(slots).sort();
-    if (dates.length === 0) return;
+    if (dateRange.length === 0) return;
 
     let text = "Here is my current availability for a session:\n\n";
-    dates.forEach(date => {
+    let hasAny = false;
+
+    dateRange.forEach(date => {
       const isBlocked = blockedDates.includes(date);
       const daySlots = slots[date] || [];
       
       if (!isBlocked && daySlots.length > 0) {
+        hasAny = true;
         const formattedDate = format(new Date(date), "EEEE, MMMM do");
         const times = daySlots.map(s => format(new Date(s.time || s.start), "h:mm a")).join(", ");
         text += `• ${formattedDate}: ${times}\n`;
       }
     });
+
+    if (!hasAny) {
+      showError("No available slots to copy.");
+      return;
+    }
+
     text += "\nYou can book directly here: https://cal.com/danielebuatti/fnh-neuro-75";
 
     navigator.clipboard.writeText(text);
@@ -149,8 +162,6 @@ const CalcomSlotsView = () => {
   useEffect(() => {
     fetchSlots();
   }, [weeks]);
-
-  const dates = Object.keys(slots).sort();
 
   return (
     <div className="space-y-8 animate-in fade-in duration-700">
@@ -209,7 +220,7 @@ const CalcomSlotsView = () => {
           <Button 
             variant="outline"
             onClick={handleCopyAll}
-            disabled={loading || dates.length === 0}
+            disabled={loading}
             className="rounded-xl h-12 px-6 border-indigo-100 text-indigo-600 hover:bg-indigo-50 font-black text-xs uppercase tracking-widest"
           >
             {copied ? <Check size={16} className="mr-2" /> : <Copy size={16} className="mr-2" />}
@@ -243,11 +254,16 @@ const CalcomSlotsView = () => {
           <Loader2 className="w-10 h-10 text-indigo-500 animate-spin" />
           <p className="text-xs font-black uppercase tracking-widest text-slate-400">Fetching Cal.com Slots...</p>
         </div>
-      ) : dates.length > 0 ? (
+      ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {dates.map(date => {
+          {dateRange.map(date => {
             const daySlots = slots[date] || [];
-            const isBlocked = blockedDates.includes(date) || daySlots.length === 0;
+            const isBlocked = blockedDates.includes(date);
+            const hasNoSlots = daySlots.length === 0;
+            
+            // Only show days that are either blocked OR have slots
+            // This hides weekends/off-days that aren't explicitly blocked
+            if (!isBlocked && hasNoSlots) return null;
 
             return (
               <Card key={date} className={cn(
@@ -337,14 +353,6 @@ const CalcomSlotsView = () => {
               </Card>
             );
           })}
-        </div>
-      ) : !loading && (
-        <div className="text-center py-32 bg-slate-50 dark:bg-slate-900/30 rounded-[3rem] border-2 border-dashed border-slate-200 dark:border-slate-800">
-          <div className="w-20 h-20 bg-white dark:bg-slate-800 rounded-3xl flex items-center justify-center mx-auto mb-6 shadow-xl">
-            <CalendarDays size={40} className="text-slate-200 dark:text-slate-700" />
-          </div>
-          <h3 className="text-xl font-black text-slate-900 dark:text-white">No availability found</h3>
-          <p className="text-slate-500 mt-2">Try adjusting your lookahead range or check your Cal.com settings.</p>
         </div>
       )}
     </div>

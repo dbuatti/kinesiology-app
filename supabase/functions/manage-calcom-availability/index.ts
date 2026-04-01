@@ -10,7 +10,7 @@ const corsHeaders = {
 serve(async (req) => {
   if (req.method === 'OPTIONS') return new Response('ok', { headers: corsHeaders })
 
-  console.log("--- [manage-calcom-availability] v7.0 — OOO DEBUG MODE ---");
+  console.log("--- [manage-calcom-availability] v8.0 — FIXING OOO REASON ---");
 
   try {
     const { action, date } = await req.json()
@@ -18,8 +18,6 @@ serve(async (req) => {
     
     if (!CALCOM_KEY) throw new Error("Missing CALCOM_API_KEY in Supabase Secrets.")
 
-    // 1. Format the Date to YYYY-MM-DD
-    // Ensure we handle the date string correctly regardless of input format
     const dateOnly = typeof date === 'string' && date.includes('T') 
       ? date.split('T')[0] 
       : date;
@@ -33,14 +31,13 @@ serve(async (req) => {
     };
 
     if (action === 'block-day') {
-      // Use clean ISO strings without milliseconds as some APIs are sensitive to them
       const start = `${dateOnly}T00:00:00Z`;
       const end = `${dateOnly}T23:59:59Z`;
 
       const oooPayload = {
         start,
         end,
-        reason: "unavailable",
+        reason: "unspecified", // Changed from 'unavailable' to match Cal.com enum requirements
         notes: `Blocked via Antigravity CRM`
       };
 
@@ -56,7 +53,6 @@ serve(async (req) => {
       
       if (!res.ok) {
         console.error("Cal.com API Error Response:", JSON.stringify(json));
-        // Extract the most useful error message
         const errorMsg = json.error?.message || json.message || res.statusText;
         throw new Error(`Cal.com Error: ${errorMsg}`);
       }
@@ -82,7 +78,6 @@ serve(async (req) => {
       const listJson = await listRes.json();
       if (!listRes.ok) throw new Error(`Failed to fetch OOO list: ${listJson.error?.message || listRes.statusText}`);
 
-      // Find the entry matching this date
       const entries = listJson.data || [];
       const targetEntry = entries.find(e => e.start.startsWith(dateOnly));
 

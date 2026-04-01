@@ -10,7 +10,7 @@ const corsHeaders = {
 serve(async (req) => {
   if (req.method === 'OPTIONS') return new Response('ok', { headers: corsHeaders })
 
-  console.log("--- [manage-calcom-availability] v1.1 UPDATED ---");
+  console.log("--- [manage-calcom-availability] v1.2 PRODUCTION ---");
 
   try {
     const { action, date, scheduleId: providedScheduleId } = await req.json()
@@ -18,38 +18,44 @@ serve(async (req) => {
 
     if (!CALCOM_KEY) throw new Error("Missing CALCOM_API_KEY in Supabase Secrets.")
 
-    // 1. Resolve the schedule ID (Default to your provided ID)
+    // 1. Resolve the schedule ID (Default to your Kinesiology schedule)
     const targetId = providedScheduleId || "1387833";
     
-    // 2. Fetch current schedule via v1 to get existing overrides
-    console.log(`Fetching schedule ${targetId} via v1...`);
+    // 2. Fetch current schedule to preserve existing overrides
+    console.log(`Fetching schedule ${targetId} to check existing blocks...`);
     const getRes = await fetch(`https://api.cal.com/v1/schedules/${targetId}?apiKey=${CALCOM_KEY}`);
     const getData = await getRes.json();
 
     if (!getRes.ok) {
-      console.error("Fetch Error:", getData);
       throw new Error(`Failed to fetch schedule: ${getData.message || JSON.stringify(getData)}`);
     }
 
-    // Cal.com v1 uses 'timeSlots' inside overrides, not 'slots'
     const currentOverrides = getData.schedule?.overrides || [];
     let newOverrides = [];
 
     if (action === 'block-day') {
-      // Add an override with no timeSlots for that date to block it
+      console.log(`Applying hard block for: ${date}`);
+      
+      // We create a "Zero-Duration" slot. Cal.com interprets 00:00-00:00 as "No Availability".
+      // We include both 'timeSlots' and 'slots' for maximum API compatibility.
+      const blockEntry = { 
+        date: date, 
+        timeSlots: [{ start: "00:00", end: "00:00" }],
+        slots: [{ start: "00:00", end: "00:00" }] 
+      };
+
       newOverrides = [
         ...currentOverrides.filter(o => o.date !== date),
-        { date: date, timeSlots: [] }
+        blockEntry
       ];
     } else if (action === 'unblock-day') {
-      // Remove the override for that date to restore default availability
+      console.log(`Removing blocks for: ${date}`);
       newOverrides = currentOverrides.filter(o => o.date !== date);
     }
 
-    console.log(`Updating schedule ${targetId} with ${newOverrides.length} total overrides...`);
-    console.log(`Target Date: ${date}, Action: ${action}`);
+    console.log(`Syncing ${newOverrides.length} total overrides to Cal.com...`);
 
-    // 3. Update via v1 PATCH
+    // 3. Update the Schedule via PATCH
     const updateRes = await fetch(`https://api.cal.com/v1/schedules/${targetId}?apiKey=${CALCOM_KEY}`, {
       method: 'PATCH',
       headers: { 'Content-Type': 'application/json' },
@@ -59,16 +65,16 @@ serve(async (req) => {
     const updateData = await updateRes.json();
 
     if (!updateRes.ok) {
-      console.error("Update Error Response:", updateData);
+      console.error("Cal.com API Update Error:", updateData);
       throw new Error(`Update failed: ${updateData.message || JSON.stringify(updateData)}`);
     }
 
-    console.log("Update successful:", JSON.stringify(updateData.schedule?.overrides));
+    console.log("✅ Update Successful. Current Overrides:", JSON.stringify(updateData.schedule?.overrides));
 
     return new Response(JSON.stringify({ 
       success: true, 
       message: `Successfully ${action === 'block-day' ? 'blocked' : 'unblocked'} ${date}.`,
-      overrides: updateData.schedule?.overrides
+      count: updateData.schedule?.overrides?.length
     }), { 
       status: 200, 
       headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
@@ -77,7 +83,7 @@ serve(async (req) => {
   } catch (error) {
     console.error("Management Error:", error.message);
     return new Response(JSON.stringify({ status: 'error', message: error.message }), { 
-      status: 200, 
+      status: 400, 
       headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
     });
   }

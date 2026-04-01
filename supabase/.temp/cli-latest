@@ -10,59 +10,54 @@ const corsHeaders = {
 serve(async (req) => {
   if (req.method === 'OPTIONS') return new Response('ok', { headers: corsHeaders })
 
-  console.log("--- [manage-calcom-availability] v4.4 — Cal.com v2 FULL DAY BLOCK ---");
+  console.log("--- [manage-calcom-availability] v4.5 — Cal.com v2 FULL DAY BLOCK (Fixed) ---");
 
   try {
     const { action, date, scheduleId: providedScheduleId } = await req.json()
     const CALCOM_KEY = Deno.env.get('CALCOM_API_KEY')
 
-    if (!CALCOM_KEY || !CALCOM_KEY.startsWith('cal_')) {
-      throw new Error("Missing or invalid CALCOM_API_KEY. Must be a v2 key starting with 'cal_'");
+    if (!CALCOM_KEY?.startsWith('cal_')) {
+      throw new Error("Invalid CALCOM_API_KEY. Must be v2 key starting with 'cal_'");
     }
 
     const targetId = providedScheduleId || "1387833";
-    const dateObj = new Date(date);
-    const dateOnly = dateObj.toISOString().split('T')[0];
+    const dateOnly = new Date(date).toISOString().split('T')[0];
 
     console.log(`Action: ${action}, Target Date: ${dateOnly}, ScheduleID: ${targetId}`);
 
-    // 1. Fetch current schedule (v2)
-    console.log("FETCHING CURRENT SCHEDULE (v2)...");
+    // Fetch current
     const getRes = await fetch(`https://api.cal.com/v2/schedules/${targetId}`, {
       method: 'GET',
       headers: {
         'Authorization': `Bearer ${CALCOM_KEY}`,
-        'cal-api-version': '2024-06-11',
+        'cal-api-version': '2024-08-13',   // Updated to a more recent stable version
         'Content-Type': 'application/json'
       }
     });
 
     const getData = await getRes.json();
-    if (!getRes.ok) {
-      console.error("Fetch Error:", JSON.stringify(getData));
-      throw new Error(`Failed to fetch schedule: ${getData.message || getRes.statusText}`);
-    }
+    if (!getRes.ok) throw new Error(`Fetch failed: ${getData.message || getRes.status}`);
 
     let currentOverrides = getData.data?.overrides || [];
     console.log(`CURRENT OVERRIDES COUNT: ${currentOverrides.length}`);
 
-    // 2. Remove existing override for this date
+    // Remove old override for this date
     const updatedOverrides = currentOverrides.filter((o: any) => {
       const oDate = typeof o.date === 'string' ? o.date.split('T')[0] : String(o.date || '');
       return oDate !== dateOnly;
     });
 
     if (action === 'block-day') {
-      console.log(`Adding FULL-DAY BLOCK (Unavailable All Day) for ${dateOnly}`);
+      console.log(`Adding FULL-DAY BLOCK for ${dateOnly}`);
 
-      // Key fix: only 'date' → this matches the UI's "Unavailable All Day"
       updatedOverrides.push({
-        date: dateOnly
-        // Do NOT include startTime or endTime
+        date: dateOnly,
+        // This is the most reliable way we've seen for full block via overrides
+        startTime: "00:00",
+        endTime: "00:01"   // tiny window = effectively blocks the whole day
       });
     }
 
-    // 3. PATCH v2
     const payload = { overrides: updatedOverrides };
 
     console.log("SENDING v2 PATCH PAYLOAD:", JSON.stringify(payload));
@@ -71,7 +66,7 @@ serve(async (req) => {
       method: 'PATCH',
       headers: {
         'Authorization': `Bearer ${CALCOM_KEY}`,
-        'cal-api-version': '2024-06-11',
+        'cal-api-version': '2024-08-13',
         'Content-Type': 'application/json'
       },
       body: JSON.stringify(payload)
@@ -79,14 +74,12 @@ serve(async (req) => {
 
     const patchData = await patchRes.json();
     console.log(`PATCH Status: ${patchRes.status}`);
-    console.log("FULL PATCH RESPONSE BODY:", JSON.stringify(patchData));
+    console.log("FULL PATCH RESPONSE BODY:", JSON.stringify(patchData, null, 2));
 
     if (!patchRes.ok) {
-      console.error("PATCH Error:", JSON.stringify(patchData));
-      throw new Error(`Failed to update: ${patchData.message || patchRes.statusText}`);
+      throw new Error(`PATCH failed: ${patchData.message || patchRes.statusText}`);
     }
 
-    // 4. Verify
     const finalOverrides = patchData.data?.overrides || [];
     console.log("FINAL OVERRIDES COUNT:", finalOverrides.length);
 
@@ -96,16 +89,12 @@ serve(async (req) => {
     });
 
     return new Response(JSON.stringify({ 
-      success: true, 
+      success: true,
       action,
       date: dateOnly,
       overridesCount: finalOverrides.length,
       actuallyBlocked: isBlocked,
-      debug: {
-        sentCount: updatedOverrides.length,
-        receivedCount: finalOverrides.length,
-        blockApplied: isBlocked
-      }
+      debug: { sent: updatedOverrides.length }
     }), { 
       status: 200, 
       headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
@@ -113,12 +102,9 @@ serve(async (req) => {
 
   } catch (error) {
     console.error("CRITICAL ERROR:", error.message);
-    return new Response(JSON.stringify({ 
-      status: 'error', 
-      message: error.message 
-    }), { 
-      status: 400, 
-      headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
+    return new Response(JSON.stringify({ status: 'error', message: error.message }), {
+      status: 400,
+      headers: { ...corsHeaders, 'Content-Type': 'application/json' }
     });
   }
 })

@@ -15,7 +15,9 @@ import {
   CheckCircle2,
   CalendarDays,
   Info,
-  Settings2
+  Settings2,
+  Copy,
+  Check
 } from "lucide-react";
 import { format, addWeeks, startOfToday, endOfDay } from "date-fns";
 import { supabase } from "@/integrations/supabase/client";
@@ -29,6 +31,8 @@ const CalcomSlotsView = () => {
   const [slots, setSlots] = useState<Record<string, any[]>>({});
   const [error, setError] = useState<string | null>(null);
   const [weeks, setWeeks] = useState(4);
+  const [copied, setCopied] = useState(false);
+  
   // Defaulting to your specific event ID: 4279898
   const [eventTypeId, setEventTypeId] = useState<string>(() => 
     localStorage.getItem('calcom_preferred_event_id') || "4279898"
@@ -71,6 +75,29 @@ const CalcomSlotsView = () => {
     } finally {
       setLoading(false);
     }
+  };
+
+  const handleCopyAll = () => {
+    const dates = Object.keys(slots).sort();
+    if (dates.length === 0) return;
+
+    let text = "Here is my current availability for a session:\n\n";
+    
+    dates.forEach(date => {
+      const daySlots = slots[date];
+      if (daySlots.length > 0) {
+        const formattedDate = format(new Date(date), "EEEE, MMMM do");
+        const times = daySlots.map(s => format(new Date(s.start), "h:mm a")).join(", ");
+        text += `• ${formattedDate}: ${times}\n`;
+      }
+    });
+
+    text += "\nYou can book directly here: https://cal.com/danielebuatti/fnh-neuro-75";
+
+    navigator.clipboard.writeText(text);
+    setCopied(true);
+    showSuccess("Availability copied to clipboard!");
+    setTimeout(() => setCopied(false), 2000);
   };
 
   useEffect(() => {
@@ -119,14 +146,25 @@ const CalcomSlotsView = () => {
           </div>
         </div>
         
-        <Button 
-          onClick={fetchSlots} 
-          disabled={loading}
-          className="rounded-xl h-12 px-8 bg-indigo-600 hover:bg-indigo-700 text-white font-black text-xs uppercase tracking-widest shadow-lg shadow-indigo-100"
-        >
-          {loading ? <Loader2 className="mr-2 animate-spin" /> : <RefreshCw size={16} className="mr-2" />}
-          Refresh Availability
-        </Button>
+        <div className="flex gap-3">
+          <Button 
+            variant="outline"
+            onClick={handleCopyAll}
+            disabled={loading || dates.length === 0}
+            className="rounded-xl h-12 px-6 border-indigo-100 text-indigo-600 hover:bg-indigo-50 font-black text-xs uppercase tracking-widest"
+          >
+            {copied ? <Check size={16} className="mr-2 text-emerald-500" /> : <Copy size={16} className="mr-2" />}
+            Copy Availability
+          </Button>
+          <Button 
+            onClick={fetchSlots} 
+            disabled={loading}
+            className="rounded-xl h-12 px-8 bg-indigo-600 hover:bg-indigo-700 text-white font-black text-xs uppercase tracking-widest shadow-lg shadow-indigo-100"
+          >
+            {loading ? <Loader2 className="mr-2 animate-spin" /> : <RefreshCw size={16} className="mr-2" />}
+            Refresh
+          </Button>
+        </div>
       </div>
 
       {error && (

@@ -34,6 +34,7 @@ const CalcomSlotsView = () => {
   const [loading, setLoading] = useState(false);
   const [processingDate, setProcessingDate] = useState<string | null>(null);
   const [slots, setSlots] = useState<Record<string, any[]>>({});
+  const [blockedDates, setBlockedDates] = useState<string[]>([]);
   const [error, setError] = useState<string | null>(null);
   const [weeks, setWeeks] = useState(4);
   const [copied, setCopied] = useState(false);
@@ -70,7 +71,9 @@ const CalcomSlotsView = () => {
       }
 
       setSlots(data.data || {});
-      if (Object.keys(data.data || {}).length > 0) {
+      setBlockedDates(data.blockedDates || []);
+      
+      if (Object.keys(data.data || {}).length > 0 || data.blockedDates?.length > 0) {
         showSuccess("Availability updated.");
       }
       
@@ -126,8 +129,10 @@ const CalcomSlotsView = () => {
 
     let text = "Here is my current availability for a session:\n\n";
     dates.forEach(date => {
-      const daySlots = slots[date];
-      if (daySlots.length > 0) {
+      const isBlocked = blockedDates.includes(date);
+      const daySlots = slots[date] || [];
+      
+      if (!isBlocked && daySlots.length > 0) {
         const formattedDate = format(new Date(date), "EEEE, MMMM do");
         const times = daySlots.map(s => format(new Date(s.time || s.start), "h:mm a")).join(", ");
         text += `• ${formattedDate}: ${times}\n`;
@@ -241,8 +246,8 @@ const CalcomSlotsView = () => {
       ) : dates.length > 0 ? (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {dates.map(date => {
-            const daySlots = slots[date];
-            const isBlocked = daySlots.length === 0;
+            const daySlots = slots[date] || [];
+            const isBlocked = blockedDates.includes(date) || daySlots.length === 0;
 
             return (
               <Card key={date} className={cn(

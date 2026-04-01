@@ -9,7 +9,7 @@ const corsHeaders = {
 serve(async (req) => {
   if (req.method === 'OPTIONS') return new Response('ok', { headers: corsHeaders })
 
-  console.log("--- [get-calcom-slots] v2 WITH VERSION ---");
+  console.log("--- [get-calcom-slots] v3 WITH OOO SYNC ---");
 
   try {
     let { start, end, eventTypeId, timeZone } = await req.json()
@@ -23,22 +23,25 @@ serve(async (req) => {
       'Content-Type': 'application/json',
     };
 
-    // Use provided event type or default
+    // 1. Fetch Available Slots
     const targetEventTypeId = eventTypeId || "4279898";
+    const slotsUrl = new URL('https://api.cal.com/v2/slots/available')
+    slotsUrl.searchParams.set('startTime', start)
+    slotsUrl.searchParams.set('endTime', end)
+    slotsUrl.searchParams.set('eventTypeId', targetEventTypeId)
+    if (timeZone) slotsUrl.searchParams.set('timeZone', timeZone)
 
-    const url = new URL('https://api.cal.com/v2/slots/available')
-    url.searchParams.set('startTime', start)
-    url.searchParams.set('endTime', end)
-    url.searchParams.set('eventTypeId', targetEventTypeId)
-    if (timeZone) url.searchParams.set('timeZone', timeZone)
-
-    const response = await fetch(url.toString(), { method: 'GET', headers })
-    const data = await response.json()
+    const slotsResponse = await fetch(slotsUrl.toString(), { method: 'GET', headers })
+    const slotsData = await slotsResponse.json()
     
-    if (!response.ok) {
+    // 2. Fetch Out-of-Office Blocks (to cross-reference)
+    const oooResponse = await fetch('https://api.cal.com/v2/me/ooo', { method: 'GET', headers })
+    const oooData = await oooResponse.json()
+
+    if (!slotsResponse.ok) {
       return new Response(JSON.stringify({ 
         status: 'error', 
-        message: data.error?.message || "Cal.com v2 API Error"
+        message: slotsData.error?.message || "Cal.com Slots API Error"
       }), { 
         status: 200,
         headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
@@ -47,7 +50,8 @@ serve(async (req) => {
 
     return new Response(JSON.stringify({
       status: 'success',
-      data: data.data.slots
+      data: slotsData.data.slots,
+      blockedDates: (oooData.data || []).map(entry => entry.start.split('T')[0])
     }), { 
       status: 200, 
       headers: { ...corsHeaders, 'Content-Type': 'application/json' } 

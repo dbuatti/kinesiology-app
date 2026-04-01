@@ -10,7 +10,7 @@ const corsHeaders = {
 serve(async (req) => {
   if (req.method === 'OPTIONS') return new Response('ok', { headers: corsHeaders })
 
-  console.log("--- [manage-calcom-availability] v2 START ---");
+  console.log("--- [manage-calcom-availability] v2 AUTO-RESOLVE ---");
 
   try {
     const { action, date, eventTypeId, scheduleId: providedScheduleId } = await req.json()
@@ -24,51 +24,43 @@ serve(async (req) => {
       'Content-Type': 'application/json',
     };
 
-    let scheduleId = providedScheduleId;
+    // 1. Fetch all schedules to find the correct v2 ID
+    console.log("Fetching all schedules to resolve ID...");
+    const listRes = await fetch('https://api.cal.com/v2/schedules', { method: 'GET', headers });
+    const listData = await listRes.json();
 
-    // 1. Resolve Schedule ID if not provided
-    if (!scheduleId) {
-      console.log(`Attempting to auto-resolve schedule. EventType: ${eventTypeId}`);
-      
-      // Try Event Type first
-      if (eventTypeId) {
-        const etRes = await fetch(`https://api.cal.com/v2/event-types/${eventTypeId}`, { headers });
-        const etData = await etRes.json();
-        if (etRes.ok && etData.data?.scheduleId) {
-          scheduleId = etData.data.scheduleId;
-          console.log(`Resolved Schedule ID from Event Type: ${scheduleId}`);
-        } else {
-          console.log(`Could not find scheduleId in Event Type response: ${JSON.stringify(etData)}`);
-        }
-      }
-      
-      // Fallback to listing all schedules
-      if (!scheduleId) {
-        console.log("Falling back to listing all schedules...");
-        const schedsRes = await fetch('https://api.cal.com/v2/schedules', { headers });
-        const schedsData = await schedsRes.json();
-        
-        if (schedsRes.ok && schedsData.data?.length > 0) {
-          const preferred = schedsData.data.find(s => s.isDefault) || schedsData.data[0];
-          scheduleId = preferred.id;
-          console.log(`Resolved Schedule ID from list: ${scheduleId} (Default: ${!!preferred.isDefault})`);
-        } else {
-          console.log(`Schedules list failed or empty: ${JSON.stringify(schedsData)}`);
-        }
-      }
+    if (!listRes.ok) {
+      throw new Error(`Failed to list schedules: ${listData.error?.message || JSON.stringify(listData)}`);
     }
 
-    if (!scheduleId) {
-      throw new Error("Could not identify a valid v2 Schedule ID. Please provide it manually in the settings.");
+    // 2. Find the best matching schedule
+    // We look for: 1. The provided ID, 2. The default schedule, 3. The first schedule in the list
+    const allSchedules = listData.data || [];
+    console.log(`Found ${allSchedules.length} schedules.`);
+
+    let targetSchedule = null;
+    
+    if (providedScheduleId) {
+      targetSchedule = allSchedules.find(s => String(s.id) === String(providedScheduleId));
     }
 
-    // 2. Fetch current schedule to get existing overrides
-    console.log(`Fetching schedule details for ID: ${scheduleId}`);
-    const scheduleRes = await fetch(`https://api.cal.com/v2/schedules/${scheduleId}`, { headers });
+    if (!targetSchedule) {
+      targetSchedule = allSchedules.find(s => s.isDefault) || allSchedules[0];
+    }
+
+    if (!targetSchedule) {
+      throw new Error("No schedules found in your Cal.com account.");
+    }
+
+    const scheduleId = targetSchedule.id;
+    console.log(`Resolved Target Schedule: "${targetSchedule.name}" (ID: ${scheduleId})`);
+
+    // 3. Fetch the full schedule details to get existing overrides
+    const scheduleRes = await fetch(`https://api.cal.com/v2/schedules/${scheduleId}`, { method: 'GET', headers });
     const scheduleData = await scheduleRes.json();
     
     if (!scheduleRes.ok) {
-      throw new Error(`Failed to fetch v2 schedule (${scheduleRes.status}): ${scheduleData.error?.message || JSON.stringify(scheduleData)}`);
+      throw new Error(`Failed to fetch schedule details: ${scheduleData.error?.message || JSON.stringify(scheduleData)}`);
     }
 
     const currentOverrides = scheduleData.data.overrides || [];
@@ -85,8 +77,8 @@ serve(async (req) => {
       newOverrides = currentOverrides.filter(o => o.date !== date);
     }
 
-    // 3. Update Schedule
-    console.log(`Updating schedule ${scheduleId} with ${newOverrides.length} overrides`);
+    // 4. Update the Schedule
+    console.log(`Updating schedule with ${newOverrides.length} overrides...`);
     const updateRes = await fetch(`https://api.cal.com/v2/schedules/${scheduleId}`, {
       method: 'PATCH',
       headers,
@@ -96,12 +88,12 @@ serve(async (req) => {
     const updateData = await updateRes.json();
 
     if (!updateRes.ok) {
-      throw new Error(`Failed to update v2 schedule: ${updateData.error?.message || JSON.stringify(updateData)}`);
+      throw new Error(`Update failed: ${updateData.error?.message || JSON.stringify(updateData)}`);
     }
 
     return new Response(JSON.stringify({ 
       success: true, 
-      message: `Day ${date} ${action === 'block-day' ? 'blocked' : 'unblocked'} successfully.` 
+      message: `Successfully ${action === 'block-day' ? 'blocked' : 'unblocked'} ${date} on schedule "${targetSchedule.name}".` 
     }), { 
       status: 200, 
       headers: { ...corsHeaders, 'Content-Type': 'application/json' } 

@@ -1,4 +1,5 @@
 // @ts-nocheck
+/// <reference lib="deno.ns" />
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
 
 const corsHeaders = {
@@ -10,7 +11,7 @@ const corsHeaders = {
 serve(async (req) => {
   if (req.method === 'OPTIONS') return new Response('ok', { headers: corsHeaders })
 
-  console.log("--- [manage-calcom-availability] v4.1 V1 API + WRAPPED PAYLOAD ---");
+  console.log("--- [manage-calcom-availability] v4.2 V1 API + UNWRAPPED PAYLOAD ---");
 
   try {
     const { action, date, scheduleId: providedScheduleId } = await req.json()
@@ -57,14 +58,11 @@ serve(async (req) => {
     }
 
     // 4. PUSH UPDATED STATE (V1)
-    // We try wrapping the overrides in a 'schedule' object as the V1 API often mirrors its GET structure in PATCH
     const payload = { 
-      schedule: {
-        overrides: updatedOverrides 
-      }
+      overrides: updatedOverrides 
     };
     
-    console.log("SENDING V1 PATCH PAYLOAD (WRAPPED):", JSON.stringify(payload));
+    console.log("SENDING V1 PATCH PAYLOAD (UNWRAPPED):", JSON.stringify(payload));
 
     const patchRes = await fetch(`https://api.cal.com/v1/schedules/${targetId}?apiKey=${CALCOM_KEY}`, {
       method: 'PATCH',

@@ -14,19 +14,22 @@ import {
   AlertCircle,
   CheckCircle2,
   CalendarDays,
-  Info
+  Info,
+  Settings2
 } from "lucide-react";
 import { format, addWeeks, startOfToday, endOfDay } from "date-fns";
 import { supabase } from "@/integrations/supabase/client";
 import { cn } from "@/lib/utils";
 import { showSuccess, showError } from "@/utils/toast";
 import { Alert, AlertDescription } from "@/components/ui/alert";
+import { Input } from "@/components/ui/input";
 
 const CalcomSlotsView = () => {
   const [loading, setLoading] = useState(false);
   const [slots, setSlots] = useState<Record<string, any[]>>({});
   const [error, setError] = useState<string | null>(null);
   const [weeks, setWeeks] = useState(4);
+  const [eventTypeId, setEventTypeId] = useState<string>(() => localStorage.getItem('calcom_preferred_event_id') || "");
 
   const fetchSlots = async () => {
     setLoading(true);
@@ -39,6 +42,7 @@ const CalcomSlotsView = () => {
         body: { 
           start, 
           end,
+          eventTypeId: eventTypeId || undefined,
           timeZone: Intl.DateTimeFormat().resolvedOptions().timeZone
         }
       });
@@ -53,6 +57,10 @@ const CalcomSlotsView = () => {
       setSlots(data.data || {});
       if (Object.keys(data.data || {}).length > 0) {
         showSuccess("Availability updated.");
+      }
+      
+      if (eventTypeId) {
+        localStorage.setItem('calcom_preferred_event_id', eventTypeId);
       }
     } catch (err: any) {
       console.error("Failed to fetch slots:", err);
@@ -70,34 +78,51 @@ const CalcomSlotsView = () => {
 
   return (
     <div className="space-y-8 animate-in fade-in duration-700">
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-        <div className="flex items-center gap-2">
-          <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Lookahead Range:</p>
-          <div className="flex bg-muted p-1 rounded-xl">
-            {[2, 4, 6, 8].map(w => (
-              <Button 
-                key={w}
-                variant="ghost" 
-                size="sm" 
-                onClick={() => setWeeks(w)}
-                className={cn(
-                  "h-8 px-3 rounded-lg text-[10px] font-black uppercase tracking-widest",
-                  weeks === w ? "bg-white text-indigo-600 shadow-sm" : "text-slate-500"
-                )}
-              >
-                {w} Weeks
-              </Button>
-            ))}
+      <div className="flex flex-col lg:flex-row lg:items-end justify-between gap-6 bg-card p-6 rounded-[2rem] border border-border shadow-sm">
+        <div className="space-y-4 flex-1">
+          <div className="flex items-center gap-2">
+            <Settings2 size={16} className="text-indigo-500" />
+            <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Configuration</p>
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <label className="text-[10px] font-bold text-slate-500 uppercase ml-1">Lookahead Range</label>
+              <div className="flex bg-muted p-1 rounded-xl w-max">
+                {[2, 4, 6, 8].map(w => (
+                  <Button 
+                    key={w}
+                    variant="ghost" 
+                    size="sm" 
+                    onClick={() => setWeeks(w)}
+                    className={cn(
+                      "h-8 px-4 rounded-lg text-[10px] font-black uppercase tracking-widest",
+                      weeks === w ? "bg-white text-indigo-600 shadow-sm" : "text-slate-500"
+                    )}
+                  >
+                    {w} Weeks
+                  </Button>
+                ))}
+              </div>
+            </div>
+            <div className="space-y-2">
+              <label className="text-[10px] font-bold text-slate-500 uppercase ml-1">Event Type ID (Optional)</label>
+              <Input 
+                placeholder="Auto-detecting..." 
+                value={eventTypeId}
+                onChange={(e) => setEventTypeId(e.target.value)}
+                className="h-10 rounded-xl bg-muted/50 border-none font-bold text-xs"
+              />
+            </div>
           </div>
         </div>
+        
         <Button 
-          variant="outline" 
           onClick={fetchSlots} 
           disabled={loading}
-          className="rounded-xl h-10 border-indigo-100 text-indigo-600 hover:bg-indigo-50 font-bold text-xs"
+          className="rounded-xl h-12 px-8 bg-indigo-600 hover:bg-indigo-700 text-white font-black text-xs uppercase tracking-widest shadow-lg shadow-indigo-100"
         >
-          {loading ? <Loader2 size={14} className="mr-2 animate-spin" /> : <RefreshCw size={14} className="mr-2" />}
-          Refresh Live
+          {loading ? <Loader2 className="mr-2 animate-spin" /> : <RefreshCw size={16} className="mr-2" />}
+          Refresh Availability
         </Button>
       </div>
 

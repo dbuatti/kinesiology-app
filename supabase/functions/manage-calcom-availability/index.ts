@@ -10,13 +10,12 @@ const corsHeaders = {
 serve(async (req) => {
   if (req.method === 'OPTIONS') return new Response('ok', { headers: corsHeaders })
 
-  console.log("--- [manage-calcom-availability] v4.0 V1 API + ROBUST MERGE ---");
+  console.log("--- [manage-calcom-availability] v4.1 V1 API + WRAPPED PAYLOAD ---");
 
   try {
     const { action, date, scheduleId: providedScheduleId } = await req.json()
     const CALCOM_KEY = Deno.env.get('CALCOM_API_KEY')
     
-    // Default schedule ID if none provided
     const targetId = providedScheduleId || "1387833";
     
     // 1. Format the Date to YYYY-MM-DD strictly
@@ -39,14 +38,11 @@ serve(async (req) => {
       throw new Error(`Failed to fetch schedule: ${getData.message || getRes.statusText}`);
     }
 
-    // Extract existing overrides from v1 response structure
-    // v1 structure: { schedule: { overrides: [...] } }
+    // Extract existing overrides
     let currentOverrides = getData.schedule?.overrides || [];
     console.log(`CURRENT OVERRIDES COUNT: ${currentOverrides.length}`);
-    console.log("CURRENT OVERRIDES LIST:", JSON.stringify(currentOverrides));
 
-    // 3. MODIFY OVERRIDES (Additive/Subtractive)
-    // Always remove existing entries for this specific date first to avoid duplicates or conflicts
+    // 3. MODIFY OVERRIDES
     let updatedOverrides = currentOverrides.filter(o => {
       const oDate = o.date.includes('T') ? o.date.split('T')[0] : o.date;
       return oDate !== dateOnly;
@@ -58,15 +54,17 @@ serve(async (req) => {
         date: dateOnly,
         slots: [] // Empty slots array blocks the day in Cal.com v1
       });
-    } else {
-      console.log(`Removing override for ${dateOnly} (Restoring default)`);
-      // Already filtered out above
     }
 
     // 4. PUSH UPDATED STATE (V1)
-    // In v1 PATCH, we send the fields we want to update
-    const payload = { overrides: updatedOverrides };
-    console.log("SENDING V1 PATCH PAYLOAD:", JSON.stringify(payload));
+    // We try wrapping the overrides in a 'schedule' object as the V1 API often mirrors its GET structure in PATCH
+    const payload = { 
+      schedule: {
+        overrides: updatedOverrides 
+      }
+    };
+    
+    console.log("SENDING V1 PATCH PAYLOAD (WRAPPED):", JSON.stringify(payload));
 
     const patchRes = await fetch(`https://api.cal.com/v1/schedules/${targetId}?apiKey=${CALCOM_KEY}`, {
       method: 'PATCH',
@@ -76,6 +74,7 @@ serve(async (req) => {
 
     const patchData = await patchRes.json();
     console.log(`PATCH Status: ${patchRes.status}`);
+    console.log("FULL PATCH RESPONSE BODY:", JSON.stringify(patchData));
 
     if (!patchRes.ok) {
       console.error("PATCH Error:", JSON.stringify(patchData));
@@ -85,7 +84,6 @@ serve(async (req) => {
     // 5. FINAL VERIFICATION
     const finalOverrides = patchData.schedule?.overrides || [];
     console.log("FINAL OVERRIDES COUNT:", finalOverrides.length);
-    console.log("FINAL OVERRIDES STATE:", JSON.stringify(finalOverrides));
 
     return new Response(JSON.stringify({ 
       success: true, 

@@ -10,7 +10,7 @@ const corsHeaders = {
 serve(async (req) => {
   if (req.method === 'OPTIONS') return new Response('ok', { headers: corsHeaders })
 
-  console.log("--- [manage-calcom-availability] v3.0 V2 API + MERGE LOGIC ---");
+  console.log("--- [manage-calcom-availability] v4.0 V1 API + ROBUST MERGE ---");
 
   try {
     const { action, date, scheduleId: providedScheduleId } = await req.json()
@@ -19,38 +19,34 @@ serve(async (req) => {
     // Default schedule ID if none provided
     const targetId = providedScheduleId || "1387833";
     
-    // 1. Format the Date to YYYY-MM-DD
+    // 1. Format the Date to YYYY-MM-DD strictly
     const dateObj = new Date(date);
     const dateOnly = dateObj.toISOString().split('T')[0];
 
     console.log(`Action: ${action}, Target Date: ${dateOnly}, ScheduleID: ${targetId}`);
 
-    const headers = {
-      'Authorization': `Bearer ${CALCOM_KEY}`,
-      'cal-api-version': '2024-08-13',
-      'Content-Type': 'application/json',
-    };
-
-    // 2. FETCH CURRENT STATE (V2)
-    console.log("FETCHING CURRENT SCHEDULE STATE...");
-    const getRes = await fetch(`https://api.cal.com/v2/schedules/${targetId}`, {
+    // 2. FETCH CURRENT STATE (V1)
+    console.log("FETCHING CURRENT SCHEDULE STATE (V1)...");
+    const getRes = await fetch(`https://api.cal.com/v1/schedules/${targetId}?apiKey=${CALCOM_KEY}`, {
       method: 'GET',
-      headers
+      headers: { 'Content-Type': 'application/json' }
     });
     
     const getData = await getRes.json();
     
     if (!getRes.ok) {
       console.error("Fetch Error:", JSON.stringify(getData));
-      throw new Error(`Failed to fetch schedule: ${getData.error?.message || getRes.statusText}`);
+      throw new Error(`Failed to fetch schedule: ${getData.message || getRes.statusText}`);
     }
 
-    // Extract existing overrides
-    let currentOverrides = getData.data?.overrides || [];
-    console.log(`Found ${currentOverrides.length} existing overrides.`);
+    // Extract existing overrides from v1 response structure
+    // v1 structure: { schedule: { overrides: [...] } }
+    let currentOverrides = getData.schedule?.overrides || [];
+    console.log(`CURRENT OVERRIDES COUNT: ${currentOverrides.length}`);
+    console.log("CURRENT OVERRIDES LIST:", JSON.stringify(currentOverrides));
 
     // 3. MODIFY OVERRIDES (Additive/Subtractive)
-    // Always remove existing entries for this specific date first to avoid duplicates
+    // Always remove existing entries for this specific date first to avoid duplicates or conflicts
     let updatedOverrides = currentOverrides.filter(o => {
       const oDate = o.date.includes('T') ? o.date.split('T')[0] : o.date;
       return oDate !== dateOnly;
@@ -60,20 +56,21 @@ serve(async (req) => {
       console.log(`Adding block for ${dateOnly}`);
       updatedOverrides.push({
         date: dateOnly,
-        slots: [] // Empty slots array blocks the day in Cal.com
+        slots: [] // Empty slots array blocks the day in Cal.com v1
       });
     } else {
       console.log(`Removing override for ${dateOnly} (Restoring default)`);
       // Already filtered out above
     }
 
-    // 4. PUSH UPDATED STATE (V2)
+    // 4. PUSH UPDATED STATE (V1)
+    // In v1 PATCH, we send the fields we want to update
     const payload = { overrides: updatedOverrides };
-    console.log("SENDING V2 PATCH PAYLOAD:", JSON.stringify(payload));
+    console.log("SENDING V1 PATCH PAYLOAD:", JSON.stringify(payload));
 
-    const patchRes = await fetch(`https://api.cal.com/v2/schedules/${targetId}`, {
+    const patchRes = await fetch(`https://api.cal.com/v1/schedules/${targetId}?apiKey=${CALCOM_KEY}`, {
       method: 'PATCH',
-      headers,
+      headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(payload)
     });
 
@@ -82,12 +79,13 @@ serve(async (req) => {
 
     if (!patchRes.ok) {
       console.error("PATCH Error:", JSON.stringify(patchData));
-      throw new Error(`Failed to update schedule: ${patchData.error?.message || patchRes.statusText}`);
+      throw new Error(`Failed to update schedule: ${patchData.message || patchRes.statusText}`);
     }
 
     // 5. FINAL VERIFICATION
-    const finalOverrides = patchData.data?.overrides || [];
+    const finalOverrides = patchData.schedule?.overrides || [];
     console.log("FINAL OVERRIDES COUNT:", finalOverrides.length);
+    console.log("FINAL OVERRIDES STATE:", JSON.stringify(finalOverrides));
 
     return new Response(JSON.stringify({ 
       success: true, 
@@ -96,7 +94,8 @@ serve(async (req) => {
       overridesCount: finalOverrides.length,
       debug: {
         sentCount: updatedOverrides.length,
-        receivedCount: finalOverrides.length
+        receivedCount: finalOverrides.length,
+        matchFound: finalOverrides.some(o => (o.date.includes('T') ? o.date.split('T')[0] : o.date) === dateOnly)
       }
     }), { 
       status: 200, 

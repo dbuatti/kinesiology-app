@@ -9,7 +9,7 @@ const corsHeaders = {
 serve(async (req) => {
   if (req.method === 'OPTIONS') return new Response('ok', { headers: corsHeaders })
 
-  console.log("--- [get-calcom-slots] START ---");
+  console.log("--- [get-calcom-slots] v2 START ---");
 
   try {
     let { start, end, eventTypeId, timeZone, username, eventTypeSlug } = await req.json()
@@ -23,21 +23,21 @@ serve(async (req) => {
       'Content-Type': 'application/json',
     };
 
-    // 1. If no identifier is provided, try to fetch the first active event type
+    // 1. If no identifier is provided, try to fetch the first active event type (v2)
     if (!eventTypeId && !username && !eventTypeSlug) {
-      console.log("No identifier provided. Fetching event types...");
+      console.log("[v2] No identifier provided. Fetching event types...");
       const etResponse = await fetch('https://api.cal.com/v2/event-types', { headers });
       const etData = await etResponse.json();
       
       if (etData.status === 'success' && etData.data?.length > 0) {
         eventTypeId = etData.data[0].id;
-        console.log(`Auto-selected Event Type ID: ${eventTypeId} (${etData.data[0].title})`);
+        console.log(`[v2] Auto-selected Event Type ID: ${eventTypeId} (${etData.data[0].title})`);
       } else {
-        throw new Error("No active Event Types found in your Cal.com account. Please create one first.");
+        throw new Error("No active v2 Event Types found. Please check your Cal.com account.");
       }
     }
 
-    // 2. Build the slots URL
+    // 2. Build the slots URL (v2)
     const url = new URL('https://api.cal.com/v2/slots')
     url.searchParams.set('start', start)
     url.searchParams.set('end', end)
@@ -46,7 +46,7 @@ serve(async (req) => {
     if (eventTypeSlug) url.searchParams.set('eventTypeSlug', eventTypeSlug)
     if (timeZone) url.searchParams.set('timeZone', timeZone)
 
-    console.log(`Fetching slots from: ${url.toString()}`);
+    console.log(`[v2] Fetching slots from: ${url.toString()}`);
 
     const response = await fetch(url.toString(), { method: 'GET', headers })
     const data = await response.json()
@@ -54,7 +54,7 @@ serve(async (req) => {
     if (!response.ok) {
       return new Response(JSON.stringify({ 
         status: 'error', 
-        message: data.message || "Cal.com API Error",
+        message: data.message || "Cal.com v2 API Error",
         details: data 
       }), { 
         status: 200,
@@ -68,7 +68,7 @@ serve(async (req) => {
     })
 
   } catch (error) {
-    console.error("Critical Error:", error.message);
+    console.error("v2 Slots Error:", error.message);
     return new Response(JSON.stringify({ status: 'error', message: error.message }), { 
       status: 200, 
       headers: { ...corsHeaders, 'Content-Type': 'application/json' } 

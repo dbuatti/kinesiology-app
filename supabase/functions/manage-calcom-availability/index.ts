@@ -10,7 +10,7 @@ const corsHeaders = {
 serve(async (req) => {
   if (req.method === 'OPTIONS') return new Response('ok', { headers: corsHeaders })
 
-  console.log("--- [manage-calcom-availability] v1 STABLE ---");
+  console.log("--- [manage-calcom-availability] v1.1 UPDATED ---");
 
   try {
     const { action, date, scheduleId: providedScheduleId } = await req.json()
@@ -27,25 +27,29 @@ serve(async (req) => {
     const getData = await getRes.json();
 
     if (!getRes.ok) {
+      console.error("Fetch Error:", getData);
       throw new Error(`Failed to fetch schedule: ${getData.message || JSON.stringify(getData)}`);
     }
 
+    // Cal.com v1 uses 'timeSlots' inside overrides, not 'slots'
     const currentOverrides = getData.schedule?.overrides || [];
     let newOverrides = [];
 
     if (action === 'block-day') {
-      // Add an override with no slots for that date
+      // Add an override with no timeSlots for that date to block it
       newOverrides = [
         ...currentOverrides.filter(o => o.date !== date),
-        { date: date, slots: [] }
+        { date: date, timeSlots: [] }
       ];
     } else if (action === 'unblock-day') {
-      // Remove the override for that date
+      // Remove the override for that date to restore default availability
       newOverrides = currentOverrides.filter(o => o.date !== date);
     }
 
+    console.log(`Updating schedule ${targetId} with ${newOverrides.length} total overrides...`);
+    console.log(`Target Date: ${date}, Action: ${action}`);
+
     // 3. Update via v1 PATCH
-    console.log(`Updating schedule ${targetId} with ${newOverrides.length} overrides...`);
     const updateRes = await fetch(`https://api.cal.com/v1/schedules/${targetId}?apiKey=${CALCOM_KEY}`, {
       method: 'PATCH',
       headers: { 'Content-Type': 'application/json' },
@@ -55,12 +59,16 @@ serve(async (req) => {
     const updateData = await updateRes.json();
 
     if (!updateRes.ok) {
+      console.error("Update Error Response:", updateData);
       throw new Error(`Update failed: ${updateData.message || JSON.stringify(updateData)}`);
     }
 
+    console.log("Update successful:", JSON.stringify(updateData.schedule?.overrides));
+
     return new Response(JSON.stringify({ 
       success: true, 
-      message: `Successfully ${action === 'block-day' ? 'blocked' : 'unblocked'} ${date}.` 
+      message: `Successfully ${action === 'block-day' ? 'blocked' : 'unblocked'} ${date}.`,
+      overrides: updateData.schedule?.overrides
     }), { 
       status: 200, 
       headers: { ...corsHeaders, 'Content-Type': 'application/json' } 

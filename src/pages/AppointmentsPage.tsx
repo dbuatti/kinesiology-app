@@ -206,7 +206,9 @@ const AppointmentsPage = () => {
         app.tag.toLowerCase().includes(search.toLowerCase()) ||
         app.name?.toLowerCase().includes(search.toLowerCase());
       
-      const matchesStatus = statusFilter === "all" || app.status === statusFilter;
+      const matchesStatus = statusFilter === "all" || 
+                           (statusFilter === "today" && isToday(app.date)) ||
+                           app.status === statusFilter;
       
       return matchesSearch && matchesStatus;
     });
@@ -514,8 +516,9 @@ const AppointmentsPage = () => {
           </div>
           
           <Tabs value={statusFilter} onValueChange={setStatusFilter} className="w-full md:w-auto">
-            <TabsList className="grid grid-cols-3 h-12 bg-muted p-1 rounded-xl">
+            <TabsList className="grid grid-cols-4 h-12 bg-muted p-1 rounded-xl">
               <TabsTrigger value="all" className="rounded-lg text-[10px] font-black uppercase tracking-widest">All</TabsTrigger>
+              <TabsTrigger value="today" className="rounded-lg text-[10px] font-black uppercase tracking-widest text-rose-600">Today</TabsTrigger>
               <TabsTrigger value="Scheduled" className="rounded-lg text-[10px] font-black uppercase tracking-widest">Scheduled</TabsTrigger>
               <TabsTrigger value="Completed" className="rounded-lg text-[10px] font-black uppercase tracking-widest">Completed</TabsTrigger>
             </TabsList>

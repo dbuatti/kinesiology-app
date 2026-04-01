@@ -11,7 +11,7 @@ import {
   Plus, UserPlus, Sparkles,
   CheckCircle2, Zap, FlaskConical, Brain, Wind, StickyNote, Timer,
   ArrowRight, AlertCircle, TrendingUp, Clock, ShieldCheck, Heart,
-  ClipboardCheck, EyeOff
+  ClipboardCheck, EyeOff, CalendarPlus, Target
 } from "lucide-react";
 import {
   Dialog,
@@ -256,6 +256,40 @@ const Index = () => {
         ) : (
           <>
             <PractitionerGrounding />
+
+            {/* Quick Actions Grid */}
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+              <Button 
+                onClick={() => setClientDialogOpen(true)}
+                className="h-24 rounded-[2rem] bg-white border-2 border-indigo-100 hover:border-indigo-500 hover:bg-indigo-50 text-indigo-600 flex flex-col gap-2 shadow-sm transition-all group"
+              >
+                <UserPlus size={24} className="group-hover:scale-110 transition-transform" />
+                <span className="font-black text-[10px] uppercase tracking-widest">New Client</span>
+              </Button>
+              <Button 
+                onClick={() => setAppDialogOpen(true)}
+                className="h-24 rounded-[2rem] bg-white border-2 border-rose-100 hover:border-rose-500 hover:bg-rose-50 text-rose-600 flex flex-col gap-2 shadow-sm transition-all group"
+              >
+                <CalendarPlus size={24} className="group-hover:scale-110 transition-transform" />
+                <span className="font-black text-[10px] uppercase tracking-widest">Book Session</span>
+              </Button>
+              <Link to="/practice/calibrate" className="block">
+                <Button 
+                  className="w-full h-24 rounded-[2rem] bg-white border-2 border-amber-100 hover:border-amber-500 hover:bg-amber-50 text-amber-600 flex flex-col gap-2 shadow-sm transition-all group"
+                >
+                  <Zap size={24} className="group-hover:scale-110 transition-transform" />
+                  <span className="font-black text-[10px] uppercase tracking-widest">Quick Calibrate</span>
+                </Button>
+              </Link>
+              <Link to="/practice/procedures" className="block">
+                <Button 
+                  className="w-full h-24 rounded-[2rem] bg-white border-2 border-emerald-100 hover:border-emerald-500 hover:bg-emerald-50 text-emerald-600 flex flex-col gap-2 shadow-sm transition-all group"
+                >
+                  <Target size={24} className="group-hover:scale-110 transition-transform" />
+                  <span className="font-black text-[10px] uppercase tracking-widest">Procedures</span>
+                </Button>
+              </Link>
+            </div>
 
             {/* Clinical Pulse Row */}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">

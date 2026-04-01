@@ -10,60 +10,93 @@ const corsHeaders = {
 serve(async (req) => {
   if (req.method === 'OPTIONS') return new Response('ok', { headers: corsHeaders })
 
-  console.log("--- [manage-calcom-availability] v2.0 DATE FORMAT FIX ---");
+  console.log("--- [manage-calcom-availability] v3.0 V2 API + MERGE LOGIC ---");
 
   try {
     const { action, date, scheduleId: providedScheduleId } = await req.json()
     const CALCOM_KEY = Deno.env.get('CALCOM_API_KEY')
+    
+    // Default schedule ID if none provided
     const targetId = providedScheduleId || "1387833";
     
-    // 1. Format the Date - Using YYYY-MM-DD which is often more reliable for Cal.com v1 overrides
+    // 1. Format the Date to YYYY-MM-DD
     const dateObj = new Date(date);
     const dateOnly = dateObj.toISOString().split('T')[0];
 
-    console.log(`Action: ${action}, Input: ${date}, Target Date: ${dateOnly}, ScheduleID: ${targetId}`);
+    console.log(`Action: ${action}, Target Date: ${dateOnly}, ScheduleID: ${targetId}`);
 
-    // 2. PRE-PATCH CHECK: See what's there now
-    console.log("FETCHING CURRENT STATE...");
-    const preRes = await fetch(`https://api.cal.com/v1/schedules/${targetId}?apiKey=${CALCOM_KEY}`);
-    const preData = await preRes.json();
-    console.log("CURRENT OVERRIDES:", JSON.stringify(preData.schedule?.overrides || []));
-
-    // 3. Prepare Payload
-    // We send the date as YYYY-MM-DD. 
-    // For 'block-day', we send an empty slots array for that date.
-    const payload = { 
-      overrides: action === 'block-day' ? [{ date: dateOnly, slots: [] }] : [] 
+    const headers = {
+      'Authorization': `Bearer ${CALCOM_KEY}`,
+      'cal-api-version': '2024-08-13',
+      'Content-Type': 'application/json',
     };
 
-    console.log("SENDING PATCH PAYLOAD:", JSON.stringify(payload));
+    // 2. FETCH CURRENT STATE (V2)
+    console.log("FETCHING CURRENT SCHEDULE STATE...");
+    const getRes = await fetch(`https://api.cal.com/v2/schedules/${targetId}`, {
+      method: 'GET',
+      headers
+    });
+    
+    const getData = await getRes.json();
+    
+    if (!getRes.ok) {
+      console.error("Fetch Error:", JSON.stringify(getData));
+      throw new Error(`Failed to fetch schedule: ${getData.error?.message || getRes.statusText}`);
+    }
 
-    // 4. The Update
-    const updateRes = await fetch(`https://api.cal.com/v1/schedules/${targetId}?apiKey=${CALCOM_KEY}`, {
+    // Extract existing overrides
+    let currentOverrides = getData.data?.overrides || [];
+    console.log(`Found ${currentOverrides.length} existing overrides.`);
+
+    // 3. MODIFY OVERRIDES (Additive/Subtractive)
+    // Always remove existing entries for this specific date first to avoid duplicates
+    let updatedOverrides = currentOverrides.filter(o => {
+      const oDate = o.date.includes('T') ? o.date.split('T')[0] : o.date;
+      return oDate !== dateOnly;
+    });
+
+    if (action === 'block-day') {
+      console.log(`Adding block for ${dateOnly}`);
+      updatedOverrides.push({
+        date: dateOnly,
+        slots: [] // Empty slots array blocks the day in Cal.com
+      });
+    } else {
+      console.log(`Removing override for ${dateOnly} (Restoring default)`);
+      // Already filtered out above
+    }
+
+    // 4. PUSH UPDATED STATE (V2)
+    const payload = { overrides: updatedOverrides };
+    console.log("SENDING V2 PATCH PAYLOAD:", JSON.stringify(payload));
+
+    const patchRes = await fetch(`https://api.cal.com/v2/schedules/${targetId}`, {
       method: 'PATCH',
-      headers: { 'Content-Type': 'application/json' },
+      headers,
       body: JSON.stringify(payload)
     });
 
-    const updateData = await updateRes.json();
-    console.log(`PATCH Status: ${updateRes.status}, Response:`, JSON.stringify(updateData));
+    const patchData = await patchRes.json();
+    console.log(`PATCH Status: ${patchRes.status}`);
 
-    // 5. THE RE-VERIFY
-    console.log("RE-VERIFYING...");
-    const verifyRes = await fetch(`https://api.cal.com/v1/schedules/${targetId}?apiKey=${CALCOM_KEY}`);
-    const verifyData = await verifyRes.json();
-    const finalOverrides = verifyData.schedule?.overrides || [];
-    
-    console.log("FINAL OVERRIDES STATE:", JSON.stringify(finalOverrides));
+    if (!patchRes.ok) {
+      console.error("PATCH Error:", JSON.stringify(patchData));
+      throw new Error(`Failed to update schedule: ${patchData.error?.message || patchRes.statusText}`);
+    }
+
+    // 5. FINAL VERIFICATION
+    const finalOverrides = patchData.data?.overrides || [];
+    console.log("FINAL OVERRIDES COUNT:", finalOverrides.length);
 
     return new Response(JSON.stringify({ 
       success: true, 
       action,
       date: dateOnly,
-      overrides: finalOverrides,
+      overridesCount: finalOverrides.length,
       debug: {
-        sent: payload,
-        received: finalOverrides
+        sentCount: updatedOverrides.length,
+        receivedCount: finalOverrides.length
       }
     }), { 
       status: 200, 
@@ -72,6 +105,12 @@ serve(async (req) => {
 
   } catch (error) {
     console.error("CRITICAL ERROR:", error.message);
-    return new Response(JSON.stringify({ error: error.message }), { status: 400, headers: corsHeaders });
+    return new Response(JSON.stringify({ 
+      status: 'error', 
+      message: error.message 
+    }), { 
+      status: 400, 
+      headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
+    });
   }
 })

@@ -10,14 +10,14 @@ const corsHeaders = {
 serve(async (req) => {
   if (req.method === 'OPTIONS') return new Response('ok', { headers: corsHeaders })
 
-  console.log("--- [manage-calcom-availability] v4.5 — Cal.com v2 FULL DAY BLOCK (Fixed) ---");
+  console.log("--- [manage-calcom-availability] v4.6 — Cal.com v2 FULL DAY BLOCK ---");
 
   try {
     const { action, date, scheduleId: providedScheduleId } = await req.json()
     const CALCOM_KEY = Deno.env.get('CALCOM_API_KEY')
 
     if (!CALCOM_KEY?.startsWith('cal_')) {
-      throw new Error("Invalid CALCOM_API_KEY. Must be v2 key starting with 'cal_'");
+      throw new Error("Invalid CALCOM_API_KEY - must start with cal_ or cal_live_");
     }
 
     const targetId = providedScheduleId || "1387833";
@@ -25,23 +25,26 @@ serve(async (req) => {
 
     console.log(`Action: ${action}, Target Date: ${dateOnly}, ScheduleID: ${targetId}`);
 
-    // Fetch current
+    // 1. Fetch current schedule
+    console.log("FETCHING CURRENT SCHEDULE (v2)...");
     const getRes = await fetch(`https://api.cal.com/v2/schedules/${targetId}`, {
       method: 'GET',
       headers: {
         'Authorization': `Bearer ${CALCOM_KEY}`,
-        'cal-api-version': '2024-08-13',   // Updated to a more recent stable version
+        'cal-api-version': '2024-08-13',
         'Content-Type': 'application/json'
       }
     });
 
     const getData = await getRes.json();
-    if (!getRes.ok) throw new Error(`Fetch failed: ${getData.message || getRes.status}`);
+    if (!getRes.ok) {
+      throw new Error(`Fetch failed: ${getData.message || getRes.statusText}`);
+    }
 
     let currentOverrides = getData.data?.overrides || [];
     console.log(`CURRENT OVERRIDES COUNT: ${currentOverrides.length}`);
 
-    // Remove old override for this date
+    // Remove existing override for this date
     const updatedOverrides = currentOverrides.filter((o: any) => {
       const oDate = typeof o.date === 'string' ? o.date.split('T')[0] : String(o.date || '');
       return oDate !== dateOnly;
@@ -50,11 +53,11 @@ serve(async (req) => {
     if (action === 'block-day') {
       console.log(`Adding FULL-DAY BLOCK for ${dateOnly}`);
 
+      // This structure works best for "Unavailable All Day"
       updatedOverrides.push({
         date: dateOnly,
-        // This is the most reliable way we've seen for full block via overrides
-        startTime: "00:00",
-        endTime: "00:01"   // tiny window = effectively blocks the whole day
+        startTime: null,   // or omit completely
+        endTime: null
       });
     }
 
@@ -93,8 +96,7 @@ serve(async (req) => {
       action,
       date: dateOnly,
       overridesCount: finalOverrides.length,
-      actuallyBlocked: isBlocked,
-      debug: { sent: updatedOverrides.length }
+      actuallyBlocked: isBlocked
     }), { 
       status: 200, 
       headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
@@ -102,9 +104,12 @@ serve(async (req) => {
 
   } catch (error) {
     console.error("CRITICAL ERROR:", error.message);
-    return new Response(JSON.stringify({ status: 'error', message: error.message }), {
-      status: 400,
-      headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+    return new Response(JSON.stringify({ 
+      status: 'error', 
+      message: error.message 
+    }), { 
+      status: 400, 
+      headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
     });
   }
 })

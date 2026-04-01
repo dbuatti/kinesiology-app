@@ -10,68 +10,45 @@ const corsHeaders = {
 serve(async (req) => {
   if (req.method === 'OPTIONS') return new Response('ok', { headers: corsHeaders })
 
-  console.log("--- [manage-calcom-availability] v1.7 FLAT & ISO ---");
+  console.log("--- [manage-calcom-availability] v1.8 RE-VERIFY ---");
 
   try {
     const { action, date, scheduleId: providedScheduleId } = await req.json()
     const CALCOM_KEY = Deno.env.get('CALCOM_API_KEY')
     const targetId = providedScheduleId || "1387833";
     
-    // 1. Fetch current schedule
-    const getRes = await fetch(`https://api.cal.com/v1/schedules/${targetId}?apiKey=${CALCOM_KEY}`);
-    const getData = await getRes.json();
-    if (!getRes.ok) throw new Error("Fetch failed.");
+    // 1. Format the Date for Cal.com's DB
+    const isoDate = new Date(date).toISOString();
 
-    const currentOverrides = getData.schedule?.overrides || [];
-
-    let newOverrides = [];
-    if (action === 'block-day') {
-      // THE FIX: Convert "2026-05-13" to "2026-05-13T00:00:00.000Z"
-      // Many Cal.com v1 instances ignore raw date strings.
-      const isoDate = new Date(date).toISOString();
-      
-      newOverrides = [
-        ...currentOverrides.filter(o => !o.date.includes(date)),
-        { date: isoDate, slots: [] }
-      ];
-    } else {
-      newOverrides = currentOverrides.filter(o => !o.date.includes(date));
-    }
-
-    // 2. THE FLAT PAYLOAD
-    // We send 'overrides' at the root level, NOT nested inside 'schedule'.
-    const payload = {
-      overrides: newOverrides
-    };
-
-    console.log("SENDING FLAT PAYLOAD:", JSON.stringify(payload));
-
+    // 2. The Update (Using the root-level 'overrides' which is v1 standard)
     const updateRes = await fetch(`https://api.cal.com/v1/schedules/${targetId}?apiKey=${CALCOM_KEY}`, {
       method: 'PATCH',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(payload)
+      body: JSON.stringify({ 
+        overrides: action === 'block-day' ? [{ date: isoDate, slots: [] }] : [] 
+      })
     });
 
     const updateData = await updateRes.json();
-    console.log("CAL.COM API RESPONSE:", JSON.stringify(updateData));
+    console.log("POST-PATCH STATE:", JSON.stringify(updateData));
 
-    // Check both potential response locations
-    const finalOverrides = updateData.schedule?.overrides || updateData.overrides || [];
+    // 3. THE RE-VERIFY: Fetch it again to see if it stuck
+    const verifyRes = await fetch(`https://api.cal.com/v1/schedules/${targetId}?apiKey=${CALCOM_KEY}`);
+    const verifyData = await verifyRes.json();
+    const finalOverrides = verifyData.schedule?.overrides || [];
+
+    console.log("RE-VERIFIED OVERRIDES:", JSON.stringify(finalOverrides));
 
     return new Response(JSON.stringify({ 
-      success: true, 
+      success: finalOverrides.length > 0 || action === 'unblock-day', 
       count: finalOverrides.length,
-      date_sent: date
+      status: finalOverrides.length > 0 ? "Blocked" : "Failed to save"
     }), { 
       status: 200, 
       headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
     });
 
   } catch (error) {
-    console.error("ERROR:", error.message);
-    return new Response(JSON.stringify({ error: error.message }), { 
-      status: 400, 
-      headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
-    });
+    return new Response(JSON.stringify({ error: error.message }), { status: 400, headers: corsHeaders });
   }
 })

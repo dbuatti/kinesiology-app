@@ -90,7 +90,11 @@ const CalcomSlotsView = () => {
     setProcessingDate(date);
     try {
       const { data, error: invokeError } = await supabase.functions.invoke('manage-calcom-availability', {
-        body: { action, date }
+        body: { 
+          action, 
+          date,
+          eventTypeId // Pass the event ID to help find the right schedule
+        }
       });
 
       if (invokeError) throw invokeError;

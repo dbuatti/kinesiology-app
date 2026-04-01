@@ -13,7 +13,7 @@ serve(async (req) => {
   console.log("--- [manage-calcom-availability] START ---");
 
   try {
-    const { action, date, scheduleId: providedScheduleId } = await req.json()
+    const { action, date, eventTypeId, scheduleId: providedScheduleId } = await req.json()
     const CALCOM_KEY = Deno.env.get('CALCOM_API_KEY')
 
     if (!CALCOM_KEY) throw new Error("Missing CALCOM_API_KEY in Supabase Secrets.")
@@ -26,23 +26,38 @@ serve(async (req) => {
 
     let scheduleId = providedScheduleId;
 
+    // 1. If no scheduleId is provided, try to find it via the eventTypeId
+    if (!scheduleId && eventTypeId) {
+      console.log(`Fetching event type ${eventTypeId} to find its schedule...`);
+      const etRes = await fetch(`https://api.cal.com/v2/event-types/${eventTypeId}`, { headers });
+      const etData = await etRes.json();
+      
+      if (etData.status === 'success' && etData.data?.scheduleId) {
+        scheduleId = etData.data.scheduleId;
+        console.log(`Found Schedule ID from Event Type: ${scheduleId}`);
+      }
+    }
+
+    // 2. Fallback: Fetch all schedules and take the first one
     if (!scheduleId) {
+      console.log("Fetching all schedules as fallback...");
       const schedulesRes = await fetch('https://api.cal.com/v2/schedules', { headers });
       const schedulesData = await schedulesRes.json();
       
       if (schedulesData.status === 'success' && schedulesData.data?.length > 0) {
         scheduleId = schedulesData.data[0].id;
+        console.log(`Using first available Schedule ID: ${scheduleId}`);
       } else {
-        throw new Error("No schedules found in your Cal.com account.");
+        throw new Error("No schedules found in your Cal.com account. Please ensure you have an availability schedule set up.");
       }
     }
 
-    // Fetch current schedule to manage overrides
+    // 3. Fetch current schedule to manage overrides
     const scheduleRes = await fetch(`https://api.cal.com/v2/schedules/${scheduleId}`, { headers });
     const scheduleData = await scheduleRes.json();
     
     if (scheduleData.status !== 'success') {
-      throw new Error(`Failed to fetch schedule: ${scheduleData.message}`);
+      throw new Error(`Failed to fetch schedule details: ${scheduleData.message}`);
     }
 
     const currentOverrides = scheduleData.data.overrides || [];

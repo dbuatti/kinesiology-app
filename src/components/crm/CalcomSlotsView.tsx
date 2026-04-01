@@ -42,7 +42,7 @@ const CalcomSlotsView = () => {
   );
 
   const [scheduleId, setScheduleId] = useState<string>(() => 
-    localStorage.getItem('calcom_preferred_schedule_id') || ""
+    localStorage.getItem('calcom_preferred_schedule_id') || "1387833"
   );
 
   const fetchSlots = async () => {
@@ -324,7 +324,7 @@ const CalcomSlotsView = () => {
           <div className="w-20 h-20 bg-white rounded-3xl flex items-center justify-center mx-auto mb-6 shadow-xl">
             <CalendarDays size={40} className="text-slate-200" />
           </div>
-          <h3 className="text-xl font-black text-slate-900">No availability found</h3>
+          <h3 className="text-xl font-black text-xl font-black text-slate-900">No availability found</h3>
         </div>
       )}
     </div>

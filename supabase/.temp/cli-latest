@@ -1,1 +1,118 @@
-v2.84.2
+// @ts-nocheck
+import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
+
+const corsHeaders = {
+  'Access-Control-Allow-Origin': '*',
+  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type, x-supabase-client-platform',
+  'Access-Control-Allow-Methods': 'POST, OPTIONS',
+}
+
+serve(async (req) => {
+  if (req.method === 'OPTIONS') return new Response('ok', { headers: corsHeaders })
+
+  console.log("--- [manage-calcom-availability] v4.2 — Cal.com v2 API ---");
+
+  try {
+    const { action, date, scheduleId: providedScheduleId } = await req.json()
+    const CALCOM_KEY = Deno.env.get('CALCOM_API_KEY')  // Should be a v2 token (starts with "cal_")
+
+    if (!CALCOM_KEY) throw new Error("Missing CALCOM_API_KEY");
+
+    const targetId = providedScheduleId || "1387833";
+    const dateObj = new Date(date);
+    const dateOnly = dateObj.toISOString().split('T')[0];
+
+    console.log(`Action: ${action}, Target Date: ${dateOnly}, ScheduleID: ${targetId}`);
+
+    // 1. Fetch current schedule (v2)
+    console.log("FETCHING CURRENT SCHEDULE (v2)...");
+    const getRes = await fetch(`https://api.cal.com/v2/schedules/${targetId}`, {
+      method: 'GET',
+      headers: {
+        'Authorization': `Bearer ${CALCOM_KEY}`,
+        'cal-api-version': '2024-06-11',   // Use the latest stable version from docs
+        'Content-Type': 'application/json'
+      }
+    });
+
+    const getData = await getRes.json();
+    if (!getRes.ok) {
+      console.error("Fetch Error:", JSON.stringify(getData));
+      throw new Error(`Failed to fetch: ${getData.message || getRes.status}`);
+    }
+
+    let currentOverrides = getData.data?.overrides || [];
+    console.log(`CURRENT OVERRIDES COUNT: ${currentOverrides.length}`);
+
+    // 2. Remove existing override for this date (if any)
+    const updatedOverrides = currentOverrides.filter(o => {
+      const oDate = typeof o.date === 'string' ? o.date.split('T')[0] : o.date;
+      return oDate !== dateOnly;
+    });
+
+    if (action === 'block-day') {
+      console.log(`Adding full-day block for ${dateOnly}`);
+
+      // For full-day block, the most reliable way is to override with NO availability periods.
+      // Some users report success by omitting startTime/endTime entirely for the date.
+      updatedOverrides.push({
+        date: dateOnly
+        // Do NOT add startTime/endTime → this signals "unavailable all day" in many cases
+        // Alternative (if the above doesn't stick): use very narrow or inverted times, but try empty first
+      });
+    }
+
+    // 3. PATCH using v2 (send overrides directly — no "schedule" wrapper needed in v2)
+    const payload = {
+      overrides: updatedOverrides
+    };
+
+    console.log("SENDING v2 PATCH PAYLOAD:", JSON.stringify(payload));
+
+    const patchRes = await fetch(`https://api.cal.com/v2/schedules/${targetId}`, {
+      method: 'PATCH',
+      headers: {
+        'Authorization': `Bearer ${CALCOM_KEY}`,
+        'cal-api-version': '2024-06-11',
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify(payload)
+    });
+
+    const patchData = await patchRes.json();
+    console.log(`PATCH Status: ${patchRes.status}`);
+    console.log("FULL PATCH RESPONSE:", JSON.stringify(patchData));
+
+    if (!patchRes.ok) {
+      throw new Error(`PATCH failed: ${patchData.message || patchRes.statusText}`);
+    }
+
+    // 4. Verify
+    const finalOverrides = patchData.data?.overrides || [];
+    console.log("FINAL OVERRIDES COUNT:", finalOverrides.length);
+
+    const isBlocked = finalOverrides.some(o => {
+      const oDate = typeof o.date === 'string' ? o.date.split('T')[0] : String(o.date);
+      return oDate === dateOnly;
+    });
+
+    return new Response(JSON.stringify({
+      success: true,
+      action,
+      date: dateOnly,
+      overridesCount: finalOverrides.length,
+      actuallyBlocked: isBlocked,
+      debug: { sent: updatedOverrides.length }
+    }), {
+      status: 200,
+      headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+    });
+
+  } catch (error) {
+    console.error("CRITICAL ERROR:", error.message);
+    return new Response(JSON.stringify({ status: 'error', message: error.message }), {
+      status: 400,
+      headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+    });
+  }
+})

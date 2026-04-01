@@ -10,52 +10,41 @@ const corsHeaders = {
 serve(async (req) => {
   if (req.method === 'OPTIONS') return new Response('ok', { headers: corsHeaders })
 
-  console.log("--- [manage-calcom-availability] v1.6 FINAL ---");
+  console.log("--- [manage-calcom-availability] v1.7 FLAT & ISO ---");
 
   try {
     const { action, date, scheduleId: providedScheduleId } = await req.json()
     const CALCOM_KEY = Deno.env.get('CALCOM_API_KEY')
     const targetId = providedScheduleId || "1387833";
     
-    // 1. Fetch current schedule to keep your Wed 10am-6pm availability safe
+    // 1. Fetch current schedule
     const getRes = await fetch(`https://api.cal.com/v1/schedules/${targetId}?apiKey=${CALCOM_KEY}`);
     const getData = await getRes.json();
-    
-    if (!getRes.ok) throw new Error("Could not fetch schedule.");
+    if (!getRes.ok) throw new Error("Fetch failed.");
 
-    const currentAvailability = getData.schedule?.availability || [];
     const currentOverrides = getData.schedule?.overrides || [];
 
     let newOverrides = [];
-
     if (action === 'block-day') {
-      // We format the date to ensure no timezone shifting (YYYY-MM-DD)
-      // Some Cal.com versions require an empty array for BOTH keys to register a block
-      const blockEntry = { 
-        date: date, 
-        slots: [],
-        timeSlots: [] 
-      };
-
+      // THE FIX: Convert "2026-05-13" to "2026-05-13T00:00:00.000Z"
+      // Many Cal.com v1 instances ignore raw date strings.
+      const isoDate = new Date(date).toISOString();
+      
       newOverrides = [
-        ...currentOverrides.filter(o => o.date !== date),
-        blockEntry
+        ...currentOverrides.filter(o => !o.date.includes(date)),
+        { date: isoDate, slots: [] }
       ];
     } else {
-      newOverrides = currentOverrides.filter(o => o.date !== date);
+      newOverrides = currentOverrides.filter(o => !o.date.includes(date));
     }
 
-    // 2. The Final Payload Structure
-    // We provide the schedule object with BOTH availability and overrides.
-    // This tells Cal.com "Keep my regular hours, but add this specific date block."
+    // 2. THE FLAT PAYLOAD
+    // We send 'overrides' at the root level, NOT nested inside 'schedule'.
     const payload = {
-      schedule: {
-        availability: currentAvailability,
-        overrides: newOverrides
-      }
+      overrides: newOverrides
     };
 
-    console.log("SENDING TO CAL.COM:", JSON.stringify(payload));
+    console.log("SENDING FLAT PAYLOAD:", JSON.stringify(payload));
 
     const updateRes = await fetch(`https://api.cal.com/v1/schedules/${targetId}?apiKey=${CALCOM_KEY}`, {
       method: 'PATCH',
@@ -64,14 +53,15 @@ serve(async (req) => {
     });
 
     const updateData = await updateRes.json();
-    console.log("FINAL RESPONSE:", JSON.stringify(updateData));
+    console.log("CAL.COM API RESPONSE:", JSON.stringify(updateData));
 
-    const finalCount = updateData.schedule?.overrides?.length ?? 0;
+    // Check both potential response locations
+    const finalOverrides = updateData.schedule?.overrides || updateData.overrides || [];
 
     return new Response(JSON.stringify({ 
       success: true, 
-      date: date,
-      count: finalCount 
+      count: finalOverrides.length,
+      date_sent: date
     }), { 
       status: 200, 
       headers: { ...corsHeaders, 'Content-Type': 'application/json' } 

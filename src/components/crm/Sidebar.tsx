@@ -81,15 +81,15 @@ const Sidebar = ({ onHide }: SidebarProps) => {
   });
   const [labOpen, setLabOpen] = useState(() => {
     const saved = localStorage.getItem("sidebar_lab_open");
-    return saved !== null ? JSON.parse(saved) : labOpen;
+    return saved !== null ? JSON.parse(saved) : isLabPath(location.pathname);
   });
   const [libraryOpen, setLibraryOpen] = useState(() => {
     const saved = localStorage.getItem("sidebar_library_open");
-    return saved !== null ? JSON.parse(saved) : libraryOpen;
+    return saved !== null ? JSON.parse(saved) : isLibraryPath(location.pathname);
   });
   const [businessOpen, setBusinessOpen] = useState(() => {
     const saved = localStorage.getItem("sidebar_business_open");
-    return saved !== null ? JSON.parse(saved) : businessOpen;
+    return saved !== null ? JSON.parse(saved) : isBusinessPath(location.pathname);
   });
 
   useEffect(() => { localStorage.setItem("sidebar_ops_open", JSON.stringify(opsOpen)); }, [opsOpen]);
@@ -171,16 +171,16 @@ const Sidebar = ({ onHide }: SidebarProps) => {
     const isActive = !item.isExternal && (location.pathname === item.path || (item.path !== "/" && location.pathname.startsWith(item.path)));
     
     const className = cn(
-      "flex items-center justify-between gap-2 px-3 py-2 rounded-xl transition-all duration-500 group",
+      "flex items-center justify-between gap-2 px-3 py-2 rounded-xl transition-all duration-300 group",
       isActive 
         ? "bg-primary text-white shadow-lg shadow-primary/20" 
-        : "text-muted-foreground hover:text-primary hover:bg-secondary"
+        : "text-muted-foreground hover:text-primary hover:bg-secondary/50"
     );
 
     const content = (
       <>
         <div className="flex items-center gap-3">
-          <item.icon size={16} className={cn("transition-all duration-500", isActive ? "text-white" : "text-muted-foreground group-hover:text-accent")} />
+          <item.icon size={16} className={cn("transition-all duration-300", isActive ? "text-white" : "text-muted-foreground group-hover:text-primary")} />
           <span className="font-bold text-[10px] uppercase tracking-widest">{item.label}</span>
         </div>
         {item.shortcut && (
@@ -224,13 +224,13 @@ const Sidebar = ({ onHide }: SidebarProps) => {
     <div className="space-y-1">
       <button
         onClick={onToggle}
-        className="flex items-center justify-between w-full px-3 py-2 rounded-xl text-muted-foreground hover:text-primary hover:bg-secondary transition-all group"
+        className="flex items-center justify-between w-full px-3 py-2 rounded-xl text-muted-foreground hover:text-primary hover:bg-secondary/30 transition-all group"
       >
         <div className="flex items-center gap-3">
-          <Icon size={16} className="text-muted-foreground group-hover:text-accent" />
+          <Icon size={16} className="text-muted-foreground group-hover:text-primary" />
           <span className="text-[9px] font-black uppercase tracking-[0.3em]">{title}</span>
         </div>
-        {isOpen ? <ChevronUp size={12} /> : <ChevronDown size={12} />}
+        {isOpen ? <ChevronUp size={12} className="opacity-50" /> : <ChevronDown size={12} className="opacity-50" />}
       </button>
       {isOpen && (
         <div className="space-y-1 pl-1 animate-in fade-in slide-in-from-top-1 duration-300">
@@ -324,7 +324,7 @@ const Sidebar = ({ onHide }: SidebarProps) => {
           </div>
         )}
 
-        <div className="px-4 py-4 bg-secondary rounded-2xl border border-secondary/30 mx-1 space-y-3">
+        <div className="px-4 py-4 bg-secondary/30 rounded-2xl border border-secondary/30 mx-1 space-y-3">
           <div className="flex items-center justify-between">
             <p className="text-[9px] font-black text-muted-foreground uppercase tracking-[0.2em] flex items-center gap-2">
               <ShieldCheck size={12} className="text-emerald-500" /> Health
@@ -347,9 +347,9 @@ const Sidebar = ({ onHide }: SidebarProps) => {
                   <TooltipTrigger asChild>
                     <Link 
                       to={`/clients/${client.id}`}
-                      className="flex items-center gap-3 text-xs text-muted-foreground hover:text-primary transition-all duration-300 py-2 px-3 rounded-xl hover:bg-secondary truncate group"
+                      className="flex items-center gap-3 text-xs text-muted-foreground hover:text-primary transition-all duration-300 py-2 px-3 rounded-xl hover:bg-secondary/50 truncate group"
                     >
-                      <div className="w-7 h-7 rounded-xl bg-secondary border border-border flex items-center justify-center text-[9px] font-black group-hover:border-primary/40 transition-all">
+                      <div className="w-7 h-7 rounded-xl bg-secondary/50 border border-border flex items-center justify-center text-[9px] font-black group-hover:border-primary/40 transition-all">
                         {client.name.charAt(0)}
                       </div>
                       <span className="truncate font-bold text-[11px]">{client.name}</span>

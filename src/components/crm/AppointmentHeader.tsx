@@ -16,7 +16,9 @@ import {
   ChevronRight,
   TrendingUp,
   ShieldAlert,
-  Brain
+  Brain,
+  Copy,
+  Check
 } from "lucide-react";
 import { format, isToday } from "date-fns";
 import { cn } from "@/lib/utils";
@@ -32,6 +34,7 @@ import { APPOINTMENT_STATUSES } from "@/data/appointment-data";
 import { AppointmentWithClient } from "@/types/crm";
 import QuickAssessmentModal from "./QuickAssessmentModal";
 import { calculateBrainstemTone } from "@/utils/brainstem-logic";
+import { showSuccess } from "@/utils/toast";
 
 interface AppointmentHeaderProps {
   appointment: AppointmentWithClient;
@@ -41,6 +44,7 @@ interface AppointmentHeaderProps {
 
 const AppointmentHeader = ({ appointment, onSaveField, onUpdate }: AppointmentHeaderProps) => {
   const [assessmentModal, setAssessmentModal] = useState<{ open: boolean; type: 'bolt' | 'coherence' } | null>(null);
+  const [idCopied, setIdCopied] = useState(false);
   const clientBorn = appointment.clients.born ? new Date(appointment.clients.born) : null;
   const isSessionToday = isToday(appointment.date);
 
@@ -48,6 +52,15 @@ const AppointmentHeader = ({ appointment, onSaveField, onUpdate }: AppointmentHe
     const nuclei = calculateBrainstemTone(appointment.priority_pattern || null);
     return Math.round(nuclei.reduce((sum, n) => sum + n.threatLevel, 0) / 4);
   }, [appointment.priority_pattern]);
+
+  const handleCopyId = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    const id = appointment.display_id || appointment.id;
+    navigator.clipboard.writeText(id);
+    setIdCopied(true);
+    showSuccess("Session ID copied");
+    setTimeout(() => setIdCopied(false), 2000);
+  };
 
   return (
     <div className="p-6 border-b border-border bg-card">
@@ -64,9 +77,15 @@ const AppointmentHeader = ({ appointment, onSaveField, onUpdate }: AppointmentHe
           
           <div className="space-y-2">
             <div className="flex flex-wrap items-center gap-2">
-              <Badge variant="secondary" className="font-black bg-muted border-none text-muted-foreground text-[8px] uppercase tracking-widest px-2 py-0.5 rounded-md">
-                {appointment.display_id || appointment.id.slice(0, 8)}
-              </Badge>
+              <button 
+                onClick={handleCopyId}
+                className="group/id flex items-center gap-1.5"
+              >
+                <Badge variant="secondary" className="font-black bg-muted border-none text-muted-foreground text-[8px] uppercase tracking-widest px-2 py-0.5 rounded-md group-hover/id:bg-indigo-50 group-hover/id:text-indigo-600 transition-colors">
+                  {appointment.display_id || appointment.id.slice(0, 8)}
+                  {idCopied ? <Check size={8} className="ml-1 text-emerald-500" /> : <Copy size={8} className="ml-1 opacity-0 group-hover/id:opacity-100 transition-opacity" />}
+                </Badge>
+              </button>
               <Badge className="bg-indigo-600 text-white border-none font-black text-[8px] uppercase tracking-widest px-2 py-0.5 rounded-md">
                 {appointment.tag}
               </Badge>

@@ -4,7 +4,8 @@ import React from "react";
 import { Link } from "react-router-dom";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Zap, ArrowRight, CheckCircle2, Sparkles, Target, Clock, Activity } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Zap, ArrowRight, CheckCircle2, Sparkles, Target, Clock, Activity, Coffee } from "lucide-react";
 import { format } from "date-fns";
 import { cn } from "@/lib/utils";
 import { AppointmentWithClient } from "@/types/crm";
@@ -27,7 +28,7 @@ const DailyBriefing = ({ todaySessions, activeSession }: DailyBriefingProps) => 
             <CardDescription className="text-slate-400 text-lg font-medium">
               {todaySessions.length > 0 
                 ? `You have ${todaySessions.length} session${todaySessions.length === 1 ? '' : 's'} scheduled for today.`
-                : "No sessions scheduled for today. Time for research or admin!"}
+                : "Your schedule is clear for today."}
             </CardDescription>
           </div>
           {activeSession && (
@@ -84,13 +85,27 @@ const DailyBriefing = ({ todaySessions, activeSession }: DailyBriefingProps) => 
               </Link>
             ))
           ) : (
-            <div className="sm:col-span-2 flex items-center gap-6 p-8 bg-white/5 rounded-[2.5rem] border border-white/10">
-              <div className="w-16 h-16 rounded-2xl bg-emerald-500/20 flex items-center justify-center text-emerald-400 shadow-inner">
-                <CheckCircle2 size={32} />
+            <div className="sm:col-span-2 flex flex-col items-center justify-center gap-4 p-12 bg-white/5 rounded-[2.5rem] border border-white/10 text-center">
+              <div className="w-20 h-20 rounded-3xl bg-emerald-500/20 flex items-center justify-center text-emerald-400 shadow-inner mb-2">
+                <Coffee size={40} />
               </div>
               <div>
-                <p className="font-black text-slate-200 text-xl">Your schedule is clear.</p>
-                <p className="text-slate-400 font-medium text-base mt-1">Enjoy the space for deep work or rest.</p>
+                <p className="font-black text-slate-200 text-2xl">Time for deep work or rest.</p>
+                <p className="text-slate-400 font-medium text-base mt-2 max-w-md mx-auto">
+                  No sessions scheduled for today. Use this space to catch up on clinical research, admin, or personal practice.
+                </p>
+              </div>
+              <div className="flex gap-3 mt-4">
+                <Link to="/practice/self">
+                  <Button variant="outline" className="bg-transparent border-white/20 text-white hover:bg-white/10 rounded-xl font-bold text-xs uppercase tracking-widest">
+                    Self Practice
+                  </Button>
+                </Link>
+                <Link to="/resources">
+                  <Button variant="outline" className="bg-transparent border-white/20 text-white hover:bg-white/10 rounded-xl font-bold text-xs uppercase tracking-widest">
+                    Browse Resources
+                  </Button>
+                </Link>
               </div>
             </div>
           )}

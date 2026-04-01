@@ -10,7 +10,7 @@ const corsHeaders = {
 serve(async (req) => {
   if (req.method === 'OPTIONS') return new Response('ok', { headers: corsHeaders })
 
-  console.log("--- [manage-calcom-availability] v1.2 PRODUCTION ---");
+  console.log("--- [manage-calcom-availability] v1.3 DEEP LOGGING ---");
 
   try {
     const { action, date, scheduleId: providedScheduleId } = await req.json()
@@ -18,44 +18,45 @@ serve(async (req) => {
 
     if (!CALCOM_KEY) throw new Error("Missing CALCOM_API_KEY in Supabase Secrets.")
 
-    // 1. Resolve the schedule ID (Default to your Kinesiology schedule)
+    // 1. Resolve the schedule ID
     const targetId = providedScheduleId || "1387833";
     
-    // 2. Fetch current schedule to preserve existing overrides
-    console.log(`Fetching schedule ${targetId} to check existing blocks...`);
+    // 2. Fetch current state to avoid wiping out other blocked days
+    console.log(`Fetching schedule ${targetId}...`);
     const getRes = await fetch(`https://api.cal.com/v1/schedules/${targetId}?apiKey=${CALCOM_KEY}`);
     const getData = await getRes.json();
 
-    if (!getRes.ok) {
-      throw new Error(`Failed to fetch schedule: ${getData.message || JSON.stringify(getData)}`);
-    }
+    if (!getRes.ok) throw new Error(`Fetch failed: ${JSON.stringify(getData)}`);
 
+    // Log the current state so we can see if the date already exists
     const currentOverrides = getData.schedule?.overrides || [];
+    console.log("CURRENT OVERRIDES IN CAL.COM:", JSON.stringify(currentOverrides));
+
     let newOverrides = [];
 
     if (action === 'block-day') {
-      console.log(`Applying hard block for: ${date}`);
+      console.log(`ACTION: Blocking ${date}`);
       
-      // We create a "Zero-Duration" slot. Cal.com interprets 00:00-00:00 as "No Availability".
-      // We include both 'timeSlots' and 'slots' for maximum API compatibility.
+      // We send both 'timeSlots' and 'slots' as empty arrays. 
+      // In Cal.com v1, an override with NO slots = a blocked day.
       const blockEntry = { 
         date: date, 
-        timeSlots: [{ start: "00:00", end: "00:00" }],
-        slots: [{ start: "00:00", end: "00:00" }] 
+        timeSlots: [], 
+        slots: [] 
       };
 
       newOverrides = [
         ...currentOverrides.filter(o => o.date !== date),
         blockEntry
       ];
-    } else if (action === 'unblock-day') {
-      console.log(`Removing blocks for: ${date}`);
+    } else {
+      console.log(`ACTION: Unblocking ${date}`);
       newOverrides = currentOverrides.filter(o => o.date !== date);
     }
 
-    console.log(`Syncing ${newOverrides.length} total overrides to Cal.com...`);
+    // 3. The Update Request
+    console.log("SENDING NEW OVERRIDES LIST:", JSON.stringify(newOverrides));
 
-    // 3. Update the Schedule via PATCH
     const updateRes = await fetch(`https://api.cal.com/v1/schedules/${targetId}?apiKey=${CALCOM_KEY}`, {
       method: 'PATCH',
       headers: { 'Content-Type': 'application/json' },
@@ -64,25 +65,31 @@ serve(async (req) => {
 
     const updateData = await updateRes.json();
 
+    // 4. DEEP LOGGING: See the actual response structure
+    console.log("CAL.COM API STATUS:", updateRes.status);
+    console.log("CAL.COM API RESPONSE:", JSON.stringify(updateData));
+
     if (!updateRes.ok) {
-      console.error("Cal.com API Update Error:", updateData);
       throw new Error(`Update failed: ${updateData.message || JSON.stringify(updateData)}`);
     }
 
-    console.log("✅ Update Successful. Current Overrides:", JSON.stringify(updateData.schedule?.overrides));
+    // Check if the update actually took effect in the response
+    const finalOverrides = updateData.schedule?.overrides || [];
+    console.log(`SUCCESS: Schedule now has ${finalOverrides.length} overrides.`);
 
     return new Response(JSON.stringify({ 
       success: true, 
-      message: `Successfully ${action === 'block-day' ? 'blocked' : 'unblocked'} ${date}.`,
-      count: updateData.schedule?.overrides?.length
+      date: date,
+      action: action,
+      total_overrides: finalOverrides.length
     }), { 
       status: 200, 
       headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
     });
 
   } catch (error) {
-    console.error("Management Error:", error.message);
-    return new Response(JSON.stringify({ status: 'error', message: error.message }), { 
+    console.error("CRITICAL ERROR:", error.message);
+    return new Response(JSON.stringify({ success: false, error: error.message }), { 
       status: 400, 
       headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
     });

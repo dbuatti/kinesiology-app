@@ -10,14 +10,14 @@ const corsHeaders = {
 serve(async (req) => {
   if (req.method === 'OPTIONS') return new Response('ok', { headers: corsHeaders })
 
-  console.log("--- [manage-calcom-availability] v4.3 — Cal.com v2 Full Day Block ---");
+  console.log("--- [manage-calcom-availability] v4.4 — Cal.com v2 FULL DAY BLOCK ---");
 
   try {
     const { action, date, scheduleId: providedScheduleId } = await req.json()
     const CALCOM_KEY = Deno.env.get('CALCOM_API_KEY')
 
     if (!CALCOM_KEY || !CALCOM_KEY.startsWith('cal_')) {
-      throw new Error("Invalid or missing CALCOM_API_KEY. Use a v2 key starting with 'cal_'");
+      throw new Error("Missing or invalid CALCOM_API_KEY. Must be a v2 key starting with 'cal_'");
     }
 
     const targetId = providedScheduleId || "1387833";
@@ -32,7 +32,7 @@ serve(async (req) => {
       method: 'GET',
       headers: {
         'Authorization': `Bearer ${CALCOM_KEY}`,
-        'cal-api-version': '2024-06-11',   // Update this if a newer version is documented
+        'cal-api-version': '2024-06-11',
         'Content-Type': 'application/json'
       }
     });
@@ -40,29 +40,29 @@ serve(async (req) => {
     const getData = await getRes.json();
     if (!getRes.ok) {
       console.error("Fetch Error:", JSON.stringify(getData));
-      throw new Error(`Failed to fetch schedule: ${getData.message || getRes.status}`);
+      throw new Error(`Failed to fetch schedule: ${getData.message || getRes.statusText}`);
     }
 
     let currentOverrides = getData.data?.overrides || [];
     console.log(`CURRENT OVERRIDES COUNT: ${currentOverrides.length}`);
 
-    // 2. Remove any existing override for this exact date
-    const updatedOverrides = currentOverrides.filter(o => {
+    // 2. Remove existing override for this date
+    const updatedOverrides = currentOverrides.filter((o: any) => {
       const oDate = typeof o.date === 'string' ? o.date.split('T')[0] : String(o.date || '');
       return oDate !== dateOnly;
     });
 
     if (action === 'block-day') {
-      console.log(`Adding FULL-DAY BLOCK for ${dateOnly}`);
+      console.log(`Adding FULL-DAY BLOCK (Unavailable All Day) for ${dateOnly}`);
 
-      // This is the key fix for "Unavailable All Day"
+      // Key fix: only 'date' → this matches the UI's "Unavailable All Day"
       updatedOverrides.push({
         date: dateOnly
-        // NO startTime / endTime → tells Cal.com the whole day is unavailable
+        // Do NOT include startTime or endTime
       });
     }
 
-    // 3. PATCH (v2 — overrides sent directly, no "schedule" wrapper)
+    // 3. PATCH v2
     const payload = { overrides: updatedOverrides };
 
     console.log("SENDING v2 PATCH PAYLOAD:", JSON.stringify(payload));
@@ -83,14 +83,14 @@ serve(async (req) => {
 
     if (!patchRes.ok) {
       console.error("PATCH Error:", JSON.stringify(patchData));
-      throw new Error(`Failed to update schedule: ${patchData.message || patchRes.statusText}`);
+      throw new Error(`Failed to update: ${patchData.message || patchRes.statusText}`);
     }
 
-    // 4. Final verification
+    // 4. Verify
     const finalOverrides = patchData.data?.overrides || [];
     console.log("FINAL OVERRIDES COUNT:", finalOverrides.length);
 
-    const isBlocked = finalOverrides.some(o => {
+    const isBlocked = finalOverrides.some((o: any) => {
       const oDate = typeof o.date === 'string' ? o.date.split('T')[0] : String(o.date || '');
       return oDate === dateOnly;
     });

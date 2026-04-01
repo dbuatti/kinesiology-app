@@ -10,7 +10,7 @@ const corsHeaders = {
 serve(async (req) => {
   if (req.method === 'OPTIONS') return new Response('ok', { headers: corsHeaders })
 
-  console.log("--- [manage-calcom-availability] v6.0 — OOO API MIGRATION ---");
+  console.log("--- [manage-calcom-availability] v7.0 — OOO DEBUG MODE ---");
 
   try {
     const { action, date } = await req.json()
@@ -19,8 +19,10 @@ serve(async (req) => {
     if (!CALCOM_KEY) throw new Error("Missing CALCOM_API_KEY in Supabase Secrets.")
 
     // 1. Format the Date to YYYY-MM-DD
-    const dateObj = new Date(date);
-    const dateOnly = dateObj.toISOString().split('T')[0];
+    // Ensure we handle the date string correctly regardless of input format
+    const dateOnly = typeof date === 'string' && date.includes('T') 
+      ? date.split('T')[0] 
+      : date;
 
     console.log(`Action: ${action}, Target Date: ${dateOnly}`);
 
@@ -31,15 +33,18 @@ serve(async (req) => {
     };
 
     if (action === 'block-day') {
-      console.log(`Creating OOO block for ${dateOnly}...`);
-      
-      // Create a full-day Out-of-Office entry
+      // Use clean ISO strings without milliseconds as some APIs are sensitive to them
+      const start = `${dateOnly}T00:00:00Z`;
+      const end = `${dateOnly}T23:59:59Z`;
+
       const oooPayload = {
-        start: `${dateOnly}T00:00:00.000Z`,
-        end: `${dateOnly}T23:59:59.999Z`,
+        start,
+        end,
         reason: "unavailable",
         notes: `Blocked via Antigravity CRM`
       };
+
+      console.log("Sending OOO Payload:", JSON.stringify(oooPayload));
 
       const res = await fetch(`https://api.cal.com/v2/me/ooo`, {
         method: 'POST',
@@ -48,13 +53,19 @@ serve(async (req) => {
       });
 
       const json = await res.json();
-      if (!res.ok) throw new Error(`Failed to block day: ${json.error?.message || res.statusText}`);
+      
+      if (!res.ok) {
+        console.error("Cal.com API Error Response:", JSON.stringify(json));
+        // Extract the most useful error message
+        const errorMsg = json.error?.message || json.message || res.statusText;
+        throw new Error(`Cal.com Error: ${errorMsg}`);
+      }
 
       return new Response(JSON.stringify({ 
         success: true, 
         action,
         date: dateOnly,
-        message: `Day ${dateOnly} blocked successfully via OOO.`
+        message: `Day ${dateOnly} blocked successfully.`
       }), { 
         status: 200, 
         headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
@@ -63,7 +74,6 @@ serve(async (req) => {
     } else if (action === 'unblock-day') {
       console.log(`Searching for OOO entry to remove for ${dateOnly}...`);
       
-      // 1. Fetch current OOO entries
       const listRes = await fetch(`https://api.cal.com/v2/me/ooo`, {
         method: 'GET',
         headers
@@ -72,12 +82,11 @@ serve(async (req) => {
       const listJson = await listRes.json();
       if (!listRes.ok) throw new Error(`Failed to fetch OOO list: ${listJson.error?.message || listRes.statusText}`);
 
-      // 2. Find the entry matching this date
+      // Find the entry matching this date
       const entries = listJson.data || [];
       const targetEntry = entries.find(e => e.start.startsWith(dateOnly));
 
       if (!targetEntry) {
-        console.log("No matching OOO entry found to delete.");
         return new Response(JSON.stringify({ 
           success: true, 
           message: "No block found for this date." 
@@ -87,7 +96,6 @@ serve(async (req) => {
         });
       }
 
-      // 3. Delete the OOO entry
       console.log(`Deleting OOO entry ID: ${targetEntry.id}`);
       const delRes = await fetch(`https://api.cal.com/v2/me/ooo/${targetEntry.id}`, {
         method: 'DELETE',

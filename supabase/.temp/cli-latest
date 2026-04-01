@@ -10,7 +10,7 @@ const corsHeaders = {
 serve(async (req) => {
   if (req.method === 'OPTIONS') return new Response('ok', { headers: corsHeaders })
 
-  console.log("--- [manage-calcom-availability] v4.6 — Cal.com v2 FULL DAY BLOCK ---");
+  console.log("--- [manage-calcom-availability] v4.7 — Cal.com v2 FULL DAY BLOCK (Final) ---");
 
   try {
     const { action, date, scheduleId: providedScheduleId } = await req.json()
@@ -25,7 +25,7 @@ serve(async (req) => {
 
     console.log(`Action: ${action}, Target Date: ${dateOnly}, ScheduleID: ${targetId}`);
 
-    // 1. Fetch current schedule
+    // Fetch current schedule (v2)
     console.log("FETCHING CURRENT SCHEDULE (v2)...");
     const getRes = await fetch(`https://api.cal.com/v2/schedules/${targetId}`, {
       method: 'GET',
@@ -37,14 +37,12 @@ serve(async (req) => {
     });
 
     const getData = await getRes.json();
-    if (!getRes.ok) {
-      throw new Error(`Fetch failed: ${getData.message || getRes.statusText}`);
-    }
+    if (!getRes.ok) throw new Error(`Fetch failed: ${getData.message || getRes.statusText}`);
 
     let currentOverrides = getData.data?.overrides || [];
     console.log(`CURRENT OVERRIDES COUNT: ${currentOverrides.length}`);
 
-    // Remove existing override for this date
+    // Remove any existing override for this date
     const updatedOverrides = currentOverrides.filter((o: any) => {
       const oDate = typeof o.date === 'string' ? o.date.split('T')[0] : String(o.date || '');
       return oDate !== dateOnly;
@@ -53,11 +51,11 @@ serve(async (req) => {
     if (action === 'block-day') {
       console.log(`Adding FULL-DAY BLOCK for ${dateOnly}`);
 
-      // This structure works best for "Unavailable All Day"
+      // This matches the official v2 example structure for overrides
       updatedOverrides.push({
         date: dateOnly,
-        startTime: null,   // or omit completely
-        endTime: null
+        startTime: "00:00",
+        endTime: "00:00"     // 00:00-00:00 = Unavailable all day (common working pattern)
       });
     }
 

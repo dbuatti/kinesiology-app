@@ -81,15 +81,15 @@ const Sidebar = ({ onHide }: SidebarProps) => {
   });
   const [labOpen, setLabOpen] = useState(() => {
     const saved = localStorage.getItem("sidebar_lab_open");
-    return saved !== null ? JSON.parse(saved) : isLabPath(location.pathname);
+    return saved !== null ? JSON.parse(saved) : labOpen;
   });
   const [libraryOpen, setLibraryOpen] = useState(() => {
     const saved = localStorage.getItem("sidebar_library_open");
-    return saved !== null ? JSON.parse(saved) : isLibraryPath(location.pathname);
+    return saved !== null ? JSON.parse(saved) : libraryOpen;
   });
   const [businessOpen, setBusinessOpen] = useState(() => {
     const saved = localStorage.getItem("sidebar_business_open");
-    return saved !== null ? JSON.parse(saved) : isBusinessPath(location.pathname);
+    return saved !== null ? JSON.parse(saved) : businessOpen;
   });
 
   useEffect(() => { localStorage.setItem("sidebar_ops_open", JSON.stringify(opsOpen)); }, [opsOpen]);
@@ -248,7 +248,7 @@ const Sidebar = ({ onHide }: SidebarProps) => {
         <div className="flex items-center gap-3">
           <div className="w-10 h-10 bg-primary rounded-xl flex items-center justify-center font-black text-xl text-white shadow-2xl shadow-primary/20 transition-transform hover:scale-105">✦</div>
           <div>
-            <h1 className="text-lg font-bold tracking-tight leading-none">Resonance</h1>
+            <h1 className="text-lg font-serif font-bold tracking-tight leading-none">Resonance</h1>
             <p className="text-[8px] text-muted-foreground uppercase font-black tracking-[0.2em] mt-1">Kinesiology CRM</p>
           </div>
         </div>
@@ -429,7 +429,7 @@ const Sidebar = ({ onHide }: SidebarProps) => {
       </Dialog>
 
       <Dialog open={appDialogOpen} onOpenChange={setAppDialogOpen}>
-        <DialogContent className="sm:max-w-[550px] rounded-[3rem] p-8">
+        <DialogContent className="sm:max-w-[500px] rounded-[3rem] p-8">
           <DialogHeader className="mb-4">
             <DialogTitle className="text-2xl font-black tracking-tight">Schedule New Session</DialogTitle>
           </DialogHeader>

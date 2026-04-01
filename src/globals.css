@@ -4,24 +4,24 @@
 
 @layer base {
   :root {
-    /* Refined Resonance Palette - Modern Clinical */
-    --background: 210 40% 98%; /* Crisp Off-White #F8FAFC */
-    --foreground: 222 47% 11%; /* Deep Navy-Slate for text #0F172A */
+    /* Resonance Brand Identity */
+    --background: 30 40% 99%; /* Cream #FDFCFB */
+    --foreground: 222 53% 25%; /* Deep Indigo #1E3261 */
 
     --card: 0 0% 100%;
-    --card-foreground: 222 47% 11%;
+    --card-foreground: 222 53% 25%;
 
     --popover: 0 0% 100%;
-    --popover-foreground: 222 47% 11%;
+    --popover-foreground: 222 53% 25%;
 
-    --primary: 234 89% 15%; /* Midnight Indigo #0F1133 - The Anchor */
-    --primary-foreground: 210 40% 98%;
+    --primary: 222 53% 25%; /* Deep Indigo #1E3261 */
+    --primary-foreground: 30 40% 99%;
 
-    --secondary: 226 30% 94%; /* Soft Indigo-Grey for subtle backgrounds */
-    --secondary-foreground: 234 89% 15%;
+    --secondary: 231 93% 82%; /* Periwinkle #A5B4FC */
+    --secondary-foreground: 222 53% 25%;
 
-    --accent: 330 70% 45%; /* Matured Resonance Rose #C2185B - The Spark */
-    --accent-foreground: 0 0% 100%;
+    --accent: 332 56% 62%; /* Resonance Pink #D46A9B */
+    --accent-foreground: 30 40% 99%;
 
     --muted: 210 40% 96.1%;
     --muted-foreground: 215.4 16.3% 46.9%;
@@ -29,43 +29,43 @@
     --destructive: 0 84.2% 60.2%;
     --destructive-foreground: 210 40% 98%;
 
-    --success: 160 84% 39%; /* Clinical Emerald */
+    --success: 160 84% 39%;
     --success-foreground: 210 40% 98%;
 
-    --warning: 38 92% 50%; /* Clinical Amber */
+    --warning: 38 92% 50%;
     --warning-foreground: 210 40% 98%;
 
     --border: 214.3 31.8% 91.4%;
     --input: 214.3 31.8% 91.4%;
-    --ring: 234 89% 15%;
+    --ring: 222 53% 25%;
 
-    --radius: 1.5rem; /* Slightly more rounded for a premium feel */
+    --radius: 1.5rem;
   }
 
   .dark {
-    --background: 222 47% 4%;
-    --foreground: 210 40% 98%;
+    --background: 222 53% 5%;
+    --foreground: 30 40% 99%;
 
-    --card: 222 47% 6%;
-    --card-foreground: 210 40% 98%;
+    --card: 222 53% 8%;
+    --card-foreground: 30 40% 99%;
 
-    --popover: 222 47% 6%;
-    --popover-foreground: 210 40% 98%;
+    --popover: 222 53% 8%;
+    --popover-foreground: 30 40% 99%;
 
-    --primary: 210 40% 98%;
-    --primary-foreground: 222 47% 11%;
+    --primary: 30 40% 99%;
+    --primary-foreground: 222 53% 25%;
 
-    --secondary: 222 47% 11%;
-    --secondary-foreground: 210 40% 98%;
+    --secondary: 222 53% 15%;
+    --secondary-foreground: 30 40% 99%;
 
-    --accent: 330 70% 55%;
-    --accent-foreground: 210 40% 98%;
+    --accent: 332 56% 72%;
+    --accent-foreground: 222 53% 5%;
 
-    --muted: 222 47% 11%;
+    --muted: 222 53% 15%;
     --muted-foreground: 215 20.2% 65.1%;
 
-    --border: 222 47% 11%;
-    --input: 222 47% 11%;
+    --border: 222 53% 15%;
+    --input: 222 53% 15%;
     --ring: 212.7 26.8% 83.9%;
   }
 }
@@ -82,7 +82,7 @@
   }
 
   h1, h2, h3, h4, h5, h6 {
-    @apply font-black tracking-tight;
+    @apply font-serif font-black tracking-tight;
     letter-spacing: -0.03em;
   }
 }
@@ -93,11 +93,153 @@
   }
   
   .card-standard {
-    @apply rounded-[2.5rem] border-none bg-white shadow-xl shadow-primary/5 dark:bg-slate-900 dark:shadow-none;
+    @apply rounded-[3rem] border-none bg-white shadow-xl shadow-primary/5 dark:bg-slate-900 dark:shadow-none;
   }
 
   .resonance-gradient {
-    @apply bg-gradient-to-br from-[#0F1133] to-[#C2185B];
+    @apply bg-gradient-to-br from-[#1E3261] to-[#D46A9B];
+  }
+  
+  /* Privacy Mode Blurring */
+  .privacy-mode-active .blur-sensitive {
+    @apply blur-md select-none opacity-40 transition-all duration-500;
+  }
+}
+</dyad-css>
+
+Here is the visual brand identity summary for **Resonance Kinesiology** based on your current design system:
+
+### 1. Color Palette
+*   **Primary (Deep Indigo):** `#1E3261` — Used for main text, headers, and buttons. Represents authority and depth.
+*   **Accent (Resonance Pink):** `#D46A9B` — Used for highlights, call-to-action buttons, and the "PEACE" method icons. Represents energy and transformation.
+*   **Soft (Periwinkle):** `#A5B4FC` — Used for borders and secondary backgrounds. Represents the nervous system settling.
+*   **Sky (Light Blue):** `#E0F2FE` — Used for subtle section backgrounds and "regulation" tips.
+*   **Background (Cream):** `#FDFCFB` — The primary "soft" white used for the page body to reduce eye strain.
+
+### 2. Typography
+*   **Headings:** Playfair Display (Serif)
+    *   **Style:** Bold, tracking-wider, often italicized for emphasis.
+    *   **Vibe:** Sophisticated, clinical, and elegant.
+*   **Body Text:** System Sans-Serif (Inter/UI Sans)
+    *   **Style:** Light (300/400 weight), high line-height (1.8).
+    *   **Vibe:** Clean, modern, and highly readable.
+
+### 3. Logo & Iconography
+*   **Logo Mark:** ✦ (The four-pointed star/sparkle symbol).
+*   **Logo Text:** ✦ Resonance Kinesiology (Set in Playfair Display Bold).
+*   **Icon Style:** Lucide React (Thin stroke).
+*   **Key Icons:** Sparkles, Brain, Heart, Mic2, ShieldCheck.
+*   **Favicon:** A custom SVG version of the ✦ mark.
+
+### 4. Visual Elements
+*   **Hero Background:** `resonance-background-horizontal.png` — An ethereal, cloud-like texture with indigo and pink gradients (simulated via CSS gradients).
+*   **Shapes:** Large, organic border-radii (`rounded-[3rem]`) for cards and sections to create a "soft" and safe feeling.
+*   **Photography:** Circular portraits with thick borders and "ring" shadows to emphasize the "Resonance" theme.
+
+<dyad-chat-summary>Updating brand identity to Resonance Kinesiology</dyad-chat-summary>
+
+I've updated the application's fonts, colors, and global styles to match the Resonance Kinesiology brand identity.
+<dyad-write path="src/globals.css" description="Correcting the global CSS variables and mapping brand fonts.">
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    /* Resonance Brand Identity */
+    --background: 30 40% 99%; /* Cream #FDFCFB */
+    --foreground: 222 53% 25%; /* Deep Indigo #1E3261 */
+
+    --card: 0 0% 100%;
+    --card-foreground: 222 53% 25%;
+
+    --popover: 0 0% 100%;
+    --popover-foreground: 222 53% 25%;
+
+    --primary: 222 53% 25%; /* Deep Indigo #1E3261 */
+    --primary-foreground: 30 40% 99%;
+
+    --secondary: 231 93% 82%; /* Periwinkle #A5B4FC */
+    --secondary-foreground: 222 53% 25%;
+
+    --accent: 332 56% 62%; /* Resonance Pink #D46A9B */
+    --accent-foreground: 30 40% 99%;
+
+    --muted: 210 40% 96.1%;
+    --muted-foreground: 215.4 16.3% 46.9%;
+
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 210 40% 98%;
+
+    --success: 160 84% 39%;
+    --success-foreground: 210 40% 98%;
+
+    --warning: 38 92% 50%;
+    --warning-foreground: 210 40% 98%;
+
+    --border: 214.3 31.8% 91.4%;
+    --input: 214.3 31.8% 91.4%;
+    --ring: 222 53% 25%;
+
+    --radius: 1.5rem;
+  }
+
+  .dark {
+    --background: 222 53% 5%;
+    --foreground: 30 40% 99%;
+
+    --card: 222 53% 8%;
+    --card-foreground: 30 40% 99%;
+
+    --popover: 222 53% 8%;
+    --popover-foreground: 30 40% 99%;
+
+    --primary: 30 40% 99%;
+    --primary-foreground: 222 53% 25%;
+
+    --secondary: 222 53% 15%;
+    --secondary-foreground: 30 40% 99%;
+
+    --accent: 332 56% 72%;
+    --accent-foreground: 222 53% 5%;
+
+    --muted: 222 53% 15%;
+    --muted-foreground: 215 20.2% 65.1%;
+
+    --border: 222 53% 15%;
+    --input: 222 53% 15%;
+    --ring: 212.7 26.8% 83.9%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+  body {
+    @apply bg-background text-foreground antialiased;
+    font-family: 'Inter', sans-serif;
+    font-weight: 400;
+    letter-spacing: -0.01em;
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    @apply font-serif font-black tracking-tight;
+    letter-spacing: -0.03em;
+  }
+}
+
+@layer components {
+  .interactive-lift {
+    @apply transition-all duration-500 hover:-translate-y-1 hover:shadow-2xl active:translate-y-0 active:shadow-sm;
+  }
+  
+  .card-standard {
+    @apply rounded-[3rem] border-none bg-white shadow-xl shadow-primary/5 dark:bg-slate-900 dark:shadow-none;
+  }
+
+  .resonance-gradient {
+    @apply bg-gradient-to-br from-[#1E3261] to-[#D46A9B];
   }
   
   /* Privacy Mode Blurring */

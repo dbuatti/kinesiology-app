@@ -20,6 +20,7 @@ export default {
     extend: {
       fontFamily: {
         sans: ["Inter", "sans-serif"],
+        serif: ["Playfair Display", "serif"],
       },
       colors: {
         border: "hsl(var(--border))",
@@ -28,12 +29,12 @@ export default {
         background: "hsl(var(--background))",
         foreground: "hsl(var(--foreground))",
         primary: {
-          DEFAULT: "hsl(var(--primary))",
-          foreground: "hsl(var(--primary-foreground))",
+          DEFAULT: "#1E3261", // Deep Indigo
+          foreground: "#FDFCFB",
         },
         secondary: {
-          DEFAULT: "hsl(var(--secondary))",
-          foreground: "hsl(var(--secondary-foreground))",
+          DEFAULT: "#A5B4FC", // Periwinkle
+          foreground: "#1E3261",
         },
         destructive: {
           DEFAULT: "hsl(var(--destructive))",
@@ -52,8 +53,8 @@ export default {
           foreground: "hsl(var(--muted-foreground))",
         },
         accent: {
-          DEFAULT: "hsl(var(--accent))",
-          foreground: "hsl(var(--accent-foreground))",
+          DEFAULT: "#D46A9B", // Resonance Pink
+          foreground: "#FDFCFB",
         },
         popover: {
           DEFAULT: "hsl(var(--popover))",
@@ -63,6 +64,14 @@ export default {
           DEFAULT: "hsl(var(--card))",
           foreground: "hsl(var(--card-foreground))",
         },
+        sky: {
+          DEFAULT: "#E0F2FE",
+          foreground: "#1E3261",
+        },
+        cream: {
+          DEFAULT: "#FDFCFB",
+          foreground: "#1E3261",
+        }
       },
       borderRadius: {
         lg: "var(--radius)",

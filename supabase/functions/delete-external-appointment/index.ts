@@ -18,45 +18,34 @@ serve(async (req) => {
 
     const results = { notion: 'skipped', planner: 'skipped', calcom: 'skipped' };
 
-    // 1. Archive Notion Appointment
-    if (notionPageId && NOTION_KEY) {
-      const res = await fetch(`https://api.notion.com/v1/pages/${notionPageId}`, {
-        method: 'PATCH',
-        headers: { 'Authorization': `Bearer ${NOTION_KEY}`, 'Content-Type': 'application/json', 'Notion-Version': '2022-06-28' },
-        body: JSON.stringify({ archived: true })
-      });
-      results.notion = res.ok ? 'success' : 'failed';
-    }
-
-    // 2. Archive Notion Planner
-    if (notionPlannerId && NOTION_KEY) {
-      const res = await fetch(`https://api.notion.com/v1/pages/${notionPlannerId}`, {
-        method: 'PATCH',
-        headers: { 'Authorization': `Bearer ${NOTION_KEY}`, 'Content-Type': 'application/json', 'Notion-Version': '2022-06-28' },
-        body: JSON.stringify({ archived: true })
-      });
-      results.planner = res.ok ? 'success' : 'failed';
-    }
-
-    // 3. Cancel Cal.com Booking (Primary: DELETE)
-    if (calcomBookingId && CALCOM_KEY && calcomBookingId !== "undefined") {
-      console.log(`Cancelling Cal.com booking: ${calcomBookingId}`);
-      
-      const res = await fetch(`https://api.cal.com/v1/bookings/${calcomBookingId}?apiKey=${CALCOM_KEY}`, {
-        method: 'DELETE'
-      });
-      
-      if (res.ok) {
-        results.calcom = 'success';
-      } else {
-        console.log("Direct DELETE failed, trying /cancel endpoint as fallback...");
-        const cancelRes = await fetch(`https://api.cal.com/v1/bookings/${calcomBookingId}/cancel?apiKey=${CALCOM_KEY}`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ reason: "Cancelled via Antigravity CRM" })
-        });
-        results.calcom = cancelRes.ok ? 'success' : 'failed';
+    // 1. Archive Notion Pages (Remains same as Notion API hasn't changed)
+    if (NOTION_KEY) {
+      const notionHeaders = { 'Authorization': `Bearer ${NOTION_KEY}`, 'Content-Type': 'application/json', 'Notion-Version': '2022-06-28' };
+      if (notionPageId) {
+        const res = await fetch(`https://api.notion.com/v1/pages/${notionPageId}`, { method: 'PATCH', headers: notionHeaders, body: JSON.stringify({ archived: true }) });
+        results.notion = res.ok ? 'success' : 'failed';
       }
+      if (notionPlannerId) {
+        const res = await fetch(`https://api.notion.com/v1/pages/${notionPlannerId}`, { method: 'PATCH', headers: notionHeaders, body: JSON.stringify({ archived: true }) });
+        results.planner = res.ok ? 'success' : 'failed';
+      }
+    }
+
+    // 2. Cancel Cal.com Booking (v2 Migration)
+    if (calcomBookingId && CALCOM_KEY && calcomBookingId !== "undefined") {
+      console.log(`[v2] Cancelling Cal.com booking: ${calcomBookingId}`);
+      
+      const res = await fetch(`https://api.cal.com/v2/bookings/${calcomBookingId}/cancel`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${CALCOM_KEY}`,
+          'cal-api-version': '2024-08-13',
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ cancellationReason: "Cancelled via Antigravity CRM" })
+      });
+      
+      results.calcom = res.ok ? 'success' : 'failed';
     }
 
     return new Response(JSON.stringify({ success: true, results }), { 

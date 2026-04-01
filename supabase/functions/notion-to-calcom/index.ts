@@ -11,7 +11,7 @@ const corsHeaders = {
 serve(async (req) => {
   if (req.method === 'OPTIONS') return new Response('ok', { headers: corsHeaders })
 
-  console.log("--- [v5] NOTION TO CAL.COM FULL DELETE START ---");
+  console.log("--- [notion-to-calcom] v2 MIGRATION ---");
 
   try {
     const supabaseUrl = Deno.env.get('SUPABASE_URL')
@@ -19,32 +19,27 @@ serve(async (req) => {
     const supabase = createClient(supabaseUrl, supabaseKey)
     
     const NOTION_KEY = Deno.env.get('NOTION_API_KEY')
-    const CALCOM_KEY = Deno.env.get('CALCOM_API_KEY') || Deno.env.get('CAL_COM_API_KEY');
+    const CALCOM_KEY = Deno.env.get('CALCOM_API_KEY');
 
     if (!NOTION_KEY || !CALCOM_KEY) {
-      throw new Error(`Missing Secrets: Notion=${!!NOTION_KEY}, Calcom=${!!CALCOM_KEY}`);
+      throw new Error("Missing API keys.");
     }
 
     const body = await req.json().catch(() => ({}));
     const rawId = body.data?.id || body.id || body.page_id || body.source?.page_id;
 
-    if (!rawId) {
-      return new Response(JSON.stringify({ error: "Missing Notion Page ID" }), { status: 400, headers: corsHeaders });
-    }
+    if (!rawId) return new Response(JSON.stringify({ error: "Missing ID" }), { status: 400, headers: corsHeaders });
 
     const notionPageId = rawId.includes('-') ? rawId : rawId.replace(/(.{8})(.{4})(.{4})(.{4})(.{12})/, "$1-$2-$3-$4-$5");
     
     const { data: appointment, error: dbError } = await supabase
       .from('appointments')
-      .select('id, calcom_booking_id, notion_planner_id, notion_page_id')
+      .select('id, calcom_booking_id, notion_planner_id')
       .eq('notion_page_id', notionPageId)
       .maybeSingle();
 
     if (dbError) throw dbError;
-
-    if (!appointment) {
-      return new Response(JSON.stringify({ message: "No record found" }), { status: 200, headers: corsHeaders });
-    }
+    if (!appointment) return new Response(JSON.stringify({ message: "No record" }), { status: 200, headers: corsHeaders });
 
     // 1. Archive Notion Planner
     if (appointment.notion_planner_id) {
@@ -55,17 +50,23 @@ serve(async (req) => {
       });
     }
 
-    // 2. Delete Cal.com Booking
+    // 2. Cancel Cal.com Booking (v2)
     if (appointment.calcom_booking_id && appointment.calcom_booking_id !== "undefined") {
-      await fetch(`https://api.cal.com/v1/bookings/${appointment.calcom_booking_id}?apiKey=${CALCOM_KEY}`, {
-        method: 'DELETE'
+      await fetch(`https://api.cal.com/v2/bookings/${appointment.calcom_booking_id}/cancel`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${CALCOM_KEY}`,
+          'cal-api-version': '2024-08-13',
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ cancellationReason: "Deleted from Notion" })
       });
     }
 
-    // 3. Full Delete from Supabase CRM
+    // 3. Delete from Supabase
     await supabase.from('appointments').delete().eq('id', appointment.id);
 
-    return new Response(JSON.stringify({ success: true, action: 'deleted' }), { status: 200, headers: corsHeaders });
+    return new Response(JSON.stringify({ success: true }), { status: 200, headers: corsHeaders });
   } catch (error) {
     console.error("Sync Error:", error.message);
     return new Response(JSON.stringify({ error: error.message }), { status: 400, headers: corsHeaders });

@@ -9,44 +9,40 @@ const corsHeaders = {
 serve(async (req) => {
   if (req.method === 'OPTIONS') return new Response('ok', { headers: corsHeaders })
 
-  console.log("--- [get-calcom-slots] v2 START ---");
+  console.log("--- [get-calcom-slots] v2 MIGRATION ---");
 
   try {
-    let { start, end, eventTypeId, timeZone, username, eventTypeSlug } = await req.json()
+    let { start, end, eventTypeId, timeZone } = await req.json()
     const CALCOM_KEY = Deno.env.get('CALCOM_API_KEY')
 
     if (!CALCOM_KEY) throw new Error("Missing CALCOM_API_KEY in Supabase Secrets.")
 
     const headers = {
       'Authorization': `Bearer ${CALCOM_KEY}`,
-      'cal-api-version': '2024-09-04',
+      'cal-api-version': '2024-08-13',
       'Content-Type': 'application/json',
     };
 
-    // 1. If no identifier is provided, try to fetch the first active event type (v2)
-    if (!eventTypeId && !username && !eventTypeSlug) {
-      console.log("[v2] No identifier provided. Fetching event types...");
+    // 1. If no eventTypeId is provided, fetch the first one
+    if (!eventTypeId) {
       const etResponse = await fetch('https://api.cal.com/v2/event-types', { headers });
       const etData = await etResponse.json();
-      
       if (etData.status === 'success' && etData.data?.length > 0) {
         eventTypeId = etData.data[0].id;
-        console.log(`[v2] Auto-selected Event Type ID: ${eventTypeId} (${etData.data[0].title})`);
       } else {
-        throw new Error("No active v2 Event Types found. Please check your Cal.com account.");
+        throw new Error("No active Event Types found.");
       }
     }
 
-    // 2. Build the slots URL (v2)
-    const url = new URL('https://api.cal.com/v2/slots')
-    url.searchParams.set('start', start)
-    url.searchParams.set('end', end)
-    if (eventTypeId) url.searchParams.set('eventTypeId', eventTypeId)
-    if (username) url.searchParams.set('username', username)
-    if (eventTypeSlug) url.searchParams.set('eventTypeSlug', eventTypeSlug)
+    // 2. Build the v2 slots URL
+    // Note: v2 uses startTime and endTime instead of start/end
+    const url = new URL('https://api.cal.com/v2/slots/available')
+    url.searchParams.set('startTime', start)
+    url.searchParams.set('endTime', end)
+    url.searchParams.set('eventTypeId', eventTypeId)
     if (timeZone) url.searchParams.set('timeZone', timeZone)
 
-    console.log(`[v2] Fetching slots from: ${url.toString()}`);
+    console.log(`[v2] Fetching slots for Event Type: ${eventTypeId}`);
 
     const response = await fetch(url.toString(), { method: 'GET', headers })
     const data = await response.json()
@@ -54,15 +50,19 @@ serve(async (req) => {
     if (!response.ok) {
       return new Response(JSON.stringify({ 
         status: 'error', 
-        message: data.message || "Cal.com v2 API Error",
-        details: data 
+        message: data.error?.message || "Cal.com v2 API Error"
       }), { 
         status: 200,
         headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
       })
     }
 
-    return new Response(JSON.stringify(data), { 
+    // v2 returns { status: "success", data: { slots: { "date": [...] } } }
+    // We transform it to match the UI's expected format: { data: { "date": [...] } }
+    return new Response(JSON.stringify({
+      status: 'success',
+      data: data.data.slots
+    }), { 
       status: 200, 
       headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
     })

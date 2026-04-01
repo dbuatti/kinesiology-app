@@ -122,7 +122,8 @@ const CalcomSlotsView = () => {
       const daySlots = slots[date];
       if (daySlots.length > 0) {
         const formattedDate = format(new Date(date), "EEEE, MMMM do");
-        const times = daySlots.map(s => format(new Date(s.start), "h:mm a")).join(", ");
+        // Support both v1 (start) and v2 (time)
+        const times = daySlots.map(s => format(new Date(s.time || s.start), "h:mm a")).join(", ");
         text += `• ${formattedDate}: ${times}\n`;
       }
     });
@@ -287,7 +288,8 @@ const CalcomSlotsView = () => {
                           className="flex items-center justify-center p-2.5 rounded-xl bg-slate-50 border border-slate-100 text-xs font-black text-slate-700 hover:bg-indigo-50 hover:border-indigo-200 hover:text-indigo-600 transition-all cursor-default"
                         >
                           <Clock size={12} className="mr-2 opacity-40" />
-                          {format(new Date(slot.start), "h:mm a")}
+                          {/* Support both v1 (start) and v2 (time) */}
+                          {format(new Date(slot.time || slot.start), "h:mm a")}
                         </div>
                       ))}
                     </div>

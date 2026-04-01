@@ -9,7 +9,7 @@ const corsHeaders = {
 serve(async (req) => {
   if (req.method === 'OPTIONS') return new Response('ok', { headers: corsHeaders })
 
-  console.log("--- [get-calcom-slots] v2 MIGRATION ---");
+  console.log("--- [get-calcom-slots] v2 WITH VERSION ---");
 
   try {
     let { start, end, eventTypeId, timeZone } = await req.json()
@@ -23,26 +23,14 @@ serve(async (req) => {
       'Content-Type': 'application/json',
     };
 
-    // 1. If no eventTypeId is provided, fetch the first one
-    if (!eventTypeId) {
-      const etResponse = await fetch('https://api.cal.com/v2/event-types', { headers });
-      const etData = await etResponse.json();
-      if (etData.status === 'success' && etData.data?.length > 0) {
-        eventTypeId = etData.data[0].id;
-      } else {
-        throw new Error("No active Event Types found.");
-      }
-    }
+    // Use provided event type or default
+    const targetEventTypeId = eventTypeId || "4279898";
 
-    // 2. Build the v2 slots URL
-    // Note: v2 uses startTime and endTime instead of start/end
     const url = new URL('https://api.cal.com/v2/slots/available')
     url.searchParams.set('startTime', start)
     url.searchParams.set('endTime', end)
-    url.searchParams.set('eventTypeId', eventTypeId)
+    url.searchParams.set('eventTypeId', targetEventTypeId)
     if (timeZone) url.searchParams.set('timeZone', timeZone)
-
-    console.log(`[v2] Fetching slots for Event Type: ${eventTypeId}`);
 
     const response = await fetch(url.toString(), { method: 'GET', headers })
     const data = await response.json()
@@ -57,8 +45,6 @@ serve(async (req) => {
       })
     }
 
-    // v2 returns { status: "success", data: { slots: { "date": [...] } } }
-    // We transform it to match the UI's expected format: { data: { "date": [...] } }
     return new Response(JSON.stringify({
       status: 'success',
       data: data.data.slots
@@ -68,7 +54,7 @@ serve(async (req) => {
     })
 
   } catch (error) {
-    console.error("v2 Slots Error:", error.message);
+    console.error("Slots Error:", error.message);
     return new Response(JSON.stringify({ status: 'error', message: error.message }), { 
       status: 200, 
       headers: { ...corsHeaders, 'Content-Type': 'application/json' } 

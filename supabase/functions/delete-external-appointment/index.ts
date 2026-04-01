@@ -18,7 +18,6 @@ serve(async (req) => {
 
     const results = { notion: 'skipped', planner: 'skipped', calcom: 'skipped' };
 
-    // 1. Archive Notion Pages (Remains same as Notion API hasn't changed)
     if (NOTION_KEY) {
       const notionHeaders = { 'Authorization': `Bearer ${NOTION_KEY}`, 'Content-Type': 'application/json', 'Notion-Version': '2022-06-28' };
       if (notionPageId) {
@@ -31,7 +30,7 @@ serve(async (req) => {
       }
     }
 
-    // 2. Cancel Cal.com Booking (v2 Migration)
+    // v2 Cancellation: POST /v2/bookings/{uid}/cancel
     if (calcomBookingId && CALCOM_KEY && calcomBookingId !== "undefined") {
       console.log(`[v2] Cancelling Cal.com booking: ${calcomBookingId}`);
       

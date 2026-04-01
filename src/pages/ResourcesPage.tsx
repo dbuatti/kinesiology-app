@@ -75,6 +75,7 @@ import AppLayout from "@/components/crm/AppLayout";
 import PulsePointReference from "@/components/crm/PulsePointReference";
 import HandPolarityReference from "@/components/crm/HandPolarityReference";
 import MuscleReference from "@/components/crm/MuscleReference";
+import BaGuaReference from "@/components/crm/BaGuaReference";
 
 const CATEGORIES = [
   {
@@ -132,6 +133,7 @@ const CATEGORIES = [
     items: [
       { id: "clock", label: "Meridian Clock", icon: Clock, desc: "Interactive TCM peak activity reference." },
       { id: "elements", label: "5 Elements", icon: RefreshCw, desc: "Sheng and Ko cycle relationships." },
+      { id: "bagua", label: "Ba Gua", icon: Zap, desc: "Constitutional emotional motivators and meridians." },
       { id: "channels", label: "Channels", icon: Layers, desc: "Detailed meridian and emotion mapping." },
       { id: "acupoints", label: "Acupoints", icon: Target, desc: "Primary point locations and clinical functions." },
     ]
@@ -382,6 +384,7 @@ const ResourcesPage = () => {
               {/* TCM & Meridians */}
               <TabsContent value="clock"><MeridianClock /></TabsContent>
               <TabsContent value="elements"><FiveElementCycle /></TabsContent>
+              <TabsContent value="bagua"><BaGuaReference /></TabsContent>
               <TabsContent value="channels"><TcmChannelReference /></TabsContent>
               <TabsContent value="acupoints"><AcupointReference /></TabsContent>
 
@@ -613,20 +616,20 @@ const ResourcesPage = () => {
                           </div>
                         </CardContent>
                       </Card>
-                    </div>
 
-                    <div className="max-w-4xl mx-auto">
-                      <div className="flex items-center gap-3 mb-6 px-4">
-                        <div className="w-10 h-10 rounded-xl bg-indigo-600 text-white flex items-center justify-center shadow-lg">
-                          <Target size={20} />
+                      <div className="max-w-4xl mx-auto">
+                        <div className="flex items-center gap-3 mb-6 px-4">
+                          <div className="w-10 h-10 rounded-xl bg-indigo-600 text-white flex items-center justify-center shadow-lg">
+                            <Target size={20} />
+                          </div>
+                          <h3 className="text-2xl font-black text-foreground">Interactive Assessment Tool</h3>
                         </div>
-                        <h3 className="text-2xl font-black text-foreground">Interactive Assessment Tool</h3>
+                        <RightingReflexesAssessment 
+                          appointmentId="temp" 
+                          initialNotes={null} 
+                          onUpdate={() => {}} 
+                        />
                       </div>
-                      <RightingReflexesAssessment 
-                        appointmentId="temp" 
-                        initialNotes={null} 
-                        onUpdate={() => {}} 
-                      />
                     </div>
                   </Card>
                 </div>

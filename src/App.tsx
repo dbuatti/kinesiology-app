@@ -39,6 +39,7 @@ import QuickCalibratePage from "./pages/QuickCalibratePage";
 import PEACEFrameworkPage from "./pages/PEACEFrameworkPage";
 import MarketingEnginePage from "./pages/MarketingEnginePage";
 import BusinessHubPage from "./pages/BusinessHubPage";
+import AvailabilityPage from "./pages/AvailabilityPage";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -80,6 +81,7 @@ const AppRoutes = () => {
         <Route path="/appointments" element={<AppointmentsPage />} />
         <Route path="/appointments/:id" element={<AppointmentDetailPage />} />
         <Route path="/oversight" element={<ClinicalOversightPage />} />
+        <Route path="/availability" element={<AvailabilityPage />} />
         
         {/* Practice Lab */}
         <Route path="/practice/calibrate" element={<QuickCalibratePage />} />

@@ -28,7 +28,8 @@ import {
   ExternalLink,
   Mic,
   Sparkles,
-  Briefcase
+  Briefcase,
+  CalendarDays
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import SearchBar from "./SearchBar";
@@ -69,7 +70,7 @@ const Sidebar = ({ onHide }: SidebarProps) => {
   const [appDialogOpen, setAppDialogOpen] = useState(false);
   const { isPrivate, togglePrivacy } = usePrivacyMode();
   
-  const isOpsPath = (path: string) => path === "/" || path.startsWith("/appointments") || path.startsWith("/clients");
+  const isOpsPath = (path: string) => path === "/" || path.startsWith("/appointments") || path.startsWith("/clients") || path === "/availability";
   const isLabPath = (path: string) => path.startsWith("/practice/calibrate") || path.startsWith("/practice/procedures") || path.startsWith("/oversight");
   const isLibraryPath = (path: string) => path.startsWith("/resources") || path.startsWith("/practice/self") || path.startsWith("/peace-framework");
   const isBusinessPath = (path: string) => path.startsWith("/business");
@@ -112,6 +113,7 @@ const Sidebar = ({ onHide }: SidebarProps) => {
     { label: "Dashboard", icon: LayoutDashboard, path: "/", shortcut: "⌘D" },
     { label: "Appointments", icon: Calendar, path: "/appointments", shortcut: "⌘2" },
     { label: "Clients", icon: Users, path: "/clients", shortcut: "⌘1" },
+    { label: "Availability", icon: CalendarDays, path: "/availability" },
   ];
 
   const labItems = [

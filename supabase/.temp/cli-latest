@@ -10,13 +10,15 @@ const corsHeaders = {
 serve(async (req) => {
   if (req.method === 'OPTIONS') return new Response('ok', { headers: corsHeaders })
 
-  console.log("--- [manage-calcom-availability] v4.2 — Cal.com v2 API ---");
+  console.log("--- [manage-calcom-availability] v4.3 — Cal.com v2 Full Day Block ---");
 
   try {
     const { action, date, scheduleId: providedScheduleId } = await req.json()
-    const CALCOM_KEY = Deno.env.get('CALCOM_API_KEY')  // Should be a v2 token (starts with "cal_")
+    const CALCOM_KEY = Deno.env.get('CALCOM_API_KEY')
 
-    if (!CALCOM_KEY) throw new Error("Missing CALCOM_API_KEY");
+    if (!CALCOM_KEY || !CALCOM_KEY.startsWith('cal_')) {
+      throw new Error("Invalid or missing CALCOM_API_KEY. Use a v2 key starting with 'cal_'");
+    }
 
     const targetId = providedScheduleId || "1387833";
     const dateObj = new Date(date);
@@ -30,7 +32,7 @@ serve(async (req) => {
       method: 'GET',
       headers: {
         'Authorization': `Bearer ${CALCOM_KEY}`,
-        'cal-api-version': '2024-06-11',   // Use the latest stable version from docs
+        'cal-api-version': '2024-06-11',   // Update this if a newer version is documented
         'Content-Type': 'application/json'
       }
     });
@@ -38,34 +40,30 @@ serve(async (req) => {
     const getData = await getRes.json();
     if (!getRes.ok) {
       console.error("Fetch Error:", JSON.stringify(getData));
-      throw new Error(`Failed to fetch: ${getData.message || getRes.status}`);
+      throw new Error(`Failed to fetch schedule: ${getData.message || getRes.status}`);
     }
 
     let currentOverrides = getData.data?.overrides || [];
     console.log(`CURRENT OVERRIDES COUNT: ${currentOverrides.length}`);
 
-    // 2. Remove existing override for this date (if any)
+    // 2. Remove any existing override for this exact date
     const updatedOverrides = currentOverrides.filter(o => {
-      const oDate = typeof o.date === 'string' ? o.date.split('T')[0] : o.date;
+      const oDate = typeof o.date === 'string' ? o.date.split('T')[0] : String(o.date || '');
       return oDate !== dateOnly;
     });
 
     if (action === 'block-day') {
-      console.log(`Adding full-day block for ${dateOnly}`);
+      console.log(`Adding FULL-DAY BLOCK for ${dateOnly}`);
 
-      // For full-day block, the most reliable way is to override with NO availability periods.
-      // Some users report success by omitting startTime/endTime entirely for the date.
+      // This is the key fix for "Unavailable All Day"
       updatedOverrides.push({
         date: dateOnly
-        // Do NOT add startTime/endTime → this signals "unavailable all day" in many cases
-        // Alternative (if the above doesn't stick): use very narrow or inverted times, but try empty first
+        // NO startTime / endTime → tells Cal.com the whole day is unavailable
       });
     }
 
-    // 3. PATCH using v2 (send overrides directly — no "schedule" wrapper needed in v2)
-    const payload = {
-      overrides: updatedOverrides
-    };
+    // 3. PATCH (v2 — overrides sent directly, no "schedule" wrapper)
+    const payload = { overrides: updatedOverrides };
 
     console.log("SENDING v2 PATCH PAYLOAD:", JSON.stringify(payload));
 
@@ -81,38 +79,46 @@ serve(async (req) => {
 
     const patchData = await patchRes.json();
     console.log(`PATCH Status: ${patchRes.status}`);
-    console.log("FULL PATCH RESPONSE:", JSON.stringify(patchData));
+    console.log("FULL PATCH RESPONSE BODY:", JSON.stringify(patchData));
 
     if (!patchRes.ok) {
-      throw new Error(`PATCH failed: ${patchData.message || patchRes.statusText}`);
+      console.error("PATCH Error:", JSON.stringify(patchData));
+      throw new Error(`Failed to update schedule: ${patchData.message || patchRes.statusText}`);
     }
 
-    // 4. Verify
+    // 4. Final verification
     const finalOverrides = patchData.data?.overrides || [];
     console.log("FINAL OVERRIDES COUNT:", finalOverrides.length);
 
     const isBlocked = finalOverrides.some(o => {
-      const oDate = typeof o.date === 'string' ? o.date.split('T')[0] : String(o.date);
+      const oDate = typeof o.date === 'string' ? o.date.split('T')[0] : String(o.date || '');
       return oDate === dateOnly;
     });
 
-    return new Response(JSON.stringify({
-      success: true,
+    return new Response(JSON.stringify({ 
+      success: true, 
       action,
       date: dateOnly,
       overridesCount: finalOverrides.length,
       actuallyBlocked: isBlocked,
-      debug: { sent: updatedOverrides.length }
-    }), {
-      status: 200,
-      headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+      debug: {
+        sentCount: updatedOverrides.length,
+        receivedCount: finalOverrides.length,
+        blockApplied: isBlocked
+      }
+    }), { 
+      status: 200, 
+      headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
     });
 
   } catch (error) {
     console.error("CRITICAL ERROR:", error.message);
-    return new Response(JSON.stringify({ status: 'error', message: error.message }), {
-      status: 400,
-      headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+    return new Response(JSON.stringify({ 
+      status: 'error', 
+      message: error.message 
+    }), { 
+      status: 400, 
+      headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
     });
   }
 })

@@ -19,7 +19,8 @@ import {
   Copy,
   Check,
   Ban,
-  Unlock
+  Unlock,
+  Hash
 } from "lucide-react";
 import { format, addWeeks, startOfToday, endOfDay } from "date-fns";
 import { supabase } from "@/integrations/supabase/client";
@@ -38,6 +39,10 @@ const CalcomSlotsView = () => {
   
   const [eventTypeId, setEventTypeId] = useState<string>(() => 
     localStorage.getItem('calcom_preferred_event_id') || "4279898"
+  );
+
+  const [scheduleId, setScheduleId] = useState<string>(() => 
+    localStorage.getItem('calcom_preferred_schedule_id') || ""
   );
 
   const fetchSlots = async () => {
@@ -68,9 +73,9 @@ const CalcomSlotsView = () => {
         showSuccess("Availability updated.");
       }
       
-      if (eventTypeId) {
-        localStorage.setItem('calcom_preferred_event_id', eventTypeId);
-      }
+      if (eventTypeId) localStorage.setItem('calcom_preferred_event_id', eventTypeId);
+      if (scheduleId) localStorage.setItem('calcom_preferred_schedule_id', scheduleId);
+      
     } catch (err: any) {
       console.error("Failed to fetch slots:", err);
       setError(err.message || "An unexpected error occurred.");
@@ -93,7 +98,8 @@ const CalcomSlotsView = () => {
         body: { 
           action, 
           date,
-          eventTypeId // Pass the event ID to help find the right schedule
+          eventTypeId,
+          scheduleId: scheduleId || undefined
         }
       });
 
@@ -122,7 +128,6 @@ const CalcomSlotsView = () => {
       const daySlots = slots[date];
       if (daySlots.length > 0) {
         const formattedDate = format(new Date(date), "EEEE, MMMM do");
-        // Support both v1 (start) and v2 (time)
         const times = daySlots.map(s => format(new Date(s.time || s.start), "h:mm a")).join(", ");
         text += `• ${formattedDate}: ${times}\n`;
       }
@@ -149,7 +154,7 @@ const CalcomSlotsView = () => {
             <Settings2 size={16} className="text-indigo-500" />
             <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Configuration</p>
           </div>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <div className="space-y-2">
               <label className="text-[10px] font-bold text-slate-500 uppercase ml-1">Lookahead Range</label>
               <div className="flex bg-muted p-1 rounded-xl w-max">
@@ -164,17 +169,30 @@ const CalcomSlotsView = () => {
                       weeks === w ? "bg-white text-indigo-600 shadow-sm" : "text-slate-500"
                     )}
                   >
-                    {w} Weeks
+                    {w}W
                   </Button>
                 ))}
               </div>
             </div>
             <div className="space-y-2">
-              <label className="text-[10px] font-bold text-slate-500 uppercase ml-1">Event Type ID</label>
+              <label className="text-[10px] font-bold text-slate-500 uppercase ml-1 flex items-center gap-1">
+                Event Type ID <Info size={10} className="text-slate-400" />
+              </label>
               <Input 
                 placeholder="e.g. 4279898" 
                 value={eventTypeId}
                 onChange={(e) => setEventTypeId(e.target.value)}
+                className="h-10 rounded-xl bg-muted/50 border-none font-bold text-xs"
+              />
+            </div>
+            <div className="space-y-2">
+              <label className="text-[10px] font-bold text-slate-500 uppercase ml-1 flex items-center gap-1">
+                Schedule ID <Hash size={10} className="text-slate-400" />
+              </label>
+              <Input 
+                placeholder="Optional override" 
+                value={scheduleId}
+                onChange={(e) => setScheduleId(e.target.value)}
                 className="h-10 rounded-xl bg-muted/50 border-none font-bold text-xs"
               />
             </div>
@@ -188,8 +206,8 @@ const CalcomSlotsView = () => {
             disabled={loading || dates.length === 0}
             className="rounded-xl h-12 px-6 border-indigo-100 text-indigo-600 hover:bg-indigo-50 font-black text-xs uppercase tracking-widest"
           >
-            {copied ? <Check size={16} className="mr-2 text-emerald-500" /> : <Copy size={16} className="mr-2" />}
-            Copy Availability
+            {copied ? <Check size={16} className="mr-2" /> : <Copy size={16} className="mr-2" />}
+            Copy
           </Button>
           <Button 
             onClick={fetchSlots} 
@@ -207,6 +225,9 @@ const CalcomSlotsView = () => {
           <AlertCircle className="h-5 w-5 text-rose-600" />
           <AlertDescription className="text-sm text-rose-900 font-bold">
             Error: {error}
+            <p className="mt-2 text-xs font-medium opacity-80">
+              Tip: Try manually entering your **Schedule ID** from the Cal.com Availability URL.
+            </p>
           </AlertDescription>
         </Alert>
       )}
@@ -288,7 +309,6 @@ const CalcomSlotsView = () => {
                           className="flex items-center justify-center p-2.5 rounded-xl bg-slate-50 border border-slate-100 text-xs font-black text-slate-700 hover:bg-indigo-50 hover:border-indigo-200 hover:text-indigo-600 transition-all cursor-default"
                         >
                           <Clock size={12} className="mr-2 opacity-40" />
-                          {/* Support both v1 (start) and v2 (time) */}
                           {format(new Date(slot.time || slot.start), "h:mm a")}
                         </div>
                       ))}

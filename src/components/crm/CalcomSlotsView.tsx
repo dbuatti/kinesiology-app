@@ -18,7 +18,8 @@ import {
   Settings2,
   Copy,
   Check,
-  Ban
+  Ban,
+  Unlock
 } from "lucide-react";
 import { format, addWeeks, startOfToday, endOfDay } from "date-fns";
 import { supabase } from "@/integrations/supabase/client";
@@ -29,13 +30,12 @@ import { Input } from "@/components/ui/input";
 
 const CalcomSlotsView = () => {
   const [loading, setLoading] = useState(false);
-  const [blockingDate, setBlockingDate] = useState<string | null>(null);
+  const [processingDate, setProcessingDate] = useState<string | null>(null);
   const [slots, setSlots] = useState<Record<string, any[]>>({});
   const [error, setError] = useState<string | null>(null);
   const [weeks, setWeeks] = useState(4);
   const [copied, setCopied] = useState(false);
   
-  // Defaulting to your specific event ID: 4279898
   const [eventTypeId, setEventTypeId] = useState<string>(() => 
     localStorage.getItem('calcom_preferred_event_id') || "4279898"
   );
@@ -79,16 +79,18 @@ const CalcomSlotsView = () => {
     }
   };
 
-  const handleBlockDay = async (date: string) => {
-    if (!confirm(`Are you sure you want to block off ${format(new Date(date), "EEEE, MMMM do")}? This will mark you as unavailable in Cal.com.`)) return;
+  const handleToggleBlock = async (date: string, isCurrentlyBlocked: boolean) => {
+    const action = isCurrentlyBlocked ? 'unblock-day' : 'block-day';
+    const confirmMsg = isCurrentlyBlocked 
+      ? `Restore default availability for ${format(new Date(date), "EEEE, MMMM do")}?`
+      : `Block off ${format(new Date(date), "EEEE, MMMM do")}? You will be marked as unavailable.`;
 
-    setBlockingDate(date);
+    if (!confirm(confirmMsg)) return;
+
+    setProcessingDate(date);
     try {
       const { data, error: invokeError } = await supabase.functions.invoke('manage-calcom-availability', {
-        body: { 
-          action: 'block-day',
-          date: date
-        }
+        body: { action, date }
       });
 
       if (invokeError) throw invokeError;
@@ -98,14 +100,12 @@ const CalcomSlotsView = () => {
         return;
       }
 
-      showSuccess(`Day blocked: ${date}`);
-      // Refresh slots to show the change
+      showSuccess(isCurrentlyBlocked ? "Day unblocked." : "Day blocked.");
       fetchSlots();
     } catch (err: any) {
-      console.error("Failed to block day:", err);
-      showError(err.message || "Failed to block day.");
+      showError("Failed to update availability.");
     } finally {
-      setBlockingDate(null);
+      setProcessingDate(null);
     }
   };
 
@@ -114,7 +114,6 @@ const CalcomSlotsView = () => {
     if (dates.length === 0) return;
 
     let text = "Here is my current availability for a session:\n\n";
-    
     dates.forEach(date => {
       const daySlots = slots[date];
       if (daySlots.length > 0) {
@@ -123,12 +122,11 @@ const CalcomSlotsView = () => {
         text += `• ${formattedDate}: ${times}\n`;
       }
     });
-
     text += "\nYou can book directly here: https://cal.com/danielebuatti/fnh-neuro-75";
 
     navigator.clipboard.writeText(text);
     setCopied(true);
-    showSuccess("Availability copied to clipboard!");
+    showSuccess("Availability copied!");
     setTimeout(() => setCopied(false), 2000);
   };
 
@@ -204,9 +202,6 @@ const CalcomSlotsView = () => {
           <AlertCircle className="h-5 w-5 text-rose-600" />
           <AlertDescription className="text-sm text-rose-900 font-bold">
             Error: {error}
-            <p className="mt-2 text-xs font-medium text-rose-700">
-              Ensure your CALCOM_API_KEY is set in Supabase Secrets and that you have active event types in Cal.com.
-            </p>
           </AlertDescription>
         </Alert>
       )}
@@ -218,55 +213,85 @@ const CalcomSlotsView = () => {
         </div>
       ) : dates.length > 0 ? (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {dates.map(date => (
-            <Card key={date} className="border-none shadow-md rounded-[2rem] bg-white overflow-hidden group hover:shadow-xl transition-all">
-              <CardHeader className="bg-slate-50 border-b border-slate-100 p-6">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-xl bg-indigo-600 text-white flex items-center justify-center shadow-lg">
-                      <Calendar size={20} />
+          {dates.map(date => {
+            const daySlots = slots[date];
+            const isBlocked = daySlots.length === 0;
+
+            return (
+              <Card key={date} className={cn(
+                "border-none shadow-md rounded-[2rem] overflow-hidden group hover:shadow-xl transition-all",
+                isBlocked ? "bg-slate-50 opacity-80" : "bg-white"
+              )}>
+                <CardHeader className="bg-slate-50 border-b border-slate-100 p-6">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-3">
+                      <div className={cn(
+                        "w-10 h-10 rounded-xl flex items-center justify-center shadow-lg",
+                        isBlocked ? "bg-slate-400" : "bg-indigo-600"
+                      )}>
+                        <Calendar size={20} className="text-white" />
+                      </div>
+                      <div>
+                        <CardTitle className="text-lg font-black text-slate-900">
+                          {format(new Date(date), "EEEE")}
+                        </CardTitle>
+                        <CardDescription className="font-bold text-[10px] uppercase tracking-widest text-indigo-600">
+                          {format(new Date(date), "MMMM d, yyyy")}
+                        </CardDescription>
+                      </div>
                     </div>
-                    <div>
-                      <CardTitle className="text-lg font-black text-slate-900">
-                        {format(new Date(date), "EEEE")}
-                      </CardTitle>
-                      <CardDescription className="font-bold text-[10px] uppercase tracking-widest text-indigo-600">
-                        {format(new Date(date), "MMMM d, yyyy")}
-                      </CardDescription>
+                    <div className="flex flex-col items-end gap-2">
+                      <Badge className={cn(
+                        "border-none font-black text-[8px] uppercase tracking-widest",
+                        isBlocked ? "bg-slate-200 text-slate-500" : "bg-emerald-50 text-emerald-600"
+                      )}>
+                        {daySlots.length} Slots
+                      </Badge>
+                      <Button 
+                        variant="ghost" 
+                        size="sm" 
+                        className={cn(
+                          "h-6 px-2 text-[8px] font-black uppercase tracking-widest rounded-md",
+                          isBlocked ? "text-emerald-600 hover:bg-emerald-50" : "text-rose-500 hover:bg-rose-50"
+                        )}
+                        onClick={() => handleToggleBlock(date, isBlocked)}
+                        disabled={processingDate === date}
+                      >
+                        {processingDate === date ? (
+                          <Loader2 size={10} className="animate-spin mr-1" />
+                        ) : isBlocked ? (
+                          <Unlock size={10} className="mr-1" />
+                        ) : (
+                          <Ban size={10} className="mr-1" />
+                        )}
+                        {isBlocked ? "Unblock Day" : "Block Day"}
+                      </Button>
                     </div>
                   </div>
-                  <div className="flex flex-col items-end gap-2">
-                    <Badge className="bg-emerald-50 text-emerald-600 border-none font-black text-[8px] uppercase tracking-widest">
-                      {slots[date].length} Slots
-                    </Badge>
-                    <Button 
-                      variant="ghost" 
-                      size="sm" 
-                      className="h-6 px-2 text-[8px] font-black uppercase tracking-widest text-rose-500 hover:bg-rose-50 hover:text-rose-600 rounded-md"
-                      onClick={() => handleBlockDay(date)}
-                      disabled={blockingDate === date}
-                    >
-                      {blockingDate === date ? <Loader2 size={10} className="animate-spin mr-1" /> : <Ban size={10} className="mr-1" />}
-                      Block Day
-                    </Button>
-                  </div>
-                </div>
-              </CardHeader>
-              <CardContent className="p-6">
-                <div className="grid grid-cols-2 gap-2">
-                  {slots[date].map((slot, idx) => (
-                    <div 
-                      key={idx} 
-                      className="flex items-center justify-center p-2.5 rounded-xl bg-slate-50 border border-slate-100 text-xs font-black text-slate-700 hover:bg-indigo-50 hover:border-indigo-200 hover:text-indigo-600 transition-all cursor-default"
-                    >
-                      <Clock size={12} className="mr-2 opacity-40" />
-                      {format(new Date(slot.start), "h:mm a")}
+                </CardHeader>
+                <CardContent className="p-6">
+                  {isBlocked ? (
+                    <div className="py-8 text-center space-y-2">
+                      <Ban size={24} className="mx-auto text-slate-300" />
+                      <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">No Availability</p>
                     </div>
-                  ))}
-                </div>
-              </CardContent>
-            </Card>
-          ))}
+                  ) : (
+                    <div className="grid grid-cols-2 gap-2">
+                      {daySlots.map((slot, idx) => (
+                        <div 
+                          key={idx} 
+                          className="flex items-center justify-center p-2.5 rounded-xl bg-slate-50 border border-slate-100 text-xs font-black text-slate-700 hover:bg-indigo-50 hover:border-indigo-200 hover:text-indigo-600 transition-all cursor-default"
+                        >
+                          <Clock size={12} className="mr-2 opacity-40" />
+                          {format(new Date(slot.start), "h:mm a")}
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+            );
+          })}
         </div>
       ) : !loading && (
         <div className="text-center py-32 bg-slate-50 rounded-[3rem] border-2 border-dashed border-slate-200">
@@ -274,23 +299,8 @@ const CalcomSlotsView = () => {
             <CalendarDays size={40} className="text-slate-200" />
           </div>
           <h3 className="text-xl font-black text-slate-900">No availability found</h3>
-          <p className="text-slate-500 mt-2 max-w-xs mx-auto font-medium">
-            Check your Cal.com schedule or ensure your API key is correctly configured in Supabase.
-          </p>
         </div>
       )}
-
-      <div className="p-8 bg-slate-900 text-white rounded-[2.5rem] flex items-start gap-6 shadow-2xl">
-        <div className="w-14 h-14 rounded-2xl bg-indigo-600 text-white flex items-center justify-center shadow-xl shrink-0">
-          <Info size={32} />
-        </div>
-        <div className="space-y-2">
-          <h4 className="text-xl font-black text-indigo-400">Practitioner Note</h4>
-          <p className="text-slate-300 font-medium leading-relaxed italic">
-            "This view shows your live availability as seen by clients. Use the 'Block Day' button to quickly mark yourself as unavailable for a specific date without leaving the CRM."
-          </p>
-        </div>
-      </div>
     </div>
   );
 };

@@ -26,61 +26,60 @@ serve(async (req) => {
 
     let scheduleId = providedScheduleId;
 
-    // 1. If no scheduleId is provided, fetch the default schedule
     if (!scheduleId) {
-      console.log("Fetching schedules to find default...");
       const schedulesRes = await fetch('https://api.cal.com/v2/schedules', { headers });
       const schedulesData = await schedulesRes.json();
       
       if (schedulesData.status === 'success' && schedulesData.data?.length > 0) {
-        // Use the first schedule found
         scheduleId = schedulesData.data[0].id;
-        console.log(`Using Schedule ID: ${scheduleId}`);
       } else {
         throw new Error("No schedules found in your Cal.com account.");
       }
     }
 
-    if (action === 'block-day') {
-      console.log(`Blocking day: ${date} on schedule ${scheduleId}`);
-      
-      // 2. Get current schedule to preserve existing overrides
-      const scheduleRes = await fetch(`https://api.cal.com/v2/schedules/${scheduleId}`, { headers });
-      const scheduleData = await scheduleRes.json();
-      
-      if (scheduleData.status !== 'success') {
-        throw new Error(`Failed to fetch schedule: ${scheduleData.message}`);
-      }
+    // Fetch current schedule to manage overrides
+    const scheduleRes = await fetch(`https://api.cal.com/v2/schedules/${scheduleId}`, { headers });
+    const scheduleData = await scheduleRes.json();
+    
+    if (scheduleData.status !== 'success') {
+      throw new Error(`Failed to fetch schedule: ${scheduleData.message}`);
+    }
 
-      const currentOverrides = scheduleData.data.overrides || [];
-      
-      // 3. Add new override for the date with NO time slots (empty array)
-      // Format: { date: "YYYY-MM-DD", slots: [] }
-      const newOverrides = [
+    const currentOverrides = scheduleData.data.overrides || [];
+    let newOverrides = [];
+
+    if (action === 'block-day') {
+      console.log(`Blocking day: ${date}`);
+      newOverrides = [
         ...currentOverrides.filter(o => o.date !== date),
         { date: date, slots: [] }
       ];
-
-      // 4. Update the schedule
-      const updateRes = await fetch(`https://api.cal.com/v2/schedules/${scheduleId}`, {
-        method: 'PATCH',
-        headers,
-        body: JSON.stringify({ overrides: newOverrides })
-      });
-
-      const updateData = await updateRes.json();
-
-      if (updateData.status !== 'success') {
-        throw new Error(`Failed to update schedule: ${updateData.message}`);
-      }
-
-      return new Response(JSON.stringify({ success: true, message: `Day ${date} blocked successfully.` }), { 
-        status: 200, 
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
-      });
+    } else if (action === 'unblock-day') {
+      console.log(`Unblocking day: ${date}`);
+      newOverrides = currentOverrides.filter(o => o.date !== date);
+    } else {
+      throw new Error(`Unsupported action: ${action}`);
     }
 
-    throw new Error(`Unsupported action: ${action}`);
+    const updateRes = await fetch(`https://api.cal.com/v2/schedules/${scheduleId}`, {
+      method: 'PATCH',
+      headers,
+      body: JSON.stringify({ overrides: newOverrides })
+    });
+
+    const updateData = await updateRes.json();
+
+    if (updateData.status !== 'success') {
+      throw new Error(`Failed to update schedule: ${updateData.message}`);
+    }
+
+    return new Response(JSON.stringify({ 
+      success: true, 
+      message: `Day ${date} ${action === 'block-day' ? 'blocked' : 'unblocked'} successfully.` 
+    }), { 
+      status: 200, 
+      headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
+    });
 
   } catch (error) {
     console.error("Critical Error:", error.message);

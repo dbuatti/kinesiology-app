@@ -13,7 +13,7 @@ serve(async (req) => {
     return new Response('ok', { headers: corsHeaders })
   }
 
-  console.log("--- [v6.0] CREATE-CALCOM-BOOKING (API v2024-08-13) ---");
+  console.log("--- [v7.0] CREATE-CALCOM-BOOKING (API v2024-08-13) ---");
   
   try {
     const supabaseUrl = Deno.env.get('SUPABASE_URL');
@@ -65,19 +65,21 @@ serve(async (req) => {
       throw new Error(`Client '${client.name}' has no email address.`);
     }
 
-    // Cal.com v2 Booking Payload (v6.0)
-    // Using the 2024-08-13 stable version schema
+    // Cal.com v2 Booking Payload (v7.0)
     const bookingPayload = {
       start: startTime,
       eventTypeId: parseInt(eventTypeId, 10),
       attendee: {
         name: client.name,
         email: client.email,
-        timeZone: Intl.DateTimeFormat().resolvedOptions().timeZone || "Australia/Melbourne",
+        timeZone: "Australia/Melbourne", // Defaulting to your practice timezone
         language: "en"
       },
-      // We pass the custom title and notes in metadata
-      // Note: Some event types might require these in 'responses' if they are mandatory fields
+      // Mandatory fields in Cal.com are passed in 'responses'
+      responses: {
+        title: title || "Kinesiology Session",
+        notes: notes || ""
+      },
       metadata: { 
         crm_title: title || "Kinesiology Session",
         crm_notes: notes || "",
@@ -102,11 +104,7 @@ serve(async (req) => {
     if (!response.ok) {
       console.error(`❌ Cal.com API Error (${response.status}):`, JSON.stringify(result));
       
-      // Extract the most useful error message
-      const errorMessage = result.message || 
-                           (result.error && typeof result.error === 'object' ? result.error.message : null) || 
-                           result.error || 
-                           "Cal.com API Error";
+      const errorMessage = result.error?.message || result.message || "Cal.com API Error";
 
       return new Response(JSON.stringify({ 
         success: false, 

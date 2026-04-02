@@ -1,5 +1,5 @@
 // @ts-nocheck
-import { serve } from "https://deno.land/std@0.177.0/http/server.ts"
+import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
 
 const corsHeaders = {
@@ -9,52 +9,54 @@ const corsHeaders = {
 }
 
 serve(async (req) => {
-  // 1. Handle CORS preflight
+  // 1. Immediate OPTIONS handling
   if (req.method === 'OPTIONS') {
     return new Response('ok', { headers: corsHeaders })
   }
 
-  console.log("--- [v2.3] CREATE-CALCOM-BOOKING START ---");
+  console.log("--- [v2.1] CREATE-CALCOM-BOOKING START ---");
   
   try {
-    const CALCOM_KEY = Deno.env.get('CALCOM_API_KEY');
+    // 2. Check Environment Secrets immediately
     const supabaseUrl = Deno.env.get('SUPABASE_URL');
     const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY');
-    const authHeader = req.headers.get('Authorization');
+    const CALCOM_KEY = Deno.env.get('CALCOM_API_KEY');
 
-    // Log configuration state (safe check)
-    console.log(`Config Check: CALCOM_KEY=${!!CALCOM_KEY}, URL=${!!supabaseUrl}, ROLE_KEY=${!!supabaseKey}, AuthHeader=${!!authHeader}`);
+    console.log(`Env Check: URL=${!!supabaseUrl}, ServiceKey=${!!supabaseKey}, CalKey=${!!CALCOM_KEY} (Len: ${CALCOM_KEY?.length || 0})`);
 
     if (!CALCOM_KEY) {
-      console.error("❌ CRITICAL: CALCOM_API_KEY is not set in Supabase secrets.");
-      return new Response(JSON.stringify({ 
-        error: "Missing API Key", 
-        message: "CALCOM_API_KEY not found in Supabase secrets." 
-      }), { 
-        status: 418, // Teapot: Identifies missing secret
+      console.error("❌ Missing CALCOM_API_KEY secret.");
+      return new Response(JSON.stringify({ error: "Cal.com API key not set in Supabase secrets." }), { 
+        status: 418, // Teapot: If you see this, the secret is missing!
         headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
       });
     }
 
+    // 3. Parse Body
     const body = await req.json().catch(e => {
-      console.error("❌ Request Body Parse Error:", e.message);
+      console.error("❌ JSON Parse Error:", e.message);
       return null;
     });
 
     if (!body) {
-      throw new Error("Invalid request: No JSON body provided.");
+      return new Response(JSON.stringify({ error: "Invalid or empty JSON body" }), { 
+        status: 400, 
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
+      });
     }
 
     const { clientId, startTime, eventTypeId } = body;
-    console.log(`Processing: Client=${clientId}, Time=${startTime}, Event=${eventTypeId}`);
+    console.log(`Request Data: Client=${clientId}, Time=${startTime}, Event=${eventTypeId}`);
 
     if (!clientId || !startTime || !eventTypeId) {
       throw new Error("Missing required fields: clientId, startTime, or eventTypeId.");
     }
 
+    // 4. Initialize Supabase with Service Role
     const supabase = createClient(supabaseUrl, supabaseKey);
 
-    // Fetch Client Details
+    // 5. Fetch Client
+    console.log(`Fetching client ${clientId}...`);
     const { data: client, error: clientError } = await supabase
       .from('clients')
       .select('name, email')
@@ -62,14 +64,18 @@ serve(async (req) => {
       .single();
 
     if (clientError || !client) {
-      console.error("❌ Client Lookup Error:", clientError);
-      throw new Error(`Client not found: ${clientError?.message || 'Unknown error'}`);
+      console.error("❌ Client lookup failed:", clientError);
+      return new Response(JSON.stringify({ error: `Client not found: ${clientError?.message}` }), { 
+        status: 404, 
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
+      });
     }
     
     if (!client.email) {
-      throw new Error(`Client '${client.name}' has no email address. Cannot book on Cal.com.`);
+      throw new Error(`Client '${client.name}' has no email address.`);
     }
 
+    // 6. Call Cal.com
     const bookingPayload = {
       start: startTime,
       eventTypeId: parseInt(eventTypeId, 10),
@@ -98,7 +104,7 @@ serve(async (req) => {
 
     if (!response.ok) {
       console.error(`❌ Cal.com API Error (${response.status}):`, JSON.stringify(result));
-      // If Cal.com returns 401, it means the CALCOM_API_KEY is invalid
+      // If Cal.com returns 401, we return 418 to distinguish it from Supabase 401
       const status = response.status === 401 ? 418 : 400;
       return new Response(JSON.stringify({ 
         success: false, 
@@ -110,7 +116,7 @@ serve(async (req) => {
       });
     }
 
-    console.log(`✅ SUCCESS: Booking ${result.data?.id} created.`);
+    console.log(`✅ Success: Booking ${result.data?.id} created.`);
 
     return new Response(JSON.stringify({ 
       success: true, 
@@ -122,7 +128,7 @@ serve(async (req) => {
     });
 
   } catch (error) {
-    console.error("❌ CRITICAL ERROR:", error.message);
+    console.error("❌ Critical Function Error:", error.message);
     return new Response(JSON.stringify({ 
       success: false, 
       error: error.message 

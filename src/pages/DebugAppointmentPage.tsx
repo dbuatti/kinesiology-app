@@ -6,7 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { showSuccess, showError } from "@/utils/toast";
-import { Loader2, FlaskConical, Activity, RefreshCw, Sparkles, UserPlus, Trash2, AlertTriangle, Globe, Mail } from "lucide-react";
+import { Loader2, FlaskConical, Activity, RefreshCw, Sparkles, UserPlus, Trash2, AlertTriangle } from "lucide-react";
 import { subDays } from "date-fns";
 
 const DebugAppointmentPage = () => {
@@ -16,27 +16,6 @@ const DebugAppointmentPage = () => {
   const [heartRate, setHeartRate] = useState<string>("72");
   const [breathRate, setBreathRate] = useState<string>("12");
   const [debugInfo, setDebugInfo] = useState<any>(null);
-
-  const testKitSync = async () => {
-    setLoading(true);
-    try {
-      const { data: clients } = await supabase.from('clients').select('*').limit(1);
-      if (!clients || clients.length === 0) throw new Error("No clients found to test with.");
-      
-      const { data, error } = await supabase.functions.invoke('sync-to-kit', {
-        body: { record: clients[0] }
-      });
-
-      if (error) throw error;
-      setDebugInfo(data);
-      showSuccess("Kit Sync Function triggered successfully!");
-    } catch (err: any) {
-      showError(err.message || "Kit Sync failed");
-      setDebugInfo(err);
-    } finally {
-      setLoading(false);
-    }
-  };
 
   const cleanupTransverseAbdominals = async () => {
     if (!confirm("This will permanently delete ALL test records for 'Transverse Abdominals' across all clients and sessions. This cannot be undone. Proceed?")) return;
@@ -64,6 +43,7 @@ const DebugAppointmentPage = () => {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error("Not authenticated");
 
+      // 1. Create Arthur Dent
       const { data: client, error: clientError } = await supabase
         .from('clients')
         .insert({
@@ -79,6 +59,7 @@ const DebugAppointmentPage = () => {
 
       if (clientError) throw clientError;
 
+      // 2. Create 3 sessions with evolving patterns
       const sessions = [
         {
           user_id: user.id,
@@ -253,7 +234,7 @@ const DebugAppointmentPage = () => {
         </div>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
         <Card className="border-2 border-rose-200 bg-rose-50">
           <CardHeader>
             <CardTitle className="text-rose-900 flex items-center gap-2">
@@ -262,17 +243,25 @@ const DebugAppointmentPage = () => {
           </CardHeader>
           <CardContent className="space-y-4">
             <p className="text-sm text-rose-800">
-              Wipe specific data points to reset mastery stats.
+              Use these tools to remove specific data points from your history. This is useful if you've logged items for testing purposes and want to reset your mastery stats.
             </p>
-            <Button 
-              variant="destructive" 
-              size="sm" 
-              onClick={cleanupTransverseAbdominals}
-              disabled={loading}
-              className="w-full rounded-xl font-bold"
-            >
-              {loading ? <Loader2 className="animate-spin" size={16} /> : "Reset Transverse Abdominals"}
-            </Button>
+            <div className="p-4 bg-white rounded-xl border border-rose-200 space-y-4">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="font-bold text-slate-900">Transverse Abdominals</p>
+                  <p className="text-xs text-slate-500">Wipe all muscle test logs for this component.</p>
+                </div>
+                <Button 
+                  variant="destructive" 
+                  size="sm" 
+                  onClick={cleanupTransverseAbdominals}
+                  disabled={loading}
+                  className="rounded-xl font-bold"
+                >
+                  {loading ? <Loader2 className="animate-spin" size={16} /> : "Reset Data"}
+                </Button>
+              </div>
+            </div>
           </CardContent>
         </Card>
 
@@ -284,7 +273,7 @@ const DebugAppointmentPage = () => {
           </CardHeader>
           <CardContent className="space-y-4">
             <p className="text-sm text-indigo-800">
-              Create <strong>Arthur Dent</strong> and 3 past sessions.
+              Create a client named <strong>Arthur Dent</strong> and 3 past sessions with evolving neurological findings to test the evolution grid.
             </p>
             <Button 
               onClick={seedDemoData}
@@ -292,28 +281,7 @@ const DebugAppointmentPage = () => {
               className="w-full bg-indigo-600 hover:bg-indigo-700 shadow-lg shadow-indigo-200"
             >
               {loading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <UserPlus size={18} className="mr-2" />}
-              Seed Arthur Dent
-            </Button>
-          </CardContent>
-        </Card>
-
-        <Card className="border-2 border-emerald-200 bg-emerald-50">
-          <CardHeader>
-            <CardTitle className="text-emerald-900 flex items-center gap-2">
-              <Globe size={20} className="text-emerald-600" /> Integration Tests
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <p className="text-sm text-emerald-800">
-              Test Edge Function connectivity.
-            </p>
-            <Button 
-              onClick={testKitSync}
-              disabled={loading}
-              className="w-full bg-emerald-600 hover:bg-emerald-700 shadow-lg shadow-emerald-200"
-            >
-              {loading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Mail size={18} className="mr-2" />}
-              Test Kit Sync
+              Seed Arthur Dent & History
             </Button>
           </CardContent>
         </Card>
@@ -366,7 +334,7 @@ const DebugAppointmentPage = () => {
 
       {debugInfo && (
         <Card className="border-2 border-blue-200 bg-blue-50">
-          <CardHeader><CardTitle className="text-blue-900 flex items-center gap-2">📊 Debug Info <Badge className="bg-blue-600">{debugInfo.step || 'Result'}</Badge></CardTitle></CardHeader>
+          <CardHeader><CardTitle className="text-blue-900 flex items-center gap-2">📊 Debug Info <Badge className="bg-blue-600">{debugInfo.step}</Badge></CardTitle></CardHeader>
           <CardContent><pre className="bg-white p-4 rounded-lg overflow-auto text-xs border border-blue-200">{JSON.stringify(debugInfo, null, 2)}</pre></CardContent>
         </Card>
       )}

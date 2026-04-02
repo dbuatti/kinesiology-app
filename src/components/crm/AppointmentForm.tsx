@@ -25,7 +25,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { format } from "date-fns";
-import { CalendarIcon, Loader2 } from "lucide-react";
+import { CalendarIcon, Loader2, Globe } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { showSuccess, showError } from "@/utils/toast";
 import { APPOINTMENT_TAGS, APPOINTMENT_STATUSES } from "@/data/appointment-data";
@@ -56,6 +56,7 @@ const AppointmentForm = ({ onSuccess, initialClientId, initialDate, initialTime 
   const [clients, setClients] = useState<{ id: string; name: string }[]>([]);
   const [loadingClients, setLoadingClients] = useState(true);
   const [submitting, setSubmitting] = useState(false);
+  const [syncStatus, setSyncStatus] = useState<'idle' | 'calcom'>('idle');
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -94,7 +95,29 @@ const AppointmentForm = ({ onSuccess, initialClientId, initialDate, initialTime 
       const [hours, minutes] = values.time.split(":");
       const appointmentDate = new Date(values.date);
       appointmentDate.setHours(parseInt(hours), parseInt(minutes));
+      const isoDate = appointmentDate.toISOString();
 
+      let calcomId = null;
+
+      // 1. If we have initialTime, it means we're booking from the Availability view
+      // Let's try to book on Cal.com first
+      if (initialTime) {
+        setSyncStatus('calcom');
+        const eventTypeId = localStorage.getItem('calcom_preferred_event_id') || "4279898";
+        
+        const { data: calcomData, error: calcomError } = await supabase.functions.invoke('create-calcom-booking', {
+          body: { 
+            clientId: values.clientId, 
+            startTime: isoDate,
+            eventTypeId: eventTypeId
+          }
+        });
+
+        if (calcomError) throw new Error(`Cal.com Booking Failed: ${calcomError.message}`);
+        calcomId = calcomData.uid || calcomData.bookingId;
+      }
+
+      // 2. Create in Supabase CRM
       let appointmentName = values.name?.trim() || '';
       if (!appointmentName) {
           const client = clients.find(c => c.id === values.clientId);
@@ -107,21 +130,23 @@ const AppointmentForm = ({ onSuccess, initialClientId, initialDate, initialTime 
         user_id: session.user.id,
         client_id: values.clientId,
         name: appointmentName,
-        date: appointmentDate.toISOString(),
+        date: isoDate,
         tag: values.tag,
         status: values.status,
         goal: values.goal,
         issue: values.issue,
+        calcom_booking_id: calcomId ? String(calcomId) : null
       });
 
       if (error) throw error;
 
-      showSuccess("Appointment scheduled successfully");
+      showSuccess(calcomId ? "Session booked in CRM and Cal.com!" : "Appointment scheduled in CRM.");
       onSuccess();
     } catch (error: any) {
       showError(error.message || "Failed to schedule appointment");
     } finally {
       setSubmitting(false);
+      setSyncStatus('idle');
     }
   };
 
@@ -298,9 +323,21 @@ const AppointmentForm = ({ onSuccess, initialClientId, initialDate, initialTime 
         />
 
         <Button type="submit" className="w-full bg-indigo-600 hover:bg-indigo-700 h-12 rounded-xl font-bold interactive-lift shadow-indigo-100" disabled={submitting}>
-          {submitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-          Schedule Appointment
+          {submitting ? (
+            <>
+              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+              {syncStatus === 'calcom' ? 'Syncing with Cal.com...' : 'Scheduling...'}
+            </>
+          ) : (
+            'Schedule Appointment'
+          )}
         </Button>
+        
+        {initialTime && (
+          <div className="flex items-center justify-center gap-2 text-[10px] font-black text-indigo-400 uppercase tracking-widest pt-2">
+            <Globe size={12} /> This will create a live booking on Cal.com
+          </div>
+        )}
       </form>
     </Form>
   );

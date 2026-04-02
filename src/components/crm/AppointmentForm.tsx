@@ -112,7 +112,6 @@ const AppointmentForm = ({ onSuccess, initialClientId, initialDate, initialTime 
         
         const eventTypeId = localStorage.getItem('calcom_preferred_event_id') || "4279898";
 
-        // Explicitly invoke with the current session to avoid 401s
         const { data: calcomData, error: invokeError } = await supabase.functions.invoke('create-calcom-booking', {
           body: { 
             clientId: values.clientId, 
@@ -123,7 +122,9 @@ const AppointmentForm = ({ onSuccess, initialClientId, initialDate, initialTime 
 
         if (invokeError) {
           console.error("[AppointmentForm] Invocation Error:", invokeError);
-          throw new Error(`Edge Function Error: ${invokeError.message}`);
+          // Check if it's a functional error returned as 400
+          const errorMsg = invokeError.context?.error || invokeError.message;
+          throw new Error(`Booking Error: ${errorMsg}`);
         }
 
         if (calcomData?.success === false) {

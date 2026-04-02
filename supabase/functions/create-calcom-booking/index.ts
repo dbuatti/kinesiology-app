@@ -10,33 +10,34 @@ const corsHeaders = {
 
 serve(async (req) => {
   // VERIFICATION MARKER
-  console.log("--- [v1.7] CREATE-CALCOM-BOOKING START ---");
+  console.log("--- [v1.9] CREATE-CALCOM-BOOKING START ---");
   
-  // Log request metadata for debugging 401s
-  const authHeader = req.headers.get('Authorization');
-  const apiKeyHeader = req.headers.get('apikey');
-  console.log(`Request Headers: Auth=${!!authHeader}, ApiKey=${!!apiKeyHeader}`);
-
   // 1. Handle CORS preflight
   if (req.method === 'OPTIONS') {
     return new Response('ok', { headers: corsHeaders })
   }
 
   try {
+    // Log request metadata for debugging 401s
+    const authHeader = req.headers.get('Authorization');
+    const apiKeyHeader = req.headers.get('apikey');
+    console.log(`Request Headers: AuthPresent=${!!authHeader}, ApiKeyPresent=${!!apiKeyHeader}`);
+
     // 2. Check Environment Variables & Secrets
     const supabaseUrl = Deno.env.get('SUPABASE_URL');
     const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY');
     const CALCOM_KEY = Deno.env.get('CALCOM_API_KEY');
 
     if (!CALCOM_KEY) {
-      throw new Error("CALCOM_API_KEY is missing in Supabase Secrets.");
+      console.error("❌ Missing CALCOM_API_KEY in Supabase Secrets.");
+      throw new Error("System configuration error: Cal.com API key is missing.");
     }
 
     // 3. Parse and Validate Body
     const body = await req.json();
     const { clientId, startTime, eventTypeId } = body;
     
-    console.log(`Processing booking for Client: ${clientId}, Time: ${startTime}`);
+    console.log(`Processing booking for Client: ${clientId}, Time: ${startTime}, Event: ${eventTypeId}`);
 
     if (!clientId || !startTime || !eventTypeId) {
       throw new Error("Missing required fields: clientId, startTime, or eventTypeId.");
@@ -52,6 +53,7 @@ serve(async (req) => {
       .single();
 
     if (clientError || !client) {
+      console.error("❌ Client lookup failed:", clientError);
       throw new Error(`Client not found: ${clientError?.message || 'Unknown error'}`);
     }
     
@@ -66,7 +68,7 @@ serve(async (req) => {
       attendee: {
         name: client.name,
         email: client.email,
-        timeZone: Intl.DateTimeFormat().resolvedOptions().timeZone,
+        timeZone: "Australia/Melbourne", // Defaulting to practitioner timezone
         language: "en"
       },
       metadata: {
@@ -89,8 +91,9 @@ serve(async (req) => {
     const result = await response.json();
 
     if (!response.ok) {
-      console.error("Cal.com API Error:", JSON.stringify(result));
-      throw new Error(result.message || result.error?.message || `Cal.com API Error (${response.status})`);
+      console.error("❌ Cal.com API Error:", JSON.stringify(result));
+      const errorMsg = result.message || result.error?.message || `Cal.com API Error (${response.status})`;
+      throw new Error(errorMsg);
     }
 
     console.log(`✅ Success: Booking ${result.data?.id} created.`);
@@ -110,7 +113,7 @@ serve(async (req) => {
       success: false, 
       error: error.message 
     }), { 
-      status: 400, 
+      status: 400, // Return 400 so the frontend catch block handles it as a functional error
       headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
     });
   }

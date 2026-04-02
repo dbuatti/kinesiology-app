@@ -105,12 +105,14 @@ const AppointmentForm = ({ onSuccess, initialClientId, initialDate, initialTime 
 
       let calcomId = null;
 
+      // If we have an initialTime, it means we're booking from the Availability view
       if (initialTime) {
         console.log("[AppointmentForm] Triggering Cal.com sync via invoke...");
         setSyncStatus('calcom');
         
         const eventTypeId = localStorage.getItem('calcom_preferred_event_id') || "4279898";
 
+        // Explicitly invoke with the current session to avoid 401s
         const { data: calcomData, error: invokeError } = await supabase.functions.invoke('create-calcom-booking', {
           body: { 
             clientId: values.clientId, 

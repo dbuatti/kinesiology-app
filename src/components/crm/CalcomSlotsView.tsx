@@ -113,11 +113,22 @@ const CalcomSlotsView = () => {
 
     setProcessingBooking(bookingUid);
     try {
+      // 1. Cancel externally (Notion + Cal.com)
       const { data, error: invokeError } = await supabase.functions.invoke('delete-external-appointment', {
         body: { calcomBookingId: bookingUid }
       });
 
       if (invokeError) throw invokeError;
+
+      // 2. Explicitly delete from Supabase CRM to ensure consistency
+      const { error: deleteError } = await supabase
+        .from('appointments')
+        .delete()
+        .eq('calcom_booking_id', bookingUid);
+
+      if (deleteError) {
+        console.error("Failed to delete from Supabase, but external cancellation succeeded:", deleteError);
+      }
 
       // Optimistic Update: Remove from local state immediately
       setBookings(prev => {

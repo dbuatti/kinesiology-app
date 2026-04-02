@@ -90,7 +90,7 @@ const AppointmentForm = ({ onSuccess, initialClientId, initialDate, initialTime 
   }, []);
 
   const onSubmit = async (values: z.infer<typeof formSchema>) => {
-    if (!session?.user?.id) {
+    if (!session?.user?.id || !session?.access_token) {
       showError("You must be logged in to schedule appointments.");
       return;
     }
@@ -105,36 +105,37 @@ const AppointmentForm = ({ onSuccess, initialClientId, initialDate, initialTime 
 
       let calcomId = null;
 
-      // 1. If we have initialTime, it means we're booking from the Availability view
       if (initialTime) {
-        console.log("[AppointmentForm] Detected initialTime, triggering Cal.com sync...");
+        console.log("[AppointmentForm] Detected initialTime, triggering Cal.com sync via direct fetch...");
         setSyncStatus('calcom');
         const eventTypeId = localStorage.getItem('calcom_preferred_event_id') || "4279898";
         
-        const { data: calcomData, error: calcomError } = await supabase.functions.invoke('create-calcom-booking', {
-          body: { 
+        // Using direct fetch to ensure apikey and Authorization headers are explicitly set
+        // to bypass the 401 gateway error.
+        const response = await fetch(`https://xebtjnvfkroiplyzftas.supabase.co/functions/v1/create-calcom-booking`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${session.access_token}`,
+            'apikey': (supabase as any).supabaseKey // Accessing the anon key from the client
+          },
+          body: JSON.stringify({ 
             clientId: values.clientId, 
             startTime: isoDate,
             eventTypeId: eventTypeId
-          }
+          })
         });
 
-        // Handle Edge Function invocation errors
-        if (calcomError) {
-          console.error("[AppointmentForm] Edge Function Invocation Error:", calcomError);
-          throw new Error(`Cal.com Booking Failed: ${calcomError.message || 'Unauthorized'}`);
+        if (!response.ok) {
+          const errorData = await response.json().catch(() => ({}));
+          console.error("[AppointmentForm] Edge Function Error:", errorData);
+          throw new Error(errorData.error || `Cal.com Booking Failed: ${response.statusText}`);
         }
 
-        // Handle application-level errors returned by the function
-        if (calcomData?.success === false) {
-          console.error("[AppointmentForm] Cal.com API Error:", calcomData.error);
-          throw new Error(calcomData.error || "Cal.com booking failed.");
-        }
-        
+        const calcomData = await response.json();
         calcomId = calcomData?.uid || calcomData?.bookingId;
       }
 
-      // 2. Create in Supabase CRM
       let appointmentName = values.name?.trim() || '';
       if (!appointmentName) {
           const client = clients.find(c => c.id === values.clientId);

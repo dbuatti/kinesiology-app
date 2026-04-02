@@ -16,6 +16,7 @@ import {
 import {
   Dialog,
   DialogContent,
+  DialogDescription,
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
@@ -568,14 +569,20 @@ const Index = () => {
 
         <Dialog open={clientDialogOpen} onOpenChange={setClientDialogOpen}>
           <DialogContent className="sm:max-w-[550px] rounded-[3rem] p-8">
-            <DialogHeader className="mb-4"><DialogTitle className="text-2xl font-black tracking-tight">Add New Client</DialogTitle></DialogHeader>
+            <DialogHeader className="mb-4">
+              <DialogTitle className="text-2xl font-black tracking-tight">Add New Client</DialogTitle>
+              <DialogDescription>Create a new client profile in your clinical database.</DialogDescription>
+            </DialogHeader>
             <ClientForm onSuccess={() => { setClientDialogOpen(false); fetchDashboardData(); }} />
           </DialogContent>
         </Dialog>
 
         <Dialog open={appDialogOpen} onOpenChange={setAppDialogOpen}>
           <DialogContent className="sm:max-w-[500px] rounded-[3rem] p-8">
-            <DialogHeader className="mb-4"><DialogTitle className="text-2xl font-black tracking-tight">Schedule New Session</DialogTitle></DialogHeader>
+            <DialogHeader className="mb-4">
+              <DialogTitle className="text-2xl font-black tracking-tight">Schedule New Session</DialogTitle>
+              <DialogDescription>Book a new appointment for an existing client.</DialogDescription>
+            </DialogHeader>
             <AppointmentForm onSuccess={() => { setAppDialogOpen(false); fetchDashboardData(); }} />
           </DialogContent>
         </Dialog>

@@ -17,6 +17,7 @@ import { Client, Appointment } from "@/types/crm";
 import {
   Dialog,
   DialogContent,
+  DialogDescription,
   DialogHeader,
   DialogTitle,
   DialogTrigger,
@@ -240,6 +241,7 @@ const ClientDetailPage = () => {
                 <DialogContent className="sm:max-w-[550px]">
                   <DialogHeader>
                     <DialogTitle>Edit Client Profile</DialogTitle>
+                    <DialogDescription>Update the personal and clinical details for this client.</DialogDescription>
                   </DialogHeader>
                   <ClientForm 
                     initialData={client}
@@ -513,6 +515,7 @@ const ClientDetailPage = () => {
                 <DialogContent className="sm:max-w-[500px]">
                   <DialogHeader>
                     <DialogTitle>Schedule New Appointment</DialogTitle>
+                    <DialogDescription>Book a new session for this client.</DialogDescription>
                   </DialogHeader>
                   <AppointmentForm 
                     initialClientId={id}

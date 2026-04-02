@@ -105,17 +105,17 @@ const AppointmentForm = ({ onSuccess, initialClientId, initialDate, initialTime 
         setSyncStatus('calcom');
         const eventTypeId = localStorage.getItem('calcom_preferred_event_id') || "4279898";
         
-        console.log("[AppointmentForm] Invoking 'create-calcom-booking' with:", {
-          clientId: values.clientId,
-          startTime: isoDate,
-          eventTypeId
-        });
-
+        // Explicitly get the session token to ensure Authorization header is sent
+        const { data: { session: currentSession } } = await supabase.auth.getSession();
+        
         const { data: calcomData, error: calcomError } = await supabase.functions.invoke('create-calcom-booking', {
           body: { 
             clientId: values.clientId, 
             startTime: isoDate,
             eventTypeId: eventTypeId
+          },
+          headers: {
+            Authorization: `Bearer ${currentSession?.access_token}`
           }
         });
 
@@ -124,7 +124,6 @@ const AppointmentForm = ({ onSuccess, initialClientId, initialDate, initialTime 
           throw new Error(`Cal.com Booking Failed: ${calcomError.message}`);
         }
         
-        console.log("[AppointmentForm] Edge Function Success:", calcomData);
         calcomId = calcomData.uid || calcomData.bookingId;
       }
 

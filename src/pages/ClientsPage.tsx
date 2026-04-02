@@ -11,6 +11,7 @@ import { Input } from "@/components/ui/input";
 import {
   Dialog,
   DialogContent,
+  DialogDescription,
   DialogHeader,
   DialogTitle,
   DialogTrigger,
@@ -109,7 +110,10 @@ const ClientsPage = () => {
               </Button>
             </DialogTrigger>
             <DialogContent className="sm:max-w-[550px] rounded-[2rem]">
-              <DialogHeader><DialogTitle className="text-2xl font-black">Add New Client</DialogTitle></DialogHeader>
+              <DialogHeader>
+                <DialogTitle className="text-2xl font-black">Add New Client</DialogTitle>
+                <DialogDescription>Create a new client profile in your clinical database.</DialogDescription>
+              </DialogHeader>
               <ClientForm onSuccess={() => { setOpen(false); fetchClients(); }} />
             </DialogContent>
           </Dialog>
@@ -215,7 +219,7 @@ const ClientsPage = () => {
                           {client.phone && (
                             <Tooltip>
                               <TooltipTrigger asChild>
-                                <Button variant="ghost" size="icon" className="h-9 w-9 rounded-xl text-muted-foreground hover:text-emerald-600 hover:bg-emerald-50 dark:hover:bg-emerald-900/20" asChild>
+                                <Button variant="ghost" size="icon" className="h-9 w-9 rounded-xl text-muted-foreground hover:text-emerald-600 hover:bg-emerald-50 dark:hover:bg-indigo-900/20" asChild>
                                   <a href={`tel:${client.phone}`}><Phone size={18} /></a>
                                 </Button>
                               </TooltipTrigger>
@@ -339,14 +343,17 @@ const ClientsPage = () => {
             </div>
             <p className="text-foreground font-black text-xl">No clients found</p>
             <p className="text-muted-foreground mt-2 mb-8 font-medium">Try adjusting your search or add a new client.</p>
-            <Button variant="outline" className="h-12 px-8 border-border hover:bg-card rounded-2xl font-bold" onClick={() => setSearch("")}>Clear Search</Button>
+            <Button variant="outline" className="h-12 px-8 border-border hover:bg-card rounded-2xl font-bold" onClick={() => { setSearch(""); }}>Clear Search</Button>
           </div>
         )}
       </div>
 
       <Dialog open={bookOpen} onOpenChange={setBookOpen}>
         <DialogContent className="sm:max-w-[500px] rounded-[2rem]">
-          <DialogHeader><DialogTitle className="text-2xl font-black">Quick Book Session</DialogTitle></DialogHeader>
+          <DialogHeader>
+            <DialogTitle className="text-2xl font-black">Quick Book Session</DialogTitle>
+            <DialogDescription>Schedule a new appointment for this client.</DialogDescription>
+          </DialogHeader>
           {selectedClientId && <AppointmentForm initialClientId={selectedClientId} onSuccess={() => { setBookOpen(false); fetchClients(); }} />}
         </DialogContent>
       </Dialog>

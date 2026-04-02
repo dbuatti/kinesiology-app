@@ -13,6 +13,7 @@ import { Plus, UserPlus, Calendar, Target, Upload, HelpCircle, Sparkles, Zap } f
 import {
   Dialog,
   DialogContent,
+  DialogDescription,
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
@@ -191,6 +192,7 @@ const QuickActions = () => {
         <DialogContent className="sm:max-w-[550px] rounded-[2.5rem]">
           <DialogHeader>
             <DialogTitle className="text-2xl font-black">Add New Client</DialogTitle>
+            <DialogDescription>Enter the details for the new client profile.</DialogDescription>
           </DialogHeader>
           <ClientForm
             onSuccess={() => {
@@ -204,6 +206,7 @@ const QuickActions = () => {
         <DialogContent className="sm:max-w-[500px] rounded-[2.5rem]">
           <DialogHeader>
             <DialogTitle className="text-2xl font-black">Schedule New Session</DialogTitle>
+            <DialogDescription>Select a client and set the appointment details.</DialogDescription>
           </DialogHeader>
           <AppointmentForm
             onSuccess={() => {

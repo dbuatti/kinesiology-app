@@ -18,6 +18,7 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import {
   Dialog,
   DialogContent,
+  DialogDescription,
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
@@ -383,7 +384,8 @@ const PathwayLogicWizard = ({ onSave, onClearItem, priorityPattern, initialFindi
               <button key={item.type} onClick={() => goToStep(item.step as Step)} className={cn(
                 "p-6 rounded-2xl border-2 transition-all duration-300 text-left group w-full",
                 item.color === 'purple' ? "border-purple-100 bg-purple-50/30 hover:border-purple-300" :
-                "border-rose-100 bg-rose-50/30 hover:border-rose-300"
+                item.color === 'rose' ? "border-rose-100 bg-rose-50/30 hover:border-rose-300" :
+                "border-slate-100 bg-slate-50/30 hover:border-slate-300"
               )}>
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-4">
@@ -462,6 +464,7 @@ const PathwayLogicWizard = ({ onSave, onClearItem, priorityPattern, initialFindi
         <DialogContent className="sm:max-w-[80vw] max-h-[90vh] rounded-[3rem] p-0 overflow-hidden border-none shadow-2xl bg-card">
           <DialogHeader className="p-8 bg-slate-900 dark:bg-slate-950 text-white">
             <DialogTitle className="text-2xl font-black">Ligament Reference Images</DialogTitle>
+            <DialogDescription>Visual guides for mechanoreceptive ligament corrections.</DialogDescription>
           </DialogHeader>
           <ScrollArea className="max-h-[70vh] p-8">
             <div className="space-y-12">

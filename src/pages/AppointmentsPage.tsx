@@ -36,6 +36,7 @@ import { Button } from "@/components/ui/button";
 import {
   Dialog,
   DialogContent,
+  DialogDescription,
   DialogHeader,
   DialogTitle,
   DialogTrigger,
@@ -453,6 +454,7 @@ const AppointmentsPage = () => {
               <DialogContent className="sm:max-w-[500px] rounded-[2rem]">
                 <DialogHeader>
                   <DialogTitle className="text-2xl font-black">Schedule New Appointment</DialogTitle>
+                  <DialogDescription>Create a new session for an existing client.</DialogDescription>
                 </DialogHeader>
                 <AppointmentForm 
                   onSuccess={() => {

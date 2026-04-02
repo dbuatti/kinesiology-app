@@ -33,6 +33,7 @@ import { Input } from "@/components/ui/input";
 import {
   Dialog,
   DialogContent,
+  DialogDescription,
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
@@ -388,6 +389,7 @@ const CalcomSlotsView = () => {
               </div>
               <DialogTitle className="text-2xl font-black">Book Client</DialogTitle>
             </div>
+            <DialogDescription>Schedule a session for the selected time slot.</DialogDescription>
             <div className="flex items-center gap-4 p-3 bg-indigo-50 rounded-xl border border-indigo-100">
               <div className="flex items-center gap-2">
                 <Calendar size={14} className="text-indigo-600" />

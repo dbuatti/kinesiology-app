@@ -1,3 +1,5 @@
+"use client";
+
 import { useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -88,7 +90,11 @@ const AppointmentForm = ({ onSuccess, initialClientId, initialDate, initialTime 
   }, []);
 
   const onSubmit = async (values: z.infer<typeof formSchema>) => {
-    if (!session?.user?.id) return;
+    if (!session?.user?.id) {
+      showError("You must be logged in to schedule appointments.");
+      return;
+    }
+    
     setSubmitting(true);
 
     try {
@@ -105,26 +111,26 @@ const AppointmentForm = ({ onSuccess, initialClientId, initialDate, initialTime 
         setSyncStatus('calcom');
         const eventTypeId = localStorage.getItem('calcom_preferred_event_id') || "4279898";
         
-        // Explicitly get the session token to ensure Authorization header is sent
-        const { data: { session: currentSession } } = await supabase.auth.getSession();
-        
+        // We don't need to manually pass the Authorization header; 
+        // the Supabase client handles this automatically when a session exists.
         const { data: calcomData, error: calcomError } = await supabase.functions.invoke('create-calcom-booking', {
           body: { 
             clientId: values.clientId, 
             startTime: isoDate,
             eventTypeId: eventTypeId
-          },
-          headers: {
-            Authorization: `Bearer ${currentSession?.access_token}`
           }
         });
 
         if (calcomError) {
           console.error("[AppointmentForm] Edge Function Error:", calcomError);
+          // Check for specific 401 error from the gateway
+          if (calcomError.message?.includes('401') || calcomError.status === 401) {
+            throw new Error("Authentication error. Please try signing out and back in.");
+          }
           throw new Error(`Cal.com Booking Failed: ${calcomError.message}`);
         }
         
-        calcomId = calcomData.uid || calcomData.bookingId;
+        calcomId = calcomData?.uid || calcomData?.bookingId;
       }
 
       // 2. Create in Supabase CRM

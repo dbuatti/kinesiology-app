@@ -9,7 +9,7 @@ const corsHeaders = {
 serve(async (req) => {
   if (req.method === 'OPTIONS') return new Response('ok', { headers: corsHeaders })
 
-  console.log("--- [get-calcom-slots] v4 TIMEZONE ROBUST ---");
+  console.log("--- [get-calcom-slots] v5 SLOTS + BOOKINGS ---");
 
   try {
     let { start, end, eventTypeId, timeZone } = await req.json()
@@ -31,14 +31,21 @@ serve(async (req) => {
     slotsUrl.searchParams.set('eventTypeId', targetEventTypeId)
     if (timeZone) slotsUrl.searchParams.set('timeZone', timeZone)
 
-    console.log(`Fetching slots for Event: ${targetEventTypeId} in TZ: ${timeZone || 'UTC'}`);
-
     const slotsResponse = await fetch(slotsUrl.toString(), { method: 'GET', headers })
     const slotsData = await slotsResponse.json()
     
     // 2. Fetch Out-of-Office Blocks
     const oooResponse = await fetch('https://api.cal.com/v2/me/ooo', { method: 'GET', headers })
     const oooData = await oooResponse.json()
+
+    // 3. Fetch Existing Bookings
+    const bookingsUrl = new URL('https://api.cal.com/v2/bookings')
+    bookingsUrl.searchParams.set('startTime', start)
+    bookingsUrl.searchParams.set('endTime', end)
+    bookingsUrl.searchParams.set('status', 'upcoming')
+
+    const bookingsResponse = await fetch(bookingsUrl.toString(), { method: 'GET', headers })
+    const bookingsData = await bookingsResponse.json()
 
     if (!slotsResponse.ok) {
       return new Response(JSON.stringify({ 
@@ -50,11 +57,9 @@ serve(async (req) => {
       })
     }
 
-    // 3. Robust Date Matching (Timezone Aware)
-    // We map OOO entries to the local date they represent for the user
+    // 4. Robust Date Matching (Timezone Aware)
     const blockedDates = (oooData.data || []).map(entry => {
       const date = new Date(entry.start);
-      // Format to YYYY-MM-DD in the user's specific timezone
       return new Intl.DateTimeFormat('en-CA', {
         timeZone: timeZone || 'UTC',
         year: 'numeric',
@@ -63,12 +68,31 @@ serve(async (req) => {
       }).format(date);
     });
 
-    console.log(`Detected ${blockedDates.length} OOO blocks. Localized dates:`, blockedDates);
+    // 5. Process Bookings into Date Groups
+    const bookingsByDate = {};
+    (bookingsData.data || []).forEach(booking => {
+      const dateKey = new Intl.DateTimeFormat('en-CA', {
+        timeZone: timeZone || 'UTC',
+        year: 'numeric',
+        month: '2-digit',
+        day: '2-digit'
+      }).format(new Date(booking.start));
+      
+      if (!bookingsByDate[dateKey]) bookingsByDate[dateKey] = [];
+      bookingsByDate[dateKey].push({
+        id: booking.id,
+        uid: booking.uid,
+        start: booking.start,
+        attendeeName: booking.attendees?.[0]?.name || "Unknown",
+        title: booking.title
+      });
+    });
 
     return new Response(JSON.stringify({
       status: 'success',
       data: slotsData.data.slots,
-      blockedDates: blockedDates
+      blockedDates: blockedDates,
+      bookings: bookingsByDate
     }), { 
       status: 200, 
       headers: { ...corsHeaders, 'Content-Type': 'application/json' } 

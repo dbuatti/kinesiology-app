@@ -22,7 +22,10 @@ import {
   Unlock,
   Hash,
   ShieldAlert,
-  CalendarPlus
+  CalendarPlus,
+  User,
+  X,
+  Trash2
 } from "lucide-react";
 import { format, addWeeks, startOfToday, endOfDay, eachDayOfInterval, addDays } from "date-fns";
 import { supabase } from "@/integrations/supabase/client";
@@ -42,13 +45,14 @@ import AppointmentForm from "./AppointmentForm";
 const CalcomSlotsView = () => {
   const [loading, setLoading] = useState(false);
   const [processingDate, setProcessingDate] = useState<string | null>(null);
+  const [processingBooking, setProcessingBooking] = useState<string | null>(null);
   const [slots, setSlots] = useState<Record<string, any[]>>({});
+  const [bookings, setBookings] = useState<Record<string, any[]>>({});
   const [blockedDates, setBlockedDates] = useState<string[]>([]);
   const [error, setError] = useState<string | null>(null);
   const [weeks, setWeeks] = useState(4);
   const [copied, setCopied] = useState(false);
   
-  // Booking Dialog State
   const [bookingData, setBookingData] = useState<{ date: Date; time: string } | null>(null);
   const [bookingDialogOpen, setBookingDialogOpen] = useState(false);
   
@@ -90,6 +94,7 @@ const CalcomSlotsView = () => {
       }
 
       setSlots(data.data || {});
+      setBookings(data.bookings || {});
       setBlockedDates(data.blockedDates || []);
       
       showSuccess("Availability updated.");
@@ -102,6 +107,26 @@ const CalcomSlotsView = () => {
       setError(err.message || "An unexpected error occurred.");
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleCancelBooking = async (bookingUid: string, attendeeName: string) => {
+    if (!confirm(`Are you sure you want to cancel the booking for ${attendeeName}? This will remove it from Cal.com and Notion.`)) return;
+
+    setProcessingBooking(bookingUid);
+    try {
+      const { data, error: invokeError } = await supabase.functions.invoke('delete-external-appointment', {
+        body: { calcomBookingId: bookingUid }
+      });
+
+      if (invokeError) throw invokeError;
+
+      showSuccess(`Booking for ${attendeeName} cancelled.`);
+      fetchSlots();
+    } catch (err) {
+      showError("Failed to cancel booking.");
+    } finally {
+      setProcessingBooking(null);
     }
   };
 
@@ -142,7 +167,6 @@ const CalcomSlotsView = () => {
 
   const handleSlotClick = (dateStr: string, timeStr: string) => {
     const date = new Date(dateStr);
-    // Extract HH:mm from the time string (which might be ISO or just time)
     const timeMatch = timeStr.match(/(\d{2}:\d{2})/);
     const formattedTime = timeMatch ? timeMatch[1] : "10:00";
     
@@ -264,9 +288,6 @@ const CalcomSlotsView = () => {
           <AlertCircle className="h-5 w-5 text-rose-600" />
           <AlertDescription className="text-sm text-rose-900 font-bold">
             Error: {error}
-            <p className="mt-2 text-xs font-medium opacity-80">
-              Tip: Try manually entering your **Schedule ID** from the Cal.com Availability URL.
-            </p>
           </AlertDescription>
         </Alert>
       )}
@@ -274,16 +295,17 @@ const CalcomSlotsView = () => {
       {loading && Object.keys(slots).length === 0 ? (
         <div className="py-20 flex flex-col items-center justify-center gap-4">
           <Loader2 className="w-10 h-10 text-indigo-500 animate-spin" />
-          <p className="text-xs font-black uppercase tracking-widest text-slate-400">Fetching Cal.com Slots...</p>
+          <p className="text-xs font-black uppercase tracking-widest text-slate-400">Fetching Cal.com Data...</p>
         </div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {dateRange.map(date => {
             const daySlots = slots[date] || [];
+            const dayBookings = bookings[date] || [];
             const isBlocked = blockedDates.includes(date);
-            const hasNoSlots = daySlots.length === 0;
+            const hasNoActivity = daySlots.length === 0 && dayBookings.length === 0;
             
-            if (!isBlocked && hasNoSlots) return null;
+            if (!isBlocked && hasNoActivity) return null;
 
             return (
               <Card key={date} className={cn(
@@ -317,9 +339,9 @@ const CalcomSlotsView = () => {
                     <div className="flex flex-col items-end gap-2">
                       <Badge className={cn(
                         "border-none font-black text-[8px] uppercase tracking-widest px-3 py-1 rounded-full shadow-sm",
-                        isBlocked ? "bg-rose-100 text-rose-600 dark:bg-rose-900/30 dark:text-rose-400" : "bg-emerald-50 text-emerald-600 dark:bg-emerald-900/30 dark:text-emerald-400"
+                        isBlocked ? "bg-rose-100 text-rose-600" : "bg-emerald-50 text-emerald-600"
                       )}>
-                        {isBlocked ? "Blocked" : `${daySlots.length} Slots`}
+                        {isBlocked ? "Blocked" : `${daySlots.length} Available`}
                       </Badge>
                       <Button 
                         variant="ghost" 
@@ -327,51 +349,86 @@ const CalcomSlotsView = () => {
                         className={cn(
                           "h-7 px-3 text-[9px] font-black uppercase tracking-widest rounded-lg transition-all",
                           isBlocked 
-                            ? "bg-emerald-600 text-white hover:bg-emerald-700 shadow-md shadow-emerald-100 dark:shadow-none" 
-                            : "text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-900/20 opacity-0 group-hover:opacity-100"
+                            ? "bg-emerald-600 text-white hover:bg-emerald-700 shadow-md" 
+                            : "text-rose-500 hover:bg-rose-50 opacity-0 group-hover:opacity-100"
                         )}
                         onClick={() => handleToggleBlock(date, isBlocked)}
                         disabled={processingDate === date}
                       >
-                        {processingDate === date ? (
-                          <Loader2 size={12} className="animate-spin mr-1.5" />
-                        ) : isBlocked ? (
-                          <Unlock size={12} className="mr-1.5" />
-                        ) : (
-                          <Ban size={12} className="mr-1.5" />
-                        )}
+                        {processingDate === date ? <Loader2 size={12} className="animate-spin mr-1.5" /> : isBlocked ? <Unlock size={12} className="mr-1.5" /> : <Ban size={12} className="mr-1.5" />}
                         {isBlocked ? "Unblock Day" : "Block Day"}
                       </Button>
                     </div>
                   </div>
                 </CardHeader>
-                <CardContent className="p-6">
+                <CardContent className="p-6 space-y-4">
                   {isBlocked ? (
                     <div className="py-10 text-center space-y-3 animate-in fade-in zoom-in-95 duration-500">
                       <div className="w-12 h-12 rounded-full bg-rose-50 dark:bg-rose-900/20 flex items-center justify-center mx-auto">
                         <ShieldAlert size={24} className="text-rose-400" />
                       </div>
-                      <div>
-                        <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Manual Override</p>
-                        <p className="text-xs font-bold text-slate-500 mt-1">This day is currently blocked <br/>across all event types.</p>
-                      </div>
+                      <p className="text-xs font-bold text-slate-500">Manual Override Active</p>
                     </div>
                   ) : (
-                    <div className="grid grid-cols-2 gap-2">
-                      {daySlots.map((slot, idx) => {
-                        const timeStr = slot.time || slot.start;
-                        return (
-                          <button 
-                            key={idx} 
-                            onClick={() => handleSlotClick(date, timeStr)}
-                            className="flex items-center justify-center p-2.5 rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-100 dark:border-slate-800 text-xs font-black text-slate-700 dark:text-slate-300 hover:bg-indigo-600 hover:border-indigo-600 hover:text-white transition-all group/slot"
-                          >
-                            <Clock size={12} className="mr-2 opacity-40 group-hover/slot:opacity-100 transition-opacity" />
-                            {format(new Date(timeStr), "h:mm a")}
-                          </button>
-                        );
-                      })}
-                    </div>
+                    <>
+                      {/* Bookings Section */}
+                      {dayBookings.length > 0 && (
+                        <div className="space-y-2">
+                          <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest ml-1">Booked Sessions</p>
+                          <div className="grid grid-cols-1 gap-2">
+                            {dayBookings.map((booking) => (
+                              <div 
+                                key={booking.id} 
+                                className="flex items-center justify-between p-3 rounded-xl bg-indigo-900 text-white shadow-lg border border-indigo-800 group/booking"
+                              >
+                                <div className="flex items-center gap-3 min-w-0">
+                                  <div className="w-8 h-8 rounded-lg bg-white/10 flex items-center justify-center shrink-0">
+                                    <User size={14} className="text-indigo-300" />
+                                  </div>
+                                  <div className="min-w-0">
+                                    <p className="text-xs font-black truncate">{booking.attendeeName}</p>
+                                    <p className="text-[9px] font-bold text-indigo-300 uppercase tracking-widest">
+                                      {format(new Date(booking.start), "h:mm a")}
+                                    </p>
+                                  </div>
+                                </div>
+                                <Button 
+                                  variant="ghost" 
+                                  size="icon" 
+                                  className="h-8 w-8 rounded-lg text-indigo-300 hover:text-rose-400 hover:bg-rose-500/20 opacity-0 group-hover/booking:opacity-100 transition-all"
+                                  onClick={() => handleCancelBooking(booking.uid, booking.attendeeName)}
+                                  disabled={processingBooking === booking.uid}
+                                >
+                                  {processingBooking === booking.uid ? <Loader2 size={14} className="animate-spin" /> : <Trash2 size={14} />}
+                                </Button>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+
+                      {/* Available Slots Section */}
+                      {daySlots.length > 0 && (
+                        <div className="space-y-2">
+                          <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest ml-1">Available Slots</p>
+                          <div className="grid grid-cols-2 gap-2">
+                            {daySlots.map((slot, idx) => {
+                              const timeStr = slot.time || slot.start;
+                              return (
+                                <button 
+                                  key={idx} 
+                                  onClick={() => handleSlotClick(date, timeStr)}
+                                  className="flex items-center justify-center p-2.5 rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-100 dark:border-slate-800 text-xs font-black text-slate-700 dark:text-slate-300 hover:bg-indigo-600 hover:border-indigo-600 hover:text-white transition-all group/slot"
+                                >
+                                  <Clock size={12} className="mr-2 opacity-40 group-hover/slot:opacity-100 transition-opacity" />
+                                  {format(new Date(timeStr), "h:mm a")}
+                                </button>
+                              );
+                            })}
+                          </div>
+                        </div>
+                      )}
+                    </>
                   )}
                 </CardContent>
               </Card>

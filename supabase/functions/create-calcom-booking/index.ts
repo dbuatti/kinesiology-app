@@ -13,7 +13,7 @@ serve(async (req) => {
     return new Response('ok', { headers: corsHeaders })
   }
 
-  console.log("--- [v2.5] CREATE-CALCOM-BOOKING START ---");
+  console.log("--- [v2.6] CREATE-CALCOM-BOOKING START ---");
   
   try {
     const supabaseUrl = Deno.env.get('SUPABASE_URL');
@@ -66,8 +66,7 @@ serve(async (req) => {
     }
 
     // Cal.com v2 Booking Payload
-    // Note: 'responses' was rejected in v2.4, so we are removing it.
-    // We'll pass the title/notes in metadata for reference if allowed.
+    // Re-introducing 'responses' because the API explicitly requested the 'title' field.
     const bookingPayload = {
       start: startTime,
       eventTypeId: parseInt(eventTypeId, 10),
@@ -77,14 +76,16 @@ serve(async (req) => {
         timeZone: "Australia/Melbourne",
         language: "en"
       },
+      responses: {
+        title: title || "Kinesiology Session",
+        notes: notes || ""
+      },
       metadata: { 
-        source: "Antigravity CRM",
-        session_title: title || "Kinesiology Session",
-        session_notes: notes || ""
+        source: "Antigravity CRM"
       }
     };
 
-    console.log(`Calling Cal.com API for ${client.email}...`);
+    console.log(`Calling Cal.com API for ${client.email} with title: ${bookingPayload.responses.title}...`);
 
     const response = await fetch("https://api.cal.com/v2/bookings", {
       method: "POST",

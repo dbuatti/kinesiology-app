@@ -5,7 +5,7 @@ import { Card, CardHeader, CardTitle, CardContent, CardDescription } from "@/com
 import { Button } from "@/components/ui/button";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { 
-  Brain, Zap, Activity, Shield, Dumbbell, AlertTriangle, ChevronDown, Check, X, Plus, Search, RotateCcw, Layers, ImageIcon, Baby, PlayCircle, ShieldAlert, ListChecks, Info, MousePointer2, Maximize2, History, Trash2, Eye, EyeOff, Lightbulb, CheckCircle2, ArrowRight, RefreshCw, Target
+  Brain, Zap, Activity, Shield, Dumbbell, AlertTriangle, ChevronDown, Check, X, Plus, Search, RotateCcw, Layers, ImageIcon, Baby, PlayCircle, ShieldAlert, ListChecks, Info, MousePointer2, Maximize2, History, Trash2, Eye, EyeOff, Lightbulb, CheckCircle2, ArrowRight, RefreshCw, Target, FilterX
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { BRAIN_REFLEX_POINTS, BrainReflexPoint } from '@/data/brain-reflex-data';
@@ -156,7 +156,7 @@ const AssessmentItem = ({
             {statusL && (
               <Badge className={cn(
                 "border-none text-white font-black text-[7px] uppercase tracking-widest px-1.5 py-0.5 rounded-md",
-                statusL === 'Clear' ? "bg-emerald-500" : "bg-rose-600"
+                statusL === 'Clear' ? "bg-emerald-50" : "bg-rose-600"
               )}>
                 L: {statusL}
               </Badge>
@@ -164,7 +164,7 @@ const AssessmentItem = ({
             {statusR && (
               <Badge className={cn(
                 "border-none text-white font-black text-[7px] uppercase tracking-widest px-1.5 py-0.5 rounded-md",
-                statusR === 'Clear' ? "bg-emerald-500" : "bg-rose-600"
+                statusR === 'Clear' ? "bg-emerald-50" : "bg-rose-600"
               )}>
                 R: {statusR}
               </Badge>
@@ -174,7 +174,7 @@ const AssessmentItem = ({
           statusMidline && (
             <Badge className={cn(
               "border-none text-white font-black text-[7px] uppercase tracking-widest px-1.5 py-0.5 rounded-md",
-              statusMidline === 'Clear' ? "bg-emerald-500" : "bg-rose-600"
+              statusMidline === 'Clear' ? "bg-emerald-50" : "bg-rose-600"
             )}>
               {statusMidline}
             </Badge>

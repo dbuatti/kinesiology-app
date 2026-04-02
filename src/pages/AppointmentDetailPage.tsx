@@ -60,7 +60,7 @@ const AppointmentDetailPage = () => {
   const [syncingNotion, setSyncingNotion] = useState(false);
   const [deleting, setDeleting] = useState(false);
   const [currentTime, setCurrentTime] = useState(new Date());
-  const [showSidebar, setShowSidebar] = useState(true); // Default to true for better desktop utility
+  const [showSidebar, setShowSidebar] = useState(true); 
   const [nucleiFilter, setNucleiFilter] = useState<Nuclei | null>(null);
 
   useEffect(() => {
@@ -189,7 +189,7 @@ const AppointmentDetailPage = () => {
       if (data.plannerId && !appointment.notion_planner_id) updates.notion_planner_id = data.plannerId;
 
       if (Object.keys(updates).length > 0) {
-        await supabase.from('appointments').update(updates).eq('id', id);
+        await supabase.from('appointments').update(updates).eq(id, id);
         setAppointment(prev => prev ? { ...prev, ...updates } : null);
       }
       

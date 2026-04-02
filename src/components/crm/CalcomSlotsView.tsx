@@ -21,7 +21,8 @@ import {
   Ban,
   Unlock,
   Hash,
-  ShieldAlert
+  ShieldAlert,
+  CalendarPlus
 } from "lucide-react";
 import { format, addWeeks, startOfToday, endOfDay, eachDayOfInterval, addDays } from "date-fns";
 import { supabase } from "@/integrations/supabase/client";
@@ -29,6 +30,13 @@ import { cn } from "@/lib/utils";
 import { showSuccess, showError } from "@/utils/toast";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Input } from "@/components/ui/input";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import AppointmentForm from "./AppointmentForm";
 
 const CalcomSlotsView = () => {
   const [loading, setLoading] = useState(false);
@@ -39,6 +47,10 @@ const CalcomSlotsView = () => {
   const [weeks, setWeeks] = useState(4);
   const [copied, setCopied] = useState(false);
   
+  // Booking Dialog State
+  const [bookingData, setBookingData] = useState<{ date: Date; time: string } | null>(null);
+  const [bookingDialogOpen, setBookingDialogOpen] = useState(false);
+  
   const [eventTypeId, setEventTypeId] = useState<string>(() => 
     localStorage.getItem('calcom_preferred_event_id') || "4279898"
   );
@@ -47,7 +59,6 @@ const CalcomSlotsView = () => {
     localStorage.getItem('calcom_preferred_schedule_id') || "1387833"
   );
 
-  // Generate a continuous list of dates based on the lookahead range
   const dateRange = useMemo(() => {
     const start = startOfToday();
     const end = addDays(start, (weeks * 7) - 1);
@@ -128,6 +139,16 @@ const CalcomSlotsView = () => {
     }
   };
 
+  const handleSlotClick = (dateStr: string, timeStr: string) => {
+    const date = new Date(dateStr);
+    // Extract HH:mm from the time string (which might be ISO or just time)
+    const timeMatch = timeStr.match(/(\d{2}:\d{2})/);
+    const formattedTime = timeMatch ? timeMatch[1] : "10:00";
+    
+    setBookingData({ date, time: formattedTime });
+    setBookingDialogOpen(true);
+  };
+
   const handleCopyAll = () => {
     if (dateRange.length === 0) return;
 
@@ -183,7 +204,7 @@ const CalcomSlotsView = () => {
                     onClick={() => setWeeks(w)}
                     className={cn(
                       "h-8 px-4 rounded-lg text-[10px] font-black uppercase tracking-widest",
-                      weeks === w ? "bg-white text-indigo-600 shadow-sm" : "text-slate-500"
+                      weeks === w ? "bg-white text-indigo-600 shadow-sm" : "text-slate-50"
                     )}
                   >
                     {w}W
@@ -261,8 +282,6 @@ const CalcomSlotsView = () => {
             const isBlocked = blockedDates.includes(date);
             const hasNoSlots = daySlots.length === 0;
             
-            // Only show days that are either blocked OR have slots
-            // This hides weekends/off-days that aren't explicitly blocked
             if (!isBlocked && hasNoSlots) return null;
 
             return (
@@ -338,15 +357,19 @@ const CalcomSlotsView = () => {
                     </div>
                   ) : (
                     <div className="grid grid-cols-2 gap-2">
-                      {daySlots.map((slot, idx) => (
-                        <div 
-                          key={idx} 
-                          className="flex items-center justify-center p-2.5 rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-100 dark:border-slate-800 text-xs font-black text-slate-700 dark:text-slate-300 hover:bg-indigo-50 dark:hover:bg-indigo-900/30 hover:border-indigo-200 dark:hover:border-indigo-800 hover:text-indigo-600 dark:hover:text-indigo-400 transition-all cursor-default group/slot"
-                        >
-                          <Clock size={12} className="mr-2 opacity-40 group-hover/slot:opacity-100 transition-opacity" />
-                          {format(new Date(slot.time || slot.start), "h:mm a")}
-                        </div>
-                      ))}
+                      {daySlots.map((slot, idx) => {
+                        const timeStr = slot.time || slot.start;
+                        return (
+                          <button 
+                            key={idx} 
+                            onClick={() => handleSlotClick(date, timeStr)}
+                            className="flex items-center justify-center p-2.5 rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-100 dark:border-slate-800 text-xs font-black text-slate-700 dark:text-slate-300 hover:bg-indigo-600 hover:border-indigo-600 hover:text-white transition-all group/slot"
+                          >
+                            <Clock size={12} className="mr-2 opacity-40 group-hover/slot:opacity-100 transition-opacity" />
+                            {format(new Date(timeStr), "h:mm a")}
+                          </button>
+                        );
+                      })}
                     </div>
                   )}
                 </CardContent>
@@ -355,6 +378,39 @@ const CalcomSlotsView = () => {
           })}
         </div>
       )}
+
+      <Dialog open={bookingDialogOpen} onOpenChange={setBookingDialogOpen}>
+        <DialogContent className="sm:max-w-[500px] rounded-[2.5rem]">
+          <DialogHeader>
+            <div className="flex items-center gap-3 mb-2">
+              <div className="w-10 h-10 rounded-xl bg-indigo-600 text-white flex items-center justify-center shadow-lg">
+                <CalendarPlus size={20} />
+              </div>
+              <DialogTitle className="text-2xl font-black">Book Client</DialogTitle>
+            </div>
+            <div className="flex items-center gap-4 p-3 bg-indigo-50 rounded-xl border border-indigo-100">
+              <div className="flex items-center gap-2">
+                <Calendar size={14} className="text-indigo-600" />
+                <span className="text-xs font-bold text-indigo-900">{bookingData?.date ? format(bookingData.date, "MMM d, yyyy") : ""}</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <Clock size={14} className="text-indigo-600" />
+                <span className="text-xs font-bold text-indigo-900">{bookingData?.time}</span>
+              </div>
+            </div>
+          </DialogHeader>
+          {bookingData && (
+            <AppointmentForm 
+              initialDate={bookingData.date}
+              initialTime={bookingData.time}
+              onSuccess={() => {
+                setBookingDialogOpen(false);
+                fetchSlots();
+              }} 
+            />
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };

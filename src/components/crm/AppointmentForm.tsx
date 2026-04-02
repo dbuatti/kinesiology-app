@@ -47,9 +47,11 @@ const formSchema = z.object({
 interface AppointmentFormProps {
   onSuccess: () => void;
   initialClientId?: string;
+  initialDate?: Date;
+  initialTime?: string;
 }
 
-const AppointmentForm = ({ onSuccess, initialClientId }: AppointmentFormProps) => {
+const AppointmentForm = ({ onSuccess, initialClientId, initialDate, initialTime }: AppointmentFormProps) => {
   const { session } = useAuth();
   const [clients, setClients] = useState<{ id: string; name: string }[]>([]);
   const [loadingClients, setLoadingClients] = useState(true);
@@ -62,8 +64,8 @@ const AppointmentForm = ({ onSuccess, initialClientId }: AppointmentFormProps) =
       name: "",
       tag: APPOINTMENT_TAGS[0],
       status: APPOINTMENT_STATUSES[0],
-      time: "10:00",
-      date: new Date(),
+      time: initialTime || "10:00",
+      date: initialDate || new Date(),
     },
   });
 
@@ -72,6 +74,7 @@ const AppointmentForm = ({ onSuccess, initialClientId }: AppointmentFormProps) =
       const { data, error } = await supabase
         .from("clients")
         .select("id, name")
+        .or('is_practitioner.eq.false,is_practitioner.is.null')
         .order("name");
       
       if (!error && data) {
@@ -136,7 +139,7 @@ const AppointmentForm = ({ onSuccess, initialClientId }: AppointmentFormProps) =
                   clients={clients}
                   value={field.value}
                   onSelect={field.onChange}
-                  disabled={!!initialClientId || loadingClients}
+                  disabled={loadingClients}
                   placeholder={loadingClients ? "Loading clients..." : "Search and select client"}
                 />
               </FormControl>
@@ -152,7 +155,7 @@ const AppointmentForm = ({ onSuccess, initialClientId }: AppointmentFormProps) =
             <FormItem>
               <FormLabel>Appointment Title (Optional)</FormLabel>
               <FormControl>
-                <Input placeholder="e.g. Initial Session" {...field} className="input-standard" />
+                <Input placeholder="e.g. Initial Session" {...field} className="h-12 rounded-xl border-2 border-slate-100" />
               </FormControl>
               <FormMessage />
             </FormItem>
@@ -206,7 +209,7 @@ const AppointmentForm = ({ onSuccess, initialClientId }: AppointmentFormProps) =
               <FormItem>
                 <FormLabel>Time</FormLabel>
                 <FormControl>
-                  <Input type="time" {...field} className="input-standard" />
+                  <Input type="time" {...field} className="h-12 rounded-xl border-2 border-slate-100" />
                 </FormControl>
                 <FormMessage />
               </FormItem>
@@ -269,7 +272,7 @@ const AppointmentForm = ({ onSuccess, initialClientId }: AppointmentFormProps) =
             <FormItem>
               <FormLabel>Goal</FormLabel>
               <FormControl>
-                <Input placeholder="What is the goal for this session?" {...field} className="input-standard" />
+                <Input placeholder="What is the goal for this session?" {...field} className="h-12 rounded-xl border-2 border-slate-100" />
               </FormControl>
               <FormMessage />
             </FormItem>

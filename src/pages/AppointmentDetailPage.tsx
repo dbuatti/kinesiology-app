@@ -189,7 +189,7 @@ const AppointmentDetailPage = () => {
       if (data.plannerId && !appointment.notion_planner_id) updates.notion_planner_id = data.plannerId;
 
       if (Object.keys(updates).length > 0) {
-        await supabase.from('appointments').update(updates).eq(id, id);
+        await supabase.from('appointments').update(updates).eq('id', id);
         setAppointment(prev => prev ? { ...prev, ...updates } : null);
       }
       

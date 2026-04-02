@@ -1,21 +1,75 @@
 import { useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { showSuccess, showError } from "@/utils/toast";
-import { Loader2, FlaskConical, Activity, RefreshCw, Sparkles, UserPlus, Trash2, AlertTriangle } from "lucide-react";
+import { Loader2, FlaskConical, Activity, RefreshCw, Sparkles, UserPlus, Trash2, AlertTriangle, Mail, Send, DollarSign, CheckCircle2 } from "lucide-react";
 import { subDays } from "date-fns";
 
 const DebugAppointmentPage = () => {
   const [loading, setLoading] = useState(false);
+  const [emailLoading, setEmailLoading] = useState<'paid' | 'free' | null>(null);
   const [testAppointmentId, setTestAppointmentId] = useState<string>("");
   const [boltScore, setBoltScore] = useState<string>("30");
   const [heartRate, setHeartRate] = useState<string>("72");
   const [breathRate, setBreathRate] = useState<string>("12");
   const [debugInfo, setDebugInfo] = useState<any>(null);
+
+  const testEmail = "daniele.buatti@gmail.com";
+
+  const sendTestEmail = async (type: 'paid' | 'free') => {
+    setEmailLoading(type);
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) throw new Error("Not authenticated");
+
+      // 1. Ensure test client exists
+      const { data: client, error: clientError } = await supabase
+        .from('clients')
+        .upsert({
+          user_id: user.id,
+          name: "Test Daniele",
+          email: testEmail,
+          pronouns: "Tester"
+        }, { onConflict: 'email' })
+        .select()
+        .single();
+
+      if (clientError) throw clientError;
+
+      // 2. Create a dummy appointment to set the "Paid" context
+      const { error: appError } = await supabase
+        .from('appointments')
+        .insert({
+          user_id: user.id,
+          client_id: client.id,
+          date: new Date().toISOString(),
+          tag: "Test Session",
+          status: "Scheduled",
+          is_paid: type === 'paid',
+          payment_received: false // Ensure bank details show for paid test
+        });
+
+      if (appError) throw appError;
+
+      // 3. Trigger the manual onboarding function
+      const { error: funcError } = await supabase.functions.invoke('send-manual-onboarding', {
+        body: { clientId: client.id }
+      });
+
+      if (funcError) throw funcError;
+
+      showSuccess(`Test ${type} email sent to ${testEmail}!`);
+    } catch (err: any) {
+      console.error(err);
+      showError(err.message || "Failed to send test email");
+    } finally {
+      setEmailLoading(null);
+    }
+  };
 
   const cleanupTransverseAbdominals = async () => {
     if (!confirm("This will permanently delete ALL test records for 'Transverse Abdominals' across all clients and sessions. This cannot be undone. Proceed?")) return;
@@ -233,6 +287,48 @@ const DebugAppointmentPage = () => {
           <p className="text-slate-500 mt-2">System maintenance and testing tools.</p>
         </div>
       </div>
+
+      {/* Email Testing Section */}
+      <Card className="border-none shadow-xl rounded-[2.5rem] bg-indigo-900 text-white overflow-hidden relative">
+        <div className="absolute top-0 right-0 p-8 opacity-10"><Mail size={120} /></div>
+        <CardHeader className="p-8 pb-4">
+          <CardTitle className="text-2xl font-black flex items-center gap-3">
+            <Send size={28} className="text-indigo-400" /> Email Template Testing
+          </CardTitle>
+          <CardDescription className="text-indigo-200 font-medium">
+            Send test onboarding emails to <strong>{testEmail}</strong> to verify formatting.
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="p-8 pt-0 space-y-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <Button 
+              onClick={() => sendTestEmail('paid')}
+              disabled={!!emailLoading}
+              className="h-20 rounded-2xl bg-white text-indigo-900 hover:bg-indigo-50 flex flex-col gap-1 shadow-xl"
+            >
+              {emailLoading === 'paid' ? <Loader2 className="animate-spin" /> : <DollarSign size={24} />}
+              <span className="font-black text-xs uppercase tracking-widest">Send Paid Test</span>
+              <span className="text-[10px] font-medium opacity-60">(Includes Bank Details)</span>
+            </Button>
+
+            <Button 
+              onClick={() => sendTestEmail('free')}
+              disabled={!!emailLoading}
+              className="h-20 rounded-2xl bg-indigo-800 text-white border border-indigo-700 hover:bg-indigo-700 flex flex-col gap-1"
+            >
+              {emailLoading === 'free' ? <Loader2 className="animate-spin" /> : <CheckCircle2 size={24} />}
+              <span className="font-black text-xs uppercase tracking-widest">Send Free Test</span>
+              <span className="text-[10px] font-medium opacity-60">(No Bank Details)</span>
+            </Button>
+          </div>
+          
+          <div className="p-4 bg-white/5 rounded-2xl border border-white/10">
+            <p className="text-xs text-indigo-200 leading-relaxed">
+              <strong>Note:</strong> These buttons will create a temporary client and appointment in your database to simulate the real clinical context.
+            </p>
+          </div>
+        </CardContent>
+      </Card>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
         <Card className="border-2 border-rose-200 bg-rose-50">

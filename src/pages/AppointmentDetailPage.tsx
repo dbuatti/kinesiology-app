@@ -11,7 +11,11 @@ import {
   ShieldCheck,
   Sparkles,
   Share,
-  Link as LinkIcon
+  Link as LinkIcon,
+  ChevronRight,
+  ExternalLink,
+  DollarSign,
+  AlertCircle
 } from "lucide-react";
 import { format, isToday } from "date-fns";
 import { AppointmentWithClient } from "@/types/crm";
@@ -56,7 +60,7 @@ const AppointmentDetailPage = () => {
   const [syncingNotion, setSyncingNotion] = useState(false);
   const [deleting, setDeleting] = useState(false);
   const [currentTime, setCurrentTime] = useState(new Date());
-  const [showSidebar, setShowSidebar] = useState(false);
+  const [showSidebar, setShowSidebar] = useState(true); // Default to true for better desktop utility
   const [nucleiFilter, setNucleiFilter] = useState<Nuclei | null>(null);
 
   useEffect(() => {
@@ -64,7 +68,7 @@ const AppointmentDetailPage = () => {
     return () => clearInterval(timer);
   }, []);
 
-  const currentPeakMeridian = (() => {
+  const currentPeakMeridian = useMemo(() => {
     const hour = currentTime.getHours();
     return TCM_CHANNELS.find(c => {
       if (c.peakTime === 'None') return false;
@@ -80,7 +84,7 @@ const AppointmentDetailPage = () => {
       if (start > end) return hour >= start || hour < end;
       return hour >= start && hour < end;
     });
-  })();
+  }, [currentTime]);
 
   const fetchAppointmentData = async () => {
     if (!id) return;
@@ -336,7 +340,8 @@ const AppointmentDetailPage = () => {
         onCompleteSession={handleCompleteSession}
       />
       <AppLayout variant="wide" hasFixedHeader={isFixedHeaderActive}>
-        <div className="flex flex-col gap-8 print:p-0">
+        <div className="flex flex-col gap-6 print:p-0">
+          {/* Page Header */}
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 print:hidden">
             <Breadcrumbs 
               items={[
@@ -379,6 +384,7 @@ const AppointmentDetailPage = () => {
             </div>
           </div>
 
+          {/* Print Header */}
           <div className="print:block hidden mb-8">
             <div className="flex items-center justify-between border-b-2 border-indigo-600 pb-4">
               <div>
@@ -392,18 +398,22 @@ const AppointmentDetailPage = () => {
             </div>
           </div>
 
-          <WeeklyFocusBanner 
-            appointmentId={appointment.id}
-            priorityPattern={appointment.priority_pattern}
-            onSaveField={saveField}
-            onJumpToCalibrate={handleJumpToCalibrate}
-          />
+          {/* Context Banners */}
+          <div className="space-y-4 print:hidden">
+            <WeeklyFocusBanner 
+              appointmentId={appointment.id}
+              priorityPattern={appointment.priority_pattern}
+              onSaveField={saveField}
+              onJumpToCalibrate={handleJumpToCalibrate}
+            />
 
-          <PreviousSessionInsightsBar 
-            clientId={appointment.clients.id} 
-            currentAppointmentId={appointment.id} 
-          />
+            <PreviousSessionInsightsBar 
+              clientId={appointment.clients.id} 
+              currentAppointmentId={appointment.id} 
+            />
+          </div>
 
+          {/* Main Content Grid */}
           <div className="grid grid-cols-1 xl:grid-cols-12 gap-8">
             <div className={cn(showSidebar ? "xl:col-span-8" : "xl:col-span-12", "space-y-8 transition-all duration-500")}>
               <Card className="border-none shadow-xl rounded-[2.5rem] bg-white overflow-hidden">
@@ -463,12 +473,18 @@ const AppointmentDetailPage = () => {
               </div>
             </div>
 
+            {/* Sidebar */}
             {showSidebar && (
               <div className="xl:col-span-4 space-y-8 print:hidden animate-in fade-in slide-in-from-right-4 duration-500">
                 <div className="space-y-4">
-                  <div className="flex items-center gap-2 px-2">
-                    <Brain size={18} className="text-indigo-600" />
-                    <h3 className="text-sm font-black text-slate-400 uppercase tracking-[0.3em]">Brainstem Tone Map</h3>
+                  <div className="flex items-center justify-between px-2">
+                    <div className="flex items-center gap-2">
+                      <Brain size={18} className="text-indigo-600" />
+                      <h3 className="text-sm font-black text-slate-400 uppercase tracking-[0.3em]">Brainstem Tone Map</h3>
+                    </div>
+                    <Button variant="ghost" size="icon" onClick={() => setShowSidebar(false)} className="h-8 w-8 rounded-xl text-slate-400 hover:text-slate-900">
+                      <PanelRightClose size={18} />
+                    </Button>
                   </div>
                   <BrainstemToneMap 
                     priorityPattern={appointment.priority_pattern} 
@@ -534,6 +550,7 @@ const AppointmentDetailPage = () => {
             )}
           </div>
 
+          {/* Print View Content */}
           <div className="hidden print:block space-y-8">
             <div className="grid grid-cols-2 gap-8">
               <div className="p-6 bg-slate-50 rounded-2xl border border-slate-100">

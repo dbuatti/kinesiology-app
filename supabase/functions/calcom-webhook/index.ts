@@ -60,7 +60,7 @@ async function sendGmail(accessToken: string, from: string, to: string, subject:
 
 serve(async (req) => {
   if (req.method === 'GET') {
-    return new Response(JSON.stringify({ status: "active", provider: "gmail", version: "v38" }), { 
+    return new Response(JSON.stringify({ status: "active", provider: "gmail", version: "v39" }), { 
       status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
     });
   }
@@ -146,10 +146,10 @@ serve(async (req) => {
         const onboardingUrl = `https://kinesiology-app.vercel.app/onboarding/${dbClient.id}`;
         
         const paymentSection = isPaid ? `
-          <div style="background-color: #F8FAFC; border-radius: 24px; padding: 24px; margin: 24px 0; border: 1px solid #E2E8F0;">
-            <div style="font-size: 11px; font-weight: 800; color: #1E3261; text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 12px;">Payment Details ($50)</div>
-            <p style="margin: 0; font-size: 15px; color: #475569;">You can transfer via bank details below or tap to pay on the day:</p>
-            <div style="margin-top: 16px; font-family: monospace; font-size: 16px; color: #1E3261; font-weight: 700;">
+          <div style="background-color: #F8FAFC; border-radius: 24px; padding: 32px; margin: 32px 0; border: 1px solid #E2E8F0;">
+            <div style="font-size: 11px; font-weight: 800; color: #1E3261; text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 16px;">Payment Details ($50)</div>
+            <p style="margin: 0; font-size: 16px; color: #475569; line-height: 1.6;">This session is a paid clinical assessment. You can settle the fee via bank transfer using the details below, or via tap-to-pay during our session:</p>
+            <div style="margin-top: 24px; padding: 20px; background-color: #ffffff; border-radius: 16px; border: 1px solid #F1F5F9; font-family: monospace; font-size: 18px; color: #1E3261; font-weight: 700; text-align: center;">
               BSB: 923100<br/>
               ACC: 301110875
             </div>
@@ -168,11 +168,11 @@ serve(async (req) => {
               .header { padding: 56px 40px 40px 40px; text-align: center; }
               .logo { color: #1E3261; font-size: 28px; font-weight: 700; letter-spacing: 0.02em; }
               .sub-logo { color: #D46A9B; font-size: 11px; font-weight: 900; letter-spacing: 0.4em; margin-top: 16px; text-transform: uppercase; opacity: 0.8; }
-              .content { padding: 0 56px 48px 56px; line-height: 1.8; font-size: 17px; color: #334155; font-weight: 300; }
+              .content { padding: 0 56px 48px 56px; line-height: 1.8; font-size: 17px; color: #334155; font-weight: 400; }
               .booking-box { background-color: #F8FAFC; border-radius: 24px; padding: 24px; margin: 24px 0; border: 1px solid #F1F5F9; text-align: center; }
               .booking-time { color: #1E3261; font-weight: 700; font-size: 16px; margin-top: 4px; }
-              .button-container { text-align: center; padding: 20px 0; }
-              .button { display: inline-block; background-color: #1E3261; color: #ffffff !important; padding: 18px 40px; border-radius: 100px; text-decoration: none; font-weight: 700; font-size: 15px; letter-spacing: 0.05em; box-shadow: 0 12px 20px -5px rgba(30, 50, 97, 0.25); }
+              .button-container { text-align: center; padding: 32px 0; }
+              .button { display: inline-block; background-color: #1E3261; color: #ffffff !important; padding: 20px 48px; border-radius: 100px; text-decoration: none; font-weight: 700; font-size: 16px; letter-spacing: 0.05em; box-shadow: 0 12px 20px -5px rgba(30, 50, 97, 0.25); }
               .signature { padding: 0 56px 56px 56px; border-top: 1px solid #F1F5F9; margin-top: 20px; padding-top: 32px; }
               .sig-name { font-weight: 700; color: #1E3261; font-size: 20px; margin-bottom: 4px; }
               .sig-title { color: #D46A9B; font-size: 12px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.15em; }
@@ -188,7 +188,7 @@ serve(async (req) => {
                   <div class="sub-logo">Neuro-Somatic Support</div>
                 </div>
                 <div class="content">
-                  <h2 style="color: #1E3261; margin-top: 0; font-size: 24px;">Welcome to Resonance</h2>
+                  <h2 style="color: #1E3261; margin-top: 0; font-size: 26px; font-weight: 800;">Session Confirmed</h2>
                   <p>Hi ${name.split(' ')[0]},</p>
                   <p>Thank you for booking your session. Your appointment is confirmed for:</p>
                   
@@ -199,15 +199,13 @@ serve(async (req) => {
 
                   <p>To help me prepare and ensure we get the most out of our time together, please complete your clinical onboarding form before we meet.</p>
                   
+                  <p>This form allows me to review your history and current health goals in advance, so we can focus entirely on the neurological work during our session.</p>
+
                   ${paymentSection}
 
                   <div class="button-container">
                     <a href="${onboardingUrl}" class="button">Complete Onboarding Form</a>
                   </div>
-                  <p style="font-size: 13px; color: #94a3b8; margin-top: 30px;">
-                    If the button doesn't work, you can copy this link:<br/>
-                    <a href="${onboardingUrl}" style="color: #D46A9B;">${onboardingUrl}</a>
-                  </p>
                 </div>
                 <div class="signature">
                   <div class="sig-name">Daniele Buatti</div>
@@ -215,7 +213,6 @@ serve(async (req) => {
                 </div>
               </div>
               <div class="footer">
-                <p style="font-style: italic; font-size: 18px; color: #1E3261; margin-bottom: 24px;">"Come home to your body."</p>
                 <p>© ${new Date().getFullYear()} Resonance Kinesiology</p>
               </div>
             </div>

@@ -105,7 +105,6 @@ const AppointmentForm = ({ onSuccess, initialClientId, initialDate, initialTime 
 
       let calcomId = null;
 
-      // If we have an initialTime, it means we're booking from the Availability view
       if (initialTime) {
         console.log("[AppointmentForm] Triggering Cal.com sync via invoke...");
         setSyncStatus('calcom');
@@ -121,10 +120,15 @@ const AppointmentForm = ({ onSuccess, initialClientId, initialDate, initialTime 
         });
 
         if (invokeError) {
-          console.error("[AppointmentForm] Invocation Error:", invokeError);
-          // Check if it's a functional error returned as 400
+          console.error("[AppointmentForm] Invocation Error Object:", invokeError);
+          
+          // If we get a 418, it's our custom "Teapot" error from the function
+          if (invokeError.status === 418) {
+            throw new Error("Cal.com API Key is invalid or missing in Supabase secrets.");
+          }
+          
           const errorMsg = invokeError.context?.error || invokeError.message;
-          throw new Error(`Booking Error: ${errorMsg}`);
+          throw new Error(`Sync Error (${invokeError.status || 'Unknown'}): ${errorMsg}`);
         }
 
         if (calcomData?.success === false) {

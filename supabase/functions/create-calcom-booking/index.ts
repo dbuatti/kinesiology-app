@@ -9,38 +9,54 @@ const corsHeaders = {
 }
 
 serve(async (req) => {
-  console.log("--- [v2.0] CREATE-CALCOM-BOOKING START ---");
-  
+  // 1. Immediate OPTIONS handling
   if (req.method === 'OPTIONS') {
     return new Response('ok', { headers: corsHeaders })
   }
 
+  console.log("--- [v2.1] CREATE-CALCOM-BOOKING START ---");
+  
   try {
-    const authHeader = req.headers.get('Authorization');
-    const apiKeyHeader = req.headers.get('apikey');
-    console.log(`Auth Check: Authorization=${!!authHeader}, apikey=${!!apiKeyHeader}`);
-
+    // 2. Check Environment Secrets immediately
     const supabaseUrl = Deno.env.get('SUPABASE_URL');
     const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY');
     const CALCOM_KEY = Deno.env.get('CALCOM_API_KEY');
 
+    console.log(`Env Check: URL=${!!supabaseUrl}, ServiceKey=${!!supabaseKey}, CalKey=${!!CALCOM_KEY} (Len: ${CALCOM_KEY?.length || 0})`);
+
     if (!CALCOM_KEY) {
       console.error("❌ Missing CALCOM_API_KEY secret.");
-      throw new Error("Cal.com API key is not configured in Supabase secrets.");
+      return new Response(JSON.stringify({ error: "Cal.com API key not set in Supabase secrets." }), { 
+        status: 418, // Teapot: If you see this, the secret is missing!
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
+      });
     }
 
-    const body = await req.json();
+    // 3. Parse Body
+    const body = await req.json().catch(e => {
+      console.error("❌ JSON Parse Error:", e.message);
+      return null;
+    });
+
+    if (!body) {
+      return new Response(JSON.stringify({ error: "Invalid or empty JSON body" }), { 
+        status: 400, 
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
+      });
+    }
+
     const { clientId, startTime, eventTypeId } = body;
-    
-    console.log(`Booking Request: Client=${clientId}, Time=${startTime}, Event=${eventTypeId}`);
+    console.log(`Request Data: Client=${clientId}, Time=${startTime}, Event=${eventTypeId}`);
 
     if (!clientId || !startTime || !eventTypeId) {
       throw new Error("Missing required fields: clientId, startTime, or eventTypeId.");
     }
 
+    // 4. Initialize Supabase with Service Role
     const supabase = createClient(supabaseUrl, supabaseKey);
 
-    // Fetch Client
+    // 5. Fetch Client
+    console.log(`Fetching client ${clientId}...`);
     const { data: client, error: clientError } = await supabase
       .from('clients')
       .select('name, email')
@@ -49,13 +65,17 @@ serve(async (req) => {
 
     if (clientError || !client) {
       console.error("❌ Client lookup failed:", clientError);
-      throw new Error(`Client not found: ${clientError?.message || 'Unknown error'}`);
+      return new Response(JSON.stringify({ error: `Client not found: ${clientError?.message}` }), { 
+        status: 404, 
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
+      });
     }
     
     if (!client.email) {
-      throw new Error(`Client '${client.name}' has no email address. Cal.com requires an email.`);
+      throw new Error(`Client '${client.name}' has no email address.`);
     }
 
+    // 6. Call Cal.com
     const bookingPayload = {
       start: startTime,
       eventTypeId: parseInt(eventTypeId, 10),
@@ -84,15 +104,14 @@ serve(async (req) => {
 
     if (!response.ok) {
       console.error(`❌ Cal.com API Error (${response.status}):`, JSON.stringify(result));
-      const errorMsg = result.message || result.error?.message || `Cal.com API Error (${response.status})`;
-      
-      // Return a 400 with the specific Cal.com error so the frontend can show it
+      // If Cal.com returns 401, we return 418 to distinguish it from Supabase 401
+      const status = response.status === 401 ? 418 : 400;
       return new Response(JSON.stringify({ 
         success: false, 
-        error: errorMsg,
+        error: result.message || result.error?.message || "Cal.com API Error",
         details: result
       }), { 
-        status: 400, 
+        status: status, 
         headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
       });
     }
@@ -114,7 +133,7 @@ serve(async (req) => {
       success: false, 
       error: error.message 
     }), { 
-      status: 400, 
+      status: 500, 
       headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
     });
   }

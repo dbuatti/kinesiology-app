@@ -106,7 +106,6 @@ const AppointmentForm = ({ onSuccess, initialClientId, initialDate, initialTime 
       let calcomId = null;
 
       if (initialTime) {
-        console.log("[AppointmentForm] Triggering Cal.com sync via invoke...");
         setSyncStatus('calcom');
         
         const eventTypeId = localStorage.getItem('calcom_preferred_event_id') || "4279898";
@@ -120,13 +119,9 @@ const AppointmentForm = ({ onSuccess, initialClientId, initialDate, initialTime 
         });
 
         if (invokeError) {
-          console.error("[AppointmentForm] Invocation Error Object:", invokeError);
-          
-          // If we get a 418, it's our custom "Teapot" error from the function
           if (invokeError.status === 418) {
             throw new Error("Cal.com API Key is invalid or missing in Supabase secrets.");
           }
-          
           const errorMsg = invokeError.context?.error || invokeError.message;
           throw new Error(`Sync Error (${invokeError.status || 'Unknown'}): ${errorMsg}`);
         }
@@ -163,7 +158,6 @@ const AppointmentForm = ({ onSuccess, initialClientId, initialDate, initialTime 
       showSuccess(calcomId ? "Session booked in CRM and Cal.com!" : "Appointment scheduled in CRM.");
       onSuccess();
     } catch (error: any) {
-      console.error("[AppointmentForm] Submit Error:", error);
       showError(error.message || "Failed to schedule appointment");
     } finally {
       setSubmitting(false);

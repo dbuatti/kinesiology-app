@@ -14,21 +14,22 @@ serve(async (req) => {
     return new Response('ok', { headers: corsHeaders })
   }
 
-  console.log("--- [v2.2] CREATE-CALCOM-BOOKING START ---");
+  console.log("--- [v2.3] CREATE-CALCOM-BOOKING START ---");
   
   try {
     const CALCOM_KEY = Deno.env.get('CALCOM_API_KEY');
     const supabaseUrl = Deno.env.get('SUPABASE_URL');
     const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY');
+    const authHeader = req.headers.get('Authorization');
 
     // Log configuration state (safe check)
-    console.log(`Config Check: CALCOM_KEY=${!!CALCOM_KEY}, URL=${!!supabaseUrl}, ROLE_KEY=${!!supabaseKey}`);
+    console.log(`Config Check: CALCOM_KEY=${!!CALCOM_KEY}, URL=${!!supabaseUrl}, ROLE_KEY=${!!supabaseKey}, AuthHeader=${!!authHeader}`);
 
     if (!CALCOM_KEY) {
       console.error("❌ CRITICAL: CALCOM_API_KEY is not set in Supabase secrets.");
       return new Response(JSON.stringify({ 
         error: "Missing API Key", 
-        message: "CALCOM_API_KEY not found. Please run 'supabase secrets set CALCOM_API_KEY=...' in your terminal." 
+        message: "CALCOM_API_KEY not found in Supabase secrets." 
       }), { 
         status: 418, // Teapot: Identifies missing secret
         headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
@@ -97,7 +98,7 @@ serve(async (req) => {
 
     if (!response.ok) {
       console.error(`❌ Cal.com API Error (${response.status}):`, JSON.stringify(result));
-      // Distinguish 401 Unauthorized from Cal.com
+      // If Cal.com returns 401, it means the CALCOM_API_KEY is invalid
       const status = response.status === 401 ? 418 : 400;
       return new Response(JSON.stringify({ 
         success: false, 

@@ -29,7 +29,8 @@ import {
   Printer,
   Copy,
   FileText,
-  ChevronRight
+  ChevronRight,
+  DollarSign
 } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -53,7 +54,7 @@ import { Appointment } from "@/types/crm";
 import { showSuccess, showError } from "@/utils/toast";
 import { Link, useNavigate } from "react-router-dom";
 import { cn } from "@/lib/utils";
-import { APPOINTMENT_STATUSES } from "@/data/appointment-data";
+import { APPOINTMENT_TAGS, APPOINTMENT_STATUSES } from "@/data/appointment-data";
 import Breadcrumbs from "@/components/shared/Breadcrumbs";
 import { Input } from "@/components/ui/input";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -269,6 +270,11 @@ const AppointmentsPage = () => {
                     {isTodaySession && (
                       <Badge className="bg-rose-500 text-white border-none animate-pulse font-black text-[8px] uppercase tracking-widest px-2 py-0.5 rounded-full">
                         Live Today
+                      </Badge>
+                    )}
+                    {app.is_paid && (
+                      <Badge className="bg-emerald-500 text-white border-none font-black text-[8px] uppercase tracking-widest px-2 py-0.5 rounded-full flex items-center gap-1">
+                        <DollarSign size={10} /> Paid
                       </Badge>
                     )}
                     {isHighRisk && !isCompleted && (

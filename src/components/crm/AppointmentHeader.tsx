@@ -19,7 +19,9 @@ import {
   Brain,
   Copy,
   Check,
-  DollarSign
+  DollarSign,
+  ExternalLink,
+  CreditCard
 } from "lucide-react";
 import { format, isToday } from "date-fns";
 import { cn } from "@/lib/utils";
@@ -36,6 +38,7 @@ import { AppointmentWithClient } from "@/types/crm";
 import QuickAssessmentModal from "./QuickAssessmentModal";
 import { calculateBrainstemTone } from "@/utils/brainstem-logic";
 import { showSuccess } from "@/utils/toast";
+import EditableField from "@/components/shared/EditableField";
 
 interface AppointmentHeaderProps {
   appointment: AppointmentWithClient;
@@ -46,6 +49,7 @@ interface AppointmentHeaderProps {
 const AppointmentHeader = ({ appointment, onSaveField, onUpdate }: AppointmentHeaderProps) => {
   const [assessmentModal, setAssessmentModal] = useState<{ open: boolean; type: 'bolt' | 'coherence' } | null>(null);
   const [idCopied, setIdCopied] = useState(false);
+  const [linkCopied, setLinkCopied] = useState(false);
   const clientBorn = appointment.clients.born ? new Date(appointment.clients.born) : null;
   const isSessionToday = isToday(appointment.date);
 
@@ -61,6 +65,15 @@ const AppointmentHeader = ({ appointment, onSaveField, onUpdate }: AppointmentHe
     setIdCopied(true);
     showSuccess("Session ID copied");
     setTimeout(() => setIdCopied(false), 2000);
+  };
+
+  const handleCopyPaymentLink = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (!appointment.payment_link) return;
+    navigator.clipboard.writeText(appointment.payment_link);
+    setLinkCopied(true);
+    showSuccess("Payment link copied");
+    setTimeout(() => setLinkCopied(false), 2000);
   };
 
   return (
@@ -136,33 +149,59 @@ const AppointmentHeader = ({ appointment, onSaveField, onUpdate }: AppointmentHe
         </div>
 
         <div className="flex flex-wrap items-center gap-3 lg:justify-end">
-          {/* Paid Status Toggle */}
-          <div className={cn(
-            "flex items-center gap-3 px-4 py-2 rounded-2xl border-2 transition-all duration-500",
-            appointment.is_paid ? "bg-emerald-50 border-emerald-200 text-emerald-700" : "bg-amber-50 border-amber-200 text-amber-700"
-          )}>
+          {/* Payment Section */}
+          <div className="flex flex-col gap-2">
             <div className={cn(
-              "w-8 h-8 rounded-xl flex items-center justify-center text-white shadow-sm",
-              appointment.is_paid ? "bg-emerald-600" : "bg-amber-600"
+              "flex items-center gap-3 px-4 py-2 rounded-2xl border-2 transition-all duration-500",
+              appointment.is_paid ? "bg-emerald-50 border-emerald-200 text-emerald-700" : "bg-amber-50 border-amber-200 text-amber-700"
             )}>
-              <DollarSign size={18} />
-            </div>
-            <div className="pr-1">
-              <Label htmlFor="paid-toggle" className="text-[8px] font-black uppercase tracking-[0.2em] block mb-0.5 opacity-60">
-                Payment
-              </Label>
-              <div className="flex items-center gap-2">
-                <span className="text-[10px] font-black">
-                  {appointment.is_paid ? "PAID" : "FREE"}
-                </span>
-                <Switch 
-                  id="paid-toggle" 
-                  checked={appointment.is_paid || false} 
-                  onCheckedChange={(checked) => onSaveField('is_paid', checked)} 
-                  className="data-[state=checked]:bg-emerald-500 scale-75" 
-                />
+              <div className={cn(
+                "w-8 h-8 rounded-xl flex items-center justify-center text-white shadow-sm",
+                appointment.is_paid ? "bg-emerald-600" : "bg-amber-600"
+              )}>
+                <DollarSign size={18} />
+              </div>
+              <div className="pr-1">
+                <Label htmlFor="paid-toggle" className="text-[8px] font-black uppercase tracking-[0.2em] block mb-0.5 opacity-60">
+                  Payment
+                </Label>
+                <div className="flex items-center gap-2">
+                  <span className="text-[10px] font-black">
+                    {appointment.is_paid ? "PAID" : "PENDING"}
+                  </span>
+                  <Switch 
+                    id="paid-toggle" 
+                    checked={appointment.is_paid || false} 
+                    onCheckedChange={(checked) => onSaveField('is_paid', checked)} 
+                    className="data-[state=checked]:bg-emerald-500 scale-75" 
+                  />
+                </div>
               </div>
             </div>
+            
+            {appointment.payment_link && (
+              <div className="flex gap-1 animate-in fade-in slide-in-from-right-2">
+                <Button 
+                  variant="outline" 
+                  size="sm" 
+                  className="h-7 px-2 rounded-lg text-[8px] font-black uppercase tracking-widest border-indigo-100 text-indigo-600 hover:bg-indigo-50 flex-1"
+                  onClick={handleCopyPaymentLink}
+                >
+                  {linkCopied ? <Check size={10} className="mr-1" /> : <Copy size={10} className="mr-1" />}
+                  Copy Link
+                </Button>
+                <Button 
+                  variant="outline" 
+                  size="sm" 
+                  className="h-7 px-2 rounded-lg text-[8px] font-black uppercase tracking-widest border-indigo-100 text-indigo-600 hover:bg-indigo-50"
+                  asChild
+                >
+                  <a href={appointment.payment_link} target="_blank" rel="noopener noreferrer">
+                    <ExternalLink size={10} />
+                  </a>
+                </Button>
+              </div>
+            )}
           </div>
 
           {/* Neural Load Indicator */}

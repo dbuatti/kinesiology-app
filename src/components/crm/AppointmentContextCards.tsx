@@ -4,7 +4,7 @@ import React from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Zap, ExternalLink, Clock, Target, ShieldAlert, Activity, Brain, Heart, Home, Sparkles } from "lucide-react";
+import { Zap, ExternalLink, Clock, Target, ShieldAlert, Activity, Brain, Heart, Home, Sparkles, CreditCard } from "lucide-react";
 import { cn } from "@/lib/utils";
 import EditableField from "@/components/shared/EditableField";
 import QuickAcupointSelector from "./QuickAcupointSelector";
@@ -117,6 +117,22 @@ const AppointmentContextCards = ({ appointment, currentPeakMeridian, onSaveField
           </div>
           
           <div className="space-y-6">
+            <div className="space-y-4">
+              <div className="flex items-center gap-2 px-2">
+                <CreditCard size={14} className="text-emerald-400" />
+                <span className="text-[10px] font-black text-slate-500 uppercase tracking-widest">Payment Link</span>
+              </div>
+              <EditableField 
+                key={`payment-link-${appointment.id}`} 
+                field="payment_link" 
+                label="Stripe / Cal.com Link" 
+                value={appointment.payment_link} 
+                placeholder="Paste payment URL here..." 
+                onSave={onSaveField as any} 
+                className="bg-white/5 border-white/10 p-4 rounded-2xl"
+              />
+            </div>
+
             <div className="space-y-4">
               <EditableField 
                 key={`acupoints-${appointment.id}`} 

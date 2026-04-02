@@ -105,35 +105,28 @@ const AppointmentForm = ({ onSuccess, initialClientId, initialDate, initialTime 
 
       let calcomId = null;
 
-      // 1. If we have initialTime, it means we're booking from the Availability view
       if (initialTime) {
-        console.log("[AppointmentForm] Detected initialTime, triggering Cal.com sync...");
         setSyncStatus('calcom');
         const eventTypeId = localStorage.getItem('calcom_preferred_event_id') || "4279898";
         
-        // We don't need to manually pass the Authorization header; 
-        // the Supabase client handles this automatically when a session exists.
         const { data: calcomData, error: calcomError } = await supabase.functions.invoke('create-calcom-booking', {
           body: { 
             clientId: values.clientId, 
             startTime: isoDate,
             eventTypeId: eventTypeId
+          },
+          headers: {
+            Authorization: `Bearer ${session.access_token}`
           }
         });
 
         if (calcomError) {
-          console.error("[AppointmentForm] Edge Function Error:", calcomError);
-          // Check for specific 401 error from the gateway
-          if (calcomError.message?.includes('401') || calcomError.status === 401) {
-            throw new Error("Authentication error. Please try signing out and back in.");
-          }
-          throw new Error(`Cal.com Booking Failed: ${calcomError.message}`);
+          throw new Error(`Cal.com Booking Failed: ${calcomError.message || 'Unauthorized'}`);
         }
         
         calcomId = calcomData?.uid || calcomData?.bookingId;
       }
 
-      // 2. Create in Supabase CRM
       let appointmentName = values.name?.trim() || '';
       if (!appointmentName) {
           const client = clients.find(c => c.id === values.clientId);
@@ -159,7 +152,6 @@ const AppointmentForm = ({ onSuccess, initialClientId, initialDate, initialTime 
       showSuccess(calcomId ? "Session booked in CRM and Cal.com!" : "Appointment scheduled in CRM.");
       onSuccess();
     } catch (error: any) {
-      console.error("[AppointmentForm] Submit Error:", error);
       showError(error.message || "Failed to schedule appointment");
     } finally {
       setSubmitting(false);

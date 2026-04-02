@@ -14,19 +14,13 @@ serve(async (req) => {
     return new Response('ok', { headers: corsHeaders })
   }
 
-  console.log(`--- [create-calcom-booking] v1.1 Request Received: ${req.method} ---`);
+  console.log(`--- [create-calcom-booking] v1.2 Request Received: ${req.method} ---`);
 
   try {
     // 2. Check Environment Variables
     const supabaseUrl = Deno.env.get('SUPABASE_URL')
     const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')
     const CALCOM_KEY = Deno.env.get('CALCOM_API_KEY')
-
-    console.log("Config Check:", {
-      hasUrl: !!supabaseUrl,
-      hasKey: !!supabaseKey,
-      hasCalcom: !!CALCOM_KEY
-    });
 
     if (!supabaseUrl || !supabaseKey) {
       throw new Error("Missing Supabase environment variables.");

@@ -60,14 +60,12 @@ async function sendGmail(accessToken: string, from: string, to: string, subject:
 
 serve(async (req) => {
   if (req.method === 'GET') {
-    return new Response(JSON.stringify({ status: "active", provider: "gmail", version: "v41" }), { 
+    return new Response(JSON.stringify({ status: "active", provider: "gmail", version: "v42" }), { 
       status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
     });
   }
 
   if (req.method === 'OPTIONS') return new Response('ok', { headers: corsHeaders })
-
-  console.log("[calcom-webhook] Processing webhook...");
 
   try {
     const supabaseUrl = Deno.env.get('SUPABASE_URL')
@@ -86,7 +84,6 @@ serve(async (req) => {
     const payload = body.payload || body;
     const calcomId = String(payload.bookingId || payload.id || payload.uid);
 
-    // 0. Check for existing appointment to prevent duplicates
     const { data: existingApp } = await supabase
       .from('appointments')
       .select('id')
@@ -104,14 +101,11 @@ serve(async (req) => {
       return new Response(JSON.stringify({ success: true, action: 'skipped_duplicate' }), { status: 200, headers: corsHeaders });
     }
 
-    // 1. Extract Data
     const attendee = payload.attendees[0];
     const name = String(attendee.name || "Unknown Client").trim();
     const email = String(attendee.email || "").toLowerCase().trim();
     const phone = attendee.phoneNumber || "";
     const startTime = payload.startTime;
-    
-    // If they paid via Stripe, it's a paid session AND payment is received
     const hasPaidViaStripe = !!(payload.payment?.[0]?.amount || payload.metadata?.is_paid === "true");
 
     const dateObj = new Date(startTime);
@@ -121,21 +115,16 @@ serve(async (req) => {
       timeZone: 'Australia/Melbourne'
     }).format(dateObj);
 
-    // 2. Supabase CRM Sync (Client)
     let { data: dbClient } = await supabase.from('clients').select('id').eq('email', email).maybeSingle();
     if (!dbClient && email) {
       const { data: newDbC } = await supabase.from('clients').insert({ user_id: PRACTITIONER_ID, name, email, phone }).select().single();
       dbClient = newDbC;
     }
 
-    // 3. Send Onboarding Email
     if (!existingApp && GMAIL_CLIENT_ID && GMAIL_CLIENT_SECRET && GMAIL_REFRESH_TOKEN && dbClient) {
       try {
         const accessToken = await getGmailAccessToken(GMAIL_CLIENT_ID, GMAIL_CLIENT_SECRET, GMAIL_REFRESH_TOKEN);
         const onboardingUrl = `https://kinesiology-app.vercel.app/onboarding/${dbClient.id}`;
-        
-        // Only show bank details if it's a paid session but payment hasn't been received yet
-        // (For Cal.com, if hasPaidViaStripe is false, we assume they need to pay via bank)
         const showBankDetails = !hasPaidViaStripe;
 
         const paymentSection = showBankDetails ? `
@@ -152,33 +141,71 @@ serve(async (req) => {
         const htmlBody = `
           <!DOCTYPE html>
           <html>
-          <body style="margin: 0; padding: 0; background-color: #FDFCFB; font-family: sans-serif;">
-            <div style="width: 100%; background-color: #FDFCFB; padding: 40px 0;">
-              <div style="max-width: 600px; margin: 0 auto; background-color: #ffffff; border-radius: 40px; overflow: hidden; border: 1px solid #E0F2FE;">
-                <div style="height: 6px; background-color: #D46A9B; width: 100%;"></div>
-                <div style="padding: 56px 40px 40px 40px; text-align: center;">
-                  <div style="color: #1E3261; font-size: 28px; font-weight: 700; letter-spacing: 0.02em;">✦ Resonance Kinesiology</div>
-                  <div style="color: #D46A9B; font-size: 11px; font-weight: 900; letter-spacing: 0.4em; margin-top: 16px; text-transform: uppercase; opacity: 0.8;">Neuro-Somatic Support</div>
-                </div>
-                <div style="padding: 0 56px 56px 56px; line-height: 1.8; font-size: 17px; color: #334155; text-align: left;">
-                  <h2 style="color: #1E3261; margin-top: 0; font-size: 26px; font-weight: 800;">Session Confirmed</h2>
-                  <p>Hi ${name.split(' ')[0]},</p>
-                  <p>Your appointment is confirmed for <strong>${formattedTime}</strong>.</p>
-                  <p>Please complete your clinical onboarding form before we meet:</p>
-                  ${paymentSection}
-                  <div style="text-align: center; padding: 32px 0;">
-                    <a href="${onboardingUrl}" style="display: inline-block; background-color: #1E3261; color: #ffffff; padding: 20px 48px; border-radius: 100px; text-decoration: none; font-weight: 700; font-size: 16px; letter-spacing: 0.05em;">Complete Onboarding Form</a>
-                  </div>
-                </div>
-                <div style="padding: 0 56px 56px 56px; border-top: 1px solid #F1F5F9; margin-top: 20px; padding-top: 32px; text-align: left;">
-                  <div style="font-weight: 700; color: #1E3261; font-size: 20px; margin-bottom: 4px;">Daniele Buatti</div>
-                  <div style="color: #D46A9B; font-size: 12px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.15em;">Neuro-Somatic Kinesiologist</div>
-                </div>
-              </div>
-              <div style="padding: 48px 20px; text-align: center; color: #64748b; font-size: 13px;">
-                <p>© ${new Date().getFullYear()} Resonance Kinesiology</p>
-              </div>
-            </div>
+          <head>
+            <meta charset="utf-8">
+            <meta name="viewport" content="width=device-width, initial-scale=1.0">
+          </head>
+          <body style="margin: 0; padding: 0; background-color: #FDFCFB; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;">
+            <center style="width: 100%; background-color: #FDFCFB; padding: 40px 0;">
+              <table role="presentation" border="0" cellpadding="0" cellspacing="0" width="100%" style="max-width: 600px; margin: 0 auto;">
+                <tr>
+                  <td style="background-color: #ffffff; border-radius: 40px; overflow: hidden; border: 1px solid #E0F2FE; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);">
+                    <!-- Top Accent Bar -->
+                    <table role="presentation" width="100%" cellspacing="0" cellpadding="0">
+                      <tr><td style="height: 6px; background-color: #D46A9B;"></td></tr>
+                    </table>
+
+                    <!-- Header Section -->
+                    <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="padding: 56px 40px 40px 40px; text-align: center;">
+                      <tr>
+                        <td>
+                          <div style="color: #1E3261; font-size: 28px; font-weight: 700; letter-spacing: 0.02em;">✦ Resonance Kinesiology</div>
+                          <div style="color: #D46A9B; font-size: 11px; font-weight: 900; letter-spacing: 0.4em; margin-top: 16px; text-transform: uppercase; opacity: 0.8;">Neuro-Somatic Support</div>
+                        </td>
+                      </tr>
+                    </table>
+
+                    <!-- Main Content -->
+                    <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="padding: 0 56px 56px 56px; text-align: left;">
+                      <tr>
+                        <td style="line-height: 1.8; font-size: 17px; color: #334155;">
+                          <h2 style="color: #1E3261; margin-top: 0; font-size: 26px; font-weight: 800; text-align: center;">Session Confirmed</h2>
+                          <p style="margin-top: 24px;">Hi ${name.split(' ')[0]},</p>
+                          <p>Thank you for booking your session. Your appointment is confirmed for:</p>
+                          
+                          <!-- Time Block -->
+                          <div style="background-color: #F0F9FF; border-radius: 24px; padding: 32px; margin: 32px 0; text-align: center; border: 1px solid #E0F2FE;">
+                            <div style="font-size: 10px; font-weight: 800; color: #64748b; text-transform: uppercase; letter-spacing: 0.2em; margin-bottom: 8px;">Scheduled Time</div>
+                            <div style="font-size: 20px; font-weight: 800; color: #1E3261;">${formattedTime}</div>
+                          </div>
+
+                          <p>Please complete your clinical onboarding form before we meet:</p>
+                          
+                          ${paymentSection}
+
+                          <div style="text-align: center; padding: 32px 0;">
+                            <a href="${onboardingUrl}" style="display: inline-block; background-color: #1E3261; color: #ffffff; padding: 20px 48px; border-radius: 100px; text-decoration: none; font-weight: 700; font-size: 16px; letter-spacing: 0.05em;">Complete Onboarding Form</a>
+                          </div>
+                        </td>
+                      </tr>
+                      
+                      <!-- Signature -->
+                      <tr>
+                        <td style="border-top: 1px solid #F1F5F9; margin-top: 20px; padding-top: 32px;">
+                          <div style="font-weight: 700; color: #1E3261; font-size: 20px; margin-bottom: 4px;">Daniele Buatti</div>
+                          <div style="color: #D46A9B; font-size: 12px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.15em;">Neuro-Somatic Kinesiologist</div>
+                        </td>
+                      </tr>
+                    </table>
+                  </td>
+                </tr>
+                <tr>
+                  <td style="padding: 48px 20px; text-align: center; color: #64748b; font-size: 13px;">
+                    <p>© ${new Date().getFullYear()} Resonance Kinesiology</p>
+                  </td>
+                </tr>
+              </table>
+            </center>
           </body>
           </html>
         `;
@@ -197,7 +224,7 @@ serve(async (req) => {
         tag: "Kinesiology",
         status: "Scheduled",
         calcom_booking_id: calcomId,
-        is_paid: true, // Cal.com bookings are always paid sessions
+        is_paid: true,
         payment_received: hasPaidViaStripe
       };
       await supabase.from('appointments').upsert(appointmentData, { onConflict: 'calcom_booking_id' });

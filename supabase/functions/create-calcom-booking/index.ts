@@ -8,24 +8,34 @@ const corsHeaders = {
   'Access-Control-Allow-Methods': 'POST, OPTIONS',
 }
 
+// Helper to get Gmail Access Token using Refresh Token
+async function getGmailAccessToken(clientId: string, clientSecret: string, refreshToken: string) {
+  const response = await fetch("https://oauth2.googleapis.com/token", {
+    method: "POST",
+    headers: { "Content-Type": "application/x-www-form-urlencoded" },
+    body: new URLSearchParams({
+      client_id: clientId,
+      client_secret: clientSecret,
+      refresh_token: refreshToken,
+      grant_type: "refresh_token",
+    }),
+  });
+  const data = await response.json();
+  return data.access_token;
+}
+
 serve(async (req) => {
-  // 1. Handle CORS preflight
   if (req.method === 'OPTIONS') {
     return new Response('ok', { headers: corsHeaders })
   }
 
-  console.log("--- [v2.3] CREATE-CALCOM-BOOKING START ---");
+  console.log("--- [v2.4] CREATE-CALCOM-BOOKING START ---");
   
   try {
     const supabaseUrl = Deno.env.get('SUPABASE_URL');
     const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY');
     const CALCOM_KEY = Deno.env.get('CALCOM_API_KEY');
     
-    // Log header presence for debugging (do not log full values)
-    const authHeader = req.headers.get('Authorization');
-    const apiKeyHeader = req.headers.get('apikey');
-    console.log(`Diagnostics: AuthHeader=${!!authHeader}, ApiKeyHeader=${!!apiKeyHeader}, CalKey=${!!CALCOM_KEY}`);
-
     if (!CALCOM_KEY) {
       console.error("❌ Missing CALCOM_API_KEY secret.");
       return new Response(JSON.stringify({ error: "Cal.com API key not set in Supabase secrets." }), { 
@@ -46,12 +56,11 @@ serve(async (req) => {
       });
     }
 
-    const { clientId, startTime, eventTypeId } = body;
+    const { clientId, startTime, eventTypeId, title, notes } = body;
     if (!clientId || !startTime || !eventTypeId) {
       throw new Error("Missing required fields: clientId, startTime, or eventTypeId.");
     }
 
-    // Initialize Supabase with Service Role to ensure we can read client data
     const supabase = createClient(supabaseUrl, supabaseKey);
 
     const { data: client, error: clientError } = await supabase
@@ -72,6 +81,8 @@ serve(async (req) => {
       throw new Error(`Client '${client.name}' has no email address.`);
     }
 
+    // Cal.com v2 requires 'responses' for mandatory fields
+    // We map our 'title' and 'notes' to the standard Cal.com response keys
     const bookingPayload = {
       start: startTime,
       eventTypeId: parseInt(eventTypeId, 10),
@@ -81,10 +92,14 @@ serve(async (req) => {
         timeZone: "Australia/Melbourne",
         language: "en"
       },
+      responses: {
+        title: title || "Kinesiology Session",
+        notes: notes || ""
+      },
       metadata: { source: "Antigravity CRM" }
     };
 
-    console.log(`Calling Cal.com API for ${client.email}...`);
+    console.log(`Calling Cal.com API for ${client.email} with title: ${bookingPayload.responses.title}`);
 
     const response = await fetch("https://api.cal.com/v2/bookings", {
       method: "POST",
@@ -100,13 +115,12 @@ serve(async (req) => {
 
     if (!response.ok) {
       console.error(`❌ Cal.com API Error (${response.status}):`, JSON.stringify(result));
-      const status = response.status === 401 ? 418 : 400;
       return new Response(JSON.stringify({ 
         success: false, 
         error: result.message || result.error?.message || "Cal.com API Error",
         details: result
       }), { 
-        status: status, 
+        status: 400, 
         headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
       });
     }

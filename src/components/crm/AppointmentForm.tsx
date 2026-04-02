@@ -116,19 +116,19 @@ const AppointmentForm = ({ onSuccess, initialClientId, initialDate, initialTime 
           body: { 
             clientId: values.clientId, 
             startTime: isoDate,
-            eventTypeId: eventTypeId
+            eventTypeId: eventTypeId,
+            title: values.name || values.tag || "Kinesiology Session",
+            notes: values.goal || values.issue || ""
           }
         });
 
         if (invokeError) {
           console.error("[AppointmentForm] Invocation Error:", invokeError);
           
-          // Handle 401 specifically (Gateway rejection)
           if (invokeError.status === 401) {
             throw new Error("Your session has expired. Please sign out and sign back in to refresh your connection.");
           }
           
-          // Handle 418 (Missing Secret)
           if (invokeError.status === 418) {
             throw new Error("Cal.com API Key is invalid or missing in Supabase secrets.");
           }

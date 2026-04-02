@@ -13,7 +13,7 @@ serve(async (req) => {
     return new Response('ok', { headers: corsHeaders })
   }
 
-  console.log("--- [v2.8] CREATE-CALCOM-BOOKING START ---");
+  console.log("--- [v2.9] CREATE-CALCOM-BOOKING START ---");
   
   try {
     const supabaseUrl = Deno.env.get('SUPABASE_URL');
@@ -66,12 +66,7 @@ serve(async (req) => {
     }
 
     // Cal.com v2 Booking Payload
-    // Mapping to the specific questions provided by the user:
-    // 1. "Your name" -> attendee.name
-    // 2. "Email address" -> attendee.email
-    // 3. "Phone number" -> attendee.phoneNumber
-    // 4. "What is this meeting about?" -> responses.title (Required)
-    // 5. "Additional notes" -> responses.notes (Optional)
+    // Mapping to the exact slugs provided by the user
     const bookingPayload = {
       start: startTime,
       eventTypeId: parseInt(eventTypeId, 10),
@@ -83,6 +78,9 @@ serve(async (req) => {
         language: "en"
       },
       responses: {
+        name: client.name,
+        email: client.email,
+        attendeePhoneNumber: client.phone || "",
         title: title || "Kinesiology Session",
         notes: notes || ""
       },

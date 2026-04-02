@@ -13,7 +13,7 @@ serve(async (req) => {
     return new Response('ok', { headers: corsHeaders })
   }
 
-  console.log("--- [v8.0] CREATE-CALCOM-BOOKING (API v2024-08-13) ---");
+  console.log("--- [v9.0] CREATE-CALCOM-BOOKING (API v2024-08-13) ---");
   
   try {
     const supabaseUrl = Deno.env.get('SUPABASE_URL');
@@ -65,8 +65,7 @@ serve(async (req) => {
       throw new Error(`Client '${client.name}' has no email address.`);
     }
 
-    // Cal.com v2 Booking Payload (v8.0)
-    // Removed 'responses' as it was causing 400 errors when no custom fields are defined.
+    // Cal.com v2 Booking Payload
     const bookingPayload = {
       start: startTime,
       eventTypeId: parseInt(eventTypeId, 10),
@@ -83,7 +82,7 @@ serve(async (req) => {
       }
     };
 
-    console.log(`Calling Cal.com v2 API for ${client.email} at ${startTime}`);
+    console.log(`Calling Cal.com v2 API for ${client.email} at ${startTime} (Event: ${eventTypeId})`);
 
     const response = await fetch("https://api.cal.com/v2/bookings", {
       method: "POST",
@@ -99,25 +98,21 @@ serve(async (req) => {
 
     if (!response.ok) {
       console.error(`❌ Cal.com API Error (${response.status}):`, JSON.stringify(result));
-      
       const errorMessage = result.error?.message || result.message || "Cal.com API Error";
-
-      return new Response(JSON.stringify({ 
-        success: false, 
-        error: errorMessage,
-        details: result
-      }), { 
+      return new Response(JSON.stringify({ success: false, error: errorMessage, details: result }), { 
         status: 400, 
         headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
       });
     }
 
-    console.log(`✅ Success: Booking ${result.data?.id} created.`);
+    const booking = result.data;
+    console.log(`✅ Success: Booking ${booking.id} created. Status: ${booking.status}. UID: ${booking.uid}`);
 
     return new Response(JSON.stringify({ 
       success: true, 
-      bookingId: result.data?.id,
-      uid: result.data?.uid
+      bookingId: booking.id,
+      uid: booking.uid,
+      status: booking.status
     }), { 
       status: 200, 
       headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
@@ -125,10 +120,7 @@ serve(async (req) => {
 
   } catch (error) {
     console.error("❌ Critical Function Error:", error.message);
-    return new Response(JSON.stringify({ 
-      success: false, 
-      error: error.message 
-    }), { 
+    return new Response(JSON.stringify({ success: false, error: error.message }), { 
       status: 500, 
       headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
     });

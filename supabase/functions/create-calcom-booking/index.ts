@@ -8,28 +8,12 @@ const corsHeaders = {
   'Access-Control-Allow-Methods': 'POST, OPTIONS',
 }
 
-// Helper to get Gmail Access Token using Refresh Token
-async function getGmailAccessToken(clientId: string, clientSecret: string, refreshToken: string) {
-  const response = await fetch("https://oauth2.googleapis.com/token", {
-    method: "POST",
-    headers: { "Content-Type": "application/x-www-form-urlencoded" },
-    body: new URLSearchParams({
-      client_id: clientId,
-      client_secret: clientSecret,
-      refresh_token: refreshToken,
-      grant_type: "refresh_token",
-    }),
-  });
-  const data = await response.json();
-  return data.access_token;
-}
-
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
     return new Response('ok', { headers: corsHeaders })
   }
 
-  console.log("--- [v2.4] CREATE-CALCOM-BOOKING START ---");
+  console.log("--- [v2.5] CREATE-CALCOM-BOOKING START ---");
   
   try {
     const supabaseUrl = Deno.env.get('SUPABASE_URL');
@@ -81,8 +65,9 @@ serve(async (req) => {
       throw new Error(`Client '${client.name}' has no email address.`);
     }
 
-    // Cal.com v2 requires 'responses' for mandatory fields
-    // We map our 'title' and 'notes' to the standard Cal.com response keys
+    // Cal.com v2 Booking Payload
+    // Note: 'responses' was rejected in v2.4, so we are removing it.
+    // We'll pass the title/notes in metadata for reference if allowed.
     const bookingPayload = {
       start: startTime,
       eventTypeId: parseInt(eventTypeId, 10),
@@ -92,14 +77,14 @@ serve(async (req) => {
         timeZone: "Australia/Melbourne",
         language: "en"
       },
-      responses: {
-        title: title || "Kinesiology Session",
-        notes: notes || ""
-      },
-      metadata: { source: "Antigravity CRM" }
+      metadata: { 
+        source: "Antigravity CRM",
+        session_title: title || "Kinesiology Session",
+        session_notes: notes || ""
+      }
     };
 
-    console.log(`Calling Cal.com API for ${client.email} with title: ${bookingPayload.responses.title}`);
+    console.log(`Calling Cal.com API for ${client.email}...`);
 
     const response = await fetch("https://api.cal.com/v2/bookings", {
       method: "POST",

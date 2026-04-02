@@ -189,7 +189,7 @@ const InteractiveIntentionWorksheet = () => {
             </Badge>
             <h1 className="text-4xl font-black tracking-tighter">Setting Your North Star</h1>
             <p className="text-lg text-slate-400 font-medium max-w-xl mx-auto italic">
-              "The deeper you work, the higher you rise."
+              "Clarity of intention is the foundation of transformation."
             </p>
           </div>
         </div>
@@ -232,7 +232,7 @@ const InteractiveIntentionWorksheet = () => {
             </div>
             <p className={cn(
               "text-[10px] font-bold truncate",
-              currentStep === i ? "text-slate-900" : "text-slate-500"
+              currentStep === i ? "text-slate-900" : "text-slate-50"
             )}>
               {s.title.split(': ')[1]}
             </p>

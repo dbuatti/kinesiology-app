@@ -177,9 +177,6 @@ const Login = () => {
           <div className="flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-primary">
             <ShieldCheck size={14} /> Secure Clinical Infrastructure
           </div>
-          <p className="text-[10px] font-black text-muted-foreground uppercase tracking-[0.3em] italic">
-            "The deeper you work, the higher you rise."
-          </p>
         </div>
       </div>
     </div>

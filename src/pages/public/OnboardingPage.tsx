@@ -55,7 +55,7 @@ const OnboardingPage = () => {
 
   if (error) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-background p-6">
+      <div className="min-h-screen flex flex-col items-center justify-center bg-background p-6">
         <Card className="max-w-md w-full border-none shadow-3xl rounded-[3rem] p-8 text-center bg-white">
           <div className="w-16 h-16 bg-rose-50 rounded-2xl flex items-center justify-center mx-auto mb-6 text-rose-500">
             <Sparkles size={32} />
@@ -150,9 +150,6 @@ const OnboardingPage = () => {
               <span className="text-[10px] font-black uppercase tracking-widest">SSL Secure</span>
             </div>
           </div>
-          <p className="text-[10px] font-black text-muted-foreground uppercase tracking-[0.3em] italic">
-            "The deeper you work, the higher you rise."
-          </p>
         </div>
       </div>
     </div>

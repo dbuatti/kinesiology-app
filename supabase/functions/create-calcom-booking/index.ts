@@ -9,31 +9,31 @@ const corsHeaders = {
 }
 
 serve(async (req) => {
-  // 1. Immediate OPTIONS handling for CORS
+  // 1. Handle CORS preflight
   if (req.method === 'OPTIONS') {
     return new Response('ok', { headers: corsHeaders })
   }
 
-  console.log("--- [v2.2] CREATE-CALCOM-BOOKING START ---");
+  console.log("--- [v2.3] CREATE-CALCOM-BOOKING START ---");
   
   try {
-    // 2. Check Environment Secrets
     const supabaseUrl = Deno.env.get('SUPABASE_URL');
     const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY');
     const CALCOM_KEY = Deno.env.get('CALCOM_API_KEY');
+    
+    // Log header presence for debugging (do not log full values)
     const authHeader = req.headers.get('Authorization');
-
-    console.log(`Request Check: AuthHeader=${!!authHeader}, CalKey=${!!CALCOM_KEY}`);
+    const apiKeyHeader = req.headers.get('apikey');
+    console.log(`Diagnostics: AuthHeader=${!!authHeader}, ApiKeyHeader=${!!apiKeyHeader}, CalKey=${!!CALCOM_KEY}`);
 
     if (!CALCOM_KEY) {
       console.error("❌ Missing CALCOM_API_KEY secret.");
       return new Response(JSON.stringify({ error: "Cal.com API key not set in Supabase secrets." }), { 
-        status: 418, // Teapot: Secret is missing
+        status: 418, 
         headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
       });
     }
 
-    // 3. Parse Body
     const body = await req.json().catch(e => {
       console.error("❌ JSON Parse Error:", e.message);
       return null;
@@ -47,16 +47,13 @@ serve(async (req) => {
     }
 
     const { clientId, startTime, eventTypeId } = body;
-    console.log(`Data: Client=${clientId}, Time=${startTime}, Event=${eventTypeId}`);
-
     if (!clientId || !startTime || !eventTypeId) {
       throw new Error("Missing required fields: clientId, startTime, or eventTypeId.");
     }
 
-    // 4. Initialize Supabase with Service Role
+    // Initialize Supabase with Service Role to ensure we can read client data
     const supabase = createClient(supabaseUrl, supabaseKey);
 
-    // 5. Fetch Client
     const { data: client, error: clientError } = await supabase
       .from('clients')
       .select('name, email')
@@ -75,7 +72,6 @@ serve(async (req) => {
       throw new Error(`Client '${client.name}' has no email address.`);
     }
 
-    // 6. Call Cal.com
     const bookingPayload = {
       start: startTime,
       eventTypeId: parseInt(eventTypeId, 10),
@@ -104,7 +100,6 @@ serve(async (req) => {
 
     if (!response.ok) {
       console.error(`❌ Cal.com API Error (${response.status}):`, JSON.stringify(result));
-      // If Cal.com returns 401, it means the CALCOM_API_KEY is invalid
       const status = response.status === 401 ? 418 : 400;
       return new Response(JSON.stringify({ 
         success: false, 

@@ -105,6 +105,7 @@ const AppointmentForm = ({ onSuccess, initialClientId, initialDate, initialTime 
 
       let calcomId = null;
 
+      // Only trigger Cal.com sync if we are coming from the Availability view (initialTime exists)
       if (initialTime) {
         console.log("[AppointmentForm] Triggering Cal.com sync via invoke...");
         setSyncStatus('calcom');
@@ -122,10 +123,12 @@ const AppointmentForm = ({ onSuccess, initialClientId, initialDate, initialTime 
         if (invokeError) {
           console.error("[AppointmentForm] Invocation Error:", invokeError);
           
+          // Handle 401 specifically (Gateway rejection)
           if (invokeError.status === 401) {
-            throw new Error("Authentication failed. Please try signing out and back in.");
+            throw new Error("Your session has expired. Please sign out and sign back in to refresh your connection.");
           }
           
+          // Handle 418 (Missing Secret)
           if (invokeError.status === 418) {
             throw new Error("Cal.com API Key is invalid or missing in Supabase secrets.");
           }

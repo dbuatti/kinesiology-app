@@ -13,7 +13,7 @@ serve(async (req) => {
     return new Response('ok', { headers: corsHeaders })
   }
 
-  console.log("--- [v5.0] CREATE-CALCOM-BOOKING (METADATA MAPPING & v2024-06-11) ---");
+  console.log("--- [v6.0] CREATE-CALCOM-BOOKING (API v2024-08-13) ---");
   
   try {
     const supabaseUrl = Deno.env.get('SUPABASE_URL');
@@ -65,34 +65,33 @@ serve(async (req) => {
       throw new Error(`Client '${client.name}' has no email address.`);
     }
 
-    // Cal.com v2 Booking Payload (v5.0)
-    // Following the "Golden" structure:
-    // 1. Flat attendee object
-    // 2. Custom fields in metadata
-    // 3. No 'responses' key
+    // Cal.com v2 Booking Payload (v6.0)
+    // Using the 2024-08-13 stable version schema
     const bookingPayload = {
       start: startTime,
       eventTypeId: parseInt(eventTypeId, 10),
       attendee: {
         name: client.name,
         email: client.email,
-        timeZone: "Australia/Melbourne",
+        timeZone: Intl.DateTimeFormat().resolvedOptions().timeZone || "Australia/Melbourne",
         language: "en"
       },
+      // We pass the custom title and notes in metadata
+      // Note: Some event types might require these in 'responses' if they are mandatory fields
       metadata: { 
-        title: title || "Kinesiology Session",
-        notes: notes || "",
+        crm_title: title || "Kinesiology Session",
+        crm_notes: notes || "",
         source: "Antigravity CRM"
       }
     };
 
-    console.log(`Calling Cal.com v2 API for ${client.email} using metadata for title.`);
+    console.log(`Calling Cal.com v2 API for ${client.email} at ${startTime}`);
 
     const response = await fetch("https://api.cal.com/v2/bookings", {
       method: "POST",
       headers: {
         'Authorization': `Bearer ${CALCOM_KEY}`,
-        'cal-api-version': '2024-06-11', // Reverting to suggested stable version
+        'cal-api-version': '2024-08-13',
         'Content-Type': 'application/json',
       },
       body: JSON.stringify(bookingPayload),
@@ -102,9 +101,16 @@ serve(async (req) => {
 
     if (!response.ok) {
       console.error(`❌ Cal.com API Error (${response.status}):`, JSON.stringify(result));
+      
+      // Extract the most useful error message
+      const errorMessage = result.message || 
+                           (result.error && typeof result.error === 'object' ? result.error.message : null) || 
+                           result.error || 
+                           "Cal.com API Error";
+
       return new Response(JSON.stringify({ 
         success: false, 
-        error: result.message || result.error?.message || "Cal.com API Error",
+        error: errorMessage,
         details: result
       }), { 
         status: 400, 

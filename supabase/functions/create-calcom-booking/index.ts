@@ -86,7 +86,7 @@ serve(async (req) => {
       method: "POST",
       headers: {
         'Authorization': `Bearer ${CALCOM_KEY}`,
-        'cal-api-version': '2026-02-25',   // ← Updated to a more recent version
+        'cal-api-version': '2024-08-13',
         'Content-Type': 'application/json',
       },
       body: JSON.stringify(bookingPayload),
@@ -106,7 +106,7 @@ serve(async (req) => {
         body: result
       });
       
-      // Common 401 causes: wrong key, key without proper prefix (cal_ or cal_live_), revoked key, or using a managed user token incorrectly
+      // Common 401 causes: wrong key, key without proper prefix (cal_ or cal_live_), revoked key
       if (response.status === 401) {
         throw new Error(`Cal.com Authentication failed (401). Check that CALCOM_API_KEY is valid and starts with 'cal_' or 'cal_live_'.`);
       }

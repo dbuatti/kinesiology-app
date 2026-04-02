@@ -18,7 +18,8 @@ import {
   ShieldAlert,
   Brain,
   Copy,
-  Check
+  Check,
+  DollarSign
 } from "lucide-react";
 import { format, isToday } from "date-fns";
 import { cn } from "@/lib/utils";
@@ -135,6 +136,35 @@ const AppointmentHeader = ({ appointment, onSaveField, onUpdate }: AppointmentHe
         </div>
 
         <div className="flex flex-wrap items-center gap-3 lg:justify-end">
+          {/* Paid Status Toggle */}
+          <div className={cn(
+            "flex items-center gap-3 px-4 py-2 rounded-2xl border-2 transition-all duration-500",
+            appointment.is_paid ? "bg-emerald-50 border-emerald-200 text-emerald-700" : "bg-amber-50 border-amber-200 text-amber-700"
+          )}>
+            <div className={cn(
+              "w-8 h-8 rounded-xl flex items-center justify-center text-white shadow-sm",
+              appointment.is_paid ? "bg-emerald-600" : "bg-amber-600"
+            )}>
+              <DollarSign size={18} />
+            </div>
+            <div className="pr-1">
+              <Label htmlFor="paid-toggle" className="text-[8px] font-black uppercase tracking-[0.2em] block mb-0.5 opacity-60">
+                Payment
+              </Label>
+              <div className="flex items-center gap-2">
+                <span className="text-[10px] font-black">
+                  {appointment.is_paid ? "PAID" : "FREE"}
+                </span>
+                <Switch 
+                  id="paid-toggle" 
+                  checked={appointment.is_paid || false} 
+                  onCheckedChange={(checked) => onSaveField('is_paid', checked)} 
+                  className="data-[state=checked]:bg-emerald-500 scale-75" 
+                />
+              </div>
+            </div>
+          </div>
+
           {/* Neural Load Indicator */}
           <div className={cn(
             "flex items-center gap-3 px-4 py-2 rounded-2xl border-2 transition-all duration-500",

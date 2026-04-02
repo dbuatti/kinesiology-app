@@ -13,7 +13,7 @@ serve(async (req) => {
     return new Response('ok', { headers: corsHeaders })
   }
 
-  console.log("--- [v7.0] CREATE-CALCOM-BOOKING (API v2024-08-13) ---");
+  console.log("--- [v8.0] CREATE-CALCOM-BOOKING (API v2024-08-13) ---");
   
   try {
     const supabaseUrl = Deno.env.get('SUPABASE_URL');
@@ -65,20 +65,16 @@ serve(async (req) => {
       throw new Error(`Client '${client.name}' has no email address.`);
     }
 
-    // Cal.com v2 Booking Payload (v7.0)
+    // Cal.com v2 Booking Payload (v8.0)
+    // Removed 'responses' as it was causing 400 errors when no custom fields are defined.
     const bookingPayload = {
       start: startTime,
       eventTypeId: parseInt(eventTypeId, 10),
       attendee: {
         name: client.name,
         email: client.email,
-        timeZone: "Australia/Melbourne", // Defaulting to your practice timezone
+        timeZone: "Australia/Melbourne",
         language: "en"
-      },
-      // Mandatory fields in Cal.com are passed in 'responses'
-      responses: {
-        title: title || "Kinesiology Session",
-        notes: notes || ""
       },
       metadata: { 
         crm_title: title || "Kinesiology Session",

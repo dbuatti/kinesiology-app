@@ -51,9 +51,16 @@ export const groupAppointmentsByMonth = <T extends Appointment>(appointments: T[
     groups[key].push(app);
   });
   
-  return Object.entries(groups).sort((a, b) => {
-    return new Date(b[1][0].date).getTime() - new Date(a[1][0].date).getTime();
-  }) as [string, T[]][];
+  return Object.entries(groups)
+    .sort((a, b) => {
+      // Sort groups by date descending (newest month first)
+      return new Date(b[1][0].date).getTime() - new Date(a[1][0].date).getTime();
+    })
+    .map(([month, apps]) => {
+      // Sort appointments WITHIN the month descending (newest day first)
+      const sortedApps = [...apps].sort((a, b) => b.date.getTime() - a.date.getTime());
+      return [month, sortedApps];
+    }) as [string, T[]][];
 };
 
 export const isMeridianPeakNow = (peakTimeStr: string, currentHour: number): boolean => {

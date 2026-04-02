@@ -228,7 +228,14 @@ const AppointmentsPage = () => {
     };
   }, [appointments]);
 
-  const todaySessions = filteredAppointments.filter(app => isToday(app.date));
+  // Today's sessions should be sorted ASCENDING (earliest first)
+  const todaySessions = useMemo(() => 
+    filteredAppointments
+      .filter(app => isToday(app.date))
+      .sort((a, b) => a.date.getTime() - b.date.getTime()),
+    [filteredAppointments]
+  );
+
   const otherSessions = filteredAppointments.filter(app => !isToday(app.date));
   const grouped = groupAppointmentsByMonth(otherSessions);
 
@@ -260,7 +267,7 @@ const AppointmentsPage = () => {
                       {app.clients?.name}
                     </Link>
                     {isTodaySession && (
-                      <Badge className="bg-rose-500 text-white border-none animate-pulse font-black text-[8px] uppercase tracking-widest px-2 py-0.5">
+                      <Badge className="bg-rose-500 text-white border-none animate-pulse font-black text-[8px] uppercase tracking-widest px-2 py-0.5 rounded-full">
                         Live Today
                       </Badge>
                     )}
@@ -297,7 +304,7 @@ const AppointmentsPage = () => {
                     </Badge>
                   )}
                   {hasCoherence && (
-                    <Badge className="bg-rose-50 dark:bg-rose-900/20 text-rose-700 dark:text-rose-400 border border-rose-100 dark:border-rose-900/30 flex items-center gap-1.5 text-[10px] font-black uppercase tracking-wider px-3 py-1 rounded-full">
+                    <Badge className="bg-rose-50 dark:bg-indigo-900/20 text-rose-700 dark:text-rose-400 border border-rose-100 dark:border-rose-900/30 flex items-center gap-1.5 text-[10px] font-black uppercase tracking-wider px-3 py-1 rounded-full">
                       <Activity size={12} /> COH: {app.coherence_score?.toFixed(2)}
                     </Badge>
                   )}
@@ -322,7 +329,7 @@ const AppointmentsPage = () => {
                       <Button 
                         size="sm" 
                         variant="outline" 
-                        className="h-8 rounded-xl border-indigo-100 dark:border-indigo-900/30 text-indigo-600 dark:text-indigo-400 hover:bg-indigo-50 dark:hover:bg-indigo-900/20 font-black text-[9px] uppercase tracking-widest"
+                        className="h-8 rounded-xl border-indigo-100 dark:border-indigo-900/30 text-indigo-600 dark:text-indigo-400 hover:bg-indigo-100 dark:hover:bg-indigo-900/20 font-black text-[9px] uppercase tracking-widest"
                         onClick={() => setAssessmentModal({ open: true, type: 'bolt', clientId: app.clients.id, clientName: app.clients.name })}
                       >
                         <FlaskConical size={12} className="mr-1" /> Log BOLT

@@ -60,7 +60,7 @@ async function sendGmail(accessToken: string, from: string, to: string, subject:
 
 serve(async (req) => {
   if (req.method === 'GET') {
-    return new Response(JSON.stringify({ status: "active", provider: "gmail", version: "v37" }), { 
+    return new Response(JSON.stringify({ status: "active", provider: "gmail", version: "v38" }), { 
       status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
     });
   }
@@ -120,6 +120,14 @@ serve(async (req) => {
     const startTime = payload.startTime;
     const notes = payload.description || "";
 
+    // Format the start time for the email
+    const dateObj = new Date(startTime);
+    const formattedTime = new Intl.DateTimeFormat('en-AU', {
+      dateStyle: 'full',
+      timeStyle: 'short',
+      timeZone: 'Australia/Melbourne'
+    }).format(dateObj);
+
     // 2. Supabase CRM Sync
     let { data: dbClient } = await supabase.from('clients').select('id').eq('email', email).maybeSingle();
     if (!dbClient && email) {
@@ -147,6 +155,8 @@ serve(async (req) => {
               .logo { color: #1E3261; font-size: 28px; font-weight: 700; letter-spacing: 0.02em; }
               .sub-logo { color: #D46A9B; font-size: 11px; font-weight: 900; letter-spacing: 0.4em; margin-top: 16px; text-transform: uppercase; opacity: 0.8; }
               .content { padding: 0 56px 48px 56px; line-height: 1.8; font-size: 17px; color: #334155; font-weight: 300; }
+              .booking-box { background-color: #F8FAFC; border-radius: 24px; padding: 24px; margin: 24px 0; border: 1px solid #F1F5F9; text-align: center; }
+              .booking-time { color: #1E3261; font-weight: 700; font-size: 16px; margin-top: 4px; }
               .button-container { text-align: center; padding: 20px 0; }
               .button { display: inline-block; background-color: #1E3261; color: #ffffff !important; padding: 18px 40px; border-radius: 100px; text-decoration: none; font-weight: 700; font-size: 15px; letter-spacing: 0.05em; box-shadow: 0 12px 20px -5px rgba(30, 50, 97, 0.25); }
               .signature { padding: 0 56px 56px 56px; border-top: 1px solid #F1F5F9; margin-top: 20px; padding-top: 32px; }
@@ -166,7 +176,14 @@ serve(async (req) => {
                 <div class="content">
                   <h2 style="color: #1E3261; margin-top: 0; font-size: 24px;">Welcome to Resonance</h2>
                   <p>Hi ${name.split(' ')[0]},</p>
-                  <p>Thank you for booking your session. To help me prepare and ensure we get the most out of our time together, please complete your clinical onboarding form before we meet.</p>
+                  <p>Thank you for booking your session. Your appointment is confirmed for:</p>
+                  
+                  <div class="booking-box">
+                    <div style="font-size: 11px; font-weight: 800; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.1em;">Scheduled Time</div>
+                    <div class="booking-time">${formattedTime}</div>
+                  </div>
+
+                  <p>To help me prepare and ensure we get the most out of our time together, please complete your clinical onboarding form before we meet.</p>
                   <div class="button-container">
                     <a href="${onboardingUrl}" class="button">Complete Onboarding Form</a>
                   </div>

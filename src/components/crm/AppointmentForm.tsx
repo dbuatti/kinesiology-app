@@ -106,34 +106,28 @@ const AppointmentForm = ({ onSuccess, initialClientId, initialDate, initialTime 
       let calcomId = null;
 
       if (initialTime) {
-        console.log("[AppointmentForm] Triggering Cal.com sync via direct fetch...");
+        console.log("[AppointmentForm] Triggering Cal.com sync via invoke...");
         setSyncStatus('calcom');
         
         const eventTypeId = localStorage.getItem('calcom_preferred_event_id') || "4279898";
-        const supabaseUrl = "https://xebtjnvfkroiplyzftas.supabase.co";
-        const anonKey = (supabase as any).supabaseKey;
 
-        // Using direct fetch to bypass SDK invocation issues and ensure headers are explicit
-        const response = await fetch(`${supabaseUrl}/functions/v1/create-calcom-booking`, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${session.access_token}`,
-            'apikey': anonKey
-          },
-          body: JSON.stringify({ 
+        const { data: calcomData, error: invokeError } = await supabase.functions.invoke('create-calcom-booking', {
+          body: { 
             clientId: values.clientId, 
             startTime: isoDate,
             eventTypeId: eventTypeId
-          })
+          }
         });
 
-        if (!response.ok) {
-          const errorData = await response.json().catch(() => ({}));
-          throw new Error(errorData.error || `Server returned ${response.status}`);
+        if (invokeError) {
+          console.error("[AppointmentForm] Invocation Error:", invokeError);
+          throw new Error(`Edge Function Error: ${invokeError.message}`);
         }
 
-        const calcomData = await response.json();
+        if (calcomData?.success === false) {
+          throw new Error(calcomData.error || "Cal.com booking failed");
+        }
+
         calcomId = calcomData?.uid || calcomData?.bookingId;
       }
 

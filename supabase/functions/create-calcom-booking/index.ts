@@ -10,7 +10,12 @@ const corsHeaders = {
 
 serve(async (req) => {
   // VERIFICATION MARKER
-  console.log("--- [v1.6] CREATE-CALCOM-BOOKING START ---");
+  console.log("--- [v1.7] CREATE-CALCOM-BOOKING START ---");
+  
+  // Log request metadata for debugging 401s
+  const authHeader = req.headers.get('Authorization');
+  const apiKeyHeader = req.headers.get('apikey');
+  console.log(`Request Headers: Auth=${!!authHeader}, ApiKey=${!!apiKeyHeader}`);
 
   // 1. Handle CORS preflight
   if (req.method === 'OPTIONS') {

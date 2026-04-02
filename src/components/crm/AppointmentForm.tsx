@@ -1,5 +1,4 @@
 "use client";
-
 import { useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -31,13 +30,10 @@ import { CalendarIcon, Loader2, Globe } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { showSuccess, showError } from "@/utils/toast";
 import { APPOINTMENT_TAGS, APPOINTMENT_STATUSES } from "@/data/appointment-data";
-import SearchableClientSelect from "./SearchableClientSelect";
 
 const formSchema = z.object({
   clientId: z.string().min(1, "Client is required"),
-  date: z.date({
-    required_error: "Date is required",
-  }),
+  date: z.date({ required_error: "Date is required" }),
   time: z.string().min(1, "Time is required"),
   name: z.string().optional(),
   tag: z.string().optional(),
@@ -53,7 +49,12 @@ interface AppointmentFormProps {
   initialTime?: string;
 }
 
-const AppointmentForm = ({ onSuccess, initialClientId, initialDate, initialTime }: AppointmentFormProps) => {
+const AppointmentForm = ({
+  onSuccess,
+  initialClientId,
+  initialDate,
+  initialTime,
+}: AppointmentFormProps) => {
   const { session } = useAuth();
   const [clients, setClients] = useState<{ id: string; name: string }[]>([]);
   const [loadingClients, setLoadingClients] = useState(true);
@@ -72,6 +73,7 @@ const AppointmentForm = ({ onSuccess, initialClientId, initialDate, initialTime 
     },
   });
 
+  // Fetch clients
   useEffect(() => {
     const fetchClients = async () => {
       const { data, error } = await supabase
@@ -79,13 +81,12 @@ const AppointmentForm = ({ onSuccess, initialClientId, initialDate, initialTime 
         .select("id, name")
         .or('is_practitioner.eq.false,is_practitioner.is.null')
         .order("name");
-      
+
       if (!error && data) {
         setClients(data);
       }
       setLoadingClients(false);
     };
-
     fetchClients();
   }, []);
 
@@ -94,48 +95,67 @@ const AppointmentForm = ({ onSuccess, initialClientId, initialDate, initialTime 
       showError("You must be logged in to schedule appointments.");
       return;
     }
-    
+
     setSubmitting(true);
+    setSyncStatus('idle');
 
     try {
       const [hours, minutes] = values.time.split(":");
       const appointmentDate = new Date(values.date);
-      appointmentDate.setHours(parseInt(hours), parseInt(minutes));
+      appointmentDate.setHours(parseInt(hours), parseInt(minutes), 0, 0);
       const isoDate = appointmentDate.toISOString();
 
-      let calcomId = null;
+      let calcomId: string | null = null;
 
+      // === Cal.com Booking (only when initialTime is passed - meaning it's from slot picker) ===
       if (initialTime) {
         setSyncStatus('calcom');
+
         const eventTypeId = localStorage.getItem('calcom_preferred_event_id') || "4279898";
-        
-        const { data: calcomData, error: calcomError } = await supabase.functions.invoke('create-calcom-booking', {
-          body: { 
-            clientId: values.clientId, 
-            startTime: isoDate,
-            eventTypeId: eventTypeId
-          },
-          headers: {
-            Authorization: `Bearer ${session.access_token}`
-          }
+
+        console.log("🔄 Calling create-calcom-booking with:", {
+          clientId: values.clientId,
+          startTime: isoDate,
+          eventTypeId,
         });
 
+        const { data: calcomData, error: calcomError } = await supabase.functions.invoke(
+          'create-calcom-booking',
+          {
+            body: {
+              clientId: values.clientId,
+              startTime: isoDate,
+              eventTypeId: eventTypeId,
+            },
+            // Important: Do NOT manually set Authorization header for Edge Functions
+            // Supabase client handles the JWT automatically
+          }
+        );
+
         if (calcomError) {
-          throw new Error(`Cal.com Booking Failed: ${calcomError.message || 'Unauthorized'}`);
+          console.error("Cal.com Edge Function Error:", calcomError);
+          throw new Error(`Cal.com Booking Failed: ${calcomError.message || 'Unknown error'}`);
         }
-        
-        calcomId = calcomData?.uid || calcomData?.bookingId;
+
+        if (!calcomData?.success) {
+          throw new Error(calcomData?.error || "Failed to create Cal.com booking");
+        }
+
+        calcomId = calcomData.uid || calcomData.bookingId;
+        console.log("✅ Cal.com booking created:", calcomId);
       }
 
+      // Build appointment name
       let appointmentName = values.name?.trim() || '';
       if (!appointmentName) {
-          const client = clients.find(c => c.id === values.clientId);
-          const clientName = client?.name || "Unknown Client";
-          const formattedDate = format(appointmentDate, "MMM d, yyyy");
-          appointmentName = `${clientName} - ${values.tag || 'Session'} (${formattedDate})`;
+        const client = clients.find((c) => c.id === values.clientId);
+        const clientName = client?.name || "Unknown Client";
+        const formattedDate = format(appointmentDate, "MMM d, yyyy");
+        appointmentName = `${clientName} - ${values.tag || 'Session'} (${formattedDate})`;
       }
 
-      const { error } = await supabase.from("appointments").insert({
+      // Insert into appointments table
+      const { error: insertError } = await supabase.from("appointments").insert({
         user_id: session.user.id,
         client_id: values.clientId,
         name: appointmentName,
@@ -144,14 +164,20 @@ const AppointmentForm = ({ onSuccess, initialClientId, initialDate, initialTime 
         status: values.status,
         goal: values.goal,
         issue: values.issue,
-        calcom_booking_id: calcomId ? String(calcomId) : null
+        calcom_booking_id: calcomId ? String(calcomId) : null,
       });
 
-      if (error) throw error;
+      if (insertError) throw insertError;
 
-      showSuccess(calcomId ? "Session booked in CRM and Cal.com!" : "Appointment scheduled in CRM.");
+      showSuccess(
+        calcomId 
+          ? "Appointment scheduled and synced with Cal.com!" 
+          : "Appointment scheduled successfully."
+      );
+
       onSuccess();
     } catch (error: any) {
+      console.error("Appointment submission error:", error);
       showError(error.message || "Failed to schedule appointment");
     } finally {
       setSubmitting(false);
@@ -189,7 +215,11 @@ const AppointmentForm = ({ onSuccess, initialClientId, initialDate, initialTime 
             <FormItem>
               <FormLabel>Appointment Title (Optional)</FormLabel>
               <FormControl>
-                <Input placeholder="e.g. Initial Session" {...field} className="h-12 rounded-xl border-2 border-slate-100" />
+                <Input 
+                  placeholder="e.g. Initial Session" 
+                  {...field} 
+                  className="h-12 rounded-xl border-2 border-slate-100" 
+                />
               </FormControl>
               <FormMessage />
             </FormItem>
@@ -207,17 +237,13 @@ const AppointmentForm = ({ onSuccess, initialClientId, initialDate, initialTime 
                   <PopoverTrigger asChild>
                     <FormControl>
                       <Button
-                        variant={"outline"}
+                        variant="outline"
                         className={cn(
                           "w-full pl-3 text-left font-normal h-12 rounded-xl border-2 border-slate-100",
                           !field.value && "text-muted-foreground"
                         )}
                       >
-                        {field.value ? (
-                          format(field.value, "PPP")
-                        ) : (
-                          <span>Pick a date</span>
-                        )}
+                        {field.value ? format(field.value, "PPP") : <span>Pick a date</span>}
                         <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
                       </Button>
                     </FormControl>
@@ -243,7 +269,11 @@ const AppointmentForm = ({ onSuccess, initialClientId, initialDate, initialTime 
               <FormItem>
                 <FormLabel>Time</FormLabel>
                 <FormControl>
-                  <Input type="time" {...field} className="h-12 rounded-xl border-2 border-slate-100" />
+                  <Input 
+                    type="time" 
+                    {...field} 
+                    className="h-12 rounded-xl border-2 border-slate-100" 
+                  />
                 </FormControl>
                 <FormMessage />
               </FormItem>
@@ -265,8 +295,10 @@ const AppointmentForm = ({ onSuccess, initialClientId, initialDate, initialTime 
                     </SelectTrigger>
                   </FormControl>
                   <SelectContent>
-                    {APPOINTMENT_TAGS.map(tag => (
-                      <SelectItem key={tag} value={tag}>{tag}</SelectItem>
+                    {APPOINTMENT_TAGS.map((tag) => (
+                      <SelectItem key={tag} value={tag}>
+                        {tag}
+                      </SelectItem>
                     ))}
                   </SelectContent>
                 </Select>
@@ -288,8 +320,10 @@ const AppointmentForm = ({ onSuccess, initialClientId, initialDate, initialTime 
                     </SelectTrigger>
                   </FormControl>
                   <SelectContent>
-                    {APPOINTMENT_STATUSES.map(status => (
-                      <SelectItem key={status} value={status}>{status}</SelectItem>
+                    {APPOINTMENT_STATUSES.map((status) => (
+                      <SelectItem key={status} value={status}>
+                        {status}
+                      </SelectItem>
                     ))}
                   </SelectContent>
                 </Select>
@@ -306,7 +340,11 @@ const AppointmentForm = ({ onSuccess, initialClientId, initialDate, initialTime 
             <FormItem>
               <FormLabel>Goal</FormLabel>
               <FormControl>
-                <Input placeholder="What is the goal for this session?" {...field} className="h-12 rounded-xl border-2 border-slate-100" />
+                <Input 
+                  placeholder="What is the goal for this session?" 
+                  {...field} 
+                  className="h-12 rounded-xl border-2 border-slate-100" 
+                />
               </FormControl>
               <FormMessage />
             </FormItem>
@@ -320,10 +358,10 @@ const AppointmentForm = ({ onSuccess, initialClientId, initialDate, initialTime 
             <FormItem>
               <FormLabel>Main Issue</FormLabel>
               <FormControl>
-                <Textarea 
-                  placeholder="Describe the main concern..." 
+                <Textarea
+                  placeholder="Describe the main concern..."
                   className="resize-none rounded-xl border-2 border-slate-100 min-h-[100px]"
-                  {...field} 
+                  {...field}
                 />
               </FormControl>
               <FormMessage />
@@ -331,17 +369,21 @@ const AppointmentForm = ({ onSuccess, initialClientId, initialDate, initialTime 
           )}
         />
 
-        <Button type="submit" className="w-full bg-indigo-600 hover:bg-indigo-700 h-12 rounded-xl font-bold interactive-lift shadow-indigo-100" disabled={submitting}>
+        <Button 
+          type="submit" 
+          className="w-full bg-indigo-600 hover:bg-indigo-700 h-12 rounded-xl font-bold shadow-indigo-100" 
+          disabled={submitting}
+        >
           {submitting ? (
             <>
               <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-              {syncStatus === 'calcom' ? 'Syncing with Cal.com...' : 'Scheduling...'}
+              {syncStatus === 'calcom' ? 'Creating Cal.com booking...' : 'Scheduling appointment...'}
             </>
           ) : (
             'Schedule Appointment'
           )}
         </Button>
-        
+
         {initialTime && (
           <div className="flex items-center justify-center gap-2 text-[10px] font-black text-indigo-400 uppercase tracking-widest pt-2">
             <Globe size={12} /> This will create a live booking on Cal.com

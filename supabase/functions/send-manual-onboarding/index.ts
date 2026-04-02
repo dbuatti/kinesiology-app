@@ -73,19 +73,34 @@ serve(async (req) => {
       throw new Error("Gmail API secrets are not configured.");
     }
 
-    // Fetch client details
+    // Fetch client and their latest appointment to check is_paid status
     const { data: client, error: clientError } = await supabase
       .from('clients')
-      .select('id, name, email')
+      .select('id, name, email, appointments(is_paid)')
       .eq('id', clientId)
       .single();
 
     if (clientError || !client) throw new Error("Client not found.");
     if (!client.email) throw new Error("Client has no email address.");
 
+    // Check if the latest appointment is paid
+    const latestApp = client.appointments?.sort((a, b) => new Date(b.date) - new Date(a.date))[0];
+    const isPaid = latestApp?.is_paid || false;
+
     const accessToken = await getGmailAccessToken(GMAIL_CLIENT_ID, GMAIL_CLIENT_SECRET, GMAIL_REFRESH_TOKEN);
     const onboardingUrl = `https://kinesiology-app.vercel.app/onboarding/${client.id}`;
     
+    const paymentSection = isPaid ? `
+      <div style="background-color: #F8FAFC; border-radius: 24px; padding: 24px; margin: 24px 0; border: 1px solid #E2E8F0;">
+        <div style="font-size: 11px; font-weight: 800; color: #1E3261; text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 12px;">Payment Details ($50)</div>
+        <p style="margin: 0; font-size: 15px; color: #475569;">You can transfer via bank details below or tap to pay on the day:</p>
+        <div style="margin-top: 16px; font-family: monospace; font-size: 16px; color: #1E3261; font-weight: 700;">
+          BSB: 923100<br/>
+          ACC: 301110875
+        </div>
+      </div>
+    ` : '';
+
     const htmlBody = `
       <!DOCTYPE html>
       <html>
@@ -119,6 +134,9 @@ serve(async (req) => {
               <h2 style="color: #1E3261; margin-top: 0; font-size: 24px;">Welcome to Resonance</h2>
               <p>Hi ${client.name.split(' ')[0]},</p>
               <p>To help me prepare for our upcoming session and ensure we get the most out of our time together, please complete your clinical onboarding form.</p>
+              
+              ${paymentSection}
+
               <div class="button-container">
                 <a href="${onboardingUrl}" class="button">Complete Onboarding Form</a>
               </div>

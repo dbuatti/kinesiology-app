@@ -27,11 +27,12 @@ import { Textarea } from "@/components/ui/textarea";
 import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { format } from "date-fns";
-import { CalendarIcon, Loader2, Globe } from "lucide-react";
+import { CalendarIcon, Loader2, Globe, DollarSign } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { showSuccess, showError } from "@/utils/toast";
 import { APPOINTMENT_TAGS, APPOINTMENT_STATUSES } from "@/data/appointment-data";
 import SearchableClientSelect from "./SearchableClientSelect";
+import { Checkbox } from "@/components/ui/checkbox";
 
 const formSchema = z.object({
   clientId: z.string().min(1, "Client is required"),
@@ -44,6 +45,7 @@ const formSchema = z.object({
   status: z.string().default("Scheduled"),
   goal: z.string().optional(),
   issue: z.string().optional(),
+  is_paid: z.boolean().default(false),
 });
 
 interface AppointmentFormProps {
@@ -69,6 +71,7 @@ const AppointmentForm = ({ onSuccess, initialClientId, initialDate, initialTime 
       status: APPOINTMENT_STATUSES[0],
       time: initialTime || "10:00",
       date: initialDate || new Date(),
+      is_paid: false,
     },
   });
 
@@ -105,11 +108,8 @@ const AppointmentForm = ({ onSuccess, initialClientId, initialDate, initialTime 
 
       let calcomId = null;
 
-      // Only trigger Cal.com sync if we are coming from the Availability view (initialTime exists)
       if (initialTime) {
-        console.log("[AppointmentForm] Triggering Cal.com sync via invoke...");
         setSyncStatus('calcom');
-        
         const eventTypeId = localStorage.getItem('calcom_preferred_event_id') || "4279898";
 
         const { data: calcomData, error: invokeError } = await supabase.functions.invoke('create-calcom-booking', {
@@ -122,25 +122,7 @@ const AppointmentForm = ({ onSuccess, initialClientId, initialDate, initialTime 
           }
         });
 
-        if (invokeError) {
-          console.error("[AppointmentForm] Invocation Error:", invokeError);
-          
-          if (invokeError.status === 401) {
-            throw new Error("Your session has expired. Please sign out and sign back in to refresh your connection.");
-          }
-          
-          if (invokeError.status === 418) {
-            throw new Error("Cal.com API Key is invalid or missing in Supabase secrets.");
-          }
-          
-          const errorMsg = invokeError.context?.error || invokeError.message;
-          throw new Error(`Sync Error (${invokeError.status || 'Unknown'}): ${errorMsg}`);
-        }
-
-        if (calcomData?.success === false) {
-          throw new Error(calcomData.error || "Cal.com booking failed");
-        }
-
+        if (invokeError) throw new Error(`Sync Error: ${invokeError.message}`);
         calcomId = calcomData?.uid || calcomData?.bookingId;
       }
 
@@ -161,6 +143,7 @@ const AppointmentForm = ({ onSuccess, initialClientId, initialDate, initialTime 
         status: values.status,
         goal: values.goal,
         issue: values.issue,
+        is_paid: values.is_paid,
         calcom_booking_id: calcomId ? String(calcomId) : null
       });
 
@@ -169,7 +152,6 @@ const AppointmentForm = ({ onSuccess, initialClientId, initialDate, initialTime 
       showSuccess(calcomId ? "Session booked in CRM and Cal.com!" : "Appointment scheduled in CRM.");
       onSuccess();
     } catch (error: any) {
-      console.error("[AppointmentForm] Submit Error:", error);
       showError(error.message || "Failed to schedule appointment");
     } finally {
       setSubmitting(false);
@@ -319,6 +301,31 @@ const AppointmentForm = ({ onSuccess, initialClientId, initialDate, initialTime 
 
         <FormField
           control={form.control}
+          name="is_paid"
+          render={({ field }) => (
+            <FormItem className="flex flex-row items-center justify-between rounded-xl border-2 border-indigo-100 p-4 bg-indigo-50/30">
+              <div className="space-y-0.5">
+                <FormLabel className="text-base font-bold text-indigo-900 flex items-center gap-2">
+                  <DollarSign size={18} className="text-indigo-600" />
+                  Paid Session ($50)
+                </FormLabel>
+                <p className="text-[10px] text-indigo-400 font-bold uppercase tracking-widest">
+                  Include payment details in onboarding email
+                </p>
+              </div>
+              <FormControl>
+                <Checkbox
+                  checked={field.value}
+                  onCheckedChange={field.onChange}
+                  className="h-6 w-6 rounded-md border-indigo-300 data-[state=checked]:bg-indigo-600"
+                />
+              </FormControl>
+            </FormItem>
+          )}
+        />
+
+        <FormField
+          control={form.control}
           name="goal"
           render={({ field }) => (
             <FormItem>
@@ -359,12 +366,6 @@ const AppointmentForm = ({ onSuccess, initialClientId, initialDate, initialTime 
             'Schedule Appointment'
           )}
         </Button>
-        
-        {initialTime && (
-          <div className="flex items-center justify-center gap-2 text-[10px] font-black text-indigo-400 uppercase tracking-widest pt-2">
-            <Globe size={12} /> This will create a live booking on Cal.com
-          </div>
-        )}
       </form>
     </Form>
   );

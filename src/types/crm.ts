@@ -21,6 +21,7 @@ export interface Appointment {
   goal: string;
   issue: string;
   acupoints: string;
+  is_paid?: boolean;
   // External Tracking
   notion_page_id?: string | null;
   notion_planner_id?: string | null;

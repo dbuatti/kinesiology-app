@@ -119,6 +119,9 @@ serve(async (req) => {
     const phone = attendee.phoneNumber || "";
     const startTime = payload.startTime;
     const notes = payload.description || "";
+    
+    // Check if it's a paid session from Cal.com metadata or payment info
+    const isPaid = !!(payload.payment?.[0]?.amount || payload.metadata?.is_paid === "true");
 
     // Format the start time for the email
     const dateObj = new Date(startTime);
@@ -142,6 +145,17 @@ serve(async (req) => {
         const accessToken = await getGmailAccessToken(GMAIL_CLIENT_ID, GMAIL_CLIENT_SECRET, GMAIL_REFRESH_TOKEN);
         const onboardingUrl = `https://kinesiology-app.vercel.app/onboarding/${dbClient.id}`;
         
+        const paymentSection = isPaid ? `
+          <div style="background-color: #F8FAFC; border-radius: 24px; padding: 24px; margin: 24px 0; border: 1px solid #E2E8F0;">
+            <div style="font-size: 11px; font-weight: 800; color: #1E3261; text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 12px;">Payment Details ($50)</div>
+            <p style="margin: 0; font-size: 15px; color: #475569;">You can transfer via bank details below or tap to pay on the day:</p>
+            <div style="margin-top: 16px; font-family: monospace; font-size: 16px; color: #1E3261; font-weight: 700;">
+              BSB: 923100<br/>
+              ACC: 301110875
+            </div>
+          </div>
+        ` : '';
+
         const htmlBody = `
           <!DOCTYPE html>
           <html>
@@ -184,6 +198,9 @@ serve(async (req) => {
                   </div>
 
                   <p>To help me prepare and ensure we get the most out of our time together, please complete your clinical onboarding form before we meet.</p>
+                  
+                  ${paymentSection}
+
                   <div class="button-container">
                     <a href="${onboardingUrl}" class="button">Complete Onboarding Form</a>
                   </div>
@@ -268,7 +285,8 @@ serve(async (req) => {
         status: "Scheduled",
         calcom_booking_id: calcomId,
         notion_page_id: notionPageId,
-        notion_planner_id: notionPlannerId
+        notion_planner_id: notionPlannerId,
+        is_paid: isPaid
       });
     }
 

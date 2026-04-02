@@ -9,25 +9,26 @@ const corsHeaders = {
 }
 
 serve(async (req) => {
-  // 1. Immediate OPTIONS handling
+  // 1. Immediate OPTIONS handling for CORS
   if (req.method === 'OPTIONS') {
     return new Response('ok', { headers: corsHeaders })
   }
 
-  console.log("--- [v2.1] CREATE-CALCOM-BOOKING START ---");
+  console.log("--- [v2.2] CREATE-CALCOM-BOOKING START ---");
   
   try {
-    // 2. Check Environment Secrets immediately
+    // 2. Check Environment Secrets
     const supabaseUrl = Deno.env.get('SUPABASE_URL');
     const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY');
     const CALCOM_KEY = Deno.env.get('CALCOM_API_KEY');
+    const authHeader = req.headers.get('Authorization');
 
-    console.log(`Env Check: URL=${!!supabaseUrl}, ServiceKey=${!!supabaseKey}, CalKey=${!!CALCOM_KEY} (Len: ${CALCOM_KEY?.length || 0})`);
+    console.log(`Request Check: AuthHeader=${!!authHeader}, CalKey=${!!CALCOM_KEY}`);
 
     if (!CALCOM_KEY) {
       console.error("❌ Missing CALCOM_API_KEY secret.");
       return new Response(JSON.stringify({ error: "Cal.com API key not set in Supabase secrets." }), { 
-        status: 418, // Teapot: If you see this, the secret is missing!
+        status: 418, // Teapot: Secret is missing
         headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
       });
     }
@@ -46,7 +47,7 @@ serve(async (req) => {
     }
 
     const { clientId, startTime, eventTypeId } = body;
-    console.log(`Request Data: Client=${clientId}, Time=${startTime}, Event=${eventTypeId}`);
+    console.log(`Data: Client=${clientId}, Time=${startTime}, Event=${eventTypeId}`);
 
     if (!clientId || !startTime || !eventTypeId) {
       throw new Error("Missing required fields: clientId, startTime, or eventTypeId.");
@@ -56,7 +57,6 @@ serve(async (req) => {
     const supabase = createClient(supabaseUrl, supabaseKey);
 
     // 5. Fetch Client
-    console.log(`Fetching client ${clientId}...`);
     const { data: client, error: clientError } = await supabase
       .from('clients')
       .select('name, email')
@@ -104,7 +104,7 @@ serve(async (req) => {
 
     if (!response.ok) {
       console.error(`❌ Cal.com API Error (${response.status}):`, JSON.stringify(result));
-      // If Cal.com returns 401, we return 418 to distinguish it from Supabase 401
+      // If Cal.com returns 401, it means the CALCOM_API_KEY is invalid
       const status = response.status === 401 ? 418 : 400;
       return new Response(JSON.stringify({ 
         success: false, 

@@ -120,9 +120,12 @@ const AppointmentForm = ({ onSuccess, initialClientId, initialDate, initialTime 
         });
 
         if (invokeError) {
-          console.error("[AppointmentForm] Invocation Error Object:", invokeError);
+          console.error("[AppointmentForm] Invocation Error:", invokeError);
           
-          // If we get a 418, it's our custom "Teapot" error from the function
+          if (invokeError.status === 401) {
+            throw new Error("Authentication failed. Please try signing out and back in.");
+          }
+          
           if (invokeError.status === 418) {
             throw new Error("Cal.com API Key is invalid or missing in Supabase secrets.");
           }

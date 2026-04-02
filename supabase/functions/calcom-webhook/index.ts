@@ -60,7 +60,7 @@ async function sendGmail(accessToken: string, from: string, to: string, subject:
 
 serve(async (req) => {
   if (req.method === 'GET') {
-    return new Response(JSON.stringify({ status: "active", provider: "gmail", version: "v40" }), { 
+    return new Response(JSON.stringify({ status: "active", provider: "gmail", version: "v41" }), { 
       status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
     });
   }
@@ -74,15 +74,11 @@ serve(async (req) => {
     const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')
     const supabase = createClient(supabaseUrl, supabaseKey)
     
-    const NOTION_KEY = Deno.env.get('NOTION_API_KEY');
     const GMAIL_CLIENT_ID = Deno.env.get('GMAIL_CLIENT_ID');
     const GMAIL_CLIENT_SECRET = Deno.env.get('GMAIL_CLIENT_SECRET');
     const GMAIL_REFRESH_TOKEN = Deno.env.get('GMAIL_REFRESH_TOKEN');
     const SENDER_EMAIL = Deno.env.get('GMAIL_USER_EMAIL');
     
-    const CLIENTS_DB_ID = "074e2c006bd541d88c502feb397ef31d";
-    const APPTS_DB_ID = "171f7156cdc645e8b689af13d217bc7c";
-    const PLANNER_DB_ID = "11caad21cd0980d8a3eeeffb27fc43c0";
     const PRACTITIONER_ID = "6f2caa85-bfce-4264-97cd-c0d2f62b24f0";
 
     const body = await req.json();
@@ -99,15 +95,12 @@ serve(async (req) => {
 
     if (triggerEvent === 'BOOKING_CANCELLED' || triggerEvent === 'BOOKING_REJECTED') {
       if (existingApp) {
-        // Handle Notion cleanup if needed...
         await supabase.from('appointments').delete().eq('id', existingApp.id);
       }
       return new Response(JSON.stringify({ success: true, action: 'deleted' }), { status: 200, headers: corsHeaders });
     }
 
-    // If it's a creation/reschedule and we already have it, just stop here or update
     if (existingApp && triggerEvent === 'BOOKING_CREATED') {
-      console.log(`[calcom-webhook] Appointment ${calcomId} already exists. Skipping duplicate insert.`);
       return new Response(JSON.stringify({ success: true, action: 'skipped_duplicate' }), { status: 200, headers: corsHeaders });
     }
 
@@ -117,7 +110,6 @@ serve(async (req) => {
     const email = String(attendee.email || "").toLowerCase().trim();
     const phone = attendee.phoneNumber || "";
     const startTime = payload.startTime;
-    const notes = payload.description || "";
     const isPaid = !!(payload.payment?.[0]?.amount || payload.metadata?.is_paid === "true");
 
     const dateObj = new Date(startTime);
@@ -134,14 +126,14 @@ serve(async (req) => {
       dbClient = newDbC;
     }
 
-    // 3. Send Onboarding Email (Only for new bookings, not duplicates)
+    // 3. Send Onboarding Email
     if (!existingApp && GMAIL_CLIENT_ID && GMAIL_CLIENT_SECRET && GMAIL_REFRESH_TOKEN && dbClient) {
       try {
         const accessToken = await getGmailAccessToken(GMAIL_CLIENT_ID, GMAIL_CLIENT_SECRET, GMAIL_REFRESH_TOKEN);
         const onboardingUrl = `https://kinesiology-app.vercel.app/onboarding/${dbClient.id}`;
         
         const paymentSection = isPaid ? `
-          <div style="background-color: #F8FAFC; border-radius: 24px; padding: 32px; margin: 32px 0; border: 1px solid #E2E8F0;">
+          <div style="background-color: #F8FAFC; border-radius: 24px; padding: 32px; margin: 32px 0; border: 1px solid #E2E8F0; text-align: left;">
             <div style="font-size: 11px; font-weight: 800; color: #1E3261; text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 16px;">Payment Details ($50)</div>
             <p style="margin: 0; font-size: 16px; color: #475569; line-height: 1.6;">This session is a paid clinical assessment. You can settle the fee via bank transfer using the details below, or via tap-to-pay during our session:</p>
             <div style="margin-top: 24px; padding: 20px; background-color: #ffffff; border-radius: 16px; border: 1px solid #F1F5F9; font-family: monospace; font-size: 18px; color: #1E3261; font-weight: 700; text-align: center;">
@@ -154,31 +146,31 @@ serve(async (req) => {
         const htmlBody = `
           <!DOCTYPE html>
           <html>
-          <head>
-            <style>
-              body { margin: 0; padding: 0; background-color: #FDFCFB; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; }
-              .wrapper { width: 100%; background-color: #FDFCFB; padding: 40px 0; }
-              .container { max-width: 600px; margin: 0 auto; background-color: #ffffff; border-radius: 40px; overflow: hidden; border: 1px solid #E0F2FE; box-shadow: 0 20px 40px -10px rgba(30, 50, 97, 0.05); }
-              .top-bar { height: 6px; background-color: #D46A9B; width: 100%; }
-              . Phone { color: #1E3261; font-size: 28px; font-weight: 700; letter-spacing: 0.02em; }
-              .content { padding: 56px 40px 48px 40px; line-height: 1.8; font-size: 17px; color: #334155; }
-              .button { display: inline-block; background-color: #1E3261; color: #ffffff !important; padding: 20px 48px; border-radius: 100px; text-decoration: none; font-weight: 700; }
-            </style>
-          </head>
-          <body>
-            <div class="wrapper">
-              <div class="container">
-                <div class="top-bar"></div>
-                <div class="content">
+          <body style="margin: 0; padding: 0; background-color: #FDFCFB; font-family: sans-serif;">
+            <div style="width: 100%; background-color: #FDFCFB; padding: 40px 0;">
+              <div style="max-width: 600px; margin: 0 auto; background-color: #ffffff; border-radius: 40px; overflow: hidden; border: 1px solid #E0F2FE;">
+                <div style="height: 6px; background-color: #D46A9B; width: 100%;"></div>
+                <div style="padding: 56px 40px 40px 40px; text-align: center;">
+                  <div style="color: #1E3261; font-size: 28px; font-weight: 700; letter-spacing: 0.02em;">✦ Resonance Kinesiology</div>
+                  <div style="color: #D46A9B; font-size: 11px; font-weight: 900; letter-spacing: 0.4em; margin-top: 16px; text-transform: uppercase; opacity: 0.8;">Neuro-Somatic Support</div>
+                </div>
+                <div style="padding: 0 56px 56px 56px; line-height: 1.8; font-size: 17px; color: #334155; text-align: left;">
                   <h2 style="color: #1E3261; margin-top: 0; font-size: 26px; font-weight: 800;">Session Confirmed</h2>
                   <p>Hi ${name.split(' ')[0]},</p>
                   <p>Your appointment is confirmed for <strong>${formattedTime}</strong>.</p>
                   <p>Please complete your clinical onboarding form before we meet:</p>
                   ${paymentSection}
                   <div style="text-align: center; padding: 32px 0;">
-                    <a href="${onboardingUrl}" class="button">Complete Onboarding Form</a>
+                    <a href="${onboardingUrl}" style="display: inline-block; background-color: #1E3261; color: #ffffff; padding: 20px 48px; border-radius: 100px; text-decoration: none; font-weight: 700; font-size: 16px; letter-spacing: 0.05em;">Complete Onboarding Form</a>
                   </div>
                 </div>
+                <div style="padding: 0 56px 56px 56px; border-top: 1px solid #F1F5F9; margin-top: 20px; padding-top: 32px; text-align: left;">
+                  <div style="font-weight: 700; color: #1E3261; font-size: 20px; margin-bottom: 4px;">Daniele Buatti</div>
+                  <div style="color: #D46A9B; font-size: 12px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.15em;">Neuro-Somatic Kinesiologist</div>
+                </div>
+              </div>
+              <div style="padding: 48px 20px; text-align: center; color: #64748b; font-size: 13px;">
+                <p>© ${new Date().getFullYear()} Resonance Kinesiology</p>
               </div>
             </div>
           </body>
@@ -191,10 +183,6 @@ serve(async (req) => {
       }
     }
 
-    // 4. Notion Sync (Simplified for brevity, keeping existing logic)
-    // ... (Notion logic remains same)
-
-    // 5. Final Supabase Appointment Sync (Upsert)
     if (dbClient) {
       const appointmentData = {
         user_id: PRACTITIONER_ID,
@@ -205,8 +193,6 @@ serve(async (req) => {
         calcom_booking_id: calcomId,
         is_paid: isPaid
       };
-
-      // Use upsert to prevent duplicates if the ID already exists
       await supabase.from('appointments').upsert(appointmentData, { onConflict: 'calcom_booking_id' });
     }
 

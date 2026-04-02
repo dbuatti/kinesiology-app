@@ -74,7 +74,6 @@ serve(async (req) => {
       throw new Error("Gmail API secrets are not configured.");
     }
 
-    // Fetch client and their appointments, sorted by date descending to find the most recent status
     const { data: client, error: clientError } = await supabase
       .from('clients')
       .select('id, name, email, appointments(is_paid, date)')
@@ -84,7 +83,6 @@ serve(async (req) => {
     if (clientError || !client) throw new Error("Client not found.");
     if (!client.email) throw new Error("Client has no email address.");
 
-    // Check if the most recent appointment is marked as paid
     const sortedApps = (client.appointments || []).sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
     const isPaid = sortedApps.length > 0 ? sortedApps[0].is_paid : false;
 
@@ -92,7 +90,7 @@ serve(async (req) => {
     const onboardingUrl = `https://kinesiology-app.vercel.app/onboarding/${client.id}`;
     
     const paymentSection = isPaid ? `
-      <div style="background-color: #F8FAFC; border-radius: 24px; padding: 32px; margin: 32px 0; border: 1px solid #E2E8F0;">
+      <div style="background-color: #F8FAFC; border-radius: 24px; padding: 32px; margin: 32px 0; border: 1px solid #E2E8F0; text-align: left;">
         <div style="font-size: 11px; font-weight: 800; color: #1E3261; text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 16px;">Payment Details ($50)</div>
         <p style="margin: 0; font-size: 16px; color: #475569; line-height: 1.6;">This session is a paid clinical assessment. You can settle the fee via bank transfer using the details below, or via tap-to-pay during our session:</p>
         <div style="margin-top: 24px; padding: 20px; background-color: #ffffff; border-radius: 16px; border: 1px solid #F1F5F9; font-family: monospace; font-size: 18px; color: #1E3261; font-weight: 700; text-align: center;">
@@ -105,55 +103,33 @@ serve(async (req) => {
     const htmlBody = `
       <!DOCTYPE html>
       <html>
-      <head>
-        <style>
-          body { margin: 0; padding: 0; background-color: #FDFCFB; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; }
-          .wrapper { width: 100%; background-color: #FDFCFB; padding: 40px 0; }
-          .container { max-width: 600px; margin: 0 auto; background-color: #ffffff; border-radius: 40px; overflow: hidden; border: 1px solid #E0F2FE; box-shadow: 0 20px 40px -10px rgba(30, 50, 97, 0.05); }
-          .top-bar { height: 6px; background-color: #D46A9B; width: 100%; }
-          .header { padding: 56px 40px 40px 40px; text-align: center; }
-          .logo { color: #1E3261; font-size: 28px; font-weight: 700; letter-spacing: 0.02em; }
-          .sub-logo { color: #D46A9B; font-size: 11px; font-weight: 900; letter-spacing: 0.4em; margin-top: 16px; text-transform: uppercase; opacity: 0.8; }
-          .content { padding: 0 56px 48px 56px; line-height: 1.8; font-size: 17px; color: #334155; font-weight: 400; }
-          .button-container { text-align: center; padding: 32px 0; }
-          .button { display: inline-block; background-color: #1E3261; color: #ffffff !important; padding: 20px 48px; border-radius: 100px; text-decoration: none; font-weight: 700; font-size: 16px; letter-spacing: 0.05em; box-shadow: 0 12px 20px -5px rgba(30, 50, 97, 0.25); }
-          .signature { padding: 0 56px 56px 56px; border-top: 1px solid #F1F5F9; margin-top: 20px; padding-top: 32px; }
-          .sig-name { font-weight: 700; color: #1E3261; font-size: 20px; margin-bottom: 4px; }
-          .sig-title { color: #D46A9B; font-size: 12px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.15em; }
-          .footer { padding: 48px 20px; text-align: center; color: #64748b; font-size: 13px; }
-        </style>
-      </head>
-      <body>
-        <div class="wrapper">
-          <div class="container">
-            <div class="top-bar"></div>
-            <div class="header">
-              <div class="logo">✦ Resonance Kinesiology</div>
-              <div class="sub-logo">Neuro-Somatic Support</div>
+      <body style="margin: 0; padding: 0; background-color: #FDFCFB; font-family: sans-serif;">
+        <div style="width: 100%; background-color: #FDFCFB; padding: 40px 0;">
+          <div style="max-width: 600px; margin: 0 auto; background-color: #ffffff; border-radius: 40px; overflow: hidden; border: 1px solid #E0F2FE;">
+            <div style="height: 6px; background-color: #D46A9B; width: 100%;"></div>
+            <div style="padding: 56px 40px 40px 40px; text-align: center;">
+              <div style="color: #1E3261; font-size: 28px; font-weight: 700; letter-spacing: 0.02em;">✦ Resonance Kinesiology</div>
+              <div style="color: #D46A9B; font-size: 11px; font-weight: 900; letter-spacing: 0.4em; margin-top: 16px; text-transform: uppercase; opacity: 0.8;">Neuro-Somatic Support</div>
             </div>
-            <div class="content">
+            <div style="padding: 0 56px 56px 56px; line-height: 1.8; font-size: 17px; color: #334155; text-align: left;">
               <h2 style="color: #1E3261; margin-top: 0; font-size: 26px; font-weight: 800;">Clinical Onboarding</h2>
               <p>Hi ${client.name.split(' ')[0]},</p>
               <p>To ensure we make the most of our time together, I need to gather some foundational information about your clinical history and current health goals.</p>
-              
               <p>This form allows me to review your context before we meet, so we can dive straight into the neurological work during our session.</p>
-
               ${paymentSection}
-
-              <div class="button-container">
-                <a href="${onboardingUrl}" class="button">Complete Onboarding Form</a>
+              <div style="text-align: center; padding: 32px 0;">
+                <a href="${onboardingUrl}" style="display: inline-block; background-color: #1E3261; color: #ffffff; padding: 20px 48px; border-radius: 100px; text-decoration: none; font-weight: 700; font-size: 16px; letter-spacing: 0.05em;">Complete Onboarding Form</a>
               </div>
-              
               <p style="font-size: 14px; color: #64748b; margin-top: 20px;">
                 The form takes about 5-10 minutes to complete and is stored securely in our clinical database.
               </p>
             </div>
-            <div class="signature">
-              <div class="sig-name">Daniele Buatti</div>
-              <div class="sig-title">Neuro-Somatic Kinesiologist</div>
+            <div style="padding: 0 56px 56px 56px; border-top: 1px solid #F1F5F9; margin-top: 20px; padding-top: 32px; text-align: left;">
+              <div style="font-weight: 700; color: #1E3261; font-size: 20px; margin-bottom: 4px;">Daniele Buatti</div>
+              <div style="color: #D46A9B; font-size: 12px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.15em;">Neuro-Somatic Kinesiologist</div>
             </div>
           </div>
-          <div class="footer">
+          <div style="padding: 48px 20px; text-align: center; color: #64748b; font-size: 13px;">
             <p>© ${new Date().getFullYear()} Resonance Kinesiology</p>
           </div>
         </div>

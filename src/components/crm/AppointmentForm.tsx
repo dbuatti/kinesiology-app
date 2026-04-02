@@ -106,28 +106,34 @@ const AppointmentForm = ({ onSuccess, initialClientId, initialDate, initialTime 
       let calcomId = null;
 
       if (initialTime) {
-        console.log("[AppointmentForm] Triggering Cal.com sync via invoke...");
+        console.log("[AppointmentForm] Triggering Cal.com sync via direct fetch...");
         setSyncStatus('calcom');
-        const eventTypeId = localStorage.getItem('calcom_preferred_event_id') || "4279898";
         
-        const { data: calcomData, error: calcomError } = await supabase.functions.invoke('create-calcom-booking', {
-          body: { 
+        const eventTypeId = localStorage.getItem('calcom_preferred_event_id') || "4279898";
+        const supabaseUrl = "https://xebtjnvfkroiplyzftas.supabase.co";
+        const anonKey = (supabase as any).supabaseKey;
+
+        // Using direct fetch to bypass SDK invocation issues and ensure headers are explicit
+        const response = await fetch(`${supabaseUrl}/functions/v1/create-calcom-booking`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${session.access_token}`,
+            'apikey': anonKey
+          },
+          body: JSON.stringify({ 
             clientId: values.clientId, 
             startTime: isoDate,
             eventTypeId: eventTypeId
-          }
+          })
         });
 
-        if (calcomError) {
-          console.error("[AppointmentForm] Invocation Error:", calcomError);
-          throw new Error(`Edge Function Error: ${calcomError.message || 'Unknown error'}`);
+        if (!response.ok) {
+          const errorData = await response.json().catch(() => ({}));
+          throw new Error(errorData.error || `Server returned ${response.status}`);
         }
 
-        if (calcomData?.success === false) {
-          console.error("[AppointmentForm] Application Error:", calcomData.error);
-          throw new Error(calcomData.error || "Cal.com booking failed.");
-        }
-        
+        const calcomData = await response.json();
         calcomId = calcomData?.uid || calcomData?.bookingId;
       }
 

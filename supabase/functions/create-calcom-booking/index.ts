@@ -9,12 +9,13 @@ const corsHeaders = {
 }
 
 serve(async (req) => {
+  // VERIFICATION MARKER
+  console.log("--- [v1.6] CREATE-CALCOM-BOOKING START ---");
+
   // 1. Handle CORS preflight
   if (req.method === 'OPTIONS') {
     return new Response('ok', { headers: corsHeaders })
   }
-
-  console.log(`--- [create-calcom-booking] v1.5 START ---`);
 
   try {
     // 2. Check Environment Variables & Secrets
@@ -22,18 +23,15 @@ serve(async (req) => {
     const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY');
     const CALCOM_KEY = Deno.env.get('CALCOM_API_KEY');
 
-    // Log configuration status (not the values)
-    console.log(`Config Check: URL=${!!supabaseUrl}, ServiceKey=${!!supabaseKey}, CalcomKey=${!!CALCOM_KEY}`);
-
     if (!CALCOM_KEY) {
-      throw new Error("CALCOM_API_KEY is missing. Please set it using 'supabase secrets set CALCOM_API_KEY=your_key' or in the Supabase Dashboard.");
+      throw new Error("CALCOM_API_KEY is missing in Supabase Secrets.");
     }
 
     // 3. Parse and Validate Body
     const body = await req.json();
     const { clientId, startTime, eventTypeId } = body;
     
-    console.log("Request Payload:", { clientId, startTime, eventTypeId });
+    console.log(`Processing booking for Client: ${clientId}, Time: ${startTime}`);
 
     if (!clientId || !startTime || !eventTypeId) {
       throw new Error("Missing required fields: clientId, startTime, or eventTypeId.");
@@ -42,7 +40,6 @@ serve(async (req) => {
     const supabase = createClient(supabaseUrl, supabaseKey);
 
     // 4. Fetch Client Details
-    console.log(`Fetching client ${clientId}...`);
     const { data: client, error: clientError } = await supabase
       .from('clients')
       .select('name, email')
@@ -50,7 +47,6 @@ serve(async (req) => {
       .single();
 
     if (clientError || !client) {
-      console.error("Database Error:", clientError);
       throw new Error(`Client not found: ${clientError?.message || 'Unknown error'}`);
     }
     

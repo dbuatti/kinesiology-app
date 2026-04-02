@@ -39,6 +39,7 @@ import ClientProgressTab from "@/components/crm/ClientProgressTab";
 import ClientProfileCard from "@/components/crm/ClientProfileCard";
 import AppLayout from "@/components/crm/AppLayout";
 import { generateAICasePrompt, generateSessionSummary } from "@/utils/summary-generator";
+import QuickAssessmentModal from "@/components/crm/QuickAssessmentModal";
 
 const ClientDetailPage = () => {
   const { id } = useParams();
@@ -56,6 +57,7 @@ const ClientDetailPage = () => {
   const [linkCopying, setLinkCopying] = useState(false);
   const [sendingEmail, setSendingEmail] = useState(false);
   const [syncingKit, setSyncingKit] = useState(false);
+  const [assessmentModal, setAssessmentModal] = useState<{ open: boolean; type: 'bolt' | 'coherence' } | null>(null);
   const { addRecentClient } = useRecentClients();
 
   const fetchClientData = async () => {
@@ -197,27 +199,48 @@ const ClientDetailPage = () => {
           ]} 
         />
 
-        <div className="flex items-center justify-between gap-4">
-          <Link to="/clients">
-            <Button variant="ghost" size="sm">
-              <ArrowLeft size={18} className="mr-2" /> Back to Clients
-            </Button>
-          </Link>
-          <div className="flex gap-2">
+        <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6">
+          <div className="flex items-center gap-4">
+            <Link to="/clients">
+              <Button variant="ghost" size="icon" className="rounded-xl">
+                <ArrowLeft size={20} />
+              </Button>
+            </Link>
+            <div className="flex gap-2">
               <Button 
                 variant="outline" 
                 size="sm" 
-                className="bg-indigo-50 border-indigo-100 text-indigo-600 hover:bg-indigo-100 rounded-xl font-bold"
-                onClick={handleSendOnboardingEmail}
-                disabled={sendingEmail || !client.email}
+                className="bg-indigo-50 border-indigo-100 text-indigo-600 hover:bg-indigo-100 rounded-xl font-black text-[10px] uppercase tracking-widest h-10 px-4"
+                onClick={() => setAssessmentModal({ open: true, type: 'bolt' })}
               >
-                {sendingEmail ? <Loader2 size={16} className="mr-2 animate-spin" /> : <Send size={16} className="mr-2" />}
-                Send Onboarding Email
+                <FlaskConical size={14} className="mr-2" /> Log BOLT
               </Button>
               <Button 
                 variant="outline" 
                 size="sm" 
-                className="bg-emerald-50 border-emerald-100 text-emerald-600 hover:bg-emerald-100 rounded-xl font-bold"
+                className="bg-rose-50 border-rose-100 text-rose-600 hover:bg-rose-100 rounded-xl font-black text-[10px] uppercase tracking-widest h-10 px-4"
+                onClick={() => setAssessmentModal({ open: true, type: 'coherence' })}
+              >
+                <Activity size={14} className="mr-2" /> Log COH
+              </Button>
+            </div>
+          </div>
+          
+          <div className="flex flex-wrap gap-2">
+              <Button 
+                variant="outline" 
+                size="sm" 
+                className="bg-indigo-50 border-indigo-100 text-indigo-600 hover:bg-indigo-100 rounded-xl font-bold h-10"
+                onClick={handleSendOnboardingEmail}
+                disabled={sendingEmail || !client.email}
+              >
+                {sendingEmail ? <Loader2 size={16} className="mr-2 animate-spin" /> : <Send size={16} className="mr-2" />}
+                Send Onboarding
+              </Button>
+              <Button 
+                variant="outline" 
+                size="sm" 
+                className="bg-emerald-50 border-emerald-100 text-emerald-600 hover:bg-emerald-100 rounded-xl font-bold h-10"
                 onClick={handleCopyOnboardingLink}
               >
                 {linkCopying ? <Check size={16} className="mr-2" /> : <LinkIcon size={16} className="mr-2" />}
@@ -226,15 +249,15 @@ const ClientDetailPage = () => {
               <Button 
                 variant="outline" 
                 size="sm" 
-                className="bg-indigo-50 border-indigo-100 text-indigo-600 hover:bg-indigo-100 rounded-xl font-bold"
+                className="bg-indigo-50 border-indigo-100 text-indigo-600 hover:bg-indigo-100 rounded-xl font-bold h-10"
                 onClick={handleCopyForAI}
               >
                 {aiCopying ? <Check size={16} className="mr-2 text-emerald-500" /> : <Sparkles size={16} className="mr-2" />}
-                Copy Case for AI
+                AI Case
               </Button>
               <Dialog open={editOpen} onOpenChange={setEditOpen}>
                 <DialogTrigger asChild>
-                  <Button variant="outline" size="sm" className="bg-white rounded-xl border-slate-200">
+                  <Button variant="outline" size="sm" className="bg-white rounded-xl border-slate-200 h-10">
                     <Edit3 size={16} className="mr-2" /> Edit Profile
                   </Button>
                 </DialogTrigger>
@@ -255,16 +278,16 @@ const ClientDetailPage = () => {
 
               <DropdownMenu>
                   <DropdownMenuTrigger asChild>
-                      <Button variant="ghost" size="icon" className="rounded-xl">
+                      <Button variant="ghost" size="icon" className="rounded-xl h-10 w-10">
                           <MoreHorizontal size={20} />
                       </Button>
                   </DropdownMenuTrigger>
-                  <DropdownMenuContent align="end">
+                  <DropdownMenuContent align="end" className="rounded-2xl p-2 shadow-2xl border-none bg-card">
                       <DropdownMenuItem 
-                          className="text-destructive focus:text-destructive"
+                          className="text-destructive focus:text-destructive rounded-xl py-2.5 px-4 cursor-pointer flex items-center gap-3"
                           onClick={handleDeleteClient}
                       >
-                          <Trash2 size={16} className="mr-2" /> Delete Client
+                          <Trash2 size={16} /> Delete Client
                       </DropdownMenuItem>
                   </DropdownMenuContent>
               </DropdownMenu>
@@ -475,7 +498,7 @@ const ClientDetailPage = () => {
                                   <span className="font-bold text-lg text-slate-900 group-hover:text-indigo-600 transition-colors">{app.name || format(app.date, "MMM d, yyyy")}</span>
                                 </div>
                                 <div className="flex items-center gap-4 text-sm text-slate-500 font-medium">
-                                  <span className="flex items-center gap-1.5"><Calendar size={14} className="text-indigo-500" /> {format(app.date, "MMM d")}</span>
+                                  <span className="flex items-center gap-1.5"><Calendar size={14} className="text-indigo-400" /> {format(app.date, "MMM d")}</span>
                                   <span className={cn(
                                       "px-2 py-0.5 rounded-full text-xs font-bold",
                                       app.status === 'Completed' ? "bg-emerald-50 text-emerald-600" : "bg-slate-100 text-slate-600"
@@ -542,7 +565,7 @@ const ClientDetailPage = () => {
                               <Badge className="bg-indigo-50 text-indigo-700 hover:bg-indigo-100 border-none">{app.tag}</Badge>
                             </div>
                             <div className="flex items-center gap-4 text-sm text-slate-500 font-medium">
-                              <span className="flex items-center gap-1.5"><Calendar size={14} className="text-indigo-500" /> {format(app.date, "EEEE, MMM d")}</span>
+                              <span className="flex items-center gap-1.5"><Calendar size={14} className="text-indigo-400" /> {format(app.date, "EEEE, MMM d")}</span>
                               <span className="flex items-center gap-1.5"><Clock size={14} className="text-indigo-500" /> {format(app.date, "h:mm a")}</span>
                               <span className={cn(
                                   "px-2 py-0.5 rounded-full text-xs font-bold",
@@ -578,6 +601,17 @@ const ClientDetailPage = () => {
           </TabsContent>
         </Tabs>
       </div>
+
+      {assessmentModal && client && (
+        <QuickAssessmentModal 
+          open={assessmentModal.open}
+          onOpenChange={(open) => !open && setAssessmentModal(null)}
+          clientId={client.id}
+          clientName={client.name}
+          type={assessmentModal.type}
+          onComplete={fetchClientData}
+        />
+      )}
     </AppLayout>
   );
 };

@@ -11,7 +11,7 @@ import {
   Plus, UserPlus, Sparkles,
   CheckCircle2, Zap, FlaskConical, Brain, Wind, StickyNote, Timer,
   ArrowRight, AlertCircle, TrendingUp, Clock, ShieldCheck, Heart,
-  ClipboardCheck, EyeOff, CalendarPlus, Target
+  ClipboardCheck, EyeOff, CalendarPlus, Target, Link as LinkIcon, Check
 } from "lucide-react";
 import {
   Dialog,
@@ -36,6 +36,7 @@ import AppLayout from "@/components/crm/AppLayout";
 import PractitionerGrounding from "@/components/crm/PractitionerGrounding";
 import { cn } from "@/lib/utils";
 import { usePrivacyMode } from "@/hooks/use-privacy-mode";
+import { showSuccess } from "@/utils/toast";
 
 const SCRATCHPAD_KEY = "antigravity_practitioner_scratchpad";
 const SCRATCHPAD_TIME_KEY = "antigravity_practitioner_scratchpad_time";
@@ -63,6 +64,7 @@ const Index = () => {
   const [scratchpad, setScratchpad] = useState("");
   const [lastSaved, setLastSaved] = useState<string | null>(null);
   const [currentTime, setCurrentTime] = useState(new Date());
+  const [copiedId, setCopiedId] = useState<string | null>(null);
 
   useEffect(() => {
     const saved = localStorage.getItem(SCRATCHPAD_KEY);
@@ -80,6 +82,16 @@ const Index = () => {
     setLastSaved(now);
     localStorage.setItem(SCRATCHPAD_KEY, val);
     localStorage.setItem(SCRATCHPAD_TIME_KEY, now);
+  };
+
+  const handleCopyLink = (e: React.MouseEvent, clientId: string) => {
+    e.preventDefault();
+    e.stopPropagation();
+    const url = `${window.location.origin}/onboarding/${clientId}`;
+    navigator.clipboard.writeText(url);
+    setCopiedId(clientId);
+    showSuccess("Onboarding link copied!");
+    setTimeout(() => setCopiedId(null), 2000);
   };
 
   const fetchDashboardData = async () => {
@@ -359,24 +371,35 @@ const Index = () => {
                     </CardHeader>
                     <CardContent className="p-8 pt-0 space-y-3">
                       {pendingOnboarding.map(client => (
-                        <Link key={client.id} to={`/clients/${client.id}`}>
-                          <div className="p-5 bg-white rounded-[2rem] border border-secondary/30 flex items-center justify-between group hover:shadow-md transition-all duration-300">
-                            <div className="flex items-center gap-4">
-                              <div className="w-10 h-10 rounded-xl bg-muted text-primary flex items-center justify-center font-black text-lg">
-                                {client.name.charAt(0)}
-                              </div>
-                              <div>
-                                <p className={cn("font-black text-lg text-foreground group-hover:text-accent transition-colors", isPrivate && "blur-sm")}>{client.name}</p>
-                                <p className="text-xs font-bold text-muted-foreground flex items-center gap-1.5 mt-1">
-                                  <Clock size={14} className="text-accent" /> Updated {formatDistanceToNow(new Date(client.created_at), { addSuffix: true })}
-                                </p>
-                              </div>
+                        <div key={client.id} className="p-5 bg-white rounded-[2rem] border border-secondary/30 flex items-center justify-between group hover:shadow-md transition-all duration-300">
+                          <Link to={`/clients/${client.id}`} className="flex items-center gap-4 flex-1">
+                            <div className="w-10 h-10 rounded-xl bg-muted text-primary flex items-center justify-center font-black text-lg">
+                              {client.name.charAt(0)}
                             </div>
-                            <div className="w-10 h-10 rounded-xl bg-muted text-primary flex items-center justify-center group-hover:bg-primary group-hover:text-white transition-all">
-                              <ArrowRight size={20} />
+                            <div>
+                              <p className={cn("font-black text-lg text-foreground group-hover:text-accent transition-colors", isPrivate && "blur-sm")}>{client.name}</p>
+                              <p className="text-xs font-bold text-muted-foreground flex items-center gap-1.5 mt-1">
+                                <Clock size={14} className="text-accent" /> Updated {formatDistanceToNow(new Date(client.created_at), { addSuffix: true })}
+                              </p>
                             </div>
+                          </Link>
+                          <div className="flex items-center gap-2">
+                            <Button 
+                              variant="ghost" 
+                              size="sm" 
+                              className="h-9 px-3 rounded-xl text-indigo-600 hover:bg-indigo-50 font-black text-[9px] uppercase tracking-widest"
+                              onClick={(e) => handleCopyLink(e, client.id)}
+                            >
+                              {copiedId === client.id ? <Check size={14} className="mr-1.5 text-emerald-500" /> : <LinkIcon size={14} className="mr-1.5" />}
+                              {copiedId === client.id ? "Copied" : "Copy Link"}
+                            </Button>
+                            <Link to={`/clients/${client.id}`}>
+                              <div className="w-10 h-10 rounded-xl bg-muted text-primary flex items-center justify-center group-hover:bg-primary group-hover:text-white transition-all">
+                                <ArrowRight size={20} />
+                              </div>
+                            </Link>
                           </div>
-                        </Link>
+                        </div>
                       ))}
                     </CardContent>
                   </Card>

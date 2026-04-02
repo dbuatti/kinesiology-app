@@ -61,7 +61,7 @@ import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import CalendarView from "@/components/crm/CalendarView";
 import QuickAssessmentModal from "@/components/crm/QuickAssessmentModal";
 import AppLayout from "@/components/crm/AppLayout";
-import { formatAppointmentQuickInfo } from "@/utils/summary-generator";
+import { formatAppointmentQuickInfo, generateSessionSummary } from "@/utils/summary-generator";
 
 interface AppointmentWithClient extends Appointment {
   clients: { name: string; id: string; latest_bolt?: number | null };
@@ -198,6 +198,12 @@ const AppointmentsPage = () => {
     showSuccess("Quick info copied!");
   };
 
+  const handleCopyFullSummary = (app: any) => {
+    const summary = generateSessionSummary(app);
+    navigator.clipboard.writeText(summary);
+    showSuccess("Full session summary copied!");
+  };
+
   useEffect(() => {
     fetchAppointments(PAGE_SIZE);
   }, []);
@@ -326,9 +332,9 @@ const AppointmentsPage = () => {
                     size="sm" 
                     variant="ghost" 
                     className="h-8 rounded-xl text-slate-400 hover:text-indigo-600 font-black text-[9px] uppercase tracking-widest"
-                    onClick={() => navigate(`/appointments/${app.id}`)}
+                    onClick={() => handleCopyFullSummary(app)}
                   >
-                    <Printer size={12} className="mr-1" /> Worksheet
+                    <Copy size={12} className="mr-1" /> Copy Summary
                   </Button>
                   {isTodaySession && !isCompleted && (
                     <div className="flex gap-2 animate-in fade-in slide-in-from-right-2 duration-500">

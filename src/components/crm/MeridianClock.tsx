@@ -1,9 +1,9 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import { TCM_CHANNELS } from "@/data/tcm-channel-data";
 import { cn } from "@/lib/utils";
-import { Clock, Zap, Info, Activity } from "lucide-react";
+import { Clock, Zap, Info, Activity, ArrowRight } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { format } from "date-fns";
 import { Card, CardContent } from "@/components/ui/card";
@@ -37,12 +37,20 @@ const MeridianClock = () => {
     return channel?.id || null;
   };
 
+  const clockOrder = ["LU", "LI", "ST", "SP", "HT", "SI", "BL", "KI", "PC", "SJ", "GB", "LV"];
   const activeId = getActiveId(currentHour);
+  
+  const nextId = useMemo(() => {
+    if (!activeId) return null;
+    const currentIndex = clockOrder.indexOf(activeId);
+    const nextIndex = (currentIndex + 1) % clockOrder.length;
+    return clockOrder[nextIndex];
+  }, [activeId]);
+
   const displayId = hoveredId || activeId;
   const displayChannel = TCM_CHANNELS.find(c => c.id === displayId);
+  const nextChannel = nextId ? TCM_CHANNELS.find(c => c.id === nextId) : null;
   const oppositeChannel = displayChannel ? TCM_CHANNELS.find(c => c.id === displayChannel.oppositeId) : null;
-
-  const clockOrder = ["LU", "LI", "ST", "SP", "HT", "SI", "BL", "KI", "PC", "SJ", "GB", "LV"];
 
   return (
     <Card className="border-none shadow-sm bg-card rounded-[2rem] overflow-hidden">
@@ -52,7 +60,10 @@ const MeridianClock = () => {
           <div className="absolute inset-0 rounded-full border-4 border-muted shadow-inner" />
           
           {clockOrder.map((id, index) => {
-            const channel = TCM_CHANNELS.find(c => c.id === id)!;
+            const channel = TCM_CHANNELS.find(c => {
+              const ch = TCM_CHANNELS.find(item => item.id === id);
+              return ch;
+            })!;
             const isActive = activeId === id;
             const isHovered = hoveredId === id;
             const rotation = index * 30;
@@ -106,14 +117,24 @@ const MeridianClock = () => {
         {/* Detail Panel */}
         {displayChannel && (
           <div className="space-y-4 animate-in fade-in duration-500">
-            <div className="flex items-center gap-3">
-              <div className={cn("w-8 h-8 rounded-lg flex items-center justify-center text-white shadow-sm", displayChannel.color.split(' ')[0])}>
-                <Activity size={16} />
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <div className={cn("w-8 h-8 rounded-lg flex items-center justify-center text-white shadow-sm", displayChannel.color.split(' ')[0])}>
+                  <Activity size={16} />
+                </div>
+                <div>
+                  <h3 className="text-sm font-black text-foreground">{displayChannel.name}</h3>
+                  <p className="text-[9px] font-bold text-muted-foreground uppercase tracking-wider">{displayChannel.peakTime}</p>
+                </div>
               </div>
-              <div>
-                <h3 className="text-sm font-black text-foreground">{displayChannel.name}</h3>
-                <p className="text-[9px] font-bold text-muted-foreground uppercase tracking-wider">{displayChannel.peakTime}</p>
-              </div>
+              {nextChannel && !hoveredId && (
+                <div className="text-right">
+                  <p className="text-[7px] font-black text-slate-400 uppercase tracking-widest flex items-center justify-end gap-1">
+                    Next <ArrowRight size={8} />
+                  </p>
+                  <p className="text-[9px] font-bold text-slate-500">{nextChannel.name}</p>
+                </div>
+              )}
             </div>
 
             <div className="grid grid-cols-1 gap-2">

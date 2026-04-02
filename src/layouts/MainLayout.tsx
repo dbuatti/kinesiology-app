@@ -6,6 +6,7 @@ import Sidebar from '@/components/crm/Sidebar';
 import MobileNav from '@/components/crm/MobileNav';
 import QuickActions from '@/components/crm/QuickActions';
 import AppFooter from '@/components/crm/AppFooter';
+import BackToTop from '@/components/shared/BackToTop';
 import { Button } from '@/components/ui/button';
 import { PanelLeftOpen } from 'lucide-react';
 
@@ -45,6 +46,7 @@ const MainLayout = () => {
         <AppFooter />
       </main>
       <QuickActions />
+      <BackToTop />
     </div>
   );
 };

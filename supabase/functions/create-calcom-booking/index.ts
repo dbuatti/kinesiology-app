@@ -13,7 +13,7 @@ serve(async (req) => {
     return new Response('ok', { headers: corsHeaders })
   }
 
-  console.log("--- [v2.6] CREATE-CALCOM-BOOKING START ---");
+  console.log("--- [v2.7] CREATE-CALCOM-BOOKING START ---");
   
   try {
     const supabaseUrl = Deno.env.get('SUPABASE_URL');
@@ -66,7 +66,8 @@ serve(async (req) => {
     }
 
     // Cal.com v2 Booking Payload
-    // Re-introducing 'responses' because the API explicitly requested the 'title' field.
+    // We send 'title' in responses as requested by the 400 error.
+    // We move 'notes' to metadata to avoid "property should not exist" errors if it's not a defined question.
     const bookingPayload = {
       start: startTime,
       eventTypeId: parseInt(eventTypeId, 10),
@@ -77,11 +78,11 @@ serve(async (req) => {
         language: "en"
       },
       responses: {
-        title: title || "Kinesiology Session",
-        notes: notes || ""
+        title: title || "Kinesiology Session"
       },
       metadata: { 
-        source: "Antigravity CRM"
+        source: "Antigravity CRM",
+        notes: notes || ""
       }
     };
 

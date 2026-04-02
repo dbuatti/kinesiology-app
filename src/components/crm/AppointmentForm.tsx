@@ -310,7 +310,7 @@ const AppointmentForm = ({ onSuccess, initialClientId, initialDate, initialTime 
                   Paid Session ($50)
                 </FormLabel>
                 <p className="text-[10px] text-indigo-400 font-bold uppercase tracking-widest">
-                  Include payment details in onboarding email
+                  Requires payment (triggers bank details in email)
                 </p>
               </div>
               <FormControl>

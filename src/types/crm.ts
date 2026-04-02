@@ -22,6 +22,7 @@ export interface Appointment {
   issue: string;
   acupoints: string;
   is_paid?: boolean;
+  payment_received?: boolean;
   payment_link?: string | null;
   // External Tracking
   notion_page_id?: string | null;

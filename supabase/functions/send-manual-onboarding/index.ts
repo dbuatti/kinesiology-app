@@ -76,7 +76,7 @@ serve(async (req) => {
 
     const { data: client, error: clientError } = await supabase
       .from('clients')
-      .select('id, name, email, appointments(is_paid, date)')
+      .select('id, name, email, appointments(is_paid, payment_received, date)')
       .eq('id', clientId)
       .single();
 
@@ -84,12 +84,18 @@ serve(async (req) => {
     if (!client.email) throw new Error("Client has no email address.");
 
     const sortedApps = (client.appointments || []).sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
-    const isPaid = sortedApps.length > 0 ? sortedApps[0].is_paid : false;
+    const latestApp = sortedApps[0];
+    
+    const isPaidSession = latestApp?.is_paid || false;
+    const paymentAlreadyReceived = latestApp?.payment_received || false;
 
     const accessToken = await getGmailAccessToken(GMAIL_CLIENT_ID, GMAIL_CLIENT_SECRET, GMAIL_REFRESH_TOKEN);
     const onboardingUrl = `https://kinesiology-app.vercel.app/onboarding/${client.id}`;
     
-    const paymentSection = isPaid ? `
+    // Only show bank details if it's a paid session but payment hasn't been received yet
+    const showBankDetails = isPaidSession && !paymentAlreadyReceived;
+
+    const paymentSection = showBankDetails ? `
       <div style="background-color: #F8FAFC; border-radius: 24px; padding: 32px; margin: 32px 0; border: 1px solid #E2E8F0; text-align: left;">
         <div style="font-size: 11px; font-weight: 800; color: #1E3261; text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 16px;">Payment Details ($50)</div>
         <p style="margin: 0; font-size: 16px; color: #475569; line-height: 1.6;">This session is a paid clinical assessment. You can settle the fee via bank transfer using the details below, or via tap-to-pay during our session:</p>

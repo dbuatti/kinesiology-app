@@ -97,8 +97,6 @@ const CalcomSlotsView = () => {
       setBookings(data.bookings || {});
       setBlockedDates(data.blockedDates || []);
       
-      showSuccess("Availability updated.");
-      
       if (eventTypeId) localStorage.setItem('calcom_preferred_event_id', eventTypeId);
       if (scheduleId) localStorage.setItem('calcom_preferred_schedule_id', scheduleId);
       
@@ -121,8 +119,19 @@ const CalcomSlotsView = () => {
 
       if (invokeError) throw invokeError;
 
+      // Optimistic Update: Remove from local state immediately
+      setBookings(prev => {
+        const newBookings = { ...prev };
+        Object.keys(newBookings).forEach(date => {
+          newBookings[date] = newBookings[date].filter(b => b.uid !== bookingUid);
+        });
+        return newBookings;
+      });
+
       showSuccess(`Booking for ${attendeeName} cancelled.`);
-      fetchSlots();
+      
+      // Refresh in background after a short delay to allow API propagation
+      setTimeout(fetchSlots, 2000);
     } catch (err) {
       showError("Failed to cancel booking.");
     } finally {
@@ -156,8 +165,17 @@ const CalcomSlotsView = () => {
         return;
       }
 
+      // Optimistic Update: Update local blocked dates immediately
+      if (isCurrentlyBlocked) {
+        setBlockedDates(prev => prev.filter(d => d !== date));
+      } else {
+        setBlockedDates(prev => [...prev, date]);
+      }
+
       showSuccess(isCurrentlyBlocked ? "Day unblocked." : "Day blocked.");
-      fetchSlots();
+      
+      // Refresh in background after a short delay
+      setTimeout(fetchSlots, 2000);
     } catch (err: any) {
       showError("Failed to update availability.");
     } finally {

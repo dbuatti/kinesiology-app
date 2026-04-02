@@ -25,17 +25,15 @@ import {
   EyeOff,
   Lock,
   FileText,
-  ExternalLink,
-  Mic,
-  Sparkles,
   Briefcase,
-  CalendarDays
+  CalendarDays,
+  Mic
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import SearchBar from "./SearchBar";
 import { supabase } from "@/integrations/supabase/client";
 import { showSuccess } from "@/utils/toast";
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect } from "react";
 import HelpModal from "./HelpModal";
 import { useRecentClients } from "@/hooks/use-recent-clients";
 import { useActiveSession } from "@/hooks/useActiveSession";

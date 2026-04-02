@@ -89,7 +89,7 @@ const FollowUpTracker = ({ clients }: FollowUpTrackerProps) => {
                   {client.name.charAt(0)}
                 </div>
                 <div>
-                  <p className="font-black text-foreground group-hover:text-rose-600 transition-colors">{client.name}</p>
+                  <p className="font-black text-foreground group-hover:text-indigo-600 transition-colors">{client.name}</p>
                   <div className="flex items-center gap-3 mt-1">
                     <span className="text-[10px] font-bold text-muted-foreground flex items-center gap-1">
                       <History size={12} /> Last: {format(new Date(client.lastApp.date), "MMM d")}

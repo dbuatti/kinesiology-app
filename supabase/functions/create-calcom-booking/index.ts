@@ -13,7 +13,7 @@ serve(async (req) => {
     return new Response('ok', { headers: corsHeaders })
   }
 
-  console.log("--- [v4.0] CREATE-CALCOM-BOOKING (MAPPING REQUIRED RESPONSES) ---");
+  console.log("--- [v5.0] CREATE-CALCOM-BOOKING (METADATA MAPPING & v2024-06-11) ---");
   
   try {
     const supabaseUrl = Deno.env.get('SUPABASE_URL');
@@ -65,9 +65,11 @@ serve(async (req) => {
       throw new Error(`Client '${client.name}' has no email address.`);
     }
 
-    // Cal.com v2 Booking Payload (v4.0)
-    // name/email are top-level in 'attendee'
-    // custom fields (like 'title') MUST be in 'responses'
+    // Cal.com v2 Booking Payload (v5.0)
+    // Following the "Golden" structure:
+    // 1. Flat attendee object
+    // 2. Custom fields in metadata
+    // 3. No 'responses' key
     const bookingPayload = {
       start: startTime,
       eventTypeId: parseInt(eventTypeId, 10),
@@ -77,23 +79,20 @@ serve(async (req) => {
         timeZone: "Australia/Melbourne",
         language: "en"
       },
-      // Re-introducing 'responses' to satisfy the 'title' requirement
-      responses: {
-        title: title || "Kinesiology Session",
-        notes: notes || ""
-      },
       metadata: { 
+        title: title || "Kinesiology Session",
+        notes: notes || "",
         source: "Antigravity CRM"
       }
     };
 
-    console.log(`Calling Cal.com v2 API for ${client.email} with title: ${bookingPayload.responses.title}`);
+    console.log(`Calling Cal.com v2 API for ${client.email} using metadata for title.`);
 
     const response = await fetch("https://api.cal.com/v2/bookings", {
       method: "POST",
       headers: {
         'Authorization': `Bearer ${CALCOM_KEY}`,
-        'cal-api-version': '2024-08-13',
+        'cal-api-version': '2024-06-11', // Reverting to suggested stable version
         'Content-Type': 'application/json',
       },
       body: JSON.stringify(bookingPayload),

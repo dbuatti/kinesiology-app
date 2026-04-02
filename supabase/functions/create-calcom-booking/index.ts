@@ -13,7 +13,7 @@ serve(async (req) => {
     return new Response('ok', { headers: corsHeaders })
   }
 
-  console.log("--- [v2.7] CREATE-CALCOM-BOOKING START ---");
+  console.log("--- [v2.8] CREATE-CALCOM-BOOKING START ---");
   
   try {
     const supabaseUrl = Deno.env.get('SUPABASE_URL');
@@ -49,7 +49,7 @@ serve(async (req) => {
 
     const { data: client, error: clientError } = await supabase
       .from('clients')
-      .select('name, email')
+      .select('name, email, phone')
       .eq('id', clientId)
       .single();
 
@@ -66,23 +66,28 @@ serve(async (req) => {
     }
 
     // Cal.com v2 Booking Payload
-    // We send 'title' in responses as requested by the 400 error.
-    // We move 'notes' to metadata to avoid "property should not exist" errors if it's not a defined question.
+    // Mapping to the specific questions provided by the user:
+    // 1. "Your name" -> attendee.name
+    // 2. "Email address" -> attendee.email
+    // 3. "Phone number" -> attendee.phoneNumber
+    // 4. "What is this meeting about?" -> responses.title (Required)
+    // 5. "Additional notes" -> responses.notes (Optional)
     const bookingPayload = {
       start: startTime,
       eventTypeId: parseInt(eventTypeId, 10),
       attendee: {
         name: client.name,
         email: client.email,
+        phoneNumber: client.phone || undefined,
         timeZone: "Australia/Melbourne",
         language: "en"
       },
       responses: {
-        title: title || "Kinesiology Session"
+        title: title || "Kinesiology Session",
+        notes: notes || ""
       },
       metadata: { 
-        source: "Antigravity CRM",
-        notes: notes || ""
+        source: "Antigravity CRM"
       }
     };
 

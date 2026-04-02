@@ -9,45 +9,40 @@ const corsHeaders = {
 }
 
 serve(async (req) => {
-  // 1. Handle CORS
+  // 1. Handle CORS preflight
   if (req.method === 'OPTIONS') {
     return new Response('ok', { headers: corsHeaders })
   }
 
-  console.log(`--- [create-calcom-booking] v1.4 Request Received: ${req.method} ---`);
-  
-  // Log headers for debugging (anonymized)
-  const authHeader = req.headers.get('Authorization');
-  const apiKeyHeader = req.headers.get('apikey');
-  console.log(`Auth Header Present: ${!!authHeader}, API Key Present: ${!!apiKeyHeader}`);
+  console.log(`--- [create-calcom-booking] v1.5 START ---`);
 
   try {
-    // 2. Check Environment Variables
-    const supabaseUrl = Deno.env.get('SUPABASE_URL')
-    const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')
-    const CALCOM_KEY = Deno.env.get('CALCOM_API_KEY')
+    // 2. Check Environment Variables & Secrets
+    const supabaseUrl = Deno.env.get('SUPABASE_URL');
+    const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY');
+    const CALCOM_KEY = Deno.env.get('CALCOM_API_KEY');
 
-    if (!supabaseUrl || !supabaseKey) {
-      throw new Error("Missing Supabase environment variables.");
-    }
+    // Log configuration status (not the values)
+    console.log(`Config Check: URL=${!!supabaseUrl}, ServiceKey=${!!supabaseKey}, CalcomKey=${!!CALCOM_KEY}`);
+
     if (!CALCOM_KEY) {
-      throw new Error("Missing CALCOM_API_KEY in Supabase Secrets.");
+      throw new Error("CALCOM_API_KEY is missing. Please set it using 'supabase secrets set CALCOM_API_KEY=your_key' or in the Supabase Dashboard.");
     }
 
-    // 3. Parse Body
+    // 3. Parse and Validate Body
     const body = await req.json();
     const { clientId, startTime, eventTypeId } = body;
     
-    console.log("Request Body:", { clientId, startTime, eventTypeId });
+    console.log("Request Payload:", { clientId, startTime, eventTypeId });
 
     if (!clientId || !startTime || !eventTypeId) {
       throw new Error("Missing required fields: clientId, startTime, or eventTypeId.");
     }
 
-    const supabase = createClient(supabaseUrl, supabaseKey)
+    const supabase = createClient(supabaseUrl, supabaseKey);
 
     // 4. Fetch Client Details
-    console.log(`Fetching client details for ID: ${clientId}`);
+    console.log(`Fetching client ${clientId}...`);
     const { data: client, error: clientError } = await supabase
       .from('clients')
       .select('name, email')
@@ -55,18 +50,18 @@ serve(async (req) => {
       .single();
 
     if (clientError || !client) {
-      console.error("Client Fetch Error:", clientError);
-      throw new Error("Client not found in CRM.");
+      console.error("Database Error:", clientError);
+      throw new Error(`Client not found: ${clientError?.message || 'Unknown error'}`);
     }
     
     if (!client.email) {
-      throw new Error(`Client '${client.name}' must have an email address to book via Cal.com.`);
+      throw new Error(`Client '${client.name}' has no email address. Cal.com requires an email.`);
     }
 
     // 5. Create Booking in Cal.com (v2 API)
     const bookingPayload = {
       start: startTime,
-      eventTypeId: parseInt(eventTypeId),
+      eventTypeId: parseInt(eventTypeId, 10),
       attendee: {
         name: client.name,
         email: client.email,
@@ -78,7 +73,7 @@ serve(async (req) => {
       }
     };
 
-    console.log(`Attempting Cal.com API call for ${client.email}...`);
+    console.log(`Calling Cal.com API for ${client.email}...`);
 
     const response = await fetch("https://api.cal.com/v2/bookings", {
       method: "POST",
@@ -93,11 +88,11 @@ serve(async (req) => {
     const result = await response.json();
 
     if (!response.ok) {
-      console.error("Cal.com API Error Response:", JSON.stringify(result));
-      throw new Error(result.message || result.error?.message || "Cal.com API Error");
+      console.error("Cal.com API Error:", JSON.stringify(result));
+      throw new Error(result.message || result.error?.message || `Cal.com API Error (${response.status})`);
     }
 
-    console.log(`✅ Successfully created Cal.com booking: ${result.data?.id || 'unknown'}`);
+    console.log(`✅ Success: Booking ${result.data?.id} created.`);
 
     return new Response(JSON.stringify({ 
       success: true, 
@@ -109,8 +104,11 @@ serve(async (req) => {
     });
 
   } catch (error) {
-    console.error("❌ Critical Error:", error.message);
-    return new Response(JSON.stringify({ success: false, error: error.message }), { 
+    console.error("❌ Function Error:", error.message);
+    return new Response(JSON.stringify({ 
+      success: false, 
+      error: error.message 
+    }), { 
       status: 400, 
       headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
     });

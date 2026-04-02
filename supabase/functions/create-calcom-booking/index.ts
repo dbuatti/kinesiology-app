@@ -9,33 +9,62 @@ const corsHeaders = {
 }
 
 serve(async (req) => {
-  if (req.method === 'OPTIONS') return new Response('ok', { headers: corsHeaders })
+  // 1. Handle CORS
+  if (req.method === 'OPTIONS') {
+    return new Response('ok', { headers: corsHeaders })
+  }
 
-  console.log("--- [create-calcom-booking] v1.0 ---");
+  console.log(`--- [create-calcom-booking] v1.1 Request Received: ${req.method} ---`);
 
   try {
-    const { clientId, startTime, eventTypeId } = await req.json()
-    
+    // 2. Check Environment Variables
     const supabaseUrl = Deno.env.get('SUPABASE_URL')
     const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')
-    const supabase = createClient(supabaseUrl, supabaseKey)
-    
     const CALCOM_KEY = Deno.env.get('CALCOM_API_KEY')
 
-    if (!CALCOM_KEY) throw new Error("Missing CALCOM_API_KEY in Supabase Secrets.")
+    console.log("Config Check:", {
+      hasUrl: !!supabaseUrl,
+      hasKey: !!supabaseKey,
+      hasCalcom: !!CALCOM_KEY
+    });
 
-    // 1. Fetch Client Details from Supabase
+    if (!supabaseUrl || !supabaseKey) {
+      throw new Error("Missing Supabase environment variables.");
+    }
+    if (!CALCOM_KEY) {
+      throw new Error("Missing CALCOM_API_KEY in Supabase Secrets.");
+    }
+
+    // 3. Parse Body
+    const body = await req.json();
+    const { clientId, startTime, eventTypeId } = body;
+    
+    console.log("Request Body:", { clientId, startTime, eventTypeId });
+
+    if (!clientId || !startTime || !eventTypeId) {
+      throw new Error("Missing required fields: clientId, startTime, or eventTypeId.");
+    }
+
+    const supabase = createClient(supabaseUrl, supabaseKey)
+
+    // 4. Fetch Client Details
+    console.log(`Fetching client details for ID: ${clientId}`);
     const { data: client, error: clientError } = await supabase
       .from('clients')
       .select('name, email')
       .eq('id', clientId)
       .single();
 
-    if (clientError || !client) throw new Error("Client not found in CRM.");
-    if (!client.email) throw new Error("Client must have an email address to book via Cal.com.");
+    if (clientError || !client) {
+      console.error("Client Fetch Error:", clientError);
+      throw new Error("Client not found in CRM.");
+    }
+    
+    if (!client.email) {
+      throw new Error(`Client '${client.name}' must have an email address to book via Cal.com.`);
+    }
 
-    // 2. Create Booking in Cal.com (v2 API)
-    // Note: Cal.com v2 uses ISO strings for time
+    // 5. Create Booking in Cal.com (v2 API)
     const bookingPayload = {
       start: startTime,
       eventTypeId: parseInt(eventTypeId),
@@ -50,7 +79,7 @@ serve(async (req) => {
       }
     };
 
-    console.log(`Attempting Cal.com booking for ${client.email} at ${startTime}...`);
+    console.log(`Attempting Cal.com API call for ${client.email}...`);
 
     const response = await fetch("https://api.cal.com/v2/bookings", {
       method: "POST",
@@ -65,11 +94,11 @@ serve(async (req) => {
     const result = await response.json();
 
     if (!response.ok) {
-      console.error("Cal.com API Error:", JSON.stringify(result));
+      console.error("Cal.com API Error Response:", JSON.stringify(result));
       throw new Error(result.message || "Cal.com API Error");
     }
 
-    console.log(`Successfully created Cal.com booking: ${result.data.id}`);
+    console.log(`✅ Successfully created Cal.com booking: ${result.data.id}`);
 
     return new Response(JSON.stringify({ 
       success: true, 
@@ -81,7 +110,7 @@ serve(async (req) => {
     });
 
   } catch (error) {
-    console.error("Critical Error:", error.message);
+    console.error("❌ Critical Error:", error.message);
     return new Response(JSON.stringify({ error: error.message }), { 
       status: 400, 
       headers: { ...corsHeaders, 'Content-Type': 'application/json' } 

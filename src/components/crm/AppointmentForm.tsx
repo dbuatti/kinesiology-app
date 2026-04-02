@@ -100,11 +100,17 @@ const AppointmentForm = ({ onSuccess, initialClientId, initialDate, initialTime 
       let calcomId = null;
 
       // 1. If we have initialTime, it means we're booking from the Availability view
-      // Let's try to book on Cal.com first
       if (initialTime) {
+        console.log("[AppointmentForm] Detected initialTime, triggering Cal.com sync...");
         setSyncStatus('calcom');
         const eventTypeId = localStorage.getItem('calcom_preferred_event_id') || "4279898";
         
+        console.log("[AppointmentForm] Invoking 'create-calcom-booking' with:", {
+          clientId: values.clientId,
+          startTime: isoDate,
+          eventTypeId
+        });
+
         const { data: calcomData, error: calcomError } = await supabase.functions.invoke('create-calcom-booking', {
           body: { 
             clientId: values.clientId, 
@@ -113,7 +119,12 @@ const AppointmentForm = ({ onSuccess, initialClientId, initialDate, initialTime 
           }
         });
 
-        if (calcomError) throw new Error(`Cal.com Booking Failed: ${calcomError.message}`);
+        if (calcomError) {
+          console.error("[AppointmentForm] Edge Function Error:", calcomError);
+          throw new Error(`Cal.com Booking Failed: ${calcomError.message}`);
+        }
+        
+        console.log("[AppointmentForm] Edge Function Success:", calcomData);
         calcomId = calcomData.uid || calcomData.bookingId;
       }
 
@@ -143,6 +154,7 @@ const AppointmentForm = ({ onSuccess, initialClientId, initialDate, initialTime 
       showSuccess(calcomId ? "Session booked in CRM and Cal.com!" : "Appointment scheduled in CRM.");
       onSuccess();
     } catch (error: any) {
+      console.error("[AppointmentForm] Submit Error:", error);
       showError(error.message || "Failed to schedule appointment");
     } finally {
       setSubmitting(false);

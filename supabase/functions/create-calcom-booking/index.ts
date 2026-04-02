@@ -13,7 +13,7 @@ serve(async (req) => {
     return new Response('ok', { headers: corsHeaders })
   }
 
-  console.log("--- [v3.0] CREATE-CALCOM-BOOKING (v2 API COMPLIANT) ---");
+  console.log("--- [v4.0] CREATE-CALCOM-BOOKING (MAPPING REQUIRED RESPONSES) ---");
   
   try {
     const supabaseUrl = Deno.env.get('SUPABASE_URL');
@@ -65,9 +65,9 @@ serve(async (req) => {
       throw new Error(`Client '${client.name}' has no email address.`);
     }
 
-    // Cal.com v2 Booking Payload (Flattened & Compliant)
-    // Note: 'responses' is removed as per API error. 
-    // Custom fields go into 'bookingFieldsResponses'.
+    // Cal.com v2 Booking Payload (v4.0)
+    // name/email are top-level in 'attendee'
+    // custom fields (like 'title') MUST be in 'responses'
     const bookingPayload = {
       start: startTime,
       eventTypeId: parseInt(eventTypeId, 10),
@@ -77,19 +77,17 @@ serve(async (req) => {
         timeZone: "Australia/Melbourne",
         language: "en"
       },
-      // In v2, custom questions/notes go here
-      bookingFieldsResponses: {
-        notes: notes || "",
-        // If your event has a specific 'title' or 'phone' field slug, they go here:
-        attendeePhoneNumber: client.phone || ""
+      // Re-introducing 'responses' to satisfy the 'title' requirement
+      responses: {
+        title: title || "Kinesiology Session",
+        notes: notes || ""
       },
       metadata: { 
-        source: "Antigravity CRM",
-        internalTitle: title || "Kinesiology Session"
+        source: "Antigravity CRM"
       }
     };
 
-    console.log(`Calling Cal.com v2 API for ${client.email}...`);
+    console.log(`Calling Cal.com v2 API for ${client.email} with title: ${bookingPayload.responses.title}`);
 
     const response = await fetch("https://api.cal.com/v2/bookings", {
       method: "POST",

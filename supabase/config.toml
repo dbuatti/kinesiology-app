@@ -1,9 +1,29 @@
-[api]
-port = 54321
-external_url = "http://localhost:54321"
+[functions.create-calcom-booking]
+verify_jwt = false
 
-[db]
-port = 54322
+[functions.get-calcom-slots]
+verify_jwt = false
 
-[auth]
-enabled = true
+[functions.manage-calcom-availability]
+verify_jwt = false
+
+[functions.calcom-webhook]
+verify_jwt = false
+
+[functions.delete-external-appointment]
+verify_jwt = false
+
+[functions.sync-to-notion]
+verify_jwt = false
+
+[functions.sync-to-kit]
+verify_jwt = false
+
+[functions.send-manual-onboarding]
+verify_jwt = false
+
+[functions.sync-to-mailchimp]
+verify_jwt = false
+
+[functions.notion-to-calcom]
+verify_jwt = false

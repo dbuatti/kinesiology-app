@@ -20,8 +20,9 @@ import { processNeurologicalHistory, FindingHistory } from '@/utils/neurological
 import { FINDING_TO_NUCLEI, Nuclei } from '@/utils/brainstem-logic';
 import { showSuccess, showError } from "@/utils/toast";
 import { Alert, AlertDescription } from "@/components/ui/alert";
+import { safeParse } from '@/utils/safe-json';
 
-// Extracted Components - Using relative paths to fix resolution errors
+// Extracted Components
 import AssessmentItem from "./pathway/AssessmentItem";
 import AssessmentSection from "./pathway/AssessmentSection";
 
@@ -32,13 +33,13 @@ import PrimitiveReflexModal from "./PrimitiveReflexModal";
 import ClinicalReasoningModal from "./ClinicalReasoningModal";
 
 type Status = 'Clear' | 'Inhibited';
-type AssessmentResults = Record<string, Record<string, Status>>;
 
 interface PathwayAssessmentProps {
   initialValue?: string;
   previousValue?: string;
   history?: any[];
   onSave: (summary: string) => void;
+  onUpdateItem: (category: string, item: string, status: Status | null, side?: 'L' | 'R') => Promise<void>;
   onJumpToCalibrate?: (itemName: string) => void;
   nucleiFilter?: Nuclei | null;
 }
@@ -48,8 +49,8 @@ interface ReflexImageData {
   secondaryUrl: string | null;
 }
 
-const PathwayAssessment = ({ initialValue, previousValue, history = [], onSave, onJumpToCalibrate, nucleiFilter }: PathwayAssessmentProps) => {
-  const [results, setResults] = useState<AssessmentResults>({});
+const PathwayAssessment = ({ initialValue, previousValue, history = [], onSave, onUpdateItem, onJumpToCalibrate, nucleiFilter }: PathwayAssessmentProps) => {
+  const results = useMemo(() => safeParse(initialValue, {} as Record<string, Record<string, Status>>), [initialValue]);
   const [globalSearch, setGlobalSearch] = useState("");
   const [showImages, setShowImages] = useState(true);
   const [showOnlyInhibited, setShowOnlyInhibited] = useState(false);
@@ -72,49 +73,31 @@ const PathwayAssessment = ({ initialValue, previousValue, history = [], onSave, 
   const [logicModalOpen, setLogicModalOpen] = useState(false);
 
   useEffect(() => {
-    try {
-      if (initialValue) {
-        const parsed = JSON.parse(initialValue);
-        setResults(parsed);
-      }
-    } catch (e) {
-      console.error("Failed to parse initial pathway data", e);
-    }
-  }, [initialValue]);
-
-  useEffect(() => {
     const fetchCustomizations = async () => {
       setLoadingImages(true);
       try {
         const { data: { user } } = await supabase.auth.getUser();
         if (!user) return;
 
-        const { data: brainData } = await supabase
-          .from('brain_reflex_customizations')
-          .select('reflex_id, image_url, secondary_image_url')
-          .eq('user_id', user.id);
+        const [brainRes, muscleRes] = await Promise.all([
+          supabase.from('brain_reflex_customizations').select('reflex_id, image_url, secondary_image_url').eq('user_id', user.id),
+          supabase.from('muscle_customizations').select('muscle_name, image_url, secondary_image_url').eq('user_id', user.id)
+        ]);
         
         const brainMapping: Record<string, ReflexImageData> = {};
-        brainData?.forEach(item => { 
-          const timestamp = Date.now();
+        brainRes.data?.forEach(item => { 
           brainMapping[item.reflex_id] = {
-            primaryUrl: item.image_url ? `${item.image_url}?t=${timestamp}` : null,
-            secondaryUrl: item.secondary_image_url ? `${item.secondary_image_url}?t=${timestamp}` : null
+            primaryUrl: item.image_url ? `${item.image_url}?t=${Date.now()}` : null,
+            secondaryUrl: item.secondary_image_url ? `${item.secondary_image_url}?t=${Date.now()}` : null
           };
         });
         setCustomizations(brainMapping);
 
-        const { data: muscleData } = await supabase
-          .from('muscle_customizations')
-          .select('muscle_name, image_url, secondary_image_url')
-          .eq('user_id', user.id);
-        
         const muscleMapping: Record<string, ReflexImageData> = {};
-        muscleData?.forEach(item => {
-          const timestamp = Date.now();
+        muscleRes.data?.forEach(item => {
           muscleMapping[item.muscle_name] = {
-            primaryUrl: item.image_url ? `${item.image_url}?t=${timestamp}` : null,
-            secondaryUrl: item.secondary_image_url ? `${item.secondary_image_url}?t=${timestamp}` : null
+            primaryUrl: item.image_url ? `${item.image_url}?t=${Date.now()}` : null,
+            secondaryUrl: item.secondary_image_url ? `${item.secondary_image_url}?t=${Date.now()}` : null
           };
         });
         setMuscleCustomizations(muscleMapping);
@@ -128,61 +111,47 @@ const PathwayAssessment = ({ initialValue, previousValue, history = [], onSave, 
     fetchCustomizations();
   }, []);
 
-  const handleSetStatus = (category: string, item: string, status: Status, side?: 'L' | 'R') => {
-    const newResults = { ...results };
-    if (!newResults[category]) {
-      newResults[category] = {};
-    }
-
+  const handleSetStatus = async (category: string, item: string, status: Status, side?: 'L' | 'R') => {
     const itemName = side ? `${item} (${side})` : item;
+    const currentStatus = results[category]?.[itemName];
+    
+    // Toggle off if same status clicked
+    const newStatus = currentStatus === status ? null : status;
+    await onUpdateItem(category, item, newStatus, side);
+  };
 
-    if (newResults[category][itemName] === status) {
-      delete newResults[category][itemName];
-    } else {
-      newResults[category][itemName] = status;
+  const handleClearSection = async (category: string, items: string[]) => {
+    // For simplicity, we clear them one by one through the hook
+    // In a high-scale app, we'd add a bulk update helper to useAppointment
+    for (const item of items) {
+      await onUpdateItem(category, item, 'Clear');
     }
-    setResults(newResults);
-    onSave(JSON.stringify(newResults));
+    showSuccess(`Section ${category} marked as clear.`);
   };
 
-  const handleClearSection = (category: string, items: string[]) => {
-    const newResults = { ...results };
-    if (!newResults[category]) newResults[category] = {};
-    
-    items.forEach(item => {
-      newResults[category][item] = 'Clear';
-    });
-    
-    setResults(newResults);
-    onSave(JSON.stringify(newResults));
-  };
-
-  const handleClearAll = () => {
+  const handleClearAll = async () => {
     if (!confirm("Clear all findings for this session?")) return;
-    setResults({});
     onSave("");
   };
 
-  const handleSyncPrevious = () => {
+  const handleSyncPrevious = async () => {
     if (!previousValue) return;
-    if (!confirm("Sync unresolved findings from previous session? This will merge with current results.")) return;
+    if (!confirm("Sync unresolved findings from previous session?")) return;
     
     try {
-      const prev = JSON.parse(previousValue);
-      const newResults = { ...results };
-      
-      Object.entries(prev).forEach(([category, items]: [string, any]) => {
-        if (!newResults[category]) newResults[category] = {};
-        Object.entries(items).forEach(([name, status]) => {
+      const prev = safeParse(previousValue, {} as any);
+      for (const [category, items] of Object.entries(prev)) {
+        for (const [name, status] of Object.entries(items as any)) {
           if (status === 'Inhibited') {
-            newResults[category][name] = 'Inhibited';
+            // Extract side if present
+            const sideMatch = name.match(/\(([LR])\)$/);
+            const side = sideMatch ? sideMatch[1] as 'L' | 'R' : undefined;
+            const baseName = name.replace(/ \([LR]\)$/, '');
+            await onUpdateItem(category, baseName, 'Inhibited', side);
           }
-        });
-      });
-      
-      setResults(newResults);
-      onSave(JSON.stringify(newResults));
-      showSuccess("Synced unresolved findings from previous session.");
+        }
+      }
+      showSuccess("Synced unresolved findings.");
     } catch (e) {
       showError("Failed to sync previous session data.");
     }

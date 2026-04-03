@@ -4,6 +4,7 @@ import { useState, useEffect, useCallback } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { AppointmentWithClient } from "@/types/crm";
 import { showError } from "@/utils/toast";
+import { safeParse, safeStringify } from "@/utils/safe-json";
 
 export function useAppointment(id: string | undefined) {
   const [appointment, setAppointment] = useState<AppointmentWithClient | null>(null);
@@ -45,7 +46,7 @@ export function useAppointment(id: string | undefined) {
         .from('appointments')
         .select('*')
         .eq('client_id', app.clients.id)
-        .order('date', { ascending: true });
+        .order('date', { ascending: false });
       
       setHistory((historyData || []).map(h => ({ ...h, date: new Date(h.date) })));
 
@@ -72,13 +73,31 @@ export function useAppointment(id: string | undefined) {
 
       if (error) throw error;
       
-      // Optimistic update
       setAppointment(prev => prev ? { ...prev, [field]: normalized } as AppointmentWithClient : null);
     } catch (err: any) {
       console.error(`Save failed for ${field}:`, err);
       showError(`Failed to save ${field}`);
       throw err;
     }
+  };
+
+  const updatePriorityPattern = async (category: string, itemName: string, status: 'Clear' | 'Inhibited' | null) => {
+    if (!id || !appointment) return;
+
+    const currentPattern = safeParse(appointment.priority_pattern, {} as any);
+    
+    if (!currentPattern[category]) {
+      currentPattern[category] = {};
+    }
+
+    if (status === null) {
+      delete currentPattern[category][itemName];
+    } else {
+      currentPattern[category][itemName] = status;
+    }
+
+    const newJson = safeStringify(currentPattern);
+    await saveField('priority_pattern', newJson);
   };
 
   useEffect(() => {
@@ -110,5 +129,12 @@ export function useAppointment(id: string | undefined) {
     };
   }, [id, fetchData]);
 
-  return { appointment, history, loading, saveField, refresh: fetchData };
+  return { 
+    appointment, 
+    history, 
+    loading, 
+    saveField, 
+    updatePriorityPattern,
+    refresh: fetchData 
+  };
 }

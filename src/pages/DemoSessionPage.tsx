@@ -115,6 +115,14 @@ const DemoSessionPage = () => {
     setAppointment((prev: any) => ({ ...prev, [field]: value }));
   };
 
+  const updatePriorityPattern = async (category: string, itemName: string, status: 'Clear' | 'Inhibited' | null) => {
+    const currentPattern = JSON.parse(appointment.priority_pattern || "{}");
+    if (!currentPattern[category]) currentPattern[category] = {};
+    if (status === null) delete currentPattern[category][itemName];
+    else currentPattern[category][itemName] = status;
+    setAppointment((prev: any) => ({ ...prev, priority_pattern: JSON.stringify(currentPattern) }));
+  };
+
   const handleJumpToCalibrate = (itemName: string) => {
     const event = new CustomEvent('jump-to-calibrate', { detail: { itemName } });
     window.dispatchEvent(event);
@@ -207,6 +215,7 @@ const DemoSessionPage = () => {
                 appointment={appointment} 
                 onUpdate={() => {}} 
                 saveField={saveField} 
+                updatePriorityPattern={updatePriorityPattern}
                 history={[...mockHistory, appointment]} 
                 showSidebar={showSidebar}
                 onToggleSidebar={() => setShowSidebar(!showSidebar)}

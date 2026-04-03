@@ -42,7 +42,7 @@ import { useAppointment } from "@/hooks/useAppointment";
 const AppointmentDetailPage = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
-  const { appointment, history, loading, saveField, refresh } = useAppointment(id);
+  const { appointment, history, loading, saveField, updatePriorityPattern, refresh } = useAppointment(id);
   
   const [isFixedHeaderActive, setIsFixedHeaderActive] = useState(false);
   const [copied, setCopied] = useState(false);
@@ -332,6 +332,7 @@ const AppointmentDetailPage = () => {
                   appointment={appointment} 
                   onUpdate={refresh} 
                   saveField={saveField} 
+                  updatePriorityPattern={updatePriorityPattern}
                   history={history}
                   nucleiFilter={nucleiFilter}
                   showSidebar={showSidebar}

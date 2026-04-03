@@ -68,6 +68,7 @@ interface SessionContentSwitcherProps {
   appointment: AppointmentWithClient;
   onUpdate: () => void;
   saveField: (field: string, value: any) => Promise<void>;
+  updatePriorityPattern: (category: string, itemName: string, status: 'Clear' | 'Inhibited' | null, side?: 'L' | 'R') => Promise<void>;
   history?: any[];
   nucleiFilter?: Nuclei | null;
   showSidebar: boolean;
@@ -93,6 +94,7 @@ const SessionContentSwitcher = ({
   appointment, 
   onUpdate, 
   saveField, 
+  updatePriorityPattern,
   history = [], 
   nucleiFilter,
   showSidebar,
@@ -174,31 +176,21 @@ const SessionContentSwitcher = ({
   };
 
   const handleClearItem = async (itemName: string) => {
-    if (!appointment.priority_pattern) return;
-    try {
-      const pattern = JSON.parse(appointment.priority_pattern);
-      let updated = false;
-      Object.keys(pattern).forEach(category => {
-        if (pattern[category][itemName]) {
-          pattern[category][itemName] = 'Clear';
-          updated = true;
-        }
-        if (pattern[category][`${itemName} (L)`]) {
-          pattern[category][`${itemName} (L)`] = 'Clear';
-          updated = true;
-        }
-        if (pattern[category][`${itemName} (R)`]) {
-          pattern[category][`${itemName} (R)`] = 'Clear';
-          updated = true;
-        }
-      });
-      if (updated) {
-        await saveField('priority_pattern', JSON.stringify(pattern));
-        onUpdate();
-      }
-    } catch (e) {
-      console.error("Failed to update priority pattern JSON", e);
+    // Find which category the item belongs to
+    let category = 'muscles';
+    if (appointment.priority_pattern) {
+      try {
+        const pattern = JSON.parse(appointment.priority_pattern);
+        Object.keys(pattern).forEach(cat => {
+          if (pattern[cat][itemName] || pattern[cat][`${itemName} (L)`] || pattern[cat][`${itemName} (R)`]) {
+            category = cat;
+          }
+        });
+      } catch (e) {}
     }
+    
+    await updatePriorityPattern(category, itemName, 'Clear');
+    onUpdate();
   };
 
   const NavItem = ({ view, label, Icon }: { view: ActiveView, label: string, Icon: React.ElementType }) => (
@@ -282,6 +274,7 @@ const SessionContentSwitcher = ({
               previousValue={history.length > 1 ? history[1]?.priority_pattern : undefined}
               history={history}
               onSave={(s) => saveField('priority_pattern', s)} 
+              onUpdateItem={(cat, item, status, side) => updatePriorityPattern(cat, side ? `${item} (${side})` : item, status)}
               onJumpToCalibrate={(itemName) => {
                 setPreselectedFinding(itemName);
                 setActiveTab('calibration');

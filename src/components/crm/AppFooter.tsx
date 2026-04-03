@@ -25,7 +25,7 @@ const AppFooter = () => {
 
   return (
     <footer className="mt-20 border-t border-border bg-muted/30 print:hidden">
-      <div className="max-w-[1600px] mx-auto px-8 py-12">
+      <div className="max-w-full mx-auto px-8 lg:px-12 py-12">
         <div className="grid grid-cols-1 md:grid-cols-4 gap-12">
           <div className="space-y-4">
             <div className="flex items-center gap-3">

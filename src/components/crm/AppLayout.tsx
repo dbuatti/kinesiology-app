@@ -20,12 +20,12 @@ const AppLayout = ({
 }: AppLayoutProps) => {
   
   const variants = {
-    // Standard container for lists, dashboards, and forms (1280px)
-    default: "max-w-7xl mx-auto px-4 sm:px-6 lg:px-8",
-    // Wider container for complex clinical views (1600px)
-    wide: "max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8",
+    // Standard container for lists and dashboards (Increased to 1600px)
+    default: "max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-10",
+    // Wider container for complex clinical views (Spans full width)
+    wide: "max-w-full mx-auto px-4 sm:px-6 lg:px-12",
     // Edge-to-edge for sandbox/wizard tools
-    full: "w-full px-4 sm:px-6"
+    full: "w-full px-4 sm:px-6 lg:px-12"
   };
 
   return (

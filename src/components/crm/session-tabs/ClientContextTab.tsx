@@ -11,17 +11,25 @@ import {
 import { cn } from "@/lib/utils";
 
 interface ClientContextTabProps {
-  client: any;
+  appointment: any;
 }
 
-const ClientContextTab = ({ client }: ClientContextTabProps) => {
+const ClientContextTab = ({ appointment }: ClientContextTabProps) => {
+  const client = appointment.clients;
+  
+  // Prioritize appointment-specific data, fallback to client profile
+  const stressLevel = appointment.current_stress_level ?? client.current_stress_level;
+  const sleepQuality = appointment.sleep_quality ?? client.sleep_quality;
+  const digestiveHealth = appointment.digestive_health ?? client.digestive_health;
+  const medications = appointment.medications_supplements ?? client.medications_supplements;
+
   const Section = ({ icon: Icon, title, children, color }: any) => (
     <div className="space-y-3">
       <div className="flex items-center gap-2 px-2">
         <Icon size={14} className={color} />
         <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-widest">{title}</h4>
       </div>
-      <div className="bg-white p-5 rounded-[2rem] border border-slate-100 shadow-sm">
+      <div className="bg-white dark:bg-slate-900 p-5 rounded-[2rem] border border-slate-100 dark:border-slate-800 shadow-sm">
         {children}
       </div>
     </div>
@@ -32,28 +40,28 @@ const ClientContextTab = ({ client }: ClientContextTabProps) => {
       <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
         <div className="space-y-8">
           <Section icon={Activity} title="Medical History & Injuries" color="text-rose-500">
-            <p className="text-sm font-medium text-slate-700 leading-relaxed whitespace-pre-wrap">
+            <p className="text-sm font-medium text-slate-700 dark:text-slate-300 leading-relaxed whitespace-pre-wrap">
               {client.medical_history || "No medical history recorded."}
             </p>
           </Section>
 
           <Section icon={Zap} title="Medications & Supplements" color="text-amber-500">
-            <p className="text-sm font-medium text-slate-700 leading-relaxed whitespace-pre-wrap">
-              {client.medications_supplements || "No medications recorded."}
+            <p className="text-sm font-medium text-slate-700 dark:text-slate-300 leading-relaxed whitespace-pre-wrap">
+              {medications || "No medications recorded."}
             </p>
           </Section>
 
           <div className="grid grid-cols-2 gap-4">
-            <div className="p-5 bg-indigo-50 rounded-[2rem] border border-indigo-100">
+            <div className="p-5 bg-indigo-50 dark:bg-indigo-900/20 rounded-[2rem] border border-indigo-100 dark:border-indigo-900/30">
               <p className="text-[9px] font-black text-indigo-400 uppercase tracking-widest mb-2">Stress Level</p>
               <div className="flex items-baseline gap-2">
-                <span className="text-3xl font-black text-indigo-600">{client.current_stress_level || "—"}</span>
+                <span className="text-3xl font-black text-indigo-600 dark:text-indigo-400">{stressLevel || "—"}</span>
                 <span className="text-xs font-bold text-indigo-400">/ 10</span>
               </div>
             </div>
-            <div className="p-5 bg-emerald-50 rounded-[2rem] border border-emerald-100">
+            <div className="p-5 bg-emerald-50 dark:bg-emerald-900/20 rounded-[2rem] border border-emerald-100 dark:border-emerald-900/30">
               <p className="text-[9px] font-black text-emerald-400 uppercase tracking-widest mb-2">Sleep Quality</p>
-              <p className="text-sm font-bold text-emerald-700">{client.sleep_quality || "Not set"}</p>
+              <p className="text-sm font-bold text-emerald-700 dark:text-emerald-400">{sleepQuality || "Not set"}</p>
             </div>
           </div>
         </div>
@@ -63,11 +71,11 @@ const ClientContextTab = ({ client }: ClientContextTabProps) => {
             <div className="space-y-3">
               <div>
                 <p className="text-[10px] font-black text-slate-400 uppercase">Contact Name</p>
-                <p className="text-sm font-bold text-slate-900">{client.emergency_contact_name || "Not provided"}</p>
+                <p className="text-sm font-bold text-slate-900 dark:text-slate-100">{client.emergency_contact_name || "Not provided"}</p>
               </div>
               <div>
                 <p className="text-[10px] font-black text-slate-400 uppercase">Contact Phone</p>
-                <p className="text-sm font-bold text-slate-900">{client.emergency_contact_phone || "Not provided"}</p>
+                <p className="text-sm font-bold text-slate-900 dark:text-slate-100">{client.emergency_contact_phone || "Not provided"}</p>
               </div>
             </div>
           </Section>
@@ -76,11 +84,11 @@ const ClientContextTab = ({ client }: ClientContextTabProps) => {
             <div className="grid grid-cols-1 gap-4">
               <div>
                 <p className="text-[10px] font-black text-slate-400 uppercase">Occupation</p>
-                <p className="text-sm font-bold text-slate-900">{client.occupation || "Not set"}</p>
+                <p className="text-sm font-bold text-slate-900 dark:text-slate-100">{client.occupation || "Not set"}</p>
               </div>
               <div>
                 <p className="text-[10px] font-black text-slate-400 uppercase">Referral Source</p>
-                <p className="text-sm font-bold text-slate-900">{client.referral_source || "Not set"}</p>
+                <p className="text-sm font-bold text-slate-900 dark:text-slate-100">{client.referral_source || "Not set"}</p>
               </div>
             </div>
           </Section>

@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { useParams, Link } from "react-router-dom";
+import { useParams, Link, useSearchParams } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -12,6 +12,9 @@ import { cn } from "@/lib/utils";
 
 const OnboardingPage = () => {
   const { id } = useParams<{ id: string }>();
+  const [searchParams] = useSearchParams();
+  const appointmentId = searchParams.get("appId");
+  
   const [client, setClient] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [submitted, setSubmitted] = useState(false);
@@ -23,7 +26,7 @@ const OnboardingPage = () => {
       try {
         const { data, error } = await supabase
           .from('clients')
-          .select('id, name, email, phone, pronouns, born, suburbs, occupation, marital_status, children')
+          .select('id, name, email, phone, pronouns, born, suburbs, occupation, marital_status, children, medical_history, emergency_contact_name, emergency_contact_phone, referral_source, current_stress_level, sleep_quality, digestive_health, medications_supplements')
           .eq('id', id)
           .single();
 
@@ -133,6 +136,7 @@ const OnboardingPage = () => {
           <CardContent className="p-10 md:p-16 pt-0">
             <PublicOnboardingForm 
               clientId={id!} 
+              appointmentId={appointmentId}
               initialData={client} 
               onSuccess={() => setSubmitted(true)} 
             />

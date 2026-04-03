@@ -75,6 +75,11 @@ export interface Appointment {
   lymphatic_suture_side?: string | null;
   lymphatic_priority_zone?: string | null;
   lymphatic_notes?: string | null;
+  // Session-specific Onboarding Data
+  current_stress_level?: number | null;
+  sleep_quality?: string | null;
+  digestive_health?: string | null;
+  medications_supplements?: string | null;
 }
 
 export interface Client {
@@ -92,15 +97,16 @@ export interface Client {
   journal?: string;
   created_at?: string;
   is_practitioner?: boolean;
-  // New Clinical Fields
+  // Static Clinical Fields
   emergency_contact_name?: string;
   emergency_contact_phone?: string;
+  medical_history?: string;
+  referral_source?: string;
+  // Fallback/Baseline fields (can be overwritten by latest appointment)
   medications_supplements?: string;
   current_stress_level?: number;
   sleep_quality?: string;
   digestive_health?: string;
-  medical_history?: string;
-  referral_source?: string;
 }
 
 export interface AppointmentWithClient extends Appointment {
@@ -109,5 +115,10 @@ export interface AppointmentWithClient extends Appointment {
     name: string; 
     born?: string | Date;
     is_practitioner?: boolean;
+    medical_history?: string;
+    emergency_contact_name?: string;
+    emergency_contact_phone?: string;
+    occupation?: string;
+    referral_source?: string;
   };
 }

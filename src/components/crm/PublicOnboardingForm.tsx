@@ -45,11 +45,12 @@ const formSchema = z.object({
 
 interface PublicOnboardingFormProps {
   clientId: string;
+  appointmentId?: string | null;
   initialData: Partial<Client>;
   onSuccess: () => void;
 }
 
-const PublicOnboardingForm = ({ clientId, initialData, onSuccess }: PublicOnboardingFormProps) => {
+const PublicOnboardingForm = ({ clientId, appointmentId, initialData, onSuccess }: PublicOnboardingFormProps) => {
   const [submitting, setSubmitting] = useState(false);
   const [syncStatus, setSyncStatus] = useState<'idle' | 'syncing' | 'done'>('idle');
 
@@ -84,7 +85,8 @@ const PublicOnboardingForm = ({ clientId, initialData, onSuccess }: PublicOnboar
         ? values.suburbs.split(",").map(s => s.trim()).filter(s => s.length > 0) 
         : [];
 
-      const payload = {
+      // 1. Static Client Data
+      const clientPayload = {
         name: values.name,
         email: values.email || null,
         phone: values.phone || null,
@@ -96,27 +98,46 @@ const PublicOnboardingForm = ({ clientId, initialData, onSuccess }: PublicOnboar
         children: values.children || null,
         emergency_contact_name: values.emergency_contact_name || null,
         emergency_contact_phone: values.emergency_contact_phone || null,
+        medical_history: values.medical_history || null,
+        referral_source: values.referral_source || null,
+        // Also update baseline on client for reference
         medications_supplements: values.medications_supplements || null,
         current_stress_level: values.current_stress_level,
         sleep_quality: values.sleep_quality || null,
         digestive_health: values.digestive_health || null,
-        medical_history: values.medical_history || null,
-        referral_source: values.referral_source || null,
       };
 
-      // 1. Update Database
-      const { error } = await supabase
+      // 2. Dynamic Appointment Data
+      const appointmentPayload = {
+        medications_supplements: values.medications_supplements || null,
+        current_stress_level: values.current_stress_level,
+        sleep_quality: values.sleep_quality || null,
+        digestive_health: values.digestive_health || null,
+      };
+
+      // Update Client
+      const { error: clientError } = await supabase
         .from("clients")
-        .update(payload)
+        .update(clientPayload)
         .eq('id', clientId);
 
-      if (error) throw error;
+      if (clientError) throw clientError;
 
-      // 2. Trigger Kit Sync
+      // Update Appointment if ID provided
+      if (appointmentId) {
+        const { error: appError } = await supabase
+          .from("appointments")
+          .update(appointmentPayload)
+          .eq('id', appointmentId);
+        
+        if (appError) console.error("Failed to update specific appointment:", appError);
+      }
+
+      // 3. Trigger Kit Sync
       setSyncStatus('syncing');
       try {
         await supabase.functions.invoke('sync-to-kit', {
-          body: { record: { ...payload, id: clientId } }
+          body: { record: { ...clientPayload, id: clientId } }
         });
         setSyncStatus('done');
       } catch (syncErr) {

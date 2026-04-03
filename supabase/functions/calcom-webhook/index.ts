@@ -60,7 +60,7 @@ async function sendGmail(accessToken: string, from: string, to: string, subject:
 
 serve(async (req) => {
   if (req.method === 'GET') {
-    return new Response(JSON.stringify({ status: "active", provider: "gmail", version: "v44" }), { 
+    return new Response(JSON.stringify({ status: "active", provider: "gmail", version: "v45" }), { 
       status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
     });
   }
@@ -135,12 +135,29 @@ serve(async (req) => {
       dbClient = newDbC;
     }
 
-    if (!existingApp && GMAIL_CLIENT_ID && GMAIL_CLIENT_SECRET && GMAIL_REFRESH_TOKEN && dbClient) {
+    // Create/Upsert Appointment first to get the ID
+    let appointmentId = existingApp?.id;
+    if (dbClient) {
+      const appointmentData = {
+        user_id: PRACTITIONER_ID,
+        client_id: dbClient.id,
+        date: startTime,
+        tag: "Kinesiology",
+        status: "Scheduled",
+        calcom_booking_id: calcomId,
+        is_paid: isPaidSession,
+        payment_received: hasPaidViaStripe
+      };
+      const { data: newApp } = await supabase.from('appointments').upsert(appointmentData, { onConflict: 'calcom_booking_id' }).select('id').single();
+      appointmentId = newApp?.id;
+    }
+
+    if (appointmentId && GMAIL_CLIENT_ID && GMAIL_CLIENT_SECRET && GMAIL_REFRESH_TOKEN && dbClient) {
       try {
         const accessToken = await getGmailAccessToken(GMAIL_CLIENT_ID, GMAIL_CLIENT_SECRET, GMAIL_REFRESH_TOKEN);
-        const onboardingUrl = `https://kinesiology-app.vercel.app/onboarding/${dbClient.id}`;
+        // Include appId in the link
+        const onboardingUrl = `https://kinesiology-app.vercel.app/onboarding/${dbClient.id}?appId=${appointmentId}`;
         
-        // Only show bank details if it's a paid session AND they haven't paid via Stripe
         const showBankDetails = isPaidSession && !hasPaidViaStripe;
 
         const paymentSection = showBankDetails ? `
@@ -230,20 +247,6 @@ serve(async (req) => {
       } catch (e) {
         console.error("[calcom-webhook] Failed to send Gmail:", e.message);
       }
-    }
-
-    if (dbClient) {
-      const appointmentData = {
-        user_id: PRACTITIONER_ID,
-        client_id: dbClient.id,
-        date: startTime,
-        tag: "Kinesiology",
-        status: "Scheduled",
-        calcom_booking_id: calcomId,
-        is_paid: isPaidSession, // Use the value from metadata
-        payment_received: hasPaidViaStripe
-      };
-      await supabase.from('appointments').upsert(appointmentData, { onConflict: 'calcom_booking_id' });
     }
 
     return new Response(JSON.stringify({ success: true, action: existingApp ? 'updated' : 'created' }), { status: 200, headers: corsHeaders });

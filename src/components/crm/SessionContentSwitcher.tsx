@@ -137,10 +137,10 @@ const SessionContentSwitcher = ({
         const containerRect = scrollContainer.getBoundingClientRect();
         
         const relativeTop = elementRect.top - containerRect.top;
-        const targetScrollTop = scrollContainer.scrollTop + relativeTop - offset;
+        const scrollPos = scrollContainer.scrollTop + relativeTop - offset;
 
         scrollContainer.scrollTo({
-          top: targetScrollTop,
+          top: scrollPos,
           behavior: 'smooth'
         });
       }
@@ -456,7 +456,7 @@ const SessionContentSwitcher = ({
       
       <div className="animate-in fade-in slide-in-from-bottom-4 duration-500">
         {activeView === 'home' && renderHomeView()}
-        {activeView === 'context' && <ClientContextTab client={appointment.clients} />}
+        {activeView === 'context' && <ClientContextTab appointment={appointment} />}
         {activeView === 'kinesiology' && (
           <div className="space-y-10">
             <LuscherColourAssessment appointmentId={appointment.id} initialColor1={appointment.luscher_color_1} initialColor2={appointment.luscher_color_2} onSaveColors={(c1, c2) => { saveField('luscher_color_1', c1); return saveField('luscher_color_2', c2); }} />

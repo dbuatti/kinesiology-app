@@ -171,7 +171,7 @@ const AppointmentForm = ({ onSuccess, initialClientId, initialDate, initialTime 
           control={form.control}
           name="clientId"
           render={({ field }) => (
-            <FormItem className="flex flex-col">
+            <FormItem>
               <FormLabel className="text-xs font-black text-slate-900 uppercase tracking-widest">Client</FormLabel>
               <FormControl>
                 <SearchableClientSelect
@@ -206,7 +206,7 @@ const AppointmentForm = ({ onSuccess, initialClientId, initialDate, initialTime 
             control={form.control}
             name="date"
             render={({ field }) => (
-              <FormItem className="flex flex-col">
+              <FormItem>
                 <FormLabel className="text-xs font-black text-slate-900 uppercase tracking-widest">Date</FormLabel>
                 <Popover>
                   <PopoverTrigger asChild>

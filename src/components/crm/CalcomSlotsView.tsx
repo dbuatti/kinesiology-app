@@ -41,6 +41,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import AppointmentForm from "./AppointmentForm";
+import { CALCOM_CONFIG } from "../../config/integrations";
 
 const CalcomSlotsView = () => {
   const [loading, setLoading] = useState(false);
@@ -57,11 +58,11 @@ const CalcomSlotsView = () => {
   const [bookingDialogOpen, setBookingDialogOpen] = useState(false);
   
   const [eventTypeId, setEventTypeId] = useState<string>(() => 
-    localStorage.getItem('calcom_preferred_event_id') || "4279898"
+    localStorage.getItem('calcom_preferred_event_id') || CALCOM_CONFIG.DEFAULT_EVENT_TYPE_ID
   );
 
   const [scheduleId, setScheduleId] = useState<string>(() => 
-    localStorage.getItem('calcom_preferred_schedule_id') || "1387833"
+    localStorage.getItem('calcom_preferred_schedule_id') || CALCOM_CONFIG.DEFAULT_SCHEDULE_ID
   );
 
   const dateRange = useMemo(() => {
@@ -109,28 +110,21 @@ const CalcomSlotsView = () => {
   };
 
   const handleCancelBooking = async (bookingUid: string, attendeeName: string) => {
-    if (!confirm(`Are you sure you want to cancel the booking for ${attendeeName}? This will remove it from Cal.com and Notion.`)) return;
+    if (!confirm(`Are you sure you want to cancel the booking for ${attendeeName}?`)) return;
 
     setProcessingBooking(bookingUid);
     try {
-      // 1. Cancel externally (Notion + Cal.com)
-      const { data, error: invokeError } = await supabase.functions.invoke('delete-external-appointment', {
+      const { error: invokeError } = await supabase.functions.invoke('delete-external-appointment', {
         body: { calcomBookingId: bookingUid }
       });
 
       if (invokeError) throw invokeError;
 
-      // 2. Explicitly delete from Supabase CRM to ensure consistency
-      const { error: deleteError } = await supabase
+      await supabase
         .from('appointments')
         .delete()
         .eq('calcom_booking_id', bookingUid);
 
-      if (deleteError) {
-        console.error("Failed to delete from Supabase, but external cancellation succeeded:", deleteError);
-      }
-
-      // Optimistic Update: Remove from local state immediately
       setBookings(prev => {
         const newBookings = { ...prev };
         Object.keys(newBookings).forEach(date => {
@@ -140,8 +134,6 @@ const CalcomSlotsView = () => {
       });
 
       showSuccess(`Booking for ${attendeeName} cancelled.`);
-      
-      // Refresh in background after a short delay to allow API propagation
       setTimeout(fetchSlots, 2000);
     } catch (err) {
       showError("Failed to cancel booking.");
@@ -152,21 +144,12 @@ const CalcomSlotsView = () => {
 
   const handleToggleBlock = async (date: string, isCurrentlyBlocked: boolean) => {
     const action = isCurrentlyBlocked ? 'unblock-day' : 'block-day';
-    const confirmMsg = isCurrentlyBlocked 
-      ? `Restore default availability for ${format(new Date(date), "EEEE, MMMM do")}?`
-      : `Block off ${format(new Date(date), "EEEE, MMMM do")}? You will be marked as unavailable.`;
-
-    if (!confirm(confirmMsg)) return;
+    if (!confirm(`${isCurrentlyBlocked ? 'Unblock' : 'Block'} ${format(new Date(date), "EEEE, MMMM do")}?`)) return;
 
     setProcessingDate(date);
     try {
       const { data, error: invokeError } = await supabase.functions.invoke('manage-calcom-availability', {
-        body: { 
-          action, 
-          date,
-          eventTypeId,
-          scheduleId: scheduleId || undefined
-        }
+        body: { action, date, eventTypeId, scheduleId: scheduleId || undefined }
       });
 
       if (invokeError) throw invokeError;
@@ -176,7 +159,6 @@ const CalcomSlotsView = () => {
         return;
       }
 
-      // Optimistic Update: Update local blocked dates immediately
       if (isCurrentlyBlocked) {
         setBlockedDates(prev => prev.filter(d => d !== date));
       } else {
@@ -184,8 +166,6 @@ const CalcomSlotsView = () => {
       }
 
       showSuccess(isCurrentlyBlocked ? "Day unblocked." : "Day blocked.");
-      
-      // Refresh in background after a short delay
       setTimeout(fetchSlots, 2000);
     } catch (err: any) {
       showError("Failed to update availability.");
@@ -206,7 +186,7 @@ const CalcomSlotsView = () => {
   const handleCopyAll = () => {
     if (dateRange.length === 0) return;
 
-    let text = "Here is my current availability for a session:\n\n";
+    let text = "Here is my current availability:\n\n";
     let hasAny = false;
 
     dateRange.forEach(date => {
@@ -226,7 +206,7 @@ const CalcomSlotsView = () => {
       return;
     }
 
-    text += "\nYou can book directly here: https://cal.com/danielebuatti/fnh-neuro-75";
+    text += `\nYou can book directly here: ${CALCOM_CONFIG.BOOKING_URL}`;
 
     navigator.clipboard.writeText(text);
     setCopied(true);
@@ -379,7 +359,7 @@ const CalcomSlotsView = () => {
                           "h-7 px-3 text-[9px] font-black uppercase tracking-widest rounded-lg transition-all",
                           isBlocked 
                             ? "bg-emerald-600 text-white hover:bg-emerald-700 shadow-md" 
-                            : "text-rose-500 hover:bg-rose-50 opacity-0 group-hover:opacity-100"
+                            : "text-rose-50 hover:bg-rose-50 opacity-0 group-hover:opacity-100"
                         )}
                         onClick={() => handleToggleBlock(date, isBlocked)}
                         disabled={processingDate === date}
@@ -400,7 +380,6 @@ const CalcomSlotsView = () => {
                     </div>
                   ) : (
                     <>
-                      {/* Bookings Section */}
                       {dayBookings.length > 0 && (
                         <div className="space-y-2">
                           <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest ml-1">Booked Sessions</p>
@@ -436,7 +415,6 @@ const CalcomSlotsView = () => {
                         </div>
                       )}
 
-                      {/* Available Slots Section */}
                       {daySlots.length > 0 && (
                         <div className="space-y-2">
                           <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest ml-1">Available Slots</p>
@@ -476,16 +454,6 @@ const CalcomSlotsView = () => {
               <DialogTitle className="text-2xl font-black">Book Client</DialogTitle>
             </div>
             <DialogDescription>Schedule a session for the selected time slot.</DialogDescription>
-            <div className="flex items-center gap-4 p-3 bg-indigo-50 rounded-xl border border-indigo-100">
-              <div className="flex items-center gap-2">
-                <Calendar size={14} className="text-indigo-600" />
-                <span className="text-xs font-bold text-indigo-900">{bookingData?.date ? format(bookingData.date, "MMM d, yyyy") : ""}</span>
-              </div>
-              <div className="flex items-center gap-2">
-                <Clock size={14} className="text-indigo-600" />
-                <span className="text-xs font-bold text-indigo-900">{bookingData?.time}</span>
-              </div>
-            </div>
           </DialogHeader>
           {bookingData && (
             <AppointmentForm 

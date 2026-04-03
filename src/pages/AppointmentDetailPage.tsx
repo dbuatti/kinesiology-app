@@ -3,19 +3,10 @@
 import { useState, useEffect, useMemo } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { 
   Loader2, Trash2, MoreHorizontal, History, Printer, Copy, Check, Play,
   FileText, Zap, Activity, Target, ClipboardList, PanelRightOpen, PanelRightClose,
-  Brain,
-  ShieldCheck,
-  Sparkles,
-  Share,
-  Link as LinkIcon,
-  ChevronRight,
-  ExternalLink,
-  DollarSign,
-  AlertCircle
+  Brain, ShieldCheck, Sparkles, Share, Link as LinkIcon, ChevronRight, ExternalLink, DollarSign, AlertCircle
 } from "lucide-react";
 import { format, isToday } from "date-fns";
 import { AppointmentWithClient } from "@/types/crm";
@@ -39,19 +30,20 @@ import {
   DropdownMenuTrigger,
   DropdownMenuSeparator,
 } from "@/components/ui/dropdown-menu";
+import { Card, CardContent } from "@/components/ui/card";
 import Breadcrumbs from "@/components/shared/Breadcrumbs";
 import { Button } from "@/components/ui/button";
 import { TCM_CHANNELS } from "@/data/tcm-channel-data";
 import { generateSessionSummary, generateAICasePrompt, formatAppointmentQuickInfo } from "@/utils/summary-generator";
 import { Badge } from "@/components/ui/badge";
 import { Nuclei } from "@/utils/brainstem-logic";
+import { useAppointment } from "@/hooks/useAppointment";
 
 const AppointmentDetailPage = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
-  const [appointment, setAppointment] = useState<AppointmentWithClient | null>(null);
-  const [history, setHistory] = useState<any[]>([]);
-  const [loading, setLoading] = useState(true);
+  const { appointment, history, loading, saveField, refresh } = useAppointment(id);
+  
   const [isFixedHeaderActive, setIsFixedHeaderActive] = useState(false);
   const [copied, setCopied] = useState(false);
   const [linkCopying, setLinkCopying] = useState(false);
@@ -86,94 +78,6 @@ const AppointmentDetailPage = () => {
     });
   }, [currentTime]);
 
-  const fetchAppointmentData = async () => {
-    if (!id) return;
-    setLoading(true);
-    try {
-      const { data, error } = await supabase
-        .from('appointments')
-        .select(`
-          *,
-          clients (
-            id,
-            name,
-            born,
-            journal
-          )
-        `)
-        .eq('id', id)
-        .single();
-
-      if (error) throw error;
-
-      const app = {
-        ...data,
-        date: new Date(data.date),
-      } as unknown as AppointmentWithClient;
-
-      setAppointment(app);
-
-      const { data: historyData } = await supabase
-        .from('appointments')
-        .select('*')
-        .eq('client_id', app.clients.id)
-        .order('date', { ascending: true });
-      
-      setHistory((historyData || []).map(h => ({ ...h, date: new Date(h.date) })));
-
-    } catch (err) {
-      console.error("Error fetching appointment details:", err);
-      showError("Failed to load appointment details.");
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  useEffect(() => {
-    if (!id) return;
-    const channel = supabase
-      .channel(`appointment-${id}`)
-      .on('postgres_changes', { 
-        event: 'UPDATE', 
-        schema: 'public', 
-        table: 'appointments', 
-        filter: `id=eq.${id}` 
-      }, (payload) => {
-        setAppointment((prev) => {
-          if (!prev) return prev;
-          const updatedData = { ...payload.new };
-          if (updatedData.date && typeof updatedData.date === 'string') {
-            updatedData.date = new Date(updatedData.date);
-          }
-          return { ...prev, ...updatedData } as AppointmentWithClient;
-        });
-      })
-      .subscribe();
-    return () => { supabase.removeChannel(channel); };
-  }, [id]);
-
-  const saveField = async (field: string, value: string | boolean | null | string[]) => {
-    if (!id || !appointment) return;
-    
-    const normalized = Array.isArray(value) 
-      ? value 
-      : (typeof value === 'string' ? (value.trim() === '' ? null : value.trim()) : value);
-
-    try {
-      const { error } = await supabase
-        .from('appointments')
-        .update({ [field]: normalized })
-        .eq('id', id);
-
-      if (error) throw error;
-      
-      setAppointment(prev => prev ? { ...prev, [field]: normalized } as AppointmentWithClient : null);
-    } catch (err: any) {
-      console.error(`Silent save failed for ${field}:`, err);
-      showError(`Failed to save ${field}`);
-    }
-  };
-
   const handleSyncToNotion = async () => {
     if (!appointment) return;
     setSyncingNotion(true);
@@ -189,11 +93,11 @@ const AppointmentDetailPage = () => {
       if (data.plannerId && !appointment.notion_planner_id) updates.notion_planner_id = data.plannerId;
 
       if (Object.keys(updates).length > 0) {
-        await supabase.from('appointments').update(updates).eq('id', id);
-        setAppointment(prev => prev ? { ...prev, ...updates } : null);
+        await saveField('notion_page_id', updates.notion_page_id);
+        if (updates.notion_planner_id) await saveField('notion_planner_id', updates.notion_planner_id);
       }
       
-      showSuccess("Session synced to both Notion databases!");
+      showSuccess("Session synced to Notion!");
     } catch (err: any) {
       showError(err.message || "Failed to sync to Notion.");
     } finally {
@@ -219,7 +123,7 @@ const AppointmentDetailPage = () => {
     if (!appointment) return;
     const now = new Date();
     await saveField('date', now.toISOString());
-    showSuccess("Session started! Timer is now active.");
+    showSuccess("Session started!");
   };
 
   const handleCompleteSession = async () => {
@@ -243,7 +147,7 @@ const AppointmentDetailPage = () => {
 
       if (error) {
         if (error.code === 'PGRST116') {
-          showError("No previous sessions found for this client.");
+          showError("No previous sessions found.");
         } else {
           throw error;
         }
@@ -251,15 +155,15 @@ const AppointmentDetailPage = () => {
       }
 
       if (previous) {
-        await supabase.from('appointments').update({
-          goal: previous.goal,
-          issue: previous.issue,
-          acupoints: previous.acupoints,
-          priority_pattern: previous.priority_pattern
-        }).eq('id', id);
+        await Promise.all([
+          saveField('goal', previous.goal),
+          saveField('issue', previous.issue),
+          saveField('acupoints', previous.acupoints),
+          saveField('priority_pattern', previous.priority_pattern)
+        ]);
         
         showSuccess("Cloned data from previous session.");
-        fetchAppointmentData();
+        refresh();
       }
     } catch (err: any) {
       showError("Failed to clone previous session data.");
@@ -268,37 +172,26 @@ const AppointmentDetailPage = () => {
     }
   };
 
-  const handlePrint = () => {
-    window.print();
-  };
-
   const handleCopySummary = () => {
     if (!appointment) return;
     const summary = generateSessionSummary(appointment);
     navigator.clipboard.writeText(summary);
     setCopied(true);
-    showSuccess("Detailed session summary copied to clipboard!");
+    showSuccess("Summary copied!");
     setTimeout(() => setCopied(false), 3000);
   };
 
   const handleCopyForAI = () => {
     if (!appointment) return;
-    setAiCopying(true);
     const prompt = generateAICasePrompt(appointment.clients, [appointment]);
     navigator.clipboard.writeText(prompt);
-    showSuccess("Deep case data formatted and copied for AI analysis!");
+    setAiCopying(true);
+    showSuccess("AI Case Prompt copied!");
     setTimeout(() => setAiCopying(false), 3000);
   };
 
-  const handleCopyQuickInfo = () => {
-    if (!appointment) return;
-    const info = formatAppointmentQuickInfo(appointment);
-    navigator.clipboard.writeText(info);
-    showSuccess("Quick info copied!");
-  };
-
   const handleDeleteAppointment = async () => {
-    if (!id || !appointment || !confirm("Are you sure you want to delete this appointment? It will also be removed from Notion and Cal.com if linked.")) return;
+    if (!id || !appointment || !confirm("Are you sure you want to delete this appointment?")) return;
     
     setDeleting(true);
     try {
@@ -315,7 +208,7 @@ const AppointmentDetailPage = () => {
       const { error } = await supabase.from('appointments').delete().eq('id', id);
       if (error) throw error;
 
-      showSuccess("Appointment deleted from all platforms.");
+      showSuccess("Appointment deleted.");
       navigate('/appointments');
     } catch (err: any) {
       showError(err.message || "Failed to delete appointment");
@@ -323,8 +216,6 @@ const AppointmentDetailPage = () => {
       setDeleting(false);
     }
   };
-
-  useEffect(() => { fetchAppointmentData(); }, [id]);
 
   if (loading) return <div className="flex min-h-screen items-center justify-center"><Loader2 className="animate-spin text-indigo-500" size={48} /></div>;
   if (!appointment) return <div className="p-12 text-center">Appointment not found</div>;
@@ -341,7 +232,6 @@ const AppointmentDetailPage = () => {
       />
       <AppLayout variant="wide" hasFixedHeader={isFixedHeaderActive}>
         <div className="flex flex-col gap-6 print:p-0">
-          {/* Page Header */}
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 print:hidden">
             <Breadcrumbs 
               items={[
@@ -384,21 +274,6 @@ const AppointmentDetailPage = () => {
             </div>
           </div>
 
-          {/* Print Header */}
-          <div className="print:block hidden mb-8">
-            <div className="flex items-center justify-between border-b-2 border-indigo-600 pb-4">
-              <div>
-                <h1 className="text-3xl font-black text-slate-900">Session Summary</h1>
-                <p className="text-slate-500 font-bold">Antigravity Kinesiology Practice</p>
-              </div>
-              <div className="text-right">
-                <p className="text-sm font-black text-indigo-600 uppercase tracking-widest">{format(appointment.date, "MMMM d, yyyy")}</p>
-                <p className="text-xs text-slate-400">ID: {appointment.display_id || appointment.id.slice(0,8)}</p>
-              </div>
-            </div>
-          </div>
-
-          {/* Context Banners */}
           <div className="space-y-4 print:hidden">
             <WeeklyFocusBanner 
               appointmentId={appointment.id}
@@ -413,11 +288,10 @@ const AppointmentDetailPage = () => {
             />
           </div>
 
-          {/* Main Content Grid */}
           <div className="grid grid-cols-1 xl:grid-cols-12 gap-8">
             <div className={cn(showSidebar ? "xl:col-span-8" : "xl:col-span-12", "space-y-8 transition-all duration-500")}>
               <Card className="border-none shadow-xl rounded-[2.5rem] bg-white overflow-hidden">
-                <AppointmentHeader appointment={appointment} onSaveField={saveField} onUpdate={fetchAppointmentData} />
+                <AppointmentHeader appointment={appointment} onSaveField={saveField} onUpdate={refresh} />
 
                 <div className="p-8 grid grid-cols-1 md:grid-cols-2 gap-8 bg-slate-50/30">
                   <div className="space-y-2">
@@ -430,7 +304,7 @@ const AppointmentDetailPage = () => {
                       field="goal" 
                       label="Session Goal" 
                       value={appointment.goal} 
-                      placeholder="What is the primary goal for this balance?" 
+                      placeholder="What is the primary goal?" 
                       onSave={saveField} 
                       className="bg-white p-6 rounded-[2rem] border border-slate-100 shadow-sm" 
                     />
@@ -445,7 +319,7 @@ const AppointmentDetailPage = () => {
                       field="issue" 
                       label="Main Concern / Issue" 
                       value={appointment.issue} 
-                      placeholder="Describe the client's main concern..." 
+                      placeholder="Describe the main concern..." 
                       onSave={saveField} 
                       className="bg-white p-6 rounded-[2rem] border border-slate-100 shadow-sm" 
                     />
@@ -456,14 +330,14 @@ const AppointmentDetailPage = () => {
               <div className="print:hidden">
                 <SessionContentSwitcher 
                   appointment={appointment} 
-                  onUpdate={fetchAppointmentData} 
+                  onUpdate={refresh} 
                   saveField={saveField} 
                   history={history}
                   nucleiFilter={nucleiFilter}
                   showSidebar={showSidebar}
                   onToggleSidebar={() => setShowSidebar(!showSidebar)}
                   onClonePrevious={handleClonePrevious}
-                  onPrint={handlePrint}
+                  onPrint={() => window.print()}
                   onCopySummary={handleCopySummary}
                   onDelete={handleDeleteAppointment}
                   onStartSession={handleStartSession}
@@ -473,7 +347,6 @@ const AppointmentDetailPage = () => {
               </div>
             </div>
 
-            {/* Sidebar */}
             {showSidebar && (
               <div className="xl:col-span-4 space-y-8 print:hidden animate-in fade-in slide-in-from-right-4 duration-500">
                 <div className="space-y-4">
@@ -494,112 +367,8 @@ const AppointmentDetailPage = () => {
                 </div>
 
                 <AppointmentContextCards appointment={appointment} currentPeakMeridian={currentPeakMeridian} onSaveField={saveField} />
-
-                <Card className="border-none shadow-lg rounded-[2.5rem] bg-white overflow-hidden">
-                  <CardHeader className="bg-slate-50/50 border-b border-slate-100">
-                    <CardTitle className="text-sm font-black text-slate-400 uppercase tracking-[0.3em] flex items-center gap-2">
-                      <ClipboardList size={16} className="text-indigo-500" /> Live Summary
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent className="p-6 space-y-4">
-                    <div className="space-y-3">
-                      <div className="flex justify-between items-center text-xs">
-                        <span className="text-slate-400 font-bold uppercase">BOLT</span>
-                        <span className={cn("font-black", appointment.bolt_score ? "text-indigo-600" : "text-slate-300")}>
-                          {appointment.bolt_score ? `${appointment.bolt_score}s` : '—'}
-                        </span>
-                      </div>
-                      <div className="flex justify-between items-center text-xs">
-                        <span className="text-slate-400 font-bold uppercase">Coherence</span>
-                        <span className={cn("font-black", appointment.coherence_score ? "text-rose-600" : "text-slate-300")}>
-                          {appointment.coherence_score ? appointment.coherence_score.toFixed(2) : '—'}
-                        </span>
-                      </div>
-                      <div className="flex justify-between items-center text-xs">
-                        <span className="text-slate-400 font-bold uppercase">Hydration</span>
-                        <Badge className={cn("border-none text-[8px] font-black", appointment.hydrated ? "bg-emerald-50" : "bg-rose-50")}>
-                          {appointment.hydrated ? 'PASSED' : 'ATTENTION'}
-                        </Badge>
-                      </div>
-                    </div>
-                    
-                    <div className="pt-4 border-t border-slate-100">
-                      <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2">Pathway Findings</p>
-                      <PathwayFindingsList priorityPattern={appointment.priority_pattern} />
-                    </div>
-
-                    <div className="flex flex-col gap-2">
-                      <Button 
-                        variant="ghost" 
-                        className="w-full text-[10px] font-black uppercase tracking-widest text-indigo-600 hover:bg-indigo-50 h-9 rounded-xl"
-                        onClick={handleCopySummary}
-                      >
-                        <Copy size={12} className="mr-2" /> Copy Full Summary
-                      </Button>
-                      <Button 
-                        variant="ghost" 
-                        className="w-full text-[10px] font-black uppercase tracking-widest text-slate-500 hover:bg-slate-100 h-9 rounded-xl"
-                        onClick={handleCopyQuickInfo}
-                      >
-                        <FileText size={12} className="mr-2" /> Copy Quick Info
-                      </Button>
-                    </div>
-                  </CardContent>
-                </Card>
               </div>
             )}
-          </div>
-
-          {/* Print View Content */}
-          <div className="hidden print:block space-y-8">
-            <div className="grid grid-cols-2 gap-8">
-              <div className="p-6 bg-slate-50 rounded-2xl border border-slate-100">
-                <h3 className="text-xs font-black text-slate-400 uppercase tracking-widest mb-4">Key Assessments</h3>
-                <div className="space-y-4">
-                  <div className="flex justify-between items-center">
-                    <span className="text-sm font-bold text-slate-600">BOLT Score</span>
-                    <span className="text-lg font-black text-indigo-600">{appointment.bolt_score ? `${appointment.bolt_score}s` : 'N/A'}</span>
-                  </div>
-                  <div className="flex justify-between items-center">
-                    <span className="text-sm font-bold text-slate-600">Coherence Ratio</span>
-                    <span className="text-lg font-black text-rose-600">{appointment.coherence_score ? appointment.coherence_score.toFixed(2) : 'N/A'}</span>
-                  </div>
-                  <div className="flex justify-between items-center">
-                    <span className="text-sm font-bold text-slate-600">Hydration Status</span>
-                    <span className={cn("text-sm font-black", appointment.hydrated ? "text-emerald-600" : "text-rose-600")}>{appointment.hydrated ? 'PASSED' : 'NEEDS ATTENTION'}</span>
-                  </div>
-                </div>
-              </div>
-              <div className="p-6 bg-slate-50 rounded-2xl border border-slate-100">
-                <h3 className="text-xs font-black text-slate-400 uppercase tracking-widest mb-4">Acupoints Used</h3>
-                <p className="text-sm font-bold text-slate-800 leading-relaxed">{appointment.acupoints || 'No specific points recorded.'}</p>
-              </div>
-            </div>
-
-            <div className="space-y-4">
-              <h3 className="text-xs font-black text-slate-400 uppercase tracking-widest">Session Findings & Corrections</h3>
-              <div className="p-6 border-2 border-slate-100 rounded-2xl space-y-6">
-                <div>
-                  <h4 className="text-xs font-black text-indigo-600 uppercase tracking-widest mb-2">Pathway & Patterns</h4>
-                  <PathwayFindingsList priorityPattern={appointment.priority_pattern} showOnlyInhibited={false} />
-                </div>
-                <div>
-                  <h4 className="text-xs font-black text-indigo-600 uppercase tracking-widest mb-2">Corrections Applied</h4>
-                  <p className="text-sm text-slate-700 leading-relaxed">{appointment.modes_balances || 'No correction notes.'}</p>
-                </div>
-              </div>
-            </div>
-
-            <div className="space-y-4">
-              <h3 className="text-xs font-black text-slate-400 uppercase tracking-widest">Practitioner Notes & Homework</h3>
-              <div className="p-6 bg-indigo-50/30 border-2 border-indigo-100 rounded-2xl">
-                <p className="text-sm text-slate-800 leading-relaxed whitespace-pre-wrap">{appointment.session_north_star || appointment.notes || 'No specific homework recorded.'}</p>
-              </div>
-            </div>
-
-            <div className="pt-12 text-center border-t border-slate-100">
-              <p className="text-[10px] font-black text-slate-400 uppercase tracking-[0.3em]">Thank you for your commitment to your healing journey.</p>
-            </div>
           </div>
           
           <SessionWorksheetTemplate clientName={appointment.clients.name} date={appointment.date} />

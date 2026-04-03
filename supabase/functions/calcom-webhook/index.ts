@@ -60,7 +60,7 @@ async function sendGmail(accessToken: string, from: string, to: string, subject:
 
 serve(async (req) => {
   if (req.method === 'GET') {
-    return new Response(JSON.stringify({ status: "active", provider: "gmail", version: "v42" }), { 
+    return new Response(JSON.stringify({ status: "active", provider: "gmail", version: "v43" }), { 
       status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
     });
   }
@@ -90,6 +90,7 @@ serve(async (req) => {
       .eq('calcom_booking_id', calcomId)
       .maybeSingle();
 
+    // Handle Cancellation
     if (triggerEvent === 'BOOKING_CANCELLED' || triggerEvent === 'BOOKING_REJECTED') {
       if (existingApp) {
         await supabase.from('appointments').delete().eq('id', existingApp.id);
@@ -97,6 +98,16 @@ serve(async (req) => {
       return new Response(JSON.stringify({ success: true, action: 'deleted' }), { status: 200, headers: corsHeaders });
     }
 
+    // Handle Reschedule
+    if (triggerEvent === 'BOOKING_RESCHEDULED' && existingApp) {
+      await supabase
+        .from('appointments')
+        .update({ date: payload.startTime })
+        .eq('id', existingApp.id);
+      return new Response(JSON.stringify({ success: true, action: 'rescheduled' }), { status: 200, headers: corsHeaders });
+    }
+
+    // Handle New Booking
     if (existingApp && triggerEvent === 'BOOKING_CREATED') {
       return new Response(JSON.stringify({ success: true, action: 'skipped_duplicate' }), { status: 200, headers: corsHeaders });
     }

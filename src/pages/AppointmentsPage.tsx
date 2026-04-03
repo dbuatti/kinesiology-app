@@ -30,7 +30,8 @@ import {
   Copy,
   FileText,
   ChevronRight,
-  DollarSign
+  DollarSign,
+  EyeOff
 } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -62,6 +63,7 @@ import CalendarView from "@/components/crm/CalendarView";
 import QuickAssessmentModal from "@/components/crm/QuickAssessmentModal";
 import AppLayout from "@/components/crm/AppLayout";
 import { formatAppointmentQuickInfo, generateSessionSummary } from "@/utils/summary-generator";
+import { usePrivacyMode } from "@/hooks/use-privacy-mode";
 
 interface AppointmentWithClient extends Appointment {
   clients: { name: string; id: string; latest_bolt?: number | null };
@@ -71,6 +73,7 @@ const PAGE_SIZE = 15;
 
 const AppointmentsPage = () => {
   const navigate = useNavigate();
+  const { isPrivate } = usePrivacyMode();
   const [appointments, setAppointments] = useState<AppointmentWithClient[]>([]);
   const [loading, setLoading] = useState(true);
   const [loadingMore, setLoadingMore] = useState(false);
@@ -88,14 +91,12 @@ const AppointmentsPage = () => {
     else setLoadingMore(true);
 
     try {
-      // 1. Get total count for "Load More" logic
       const { count } = await supabase
         .from('appointments')
         .select('*', { count: 'exact', head: true });
       
       setTotalCount(count || 0);
 
-      // 2. Fetch limited appointments
       const { data, error } = await supabase
         .from('appointments')
         .select(`
@@ -110,7 +111,6 @@ const AppointmentsPage = () => {
 
       if (error) throw error;
 
-      // 3. Fetch latest BOLT scores for high-risk badges
       const { data: clientScores } = await supabase
         .from('appointments')
         .select('client_id, bolt_score, date')
@@ -192,12 +192,6 @@ const AppointmentsPage = () => {
     }
   };
 
-  const handleCopyQuickInfo = (app: any) => {
-    const info = formatAppointmentQuickInfo(app);
-    navigator.clipboard.writeText(info);
-    showSuccess("Quick info copied!");
-  };
-
   const handleCopyFullSummary = (app: any) => {
     const summary = generateSessionSummary(app);
     navigator.clipboard.writeText(summary);
@@ -235,7 +229,6 @@ const AppointmentsPage = () => {
     };
   }, [appointments]);
 
-  // Today's sessions should be sorted ASCENDING (earliest first)
   const todaySessions = useMemo(() => 
     filteredAppointments
       .filter(app => isToday(app.date))
@@ -270,7 +263,10 @@ const AppointmentsPage = () => {
               <div className="flex items-start justify-between">
                 <div className="space-y-2">
                   <div className="flex items-center gap-3">
-                    <Link to={`/appointments/${app.id}`} className="font-black text-2xl text-foreground hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors">
+                    <Link to={`/appointments/${app.id}`} className={cn(
+                      "font-black text-2xl text-foreground hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors",
+                      isPrivate && "blur-sm select-none"
+                    )}>
                       {app.clients?.name}
                     </Link>
                     {isTodaySession && (
@@ -303,8 +299,18 @@ const AppointmentsPage = () => {
               
               {app.goal && (
                 <div className="text-sm bg-muted/30 rounded-2xl p-4 border border-border group-hover:bg-card group-hover:border-indigo-100 dark:group-hover:border-indigo-900/50 transition-all">
-                  <span className="text-[10px] font-black text-muted-foreground uppercase tracking-[0.2em] block mb-2">Session Goal</span>
-                  <p className="text-foreground font-medium leading-relaxed line-clamp-2 italic">"{app.goal}"</p>
+                  <div className="flex items-center justify-between mb-2">
+                    <span className="text-[10px] font-black text-muted-foreground uppercase tracking-[0.2em] block">Session Goal</span>
+                    {isPrivate && (
+                      <Badge variant="outline" className="h-4 px-1 text-[6px] font-black uppercase border-rose-200 text-rose-400">
+                        <EyeOff size={6} className="mr-0.5" /> Private
+                      </Badge>
+                    )}
+                  </div>
+                  <p className={cn(
+                    "text-foreground font-medium leading-relaxed line-clamp-2 italic",
+                    isPrivate && "blur-md select-none opacity-40"
+                  )}>"{app.goal}"</p>
                 </div>
               )}
 
@@ -402,12 +408,6 @@ const AppointmentsPage = () => {
                       <Link to={`/appointments/${app.id}`} className="flex items-center gap-3">
                         <ExternalLink size={16} className="text-indigo-500" /> View Details
                       </Link>
-                    </DropdownMenuItem>
-                    <DropdownMenuItem 
-                      className="rounded-xl py-2.5 px-4 cursor-pointer flex items-center gap-3"
-                      onClick={() => handleCopyQuickInfo(app)}
-                    >
-                      <Copy size={16} className="text-slate-500" /> Copy Quick Info
                     </DropdownMenuItem>
                     <DropdownMenuSeparator className="my-2" />
                     <DropdownMenuItem 
@@ -587,7 +587,7 @@ const AppointmentsPage = () => {
 
             {filteredAppointments.length === 0 && (
               <div className="text-center py-32 bg-muted/30 rounded-[3rem] border-2 border-dashed border-border">
-                <div className="w-20 h-20 bg-card rounded-3xl flex items-center justify-center mx-auto mb-6 shadow-xl">
+                <div className="w-20 h-20 bg-card rounded-3xl flex items-center justify-center mb-6 shadow-xl">
                   <CalendarIcon className="text-muted-foreground" size={40} />
                 </div>
                 <p className="text-foreground font-black text-xl">No appointments found</p>

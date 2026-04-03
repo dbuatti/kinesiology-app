@@ -1,11 +1,10 @@
 "use client";
 
 import React, { useState, useEffect, useMemo } from 'react';
-import { Card, CardHeader, CardTitle, CardContent, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { 
-  Brain, Zap, Activity, Shield, Dumbbell, AlertTriangle, ChevronDown, Check, X, Plus, Search, RotateCcw, Layers, ImageIcon, Baby, PlayCircle, ShieldAlert, ListChecks, Info, MousePointer2, Maximize2, History, Trash2, Eye, EyeOff, Lightbulb, CheckCircle2, ArrowRight, RefreshCw, Target, FilterX
+  Brain, Zap, Activity, Dumbbell, Layers, ImageIcon, Baby, History, 
+  Trash2, Eye, EyeOff, RefreshCw, FilterX, Search, Check, ShieldAlert 
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { BRAIN_REFLEX_POINTS, BrainReflexPoint } from '@/data/brain-reflex-data';
@@ -16,10 +15,15 @@ import { supabase } from "@/integrations/supabase/client";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { processNeurologicalHistory, FindingHistory } from '@/utils/neurological-history';
 import { FINDING_TO_NUCLEI, Nuclei } from '@/utils/brainstem-logic';
 import { showSuccess, showError } from "@/utils/toast";
 import { Alert, AlertDescription } from "@/components/ui/alert";
+
+// Extracted Components - Using relative paths to fix resolution errors
+import AssessmentItem from "./pathway/AssessmentItem";
+import AssessmentSection from "./pathway/AssessmentSection";
 
 // Modal Imports
 import MuscleInfoModal from "./MuscleInfoModal";
@@ -29,280 +33,6 @@ import ClinicalReasoningModal from "./ClinicalReasoningModal";
 
 type Status = 'Clear' | 'Inhibited';
 type AssessmentResults = Record<string, Record<string, Status>>;
-
-interface AssessmentItemProps {
-  name: string;
-  category: string;
-  statusL?: Status;
-  statusR?: Status;
-  statusMidline?: Status;
-  isLateralized: boolean;
-  history?: FindingHistory;
-  onSetStatus: (status: Status, side?: 'L' | 'R') => void;
-  onQuickCalibrate: () => void;
-  onShowLogic: () => void;
-  onClick: () => void;
-  imageUrl?: string | null;
-  showImage?: boolean;
-  stimulus?: string;
-  inhibitionPattern?: string;
-}
-
-const AssessmentItem = ({ 
-  name, 
-  category, 
-  statusL, 
-  statusR, 
-  statusMidline, 
-  isLateralized,
-  history, 
-  onSetStatus, 
-  onQuickCalibrate, 
-  onShowLogic, 
-  onClick, 
-  imageUrl, 
-  showImage, 
-  stimulus, 
-  inhibitionPattern 
-}: AssessmentItemProps) => {
-  const trend = useMemo(() => {
-    if (!history) return [];
-    return history.history.slice(-3).map(h => h.status);
-  }, [history]);
-
-  const nucleiInfo = useMemo(() => {
-    const mappingKey = Object.keys(FINDING_TO_NUCLEI).find(key => name.startsWith(key));
-    return mappingKey ? FINDING_TO_NUCLEI[mappingKey] : null;
-  }, [name]);
-
-  const hasInhibition = statusL === 'Inhibited' || statusR === 'Inhibited' || statusMidline === 'Inhibited';
-  const isFullyClear = (isLateralized ? (statusL === 'Clear' && statusR === 'Clear') : statusMidline === 'Clear');
-
-  return (
-    <div 
-      onClick={onClick}
-      className={cn(
-        "group relative p-4 rounded-[2rem] border-2 transition-all cursor-pointer overflow-hidden h-full flex flex-col",
-        isFullyClear ? "bg-emerald-50/30 border-emerald-100 hover:border-emerald-200" :
-        hasInhibition ? "bg-rose-50 border-rose-300 shadow-md ring-1 ring-rose-200 animate-in fade-in zoom-in-95" :
-        "bg-white border-slate-100 hover:border-indigo-200 hover:shadow-lg"
-      )}
-    >
-      {hasInhibition && (
-        <button
-          onClick={(e) => { e.stopPropagation(); onQuickCalibrate(); }}
-          className="absolute top-3 right-3 w-8 h-8 rounded-xl flex items-center justify-center shadow-lg transition-all z-30 bg-amber-500 text-white scale-110 hover:scale-125 hover:bg-amber-600 animate-in zoom-in duration-300"
-          title="Correct this inhibition"
-        >
-          <Zap size={14} className="fill-current" />
-        </button>
-      )}
-
-      <div className="flex items-start justify-between mb-3 pr-8">
-        <div className="flex flex-col min-w-0">
-          <p className={cn(
-            "font-black text-sm leading-tight truncate",
-            hasInhibition ? "text-rose-900" : "text-slate-800"
-          )}>{name}</p>
-          
-          <div className="flex items-center gap-2 mt-1.5">
-            {nucleiInfo && (
-              <Badge variant="outline" className={cn(
-                "text-[7px] font-black uppercase tracking-widest px-1.5 py-0 border-none rounded-full",
-                nucleiInfo.nuclei === 'Midbrain' ? "bg-amber-100 text-amber-700" :
-                nucleiInfo.nuclei === 'Pons' ? "bg-indigo-100 text-indigo-700" :
-                nucleiInfo.nuclei === 'Medulla' ? "bg-rose-100 text-rose-700" : "bg-purple-100 text-purple-700"
-              )}>
-                {nucleiInfo.nuclei}
-              </Badge>
-            )}
-            {trend.length > 0 && (
-              <div className="flex items-center gap-0.5">
-                {trend.map((s, i) => (
-                  <div key={i} className={cn("w-1 h-1 rounded-full", s === 'Clear' ? "bg-emerald-400" : s === 'Inhibited' ? "bg-rose-400" : "bg-slate-200")} />
-                ))}
-              </div>
-            )}
-          </div>
-        </div>
-      </div>
-
-      {(stimulus || inhibitionPattern) && (
-        <div className="space-y-2 mb-4 flex-1">
-          {stimulus && (
-            <div className="flex items-start gap-1.5">
-              <PlayCircle size={12} className="text-indigo-400 shrink-0 mt-0.5" />
-              <p className="text-[10px] text-slate-500 leading-tight font-medium line-clamp-2">{stimulus}</p>
-            </div>
-          )}
-          {inhibitionPattern && (
-            <div className="flex items-start gap-1.5">
-              <ShieldAlert size={12} className="text-rose-400 shrink-0 mt-0.5" />
-              <p className="text-[10px] text-rose-600/70 leading-tight font-bold line-clamp-2">{inhibitionPattern}</p>
-            </div>
-          )}
-        </div>
-      )}
-
-      {showImage && imageUrl && (
-        <div className="mt-2 mb-4 aspect-video rounded-2xl overflow-hidden border border-slate-100 bg-slate-50 shadow-inner">
-          <img src={imageUrl} alt={name} className="w-full h-full object-cover opacity-80 group-hover:opacity-100 transition-opacity" />
-        </div>
-      )}
-
-      <div className="mt-auto flex flex-wrap gap-1.5 pt-3 border-t border-slate-50">
-        {isLateralized ? (
-          <>
-            {statusL && (
-              <Badge className={cn(
-                "border-none text-white font-black text-[7px] uppercase tracking-widest px-1.5 py-0.5 rounded-md",
-                statusL === 'Clear' ? "bg-emerald-50" : "bg-rose-600"
-              )}>
-                L: {statusL}
-              </Badge>
-            )}
-            {statusR && (
-              <Badge className={cn(
-                "border-none text-white font-black text-[7px] uppercase tracking-widest px-1.5 py-0.5 rounded-md",
-                statusR === 'Clear' ? "bg-emerald-50" : "bg-rose-600"
-              )}>
-                R: {statusR}
-              </Badge>
-            )}
-          </>
-        ) : (
-          statusMidline && (
-            <Badge className={cn(
-              "border-none text-white font-black text-[7px] uppercase tracking-widest px-1.5 py-0.5 rounded-md",
-              statusMidline === 'Clear' ? "bg-emerald-50" : "bg-rose-600"
-            )}>
-              {statusMidline}
-            </Badge>
-          )
-        )}
-      </div>
-
-      <div className="absolute inset-0 bg-slate-900/5 backdrop-blur-[1px] opacity-0 group-hover:opacity-100 transition-all duration-300 flex flex-col items-center justify-center gap-3">
-        <div className="flex flex-wrap items-center justify-center gap-2 px-2">
-          <Button 
-            size="sm" 
-            className="bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl h-10 px-4 shadow-xl font-black text-[10px] uppercase tracking-widest border-none" 
-            onClick={(e) => { e.stopPropagation(); onSetStatus('Clear'); }}
-          >
-            <Check size={16} className="mr-1.5" /> Clear
-          </Button>
-          
-          {isLateralized ? (
-            <div className="flex gap-1">
-              <Button 
-                size="sm" 
-                className="bg-rose-600 hover:bg-rose-700 text-white rounded-xl h-10 px-3 shadow-xl font-black text-[10px] uppercase tracking-widest border-none" 
-                onClick={(e) => { e.stopPropagation(); onSetStatus('Inhibited', 'L'); }}
-              >
-                L Inhib
-              </Button>
-              <Button 
-                size="sm" 
-                className="bg-rose-600 hover:bg-rose-700 text-white rounded-xl h-10 px-3 shadow-xl font-black text-[10px] uppercase tracking-widest border-none" 
-                onClick={(e) => { e.stopPropagation(); onSetStatus('Inhibited', 'R'); }}
-              >
-                R Inhib
-              </Button>
-            </div>
-          ) : (
-            <Button 
-              size="sm" 
-              className="bg-rose-600 hover:bg-rose-700 text-white rounded-xl h-10 px-4 shadow-xl font-black text-[10px] uppercase tracking-widest border-none" 
-              onClick={(e) => { e.stopPropagation(); onSetStatus('Inhibited'); }}
-            >
-              <X size={16} className="mr-1.5" /> Inhibited
-            </Button>
-          )}
-        </div>
-        <div className="flex gap-2">
-          <div className="flex items-center gap-1.5 text-[9px] font-black text-slate-900 bg-white/95 px-4 py-1.5 rounded-full shadow-lg border border-slate-100">
-            <Maximize2 size={12} className="text-indigo-500" /> View Details
-          </div>
-        </div>
-      </div>
-    </div>
-  );
-};
-
-interface AssessmentSectionProps {
-  id: string;
-  title: string;
-  description: string;
-  icon: React.ElementType;
-  children: React.ReactNode;
-  count: number;
-  inhibitedCount: number;
-  protocol?: React.ReactNode;
-  onClearAll?: () => void;
-}
-
-const AssessmentSection = ({ id, title, description, icon: Icon, children, count, inhibitedCount, protocol, onClearAll }: AssessmentSectionProps) => {
-  const [isOpen, setIsOpen] = useState(true);
-  return (
-    <Collapsible open={isOpen} onOpenChange={setIsOpen} id={id} className="scroll-mt-32">
-      <Card className="border-none shadow-lg rounded-[2.5rem] bg-white overflow-hidden">
-        <CollapsibleTrigger asChild>
-          <CardHeader className="p-8 cursor-pointer hover:bg-slate-50/50 transition-colors">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-5">
-                <div className="w-14 h-14 rounded-2xl bg-indigo-100 text-indigo-600 flex items-center justify-center shadow-sm">
-                  <Icon size={28} />
-                </div>
-                <div>
-                  <CardTitle className="text-2xl font-black text-slate-900 tracking-tight">{title}</CardTitle>
-                  <p className="text-slate-500 font-medium">{description}</p>
-                </div>
-              </div>
-              <div className="flex items-center gap-4">
-                {count > 0 && (
-                  <div className="flex gap-2">
-                    <Badge className="bg-emerald-50 text-emerald-600 border-emerald-100 font-black text-[10px] uppercase tracking-widest px-3 py-1 rounded-full">{count - inhibitedCount} Clear</Badge>
-                    <Badge className={cn(
-                      "border-none font-black text-[10px] uppercase tracking-widest px-3 py-1 rounded-full",
-                      inhibitedCount > 0 ? "bg-rose-600 text-white shadow-md" : "bg-slate-100 text-slate-400"
-                    )}>
-                      {inhibitedCount} Inhibited
-                    </Badge>
-                  </div>
-                )}
-                <div className="flex items-center gap-2" onClick={(e) => e.stopPropagation()}>
-                  {onClearAll && (
-                    <Button 
-                      variant="ghost" 
-                      size="sm" 
-                      onClick={onClearAll}
-                      className="h-8 text-[9px] font-black uppercase tracking-widest text-indigo-600 hover:bg-indigo-50 rounded-xl"
-                    >
-                      <CheckCircle2 size={14} className="mr-1.5" /> Mark All Clear
-                    </Button>
-                  )}
-                  <div className="w-10 h-10 rounded-full bg-slate-100 flex items-center justify-center text-slate-400">
-                    <ChevronDown className={cn("h-6 w-6 transition-transform duration-300", isOpen && "rotate-180")} />
-                  </div>
-                </div>
-              </div>
-            </div>
-          </CardHeader>
-        </CollapsibleTrigger>
-        <CollapsibleContent>
-          <CardContent className="p-8 pt-0 space-y-8">
-            {protocol && (
-              <div className="p-6 bg-indigo-50/50 rounded-[2rem] border border-indigo-100">
-                {protocol}
-              </div>
-            )}
-            {children}
-          </CardContent>
-        </CollapsibleContent>
-      </Card>
-    </Collapsible>
-  );
-};
 
 interface PathwayAssessmentProps {
   initialValue?: string;
@@ -359,7 +89,6 @@ const PathwayAssessment = ({ initialValue, previousValue, history = [], onSave, 
         const { data: { user } } = await supabase.auth.getUser();
         if (!user) return;
 
-        // Fetch Brain/Nerve customizations
         const { data: brainData } = await supabase
           .from('brain_reflex_customizations')
           .select('reflex_id, image_url, secondary_image_url')
@@ -375,7 +104,6 @@ const PathwayAssessment = ({ initialValue, previousValue, history = [], onSave, 
         });
         setCustomizations(brainMapping);
 
-        // Fetch Muscle customizations
         const { data: muscleData } = await supabase
           .from('muscle_customizations')
           .select('muscle_name, image_url, secondary_image_url')
@@ -464,12 +192,6 @@ const PathwayAssessment = ({ initialValue, previousValue, history = [], onSave, 
     if (onJumpToCalibrate) {
       onJumpToCalibrate(item);
     }
-  };
-
-  const handleShowLogic = (name: string, status: Status) => {
-    setLogicMuscle(name);
-    setLogicStatus(status === 'Inhibited' ? 'Inhibition' : 'Normotonic');
-    setLogicModalOpen(true);
   };
 
   const getCounts = (category: string) => {
@@ -678,7 +400,7 @@ const PathwayAssessment = ({ initialValue, previousValue, history = [], onSave, 
           <CardHeader className="p-8 pb-4">
             <div className="flex items-center justify-between">
               <CardTitle className="text-xl font-black flex items-center gap-3 text-rose-900 dark:text-rose-100">
-                <AlertTriangle size={24} className="text-rose-600" /> Priority Findings
+                <ShieldAlert size={24} className="text-rose-600" /> Priority Findings
               </CardTitle>
               <Badge className="bg-rose-600 text-white border-none font-black text-[10px] uppercase tracking-widest px-3 py-1 rounded-full">
                 {inhibitedSummary.length} Active
@@ -726,27 +448,6 @@ const PathwayAssessment = ({ initialValue, previousValue, history = [], onSave, 
         icon={Baby} 
         {...getCounts('primitiveReflexes')}
         onClearAll={() => handleClearSection('primitiveReflexes', PRIMITIVE_REFLEXES.map(r => r.name))}
-        protocol={
-          <div className="space-y-4">
-            <div className="flex items-center gap-2 mb-2">
-              <ListChecks size={18} className="text-indigo-600" />
-              <h4 className="font-black text-indigo-900 text-xs uppercase tracking-widest">4-Step Assessment Protocol</h4>
-            </div>
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-              {[
-                { s: 1, t: "Stimulate", d: "Trigger reflex & test specific muscle pattern." },
-                { s: 2, t: "Switch to IM", d: "Test Indicator Muscle; it should now inhibit." },
-                { s: 3, t: "Find Pathway", d: "Ask for Afferent or Efferent direction." },
-                { s: 4, t: "Correct", d: "Apply correction and immediately re-assess." }
-              ].map(step => (
-                <div key={step.s} className="space-y-1">
-                  <p className="text-[10px] font-black text-indigo-400 uppercase">Step {step.s}: {step.t}</p>
-                  <p className="text-[10px] text-indigo-700 font-medium leading-tight">{step.d}</p>
-                </div>
-              ))}
-            </div>
-          </div>
-        }
       >
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
           {PRIMITIVE_REFLEXES
@@ -757,7 +458,6 @@ const PathwayAssessment = ({ initialValue, previousValue, history = [], onSave, 
             <AssessmentItem 
               key={reflex.id}
               name={reflex.name}
-              category="primitiveReflexes"
               statusL={results.primitiveReflexes?.[`${reflex.name} (L)`]}
               statusR={results.primitiveReflexes?.[`${reflex.name} (R)`]}
               statusMidline={results.primitiveReflexes?.[reflex.name]}
@@ -765,7 +465,6 @@ const PathwayAssessment = ({ initialValue, previousValue, history = [], onSave, 
               history={processedHistory.find(h => h.name === reflex.name)}
               onSetStatus={(status, side) => handleSetStatus('primitiveReflexes', reflex.name, status, side)}
               onQuickCalibrate={() => handleQuickCalibrate('primitiveReflexes', reflex.name)}
-              onShowLogic={() => handleShowLogic(reflex.name, results.primitiveReflexes?.[reflex.name] || 'Clear')}
               onClick={() => handleItemClick('reflex', reflex)}
               stimulus={reflex.stimulus}
               inhibitionPattern={reflex.inhibitionPattern}
@@ -793,7 +492,6 @@ const PathwayAssessment = ({ initialValue, previousValue, history = [], onSave, 
               <AssessmentItem 
                 key={nerve.id}
                 name={nerve.name}
-                category="cranialNerves"
                 statusL={results.cranialNerves?.[`${nerve.name} (L)`]}
                 statusR={results.cranialNerves?.[`${nerve.name} (R)`]}
                 statusMidline={results.cranialNerves?.[nerve.name]}
@@ -801,7 +499,6 @@ const PathwayAssessment = ({ initialValue, previousValue, history = [], onSave, 
                 history={processedHistory.find(h => h.name === nerve.name)}
                 onSetStatus={(status, side) => handleSetStatus('cranialNerves', nerve.name, status, side)}
                 onQuickCalibrate={() => handleQuickCalibrate('cranialNerves', nerve.name)}
-                onShowLogic={() => handleShowLogic(nerve.name, results.cranialNerves?.[nerve.name] || 'Clear')}
                 onClick={() => handleItemClick('brain', nerve)}
                 imageUrl={imageUrl}
                 showImage={showImages}
@@ -830,7 +527,6 @@ const PathwayAssessment = ({ initialValue, previousValue, history = [], onSave, 
               <AssessmentItem 
                 key={zone.id}
                 name={zone.name}
-                category="brainZones"
                 statusL={results.brainZones?.[`${zone.name} (L)`]}
                 statusR={results.brainZones?.[`${zone.name} (R)`]}
                 statusMidline={results.brainZones?.[zone.name]}
@@ -838,7 +534,6 @@ const PathwayAssessment = ({ initialValue, previousValue, history = [], onSave, 
                 history={processedHistory.find(h => h.name === zone.name)}
                 onSetStatus={(status, side) => handleSetStatus('brainZones', zone.name, status, side)}
                 onQuickCalibrate={() => handleQuickCalibrate('brainZones', zone.name)}
-                onShowLogic={() => handleShowLogic(zone.name, results.brainZones?.[zone.name] || 'Clear')}
                 onClick={() => handleItemClick('brain', zone)}
                 imageUrl={imageUrl}
                 showImage={showImages}
@@ -863,7 +558,6 @@ const PathwayAssessment = ({ initialValue, previousValue, history = [], onSave, 
                     <AssessmentItem 
                       key={muscle}
                       name={muscle}
-                      category="muscles"
                       statusL={results.muscles?.[`${muscle} (L)`]}
                       statusR={results.muscles?.[`${muscle} (R)`]}
                       statusMidline={results.muscles?.[muscle]}
@@ -871,7 +565,6 @@ const PathwayAssessment = ({ initialValue, previousValue, history = [], onSave, 
                       history={processedHistory.find(h => h.name === muscle)}
                       onSetStatus={(status, side) => handleSetStatus('muscles', muscle, status, side)}
                       onQuickCalibrate={() => handleQuickCalibrate('muscles', muscle)}
-                      onShowLogic={() => handleShowLogic(muscle, results.muscles?.[muscle] || 'Clear')}
                       onClick={() => handleItemClick('muscle', muscle)}
                       imageUrl={imageUrl}
                       showImage={showImages}
@@ -883,14 +576,6 @@ const PathwayAssessment = ({ initialValue, previousValue, history = [], onSave, 
           ))}
         </div>
       </AssessmentSection>
-
-      {totalFindings === 0 && globalSearch && (
-        <div className="py-32 text-center bg-slate-50 rounded-[3rem] border-2 border-dashed border-border">
-          <Search size={48} className="mx-auto text-slate-200 mb-4" />
-          <p className="text-lg font-black text-slate-900">No findings match "{globalSearch}"</p>
-          <Button variant="link" onClick={() => setGlobalSearch("")} className="mt-2 text-indigo-600 font-bold">Clear Search</Button>
-        </div>
-      )}
 
       <MuscleInfoModal muscleName={selectedMuscle} open={muscleModalOpen} onOpenChange={setMuscleModalOpen} />
       <BrainReflexModal point={selectedBrainPoint} primaryUrl={selectedBrainPoint ? customizations[selectedBrainPoint.id]?.primaryUrl : null} secondaryUrl={selectedBrainPoint ? customizations[selectedBrainPoint.id]?.secondaryUrl : null} open={brainModalOpen} onOpenChange={setBrainModalOpen} />

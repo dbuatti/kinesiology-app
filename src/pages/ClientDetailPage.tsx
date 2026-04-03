@@ -261,18 +261,20 @@ const ClientDetailPage = () => {
                     <Edit3 size={16} className="mr-2" /> Edit Profile
                   </Button>
                 </DialogTrigger>
-                <DialogContent className="sm:max-w-[550px]">
-                  <DialogHeader>
-                    <DialogTitle>Edit Client Profile</DialogTitle>
-                    <DialogDescription>Update the personal and clinical details for this client.</DialogDescription>
-                  </DialogHeader>
-                  <ClientForm 
-                    initialData={client}
-                    onSuccess={() => {
-                      setEditOpen(false);
-                      fetchClientData();
-                    }} 
-                  />
+                <DialogContent className="sm:max-w-[600px] max-h-[90vh] overflow-y-auto rounded-[2rem] p-0">
+                  <div className="p-8">
+                    <DialogHeader className="mb-6">
+                      <DialogTitle className="text-2xl font-black">Edit Client Profile</DialogTitle>
+                      <DialogDescription className="font-medium">Update the personal and clinical details for this client.</DialogDescription>
+                    </DialogHeader>
+                    <ClientForm 
+                      initialData={client}
+                      onSuccess={() => {
+                        setEditOpen(false);
+                        fetchClientData();
+                      }} 
+                    />
+                  </div>
                 </DialogContent>
               </Dialog>
 
@@ -535,7 +537,7 @@ const ClientDetailPage = () => {
                     <Plus size={16} className="mr-2" /> Book Session
                   </Button>
                 </DialogTrigger>
-                <DialogContent className="sm:max-w-[500px]">
+                <DialogContent className="sm:max-w-[500px] max-h-[90vh] overflow-y-auto rounded-[2rem]">
                   <DialogHeader>
                     <DialogTitle>Schedule New Appointment</DialogTitle>
                     <DialogDescription>Book a new session for this client.</DialogDescription>

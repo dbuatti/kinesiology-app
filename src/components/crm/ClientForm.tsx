@@ -33,7 +33,6 @@ const formSchema = z.object({
   children: z.string().optional(),
   chatgpt_url: z.string().url("Must be a valid URL").or(z.string().length(0)).optional(),
   journal: z.string().optional(),
-  // New Fields
   emergency_contact_name: z.string().optional(),
   emergency_contact_phone: z.string().optional(),
   medications_supplements: z.string().optional(),
@@ -132,15 +131,15 @@ const ClientForm = ({ onSuccess, initialData }: ClientFormProps) => {
   };
 
   const SectionHeader = ({ icon: Icon, title, color }: { icon: any, title: string, color: string }) => (
-    <div className="flex items-center gap-2 mb-4 pt-4 border-t border-slate-100 first:border-t-0 first:pt-0">
+    <div className="flex items-center gap-2 mb-4 pt-6 border-t border-slate-100 first:border-t-0 first:pt-0">
       <Icon size={16} className={color} />
-      <h3 className="text-sm font-black uppercase tracking-widest text-slate-900">{title}</h3>
+      <h3 className="text-xs font-black uppercase tracking-[0.2em] text-slate-900">{title}</h3>
     </div>
   );
 
   return (
     <Form {...form}>
-      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8 max-h-[70vh] overflow-y-auto px-1">
+      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8 pb-6">
         {/* Personal Section */}
         <div className="space-y-4">
           <SectionHeader icon={User} title="Personal Details" color="text-indigo-600" />
@@ -149,24 +148,24 @@ const ClientForm = ({ onSuccess, initialData }: ClientFormProps) => {
             name="name"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Full Name</FormLabel>
+                <FormLabel className="text-[10px] font-bold uppercase tracking-wider text-slate-500">Full Name</FormLabel>
                 <FormControl>
-                  <Input placeholder="Georg Gleeson" {...field} />
+                  <Input placeholder="Georg Gleeson" {...field} className="h-12 rounded-xl border-slate-200" />
                 </FormControl>
                 <FormMessage />
               </FormItem>
             )}
           />
 
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <FormField
               control={form.control}
               name="email"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Email</FormLabel>
+                  <FormLabel className="text-[10px] font-bold uppercase tracking-wider text-slate-500">Email</FormLabel>
                   <FormControl>
-                    <Input placeholder="georg@example.com" {...field} />
+                    <Input placeholder="georg@example.com" {...field} className="h-12 rounded-xl border-slate-200" />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -177,9 +176,9 @@ const ClientForm = ({ onSuccess, initialData }: ClientFormProps) => {
               name="phone"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Phone</FormLabel>
+                  <FormLabel className="text-[10px] font-bold uppercase tracking-wider text-slate-500">Phone</FormLabel>
                   <FormControl>
-                    <Input placeholder="0400 000 000" {...field} />
+                    <Input placeholder="0400 000 000" {...field} className="h-12 rounded-xl border-slate-200" />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -187,15 +186,15 @@ const ClientForm = ({ onSuccess, initialData }: ClientFormProps) => {
             />
           </div>
 
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <FormField
               control={form.control}
               name="pronouns"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Pronouns</FormLabel>
+                  <FormLabel className="text-[10px] font-bold uppercase tracking-wider text-slate-500">Pronouns</FormLabel>
                   <FormControl>
-                    <Input placeholder="They/Them" {...field} />
+                    <Input placeholder="They/Them" {...field} className="h-12 rounded-xl border-slate-200" />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -206,9 +205,9 @@ const ClientForm = ({ onSuccess, initialData }: ClientFormProps) => {
               name="born"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Date of Birth</FormLabel>
+                  <FormLabel className="text-[10px] font-bold uppercase tracking-wider text-slate-500">Date of Birth</FormLabel>
                   <FormControl>
-                    <Input type="date" {...field} />
+                    <Input type="date" {...field} className="h-12 rounded-xl border-slate-200" />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -221,9 +220,9 @@ const ClientForm = ({ onSuccess, initialData }: ClientFormProps) => {
             name="suburbs"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Suburbs (comma separated)</FormLabel>
+                <FormLabel className="text-[10px] font-bold uppercase tracking-wider text-slate-500">Suburbs (comma separated)</FormLabel>
                 <FormControl>
-                  <Input placeholder="Brunswick, Fitzroy" {...field} />
+                  <Input placeholder="Brunswick, Fitzroy" {...field} className="h-12 rounded-xl border-slate-200" />
                 </FormControl>
                 <FormMessage />
               </FormItem>
@@ -239,9 +238,9 @@ const ClientForm = ({ onSuccess, initialData }: ClientFormProps) => {
             name="medical_history"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Medical History & Past Injuries</FormLabel>
+                <FormLabel className="text-[10px] font-bold uppercase tracking-wider text-slate-500">Medical History & Past Injuries</FormLabel>
                 <FormControl>
-                  <Textarea placeholder="Past surgeries, chronic issues..." className="min-h-[80px] resize-none" {...field} />
+                  <Textarea placeholder="Past surgeries, chronic issues..." className="min-h-[100px] rounded-xl border-slate-200 resize-none" {...field} />
                 </FormControl>
                 <FormMessage />
               </FormItem>
@@ -253,24 +252,24 @@ const ClientForm = ({ onSuccess, initialData }: ClientFormProps) => {
             name="medications_supplements"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Medications & Supplements</FormLabel>
+                <FormLabel className="text-[10px] font-bold uppercase tracking-wider text-slate-500">Medications & Supplements</FormLabel>
                 <FormControl>
-                  <Textarea placeholder="Current intake..." className="min-h-[60px] resize-none" {...field} />
+                  <Textarea placeholder="Current intake..." className="min-h-[80px] rounded-xl border-slate-200 resize-none" {...field} />
                 </FormControl>
                 <FormMessage />
               </FormItem>
             )}
           />
 
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <FormField
               control={form.control}
               name="sleep_quality"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Sleep Quality</FormLabel>
+                  <FormLabel className="text-[10px] font-bold uppercase tracking-wider text-slate-500">Sleep Quality</FormLabel>
                   <FormControl>
-                    <Input placeholder="e.g. 6hrs, wake often" {...field} />
+                    <Input placeholder="e.g. 6hrs, wake often" {...field} className="h-12 rounded-xl border-slate-200" />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -281,9 +280,9 @@ const ClientForm = ({ onSuccess, initialData }: ClientFormProps) => {
               name="digestive_health"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Digestive Health</FormLabel>
+                  <FormLabel className="text-[10px] font-bold uppercase tracking-wider text-slate-500">Digestive Health</FormLabel>
                   <FormControl>
-                    <Input placeholder="e.g. Regular, bloating" {...field} />
+                    <Input placeholder="e.g. Regular, bloating" {...field} className="h-12 rounded-xl border-slate-200" />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -295,10 +294,10 @@ const ClientForm = ({ onSuccess, initialData }: ClientFormProps) => {
             control={form.control}
             name="current_stress_level"
             render={({ field }) => (
-              <FormItem className="space-y-4 p-4 bg-slate-50 rounded-xl border border-slate-100">
+              <FormItem className="space-y-4 p-6 bg-slate-50 rounded-2xl border border-slate-100">
                 <div className="flex items-center justify-between">
-                  <FormLabel>Current Stress Level (1-10)</FormLabel>
-                  <span className="font-black text-indigo-600">{field.value}</span>
+                  <FormLabel className="text-[10px] font-black uppercase tracking-widest text-slate-500">Current Stress Level</FormLabel>
+                  <span className="text-2xl font-black text-indigo-600">{field.value}</span>
                 </div>
                 <FormControl>
                   <Slider
@@ -307,8 +306,13 @@ const ClientForm = ({ onSuccess, initialData }: ClientFormProps) => {
                     step={1}
                     value={[field.value]}
                     onValueChange={(vals) => field.onChange(vals[0])}
+                    className="[&_[role=slider]]:h-6 [&_[role=slider]]:w-6"
                   />
                 </FormControl>
+                <div className="flex justify-between text-[8px] font-black text-slate-400 uppercase tracking-widest">
+                  <span>Low</span>
+                  <span>High</span>
+                </div>
                 <FormMessage />
               </FormItem>
             )}
@@ -318,15 +322,15 @@ const ClientForm = ({ onSuccess, initialData }: ClientFormProps) => {
         {/* Safety & Admin Section */}
         <div className="space-y-4">
           <SectionHeader icon={ShieldAlert} title="Safety & Admin" color="text-amber-500" />
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <FormField
               control={form.control}
               name="emergency_contact_name"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Emergency Contact Name</FormLabel>
+                  <FormLabel className="text-[10px] font-bold uppercase tracking-wider text-slate-500">Emergency Contact Name</FormLabel>
                   <FormControl>
-                    <Input placeholder="Name" {...field} />
+                    <Input placeholder="Name" {...field} className="h-12 rounded-xl border-slate-200" />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -337,9 +341,9 @@ const ClientForm = ({ onSuccess, initialData }: ClientFormProps) => {
               name="emergency_contact_phone"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Emergency Contact Phone</FormLabel>
+                  <FormLabel className="text-[10px] font-bold uppercase tracking-wider text-slate-500">Emergency Contact Phone</FormLabel>
                   <FormControl>
-                    <Input placeholder="Phone" {...field} />
+                    <Input placeholder="Phone" {...field} className="h-12 rounded-xl border-slate-200" />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -352,9 +356,9 @@ const ClientForm = ({ onSuccess, initialData }: ClientFormProps) => {
             name="referral_source"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Referral Source</FormLabel>
+                <FormLabel className="text-[10px] font-bold uppercase tracking-wider text-slate-500">Referral Source</FormLabel>
                 <FormControl>
-                  <Input placeholder="How did they find you?" {...field} />
+                  <Input placeholder="How did they find you?" {...field} className="h-12 rounded-xl border-slate-200" />
                 </FormControl>
                 <FormMessage />
               </FormItem>
@@ -366,9 +370,9 @@ const ClientForm = ({ onSuccess, initialData }: ClientFormProps) => {
             name="chatgpt_url"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>ChatGPT URL</FormLabel>
+                <FormLabel className="text-[10px] font-bold uppercase tracking-wider text-slate-500">ChatGPT URL</FormLabel>
                 <FormControl>
-                  <Input placeholder="https://chat.openai.com/c/..." {...field} />
+                  <Input placeholder="https://chat.openai.com/c/..." {...field} className="h-12 rounded-xl border-slate-200" />
                 </FormControl>
                 <FormMessage />
               </FormItem>
@@ -380,11 +384,11 @@ const ClientForm = ({ onSuccess, initialData }: ClientFormProps) => {
             name="journal"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Practitioner Notes (Journal)</FormLabel>
+                <FormLabel className="text-[10px] font-bold uppercase tracking-wider text-slate-500">Practitioner Notes (Journal)</FormLabel>
                 <FormControl>
                   <Textarea 
                     placeholder="Long-term history, key notes, and personal reflections..." 
-                    className="min-h-[100px] resize-none"
+                    className="min-h-[120px] rounded-xl border-slate-200 resize-none"
                     {...field} 
                   />
                 </FormControl>
@@ -394,10 +398,18 @@ const ClientForm = ({ onSuccess, initialData }: ClientFormProps) => {
           />
         </div>
 
-        <Button type="submit" className="w-full bg-indigo-600 hover:bg-indigo-700 h-12 rounded-xl font-bold" disabled={submitting}>
-          {submitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-          {initialData?.id ? "Update Client Profile" : "Add Client"}
-        </Button>
+        <div className="sticky bottom-0 pt-4 bg-white/80 backdrop-blur-sm border-t border-slate-100">
+          <Button type="submit" className="w-full bg-indigo-600 hover:bg-indigo-700 h-14 rounded-2xl font-black text-xs uppercase tracking-widest shadow-xl shadow-indigo-100" disabled={submitting}>
+            {submitting ? (
+              <>
+                <Loader2 className="mr-2 h-5 w-5 animate-spin" />
+                Saving...
+              </>
+            ) : (
+              initialData?.id ? "Update Client Profile" : "Add Client"
+            )}
+          </Button>
+        </div>
       </form>
     </Form>
   );

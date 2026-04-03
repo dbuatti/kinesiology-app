@@ -591,22 +591,26 @@ const Index = () => {
         )}
 
         <Dialog open={clientDialogOpen} onOpenChange={setClientDialogOpen}>
-          <DialogContent className="sm:max-w-[550px] rounded-[3rem] p-8">
-            <DialogHeader className="mb-4">
-              <DialogTitle className="text-2xl font-black tracking-tight">Add New Client</DialogTitle>
-              <DialogDescription>Create a new client profile in your clinical database.</DialogDescription>
-            </DialogHeader>
-            <ClientForm onSuccess={() => { setClientDialogOpen(false); fetchDashboardData(); }} />
+          <DialogContent className="sm:max-w-[550px] max-h-[90vh] overflow-y-auto rounded-[3rem] p-0">
+            <div className="p-8">
+              <DialogHeader className="mb-6">
+                <DialogTitle className="text-2xl font-black tracking-tight">Add New Client</DialogTitle>
+                <DialogDescription className="font-medium">Create a new client profile in your clinical database.</DialogDescription>
+              </DialogHeader>
+              <ClientForm onSuccess={() => { setClientDialogOpen(false); fetchDashboardData(); }} />
+            </div>
           </DialogContent>
         </Dialog>
 
         <Dialog open={appDialogOpen} onOpenChange={setAppDialogOpen}>
-          <DialogContent className="sm:max-w-[500px] rounded-[3rem] p-8">
-            <DialogHeader className="mb-4">
-              <DialogTitle className="text-2xl font-black tracking-tight">Schedule New Session</DialogTitle>
-              <DialogDescription>Book a new appointment for an existing client.</DialogDescription>
-            </DialogHeader>
-            <AppointmentForm onSuccess={() => { setAppDialogOpen(false); fetchDashboardData(); }} />
+          <DialogContent className="sm:max-w-[500px] max-h-[90vh] overflow-y-auto rounded-[3rem] p-0">
+            <div className="p-8">
+              <DialogHeader className="mb-6">
+                <DialogTitle className="text-2xl font-black tracking-tight">Schedule New Session</DialogTitle>
+                <DialogDescription className="font-medium">Book a new appointment for an existing client.</DialogDescription>
+              </DialogHeader>
+              <AppointmentForm onSuccess={() => { setAppDialogOpen(false); fetchDashboardData(); }} />
+            </div>
           </DialogContent>
         </Dialog>
       </div>

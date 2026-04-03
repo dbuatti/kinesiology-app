@@ -1,3 +1,5 @@
+"use client";
+
 import { Sheet, SheetContent, SheetTrigger, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
@@ -19,11 +21,16 @@ import {
   Zap,
   HelpCircle,
   FileText,
-  Briefcase
+  Briefcase,
+  CalendarDays,
+  Mic,
+  ShieldCheck,
+  ChevronDown,
+  ChevronUp
 } from "lucide-react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { cn } from "@/lib/utils";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { showSuccess } from "@/utils/toast";
 import { useRecentClients } from "@/hooks/use-recent-clients";
@@ -37,28 +44,22 @@ import ClientForm from "./ClientForm";
 import AppointmentForm from "./AppointmentForm";
 import HelpModal from "./HelpModal";
 import { ModeToggle } from "./ModeToggle";
+import { ScrollArea } from "@/components/ui/scroll-area";
 
 const MobileNav = () => {
   const [open, setOpen] = useState(false);
   const [clientDialogOpen, setClientDialogOpen] = useState(false);
   const [appDialogOpen, setAppDialogOpen] = useState(false);
   const [helpOpen, setHelpOpen] = useState(false);
+  
+  const [opsOpen, setOpsOpen] = useState(true);
+  const [labOpen, setLabOpen] = useState(false);
+  const [libraryOpen, setLibraryOpen] = useState(false);
+  const [businessOpen, setBusinessOpen] = useState(false);
+
   const location = useLocation();
   const navigate = useNavigate();
   const { recentClients } = useRecentClients();
-
-  const navItems = [
-    { label: "Dashboard", icon: LayoutDashboard, path: "/" },
-    { label: "Clients", icon: Users, path: "/clients" },
-    { label: "Appointments", icon: Calendar, path: "/appointments" },
-    { label: "Oversight", icon: TrendingUp, path: "/oversight" },
-    { label: "Quick Calibrate", icon: Zap, path: "/practice/calibrate" },
-    { label: "Self Practice", icon: Heart, path: "/practice/self" },
-    { label: "Procedures", icon: Target, path: "/practice/procedures" },
-    { label: "Worksheets", icon: FileText, path: "/resources/worksheets" },
-    { label: "Resources", icon: BookOpen, path: "/resources" },
-    { label: "Business Hub", icon: Briefcase, path: "/business" },
-  ];
 
   const handleSignOut = async () => {
     try {
@@ -71,12 +72,53 @@ const MobileNav = () => {
     }
   };
 
+  const NavItem = ({ item, onClick }: { item: any, onClick: () => void }) => {
+    const isActive = location.pathname === item.path || (item.path !== "/" && location.pathname.startsWith(item.path));
+    return (
+      <Link
+        to={item.path}
+        onClick={onClick}
+        className={cn(
+          "flex items-center gap-3 px-4 py-3 rounded-xl transition-all",
+          isActive 
+            ? "bg-indigo-600 text-white shadow-lg" 
+            : "text-slate-400 hover:text-white hover:bg-slate-800"
+        )}
+      >
+        <item.icon size={20} />
+        <span className="font-bold text-sm">{item.label}</span>
+      </Link>
+    );
+  };
+
+  const NavGroup = ({ title, icon: Icon, isOpen, onToggle, items }: any) => (
+    <div className="space-y-1">
+      <button
+        onClick={onToggle}
+        className="flex items-center justify-between w-full px-4 py-2 rounded-xl text-slate-500 hover:text-white transition-all"
+      >
+        <div className="flex items-center gap-3">
+          <Icon size={18} />
+          <span className="text-[10px] font-black uppercase tracking-[0.2em]">{title}</span>
+        </div>
+        {isOpen ? <ChevronUp size={14} /> : <ChevronDown size={14} />}
+      </button>
+      {isOpen && (
+        <div className="space-y-1 animate-in fade-in slide-in-from-top-1 duration-300">
+          {items.map((item: any) => (
+            <NavItem key={item.path} item={item} onClick={() => setOpen(false)} />
+          ))}
+        </div>
+      )}
+    </div>
+  );
+
   return (
     <>
       <div className="lg:hidden flex items-center justify-between p-4 bg-white dark:bg-slate-900 border-b dark:border-slate-800 sticky top-0 z-50 shadow-sm">
         <div className="flex items-center gap-2">
           <div className="w-8 h-8 bg-indigo-600 rounded-lg flex items-center justify-center text-white font-bold">A</div>
-          <span className="font-bold text-slate-900 dark:text-white">Antigravity</span>
+          <span className="font-black text-slate-900 dark:text-white tracking-tight">Antigravity</span>
         </div>
         
         <div className="flex items-center gap-2">
@@ -87,105 +129,143 @@ const MobileNav = () => {
                 <Menu size={24} />
               </Button>
             </SheetTrigger>
-            <SheetContent side="left" className="w-80 bg-slate-900 text-white border-none p-0">
-              <SheetHeader className="p-6 border-b border-slate-800 text-left">
-                <SheetTitle className="text-white flex items-center gap-2">
-                  <div className="w-8 h-8 bg-indigo-500 rounded-lg flex items-center justify-center font-bold">A</div>
-                  Antigravity CRM
+            <SheetContent side="left" className="w-[85vw] max-w-sm bg-slate-950 text-white border-none p-0 flex flex-col">
+              <SheetHeader className="p-6 border-b border-slate-900 text-left">
+                <SheetTitle className="text-white flex items-center gap-3">
+                  <div className="w-10 h-10 bg-indigo-600 rounded-xl flex items-center justify-center font-black text-xl">A</div>
+                  <div>
+                    <p className="font-black text-lg leading-none">Antigravity</p>
+                    <p className="text-[8px] font-black uppercase tracking-[0.3em] text-slate-500 mt-1">Clinical CRM</p>
+                  </div>
                 </SheetTitle>
               </SheetHeader>
 
-              {/* Quick Actions */}
-              <div className="p-4 space-y-2 border-b border-slate-800">
-                <p className="text-[9px] font-black text-slate-600 uppercase tracking-[0.3em] px-2 mb-2">Quick Actions</p>
-                <Button 
-                  onClick={() => { setClientDialogOpen(true); setOpen(false); }}
-                  variant="outline"
-                  className="w-full justify-start bg-white/5 border-white/10 text-white hover:bg-white/10 rounded-xl h-11 font-bold text-xs"
-                >
-                  <UserPlus size={18} className="mr-3" /> Add New Client
-                </Button>
-                <Button 
-                  onClick={() => { setAppDialogOpen(true); setOpen(false); }}
-                  className="w-full justify-start bg-rose-600 hover:bg-rose-700 rounded-xl h-11 font-bold text-xs"
-                >
-                  <CalendarPlus size={18} className="mr-3" /> Book Session
-                </Button>
-              </div>
-
-              {/* Main Navigation */}
-              <nav className="flex flex-col gap-2 p-4">
-                <p className="text-[9px] font-black text-slate-600 uppercase tracking-[0.3em] px-2 mb-2">Navigation</p>
-                {navItems.map((item) => {
-                  const isActive = location.pathname === item.path || (item.path !== "/" && location.pathname.startsWith(item.path));
-                  return (
-                    <Link
-                      key={item.path}
-                      to={item.path}
-                      onClick={() => setOpen(false)}
-                      className={cn(
-                        "flex items-center gap-3 px-4 py-3 rounded-xl transition-all",
-                        isActive 
-                          ? "bg-indigo-600 text-white" 
-                          : "text-slate-400 hover:text-white hover:bg-slate-800"
-                      )}
-                    >
-                      <item.icon size={20} />
-                      <span className="font-medium">{item.label}</span>
-                    </Link>
-                  );
-                })}
-              </nav>
-
-              {/* Recent Clients */}
-              {recentClients.length > 0 && (
-                <>
-                  <Separator className="bg-slate-800" />
-                  <div className="p-4 space-y-2">
-                    <p className="text-[9px] font-black text-slate-600 uppercase tracking-[0.3em] px-2 mb-2 flex items-center gap-2">
-                      <Clock size={12} /> Recent Clients
-                    </p>
-                    {recentClients.map(client => (
-                      <Link 
-                        key={client.id} 
-                        to={`/clients/${client.id}`}
-                        onClick={() => setOpen(false)}
-                        className="flex items-center gap-3 text-sm text-slate-400 hover:text-white transition-all py-2.5 px-4 rounded-xl hover:bg-slate-800 group"
+              <ScrollArea className="flex-1">
+                <div className="p-4 space-y-8">
+                  {/* Quick Actions */}
+                  <div className="space-y-3">
+                    <p className="text-[9px] font-black text-slate-600 uppercase tracking-[0.3em] px-2">Quick Actions</p>
+                    <div className="grid grid-cols-2 gap-2">
+                      <Button 
+                        onClick={() => { setClientDialogOpen(true); setOpen(false); }}
+                        variant="outline"
+                        className="flex-col h-20 bg-white/5 border-white/10 text-white hover:bg-white/10 rounded-2xl gap-2"
                       >
-                        <div className="w-8 h-8 rounded-xl bg-slate-800 border border-slate-700 flex items-center justify-center text-[10px] font-black group-hover:border-indigo-500/40 transition-all">
-                          {client.name.charAt(0)}
-                        </div>
-                        <span className="font-bold text-xs">{client.name}</span>
-                      </Link>
-                    ))}
+                        <UserPlus size={20} className="text-indigo-400" />
+                        <span className="text-[10px] font-black uppercase">New Client</span>
+                      </Button>
+                      <Button 
+                        onClick={() => { setAppDialogOpen(true); setOpen(false); }}
+                        className="flex-col h-20 bg-rose-600 hover:bg-rose-700 text-white rounded-2xl gap-2 border-none"
+                      >
+                        <CalendarPlus size={20} />
+                        <span className="text-[10px] font-black uppercase">Book Session</span>
+                      </Button>
+                    </div>
                   </div>
-                </>
-              )}
 
-              {/* Footer */}
-              <div className="mt-auto p-4 border-t border-slate-800 space-y-2">
+                  {/* Navigation Groups */}
+                  <div className="space-y-4">
+                    <NavGroup 
+                      title="Operations" 
+                      icon={LayoutDashboard} 
+                      isOpen={opsOpen} 
+                      onToggle={() => setOpsOpen(!opsOpen)} 
+                      items={[
+                        { label: "Dashboard", icon: LayoutDashboard, path: "/" },
+                        { label: "Appointments", icon: Calendar, path: "/appointments" },
+                        { label: "Clients", icon: Users, path: "/clients" },
+                        { label: "Availability", icon: CalendarDays, path: "/availability" },
+                      ]} 
+                    />
+
+                    <NavGroup 
+                      title="Clinical Lab" 
+                      icon={Zap} 
+                      isOpen={labOpen} 
+                      onToggle={() => setLabOpen(!labOpen)} 
+                      items={[
+                        { label: "Quick Calibrate", icon: Zap, path: "/practice/calibrate" },
+                        { label: "Procedures", icon: Target, path: "/practice/procedures" },
+                        { label: "Oversight", icon: TrendingUp, path: "/oversight" },
+                      ]} 
+                    />
+
+                    <NavGroup 
+                      title="Library" 
+                      icon={BookOpen} 
+                      isOpen={libraryOpen} 
+                      onToggle={() => setLibraryOpen(!libraryOpen)} 
+                      items={[
+                        { label: "PEACE Framework", icon: ShieldCheck, path: "/peace-framework" },
+                        { label: "Knowledge Base", icon: BookOpen, path: "/resources" },
+                        { label: "Worksheets", icon: FileText, path: "/resources/worksheets" },
+                        { label: "Self Practice", icon: Heart, path: "/practice/self" },
+                      ]} 
+                    />
+
+                    <NavGroup 
+                      title="Business" 
+                      icon={Briefcase} 
+                      isOpen={businessOpen} 
+                      onToggle={() => setBusinessOpen(!businessOpen)} 
+                      items={[
+                        { label: "Business Hub", icon: Briefcase, path: "/business" },
+                        { label: "Marketing Engine", icon: Mic, path: "/business/marketing-engine" },
+                      ]} 
+                    />
+                  </div>
+
+                  {/* Recent Clients */}
+                  {recentClients.length > 0 && (
+                    <div className="space-y-3">
+                      <p className="text-[9px] font-black text-slate-600 uppercase tracking-[0.3em] px-2 flex items-center gap-2">
+                        <Clock size={12} /> Recent Clients
+                      </p>
+                      <div className="space-y-1">
+                        {recentClients.map(client => (
+                          <Link 
+                            key={client.id} 
+                            to={`/clients/${client.id}`}
+                            onClick={() => setOpen(false)}
+                            className="flex items-center gap-3 text-sm text-slate-400 hover:text-white transition-all py-3 px-4 rounded-xl hover:bg-slate-900 group"
+                          >
+                            <div className="w-8 h-8 rounded-xl bg-slate-900 border border-slate-800 flex items-center justify-center text-[10px] font-black group-hover:border-indigo-500/40 transition-all">
+                              {client.name.charAt(0)}
+                            </div>
+                            <span className="font-bold text-xs">{client.name}</span>
+                          </Link>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                </div>
+              </ScrollArea>
+
+              {/* Footer Actions */}
+              <div className="p-4 border-t border-slate-900 bg-slate-950 space-y-2">
                 <button 
                   onClick={() => { setHelpOpen(true); setOpen(false); }}
-                  className="flex items-center gap-3 px-4 py-3 text-slate-400 hover:text-white hover:bg-slate-800 transition-all rounded-xl w-full"
+                  className="flex items-center gap-3 px-4 py-3 text-slate-400 hover:text-white hover:bg-slate-900 transition-all rounded-xl w-full"
                 >
                   <HelpCircle size={20} />
-                  <span className="font-medium">Help & Shortcuts</span>
+                  <span className="font-bold text-sm">Help & Shortcuts</span>
                 </button>
                 <Link 
                   to="/settings"
                   onClick={() => setOpen(false)}
-                  className="flex items-center gap-3 px-4 py-3 text-slate-400 hover:text-white hover:bg-slate-800 transition-all rounded-xl"
+                  className="flex items-center gap-3 px-4 py-3 text-slate-400 hover:text-white hover:bg-slate-900 transition-all rounded-xl"
                 >
                   <Settings size={20} />
-                  <span className="font-medium">Settings</span>
+                  <span className="font-bold text-sm">Settings</span>
                 </Link>
-                <div 
+                <button 
                   onClick={handleSignOut}
-                  className="flex items-center gap-3 px-4 py-3 text-slate-400 hover:text-red-400 hover:bg-slate-800 transition-all rounded-xl cursor-pointer"
+                  className="flex items-center gap-3 px-4 py-3 text-rose-400 hover:bg-rose-500/10 transition-all rounded-xl w-full"
                 >
                   <LogOut size={20} />
-                  <span className="font-medium">Sign Out</span>
-                </div>
+                  <span className="font-bold text-sm">Sign Out</span>
+                </button>
               </div>
             </SheetContent>
           </Sheet>
@@ -193,20 +273,24 @@ const MobileNav = () => {
       </div>
 
       <Dialog open={clientDialogOpen} onOpenChange={setClientDialogOpen}>
-        <DialogContent className="sm:max-w-[550px] rounded-[2rem]">
-          <DialogHeader>
-            <DialogTitle className="text-2xl font-black">Add New Client</DialogTitle>
-          </DialogHeader>
-          <ClientForm onSuccess={() => setClientDialogOpen(false)} />
+        <DialogContent className="w-[95vw] max-w-[550px] rounded-[2rem] p-0 overflow-hidden">
+          <div className="p-6 max-h-[90vh] overflow-y-auto">
+            <DialogHeader className="mb-6">
+              <DialogTitle className="text-2xl font-black">Add New Client</DialogTitle>
+            </DialogHeader>
+            <ClientForm onSuccess={() => setClientDialogOpen(false)} />
+          </div>
         </DialogContent>
       </Dialog>
 
       <Dialog open={appDialogOpen} onOpenChange={setAppDialogOpen}>
-        <DialogContent className="sm:max-w-[500px] rounded-[2rem]">
-          <DialogHeader>
-            <DialogTitle className="text-2xl font-black">Schedule New Session</DialogTitle>
-          </DialogHeader>
-          <AppointmentForm onSuccess={() => setAppDialogOpen(false)} />
+        <DialogContent className="w-[95vw] max-w-[500px] rounded-[2rem] p-0 overflow-hidden">
+          <div className="p-6 max-h-[90vh] overflow-y-auto">
+            <DialogHeader className="mb-6">
+              <DialogTitle className="text-2xl font-black">Schedule New Session</DialogTitle>
+            </DialogHeader>
+            <AppointmentForm onSuccess={() => setAppDialogOpen(false)} />
+          </div>
         </DialogContent>
       </Dialog>
 

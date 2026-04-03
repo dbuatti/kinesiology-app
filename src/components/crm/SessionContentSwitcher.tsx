@@ -176,7 +176,6 @@ const SessionContentSwitcher = ({
   };
 
   const handleClearItem = async (itemName: string) => {
-    // Find which category the item belongs to
     let category = 'muscles';
     if (appointment.priority_pattern) {
       try {
@@ -198,7 +197,7 @@ const SessionContentSwitcher = ({
       variant="ghost"
       onClick={() => setActiveView(view)}
       className={cn(
-        "h-11 px-5 rounded-2xl transition-all font-black text-[10px] uppercase tracking-widest",
+        "h-11 px-5 rounded-2xl transition-all font-black text-[10px] uppercase tracking-widest shrink-0",
         activeView === view 
           ? "bg-white text-indigo-600 shadow-md border border-slate-100" 
           : "text-slate-500 hover:bg-white/50 hover:text-slate-900"
@@ -210,7 +209,7 @@ const SessionContentSwitcher = ({
   );
 
   const TabFooter = ({ nextLabel }: { nextLabel?: string }) => (
-    <div className="mt-12 pt-8 border-t border-border flex items-center justify-between">
+    <div className="mt-12 pt-8 border-t border-border flex flex-col sm:flex-row items-center justify-between gap-6">
       <div className="flex items-center gap-3 text-[10px] font-black text-muted-foreground uppercase tracking-widest">
         {tabStatus[activeTab as keyof typeof tabStatus] ? (
           <span className="flex items-center gap-2 text-emerald-600 bg-emerald-50 px-3 py-1.5 rounded-xl border border-emerald-100">
@@ -225,7 +224,7 @@ const SessionContentSwitcher = ({
       {nextLabel && (
         <Button 
           onClick={handleNextTab}
-          className="bg-indigo-600 hover:bg-indigo-700 text-white rounded-2xl h-14 px-10 font-black text-xs uppercase tracking-widest shadow-xl shadow-indigo-100"
+          className="w-full sm:w-auto bg-indigo-600 hover:bg-indigo-700 text-white rounded-2xl h-14 px-10 font-black text-xs uppercase tracking-widest shadow-xl shadow-indigo-100"
         >
           Next: {nextLabel} <ArrowRight size={20} className="ml-2" />
         </Button>
@@ -239,25 +238,26 @@ const SessionContentSwitcher = ({
         setActiveTab(v);
         if (v === 'calibration') scrollToWizard();
       }} className="w-full">
-        <TabsList className="grid w-full grid-cols-5 h-24 bg-muted/50 p-2 rounded-[2rem]">
-          {TABS.map((tab, i) => (
-            <TabsTrigger 
-              key={tab.id} 
-              value={tab.id} 
-              className="flex flex-col items-center justify-center gap-1.5 data-[state=active]:bg-card data-[state=active]:text-indigo-600 data-[state=active]:shadow-xl rounded-2xl h-20 text-[10px] font-black uppercase tracking-wider relative transition-all duration-300"
-            >
-              <tab.icon size={20} className={cn((tabStatus as any)[tab.id] ? "text-indigo-500" : "text-muted-foreground")} />
-              <span className="hidden sm:inline text-[10px]">{tab.label}</span>
-              <span className="sm:hidden">{tab.label.split(' ')[0]}</span>
-              <span className="hidden lg:inline text-[8px] opacity-50 font-bold tracking-widest">{tab.sub}</span>
-              {(tabStatus as any)[tab.id] && (
-                <span className="absolute top-3 right-3 w-2.5 h-2.5 bg-emerald-500 rounded-full border-2 border-background shadow-sm" />
-              )}
-            </TabsTrigger>
-          ))}
-        </TabsList>
+        <div className="overflow-x-auto pb-4 no-scrollbar -mx-4 px-4">
+          <TabsList className="flex w-max h-24 bg-muted/50 p-2 rounded-[2rem] gap-1">
+            {TABS.map((tab, i) => (
+              <TabsTrigger 
+                key={tab.id} 
+                value={tab.id} 
+                className="flex flex-col items-center justify-center gap-1.5 data-[state=active]:bg-card data-[state=active]:text-indigo-600 data-[state=active]:shadow-xl rounded-2xl h-20 px-6 text-[10px] font-black uppercase tracking-wider relative transition-all duration-300"
+              >
+                <tab.icon size={20} className={cn((tabStatus as any)[tab.id] ? "text-indigo-500" : "text-muted-foreground")} />
+                <span className="text-[10px]">{tab.label.split(' — ')[0]}</span>
+                <span className="hidden lg:inline text-[8px] opacity-50 font-bold tracking-widest">{tab.sub}</span>
+                {(tabStatus as any)[tab.id] && (
+                  <span className="absolute top-3 right-3 w-2.5 h-2.5 bg-emerald-500 rounded-full border-2 border-background shadow-sm" />
+                )}
+              </TabsTrigger>
+            ))}
+          </TabsList>
+        </div>
 
-        <div className="mt-10 animate-in fade-in slide-in-from-bottom-4 duration-500">
+        <div className="mt-6 md:mt-10 animate-in fade-in slide-in-from-bottom-4 duration-500">
           <TabsContent value="baseline" className="focus-visible:ring-0">
             <BaselineTab appointment={appointment} onUpdate={onUpdate} saveField={saveField} />
             <TabFooter nextLabel="E — Ease" />
@@ -305,7 +305,7 @@ const SessionContentSwitcher = ({
               multiline 
               placeholder="Document re-test results and prescribed homework..." 
               onSave={saveField} 
-              className="bg-card p-10 rounded-[3rem] border border-border shadow-sm min-h-[500px]" 
+              className="bg-card p-6 md:p-10 rounded-[2rem] md:rounded-[3rem] border border-border shadow-sm min-h-[400px] md:min-h-[500px]" 
             />
             <TabFooter />
           </TabsContent>
@@ -319,8 +319,8 @@ const SessionContentSwitcher = ({
   return (
     <div className="space-y-8">
       {/* Master Session Bar */}
-      <div className="flex flex-col md:flex-row items-center justify-between bg-slate-100/80 backdrop-blur-md p-2.5 rounded-[2.5rem] border border-slate-200 shadow-lg gap-3">
-        <div className="flex items-center gap-1.5 overflow-x-auto no-scrollbar w-full md:w-auto">
+      <div className="flex flex-col md:flex-row items-center justify-between bg-slate-100/80 backdrop-blur-md p-2.5 rounded-[2rem] md:rounded-[2.5rem] border border-slate-200 shadow-lg gap-3">
+        <div className="flex items-center gap-1.5 overflow-x-auto no-scrollbar w-full md:w-auto px-1">
           <NavItem view="home" label="PEACE Flow" Icon={LayoutGrid} />
           <NavItem view="previous" label="History" Icon={History} />
           
@@ -329,12 +329,12 @@ const SessionContentSwitcher = ({
               <Button
                 variant="ghost"
                 className={cn(
-                  "h-11 px-5 rounded-2xl transition-all font-black text-[10px] uppercase tracking-widest",
+                  "h-11 px-5 rounded-2xl transition-all font-black text-[10px] uppercase tracking-widest shrink-0",
                   isToolActive ? "bg-white text-indigo-600 shadow-md border border-slate-100" : "text-slate-500 hover:bg-white/50 hover:text-slate-900"
                 )}
               >
                 <Wrench size={18} className="mr-2.5" />
-                Clinical Tools
+                Tools
                 <ChevronDown size={14} className="ml-2 opacity-50" />
               </Button>
             </DropdownMenuTrigger>
@@ -347,7 +347,7 @@ const SessionContentSwitcher = ({
                 className={cn("rounded-2xl py-3.5 px-5 cursor-pointer transition-all", activeView === 'context' && "bg-indigo-50 text-indigo-600 font-black")}
               >
                 <UserCircle size={18} className="mr-3.5 text-indigo-500" />
-                Client Context (Onboarding)
+                Client Context
               </DropdownMenuItem>
               <DropdownMenuItem 
                 onClick={() => setActiveView('kinesiology')}
@@ -374,13 +374,13 @@ const SessionContentSwitcher = ({
           </DropdownMenu>
         </div>
 
-        {/* Session Progress Indicator */}
-        <div className="hidden lg:flex items-center gap-4 px-6 border-x border-slate-200">
+        {/* Session Progress Indicator - Hidden on small mobile */}
+        <div className="hidden sm:flex items-center gap-4 px-6 border-x border-slate-200">
           <div className="flex flex-col items-end">
-            <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest">Session Progress</span>
+            <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest">Progress</span>
             <span className="text-[11px] font-black text-indigo-600">{progressPercent}%</span>
           </div>
-          <div className="w-32 h-2 bg-slate-200 rounded-full overflow-hidden shadow-inner">
+          <div className="w-24 lg:w-32 h-2 bg-slate-200 rounded-full overflow-hidden shadow-inner">
             <div 
               className="h-full bg-indigo-600 transition-all duration-1000 ease-out shadow-lg" 
               style={{ width: `${progressPercent}%` }}
@@ -389,28 +389,28 @@ const SessionContentSwitcher = ({
         </div>
 
         {/* Action Group */}
-        <div className="flex items-center gap-2 w-full md:w-auto justify-end">
+        <div className="flex items-center gap-2 w-full md:w-auto justify-end px-1">
           <Button 
             variant="ghost" 
             size="sm" 
-            className="h-10 px-4 font-bold text-[10px] uppercase tracking-widest rounded-xl text-slate-500 hover:text-indigo-600 hover:bg-white"
+            className="h-10 px-3 md:px-4 font-bold text-[10px] uppercase tracking-widest rounded-xl text-slate-500 hover:text-indigo-600 hover:bg-white"
             onClick={() => setNoteDialogOpen(true)}
           >
-            <StickyNote size={16} className="mr-2" />
-            Quick Note
+            <StickyNote size={16} className="md:mr-2" />
+            <span className="hidden md:inline">Quick Note</span>
           </Button>
 
           <Button 
             variant="outline" 
             size="sm" 
             className={cn(
-              "h-10 px-4 font-bold text-[10px] uppercase tracking-widest rounded-xl transition-all",
+              "h-10 px-3 md:px-4 font-bold text-[10px] uppercase tracking-widest rounded-xl transition-all",
               showSidebar ? "bg-indigo-600 text-white border-indigo-600 shadow-md" : "bg-white border-slate-200 text-slate-600 hover:bg-slate-50"
             )}
             onClick={onToggleSidebar}
           >
-            {showSidebar ? <PanelRightClose size={16} className="mr-2" /> : <PanelRightOpen size={16} className="mr-2" />}
-            Sidebar
+            {showSidebar ? <PanelRightClose size={16} className="md:mr-2" /> : <PanelRightOpen size={16} className="md:mr-2" />}
+            <span className="hidden md:inline">Sidebar</span>
           </Button>
 
           <DropdownMenu>
@@ -464,7 +464,7 @@ const SessionContentSwitcher = ({
           </div>
         )}
         {activeView === 'muscles' && (
-          <div className="bg-card rounded-[3rem] border border-border shadow-xl p-10">
+          <div className="bg-card rounded-[2rem] md:rounded-[3rem] border border-border shadow-xl p-6 md:p-10">
             <MuscleTestingTab appointmentId={appointment.id} />
           </div>
         )}
@@ -478,7 +478,7 @@ const SessionContentSwitcher = ({
                     <div className="w-12 h-12 rounded-2xl bg-indigo-600 text-white flex items-center justify-center shadow-xl">
                         <History size={24} />
                     </div>
-                    <h2 className="text-3xl font-black text-foreground tracking-tight">Neurological Evolution</h2>
+                    <h2 className="text-2xl md:text-3xl font-black text-foreground tracking-tight">Neurological Evolution</h2>
                 </div>
                 <NeurologicalHistoryTracker appointments={history.length > 0 ? history : [appointment]} />
             </div>
@@ -492,31 +492,33 @@ const SessionContentSwitcher = ({
       </div>
 
       <Dialog open={noteDialogOpen} onOpenChange={setNoteDialogOpen}>
-        <DialogContent className="sm:max-w-[550px] rounded-[2.5rem] p-8">
-          <DialogHeader>
-            <DialogTitle className="text-3xl font-black flex items-center gap-4">
-              <div className="w-12 h-12 rounded-2xl bg-amber-500 text-white flex items-center justify-center shadow-xl">
-                <StickyNote size={28} />
-              </div>
-              Quick Session Note
-            </DialogTitle>
-          </DialogHeader>
-          <div className="py-6">
-            <EditableField 
-              field="notes" 
-              label="General Session Notes" 
-              value={appointment.notes} 
-              multiline 
-              placeholder="Jot down a quick observation..." 
-              onSave={saveField} 
-              className="bg-slate-50 p-8 rounded-[2rem] border border-slate-100 shadow-inner"
-            />
-            <p className="text-[11px] text-slate-400 mt-6 text-center italic font-medium">
-              This note is saved to the general session notes field.
-            </p>
-          </div>
-          <div className="flex justify-end">
-            <Button onClick={() => setNoteDialogOpen(false)} className="rounded-2xl h-12 px-8 font-black text-xs uppercase tracking-widest">Close</Button>
+        <DialogContent className="w-[95vw] max-w-[550px] rounded-[2rem] p-0 overflow-hidden">
+          <div className="p-6 md:p-8 max-h-[90vh] overflow-y-auto">
+            <DialogHeader>
+              <DialogTitle className="text-2xl md:text-3xl font-black flex items-center gap-4">
+                <div className="w-10 h-10 md:w-12 md:h-12 rounded-xl bg-amber-500 text-white flex items-center justify-center shadow-xl">
+                  <StickyNote size={24} />
+                </div>
+                Quick Session Note
+              </DialogTitle>
+            </DialogHeader>
+            <div className="py-6">
+              <EditableField 
+                field="notes" 
+                label="General Session Notes" 
+                value={appointment.notes} 
+                multiline 
+                placeholder="Jot down a quick observation..." 
+                onSave={saveField} 
+                className="bg-slate-50 p-6 md:p-8 rounded-[2rem] border border-slate-100 shadow-inner"
+              />
+              <p className="text-[11px] text-slate-400 mt-6 text-center italic font-medium">
+                This note is saved to the general session notes field.
+              </p>
+            </div>
+            <div className="flex justify-end">
+              <Button onClick={() => setNoteDialogOpen(false)} className="w-full sm:w-auto rounded-2xl h-12 px-8 font-black text-xs uppercase tracking-widest">Close</Button>
+            </div>
           </div>
         </DialogContent>
       </Dialog>

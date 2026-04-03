@@ -21,16 +21,18 @@ const OnboardingLookupPage = () => {
     setLoading(true);
     setError(null);
     try {
+      // Use .select().eq().order() instead of maybeSingle to handle edge cases
       const { data, error: fetchError } = await supabase
         .from('clients')
         .select('id')
         .eq('email', emailToLookup.toLowerCase().trim())
-        .maybeSingle();
+        .order('created_at', { ascending: false })
+        .limit(1);
 
       if (fetchError) throw fetchError;
 
-      if (data) {
-        navigate(`/onboarding/${data.id}`, { replace: true });
+      if (data && data.length > 0) {
+        navigate(`/onboarding/${data[0].id}`, { replace: true });
       } else {
         setError("We couldn't find a booking with that email. Please ensure it's the same email you used on Cal.com.");
       }

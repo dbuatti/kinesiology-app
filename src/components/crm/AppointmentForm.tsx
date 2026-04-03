@@ -14,6 +14,7 @@ import {
   FormItem,
   FormLabel,
   FormMessage,
+  FormDescription,
 } from "@/components/ui/form";
 import {
   Select,
@@ -27,7 +28,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { format } from "date-fns";
-import { CalendarIcon, Loader2, Globe, DollarSign } from "lucide-react";
+import { CalendarIcon, Loader2, Globe, DollarSign, Mail } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { showSuccess, showError } from "@/utils/toast";
 import { APPOINTMENT_TAGS, APPOINTMENT_STATUSES } from "@/data/appointment-data";
@@ -46,6 +47,7 @@ const formSchema = z.object({
   goal: z.string().optional(),
   issue: z.string().optional(),
   is_paid: z.boolean().default(false),
+  send_onboarding: z.boolean().default(true),
 });
 
 interface AppointmentFormProps {
@@ -72,6 +74,7 @@ const AppointmentForm = ({ onSuccess, initialClientId, initialDate, initialTime 
       time: initialTime || "10:00",
       date: initialDate || new Date(),
       is_paid: false,
+      send_onboarding: true,
     },
   });
 
@@ -108,6 +111,7 @@ const AppointmentForm = ({ onSuccess, initialClientId, initialDate, initialTime 
 
       let calcomId = null;
 
+      // If booking via Cal.com slots
       if (initialTime) {
         setSyncStatus('calcom');
         const eventTypeId = localStorage.getItem('calcom_preferred_event_id') || "4279898";
@@ -119,7 +123,8 @@ const AppointmentForm = ({ onSuccess, initialClientId, initialDate, initialTime 
             eventTypeId: eventTypeId,
             title: values.name || values.tag || "Kinesiology Session",
             notes: values.goal || values.issue || "",
-            is_paid: values.is_paid // Pass the paid status to Cal.com
+            is_paid: values.is_paid,
+            send_onboarding: values.send_onboarding // Pass flag to function
           }
         });
 
@@ -145,6 +150,7 @@ const AppointmentForm = ({ onSuccess, initialClientId, initialDate, initialTime 
         goal: values.goal,
         issue: values.issue,
         is_paid: values.is_paid,
+        send_onboarding: values.send_onboarding,
         calcom_booking_id: calcomId ? String(calcomId) : null
       });
 
@@ -300,30 +306,57 @@ const AppointmentForm = ({ onSuccess, initialClientId, initialDate, initialTime 
           />
         </div>
 
-        <FormField
-          control={form.control}
-          name="is_paid"
-          render={({ field }) => (
-            <FormItem className="flex flex-row items-center justify-between rounded-xl border-2 border-indigo-100 p-4 bg-indigo-50/30">
-              <div className="space-y-0.5">
-                <FormLabel className="text-base font-bold text-indigo-900 flex items-center gap-2">
-                  <DollarSign size={18} className="text-indigo-600" />
-                  Paid Session ($50)
-                </FormLabel>
-                <p className="text-[10px] text-indigo-400 font-bold uppercase tracking-widest">
-                  Requires payment (triggers bank details in email)
-                </p>
-              </div>
-              <FormControl>
-                <Checkbox
-                  checked={field.value}
-                  onCheckedChange={field.onChange}
-                  className="h-6 w-6 rounded-md border-indigo-300 data-[state=checked]:bg-indigo-600"
-                />
-              </FormControl>
-            </FormItem>
-          )}
-        />
+        <div className="grid grid-cols-1 gap-3">
+          <FormField
+            control={form.control}
+            name="is_paid"
+            render={({ field }) => (
+              <FormItem className="flex flex-row items-center justify-between rounded-xl border-2 border-indigo-100 p-4 bg-indigo-50/30">
+                <div className="space-y-0.5">
+                  <FormLabel className="text-base font-bold text-indigo-900 flex items-center gap-2">
+                    <DollarSign size={18} className="text-indigo-600" />
+                    Paid Session ($50)
+                  </FormLabel>
+                  <p className="text-[10px] text-indigo-400 font-bold uppercase tracking-widest">
+                    Requires payment (triggers bank details in email)
+                  </p>
+                </div>
+                <FormControl>
+                  <Checkbox
+                    checked={field.value}
+                    onCheckedChange={field.onChange}
+                    className="h-6 w-6 rounded-md border-indigo-300 data-[state=checked]:bg-indigo-600"
+                  />
+                </FormControl>
+              </FormItem>
+            )}
+          />
+
+          <FormField
+            control={form.control}
+            name="send_onboarding"
+            render={({ field }) => (
+              <FormItem className="flex flex-row items-center justify-between rounded-xl border-2 border-emerald-100 p-4 bg-emerald-50/30">
+                <div className="space-y-0.5">
+                  <FormLabel className="text-base font-bold text-emerald-900 flex items-center gap-2">
+                    <Mail size={18} className="text-emerald-600" />
+                    Send Onboarding Email
+                  </FormLabel>
+                  <p className="text-[10px] text-emerald-400 font-bold uppercase tracking-widest">
+                    Automatically email the intake form to the client
+                  </p>
+                </div>
+                <FormControl>
+                  <Checkbox
+                    checked={field.value}
+                    onCheckedChange={field.onChange}
+                    className="h-6 w-6 rounded-md border-emerald-300 data-[state=checked]:bg-emerald-600"
+                  />
+                </FormControl>
+              </FormItem>
+            )}
+          />
+        </div>
 
         <FormField
           control={form.control}

@@ -60,7 +60,7 @@ async function sendGmail(accessToken: string, from: string, to: string, subject:
 
 serve(async (req) => {
   if (req.method === 'GET') {
-    return new Response(JSON.stringify({ status: "active", provider: "gmail", version: "v45" }), { 
+    return new Response(JSON.stringify({ status: "active", provider: "gmail", version: "v46" }), { 
       status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
     });
   }
@@ -84,9 +84,10 @@ serve(async (req) => {
     const payload = body.payload || body;
     const calcomId = String(payload.bookingId || payload.id || payload.uid);
 
+    // Check if an appointment already exists with this Cal.com ID
     const { data: existingApp } = await supabase
       .from('appointments')
-      .select('id')
+      .select('id, send_onboarding')
       .eq('calcom_booking_id', calcomId)
       .maybeSingle();
 
@@ -118,8 +119,9 @@ serve(async (req) => {
     const phone = attendee.phoneNumber || "";
     const startTime = payload.startTime;
     
-    // Read is_paid from metadata (passed from AppointmentForm)
+    // Read flags from metadata (passed from AppointmentForm)
     const isPaidSession = payload.metadata?.is_paid === "true";
+    const shouldSendOnboarding = payload.metadata?.send_onboarding !== "false"; // Default to true
     const hasPaidViaStripe = !!(payload.payment?.[0]?.amount);
 
     const dateObj = new Date(startTime);
@@ -135,7 +137,7 @@ serve(async (req) => {
       dbClient = newDbC;
     }
 
-    // Create/Upsert Appointment first to get the ID
+    // Create/Upsert Appointment
     let appointmentId = existingApp?.id;
     if (dbClient) {
       const appointmentData = {
@@ -146,16 +148,17 @@ serve(async (req) => {
         status: "Scheduled",
         calcom_booking_id: calcomId,
         is_paid: isPaidSession,
-        payment_received: hasPaidViaStripe
+        payment_received: hasPaidViaStripe,
+        send_onboarding: shouldSendOnboarding
       };
       const { data: newApp } = await supabase.from('appointments').upsert(appointmentData, { onConflict: 'calcom_booking_id' }).select('id').single();
       appointmentId = newApp?.id;
     }
 
-    if (appointmentId && GMAIL_CLIENT_ID && GMAIL_CLIENT_SECRET && GMAIL_REFRESH_TOKEN && dbClient) {
+    // ONLY send email if shouldSendOnboarding is true
+    if (shouldSendOnboarding && appointmentId && GMAIL_CLIENT_ID && GMAIL_CLIENT_SECRET && GMAIL_REFRESH_TOKEN && dbClient) {
       try {
         const accessToken = await getGmailAccessToken(GMAIL_CLIENT_ID, GMAIL_CLIENT_SECRET, GMAIL_REFRESH_TOKEN);
-        // Include appId in the link
         const onboardingUrl = `https://kinesiology-app.vercel.app/onboarding/${dbClient.id}?appId=${appointmentId}`;
         
         const showBankDetails = isPaidSession && !hasPaidViaStripe;

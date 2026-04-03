@@ -83,11 +83,11 @@ interface SessionContentSwitcherProps {
 }
 
 const TABS = [
-  { id: 'baseline', label: 'P — Preliminary', icon: Activity, sub: 'Baseline & Vitals' },
-  { id: 'sympathetic', label: 'E — Ease', icon: Zap, sub: 'SNS Down-regulation' },
-  { id: 'pathway', label: 'A — Align', icon: GitBranch, sub: 'Pathway Assessment' },
-  { id: 'calibration', label: 'C — Correct', icon: Target, sub: 'Calibration Wizard' },
-  { id: 'reassessment', label: 'E — Embed', icon: ClipboardCheck, sub: 'Review & Homework' }
+  { id: 'baseline', label: 'P', fullLabel: 'Preliminary', icon: Activity, sub: 'Baseline & Vitals' },
+  { id: 'sympathetic', label: 'E', fullLabel: 'Ease', icon: Zap, sub: 'SNS Down-regulation' },
+  { id: 'pathway', label: 'A', fullLabel: 'Align', icon: GitBranch, sub: 'Pathway Assessment' },
+  { id: 'calibration', label: 'C', fullLabel: 'Correct', icon: Target, sub: 'Calibration Wizard' },
+  { id: 'reassessment', label: 'E', fullLabel: 'Embed', icon: ClipboardCheck, sub: 'Review & Homework' }
 ];
 
 const SessionContentSwitcher = ({ 
@@ -239,16 +239,23 @@ const SessionContentSwitcher = ({
         if (v === 'calibration') scrollToWizard();
       }} className="w-full">
         <div className="overflow-x-auto pb-4 no-scrollbar -mx-4 px-4">
-          <TabsList className="flex w-max h-24 bg-muted/50 p-2 rounded-[2rem] gap-1">
+          <TabsList className="flex w-full h-24 bg-muted/50 p-2 rounded-[2.5rem] gap-1">
             {TABS.map((tab, i) => (
               <TabsTrigger 
                 key={tab.id} 
                 value={tab.id} 
-                className="flex flex-col items-center justify-center gap-1.5 data-[state=active]:bg-card data-[state=active]:text-indigo-600 data-[state=active]:shadow-xl rounded-2xl h-20 px-6 text-[10px] font-black uppercase tracking-wider relative transition-all duration-300"
+                className="flex-1 flex flex-col items-center justify-center gap-1.5 data-[state=active]:bg-card data-[state=active]:text-indigo-600 data-[state=active]:shadow-xl rounded-2xl h-20 px-4 text-[10px] font-black uppercase tracking-wider relative transition-all duration-300"
               >
-                <tab.icon size={20} className={cn((tabStatus as any)[tab.id] ? "text-indigo-500" : "text-muted-foreground")} />
-                <span className="text-[10px]">{tab.label.split(' — ')[0]}</span>
-                <span className="hidden lg:inline text-[8px] opacity-50 font-bold tracking-widest">{tab.sub}</span>
+                <div className={cn(
+                  "w-8 h-8 rounded-xl flex items-center justify-center transition-all duration-300",
+                  (tabStatus as any)[tab.id] ? "bg-emerald-500 text-white" : "bg-white/50 text-muted-foreground"
+                )}>
+                  <tab.icon size={16} />
+                </div>
+                <div className="flex items-center gap-1.5">
+                  <span className="text-lg font-black">{tab.label}</span>
+                  <span className="hidden lg:inline text-[8px] opacity-50 font-bold tracking-widest">— {tab.fullLabel}</span>
+                </div>
                 {(tabStatus as any)[tab.id] && (
                   <span className="absolute top-3 right-3 w-2.5 h-2.5 bg-emerald-500 rounded-full border-2 border-background shadow-sm" />
                 )}

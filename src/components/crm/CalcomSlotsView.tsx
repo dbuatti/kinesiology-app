@@ -10,6 +10,7 @@ import {
   Loader2, 
   RefreshCw, 
   ChevronRight, 
+  ChevronLeft,
   ExternalLink,
   AlertCircle,
   CheckCircle2,
@@ -30,9 +31,11 @@ import {
   ChevronDown,
   ChevronUp,
   LayoutGrid,
-  Activity
+  Activity,
+  ArrowLeft,
+  ArrowRight
 } from "lucide-react";
-import { format, addWeeks, startOfToday, endOfDay, eachDayOfInterval, addDays } from "date-fns";
+import { format, addWeeks, subWeeks, startOfToday, endOfDay, eachDayOfInterval, addDays, isBefore, startOfDay } from "date-fns";
 import { supabase } from "@/integrations/supabase/client";
 import { cn } from "@/lib/utils";
 import { showSuccess, showError } from "@/utils/toast";
@@ -61,7 +64,7 @@ const CalcomSlotsView = () => {
   const [bookings, setBookings] = useState<Record<string, any[]>>({});
   const [blockedDates, setBlockedDates] = useState<string[]>([]);
   const [error, setError] = useState<string | null>(null);
-  const [weeks, setWeeks] = useState(4);
+  const [weeksOffset, setWeeksOffset] = useState(0);
   const [copied, setCopied] = useState(false);
   const [showOnlyAvailable, setShowOnlyAvailable] = useState(false);
   const [configOpen, setConfigOpen] = useState(false);
@@ -78,10 +81,10 @@ const CalcomSlotsView = () => {
   );
 
   const dateRange = useMemo(() => {
-    const start = startOfToday();
-    const end = addDays(start, (weeks * 7) - 1);
+    const start = addWeeks(startOfToday(), weeksOffset);
+    const end = addDays(start, 6); // Show 1 week at a time for better focus
     return eachDayOfInterval({ start, end }).map(d => format(d, 'yyyy-MM-dd'));
-  }, [weeks]);
+  }, [weeksOffset]);
 
   const stats = useMemo(() => {
     let totalSlots = 0;
@@ -95,8 +98,8 @@ const CalcomSlotsView = () => {
     setLoading(true);
     setError(null);
     try {
-      const start = startOfToday().toISOString();
-      const end = endOfDay(addWeeks(new Date(), weeks)).toISOString();
+      const start = addWeeks(startOfToday(), weeksOffset).toISOString();
+      const end = endOfDay(addWeeks(new Date(start), 1)).toISOString();
       
       const { data, error: invokeError } = await supabase.functions.invoke('get-calcom-slots', {
         body: { 
@@ -206,7 +209,7 @@ const CalcomSlotsView = () => {
   const handleCopyAll = () => {
     if (dateRange.length === 0) return;
 
-    let text = "Here is my current availability:\n\n";
+    let text = "Hi! Here is my current availability for a session:\n\n";
     let hasAny = false;
 
     dateRange.forEach(date => {
@@ -216,8 +219,15 @@ const CalcomSlotsView = () => {
       if (!isBlocked && daySlots.length > 0) {
         hasAny = true;
         const formattedDate = format(new Date(date), "EEEE, MMMM do");
-        const times = daySlots.map(s => format(new Date(s.time || s.start), "h:mm a")).join(", ");
-        text += `• ${formattedDate}: ${times}\n`;
+        
+        // Group slots by Morning/Afternoon
+        const morning = daySlots.filter(s => new Date(s.time || s.start).getHours() < 12);
+        const afternoon = daySlots.filter(s => new Date(s.time || s.start).getHours() >= 12);
+        
+        text += `*${formattedDate}*\n`;
+        if (morning.length > 0) text += `  Morning: ${morning.map(s => format(new Date(s.time || s.start), "h:mm a")).join(", ")}\n`;
+        if (afternoon.length > 0) text += `  Afternoon: ${afternoon.map(s => format(new Date(s.time || s.start), "h:mm a")).join(", ")}\n`;
+        text += "\n";
       }
     });
 
@@ -226,7 +236,7 @@ const CalcomSlotsView = () => {
       return;
     }
 
-    text += `\nYou can book directly here: ${CALCOM_CONFIG.BOOKING_URL}`;
+    text += `You can book directly here: ${CALCOM_CONFIG.BOOKING_URL}`;
 
     navigator.clipboard.writeText(text);
     setCopied(true);
@@ -236,7 +246,7 @@ const CalcomSlotsView = () => {
 
   useEffect(() => {
     fetchSlots();
-  }, [weeks]);
+  }, [weeksOffset]);
 
   return (
     <div className="space-y-8 animate-in fade-in duration-700">
@@ -263,22 +273,31 @@ const CalcomSlotsView = () => {
             </div>
 
             <div className="flex items-center gap-3">
-              <div className="flex bg-muted p-1 rounded-xl">
-                {[2, 4, 8].map(w => (
-                  <Button 
-                    key={w}
-                    variant="ghost" 
-                    size="sm" 
-                    onClick={() => setWeeks(w)}
-                    className={cn(
-                      "h-8 px-4 rounded-lg text-[10px] font-black uppercase tracking-widest",
-                      weeks === w ? "bg-card text-indigo-600 shadow-sm" : "text-muted-foreground"
-                    )}
-                  >
-                    {w}W
-                  </Button>
-                ))}
+              <div className="flex bg-muted p-1 rounded-xl mr-2">
+                <Button 
+                  variant="ghost" 
+                  size="icon" 
+                  onClick={() => setWeeksOffset(prev => prev - 1)}
+                  disabled={weeksOffset <= 0}
+                  className="h-8 w-8 rounded-lg"
+                >
+                  <ArrowLeft size={16} />
+                </Button>
+                <div className="px-3 flex items-center">
+                  <span className="text-[10px] font-black uppercase tracking-widest">
+                    {weeksOffset === 0 ? 'This Week' : `Week +${weeksOffset}`}
+                  </span>
+                </div>
+                <Button 
+                  variant="ghost" 
+                  size="icon" 
+                  onClick={() => setWeeksOffset(prev => prev + 1)}
+                  className="h-8 w-8 rounded-lg"
+                >
+                  <ArrowRight size={16} />
+                </Button>
               </div>
+              
               <Button 
                 variant="outline"
                 onClick={handleCopyAll}

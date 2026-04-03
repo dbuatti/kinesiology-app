@@ -25,7 +25,12 @@ import {
   CalendarPlus,
   User,
   X,
-  Trash2
+  Trash2,
+  Filter,
+  ChevronDown,
+  ChevronUp,
+  LayoutGrid,
+  Activity
 } from "lucide-react";
 import { format, addWeeks, startOfToday, endOfDay, eachDayOfInterval, addDays } from "date-fns";
 import { supabase } from "@/integrations/supabase/client";
@@ -40,6 +45,11 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import {
+  Collapsible,
+  CollapsibleContent,
+  CollapsibleTrigger,
+} from "@/components/ui/collapsible";
 import AppointmentForm from "./AppointmentForm";
 import { CALCOM_CONFIG } from "../../config/integrations";
 
@@ -53,6 +63,8 @@ const CalcomSlotsView = () => {
   const [error, setError] = useState<string | null>(null);
   const [weeks, setWeeks] = useState(4);
   const [copied, setCopied] = useState(false);
+  const [showOnlyAvailable, setShowOnlyAvailable] = useState(false);
+  const [configOpen, setConfigOpen] = useState(false);
   
   const [bookingData, setBookingData] = useState<{ date: Date; time: string } | null>(null);
   const [bookingDialogOpen, setBookingDialogOpen] = useState(false);
@@ -70,6 +82,14 @@ const CalcomSlotsView = () => {
     const end = addDays(start, (weeks * 7) - 1);
     return eachDayOfInterval({ start, end }).map(d => format(d, 'yyyy-MM-dd'));
   }, [weeks]);
+
+  const stats = useMemo(() => {
+    let totalSlots = 0;
+    let totalBookings = 0;
+    Object.values(slots).forEach(daySlots => totalSlots += daySlots.length);
+    Object.values(bookings).forEach(dayBookings => totalBookings += dayBookings.length);
+    return { totalSlots, totalBookings };
+  }, [slots, bookings]);
 
   const fetchSlots = async () => {
     setLoading(true);
@@ -220,17 +240,31 @@ const CalcomSlotsView = () => {
 
   return (
     <div className="space-y-8 animate-in fade-in duration-700">
-      <div className="flex flex-col lg:flex-row lg:items-end justify-between gap-6 bg-card p-6 rounded-[2rem] border border-border shadow-sm">
-        <div className="space-y-4 flex-1">
-          <div className="flex items-center gap-2">
-            <Settings2 size={16} className="text-indigo-500" />
-            <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Configuration</p>
-          </div>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <div className="space-y-2">
-              <label className="text-[10px] font-bold text-slate-500 uppercase ml-1">Lookahead Range</label>
-              <div className="flex bg-muted p-1 rounded-xl w-max">
-                {[2, 4, 6, 8].map(w => (
+      {/* Summary & Controls Bar */}
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+        <div className="lg:col-span-8 space-y-6">
+          <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-card p-6 rounded-[2.5rem] border border-border shadow-sm">
+            <div className="flex items-center gap-6">
+              <div className="flex flex-col">
+                <p className="text-[10px] font-black text-muted-foreground uppercase tracking-widest mb-1">Available Slots</p>
+                <div className="flex items-center gap-2">
+                  <span className="text-3xl font-black text-emerald-600">{stats.totalSlots}</span>
+                  <Badge variant="outline" className="bg-emerald-50 text-emerald-700 border-emerald-100 font-bold">Open</Badge>
+                </div>
+              </div>
+              <div className="w-px h-10 bg-border hidden md:block" />
+              <div className="flex flex-col">
+                <p className="text-[10px] font-black text-muted-foreground uppercase tracking-widest mb-1">Upcoming Bookings</p>
+                <div className="flex items-center gap-2">
+                  <span className="text-3xl font-black text-indigo-600">{stats.totalBookings}</span>
+                  <Badge variant="outline" className="bg-indigo-50 text-indigo-700 border-indigo-100 font-bold">Confirmed</Badge>
+                </div>
+              </div>
+            </div>
+
+            <div className="flex items-center gap-3">
+              <div className="flex bg-muted p-1 rounded-xl">
+                {[2, 4, 8].map(w => (
                   <Button 
                     key={w}
                     variant="ghost" 
@@ -238,57 +272,105 @@ const CalcomSlotsView = () => {
                     onClick={() => setWeeks(w)}
                     className={cn(
                       "h-8 px-4 rounded-lg text-[10px] font-black uppercase tracking-widest",
-                      weeks === w ? "bg-white text-indigo-600 shadow-sm" : "text-slate-50"
+                      weeks === w ? "bg-card text-indigo-600 shadow-sm" : "text-muted-foreground"
                     )}
                   >
                     {w}W
                   </Button>
                 ))}
               </div>
-            </div>
-            <div className="space-y-2">
-              <label className="text-[10px] font-bold text-slate-500 uppercase ml-1 flex items-center gap-1">
-                Event Type ID <Info size={10} className="text-slate-400" />
-              </label>
-              <Input 
-                placeholder="e.g. 4279898" 
-                value={eventTypeId}
-                onChange={(e) => setEventTypeId(e.target.value)}
-                className="h-10 rounded-xl bg-muted/50 border-none font-bold text-xs"
-              />
-            </div>
-            <div className="space-y-2">
-              <label className="text-[10px] font-bold text-slate-500 uppercase ml-1 flex items-center gap-1">
-                Schedule ID <Hash size={10} className="text-slate-400" />
-              </label>
-              <Input 
-                placeholder="Optional override" 
-                value={scheduleId}
-                onChange={(e) => setScheduleId(e.target.value)}
-                className="h-10 rounded-xl bg-muted/50 border-none font-bold text-xs"
-              />
+              <Button 
+                variant="outline"
+                onClick={handleCopyAll}
+                disabled={loading}
+                className="rounded-xl h-10 px-4 border-indigo-100 text-indigo-600 hover:bg-indigo-50 font-black text-[10px] uppercase tracking-widest"
+              >
+                {copied ? <Check size={14} className="mr-2" /> : <Copy size={14} className="mr-2" />}
+                Copy Text
+              </Button>
+              <Button 
+                onClick={fetchSlots} 
+                disabled={loading}
+                className="rounded-xl h-10 px-6 bg-indigo-600 hover:bg-indigo-700 text-white font-black text-[10px] uppercase tracking-widest shadow-lg shadow-indigo-100"
+              >
+                {loading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <RefreshCw size={14} className="mr-2" />}
+                Refresh
+              </Button>
             </div>
           </div>
+
+          <div className="flex items-center justify-between px-4">
+            <div className="flex items-center gap-6">
+              <button 
+                onClick={() => setShowOnlyAvailable(!showOnlyAvailable)}
+                className="flex items-center gap-2 group"
+              >
+                <div className={cn(
+                  "w-4 h-4 rounded border-2 flex items-center justify-center transition-all",
+                  showOnlyAvailable ? "bg-indigo-600 border-indigo-600" : "border-slate-300 group-hover:border-indigo-400"
+                )}>
+                  {showOnlyAvailable && <Check size={10} className="text-white" />}
+                </div>
+                <span className="text-[10px] font-black uppercase tracking-widest text-slate-500 group-hover:text-slate-900 transition-colors">
+                  Show only available days
+                </span>
+              </button>
+            </div>
+            
+            <Collapsible open={configOpen} onOpenChange={setConfigOpen}>
+              <CollapsibleTrigger asChild>
+                <Button variant="ghost" size="sm" className="text-[10px] font-black uppercase tracking-widest text-slate-400 hover:text-indigo-600">
+                  <Settings2 size={14} className="mr-2" />
+                  Advanced Settings
+                  {configOpen ? <ChevronUp size={14} className="ml-1" /> : <ChevronDown size={14} className="ml-1" />}
+                </Button>
+              </CollapsibleTrigger>
+            </Collapsible>
+          </div>
+
+          <Collapsible open={configOpen}>
+            <CollapsibleContent className="animate-in slide-in-from-top-2 duration-300">
+              <Card className="border-none shadow-sm bg-muted/30 rounded-[2rem] p-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <div className="space-y-2">
+                    <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-1">Event Type ID</label>
+                    <Input 
+                      placeholder="e.g. 4279898" 
+                      value={eventTypeId}
+                      onChange={(e) => setEventTypeId(e.target.value)}
+                      className="h-10 rounded-xl bg-card border-border font-bold text-xs"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-1">Schedule ID</label>
+                    <Input 
+                      placeholder="Optional override" 
+                      value={scheduleId}
+                      onChange={(e) => setScheduleId(e.target.value)}
+                      className="h-10 rounded-xl bg-card border-border font-bold text-xs"
+                    />
+                  </div>
+                </div>
+              </Card>
+            </CollapsibleContent>
+          </Collapsible>
         </div>
-        
-        <div className="flex gap-3">
-          <Button 
-            variant="outline"
-            onClick={handleCopyAll}
-            disabled={loading}
-            className="rounded-xl h-12 px-6 border-indigo-100 text-indigo-600 hover:bg-indigo-50 font-black text-xs uppercase tracking-widest"
-          >
-            {copied ? <Check size={16} className="mr-2" /> : <Copy size={16} className="mr-2" />}
-            Copy
-          </Button>
-          <Button 
-            onClick={fetchSlots} 
-            disabled={loading}
-            className="rounded-xl h-12 px-8 bg-indigo-600 hover:bg-indigo-700 text-white font-black text-xs uppercase tracking-widest shadow-lg shadow-indigo-100"
-          >
-            {loading ? <Loader2 className="mr-2 animate-spin" /> : <RefreshCw size={16} className="mr-2" />}
-            Refresh
-          </Button>
+
+        <div className="lg:col-span-4">
+          <Card className="border-none shadow-lg rounded-[2.5rem] bg-slate-900 text-white h-full overflow-hidden relative group">
+            <div className="absolute top-0 right-0 p-6 opacity-10 group-hover:scale-110 transition-transform duration-700">
+              <ShieldAlert size={100} />
+            </div>
+            <CardContent className="p-8 flex flex-col justify-center h-full space-y-4 relative z-10">
+              <div className="w-12 h-12 rounded-2xl bg-white/10 flex items-center justify-center text-amber-400 border border-white/10">
+                <Info size={24} />
+              </div>
+              <h4 className="text-xl font-black">Availability Logic</h4>
+              <p className="text-sm text-slate-400 leading-relaxed font-medium">
+                Blocking a day creates an "Out of Office" entry in Cal.com. This overrides your standard schedule and prevents any new bookings for that date.
+              </p>
+            </CardContent>
+          </Card>
         </div>
       </div>
 
@@ -302,28 +384,32 @@ const CalcomSlotsView = () => {
       )}
 
       {loading && Object.keys(slots).length === 0 ? (
-        <div className="py-20 flex flex-col items-center justify-center gap-4">
-          <Loader2 className="w-10 h-10 text-indigo-500 animate-spin" />
-          <p className="text-xs font-black uppercase tracking-widest text-slate-400">Fetching Cal.com Data...</p>
+        <div className="py-32 flex flex-col items-center justify-center gap-6">
+          <div className="relative">
+            <div className="w-20 h-20 rounded-[2rem] bg-indigo-600/10 animate-pulse" />
+            <Loader2 className="absolute inset-0 m-auto w-10 h-10 text-indigo-600 animate-spin" />
+          </div>
+          <p className="text-xs font-black uppercase tracking-[0.3em] text-slate-400">Syncing with Cal.com...</p>
         </div>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
           {dateRange.map(date => {
             const daySlots = slots[date] || [];
             const dayBookings = bookings[date] || [];
             const isBlocked = blockedDates.includes(date);
             const hasNoActivity = daySlots.length === 0 && dayBookings.length === 0;
             
+            if (showOnlyAvailable && (isBlocked || daySlots.length === 0)) return null;
             if (!isBlocked && hasNoActivity) return null;
 
             return (
               <Card key={date} className={cn(
-                "border-none shadow-md rounded-[2rem] overflow-hidden group hover:shadow-xl transition-all duration-500",
-                isBlocked ? "bg-slate-50/80 dark:bg-slate-900/50 border-2 border-dashed border-slate-200 dark:border-slate-800" : "bg-white dark:bg-slate-950"
+                "border-none shadow-md rounded-[2.5rem] overflow-hidden group hover:shadow-xl transition-all duration-500 flex flex-col",
+                isBlocked ? "bg-slate-50/80 dark:bg-slate-900/50 border-2 border-dashed border-slate-200 dark:border-slate-800" : "bg-card"
               )}>
                 <CardHeader className={cn(
                   "border-b transition-colors p-6",
-                  isBlocked ? "bg-slate-100/50 dark:bg-slate-900/80 border-slate-200 dark:border-slate-800" : "bg-slate-50/50 dark:bg-slate-900/30 border-slate-100 dark:border-slate-900"
+                  isBlocked ? "bg-slate-100/50 dark:bg-slate-900/80 border-slate-200 dark:border-slate-800" : "bg-muted/30 border-border"
                 )}>
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-3">
@@ -336,12 +422,12 @@ const CalcomSlotsView = () => {
                       <div>
                         <CardTitle className={cn(
                           "text-lg font-black",
-                          isBlocked ? "text-slate-500" : "text-slate-900 dark:text-white"
+                          isBlocked ? "text-slate-500" : "text-foreground"
                         )}>
                           {format(new Date(date), "EEEE")}
                         </CardTitle>
                         <CardDescription className="font-bold text-[10px] uppercase tracking-widest text-indigo-600">
-                          {format(new Date(date), "MMMM d, yyyy")}
+                          {format(new Date(date), "MMM d, yyyy")}
                         </CardDescription>
                       </div>
                     </div>
@@ -350,44 +436,42 @@ const CalcomSlotsView = () => {
                         "border-none font-black text-[8px] uppercase tracking-widest px-3 py-1 rounded-full shadow-sm",
                         isBlocked ? "bg-rose-100 text-rose-600" : "bg-emerald-50 text-emerald-600"
                       )}>
-                        {isBlocked ? "Blocked" : `${daySlots.length} Available`}
+                        {isBlocked ? "Blocked" : `${daySlots.length} Slots`}
                       </Badge>
-                      <Button 
-                        variant="ghost" 
-                        size="sm" 
-                        className={cn(
-                          "h-7 px-3 text-[9px] font-black uppercase tracking-widest rounded-lg transition-all",
-                          isBlocked 
-                            ? "bg-emerald-600 text-white hover:bg-emerald-700 shadow-md" 
-                            : "text-rose-50 hover:bg-rose-50 opacity-0 group-hover:opacity-100"
-                        )}
-                        onClick={() => handleToggleBlock(date, isBlocked)}
-                        disabled={processingDate === date}
-                      >
-                        {processingDate === date ? <Loader2 size={12} className="animate-spin mr-1.5" /> : isBlocked ? <Unlock size={12} className="mr-1.5" /> : <Ban size={12} className="mr-1.5" />}
-                        {isBlocked ? "Unblock Day" : "Block Day"}
-                      </Button>
                     </div>
                   </div>
                 </CardHeader>
-                <CardContent className="p-6 space-y-4">
+                <CardContent className="p-6 space-y-6 flex-1 flex flex-col">
                   {isBlocked ? (
-                    <div className="py-10 text-center space-y-3 animate-in fade-in zoom-in-95 duration-500">
-                      <div className="w-12 h-12 rounded-full bg-rose-50 dark:bg-rose-900/20 flex items-center justify-center mx-auto">
-                        <ShieldAlert size={24} className="text-rose-400" />
+                    <div className="flex-1 flex flex-col items-center justify-center py-10 text-center space-y-4 animate-in fade-in zoom-in-95 duration-500">
+                      <div className="w-14 h-14 rounded-[1.5rem] bg-rose-50 dark:bg-rose-900/20 flex items-center justify-center mx-auto border border-rose-100 dark:border-rose-900/30">
+                        <ShieldAlert size={28} className="text-rose-400" />
                       </div>
-                      <p className="text-xs font-bold text-slate-500">Manual Override Active</p>
+                      <div className="space-y-1">
+                        <p className="text-xs font-black text-slate-900 dark:text-white uppercase tracking-widest">Day Blocked</p>
+                        <p className="text-[10px] font-medium text-slate-500">Manual override active</p>
+                      </div>
+                      <Button 
+                        variant="outline" 
+                        size="sm" 
+                        className="h-9 px-6 rounded-xl border-emerald-200 text-emerald-600 hover:bg-emerald-50 font-black text-[10px] uppercase tracking-widest"
+                        onClick={() => handleToggleBlock(date, true)}
+                        disabled={processingDate === date}
+                      >
+                        {processingDate === date ? <Loader2 size={14} className="animate-spin mr-2" /> : <Unlock size={14} className="mr-2" />}
+                        Unblock Day
+                      </Button>
                     </div>
                   ) : (
                     <>
                       {dayBookings.length > 0 && (
-                        <div className="space-y-2">
-                          <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest ml-1">Booked Sessions</p>
+                        <div className="space-y-3">
+                          <p className="text-[9px] font-black text-muted-foreground uppercase tracking-[0.2em] ml-1">Confirmed Sessions</p>
                           <div className="grid grid-cols-1 gap-2">
                             {dayBookings.map((booking) => (
                               <div 
                                 key={booking.id} 
-                                className="flex items-center justify-between p-3 rounded-xl bg-indigo-900 text-white shadow-lg border border-indigo-800 group/booking"
+                                className="flex items-center justify-between p-3 rounded-2xl bg-indigo-900 text-white shadow-lg border border-indigo-800 group/booking"
                               >
                                 <div className="flex items-center gap-3 min-w-0">
                                   <div className="w-8 h-8 rounded-lg bg-white/10 flex items-center justify-center shrink-0">
@@ -403,7 +487,7 @@ const CalcomSlotsView = () => {
                                 <Button 
                                   variant="ghost" 
                                   size="icon" 
-                                  className="h-8 w-8 rounded-lg text-indigo-300 hover:text-rose-400 hover:bg-rose-500/20 opacity-0 group-hover/booking:opacity-100 transition-all"
+                                  className="h-8 w-8 rounded-xl text-indigo-300 hover:text-rose-400 hover:bg-rose-500/20 opacity-0 group-hover/booking:opacity-100 transition-all"
                                   onClick={() => handleCancelBooking(booking.uid, booking.attendeeName)}
                                   disabled={processingBooking === booking.uid}
                                 >
@@ -416,8 +500,8 @@ const CalcomSlotsView = () => {
                       )}
 
                       {daySlots.length > 0 && (
-                        <div className="space-y-2">
-                          <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest ml-1">Available Slots</p>
+                        <div className="space-y-3 flex-1">
+                          <p className="text-[9px] font-black text-muted-foreground uppercase tracking-[0.2em] ml-1">Available Slots</p>
                           <div className="grid grid-cols-2 gap-2">
                             {daySlots.map((slot, idx) => {
                               const timeStr = slot.time || slot.start;
@@ -425,7 +509,7 @@ const CalcomSlotsView = () => {
                                 <button 
                                   key={idx} 
                                   onClick={() => handleSlotClick(date, timeStr)}
-                                  className="flex items-center justify-center p-2.5 rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-100 dark:border-slate-800 text-xs font-black text-slate-700 dark:text-slate-300 hover:bg-indigo-600 hover:border-indigo-600 hover:text-white transition-all group/slot"
+                                  className="flex items-center justify-center p-2.5 rounded-xl bg-muted/50 border border-border text-[10px] font-black text-foreground hover:bg-indigo-600 hover:border-indigo-600 hover:text-white transition-all group/slot"
                                 >
                                   <Clock size={12} className="mr-2 opacity-40 group-hover/slot:opacity-100 transition-opacity" />
                                   {format(new Date(timeStr), "h:mm a")}
@@ -435,12 +519,39 @@ const CalcomSlotsView = () => {
                           </div>
                         </div>
                       )}
+
+                      <div className="pt-4 border-t border-border mt-auto">
+                        <Button 
+                          variant="ghost" 
+                          size="sm" 
+                          className="w-full h-9 px-3 text-[9px] font-black uppercase tracking-widest rounded-xl text-rose-600 hover:bg-rose-50 opacity-0 group-hover:opacity-100 transition-all"
+                          onClick={() => handleToggleBlock(date, false)}
+                          disabled={processingDate === date}
+                        >
+                          {processingDate === date ? <Loader2 size={12} className="animate-spin mr-1.5" /> : <Ban size={12} className="mr-1.5" />}
+                          Block Full Day
+                        </Button>
+                      </div>
                     </>
                   )}
                 </CardContent>
               </Card>
             );
           })}
+        </div>
+      )}
+
+      {/* Empty State */}
+      {!loading && dateRange.every(date => !blockedDates.includes(date) && (slots[date] || []).length === 0 && (bookings[date] || []).length === 0) && (
+        <div className="text-center py-32 bg-muted/30 rounded-[3rem] border-2 border-dashed border-border">
+          <div className="mx-auto w-20 h-20 bg-card rounded-3xl flex items-center justify-center mb-6 shadow-xl">
+            <CalendarDays className="text-muted-foreground" size={40} />
+          </div>
+          <p className="text-foreground font-black text-xl">No availability found</p>
+          <p className="text-muted-foreground mt-2 mb-8 font-medium">Try increasing the lookahead range or check your Cal.com settings.</p>
+          <Button variant="outline" className="h-12 px-8 border-border hover:bg-card rounded-2xl font-bold" onClick={fetchSlots}>
+            Retry Sync
+          </Button>
         </div>
       )}
 
@@ -453,7 +564,7 @@ const CalcomSlotsView = () => {
               </div>
               <DialogTitle className="text-2xl font-black">Book Client</DialogTitle>
             </div>
-            <DialogDescription>Schedule a session for the selected time slot.</DialogDescription>
+            <DialogDescription className="font-medium">Schedule a session for the selected time slot.</DialogDescription>
           </DialogHeader>
           {bookingData && (
             <AppointmentForm 

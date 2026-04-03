@@ -2,6 +2,8 @@
 
 import React from 'react';
 import { cn } from '@/lib/utils';
+import { motion, AnimatePresence } from 'framer-motion';
+import { useLocation } from 'react-router-dom';
 
 type LayoutVariant = 'default' | 'wide' | 'full';
 
@@ -18,25 +20,32 @@ const AppLayout = ({
   hasFixedHeader = false,
   className 
 }: AppLayoutProps) => {
+  const location = useLocation();
   
   const variants = {
-    // Standard container for lists and dashboards (Increased to 1600px)
-    default: "max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-10",
-    // Wider container for complex clinical views (Spans full width)
-    wide: "max-w-full mx-auto px-4 sm:px-6 lg:px-12",
-    // Edge-to-edge for sandbox/wizard tools
-    full: "w-full px-4 sm:px-6 lg:px-12"
+    default: "max-w-[1400px] mx-auto px-6 lg:px-10",
+    wide: "max-w-full mx-auto px-6 lg:px-12",
+    full: "w-full px-6 lg:px-12"
   };
 
   return (
     <div className={cn(
       "w-full min-h-screen bg-background transition-all duration-500",
-      // Standardize vertical padding: pt-24 if header is fixed, pt-6 on mobile, pt-10 on desktop
-      hasFixedHeader ? "pt-24 pb-12" : "pt-6 md:pt-10 pb-12",
+      hasFixedHeader ? "pt-24 pb-16" : "pt-8 md:pt-12 pb-16",
       variants[variant],
       className
     )}>
-      {children}
+      <AnimatePresence mode="wait">
+        <motion.div
+          key={location.pathname}
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          exit={{ opacity: 0, y: -10 }}
+          transition={{ duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
+        >
+          {children}
+        </motion.div>
+      </AnimatePresence>
     </div>
   );
 };

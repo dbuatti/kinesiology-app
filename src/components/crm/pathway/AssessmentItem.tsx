@@ -134,7 +134,7 @@ const AssessmentItem = ({
             {statusL && (
               <Badge className={cn(
                 "border-none text-white font-black text-[7px] uppercase tracking-widest px-1.5 py-0.5 rounded-md",
-                statusL === 'Clear' ? "bg-emerald-500" : "bg-rose-600"
+                statusL === 'Clear' ? "bg-emerald-50" : "bg-rose-600"
               )}>
                 L: {statusL}
               </Badge>
@@ -142,7 +142,7 @@ const AssessmentItem = ({
             {statusR && (
               <Badge className={cn(
                 "border-none text-white font-black text-[7px] uppercase tracking-widest px-1.5 py-0.5 rounded-md",
-                statusR === 'Clear' ? "bg-emerald-500" : "bg-rose-600"
+                statusR === 'Clear' ? "bg-emerald-50" : "bg-rose-600"
               )}>
                 R: {statusR}
               </Badge>
@@ -152,7 +152,7 @@ const AssessmentItem = ({
           statusMidline && (
             <Badge className={cn(
               "border-none text-white font-black text-[7px] uppercase tracking-widest px-1.5 py-0.5 rounded-md",
-              statusMidline === 'Clear' ? "bg-emerald-500" : "bg-rose-600"
+              statusMidline === 'Clear' ? "bg-emerald-50" : "bg-rose-600"
             )}>
               {statusMidline}
             </Badge>

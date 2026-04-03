@@ -284,7 +284,7 @@ const ClientsPage = () => {
                         "p-3 rounded-2xl border flex flex-col items-center text-center",
                         client.latest_bolt === null ? "bg-muted/30 border-border" : (client.latest_bolt >= 25 ? "bg-emerald-50 dark:bg-emerald-900/20 border-emerald-100 dark:border-emerald-900/30" : "bg-rose-100 dark:bg-rose-900/30 border-rose-200 dark:border-rose-900/50")
                       )}>
-                        <FlaskConical size={14} className={cn("mb-1", client.latest_bolt === null ? "text-muted-foreground" : (client.latest_bolt >= 25 ? "text-emerald-600" : "text-rose-600"))} />
+                        <FlaskConical size={14} className={cn("mb-1.5", client.latest_bolt === null ? "text-muted-foreground" : (client.latest_bolt >= 25 ? "text-emerald-600" : "text-rose-600"))} />
                         <p className="text-[8px] font-black uppercase tracking-widest opacity-60">Latest BOLT</p>
                         <p className="text-lg font-black">{client.latest_bolt !== null ? `${client.latest_bolt}s` : "—"}</p>
                       </div>

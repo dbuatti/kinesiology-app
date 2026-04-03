@@ -3,7 +3,6 @@
 import React, { useState, useMemo } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Switch } from "@/components/ui/switch";
-import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { 
   Calendar, 
@@ -12,17 +11,11 @@ import {
   Star, 
   FlaskConical, 
   Activity,
-  User,
   ChevronRight,
-  TrendingUp,
   ShieldAlert,
-  Brain,
   Copy,
   Check,
-  DollarSign,
-  ExternalLink,
-  CreditCard,
-  CheckCircle2
+  DollarSign
 } from "lucide-react";
 import { format, isToday } from "date-fns";
 import { cn } from "@/lib/utils";
@@ -67,7 +60,7 @@ const AppointmentHeader = ({ appointment, onSaveField, onUpdate }: AppointmentHe
   };
 
   return (
-    <div className="p-8 border-b border-border bg-card">
+    <div className="pb-8 space-y-8">
       <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-8">
         <div className="flex items-start gap-6">
           <div className="relative group">
@@ -85,7 +78,7 @@ const AppointmentHeader = ({ appointment, onSaveField, onUpdate }: AppointmentHe
                 onClick={handleCopyId}
                 className="group/id flex items-center gap-1.5"
               >
-                <Badge variant="secondary" className="font-black bg-muted border-none text-muted-foreground text-[9px] uppercase tracking-widest px-2.5 py-1 rounded-lg group-hover/id:bg-indigo-50 group-hover/id:text-indigo-600 transition-colors">
+                <Badge variant="secondary" className="font-black bg-slate-100 dark:bg-slate-800 border-none text-muted-foreground text-[9px] uppercase tracking-widest px-2.5 py-1 rounded-lg group-hover/id:bg-indigo-50 group-hover/id:text-indigo-600 transition-colors">
                   {appointment.display_id || appointment.id.slice(0, 8)}
                   {idCopied ? <Check size={10} className="ml-1 text-emerald-500" /> : <Copy size={10} className="ml-1 opacity-0 group-hover/id:opacity-100 transition-opacity" />}
                 </Badge>
@@ -95,7 +88,7 @@ const AppointmentHeader = ({ appointment, onSaveField, onUpdate }: AppointmentHe
               </Badge>
               <Select value={appointment.status} onValueChange={(newStatus) => onSaveField('status', newStatus)}>
                 <SelectTrigger className={cn(
-                  "h-7 w-[120px] text-[9px] font-black uppercase tracking-widest border-border shadow-sm bg-card rounded-lg",
+                  "h-7 w-[120px] text-[9px] font-black uppercase tracking-widest border-slate-200 dark:border-slate-800 shadow-sm bg-white dark:bg-slate-900 rounded-lg",
                   appointment.status === 'Completed' ? "text-emerald-600" : "text-indigo-600"
                 )}>
                   <SelectValue placeholder="Status" />

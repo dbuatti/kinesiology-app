@@ -288,12 +288,12 @@ const AppointmentDetailPage = () => {
             />
           </div>
 
-          <div className="grid grid-cols-1 xl:grid-cols-12 gap-8">
-            <div className={cn(showSidebar ? "xl:col-span-8" : "xl:col-span-12", "space-y-8 transition-all duration-500")}>
-              <Card className="border-none shadow-xl rounded-[2.5rem] bg-white overflow-hidden">
+          <div className="grid grid-cols-1 xl:grid-cols-12 gap-12">
+            <div className={cn(showSidebar ? "xl:col-span-8" : "xl:col-span-12", "space-y-12 transition-all duration-500")}>
+              <div className="space-y-10">
                 <AppointmentHeader appointment={appointment} onSaveField={saveField} onUpdate={refresh} />
 
-                <div className="p-8 grid grid-cols-1 md:grid-cols-2 gap-8 bg-slate-50/30">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                   <div className="space-y-2">
                     <div className="flex items-center gap-2 px-2">
                       <Target size={14} className="text-indigo-500" />
@@ -306,7 +306,7 @@ const AppointmentDetailPage = () => {
                       value={appointment.goal} 
                       placeholder="What is the primary goal?" 
                       onSave={saveField} 
-                      className="bg-white p-6 rounded-[2rem] border border-slate-100 shadow-sm" 
+                      className="bg-slate-50/50 dark:bg-slate-900/50 p-6 rounded-[2rem] border border-slate-100 dark:border-slate-800" 
                     />
                   </div>
                   <div className="space-y-2">
@@ -321,11 +321,11 @@ const AppointmentDetailPage = () => {
                       value={appointment.issue} 
                       placeholder="Describe the main concern..." 
                       onSave={saveField} 
-                      className="bg-white p-6 rounded-[2rem] border border-slate-100 shadow-sm" 
+                      className="bg-slate-50/50 dark:bg-slate-900/50 p-6 rounded-[2rem] border border-slate-100 dark:border-slate-800" 
                     />
                   </div>
                 </div>
-              </Card>
+              </div>
 
               <div className="print:hidden">
                 <SessionContentSwitcher 
@@ -349,8 +349,8 @@ const AppointmentDetailPage = () => {
             </div>
 
             {showSidebar && (
-              <div className="xl:col-span-4 space-y-8 print:hidden animate-in fade-in slide-in-from-right-4 duration-500">
-                <div className="space-y-4">
+              <div className="xl:col-span-4 space-y-12 print:hidden animate-in fade-in slide-in-from-right-4 duration-500">
+                <div className="space-y-6">
                   <div className="flex items-center justify-between px-2">
                     <div className="flex items-center gap-2">
                       <Brain size={18} className="text-indigo-600" />

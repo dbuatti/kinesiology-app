@@ -3,7 +3,6 @@
 import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { 
@@ -226,7 +225,7 @@ const Index = () => {
 
   return (
     <AppLayout>
-      <div className="space-y-10">
+      <div className="space-y-12">
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
           <div>
             <h1 className="text-4xl font-black tracking-tighter text-primary">Practice Hub</h1>
@@ -304,74 +303,26 @@ const Index = () => {
               </Link>
             </div>
 
-            {/* Clinical Pulse Row */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-              <Card className="border-none shadow-md rounded-[3rem] bg-primary text-white overflow-hidden relative group">
-                <div className="absolute inset-0 bg-gradient-to-br from-white/10 to-transparent" />
-                <div className="absolute top-0 right-0 p-6 opacity-10 group-hover:scale-110 transition-transform duration-700"><Activity size={80} /></div>
-                <CardContent className="p-8 flex items-center gap-5 relative z-10">
-                  <div className="w-12 h-12 rounded-2xl bg-white/10 backdrop-blur-md flex items-center justify-center border border-white/10">
-                    <Activity size={24} className="text-secondary" />
-                  </div>
-                  <div>
-                    <p className="text-[10px] font-black text-secondary uppercase tracking-widest">Clinical Pulse</p>
-                    <p className="text-2xl font-black">Autonomic Sync</p>
-                    <p className="text-xs text-white/70 font-medium mt-1">Avg Coherence: {stats.avgCoherence.toFixed(2)}</p>
-                  </div>
-                </CardContent>
-              </Card>
-              <Card className="border-none shadow-md rounded-[3rem] bg-emerald-600 text-white overflow-hidden relative group">
-                <div className="absolute inset-0 bg-gradient-to-br from-white/10 to-transparent" />
-                <div className="absolute top-0 right-0 p-6 opacity-10 group-hover:scale-110 transition-transform duration-700"><Wind size={80} /></div>
-                <CardContent className="p-8 flex items-center gap-5 relative z-10">
-                  <div className="w-12 h-12 rounded-2xl bg-white/10 backdrop-blur-md flex items-center justify-center border border-white/10">
-                    <Wind size={24} className="text-emerald-200" />
-                  </div>
-                  <div>
-                    <p className="text-[10px] font-black text-emerald-200 uppercase tracking-widest">Respiratory Health</p>
-                    <p className="text-2xl font-black">CO2 Tolerance</p>
-                    <p className="text-xs text-white/70 font-medium mt-1">Avg BOLT: {stats.avgBolt}s</p>
-                  </div>
-                </CardContent>
-              </Card>
-              <Card className="border-none shadow-md rounded-[3rem] bg-accent text-white overflow-hidden relative group">
-                <div className="absolute inset-0 bg-gradient-to-br from-white/10 to-transparent" />
-                <div className="absolute top-0 right-0 p-6 opacity-10 group-hover:scale-110 transition-transform duration-700"><Heart size={80} /></div>
-                <CardContent className="p-8 flex items-center gap-5 relative z-10">
-                  <div className="w-12 h-12 rounded-2xl bg-white/10 backdrop-blur-md flex items-center justify-center border border-white/10">
-                    <Heart size={24} className="text-white" />
-                  </div>
-                  <div>
-                    <p className="text-[10px] font-black text-white/80 uppercase tracking-widest">Practice Load</p>
-                    <p className="text-2xl font-black">Active Cases</p>
-                    <p className="text-xs text-white/70 font-medium mt-1">{stats.sessionsThisWeek} sessions this week</p>
-                  </div>
-                </CardContent>
-              </Card>
-            </div>
-
             <DashboardStats stats={stats} />
 
-            <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-12">
               {/* Main Content Column */}
-              <div className="lg:col-span-8 space-y-8">
+              <div className="lg:col-span-8 space-y-12">
                 <DailyBriefing todaySessions={todaySessions} activeSession={activeSession} />
                 
                 {pendingOnboarding.length > 0 && (
-                  <Card className="border-none shadow-xl rounded-[3rem] bg-muted/30 border-2 border-secondary/30 overflow-hidden">
-                    <CardHeader className="p-8 pb-4">
-                      <div className="flex items-center justify-between">
-                        <CardTitle className="text-xl font-black flex items-center gap-3 text-primary">
-                          <ClipboardCheck size={24} className="text-accent" /> Recent Onboarding
-                        </CardTitle>
-                        <Badge className="bg-accent text-white border-none font-black text-[10px] uppercase tracking-widest px-3 py-1 rounded-full">
-                          New Submissions
-                        </Badge>
-                      </div>
-                    </CardHeader>
-                    <CardContent className="p-8 pt-0 space-y-3">
+                  <div className="space-y-6">
+                    <div className="flex items-center justify-between px-2">
+                      <h2 className="text-2xl font-black flex items-center gap-3 text-primary">
+                        <ClipboardCheck size={24} className="text-accent" /> Recent Onboarding
+                      </h2>
+                      <Badge className="bg-accent text-white border-none font-black text-[9px] uppercase tracking-widest px-3 py-1 rounded-full">
+                        New Submissions
+                      </Badge>
+                    </div>
+                    <div className="space-y-3">
                       {pendingOnboarding.map(client => (
-                        <div key={client.id} className="p-5 bg-white rounded-[2rem] border border-secondary/30 flex items-center justify-between group hover:shadow-md transition-all duration-300">
+                        <div key={client.id} className="p-5 bg-white dark:bg-slate-900 rounded-[2rem] border border-secondary/30 flex items-center justify-between group hover:shadow-md transition-all duration-300">
                           <Link to={`/clients/${client.id}`} className="flex items-center gap-4 flex-1">
                             <div className="w-10 h-10 rounded-xl bg-muted text-primary flex items-center justify-center font-black text-lg">
                               {client.name.charAt(0)}
@@ -401,26 +352,21 @@ const Index = () => {
                           </div>
                         </div>
                       ))}
-                    </CardContent>
-                  </Card>
+                    </div>
+                  </div>
                 )}
 
                 {priorityClients.length > 0 && (
-                  <Card className="border-none shadow-lg rounded-[3rem] bg-rose-50 dark:bg-rose-950/10 border-2 border-rose-200 dark:border-rose-900/30 overflow-hidden">
-                    <CardHeader className="p-8 pb-4">
-                      <div className="flex items-center justify-between">
-                        <CardTitle className="text-xl font-black flex items-center gap-3 text-rose-900 dark:text-rose-100">
-                          <AlertCircle size={24} className="text-rose-600" /> Clinical Priority: Today
-                        </CardTitle>
-                        <Badge className="bg-rose-600 text-white border-none font-black text-[10px] uppercase tracking-widest px-3 py-1 rounded-full">
-                          {priorityClients.length} High Risk
-                        </Badge>
-                      </div>
-                      <CardDescription className="text-rose-700 dark:text-rose-300 font-medium text-base mt-1">
-                        Clients scheduled for today with BOLT scores below functional baseline (25s).
-                      </CardDescription>
-                    </CardHeader>
-                    <CardContent className="p-8 pt-0 space-y-3">
+                  <div className="space-y-6">
+                    <div className="flex items-center justify-between px-2">
+                      <h2 className="text-2xl font-black flex items-center gap-3 text-rose-600">
+                        <AlertCircle size={24} /> Clinical Priority: Today
+                      </h2>
+                      <Badge className="bg-rose-600 text-white border-none font-black text-[9px] uppercase tracking-widest px-3 py-1 rounded-full">
+                        {priorityClients.length} High Risk
+                      </Badge>
+                    </div>
+                    <div className="space-y-3">
                       {priorityClients.map(pc => (
                         <Link key={pc.id} to={`/appointments/${pc.appointment.id}`}>
                           <div className="p-5 bg-white dark:bg-slate-900 rounded-[2rem] border border-rose-200 dark:border-rose-900/30 flex items-center justify-between group hover:shadow-md transition-all duration-300">
@@ -447,16 +393,16 @@ const Index = () => {
                           </div>
                         </Link>
                       ))}
-                    </CardContent>
-                  </Card>
+                    </div>
+                  </div>
                 )}
 
-                <Card className="border-none shadow-xl rounded-[3rem] overflow-hidden bg-white">
-                  <CardHeader className="p-8 pb-0">
-                    <CardTitle className="text-2xl font-black tracking-tight">Session Activity</CardTitle>
-                    <CardDescription className="font-medium text-lg mt-1">Volume of appointments over the last 6 months</CardDescription>
-                  </CardHeader>
-                  <CardContent className="h-[350px] p-8 pt-6">
+                <div className="space-y-6">
+                  <div className="px-2">
+                    <h2 className="text-2xl font-black tracking-tight">Session Activity</h2>
+                    <p className="text-muted-foreground font-medium">Volume of appointments over the last 6 months</p>
+                  </div>
+                  <div className="h-[300px] w-full">
                     <ResponsiveContainer width="100%" height="100%">
                       <AreaChart data={chartData}>
                         <defs>
@@ -475,23 +421,23 @@ const Index = () => {
                         <Area type="monotone" dataKey="sessions" stroke="#1E3261" strokeWidth={5} fillOpacity={1} fill="url(#colorSessions)" />
                       </AreaChart>
                     </ResponsiveContainer>
-                  </CardContent>
-                </Card>
+                  </div>
+                </div>
 
-                <Card className="border-none shadow-xl rounded-[3rem] bg-amber-50 dark:bg-amber-950/10 border border-amber-100 dark:border-amber-900/30 overflow-hidden">
-                  <CardHeader className="p-8 pb-4">
-                    <CardTitle className="text-2xl font-black flex items-center gap-3 text-amber-900 dark:text-amber-100">
-                      <StickyNote size={28} className="text-amber-600" /> Practitioner Scratchpad
-                    </CardTitle>
-                    <CardDescription className="text-amber-700 dark:text-amber-300 font-medium text-lg">Quick notes or research ideas. Saves automatically.</CardDescription>
-                  </CardHeader>
-                  <CardContent className="p-8 pt-0">
-                    <div className="flex flex-wrap gap-2 mb-4">
+                <div className="space-y-6">
+                  <div className="px-2">
+                    <h2 className="text-2xl font-black flex items-center gap-3 text-amber-600">
+                      <StickyNote size={24} /> Practitioner Scratchpad
+                    </h2>
+                    <p className="text-muted-foreground font-medium">Quick notes or research ideas. Saves automatically.</p>
+                  </div>
+                  <div className="space-y-4">
+                    <div className="flex flex-wrap gap-2">
                       {["Research", "Follow-up", "Protocol Idea", "Clinical Note"].map(tag => (
                         <button 
                           key={tag}
                           onClick={() => handleScratchpadChange(scratchpad ? `${scratchpad}\n[${tag}] ` : `[${tag}] `)}
-                          className="px-3 py-1.5 rounded-xl bg-white border border-amber-200 dark:border-amber-900/30 text-[10px] font-black uppercase tracking-widest text-amber-600 hover:bg-amber-100 dark:hover:bg-amber-900/20 transition-colors"
+                          className="px-3 py-1.5 rounded-xl bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-[10px] font-black uppercase tracking-widest text-slate-600 hover:bg-amber-100 dark:hover:bg-amber-900/20 transition-colors"
                         >
                           + {tag}
                         </button>
@@ -501,32 +447,33 @@ const Index = () => {
                       value={scratchpad}
                       onChange={(e) => handleScratchpadChange(e.target.value)}
                       placeholder="Type something here..."
-                      className="min-h-[200px] bg-white/70 border-amber-200 dark:border-amber-900/30 focus:ring-amber-500 focus:border-amber-500 resize-none text-amber-900 dark:text-amber-100 placeholder:text-amber-300 dark:placeholder:text-amber-800 rounded-[2rem] p-8 text-xl font-medium leading-relaxed shadow-inner"
+                      className="min-h-[200px] bg-slate-50/50 dark:bg-slate-900/50 border-slate-200 dark:border-slate-800 focus:ring-amber-500 focus:border-amber-500 resize-none text-foreground placeholder:text-slate-300 dark:placeholder:text-slate-800 rounded-[2rem] p-8 text-xl font-medium leading-relaxed shadow-inner"
                     />
-                    <div className="flex items-center justify-end gap-2 mt-4 text-[10px] font-black text-amber-600 uppercase tracking-[0.3em]">
+                    <div className="flex items-center justify-end gap-2 text-[10px] font-black text-amber-600 uppercase tracking-[0.3em]">
                       <CheckCircle2 size={14} /> {lastSaved ? `Last saved at ${lastSaved}` : 'Auto-saved to browser'}
                     </div>
-                  </CardContent>
-                </Card>
+                  </div>
+                </div>
               </div>
 
               {/* Sidebar Column */}
-              <div className="lg:col-span-4 space-y-8">
+              <div className="lg:col-span-4 space-y-12">
                 <MeridianClock />
                 
                 <UpcomingAppointments />
                 
                 <RecentActivity />
 
-                <Card className="border-none shadow-xl rounded-[3rem] bg-primary text-white overflow-hidden relative">
-                  <div className="absolute inset-0 bg-gradient-to-br from-white/10 to-transparent" />
-                  <div className="absolute top-0 right-0 p-8 opacity-10 pointer-events-none"><Wind size={120} /></div>
-                  <CardHeader className="p-8">
-                    <CardTitle className="text-2xl font-black flex items-center gap-3">
-                      <Wind size={28} className="text-secondary" /> Clinical Focus
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent className="p-8 pt-0 space-y-6">
+                <div className="p-8 bg-primary text-white rounded-[3rem] shadow-2xl relative overflow-hidden group">
+                  <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(255,255,255,0.1),transparent_50%)]" />
+                  <div className="absolute top-0 right-0 p-8 opacity-10 group-hover:scale-110 transition-transform duration-700"><Wind size={120} /></div>
+                  <div className="relative z-10 space-y-6">
+                    <div className="flex items-center gap-3">
+                      <div className="w-10 h-10 rounded-xl bg-white/10 backdrop-blur-md flex items-center justify-center border border-white/10">
+                        <Wind size={20} className="text-secondary" />
+                      </div>
+                      <h3 className="text-xl font-black">Clinical Focus</h3>
+                    </div>
                     <div className="p-5 bg-white/10 rounded-2xl border border-white/10 shadow-inner">
                       <p className="text-[10px] font-black text-secondary uppercase tracking-widest mb-2">Practice Goal</p>
                       <p className="text-lg font-bold leading-snug">Improve practice-wide BOLT scores by 15% this quarter.</p>
@@ -536,55 +483,31 @@ const Index = () => {
                         <span className="text-secondary">Quarterly Progress</span>
                         <span className="text-white">68%</span>
                       </div>
-                      <div className="h-2.5 bg-white/10 rounded-full overflow-hidden shadow-inner">
+                      <div className="h-2 bg-white/10 rounded-full overflow-hidden shadow-inner">
                         <div className="h-full bg-white rounded-full shadow-lg" style={{ width: '68%' }} />
                       </div>
                     </div>
                     <Button variant="outline" className="w-full bg-transparent border-white/20 text-white hover:bg-white/10 rounded-2xl font-black text-[10px] uppercase tracking-[0.2em] h-12 shadow-lg" asChild>
                       <Link to="/oversight">View Clinical Oversight</Link>
                     </Button>
-                  </CardContent>
-                </Card>
+                  </div>
+                </div>
 
-                <Card className="border-none shadow-xl rounded-[3rem] bg-white overflow-hidden">
-                  <CardHeader className="p-8">
-                    <CardTitle className="text-2xl font-black flex items-center gap-3 text-primary">
-                      <Brain size={28} className="text-accent" /> Protocol Mastery
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent className="p-8 pt-0 space-y-4">
-                    <p className="text-base text-muted-foreground font-medium leading-relaxed">Keep your skills sharp by practicing protocols.</p>
-                    <div className="grid grid-cols-1 gap-3">
-                      <Button variant="outline" className="justify-start h-12 rounded-2xl border-secondary/30 hover:bg-muted font-black text-[10px] uppercase tracking-widest text-primary shadow-sm" asChild>
-                        <Link to="/practice/self"><FlaskConical size={18} className="mr-3 text-primary" /> Practice BOLT Test</Link>
-                      </Button>
-                      <Button variant="outline" className="justify-start h-12 rounded-2xl border-secondary/30 hover:bg-muted font-black text-[10px] uppercase tracking-widest text-primary shadow-sm" asChild>
-                        <Link to="/practice/self"><Activity size={18} className="mr-3 text-accent" /> Practice Coherence</Link>
-                      </Button>
-                    </div>
-                  </CardContent>
-                </Card>
-
-                <Card className="border-none shadow-xl rounded-[3rem] bg-muted/30 border border-secondary/30 overflow-hidden">
-                  <CardHeader className="p-8">
-                    <CardTitle className="text-2xl font-black flex items-center gap-3 text-primary">
-                      <Sparkles size={28} className="text-accent" /> Program Resources
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent className="p-8 pt-0 space-y-4">
-                    <p className="text-base text-primary/70 font-medium leading-relaxed">Access your weekly worksheets and materials.</p>
-                    <div className="grid grid-cols-1 gap-3">
-                      <Button className="justify-start h-14 rounded-2xl bg-primary hover:bg-primary/90 font-black text-[10px] uppercase tracking-widest text-white shadow-xl shadow-primary/20" asChild>
-                        <Link to="/resources/worksheets/week-3">
-                          <ShieldCheck size={20} className="mr-3" /> Week 3: Releasing Curses
-                        </Link>
-                      </Button>
-                      <Button variant="outline" className="justify-start h-12 rounded-2xl border-secondary/30 hover:bg-white font-black text-[10px] uppercase tracking-widest text-primary shadow-sm" asChild>
-                        <Link to="/resources/worksheets/north-star"><Sparkles size={18} className="mr-3 text-accent" /> North Star Worksheet</Link>
-                      </Button>
-                    </div>
-                  </CardContent>
-                </Card>
+                <div className="space-y-6">
+                  <div className="px-2">
+                    <h3 className="text-xl font-black flex items-center gap-3 text-primary">
+                      <Brain size={24} className="text-accent" /> Protocol Mastery
+                    </h3>
+                  </div>
+                  <div className="grid grid-cols-1 gap-3">
+                    <Button variant="outline" className="justify-start h-14 rounded-2xl border-secondary/30 hover:bg-muted font-black text-[10px] uppercase tracking-widest text-primary shadow-sm" asChild>
+                      <Link to="/practice/self"><FlaskConical size={18} className="mr-3 text-primary" /> Practice BOLT Test</Link>
+                    </Button>
+                    <Button variant="outline" className="justify-start h-14 rounded-2xl border-secondary/30 hover:bg-muted font-black text-[10px] uppercase tracking-widest text-primary shadow-sm" asChild>
+                      <Link to="/practice/self"><Activity size={18} className="mr-3 text-accent" /> Practice Coherence</Link>
+                    </Button>
+                  </div>
+                </div>
               </div>
             </div>
           </>

@@ -61,9 +61,9 @@ const AssessmentItem = ({
       onClick={onClick}
       className={cn(
         "group relative p-4 rounded-[2rem] border-2 transition-all cursor-pointer overflow-hidden h-full flex flex-col",
-        isFullyClear ? "bg-emerald-50/30 border-emerald-100 hover:border-emerald-200" :
-        hasInhibition ? "bg-rose-50 border-rose-300 shadow-md ring-1 ring-rose-200 animate-in fade-in zoom-in-95" :
-        "bg-white border-slate-100 hover:border-indigo-200 hover:shadow-lg"
+        isFullyClear ? "bg-emerald-50/30 border-emerald-100/50 hover:border-emerald-200" :
+        hasInhibition ? "bg-rose-50 border-rose-300 ring-1 ring-rose-200 animate-in fade-in zoom-in-95" :
+        "bg-slate-50/50 dark:bg-slate-900/50 border-slate-100 dark:border-slate-800 hover:border-indigo-200"
       )}
     >
       {hasInhibition && (
@@ -80,7 +80,7 @@ const AssessmentItem = ({
         <div className="flex flex-col min-w-0">
           <p className={cn(
             "font-black text-sm leading-tight truncate",
-            hasInhibition ? "text-rose-900" : "text-slate-800"
+            hasInhibition ? "text-rose-900" : "text-slate-800 dark:text-slate-200"
           )}>{name}</p>
           
           <div className="flex items-center gap-2 mt-1.5">
@@ -123,18 +123,18 @@ const AssessmentItem = ({
       )}
 
       {showImage && imageUrl && (
-        <div className="mt-2 mb-4 aspect-video rounded-2xl overflow-hidden border border-slate-100 bg-slate-50 shadow-inner">
+        <div className="mt-2 mb-4 aspect-video rounded-2xl overflow-hidden border border-slate-100 dark:border-slate-800 bg-slate-50 dark:bg-slate-950 shadow-inner">
           <img src={imageUrl} alt={name} className="w-full h-full object-cover opacity-80 group-hover:opacity-100 transition-opacity" />
         </div>
       )}
 
-      <div className="mt-auto flex flex-wrap gap-1.5 pt-3 border-t border-slate-50">
+      <div className="mt-auto flex flex-wrap gap-1.5 pt-3 border-t border-slate-100 dark:border-slate-800">
         {isLateralized ? (
           <>
             {statusL && (
               <Badge className={cn(
                 "border-none text-white font-black text-[7px] uppercase tracking-widest px-1.5 py-0.5 rounded-md",
-                statusL === 'Clear' ? "bg-emerald-50" : "bg-rose-600"
+                statusL === 'Clear' ? "bg-emerald-500" : "bg-rose-600"
               )}>
                 L: {statusL}
               </Badge>
@@ -142,7 +142,7 @@ const AssessmentItem = ({
             {statusR && (
               <Badge className={cn(
                 "border-none text-white font-black text-[7px] uppercase tracking-widest px-1.5 py-0.5 rounded-md",
-                statusR === 'Clear' ? "bg-emerald-50" : "bg-rose-600"
+                statusR === 'Clear' ? "bg-emerald-500" : "bg-rose-600"
               )}>
                 R: {statusR}
               </Badge>
@@ -152,7 +152,7 @@ const AssessmentItem = ({
           statusMidline && (
             <Badge className={cn(
               "border-none text-white font-black text-[7px] uppercase tracking-widest px-1.5 py-0.5 rounded-md",
-              statusMidline === 'Clear' ? "bg-emerald-50" : "bg-rose-600"
+              statusMidline === 'Clear' ? "bg-emerald-500" : "bg-rose-600"
             )}>
               {statusMidline}
             </Badge>

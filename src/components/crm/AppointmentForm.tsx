@@ -28,12 +28,11 @@ import { Textarea } from "@/components/ui/textarea";
 import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { format } from "date-fns";
-import { CalendarIcon, Loader2, Globe, DollarSign, Mail } from "lucide-react";
+import { CalendarIcon, Loader2, Globe, DollarSign, Mail, Clock, CheckCircle2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { showSuccess, showError } from "@/utils/toast";
 import { APPOINTMENT_TAGS, APPOINTMENT_STATUSES } from "@/data/appointment-data";
 import SearchableClientSelect from "./SearchableClientSelect";
-import { Checkbox } from "@/components/ui/checkbox";
 
 const formSchema = z.object({
   clientId: z.string().min(1, "Client is required"),
@@ -111,7 +110,6 @@ const AppointmentForm = ({ onSuccess, initialClientId, initialDate, initialTime 
 
       let calcomId = null;
 
-      // If booking via Cal.com slots
       if (initialTime) {
         setSyncStatus('calcom');
         const eventTypeId = localStorage.getItem('calcom_preferred_event_id') || "4279898";
@@ -124,7 +122,7 @@ const AppointmentForm = ({ onSuccess, initialClientId, initialDate, initialTime 
             title: values.name || values.tag || "Kinesiology Session",
             notes: values.goal || values.issue || "",
             is_paid: values.is_paid,
-            send_onboarding: values.send_onboarding // Pass flag to function
+            send_onboarding: values.send_onboarding
           }
         });
 
@@ -168,13 +166,13 @@ const AppointmentForm = ({ onSuccess, initialClientId, initialDate, initialTime 
 
   return (
     <Form {...form}>
-      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
         <FormField
           control={form.control}
           name="clientId"
           render={({ field }) => (
             <FormItem className="flex flex-col">
-              <FormLabel>Client</FormLabel>
+              <FormLabel className="text-xs font-black text-slate-900 uppercase tracking-widest">Client</FormLabel>
               <FormControl>
                 <SearchableClientSelect
                   clients={clients}
@@ -194,9 +192,9 @@ const AppointmentForm = ({ onSuccess, initialClientId, initialDate, initialTime 
           name="name"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Appointment Title (Optional)</FormLabel>
+              <FormLabel className="text-xs font-black text-slate-900 uppercase tracking-widest">Appointment Title (Optional)</FormLabel>
               <FormControl>
-                <Input placeholder="e.g. Initial Session" {...field} className="h-12 rounded-xl border-2 border-slate-100" />
+                <Input placeholder="e.g. Initial Session" {...field} className="h-12 rounded-xl border-2 border-slate-100 focus:border-indigo-500 transition-all" />
               </FormControl>
               <FormMessage />
             </FormItem>
@@ -209,7 +207,7 @@ const AppointmentForm = ({ onSuccess, initialClientId, initialDate, initialTime 
             name="date"
             render={({ field }) => (
               <FormItem className="flex flex-col">
-                <FormLabel>Date</FormLabel>
+                <FormLabel className="text-xs font-black text-slate-900 uppercase tracking-widest">Date</FormLabel>
                 <Popover>
                   <PopoverTrigger asChild>
                     <FormControl>
@@ -221,7 +219,7 @@ const AppointmentForm = ({ onSuccess, initialClientId, initialDate, initialTime 
                         )}
                       >
                         {field.value ? (
-                          format(field.value, "PPP")
+                          format(field.value, "MMMM do, yyyy")
                         ) : (
                           <span>Pick a date</span>
                         )}
@@ -248,9 +246,12 @@ const AppointmentForm = ({ onSuccess, initialClientId, initialDate, initialTime 
             name="time"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Time</FormLabel>
+                <FormLabel className="text-xs font-black text-slate-900 uppercase tracking-widest">Time</FormLabel>
                 <FormControl>
-                  <Input type="time" {...field} className="h-12 rounded-xl border-2 border-slate-100" />
+                  <div className="relative">
+                    <Input type="time" {...field} className="h-12 rounded-xl border-2 border-slate-100 pr-10" />
+                    <Clock className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400 pointer-events-none" />
+                  </div>
                 </FormControl>
                 <FormMessage />
               </FormItem>
@@ -264,16 +265,16 @@ const AppointmentForm = ({ onSuccess, initialClientId, initialDate, initialTime 
             name="tag"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Type</FormLabel>
+                <FormLabel className="text-xs font-black text-slate-900 uppercase tracking-widest">Type</FormLabel>
                 <Select onValueChange={field.onChange} defaultValue={field.value}>
                   <FormControl>
                     <SelectTrigger className="h-12 rounded-xl border-2 border-slate-100">
                       <SelectValue placeholder="Select type" />
                     </SelectTrigger>
                   </FormControl>
-                  <SelectContent>
+                  <SelectContent className="rounded-xl border-none shadow-2xl">
                     {APPOINTMENT_TAGS.map(tag => (
-                      <SelectItem key={tag} value={tag}>{tag}</SelectItem>
+                      <SelectItem key={tag} value={tag} className="rounded-lg">{tag}</SelectItem>
                     ))}
                   </SelectContent>
                 </Select>
@@ -287,16 +288,16 @@ const AppointmentForm = ({ onSuccess, initialClientId, initialDate, initialTime 
             name="status"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Status</FormLabel>
+                <FormLabel className="text-xs font-black text-slate-900 uppercase tracking-widest">Status</FormLabel>
                 <Select onValueChange={field.onChange} defaultValue={field.value}>
                   <FormControl>
                     <SelectTrigger className="h-12 rounded-xl border-2 border-slate-100">
                       <SelectValue placeholder="Select status" />
                     </SelectTrigger>
                   </FormControl>
-                  <SelectContent>
+                  <SelectContent className="rounded-xl border-none shadow-2xl">
                     {APPOINTMENT_STATUSES.map(status => (
-                      <SelectItem key={status} value={status}>{status}</SelectItem>
+                      <SelectItem key={status} value={status} className="rounded-lg">{status}</SelectItem>
                     ))}
                   </SelectContent>
                 </Select>
@@ -306,28 +307,38 @@ const AppointmentForm = ({ onSuccess, initialClientId, initialDate, initialTime 
           />
         </div>
 
-        <div className="grid grid-cols-1 gap-3">
+        <div className="grid grid-cols-1 gap-4">
           <FormField
             control={form.control}
             name="is_paid"
             render={({ field }) => (
-              <FormItem className="flex flex-row items-center justify-between rounded-xl border-2 border-indigo-100 p-4 bg-indigo-50/30">
-                <div className="space-y-0.5">
-                  <FormLabel className="text-base font-bold text-indigo-900 flex items-center gap-2">
-                    <DollarSign size={18} className="text-indigo-600" />
-                    Paid Session ($50)
-                  </FormLabel>
-                  <p className="text-[10px] text-indigo-400 font-bold uppercase tracking-widest">
-                    Requires payment (triggers bank details in email)
-                  </p>
+              <FormItem 
+                className={cn(
+                  "flex flex-row items-center justify-between rounded-[1.5rem] border-2 p-5 transition-all cursor-pointer",
+                  field.value ? "bg-indigo-50 border-indigo-200" : "bg-white border-slate-100 hover:border-indigo-100"
+                )}
+                onClick={() => field.onChange(!field.value)}
+              >
+                <div className="flex items-center gap-4">
+                  <div className={cn(
+                    "w-10 h-10 rounded-xl flex items-center justify-center transition-colors",
+                    field.value ? "bg-indigo-600 text-white" : "bg-slate-100 text-indigo-600"
+                  )}>
+                    <DollarSign size={20} />
+                  </div>
+                  <div className="space-y-0.5">
+                    <FormLabel className="text-base font-black text-slate-900 cursor-pointer">Paid Session ($50)</FormLabel>
+                    <p className="text-[9px] text-slate-500 font-bold uppercase tracking-widest">
+                      Requires payment (triggers bank details in email)
+                    </p>
+                  </div>
                 </div>
-                <FormControl>
-                  <Checkbox
-                    checked={field.value}
-                    onCheckedChange={field.onChange}
-                    className="h-6 w-6 rounded-md border-indigo-300 data-[state=checked]:bg-indigo-600"
-                  />
-                </FormControl>
+                <div className={cn(
+                  "w-6 h-6 rounded-full border-2 flex items-center justify-center transition-all",
+                  field.value ? "bg-indigo-600 border-indigo-600" : "border-slate-200"
+                )}>
+                  {field.value && <div className="w-2 h-2 rounded-full bg-white" />}
+                </div>
               </FormItem>
             )}
           />
@@ -336,23 +347,33 @@ const AppointmentForm = ({ onSuccess, initialClientId, initialDate, initialTime 
             control={form.control}
             name="send_onboarding"
             render={({ field }) => (
-              <FormItem className="flex flex-row items-center justify-between rounded-xl border-2 border-emerald-100 p-4 bg-emerald-50/30">
-                <div className="space-y-0.5">
-                  <FormLabel className="text-base font-bold text-emerald-900 flex items-center gap-2">
-                    <Mail size={18} className="text-emerald-600" />
-                    Send Onboarding Email
-                  </FormLabel>
-                  <p className="text-[10px] text-emerald-400 font-bold uppercase tracking-widest">
-                    Automatically email the intake form to the client
-                  </p>
+              <FormItem 
+                className={cn(
+                  "flex flex-row items-center justify-between rounded-[1.5rem] border-2 p-5 transition-all cursor-pointer",
+                  field.value ? "bg-emerald-50 border-emerald-200" : "bg-white border-slate-100 hover:border-emerald-100"
+                )}
+                onClick={() => field.onChange(!field.value)}
+              >
+                <div className="flex items-center gap-4">
+                  <div className={cn(
+                    "w-10 h-10 rounded-xl flex items-center justify-center transition-colors",
+                    field.value ? "bg-emerald-600 text-white" : "bg-slate-100 text-emerald-600"
+                  )}>
+                    <Mail size={20} />
+                  </div>
+                  <div className="space-y-0.5">
+                    <FormLabel className="text-base font-black text-slate-900 cursor-pointer">Send Onboarding Email</FormLabel>
+                    <p className="text-[9px] text-slate-500 font-bold uppercase tracking-widest">
+                      Automatically email the intake form to the client
+                    </p>
+                  </div>
                 </div>
-                <FormControl>
-                  <Checkbox
-                    checked={field.value}
-                    onCheckedChange={field.onChange}
-                    className="h-6 w-6 rounded-md border-emerald-300 data-[state=checked]:bg-emerald-600"
-                  />
-                </FormControl>
+                <div className={cn(
+                  "w-6 h-6 rounded-full border-2 flex items-center justify-center transition-all",
+                  field.value ? "bg-emerald-600 border-emerald-600" : "border-slate-200"
+                )}>
+                  {field.value && <CheckCircle2 size={16} className="text-white" />}
+                </div>
               </FormItem>
             )}
           />
@@ -363,7 +384,7 @@ const AppointmentForm = ({ onSuccess, initialClientId, initialDate, initialTime 
           name="goal"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Goal</FormLabel>
+              <FormLabel className="text-xs font-black text-slate-900 uppercase tracking-widest">Goal</FormLabel>
               <FormControl>
                 <Input placeholder="What is the goal for this session?" {...field} className="h-12 rounded-xl border-2 border-slate-100" />
               </FormControl>
@@ -377,7 +398,7 @@ const AppointmentForm = ({ onSuccess, initialClientId, initialDate, initialTime 
           name="issue"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Main Issue</FormLabel>
+              <FormLabel className="text-xs font-black text-slate-900 uppercase tracking-widest">Main Issue</FormLabel>
               <FormControl>
                 <Textarea 
                   placeholder="Describe the main concern..." 
@@ -390,10 +411,10 @@ const AppointmentForm = ({ onSuccess, initialClientId, initialDate, initialTime 
           )}
         />
 
-        <Button type="submit" className="w-full bg-indigo-600 hover:bg-indigo-700 h-12 rounded-xl font-bold interactive-lift shadow-indigo-100" disabled={submitting}>
+        <Button type="submit" className="w-full bg-indigo-600 hover:bg-indigo-700 h-14 rounded-2xl font-black text-sm uppercase tracking-widest shadow-xl shadow-indigo-100" disabled={submitting}>
           {submitting ? (
             <>
-              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+              <Loader2 className="mr-2 h-5 w-5 animate-spin" />
               {syncStatus === 'calcom' ? 'Syncing with Cal.com...' : 'Scheduling...'}
             </>
           ) : (

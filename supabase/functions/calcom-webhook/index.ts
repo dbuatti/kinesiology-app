@@ -60,7 +60,7 @@ async function sendGmail(accessToken: string, from: string, to: string, subject:
 
 serve(async (req) => {
   if (req.method === 'GET') {
-    return new Response(JSON.stringify({ status: "active", provider: "gmail", version: "v43" }), { 
+    return new Response(JSON.stringify({ status: "active", provider: "gmail", version: "v44" }), { 
       status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
     });
   }
@@ -117,7 +117,10 @@ serve(async (req) => {
     const email = String(attendee.email || "").toLowerCase().trim();
     const phone = attendee.phoneNumber || "";
     const startTime = payload.startTime;
-    const hasPaidViaStripe = !!(payload.payment?.[0]?.amount || payload.metadata?.is_paid === "true");
+    
+    // Read is_paid from metadata (passed from AppointmentForm)
+    const isPaidSession = payload.metadata?.is_paid === "true";
+    const hasPaidViaStripe = !!(payload.payment?.[0]?.amount);
 
     const dateObj = new Date(startTime);
     const formattedTime = new Intl.DateTimeFormat('en-AU', {
@@ -136,7 +139,9 @@ serve(async (req) => {
       try {
         const accessToken = await getGmailAccessToken(GMAIL_CLIENT_ID, GMAIL_CLIENT_SECRET, GMAIL_REFRESH_TOKEN);
         const onboardingUrl = `https://kinesiology-app.vercel.app/onboarding/${dbClient.id}`;
-        const showBankDetails = !hasPaidViaStripe;
+        
+        // Only show bank details if it's a paid session AND they haven't paid via Stripe
+        const showBankDetails = isPaidSession && !hasPaidViaStripe;
 
         const paymentSection = showBankDetails ? `
           <div style="background-color: #F8FAFC; border-radius: 24px; padding: 32px; margin: 32px 0; border: 1px solid #E2E8F0; text-align: left;">
@@ -235,7 +240,7 @@ serve(async (req) => {
         tag: "Kinesiology",
         status: "Scheduled",
         calcom_booking_id: calcomId,
-        is_paid: true,
+        is_paid: isPaidSession, // Use the value from metadata
         payment_received: hasPaidViaStripe
       };
       await supabase.from('appointments').upsert(appointmentData, { onConflict: 'calcom_booking_id' });

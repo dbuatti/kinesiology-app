@@ -118,7 +118,8 @@ const AppointmentForm = ({ onSuccess, initialClientId, initialDate, initialTime 
             startTime: isoDate,
             eventTypeId: eventTypeId,
             title: values.name || values.tag || "Kinesiology Session",
-            notes: values.goal || values.issue || ""
+            notes: values.goal || values.issue || "",
+            is_paid: values.is_paid // Pass the paid status to Cal.com
           }
         });
 

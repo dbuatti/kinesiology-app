@@ -13,7 +13,7 @@ serve(async (req) => {
     return new Response('ok', { headers: corsHeaders })
   }
 
-  console.log("--- [v9.0] CREATE-CALCOM-BOOKING (API v2024-08-13) ---");
+  console.log("--- [v10.0] CREATE-CALCOM-BOOKING (API v2024-08-13) ---");
   
   try {
     const supabaseUrl = Deno.env.get('SUPABASE_URL');
@@ -40,7 +40,7 @@ serve(async (req) => {
       });
     }
 
-    const { clientId, startTime, eventTypeId, title, notes } = body;
+    const { clientId, startTime, eventTypeId, title, notes, is_paid } = body;
     if (!clientId || !startTime || !eventTypeId) {
       throw new Error("Missing required fields: clientId, startTime, or eventTypeId.");
     }
@@ -78,11 +78,12 @@ serve(async (req) => {
       metadata: { 
         crm_title: title || "Kinesiology Session",
         crm_notes: notes || "",
-        source: "Antigravity CRM"
+        source: "Antigravity CRM",
+        is_paid: String(is_paid || false) // Store the paid status in metadata
       }
     };
 
-    console.log(`Calling Cal.com v2 API for ${client.email} at ${startTime} (Event: ${eventTypeId})`);
+    console.log(`Calling Cal.com v2 API for ${client.email} at ${startTime} (Event: ${eventTypeId}, Paid: ${is_paid})`);
 
     const response = await fetch("https://api.cal.com/v2/bookings", {
       method: "POST",

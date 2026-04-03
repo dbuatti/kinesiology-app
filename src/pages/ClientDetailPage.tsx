@@ -10,7 +10,7 @@ import {
   Loader2, Briefcase, Heart, Baby,
   Activity, Edit3, Trash2, MoreHorizontal, FlaskConical, TrendingUp, Clock, Brain,
   LayoutDashboard, History, ArrowRight, Copy, Check, Sparkles, Plus, Link as LinkIcon,
-  Zap, Send, ShieldCheck, ExternalLink, RefreshCw
+  Zap, Send, ShieldCheck, ExternalLink, RefreshCw, ShieldAlert, Info, User, Star
 } from "lucide-react";
 import { format } from "date-fns";
 import { Client, Appointment } from "@/types/crm";
@@ -310,8 +310,9 @@ const ClientDetailPage = () => {
           </TabsList>
 
           <TabsContent value="overview" className="space-y-8">
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-              <div className="lg:col-span-1 space-y-6">
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
+              {/* Left Column: Identity & Contact */}
+              <div className="lg:col-span-4 space-y-6">
                 <ClientProfileCard client={client} />
 
                 <Card className="border-none shadow-sm bg-white rounded-2xl overflow-hidden">
@@ -360,60 +361,60 @@ const ClientDetailPage = () => {
                   <CardContent className="space-y-4">
                     {client.occupation && (
                       <div className="flex items-center gap-3 text-sm p-2 rounded-lg hover:bg-slate-50 transition-colors">
-                        <div className="w-8 h-8 rounded-lg bg-slate-100 flex items-center justify-center text-slate-50">
+                        <div className="w-8 h-8 rounded-lg bg-slate-100 flex items-center justify-center text-slate-500">
                           <Briefcase size={16} />
                         </div>
-                        <span className="text-slate-700">{client.occupation}</span>
+                        <span className="text-slate-700 font-medium">{client.occupation}</span>
                       </div>
                     )}
                     {client.marital_status && (
                       <div className="flex items-center gap-3 text-sm p-2 rounded-lg hover:bg-slate-50 transition-colors">
-                        <div className="w-8 h-8 rounded-lg bg-slate-100 flex items-center justify-center text-slate-50">
+                        <div className="w-8 h-8 rounded-lg bg-slate-100 flex items-center justify-center text-slate-500">
                           <Heart size={16} />
                         </div>
-                        <span className="text-slate-700">{client.marital_status}</span>
+                        <span className="text-slate-700 font-medium">{client.marital_status}</span>
                       </div>
                     )}
                     {client.children && (
                       <div className="flex items-center gap-3 text-sm p-2 rounded-lg hover:bg-slate-50 transition-colors">
-                        <div className="w-8 h-8 rounded-lg bg-slate-100 flex items-center justify-center text-slate-50">
+                        <div className="w-8 h-8 rounded-lg bg-slate-100 flex items-center justify-center text-slate-500">
                           <Baby size={16} />
                         </div>
-                        <span className="text-slate-700">Children: {client.children}</span>
+                        <span className="text-slate-700 font-medium">Children: {client.children}</span>
                       </div>
                     )}
                     <hr className="border-slate-100" />
                     <div className="flex items-center justify-between group/contact p-2 rounded-lg hover:bg-slate-50 transition-colors">
                       <div className="flex items-center gap-3 text-sm">
-                        <div className="w-8 h-8 rounded-lg bg-slate-100 flex items-center justify-center text-slate-50">
+                        <div className="w-8 h-8 rounded-lg bg-slate-100 flex items-center justify-center text-slate-500">
                             <Mail size={16} />
                         </div>
-                        <span className="text-slate-700">{client.email || 'No email'}</span>
+                        <span className="text-slate-700 font-medium">{client.email || 'No email'}</span>
                       </div>
                       {client.email && (
-                        <Button variant="ghost" size="icon" className="h-8 w-8 rounded-lg opacity-0 group-hover/contact:opacity-100 transition-opacity" onClick={() => handleCopy(client.email, 'email')}>
+                        <Button variant="ghost" size="icon" className="h-8 w-8 rounded-lg opacity-0 group-hover/contact:opacity-100 transition-opacity" onClick={() => handleCopy(client.email!, 'email')}>
                           {copiedField === 'email' ? <Check size={14} className="text-emerald-500" /> : <Copy size={14} className="text-slate-400" />}
                         </Button>
                       )}
                     </div>
                     <div className="flex items-center justify-between group/contact p-2 rounded-lg hover:bg-slate-50 transition-colors">
                       <div className="flex items-center gap-3 text-sm">
-                        <div className="w-8 h-8 rounded-lg bg-slate-100 flex items-center justify-center text-slate-50">
+                        <div className="w-8 h-8 rounded-lg bg-slate-100 flex items-center justify-center text-slate-500">
                             <Phone size={16} />
                         </div>
-                        <span className="text-slate-700">{client.phone || 'No phone'}</span>
+                        <span className="text-slate-700 font-medium">{client.phone || 'No phone'}</span>
                       </div>
                       {client.phone && (
-                        <Button variant="ghost" size="icon" className="h-8 w-8 rounded-lg opacity-0 group-hover/contact:opacity-100 transition-opacity" onClick={() => handleCopy(client.phone, 'phone')}>
+                        <Button variant="ghost" size="icon" className="h-8 w-8 rounded-lg opacity-0 group-hover/contact:opacity-100 transition-opacity" onClick={() => handleCopy(client.phone!, 'phone')}>
                           {copiedField === 'phone' ? <Check size={14} className="text-emerald-500" /> : <Copy size={14} className="text-slate-400" />}
                         </Button>
                       )}
                     </div>
                     <div className="flex items-center gap-3 text-sm p-2 rounded-lg hover:bg-slate-50 transition-colors">
-                      <div className="w-8 h-8 rounded-lg bg-slate-100 flex items-center justify-center text-slate-50">
+                      <div className="w-8 h-8 rounded-lg bg-slate-100 flex items-center justify-center text-slate-500">
                           <MapPin size={16} />
                       </div>
-                      <div className="flex gap-1 flex-wrap text-slate-700">
+                      <div className="flex gap-1 flex-wrap text-slate-700 font-medium">
                         {client.suburbs.length > 0 ? client.suburbs.map(s => <span key={s} className="mr-1">{s}</span>) : 'No suburb'}
                       </div>
                     </div>
@@ -421,7 +422,8 @@ const ClientDetailPage = () => {
                 </Card>
               </div>
 
-              <div className="lg:col-span-2 space-y-6">
+              {/* Right Column: Clinical Profile & History */}
+              <div className="lg:col-span-8 space-y-8">
                 <div className="grid grid-cols-2 lg:grid-cols-3 gap-6">
                   <Card className="border-none shadow-sm rounded-2xl bg-white border-t-4 border-indigo-500">
                     <CardHeader className="pb-2">
@@ -467,21 +469,114 @@ const ClientDetailPage = () => {
                   </Card>
                 </div>
 
-                {client.journal && (
-                  <Card className="bg-amber-50/50 border-amber-100 shadow-none rounded-2xl">
-                    <CardHeader className="pb-2">
-                      <CardTitle className="text-sm flex items-center gap-2 text-amber-700">
-                        History & Notes
-                      </CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                      <p className="text-sm text-amber-900/80 whitespace-pre-wrap leading-relaxed">{client.journal}</p>
-                    </CardContent>
-                  </Card>
-                )}
+                {/* Comprehensive Clinical Profile Section */}
+                <div className="space-y-6">
+                  <div className="flex items-center gap-3 px-2">
+                    <div className="w-10 h-10 rounded-xl bg-indigo-600 text-white flex items-center justify-center shadow-lg">
+                      <ShieldAlert size={20} />
+                    </div>
+                    <h2 className="text-2xl font-black text-foreground tracking-tight">Clinical Profile</h2>
+                  </div>
+
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <Card className="border-none shadow-sm bg-white rounded-[2rem] overflow-hidden">
+                      <CardHeader className="bg-rose-50/50 border-b border-rose-100">
+                        <CardTitle className="text-xs font-black uppercase tracking-widest text-rose-600 flex items-center gap-2">
+                          <Activity size={14} /> Medical History & Injuries
+                        </CardTitle>
+                      </CardHeader>
+                      <CardContent className="p-6">
+                        <p className="text-sm font-medium text-slate-700 leading-relaxed whitespace-pre-wrap">
+                          {client.medical_history || "No medical history recorded."}
+                        </p>
+                      </CardContent>
+                    </Card>
+
+                    <Card className="border-none shadow-sm bg-white rounded-[2rem] overflow-hidden">
+                      <CardHeader className="bg-amber-50/50 border-b border-amber-100">
+                        <CardTitle className="text-xs font-black uppercase tracking-widest text-amber-600 flex items-center gap-2">
+                          <Zap size={14} /> Medications & Supplements
+                        </CardTitle>
+                      </CardHeader>
+                      <CardContent className="p-6">
+                        <p className="text-sm font-medium text-slate-700 leading-relaxed whitespace-pre-wrap">
+                          {client.medications_supplements || "No medications recorded."}
+                        </p>
+                      </CardContent>
+                    </Card>
+
+                    <Card className="border-none shadow-sm bg-white rounded-[2rem] overflow-hidden">
+                      <CardHeader className="bg-indigo-50/50 border-b border-indigo-100">
+                        <CardTitle className="text-xs font-black uppercase tracking-widest text-indigo-600 flex items-center gap-2">
+                          <ShieldAlert size={14} /> Emergency Contact
+                        </CardTitle>
+                      </CardHeader>
+                      <CardContent className="p-6 space-y-3">
+                        <div>
+                          <p className="text-[10px] font-black text-slate-400 uppercase">Contact Name</p>
+                          <p className="text-sm font-bold text-slate-900">{client.emergency_contact_name || "Not provided"}</p>
+                        </div>
+                        <div>
+                          <p className="text-[10px] font-black text-slate-400 uppercase">Contact Phone</p>
+                          <p className="text-sm font-bold text-slate-900">{client.emergency_contact_phone || "Not provided"}</p>
+                        </div>
+                      </CardContent>
+                    </Card>
+
+                    <Card className="border-none shadow-sm bg-white rounded-[2rem] overflow-hidden">
+                      <CardHeader className="bg-emerald-50/50 border-b border-emerald-100">
+                        <CardTitle className="text-xs font-black uppercase tracking-widest text-emerald-600 flex items-center gap-2">
+                          <TrendingUp size={14} /> Baseline Health Vitals
+                        </CardTitle>
+                      </CardHeader>
+                      <CardContent className="p-6">
+                        <div className="grid grid-cols-2 gap-4">
+                          <div>
+                            <p className="text-[10px] font-black text-slate-400 uppercase">Stress Level</p>
+                            <p className="text-lg font-black text-indigo-600">{client.current_stress_level || "—"} / 10</p>
+                          </div>
+                          <div>
+                            <p className="text-[10px] font-black text-slate-400 uppercase">Sleep Quality</p>
+                            <p className="text-sm font-bold text-slate-900">{client.sleep_quality || "Not set"}</p>
+                          </div>
+                          <div className="col-span-2">
+                            <p className="text-[10px] font-black text-slate-400 uppercase">Digestive Health</p>
+                            <p className="text-sm font-bold text-slate-900">{client.digestive_health || "Not set"}</p>
+                          </div>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  </div>
+
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <Card className="bg-slate-50 border-slate-100 shadow-none rounded-2xl">
+                      <CardHeader className="pb-2">
+                        <CardTitle className="text-xs font-black uppercase tracking-widest text-slate-500 flex items-center gap-2">
+                          <Info size={14} /> Referral Source
+                        </CardTitle>
+                      </CardHeader>
+                      <CardContent>
+                        <p className="text-sm font-bold text-slate-700">{client.referral_source || "Not recorded"}</p>
+                      </CardContent>
+                    </Card>
+
+                    <Card className="bg-amber-50/50 border-amber-100 shadow-none rounded-2xl">
+                      <CardHeader className="pb-2">
+                        <CardTitle className="text-xs font-black uppercase tracking-widest text-amber-600 flex items-center gap-2">
+                          <History size={14} /> Practitioner Journal
+                        </CardTitle>
+                      </CardHeader>
+                      <CardContent>
+                        <p className="text-sm text-amber-900/80 whitespace-pre-wrap leading-relaxed font-medium">
+                          {client.journal || "No personal reflections recorded."}
+                        </p>
+                      </CardContent>
+                    </Card>
+                  </div>
+                </div>
 
                 <div className="flex justify-between items-center pt-4">
-                  <h3 className="text-xl font-bold text-slate-900">Recent Activity</h3>
+                  <h3 className="text-2xl font-black text-slate-900">Recent Activity</h3>
                   <Button variant="ghost" size="sm" className="text-indigo-600 font-bold" onClick={() => setSearchParams({ tab: "appointments" })}>
                     View All <ArrowRight size={14} className="ml-1" />
                   </Button>

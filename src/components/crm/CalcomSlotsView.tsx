@@ -64,7 +64,8 @@ const CalcomSlotsView = () => {
   const [bookings, setBookings] = useState<Record<string, any[]>>({});
   const [blockedDates, setBlockedDates] = useState<string[]>([]);
   const [error, setError] = useState<string | null>(null);
-  const [weeksOffset, setWeeksOffset] = useState(0);
+  const [weeks, setWeeks] = useState(4); // Range to show
+  const [weeksOffset, setWeeksOffset] = useState(0); // Starting point
   const [copied, setCopied] = useState(false);
   const [showOnlyAvailable, setShowOnlyAvailable] = useState(false);
   const [configOpen, setConfigOpen] = useState(false);
@@ -82,9 +83,9 @@ const CalcomSlotsView = () => {
 
   const dateRange = useMemo(() => {
     const start = addWeeks(startOfToday(), weeksOffset);
-    const end = addDays(start, 6); // Show 1 week at a time for better focus
+    const end = addDays(start, (weeks * 7) - 1);
     return eachDayOfInterval({ start, end }).map(d => format(d, 'yyyy-MM-dd'));
-  }, [weeksOffset]);
+  }, [weeks, weeksOffset]);
 
   const stats = useMemo(() => {
     let totalSlots = 0;
@@ -99,7 +100,7 @@ const CalcomSlotsView = () => {
     setError(null);
     try {
       const start = addWeeks(startOfToday(), weeksOffset).toISOString();
-      const end = endOfDay(addWeeks(new Date(start), 1)).toISOString();
+      const end = endOfDay(addWeeks(new Date(start), weeks)).toISOString();
       
       const { data, error: invokeError } = await supabase.functions.invoke('get-calcom-slots', {
         body: { 
@@ -224,7 +225,7 @@ const CalcomSlotsView = () => {
         const morning = daySlots.filter(s => new Date(s.time || s.start).getHours() < 12);
         const afternoon = daySlots.filter(s => new Date(s.time || s.start).getHours() >= 12);
         
-        text += `*${formattedDate}*\n`;
+        text += `${formattedDate}\n`;
         if (morning.length > 0) text += `  Morning: ${morning.map(s => format(new Date(s.time || s.start), "h:mm a")).join(", ")}\n`;
         if (afternoon.length > 0) text += `  Afternoon: ${afternoon.map(s => format(new Date(s.time || s.start), "h:mm a")).join(", ")}\n`;
         text += "\n";
@@ -246,7 +247,7 @@ const CalcomSlotsView = () => {
 
   useEffect(() => {
     fetchSlots();
-  }, [weeksOffset]);
+  }, [weeks, weeksOffset]);
 
   return (
     <div className="space-y-8 animate-in fade-in duration-700">
@@ -273,7 +274,24 @@ const CalcomSlotsView = () => {
             </div>
 
             <div className="flex items-center gap-3">
-              <div className="flex bg-muted p-1 rounded-xl mr-2">
+              <div className="flex bg-muted p-1 rounded-xl">
+                {[2, 4, 8].map(w => (
+                  <Button 
+                    key={w}
+                    variant="ghost" 
+                    size="sm" 
+                    onClick={() => setWeeks(w)}
+                    className={cn(
+                      "h-8 px-4 rounded-lg text-[10px] font-black uppercase tracking-widest",
+                      weeks === w ? "bg-card text-indigo-600 shadow-sm" : "text-muted-foreground"
+                    )}
+                  >
+                    {w}W
+                  </Button>
+                ))}
+              </div>
+
+              <div className="flex bg-muted p-1 rounded-xl">
                 <Button 
                   variant="ghost" 
                   size="icon" 
@@ -283,11 +301,6 @@ const CalcomSlotsView = () => {
                 >
                   <ArrowLeft size={16} />
                 </Button>
-                <div className="px-3 flex items-center">
-                  <span className="text-[10px] font-black uppercase tracking-widest">
-                    {weeksOffset === 0 ? 'This Week' : `Week +${weeksOffset}`}
-                  </span>
-                </div>
                 <Button 
                   variant="ghost" 
                   size="icon" 

@@ -470,7 +470,7 @@ const AppointmentsPage = () => {
                   <Plus size={20} className="mr-2" /> New Appointment
                 </Button>
               </DialogTrigger>
-              <DialogContent className="sm:max-w-[500px] rounded-[2rem]">
+              <DialogContent className="sm:max-w-[500px] max-h-[90vh] overflow-y-auto rounded-[2rem]">
                 <DialogHeader>
                   <DialogTitle className="text-2xl font-black">Schedule New Appointment</DialogTitle>
                   <DialogDescription>Create a new session for an existing client.</DialogDescription>

@@ -302,7 +302,7 @@ const CalcomSlotsView = () => {
                 variant="outline"
                 onClick={handleCopyAll}
                 disabled={loading}
-                className="rounded-xl h-10 px-4 border-indigo-100 text-indigo-600 hover:bg-indigo-50 font-black text-[10px] uppercase tracking-widest"
+                className="rounded-xl h-10 px-4 border-indigo-100 text-indigo-600 hover:bg-indigo-100 rounded-xl font-black text-[10px] uppercase tracking-widest"
               >
                 {copied ? <Check size={14} className="mr-2" /> : <Copy size={14} className="mr-2" />}
                 Copy Text
@@ -575,7 +575,7 @@ const CalcomSlotsView = () => {
       )}
 
       <Dialog open={bookingDialogOpen} onOpenChange={setBookingDialogOpen}>
-        <DialogContent className="sm:max-w-[500px] rounded-[2.5rem]">
+        <DialogContent className="sm:max-w-[500px] max-h-[90vh] overflow-y-auto rounded-[2.5rem]">
           <DialogHeader>
             <div className="flex items-center gap-3 mb-2">
               <div className="w-10 h-10 rounded-xl bg-indigo-600 text-white flex items-center justify-center shadow-lg">

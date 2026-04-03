@@ -80,7 +80,7 @@ const QuickActions = () => {
                   <Plus size={32} />
                 </Button>
               </DropdownMenuTrigger>
-              <DropdownMenuContent align="end" className="w-80 p-3 rounded-[2rem] shadow-2xl border-none mb-4">
+              <DropdownMenuContent align="end" className="w-80 p-3 rounded-[2rem] shadow-3xl border-none mb-4">
                 <div className="px-2 py-1 mb-2">
                   <p className="text-[9px] font-black text-slate-400 uppercase tracking-[0.3em]">Quick Actions</p>
                 </div>
@@ -189,7 +189,7 @@ const QuickActions = () => {
       </div>
 
       <Dialog open={clientDialogOpen} onOpenChange={setClientDialogOpen}>
-        <DialogContent className="sm:max-w-[550px] rounded-[2.5rem]">
+        <DialogContent className="sm:max-w-[550px] max-h-[90vh] overflow-y-auto rounded-[2.5rem]">
           <DialogHeader>
             <DialogTitle className="text-2xl font-black">Add New Client</DialogTitle>
             <DialogDescription>Enter the details for the new client profile.</DialogDescription>
@@ -203,7 +203,7 @@ const QuickActions = () => {
       </Dialog>
 
       <Dialog open={appointmentDialogOpen} onOpenChange={setAppointmentDialogOpen}>
-        <DialogContent className="sm:max-w-[500px] rounded-[2.5rem]">
+        <DialogContent className="sm:max-w-[500px] max-h-[90vh] overflow-y-auto rounded-[2.5rem]">
           <DialogHeader>
             <DialogTitle className="text-2xl font-black">Schedule New Session</DialogTitle>
             <DialogDescription>Select a client and set the appointment details.</DialogDescription>

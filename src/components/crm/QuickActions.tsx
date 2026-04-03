@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -9,7 +9,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { Plus, UserPlus, Calendar, Target, Upload, HelpCircle, Sparkles, Zap } from "lucide-react";
+import { Plus, UserPlus, Calendar, Target, Upload, HelpCircle, Zap } from "lucide-react";
 import {
   Dialog,
   DialogContent,
@@ -35,33 +35,8 @@ const QuickActions = () => {
   const [isOpen, setIsOpen] = useState(false);
   const navigate = useNavigate();
 
-  useEffect(() => {
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if ((e.metaKey || e.ctrlKey) && e.key === 'n') {
-        e.preventDefault();
-        setClientDialogOpen(true);
-      }
-      if ((e.metaKey || e.ctrlKey) && e.key === 'b') {
-        e.preventDefault();
-        setAppointmentDialogOpen(true);
-      }
-      if ((e.metaKey || e.ctrlKey) && e.key === 'p') {
-        e.preventDefault();
-        navigate('/practice/procedures');
-      }
-      if ((e.metaKey || e.ctrlKey) && e.key === 'q') {
-        e.preventDefault();
-        navigate('/practice/calibrate');
-      }
-      if ((e.metaKey || e.ctrlKey) && e.key === '/') {
-        e.preventDefault();
-        setHelpOpen(true);
-      }
-    };
-
-    document.addEventListener('keydown', handleKeyDown);
-    return () => document.removeEventListener('keydown', handleKeyDown);
-  }, [navigate]);
+  // Keyboard shortcuts are now handled globally in the Sidebar component 
+  // to prevent duplicate modal triggers.
 
   return (
     <>

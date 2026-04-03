@@ -11,7 +11,7 @@ const corsHeaders = {
 const KIT_API_SECRET = Deno.env.get('KIT_API_SECRET');
 
 serve(async (req: Request) => {
-  console.log("--- [v10] KIT SYNC START ---");
+  console.log("--- [v11] KIT SYNC START ---");
 
   // Handle CORS preflight
   if (req.method === 'OPTIONS') {
@@ -68,7 +68,6 @@ serve(async (req: Request) => {
 
     if (!response.ok) {
       console.error(`Kit API Error (${response.status}):`, JSON.stringify(result));
-      // Pass through the 401 if Kit returns it, but ensure CORS headers are attached
       return new Response(
         JSON.stringify({ 
           error: "Kit API Rejected Request", 

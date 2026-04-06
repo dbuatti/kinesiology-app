@@ -4,7 +4,7 @@ import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type, x-supabase-client-platform',
   'Access-Control-Allow-Methods': 'POST, OPTIONS, GET',
 }
 
@@ -82,9 +82,8 @@ serve(async (req) => {
     const body = await req.json();
     const triggerEvent = body.triggerEvent || body.type;
     
-    // Handle PING events immediately
     if (triggerEvent === 'PING') {
-      console.log("[calcom-webhook] PING received. Connection verified.");
+      console.log("[calcom-webhook] PING received.");
       return new Response(JSON.stringify({ success: true, message: "PONG" }), { status: 200, headers: corsHeaders });
     }
 
@@ -93,19 +92,15 @@ serve(async (req) => {
 
     console.log(`[calcom-webhook] Event: ${triggerEvent}, BookingID: ${calcomId}`);
 
-    // 1. Handle Cancellations
     if (triggerEvent === 'BOOKING_CANCELLED' || triggerEvent === 'BOOKING_REJECTED') {
-      console.log("[calcom-webhook] Action: Deleting cancelled booking");
       await supabase.from('appointments').delete().eq('calcom_booking_id', calcomId);
       return new Response(JSON.stringify({ success: true, action: 'deleted' }), { status: 200, headers: corsHeaders });
     }
 
-    // 2. Extract Attendee Info
     const attendee = (payload.attendees && payload.attendees[0]) || 
                      (payload.responses && { name: payload.responses.name, email: payload.responses.email });
     
     if (!attendee || !attendee.email) {
-      console.log("[calcom-webhook] No attendee email found. Skipping processing.");
       return new Response(JSON.stringify({ success: true, message: "No attendee" }), { status: 200, headers: corsHeaders });
     }
 
@@ -114,7 +109,8 @@ serve(async (req) => {
     const phone = attendee.phoneNumber || attendee.phone || "";
     const startTime = payload.startTime || payload.start;
     
-    const isPaidSession = payload.metadata?.is_paid === "true";
+    // Check for the is_paid flag in metadata OR responses
+    const isPaidSession = payload.metadata?.is_paid === "true" || payload.responses?.is_paid === true || payload.responses?.is_paid === "true";
     const shouldSendOnboarding = payload.metadata?.send_onboarding !== "false";
     const hasPaidViaStripe = !!(payload.payment?.[0]?.amount || payload.paymentId);
 
@@ -140,14 +136,22 @@ serve(async (req) => {
         send_onboarding: shouldSendOnboarding
       };
       
-      const { data: newApp } = await supabase
+      const { data: newApp, error: upsertError } = await supabase
         .from('appointments')
         .upsert(appointmentData, { onConflict: 'calcom_booking_id' })
         .select('id')
         .single();
         
-      appointmentId = newApp?.id;
-      console.log(`[calcom-webhook] Appointment ${appointmentId} synced to DB`);
+      if (upsertError) {
+        console.error("[calcom-webhook] Upsert Error:", upsertError);
+        // Fallback: try to find it if upsert didn't return data
+        const { data: existing } = await supabase.from('appointments').select('id').eq('calcom_booking_id', calcomId).single();
+        appointmentId = existing?.id;
+      } else {
+        appointmentId = newApp?.id;
+      }
+      
+      console.log(`[calcom-webhook] Appointment ${appointmentId} synced to DB. Paid: ${isPaidSession}`);
     }
 
     // 5. Send Onboarding Email
@@ -185,6 +189,7 @@ serve(async (req) => {
                       <div style="background-color: #F8FAFC; border-radius: 24px; padding: 24px; margin: 24px 0; border: 1px solid #E2E8F0; text-align: left;">
                         <div style="font-size: 11px; font-weight: 800; color: #1E3261; text-transform: uppercase; margin-bottom: 8px;">Payment Details ($50)</div>
                         <p style="margin: 0; font-size: 14px; color: #475569;">BSB: 923100 | ACC: 301110875</p>
+                        <p style="margin-top: 8px; font-size: 12px; color: #64748b;">Please use your name as the reference.</p>
                       </div>
                     ` : ''}
 

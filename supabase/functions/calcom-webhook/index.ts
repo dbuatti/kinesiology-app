@@ -36,7 +36,6 @@ async function sendGmail(accessToken: string, from: string, to: string, subject:
     htmlBody,
   ];
   const message = messageParts.join('\n');
-
   const encodedMessage = btoa(unescape(encodeURIComponent(message)))
     .replace(/\+/g, '-')
     .replace(/\//g, '_')
@@ -59,12 +58,6 @@ async function sendGmail(accessToken: string, from: string, to: string, subject:
 serve(async (req) => {
   console.log(`[calcom-webhook] Incoming ${req.method} request`);
 
-  if (req.method === 'GET') {
-    return new Response(JSON.stringify({ status: "active" }), { 
-      status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
-    });
-  }
-
   if (req.method === 'OPTIONS') return new Response('ok', { headers: corsHeaders })
 
   try {
@@ -72,64 +65,61 @@ serve(async (req) => {
     const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')
     const supabase = createClient(supabaseUrl, supabaseKey)
     
-    const GMAIL_CLIENT_ID = Deno.env.get('GMAIL_CLIENT_ID');
-    const GMAIL_CLIENT_SECRET = Deno.env.get('GMAIL_CLIENT_SECRET');
-    const GMAIL_REFRESH_TOKEN = Deno.env.get('GMAIL_REFRESH_TOKEN');
-    const SENDER_EMAIL = Deno.env.get('GMAIL_USER_EMAIL');
-    
-    const PRACTITIONER_ID = "6f2caa85-bfce-4264-97cd-c0d2f62b24f0";
-    const PAID_EVENT_TYPE_ID = 4279898;
+    // 1. Resolve Practitioner User ID
+    // We look up the first user in the profiles table to avoid hardcoded IDs
+    const { data: profileData } = await supabase.from('profiles').select('id').limit(1).single();
+    const PRACTITIONER_ID = profileData?.id;
+
+    if (!PRACTITIONER_ID) {
+      console.error("[calcom-webhook] Could not resolve a practitioner user ID.");
+      throw new Error("System configuration error: No practitioner found.");
+    }
 
     const body = await req.json();
     const triggerEvent = body.triggerEvent || body.type;
     
     if (triggerEvent === 'PING') {
-      console.log("[calcom-webhook] PING received.");
-      return new Response(JSON.stringify({ success: true, message: "PONG" }), { status: 200, headers: corsHeaders });
+      return new Response(JSON.stringify({ success: true }), { status: 200, headers: corsHeaders });
     }
 
     const payload = body.payload || body.data || body;
     const calcomId = String(payload.bookingId || payload.id || payload.uid || (body.payload && body.payload.id));
 
-    // 1. Handle Cancellations
     if (triggerEvent === 'BOOKING_CANCELLED' || triggerEvent === 'BOOKING_REJECTED') {
+      console.log(`[calcom-webhook] Deleting cancelled booking: ${calcomId}`);
       await supabase.from('appointments').delete().eq('calcom_booking_id', calcomId);
-      return new Response(JSON.stringify({ success: true, action: 'deleted' }), { status: 200, headers: corsHeaders });
+      return new Response(JSON.stringify({ success: true }), { status: 200, headers: corsHeaders });
     }
 
-    // 2. Extract Attendee Info
     const attendee = (payload.attendees && payload.attendees[0]) || 
                      (payload.responses && { name: payload.responses.name, email: payload.responses.email });
     
     if (!attendee || !attendee.email) {
-      return new Response(JSON.stringify({ success: true, message: "No attendee" }), { status: 200, headers: corsHeaders });
+      console.log("[calcom-webhook] Skipping: No attendee data found.");
+      return new Response(JSON.stringify({ success: true }), { status: 200, headers: corsHeaders });
     }
 
     const name = String(attendee.name || "Unknown Client").trim();
     const email = String(attendee.email || "").toLowerCase().trim();
-    const phone = attendee.phoneNumber || attendee.phone || "";
     const startTime = payload.startTime || payload.start;
-    const eventTypeId = payload.eventTypeId || (payload.eventType && payload.eventType.id);
     
-    // Robust Paid Detection
-    const isPaidMetadata = payload.metadata?.is_paid === "true";
-    const isPaidEventType = Number(eventTypeId) === PAID_EVENT_TYPE_ID;
-    const isPaidSession = isPaidMetadata || isPaidEventType;
-    
-    const shouldSendOnboarding = payload.metadata?.send_onboarding !== "false";
+    const isPaidSession = payload.metadata?.is_paid === "true" || Number(payload.eventTypeId) === 4279898;
     const hasPaidViaStripe = !!(payload.payment?.[0]?.amount || payload.paymentId);
 
-    console.log(`[calcom-webhook] Processing: ${email}, Paid: ${isPaidSession}, Event: ${eventTypeId}`);
-
-    // 3. Sync Client
+    // 2. Sync Client
     let { data: dbClient } = await supabase.from('clients').select('id').eq('email', email).maybeSingle();
     if (!dbClient) {
-      const { data: newDbC } = await supabase.from('clients').insert({ user_id: PRACTITIONER_ID, name, email, phone }).select().single();
+      const { data: newDbC, error: cErr } = await supabase.from('clients').insert({ 
+        user_id: PRACTITIONER_ID, 
+        name, 
+        email, 
+        phone: attendee.phoneNumber || attendee.phone || "" 
+      }).select().single();
+      if (cErr) console.error("[calcom-webhook] Client creation error:", cErr);
       dbClient = newDbC;
     }
 
-    // 4. Sync Appointment
-    let appointmentId = null;
+    // 3. Sync Appointment
     if (dbClient) {
       const appointmentData = {
         user_id: PRACTITIONER_ID,
@@ -139,122 +129,19 @@ serve(async (req) => {
         status: "Scheduled",
         calcom_booking_id: calcomId,
         is_paid: isPaidSession,
-        payment_received: hasPaidViaStripe,
-        send_onboarding: shouldSendOnboarding
+        payment_received: hasPaidViaStripe
       };
       
-      const { data: newApp } = await supabase
+      const { data: newApp, error: appErr } = await supabase
         .from('appointments')
         .upsert(appointmentData, { onConflict: 'calcom_booking_id' })
         .select('id')
         .single();
         
-      appointmentId = newApp?.id;
-    }
-
-    // 5. Send Detailed Onboarding Email
-    if (shouldSendOnboarding && appointmentId && GMAIL_CLIENT_ID && GMAIL_CLIENT_SECRET && GMAIL_REFRESH_TOKEN) {
-      try {
-        const accessToken = await getGmailAccessToken(GMAIL_CLIENT_ID, GMAIL_CLIENT_SECRET, GMAIL_REFRESH_TOKEN);
-        const onboardingUrl = `https://kinesiology-app.vercel.app/onboarding/${dbClient.id}?appId=${appointmentId}`;
-        
-        const dateObj = new Date(startTime);
-        const formattedTime = new Intl.DateTimeFormat('en-AU', {
-          dateStyle: 'full',
-          timeStyle: 'short',
-          timeZone: 'Australia/Melbourne'
-        }).format(dateObj);
-
-        const showBankDetails = isPaidSession && !hasPaidViaStripe;
-
-        const htmlBody = `
-          <!DOCTYPE html>
-          <html>
-          <head>
-            <meta charset="utf-8">
-            <meta name="viewport" content="width=device-width, initial-scale=1.0">
-          </head>
-          <body style="margin: 0; padding: 0; background-color: #FDFCFB; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;">
-            <center style="width: 100%; background-color: #FDFCFB; padding: 40px 0;">
-              <table role="presentation" border="0" cellpadding="0" cellspacing="0" width="100%" style="max-width: 600px; margin: 0 auto;">
-                <tr>
-                  <td style="background-color: #ffffff; border-radius: 40px; overflow: hidden; border: 1px solid #E0F2FE; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);">
-                    <!-- Top Accent Bar -->
-                    <table role="presentation" width="100%" cellspacing="0" cellpadding="0">
-                      <tr><td style="height: 6px; background-color: #D46A9B;"></td></tr>
-                    </table>
-
-                    <!-- Header Section -->
-                    <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="padding: 56px 40px 40px 40px; text-align: center;">
-                      <tr>
-                        <td>
-                          <div style="color: #1E3261; font-size: 28px; font-weight: 700; letter-spacing: 0.02em;">✦ Resonance Kinesiology</div>
-                          <div style="color: #D46A9B; font-size: 11px; font-weight: 900; letter-spacing: 0.4em; margin-top: 16px; text-transform: uppercase; opacity: 0.8;">Neuro-Somatic Support</div>
-                        </td>
-                      </tr>
-                    </table>
-
-                    <!-- Main Content -->
-                    <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="padding: 0 56px 56px 56px; text-align: left;">
-                      <tr>
-                        <td style="line-height: 1.8; font-size: 17px; color: #334155;">
-                          <h2 style="color: #1E3261; margin-top: 0; font-size: 26px; font-weight: 800; text-align: center;">Session Confirmed</h2>
-                          <p style="margin-top: 24px;">Hi ${name.split(' ')[0]},</p>
-                          <p>Your appointment is confirmed for <strong>${formattedTime}</strong>.</p>
-                          
-                          <p>To ensure we make the most of our time together, please complete your clinical onboarding form. This allows me to review your history before we meet, so we can dive straight into the neurological work.</p>
-                          
-                          <div style="background-color: #F8FAFC; border-radius: 24px; padding: 24px; margin: 32px 0; border: 1px solid #E2E8F0;">
-                            <div style="font-size: 11px; font-weight: 800; color: #1E3261; text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 12px;">Preparation</div>
-                            <ul style="margin: 0; padding-left: 20px; font-size: 15px; color: #475569;">
-                              <li style="margin-bottom: 8px;"><strong>Hydration:</strong> Please drink plenty of water before the session.</li>
-                              <li style="margin-bottom: 8px;"><strong>Space:</strong> Ensure you are in a quiet, private space where you won't be interrupted.</li>
-                              <li><strong>Intention:</strong> Take a moment to think about your primary goal for this session.</li>
-                            </ul>
-                          </div>
-
-                          ${showBankDetails ? `
-                            <div style="background-color: #F0F9FF; border-radius: 24px; padding: 32px; margin: 32px 0; border: 1px solid #BAE6FD; text-align: center;">
-                              <div style="font-size: 11px; font-weight: 800; color: #0369A1; text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 16px;">Payment Details ($50)</div>
-                              <p style="margin: 0; font-size: 16px; color: #0C4A6E; line-height: 1.6;">This is a paid clinical assessment. You can settle the fee via bank transfer below, or via tap-to-pay during our session:</p>
-                              <div style="margin-top: 24px; padding: 20px; background-color: #ffffff; border-radius: 16px; border: 1px solid #E0F2FE; font-family: monospace; font-size: 18px; color: #1E3261; font-weight: 700;">
-                                BSB: 923100<br/>
-                                ACC: 301110875
-                              </div>
-                            </div>
-                          ` : ''}
-
-                          <div style="text-align: center; padding: 32px 0;">
-                            <a href="${onboardingUrl}" style="display: inline-block; background-color: #1E3261; color: #ffffff; padding: 20px 48px; border-radius: 100px; text-decoration: none; font-weight: 700; font-size: 16px; letter-spacing: 0.05em;">Complete Onboarding Form</a>
-                          </div>
-                        </td>
-                      </tr>
-                      
-                      <!-- Signature -->
-                      <tr>
-                        <td style="border-top: 1px solid #F1F5F9; margin-top: 20px; padding-top: 32px;">
-                          <div style="font-weight: 700; color: #1E3261; font-size: 20px; margin-bottom: 4px;">Daniele Buatti</div>
-                          <div style="color: #D46A9B; font-size: 12px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.15em;">Neuro-Somatic Kinesiologist</div>
-                        </td>
-                      </tr>
-                    </table>
-                  </td>
-                </tr>
-                <tr>
-                  <td style="padding: 48px 20px; text-align: center; color: #64748b; font-size: 13px;">
-                    <p>© ${new Date().getFullYear()} Resonance Kinesiology</p>
-                  </td>
-                </tr>
-              </table>
-            </center>
-          </body>
-          </html>
-        `;
-
-        await sendGmail(accessToken, SENDER_EMAIL, email, "Action Required: Your Onboarding Form", htmlBody);
-        console.log(`[calcom-webhook] Detailed onboarding email sent to ${email}`);
-      } catch (e) {
-        console.error("[calcom-webhook] Gmail API Error:", e.message);
+      if (appErr) {
+        console.error("[calcom-webhook] Appointment sync error:", appErr);
+      } else {
+        console.log(`[calcom-webhook] Appointment ${newApp?.id} synced to DB.`);
       }
     }
 

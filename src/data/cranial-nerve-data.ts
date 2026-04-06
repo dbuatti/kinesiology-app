@@ -14,7 +14,27 @@ export interface CranialNerve {
   stimulus: string;
   clinicalPearl: string;
   color: string;
+  acupoint?: string;
 }
+
+export const BRAINSTEM_KEYS: Record<BrainstemNuclei, { description: string; stim: string }> = {
+  'Cortex': {
+    description: "Project to cortex (olfactory & visual). Not housed in brainstem.",
+    stim: "Direct sensory input (Smell/Light)"
+  },
+  'Midbrain': {
+    description: "Eye movement nuclei. Controls flexor tone.",
+    stim: "GV26 + Clavicle + Ear Cupping"
+  },
+  'Pons': {
+    description: "Facial sensation, eye movement, facial motor, hearing/balance. Controls extensor tone.",
+    stim: "GV17 (EOP)"
+  },
+  'Medulla': {
+    description: "Swallowing, Vagus, Accessory, Tongue. Controls flexor tone.",
+    stim: "GB12"
+  }
+};
 
 export const CRANIAL_NERVES: CranialNerve[] = [
   {
@@ -23,10 +43,11 @@ export const CRANIAL_NERVES: CranialNerve[] = [
     latinName: "Olfactory",
     nuclei: "Cortex",
     toneEffect: "None",
-    reflexPoint: "Yin Tang (Third Eye / between eyebrows)",
-    functions: ["Smell", "Limbic integration"],
-    stimulus: "1. Test Yin Tang reflex point. 2. If inhibited, use an essential oil to isolate side. Block one nostril and sniff; identify which side affects the IM.",
-    clinicalPearl: "The only sense that bypasses the thalamus. Only proceed to essential oil testing if the Yin Tang reflex point indicates a priority first.",
+    acupoint: "Yin Tang",
+    reflexPoint: "Yin Tang acupoint — between and just above the eyebrows",
+    functions: ["Sense of smell (olfaction)", "Olfactory memory and emotional memory recall"],
+    stimulus: "Hold Yin Tang as the reflex point. Stimulus: smell an essential oil in the nostril. CN I bypasses the thalamus entirely and projects directly to the olfactory cortex and limbic system.",
+    clinicalPearl: "The only sense that bypasses the thalamus. Essential for deep emotional memory work.",
     color: "bg-purple-500"
   },
   {
@@ -35,10 +56,11 @@ export const CRANIAL_NERVES: CranialNerve[] = [
     latinName: "Optic",
     nuclei: "Cortex",
     toneEffect: "None",
-    reflexPoint: "Bladder 2 (inner edge of the eyebrow)",
-    functions: ["Vision", "Light reflex"],
-    stimulus: "1. Test reflex point at the inner edge of the eyebrow. 2. If inhibited, shine a light into the eye from multiple directions: straight on, superior, inferior, medial, and lateral to identify the priority angle.",
-    clinicalPearl: "Only proceed to light testing if the reflex point indicates a priority. This nerve arises from the occipital lobe in the cortex.",
+    acupoint: "BL2",
+    reflexPoint: "Bladder 2 (BL2) acupoint — inner end of eyebrow, above inner canthus",
+    functions: ["Vision and visual processing", "Depth perception and spatial awareness"],
+    stimulus: "Hold BL2 as the reflex point. Stimulus: shine light into the eye in any possible direction — direct, from above, from below, from the sides. Input crosses over at the optic chiasm.",
+    clinicalPearl: "Right eye projects to left occipital cortex. Use directional light to isolate specific visual field deficits.",
     color: "bg-purple-600"
   },
   {
@@ -47,10 +69,10 @@ export const CRANIAL_NERVES: CranialNerve[] = [
     latinName: "Oculomotor",
     nuclei: "Midbrain",
     toneEffect: "Flexors",
-    reflexPoint: "Light touch to eyelids",
-    functions: ["Most eye movements", "Pupil constriction"],
-    stimulus: "Move eye into the midline (bridge of nose), look up, or look down.",
-    clinicalPearl: "Midbrain nuclei control flexor tone. Eye movement issues here often correlate with systemic flexor dominance. Shares a reflex point with CN 4 and 6.",
+    reflexPoint: "Lightly touch the eye lids",
+    functions: ["Eye movement: up, down, and medial gaze", "Pupil constriction (parasympathetic)"],
+    stimulus: "Lightly touch the eye lids as the reflex point. Stimulus: move eyes up, down, medial towards bridge of nose, up and left, down and left, open eyelid slowly.",
+    clinicalPearl: "Shares midbrain housing with CN IV. Midbrain nuclei control flexor tone.",
     color: "bg-amber-500"
   },
   {
@@ -59,10 +81,10 @@ export const CRANIAL_NERVES: CranialNerve[] = [
     latinName: "Trochlear",
     nuclei: "Midbrain",
     toneEffect: "Flexors",
-    reflexPoint: "Light touch to eyelids",
-    functions: ["Downward and inward eye movement"],
-    stimulus: "Look at the tip of the nose.",
-    clinicalPearl: "Specific for superior oblique muscle control. Shares a reflex point with CN 3 and 6.",
+    reflexPoint: "Lightly touch the eyes",
+    functions: ["Downward and inward eye movement (superior oblique)", "Stabilises eye during head tilt"],
+    stimulus: "Lightly touch the eyes as the reflex point. Stimulus: move eyes towards the tip of the nose (downward and inward convergence).",
+    clinicalPearl: "The only cranial nerve that exits dorsally from the brainstem. Critical for reading and downward gaze.",
     color: "bg-amber-600"
   },
   {
@@ -71,10 +93,10 @@ export const CRANIAL_NERVES: CranialNerve[] = [
     latinName: "Trigeminal",
     nuclei: "Pons",
     toneEffect: "Extensors",
-    reflexPoint: "Hand along the jawline (bilateral)",
-    functions: ["Face sensation (3 divisions)", "Chewing", "Soft sound (Tensor Tympani)"],
-    stimulus: "1. Rub through sensory divisions: Ophthalmic (forehead), Maxillary (cheek), Mandibular (jaw). 2. Soft sound stimulus.",
-    clinicalPearl: "The 'negative antidote' to the Vagus nerve. Heavily tied to the sympathetic nervous system and systemic pain neurology. Flaring often leads to increased head and body pain.",
+    reflexPoint: "Hand across the mandible (cheek)",
+    functions: ["Facial sensation (V1, V2, V3)", "Jaw movement and mastication (motor)"],
+    stimulus: "Place hand across the mandible (cheek) as the reflex point. Stimulate three sensory branches: V1 ophthalmic (forehead), V2 maxillary (cheek), V3 mandibular (jaw).",
+    clinicalPearl: "The 'negative antidote' to the Vagus nerve. Heavily tied to the sympathetic nervous system and systemic pain neurology.",
     color: "bg-indigo-500"
   },
   {
@@ -83,10 +105,10 @@ export const CRANIAL_NERVES: CranialNerve[] = [
     latinName: "Abducens",
     nuclei: "Pons",
     toneEffect: "Extensors",
-    reflexPoint: "Light touch to eyelids",
-    functions: ["Lateral eye movement"],
-    stimulus: "Look laterally (away from the nose) with the eye corresponding to the eyelid reflex.",
-    clinicalPearl: "Shares a reflex point (eyelids) with CN 3 and 4. If the eyelid reflex indicates, isolate CN 6 by testing lateral eye movement. Unlike CN 3 and 4 (Midbrain), the Abducens nuclei are located in the Pons.",
+    reflexPoint: "Lightly touch the eyes",
+    functions: ["Lateral eye movement — abduction", "Coordinates with CN III for conjugate gaze"],
+    stimulus: "Lightly touch the eyes as the reflex point. Stimulus: move eyes laterally — look as far left as possible, then as far right as possible.",
+    clinicalPearl: "Tests the lateral rectus muscle. Essential for horizontal scanning and peripheral awareness.",
     color: "bg-indigo-600"
   },
   {
@@ -95,10 +117,10 @@ export const CRANIAL_NERVES: CranialNerve[] = [
     latinName: "Facial",
     nuclei: "Pons",
     toneEffect: "Extensors",
-    reflexPoint: "Temporal line / Sphenoid area",
-    functions: ["Facial expression", "Taste (anterior tongue)", "Motor response to sound"],
-    stimulus: "1. Squeeze eye shut on the side of the reflex. 2. Loud sound challenge (observe for facial contortion/startle).",
-    clinicalPearl: "Motor control of the face. High relationship to loud sounds; a contorted face is a protective reflex. Stress often leads to low facial nerve tone. Relevant for Bell's Palsy cases. Differentiate from Trigeminal (sensory) and Startle reflex.",
+    reflexPoint: "Hand along the temporal / TMJ area",
+    functions: ["Facial expression (motor)", "Taste — anterior 2/3 of tongue"],
+    stimulus: "Place hand along the temporal/TMJ area as the reflex point. Stimulus: squeeze eye shut, produce different facial expressions, loud sound stimulus (stapedius branch).",
+    clinicalPearl: "Test facial symmetry and expression quality. High relationship to loud sounds and protective startle responses.",
     color: "bg-indigo-700"
   },
   {
@@ -107,10 +129,10 @@ export const CRANIAL_NERVES: CranialNerve[] = [
     latinName: "Vestibulocochlear",
     nuclei: "Pons",
     toneEffect: "Extensors",
-    reflexPoint: "Edge of the ear canal (light touch)",
-    functions: ["Hearing (Cochlear)", "Balance/Head Position (Vestibular)"],
-    stimulus: "1. Test reflex point at edge of ear canal. 2. If inhibited, delineate: Cochlear (click fingers near ear) vs. Vestibular (Head Up, Down, Rotate L/R, Tilt L/R).",
-    clinicalPearl: "Arises from the pontomedullary junction. A highly powerful nerve frequently involved in head injuries, anxiety, and gut dysfunction. It is common for multiple head positions to show up during the vestibular assessment.",
+    reflexPoint: "Finger in the ear canal",
+    functions: ["Hearing — cochlear division", "Balance and spatial orientation — vestibular division"],
+    stimulus: "Place finger in the ear canal as the reflex point. Delineate: Cochlear (click fingers near ear) vs. Vestibular (Head Up, Down, Rotate L/R, Tilt L/R).",
+    clinicalPearl: "A highly powerful nerve frequently involved in head injuries, anxiety, and gut dysfunction.",
     color: "bg-indigo-800"
   },
   {
@@ -119,10 +141,11 @@ export const CRANIAL_NERVES: CranialNerve[] = [
     latinName: "Glossopharyngeal",
     nuclei: "Medulla",
     toneEffect: "Flexors",
-    reflexPoint: "Middle of the tongue (client's thumb/finger)",
-    functions: ["Swallowing", "Taste (posterior tongue)"],
-    stimulus: "Perform a swallow or hum.",
-    clinicalPearl: "The first cranial nerve directly related to the Medulla. Works in a tight neurological cluster with CN 10 (Vagus) and CN 11 (Accessory); dysfunction in one often crosses over to the others.",
+    acupoint: "GB21",
+    reflexPoint: "GB21 acupoint — top of shoulder, midpoint between neck and shoulder tip",
+    functions: ["Taste — posterior 1/3 of tongue", "Swallowing — pharyngeal phase"],
+    stimulus: "Hold GB21 as the reflex point. Stimulus: humming. Test indicator muscle before and after humming to assess function.",
+    clinicalPearl: "Works in a tight neurological cluster with CN 10 and CN 11; dysfunction in one often crosses over.",
     color: "bg-rose-500"
   },
   {
@@ -131,10 +154,10 @@ export const CRANIAL_NERVES: CranialNerve[] = [
     latinName: "Vagus",
     nuclei: "Medulla",
     toneEffect: "Flexors",
-    reflexPoint: "Occiput (Vagal reflex)",
-    functions: ["Autonomic control", "Heart rate", "Digestion", "Ventral/Dorsal Vagal states"],
-    stimulus: "1. Test Vagal reflex point at the occiput. 2. If inhibited, touch skin at occiput to lateralize (L/R). 3. Perform swallowing, humming, or 'Aaah' sound.",
-    clinicalPearl: "The 'King' of the parasympathetic nervous system. Arises from the dorsal motor nucleus and nucleus tractus solitarius in the medulla. Includes the myelinated Ventral Vagus and unmyelinated Dorsal Vagus. Often addressed in initial SNS reset protocols.",
+    reflexPoint: "Hand along the Occiput-Atlas joint (base of skull / C1 junction)",
+    functions: ["Autonomic control (heart, lungs, gut)", "Swallowing, voice, and gag reflex"],
+    stimulus: "Place hand along the Occiput-Atlas joint as the reflex point. Stimulus: Cymba Conchae (ear bowl), humming, swallowing, 'Aaah', tongue to roof of mouth, slow breathing.",
+    clinicalPearl: "The 'King' of the parasympathetic nervous system. Arises from the medulla. Often addressed in initial SNS reset protocols.",
     color: "bg-rose-600"
   },
   {
@@ -143,10 +166,10 @@ export const CRANIAL_NERVES: CranialNerve[] = [
     latinName: "Accessory",
     nuclei: "Medulla",
     toneEffect: "Flexors",
-    reflexPoint: "SCM and Upper Trapezius muscle bellies",
-    functions: ["SCM and Trapezius control"],
-    stimulus: "1. Tap SCM and contralateral Upper Trapezius bellies simultaneously and test IM. 2. Alternatively, activate both muscles (shrug + head rotation) and test. Logic: L Accessory = L SCM + R Trap; R Accessory = R SCM + L Trap.",
-    clinicalPearl: "Closely linked with CN 9 and 10 in the Medulla. SCM and Trapezius have dual innervation (Accessory + C2/C3). Key player in head, neck, shoulder, visual, and even pelvic issues.",
+    reflexPoint: "Bilateral Posterior Ramus of Jaw (both sides simultaneously)",
+    functions: ["Motor to SCM — head rotation", "Motor to upper trapezius — shoulder elevation"],
+    stimulus: "Hold the bilateral posterior ramus of the jaw as the reflex point. Stimulus: ipsilateral SCM contraction + contralateral upper trapezius contraction.",
+    clinicalPearl: "Key player in head, neck, shoulder, visual, and even pelvic issues. Dual innervation with C2/C3.",
     color: "bg-rose-700"
   },
   {
@@ -155,10 +178,10 @@ export const CRANIAL_NERVES: CranialNerve[] = [
     latinName: "Hypoglossal",
     nuclei: "Medulla",
     toneEffect: "Flexors",
-    reflexPoint: "Sulcus under the chin",
-    functions: ["Tongue movement"],
-    stimulus: "1. Test reflex point under the chin. 2. If inhibited, push tongue straight out, then move it right, left, up, and down to identify the dysfunctional direction.",
-    clinicalPearl: "Primary control of the tongue. Key component of the Medial Longitudinal Fasciculus (MLF) alongside the eyes, jaw, and inner ear for balance. Vital for midline stability and arises from the Medulla.",
+    reflexPoint: "Sulcus under chin — anterior mandible (groove between chin and lower lip)",
+    functions: ["Tongue movement — all intrinsic muscles", "Speech articulation"],
+    stimulus: "Hold the sulcus under the chin as the reflex point. Stimulus: tongue movement — forwards, right, left, up, and any other direction.",
+    clinicalPearl: "Vital for midline stability. Deviation on protrusion indicates weakness in the contralateral medulla.",
     color: "bg-rose-800"
   }
 ];

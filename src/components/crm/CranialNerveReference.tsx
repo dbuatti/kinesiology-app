@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { CRANIAL_NERVES, CranialNerve, BrainstemNuclei } from "@/data/cranial-nerve-data";
+import { CRANIAL_NERVES, BRAINSTEM_KEYS, BrainstemNuclei } from "@/data/cranial-nerve-data";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -19,7 +19,8 @@ import {
   Workflow,
   Sparkles,
   ImageIcon,
-  Target
+  Target,
+  ChevronRight
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
@@ -76,12 +77,37 @@ const CranialNerveReference = () => {
   const nucleiOptions: (BrainstemNuclei | 'All')[] = ['All', 'Cortex', 'Midbrain', 'Pons', 'Medulla'];
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-10 animate-in fade-in duration-700">
+      {/* Brainstem Housing Key */}
+      <div className="grid grid-cols-1 lg:grid-cols-4 gap-4">
+        {Object.entries(BRAINSTEM_KEYS).map(([key, data]) => (
+          <Card key={key} className={cn(
+            "border-none shadow-md rounded-3xl overflow-hidden transition-all",
+            key === 'Cortex' ? "bg-purple-50 border-purple-100" :
+            key === 'Midbrain' ? "bg-amber-50 border-amber-100" :
+            key === 'Pons' ? "bg-indigo-50 border-indigo-100" :
+            "bg-rose-50 border-rose-100"
+          )}>
+            <CardContent className="p-5 space-y-2">
+              <div className="flex items-center justify-between">
+                <h4 className="font-black text-sm uppercase tracking-widest">{key}</h4>
+                <Badge variant="outline" className="text-[8px] font-black border-current/20">Housing</Badge>
+              </div>
+              <p className="text-[10px] font-medium leading-relaxed opacity-80">{data.description}</p>
+              <div className="pt-2 flex items-center gap-2">
+                <Zap size={12} className="text-amber-500" />
+                <span className="text-[9px] font-black uppercase tracking-widest">Stim: {data.stim}</span>
+              </div>
+            </CardContent>
+          </Card>
+        ))}
+      </div>
+
       <div className="flex flex-col md:flex-row gap-4">
         <div className="relative flex-1">
           <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
           <Input 
-            placeholder="Search nerves (e.g. Vagus, CN V, Smell)..." 
+            placeholder="Search nerves, functions, stims..." 
             className="pl-12 bg-white border-slate-200 rounded-2xl h-14 shadow-sm font-medium focus:ring-2 focus:ring-indigo-500"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
@@ -128,7 +154,7 @@ const CranialNerveReference = () => {
                         nerve.nuclei === 'Pons' ? "bg-indigo-100 text-indigo-700" :
                         "bg-rose-100 text-rose-700"
                       )}>
-                        {nerve.nuclei} Nuclei
+                        {nerve.nuclei}
                       </Badge>
                       <Badge variant="outline" className="border-slate-200 text-slate-500 font-black text-[8px] uppercase tracking-widest">
                         {nerve.toneEffect} Tone
@@ -137,6 +163,9 @@ const CranialNerveReference = () => {
                     <CardTitle className="text-2xl font-black text-slate-900 group-hover:text-indigo-600 transition-colors">
                       {nerve.name}: {nerve.latinName}
                     </CardTitle>
+                    {nerve.acupoint && (
+                      <p className="text-[10px] font-black text-indigo-600 uppercase tracking-widest">{nerve.acupoint}</p>
+                    )}
                   </div>
                   <div className={cn(
                     "w-12 h-12 rounded-xl flex items-center justify-center shadow-sm text-white",
@@ -147,56 +176,29 @@ const CranialNerveReference = () => {
                 </div>
               </CardHeader>
               <CardContent className="p-8 space-y-6">
-                {/* Images Section */}
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <p className="text-[8px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-1">
-                      <ImageIcon size={10} /> Anatomy
-                    </p>
-                    <div className="aspect-video rounded-xl bg-slate-50 border border-slate-100 overflow-hidden flex items-center justify-center shadow-inner">
-                      {data.primaryUrl ? (
-                        <img src={data.primaryUrl} alt="Anatomy" className="w-full h-full object-cover" />
-                      ) : (
-                        <Brain size={20} className="text-slate-200" />
-                      )}
-                    </div>
-                  </div>
-                  <div className="space-y-2">
-                    <p className="text-[8px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-1">
-                      <Target size={10} /> Reflex
-                    </p>
-                    <div className="aspect-video rounded-xl bg-slate-50 border border-slate-100 overflow-hidden flex items-center justify-center shadow-inner">
-                      {data.secondaryUrl ? (
-                        <img src={data.secondaryUrl} alt="Reflex" className="w-full h-full object-cover" />
-                      ) : (
-                        <Target size={20} className="text-slate-200" />
-                      )}
-                    </div>
-                  </div>
-                </div>
-
                 <div className="grid grid-cols-1 gap-4">
                   <div className="p-4 bg-slate-50 rounded-2xl border border-slate-100">
                     <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-1 flex items-center gap-1">
-                      <Hand size={12} /> Reflex Point
+                      <Hand size={12} /> Touch Point
                     </p>
-                    <p className="text-sm font-bold text-slate-900">{nerve.reflexPoint}</p>
+                    <p className="text-sm font-bold text-slate-900 leading-relaxed">{nerve.reflexPoint}</p>
                   </div>
                   <div className="p-4 bg-indigo-50/50 rounded-2xl border border-indigo-100">
                     <p className="text-[9px] font-black text-indigo-400 uppercase tracking-widest mb-1 flex items-center gap-1">
-                      <PlayCircle size={12} /> Stimulus
+                      <PlayCircle size={12} /> Stim Protocol
                     </p>
-                    <p className="text-sm font-bold text-indigo-900">{nerve.stimulus}</p>
+                    <p className="text-sm font-bold text-indigo-900 leading-relaxed">{nerve.stimulus}</p>
                   </div>
                 </div>
 
                 <div className="space-y-3">
-                  <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest">Primary Functions</p>
-                  <div className="flex flex-wrap gap-1.5">
+                  <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest">Key Functions</p>
+                  <div className="space-y-1.5">
                     {nerve.functions.map(f => (
-                      <Badge key={f} variant="secondary" className="bg-slate-100 text-slate-600 border-none text-[10px] font-bold">
+                      <div key={f} className="flex items-start gap-2 text-xs font-bold text-slate-600">
+                        <div className="w-1 h-1 rounded-full bg-indigo-400 mt-1.5 shrink-0" />
                         {f}
-                      </Badge>
+                      </div>
                     ))}
                   </div>
                 </div>
@@ -223,10 +225,10 @@ const CranialNerveReference = () => {
           </div>
           <div className="space-y-4">
             <h4 className="text-2xl font-black flex items-center gap-3">
-              <ShieldAlert size={24} className="text-indigo-400" /> The Fractal Correction Logic
+              <ShieldAlert size={24} className="text-indigo-400" /> Pathway Assessment Logic
             </h4>
             <p className="text-slate-400 font-medium leading-relaxed text-lg">
-              "You may have a whole heap of cranial nerves that come up and you may need to only do one or two corrections to clear the whole pattern or the whole fractal."
+              "When a CN reflex point test produces an Indicator Response, determine the direction of treatment: **Afferent** (mechano-vestibular, nociceptive, physiology) or **Efferent** (cortical, sub-cortical, emotions). No response = pathway normal."
             </p>
             <div className="flex flex-wrap gap-4 pt-2">
               <div className="flex items-center gap-2">

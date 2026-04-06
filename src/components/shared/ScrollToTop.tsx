@@ -7,13 +7,19 @@ const ScrollToTop = () => {
   const { pathname } = useLocation();
 
   useLayoutEffect(() => {
-    // Reset window scroll for pages without the MainLayout (like Login/Onboarding)
+    // 1. Reset the standard window scroll (important for pages like Login/Onboarding)
     window.scrollTo(0, 0);
     
-    // Reset the main container scroll which is the primary scroller in MainLayout
-    const mainContent = document.querySelector('main');
-    if (mainContent) {
-      mainContent.scrollTo(0, 0);
+    // 2. Reset the specific scroll container used in MainLayout
+    const scrollContainer = document.getElementById('main-scroll-container');
+    if (scrollContainer) {
+      scrollContainer.scrollTo(0, 0);
+    }
+    
+    // 3. Fallback for any generic 'main' element
+    const mainElement = document.querySelector('main');
+    if (mainElement && mainElement !== scrollContainer) {
+      mainElement.scrollTo(0, 0);
     }
   }, [pathname]);
 

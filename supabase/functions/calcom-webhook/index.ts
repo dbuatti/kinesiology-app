@@ -57,10 +57,11 @@ async function sendGmail(accessToken: string, from: string, to: string, subject:
 }
 
 serve(async (req) => {
-  console.log("[calcom-webhook] Request received");
+  // IMMEDIATE LOG TO PREVENT "NO DATA" IN SUPABASE
+  console.log(`[calcom-webhook] Incoming ${req.method} request at ${new Date().toISOString()}`);
 
   if (req.method === 'GET') {
-    return new Response(JSON.stringify({ status: "active", provider: "gmail", version: "v47-debug" }), { 
+    return new Response(JSON.stringify({ status: "active", version: "v48-v2-ready" }), { 
       status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
     });
   }
@@ -80,11 +81,19 @@ serve(async (req) => {
     const PRACTITIONER_ID = "6f2caa85-bfce-4264-97cd-c0d2f62b24f0";
 
     const body = await req.json();
-    const triggerEvent = body.triggerEvent;
-    const payload = body.payload || body;
-    const calcomId = String(payload.bookingId || payload.id || payload.uid);
+    
+    // Cal.com v2 often wraps the payload differently
+    const triggerEvent = body.triggerEvent || body.type;
+    const payload = body.payload || body.data || body;
+    
+    // Robust ID extraction for v2
+    const calcomId = String(payload.bookingId || payload.id || payload.uid || (body.payload && body.payload.id));
 
     console.log(`[calcom-webhook] Event: ${triggerEvent}, BookingID: ${calcomId}`);
+
+    if (!calcomId || calcomId === "undefined") {
+      console.log("[calcom-webhook] Warning: No valid Booking ID found in payload. Body keys:", Object.keys(body));
+    }
 
     // Check if an appointment already exists
     const { data: existingApp } = await supabase
@@ -94,7 +103,7 @@ serve(async (req) => {
       .maybeSingle();
 
     if (triggerEvent === 'BOOKING_CANCELLED' || triggerEvent === 'BOOKING_REJECTED') {
-      console.log("[calcom-webhook] Handling cancellation");
+      console.log("[calcom-webhook] Action: Deleting cancelled booking");
       if (existingApp) {
         await supabase.from('appointments').delete().eq('id', existingApp.id);
       }
@@ -102,25 +111,32 @@ serve(async (req) => {
     }
 
     if (triggerEvent === 'BOOKING_RESCHEDULED' && existingApp) {
-      console.log("[calcom-webhook] Handling reschedule");
+      console.log("[calcom-webhook] Action: Updating rescheduled date");
       await supabase.from('appointments').update({ date: payload.startTime }).eq('id', existingApp.id);
       return new Response(JSON.stringify({ success: true, action: 'rescheduled' }), { status: 200, headers: corsHeaders });
     }
 
     if (existingApp && triggerEvent === 'BOOKING_CREATED') {
-      console.log("[calcom-webhook] Skipping duplicate booking creation");
+      console.log("[calcom-webhook] Action: Skipping duplicate creation");
       return new Response(JSON.stringify({ success: true, action: 'skipped_duplicate' }), { status: 200, headers: corsHeaders });
     }
 
-    const attendee = payload.attendees[0];
+    // Extract attendee info (v2 structure check)
+    const attendee = (payload.attendees && payload.attendees[0]) || (payload.responses && { name: payload.responses.name, email: payload.responses.email });
+    
+    if (!attendee || !attendee.email) {
+      console.error("[calcom-webhook] Error: Could not find attendee email in payload", JSON.stringify(payload).substring(0, 200));
+      return new Response(JSON.stringify({ error: "No attendee data" }), { status: 200, headers: corsHeaders });
+    }
+
     const name = String(attendee.name || "Unknown Client").trim();
     const email = String(attendee.email || "").toLowerCase().trim();
-    const phone = attendee.phoneNumber || "";
-    const startTime = payload.startTime;
+    const phone = attendee.phoneNumber || attendee.phone || "";
+    const startTime = payload.startTime || payload.start;
     
     const isPaidSession = payload.metadata?.is_paid === "true";
     const shouldSendOnboarding = payload.metadata?.send_onboarding !== "false";
-    const hasPaidViaStripe = !!(payload.payment?.[0]?.amount);
+    const hasPaidViaStripe = !!(payload.payment?.[0]?.amount || payload.paymentId);
 
     console.log(`[calcom-webhook] Processing: ${name} (${email}), Onboarding: ${shouldSendOnboarding}`);
 
@@ -146,22 +162,12 @@ serve(async (req) => {
       };
       const { data: newApp } = await supabase.from('appointments').upsert(appointmentData, { onConflict: 'calcom_booking_id' }).select('id').single();
       appointmentId = newApp?.id;
-      console.log(`[calcom-webhook] Appointment ${appointmentId} upserted`);
+      console.log(`[calcom-webhook] Appointment ${appointmentId} synced to DB`);
     }
-
-    // LOGGING THE SEND CONDITIONS
-    console.log("[calcom-webhook] Checking email conditions:", {
-      shouldSendOnboarding,
-      hasAppointmentId: !!appointmentId,
-      hasGmailClientId: !!GMAIL_CLIENT_ID,
-      hasGmailSecret: !!GMAIL_CLIENT_SECRET,
-      hasRefreshToken: !!GMAIL_REFRESH_TOKEN,
-      hasDbClient: !!dbClient
-    });
 
     if (shouldSendOnboarding && appointmentId && GMAIL_CLIENT_ID && GMAIL_CLIENT_SECRET && GMAIL_REFRESH_TOKEN && dbClient) {
       try {
-        console.log(`[calcom-webhook] Attempting to send email to ${email}`);
+        console.log(`[calcom-webhook] Triggering Gmail API for ${email}`);
         const accessToken = await getGmailAccessToken(GMAIL_CLIENT_ID, GMAIL_CLIENT_SECRET, GMAIL_REFRESH_TOKEN);
         const onboardingUrl = `https://kinesiology-app.vercel.app/onboarding/${dbClient.id}?appId=${appointmentId}`;
         
@@ -209,12 +215,12 @@ serve(async (req) => {
         `;
 
         const result = await sendGmail(accessToken, SENDER_EMAIL, email, "Action Required: Your Onboarding Form", htmlBody);
-        console.log("[calcom-webhook] Gmail API response:", JSON.stringify(result));
+        console.log("[calcom-webhook] Gmail API Success:", JSON.stringify(result));
       } catch (e) {
-        console.error("[calcom-webhook] Failed to send Gmail:", e.message);
+        console.error("[calcom-webhook] Gmail API Error:", e.message);
       }
     } else {
-      console.log("[calcom-webhook] Email send conditions not met. Skipping email.");
+      console.log("[calcom-webhook] Email skipped. Conditions:", { shouldSendOnboarding, hasAppId: !!appointmentId, hasClient: !!dbClient });
     }
 
     return new Response(JSON.stringify({ success: true }), { status: 200, headers: corsHeaders });

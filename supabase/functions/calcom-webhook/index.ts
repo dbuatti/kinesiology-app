@@ -57,10 +57,10 @@ async function sendGmail(accessToken: string, from: string, to: string, subject:
 }
 
 serve(async (req) => {
-  console.log(`[calcom-webhook] Incoming ${req.method} request at ${new Date().toISOString()}`);
+  console.log(`[calcom-webhook] Incoming ${req.method} request`);
 
   if (req.method === 'GET') {
-    return new Response(JSON.stringify({ status: "active", version: "v49-metadata-fix" }), { 
+    return new Response(JSON.stringify({ status: "active" }), { 
       status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
     });
   }
@@ -81,35 +81,32 @@ serve(async (req) => {
 
     const body = await req.json();
     const triggerEvent = body.triggerEvent || body.type;
+    
+    // Handle PING events immediately
+    if (triggerEvent === 'PING') {
+      console.log("[calcom-webhook] PING received. Connection verified.");
+      return new Response(JSON.stringify({ success: true, message: "PONG" }), { status: 200, headers: corsHeaders });
+    }
+
     const payload = body.payload || body.data || body;
     const calcomId = String(payload.bookingId || payload.id || payload.uid || (body.payload && body.payload.id));
 
     console.log(`[calcom-webhook] Event: ${triggerEvent}, BookingID: ${calcomId}`);
 
-    const { data: existingApp } = await supabase
-      .from('appointments')
-      .select('id, send_onboarding')
-      .eq('calcom_booking_id', calcomId)
-      .maybeSingle();
-
+    // 1. Handle Cancellations
     if (triggerEvent === 'BOOKING_CANCELLED' || triggerEvent === 'BOOKING_REJECTED') {
-      if (existingApp) await supabase.from('appointments').delete().eq('id', existingApp.id);
+      console.log("[calcom-webhook] Action: Deleting cancelled booking");
+      await supabase.from('appointments').delete().eq('calcom_booking_id', calcomId);
       return new Response(JSON.stringify({ success: true, action: 'deleted' }), { status: 200, headers: corsHeaders });
     }
 
-    if (triggerEvent === 'BOOKING_RESCHEDULED' && existingApp) {
-      await supabase.from('appointments').update({ date: payload.startTime }).eq('id', existingApp.id);
-      return new Response(JSON.stringify({ success: true, action: 'rescheduled' }), { status: 200, headers: corsHeaders });
-    }
-
-    if (existingApp && triggerEvent === 'BOOKING_CREATED') {
-      return new Response(JSON.stringify({ success: true, action: 'skipped_duplicate' }), { status: 200, headers: corsHeaders });
-    }
-
-    const attendee = (payload.attendees && payload.attendees[0]) || (payload.responses && { name: payload.responses.name, email: payload.responses.email });
+    // 2. Extract Attendee Info
+    const attendee = (payload.attendees && payload.attendees[0]) || 
+                     (payload.responses && { name: payload.responses.name, email: payload.responses.email });
     
     if (!attendee || !attendee.email) {
-      return new Response(JSON.stringify({ error: "No attendee data" }), { status: 200, headers: corsHeaders });
+      console.log("[calcom-webhook] No attendee email found. Skipping processing.");
+      return new Response(JSON.stringify({ success: true, message: "No attendee" }), { status: 200, headers: corsHeaders });
     }
 
     const name = String(attendee.name || "Unknown Client").trim();
@@ -117,18 +114,19 @@ serve(async (req) => {
     const phone = attendee.phoneNumber || attendee.phone || "";
     const startTime = payload.startTime || payload.start;
     
-    // Check metadata for is_paid flag
-    const isPaidSession = payload.metadata?.is_paid === "true" || payload.customInputs?.["is_paid"] === "true";
+    const isPaidSession = payload.metadata?.is_paid === "true";
     const shouldSendOnboarding = payload.metadata?.send_onboarding !== "false";
     const hasPaidViaStripe = !!(payload.payment?.[0]?.amount || payload.paymentId);
 
+    // 3. Sync Client
     let { data: dbClient } = await supabase.from('clients').select('id').eq('email', email).maybeSingle();
-    if (!dbClient && email) {
+    if (!dbClient) {
       const { data: newDbC } = await supabase.from('clients').insert({ user_id: PRACTITIONER_ID, name, email, phone }).select().single();
       dbClient = newDbC;
     }
 
-    let appointmentId = existingApp?.id;
+    // 4. Sync Appointment
+    let appointmentId = null;
     if (dbClient) {
       const appointmentData = {
         user_id: PRACTITIONER_ID,
@@ -141,11 +139,19 @@ serve(async (req) => {
         payment_received: hasPaidViaStripe,
         send_onboarding: shouldSendOnboarding
       };
-      const { data: newApp } = await supabase.from('appointments').upsert(appointmentData, { onConflict: 'calcom_booking_id' }).select('id').single();
+      
+      const { data: newApp } = await supabase
+        .from('appointments')
+        .upsert(appointmentData, { onConflict: 'calcom_booking_id' })
+        .select('id')
+        .single();
+        
       appointmentId = newApp?.id;
+      console.log(`[calcom-webhook] Appointment ${appointmentId} synced to DB`);
     }
 
-    if (shouldSendOnboarding && appointmentId && GMAIL_CLIENT_ID && GMAIL_CLIENT_SECRET && GMAIL_REFRESH_TOKEN && dbClient) {
+    // 5. Send Onboarding Email
+    if (shouldSendOnboarding && appointmentId && GMAIL_CLIENT_ID && GMAIL_CLIENT_SECRET && GMAIL_REFRESH_TOKEN) {
       try {
         const accessToken = await getGmailAccessToken(GMAIL_CLIENT_ID, GMAIL_CLIENT_SECRET, GMAIL_REFRESH_TOKEN);
         const onboardingUrl = `https://kinesiology-app.vercel.app/onboarding/${dbClient.id}?appId=${appointmentId}`;
@@ -194,6 +200,7 @@ serve(async (req) => {
         `;
 
         await sendGmail(accessToken, SENDER_EMAIL, email, "Action Required: Your Onboarding Form", htmlBody);
+        console.log(`[calcom-webhook] Onboarding email sent to ${email}`);
       } catch (e) {
         console.error("[calcom-webhook] Gmail API Error:", e.message);
       }

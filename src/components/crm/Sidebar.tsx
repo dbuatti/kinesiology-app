@@ -27,7 +27,9 @@ import {
   FileText,
   Briefcase,
   CalendarDays,
-  Mic
+  Mic,
+  ExternalLink,
+  GraduationCap
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import SearchBar from "./SearchBar";
@@ -297,6 +299,23 @@ const Sidebar = ({ onHide }: SidebarProps) => {
         <NavGroup title="Clinical Lab" icon={Zap} isOpen={labOpen} onToggle={() => setLabOpen(!labOpen)} items={labItems} />
         <NavGroup title="Library" icon={BookOpen} isOpen={libraryOpen} onToggle={() => setLibraryOpen(!libraryOpen)} items={libraryItems} />
         <NavGroup title="Business" icon={Briefcase} isOpen={businessOpen} onToggle={() => setBusinessOpen(!businessOpen)} items={businessItems} />
+
+        {/* Quick Links / Bookmarks */}
+        <div className="space-y-1">
+          <p className="text-[9px] font-black text-muted-foreground uppercase tracking-[0.3em] px-3 py-2">Quick Links</p>
+          <a 
+            href="https://kin-videos.vercel.app/" 
+            target="_blank" 
+            rel="noopener noreferrer"
+            className="flex items-center justify-between gap-2 px-3 py-2 rounded-xl text-muted-foreground hover:text-indigo-600 hover:bg-indigo-50 transition-all group"
+          >
+            <div className="flex items-center gap-3">
+              <GraduationCap size={16} className="text-indigo-400 group-hover:text-indigo-600" />
+              <span className="font-bold text-[10px] uppercase tracking-widest">Study Videos</span>
+            </div>
+            <ExternalLink size={12} className="opacity-30 group-hover:opacity-100" />
+          </a>
+        </div>
 
         {activeSession && (
           <div className="px-1 pt-2">

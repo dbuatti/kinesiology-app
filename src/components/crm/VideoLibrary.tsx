@@ -2,11 +2,21 @@
 
 import React from "react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
-import { Youtube, ExternalLink, PlayCircle, Clock, User, Sparkles } from "lucide-react";
+import { Youtube, ExternalLink, PlayCircle, Clock, User, Sparkles, GraduationCap } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { cn } from "@/lib/utils";
 
 const CURATED_VIDEOS = [
+  {
+    title: "My Study Videos",
+    description: "Personal collection of kinesiology study materials and technique reviews for regular reference.",
+    url: "https://kin-videos.vercel.app/",
+    type: "Study Portal",
+    author: "Daniele",
+    tags: ["Study", "Reference", "Techniques"],
+    isPrimary: true
+  },
   {
     title: "Nick Moss - Kinesiology Resources",
     description: "A curated collection of kinesiology techniques, demonstrations, and clinical insights shared by Nick Moss.",
@@ -22,9 +32,16 @@ const VideoLibrary = () => {
     <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
       <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
         {CURATED_VIDEOS.map((video) => (
-          <Card key={video.url} className="border-none shadow-lg rounded-[2.5rem] bg-white hover:shadow-2xl transition-all group overflow-hidden">
+          <Card key={video.url} className={cn(
+            "border-none shadow-lg rounded-[2.5rem] bg-white hover:shadow-2xl transition-all group overflow-hidden",
+            video.isPrimary && "ring-2 ring-indigo-500 shadow-indigo-100"
+          )}>
             <div className="aspect-video bg-slate-900 relative flex items-center justify-center group-hover:bg-slate-800 transition-colors">
-              <Youtube size={64} className="text-rose-600 opacity-80 group-hover:scale-110 group-hover:opacity-100 transition-all duration-500" />
+              {video.isPrimary ? (
+                <GraduationCap size={64} className="text-indigo-400 opacity-80 group-hover:scale-110 group-hover:opacity-100 transition-all duration-500" />
+              ) : (
+                <Youtube size={64} className="text-rose-600 opacity-80 group-hover:scale-110 group-hover:opacity-100 transition-all duration-500" />
+              )}
               <div className="absolute top-4 right-4">
                 <Badge className="bg-white/20 backdrop-blur-md text-white border-none font-black text-[10px] uppercase tracking-widest">
                   {video.type}
@@ -39,7 +56,7 @@ const VideoLibrary = () => {
                   </CardTitle>
                   <div className="flex items-center gap-2 text-slate-500 text-sm font-medium">
                     <User size={14} className="text-indigo-400" />
-                    <span>Shared by {video.author}</span>
+                    <span>{video.isPrimary ? "Your Collection" : `Shared by ${video.author}`}</span>
                   </div>
                 </div>
               </div>
@@ -60,11 +77,14 @@ const VideoLibrary = () => {
               <div className="pt-4">
                 <Button 
                   asChild
-                  className="w-full bg-slate-900 hover:bg-indigo-600 h-14 rounded-2xl font-black text-xs uppercase tracking-widest shadow-xl transition-all duration-500"
+                  className={cn(
+                    "w-full h-14 rounded-2xl font-black text-xs uppercase tracking-widest shadow-xl transition-all duration-500",
+                    video.isPrimary ? "bg-indigo-600 hover:bg-indigo-700" : "bg-slate-900 hover:bg-indigo-600"
+                  )}
                 >
                   <a href={video.url} target="_blank" rel="noopener noreferrer">
                     <PlayCircle size={18} className="mr-2" />
-                    Open on YouTube
+                    Open Portal
                     <ExternalLink size={14} className="ml-2 opacity-50" />
                   </a>
                 </Button>

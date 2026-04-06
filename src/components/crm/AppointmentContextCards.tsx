@@ -4,11 +4,12 @@ import React from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Zap, ExternalLink, Clock, Target, ShieldAlert, Activity, Brain, Heart, Home, Sparkles, CreditCard } from "lucide-react";
+import { Zap, ExternalLink, Clock, Target, ShieldAlert, Activity, Brain, Heart, Home, Sparkles, CreditCard, CheckCircle2, Wallet } from "lucide-react";
 import { cn } from "@/lib/utils";
 import EditableField from "@/components/shared/EditableField";
 import QuickAcupointSelector from "./QuickAcupointSelector";
 import { AppointmentWithClient } from "@/types/crm";
+import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 
 interface AppointmentContextCardsProps {
   appointment: AppointmentWithClient;
@@ -50,6 +51,48 @@ const AppointmentContextCards = ({ appointment, currentPeakMeridian, onSaveField
           </div>
         </CardContent>
       </Card>
+
+      {/* Payment Management - New Section */}
+      {appointment.is_paid && (
+        <Card className="border-none shadow-lg rounded-[2.5rem] bg-white border-2 border-emerald-100 overflow-hidden animate-in fade-in slide-in-from-right-2 duration-500">
+          <CardHeader className="p-6 pb-2 bg-emerald-50/50 border-b border-emerald-100">
+            <CardTitle className="text-sm font-black uppercase tracking-[0.3em] text-emerald-600 flex items-center gap-2">
+              <Wallet size={16} /> In-Person Payment
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="p-6 space-y-4">
+            <div className="space-y-3">
+              <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Payment Method</p>
+              <ToggleGroup 
+                type="single" 
+                value={appointment.payment_method || ""} 
+                onValueChange={(v) => onSaveField('payment_method', v || null)}
+                className="justify-start gap-2"
+              >
+                <ToggleGroupItem value="Card" className="rounded-xl px-3 h-9 text-[10px] font-black uppercase border-slate-200 data-[state=on]:bg-emerald-600 data-[state=on]:text-white">Card</ToggleGroupItem>
+                <ToggleGroupItem value="PayID" className="rounded-xl px-3 h-9 text-[10px] font-black uppercase border-slate-200 data-[state=on]:bg-emerald-600 data-[state=on]:text-white">PayID</ToggleGroupItem>
+                <ToggleGroupItem value="Cash" className="rounded-xl px-3 h-9 text-[10px] font-black uppercase border-slate-200 data-[state=on]:bg-emerald-600 data-[state=on]:text-white">Cash</ToggleGroupItem>
+              </ToggleGroup>
+            </div>
+
+            <Button 
+              onClick={() => onSaveField('payment_received', !appointment.payment_received)}
+              className={cn(
+                "w-full h-12 rounded-2xl font-black text-[10px] uppercase tracking-widest transition-all shadow-lg",
+                appointment.payment_received 
+                  ? "bg-emerald-600 hover:bg-emerald-700 text-white shadow-emerald-100" 
+                  : "bg-white border-2 border-emerald-200 text-emerald-600 hover:bg-emerald-50 shadow-none"
+              )}
+            >
+              {appointment.payment_received ? (
+                <><CheckCircle2 size={16} className="mr-2" /> Payment Received</>
+              ) : (
+                "Mark as Paid ($50)"
+              )}
+            </Button>
+          </CardContent>
+        </Card>
+      )}
 
       {/* Practitioner Quick Reference */}
       <Card className="border-none shadow-lg rounded-[2.5rem] bg-indigo-50 border-2 border-indigo-100 overflow-hidden">

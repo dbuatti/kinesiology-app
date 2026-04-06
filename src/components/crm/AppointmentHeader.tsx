@@ -16,7 +16,8 @@ import {
   Copy,
   Check,
   DollarSign,
-  UserCircle
+  UserCircle,
+  AlertCircle
 } from "lucide-react";
 import { format, isToday } from "date-fns";
 import { cn } from "@/lib/utils";
@@ -59,6 +60,8 @@ const AppointmentHeader = ({ appointment, onSaveField, onUpdate }: AppointmentHe
     showSuccess("Session ID copied");
     setTimeout(() => setIdCopied(false), 2000);
   };
+
+  const isPaymentDue = appointment.is_paid && !appointment.payment_received;
 
   return (
     <div className="space-y-8">
@@ -142,6 +145,14 @@ const AppointmentHeader = ({ appointment, onSaveField, onUpdate }: AppointmentHe
 
         {/* Vitals Bar */}
         <div className="flex flex-wrap items-center gap-3 lg:justify-end">
+          {isPaymentDue && (
+            <div className="animate-in slide-in-from-right-4 duration-500">
+              <Badge className="bg-rose-600 text-white border-none font-black text-[10px] uppercase tracking-widest px-4 py-2 rounded-xl shadow-lg shadow-rose-200 flex items-center gap-2">
+                <AlertCircle size={14} /> Payment Due: $50
+              </Badge>
+            </div>
+          )}
+
           <div className={cn(
             "flex flex-col justify-center px-6 py-3 rounded-[2rem] border-2 transition-all duration-500 min-w-[140px]",
             neuralLoad > 50 ? "bg-rose-50 border-rose-200 text-rose-700" : "bg-emerald-50 border-emerald-200 text-emerald-700"

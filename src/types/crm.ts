@@ -24,6 +24,7 @@ export interface Appointment {
   is_paid?: boolean;
   payment_received?: boolean;
   payment_link?: string | null;
+  payment_method?: string | null; // Added for in-person tracking
   // External Tracking
   notion_page_id?: string | null;
   notion_planner_id?: string | null;

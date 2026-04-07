@@ -20,11 +20,17 @@ async function getGmailAccessToken(clientId: string, clientSecret: string, refre
     }),
   });
   const data = await response.json();
+  if (!response.ok) {
+    console.error("[calcom-webhook] Failed to get Gmail access token:", data);
+    throw new Error("Gmail Auth Failed");
+  }
   return data.access_token;
 }
 
 async function sendGmail(accessToken: string, from: string, to: string, subject: string, htmlBody: string) {
-  const utf8Subject = `=?utf-8?B?${btoa(unescape(encodeURIComponent(subject)))}?=`;
+  // Use a more robust encoding for Deno
+  const utf8Subject = `=?utf-8?B?${btoa(encodeURIComponent(subject).replace(/%([0-9A-F]{2})/g, (_, p1) => String.fromCharCode(parseInt(p1, 16))))}?=`;
+  
   const messageParts = [
     `From: ${from}`,
     `To: ${to}`,
@@ -35,8 +41,9 @@ async function sendGmail(accessToken: string, from: string, to: string, subject:
     ``,
     htmlBody,
   ];
+  
   const message = messageParts.join('\n');
-  const encodedMessage = btoa(unescape(encodeURIComponent(message)))
+  const encodedMessage = btoa(encodeURIComponent(message).replace(/%([0-9A-F]{2})/g, (_, p1) => String.fromCharCode(parseInt(p1, 16))))
     .replace(/\+/g, '-')
     .replace(/\//g, '_')
     .replace(/=+$/, '');
@@ -52,7 +59,13 @@ async function sendGmail(accessToken: string, from: string, to: string, subject:
       body: JSON.stringify({ raw: encodedMessage }),
     }
   );
-  return response.json();
+  
+  const result = await response.json();
+  if (!response.ok) {
+    console.error("[calcom-webhook] Gmail API Error:", result);
+    throw new Error(`Gmail API Error: ${result.error?.message || 'Unknown error'}`);
+  }
+  return result;
 }
 
 serve(async (req) => {
@@ -66,18 +79,18 @@ serve(async (req) => {
     const supabase = createClient(supabaseUrl, supabaseKey)
     
     // 1. Resolve Practitioner User ID
-    // We look up the first user in the profiles table to avoid hardcoded IDs
     const { data: profileData } = await supabase.from('profiles').select('id').limit(1).single();
     const PRACTITIONER_ID = profileData?.id;
 
     if (!PRACTITIONER_ID) {
-      console.error("[calcom-webhook] Could not resolve a practitioner user ID.");
-      throw new Error("System configuration error: No practitioner found.");
+      throw new Error("System configuration error: No practitioner profile found.");
     }
 
     const body = await req.json();
     const triggerEvent = body.triggerEvent || body.type;
     
+    console.log(`[calcom-webhook] Event: ${triggerEvent}`);
+
     if (triggerEvent === 'PING') {
       return new Response(JSON.stringify({ success: true }), { status: 200, headers: corsHeaders });
     }
@@ -103,6 +116,7 @@ serve(async (req) => {
     const email = String(attendee.email || "").toLowerCase().trim();
     const startTime = payload.startTime || payload.start;
     
+    // Determine if it's a paid session (Event ID 4279898 is the 75min Neuro session)
     const isPaidSession = payload.metadata?.is_paid === "true" || Number(payload.eventTypeId) === 4279898;
     const hasPaidViaStripe = !!(payload.payment?.[0]?.amount || payload.paymentId);
 
@@ -115,11 +129,12 @@ serve(async (req) => {
         email, 
         phone: attendee.phoneNumber || attendee.phone || "" 
       }).select().single();
-      if (cErr) console.error("[calcom-webhook] Client creation error:", cErr);
+      if (cErr) throw cErr;
       dbClient = newDbC;
     }
 
     // 3. Sync Appointment
+    let appointmentId = null;
     if (dbClient) {
       const appointmentData = {
         user_id: PRACTITIONER_ID,
@@ -138,10 +153,67 @@ serve(async (req) => {
         .select('id')
         .single();
         
-      if (appErr) {
-        console.error("[calcom-webhook] Appointment sync error:", appErr);
+      if (appErr) throw appErr;
+      appointmentId = newApp.id;
+      console.log(`[calcom-webhook] Appointment ${appointmentId} synced to DB.`);
+    }
+
+    // 4. Send Onboarding Email
+    if (triggerEvent === 'BOOKING_CREATED' && dbClient && email) {
+      const GMAIL_CLIENT_ID = Deno.env.get('GMAIL_CLIENT_ID');
+      const GMAIL_CLIENT_SECRET = Deno.env.get('GMAIL_CLIENT_SECRET');
+      const GMAIL_REFRESH_TOKEN = Deno.env.get('GMAIL_REFRESH_TOKEN');
+      const SENDER_EMAIL = Deno.env.get('GMAIL_USER_EMAIL');
+
+      if (GMAIL_CLIENT_ID && GMAIL_CLIENT_SECRET && GMAIL_REFRESH_TOKEN) {
+        try {
+          const accessToken = await getGmailAccessToken(GMAIL_CLIENT_ID, GMAIL_CLIENT_SECRET, GMAIL_REFRESH_TOKEN);
+          const onboardingUrl = `https://kinesiology-app.vercel.app/onboarding/${dbClient.id}`;
+          
+          const paymentSection = (isPaidSession && !hasPaidViaStripe) ? `
+            <div style="background-color: #F8FAFC; border-radius: 24px; padding: 32px; margin: 32px 0; border: 1px solid #E2E8F0; text-align: left;">
+              <div style="font-size: 11px; font-weight: 800; color: #1E3261; text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 16px;">Payment Details ($50)</div>
+              <p style="margin: 0; font-size: 16px; color: #475569; line-height: 1.6;">This session is a paid clinical assessment. You can settle the fee via bank transfer using the details below, or via tap-to-pay during our session:</p>
+              <div style="margin-top: 24px; padding: 20px; background-color: #ffffff; border-radius: 16px; border: 1px solid #F1F5F9; font-family: monospace; font-size: 18px; color: #1E3261; font-weight: 700; text-align: center;">
+                BSB: 923100<br/>
+                ACC: 301110875
+              </div>
+            </div>
+          ` : '';
+
+          const htmlBody = `
+            <!DOCTYPE html>
+            <html>
+            <body style="margin: 0; padding: 0; background-color: #FDFCFB; font-family: sans-serif;">
+              <center style="width: 100%; background-color: #FDFCFB; padding: 40px 0;">
+                <table role="presentation" border="0" cellpadding="0" cellspacing="0" width="100%" style="max-width: 600px; margin: 0 auto; background-color: #ffffff; border-radius: 40px; border: 1px solid #E0F2FE;">
+                  <tr><td style="height: 6px; background-color: #D46A9B; border-radius: 40px 40px 0 0;"></td></tr>
+                  <tr>
+                    <td style="padding: 56px 40px; text-align: center;">
+                      <div style="color: #1E3261; font-size: 28px; font-weight: 700;">✦ Resonance Kinesiology</div>
+                      <h2 style="color: #1E3261; margin-top: 32px; font-size: 26px; font-weight: 800;">Clinical Onboarding</h2>
+                      <p style="font-size: 17px; color: #334155; line-height: 1.8; text-align: left; margin-top: 24px;">Hi ${name.split(' ')[0]},</p>
+                      <p style="font-size: 17px; color: #334155; line-height: 1.8; text-align: left;">To ensure we make the most of our time together, please complete your clinical history form before we meet.</p>
+                      ${paymentSection}
+                      <div style="text-align: center; padding: 32px 0;">
+                        <a href="${onboardingUrl}" style="display: inline-block; background-color: #1E3261; color: #ffffff; padding: 20px 48px; border-radius: 100px; text-decoration: none; font-weight: 700; font-size: 16px;">Complete Onboarding Form</a>
+                      </div>
+                    </td>
+                  </tr>
+                </table>
+              </center>
+            </body>
+            </html>
+          `;
+
+          await sendGmail(accessToken, SENDER_EMAIL, email, "Action Required: Your Onboarding Form", htmlBody);
+          console.log(`[calcom-webhook] Onboarding email sent to ${email}`);
+        } catch (emailErr) {
+          console.error("[calcom-webhook] Email sending failed:", emailErr.message);
+          // We don't throw here because the appointment was already synced successfully
+        }
       } else {
-        console.log(`[calcom-webhook] Appointment ${newApp?.id} synced to DB.`);
+        console.warn("[calcom-webhook] Gmail secrets not configured. Skipping email.");
       }
     }
 

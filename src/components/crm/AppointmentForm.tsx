@@ -54,9 +54,10 @@ interface AppointmentFormProps {
   initialClientId?: string;
   initialDate?: Date;
   initialTime?: string;
+  slotTime?: string; // Exact UTC time from Cal.com
 }
 
-const AppointmentForm = ({ onSuccess, initialClientId, initialDate, initialTime }: AppointmentFormProps) => {
+const AppointmentForm = ({ onSuccess, initialClientId, initialDate, initialTime, slotTime }: AppointmentFormProps) => {
   const { session } = useAuth();
   const [clients, setClients] = useState<{ id: string; name: string }[]>([]);
   const [loadingClients, setLoadingClients] = useState(true);
@@ -103,13 +104,22 @@ const AppointmentForm = ({ onSuccess, initialClientId, initialDate, initialTime 
     setSubmitting(true);
 
     try {
-      const [hours, minutes] = values.time.split(":");
-      const appointmentDate = new Date(values.date);
-      appointmentDate.setHours(parseInt(hours), parseInt(minutes));
-      const isoDate = appointmentDate.toISOString();
+      // Determine the final ISO date string
+      let isoDate = "";
+      if (slotTime) {
+        // Use the exact UTC time from the availability slot
+        isoDate = slotTime;
+      } else {
+        // Construct from local date and time inputs
+        const [hours, minutes] = values.time.split(":");
+        const appointmentDate = new Date(values.date);
+        appointmentDate.setHours(parseInt(hours), parseInt(minutes), 0, 0);
+        isoDate = appointmentDate.toISOString();
+      }
 
       let calcomId = null;
 
+      // Only sync with Cal.com if we are coming from the availability view (initialTime provided)
       if (initialTime) {
         setSyncStatus('calcom');
         const eventTypeId = localStorage.getItem('calcom_preferred_event_id') || "4279898";
@@ -126,7 +136,16 @@ const AppointmentForm = ({ onSuccess, initialClientId, initialDate, initialTime 
           }
         });
 
-        if (invokeError) throw new Error(`Sync Error: ${invokeError.message}`);
+        if (invokeError) {
+          // Try to parse the error message from the function response
+          let errorMsg = invokeError.message;
+          try {
+            const errorBody = await invokeError.context?.json();
+            if (errorBody?.error) errorMsg = errorBody.error;
+          } catch (e) {}
+          throw new Error(`Cal.com Sync Error: ${errorMsg}`);
+        }
+        
         calcomId = calcomData?.uid || calcomData?.bookingId;
       }
 
@@ -134,7 +153,7 @@ const AppointmentForm = ({ onSuccess, initialClientId, initialDate, initialTime 
       if (!appointmentName) {
           const client = clients.find(c => c.id === values.clientId);
           const clientName = client?.name || "Unknown Client";
-          const formattedDate = format(appointmentDate, "MMM d, yyyy");
+          const formattedDate = format(new Date(isoDate), "MMM d, yyyy");
           appointmentName = `${clientName} - ${values.tag || 'Session'} (${formattedDate})`;
       }
 
@@ -217,6 +236,7 @@ const AppointmentForm = ({ onSuccess, initialClientId, initialDate, initialTime 
                           "w-full pl-3 text-left font-normal h-12 rounded-xl border-2 border-slate-100",
                           !field.value && "text-muted-foreground"
                         )}
+                        disabled={!!slotTime}
                       >
                         {field.value ? (
                           format(field.value, "MMMM do, yyyy")
@@ -249,7 +269,7 @@ const AppointmentForm = ({ onSuccess, initialClientId, initialDate, initialTime 
                 <FormLabel className="text-xs font-black text-slate-900 uppercase tracking-widest">Time</FormLabel>
                 <FormControl>
                   <div className="relative">
-                    <Input type="time" {...field} className="h-12 rounded-xl border-2 border-slate-100 pr-10" />
+                    <Input type="time" {...field} className="h-12 rounded-xl border-2 border-slate-100 pr-10" disabled={!!slotTime} />
                     <Clock className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400 pointer-events-none" />
                   </div>
                 </FormControl>

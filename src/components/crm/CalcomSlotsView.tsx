@@ -70,7 +70,7 @@ const CalcomSlotsView = () => {
   const [showOnlyAvailable, setShowOnlyAvailable] = useState(false);
   const [configOpen, setConfigOpen] = useState(false);
   
-  const [bookingData, setBookingData] = useState<{ date: Date; time: string } | null>(null);
+  const [bookingData, setBookingData] = useState<{ date: Date; time: string; slotTime?: string } | null>(null);
   const [bookingDialogOpen, setBookingDialogOpen] = useState(false);
   
   const [eventTypeId, setEventTypeId] = useState<string>(() => 
@@ -199,11 +199,14 @@ const CalcomSlotsView = () => {
   };
 
   const handleSlotClick = (dateStr: string, timeStr: string) => {
-    const date = new Date(dateStr);
-    const timeMatch = timeStr.match(/(\d{2}:\d{2})/);
-    const formattedTime = timeMatch ? timeMatch[1] : "10:00";
+    // timeStr is the raw ISO string from Cal.com (e.g. 2025-05-20T10:00:00Z)
+    const slotDate = new Date(timeStr);
     
-    setBookingData({ date, time: formattedTime });
+    setBookingData({ 
+      date: slotDate, 
+      time: format(slotDate, "HH:mm"),
+      slotTime: timeStr 
+    });
     setBookingDialogOpen(true);
   };
 
@@ -602,6 +605,7 @@ const CalcomSlotsView = () => {
             <AppointmentForm 
               initialDate={bookingData.date}
               initialTime={bookingData.time}
+              slotTime={bookingData.slotTime}
               onSuccess={() => {
                 setBookingDialogOpen(false);
                 fetchSlots();

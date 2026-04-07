@@ -22,7 +22,7 @@ serve(async (req) => {
     
     if (!CALCOM_KEY) {
       console.error("[create-calcom-booking] Missing CALCOM_API_KEY secret.");
-      return new Response(JSON.stringify({ error: "Cal.com API key not configured." }), { 
+      return new Response(JSON.stringify({ error: "Cal.com API key not configured in Supabase secrets." }), { 
         status: 500, 
         headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
       });
@@ -67,7 +67,7 @@ serve(async (req) => {
     }
     
     if (!client.email) {
-      return new Response(JSON.stringify({ error: "Client is missing an email address." }), { 
+      return new Response(JSON.stringify({ error: "Client is missing an email address. Cal.com requires an email to book." }), { 
         status: 400, 
         headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
       });
@@ -107,12 +107,16 @@ serve(async (req) => {
 
     if (!response.ok) {
       console.error(`[create-calcom-booking] Cal.com API Error (${response.status}):`, JSON.stringify(result));
+      
+      // Extract the most useful error message
+      const errorMessage = result.error?.message || result.message || "Cal.com API Error";
+      
       return new Response(JSON.stringify({ 
         success: false, 
-        error: result.error?.message || result.message || "Cal.com API Error",
+        error: errorMessage,
         details: result 
       }), { 
-        status: 400, 
+        status: response.status === 401 ? 401 : 400, 
         headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
       });
     }

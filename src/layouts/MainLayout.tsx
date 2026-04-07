@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from 'react';
-import { Outlet } from 'react-router-dom';
+import { Outlet, useLocation } from 'react-router-dom';
 import Sidebar from '@/components/crm/Sidebar';
 import MobileNav from '@/components/crm/MobileNav';
 import QuickActions from '@/components/crm/QuickActions';
@@ -11,11 +11,21 @@ import { Button } from '@/components/ui/button';
 import { PanelLeftOpen } from 'lucide-react';
 
 const MainLayout = () => {
+  const location = useLocation();
+  const isAppointmentDetail = location.pathname.startsWith('/appointments/') && location.pathname.split('/').length === 3;
+
   const [isSidebarVisible, setIsSidebarVisible] = useState(() => {
     const saved = localStorage.getItem("antigravity_sidebar_visible");
     return saved !== null ? JSON.parse(saved) : true;
   });
   
+  // Automatically hide sidebar when entering an appointment detail page
+  useEffect(() => {
+    if (isAppointmentDetail) {
+      setIsSidebarVisible(false);
+    }
+  }, [isAppointmentDetail]);
+
   useEffect(() => {
     localStorage.setItem("antigravity_sidebar_visible", JSON.stringify(isSidebarVisible));
   }, [isSidebarVisible]);

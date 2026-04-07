@@ -6,7 +6,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { 
   Loader2, Trash2, MoreHorizontal, History, Printer, Copy, Check, Play,
   FileText, Zap, Activity, Target, ClipboardList, PanelRightOpen, PanelRightClose,
-  Brain, ShieldCheck, Sparkles, Share, Link as LinkIcon, ChevronRight, ExternalLink, DollarSign, AlertCircle
+  Brain, ShieldCheck, Sparkles, Share, Link as LinkIcon, ChevronRight, ExternalLink, DollarSign, AlertCircle, Settings2, ChevronDown
 } from "lucide-react";
 import { format, isToday } from "date-fns";
 import { AppointmentWithClient } from "@/types/crm";
@@ -30,6 +30,11 @@ import {
   DropdownMenuTrigger,
   DropdownMenuSeparator,
 } from "@/components/ui/dropdown-menu";
+import {
+  Collapsible,
+  CollapsibleContent,
+  CollapsibleTrigger,
+} from "@/components/ui/collapsible";
 import { Card, CardContent } from "@/components/ui/card";
 import Breadcrumbs from "@/components/shared/Breadcrumbs";
 import { Button } from "@/components/ui/button";
@@ -52,7 +57,8 @@ const AppointmentDetailPage = () => {
   const [syncingNotion, setSyncingNotion] = useState(false);
   const [deleting, setDeleting] = useState(false);
   const [currentTime, setCurrentTime] = useState(new Date());
-  const [showSidebar, setShowSidebar] = useState(false); // Default to false for cleaner start
+  const [showSidebar, setShowSidebar] = useState(false); 
+  const [showSetup, setShowSetup] = useState(false);
   const [nucleiFilter, setNucleiFilter] = useState<Nuclei | null>(null);
 
   useEffect(() => {
@@ -232,6 +238,7 @@ const AppointmentDetailPage = () => {
       />
       <AppLayout variant="wide" hasFixedHeader={isFixedHeaderActive}>
         <div className="flex flex-col gap-6 print:p-0">
+          {/* Simplified Top Bar */}
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 print:hidden">
             <Breadcrumbs 
               items={[
@@ -240,26 +247,18 @@ const AppointmentDetailPage = () => {
               ]} 
               className="mb-0"
             />
+            
             <div className="flex items-center gap-2">
-              <Button 
-                variant="outline" 
-                size="sm" 
-                className="bg-emerald-50 border-emerald-100 text-emerald-600 hover:bg-emerald-100 rounded-xl font-bold h-10 px-4"
-                onClick={handleCopyOnboardingLink}
-              >
-                {linkCopying ? <Check size={16} className="mr-2" /> : <LinkIcon size={16} className="mr-2" />}
-                Onboarding Link
-              </Button>
-              <Button 
-                variant="outline" 
-                size="sm" 
-                className="bg-white border-slate-200 text-slate-600 hover:bg-slate-50 rounded-xl font-bold h-10 px-4"
-                onClick={handleSyncToNotion}
-                disabled={syncingNotion}
-              >
-                {syncingNotion ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Share size={16} className="mr-2" />}
-                Sync to Notion
-              </Button>
+              <Collapsible open={showSetup} onOpenChange={setShowSetup}>
+                <CollapsibleTrigger asChild>
+                  <Button variant="ghost" size="sm" className="h-10 px-4 font-bold text-[10px] uppercase tracking-widest rounded-xl text-slate-500 hover:text-indigo-600 hover:bg-indigo-50">
+                    <Settings2 size={16} className="mr-2" />
+                    Session Setup
+                    <ChevronDown size={14} className={cn("ml-2 transition-transform", showSetup && "rotate-180")} />
+                  </Button>
+                </CollapsibleTrigger>
+              </Collapsible>
+
               {isSessionToday && !isFixedHeaderActive && appointment.status === 'Scheduled' && (
                 <Button 
                   variant="default" 
@@ -273,6 +272,42 @@ const AppointmentDetailPage = () => {
               )}
             </div>
           </div>
+
+          {/* Collapsible Setup Tools */}
+          <Collapsible open={showSetup}>
+            <CollapsibleContent className="animate-in slide-in-from-top-2 duration-300">
+              <div className="flex flex-wrap gap-3 p-4 bg-slate-50 rounded-2xl border border-slate-100 mb-4">
+                <Button 
+                  variant="outline" 
+                  size="sm" 
+                  className="bg-emerald-50 border-emerald-100 text-emerald-600 hover:bg-emerald-100 rounded-xl font-bold h-10 px-4"
+                  onClick={handleCopyOnboardingLink}
+                >
+                  {linkCopying ? <Check size={16} className="mr-2" /> : <LinkIcon size={16} className="mr-2" />}
+                  Copy Onboarding Link
+                </Button>
+                <Button 
+                  variant="outline" 
+                  size="sm" 
+                  className="bg-white border-slate-200 text-slate-600 hover:bg-slate-50 rounded-xl font-bold h-10 px-4"
+                  onClick={handleSyncToNotion}
+                  disabled={syncingNotion}
+                >
+                  {syncingNotion ? <Loader2 size={16} className="mr-2 animate-spin" /> : <Share size={16} className="mr-2" />}
+                  Sync to Notion
+                </Button>
+                <Button 
+                  variant="outline" 
+                  size="sm" 
+                  className="bg-indigo-50 border-indigo-100 text-indigo-600 hover:bg-indigo-100 rounded-xl font-bold h-10 px-4"
+                  onClick={handleCopyForAI}
+                >
+                  {aiCopying ? <Check size={16} className="mr-2 text-emerald-500" /> : <Sparkles size={16} className="mr-2" />}
+                  AI Case Prompt
+                </Button>
+              </div>
+            </CollapsibleContent>
+          </Collapsible>
 
           <div className="space-y-4 print:hidden">
             <WeeklyFocusBanner 

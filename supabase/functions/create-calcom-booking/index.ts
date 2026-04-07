@@ -9,7 +9,7 @@ const corsHeaders = {
 }
 
 serve(async (req) => {
-  console.log("[create-calcom-booking] v2.1 - Fixing Payload Structure");
+  console.log("[create-calcom-booking] v2.2 - Enhanced Error Logging");
 
   if (req.method === 'OPTIONS') {
     return new Response('ok', { headers: corsHeaders })
@@ -20,9 +20,7 @@ serve(async (req) => {
     const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY');
     const CALCOM_KEY = Deno.env.get('CALCOM_API_KEY');
     
-    if (!CALCOM_KEY) {
-      throw new Error("Missing CALCOM_API_KEY secret.");
-    }
+    if (!CALCOM_KEY) throw new Error("Missing CALCOM_API_KEY secret.");
 
     const body = await req.json();
     const { clientId, startTime, eventTypeId, title, notes, is_paid } = body;
@@ -35,15 +33,13 @@ serve(async (req) => {
       .eq('id', clientId)
       .single();
 
-    if (clientError || !client?.email) {
-      throw new Error("Client not found or missing email.");
-    }
+    if (clientError || !client?.email) throw new Error("Client not found or missing email.");
 
-    // Cal.com v2 API expects custom fields in 'bookingFieldsResponses'
-    // The error "property responses should not exist" often happens if the API 
-    // version is mismatched or if 'responses' is sent instead.
+    // Ensure startTime is a clean ISO string
+    const cleanStartTime = new Date(startTime).toISOString();
+
     const bookingPayload = {
-      start: startTime,
+      start: cleanStartTime,
       eventTypeId: parseInt(eventTypeId, 10),
       attendee: {
         name: client.name,
@@ -51,7 +47,6 @@ serve(async (req) => {
         timeZone: "Australia/Melbourne",
         language: "en"
       },
-      // Ensure we only send valid v2 properties
       bookingFieldsResponses: {
         is_paid: isPaidBool 
       },
@@ -78,8 +73,13 @@ serve(async (req) => {
     const result = await response.json();
 
     if (!response.ok) {
-      console.error(`[create-calcom-booking] API Error:`, JSON.stringify(result));
-      throw new Error(result.error?.message || result.message || "Cal.com API Error");
+      console.error(`[create-calcom-booking] Cal.com API Error:`, JSON.stringify(result));
+      // Provide a more helpful error message for common scheduling issues
+      const errorMsg = result.error?.message || result.message || "Cal.com API Error";
+      if (errorMsg.includes("can't be booked at the \"start\" time")) {
+        throw new Error(`Cal.com: This time slot is unavailable or violates booking rules (e.g. minimum notice). Please use the Live Availability tool.`);
+      }
+      throw new Error(errorMsg);
     }
 
     return new Response(JSON.stringify({ 
@@ -92,7 +92,7 @@ serve(async (req) => {
     });
 
   } catch (error) {
-    console.error("[create-calcom-booking] Error:", error.message);
+    console.error("[create-calcom-booking] Function Error:", error.message);
     return new Response(JSON.stringify({ error: error.message }), { 
       status: 400, 
       headers: { ...corsHeaders, 'Content-Type': 'application/json' } 

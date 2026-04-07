@@ -9,6 +9,7 @@ const corsHeaders = {
 }
 
 async function getGmailAccessToken(clientId: string, clientSecret: string, refreshToken: string) {
+  console.log("[send-manual-onboarding] Attempting to refresh Gmail access token...");
   const response = await fetch("https://oauth2.googleapis.com/token", {
     method: "POST",
     headers: { "Content-Type": "application/x-www-form-urlencoded" },
@@ -19,7 +20,14 @@ async function getGmailAccessToken(clientId: string, clientSecret: string, refre
       grant_type: "refresh_token",
     }),
   });
+  
   const data = await response.json();
+  
+  if (!response.ok) {
+    console.error("[send-manual-onboarding] Google Token Refresh Error:", JSON.stringify(data));
+    throw new Error(`Gmail Auth Error: ${data.error_description || data.error || 'Unknown error'}`);
+  }
+  
   return data.access_token;
 }
 
@@ -52,7 +60,14 @@ async function sendGmail(accessToken: string, from: string, to: string, subject:
       body: JSON.stringify({ raw: encodedMessage }),
     }
   );
-  return response.json();
+  
+  const result = await response.json();
+  if (!response.ok) {
+    console.error("[send-manual-onboarding] Gmail Send Error:", JSON.stringify(result));
+    throw new Error(`Gmail Send Failed: ${result.error?.message || 'Unknown error'}`);
+  }
+  
+  return result;
 }
 
 serve(async (req) => {
@@ -62,7 +77,6 @@ serve(async (req) => {
 
   try {
     const { clientId } = await req.json()
-    console.log("[send-manual-onboarding] Processing for clientId:", clientId);
     
     const supabaseUrl = Deno.env.get('SUPABASE_URL')
     const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')
@@ -74,8 +88,7 @@ serve(async (req) => {
     const SENDER_EMAIL = Deno.env.get('GMAIL_USER_EMAIL');
 
     if (!GMAIL_CLIENT_ID || !GMAIL_CLIENT_SECRET || !GMAIL_REFRESH_TOKEN) {
-      console.error("[send-manual-onboarding] Missing Gmail API secrets");
-      throw new Error("Gmail API secrets are not configured.");
+      throw new Error("Gmail API secrets are missing in Supabase.");
     }
 
     const { data: client, error: clientError } = await supabase
@@ -84,17 +97,10 @@ serve(async (req) => {
       .eq('id', clientId)
       .single();
 
-    if (clientError || !client) {
-      console.error("[send-manual-onboarding] Client fetch error:", clientError);
-      throw new Error("Client not found.");
-    }
-    
-    if (!client.email) {
-      console.error("[send-manual-onboarding] Client has no email address");
-      throw new Error("Client has no email address.");
-    }
+    if (clientError || !client) throw new Error("Client not found.");
+    if (!client.email) throw new Error("Client has no email address.");
 
-    console.log("[send-manual-onboarding] Found client:", client.name, client.email);
+    console.log("[send-manual-onboarding] Preparing email for:", client.name);
 
     const sortedApps = (client.appointments || []).sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
     const latestApp = sortedApps[0];
@@ -102,7 +108,6 @@ serve(async (req) => {
     const isPaidSession = latestApp?.is_paid || false;
     const paymentAlreadyReceived = latestApp?.payment_received || false;
 
-    console.log("[send-manual-onboarding] Fetching Gmail access token...");
     const accessToken = await getGmailAccessToken(GMAIL_CLIENT_ID, GMAIL_CLIENT_SECRET, GMAIL_REFRESH_TOKEN);
     
     const onboardingUrl = `https://kinesiology-app.vercel.app/onboarding/${client.id}`;
@@ -133,12 +138,9 @@ serve(async (req) => {
           <table role="presentation" border="0" cellpadding="0" cellspacing="0" width="100%" style="max-width: 600px; margin: 0 auto;">
             <tr>
               <td style="background-color: #ffffff; border-radius: 40px; overflow: hidden; border: 1px solid #E0F2FE; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);">
-                <!-- Top Accent Bar -->
                 <table role="presentation" width="100%" cellspacing="0" cellpadding="0">
                   <tr><td style="height: 6px; background-color: #D46A9B;"></td></tr>
                 </table>
-
-                <!-- Header Section -->
                 <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="padding: 56px 40px 40px 40px; text-align: center;">
                   <tr>
                     <td>
@@ -147,8 +149,6 @@ serve(async (req) => {
                     </td>
                   </tr>
                 </table>
-
-                <!-- Main Content -->
                 <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="padding: 0 56px 56px 56px; text-align: left;">
                   <tr>
                     <td style="line-height: 1.8; font-size: 17px; color: #334155;">
@@ -156,9 +156,7 @@ serve(async (req) => {
                       <p style="margin-top: 24px;">Hi ${client.name.split(' ')[0]},</p>
                       <p>To ensure we make the most of our time together, I need to gather some foundational information about your clinical history and current health goals.</p>
                       <p>This form allows me to review your context before we meet, so we can dive straight into the neurological work during our session.</p>
-                      
                       ${paymentSection}
-
                       <div style="text-align: center; padding: 32px 0;">
                         <a href="${onboardingUrl}" style="display: inline-block; background-color: #1E3261; color: #ffffff; padding: 20px 48px; border-radius: 100px; text-decoration: none; font-weight: 700; font-size: 16px; letter-spacing: 0.05em;">Complete Onboarding Form</a>
                       </div>
@@ -167,8 +165,6 @@ serve(async (req) => {
                       </p>
                     </td>
                   </tr>
-                  
-                  <!-- Signature -->
                   <tr>
                     <td style="border-top: 1px solid #F1F5F9; margin-top: 20px; padding-top: 32px;">
                       <div style="font-weight: 700; color: #1E3261; font-size: 20px; margin-bottom: 4px;">Daniele Buatti</div>
@@ -189,9 +185,7 @@ serve(async (req) => {
       </html>
     `;
 
-    console.log("[send-manual-onboarding] Sending email via Gmail API...");
     const result = await sendGmail(accessToken, SENDER_EMAIL, client.email, "Action Required: Your Onboarding Form", htmlBody);
-    console.log("[send-manual-onboarding] Gmail API response:", JSON.stringify(result));
 
     return new Response(JSON.stringify({ success: true, result }), { 
       status: 200, 

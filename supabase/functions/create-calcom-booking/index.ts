@@ -83,9 +83,9 @@ serve(async (req) => {
         timeZone: "Australia/Melbourne",
         language: "en"
       },
-      // Correct key for v2 API custom fields is 'responses'
-      responses: {
-        is_paid: !!is_paid 
+      // Reverting to bookingFieldsResponses as 'responses' was rejected as 'should not exist'
+      bookingFieldsResponses: {
+        is_paid: Boolean(is_paid) 
       },
       metadata: { 
         crm_title: title || "Kinesiology Session",

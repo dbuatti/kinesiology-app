@@ -41,7 +41,7 @@ serve(async (req) => {
     }
 
     const { clientId, startTime, eventTypeId, title, notes, is_paid } = body;
-    console.log("[create-calcom-booking] Request params:", { clientId, startTime, eventTypeId });
+    console.log("[create-calcom-booking] Request params:", { clientId, startTime, eventTypeId, is_paid });
 
     if (!clientId || !startTime || !eventTypeId) {
       return new Response(JSON.stringify({ error: "Missing required fields: clientId, startTime, or eventTypeId." }), { 
@@ -83,6 +83,10 @@ serve(async (req) => {
         timeZone: "Australia/Melbourne",
         language: "en"
       },
+      // This is where Cal.com looks for custom booking fields
+      responses: {
+        is_paid: is_paid ? "yes" : "no" // Mapping boolean to the expected response string
+      },
       metadata: { 
         crm_title: title || "Kinesiology Session",
         crm_notes: notes || "",
@@ -107,10 +111,7 @@ serve(async (req) => {
 
     if (!response.ok) {
       console.error(`[create-calcom-booking] Cal.com API Error (${response.status}):`, JSON.stringify(result));
-      
-      // Extract the most useful error message
       const errorMessage = result.error?.message || result.message || "Cal.com API Error";
-      
       return new Response(JSON.stringify({ 
         success: false, 
         error: errorMessage,

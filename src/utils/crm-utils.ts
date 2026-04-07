@@ -57,8 +57,8 @@ export const groupAppointmentsByMonth = <T extends Appointment>(appointments: T[
       return new Date(b[1][0].date).getTime() - new Date(a[1][0].date).getTime();
     })
     .map(([month, apps]) => {
-      // Sort appointments WITHIN the month descending (newest day first)
-      const sortedApps = [...apps].sort((a, b) => b.date.getTime() - a.date.getTime());
+      // Sort appointments WITHIN the month ascending (earliest day first)
+      const sortedApps = [...apps].sort((a, b) => a.date.getTime() - b.date.getTime());
       return [month, sortedApps];
     }) as [string, T[]][];
 };

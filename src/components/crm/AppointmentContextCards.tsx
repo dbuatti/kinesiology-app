@@ -1,15 +1,17 @@
 "use client";
 
-import React from "react";
+import React, { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Zap, ExternalLink, Clock, Target, ShieldAlert, Activity, Brain, Heart, Home, Sparkles, CreditCard, CheckCircle2, Wallet, Smartphone } from "lucide-react";
+import { Zap, ExternalLink, Clock, Target, ShieldAlert, Activity, Brain, Heart, Home, Sparkles, CreditCard, CheckCircle2, Wallet, Smartphone, Loader2, QrCode } from "lucide-react";
 import { cn } from "@/lib/utils";
 import EditableField from "@/components/shared/EditableField";
 import QuickAcupointSelector from "./QuickAcupointSelector";
 import { AppointmentWithClient } from "@/types/crm";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
+import { supabase } from "@/integrations/supabase/client";
+import { showError, showSuccess } from "@/utils/toast";
 
 interface AppointmentContextCardsProps {
   appointment: AppointmentWithClient;
@@ -26,6 +28,34 @@ const SESSION_STAGES = [
 ];
 
 const AppointmentContextCards = ({ appointment, currentPeakMeridian, onSaveField }: AppointmentContextCardsProps) => {
+  const [generatingLink, setGeneratingLink] = useState(false);
+
+  const handleGeneratePaymentLink = async () => {
+    setGeneratingLink(true);
+    try {
+      const { data, error } = await supabase.functions.invoke('stripe-manager', {
+        body: { 
+          action: 'create-checkout', 
+          clientId: appointment.clients.id,
+          appointmentId: appointment.id,
+          clientData: appointment.clients
+        }
+      });
+
+      if (error) throw error;
+
+      if (data.url) {
+        await onSaveField('payment_link', data.url);
+        window.open(data.url, '_blank');
+        showSuccess("Payment link generated and opened!");
+      }
+    } catch (err: any) {
+      showError(err.message || "Failed to generate link. Ensure client is synced to Stripe.");
+    } finally {
+      setGeneratingLink(false);
+    }
+  };
+
   return (
     <div className="space-y-8">
       {/* Session Strategy Card */}
@@ -57,12 +87,31 @@ const AppointmentContextCards = ({ appointment, currentPeakMeridian, onSaveField
         <Card className="border-none shadow-lg rounded-[2.5rem] bg-white border-2 border-emerald-100 overflow-hidden animate-in fade-in slide-in-from-right-2 duration-500">
           <CardHeader className="p-6 pb-2 bg-emerald-50/50 border-b border-emerald-100">
             <CardTitle className="text-sm font-black uppercase tracking-[0.3em] text-emerald-600 flex items-center gap-2">
-              <Wallet size={16} /> In-Person Payment
+              <Wallet size={16} /> Clinical Billing
             </CardTitle>
           </CardHeader>
           <CardContent className="p-6 space-y-4">
+            {!appointment.payment_received ? (
+              <div className="space-y-3">
+                <Button 
+                  onClick={handleGeneratePaymentLink}
+                  disabled={generatingLink}
+                  className="w-full h-12 bg-indigo-600 hover:bg-indigo-700 text-white rounded-2xl font-black text-[10px] uppercase tracking-widest shadow-lg shadow-indigo-100"
+                >
+                  {generatingLink ? <Loader2 className="animate-spin mr-2" /> : <QrCode size={16} className="mr-2" />}
+                  Generate Payment Link
+                </Button>
+                <p className="text-[9px] text-center text-slate-400 font-bold uppercase">Or log manual payment below</p>
+              </div>
+            ) : (
+              <div className="p-4 bg-emerald-50 rounded-2xl border border-emerald-200 flex items-center justify-center gap-3 text-emerald-700">
+                <CheckCircle2 size={20} />
+                <span className="font-black text-xs uppercase tracking-widest">Payment Received</span>
+              </div>
+            )}
+
             <div className="space-y-3">
-              <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Payment Method</p>
+              <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Manual Override</p>
               <ToggleGroup 
                 type="single" 
                 value={appointment.payment_method || ""} 
@@ -70,28 +119,22 @@ const AppointmentContextCards = ({ appointment, currentPeakMeridian, onSaveField
                 className="flex flex-wrap justify-start gap-2"
               >
                 <ToggleGroupItem value="Stripe App" className="rounded-xl px-3 h-9 text-[10px] font-black uppercase border-slate-200 data-[state=on]:bg-indigo-600 data-[state=on]:text-white">
-                  <Smartphone size={12} className="mr-1.5" /> Stripe
+                  <Smartphone size={12} className="mr-1.5" /> Stripe App
                 </ToggleGroupItem>
                 <ToggleGroupItem value="PayID" className="rounded-xl px-3 h-9 text-[10px] font-black uppercase border-slate-200 data-[state=on]:bg-emerald-600 data-[state=on]:text-white">PayID</ToggleGroupItem>
                 <ToggleGroupItem value="Cash" className="rounded-xl px-3 h-9 text-[10px] font-black uppercase border-slate-200 data-[state=on]:bg-emerald-600 data-[state=on]:text-white">Cash</ToggleGroupItem>
               </ToggleGroup>
             </div>
 
-            <Button 
-              onClick={() => onSaveField('payment_received', !appointment.payment_received)}
-              className={cn(
-                "w-full h-12 rounded-2xl font-black text-[10px] uppercase tracking-widest transition-all shadow-lg",
-                appointment.payment_received 
-                  ? "bg-emerald-600 hover:bg-emerald-700 text-white shadow-emerald-100" 
-                  : "bg-white border-2 border-emerald-200 text-emerald-600 hover:bg-emerald-50 shadow-none"
-              )}
-            >
-              {appointment.payment_received ? (
-                <><CheckCircle2 size={16} className="mr-2" /> Payment Received</>
-              ) : (
-                "Mark as Paid ($50)"
-              )}
-            </Button>
+            {!appointment.payment_received && (
+              <Button 
+                onClick={() => onSaveField('payment_received', true)}
+                variant="outline"
+                className="w-full h-10 rounded-xl border-emerald-200 text-emerald-600 hover:bg-emerald-50 font-bold text-[10px] uppercase tracking-widest"
+              >
+                Mark as Paid ($50)
+              </Button>
+            )}
           </CardContent>
         </Card>
       )}
@@ -110,16 +153,6 @@ const AppointmentContextCards = ({ appointment, currentPeakMeridian, onSaveField
               <p className="text-[10px] font-bold text-slate-700 leading-relaxed">
                 Chop muscle spindles <span className="text-indigo-600">Inwards</span>, then <span className="text-indigo-600">Outwards</span> (x2).
               </p>
-            </div>
-            <div className="p-3 bg-white rounded-2xl border border-indigo-200 shadow-sm">
-              <p className="text-[8px] font-black text-indigo-400 uppercase tracking-widest mb-1">IM Not Unlocking?</p>
-              <div className="flex flex-wrap gap-1 mt-1">
-                {["Hydration", "ESR", "Cross Crawls", "K27s"].map(step => (
-                  <Badge key={step} variant="secondary" className="bg-indigo-50 text-indigo-700 border-none text-[7px] font-black uppercase">
-                    {step}
-                  </Badge>
-                ))}
-              </div>
             </div>
           </div>
         </CardContent>
@@ -141,14 +174,6 @@ const AppointmentContextCards = ({ appointment, currentPeakMeridian, onSaveField
             <div>
               <h3 className="text-3xl font-black tracking-tight">{currentPeakMeridian.name}</h3>
               <p className="text-xs font-bold opacity-90 mt-1">{currentPeakMeridian.peakTime}</p>
-            </div>
-            <div className="pt-4 border-t border-white/10">
-              <p className="text-[10px] font-black uppercase tracking-widest opacity-70 mb-2">Core Emotions</p>
-              <div className="flex flex-wrap gap-1.5">
-                {currentPeakMeridian.emotions.slice(0, 3).map((e: string) => (
-                  <Badge key={e} variant="outline" className="bg-white/10 border-white/20 text-white text-[9px] font-bold">{e}</Badge>
-                ))}
-              </div>
             </div>
           </CardContent>
         </Card>
@@ -205,13 +230,6 @@ const AppointmentContextCards = ({ appointment, currentPeakMeridian, onSaveField
                 placeholder="Personal insights..." 
                 onSave={onSaveField as any} 
               />
-              {appointment.notion_link && (
-                <Button variant="outline" className="w-full h-12 rounded-2xl border-white/10 bg-white/5 text-white hover:bg-white/10 font-bold text-xs" asChild>
-                  <a href={appointment.notion_link} target="_blank" rel="noopener noreferrer">
-                    <ExternalLink size={16} className="mr-2" /> View Notion Link
-                  </a>
-                </Button>
-              )}
             </div>
           </div>
         </CardContent>

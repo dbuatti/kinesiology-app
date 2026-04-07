@@ -37,7 +37,7 @@ import {
   Mail,
   Send
 } from "lucide-react";
-import { format, addWeeks, subWeeks, startOfToday, endOfDay, eachDayOfInterval, addDays, isBefore, startOfDay, isToday, isTomorrow } from "date-fns";
+import { format, addWeeks, subWeeks, startOfToday, endOfDay, eachDayOfInterval, addDays, isBefore, startOfDay } from "date-fns";
 import { supabase } from "@/integrations/supabase/client";
 import { cn } from "@/lib/utils";
 import { showSuccess, showError } from "@/utils/toast";
@@ -67,10 +67,10 @@ const CalcomSlotsView = () => {
   const [bookings, setBookings] = useState<Record<string, any[]>>({});
   const [blockedDates, setBlockedDates] = useState<string[]>([]);
   const [error, setError] = useState<string | null>(null);
-  const [weeks, setWeeks] = useState(4); 
-  const [weeksOffset, setWeeksOffset] = useState(0); 
+  const [weeks, setWeeks] = useState(4); // Range to show
+  const [weeksOffset, setWeeksOffset] = useState(0); // Starting point
   const [copied, setCopied] = useState(false);
-  const [showOnlyActive, setShowOnlyActive] = useState(false);
+  const [showOnlyAvailable, setShowOnlyAvailable] = useState(false);
   const [configOpen, setConfigOpen] = useState(false);
   
   const [bookingData, setBookingData] = useState<{ date: Date; time: string; slotTime?: string } | null>(null);
@@ -144,6 +144,7 @@ const CalcomSlotsView = () => {
 
     setSendingEmail(booking.uid);
     try {
+      // 1. Find client by email
       const { data: client, error: clientError } = await supabase
         .from('clients')
         .select('id')
@@ -154,6 +155,7 @@ const CalcomSlotsView = () => {
         throw new Error("Client not found in CRM. Please ensure the booking has synced first.");
       }
 
+      // 2. Trigger onboarding email
       const { error: emailError } = await supabase.functions.invoke('send-manual-onboarding', {
         body: { clientId: client.id }
       });
@@ -371,17 +373,17 @@ const CalcomSlotsView = () => {
           <div className="flex items-center justify-between px-4">
             <div className="flex items-center gap-6">
               <button 
-                onClick={() => setShowOnlyActive(!showOnlyActive)}
+                onClick={() => setShowOnlyAvailable(!showOnlyAvailable)}
                 className="flex items-center gap-2 group"
               >
                 <div className={cn(
                   "w-4 h-4 rounded border-2 flex items-center justify-center transition-all",
-                  showOnlyActive ? "bg-indigo-600 border-indigo-600" : "border-slate-300 group-hover:border-indigo-400"
+                  showOnlyAvailable ? "bg-indigo-600 border-indigo-600" : "border-slate-300 group-hover:border-indigo-400"
                 )}>
-                  {showOnlyActive && <Check size={10} className="text-white" />}
+                  {showOnlyAvailable && <Check size={10} className="text-white" />}
                 </div>
                 <span className="text-[10px] font-black uppercase tracking-widest text-slate-500 group-hover:text-slate-900 transition-colors">
-                  Show only days with activity
+                  Show only available days
                 </span>
               </button>
             </div>
@@ -468,8 +470,8 @@ const CalcomSlotsView = () => {
             const isBlocked = blockedDates.includes(date);
             const hasNoActivity = daySlots.length === 0 && dayBookings.length === 0;
             
-            // If "Show only active" is on, hide days with no slots AND no bookings
-            if (showOnlyActive && hasNoActivity && !isBlocked) return null;
+            if (showOnlyAvailable && (isBlocked || daySlots.length === 0)) return null;
+            if (!isBlocked && hasNoActivity) return null;
 
             return (
               <Card key={date} className={cn(
@@ -579,7 +581,7 @@ const CalcomSlotsView = () => {
                         </div>
                       )}
 
-                      {daySlots.length > 0 ? (
+                      {daySlots.length > 0 && (
                         <div className="space-y-3 flex-1">
                           <p className="text-[9px] font-black text-muted-foreground uppercase tracking-[0.2em] ml-1">Available Slots</p>
                           <div className="grid grid-cols-2 gap-2">
@@ -598,15 +600,7 @@ const CalcomSlotsView = () => {
                             })}
                           </div>
                         </div>
-                      ) : !isBlocked && dayBookings.length === 0 ? (
-                        <div className="flex-1 flex flex-col items-center justify-center py-6 text-center space-y-3 opacity-60">
-                          <Clock size={24} className="text-slate-300" />
-                          <div className="space-y-1">
-                            <p className="text-[10px] font-black text-slate-500 uppercase tracking-widest">No Slots Available</p>
-                            <p className="text-[8px] font-medium text-slate-400 max-w-[140px] mx-auto">Check Cal.com "Minimum Notice" or schedule settings.</p>
-                          </div>
-                        </div>
-                      ) : null}
+                      )}
 
                       <div className="pt-4 border-t border-border mt-auto">
                         <Button 

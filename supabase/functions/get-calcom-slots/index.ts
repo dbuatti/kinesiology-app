@@ -9,7 +9,7 @@ const corsHeaders = {
 serve(async (req) => {
   if (req.method === 'OPTIONS') return new Response('ok', { headers: corsHeaders })
 
-  console.log("--- [get-calcom-slots] v5 SLOTS + BOOKINGS ---");
+  console.log("--- [get-calcom-slots] v6 SLOTS + BOOKINGS + EMAILS ---");
 
   try {
     let { start, end, eventTypeId, timeZone } = await req.json()
@@ -84,6 +84,7 @@ serve(async (req) => {
         uid: booking.uid,
         start: booking.start,
         attendeeName: booking.attendees?.[0]?.name || "Unknown",
+        attendeeEmail: booking.attendees?.[0]?.email || "",
         title: booking.title
       });
     });

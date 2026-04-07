@@ -33,7 +33,9 @@ import {
   LayoutGrid,
   Activity,
   ArrowLeft,
-  ArrowRight
+  ArrowRight,
+  Mail,
+  Send
 } from "lucide-react";
 import { format, addWeeks, subWeeks, startOfToday, endOfDay, eachDayOfInterval, addDays, isBefore, startOfDay } from "date-fns";
 import { supabase } from "@/integrations/supabase/client";
@@ -60,6 +62,7 @@ const CalcomSlotsView = () => {
   const [loading, setLoading] = useState(false);
   const [processingDate, setProcessingDate] = useState<string | null>(null);
   const [processingBooking, setProcessingBooking] = useState<string | null>(null);
+  const [sendingEmail, setSendingEmail] = useState<string | null>(null);
   const [slots, setSlots] = useState<Record<string, any[]>>({});
   const [bookings, setBookings] = useState<Record<string, any[]>>({});
   const [blockedDates, setBlockedDates] = useState<string[]>([]);
@@ -133,6 +136,41 @@ const CalcomSlotsView = () => {
     }
   };
 
+  const handleSendOnboarding = async (booking: any) => {
+    if (!booking.attendeeEmail) {
+      showError("No email address found for this booking.");
+      return;
+    }
+
+    setSendingEmail(booking.uid);
+    try {
+      // 1. Find client by email
+      const { data: client, error: clientError } = await supabase
+        .from('clients')
+        .select('id')
+        .eq('email', booking.attendeeEmail.toLowerCase().trim())
+        .maybeSingle();
+
+      if (clientError || !client) {
+        throw new Error("Client not found in CRM. Please ensure the booking has synced first.");
+      }
+
+      // 2. Trigger onboarding email
+      const { error: emailError } = await supabase.functions.invoke('send-manual-onboarding', {
+        body: { clientId: client.id }
+      });
+
+      if (emailError) throw emailError;
+
+      showSuccess(`Onboarding email sent to ${booking.attendeeName}!`);
+    } catch (err: any) {
+      console.error(err);
+      showError(err.message || "Failed to send onboarding email.");
+    } finally {
+      setSendingEmail(null);
+    }
+  };
+
   const handleCancelBooking = async (bookingUid: string, attendeeName: string) => {
     if (!confirm(`Are you sure you want to cancel the booking for ${attendeeName}?`)) return;
 
@@ -199,7 +237,6 @@ const CalcomSlotsView = () => {
   };
 
   const handleSlotClick = (dateStr: string, timeStr: string) => {
-    // timeStr is the raw ISO string from Cal.com (e.g. 2025-05-20T10:00:00Z)
     const slotDate = new Date(timeStr);
     
     setBookingData({ 
@@ -224,7 +261,6 @@ const CalcomSlotsView = () => {
         hasAny = true;
         const formattedDate = format(new Date(date), "EEEE, MMMM do");
         
-        // Group slots by Morning/Afternoon
         const morning = daySlots.filter(s => new Date(s.time || s.start).getHours() < 12);
         const afternoon = daySlots.filter(s => new Date(s.time || s.start).getHours() >= 12);
         
@@ -519,15 +555,26 @@ const CalcomSlotsView = () => {
                                     </p>
                                   </div>
                                 </div>
-                                <Button 
-                                  variant="ghost" 
-                                  size="icon" 
-                                  className="h-8 w-8 rounded-xl text-indigo-300 hover:text-rose-400 hover:bg-rose-500/20 opacity-0 group-hover/booking:opacity-100 transition-all"
-                                  onClick={() => handleCancelBooking(booking.uid, booking.attendeeName)}
-                                  disabled={processingBooking === booking.uid}
-                                >
-                                  {processingBooking === booking.uid ? <Loader2 size={14} className="animate-spin" /> : <Trash2 size={14} />}
-                                </Button>
+                                <div className="flex items-center gap-1">
+                                  <Button 
+                                    variant="ghost" 
+                                    size="icon" 
+                                    className="h-8 w-8 rounded-xl text-indigo-300 hover:text-emerald-400 hover:bg-emerald-500/20 opacity-0 group-hover/booking:opacity-100 transition-all"
+                                    onClick={() => handleSendOnboarding(booking)}
+                                    disabled={sendingEmail === booking.uid}
+                                  >
+                                    {sendingEmail === booking.uid ? <Loader2 size={14} className="animate-spin" /> : <Send size={14} />}
+                                  </Button>
+                                  <Button 
+                                    variant="ghost" 
+                                    size="icon" 
+                                    className="h-8 w-8 rounded-xl text-indigo-300 hover:text-rose-400 hover:bg-rose-500/20 opacity-0 group-hover/booking:opacity-100 transition-all"
+                                    onClick={() => handleCancelBooking(booking.uid, booking.attendeeName)}
+                                    disabled={processingBooking === booking.uid}
+                                  >
+                                    {processingBooking === booking.uid ? <Loader2 size={14} className="animate-spin" /> : <Trash2 size={14} />}
+                                  </Button>
+                                </div>
                               </div>
                             ))}
                           </div>

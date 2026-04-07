@@ -24,14 +24,13 @@ serve(async (req) => {
     const body = await req.text();
     let event;
 
-    // Verify webhook signature if secret is provided
     if (WEBHOOK_SECRET && signature) {
       event = await stripe.webhooks.constructEventAsync(body, signature, WEBHOOK_SECRET);
     } else {
       event = JSON.parse(body);
     }
 
-    console.log(`[stripe-webhook] Received event: ${event.type}`);
+    console.log(`[stripe-webhook] Processing event: ${event.type}`);
 
     if (event.type === 'payment_intent.succeeded' || event.type === 'checkout.session.completed') {
       const data = event.data.object;
@@ -44,18 +43,18 @@ serve(async (req) => {
       );
 
       if (appointmentId) {
-        console.log(`[stripe-webhook] Updating specific appointment: ${appointmentId}`);
+        console.log(`[stripe-webhook] Success: Updating appointment ${appointmentId}`);
         await supabase
           .from('appointments')
           .update({ payment_received: true, payment_method: 'Stripe' })
           .eq('id', appointmentId);
       } else if (customerId) {
-        console.log(`[stripe-webhook] No appointment ID in metadata. Finding latest for customer: ${customerId}`);
-        // Fallback: Find the latest unpaid appointment for this customer
+        console.log(`[stripe-webhook] Warning: No appointment_id in metadata. Searching for latest unpaid for customer ${customerId}`);
+        
         const { data: app } = await supabase
           .from('appointments')
           .select('id')
-          .eq('stripe_customer_id', customerId) // We'll need to ensure this is stored
+          .eq('stripe_customer_id', customerId)
           .eq('payment_received', false)
           .order('date', { ascending: false })
           .limit(1)
@@ -64,8 +63,10 @@ serve(async (req) => {
         if (app) {
           await supabase
             .from('appointments')
-            .update({ payment_received: true, payment_method: 'Stripe' })
+            .update({ payment_received: true, payment_method: 'Stripe (Auto-Matched)' })
             .eq('id', app.id);
+        } else {
+          console.error(`[stripe-webhook] Error: Could not find an unpaid appointment for customer ${customerId}`);
         }
       }
     }
@@ -74,7 +75,7 @@ serve(async (req) => {
       status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
     });
   } catch (err) {
-    console.error(`[stripe-webhook] Error: ${err.message}`);
+    console.error(`[stripe-webhook] Critical Error: ${err.message}`);
     return new Response(`Webhook Error: ${err.message}`, { status: 400 });
   }
 })

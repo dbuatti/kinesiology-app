@@ -9,7 +9,7 @@ const corsHeaders = {
 }
 
 serve(async (req) => {
-  console.log("--- [sync-calcom-bookings] v2.1 START ---");
+  console.log("--- [sync-calcom-bookings] v3.0 — Smart Match Enabled ---");
 
   if (req.method === 'OPTIONS') return new Response('ok', { headers: corsHeaders })
 
@@ -43,8 +43,6 @@ serve(async (req) => {
     if (!response.ok) throw new Error(result.message || "Cal.com API Error");
 
     const bookings = result.data || [];
-    console.log(`[sync-calcom-bookings] Found ${bookings.length} upcoming bookings.`);
-    
     let syncedCount = 0;
 
     for (const booking of bookings) {
@@ -56,19 +54,17 @@ serve(async (req) => {
       const calcomId = String(booking.uid || booking.id);
       const startTime = booking.start;
 
-      console.log(`[sync-calcom-bookings] Processing: ${name} (${email})`);
-
+      // 1. Upsert Client
       const { data: dbClient } = await supabase
         .from('clients')
         .upsert({ user_id: PRACTITIONER_ID, name, email }, { onConflict: 'email' })
         .select('id')
         .single();
 
-      if (!dbClient) {
-        console.error(`[sync-calcom-bookings] Failed to upsert client: ${name}`);
-        continue;
-      }
+      if (!dbClient) continue;
 
+      // 2. Smart Match: Check if an appointment already exists for this client at this time
+      // This prevents duplicates if a session was created in CRM before syncing
       const { data: existingApp } = await supabase
         .from('appointments')
         .select('id')
@@ -77,7 +73,6 @@ serve(async (req) => {
         .maybeSingle();
 
       if (existingApp) {
-        console.log(`[sync-calcom-bookings] Updating existing app: ${existingApp.id}`);
         await supabase
           .from('appointments')
           .update({ 
@@ -86,7 +81,6 @@ serve(async (req) => {
           })
           .eq('id', existingApp.id);
       } else {
-        console.log(`[sync-calcom-bookings] Creating new app for: ${name}`);
         await supabase
           .from('appointments')
           .upsert({
@@ -103,14 +97,13 @@ serve(async (req) => {
       syncedCount++;
     }
 
-    console.log(`--- [sync-calcom-bookings] FINISHED: ${syncedCount} synced ---`);
     return new Response(JSON.stringify({ success: true, syncedCount }), { 
       status: 200, 
       headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
     });
 
   } catch (error) {
-    console.error("[sync-calcom-bookings] Critical Error:", error.message);
+    console.error("[sync-calcom-bookings] Error:", error.message);
     return new Response(JSON.stringify({ error: error.message }), { status: 400, headers: corsHeaders });
   }
 })

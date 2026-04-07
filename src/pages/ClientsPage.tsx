@@ -6,7 +6,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { Plus, Search, Loader2, UserPlus, Activity, CalendarPlus, Clock, LayoutGrid, List, Mail, Phone, MapPin, ArrowRight, ExternalLink, FlaskConical } from "lucide-react";
+import { Plus, Search, Loader2, UserPlus, Activity, CalendarPlus, Clock, LayoutGrid, List, Mail, Phone, MapPin, ArrowRight, ExternalLink, FlaskConical, CreditCard } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import {
   Dialog,
@@ -177,7 +177,14 @@ const ClientsPage = () => {
                             {client.name.charAt(0)}
                           </div>
                           <div className="flex flex-col">
-                            <span className="font-black text-foreground text-lg group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors">{client.name}</span>
+                            <div className="flex items-center gap-2">
+                              <span className="font-black text-foreground text-lg group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors">{client.name}</span>
+                              {client.stripe_customer_id && (
+                                <Badge variant="outline" className="h-4 px-1.5 text-[7px] font-black uppercase border-blue-200 text-blue-600 bg-blue-50">
+                                  <CreditCard size={8} className="mr-1" /> Synced
+                                </Badge>
+                              )}
+                            </div>
                             <span className="text-xs text-muted-foreground font-medium">{client.email || 'No email recorded'}</span>
                           </div>
                         </Link>
@@ -273,7 +280,14 @@ const ClientsPage = () => {
                     </div>
 
                     <div className="space-y-1">
-                      <h3 className="text-2xl font-black text-foreground group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors truncate">{client.name}</h3>
+                      <div className="flex items-center gap-2">
+                        <h3 className="text-2xl font-black text-foreground group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors truncate">{client.name}</h3>
+                        {client.stripe_customer_id && (
+                          <Badge variant="outline" className="h-4 px-1.5 text-[7px] font-black uppercase border-blue-200 text-blue-600 bg-blue-50">
+                            <CreditCard size={8} className="mr-1" /> Synced
+                          </Badge>
+                        )}
+                      </div>
                       <div className="flex items-center gap-2 text-sm font-bold text-muted-foreground">
                         {client.born && <span>{calculateAge(client.born)} yrs • {getStarSign(client.born)}</span>}
                       </div>

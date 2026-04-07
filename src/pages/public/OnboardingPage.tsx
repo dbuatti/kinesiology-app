@@ -26,7 +26,7 @@ const OnboardingPage = () => {
       try {
         const { data, error } = await supabase
           .from('clients')
-          .select('id, name, email, phone, pronouns, born, suburbs, occupation, marital_status, children, medical_history, emergency_contact_name, emergency_contact_phone, referral_source, current_stress_level, sleep_quality, digestive_health, medications_supplements')
+          .select('id, name, email, phone, pronouns, born, suburbs, occupation, marital_status, children, medical_history, emergency_contact_name, emergency_contact_phone, referral_source, current_stress_level, sleep_quality, digestive_health, medications_supplements, stripe_customer_id')
           .eq('id', id)
           .single();
 

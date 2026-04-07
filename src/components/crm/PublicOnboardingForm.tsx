@@ -52,7 +52,7 @@ interface PublicOnboardingFormProps {
 
 const PublicOnboardingForm = ({ clientId, appointmentId, initialData, onSuccess }: PublicOnboardingFormProps) => {
   const [submitting, setSubmitting] = useState(false);
-  const [syncStatus, setSyncStatus] = useState<'idle' | 'syncing' | 'done'>('idle');
+  const [syncStatus, setSyncStatus] = useState<'idle' | 'syncing' | 'stripe' | 'done'>('idle');
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -139,11 +139,28 @@ const PublicOnboardingForm = ({ clientId, appointmentId, initialData, onSuccess 
         await supabase.functions.invoke('sync-to-kit', {
           body: { record: { ...clientPayload, id: clientId } }
         });
-        setSyncStatus('done');
       } catch (syncErr) {
-        console.error("Background sync failed, but data was saved.");
+        console.error("Kit sync failed, but continuing...");
       }
 
+      // 4. Trigger Stripe Sync
+      setSyncStatus('stripe');
+      try {
+        await supabase.functions.invoke('stripe-manager', {
+          body: { 
+            action: 'sync-customer', 
+            clientId: clientId,
+            clientData: { 
+              ...clientPayload, 
+              stripe_customer_id: (initialData as any).stripe_customer_id 
+            }
+          }
+        });
+      } catch (stripeErr) {
+        console.error("Stripe sync failed, but continuing...");
+      }
+
+      setSyncStatus('done');
       showSuccess("Thank you! Your details have been updated.");
       onSuccess();
     } catch (error: any) {
@@ -414,7 +431,9 @@ const PublicOnboardingForm = ({ clientId, appointmentId, initialData, onSuccess 
             {submitting ? (
               <>
                 <Loader2 className="mr-2 h-6 w-6 animate-spin" />
-                {syncStatus === 'syncing' ? 'Syncing to Marketing...' : 'Saving Your Profile...'}
+                {syncStatus === 'syncing' ? 'Syncing to Marketing...' : 
+                 syncStatus === 'stripe' ? 'Syncing to Billing...' : 
+                 'Saving Your Profile...'}
               </>
             ) : (
               <>

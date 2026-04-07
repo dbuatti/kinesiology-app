@@ -1,6 +1,7 @@
 // @ts-nocheck
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
+import Stripe from 'https://esm.sh/stripe@14.25.0'
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -9,7 +10,6 @@ const corsHeaders = {
 }
 
 async function getGmailAccessToken(clientId: string, clientSecret: string, refreshToken: string) {
-  console.log("[send-manual-onboarding] Refreshing Gmail access token...");
   const response = await fetch("https://oauth2.googleapis.com/token", {
     method: "POST",
     headers: { "Content-Type": "application/x-www-form-urlencoded" },
@@ -22,12 +22,7 @@ async function getGmailAccessToken(clientId: string, clientSecret: string, refre
   });
   
   const data = await response.json();
-  
-  if (!response.ok) {
-    console.error("[send-manual-onboarding] Google Token Refresh Error:", JSON.stringify(data));
-    throw new Error(`Gmail Auth Error: ${data.error_description || data.error || 'Token refresh failed'}`);
-  }
-  
+  if (!response.ok) throw new Error(`Gmail Auth Error: ${data.error_description || data.error}`);
   return data.access_token;
 }
 
@@ -61,103 +56,90 @@ async function sendGmail(accessToken: string, from: string, to: string, subject:
     }
   );
   
-  const result = await response.json();
-  if (!response.ok) {
-    console.error("[send-manual-onboarding] Gmail Send Error:", JSON.stringify(result));
-    throw new Error(`Gmail Send Failed: ${result.error?.message || 'API error'}`);
-  }
-  
-  return result;
+  return await response.json();
 }
 
 serve(async (req) => {
   if (req.method === 'OPTIONS') return new Response('ok', { headers: corsHeaders })
 
-  console.log("[send-manual-onboarding] Function triggered");
-
   try {
     const body = await req.json().catch(() => ({}));
     const { clientId, appointmentId } = body;
     
-    if (!clientId) {
-      throw new Error("Missing clientId in request body.");
-    }
+    if (!clientId) throw new Error("Missing clientId");
 
+    const STRIPE_KEY = Deno.env.get('STRIPE_SECRET_KEY');
     const GMAIL_CLIENT_ID = Deno.env.get('GMAIL_CLIENT_ID');
     const GMAIL_CLIENT_SECRET = Deno.env.get('GMAIL_CLIENT_SECRET');
     const GMAIL_REFRESH_TOKEN = Deno.env.get('GMAIL_REFRESH_TOKEN');
     const SENDER_EMAIL = Deno.env.get('GMAIL_USER_EMAIL');
 
-    // Validate secrets
-    const missingSecrets = [];
-    if (!GMAIL_CLIENT_ID) missingSecrets.push("GMAIL_CLIENT_ID");
-    if (!GMAIL_CLIENT_SECRET) missingSecrets.push("GMAIL_CLIENT_SECRET");
-    if (!GMAIL_REFRESH_TOKEN) missingSecrets.push("GMAIL_REFRESH_TOKEN");
-    if (!SENDER_EMAIL) missingSecrets.push("GMAIL_USER_EMAIL");
+    const stripe = new Stripe(STRIPE_KEY, {
+      apiVersion: '2023-10-16',
+      httpClient: Stripe.createFetchHttpClient(),
+    });
 
-    if (missingSecrets.length > 0) {
-      throw new Error(`Missing Supabase Secrets: ${missingSecrets.join(", ")}`);
-    }
+    const supabase = createClient(Deno.env.get('SUPABASE_URL'), Deno.env.get('SUPABASE_SERVICE_ROLE_KEY'));
 
-    const supabaseUrl = Deno.env.get('SUPABASE_URL')
-    const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')
-    const supabase = createClient(supabaseUrl, supabaseKey)
+    // 1. Fetch Client & Appointment
+    const { data: client } = await supabase.from('clients').select('*').eq('id', clientId).single();
+    if (!client?.email) throw new Error("Client email missing");
 
-    // Fetch client data
-    const { data: client, error: clientError } = await supabase
-      .from('clients')
-      .select('id, name, email')
-      .eq('id', clientId)
-      .single();
-
-    if (clientError || !client) throw new Error(`Client not found (ID: ${clientId})`);
-    if (!client.email) throw new Error("Client has no email address recorded.");
-
-    // Determine if we should show bank details
-    let showBankDetails = false;
-
+    let targetApp = null;
     if (appointmentId) {
-      // If a specific appointment was provided, check that one
-      const { data: app } = await supabase
-        .from('appointments')
-        .select('is_paid, payment_received')
-        .eq('id', appointmentId)
-        .single();
-      
-      if (app?.is_paid && !app?.payment_received) {
-        showBankDetails = true;
-      }
+      const { data: app } = await supabase.from('appointments').select('*').eq('id', appointmentId).single();
+      targetApp = app;
     } else {
-      // Otherwise, look for the soonest upcoming unpaid appointment that is marked as paid
-      const { data: apps } = await supabase
-        .from('appointments')
-        .select('is_paid, payment_received')
-        .eq('client_id', clientId)
-        .eq('is_paid', true)
-        .eq('payment_received', false)
-        .order('date', { ascending: true })
-        .limit(1);
-      
-      if (apps && apps.length > 0) {
-        showBankDetails = true;
-      }
+      const { data: apps } = await supabase.from('appointments').select('*').eq('client_id', clientId).eq('is_paid', true).eq('payment_received', false).order('date', { ascending: true }).limit(1);
+      targetApp = apps?.[0];
     }
 
-    console.log(`[send-manual-onboarding] Preparing email for: ${client.name} (${client.email}). Show Payment: ${showBankDetails}`);
+    // 2. Generate Stripe Link if needed
+    let stripeUrl = targetApp?.payment_link;
+    if (targetApp?.is_paid && !targetApp?.payment_received && !stripeUrl) {
+      console.log(`[send-manual-onboarding] Generating Stripe link for app: ${targetApp.id}`);
+      
+      const session = await stripe.checkout.sessions.create({
+        customer: client.stripe_customer_id || undefined,
+        customer_email: client.stripe_customer_id ? undefined : client.email,
+        line_items: [{
+          price_data: {
+            currency: 'aud',
+            product_data: { 
+              name: 'FNH Clinical Assessment',
+              description: `Session on ${format(new Date(targetApp.date), "MMM d, yyyy")}`
+            },
+            unit_amount: 5000,
+          },
+          quantity: 1,
+        }],
+        mode: 'payment',
+        success_url: `${req.headers.get('origin') || 'https://kinesiology-app.vercel.app'}/onboarding/success`,
+        cancel_url: `${req.headers.get('origin') || 'https://kinesiology-app.vercel.app'}/onboarding/${client.id}`,
+        metadata: {
+          appointment_id: targetApp.id,
+          client_id: client.id
+        }
+      });
+      
+      stripeUrl = session.url;
+      await supabase.from('appointments').update({ payment_link: stripeUrl }).eq('id', targetApp.id);
+    }
 
     const accessToken = await getGmailAccessToken(GMAIL_CLIENT_ID, GMAIL_CLIENT_SECRET, GMAIL_REFRESH_TOKEN);
-    
     const onboardingUrl = `https://kinesiology-app.vercel.app/onboarding/${client.id}`;
 
-    const paymentSection = showBankDetails ? `
-      <div style="background-color: #F8FAFC; border-radius: 24px; padding: 32px; margin: 32px 0; border: 1px solid #E2E8F0; text-align: left;">
-        <div style="font-size: 11px; font-weight: 800; color: #1E3261; text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 16px;">Payment Details ($50)</div>
-        <p style="margin: 0; font-size: 16px; color: #475569; line-height: 1.6;">This session is a paid clinical assessment. You can settle the fee via PayID or bank transfer using the details below, or via tap-to-pay during our session:</p>
-        <div style="margin-top: 24px; padding: 20px; background-color: #ffffff; border-radius: 16px; border: 1px solid #F1F5F9; font-family: monospace; font-size: 18px; color: #1E3261; font-weight: 700; text-align: center;">
-          PayID: 0424174067<br/>
-          <div style="margin: 12px 0; border-top: 1px solid #F1F5F9;"></div>
-          BSB: 923100<br/>
-          ACC: 301110875
+    const paymentSection = stripeUrl ? `
+      <div style="background-color: #F8FAFC; border-radius: 24px; padding: 32px; margin: 32px 0; border: 1px solid #E2E8F0; text-align: center;">
+        <div style="font-size: 11px; font-weight: 800; color: #1E3261; text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 16px;">Secure Payment ($50)</div>
+        <p style="margin: 0 0 24px 0; font-size: 16px; color: #475569; line-height: 1.6;">This session is a paid clinical assessment. You can settle the fee securely via Stripe using the button below:</p>
+        <a href="${stripeUrl}" style="display: inline-block; background-color: #4F46E5; color: #ffffff; padding: 16px 32px; border-radius: 12px; text-decoration: none; font-weight: 700; font-size: 14px; text-transform: uppercase; letter-spacing: 0.05em; shadow: 0 4px 6px rgba(79, 70, 229, 0.2);">Pay via Stripe</a>
+        <div style="margin-top: 24px; padding-top: 20px; border-top: 1px solid #E2E8F0;">
+          <p style="font-size: 12px; color: #94a3b8; margin-bottom: 8px;">Alternatively, via PayID / Bank Transfer:</p>
+          <div style="font-family: monospace; font-size: 14px; color: #1E3261; font-weight: 700;">
+            PayID: 0424174067<br/>
+            BSB: 923100 | ACC: 301110875
+          </div>
         </div>
       </div>
     ` : '';
@@ -165,54 +147,30 @@ serve(async (req) => {
     const htmlBody = `
       <!DOCTYPE html>
       <html>
-      <head>
-        <meta charset="utf-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">
-      </head>
-      <body style="margin: 0; padding: 0; background-color: #FDFCFB; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;">
+      <body style="margin: 0; padding: 0; background-color: #FDFCFB; font-family: sans-serif;">
         <center style="width: 100%; background-color: #FDFCFB; padding: 40px 0;">
-          <table role="presentation" border="0" cellpadding="0" cellspacing="0" width="100%" style="max-width: 600px; margin: 0 auto;">
+          <table role="presentation" border="0" cellpadding="0" cellspacing="0" width="100%" style="max-width: 600px; margin: 0 auto; background-color: #ffffff; border-radius: 40px; overflow: hidden; border: 1px solid #E0F2FE;">
+            <tr><td style="height: 6px; background-color: #D46A9B;"></td></tr>
             <tr>
-              <td style="background-color: #ffffff; border-radius: 40px; overflow: hidden; border: 1px solid #E0F2FE; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);">
-                <table role="presentation" width="100%" cellspacing="0" cellpadding="0">
-                  <tr><td style="height: 6px; background-color: #D46A9B;"></td></tr>
-                </table>
-                <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="padding: 56px 40px 40px 40px; text-align: center;">
-                  <tr>
-                    <td>
-                      <div style="color: #1E3261; font-size: 28px; font-weight: 700; letter-spacing: 0.02em;">✦ Resonance Kinesiology</div>
-                      <div style="color: #D46A9B; font-size: 11px; font-weight: 900; letter-spacing: 0.4em; margin-top: 16px; text-transform: uppercase; opacity: 0.8;">Neuro-Somatic Support</div>
-                    </td>
-                  </tr>
-                </table>
-                <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="padding: 0 56px 56px 56px; text-align: left;">
-                  <tr>
-                    <td style="line-height: 1.8; font-size: 17px; color: #334155;">
-                      <h2 style="color: #1E3261; margin-top: 0; font-size: 26px; font-weight: 800; text-align: center;">Clinical Onboarding</h2>
-                      <p style="margin-top: 24px;">Hi ${client.name.split(' ')[0]},</p>
-                      <p>To ensure we make the most of our time together, I need to gather some foundational information about your clinical history and current health goals.</p>
-                      <p>This form allows me to review your context before we meet, so we can dive straight into the neurological work during our session.</p>
-                      ${paymentSection}
-                      <div style="text-align: center; padding: 32px 0;">
-                        <a href="${onboardingUrl}" style="display: inline-block; background-color: #1E3261; color: #ffffff; padding: 20px 48px; border-radius: 100px; text-decoration: none; font-weight: 700; font-size: 16px; letter-spacing: 0.05em;">Complete Onboarding Form</a>
-                      </div>
-                      <p style="font-size: 14px; color: #64748b; margin-top: 20px; text-align: center;">
-                        The form takes about 5-10 minutes to complete and is stored securely in our clinical database.
-                      </p>
-                    </td>
-                  </tr>
-                  <tr>
-                    <td style="border-top: 1px solid #F1F5F9; margin-top: 20px; padding-top: 32px;">
-                      <div style="font-weight: 700; color: #1E3261; font-size: 20px; margin-bottom: 4px;">Daniele Buatti</div>
-                      <div style="color: #D46A9B; font-size: 12px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.15em;">Neuro-Somatic Kinesiologist</div>
-                    </td>
-                  </tr>
-                </table>
-              </td>
-            </tr>
-            <tr>
-              <td style="padding: 48px 20px; text-align: center; color: #64748b; font-size: 13px;">
-                <p>© ${new Date().getFullYear()} Resonance Kinesiology</p>
+              <td style="padding: 56px 40px; text-align: center;">
+                <div style="color: #1E3261; font-size: 28px; font-weight: 700;">✦ Resonance Kinesiology</div>
+                <div style="color: #D46A9B; font-size: 11px; font-weight: 900; letter-spacing: 0.4em; margin-top: 16px; text-transform: uppercase;">Clinical Onboarding</div>
+                
+                <div style="text-align: left; margin-top: 48px; line-height: 1.8; font-size: 17px; color: #334155;">
+                  <p>Hi ${client.name.split(' ')[0]},</p>
+                  <p>To ensure we make the most of our time together, please complete your clinical history form before we meet.</p>
+                  
+                  ${paymentSection}
+
+                  <div style="text-align: center; padding: 32px 0;">
+                    <a href="${onboardingUrl}" style="display: inline-block; background-color: #1E3261; color: #ffffff; padding: 20px 48px; border-radius: 100px; text-decoration: none; font-weight: 700; font-size: 16px;">Complete Onboarding Form</a>
+                  </div>
+                </div>
+                
+                <div style="border-top: 1px solid #F1F5F9; margin-top: 40px; padding-top: 32px; text-align: left;">
+                  <div style="font-weight: 700; color: #1E3261; font-size: 18px;">Daniele Buatti</div>
+                  <div style="color: #D46A9B; font-size: 11px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.1em;">Neuro-Somatic Kinesiologist</div>
+                </div>
               </td>
             </tr>
           </table>
@@ -221,18 +179,16 @@ serve(async (req) => {
       </html>
     `;
 
-    const result = await sendGmail(accessToken, SENDER_EMAIL, client.email, "Action Required: Your Onboarding Form", htmlBody);
+    await sendGmail(accessToken, SENDER_EMAIL, client.email, "Action Required: Your Onboarding Form", htmlBody);
 
-    return new Response(JSON.stringify({ success: true, result }), { 
-      status: 200, 
-      headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
+    return new Response(JSON.stringify({ success: true }), { 
+      status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
     });
 
   } catch (error) {
-    console.error("[send-manual-onboarding] Critical error:", error.message);
+    console.error("[send-manual-onboarding] Error:", error.message);
     return new Response(JSON.stringify({ error: error.message }), { 
-      status: 400, 
-      headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
+      status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
     });
   }
 })

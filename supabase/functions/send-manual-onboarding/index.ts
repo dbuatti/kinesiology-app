@@ -96,8 +96,10 @@ serve(async (req) => {
     const paymentSection = showBankDetails ? `
       <div style="background-color: #F8FAFC; border-radius: 24px; padding: 32px; margin: 32px 0; border: 1px solid #E2E8F0; text-align: left;">
         <div style="font-size: 11px; font-weight: 800; color: #1E3261; text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 16px;">Payment Details ($50)</div>
-        <p style="margin: 0; font-size: 16px; color: #475569; line-height: 1.6;">This session is a paid clinical assessment. You can settle the fee via bank transfer using the details below, or via tap-to-pay during our session:</p>
+        <p style="margin: 0; font-size: 16px; color: #475569; line-height: 1.6;">This session is a paid clinical assessment. You can settle the fee via PayID or bank transfer using the details below, or via tap-to-pay during our session:</p>
         <div style="margin-top: 24px; padding: 20px; background-color: #ffffff; border-radius: 16px; border: 1px solid #F1F5F9; font-family: monospace; font-size: 18px; color: #1E3261; font-weight: 700; text-align: center;">
+          PayID: 0424174067<br/>
+          <div style="margin: 12px 0; border-top: 1px solid #F1F5F9;"></div>
           BSB: 923100<br/>
           ACC: 301110875
         </div>
@@ -163,7 +165,7 @@ serve(async (req) => {
             </tr>
             <tr>
               <td style="padding: 48px 20px; text-align: center; color: #64748b; font-size: 13px;">
-                <p>© ${new Date().getFullYear()} Resonance Kinesiology</p>
+                <p>© {new Date().getFullYear()} Resonance Kinesiology</p>
               </td>
             </tr>
           </table>

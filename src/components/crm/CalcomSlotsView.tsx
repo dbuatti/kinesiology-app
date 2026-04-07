@@ -21,6 +21,7 @@ import {
   Check,
   Ban,
   Unlock,
+  Hash,
   ShieldAlert,
   CalendarPlus,
   User,
@@ -34,8 +35,7 @@ import {
   ArrowLeft,
   ArrowRight,
   Mail,
-  Send,
-  Zap
+  Send
 } from "lucide-react";
 import { format, addWeeks, subWeeks, startOfToday, endOfDay, eachDayOfInterval, addDays, isBefore, startOfDay } from "date-fns";
 import { supabase } from "@/integrations/supabase/client";
@@ -43,8 +43,6 @@ import { cn } from "@/lib/utils";
 import { showSuccess, showError } from "@/utils/toast";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Input } from "@/components/ui/input";
-import { Switch } from "@/components/ui/switch";
-import { Label } from "@/components/ui/label";
 import {
   Dialog,
   DialogContent,
@@ -69,12 +67,11 @@ const CalcomSlotsView = () => {
   const [bookings, setBookings] = useState<Record<string, any[]>>({});
   const [blockedDates, setBlockedDates] = useState<string[]>([]);
   const [error, setError] = useState<string | null>(null);
-  const [weeks, setWeeks] = useState(4); 
-  const [weeksOffset, setWeeksOffset] = useState(0); 
+  const [weeks, setWeeks] = useState(4); // Range to show
+  const [weeksOffset, setWeeksOffset] = useState(0); // Starting point
   const [copied, setCopied] = useState(false);
   const [showOnlyAvailable, setShowOnlyAvailable] = useState(false);
   const [configOpen, setConfigOpen] = useState(false);
-  const [isOverride, setIsOverride] = useState(false);
   
   const [bookingData, setBookingData] = useState<{ date: Date; time: string; slotTime?: string } | null>(null);
   const [bookingDialogOpen, setBookingDialogOpen] = useState(false);
@@ -113,8 +110,7 @@ const CalcomSlotsView = () => {
           start, 
           end,
           eventTypeId: eventTypeId || undefined,
-          timeZone: Intl.DateTimeFormat().resolvedOptions().timeZone,
-          isOverride: isOverride
+          timeZone: Intl.DateTimeFormat().resolvedOptions().timeZone
         }
       });
 
@@ -148,6 +144,7 @@ const CalcomSlotsView = () => {
 
     setSendingEmail(booking.uid);
     try {
+      // 1. Find client by email
       const { data: client, error: clientError } = await supabase
         .from('clients')
         .select('id')
@@ -158,6 +155,7 @@ const CalcomSlotsView = () => {
         throw new Error("Client not found in CRM. Please ensure the booking has synced first.");
       }
 
+      // 2. Trigger onboarding email
       const { error: emailError } = await supabase.functions.invoke('send-manual-onboarding', {
         body: { clientId: client.id }
       });
@@ -288,10 +286,11 @@ const CalcomSlotsView = () => {
 
   useEffect(() => {
     fetchSlots();
-  }, [weeks, weeksOffset, isOverride]);
+  }, [weeks, weeksOffset]);
 
   return (
     <div className="space-y-8 animate-in fade-in duration-700">
+      {/* Summary & Controls Bar */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
         <div className="lg:col-span-8 space-y-6">
           <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-card p-6 rounded-[2.5rem] border border-border shadow-sm">
@@ -355,7 +354,7 @@ const CalcomSlotsView = () => {
                 variant="outline"
                 onClick={handleCopyAll}
                 disabled={loading}
-                className="rounded-xl h-10 px-4 border-indigo-100 text-indigo-600 hover:bg-indigo-100 font-black text-[10px] uppercase tracking-widest"
+                className="rounded-xl h-10 px-4 border-indigo-100 text-indigo-600 hover:bg-indigo-100 rounded-xl font-black text-[10px] uppercase tracking-widest"
               >
                 {copied ? <Check size={14} className="mr-2" /> : <Copy size={14} className="mr-2" />}
                 Copy Text
@@ -387,19 +386,6 @@ const CalcomSlotsView = () => {
                   Show only available days
                 </span>
               </button>
-
-              <div className="flex items-center space-x-2">
-                <Switch 
-                  id="override-mode" 
-                  checked={isOverride} 
-                  onCheckedChange={setIsOverride} 
-                  className="data-[state=checked]:bg-amber-500"
-                />
-                <Label htmlFor="override-mode" className="text-[10px] font-black text-slate-500 uppercase tracking-widest cursor-pointer flex items-center gap-1.5">
-                  <Zap size={12} className={cn(isOverride ? "text-amber-500 fill-amber-500" : "text-slate-400")} />
-                  Practitioner Override
-                </Label>
-              </div>
             </div>
             
             <Collapsible open={configOpen} onOpenChange={setConfigOpen}>
@@ -448,11 +434,11 @@ const CalcomSlotsView = () => {
             </div>
             <CardContent className="p-8 flex flex-col justify-center h-full space-y-4 relative z-10">
               <div className="w-12 h-12 rounded-2xl bg-white/10 flex items-center justify-center text-amber-400 border border-white/10">
-                <Zap size={24} />
+                <Info size={24} />
               </div>
-              <h4 className="text-xl font-black">Override Logic</h4>
+              <h4 className="text-xl font-black">Availability Logic</h4>
               <p className="text-sm text-slate-400 leading-relaxed font-medium">
-                Enable **Practitioner Override** to bypass minimum notice periods (like the 1-day rule). This allows you to see and book slots for tomorrow or today.
+                Blocking a day creates an "Out of Office" entry in Cal.com. This overrides your standard schedule and prevents any new bookings for that date.
               </p>
             </CardContent>
           </Card>
@@ -637,6 +623,7 @@ const CalcomSlotsView = () => {
         </div>
       )}
 
+      {/* Empty State */}
       {!loading && dateRange.every(date => !blockedDates.includes(date) && (slots[date] || []).length === 0 && (bookings[date] || []).length === 0) && (
         <div className="text-center py-32 bg-muted/30 rounded-[3rem] border-2 border-dashed border-border">
           <div className="mx-auto w-20 h-20 bg-card rounded-3xl flex items-center justify-center mb-6 shadow-xl">

@@ -9,10 +9,10 @@ const corsHeaders = {
 serve(async (req) => {
   if (req.method === 'OPTIONS') return new Response('ok', { headers: corsHeaders })
 
-  console.log("--- [get-calcom-slots] v7 OVERRIDE SUPPORT ---");
+  console.log("--- [get-calcom-slots] v6 SLOTS + BOOKINGS + EMAILS ---");
 
   try {
-    let { start, end, eventTypeId, timeZone, isOverride } = await req.json()
+    let { start, end, eventTypeId, timeZone } = await req.json()
     const CALCOM_KEY = Deno.env.get('CALCOM_API_KEY')
 
     if (!CALCOM_KEY) throw new Error("Missing CALCOM_API_KEY in Supabase Secrets.")
@@ -23,38 +23,22 @@ serve(async (req) => {
       'Content-Type': 'application/json',
     };
 
-    // 1. Fetch User Info if in Override Mode
-    let username = null;
-    if (isOverride) {
-      const meRes = await fetch('https://api.cal.com/v2/me', { headers });
-      const meData = await meRes.json();
-      username = meData.data?.username;
-      console.log(`[Override] Fetching slots for user: ${username}`);
-    }
-
-    // 2. Fetch Available Slots
+    // 1. Fetch Available Slots
+    const targetEventTypeId = eventTypeId || "4279898";
     const slotsUrl = new URL('https://api.cal.com/v2/slots/available')
     slotsUrl.searchParams.set('startTime', start)
     slotsUrl.searchParams.set('endTime', end)
-    
-    if (isOverride && username) {
-      slotsUrl.searchParams.set('username', username)
-      // We still pass eventTypeId to help Cal.com determine the slot duration (e.g. 75m)
-      if (eventTypeId) slotsUrl.searchParams.set('eventTypeId', eventTypeId)
-    } else {
-      slotsUrl.searchParams.set('eventTypeId', eventTypeId || "4279898")
-    }
-    
+    slotsUrl.searchParams.set('eventTypeId', targetEventTypeId)
     if (timeZone) slotsUrl.searchParams.set('timeZone', timeZone)
 
     const slotsResponse = await fetch(slotsUrl.toString(), { method: 'GET', headers })
     const slotsData = await slotsResponse.json()
     
-    // 3. Fetch Out-of-Office Blocks
+    // 2. Fetch Out-of-Office Blocks
     const oooResponse = await fetch('https://api.cal.com/v2/me/ooo', { method: 'GET', headers })
     const oooData = await oooResponse.json()
 
-    // 4. Fetch Existing Bookings
+    // 3. Fetch Existing Bookings
     const bookingsUrl = new URL('https://api.cal.com/v2/bookings')
     bookingsUrl.searchParams.set('startTime', start)
     bookingsUrl.searchParams.set('endTime', end)
@@ -73,6 +57,7 @@ serve(async (req) => {
       })
     }
 
+    // 4. Robust Date Matching (Timezone Aware)
     const blockedDates = (oooData.data || []).map(entry => {
       const date = new Date(entry.start);
       return new Intl.DateTimeFormat('en-CA', {
@@ -83,6 +68,7 @@ serve(async (req) => {
       }).format(date);
     });
 
+    // 5. Process Bookings into Date Groups
     const bookingsByDate = {};
     (bookingsData.data || []).forEach(booking => {
       const dateKey = new Intl.DateTimeFormat('en-CA', {

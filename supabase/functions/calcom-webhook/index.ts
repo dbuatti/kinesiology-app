@@ -28,7 +28,6 @@ async function getGmailAccessToken(clientId: string, clientSecret: string, refre
 }
 
 async function sendGmail(accessToken: string, from: string, to: string, subject: string, htmlBody: string) {
-  // Use a more robust encoding for Deno
   const utf8Subject = `=?utf-8?B?${btoa(encodeURIComponent(subject).replace(/%([0-9A-F]{2})/g, (_, p1) => String.fromCharCode(parseInt(p1, 16))))}?=`;
   
   const messageParts = [
@@ -78,7 +77,6 @@ serve(async (req) => {
     const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')
     const supabase = createClient(supabaseUrl, supabaseKey)
     
-    // 1. Resolve Practitioner User ID
     const { data: profileData } = await supabase.from('profiles').select('id').limit(1).single();
     const PRACTITIONER_ID = profileData?.id;
 
@@ -116,9 +114,25 @@ serve(async (req) => {
     const email = String(attendee.email || "").toLowerCase().trim();
     const startTime = payload.startTime || payload.start;
     
-    // Determine if it's a paid session (Event ID 4279898 is the 75min Neuro session)
-    const isPaidSession = payload.metadata?.is_paid === "true" || Number(payload.eventTypeId) === 4279898;
+    // REFINED PAID LOGIC:
+    // 1. Check metadata (explicitly set by the CRM app)
+    // 2. Check responses (set by the booking form checkbox)
+    // 3. Fallback to Event ID (default behavior for direct bookings)
+    const metadataIsPaid = payload.metadata?.is_paid;
+    const responseIsPaid = payload.responses?.is_paid;
+    
+    let isPaidSession = false;
+    if (metadataIsPaid !== undefined) {
+      isPaidSession = metadataIsPaid === "true";
+    } else if (responseIsPaid !== undefined) {
+      isPaidSession = responseIsPaid === true || responseIsPaid === "true";
+    } else {
+      isPaidSession = Number(payload.eventTypeId) === 4279898;
+    }
+
     const hasPaidViaStripe = !!(payload.payment?.[0]?.amount || payload.paymentId);
+
+    console.log(`[calcom-webhook] Processing ${email}. Paid: ${isPaidSession}, Stripe: ${hasPaidViaStripe}`);
 
     // 2. Sync Client
     let { data: dbClient } = await supabase.from('clients').select('id').eq('email', email).maybeSingle();
@@ -155,7 +169,6 @@ serve(async (req) => {
         
       if (appErr) throw appErr;
       appointmentId = newApp.id;
-      console.log(`[calcom-webhook] Appointment ${appointmentId} synced to DB.`);
     }
 
     // 4. Send Onboarding Email
@@ -210,10 +223,7 @@ serve(async (req) => {
           console.log(`[calcom-webhook] Onboarding email sent to ${email}`);
         } catch (emailErr) {
           console.error("[calcom-webhook] Email sending failed:", emailErr.message);
-          // We don't throw here because the appointment was already synced successfully
         }
-      } else {
-        console.warn("[calcom-webhook] Gmail secrets not configured. Skipping email.");
       }
     }
 

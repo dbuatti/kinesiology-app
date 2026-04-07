@@ -52,7 +52,7 @@ const AppointmentDetailPage = () => {
   const [syncingNotion, setSyncingNotion] = useState(false);
   const [deleting, setDeleting] = useState(false);
   const [currentTime, setCurrentTime] = useState(new Date());
-  const [showSidebar, setShowSidebar] = useState(true); 
+  const [showSidebar, setShowSidebar] = useState(false); // Default to false for cleaner start
   const [nucleiFilter, setNucleiFilter] = useState<Nuclei | null>(null);
 
   useEffect(() => {
@@ -289,42 +289,9 @@ const AppointmentDetailPage = () => {
           </div>
 
           <div className="grid grid-cols-1 xl:grid-cols-12 gap-12">
-            <div className={cn(showSidebar ? "xl:col-span-8" : "xl:col-span-12", "space-y-12 transition-all duration-500")}>
-              <div className="space-y-10">
+            <div className={cn(showSidebar ? "xl:col-span-8" : "xl:col-span-12", "space-y-8 transition-all duration-500")}>
+              <div className="space-y-6">
                 <AppointmentHeader appointment={appointment} onSaveField={saveField} onUpdate={refresh} />
-
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                  <div className="space-y-2">
-                    <div className="flex items-center gap-2 px-2">
-                      <Target size={14} className="text-indigo-500" />
-                      <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Clinical Intake</span>
-                    </div>
-                    <EditableField 
-                      key={`goal-${appointment.id}`} 
-                      field="goal" 
-                      label="Session Goal" 
-                      value={appointment.goal} 
-                      placeholder="What is the primary goal?" 
-                      onSave={saveField} 
-                      className="bg-slate-50/50 dark:bg-slate-900/50 p-6 rounded-[2rem] border border-slate-100 dark:border-slate-800" 
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <div className="flex items-center gap-2 px-2">
-                      <ClipboardList size={14} className="text-rose-500" />
-                      <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Primary Concern</span>
-                    </div>
-                    <EditableField 
-                      key={`issue-${appointment.id}`} 
-                      field="issue" 
-                      label="Main Concern / Issue" 
-                      value={appointment.issue} 
-                      placeholder="Describe the main concern..." 
-                      onSave={saveField} 
-                      className="bg-slate-50/50 dark:bg-slate-900/50 p-6 rounded-[2rem] border border-slate-100 dark:border-slate-800" 
-                    />
-                  </div>
-                </div>
               </div>
 
               <div className="print:hidden">

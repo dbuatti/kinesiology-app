@@ -10,7 +10,7 @@ import {
   Loader2, Briefcase, Heart, Baby,
   Activity, Edit3, Trash2, MoreHorizontal, FlaskConical, TrendingUp, Clock, Brain,
   LayoutDashboard, History, ArrowRight, Copy, Check, Sparkles, Plus, Link as LinkIcon,
-  Zap, Send, ShieldCheck, ExternalLink, RefreshCw, ShieldAlert, Info, User, Star
+  Zap, Send, ShieldCheck, ExternalLink, RefreshCw, ShieldAlert, Info, User, Star, CreditCard
 } from "lucide-react";
 import { format } from "date-fns";
 import { Client, Appointment } from "@/types/crm";
@@ -57,6 +57,7 @@ const ClientDetailPage = () => {
   const [linkCopying, setLinkCopying] = useState(false);
   const [sendingEmail, setSendingEmail] = useState(false);
   const [syncingKit, setSyncingKit] = useState(false);
+  const [syncingStripe, setSyncingStripe] = useState(false);
   const [assessmentModal, setAssessmentModal] = useState<{ open: boolean; type: 'bolt' | 'coherence' } | null>(null);
   const { addRecentClient } = useRecentClients();
 
@@ -96,6 +97,36 @@ const ClientDetailPage = () => {
       console.error("Error fetching client details:", err);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleSyncToStripe = async () => {
+    if (!client) return;
+    setSyncingStripe(true);
+    try {
+      const { data, error } = await supabase.functions.invoke('stripe-manager', {
+        body: { 
+          action: 'sync-customer', 
+          clientId: client.id,
+          clientData: client
+        }
+      });
+
+      if (error) throw error;
+
+      if (data.stripeCustomerId) {
+        await supabase
+          .from('clients')
+          .update({ stripe_customer_id: data.stripeCustomerId })
+          .eq('id', client.id);
+        
+        showSuccess(`Synced ${client.name} to Stripe!`);
+        fetchClientData();
+      }
+    } catch (err: any) {
+      showError(err.message || "Failed to sync to Stripe.");
+    } finally {
+      setSyncingStripe(false);
     }
   };
 
@@ -338,6 +369,24 @@ const ClientDetailPage = () => {
                       >
                         {syncingKit ? <Loader2 size={14} className="animate-spin" /> : <RefreshCw size={14} className="mr-1.5" />}
                         Sync Now
+                      </Button>
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-3">
+                        <div className="w-8 h-8 rounded-lg bg-blue-50 flex items-center justify-center text-blue-600">
+                          <CreditCard size={16} />
+                        </div>
+                        <span className="text-xs font-bold text-slate-700">Stripe Sync</span>
+                      </div>
+                      <Button 
+                        variant="ghost" 
+                        size="sm" 
+                        onClick={handleSyncToStripe}
+                        disabled={syncingStripe}
+                        className="h-8 text-[10px] font-black uppercase tracking-widest text-blue-600 hover:bg-blue-50"
+                      >
+                        {syncingStripe ? <Loader2 size={14} className="animate-spin" /> : <RefreshCw size={14} className="mr-1.5" />}
+                        {(client as any).stripe_customer_id ? 'Update' : 'Sync'}
                       </Button>
                     </div>
                     <div className="flex items-center justify-between">

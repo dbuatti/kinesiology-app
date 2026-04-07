@@ -1,6 +1,26 @@
-import { useState, useEffect } from "react";
+"use client";
+
+import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
-import { Settings, User, LogOut, Mail, Loader2, RefreshCw, Zap, Info, Calendar, Copy, Check, ShieldCheck, Link as LinkIcon, Sparkles, CheckCircle2, Globe } from "lucide-react";
+import { 
+  Settings, 
+  User, 
+  LogOut, 
+  Mail, 
+  Loader2, 
+  RefreshCw, 
+  Zap, 
+  Info, 
+  Calendar, 
+  Copy, 
+  Check, 
+  ShieldCheck, 
+  Link as LinkIcon, 
+  Sparkles, 
+  Globe, 
+  CreditCard, 
+  DollarSign 
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
 import { showSuccess, showError } from "@/utils/toast";
@@ -11,7 +31,7 @@ import { cn } from "@/lib/utils";
 const SettingsPage = () => {
   const navigate = useNavigate();
   const [copied, setCopied] = useState<string | null>(null);
-  const [checkingStatus, setCheckingStatus] = useState(false);
+  const [initializingStripe, setInitializingStripe] = useState(false);
 
   const projectRef = "xebtjnvfkroiplyzftas";
   const webhookUrl = `https://${projectRef}.supabase.co/functions/v1/calcom-webhook`;
@@ -21,6 +41,23 @@ const SettingsPage = () => {
     setCopied(id);
     showSuccess("Copied to clipboard!");
     setTimeout(() => setCopied(null), 2000);
+  };
+
+  const handleInitializeStripe = async () => {
+    setInitializingStripe(true);
+    try {
+      const { error } = await supabase.functions.invoke('stripe-manager', {
+        body: { action: 'setup-product' }
+      });
+
+      if (error) throw error;
+      
+      showSuccess("Stripe Product 'FNH Clinical Assessment' created successfully!");
+    } catch (err: any) {
+      showError(err.message || "Failed to initialize Stripe. Ensure STRIPE_SECRET_KEY is set in Supabase.");
+    } finally {
+      setInitializingStripe(false);
+    }
   };
 
   const handleSignOut = async () => {
@@ -33,7 +70,7 @@ const SettingsPage = () => {
     }
   };
 
-  const IntegrationStatus = ({ name, icon: Icon, description }: any) => (
+  const IntegrationStatus = ({ name, icon: Icon, description, status = "Connected" }: any) => (
     <div className="flex items-center justify-between p-4 bg-slate-50 dark:bg-slate-900 rounded-2xl border border-slate-100 dark:border-slate-800">
       <div className="flex items-center gap-3">
         <div className="w-10 h-10 rounded-xl bg-white dark:bg-slate-800 shadow-sm flex items-center justify-center text-indigo-600">
@@ -44,8 +81,11 @@ const SettingsPage = () => {
           <p className="text-[10px] text-slate-500 font-medium">{description}</p>
         </div>
       </div>
-      <Badge className="bg-emerald-500 text-white border-none font-black text-[8px] uppercase tracking-widest">
-        Connected
+      <Badge className={cn(
+        "border-none font-black text-[8px] uppercase tracking-widest",
+        status === "Connected" ? "bg-emerald-500 text-white" : "bg-amber-500 text-white"
+      )}>
+        {status}
       </Badge>
     </div>
   );
@@ -65,7 +105,6 @@ const SettingsPage = () => {
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-        {/* Integration Health */}
         <div className="lg:col-span-2 space-y-6">
           <Card className="border-none shadow-xl rounded-[2.5rem] bg-white dark:bg-slate-950 overflow-hidden">
             <CardHeader className="p-8 pb-4">
@@ -81,19 +120,44 @@ const SettingsPage = () => {
                 <IntegrationStatus name="Gmail API" icon={Sparkles} description="Automated Onboarding Emails" />
                 <IntegrationStatus name="Cal.com" icon={Calendar} description="Booking & Scheduling" />
               </div>
-              
-              <div className="mt-6 p-6 bg-indigo-50 dark:bg-indigo-900/20 rounded-[2rem] border border-indigo-100 dark:border-indigo-900/30">
-                <div className="flex items-start gap-4">
-                  <div className="w-10 h-10 rounded-xl bg-white dark:bg-slate-800 flex items-center justify-center text-indigo-600 shrink-0 shadow-sm">
-                    <Zap size={20} />
-                  </div>
+            </CardContent>
+          </Card>
+
+          <Card className="border-none shadow-xl rounded-[2.5rem] bg-white dark:bg-slate-950 overflow-hidden border-2 border-indigo-100">
+            <CardHeader className="p-8 pb-4 bg-indigo-50/50">
+              <CardTitle className="text-xl font-black flex items-center gap-3 text-indigo-900">
+                <CreditCard size={24} /> Stripe Clinical Payments
+              </CardTitle>
+              <CardDescription className="text-indigo-700 font-medium">Link your CRM clients to Stripe for seamless Tap-to-Pay and invoicing.</CardDescription>
+            </CardHeader>
+            <CardContent className="p-8 pt-0 space-y-6">
+              <div className="p-6 bg-white dark:bg-slate-900 rounded-3xl border border-indigo-100 dark:border-indigo-900/30 space-y-4">
+                <div className="flex items-center justify-between">
                   <div className="space-y-1">
-                    <h4 className="font-black text-indigo-900 dark:text-indigo-100 text-sm uppercase tracking-tight">Automation Logic</h4>
-                    <p className="text-xs text-indigo-700 dark:text-indigo-300 leading-relaxed font-medium">
-                      New bookings from Cal.com automatically create a client, send a Gmail onboarding link, and sync the record to Notion. Once the client submits their form, they are tagged and synced to Kit.
-                    </p>
+                    <h4 className="font-black text-slate-900 dark:text-white text-sm uppercase tracking-tight">1. Initialize FNH Product</h4>
+                    <p className="text-xs text-slate-500 leading-relaxed">Creates the '$50 FNH Clinical Assessment' product in your Stripe account.</p>
                   </div>
+                  <Button 
+                    onClick={handleInitializeStripe} 
+                    disabled={initializingStripe}
+                    className="bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl h-10 px-6 font-black text-[10px] uppercase tracking-widest shadow-lg"
+                  >
+                    {initializingStripe ? <Loader2 className="animate-spin" /> : <Zap size={16} className="mr-2" />}
+                    Initialize
+                  </Button>
                 </div>
+              </div>
+
+              <div className="p-6 bg-amber-50 dark:bg-amber-950/20 rounded-3xl border border-amber-100 dark:border-amber-900/30 space-y-3">
+                <div className="flex items-center gap-2">
+                  <Info size={16} className="text-amber-600" />
+                  <p className="text-[10px] font-black text-amber-600 uppercase tracking-widest">How it works</p>
+                </div>
+                <ul className="text-xs text-amber-800 dark:text-amber-200 space-y-2 list-disc pl-4 font-medium">
+                  <li>Every new client added to the CRM will automatically have a matching <strong>Customer</strong> created in Stripe.</li>
+                  <li>In the <strong>Stripe Dashboard App</strong>, you can search for the client by name and select the <strong>FNH Clinical Assessment</strong> product.</li>
+                  <li>Accept payment via Tap-to-Pay, and Stripe will automatically email them a professional invoice/receipt.</li>
+                </ul>
               </div>
             </CardContent>
           </Card>
@@ -116,24 +180,10 @@ const SettingsPage = () => {
                   </Button>
                 </div>
               </div>
-
-              <div className="p-6 bg-amber-50 dark:bg-amber-950/20 rounded-3xl border border-amber-100 dark:border-amber-900/30 space-y-3">
-                <div className="flex items-center gap-2">
-                  <Info size={16} className="text-amber-600" />
-                  <p className="text-[10px] font-black text-amber-600 uppercase tracking-widest">Setup Instructions</p>
-                </div>
-                <ol className="text-xs text-amber-800 dark:text-amber-200 space-y-2 list-decimal pl-4 font-medium">
-                  <li>Go to <strong>Cal.com Settings {" > "} Webhooks</strong>.</li>
-                  <li>Paste the URL above into <strong>Subscriber URL</strong>.</li>
-                  <li>Select <strong>Booking Created</strong> and <strong>Booking Cancelled</strong>.</li>
-                  <li>Click <strong>Save</strong>.</li>
-                </ol>
-              </div>
             </CardContent>
           </Card>
         </div>
 
-        {/* Account & Security */}
         <div className="space-y-6">
           <Card className="border-none shadow-lg rounded-[2.5rem] bg-white dark:bg-slate-950 overflow-hidden">
             <CardHeader className="p-8 pb-4">
@@ -158,23 +208,6 @@ const SettingsPage = () => {
               >
                 <LogOut size={18} className="mr-2" /> Sign Out of System
               </Button>
-            </CardContent>
-          </Card>
-
-          <Card className="border-none shadow-lg rounded-[2.5rem] bg-slate-900 text-white overflow-hidden relative">
-            <div className="absolute top-0 right-0 p-6 opacity-10"><ShieldCheck size={80} /></div>
-            <CardHeader className="p-8 pb-4">
-              <CardTitle className="text-lg font-black flex items-center gap-2">
-                <ShieldCheck size={20} className="text-emerald-400" /> System Security
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="p-8 pt-0 space-y-4">
-              <p className="text-xs text-slate-400 leading-relaxed font-medium">
-                Your clinical data is encrypted at rest and in transit. All external integrations use secure OAuth 2.0 or API Key protocols.
-              </p>
-              <div className="flex items-center gap-2 text-[10px] font-black text-emerald-400 uppercase tracking-widest">
-                <CheckCircle2 size={14} /> SSL Secure Connection
-              </div>
             </CardContent>
           </Card>
         </div>

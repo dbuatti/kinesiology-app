@@ -127,10 +127,10 @@ const AppointmentsPage = () => {
       const mapped = (data || []).map(a => ({
         ...a,
         date: new Date(a.date),
-        clients: {
+        clients: a.clients ? {
           ...a.clients,
           latest_bolt: latestScores[a.clients.id] || null
-        }
+        } : { name: "Unknown Client", id: "unknown" }
       })) as unknown as AppointmentWithClient[];
 
       setAppointments(mapped);
@@ -204,9 +204,10 @@ const AppointmentsPage = () => {
 
   const filteredAppointments = useMemo(() => {
     return appointments.filter(app => {
-      const matchesSearch = app.clients?.name.toLowerCase().includes(search.toLowerCase()) ||
+      const clientName = app.clients?.name || "";
+      const matchesSearch = clientName.toLowerCase().includes(search.toLowerCase()) ||
         app.tag.toLowerCase().includes(search.toLowerCase()) ||
-        app.name?.toLowerCase().includes(search.toLowerCase());
+        (app.name || "").toLowerCase().includes(search.toLowerCase());
       
       const matchesStatus = statusFilter === "all" || 
                            (statusFilter === "today" && isToday(app.date)) ||
@@ -245,7 +246,7 @@ const AppointmentsPage = () => {
     const hasCogs = app.sagittal_plane_notes || app.frontal_plane_notes || app.transverse_plane_notes;
     const isCompleted = app.status === 'Completed';
     const isTodaySession = isToday(app.date);
-    const isHighRisk = app.clients.latest_bolt !== null && app.clients.latest_bolt! < 25;
+    const isHighRisk = app.clients?.latest_bolt !== null && app.clients?.latest_bolt! < 25;
 
     return (
       <Card 
@@ -267,7 +268,7 @@ const AppointmentsPage = () => {
                       "font-black text-2xl text-foreground hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors",
                       isPrivate && "blur-sm select-none"
                     )}>
-                      {app.clients?.name}
+                      {app.clients?.name || "Unknown Client"}
                     </Link>
                     {isTodaySession && (
                       <Badge className="bg-rose-500 text-white border-none animate-pulse font-black text-[8px] uppercase tracking-widest px-2 py-0.5 rounded-full">
@@ -277,7 +278,7 @@ const AppointmentsPage = () => {
                     {app.is_paid && (
                       <Badge className={cn(
                         "border-none font-black text-[8px] uppercase tracking-widest px-2 py-0.5 rounded-full flex items-center gap-1 shadow-sm",
-                        app.payment_received ? "bg-emerald-500 text-white" : "bg-amber-500 text-white"
+                        app.payment_received ? "bg-emerald-50 text-emerald-700" : "bg-amber-500 text-white"
                       )}>
                         <DollarSign size={10} /> {app.payment_received ? "Paid" : "Payment Due"}
                       </Badge>

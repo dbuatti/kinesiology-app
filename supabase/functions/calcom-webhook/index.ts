@@ -77,7 +77,8 @@ serve(async (req) => {
     const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')
     const supabase = createClient(supabaseUrl, supabaseKey)
     
-    const { data: profileData } = await supabase.from('profiles').select('id').limit(1).single();
+    // Get the first available practitioner profile
+    const { data: profileData } = await supabase.from('profiles').select('id').limit(1).maybeSingle();
     const PRACTITIONER_ID = profileData?.id;
 
     if (!PRACTITIONER_ID) {
@@ -125,16 +126,21 @@ serve(async (req) => {
 
     console.log(`[calcom-webhook] Processing ${email}. Paid: ${isPaidSession}, Stripe: ${hasPaidViaStripe}`);
 
-    let { data: dbClient } = await supabase.from('clients').select('id').eq('email', email).maybeSingle();
-    if (!dbClient) {
-      const { data: newDbC, error: cErr } = await supabase.from('clients').insert({ 
+    // Use upsert for client to handle existing emails gracefully
+    const { data: dbClient, error: clientError } = await supabase
+      .from('clients')
+      .upsert({ 
         user_id: PRACTITIONER_ID, 
         name, 
         email, 
         phone: attendee.phoneNumber || attendee.phone || "" 
-      }).select().single();
-      if (cErr) throw cErr;
-      dbClient = newDbC;
+      }, { onConflict: 'email' })
+      .select('id')
+      .single();
+
+    if (clientError) {
+      console.error("[calcom-webhook] Client upsert failed:", clientError);
+      throw clientError;
     }
 
     let appointmentId = null;
@@ -156,11 +162,15 @@ serve(async (req) => {
         .select('id')
         .single();
         
-      if (appErr) throw appErr;
+      if (appErr) {
+        console.error("[calcom-webhook] Appointment upsert failed:", appErr);
+        throw appErr;
+      }
       appointmentId = newApp.id;
     }
 
-    if (triggerEvent === 'BOOKING_CREATED' && dbClient && email) {
+    // Send onboarding email for new bookings
+    if ((triggerEvent === 'BOOKING_CREATED' || triggerEvent === 'BOOKING_PAID') && dbClient && email) {
       const GMAIL_CLIENT_ID = Deno.env.get('GMAIL_CLIENT_ID');
       const GMAIL_CLIENT_SECRET = Deno.env.get('GMAIL_CLIENT_SECRET');
       const GMAIL_REFRESH_TOKEN = Deno.env.get('GMAIL_REFRESH_TOKEN');

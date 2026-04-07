@@ -41,7 +41,11 @@ serve(async (req) => {
     }
 
     const { clientId, startTime, eventTypeId, title, notes, is_paid } = body;
-    console.log("[create-calcom-booking] Request params:", { clientId, startTime, eventTypeId, is_paid });
+    
+    // Ensure is_paid is a strict boolean
+    const isPaidBool = is_paid === true || is_paid === 'true';
+
+    console.log("[create-calcom-booking] Request params:", { clientId, startTime, eventTypeId, isPaidBool });
 
     if (!clientId || !startTime || !eventTypeId) {
       return new Response(JSON.stringify({ error: "Missing required fields: clientId, startTime, or eventTypeId." }), { 
@@ -83,15 +87,15 @@ serve(async (req) => {
         timeZone: "Australia/Melbourne",
         language: "en"
       },
-      // Reverting to bookingFieldsResponses as 'responses' was rejected as 'should not exist'
+      // bookingFieldsResponses is the correct key for v2 custom fields
       bookingFieldsResponses: {
-        is_paid: Boolean(is_paid) 
+        is_paid: isPaidBool 
       },
       metadata: { 
         crm_title: title || "Kinesiology Session",
         crm_notes: notes || "",
         source: "Antigravity CRM",
-        is_paid: String(is_paid || false)
+        is_paid: String(isPaidBool)
       }
     };
 

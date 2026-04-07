@@ -1,5 +1,6 @@
 // @ts-nocheck
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
+import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
 import Stripe from 'https://esm.sh/stripe@14.25.0'
 
 const corsHeaders = {
@@ -13,6 +14,9 @@ serve(async (req) => {
 
   try {
     const STRIPE_KEY = Deno.env.get('STRIPE_SECRET_KEY');
+    const supabaseUrl = Deno.env.get('SUPABASE_URL');
+    const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY');
+    
     if (!STRIPE_KEY) throw new Error("Missing STRIPE_SECRET_KEY");
 
     const stripe = new Stripe(STRIPE_KEY, {
@@ -20,8 +24,30 @@ serve(async (req) => {
       httpClient: Stripe.createFetchHttpClient(),
     });
 
+    const supabase = createClient(supabaseUrl, supabaseKey);
     const body = await req.json();
-    const { action, clientId, appointmentId, clientData } = body;
+    const { action, clientId, clientData } = body;
+
+    if (action === 'sync-all') {
+      const { data: clients } = await supabase
+        .from('clients')
+        .select('id, name, email')
+        .is('stripe_customer_id', null);
+      
+      let count = 0;
+      for (const client of (clients || [])) {
+        try {
+          const customer = await stripe.customers.create({
+            name: client.name,
+            email: client.email,
+            metadata: { crm_id: client.id }
+          });
+          await supabase.from('clients').update({ stripe_customer_id: customer.id }).eq('id', client.id);
+          count++;
+        } catch (e) { console.error(`Failed for ${client.name}:`, e.message); }
+      }
+      return new Response(JSON.stringify({ success: true, syncedCount: count }), { status: 200, headers: corsHeaders });
+    }
 
     if (action === 'setup-product') {
       const products = await stripe.products.list({ limit: 100 });
@@ -47,27 +73,6 @@ serve(async (req) => {
         customer = await stripe.customers.create(customerData);
       }
       return new Response(JSON.stringify({ success: true, stripeCustomerId: customer.id }), { status: 200, headers: corsHeaders });
-    }
-
-    if (action === 'create-checkout') {
-      console.log(`[stripe-manager] Creating checkout for appointment: ${appointmentId}`);
-      const products = await stripe.products.list({ limit: 100 });
-      const product = products.data.find(p => p.name === 'FNH Clinical Assessment');
-      
-      if (!product) throw new Error("FNH Product not found. Run setup first.");
-
-      const session = await stripe.checkout.sessions.create({
-        customer: clientData.stripe_customer_id,
-        line_items: [{ price: product.default_price, quantity: 1 }],
-        mode: 'payment',
-        success_url: `${req.headers.get('origin')}/appointments/${appointmentId}?payment=success`,
-        cancel_url: `${req.headers.get('origin')}/appointments/${appointmentId}`,
-        metadata: { appointment_id: appointmentId, crm_id: clientId }
-      });
-
-      return new Response(JSON.stringify({ success: true, url: session.url }), { 
-        status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
-      });
     }
 
     throw new Error(`Unsupported action: ${action}`);

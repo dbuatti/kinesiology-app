@@ -4,7 +4,7 @@ import React from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Zap, ExternalLink, Clock, Target, ShieldAlert, Activity, Brain, Heart, Home, Sparkles, CreditCard, CheckCircle2, Wallet } from "lucide-react";
+import { Zap, ExternalLink, Clock, Target, ShieldAlert, Activity, Brain, Heart, Home, Sparkles, CreditCard, CheckCircle2, Wallet, Smartphone } from "lucide-react";
 import { cn } from "@/lib/utils";
 import EditableField from "@/components/shared/EditableField";
 import QuickAcupointSelector from "./QuickAcupointSelector";
@@ -18,11 +18,11 @@ interface AppointmentContextCardsProps {
 }
 
 const SESSION_STAGES = [
-  { name: "Goal Setting", time: "15m", icon: Target, color: "text-indigo-500" },
-  { name: "Activation", time: "15m", icon: Zap, color: "text-blue-500" },
-  { name: "Correction", time: "20m", icon: Activity, color: "text-emerald-500" },
-  { name: "Challenge", time: "5m", icon: ShieldAlert, color: "text-amber-500" },
-  { name: "Home Reinforcement", time: "5m", icon: Home, color: "text-rose-500" },
+  { name: "Goal Setting", duration: 15, icon: Target, color: "text-indigo-500" },
+  { name: "Activation", duration: 15, icon: Zap, color: "text-blue-500" },
+  { name: "Correction", duration: 20, icon: Activity, color: "text-emerald-500" },
+  { name: "Challenge", duration: 5, icon: ShieldAlert, color: "text-amber-500" },
+  { name: "Home Reinforcement", duration: 5, icon: Home, color: "text-rose-500" },
 ];
 
 const AppointmentContextCards = ({ appointment, currentPeakMeridian, onSaveField }: AppointmentContextCardsProps) => {
@@ -44,7 +44,7 @@ const AppointmentContextCards = ({ appointment, currentPeakMeridian, onSaveField
                   <span className="text-[11px] font-bold text-slate-300">{stage.name}</span>
                 </div>
                 <Badge variant="outline" className="border-white/20 text-white font-black text-[8px] uppercase tracking-widest">
-                  {stage.time}
+                  {stage.duration}m
                 </Badge>
               </div>
             ))}
@@ -52,7 +52,7 @@ const AppointmentContextCards = ({ appointment, currentPeakMeridian, onSaveField
         </CardContent>
       </Card>
 
-      {/* Payment Management - New Section */}
+      {/* Payment Management */}
       {appointment.is_paid && (
         <Card className="border-none shadow-lg rounded-[2.5rem] bg-white border-2 border-emerald-100 overflow-hidden animate-in fade-in slide-in-from-right-2 duration-500">
           <CardHeader className="p-6 pb-2 bg-emerald-50/50 border-b border-emerald-100">
@@ -67,9 +67,11 @@ const AppointmentContextCards = ({ appointment, currentPeakMeridian, onSaveField
                 type="single" 
                 value={appointment.payment_method || ""} 
                 onValueChange={(v) => onSaveField('payment_method', v || null)}
-                className="justify-start gap-2"
+                className="flex flex-wrap justify-start gap-2"
               >
-                <ToggleGroupItem value="Card" className="rounded-xl px-3 h-9 text-[10px] font-black uppercase border-slate-200 data-[state=on]:bg-emerald-600 data-[state=on]:text-white">Card</ToggleGroupItem>
+                <ToggleGroupItem value="Stripe App" className="rounded-xl px-3 h-9 text-[10px] font-black uppercase border-slate-200 data-[state=on]:bg-indigo-600 data-[state=on]:text-white">
+                  <Smartphone size={12} className="mr-1.5" /> Stripe
+                </ToggleGroupItem>
                 <ToggleGroupItem value="PayID" className="rounded-xl px-3 h-9 text-[10px] font-black uppercase border-slate-200 data-[state=on]:bg-emerald-600 data-[state=on]:text-white">PayID</ToggleGroupItem>
                 <ToggleGroupItem value="Cash" className="rounded-xl px-3 h-9 text-[10px] font-black uppercase border-slate-200 data-[state=on]:bg-emerald-600 data-[state=on]:text-white">Cash</ToggleGroupItem>
               </ToggleGroup>

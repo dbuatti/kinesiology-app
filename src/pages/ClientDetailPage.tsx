@@ -10,7 +10,7 @@ import {
   Loader2, Briefcase, Heart, Baby,
   Activity, Edit3, Trash2, MoreHorizontal, FlaskConical, TrendingUp, Clock, Brain,
   LayoutDashboard, History, ArrowRight, Copy, Check, Sparkles, Plus, Link as LinkIcon,
-  Zap, Send, ShieldCheck, ExternalLink, RefreshCw, ShieldAlert, Info, User, Star, CreditCard
+  Zap, Send, ShieldCheck, ExternalLink, RefreshCw, ShieldAlert, Info, User, Star, CreditCard, DollarSign, QrCode
 } from "lucide-react";
 import { format } from "date-fns";
 import { Client, Appointment } from "@/types/crm";
@@ -58,6 +58,7 @@ const ClientDetailPage = () => {
   const [sendingEmail, setSendingEmail] = useState(false);
   const [syncingKit, setSyncingKit] = useState(false);
   const [syncingStripe, setSyncingStripe] = useState(false);
+  const [generatingLink, setGeneratingLink] = useState<string | null>(null);
   const [assessmentModal, setAssessmentModal] = useState<{ open: boolean; type: 'bolt' | 'coherence' } | null>(null);
   const { addRecentClient } = useRecentClients();
 
@@ -97,6 +98,38 @@ const ClientDetailPage = () => {
       console.error("Error fetching client details:", err);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleGeneratePaymentLink = async (e: React.MouseEvent, app: Appointment) => {
+    e.preventDefault();
+    e.stopPropagation();
+    if (!client) return;
+    
+    setGeneratingLink(app.id);
+    try {
+      const { data, error } = await supabase.functions.invoke('stripe-manager', {
+        body: { 
+          action: 'create-checkout', 
+          clientId: client.id,
+          appointmentId: app.id,
+          clientData: client
+        }
+      });
+
+      if (error) throw error;
+
+      if (data.url) {
+        // Update the appointment with the link silently
+        await supabase.from('appointments').update({ payment_link: data.url }).eq('id', app.id);
+        window.open(data.url, '_blank');
+        showSuccess("Payment link generated!");
+        fetchClientData();
+      }
+    } catch (err: any) {
+      showError(err.message || "Failed to generate link. Ensure client is synced to Stripe.");
+    } finally {
+      setGeneratingLink(null);
     }
   };
 
@@ -638,7 +671,7 @@ const ClientDetailPage = () => {
                         <Card className="hover:shadow-md transition-all border-slate-200 bg-white group rounded-2xl overflow-hidden cursor-pointer">
                           <CardContent className="p-6">
                             <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-                              <div className="space-y-3">
+                              <div className="space-y-3 flex-1">
                                 <div className="flex items-center gap-3">
                                   <Badge variant="secondary" className="font-bold bg-slate-100 text-slate-600">{(app as any).display_id || app.id.slice(0,8)}</Badge>
                                   <span className="font-bold text-lg text-slate-900 group-hover:text-indigo-600 transition-colors">{app.name || format(app.date, "MMM d, yyyy")}</span>
@@ -651,6 +684,26 @@ const ClientDetailPage = () => {
                                   )}>
                                     {app.status}
                                   </span>
+                                  {app.is_paid && !app.payment_received && (
+                                    <Badge className="bg-amber-100 text-amber-700 border-none font-black text-[8px] uppercase tracking-widest">Payment Due</Badge>
+                                  )}
+                                </div>
+                              </div>
+                              
+                              <div className="flex items-center gap-2">
+                                {app.is_paid && !app.payment_received && (
+                                  <Button 
+                                    size="sm" 
+                                    className="bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl h-9 px-4 font-black text-[10px] uppercase tracking-widest shadow-lg shadow-indigo-100"
+                                    onClick={(e) => handleGeneratePaymentLink(e, app)}
+                                    disabled={generatingLink === app.id}
+                                  >
+                                    {generatingLink === app.id ? <Loader2 size={14} className="animate-spin mr-2" /> : <QrCode size={14} className="mr-2" />}
+                                    Generate Link
+                                  </Button>
+                                )}
+                                <div className="w-8 h-8 rounded-xl bg-slate-50 flex items-center justify-center text-slate-400 group-hover:bg-indigo-600 group-hover:text-white transition-all">
+                                  <ArrowRight size={16} />
                                 </div>
                               </div>
                             </div>
@@ -704,7 +757,7 @@ const ClientDetailPage = () => {
                     <Card className="hover:shadow-md transition-all border-slate-200 bg-white group rounded-2xl overflow-hidden cursor-pointer">
                       <CardContent className="p-6">
                         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-                          <div className="space-y-3">
+                          <div className="space-y-3 flex-1">
                             <div className="flex items-center gap-3">
                               <Badge variant="secondary" className="font-bold bg-slate-100 text-slate-600">{(app as any).display_id || app.id.slice(0,8)}</Badge>
                               <span className="font-bold text-lg text-slate-900 group-hover:text-indigo-600 transition-colors">{app.name || format(app.date, "MMM d, yyyy")}</span>
@@ -719,6 +772,26 @@ const ClientDetailPage = () => {
                               )}>
                                 {app.status}
                               </span>
+                              {app.is_paid && !app.payment_received && (
+                                <Badge className="bg-amber-100 text-amber-700 border-none font-black text-[8px] uppercase tracking-widest">Payment Due</Badge>
+                              )}
+                            </div>
+                          </div>
+                          
+                          <div className="flex items-center gap-2">
+                            {app.is_paid && !app.payment_received && (
+                              <Button 
+                                size="sm" 
+                                className="bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl h-9 px-4 font-black text-[10px] uppercase tracking-widest shadow-lg shadow-indigo-100"
+                                onClick={(e) => handleGeneratePaymentLink(e, app)}
+                                disabled={generatingLink === app.id}
+                              >
+                                {generatingLink === app.id ? <Loader2 size={14} className="animate-spin mr-2" /> : <QrCode size={14} className="mr-2" />}
+                                Generate Link
+                              </Button>
+                            )}
+                            <div className="w-8 h-8 rounded-xl bg-slate-50 flex items-center justify-center text-slate-400 group-hover:bg-indigo-600 group-hover:text-white transition-all">
+                              <ArrowRight size={16} />
                             </div>
                           </div>
                         </div>

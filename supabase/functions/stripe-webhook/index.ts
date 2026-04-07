@@ -43,30 +43,43 @@ serve(async (req) => {
       );
 
       if (appointmentId) {
-        console.log(`[stripe-webhook] Success: Updating appointment ${appointmentId}`);
+        console.log(`[stripe-webhook] Success: Updating appointment ${appointmentId} via metadata`);
         await supabase
           .from('appointments')
           .update({ payment_received: true, payment_method: 'Stripe' })
           .eq('id', appointmentId);
       } else if (customerId) {
-        console.log(`[stripe-webhook] Warning: No appointment_id in metadata. Searching for latest unpaid for customer ${customerId}`);
+        console.log(`[stripe-webhook] Smart Match: Searching for latest unpaid for customer ${customerId}`);
         
-        const { data: app } = await supabase
-          .from('appointments')
+        // 1. Find the client ID associated with this Stripe Customer ID
+        const { data: client } = await supabase
+          .from('clients')
           .select('id')
           .eq('stripe_customer_id', customerId)
-          .eq('payment_received', false)
-          .order('date', { ascending: false })
-          .limit(1)
-          .maybeSingle();
+          .single();
 
-        if (app) {
-          await supabase
+        if (client) {
+          // 2. Find their latest unpaid appointment
+          const { data: app } = await supabase
             .from('appointments')
-            .update({ payment_received: true, payment_method: 'Stripe (Auto-Matched)' })
-            .eq('id', app.id);
+            .select('id')
+            .eq('client_id', client.id)
+            .eq('payment_received', false)
+            .order('date', { ascending: false })
+            .limit(1)
+            .maybeSingle();
+
+          if (app) {
+            console.log(`[stripe-webhook] Match Found: Updating appointment ${app.id}`);
+            await supabase
+              .from('appointments')
+              .update({ payment_received: true, payment_method: 'Stripe (Mobile App)' })
+              .eq('id', app.id);
+          } else {
+            console.log(`[stripe-webhook] No unpaid appointments found for client ${client.id}`);
+          }
         } else {
-          console.error(`[stripe-webhook] Error: Could not find an unpaid appointment for customer ${customerId}`);
+          console.error(`[stripe-webhook] Error: No CRM client found for Stripe Customer ${customerId}`);
         }
       }
     }

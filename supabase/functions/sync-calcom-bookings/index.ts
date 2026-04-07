@@ -9,7 +9,7 @@ const corsHeaders = {
 }
 
 serve(async (req) => {
-  console.log("--- [sync-calcom-bookings] START (v2 Smart Match) ---");
+  console.log("--- [sync-calcom-bookings] v2.1 START ---");
 
   if (req.method === 'OPTIONS') return new Response('ok', { headers: corsHeaders })
 
@@ -19,7 +19,7 @@ serve(async (req) => {
     const CALCOM_KEY = Deno.env.get('CALCOM_API_KEY')
     const supabase = createClient(supabaseUrl, supabaseKey)
 
-    if (!CALCOM_KEY) throw new Error("Missing CALCOM_API_KEY in Supabase Secrets.")
+    if (!CALCOM_KEY) throw new Error("Missing CALCOM_API_KEY")
 
     const { data: profileData } = await supabase.from('profiles').select('id').limit(1).maybeSingle();
     const PRACTITIONER_ID = profileData?.id;
@@ -43,6 +43,8 @@ serve(async (req) => {
     if (!response.ok) throw new Error(result.message || "Cal.com API Error");
 
     const bookings = result.data || [];
+    console.log(`[sync-calcom-bookings] Found ${bookings.length} upcoming bookings.`);
+    
     let syncedCount = 0;
 
     for (const booking of bookings) {
@@ -54,17 +56,19 @@ serve(async (req) => {
       const calcomId = String(booking.uid || booking.id);
       const startTime = booking.start;
 
-      // 1. Upsert Client
+      console.log(`[sync-calcom-bookings] Processing: ${name} (${email})`);
+
       const { data: dbClient } = await supabase
         .from('clients')
         .upsert({ user_id: PRACTITIONER_ID, name, email }, { onConflict: 'email' })
         .select('id')
         .single();
 
-      if (!dbClient) continue;
+      if (!dbClient) {
+        console.error(`[sync-calcom-bookings] Failed to upsert client: ${name}`);
+        continue;
+      }
 
-      // 2. SMART MATCH: Check if an appointment already exists for this client at this time
-      // even if it doesn't have a calcom_booking_id yet.
       const { data: existingApp } = await supabase
         .from('appointments')
         .select('id')
@@ -73,7 +77,7 @@ serve(async (req) => {
         .maybeSingle();
 
       if (existingApp) {
-        // Update existing instead of creating new
+        console.log(`[sync-calcom-bookings] Updating existing app: ${existingApp.id}`);
         await supabase
           .from('appointments')
           .update({ 
@@ -82,7 +86,7 @@ serve(async (req) => {
           })
           .eq('id', existingApp.id);
       } else {
-        // Create new
+        console.log(`[sync-calcom-bookings] Creating new app for: ${name}`);
         await supabase
           .from('appointments')
           .upsert({
@@ -99,12 +103,14 @@ serve(async (req) => {
       syncedCount++;
     }
 
+    console.log(`--- [sync-calcom-bookings] FINISHED: ${syncedCount} synced ---`);
     return new Response(JSON.stringify({ success: true, syncedCount }), { 
       status: 200, 
       headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
     });
 
   } catch (error) {
+    console.error("[sync-calcom-bookings] Critical Error:", error.message);
     return new Response(JSON.stringify({ error: error.message }), { status: 400, headers: corsHeaders });
   }
 })

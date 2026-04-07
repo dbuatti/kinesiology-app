@@ -9,7 +9,7 @@ const corsHeaders = {
 }
 
 serve(async (req) => {
-  console.log("[create-calcom-booking] Function invoked");
+  console.log("[create-calcom-booking] v2.1 - Fixing Payload Structure");
 
   if (req.method === 'OPTIONS') {
     return new Response('ok', { headers: corsHeaders })
@@ -21,63 +21,27 @@ serve(async (req) => {
     const CALCOM_KEY = Deno.env.get('CALCOM_API_KEY');
     
     if (!CALCOM_KEY) {
-      console.error("[create-calcom-booking] Missing CALCOM_API_KEY secret.");
-      return new Response(JSON.stringify({ error: "Cal.com API key not configured in Supabase secrets." }), { 
-        status: 500, 
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
-      });
+      throw new Error("Missing CALCOM_API_KEY secret.");
     }
 
-    const body = await req.json().catch(e => {
-      console.error("[create-calcom-booking] JSON Parse Error:", e.message);
-      return null;
-    });
-
-    if (!body) {
-      return new Response(JSON.stringify({ error: "Invalid request body" }), { 
-        status: 400, 
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
-      });
-    }
-
+    const body = await req.json();
     const { clientId, startTime, eventTypeId, title, notes, is_paid } = body;
-    
-    // Ensure is_paid is a strict boolean
     const isPaidBool = is_paid === true || is_paid === 'true';
 
-    console.log("[create-calcom-booking] Request params:", { clientId, startTime, eventTypeId, isPaidBool });
-
-    if (!clientId || !startTime || !eventTypeId) {
-      return new Response(JSON.stringify({ error: "Missing required fields: clientId, startTime, or eventTypeId." }), { 
-        status: 400, 
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
-      });
-    }
-
     const supabase = createClient(supabaseUrl, supabaseKey);
-
     const { data: client, error: clientError } = await supabase
       .from('clients')
-      .select('name, email, phone')
+      .select('name, email')
       .eq('id', clientId)
       .single();
 
-    if (clientError || !client) {
-      console.error("[create-calcom-booking] Client lookup failed:", clientError);
-      return new Response(JSON.stringify({ error: "Client not found in database." }), { 
-        status: 404, 
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
-      });
-    }
-    
-    if (!client.email) {
-      return new Response(JSON.stringify({ error: "Client is missing an email address. Cal.com requires an email to book." }), { 
-        status: 400, 
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
-      });
+    if (clientError || !client?.email) {
+      throw new Error("Client not found or missing email.");
     }
 
-    // Cal.com v2 Booking Payload
+    // Cal.com v2 API expects custom fields in 'bookingFieldsResponses'
+    // The error "property responses should not exist" often happens if the API 
+    // version is mismatched or if 'responses' is sent instead.
     const bookingPayload = {
       start: startTime,
       eventTypeId: parseInt(eventTypeId, 10),
@@ -87,7 +51,7 @@ serve(async (req) => {
         timeZone: "Australia/Melbourne",
         language: "en"
       },
-      // bookingFieldsResponses is the correct key for v2 custom fields
+      // Ensure we only send valid v2 properties
       bookingFieldsResponses: {
         is_paid: isPaidBool 
       },
@@ -99,7 +63,7 @@ serve(async (req) => {
       }
     };
 
-    console.log("[create-calcom-booking] Sending payload to Cal.com:", JSON.stringify(bookingPayload));
+    console.log("[create-calcom-booking] Sending payload:", JSON.stringify(bookingPayload));
 
     const response = await fetch("https://api.cal.com/v2/bookings", {
       method: "POST",
@@ -114,34 +78,23 @@ serve(async (req) => {
     const result = await response.json();
 
     if (!response.ok) {
-      console.error(`[create-calcom-booking] Cal.com API Error (${response.status}):`, JSON.stringify(result));
-      const errorMessage = result.error?.message || result.message || "Cal.com API Error";
-      return new Response(JSON.stringify({ 
-        success: false, 
-        error: errorMessage,
-        details: result 
-      }), { 
-        status: response.status === 401 ? 401 : 400, 
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
-      });
+      console.error(`[create-calcom-booking] API Error:`, JSON.stringify(result));
+      throw new Error(result.error?.message || result.message || "Cal.com API Error");
     }
-
-    console.log(`[create-calcom-booking] Success: Booking ${result.data.id} created.`);
 
     return new Response(JSON.stringify({ 
       success: true, 
       bookingId: result.data.id,
-      uid: result.data.uid,
-      status: result.data.status
+      uid: result.data.uid 
     }), { 
       status: 200, 
       headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
     });
 
   } catch (error) {
-    console.error("[create-calcom-booking] Critical Error:", error.message);
-    return new Response(JSON.stringify({ success: false, error: error.message }), { 
-      status: 500, 
+    console.error("[create-calcom-booking] Error:", error.message);
+    return new Response(JSON.stringify({ error: error.message }), { 
+      status: 400, 
       headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
     });
   }

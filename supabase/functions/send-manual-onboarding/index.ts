@@ -77,7 +77,7 @@ serve(async (req) => {
 
   try {
     const body = await req.json().catch(() => ({}));
-    const { clientId } = body;
+    const { clientId, appointmentId } = body;
     
     if (!clientId) {
       throw new Error("Missing clientId in request body.");
@@ -113,24 +113,41 @@ serve(async (req) => {
     if (clientError || !client) throw new Error(`Client not found (ID: ${clientId})`);
     if (!client.email) throw new Error("Client has no email address recorded.");
 
-    // Fetch latest appointment for payment context
-    const { data: appointments } = await supabase
-      .from('appointments')
-      .select('is_paid, payment_received')
-      .eq('client_id', clientId)
-      .order('date', { ascending: false })
-      .limit(1);
+    // Determine if we should show bank details
+    let showBankDetails = false;
 
-    const latestApp = appointments?.[0];
-    const isPaidSession = latestApp?.is_paid || false;
-    const paymentAlreadyReceived = latestApp?.payment_received || false;
+    if (appointmentId) {
+      // If a specific appointment was provided, check that one
+      const { data: app } = await supabase
+        .from('appointments')
+        .select('is_paid, payment_received')
+        .eq('id', appointmentId)
+        .single();
+      
+      if (app?.is_paid && !app?.payment_received) {
+        showBankDetails = true;
+      }
+    } else {
+      // Otherwise, look for the soonest upcoming unpaid appointment that is marked as paid
+      const { data: apps } = await supabase
+        .from('appointments')
+        .select('is_paid, payment_received')
+        .eq('client_id', clientId)
+        .eq('is_paid', true)
+        .eq('payment_received', false)
+        .order('date', { ascending: true })
+        .limit(1);
+      
+      if (apps && apps.length > 0) {
+        showBankDetails = true;
+      }
+    }
 
-    console.log(`[send-manual-onboarding] Preparing email for: ${client.name} (${client.email})`);
+    console.log(`[send-manual-onboarding] Preparing email for: ${client.name} (${client.email}). Show Payment: ${showBankDetails}`);
 
     const accessToken = await getGmailAccessToken(GMAIL_CLIENT_ID, GMAIL_CLIENT_SECRET, GMAIL_REFRESH_TOKEN);
     
     const onboardingUrl = `https://kinesiology-app.vercel.app/onboarding/${client.id}`;
-    const showBankDetails = isPaidSession && !paymentAlreadyReceived;
 
     const paymentSection = showBankDetails ? `
       <div style="background-color: #F8FAFC; border-radius: 24px; padding: 32px; margin: 32px 0; border: 1px solid #E2E8F0; text-align: left;">

@@ -155,19 +155,23 @@ const AppointmentForm = ({ onSuccess, initialClientId, initialDate, initialTime,
           appointmentName = `${clientName} - ${values.tag || 'Session'} (${formattedDate})`;
       }
 
-      const { error: dbError } = await supabase.from("appointments").insert({
-        user_id: session.user.id,
-        client_id: values.clientId,
-        name: appointmentName,
-        date: isoDate,
-        tag: values.tag,
-        status: values.status,
-        goal: values.goal,
-        issue: values.issue,
-        is_paid: values.is_paid,
-        send_onboarding: values.send_onboarding,
-        calcom_booking_id: calcomId ? String(calcomId) : null
-      });
+      const { data: newApp, error: dbError } = await supabase
+        .from("appointments")
+        .insert({
+          user_id: session.user.id,
+          client_id: values.clientId,
+          name: appointmentName,
+          date: isoDate,
+          tag: values.tag,
+          status: values.status,
+          goal: values.goal,
+          issue: values.issue,
+          is_paid: values.is_paid,
+          send_onboarding: values.send_onboarding,
+          calcom_booking_id: calcomId ? String(calcomId) : null
+        })
+        .select('id')
+        .single();
 
       if (dbError) throw dbError;
 
@@ -176,7 +180,10 @@ const AppointmentForm = ({ onSuccess, initialClientId, initialDate, initialTime,
         setSyncStatus('email');
         try {
           const { error: emailError } = await supabase.functions.invoke('send-manual-onboarding', {
-            body: { clientId: values.clientId }
+            body: { 
+              clientId: values.clientId,
+              appointmentId: newApp?.id // Pass the specific appointment ID
+            }
           });
           if (emailError) throw emailError;
         } catch (err) {

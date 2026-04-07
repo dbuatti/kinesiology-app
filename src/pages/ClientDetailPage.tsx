@@ -182,8 +182,16 @@ const ClientDetailPage = () => {
     if (!client) return;
     setSendingEmail(true);
     try {
+      // Find the soonest upcoming unpaid paid appointment to pass as context
+      const relevantApp = appointments
+        .filter(a => a.is_paid && !a.payment_received && new Date(a.date) >= new Date())
+        .sort((a, b) => a.date.getTime() - b.date.getTime())[0];
+
       const { error } = await supabase.functions.invoke('send-manual-onboarding', {
-        body: { clientId: client.id }
+        body: { 
+          clientId: client.id,
+          appointmentId: relevantApp?.id 
+        }
       });
       if (error) throw error;
       showSuccess(`Onboarding email sent to ${client.email}!`);

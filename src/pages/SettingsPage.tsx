@@ -172,7 +172,7 @@ const SettingsPage = () => {
                     disabled={syncingAll}
                     className="w-full bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl h-10 font-black text-[10px] uppercase tracking-widest shadow-lg"
                   >
-                    {syncingAll ? <Loader2 className="animate-spin" /> : <Users size={16} className="mr-2" />}
+                    {syncingAll ? <Loader2 className="mr-2 animate-spin" /> : <Users size={16} className="mr-2" />}
                     Sync All to Stripe
                   </Button>
                 </div>

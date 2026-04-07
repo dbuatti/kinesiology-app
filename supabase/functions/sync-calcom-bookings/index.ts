@@ -64,7 +64,6 @@ serve(async (req) => {
       if (!dbClient) continue;
 
       // 2. Smart Match: Check if an appointment already exists for this client at this time
-      // This prevents duplicates if a session was created in CRM before syncing
       const { data: existingApp } = await supabase
         .from('appointments')
         .select('id')

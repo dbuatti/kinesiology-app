@@ -9,7 +9,7 @@ const corsHeaders = {
 }
 
 async function getGmailAccessToken(clientId: string, clientSecret: string, refreshToken: string) {
-  console.log("[send-manual-onboarding] Attempting to refresh Gmail access token...");
+  console.log("[send-manual-onboarding] Refreshing Gmail access token...");
   const response = await fetch("https://oauth2.googleapis.com/token", {
     method: "POST",
     headers: { "Content-Type": "application/x-www-form-urlencoded" },
@@ -25,7 +25,7 @@ async function getGmailAccessToken(clientId: string, clientSecret: string, refre
   
   if (!response.ok) {
     console.error("[send-manual-onboarding] Google Token Refresh Error:", JSON.stringify(data));
-    throw new Error(`Gmail Auth Error: ${data.error_description || data.error || 'Unknown error'}`);
+    throw new Error(`Gmail Auth Error: ${data.error_description || data.error || 'Token refresh failed'}`);
   }
   
   return data.access_token;
@@ -64,7 +64,7 @@ async function sendGmail(accessToken: string, from: string, to: string, subject:
   const result = await response.json();
   if (!response.ok) {
     console.error("[send-manual-onboarding] Gmail Send Error:", JSON.stringify(result));
-    throw new Error(`Gmail Send Failed: ${result.error?.message || 'Unknown error'}`);
+    throw new Error(`Gmail Send Failed: ${result.error?.message || 'API error'}`);
   }
   
   return result;
@@ -76,37 +76,56 @@ serve(async (req) => {
   console.log("[send-manual-onboarding] Function triggered");
 
   try {
-    const { clientId } = await req.json()
+    const body = await req.json().catch(() => ({}));
+    const { clientId } = body;
     
-    const supabaseUrl = Deno.env.get('SUPABASE_URL')
-    const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')
-    const supabase = createClient(supabaseUrl, supabaseKey)
+    if (!clientId) {
+      throw new Error("Missing clientId in request body.");
+    }
 
     const GMAIL_CLIENT_ID = Deno.env.get('GMAIL_CLIENT_ID');
     const GMAIL_CLIENT_SECRET = Deno.env.get('GMAIL_CLIENT_SECRET');
     const GMAIL_REFRESH_TOKEN = Deno.env.get('GMAIL_REFRESH_TOKEN');
     const SENDER_EMAIL = Deno.env.get('GMAIL_USER_EMAIL');
 
-    if (!GMAIL_CLIENT_ID || !GMAIL_CLIENT_SECRET || !GMAIL_REFRESH_TOKEN) {
-      throw new Error("Gmail API secrets are missing in Supabase.");
+    // Validate secrets
+    const missingSecrets = [];
+    if (!GMAIL_CLIENT_ID) missingSecrets.push("GMAIL_CLIENT_ID");
+    if (!GMAIL_CLIENT_SECRET) missingSecrets.push("GMAIL_CLIENT_SECRET");
+    if (!GMAIL_REFRESH_TOKEN) missingSecrets.push("GMAIL_REFRESH_TOKEN");
+    if (!SENDER_EMAIL) missingSecrets.push("GMAIL_USER_EMAIL");
+
+    if (missingSecrets.length > 0) {
+      throw new Error(`Missing Supabase Secrets: ${missingSecrets.join(", ")}`);
     }
 
+    const supabaseUrl = Deno.env.get('SUPABASE_URL')
+    const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')
+    const supabase = createClient(supabaseUrl, supabaseKey)
+
+    // Fetch client data
     const { data: client, error: clientError } = await supabase
       .from('clients')
-      .select('id, name, email, phone, appointments(is_paid, payment_received, date)')
+      .select('id, name, email')
       .eq('id', clientId)
       .single();
 
-    if (clientError || !client) throw new Error("Client not found.");
-    if (!client.email) throw new Error("Client has no email address.");
+    if (clientError || !client) throw new Error(`Client not found (ID: ${clientId})`);
+    if (!client.email) throw new Error("Client has no email address recorded.");
 
-    console.log("[send-manual-onboarding] Preparing email for:", client.name);
+    // Fetch latest appointment for payment context
+    const { data: appointments } = await supabase
+      .from('appointments')
+      .select('is_paid, payment_received')
+      .eq('client_id', clientId)
+      .order('date', { ascending: false })
+      .limit(1);
 
-    const sortedApps = (client.appointments || []).sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
-    const latestApp = sortedApps[0];
-    
+    const latestApp = appointments?.[0];
     const isPaidSession = latestApp?.is_paid || false;
     const paymentAlreadyReceived = latestApp?.payment_received || false;
+
+    console.log(`[send-manual-onboarding] Preparing email for: ${client.name} (${client.email})`);
 
     const accessToken = await getGmailAccessToken(GMAIL_CLIENT_ID, GMAIL_CLIENT_SECRET, GMAIL_REFRESH_TOKEN);
     

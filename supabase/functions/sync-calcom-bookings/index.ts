@@ -9,7 +9,7 @@ const corsHeaders = {
 }
 
 serve(async (req) => {
-  console.log("--- [sync-calcom-bookings] START ---");
+  console.log("--- [sync-calcom-bookings] START (v2 Smart Match) ---");
 
   if (req.method === 'OPTIONS') return new Response('ok', { headers: corsHeaders })
 
@@ -21,12 +21,10 @@ serve(async (req) => {
 
     if (!CALCOM_KEY) throw new Error("Missing CALCOM_API_KEY in Supabase Secrets.")
 
-    // Get the practitioner profile
     const { data: profileData } = await supabase.from('profiles').select('id').limit(1).maybeSingle();
     const PRACTITIONER_ID = profileData?.id;
     if (!PRACTITIONER_ID) throw new Error("No practitioner profile found.");
 
-    // 1. Fetch upcoming bookings from Cal.com
     const now = new Date().toISOString();
     const bookingsUrl = new URL('https://api.cal.com/v2/bookings');
     bookingsUrl.searchParams.set('status', 'upcoming');
@@ -45,8 +43,6 @@ serve(async (req) => {
     if (!response.ok) throw new Error(result.message || "Cal.com API Error");
 
     const bookings = result.data || [];
-    console.log(`Found ${bookings.length} upcoming bookings to sync.`);
-
     let syncedCount = 0;
 
     for (const booking of bookings) {
@@ -56,40 +52,48 @@ serve(async (req) => {
       const name = String(attendee.name || "Unknown Client").trim();
       const email = String(attendee.email || "").toLowerCase().trim();
       const calcomId = String(booking.uid || booking.id);
+      const startTime = booking.start;
 
-      // 2. Upsert Client
-      const { data: dbClient, error: clientError } = await supabase
+      // 1. Upsert Client
+      const { data: dbClient } = await supabase
         .from('clients')
-        .upsert({ 
-          user_id: PRACTITIONER_ID, 
-          name, 
-          email, 
-          phone: attendee.phoneNumber || attendee.phone || "" 
-        }, { onConflict: 'email' })
+        .upsert({ user_id: PRACTITIONER_ID, name, email }, { onConflict: 'email' })
         .select('id')
         .single();
 
-      if (clientError) {
-        console.error(`Failed to sync client ${email}:`, clientError);
-        continue;
-      }
+      if (!dbClient) continue;
 
-      // 3. Upsert Appointment
-      const { error: appError } = await supabase
+      // 2. SMART MATCH: Check if an appointment already exists for this client at this time
+      // even if it doesn't have a calcom_booking_id yet.
+      const { data: existingApp } = await supabase
         .from('appointments')
-        .upsert({
-          user_id: PRACTITIONER_ID,
-          client_id: dbClient.id,
-          date: booking.start,
-          tag: "Kinesiology",
-          status: "Scheduled",
-          calcom_booking_id: calcomId,
-          is_paid: booking.metadata?.is_paid === "true" || !!booking.payment?.[0]
-        }, { onConflict: 'calcom_booking_id' });
+        .select('id')
+        .eq('client_id', dbClient.id)
+        .eq('date', startTime)
+        .maybeSingle();
 
-      if (appError) {
-        console.error(`Failed to sync appointment ${calcomId}:`, appError);
-        continue;
+      if (existingApp) {
+        // Update existing instead of creating new
+        await supabase
+          .from('appointments')
+          .update({ 
+            calcom_booking_id: calcomId,
+            is_paid: booking.metadata?.is_paid === "true" || !!booking.payment?.[0]
+          })
+          .eq('id', existingApp.id);
+      } else {
+        // Create new
+        await supabase
+          .from('appointments')
+          .upsert({
+            user_id: PRACTITIONER_ID,
+            client_id: dbClient.id,
+            date: startTime,
+            tag: "Kinesiology",
+            status: "Scheduled",
+            calcom_booking_id: calcomId,
+            is_paid: booking.metadata?.is_paid === "true" || !!booking.payment?.[0]
+          }, { onConflict: 'calcom_booking_id' });
       }
 
       syncedCount++;
@@ -101,10 +105,6 @@ serve(async (req) => {
     });
 
   } catch (error) {
-    console.error("Critical Sync Error:", error.message);
-    return new Response(JSON.stringify({ error: error.message }), { 
-      status: 400, 
-      headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
-    });
+    return new Response(JSON.stringify({ error: error.message }), { status: 400, headers: corsHeaders });
   }
 })

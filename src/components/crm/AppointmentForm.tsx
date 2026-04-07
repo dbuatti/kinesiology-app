@@ -28,7 +28,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { format } from "date-fns";
-import { CalendarIcon, Loader2, Globe, DollarSign, Mail, Clock, CheckCircle2 } from "lucide-react";
+import { CalendarIcon, Loader2, Globe, DollarSign, Mail, Clock, CheckCircle2, AlertCircle } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { showSuccess, showError } from "@/utils/toast";
 import { APPOINTMENT_TAGS, APPOINTMENT_STATUSES } from "@/data/appointment-data";
@@ -62,17 +62,19 @@ const AppointmentForm = ({ onSuccess, initialClientId, initialDate, initialTime,
   const [clients, setClients] = useState<{ id: string; name: string }[]>([]);
   const [loadingClients, setLoadingClients] = useState(true);
   const [submitting, setSubmitting] = useState(false);
-  const [syncStatus, setSyncStatus] = useState<'idle' | 'calcom'>('idle');
+  const [syncStatus, setSyncStatus] = useState<'idle' | 'calcom' | 'email'>('idle');
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
       clientId: initialClientId || "",
-      name: "",
-      tag: APPOINTMENT_TAGS[0],
-      status: APPOINTMENT_STATUSES[0],
-      time: initialTime || "10:00",
       date: initialDate || new Date(),
+      time: initialTime || "10:00",
+      name: "",
+      tag: "Kinesiology",
+      status: "Scheduled",
+      goal: "",
+      issue: "",
       is_paid: false,
       send_onboarding: true,
     },
@@ -107,10 +109,8 @@ const AppointmentForm = ({ onSuccess, initialClientId, initialDate, initialTime,
       // Determine the final ISO date string
       let isoDate = "";
       if (slotTime) {
-        // Use the exact UTC time from the availability slot
         isoDate = slotTime;
       } else {
-        // Construct from local date and time inputs
         const [hours, minutes] = values.time.split(":");
         const appointmentDate = new Date(values.date);
         appointmentDate.setHours(parseInt(hours), parseInt(minutes), 0, 0);
@@ -118,37 +118,35 @@ const AppointmentForm = ({ onSuccess, initialClientId, initialDate, initialTime,
       }
 
       let calcomId = null;
+      let calcomError = null;
 
-      // Only sync with Cal.com if we are coming from the availability view (initialTime provided)
-      if (initialTime) {
+      // 1. Sync with Cal.com if applicable
+      if (initialTime || slotTime) {
         setSyncStatus('calcom');
         const eventTypeId = localStorage.getItem('calcom_preferred_event_id') || "4279898";
 
-        const { data: calcomData, error: invokeError } = await supabase.functions.invoke('create-calcom-booking', {
-          body: { 
-            clientId: values.clientId, 
-            startTime: isoDate,
-            eventTypeId: eventTypeId,
-            title: values.name || values.tag || "Kinesiology Session",
-            notes: values.goal || values.issue || "",
-            is_paid: values.is_paid,
-            send_onboarding: values.send_onboarding
-          }
-        });
+        try {
+          const { data: calcomData, error: invokeError } = await supabase.functions.invoke('create-calcom-booking', {
+            body: { 
+              clientId: values.clientId, 
+              startTime: isoDate,
+              eventTypeId: eventTypeId,
+              title: values.name || values.tag || "Kinesiology Session",
+              notes: values.goal || values.issue || "",
+              is_paid: values.is_paid,
+              send_onboarding: values.send_onboarding
+            }
+          });
 
-        if (invokeError) {
-          // Try to parse the error message from the function response
-          let errorMsg = invokeError.message;
-          try {
-            const errorBody = await invokeError.context?.json();
-            if (errorBody?.error) errorMsg = errorBody.error;
-          } catch (e) {}
-          throw new Error(`Cal.com Sync Error: ${errorMsg}`);
+          if (invokeError) throw invokeError;
+          calcomId = calcomData?.uid || calcomData?.bookingId;
+        } catch (err: any) {
+          console.error("Cal.com Sync Failed:", err);
+          calcomError = err.message;
         }
-        
-        calcomId = calcomData?.uid || calcomData?.bookingId;
       }
 
+      // 2. Create CRM Record
       let appointmentName = values.name?.trim() || '';
       if (!appointmentName) {
           const client = clients.find(c => c.id === values.clientId);
@@ -157,7 +155,7 @@ const AppointmentForm = ({ onSuccess, initialClientId, initialDate, initialTime,
           appointmentName = `${clientName} - ${values.tag || 'Session'} (${formattedDate})`;
       }
 
-      const { error } = await supabase.from("appointments").insert({
+      const { error: dbError } = await supabase.from("appointments").insert({
         user_id: session.user.id,
         client_id: values.clientId,
         name: appointmentName,
@@ -171,9 +169,28 @@ const AppointmentForm = ({ onSuccess, initialClientId, initialDate, initialTime,
         calcom_booking_id: calcomId ? String(calcomId) : null
       });
 
-      if (error) throw error;
+      if (dbError) throw dbError;
 
-      showSuccess(calcomId ? "Session booked in CRM and Cal.com!" : "Appointment scheduled in CRM.");
+      // 3. Trigger Onboarding Email if requested
+      if (values.send_onboarding) {
+        setSyncStatus('email');
+        try {
+          const { error: emailError } = await supabase.functions.invoke('send-manual-onboarding', {
+            body: { clientId: values.clientId }
+          });
+          if (emailError) throw emailError;
+        } catch (err) {
+          console.error("Onboarding Email Failed:", err);
+          showError("Appointment created, but onboarding email failed to send.");
+        }
+      }
+
+      if (calcomError) {
+        showError(`CRM record created, but Cal.com sync failed: ${calcomError}`);
+      } else {
+        showSuccess(values.send_onboarding ? "Session booked and onboarding email sent!" : "Appointment scheduled successfully.");
+      }
+      
       onSuccess();
     } catch (error: any) {
       showError(error.message || "Failed to schedule appointment");
@@ -435,7 +452,8 @@ const AppointmentForm = ({ onSuccess, initialClientId, initialDate, initialTime,
           {submitting ? (
             <>
               <Loader2 className="mr-2 h-5 w-5 animate-spin" />
-              {syncStatus === 'calcom' ? 'Syncing with Cal.com...' : 'Scheduling...'}
+              {syncStatus === 'calcom' ? 'Syncing with Cal.com...' : 
+               syncStatus === 'email' ? 'Sending Onboarding...' : 'Scheduling...'}
             </>
           ) : (
             'Schedule Appointment'

@@ -58,8 +58,11 @@ async function sendGmail(accessToken: string, from: string, to: string, subject:
 serve(async (req) => {
   if (req.method === 'OPTIONS') return new Response('ok', { headers: corsHeaders })
 
+  console.log("[send-manual-onboarding] Function triggered");
+
   try {
     const { clientId } = await req.json()
+    console.log("[send-manual-onboarding] Processing for clientId:", clientId);
     
     const supabaseUrl = Deno.env.get('SUPABASE_URL')
     const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')
@@ -71,6 +74,7 @@ serve(async (req) => {
     const SENDER_EMAIL = Deno.env.get('GMAIL_USER_EMAIL');
 
     if (!GMAIL_CLIENT_ID || !GMAIL_CLIENT_SECRET || !GMAIL_REFRESH_TOKEN) {
+      console.error("[send-manual-onboarding] Missing Gmail API secrets");
       throw new Error("Gmail API secrets are not configured.");
     }
 
@@ -80,8 +84,17 @@ serve(async (req) => {
       .eq('id', clientId)
       .single();
 
-    if (clientError || !client) throw new Error("Client not found.");
-    if (!client.email) throw new Error("Client has no email address.");
+    if (clientError || !client) {
+      console.error("[send-manual-onboarding] Client fetch error:", clientError);
+      throw new Error("Client not found.");
+    }
+    
+    if (!client.email) {
+      console.error("[send-manual-onboarding] Client has no email address");
+      throw new Error("Client has no email address.");
+    }
+
+    console.log("[send-manual-onboarding] Found client:", client.name, client.email);
 
     const sortedApps = (client.appointments || []).sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
     const latestApp = sortedApps[0];
@@ -89,7 +102,9 @@ serve(async (req) => {
     const isPaidSession = latestApp?.is_paid || false;
     const paymentAlreadyReceived = latestApp?.payment_received || false;
 
+    console.log("[send-manual-onboarding] Fetching Gmail access token...");
     const accessToken = await getGmailAccessToken(GMAIL_CLIENT_ID, GMAIL_CLIENT_SECRET, GMAIL_REFRESH_TOKEN);
+    
     const onboardingUrl = `https://kinesiology-app.vercel.app/onboarding/${client.id}`;
     const showBankDetails = isPaidSession && !paymentAlreadyReceived;
 
@@ -165,7 +180,7 @@ serve(async (req) => {
             </tr>
             <tr>
               <td style="padding: 48px 20px; text-align: center; color: #64748b; font-size: 13px;">
-                <p>© {new Date().getFullYear()} Resonance Kinesiology</p>
+                <p>© ${new Date().getFullYear()} Resonance Kinesiology</p>
               </td>
             </tr>
           </table>
@@ -174,14 +189,17 @@ serve(async (req) => {
       </html>
     `;
 
-    await sendGmail(accessToken, SENDER_EMAIL, client.email, "Action Required: Your Onboarding Form", htmlBody);
+    console.log("[send-manual-onboarding] Sending email via Gmail API...");
+    const result = await sendGmail(accessToken, SENDER_EMAIL, client.email, "Action Required: Your Onboarding Form", htmlBody);
+    console.log("[send-manual-onboarding] Gmail API response:", JSON.stringify(result));
 
-    return new Response(JSON.stringify({ success: true }), { 
+    return new Response(JSON.stringify({ success: true, result }), { 
       status: 200, 
       headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
     });
 
   } catch (error) {
+    console.error("[send-manual-onboarding] Critical error:", error.message);
     return new Response(JSON.stringify({ error: error.message }), { 
       status: 400, 
       headers: { ...corsHeaders, 'Content-Type': 'application/json' } 

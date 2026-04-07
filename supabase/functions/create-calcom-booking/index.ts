@@ -83,9 +83,9 @@ serve(async (req) => {
         timeZone: "Australia/Melbourne",
         language: "en"
       },
-      // This is where Cal.com looks for custom booking fields
-      responses: {
-        is_paid: is_paid ? "yes" : "no" // Mapping boolean to the expected response string
+      // Correct key for v2 API custom fields
+      bookingFieldsResponses: {
+        is_paid: is_paid ? "yes" : "no"
       },
       metadata: { 
         crm_title: title || "Kinesiology Session",

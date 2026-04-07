@@ -275,8 +275,11 @@ const AppointmentsPage = () => {
                       </Badge>
                     )}
                     {app.is_paid && (
-                      <Badge className="bg-emerald-500 text-white border-none font-black text-[8px] uppercase tracking-widest px-2 py-0.5 rounded-full flex items-center gap-1">
-                        <DollarSign size={10} /> Paid
+                      <Badge className={cn(
+                        "border-none font-black text-[8px] uppercase tracking-widest px-2 py-0.5 rounded-full flex items-center gap-1 shadow-sm",
+                        app.payment_received ? "bg-emerald-500 text-white" : "bg-amber-500 text-white"
+                      )}>
+                        <DollarSign size={10} /> {app.payment_received ? "Paid" : "Payment Due"}
                       </Badge>
                     )}
                     {isHighRisk && !isCompleted && (

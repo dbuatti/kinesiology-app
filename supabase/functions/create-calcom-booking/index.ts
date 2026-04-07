@@ -85,7 +85,7 @@ serve(async (req) => {
       },
       // Correct key for v2 API custom fields
       bookingFieldsResponses: {
-        is_paid: is_paid ? "yes" : "no"
+        is_paid: !!is_paid // Changed from string "yes"/"no" to boolean to match Cal.com API requirements
       },
       metadata: { 
         crm_title: title || "Kinesiology Session",

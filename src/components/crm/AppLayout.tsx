@@ -23,15 +23,15 @@ const AppLayout = ({
   const location = useLocation();
   
   const variants = {
-    default: "max-w-[1400px] mx-auto px-6 lg:px-10",
-    wide: "max-w-full mx-auto px-6 lg:px-12",
-    full: "w-full px-6 lg:px-12"
+    default: "max-w-[1400px] mx-auto px-4 md:px-10",
+    wide: "max-w-full mx-auto px-4 md:px-12",
+    full: "w-full px-4 md:px-12"
   };
 
   return (
     <div className={cn(
       "w-full min-h-screen bg-background transition-all duration-500",
-      hasFixedHeader ? "pt-24 pb-16" : "pt-8 md:pt-12 pb-16",
+      hasFixedHeader ? "pt-20 md:pt-24 pb-16" : "pt-4 md:pt-12 pb-16",
       variants[variant],
       className
     )}>

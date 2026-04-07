@@ -31,7 +31,8 @@ import {
   FileText,
   ChevronRight,
   DollarSign,
-  EyeOff
+  EyeOff,
+  RefreshCw
 } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -76,6 +77,7 @@ const AppointmentsPage = () => {
   const { isPrivate } = usePrivacyMode();
   const [appointments, setAppointments] = useState<AppointmentWithClient[]>([]);
   const [loading, setLoading] = useState(true);
+  const [syncing, setSyncing] = useState(false);
   const [loadingMore, setLoadingMore] = useState(false);
   const [displayLimit, setDisplayLimit] = useState(PAGE_SIZE);
   const [totalCount, setTotalCount] = useState(0);
@@ -139,6 +141,21 @@ const AppointmentsPage = () => {
     } finally {
       setLoading(false);
       setLoadingMore(false);
+    }
+  };
+
+  const handleSyncFromCalcom = async () => {
+    setSyncing(true);
+    try {
+      const { data, error } = await supabase.functions.invoke('sync-calcom-bookings');
+      if (error) throw error;
+      
+      showSuccess(`Sync complete! ${data.syncedCount} bookings updated.`);
+      fetchAppointments(displayLimit);
+    } catch (err: any) {
+      showError(err.message || "Failed to sync from Cal.com");
+    } finally {
+      setSyncing(false);
     }
   };
 
@@ -278,7 +295,7 @@ const AppointmentsPage = () => {
                     {app.is_paid && (
                       <Badge className={cn(
                         "border-none font-black text-[8px] uppercase tracking-widest px-2 py-0.5 rounded-full flex items-center gap-1 shadow-sm",
-                        app.payment_received ? "bg-emerald-50 text-emerald-700" : "bg-amber-500 text-white"
+                        app.payment_received ? "bg-emerald-50 text-emerald-700" : "bg-amber-50 text-white"
                       )}>
                         <DollarSign size={10} /> {app.payment_received ? "Paid" : "Payment Due"}
                       </Badge>
@@ -450,6 +467,15 @@ const AppointmentsPage = () => {
             <p className="text-muted-foreground font-medium mt-1">View and manage upcoming and past clinical sessions</p>
           </div>
           <div className="flex items-center gap-3">
+            <Button 
+              variant="outline" 
+              onClick={handleSyncFromCalcom}
+              disabled={syncing}
+              className="rounded-xl h-12 px-6 font-black text-[10px] uppercase tracking-widest border-indigo-100 text-indigo-600 hover:bg-indigo-50"
+            >
+              {syncing ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <RefreshCw size={18} className="mr-2" />}
+              Sync from Cal.com
+            </Button>
             <div className="flex items-center gap-1 bg-muted p-1 rounded-xl">
               <Button 
                 variant={viewMode === 'list' ? 'default' : 'ghost'} 

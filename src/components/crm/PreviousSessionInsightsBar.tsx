@@ -31,7 +31,7 @@ const PreviousSessionInsightsBar = ({ clientId, currentAppointmentId, manualData
     }
 
     const fetchPreviousSession = async () => {
-      // Skip fetch if IDs are placeholders (not valid UUIDs)
+      // Skip fetch if IDs are placeholders
       const isDemoId = clientId.includes('demo') || currentAppointmentId.includes('demo') || currentAppointmentId.includes('00000000');
       if (isDemoId) {
         setLoading(false);
@@ -162,7 +162,7 @@ const PreviousSessionInsightsBar = ({ clientId, currentAppointmentId, manualData
                   </p>
                 </div>
               </div>
-              <Link to={clientId.includes('demo') ? '#' : `/appointments/${previousSession.id}`} className="block">
+              <Link to={`/appointments/${previousSession.id}`} className="block">
                 <Button variant="outline" size="sm" className="w-full bg-transparent border-white/20 text-white hover:bg-white/10 rounded-xl text-xs">
                   View Full Previous Session
                 </Button>

@@ -108,11 +108,7 @@ Please provide the final output ready to be reviewed.`;
     try {
       const response = await fetch('/kit-template.html');
       let text = await response.text();
-      
-      // Robustly strip any script tags that might have been injected by Vite/Dev tools
-      // to prevent Kit.com from blocking the paste action
       text = text.replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, "");
-      
       navigator.clipboard.writeText(text.trim());
       setTemplateCopied(true);
       showSuccess("Clean HTML Template copied!");
@@ -127,7 +123,6 @@ Please provide the final output ready to be reviewed.`;
       <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-700 pb-20">
         <Breadcrumbs items={[{ label: "Business Tools" }, { label: "AI Marketing Engine" }]} />
 
-        {/* Hero Section */}
         <div className="relative rounded-[3.5rem] overflow-hidden bg-slate-950 text-white p-12 shadow-2xl group border border-slate-800">
           <div className="absolute inset-0 bg-gradient-to-br from-emerald-900/40 via-slate-950 to-teal-900/40" />
           <div className="absolute top-0 right-0 p-12 opacity-10 group-hover:scale-110 transition-transform duration-700">
@@ -146,31 +141,14 @@ Please provide the final output ready to be reviewed.`;
                 </p>
               </div>
               <div className="flex flex-wrap gap-3 shrink-0">
-                <Button 
-                  asChild
-                  className="bg-white text-slate-950 hover:bg-emerald-50 h-14 px-6 rounded-2xl font-black text-[10px] uppercase tracking-widest shadow-xl"
-                >
+                <Button asChild className="bg-white text-slate-950 hover:bg-emerald-50 h-14 px-6 rounded-2xl font-black text-[10px] uppercase tracking-widest shadow-xl">
                   <a href={CLAUDE_MARKETING_CHAT} target="_blank" rel="noopener noreferrer">
-                    <MessageSquare size={18} className="mr-2 text-emerald-600" />
-                    Claude
+                    <MessageSquare size={18} className="mr-2 text-emerald-600" /> Claude
                   </a>
                 </Button>
-                <Button 
-                  asChild
-                  className="bg-white text-slate-950 hover:bg-emerald-50 h-14 px-6 rounded-2xl font-black text-[10px] uppercase tracking-widest shadow-xl"
-                >
+                <Button asChild className="bg-white text-slate-950 hover:bg-emerald-50 h-14 px-6 rounded-2xl font-black text-[10px] uppercase tracking-widest shadow-xl">
                   <a href={GEMINI_BUSINESS_CHAT} target="_blank" rel="noopener noreferrer">
-                    <Sparkles size={18} className="mr-2 text-blue-600" />
-                    Gemini
-                  </a>
-                </Button>
-                <Button 
-                  asChild
-                  className="bg-white text-slate-950 hover:bg-emerald-50 h-14 px-6 rounded-2xl font-black text-[10px] uppercase tracking-widest shadow-xl"
-                >
-                  <a href={INSIGHT_TIMER_PORTAL} target="_blank" rel="noopener noreferrer">
-                    <Volume2 size={18} className="mr-2 text-indigo-600" />
-                    Insight Timer
+                    <Sparkles size={18} className="mr-2 text-blue-600" /> Gemini
                   </a>
                 </Button>
               </div>
@@ -192,7 +170,6 @@ Please provide the final output ready to be reviewed.`;
           </TabsList>
 
           <TabsContent value="guide" className="space-y-12 mt-0">
-            {/* Thought Catcher Section */}
             <Card className="border-none shadow-xl rounded-[2.5rem] bg-emerald-50 dark:bg-emerald-950/10 border-2 border-emerald-100 dark:border-emerald-900/30 overflow-hidden">
               <CardHeader className="p-8 pb-4">
                 <CardTitle className="text-2xl font-black flex items-center gap-3 text-emerald-900 dark:text-emerald-100">
@@ -210,17 +187,13 @@ Please provide the final output ready to be reviewed.`;
                   onChange={(e) => setCustomStory(e.target.value)}
                 />
                 <div className="flex justify-end">
-                  <Button 
-                    onClick={() => setActiveTab('studio')}
-                    className="bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl h-12 px-8 font-black text-xs uppercase tracking-widest shadow-lg"
-                  >
+                  <Button onClick={() => setActiveTab('studio')} className="bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl h-12 px-8 font-black text-xs uppercase tracking-widest shadow-lg">
                     Process with AI <ArrowRight size={18} className="ml-2" />
                   </Button>
                 </div>
               </CardContent>
             </Card>
 
-            {/* Wins Vault Section */}
             <div className="space-y-6">
               <div className="flex items-center justify-between px-2">
                 <h2 className="text-2xl font-black flex items-center gap-3 text-slate-900">
@@ -261,61 +234,10 @@ Please provide the final output ready to be reviewed.`;
                 ))}
               </div>
             </div>
-
-            {/* Strategic Foundation */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-8 pt-8 border-t border-slate-200">
-              <div className="space-y-6">
-                <h2 className="text-2xl font-black flex items-center gap-3 text-slate-900">
-                  <LinkIcon size={24} className="text-indigo-600" /> Renting vs. Owning
-                </h2>
-                <div className="grid grid-cols-1 gap-4">
-                  <Card className="border-2 border-rose-100 shadow-sm bg-rose-50/50">
-                    <CardHeader className="pb-2">
-                      <CardTitle className="text-lg font-black text-rose-900">Rented Land (Social Media)</CardTitle>
-                    </CardHeader>
-                    <CardContent className="text-sm font-medium text-rose-800 space-y-2">
-                      <ul className="list-disc pl-4 space-y-1">
-                        <li>Don't control distribution or algorithm shifts</li>
-                        <li>Can lose reach overnight</li>
-                      </ul>
-                    </CardContent>
-                  </Card>
-                  <Card className="border-2 border-emerald-100 shadow-sm bg-emerald-50/50">
-                    <CardHeader className="pb-2">
-                      <CardTitle className="text-lg font-black text-emerald-900">Owned Land (Kit Email List)</CardTitle>
-                    </CardHeader>
-                    <CardContent className="text-sm font-medium text-emerald-800 space-y-2">
-                      <ul className="list-disc pl-4 space-y-1">
-                        <li>Own the relationship and control communication</li>
-                        <li>Build long-term trust + conversion</li>
-                      </ul>
-                    </CardContent>
-                  </Card>
-                </div>
-              </div>
-
-              <div className="space-y-6">
-                <h2 className="text-2xl font-black flex items-center gap-3 text-slate-900">
-                  <Target size={24} className="text-indigo-600" /> Strategic Objective
-                </h2>
-                <Card className="border-none shadow-lg rounded-3xl bg-indigo-900 text-white h-full">
-                  <CardContent className="p-8 flex flex-col justify-center h-full space-y-6">
-                    <p className="text-indigo-200 font-medium">Every piece of content should:</p>
-                    <ol className="space-y-4">
-                      <li className="flex items-center gap-3"><span className="w-8 h-8 rounded-full bg-indigo-800 flex items-center justify-center font-black">1</span> <strong>Capture attention</strong> (social)</li>
-                      <li className="flex items-center gap-3"><span className="w-8 h-8 rounded-full bg-indigo-800 flex items-center justify-center font-black">2</span> <strong>Build trust</strong> (story, value)</li>
-                      <li className="flex items-center gap-3"><span className="w-8 h-8 rounded-full bg-indigo-800 flex items-center justify-center font-black">3</span> <strong>Redirect</strong> → Kit email list</li>
-                      <li className="flex items-center gap-3"><span className="w-8 h-8 rounded-full bg-indigo-800 flex items-center justify-center font-black">4</span> <strong>Nurture deeply</strong> (Kit Broadcasts)</li>
-                    </ol>
-                  </CardContent>
-                </Card>
-              </div>
-            </div>
           </TabsContent>
 
           <TabsContent value="studio" className="mt-0 space-y-6">
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
-              {/* Controls */}
               <div className="lg:col-span-5 space-y-6">
                 <Card className="border-none shadow-lg rounded-[2.5rem] bg-white border-2 border-emerald-100/50">
                   <CardHeader className="p-6 pb-4 border-b border-slate-50 bg-emerald-50/30">
@@ -346,21 +268,11 @@ Please provide the final output ready to be reviewed.`;
                       <div className="space-y-4 animate-in slide-in-from-top-2 duration-300">
                         <div className="space-y-2">
                           <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Story / Experience</label>
-                          <Textarea 
-                            placeholder="Briefly describe what happened..."
-                            value={customStory}
-                            onChange={e => setCustomStory(e.target.value)}
-                            className="resize-none h-20 rounded-xl"
-                          />
+                          <Textarea placeholder="Briefly describe what happened..." value={customStory} onChange={e => setCustomStory(e.target.value)} className="resize-none h-20 rounded-xl" />
                         </div>
                         <div className="space-y-2">
                           <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Core Insight / Lesson</label>
-                          <Input 
-                            placeholder="What is the takeaway?"
-                            value={customInsight}
-                            onChange={e => setCustomInsight(e.target.value)}
-                            className="h-10 rounded-xl"
-                          />
+                          <Input placeholder="What is the takeaway?" value={customInsight} onChange={e => setCustomInsight(e.target.value)} className="h-10 rounded-xl" />
                         </div>
                       </div>
                     )}
@@ -397,7 +309,6 @@ Please provide the final output ready to be reviewed.`;
                 </Card>
               </div>
 
-              {/* Output */}
               <div className="lg:col-span-7">
                 <Card className="border-none shadow-xl rounded-[2.5rem] bg-slate-900 text-white overflow-hidden h-full flex flex-col">
                   <CardHeader className="p-6 pb-4 border-b border-slate-800 flex flex-row items-center justify-between">
@@ -410,15 +321,8 @@ Please provide the final output ready to be reviewed.`;
                         <CardDescription className="text-slate-400 text-xs">Copy and paste this into Claude/ChatGPT.</CardDescription>
                       </div>
                     </div>
-                    <Button 
-                      onClick={handleCopy}
-                      className={cn(
-                        "h-10 px-4 rounded-xl font-black text-[10px] uppercase tracking-widest transition-all",
-                        copied ? "bg-emerald-500 hover:bg-emerald-600 text-white" : "bg-white text-slate-900 hover:bg-slate-200"
-                      )}
-                    >
-                      {copied ? <Check size={16} className="mr-2" /> : <Copy size={16} className="mr-2" />}
-                      {copied ? "Copied!" : "Copy Prompt"}
+                    <Button onClick={handleCopy} className={cn("h-10 px-4 rounded-xl font-black text-[10px] uppercase tracking-widest transition-all", copied ? "bg-emerald-500 text-white" : "bg-white text-slate-900")}>
+                      {copied ? <Check size={16} className="mr-2" /> : <Copy size={16} className="mr-2" />} {copied ? "Copied!" : "Copy Prompt"}
                     </Button>
                   </CardHeader>
                   <CardContent className="p-6 flex-1">
@@ -445,15 +349,8 @@ Please provide the final output ready to be reviewed.`;
                         <CardDescription className="font-medium">The "Antigravity Clinical Standard" layout.</CardDescription>
                       </div>
                     </div>
-                    <Button 
-                      onClick={handleCopyTemplate}
-                      className={cn(
-                        "h-10 px-6 rounded-xl font-black text-[10px] uppercase tracking-widest transition-all",
-                        templateCopied ? "bg-emerald-50 text-white" : "bg-indigo-600 text-white hover:bg-indigo-700"
-                      )}
-                    >
-                      {templateCopied ? <Check size={16} className="mr-2" /> : <Copy size={16} className="mr-2" />}
-                      Copy HTML
+                    <Button onClick={handleCopyTemplate} className={cn("h-10 px-6 rounded-xl font-black text-[10px] uppercase tracking-widest transition-all", templateCopied ? "bg-emerald-50 text-white" : "bg-indigo-600 text-white")}>
+                      {templateCopied ? <Check size={16} className="mr-2" /> : <Copy size={16} className="mr-2" />} Copy HTML
                     </Button>
                   </div>
                 </CardHeader>
@@ -467,44 +364,8 @@ Please provide the final output ready to be reviewed.`;
                       <li>Paste the code and save it as "Antigravity Standard".</li>
                     </ol>
                   </div>
-                  <div className="aspect-[4/3] bg-slate-100 rounded-2xl border-2 border-dashed border-slate-200 flex items-center justify-center text-slate-400">
-                    <div className="text-center">
-                      <Laptop size={48} className="mx-auto mb-3 opacity-20" />
-                      <p className="text-xs font-bold">Template Preview (Visual)</p>
-                    </div>
-                  </div>
                 </CardContent>
               </Card>
-
-              <div className="space-y-6">
-                <Card className="border-none shadow-lg rounded-[2.5rem] bg-slate-900 text-white overflow-hidden">
-                  <CardHeader className="p-8">
-                    <CardTitle className="text-xl font-black flex items-center gap-3">
-                      <Sparkles size={24} className="text-amber-400" /> Why a Custom Template?
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent className="p-8 pt-0 space-y-6">
-                    <p className="text-slate-400 font-medium leading-relaxed">
-                      Standard email templates are often cluttered. The Antigravity template is designed for **high-readability** and **authority**.
-                    </p>
-                    <div className="grid grid-cols-1 gap-3">
-                      {[
-                        { label: "Minimalist Design", desc: "Focuses the reader on your clinical insight." },
-                        { label: "Mobile Optimized", desc: "Looks perfect on every device." },
-                        { label: "Brand Consistency", desc: "Matches the professional look of your CRM." }
-                      ].map(item => (
-                        <div key={item.label} className="flex items-start gap-3 p-4 bg-white/5 rounded-2xl border border-white/10">
-                          <CheckCircle2 size={18} className="text-emerald-400 shrink-0 mt-0.5" />
-                          <div>
-                            <p className="font-bold text-sm">{item.label}</p>
-                            <p className="text-xs text-slate-500">{item.desc}</p>
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  </CardContent>
-                </Card>
-              </div>
             </div>
           </TabsContent>
         </Tabs>

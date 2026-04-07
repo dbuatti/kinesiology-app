@@ -24,12 +24,10 @@ export interface Appointment {
   is_paid?: boolean;
   payment_received?: boolean;
   payment_link?: string | null;
-  payment_method?: string | null; // Added for in-person tracking
-  // External Tracking
+  payment_method?: string | null;
   notion_page_id?: string | null;
   notion_planner_id?: string | null;
   calcom_booking_id?: string | null;
-  // New CSV fields
   name?: string;
   additional_notes?: string;
   priority_pattern?: string;
@@ -38,45 +36,32 @@ export interface Appointment {
   journal?: string;
   notion_link?: string;
   bolt_score?: number | null;
-  // Heart/Brain Coherence fields
   heart_rate?: number | null;
   breath_rate?: number | null;
   coherence_score?: number | null;
-  // Range of Motion/Cogs fields
   sagittal_plane_notes?: string | null;
   frontal_plane_notes?: string | null;
   transverse_plane_notes?: string | null;
-  // Hydration tracking fields
   hydrated?: boolean | null;
   hydration_notes?: string | null;
-  // Emotion Assessment fields
   emotion_mode?: string | null;
   emotion_primary_selection?: string | null;
   emotion_secondary_selection?: string[] | null;
   emotion_notes?: string | null;
-  // Fakuda Step Test field
   fakuda_notes?: string | null;
-  // Sharpened Rhombergs Test field
   sharpened_rhombergs_notes?: string | null;
-  // Frontal Lobe Assessment field
   frontal_lobe_notes?: string | null;
-  // Righting Reflexes field
   righting_reflex_notes?: string | null;
-  // Luscher Colour Assessment fields
   luscher_color_1?: string | null;
   luscher_color_2?: string | null;
-  // Sympathetic Down Regulation fields
   harmonic_rocking_notes?: string | null;
   t1_reset_notes?: string | null;
   diaphragm_reset_notes?: string | null;
   vagus_nerve_notes?: string | null;
-  // Gait Reflex Integration
   gait_notes?: string | null;
-  // Lymphatic System Assessment
   lymphatic_suture_side?: string | null;
   lymphatic_priority_zone?: string | null;
   lymphatic_notes?: string | null;
-  // Session-specific Onboarding Data
   current_stress_level?: number | null;
   sleep_quality?: string | null;
   digestive_health?: string | null;
@@ -98,12 +83,11 @@ export interface Client {
   journal?: string;
   created_at?: string;
   is_practitioner?: boolean;
-  // Static Clinical Fields
+  stripe_customer_id?: string;
   emergency_contact_name?: string;
   emergency_contact_phone?: string;
   medical_history?: string;
   referral_source?: string;
-  // Fallback/Baseline fields (can be overwritten by latest appointment)
   medications_supplements?: string;
   current_stress_level?: number;
   sleep_quality?: string;
@@ -121,5 +105,6 @@ export interface AppointmentWithClient extends Appointment {
     emergency_contact_phone?: string;
     occupation?: string;
     referral_source?: string;
+    stripe_customer_id?: string;
   };
 }

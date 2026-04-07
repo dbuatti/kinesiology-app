@@ -66,6 +66,7 @@ const CalcomSlotsView = () => {
   const [slots, setSlots] = useState<Record<string, any[]>>({});
   const [bookings, setBookings] = useState<Record<string, any[]>>({});
   const [blockedDates, setBlockedDates] = useState<string[]>([]);
+  const [expandedDays, setExpandedDays] = useState<Record<string, boolean>>({});
   const [error, setError] = useState<string | null>(null);
   const [weeks, setWeeks] = useState(4); // Range to show
   const [weeksOffset, setWeeksOffset] = useState(0); // Starting point
@@ -144,7 +145,6 @@ const CalcomSlotsView = () => {
 
     setSendingEmail(booking.uid);
     try {
-      // 1. Find client by email
       const { data: client, error: clientError } = await supabase
         .from('clients')
         .select('id')
@@ -155,7 +155,6 @@ const CalcomSlotsView = () => {
         throw new Error("Client not found in CRM. Please ensure the booking has synced first.");
       }
 
-      // 2. Trigger onboarding email
       const { error: emailError } = await supabase.functions.invoke('send-manual-onboarding', {
         body: { clientId: client.id }
       });
@@ -282,6 +281,13 @@ const CalcomSlotsView = () => {
     setCopied(true);
     showSuccess("Availability copied!");
     setTimeout(() => setCopied(false), 2000);
+  };
+
+  const toggleDayExpansion = (date: string) => {
+    setExpandedDays(prev => ({
+      ...prev,
+      [date]: !prev[date]
+    }));
   };
 
   useEffect(() => {
@@ -469,9 +475,12 @@ const CalcomSlotsView = () => {
             const dayBookings = bookings[date] || [];
             const isBlocked = blockedDates.includes(date);
             const hasNoActivity = daySlots.length === 0 && dayBookings.length === 0;
+            const isExpanded = expandedDays[date] || false;
             
             if (showOnlyAvailable && (isBlocked || daySlots.length === 0)) return null;
             if (!isBlocked && hasNoActivity) return null;
+
+            const visibleSlots = isExpanded ? daySlots : daySlots.slice(0, 6);
 
             return (
               <Card key={date} className={cn(
@@ -585,7 +594,7 @@ const CalcomSlotsView = () => {
                         <div className="space-y-3 flex-1">
                           <p className="text-[9px] font-black text-muted-foreground uppercase tracking-[0.2em] ml-1">Available Slots</p>
                           <div className="grid grid-cols-2 gap-2">
-                            {daySlots.map((slot, idx) => {
+                            {visibleSlots.map((slot, idx) => {
                               const timeStr = slot.time || slot.start;
                               return (
                                 <button 
@@ -599,6 +608,20 @@ const CalcomSlotsView = () => {
                               );
                             })}
                           </div>
+                          {daySlots.length > 6 && (
+                            <Button 
+                              variant="ghost" 
+                              size="sm" 
+                              onClick={() => toggleDayExpansion(date)}
+                              className="w-full h-8 text-[9px] font-black uppercase tracking-widest text-indigo-600 hover:bg-indigo-50"
+                            >
+                              {isExpanded ? (
+                                <><ChevronUp size={12} className="mr-1" /> Show Less</>
+                              ) : (
+                                <><ChevronDown size={12} className="mr-1" /> Show {daySlots.length - 6} More</>
+                              )}
+                            </Button>
+                          )}
                         </div>
                       )}
 

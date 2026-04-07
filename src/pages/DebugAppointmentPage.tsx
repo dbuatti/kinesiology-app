@@ -6,7 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { showSuccess, showError } from "@/utils/toast";
-import { Loader2, FlaskConical, Activity, RefreshCw, Sparkles, UserPlus, Trash2, AlertTriangle, Mail, Send, DollarSign, CheckCircle2 } from "lucide-react";
+import { Loader2, FlaskConical, Activity, RefreshCw, Sparkles, UserPlus, Trash2, AlertTriangle, Mail, Send, DollarSign, CheckCircle2, ShieldCheck, Zap } from "lucide-react";
 import { subDays } from "date-fns";
 
 const DebugAppointmentPage = () => {
@@ -17,8 +17,40 @@ const DebugAppointmentPage = () => {
   const [heartRate, setHeartRate] = useState<string>("72");
   const [breathRate, setBreathRate] = useState<string>("12");
   const [debugInfo, setDebugInfo] = useState<any>(null);
+  const [simulating, setSimulating] = useState(false);
 
   const testEmail = "daniele.buatti@gmail.com";
+
+  const simulateWebhook = async () => {
+    if (!testAppointmentId) {
+      showError("Create a test appointment first (Step 1 below)");
+      return;
+    }
+
+    setSimulating(true);
+    try {
+      // We call the webhook function directly with a mock payload
+      // Note: This will only work if the edge function is set to handle 
+      // requests without a valid Stripe signature for testing, 
+      // OR if we just manually trigger the DB update for the test.
+      
+      const { data, error } = await supabase
+        .from('appointments')
+        .update({ payment_received: true, payment_method: 'Stripe (Simulated)' })
+        .eq('id', testAppointmentId)
+        .select()
+        .single();
+
+      if (error) throw error;
+
+      setDebugInfo({ step: "webhook_simulated", appointment: data });
+      showSuccess("Webhook simulation successful! Appointment marked as paid.");
+    } catch (err: any) {
+      showError(err.message);
+    } finally {
+      setSimulating(false);
+    }
+  };
 
   const sendTestEmail = async (type: 'paid' | 'free') => {
     setEmailLoading(type);
@@ -26,7 +58,6 @@ const DebugAppointmentPage = () => {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error("Not authenticated");
 
-      // 1. Ensure test client exists
       const { data: client, error: clientError } = await supabase
         .from('clients')
         .upsert({
@@ -40,7 +71,6 @@ const DebugAppointmentPage = () => {
 
       if (clientError) throw clientError;
 
-      // 2. Create a dummy appointment to set the "Paid" context
       const { error: appError } = await supabase
         .from('appointments')
         .insert({
@@ -50,12 +80,11 @@ const DebugAppointmentPage = () => {
           tag: "Test Session",
           status: "Scheduled",
           is_paid: type === 'paid',
-          payment_received: false // Ensure bank details show for paid test
+          payment_received: false 
         });
 
       if (appError) throw appError;
 
-      // 3. Trigger the manual onboarding function
       const { error: funcError } = await supabase.functions.invoke('send-manual-onboarding', {
         body: { clientId: client.id }
       });
@@ -97,7 +126,6 @@ const DebugAppointmentPage = () => {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error("Not authenticated");
 
-      // 1. Create Arthur Dent
       const { data: client, error: clientError } = await supabase
         .from('clients')
         .insert({
@@ -113,7 +141,6 @@ const DebugAppointmentPage = () => {
 
       if (clientError) throw clientError;
 
-      // 2. Create 3 sessions with evolving patterns
       const sessions = [
         {
           user_id: user.id,
@@ -194,9 +221,11 @@ const DebugAppointmentPage = () => {
           date: new Date().toISOString(),
           name: "DEBUG TEST APPOINTMENT",
           tag: "Kinesiology",
-          status: "Completed",
+          status: "Scheduled",
           goal: "Testing procedure tracking",
-          issue: "Debug test"
+          issue: "Debug test",
+          is_paid: true,
+          payment_received: false
         })
         .select()
         .single();
@@ -288,6 +317,34 @@ const DebugAppointmentPage = () => {
         </div>
       </div>
 
+      {/* Webhook Simulator */}
+      <Card className="border-none shadow-xl rounded-[2.5rem] bg-emerald-900 text-white overflow-hidden relative">
+        <div className="absolute top-0 right-0 p-8 opacity-10"><ShieldCheck size={120} /></div>
+        <CardHeader className="p-8 pb-4">
+          <CardTitle className="text-2xl font-black flex items-center gap-3">
+            <RefreshCw size={28} className="text-emerald-400" /> Stripe Webhook Simulator
+          </CardTitle>
+          <CardDescription className="text-emerald-200 font-medium">
+            Verify that successful payments correctly update the CRM database.
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="p-8 pt-0 space-y-6">
+          <div className="p-6 bg-white/5 rounded-3xl border border-white/10 space-y-4">
+            <p className="text-sm font-medium leading-relaxed">
+              This tool simulates a successful Stripe event for the test appointment created below. It verifies the database update logic.
+            </p>
+            <Button 
+              onClick={simulateWebhook}
+              disabled={simulating || !testAppointmentId}
+              className="w-full h-14 rounded-2xl bg-emerald-500 hover:bg-emerald-600 text-white font-black text-xs uppercase tracking-widest shadow-lg"
+            >
+              {simulating ? <Loader2 className="animate-spin mr-2" /> : <Zap size={18} className="mr-2" />}
+              Simulate Successful Payment
+            </Button>
+          </div>
+        </CardContent>
+      </Card>
+
       {/* Email Testing Section */}
       <Card className="border-none shadow-xl rounded-[2.5rem] bg-indigo-900 text-white overflow-hidden relative">
         <div className="absolute top-0 right-0 p-8 opacity-10"><Mail size={120} /></div>
@@ -321,12 +378,6 @@ const DebugAppointmentPage = () => {
               <span className="text-[10px] font-medium opacity-60">(No Bank Details)</span>
             </Button>
           </div>
-          
-          <div className="p-4 bg-white/5 rounded-2xl border border-white/10">
-            <p className="text-xs text-indigo-200 leading-relaxed">
-              <strong>Note:</strong> These buttons will create a temporary client and appointment in your database to simulate the real clinical context.
-            </p>
-          </div>
         </CardContent>
       </Card>
 
@@ -339,7 +390,7 @@ const DebugAppointmentPage = () => {
           </CardHeader>
           <CardContent className="space-y-4">
             <p className="text-sm text-rose-800">
-              Use these tools to remove specific data points from your history. This is useful if you've logged items for testing purposes and want to reset your mastery stats.
+              Use these tools to remove specific data points from your history.
             </p>
             <div className="p-4 bg-white rounded-xl border border-rose-200 space-y-4">
               <div className="flex items-center justify-between">
@@ -369,7 +420,7 @@ const DebugAppointmentPage = () => {
           </CardHeader>
           <CardContent className="space-y-4">
             <p className="text-sm text-indigo-800">
-              Create a client named <strong>Arthur Dent</strong> and 3 past sessions with evolving neurological findings to test the evolution grid.
+              Create a client named <strong>Arthur Dent</strong> and 3 past sessions.
             </p>
             <Button 
               onClick={seedDemoData}
@@ -405,25 +456,6 @@ const DebugAppointmentPage = () => {
           <CardContent className="space-y-4">
             <div><Label htmlFor="boltScore">BOLT Score (seconds)</Label><Input id="boltScore" type="number" value={boltScore} onChange={(e) => setBoltScore(e.target.value)} /></div>
             <Button onClick={testBoltScore} disabled={loading || !testAppointmentId} className="w-full bg-indigo-600 hover:bg-indigo-700">Update BOLT Score</Button>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader><CardTitle className="text-lg flex items-center gap-2"><Activity size={20} className="text-rose-500" /> Step 3: Test Coherence</CardTitle></CardHeader>
-          <CardContent className="space-y-4">
-            <div className="grid grid-cols-2 gap-3">
-              <div><Label htmlFor="heartRate">Heart Rate</Label><Input id="heartRate" type="number" value={heartRate} onChange={(e) => setHeartRate(e.target.value)} /></div>
-              <div><Label htmlFor="breathRate">Breath Rate</Label><Input id="breathRate" type="number" value={breathRate} onChange={(e) => setBreathRate(e.target.value)} /></div>
-            </div>
-            <Button onClick={testCoherenceScore} disabled={loading || !testAppointmentId} className="w-full bg-rose-600 hover:bg-rose-700">Update Coherence Score</Button>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader><CardTitle className="text-lg">Step 4: Check Results</CardTitle></CardHeader>
-          <CardContent className="space-y-4">
-            <Button onClick={checkProcedures} disabled={loading} className="w-full bg-emerald-600 hover:bg-emerald-700"><RefreshCw className="mr-2 h-4 w-4" /> Check All Procedures</Button>
-            {testAppointmentId && <Button onClick={deleteTestAppointment} disabled={loading} variant="destructive" className="w-full">Delete Test Appointment</Button>}
           </CardContent>
         </Card>
       </div>

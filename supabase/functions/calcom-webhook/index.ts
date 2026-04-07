@@ -115,19 +115,13 @@ serve(async (req) => {
     const startTime = payload.startTime || payload.start;
     
     // REFINED PAID LOGIC:
-    // 1. Check metadata (explicitly set by the CRM app)
-    // 2. Check responses (set by the booking form checkbox)
-    // 3. Fallback to Event ID (default behavior for direct bookings)
+    // If it comes from Cal.com directly, it MUST be paid.
+    // If it comes from the CRM, we respect the metadata flag.
     const metadataIsPaid = payload.metadata?.is_paid;
-    const responseIsPaid = payload.responses?.is_paid;
+    let isPaidSession = true; // Default to true for all Cal.com bookings
     
-    let isPaidSession = false;
     if (metadataIsPaid !== undefined) {
       isPaidSession = metadataIsPaid === "true";
-    } else if (responseIsPaid !== undefined) {
-      isPaidSession = responseIsPaid === true || responseIsPaid === "true";
-    } else {
-      isPaidSession = Number(payload.eventTypeId) === 4279898;
     }
 
     const hasPaidViaStripe = !!(payload.payment?.[0]?.amount || payload.paymentId);

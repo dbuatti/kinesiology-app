@@ -76,7 +76,7 @@ serve(async (req) => {
 
     const { data: client, error: clientError } = await supabase
       .from('clients')
-      .select('id, name, email, appointments(is_paid, payment_received, date)')
+      .select('id, name, email, phone, appointments(is_paid, payment_received, date)')
       .eq('id', clientId)
       .single();
 

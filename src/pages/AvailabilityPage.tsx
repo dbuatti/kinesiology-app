@@ -9,7 +9,7 @@ import { Button } from "@/components/ui/button";
 
 const AvailabilityPage = () => {
   return (
-    <AppLayout>
+    <AppLayout variant="full">
       <div className="space-y-8">
         <Breadcrumbs items={[{ label: "Operations" }, { label: "Live Availability" }]} />
         

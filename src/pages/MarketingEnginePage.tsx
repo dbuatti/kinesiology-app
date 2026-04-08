@@ -14,7 +14,7 @@ import {
   CheckCircle2, Workflow, Clock, Sparkles, Link as LinkIcon, Send,
   BookOpen, Wand2, Copy, Check, User, Activity, History, Mail,
   Trophy, ArrowRight, Star, ExternalLink, MessageSquare, Code,
-  EyeOff, Volume2
+  EyeOff, Volume2, Heart, Quote
 } from "lucide-react";
 import AppLayout from "@/components/crm/AppLayout";
 import Breadcrumbs from "@/components/shared/Breadcrumbs";
@@ -25,12 +25,12 @@ import { usePrivacyMode } from "@/hooks/use-privacy-mode";
 
 const CLAUDE_MARKETING_CHAT = "https://claude.ai/chat/e4805343-71a0-48fc-a1e0-4d2dde541a88";
 const GEMINI_BUSINESS_CHAT = "https://gemini.google.com/app/5d5d4bcde141a99a";
-const INSIGHT_TIMER_PORTAL = "https://teacher.insighttimer.com/login?next=%2Faudio%3Flibraryitem%3DNhUOPacb0145IEvUBJCf%26sortBy%3Dnewest%26sort_direction%3Ddesc";
 
 const MarketingEnginePage = () => {
   const { isPrivate } = usePrivacyMode();
   const [activeTab, setActiveTab] = useState("guide");
   const [recentWins, setRecentWins] = useState<any[]>([]);
+  const [vaultWins, setVaultWins] = useState<any[]>([]);
   const [selectedWin, setSelectedWin] = useState<string>("custom");
   const [outputFormat, setOutputFormat] = useState("kit_broadcast");
   const [cta, setCta] = useState("book_session");
@@ -41,18 +41,25 @@ const MarketingEnginePage = () => {
   const [templateCopied, setTemplateCopied] = useState(false);
 
   useEffect(() => {
-    const fetchWins = async () => {
-      const { data } = await supabase
-        .from('appointments')
-        .select('id, goal, issue, bolt_score, date, clients(name)')
-        .eq('status', 'Completed')
-        .not('issue', 'is', null)
-        .order('date', { ascending: false })
-        .limit(10);
+    const fetchData = async () => {
+      const [appsRes, winsRes] = await Promise.all([
+        supabase
+          .from('appointments')
+          .select('id, goal, issue, bolt_score, date, clients(name)')
+          .eq('status', 'Completed')
+          .not('issue', 'is', null)
+          .order('date', { ascending: false })
+          .limit(10),
+        supabase
+          .from('client_wins')
+          .select('*')
+          .order('created_at', { ascending: false })
+      ]);
       
-      if (data) setRecentWins(data);
+      if (appsRes.data) setRecentWins(appsRes.data);
+      if (winsRes.data) setVaultWins(winsRes.data);
     };
-    fetchWins();
+    fetchData();
   }, []);
 
   const generatedPrompt = useMemo(() => {
@@ -60,10 +67,15 @@ const MarketingEnginePage = () => {
 
     if (selectedWin === "custom") {
       contextText = `STORY/EXPERIENCE:\n${customStory || "[Insert your story here]"}\n\nCORE INSIGHT/LESSON:\n${customInsight || "[Insert the main takeaway here]"}`;
+    } else if (selectedWin.startsWith('vault-')) {
+      const win = vaultWins.find(w => `vault-${w.id}` === selectedWin);
+      if (win) {
+        contextText = `CLIENT TESTIMONIAL:\n"${win.content}"\n- Client: ${win.client_name}\n- Context: ${win.context}\n\nTASK: Use this testimonial as social proof to explain a clinical concept.`;
+      }
     } else {
       const win = recentWins.find(w => w.id === selectedWin);
       if (win) {
-        contextText = `CLINICAL CASE STUDY (Anonymized):\n- Client Issue: ${win.issue}\n- Client Goal: ${win.goal}\n- Clinical Outcome: ${win.bolt_score ? `Physiological markers improved (e.g., BOLT score reached ${win.bolt_score}s). ` : ''}The nervous system shifted from a state of threat to a state of safety and integration.\n\nCORE INSIGHT:\nSometimes the site of pain isn't the source of the threat. When we address the nervous system's safety first, the structural symptoms often resolve themselves.`;
+        contextText = `CLINICAL CASE STUDY (Anonymized):\n- Client Issue: ${win.issue}\n- Client Goal: ${win.goal}\n- Clinical Outcome: ${win.bolt_score ? `Physiological markers improved (e.g., BOLT score reached ${win.bolt_score}s). ` : ''}The nervous system shifted from a state of threat to a state of safety and integration.`;
       }
     }
 
@@ -95,7 +107,7 @@ CALL TO ACTION:
 ${ctaInstruction}
 
 Please provide the final output ready to be reviewed.`;
-  }, [selectedWin, recentWins, customStory, customInsight, outputFormat, cta]);
+  }, [selectedWin, recentWins, vaultWins, customStory, customInsight, outputFormat, cta]);
 
   const handleCopy = () => {
     navigator.clipboard.writeText(generatedPrompt);
@@ -194,44 +206,65 @@ Please provide the final output ready to be reviewed.`;
               </CardContent>
             </Card>
 
-            <div className="space-y-6">
-              <div className="flex items-center justify-between px-2">
-                <h2 className="text-2xl font-black flex items-center gap-3 text-slate-900">
-                  <Trophy size={24} className="text-amber-500" /> The Wins Vault
-                </h2>
-                <div className="flex items-center gap-3">
-                  {isPrivate && (
-                    <Badge variant="outline" className="h-6 px-2 text-[8px] font-black uppercase border-rose-200 text-rose-400">
-                      <EyeOff size={10} className="mr-1" /> Private
-                    </Badge>
-                  )}
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
+              <div className="space-y-6">
+                <div className="flex items-center justify-between px-2">
+                  <h2 className="text-2xl font-black flex items-center gap-3 text-slate-900">
+                    <Trophy size={24} className="text-amber-500" /> The Wins Vault
+                  </h2>
                   <Badge variant="outline" className="font-bold border-amber-200 text-amber-600">
-                    {recentWins.length} Potential Stories
+                    {recentWins.length} Case Stories
                   </Badge>
                 </div>
-              </div>
-              
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {recentWins.map(win => (
-                  <Card key={win.id} className="border-none shadow-md rounded-[2rem] bg-card hover:shadow-xl transition-all group cursor-pointer" onClick={() => { setSelectedWin(win.id); setActiveTab('studio'); }}>
-                    <CardContent className="p-6 space-y-4">
-                      <div className="flex items-start justify-between">
-                        <div className="w-10 h-10 rounded-xl bg-amber-50 flex items-center justify-center text-amber-600 group-hover:bg-amber-500 group-hover:text-white transition-all">
-                          <Star size={20} className="fill-current" />
+                
+                <div className="grid grid-cols-1 gap-4">
+                  {recentWins.map(win => (
+                    <Card key={win.id} className="border-none shadow-md rounded-[2rem] bg-card hover:shadow-xl transition-all group cursor-pointer" onClick={() => { setSelectedWin(win.id); setActiveTab('studio'); }}>
+                      <CardContent className="p-6 space-y-4">
+                        <div className="flex items-start justify-between">
+                          <div className="w-10 h-10 rounded-xl bg-amber-50 flex items-center justify-center text-amber-600 group-hover:bg-amber-500 group-hover:text-white transition-all">
+                            <Star size={20} className="fill-current" />
+                          </div>
+                          <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">{format(new Date(win.date), "MMM d")}</span>
                         </div>
-                        <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">{format(new Date(win.date), "MMM d")}</span>
-                      </div>
-                      <div>
-                        <p className={cn("text-[10px] font-black text-indigo-600 uppercase tracking-widest mb-1", isPrivate && "blur-sm")}>{win.clients?.name}</p>
-                        <h3 className="font-black text-lg text-slate-900 line-clamp-2 leading-tight">{win.issue}</h3>
-                      </div>
-                      <div className="pt-4 border-t border-slate-50 flex items-center justify-between">
-                        <span className="text-[10px] font-black uppercase tracking-widest text-slate-400 group-hover:text-indigo-600 transition-colors">Create Content</span>
-                        <ArrowRight size={16} className="text-slate-300 group-hover:text-indigo-600 group-hover:translate-x-1 transition-all" />
-                      </div>
-                    </CardContent>
-                  </Card>
-                ))}
+                        <div>
+                          <p className={cn("text-[10px] font-black text-indigo-600 uppercase tracking-widest mb-1", isPrivate && "blur-sm")}>{win.clients?.name}</p>
+                          <h3 className="font-black text-lg text-slate-900 line-clamp-2 leading-tight">{win.issue}</h3>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  ))}
+                </div>
+              </div>
+
+              <div className="space-y-6">
+                <div className="flex items-center justify-between px-2">
+                  <h2 className="text-2xl font-black flex items-center gap-3 text-rose-600">
+                    <Heart size={24} className="fill-current" /> Testimonials
+                  </h2>
+                  <Badge variant="outline" className="font-bold border-rose-200 text-rose-600">
+                    {vaultWins.length} Nice Words
+                  </Badge>
+                </div>
+                
+                <div className="grid grid-cols-1 gap-4">
+                  {vaultWins.map(win => (
+                    <Card key={win.id} className="border-none shadow-md rounded-[2rem] bg-card hover:shadow-xl transition-all group cursor-pointer" onClick={() => { setSelectedWin(`vault-${win.id}`); setActiveTab('studio'); }}>
+                      <CardContent className="p-6 space-y-4">
+                        <div className="flex items-start justify-between">
+                          <div className="w-10 h-10 rounded-xl bg-rose-50 flex items-center justify-center text-rose-600 group-hover:bg-rose-500 group-hover:text-white transition-all">
+                            <Quote size={20} className="fill-current" />
+                          </div>
+                          <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">{format(new Date(win.created_at), "MMM d")}</span>
+                        </div>
+                        <div>
+                          <p className="text-[10px] font-black text-rose-600 uppercase tracking-widest mb-1">{win.client_name}</p>
+                          <p className="text-sm font-medium text-slate-600 italic line-clamp-3">"{win.content}"</p>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  ))}
+                </div>
               </div>
             </div>
           </TabsContent>
@@ -254,7 +287,15 @@ Please provide the final output ready to be reviewed.`;
                         </SelectTrigger>
                         <SelectContent>
                           <SelectItem value="custom" className="font-bold text-indigo-600">From Scratch / Custom Story</SelectItem>
-                          <div className="px-2 py-1.5 text-[10px] font-black uppercase tracking-widest text-slate-400">Recent Clinical Wins</div>
+                          
+                          <div className="px-2 py-1.5 text-[10px] font-black uppercase tracking-widest text-slate-400">Testimonials (Nice Words)</div>
+                          {vaultWins.map(win => (
+                            <SelectItem key={win.id} value={`vault-${win.id}`}>
+                              {win.client_name}: {win.content.substring(0,30)}...
+                            </SelectItem>
+                          ))}
+
+                          <div className="px-2 py-1.5 text-[10px] font-black uppercase tracking-widest text-slate-400">Clinical Wins (Cases)</div>
                           {recentWins.map(win => (
                             <SelectItem key={win.id} value={win.id}>
                               {win.clients?.name} - {win.issue?.substring(0,30)}...

@@ -47,6 +47,17 @@ serve(async (req) => {
     const name = String(attendee.name || "Unknown Client").trim();
     const email = String(attendee.email || "").toLowerCase().trim();
     const startTime = payload.startTime || payload.start;
+    const eventTypeId = String(payload.eventTypeId || "");
+
+    // Price Mapping
+    let priceAmount = 0;
+    if (eventTypeId === "4279898") priceAmount = 50;
+    else if (eventTypeId === "5302336") priceAmount = 100;
+    
+    // Override with actual payment data if present
+    if (payload.payment && payload.payment[0]) {
+      priceAmount = payload.payment[0].amount / 100;
+    }
 
     // 2. Ensure Client exists
     const { data: dbClient } = await supabase
@@ -70,9 +81,11 @@ serve(async (req) => {
       console.log(`[calcom-webhook] Linking existing app ${existingApp.id} to Cal.com ID ${calcomId}`);
       await supabase
         .from('appointments')
-        .update({ 
+        .update({
           calcom_booking_id: calcomId,
-          is_paid: payload.metadata?.is_paid === "true" || !!payload.payment?.[0]
+          is_paid: payload.metadata?.is_paid === "true" || !!payload.payment?.[0],
+          price_amount: priceAmount,
+          price_currency: 'AUD'
         })
         .eq('id', existingApp.id);
     } else if (triggerEvent === 'BOOKING_RESCHEDULED') {
@@ -80,9 +93,11 @@ serve(async (req) => {
       console.log(`[calcom-webhook] Updating rescheduled date for booking: ${calcomId}`);
       await supabase
         .from('appointments')
-        .update({ 
+        .update({
           date: startTime,
-          is_paid: payload.metadata?.is_paid === "true" || !!payload.payment?.[0]
+          is_paid: payload.metadata?.is_paid === "true" || !!payload.payment?.[0],
+          price_amount: priceAmount,
+          price_currency: 'AUD'
         })
         .eq('calcom_booking_id', calcomId);
     } else {
@@ -97,7 +112,9 @@ serve(async (req) => {
           tag: "Kinesiology",
           status: "Scheduled",
           calcom_booking_id: calcomId,
-          is_paid: payload.metadata?.is_paid === "true" || !!payload.payment?.[0]
+          is_paid: payload.metadata?.is_paid === "true" || !!payload.payment?.[0],
+          price_amount: priceAmount,
+          price_currency: 'AUD'
         }, { onConflict: 'calcom_booking_id' });
     }
 

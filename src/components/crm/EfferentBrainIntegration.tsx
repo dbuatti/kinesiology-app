@@ -7,12 +7,17 @@ import { Input } from '@/components/ui/input';
 import { 
   Brain, Zap, ChevronRight, ChevronLeft, CheckCircle2, 
   Layers, RefreshCw, Sparkles, Heart, X, Activity, 
-  Target, Loader2, Info, ShieldAlert, Search
+  Target, Loader2, Info, ShieldAlert, Search, HelpCircle
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { BRAIN_REFLEX_POINTS, BrainReflexPoint } from '@/data/brain-reflex-data';
 import { CRANIAL_NERVES } from '@/data/cranial-nerve-data';
 import { supabase } from "@/integrations/supabase/client";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 
 type Step = 'ENTRY' | 'COORD_1' | 'COORD_2' | 'METHOD' | 'CALIBRATE' | 'REASSESS';
 type IntegrationMethod = 'Tapping' | 'Holding + Intention' | 'Tuning Fork';
@@ -53,7 +58,7 @@ const ZoneCard = ({ point, images, isSelected, onSelect, isLoading }: {
                 : "bg-white border-slate-100 hover:border-indigo-200"
         )}>
             <div className={cn(
-                "w-full aspect-square rounded-lg overflow-hidden mb-1.5 flex items-center justify-center transition-colors",
+                "w-full aspect-square rounded-lg overflow-hidden mb-1.5 flex items-center justify-center transition-colors relative",
                 isSelected ? "bg-white/10" : "bg-slate-50"
             )}>
                 {isLoading ? (
@@ -63,6 +68,29 @@ const ZoneCard = ({ point, images, isSelected, onSelect, isLoading }: {
                 ) : (
                     <Brain size={18} className={isSelected ? "text-white" : "text-slate-300"} />
                 )}
+
+                {/* Info Trigger for missing images */}
+                <div className="absolute top-1 right-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <div className="w-5 h-5 rounded-full bg-white/90 backdrop-blur-sm flex items-center justify-center text-indigo-600 shadow-sm cursor-help">
+                        <HelpCircle size={12} />
+                      </div>
+                    </TooltipTrigger>
+                    <TooltipContent side="top" className="max-w-[200px] p-3 rounded-xl border-none shadow-2xl bg-slate-900 text-white">
+                      <div className="space-y-2">
+                        <p className="text-[10px] font-black uppercase tracking-widest text-indigo-400">Reflex Point</p>
+                        <p className="text-[11px] font-bold leading-tight">{point.location}</p>
+                        {point.stimulus && (
+                          <>
+                            <p className="text-[10px] font-black uppercase tracking-widest text-amber-400 pt-1">Stimulus</p>
+                            <p className="text-[11px] font-bold leading-tight">{point.stimulus}</p>
+                          </>
+                        )}
+                      </div>
+                    </TooltipContent>
+                  </Tooltip>
+                </div>
             </div>
             <p className={cn(
                 "font-black text-[8px] uppercase tracking-tight truncate w-full text-center",

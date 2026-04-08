@@ -15,6 +15,8 @@ export interface CranialNerve {
   clinicalPearl: string;
   color: string;
   acupoint?: string;
+  videoUrl?: string;
+  pageUrl?: string;
 }
 
 export const BRAINSTEM_KEYS: Record<BrainstemNuclei, { description: string; stim: string }> = {
@@ -48,7 +50,9 @@ export const CRANIAL_NERVES: CranialNerve[] = [
     functions: ["Sense of smell (olfaction)", "Olfactory memory and emotional memory recall"],
     stimulus: "Hold Yin Tang as the reflex point. Stimulus: smell an essential oil in the nostril. CN I bypasses the thalamus entirely and projects directly to the olfactory cortex and limbic system.",
     clinicalPearl: "The only sense that bypasses the thalamus. Essential for deep emotional memory work.",
-    color: "bg-purple-500"
+    color: "bg-purple-500",
+    videoUrl: "https://embed-ssl.wistia.com/deliveries/aca41508634a068fbda3d10c96f150a9.mp4",
+    pageUrl: "https://functional-neuro-health.mykajabi.com/products/functional-neuro-approach-foundations/categories/2152127509/posts/2167205372"
   },
   {
     id: 2,
@@ -61,7 +65,9 @@ export const CRANIAL_NERVES: CranialNerve[] = [
     functions: ["Vision and visual processing", "Depth perception and spatial awareness"],
     stimulus: "Hold BL2 as the reflex point. Stimulus: shine light into the eye in any possible direction — direct, from above, from below, from the sides. Input crosses over at the optic chiasm.",
     clinicalPearl: "Right eye projects to left occipital cortex. Use directional light to isolate specific visual field deficits.",
-    color: "bg-purple-600"
+    color: "bg-purple-600",
+    videoUrl: "https://embed-ssl.wistia.com/deliveries/b874823f0dc614160512b66bcb5b516f50f9eb2d.mp4",
+    pageUrl: "https://functional-neuro-health.mykajabi.com/products/functional-neuro-approach-foundations/categories/2152127509/posts/2167779783"
   },
   {
     id: 3,
@@ -73,7 +79,9 @@ export const CRANIAL_NERVES: CranialNerve[] = [
     functions: ["Eye movement: up, down, and medial gaze", "Pupil constriction (parasympathetic)"],
     stimulus: "Lightly touch the eye lids as the reflex point. Stimulus: move eyes up, down, medial towards bridge of nose, up and left, down and left, open eyelid slowly.",
     clinicalPearl: "Shares midbrain housing with CN IV. Midbrain nuclei control flexor tone.",
-    color: "bg-amber-500"
+    color: "bg-amber-500",
+    videoUrl: "https://embed-ssl.wistia.com/deliveries/e469a668620604adbb0a0c69a192e7af50579078.mp4",
+    pageUrl: "https://functional-neuro-health.mykajabi.com/products/functional-neuro-approach-foundations/categories/2152127509/posts/2167779787"
   },
   {
     id: 4,
@@ -85,7 +93,9 @@ export const CRANIAL_NERVES: CranialNerve[] = [
     functions: ["Downward and inward eye movement (superior oblique)", "Stabilises eye during head tilt"],
     stimulus: "Lightly touch the eyes as the reflex point. Stimulus: move eyes towards the tip of the nose (downward and inward convergence).",
     clinicalPearl: "The only cranial nerve that exits dorsally from the brainstem. Critical for reading and downward gaze.",
-    color: "bg-amber-600"
+    color: "bg-amber-600",
+    videoUrl: "https://embed-ssl.wistia.com/deliveries/e469a668620604adbb0a0c69a192e7af50579078.mp4",
+    pageUrl: "https://functional-neuro-health.mykajabi.com/products/functional-neuro-approach-foundations/categories/2152127509/posts/2167779806"
   },
   {
     id: 5,
@@ -97,7 +107,9 @@ export const CRANIAL_NERVES: CranialNerve[] = [
     functions: ["Facial sensation (V1, V2, V3)", "Jaw movement and mastication (motor)"],
     stimulus: "Place hand across the mandible (cheek) as the reflex point. Stimulate three sensory branches: V1 ophthalmic (forehead), V2 maxillary (cheek), V3 mandibular (jaw).",
     clinicalPearl: "The 'negative antidote' to the Vagus nerve. Heavily tied to the sympathetic nervous system and systemic pain neurology.",
-    color: "bg-indigo-500"
+    color: "bg-indigo-500",
+    videoUrl: "https://embed-ssl.wistia.com/deliveries/10de3ccab10de3ccab1d8595c4c3e451aea5b91c84cf6213f.mp4",
+    pageUrl: "https://functional-neuro-health.mykajabi.com/products/functional-neuro-approach-foundations/categories/2152127509/posts/2167780073"
   },
   {
     id: 6,
@@ -109,7 +121,9 @@ export const CRANIAL_NERVES: CranialNerve[] = [
     functions: ["Lateral eye movement — abduction", "Coordinates with CN III for conjugate gaze"],
     stimulus: "Lightly touch the eyes as the reflex point. Stimulus: move eyes laterally — look as far left as possible, then as far right as possible.",
     clinicalPearl: "Tests the lateral rectus muscle. Essential for horizontal scanning and peripheral awareness.",
-    color: "bg-indigo-600"
+    color: "bg-indigo-600",
+    videoUrl: "https://embed-ssl.wistia.com/deliveries/e469a668620604adbb0a0c69a192e7af50579078.mp4",
+    pageUrl: "https://functional-neuro-health.mykajabi.com/products/functional-neuro-approach-foundations/categories/2152127509/posts/2167780077"
   },
   {
     id: 7,
@@ -121,7 +135,9 @@ export const CRANIAL_NERVES: CranialNerve[] = [
     functions: ["Facial expression (motor)", "Taste — anterior 2/3 of tongue"],
     stimulus: "Place hand along the temporal/TMJ area as the reflex point. Stimulus: squeeze eye shut, produce different facial expressions, loud sound stimulus (stapedius branch).",
     clinicalPearl: "Test facial symmetry and expression quality. High relationship to loud sounds and protective startle responses.",
-    color: "bg-indigo-700"
+    color: "bg-indigo-700",
+    videoUrl: "https://embed-ssl.wistia.com/deliveries/e80792dddb73e4f494dd7f56a6cb1958e571e5ae.mp4",
+    pageUrl: "https://functional-neuro-health.mykajabi.com/products/functional-neuro-approach-foundations/categories/2152127509/posts/2167780903"
   },
   {
     id: 8,
@@ -133,7 +149,9 @@ export const CRANIAL_NERVES: CranialNerve[] = [
     functions: ["Hearing — cochlear division", "Balance and spatial orientation — vestibular division"],
     stimulus: "Place finger in the ear canal as the reflex point. Delineate: Cochlear (click fingers near ear) vs. Vestibular (Head Up, Down, Rotate L/R, Tilt L/R).",
     clinicalPearl: "A highly powerful nerve frequently involved in head injuries, anxiety, and gut dysfunction.",
-    color: "bg-indigo-800"
+    color: "bg-indigo-800",
+    videoUrl: "https://embed-ssl.wistia.com/deliveries/465c56ed15ec74012154656cd87ff84d9307a40c.mp4",
+    pageUrl: "https://functional-neuro-health.mykajabi.com/products/functional-neuro-approach-foundations/categories/2152127509/posts/2167780911"
   },
   {
     id: 9,
@@ -146,7 +164,9 @@ export const CRANIAL_NERVES: CranialNerve[] = [
     functions: ["Taste — posterior 1/3 of tongue", "Swallowing — pharyngeal phase"],
     stimulus: "Hold GB21 as the reflex point. Stimulus: humming. Test indicator muscle before and after humming to assess function.",
     clinicalPearl: "Works in a tight neurological cluster with CN 10 and CN 11; dysfunction in one often crosses over.",
-    color: "bg-rose-500"
+    color: "bg-rose-500",
+    videoUrl: "https://embed-ssl.wistia.com/deliveries/c951c07cedadced7e1d2291c60a8dc22d90ac90a.mp4",
+    pageUrl: "https://functional-neuro-health.mykajabi.com/products/functional-neuro-approach-foundations/categories/2152127509/posts/2167780916"
   },
   {
     id: 10,
@@ -158,7 +178,9 @@ export const CRANIAL_NERVES: CranialNerve[] = [
     functions: ["Autonomic control (heart, lungs, gut)", "Swallowing, voice, and gag reflex"],
     stimulus: "Place hand along the Occiput-Atlas joint as the reflex point. Stimulus: Cymba Conchae (ear bowl), humming, swallowing, 'Aaah', tongue to roof of mouth, slow breathing.",
     clinicalPearl: "The 'King' of the parasympathetic nervous system. Arises from the medulla. Often addressed in initial SNS reset protocols.",
-    color: "bg-rose-600"
+    color: "bg-rose-600",
+    videoUrl: "https://embed-ssl.wistia.com/deliveries/fde31242dde2c7536f59b7c3a46f6070.mp4",
+    pageUrl: "https://functional-neuro-health.mykajabi.com/products/functional-neuro-approach-foundations/categories/2152152431/posts/2166291753"
   },
   {
     id: 11,

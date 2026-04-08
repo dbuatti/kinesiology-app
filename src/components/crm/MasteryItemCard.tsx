@@ -7,11 +7,12 @@ import { Progress } from "@/components/ui/progress";
 import { 
   Dumbbell, Baby, Brain, Zap, 
   TrendingUp, Clock, CheckCircle2, 
-  AlertTriangle, Sparkles 
+  AlertTriangle, Sparkles, PlayCircle, ExternalLink 
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { MasteryStat } from "@/utils/mastery-stats";
 import { formatDistanceToNow } from "date-fns";
+import { Button } from "@/components/ui/button";
 
 interface MasteryItemCardProps {
   stat: MasteryStat;
@@ -86,6 +87,21 @@ const MasteryItemCard = ({ stat, onClick }: MasteryItemCardProps) => {
             </div>
           )}
         </div>
+
+        {stat.videoUrl && (
+          <div className="pt-2" onClick={(e) => e.stopPropagation()}>
+            <Button 
+              variant="outline" 
+              size="sm" 
+              className="w-full h-8 rounded-xl text-[9px] font-black uppercase tracking-widest border-indigo-100 text-indigo-600 hover:bg-indigo-50"
+              asChild
+            >
+              <a href={stat.videoUrl} target="_blank" rel="noopener noreferrer">
+                <PlayCircle size={12} className="mr-1.5" /> Watch Lesson
+              </a>
+            </Button>
+          </div>
+        )}
       </CardContent>
     </Card>
   );

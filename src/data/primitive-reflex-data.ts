@@ -13,6 +13,8 @@ export interface PrimitiveReflex {
   fractalPartners?: string[];
   clinicalSigns?: string[];
   developmentalWindow?: string;
+  videoUrl?: string;
+  pageUrl?: string;
 }
 
 export const PRIMITIVE_REFLEXES: PrimitiveReflex[] = [
@@ -28,7 +30,9 @@ export const PRIMITIVE_REFLEXES: PrimitiveReflex[] = [
     description: 'The foundational OS. Linked to the Dorsal Vagus (Freeze) response. Precedes the Moro reflex.',
     pearl: 'The "Master Reflex". If this is on, many others will be active. Drives chronic adrenal issues and PTSD states.',
     clinicalSigns: ['High anxiety', 'PTSD/Trauma history', 'Immune issues', 'Sensory hypersensitivity', 'Freeze response'],
-    fractalPartners: ['Moro', 'Startle']
+    fractalPartners: ['Moro', 'Startle'],
+    videoUrl: "https://embed-ssl.wistia.com/deliveries/7d40f82dbdf33d51bdc9195adec04a9d0e8b5c7f.mp4",
+    pageUrl: "https://functional-neuro-health.mykajabi.com/products/functional-neuro-approach-foundations/categories/2152127437/posts/2167094242"
   },
   {
     id: 'moro',
@@ -42,7 +46,9 @@ export const PRIMITIVE_REFLEXES: PrimitiveReflex[] = [
     description: 'The "Fight or Flight" reflex. Activated during the first breath. Mutually exclusive with the Startle reflex.',
     pearl: 'Stage 1 is extension/inhale; Stage 2 is flexion/ball. Retained Moro creates a massive constant neural load.',
     clinicalSigns: ['Adrenal fatigue', 'Poor stress tolerance', 'Emotional volatility', 'Sleep issues', 'Vestibular sensitivity'],
-    fractalPartners: ['TLR', 'ATNR', 'STNR']
+    fractalPartners: ['TLR', 'ATNR', 'STNR'],
+    videoUrl: "https://embed-ssl.wistia.com/deliveries/7bee9c3cc03da234cda80dfd2f796c3a80b55414.mp4",
+    pageUrl: "https://functional-neuro-health.mykajabi.com/products/functional-neuro-approach-foundations/categories/2152127437/posts/2167502429"
   },
   {
     id: 'startle',
@@ -56,7 +62,9 @@ export const PRIMITIVE_REFLEXES: PrimitiveReflex[] = [
     description: 'The "Closing" reflex. Emerges from an integrated Fear Paralysis.',
     pearl: 'Moro is about "opening," Startle is about "closing." High correlation with chronic defensive posturing.',
     clinicalSigns: ['Chronic defensive posture', 'Flexor dominance', 'Anxiety', 'Hyper-vigilance'],
-    fractalPartners: ['Fear Paralysis', 'Moro']
+    fractalPartners: ['Fear Paralysis', 'Moro'],
+    videoUrl: "https://embed-ssl.wistia.com/deliveries/7bee9c3cc03da234cda80dfd2f796c3a80b55414.mp4",
+    pageUrl: "https://functional-neuro-health.mykajabi.com/products/functional-neuro-approach-foundations/categories/2152127437/posts/2167502429"
   },
   {
     id: 'tlr',
@@ -69,7 +77,9 @@ export const PRIMITIVE_REFLEXES: PrimitiveReflex[] = [
     description: 'Vestibular-driven tone regulation.',
     pearl: 'Essential for sensory mapping of the neck. Retained TLR often manifests as sleep issues or "somersaulting" sensations.',
     clinicalSigns: ['Sleep issues', 'Somersaulting sensation', 'Poor posture', 'Dizziness/Vertigo', 'Neck instability'],
-    fractalPartners: ['Moro', 'ATNR', 'STNR']
+    fractalPartners: ['Moro', 'ATNR', 'STNR'],
+    videoUrl: "https://embed-ssl.wistia.com/deliveries/710dba831b6b97eb558e3e4f1ad866800076dd0b.mp4",
+    pageUrl: "https://functional-neuro-health.mykajabi.com/products/functional-neuro-approach-foundations/categories/2152127437/posts/2164729000"
   },
   {
     id: 'atnr',
@@ -82,7 +92,9 @@ export const PRIMITIVE_REFLEXES: PrimitiveReflex[] = [
     description: 'The "Fencing" reflex. Integrates eyes, hands, and environment.',
     pearl: 'Huge impact on gait and vision. A classic clinical sign is getting tired quickly when reading.',
     clinicalSigns: ['Tired when reading', 'Poor handwriting', 'Midline crossing issues', 'Uncoordinated gait', 'Functional scoliosis'],
-    fractalPartners: ['Moro', 'TLR', 'STNR']
+    fractalPartners: ['Moro', 'TLR', 'STNR'],
+    videoUrl: "https://embed-ssl.wistia.com/deliveries/896c250c771ff9c61de1176371bcaa86882f7685.mp4",
+    pageUrl: "https://functional-neuro-health.mykajabi.com/products/functional-neuro-approach-foundations/categories/2152127437/posts/2167502432"
   },
   {
     id: 'stnr',
@@ -95,7 +107,9 @@ export const PRIMITIVE_REFLEXES: PrimitiveReflex[] = [
     description: 'The "Crawling" reflex. Differentiated from TLR by being assessed in a seated position.',
     pearl: 'The "cat" reflex. Retained STNR is a major factor in poor desk posture and "W-sitting".',
     clinicalSigns: ['Poor desk posture', 'W-sitting', 'Slumping', 'Difficulty with swimming/crawling'],
-    fractalPartners: ['Moro', 'TLR', 'ATNR']
+    fractalPartners: ['Moro', 'TLR', 'ATNR'],
+    videoUrl: "https://embed-ssl.wistia.com/deliveries/0ac1da7790c7d8bff65b957bcad11e0a.mp4",
+    pageUrl: "https://functional-neuro-health.mykajabi.com/products/functional-neuro-approach-foundations/categories/2154487237/posts/2187520560"
   },
   {
     id: 'spinal-galant',
@@ -108,7 +122,9 @@ export const PRIMITIVE_REFLEXES: PrimitiveReflex[] = [
     description: 'Lateral trunk flexion in response to lumbar stimulation.',
     pearl: 'Linked to bedwetting and concentration issues. In adults, manifests as functional scoliosis.',
     clinicalSigns: ['Bedwetting', 'Concentration issues', 'Functional scoliosis', 'Lower back pain', 'Fidgeting in chairs'],
-    fractalPartners: ['ATNR']
+    fractalPartners: ['ATNR'],
+    videoUrl: "https://embed-ssl.wistia.com/deliveries/ace191c3994201b6b30d5d5ba6a88f88834f537d.mp4",
+    pageUrl: "https://functional-neuro-health.mykajabi.com/products/functional-neuro-approach-foundations/categories/2152127437/posts/2169016216"
   },
   {
     id: 'babinski',
@@ -121,7 +137,9 @@ export const PRIMITIVE_REFLEXES: PrimitiveReflex[] = [
     description: 'Foundational for gait and grounding.',
     pearl: 'If active in adults, it "screws up" gait integration and can cause chronic ankle instability.',
     clinicalSigns: ['Ankle instability', 'Poor grounding', 'Gait dysfunction', 'Flat feet'],
-    fractalPartners: ['Palmar']
+    fractalPartners: ['Palmar'],
+    videoUrl: "https://embed-ssl.wistia.com/deliveries/18739c5ea2d71bafc1e674974e51ad0408c2bae2.mp4",
+    pageUrl: "https://functional-neuro-health.mykajabi.com/products/functional-neuro-approach-foundations/categories/2152127437/posts/2167502394"
   },
   {
     id: 'rooting',
@@ -134,7 +152,9 @@ export const PRIMITIVE_REFLEXES: PrimitiveReflex[] = [
     description: 'Directs the newborn towards the nipple.',
     pearl: 'Massive effect on neck/shoulder stability. Often shows up in cases of torticollis or chronic TMJ tension.',
     clinicalSigns: ['TMJ tension', 'Neck instability', 'Torticollis', 'Shoulder pain', 'Speech issues'],
-    fractalPartners: ['Sucking', 'Palmar']
+    fractalPartners: ['Sucking', 'Palmar'],
+    videoUrl: "https://embed-ssl.wistia.com/deliveries/aca41508634a068fbda3d10c96f150a9.mp4",
+    pageUrl: "https://functional-neuro-health.mykajabi.com/products/functional-neuro-approach-foundations/categories/2152127509/posts/2167205372"
   },
   {
     id: 'palmar',

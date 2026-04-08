@@ -19,7 +19,8 @@ export interface MuscleInfo {
   neurovascular?: string;
   description?: string;
   videoUrl?: string;
-  pearl?: string; // Added for specific clinical insights
+  pageUrl?: string;
+  pearl?: string;
 }
 
 export const MUSCLE_INFO_DETAILS: Record<string, MuscleInfo> = {
@@ -49,7 +50,9 @@ export const MUSCLE_INFO_DETAILS: Record<string, MuscleInfo> = {
     spinalFixation: 'C3-C4',
     testingPosition: 'Primary: Shrug shoulder up, rotate head away, bring them together; practitioner pulls apart. Alternate: Lift the shoulder girdle vertically and test for lock.',
     pearl: 'The alternate vertical lift method allows you to test the Upper Trapezius "like an indicator" to check general system integrity.',
-    description: 'The primary "stress" muscle. Closely linked to the Lung meridian and the body\'s ability to take in Qi and release grief.'
+    description: 'The primary "stress" muscle. Closely linked to the Lung meridian and the body\'s ability to take in Qi and release grief.',
+    videoUrl: "https://embed-ssl.wistia.com/deliveries/8dc68372fa942300d450b03ec8487454cacb02c7.mp4",
+    pageUrl: "https://functional-neuro-health.mykajabi.com/products/functional-neuro-approach-foundations/categories/2152591139/posts/2166647725"
   },
   'Psoas': {
     name: 'Psoas',
@@ -99,6 +102,55 @@ export const MUSCLE_INFO_DETAILS: Record<string, MuscleInfo> = {
     organGland: 'Pancreas / Spleen',
     spinalFixation: 'T4-T7',
     description: 'The largest muscle of the upper body. Key indicator for metabolic and digestive stress.'
+  },
+  'Transverse Abdominals': {
+    name: 'Transverse Abdominals',
+    meridian: 'Stomach',
+    testingPosition: 'Client supine, knees bent. Lift head and shoulders slightly. Practitioner applies pressure to the abdomen.',
+    videoUrl: "https://embed-ssl.wistia.com/deliveries/06654b19dfccfcb0bf7333a032825f4a.mp4",
+    pageUrl: "https://functional-neuro-health.mykajabi.com/products/functional-neuro-approach-foundations/categories/2152591139/posts/2166239953"
+  },
+  'Diaphragm': {
+    name: 'Diaphragm',
+    meridian: 'Pericardium',
+    testingPosition: 'Assessment of breathing mechanics and ribcage expansion.',
+    videoUrl: "https://embed-ssl.wistia.com/deliveries/9813e62a13a7ef09e17f7a16e5ca810b096b5ed2.mp4",
+    pageUrl: "https://functional-neuro-health.mykajabi.com/products/functional-neuro-approach-foundations/categories/2152591139/posts/2167833384"
+  },
+  'Multifidi': {
+    name: 'Multifidi',
+    meridian: 'Bladder',
+    testingPosition: 'Client prone, lifting opposite arm and leg.',
+    videoUrl: "https://embed-ssl.wistia.com/deliveries/2630882e5679cf0ec3b82ea50047b8490aeebf16.mp4",
+    pageUrl: "https://functional-neuro-health.mykajabi.com/products/functional-neuro-approach-foundations/categories/2152591139/posts/2167418078"
+  },
+  'Sacrospinalis': {
+    name: 'Sacrospinalis',
+    meridian: 'Bladder',
+    testingPosition: 'Client prone, lifting upper body.',
+    videoUrl: "https://embed-ssl.wistia.com/deliveries/67f55210add07eaec9dbcde9a093d5e8589d3a37.mp4",
+    pageUrl: "https://functional-neuro-health.mykajabi.com/products/functional-neuro-approach-foundations/categories/2152591139/posts/2167833389"
+  },
+  'Quadriceps Group': {
+    name: 'Quadriceps Group',
+    meridian: 'Stomach',
+    testingPosition: 'Client supine, leg extended. Practitioner applies pressure into flexion.',
+    videoUrl: "https://embed-ssl.wistia.com/deliveries/e3568b13d3b8ecaa2e2c7e363a064435.mp4",
+    pageUrl: "https://functional-neuro-health.mykajabi.com/products/functional-neuro-approach-foundations/categories/2152591139/posts/2166288733"
+  },
+  'Biceps': {
+    name: 'Biceps',
+    meridian: 'Stomach',
+    testingPosition: 'Elbow flexion with supination.',
+    videoUrl: "https://embed-ssl.wistia.com/deliveries/006270ae8c685161a8a2c55053ee0fd5ecf69b18.mp4",
+    pageUrl: "https://functional-neuro-health.mykajabi.com/products/functional-neuro-approach-foundations/categories/2152591139/posts/2167503394"
+  },
+  'Triceps': {
+    name: 'Triceps',
+    meridian: 'Small Intestine',
+    testingPosition: 'Elbow extension.',
+    videoUrl: "https://embed-ssl.wistia.com/deliveries/006270ae8c685161a8a2c55053ee0fd5ecf69b18.mp4",
+    pageUrl: "https://functional-neuro-health.mykajabi.com/products/functional-neuro-approach-foundations/categories/2152591139/posts/2167503394"
   }
 };
 

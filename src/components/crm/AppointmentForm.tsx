@@ -125,7 +125,7 @@ const AppointmentForm = ({ onSuccess, initialClientId, initialDate, initialTime,
       // 1. Sync with Cal.com if applicable
       if (initialTime || slotTime) {
         setSyncStatus('calcom');
-        const eventTypeId = propEventTypeId || localStorage.getItem('calcom_preferred_event_id') || CALCOM_CONFIG.DEFAULT_EVENT_TYPE_ID;
+        const eventTypeId = currentEventType.id;
 
         try {
           const { data: calcomData, error: invokeError } = await supabase.functions.invoke('create-calcom-booking', {
@@ -212,7 +212,15 @@ const AppointmentForm = ({ onSuccess, initialClientId, initialDate, initialTime,
   };
 
   const currentEventTypeId = propEventTypeId || localStorage.getItem('calcom_preferred_event_id') || CALCOM_CONFIG.DEFAULT_EVENT_TYPE_ID;
-  const currentEventType = CALCOM_CONFIG.EVENT_TYPES.find(t => t.id === currentEventTypeId) || CALCOM_CONFIG.EVENT_TYPES[0];
+  const [selectedPrice, setSelectedPrice] = useState<number>(() => {
+    if (initialTime || slotTime) {
+      const type = CALCOM_CONFIG.EVENT_TYPES.find(t => t.id === currentEventTypeId);
+      return type?.price || 50;
+    }
+    return 0; // Default to Free for manual bookings unless specified
+  });
+
+  const currentEventType = CALCOM_CONFIG.EVENT_TYPES.find(t => t.price === selectedPrice) || CALCOM_CONFIG.EVENT_TYPES[0];
 
   return (
     <Form {...form}>
@@ -359,40 +367,32 @@ const AppointmentForm = ({ onSuccess, initialClientId, initialDate, initialTime,
         </div>
 
         <div className="grid grid-cols-1 gap-4">
-          <FormField
-            control={form.control}
-            name="is_paid"
-            render={({ field }) => (
-              <FormItem 
-                className={cn(
-                  "flex flex-row items-center justify-between rounded-[1.5rem] border-2 p-5 transition-all cursor-pointer",
-                  field.value ? "bg-indigo-50 border-indigo-200" : "bg-white border-slate-100 hover:border-indigo-100"
-                )}
-                onClick={() => field.onChange(!field.value)}
-              >
-                <div className="flex items-center gap-4">
-                  <div className={cn(
-                    "w-10 h-10 rounded-xl flex items-center justify-center transition-colors",
-                    field.value ? "bg-indigo-600 text-white" : "bg-slate-100 text-indigo-600"
-                  )}>
-                    <DollarSign size={20} />
-                  </div>
-                  <div className="space-y-0.5">
-                    <FormLabel className="text-base font-black text-slate-900 cursor-pointer">Paid Session (${currentEventType.price})</FormLabel>
-                    <p className="text-[9px] text-slate-500 font-bold uppercase tracking-widest">
-                      Requires payment (triggers bank details in email)
-                    </p>
-                  </div>
-                </div>
-                <div className={cn(
-                  "w-6 h-6 rounded-full border-2 flex items-center justify-center transition-all",
-                  field.value ? "bg-indigo-600 border-indigo-600" : "border-slate-200"
-                )}>
-                  {field.value && <div className="w-2 h-2 rounded-full bg-white" />}
-                </div>
-              </FormItem>
-            )}
-          />
+          <div className="space-y-3">
+            <FormLabel className="text-xs font-black text-slate-900 uppercase tracking-widest ml-1">Session Price</FormLabel>
+            <div className="grid grid-cols-3 gap-3">
+              {[0, 50, 100].map((price) => (
+                <button
+                  key={price}
+                  type="button"
+                  onClick={() => {
+                    setSelectedPrice(price);
+                    form.setValue('is_paid', price > 0);
+                  }}
+                  className={cn(
+                    "flex flex-col items-center justify-center p-4 rounded-2xl border-2 transition-all",
+                    selectedPrice === price
+                      ? "bg-indigo-600 border-indigo-600 text-white shadow-lg shadow-indigo-100"
+                      : "bg-white border-slate-100 text-slate-600 hover:border-indigo-100"
+                  )}
+                >
+                  <span className="text-lg font-black">{price === 0 ? "Free" : `$${price}`}</span>
+                  <span className="text-[8px] font-bold uppercase tracking-widest opacity-70">
+                    {price === 0 ? "No Charge" : "Paid Session"}
+                  </span>
+                </button>
+              ))}
+            </div>
+          </div>
 
           <FormField
             control={form.control}

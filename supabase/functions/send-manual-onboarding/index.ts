@@ -122,8 +122,10 @@ serve(async (req) => {
 
     // 3. Generate Stripe Link if needed
     let stripeUrl = targetApp?.payment_link;
+    const priceAmount = targetApp?.price_amount || 50;
+
     if (targetApp?.is_paid && !targetApp?.payment_received && !stripeUrl) {
-      console.log(`[send-manual-onboarding] Generating Stripe link for app: ${targetApp.id}`);
+      console.log(`[send-manual-onboarding] Generating Stripe link for app: ${targetApp.id} at $${priceAmount}`);
       
       const session = await stripe.checkout.sessions.create({
         customer: client.stripe_customer_id || undefined,
@@ -131,11 +133,11 @@ serve(async (req) => {
         line_items: [{
           price_data: {
             currency: 'aud',
-            product_data: { 
+            product_data: {
               name: 'FNH Clinical Assessment',
               description: `Session on ${format(new Date(targetApp.date), "MMM d, yyyy")}`
             },
-            unit_amount: 5000,
+            unit_amount: priceAmount * 100,
           },
           quantity: 1,
         }],
@@ -157,7 +159,7 @@ serve(async (req) => {
 
     const paymentSection = stripeUrl ? `
       <div style="background-color: #F8FAFC; border-radius: 24px; padding: 32px; margin: 32px 0; border: 1px solid #E2E8F0; text-align: center;">
-        <div style="font-size: 11px; font-weight: 800; color: #1E3261; text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 16px;">Secure Payment ($50)</div>
+        <div style="font-size: 11px; font-weight: 800; color: #1E3261; text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 16px;">Secure Payment ($${priceAmount})</div>
         <p style="margin: 0 0 24px 0; font-size: 16px; color: #475569; line-height: 1.6;">This session is a paid clinical assessment. You can settle the fee securely via Stripe using the button below:</p>
         <a href="${stripeUrl}" style="display: inline-block; background-color: #4F46E5; color: #ffffff; padding: 16px 32px; border-radius: 12px; text-decoration: none; font-weight: 700; font-size: 14px; text-transform: uppercase; letter-spacing: 0.05em; shadow: 0 4px 6px rgba(79, 70, 229, 0.2);">Pay via Stripe</a>
         <div style="margin-top: 24px; padding-top: 20px; border-top: 1px solid #E2E8F0;">

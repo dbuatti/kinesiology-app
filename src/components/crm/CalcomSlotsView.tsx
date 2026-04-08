@@ -301,6 +301,14 @@ const CalcomSlotsView = () => {
     fetchSlots();
   }, [weeks, weeksOffset]);
 
+  const groupedWeeks = useMemo(() => {
+    const result = [];
+    for (let i = 0; i < dateRange.length; i += 7) {
+      result.push(dateRange.slice(i, i + 7));
+    }
+    return result;
+  }, [dateRange]);
+
   return (
     <div className="space-y-8 animate-in fade-in duration-700">
       {/* Summary & Controls Bar */}
@@ -496,180 +504,188 @@ const CalcomSlotsView = () => {
           <p className="text-xs font-black uppercase tracking-[0.3em] text-slate-400">Syncing with Cal.com...</p>
         </div>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-          {dateRange.map(date => {
-            const daySlots = slots[date] || [];
-            const dayBookings = bookings[date] || [];
-            const isBlocked = blockedDates.includes(date);
-            const hasNoActivity = daySlots.length === 0 && dayBookings.length === 0;
-            const isExpanded = expandedDays[date] || false;
-            
-            if (showOnlyAvailable && (isBlocked || daySlots.length === 0)) return null;
-            if (!isBlocked && hasNoActivity) return null;
+        <div className="space-y-12">
+          {groupedWeeks.map((week, weekIdx) => (
+            <div key={weekIdx} className="space-y-4">
+              <div className="flex items-center gap-3 px-4">
+                <div className="w-8 h-8 rounded-lg bg-indigo-50 flex items-center justify-center text-indigo-600">
+                  <CalendarDays size={16} />
+                </div>
+                <h3 className="text-sm font-black uppercase tracking-widest text-slate-400">
+                  Week of {format(new Date(week[0]), "MMM d")}
+                </h3>
+                <div className="flex-1 h-px bg-slate-100" />
+              </div>
+              
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 xl:grid-cols-7 gap-4">
+                {week.map(date => {
+                  const daySlots = slots[date] || [];
+                  const dayBookings = bookings[date] || [];
+                  const isBlocked = blockedDates.includes(date);
+                  const hasNoActivity = daySlots.length === 0 && dayBookings.length === 0;
+                  const isExpanded = expandedDays[date] || false;
+                  
+                  if (showOnlyAvailable && (isBlocked || daySlots.length === 0)) return null;
+                  if (!isBlocked && hasNoActivity) return null;
 
-            const visibleSlots = isExpanded ? daySlots : daySlots.slice(0, 6);
+                  const visibleSlots = isExpanded ? daySlots : daySlots.slice(0, 4);
 
-            return (
-              <Card key={date} className={cn(
-                "border-none shadow-md rounded-[2.5rem] overflow-hidden group hover:shadow-xl transition-all duration-500 flex flex-col",
-                isBlocked ? "bg-slate-50/80 dark:bg-slate-900/50 border-2 border-dashed border-slate-200 dark:border-slate-800" : "bg-card"
-              )}>
-                <CardHeader className={cn(
-                  "border-b transition-colors p-6",
-                  isBlocked ? "bg-slate-100/50 dark:bg-slate-900/80 border-slate-200 dark:border-slate-800" : "bg-muted/30 border-border"
-                )}>
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-3">
-                      <div className={cn(
-                        "w-10 h-10 rounded-xl flex items-center justify-center shadow-lg transition-all duration-500",
-                        isBlocked ? "bg-slate-400 scale-95" : "bg-indigo-600"
+                  return (
+                    <Card key={date} className={cn(
+                      "border-none shadow-md rounded-[2rem] overflow-hidden group hover:shadow-xl transition-all duration-500 flex flex-col",
+                      isBlocked ? "bg-slate-50/80 dark:bg-slate-900/50 border-2 border-dashed border-slate-200 dark:border-slate-800" : "bg-card"
+                    )}>
+                      <CardHeader className={cn(
+                        "border-b transition-colors p-4",
+                        isBlocked ? "bg-slate-100/50 dark:bg-slate-900/80 border-slate-200 dark:border-slate-800" : "bg-muted/30 border-border"
                       )}>
-                        {isBlocked ? <Ban size={20} className="text-white" /> : <Calendar size={20} className="text-white" />}
-                      </div>
-                      <div>
-                        <CardTitle className={cn(
-                          "text-lg font-black",
-                          isBlocked ? "text-slate-500" : "text-foreground"
-                        )}>
-                          {format(new Date(date), "EEEE")}
-                        </CardTitle>
-                        <CardDescription className="font-bold text-[10px] uppercase tracking-widest text-indigo-600">
-                          {format(new Date(date), "MMM d, yyyy")}
-                        </CardDescription>
-                      </div>
-                    </div>
-                    <div className="flex flex-col items-end gap-2">
-                      <Badge className={cn(
-                        "border-none font-black text-[8px] uppercase tracking-widest px-3 py-1 rounded-full shadow-sm",
-                        isBlocked ? "bg-rose-100 text-rose-600" : "bg-emerald-50 text-emerald-600"
-                      )}>
-                        {isBlocked ? "Blocked" : `${daySlots.length} Slots`}
-                      </Badge>
-                    </div>
-                  </div>
-                </CardHeader>
-                <CardContent className="p-6 space-y-6 flex-1 flex flex-col">
-                  {isBlocked ? (
-                    <div className="flex-1 flex flex-col items-center justify-center py-10 text-center space-y-4 animate-in fade-in zoom-in-95 duration-500">
-                      <div className="w-14 h-14 rounded-[1.5rem] bg-rose-50 dark:bg-rose-900/20 flex items-center justify-center mx-auto border border-rose-100 dark:border-rose-900/30">
-                        <ShieldAlert size={28} className="text-rose-400" />
-                      </div>
-                      <div className="space-y-1">
-                        <p className="text-xs font-black text-slate-900 dark:text-white uppercase tracking-widest">Day Blocked</p>
-                        <p className="text-[10px] font-medium text-slate-500">Manual override active</p>
-                      </div>
-                      <Button 
-                        variant="outline" 
-                        size="sm" 
-                        className="h-9 px-6 rounded-xl border-emerald-200 text-emerald-600 hover:bg-emerald-50 font-black text-[10px] uppercase tracking-widest"
-                        onClick={() => handleToggleBlock(date, true)}
-                        disabled={processingDate === date}
-                      >
-                        {processingDate === date ? <Loader2 size={14} className="animate-spin mr-2" /> : <Unlock size={14} className="mr-2" />}
-                        Unblock Day
-                      </Button>
-                    </div>
-                  ) : (
-                    <>
-                      {dayBookings.length > 0 && (
-                        <div className="space-y-3">
-                          <p className="text-[9px] font-black text-muted-foreground uppercase tracking-[0.2em] ml-1">Confirmed Sessions</p>
-                          <div className="grid grid-cols-1 gap-2">
-                            {dayBookings.map((booking) => (
-                              <div 
-                                key={booking.id} 
-                                className="flex items-center justify-between p-3 rounded-2xl bg-indigo-900 text-white shadow-lg border border-indigo-800 group/booking"
-                              >
-                                <div className="flex items-center gap-3 min-w-0">
-                                  <div className="w-8 h-8 rounded-lg bg-white/10 flex items-center justify-center shrink-0">
-                                    <User size={14} className="text-indigo-300" />
-                                  </div>
-                                  <div className="min-w-0">
-                                    <p className="text-xs font-black truncate">{booking.attendeeName}</p>
-                                    <p className="text-[9px] font-bold text-indigo-300 uppercase tracking-widest">
-                                      {format(new Date(booking.start), "h:mm a")}
-                                    </p>
-                                  </div>
-                                </div>
-                                <div className="flex items-center gap-1">
-                                  <Button 
-                                    variant="ghost" 
-                                    size="icon" 
-                                    className="h-8 w-8 rounded-xl text-indigo-300 hover:text-emerald-400 hover:bg-emerald-500/20 opacity-0 group-hover/booking:opacity-100 transition-all"
-                                    onClick={() => handleSendOnboarding(booking)}
-                                    disabled={sendingEmail === booking.uid}
-                                  >
-                                    {sendingEmail === booking.uid ? <Loader2 size={14} className="animate-spin" /> : <Send size={14} />}
-                                  </Button>
-                                  <Button 
-                                    variant="ghost" 
-                                    size="icon" 
-                                    className="h-8 w-8 rounded-xl text-indigo-300 hover:text-rose-400 hover:bg-rose-500/20 opacity-0 group-hover/booking:opacity-100 transition-all"
-                                    onClick={() => handleCancelBooking(booking.uid, booking.attendeeName)}
-                                    disabled={processingBooking === booking.uid}
-                                  >
-                                    {processingBooking === booking.uid ? <Loader2 size={14} className="animate-spin" /> : <Trash2 size={14} />}
-                                  </Button>
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center gap-2">
+                            <div className={cn(
+                              "w-8 h-8 rounded-lg flex items-center justify-center shadow-sm transition-all duration-500",
+                              isBlocked ? "bg-slate-400 scale-95" : "bg-indigo-600"
+                            )}>
+                              {isBlocked ? <Ban size={14} className="text-white" /> : <Calendar size={14} className="text-white" />}
+                            </div>
+                            <div>
+                              <CardTitle className={cn(
+                                "text-xs font-black",
+                                isBlocked ? "text-slate-500" : "text-foreground"
+                              )}>
+                                {format(new Date(date), "EEE")}
+                              </CardTitle>
+                              <CardDescription className="font-bold text-[8px] uppercase tracking-widest text-indigo-600">
+                                {format(new Date(date), "MMM d")}
+                              </CardDescription>
+                            </div>
+                          </div>
+                          <Badge className={cn(
+                            "border-none font-black text-[7px] uppercase tracking-widest px-1.5 py-0.5 rounded-full shadow-sm",
+                            isBlocked ? "bg-rose-100 text-rose-600" : "bg-emerald-50 text-emerald-600"
+                          )}>
+                            {isBlocked ? "X" : daySlots.length}
+                          </Badge>
+                        </div>
+                      </CardHeader>
+                      <CardContent className="p-4 space-y-4 flex-1 flex flex-col">
+                        {isBlocked ? (
+                          <div className="flex-1 flex flex-col items-center justify-center py-6 text-center space-y-3 animate-in fade-in zoom-in-95 duration-500">
+                            <ShieldAlert size={20} className="text-rose-400" />
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              className="h-7 px-3 rounded-lg border-emerald-200 text-emerald-600 hover:bg-emerald-50 font-black text-[8px] uppercase tracking-widest"
+                              onClick={() => handleToggleBlock(date, true)}
+                              disabled={processingDate === date}
+                            >
+                              {processingDate === date ? <Loader2 size={10} className="animate-spin mr-1" /> : <Unlock size={10} className="mr-1" />}
+                              Unblock
+                            </Button>
+                          </div>
+                        ) : (
+                          <>
+                            {dayBookings.length > 0 && (
+                              <div className="space-y-2">
+                                <p className="text-[8px] font-black text-muted-foreground uppercase tracking-[0.2em] ml-1">Bookings</p>
+                                <div className="grid grid-cols-1 gap-1.5">
+                                  {dayBookings.map((booking) => (
+                                    <div
+                                      key={booking.id}
+                                      className="flex items-center justify-between p-2 rounded-xl bg-indigo-900 text-white shadow-md border border-indigo-800 group/booking"
+                                    >
+                                      <div className="flex items-center gap-2 min-w-0">
+                                        <div className="w-6 h-6 rounded-md bg-white/10 flex items-center justify-center shrink-0">
+                                          <User size={10} className="text-indigo-300" />
+                                        </div>
+                                        <div className="min-w-0">
+                                          <p className="text-[10px] font-black truncate">{booking.attendeeName}</p>
+                                          <p className="text-[7px] font-bold text-indigo-300 uppercase tracking-widest">
+                                            {format(new Date(booking.start), "h:mm a")}
+                                          </p>
+                                        </div>
+                                      </div>
+                                      <div className="flex items-center gap-0.5">
+                                        <Button
+                                          variant="ghost"
+                                          size="icon"
+                                          className="h-6 w-6 rounded-lg text-indigo-300 hover:text-emerald-400 hover:bg-emerald-500/20 opacity-0 group-hover/booking:opacity-100 transition-all"
+                                          onClick={() => handleSendOnboarding(booking)}
+                                          disabled={sendingEmail === booking.uid}
+                                        >
+                                          {sendingEmail === booking.uid ? <Loader2 size={10} className="animate-spin" /> : <Send size={10} />}
+                                        </Button>
+                                        <Button
+                                          variant="ghost"
+                                          size="icon"
+                                          className="h-6 w-6 rounded-lg text-indigo-300 hover:text-rose-400 hover:bg-rose-500/20 opacity-0 group-hover/booking:opacity-100 transition-all"
+                                          onClick={() => handleCancelBooking(booking.uid, booking.attendeeName)}
+                                          disabled={processingBooking === booking.uid}
+                                        >
+                                          {processingBooking === booking.uid ? <Loader2 size={10} className="animate-spin" /> : <Trash2 size={10} />}
+                                        </Button>
+                                      </div>
+                                    </div>
+                                  ))}
                                 </div>
                               </div>
-                            ))}
-                          </div>
-                        </div>
-                      )}
+                            )}
 
-                      {daySlots.length > 0 && (
-                        <div className="space-y-3 flex-1">
-                          <p className="text-[9px] font-black text-muted-foreground uppercase tracking-[0.2em] ml-1">Available Slots</p>
-                          <div className="grid grid-cols-2 gap-2">
-                            {visibleSlots.map((slot, idx) => {
-                              const timeStr = slot.time || slot.start;
-                              return (
-                                <button 
-                                  key={idx} 
-                                  onClick={() => handleSlotClick(date, timeStr)}
-                                  className="flex items-center justify-center p-2.5 rounded-xl bg-muted/50 border border-border text-[10px] font-black text-foreground hover:bg-indigo-600 hover:border-indigo-600 hover:text-white transition-all group/slot"
-                                >
-                                  <Clock size={12} className="mr-2 opacity-40 group-hover/slot:opacity-100 transition-opacity" />
-                                  {format(new Date(timeStr), "h:mm a")}
-                                </button>
-                              );
-                            })}
-                          </div>
-                          {daySlots.length > 6 && (
-                            <Button 
-                              variant="ghost" 
-                              size="sm" 
-                              onClick={() => toggleDayExpansion(date)}
-                              className="w-full h-8 text-[9px] font-black uppercase tracking-widest text-indigo-600 hover:bg-indigo-50"
-                            >
-                              {isExpanded ? (
-                                <><ChevronUp size={12} className="mr-1" /> Show Less</>
-                              ) : (
-                                <><ChevronDown size={12} className="mr-1" /> Show {daySlots.length - 6} More</>
-                              )}
-                            </Button>
-                          )}
-                        </div>
-                      )}
+                            {daySlots.length > 0 && (
+                              <div className="space-y-2 flex-1">
+                                <p className="text-[8px] font-black text-muted-foreground uppercase tracking-[0.2em] ml-1">Slots</p>
+                                <div className="grid grid-cols-1 gap-1.5">
+                                  {visibleSlots.map((slot, idx) => {
+                                    const timeStr = slot.time || slot.start;
+                                    return (
+                                      <button
+                                        key={idx}
+                                        onClick={() => handleSlotClick(date, timeStr)}
+                                        className="flex items-center justify-center p-2 rounded-xl bg-muted/50 border border-border text-[9px] font-black text-foreground hover:bg-indigo-600 hover:border-indigo-600 hover:text-white transition-all group/slot"
+                                      >
+                                        <Clock size={10} className="mr-1.5 opacity-40 group-hover/slot:opacity-100 transition-opacity" />
+                                        {format(new Date(timeStr), "h:mm a")}
+                                      </button>
+                                    );
+                                  })}
+                                </div>
+                                {daySlots.length > 4 && (
+                                  <Button
+                                    variant="ghost"
+                                    size="sm"
+                                    onClick={() => toggleDayExpansion(date)}
+                                    className="w-full h-6 text-[7px] font-black uppercase tracking-widest text-indigo-600 hover:bg-indigo-50"
+                                  >
+                                    {isExpanded ? (
+                                      <><ChevronUp size={10} className="mr-1" /> Less</>
+                                    ) : (
+                                      <><ChevronDown size={10} className="mr-1" /> {daySlots.length - 4} More</>
+                                    )}
+                                  </Button>
+                                )}
+                              </div>
+                            )}
 
-                      <div className="pt-4 border-t border-border mt-auto">
-                        <Button 
-                          variant="ghost" 
-                          size="sm" 
-                          className="w-full h-9 px-3 text-[9px] font-black uppercase tracking-widest rounded-xl text-rose-600 hover:bg-rose-50 opacity-0 group-hover:opacity-100 transition-all"
-                          onClick={() => handleToggleBlock(date, false)}
-                          disabled={processingDate === date}
-                        >
-                          {processingDate === date ? <Loader2 size={12} className="animate-spin mr-1.5" /> : <Ban size={12} className="mr-1.5" />}
-                          Block Full Day
-                        </Button>
-                      </div>
-                    </>
-                  )}
-                </CardContent>
-              </Card>
-            );
-          })}
+                            <div className="pt-3 border-t border-border mt-auto">
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                className="w-full h-7 px-2 text-[7px] font-black uppercase tracking-widest rounded-lg text-rose-600 hover:bg-rose-50 opacity-0 group-hover:opacity-100 transition-all"
+                                onClick={() => handleToggleBlock(date, false)}
+                                disabled={processingDate === date}
+                              >
+                                {processingDate === date ? <Loader2 size={10} className="animate-spin mr-1" /> : <Ban size={10} className="mr-1" />}
+                                Block Day
+                              </Button>
+                            </div>
+                          </>
+                        )}
+                      </CardContent>
+                    </Card>
+                  );
+                })}
+              </div>
+            </div>
+          ))}
         </div>
       )}
 

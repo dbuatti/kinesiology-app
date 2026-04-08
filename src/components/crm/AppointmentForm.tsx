@@ -33,6 +33,7 @@ import { cn } from "@/lib/utils";
 import { showSuccess, showError } from "@/utils/toast";
 import { APPOINTMENT_TAGS, APPOINTMENT_STATUSES } from "@/data/appointment-data";
 import SearchableClientSelect from "./SearchableClientSelect";
+import { CALCOM_CONFIG } from "../../config/integrations";
 
 const formSchema = z.object({
   clientId: z.string().min(1, "Client is required"),
@@ -55,9 +56,10 @@ interface AppointmentFormProps {
   initialDate?: Date;
   initialTime?: string;
   slotTime?: string; // Exact UTC time from Cal.com
+  eventTypeId?: string; // Selected event type ID
 }
 
-const AppointmentForm = ({ onSuccess, initialClientId, initialDate, initialTime, slotTime }: AppointmentFormProps) => {
+const AppointmentForm = ({ onSuccess, initialClientId, initialDate, initialTime, slotTime, eventTypeId: propEventTypeId }: AppointmentFormProps) => {
   const { session } = useAuth();
   const [clients, setClients] = useState<{ id: string; name: string }[]>([]);
   const [loadingClients, setLoadingClients] = useState(true);
@@ -123,12 +125,12 @@ const AppointmentForm = ({ onSuccess, initialClientId, initialDate, initialTime,
       // 1. Sync with Cal.com if applicable
       if (initialTime || slotTime) {
         setSyncStatus('calcom');
-        const eventTypeId = localStorage.getItem('calcom_preferred_event_id') || "4279898";
+        const eventTypeId = propEventTypeId || localStorage.getItem('calcom_preferred_event_id') || CALCOM_CONFIG.DEFAULT_EVENT_TYPE_ID;
 
         try {
           const { data: calcomData, error: invokeError } = await supabase.functions.invoke('create-calcom-booking', {
-            body: { 
-              clientId: values.clientId, 
+            body: {
+              clientId: values.clientId,
               startTime: isoDate,
               eventTypeId: eventTypeId,
               title: values.name || values.tag || "Kinesiology Session",
@@ -168,7 +170,9 @@ const AppointmentForm = ({ onSuccess, initialClientId, initialDate, initialTime,
           issue: values.issue,
           is_paid: values.is_paid,
           send_onboarding: values.send_onboarding,
-          calcom_booking_id: calcomId ? String(calcomId) : null
+          calcom_booking_id: calcomId ? String(calcomId) : null,
+          price_amount: currentEventType.price,
+          price_currency: currentEventType.currency
         })
         .select('id')
         .single();
@@ -206,6 +210,9 @@ const AppointmentForm = ({ onSuccess, initialClientId, initialDate, initialTime,
       setSyncStatus('idle');
     }
   };
+
+  const currentEventTypeId = propEventTypeId || localStorage.getItem('calcom_preferred_event_id') || CALCOM_CONFIG.DEFAULT_EVENT_TYPE_ID;
+  const currentEventType = CALCOM_CONFIG.EVENT_TYPES.find(t => t.id === currentEventTypeId) || CALCOM_CONFIG.EVENT_TYPES[0];
 
   return (
     <Form {...form}>
@@ -371,7 +378,7 @@ const AppointmentForm = ({ onSuccess, initialClientId, initialDate, initialTime,
                     <DollarSign size={20} />
                   </div>
                   <div className="space-y-0.5">
-                    <FormLabel className="text-base font-black text-slate-900 cursor-pointer">Paid Session ($50)</FormLabel>
+                    <FormLabel className="text-base font-black text-slate-900 cursor-pointer">Paid Session (${currentEventType.price})</FormLabel>
                     <p className="text-[9px] text-slate-500 font-bold uppercase tracking-widest">
                       Requires payment (triggers bank details in email)
                     </p>

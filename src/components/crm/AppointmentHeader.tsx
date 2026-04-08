@@ -113,18 +113,18 @@ const AppointmentHeader = ({ appointment, onSaveField, onUpdate }: AppointmentHe
 
           <div className={cn(
             "flex items-center gap-2 px-2 py-1 md:px-3 md:py-1.5 rounded-lg md:rounded-xl border transition-all",
-            appointment.is_paid 
+            appointment.is_paid
               ? (appointment.payment_received ? "bg-emerald-50 border-emerald-200 text-emerald-700" : "bg-amber-50 border-amber-200 text-amber-700")
               : "bg-slate-50 border-slate-200 text-slate-400"
           )}>
             <span className="text-[8px] md:text-[10px] font-black uppercase tracking-widest">
-              {!appointment.is_paid ? "FREE" : (appointment.payment_received ? "PAID" : "DUE")}
+              {!appointment.is_paid ? "FREE" : (appointment.payment_received ? "PAID" : `DUE ${appointment.price_amount ? `$${appointment.price_amount}` : ''}`)}
             </span>
-            <Switch 
-              checked={appointment.payment_received || false} 
-              onCheckedChange={(checked) => onSaveField('payment_received', checked)} 
+            <Switch
+              checked={appointment.payment_received || false}
+              onCheckedChange={(checked) => onSaveField('payment_received', checked)}
               disabled={!appointment.is_paid}
-              className="data-[state=checked]:bg-emerald-500 scale-[0.6] md:scale-75" 
+              className="data-[state=checked]:bg-emerald-500 scale-[0.6] md:scale-75"
             />
           </div>
 

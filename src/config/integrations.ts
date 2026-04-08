@@ -9,7 +9,24 @@ export const CALCOM_CONFIG = {
   // Your primary availability schedule
   DEFAULT_SCHEDULE_ID: "1387833",
   // The public booking URL
-  BOOKING_URL: "https://cal.com/danielebuatti/fnh-neuro-75"
+  BOOKING_URL: "https://cal.com/danielebuatti/fnh-neuro-75",
+  
+  EVENT_TYPES: [
+    {
+      id: "4279898",
+      name: "Standard Session",
+      price: 50,
+      currency: "AUD",
+      description: "75-minute neurological kinesiology session"
+    },
+    {
+      id: "5302336",
+      name: "Full Price Session",
+      price: 100,
+      currency: "AUD",
+      description: "Full price neurological kinesiology session"
+    }
+  ]
 };
 
 export const NOTION_CONFIG = {

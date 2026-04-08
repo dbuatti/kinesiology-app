@@ -135,6 +135,14 @@ const UpcomingAppointments = () => {
                     isPrivate && "blur-[2px] select-none"
                   )}>
                     {appointment.name || appointment.tag}
+                    {appointment.is_paid && (
+                      <span className={cn(
+                        "ml-2 px-1.5 py-0.5 rounded text-[8px] font-black uppercase tracking-widest",
+                        appointment.payment_received ? "bg-emerald-100 text-emerald-600" : "bg-amber-100 text-amber-600"
+                      )}>
+                        {appointment.payment_received ? "Paid" : `Due ${appointment.price_amount ? `$${appointment.price_amount}` : ''}`}
+                      </span>
+                    )}
                   </p>
                 </div>
                 <Button

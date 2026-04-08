@@ -55,6 +55,13 @@ import {
   CollapsibleContent,
   CollapsibleTrigger,
 } from "@/components/ui/collapsible";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import AppointmentForm from "./AppointmentForm";
 import { CALCOM_CONFIG } from "../../config/integrations";
 
@@ -378,7 +385,7 @@ const CalcomSlotsView = () => {
 
           <div className="flex items-center justify-between px-4">
             <div className="flex items-center gap-6">
-              <button 
+              <button
                 onClick={() => setShowOnlyAvailable(!showOnlyAvailable)}
                 className="flex items-center gap-2 group"
               >
@@ -392,6 +399,26 @@ const CalcomSlotsView = () => {
                   Show only available days
                 </span>
               </button>
+
+              <div className="flex items-center gap-2">
+                <span className="text-[10px] font-black uppercase tracking-widest text-slate-500">Session Type:</span>
+                <Select value={eventTypeId} onValueChange={(val) => {
+                  setEventTypeId(val);
+                  // Trigger fetch immediately when changed
+                  setTimeout(fetchSlots, 100);
+                }}>
+                  <SelectTrigger className="h-8 w-[180px] rounded-xl bg-card border-border font-bold text-[10px] uppercase tracking-widest">
+                    <SelectValue placeholder="Select Type" />
+                  </SelectTrigger>
+                  <SelectContent className="rounded-xl border-none shadow-2xl">
+                    {CALCOM_CONFIG.EVENT_TYPES.map(type => (
+                      <SelectItem key={type.id} value={type.id} className="rounded-lg text-[10px] font-bold uppercase tracking-widest">
+                        {type.name} (${type.price})
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
             </div>
             
             <Collapsible open={configOpen} onOpenChange={setConfigOpen}>
@@ -672,14 +699,15 @@ const CalcomSlotsView = () => {
             <DialogDescription className="font-medium">Schedule a session for the selected time slot.</DialogDescription>
           </DialogHeader>
           {bookingData && (
-            <AppointmentForm 
+            <AppointmentForm
               initialDate={bookingData.date}
               initialTime={bookingData.time}
               slotTime={bookingData.slotTime}
+              eventTypeId={eventTypeId}
               onSuccess={() => {
                 setBookingDialogOpen(false);
                 fetchSlots();
-              }} 
+              }}
             />
           )}
         </DialogContent>

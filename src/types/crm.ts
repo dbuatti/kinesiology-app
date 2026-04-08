@@ -29,6 +29,8 @@ export interface Appointment {
   notion_planner_id?: string | null;
   calcom_booking_id?: string | null;
   name?: string;
+  price_amount?: number | null;
+  price_currency?: string | null;
   additional_notes?: string;
   priority_pattern?: string;
   session_north_star?: string;

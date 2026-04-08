@@ -1,0 +1,3 @@
+ALTER TABLE appointments 
+ADD COLUMN IF NOT EXISTS price_amount NUMERIC,
+ADD COLUMN IF NOT EXISTS price_currency TEXT DEFAULT 'AUD';

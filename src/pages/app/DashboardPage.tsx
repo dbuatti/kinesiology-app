@@ -7,11 +7,10 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { 
   Calendar, Activity, Loader2,
-  Plus, UserPlus, Sparkles,
-  CheckCircle2, Zap, FlaskConical, Brain, Wind, StickyNote, Timer,
-  ArrowRight, AlertCircle, TrendingUp, Clock, ShieldCheck, Heart,
-  ClipboardCheck, EyeOff, CalendarPlus, Target, Link as LinkIcon, Check,
-  Coffee, Mic, MessageSquare, Code, Volume2
+  UserPlus, Zap, FlaskConical, Brain, Wind, StickyNote,
+  ArrowRight, AlertCircle, TrendingUp, Clock, Heart,
+  ClipboardCheck, Link as LinkIcon, Check,
+  Coffee, Mic, Trophy, CalendarPlus, Target, CheckCircle2
 } from "lucide-react";
 import {
   Dialog,
@@ -34,6 +33,7 @@ import DashboardStats from "@/components/crm/DashboardStats";
 import DailyBriefing from "@/components/crm/DailyBriefing";
 import AppLayout from "@/components/crm/AppLayout";
 import PractitionerGrounding from "@/components/crm/PractitionerGrounding";
+import ClientWins from "@/components/crm/ClientWins";
 import { cn } from "@/lib/utils";
 import { usePrivacyMode } from "@/hooks/use-privacy-mode";
 import { showSuccess } from "@/utils/toast";
@@ -337,35 +337,8 @@ const Index = () => {
 
             <div className="space-y-6 md:space-y-8">
               <div className="px-2 space-y-0.5 md:space-y-1">
-                <h2 className="text-2xl md:text-3xl font-serif font-bold tracking-tight">Session Activity</h2>
-                <p className="text-xs md:text-base text-muted-foreground font-medium">Volume of appointments over the last 6 months</p>
-              </div>
-              <div className="h-[250px] md:h-[350px] w-full bg-white dark:bg-slate-900/50 p-4 md:p-8 rounded-2xl md:rounded-[3rem] border border-border shadow-inner">
-                <ResponsiveContainer width="100%" height="100%">
-                  <AreaChart data={chartData}>
-                    <defs>
-                      <linearGradient id="colorSessions" x1="0" y1="0" x2="0" y2="1">
-                        <stop offset="5%" stopColor="#1E3261" stopOpacity={0.15}/>
-                        <stop offset="95%" stopColor="#1E3261" stopOpacity={0}/>
-                      </linearGradient>
-                    </defs>
-                    <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="hsl(var(--border))" />
-                    <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{fontSize: 9, fill: 'hsl(var(--muted-foreground))', fontWeight: 900}} />
-                    <YAxis axisLine={false} tickLine={false} tick={{fontSize: 9, fill: 'hsl(var(--muted-foreground))', fontWeight: 900}} />
-                    <ChartTooltip 
-                      contentStyle={{borderRadius: '16px', border: 'none', backgroundColor: 'hsl(var(--card))', boxShadow: '0 20px 25px -5px rgb(0 0 0 / 0.1)', padding: '12px'}}
-                      labelStyle={{fontWeight: 900, color: 'hsl(var(--foreground))', marginBottom: '4px', fontSize: '14px', fontFamily: 'Playfair Display'}}
-                    />
-                    <Area type="monotone" dataKey="sessions" stroke="#1E3261" strokeWidth={4} fillOpacity={1} fill="url(#colorSessions)" />
-                  </AreaChart>
-                </ResponsiveContainer>
-              </div>
-            </div>
-
-            <div className="space-y-6 md:space-y-8">
-              <div className="px-2 space-y-0.5 md:space-y-1">
-                <h2 className="text-2xl md:text-3xl font-serif font-bold flex items-center gap-3 md:gap-4 text-amber-600">
-                  <StickyNote size={24} className="md:w-8 md:h-8" /> Practitioner Scratchpad
+                <h2 className="text-2xl md:text-3xl font-serif font-bold tracking-tight text-amber-600 flex items-center gap-3">
+                  <StickyNote size={24} /> Practitioner Scratchpad
                 </h2>
                 <p className="text-xs md:text-base text-muted-foreground font-medium">Quick notes or research ideas. Saves automatically to your browser.</p>
               </div>
@@ -397,16 +370,17 @@ const Index = () => {
           </div>
 
           <div className="lg:col-span-4 space-y-12 md:space-y-16">
+            <ClientWins />
             <MeridianClock />
             <UpcomingAppointments />
             <RecentActivity />
 
             <div className="p-8 md:p-10 bg-primary text-white rounded-2xl md:rounded-[3rem] shadow-2xl relative overflow-hidden group">
-              <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(255,255,255,0.1),transparent_50%)]" />
+              <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(255,255,255,0.15),transparent_50%)]" />
               <div className="absolute top-0 right-0 p-6 md:p-8 opacity-10 group-hover:scale-110 transition-transform duration-700"><Wind size={100} className="md:w-[150px] md:h-[150px]" /></div>
               <div className="relative z-10 space-y-6 md:space-y-8">
                 <div className="flex items-center gap-3 md:gap-4">
-                  <div className="w-10 h-10 md:w-12 md:h-12 rounded-xl md:rounded-2xl bg-white/10 backdrop-blur-md flex items-center justify-center border border-white/10 shadow-xl">
+                  <div className="w-10 h-10 md:w-12 md:h-12 bg-white/10 backdrop-blur-md flex items-center justify-center border border-white/10 shadow-xl">
                     <Wind size={20} className="md:w-6 md:h-6 text-secondary" />
                   </div>
                   <h3 className="text-xl md:text-2xl font-serif font-bold">Clinical Focus</h3>

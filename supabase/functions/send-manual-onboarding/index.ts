@@ -2,7 +2,7 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
 import Stripe from 'https://esm.sh/stripe@14.25.0'
-import { format } from 'https://esm.sh/date-fns@3.6.0'
+import { format, subMonths } from 'https://esm.sh/date-fns@3.6.0'
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -65,7 +65,7 @@ serve(async (req) => {
 
   try {
     const body = await req.json().catch(() => ({}));
-    const { clientId, appointmentId } = body;
+    const { clientId, appointmentId, force = false } = body;
     
     if (!clientId) throw new Error("Missing clientId");
 
@@ -82,7 +82,32 @@ serve(async (req) => {
 
     const supabase = createClient(Deno.env.get('SUPABASE_URL'), Deno.env.get('SUPABASE_SERVICE_ROLE_KEY'));
 
-    // 1. Fetch Client & Appointment
+    // 1. Check for recent appointments (6-month rule)
+    if (!force) {
+      const sixMonthsAgo = subMonths(new Date(), 6).toISOString();
+      const { data: recentApps, error: historyError } = await supabase
+        .from('appointments')
+        .select('id, date')
+        .eq('client_id', clientId)
+        .gt('date', sixMonthsAgo)
+        .neq('id', appointmentId || '') // Exclude the current appointment
+        .limit(1);
+
+      if (historyError) console.error("[send-manual-onboarding] History check error:", historyError);
+
+      if (recentApps && recentApps.length > 0) {
+        console.log(`[send-manual-onboarding] Skipping email for client ${clientId}: Recent appointment found on ${recentApps[0].date}`);
+        return new Response(JSON.stringify({ 
+          success: true, 
+          skipped: true, 
+          reason: "Client had an appointment within the last 6 months." 
+        }), { 
+          status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
+        });
+      }
+    }
+
+    // 2. Fetch Client & Appointment
     const { data: client } = await supabase.from('clients').select('*').eq('id', clientId).single();
     if (!client?.email) throw new Error("Client email missing");
 
@@ -95,7 +120,7 @@ serve(async (req) => {
       targetApp = apps?.[0];
     }
 
-    // 2. Generate Stripe Link if needed
+    // 3. Generate Stripe Link if needed
     let stripeUrl = targetApp?.payment_link;
     if (targetApp?.is_paid && !targetApp?.payment_received && !stripeUrl) {
       console.log(`[send-manual-onboarding] Generating Stripe link for app: ${targetApp.id}`);

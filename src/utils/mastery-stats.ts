@@ -41,7 +41,7 @@ export async function fetchMasteryStats(): Promise<MasteryStat[]> {
     return 'Novice';
   };
 
-  // 1. Pre-populate with ALL possible items
+  // 1. Pre-populate with ALL possible items and their URLs
   Object.values(MUSCLE_GROUPS).flat().forEach(name => {
     const info = getMuscleInfo(name);
     statsMap[name] = {
@@ -60,18 +60,19 @@ export async function fetchMasteryStats(): Promise<MasteryStat[]> {
   });
 
   BRAIN_REFLEX_POINTS.forEach(point => {
-    const name = point.name.includes(':') ? point.name.split(':')[0].trim() : point.name;
-    statsMap[name] = {
-      id: name, 
-      name, 
+    // Handle the "CN I: Olfactory" style names for display but keep ID for lookup
+    const displayName = point.name.includes(':') ? point.name.split(':')[0].trim() : point.name;
+    statsMap[displayName] = {
+      id: point.id, 
+      name: displayName, 
       category: 'Brain Zones', 
       count: 0, 
       dysfunctionCount: 0, 
       dysfunctionRate: 0, 
       lastLogged: null, 
       masteryLevel: 'Novice',
-      videoUrl: (point as any).videoUrl,
-      pageUrl: (point as any).pageUrl
+      videoUrl: point.videoUrl,
+      pageUrl: point.pageUrl
     };
   });
 
@@ -109,6 +110,7 @@ export async function fetchMasteryStats(): Promise<MasteryStat[]> {
         Object.values(pattern).forEach((items: any) => {
           Object.entries(items).forEach(([name, status]) => {
             const cleanName = name.replace(/ \([LR]\)$/, '');
+            // Try to find the key in statsMap that matches the start of the name (handles CN I vs CN I: Olfactory)
             const matchKey = Object.keys(statsMap).find(k => cleanName.startsWith(k));
             if (matchKey && statsMap[matchKey]) {
               statsMap[matchKey].count++;

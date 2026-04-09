@@ -171,17 +171,17 @@ const Sidebar = ({ onHide }: SidebarProps) => {
     const isActive = !item.isExternal && (location.pathname === item.path || (item.path !== "/" && location.pathname.startsWith(item.path)));
     
     const className = cn(
-      "flex items-center justify-between gap-2 px-3 py-2 rounded-xl transition-all duration-300 group",
-      isActive 
-        ? "bg-primary text-white shadow-lg shadow-primary/20" 
+      "flex items-center justify-between gap-2 px-3 py-2.5 rounded-xl transition-all duration-300 group",
+      isActive
+        ? "bg-primary text-white shadow-lg shadow-primary/20"
         : "text-muted-foreground hover:text-primary hover:bg-secondary/50"
     );
 
     const content = (
       <>
         <div className="flex items-center gap-3">
-          <item.icon size={16} className={cn("transition-all duration-300", isActive ? "text-white" : "text-muted-foreground group-hover:text-primary")} />
-          <span className="font-bold text-[10px] uppercase tracking-widest">{item.label}</span>
+          <item.icon size={18} className={cn("transition-all duration-300", isActive ? "text-white" : "text-muted-foreground group-hover:text-primary")} />
+          <span className="font-bold text-[11px] uppercase tracking-widest">{item.label}</span>
         </div>
         {item.shortcut && (
           <kbd className={cn(
@@ -224,13 +224,13 @@ const Sidebar = ({ onHide }: SidebarProps) => {
     <div className="space-y-1">
       <button
         onClick={onToggle}
-        className="flex items-center justify-between w-full px-3 py-2 rounded-xl text-muted-foreground hover:text-primary hover:bg-secondary/30 transition-all group"
+        className="flex items-center justify-between w-full px-3 py-2.5 rounded-xl text-muted-foreground hover:text-primary hover:bg-secondary/30 transition-all group"
       >
         <div className="flex items-center gap-3">
-          <Icon size={16} className="text-muted-foreground group-hover:text-primary" />
-          <span className="text-[9px] font-black uppercase tracking-[0.3em]">{title}</span>
+          <Icon size={18} className="text-muted-foreground group-hover:text-primary" />
+          <span className="text-[10px] font-black uppercase tracking-[0.3em]">{title}</span>
         </div>
-        {isOpen ? <ChevronUp size={12} className="opacity-50" /> : <ChevronDown size={12} className="opacity-50" />}
+        {isOpen ? <ChevronUp size={14} className="opacity-50" /> : <ChevronDown size={14} className="opacity-50" />}
       </button>
       {isOpen && (
         <div className="space-y-1 pl-1 animate-in fade-in slide-in-from-top-1 duration-300">

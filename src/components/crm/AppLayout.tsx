@@ -31,17 +31,17 @@ const AppLayout = ({
   return (
     <div className={cn(
       "w-full min-h-screen bg-background transition-all duration-500",
-      hasFixedHeader ? "pt-20 md:pt-24 pb-16" : "pt-4 md:pt-12 pb-16",
+      hasFixedHeader ? "pt-20 md:pt-24 pb-16" : "pt-6 md:pt-16 pb-16",
       variants[variant],
       className
     )}>
       <AnimatePresence mode="wait">
         <motion.div
           key={location.pathname}
-          initial={{ opacity: 0, y: 10 }}
+          initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          exit={{ opacity: 0, y: -10 }}
-          transition={{ duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
+          exit={{ opacity: 0, y: -20 }}
+          transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
         >
           {children}
         </motion.div>

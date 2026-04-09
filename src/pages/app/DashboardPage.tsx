@@ -5,12 +5,12 @@ import { Link } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { 
+import {
   Calendar, Activity, Loader2,
-  UserPlus, Zap, FlaskConical, Brain, Wind, StickyNote,
-  ArrowRight, AlertCircle, TrendingUp, Clock, Heart,
+  UserPlus, Zap, Wind,
+  ArrowRight, Clock,
   ClipboardCheck, Link as LinkIcon, Check,
-  Coffee, Mic, Trophy, CalendarPlus, Target, CheckCircle2
+  Coffee, CalendarPlus, Target
 } from "lucide-react";
 import {
   Dialog,
@@ -23,10 +23,8 @@ import ClientForm from "@/components/crm/ClientForm";
 import AppointmentForm from "@/components/crm/AppointmentForm";
 import RecentActivity from "@/components/crm/RecentActivity";
 import UpcomingAppointments from "@/components/crm/UpcomingAppointments";
-import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip as ChartTooltip, ResponsiveContainer } from 'recharts';
-import { format, subMonths, isToday, subDays, differenceInMinutes, startOfWeek, endOfWeek, isWithinInterval, formatDistanceToNow } from "date-fns";
+import { format, isToday, subDays, differenceInMinutes, startOfWeek, endOfWeek, isWithinInterval, formatDistanceToNow } from "date-fns";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Textarea } from "@/components/ui/textarea";
 import MeridianClock from "@/components/crm/MeridianClock";
 import { AppointmentWithClient } from "@/types/crm";
 import DashboardStats from "@/components/crm/DashboardStats";
@@ -37,9 +35,8 @@ import ClientWins from "@/components/crm/ClientWins";
 import { cn } from "@/lib/utils";
 import { usePrivacyMode } from "@/hooks/use-privacy-mode";
 import { showSuccess } from "@/utils/toast";
-
-const SCRATCHPAD_KEY = "antigravity_practitioner_scratchpad";
-const SCRATCHPAD_TIME_KEY = "antigravity_practitioner_scratchpad_time";
+import Scratchpad from "@/components/crm/Scratchpad";
+import QuickActionsGrid from "@/components/crm/QuickActionsGrid";
 
 const Index = () => {
   const { isPrivate } = usePrivacyMode();
@@ -59,29 +56,13 @@ const Index = () => {
   const [loading, setLoading] = useState(true);
   const [clientDialogOpen, setClientDialogOpen] = useState(false);
   const [appDialogOpen, setAppDialogOpen] = useState(false);
-  const [chartData, setChartData] = useState<{ name: string; sessions: number; date: Date }[]>([]);
-  const [scratchpad, setScratchpad] = useState("");
-  const [lastSaved, setLastSaved] = useState<string | null>(null);
   const [currentTime, setCurrentTime] = useState(new Date());
   const [copiedId, setCopiedId] = useState<string | null>(null);
 
   useEffect(() => {
-    const saved = localStorage.getItem(SCRATCHPAD_KEY);
-    const savedTime = localStorage.getItem(SCRATCHPAD_TIME_KEY);
-    if (saved) setScratchpad(saved);
-    if (savedTime) setLastSaved(savedTime);
-    
     const timer = setInterval(() => setCurrentTime(new Date()), 60000);
     return () => clearInterval(timer);
   }, []);
-
-  const handleScratchpadChange = (val: string) => {
-    const now = format(new Date(), "h:mm a");
-    setScratchpad(val);
-    setLastSaved(now);
-    localStorage.setItem(SCRATCHPAD_KEY, val);
-    localStorage.setItem(SCRATCHPAD_TIME_KEY, now);
-  };
 
   const handleCopyLink = (e: React.MouseEvent, clientId: string) => {
     e.preventDefault();
@@ -167,21 +148,6 @@ const Index = () => {
         return diff >= 0 && diff < 60 && app.status !== 'Completed';
       });
       setActiveSession(active || null);
-
-      const months = Array.from({ length: 6 }).map((_, i) => {
-        const d = subMonths(new Date(), 5 - i);
-        return { name: format(d, "MMM"), sessions: 0, date: d };
-      });
-
-      allApps.forEach(app => {
-        const monthIndex = months.findIndex(m => 
-          app.date.getMonth() === m.date.getMonth() && 
-          app.date.getFullYear() === m.date.getFullYear()
-        );
-        if (monthIndex !== -1) months[monthIndex].sessions += 1;
-      });
-
-      setChartData(months);
     } catch (err) {
       console.error("Error fetching dashboard data:", err);
     } finally {
@@ -238,47 +204,10 @@ const Index = () => {
 
         <PractitionerGrounding />
 
-        {/* Quick Actions Grid */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-6">
-          <Button 
-            onClick={() => setClientDialogOpen(true)}
-            className="h-24 md:h-32 rounded-2xl md:rounded-[2.5rem] bg-white dark:bg-slate-900 border-2 border-indigo-50 dark:border-indigo-900/20 hover:border-indigo-500 hover:bg-indigo-50/30 text-indigo-600 flex flex-col gap-2 md:gap-3 shadow-sm transition-all group"
-          >
-            <div className="w-8 h-8 md:w-12 md:h-12 rounded-lg md:rounded-2xl bg-indigo-50 dark:bg-indigo-900/40 flex items-center justify-center group-hover:scale-110 transition-transform">
-              <UserPlus size={20} className="md:w-7 md:h-7" />
-            </div>
-            <span className="font-black text-[9px] md:text-[11px] uppercase tracking-widest">New Client</span>
-          </Button>
-          <Button 
-            onClick={() => setAppDialogOpen(true)}
-            className="h-24 md:h-32 rounded-2xl md:rounded-[2.5rem] bg-white dark:bg-slate-900 border-2 border-rose-50 dark:border-rose-900/20 hover:border-rose-500 hover:bg-rose-50/30 text-rose-600 flex flex-col gap-2 md:gap-3 shadow-sm transition-all group"
-          >
-            <div className="w-8 h-8 md:w-12 md:h-12 rounded-lg md:rounded-2xl bg-rose-50 dark:bg-rose-900/40 flex items-center justify-center group-hover:scale-110 transition-transform">
-              <CalendarPlus size={20} className="md:w-7 md:h-7" />
-            </div>
-            <span className="font-black text-[9px] md:text-[11px] uppercase tracking-widest">Book Session</span>
-          </Button>
-          <Link to="/practice/calibrate" className="block">
-            <Button 
-              className="w-full h-24 md:h-32 rounded-2xl md:rounded-[2.5rem] bg-white dark:bg-slate-900 border-2 border-amber-50 dark:border-amber-900/20 hover:border-amber-500 hover:bg-amber-50/30 text-amber-600 flex flex-col gap-2 md:gap-3 shadow-sm transition-all group"
-            >
-              <div className="w-8 h-8 md:w-12 md:h-12 rounded-lg md:rounded-2xl bg-amber-50 dark:bg-amber-900/40 flex items-center justify-center group-hover:scale-110 transition-transform">
-                <Zap size={20} className="md:w-7 md:h-7" />
-              </div>
-              <span className="font-black text-[9px] md:text-[11px] uppercase tracking-widest">Quick Calibrate</span>
-            </Button>
-          </Link>
-          <Link to="/practice/procedures" className="block">
-            <Button 
-              className="w-full h-24 md:h-32 rounded-2xl md:rounded-[2.5rem] bg-white dark:bg-slate-900 border-2 border-emerald-50 dark:border-emerald-900/20 hover:border-emerald-500 hover:bg-emerald-50/30 text-emerald-600 flex flex-col gap-2 md:gap-3 shadow-sm transition-all group"
-            >
-              <div className="w-8 h-8 md:w-12 md:h-12 rounded-lg md:rounded-2xl bg-emerald-50 dark:bg-emerald-900/40 flex items-center justify-center group-hover:scale-110 transition-transform">
-                <Target size={20} className="md:w-7 md:h-7" />
-              </div>
-              <span className="font-black text-[9px] md:text-[11px] uppercase tracking-widest">Procedures</span>
-            </Button>
-          </Link>
-        </div>
+        <QuickActionsGrid 
+          onNewClient={() => setClientDialogOpen(true)} 
+          onBookSession={() => setAppDialogOpen(true)} 
+        />
 
         <DashboardStats stats={stats} />
 
@@ -335,38 +264,7 @@ const Index = () => {
               </div>
             )}
 
-            <div className="space-y-6 md:space-y-8">
-              <div className="px-2 space-y-0.5 md:space-y-1">
-                <h2 className="text-2xl md:text-3xl font-serif font-bold tracking-tight text-amber-600 flex items-center gap-3">
-                  <StickyNote size={24} /> Practitioner Scratchpad
-                </h2>
-                <p className="text-xs md:text-base text-muted-foreground font-medium">Quick notes or research ideas. Saves automatically to your browser.</p>
-              </div>
-              <div className="space-y-4 md:space-y-6">
-                <div className="flex flex-wrap gap-1.5 md:gap-2">
-                  {["Research", "Follow-up", "Protocol Idea", "Clinical Note"].map(tag => (
-                    <button 
-                      key={tag}
-                      onClick={() => handleScratchpadChange(scratchpad ? `${scratchpad}\n[${tag}] ` : `[${tag}] `)}
-                      className="px-3 py-1.5 md:px-4 md:py-2 rounded-lg md:rounded-xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-[8px] md:text-[10px] font-black uppercase tracking-widest text-slate-600 hover:bg-amber-50 hover:border-amber-200 transition-all shadow-sm"
-                    >
-                      + {tag}
-                    </button>
-                  ))}
-                </div>
-                <div className="relative group">
-                  <Textarea 
-                    value={scratchpad}
-                    onChange={(e) => handleScratchpadChange(e.target.value)}
-                    placeholder="Type something here..."
-                    className="min-h-[200px] md:min-h-[250px] bg-white dark:bg-slate-900/50 border-slate-200 dark:border-slate-800 focus:ring-amber-500 focus:border-amber-500 resize-none text-foreground placeholder:text-slate-300 dark:placeholder:text-slate-800 rounded-2xl md:rounded-[2.5rem] p-6 md:p-10 text-lg md:text-2xl font-medium leading-relaxed shadow-xl transition-all"
-                  />
-                  <div className="absolute bottom-4 right-6 md:bottom-6 md:right-10 flex items-center gap-1.5 md:gap-2 text-[8px] md:text-[10px] font-black text-amber-600 uppercase tracking-[0.3em] opacity-0 group-hover:opacity-100 transition-opacity">
-                    <CheckCircle2 size={12} className="md:w-3.5 md:h-3.5" /> {lastSaved ? `Last saved at ${lastSaved}` : 'Auto-saved'}
-                  </div>
-                </div>
-              </div>
-            </div>
+            <Scratchpad />
           </div>
 
           <div className="lg:col-span-4 space-y-12 md:space-y-16">

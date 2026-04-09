@@ -80,11 +80,11 @@ interface SessionContentSwitcherProps {
 }
 
 const TABS = [
-  { id: 'baseline', label: 'P', fullLabel: 'Preliminary', icon: Activity, color: 'text-indigo-600', bgColor: 'bg-indigo-50' },
-  { id: 'sympathetic', label: 'E', fullLabel: 'Ease', icon: Zap, color: 'text-rose-600', bgColor: 'bg-rose-50' },
-  { id: 'pathway', label: 'A', fullLabel: 'Align', icon: GitBranch, color: 'text-amber-600', bgColor: 'bg-amber-50' },
-  { id: 'calibration', label: 'C', fullLabel: 'Correct', icon: Target, color: 'text-emerald-600', bgColor: 'bg-emerald-50' },
-  { id: 'reassessment', label: 'E', fullLabel: 'Embed', icon: ClipboardCheck, color: 'text-blue-600', bgColor: 'bg-blue-50' }
+  { id: 'baseline', label: 'P', fullLabel: 'Preliminary', icon: Activity, color: 'text-indigo-600' },
+  { id: 'sympathetic', label: 'E', fullLabel: 'Ease', icon: Zap, color: 'text-rose-600' },
+  { id: 'pathway', label: 'A', fullLabel: 'Align', icon: GitBranch, color: 'text-amber-600' },
+  { id: 'calibration', label: 'C', fullLabel: 'Correct', icon: Target, color: 'text-emerald-600' },
+  { id: 'reassessment', label: 'E', fullLabel: 'Embed', icon: ClipboardCheck, color: 'text-blue-600' }
 ];
 
 const SessionContentSwitcher = ({ 
@@ -117,11 +117,6 @@ const SessionContentSwitcher = ({
     calibration: !!appointment.modes_balances,
     reassessment: !!appointment.session_north_star
   }), [appointment]);
-
-  const progressPercent = useMemo(() => {
-    const completed = Object.values(tabStatus).filter(Boolean).length;
-    return Math.round((completed / TABS.length) * 100);
-  }, [tabStatus]);
 
   const scrollToWizard = () => {
     setTimeout(() => {
@@ -185,13 +180,13 @@ const SessionContentSwitcher = ({
       variant="ghost"
       onClick={() => setActiveView(view)}
       className={cn(
-        "h-9 md:h-11 px-3 md:px-5 rounded-xl md:rounded-2xl transition-all font-black text-[9px] md:text-[10px] uppercase tracking-widest shrink-0",
+        "h-9 md:h-10 px-3 md:px-4 rounded-xl transition-all font-black text-[9px] md:text-[10px] uppercase tracking-widest shrink-0",
         activeView === view 
-          ? "bg-white text-indigo-600 shadow-md border border-slate-100" 
+          ? "bg-white text-indigo-600 shadow-sm border border-slate-100" 
           : "text-slate-500 hover:bg-white/50"
       )}
     >
-      <Icon size={16} className="mr-2 md:mr-2.5" />
+      <Icon size={14} className="mr-2" />
       {label}
     </Button>
   );
@@ -200,11 +195,11 @@ const SessionContentSwitcher = ({
     <div className="mt-8 md:mt-12 pt-6 md:pt-8 border-t border-border flex flex-col sm:flex-row items-center justify-between gap-4 md:gap-6">
       <div className="flex items-center gap-2 text-[9px] md:text-[10px] font-black text-muted-foreground uppercase tracking-widest">
         {tabStatus[activeTab as keyof typeof tabStatus] ? (
-          <span className="flex items-center gap-1.5 text-emerald-600 bg-emerald-50 px-2.5 py-1 rounded-lg border border-emerald-100">
+          <span className="flex items-center gap-1.5 text-emerald-600">
             <CheckCircle2 size={12} /> Section Complete
           </span>
         ) : (
-          <span className="flex items-center gap-1.5 bg-slate-50 px-2.5 py-1 rounded-lg border border-slate-100">
+          <span className="flex items-center gap-1.5 opacity-40">
             <Activity size={12} /> In Progress
           </span>
         )}
@@ -212,62 +207,56 @@ const SessionContentSwitcher = ({
       {nextLabel && (
         <Button 
           onClick={handleNextTab}
-          className="w-full sm:w-auto bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl md:rounded-2xl h-12 md:h-14 px-8 md:px-10 font-black text-xs uppercase tracking-widest shadow-lg"
+          className="w-full sm:w-auto bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl h-11 md:h-12 px-8 font-black text-xs uppercase tracking-widest shadow-lg"
         >
-          Next: {nextLabel} <ArrowRight size={18} className="ml-2" />
+          Next: {nextLabel} <ArrowRight size={16} className="ml-2" />
         </Button>
       )}
     </div>
   );
 
   const renderHomeView = () => (
-    <div className="space-y-6 md:space-y-10">
+    <div className="space-y-6 md:space-y-8">
       <Tabs value={activeTab} onValueChange={(v) => {
         setActiveTab(v);
         if (v === 'calibration') scrollToWizard();
       }} className="w-full">
-        <div className="overflow-x-auto pb-4 no-scrollbar -mx-4 px-4">
-          <TabsList className="flex w-full h-auto bg-transparent p-0 gap-2 md:gap-4">
+        <div className="overflow-x-auto pb-2 no-scrollbar -mx-4 px-4">
+          <TabsList className="flex w-full h-auto bg-transparent p-0 gap-4 md:gap-8 border-b border-slate-100 rounded-none">
             {TABS.map((tab) => {
               const isCompleted = (tabStatus as any)[tab.id];
+              const isActive = activeTab === tab.id;
               return (
                 <TabsTrigger 
                   key={tab.id} 
                   value={tab.id} 
                   className={cn(
-                    "flex-1 flex flex-col items-center justify-center gap-2 p-3 md:p-6 rounded-[1.5rem] md:rounded-[2rem] border-2 transition-all duration-500 relative group",
-                    "data-[state=active]:bg-white data-[state=active]:border-indigo-100 data-[state=active]:shadow-2xl data-[state=active]:scale-[1.02] data-[state=active]:z-10",
-                    "data-[state=inactive]:bg-slate-50/50 data-[state=inactive]:border-transparent data-[state=inactive]:hover:bg-white data-[state=inactive]:hover:border-slate-100"
+                    "flex flex-col items-center gap-1.5 pb-4 px-1 rounded-none border-b-2 transition-all duration-300 relative group",
+                    isActive 
+                      ? "border-indigo-600 text-indigo-600" 
+                      : "border-transparent text-slate-400 hover:text-slate-600"
                   )}
                 >
                   <div className={cn(
-                    "w-8 h-8 md:w-12 md:h-12 rounded-xl md:rounded-2xl flex items-center justify-center transition-all duration-500 shadow-sm",
-                    isCompleted ? "bg-emerald-500 text-white" : cn("bg-white", tab.color)
+                    "w-8 h-8 rounded-lg flex items-center justify-center transition-all duration-300",
+                    isCompleted ? "text-emerald-500" : cn(isActive ? "text-indigo-600" : "text-slate-300")
                   )}>
-                    {isCompleted ? <CheckCircle2 size={20} className="md:w-6 md:h-6" /> : <tab.icon size={20} className="md:w-6 md:h-6" />}
+                    {isCompleted ? <CheckCircle2 size={18} /> : <tab.icon size={18} />}
                   </div>
                   
-                  <div className="flex flex-col items-center">
-                    <div className="flex items-center gap-1.5">
-                      <span className="text-base md:text-2xl font-black tracking-tighter">{tab.label}</span>
-                      <span className="hidden sm:inline text-[8px] md:text-[10px] font-black uppercase tracking-widest opacity-40">
-                        {tab.fullLabel}
-                      </span>
-                    </div>
+                  <div className="flex items-center gap-1.5">
+                    <span className="text-sm md:text-base font-black tracking-tighter">{tab.label}</span>
+                    <span className="hidden sm:inline text-[8px] md:text-[9px] font-black uppercase tracking-widest opacity-60">
+                      {tab.fullLabel}
+                    </span>
                   </div>
-
-                  {isCompleted && (
-                    <div className="absolute top-2 right-2 md:top-4 md:right-4">
-                      <div className="w-2 h-2 md:w-3 md:h-3 bg-emerald-500 rounded-full border-2 border-white shadow-sm" />
-                    </div>
-                  )}
                 </TabsTrigger>
               );
             })}
           </TabsList>
         </div>
 
-        <div className="mt-4 md:mt-10 animate-in fade-in slide-in-from-bottom-2 duration-500">
+        <div className="mt-6 md:mt-10 animate-in fade-in slide-in-from-bottom-2 duration-500">
           <TabsContent value="baseline" className="focus-visible:ring-0">
             <BaselineTab appointment={appointment} onUpdate={onUpdate} saveField={saveField} />
             <TabFooter nextLabel="E — Ease" />
@@ -328,8 +317,8 @@ const SessionContentSwitcher = ({
 
   return (
     <div className="space-y-6 md:space-y-8">
-      <div className="flex flex-col md:flex-row items-center justify-between bg-slate-100/80 backdrop-blur-md p-2 md:p-3 rounded-2xl md:rounded-[2.5rem] border border-slate-200 shadow-lg gap-2 md:gap-3">
-        <div className="flex items-center gap-1 overflow-x-auto no-scrollbar w-full md:w-auto px-1 py-1">
+      <div className="flex flex-col md:flex-row items-center justify-between bg-slate-100/60 backdrop-blur-md p-1.5 rounded-2xl md:rounded-[2rem] border border-slate-200/50 gap-2">
+        <div className="flex items-center gap-1 overflow-x-auto no-scrollbar w-full md:w-auto px-1">
           <NavItem view="home" label="PEACE" Icon={LayoutGrid} />
           <NavItem view="previous" label="History" Icon={History} />
           
@@ -337,11 +326,11 @@ const SessionContentSwitcher = ({
             <DropdownMenuTrigger asChild>
               <button
                 className={cn(
-                  "h-9 md:h-11 px-3 md:px-5 rounded-xl md:rounded-2xl transition-all font-black text-[9px] md:text-[10px] uppercase tracking-widest shrink-0 flex items-center gap-2",
-                  isToolActive ? "bg-white text-indigo-600 shadow-md border border-slate-100" : "text-slate-500 hover:bg-white/50"
+                  "h-9 md:h-10 px-3 md:px-4 rounded-xl transition-all font-black text-[9px] md:text-[10px] uppercase tracking-widest shrink-0 flex items-center gap-2",
+                  isToolActive ? "bg-white text-indigo-600 shadow-sm border border-slate-100" : "text-slate-500 hover:bg-white/50"
                 )}
               >
-                <Wrench size={16} />
+                <Wrench size={14} />
                 Tools
                 <ChevronDown size={12} className="opacity-50" />
               </button>
@@ -363,7 +352,7 @@ const SessionContentSwitcher = ({
           </DropdownMenu>
         </div>
 
-        <div className="flex items-center gap-2 w-full md:w-auto justify-end px-1">
+        <div className="flex items-center gap-1.5 w-full md:w-auto justify-end px-1">
           <Button 
             variant="ghost" 
             size="sm" 
@@ -379,7 +368,7 @@ const SessionContentSwitcher = ({
             size="sm" 
             className={cn(
               "h-9 px-3 font-bold text-[9px] uppercase tracking-widest rounded-xl transition-all",
-              showSidebar ? "bg-indigo-600 text-white border-indigo-600 shadow-md" : "bg-white border-slate-200 text-slate-600"
+              showSidebar ? "bg-indigo-600 text-white border-indigo-600 shadow-sm" : "bg-white border-slate-200 text-slate-600"
             )}
             onClick={onToggleSidebar}
           >

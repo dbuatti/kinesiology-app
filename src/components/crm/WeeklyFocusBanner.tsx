@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect, useMemo } from 'react';
-import { Target, Sparkles, Zap, CheckCircle2, ChevronDown, MousePointer2, RefreshCw, Trophy, AlertCircle } from 'lucide-react';
+import { Target, Sparkles, Zap, CheckCircle2, ChevronDown, MousePointer2, RefreshCw, Trophy, AlertCircle, PlayCircle, ExternalLink } from 'lucide-react';
 import { getWeeklyFocus } from '@/utils/weekly-focus';
 import { cn } from '@/lib/utils';
 import { Badge } from '@/components/ui/badge';
@@ -14,6 +14,7 @@ import {
 import { Button } from '@/components/ui/button';
 import { PRIMITIVE_REFLEXES } from '@/data/primitive-reflex-data';
 import { BRAIN_REFLEX_POINTS } from '@/data/brain-reflex-data';
+import { getMuscleInfo } from '@/data/muscle-info-data';
 
 interface WeeklyFocusBannerProps {
   appointmentId?: string;
@@ -69,17 +70,32 @@ const WeeklyFocusBanner = ({ appointmentId, priorityPattern, onSaveField, onJump
     }
   }, [items, priorityPattern]);
 
+  // Helper to find video URL for a focus item
+  const getVideoUrl = (name: string) => {
+    // 1. Check Muscles
+    const muscle = getMuscleInfo(name);
+    if (muscle.videoUrl) return muscle.videoUrl;
+
+    // 2. Check Reflexes
+    const reflex = PRIMITIVE_REFLEXES.find(r => r.name === name);
+    if (reflex?.videoUrl) return reflex.videoUrl;
+
+    // 3. Check Brain Zones / Nerves
+    const brainPoint = BRAIN_REFLEX_POINTS.find(p => p.name.startsWith(name));
+    if (brainPoint?.videoUrl) return brainPoint.videoUrl;
+
+    return null;
+  };
+
   const handleSetStatus = async (item: string, status: 'Clear' | 'Inhibited') => {
     if (!onSaveField) return;
 
     try {
-      // Handle null or empty string patterns
       let parsed = {};
       if (priorityPattern && priorityPattern.trim() !== "") {
         parsed = JSON.parse(priorityPattern);
       }
       
-      // Determine category
       let category = 'muscles';
       if (PRIMITIVE_REFLEXES.some(r => r.name === item)) category = 'primitiveReflexes';
       else if (BRAIN_REFLEX_POINTS.some(p => p.name.startsWith(item))) category = 'cranialNerves';
@@ -87,7 +103,6 @@ const WeeklyFocusBanner = ({ appointmentId, priorityPattern, onSaveField, onJump
       if (!(parsed as any)[category]) (parsed as any)[category] = {};
       (parsed as any)[category][item] = status;
 
-      // Celebrate any interaction that marks it as practiced
       setCelebratingItem(item);
       setTimeout(() => setCelebratingItem(null), 2000);
 
@@ -108,8 +123,6 @@ const WeeklyFocusBanner = ({ appointmentId, priorityPattern, onSaveField, onJump
   if (!isVisible || items.length === 0) return null;
 
   const isInteractive = !!appointmentId && !!onSaveField;
-  
-  // Count as practiced if status is anything other than 'Not Tested'
   const practicedCount = Object.values(itemStatuses).filter(s => s !== 'Not Tested').length;
   const isAllPracticed = practicedCount === items.length && items.length > 0;
 
@@ -136,10 +149,14 @@ const WeeklyFocusBanner = ({ appointmentId, priorityPattern, onSaveField, onJump
               <div className="flex flex-wrap items-center gap-3 mt-1">
                 {items.map((item, i) => {
                   const status = itemStatuses[item] || 'Not Tested';
+                  const videoUrl = getVideoUrl(item);
                   
                   if (!isInteractive) return (
                     <React.Fragment key={item}>
-                      <span className="text-sm font-black tracking-tight">{item}</span>
+                      <div className="flex items-center gap-1.5">
+                        {videoUrl && <PlayCircle size={12} className="text-indigo-300" />}
+                        <span className="text-sm font-black tracking-tight">{item}</span>
+                      </div>
                       {i < items.length - 1 && <span className="text-indigo-400 opacity-50">•</span>}
                     </React.Fragment>
                   );
@@ -159,6 +176,7 @@ const WeeklyFocusBanner = ({ appointmentId, priorityPattern, onSaveField, onJump
                         )}>
                           {status === 'Clear' ? <CheckCircle2 size={14} className="text-emerald-300" /> :
                            status === 'Inhibited' ? <AlertCircle size={14} className="text-rose-300" /> :
+                           videoUrl ? <PlayCircle size={14} className="text-indigo-300" /> :
                            <div className="w-3.5 h-3.5 rounded-full border-2 border-current opacity-30" />}
                           <span className="text-sm font-black tracking-tight">{item}</span>
                           <ChevronDown size={12} className="opacity-50" />
@@ -182,6 +200,17 @@ const WeeklyFocusBanner = ({ appointmentId, priorityPattern, onSaveField, onJump
                             <AlertCircle size={16} className="mr-3" /> Mark as Inhibited
                           </Button>
                           <div className="h-px bg-white/10 my-1" />
+                          {videoUrl && (
+                            <Button 
+                              variant="ghost" 
+                              asChild
+                              className="w-full justify-start h-10 rounded-xl hover:bg-indigo-500/20 hover:text-indigo-400 font-bold text-xs"
+                            >
+                              <a href={videoUrl} target="_blank" rel="noopener noreferrer">
+                                <PlayCircle size={16} className="mr-3" /> Watch Lesson
+                              </a>
+                            </Button>
+                          )}
                           <Button 
                             variant="ghost" 
                             className="w-full justify-start h-10 rounded-xl hover:bg-indigo-500/20 hover:text-indigo-400 font-bold text-xs"

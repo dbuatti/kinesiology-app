@@ -18,6 +18,7 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
+import BrainReflexModal from './BrainReflexModal';
 
 type Step = 'ENTRY' | 'COORD_1' | 'COORD_2' | 'METHOD' | 'CALIBRATE' | 'REASSESS';
 type IntegrationMethod = 'Tapping' | 'Holding + Intention' | 'Tuning Fork';
@@ -40,11 +41,12 @@ interface EfferentBrainIntegrationProps {
   initialEntryPoint?: string;
 }
 
-const ZoneCard = ({ point, images, isSelected, onSelect, isLoading }: { 
+const ZoneCard = ({ point, images, isSelected, onSelect, onShowInfo, isLoading }: { 
   point: BrainReflexPoint;
   images?: ReflexImages;
   isSelected: boolean;
   onSelect: (side: 'Left' | 'Right' | 'Bilateral') => void;
+  onShowInfo: (point: BrainReflexPoint) => void;
   isLoading: boolean;
 }) => {
     const imageUrl = images?.secondaryUrl || images?.primaryUrl;
@@ -69,27 +71,14 @@ const ZoneCard = ({ point, images, isSelected, onSelect, isLoading }: {
                     <Brain size={18} className={isSelected ? "text-white" : "text-slate-300"} />
                 )}
 
-                {/* Info Trigger for missing images */}
-                <div className="absolute top-1 right-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                  <Tooltip>
-                    <TooltipTrigger asChild>
-                      <div className="w-5 h-5 rounded-full bg-white/90 backdrop-blur-sm flex items-center justify-center text-indigo-600 shadow-sm cursor-help">
-                        <HelpCircle size={12} />
-                      </div>
-                    </TooltipTrigger>
-                    <TooltipContent side="top" className="max-w-[200px] p-3 rounded-xl border-none shadow-2xl bg-slate-900 text-white">
-                      <div className="space-y-2">
-                        <p className="text-[10px] font-black uppercase tracking-widest text-indigo-400">Reflex Point</p>
-                        <p className="text-[11px] font-bold leading-tight">{point.location}</p>
-                        {point.stimulus && (
-                          <>
-                            <p className="text-[10px] font-black uppercase tracking-widest text-amber-400 pt-1">Stimulus</p>
-                            <p className="text-[11px] font-bold leading-tight">{point.stimulus}</p>
-                          </>
-                        )}
-                      </div>
-                    </TooltipContent>
-                  </Tooltip>
+                {/* Info Trigger */}
+                <div className="absolute top-1 right-1 opacity-0 group-hover:opacity-100 transition-opacity z-20">
+                  <button 
+                    onClick={(e) => { e.stopPropagation(); onShowInfo(point); }}
+                    className="w-6 h-6 rounded-full bg-white/90 backdrop-blur-sm flex items-center justify-center text-indigo-600 shadow-md hover:bg-indigo-600 hover:text-white transition-all"
+                  >
+                    <Info size={14} />
+                  </button>
                 </div>
             </div>
             <p className={cn(
@@ -130,6 +119,10 @@ const EfferentBrainIntegration = ({ onSave, onInhibited, onCancel, initialEntryP
   const [customizations, setCustomizations] = useState<Record<string, ReflexImages>>({});
   const [loadingImages, setLoadingImages] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
+  
+  // Info Modal State
+  const [infoPoint, setInfoPoint] = useState<BrainReflexPoint | null>(null);
+  const [infoOpen, setInfoOpen] = useState(false);
 
   useEffect(() => {
     const fetchCustomizations = async () => {
@@ -167,6 +160,11 @@ const EfferentBrainIntegration = ({ onSave, onInhibited, onCancel, initialEntryP
 
   const corticalPoints = filteredPoints.filter(p => p.category === 'Cortical');
   const subcorticalPoints = filteredPoints.filter(p => p.category === 'Subcortical');
+
+  const handleShowInfo = (point: BrainReflexPoint) => {
+    setInfoPoint(point);
+    setInfoOpen(true);
+  };
 
   const handleComplete = () => {
     const summary = `Efferent Integration: ${entryPoint} -> ${coord1.side} ${coord1.point?.name} + ${coord2.side} ${coord2.point?.name} via ${method}`;
@@ -218,7 +216,15 @@ const EfferentBrainIntegration = ({ onSave, onInhibited, onCancel, initialEntryP
                 <p className="text-[8px] font-black text-slate-400 uppercase tracking-widest px-1">Cortical Zones</p>
                 <div className="grid grid-cols-4 sm:grid-cols-5 gap-2">
                     {corticalPoints.map(p => (
-                        <ZoneCard key={p.id} point={p} isSelected={coord.point?.id === p.id} images={customizations[p.id]} onSelect={(side) => { setCoord({ point: p, side }); nextStep(next); }} isLoading={loadingImages} />
+                        <ZoneCard 
+                          key={p.id} 
+                          point={p} 
+                          isSelected={coord.point?.id === p.id} 
+                          images={customizations[p.id]} 
+                          onSelect={(side) => { setCoord({ point: p, side }); nextStep(next); }} 
+                          onShowInfo={handleShowInfo}
+                          isLoading={loadingImages} 
+                        />
                     ))}
                 </div>
             </div>
@@ -226,7 +232,15 @@ const EfferentBrainIntegration = ({ onSave, onInhibited, onCancel, initialEntryP
                 <p className="text-[8px] font-black text-slate-400 uppercase tracking-widest px-1">Subcortical Zones</p>
                 <div className="grid grid-cols-4 sm:grid-cols-5 gap-2">
                     {subcorticalPoints.map(p => (
-                        <ZoneCard key={p.id} point={p} isSelected={coord.point?.id === p.id} images={customizations[p.id]} onSelect={(side) => { setCoord({ point: p, side }); nextStep(next); }} isLoading={loadingImages} />
+                        <ZoneCard 
+                          key={p.id} 
+                          point={p} 
+                          isSelected={coord.point?.id === p.id} 
+                          images={customizations[p.id]} 
+                          onSelect={(side) => { setCoord({ point: p, side }); nextStep(next); }} 
+                          onShowInfo={handleShowInfo}
+                          isLoading={loadingImages} 
+                        />
                     ))}
                 </div>
             </div>
@@ -264,7 +278,7 @@ const EfferentBrainIntegration = ({ onSave, onInhibited, onCancel, initialEntryP
         </div>
         <div className="flex items-center gap-2">
           {isComplete && <Badge className="bg-emerald-500 text-white border-none font-black text-[8px]">Cleared</Badge>}
-          {onCancel && <Button variant="ghost" size="icon" onClick={onCancel} className="rounded-full h-8 w-8 hover:bg-slate-100"><X size={16} text-slate-400 /></Button>}
+          {onCancel && <Button variant="ghost" size="icon" onClick={onCancel} className="rounded-full h-8 w-8 hover:bg-slate-100"><X size={16} className="text-slate-400" /></Button>}
         </div>
       </div>
 
@@ -332,7 +346,7 @@ const EfferentBrainIntegration = ({ onSave, onInhibited, onCancel, initialEntryP
         {step === 'REASSESS' && (
           <div className="space-y-4 animate-in fade-in slide-in-from-right-2 duration-300">
             <div className="bg-emerald-50 p-8 rounded-[2rem] border-2 border-emerald-100 text-center">
-              <div className="w-16 h-16 rounded-full bg-white shadow-md flex items-center justify-center mx-auto mb-4"><RefreshCw size={32} className="text-emerald-500" /></div>
+              <div className="w-16 h-16 rounded-full bg-white shadow-sm flex items-center justify-center mx-auto mb-4"><RefreshCw size={32} className="text-emerald-500" /></div>
               <h3 className="text-xl font-black text-emerald-900 mb-1">Final Re-assessment</h3>
               <p className="text-emerald-700 font-bold text-sm">Re-stimulate <span className="font-black underline decoration-emerald-300 underline-offset-4">"{entryPoint}"</span> and test the IM.</p>
             </div>
@@ -344,6 +358,14 @@ const EfferentBrainIntegration = ({ onSave, onInhibited, onCancel, initialEntryP
           </div>
         )}
       </div>
+
+      <BrainReflexModal 
+        point={infoPoint}
+        primaryUrl={infoPoint ? customizations[infoPoint.id]?.primaryUrl : null}
+        secondaryUrl={infoPoint ? customizations[infoPoint.id]?.secondaryUrl : null}
+        open={infoOpen}
+        onOpenChange={setInfoOpen}
+      />
     </div>
   );
 };

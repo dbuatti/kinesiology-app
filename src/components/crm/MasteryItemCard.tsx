@@ -7,7 +7,7 @@ import { Progress } from "@/components/ui/progress";
 import { 
   Dumbbell, Baby, Brain, Zap, 
   TrendingUp, Clock, CheckCircle2, 
-  AlertTriangle, Sparkles, PlayCircle, ExternalLink 
+  AlertCircle, Sparkles, PlayCircle, ExternalLink 
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { MasteryStat } from "@/utils/mastery-stats";
@@ -60,9 +60,23 @@ const MasteryItemCard = ({ stat, onClick }: MasteryItemCardProps) => {
               <p className="text-[8px] font-black text-muted-foreground uppercase tracking-widest mt-0.5">{stat.category}</p>
             </div>
           </div>
-          <Badge variant="outline" className={cn("border-none font-black text-[8px] uppercase tracking-widest px-2 py-0.5", levelText[stat.masteryLevel], "bg-muted/50")}>
-            {stat.masteryLevel}
-          </Badge>
+          <div className="flex flex-col items-end gap-1.5">
+            <Badge variant="outline" className={cn("border-none font-black text-[8px] uppercase tracking-widest px-2 py-0.5", levelText[stat.masteryLevel], "bg-muted/50")}>
+              {stat.masteryLevel}
+            </Badge>
+            {stat.videoUrl && (
+              <a 
+                href={stat.videoUrl} 
+                target="_blank" 
+                rel="noopener noreferrer"
+                onClick={(e) => e.stopPropagation()}
+                className="text-indigo-600 hover:text-indigo-700 transition-colors"
+                title="Watch Lesson"
+              >
+                <PlayCircle size={14} className="fill-indigo-50" />
+              </a>
+            )}
+          </div>
         </div>
 
         <div className="space-y-2">
@@ -87,21 +101,6 @@ const MasteryItemCard = ({ stat, onClick }: MasteryItemCardProps) => {
             </div>
           )}
         </div>
-
-        {stat.videoUrl && (
-          <div className="pt-2" onClick={(e) => e.stopPropagation()}>
-            <Button 
-              variant="outline" 
-              size="sm" 
-              className="w-full h-8 rounded-xl text-[9px] font-black uppercase tracking-widest border-indigo-100 text-indigo-600 hover:bg-indigo-50"
-              asChild
-            >
-              <a href={stat.videoUrl} target="_blank" rel="noopener noreferrer">
-                <PlayCircle size={12} className="mr-1.5" /> Watch Lesson
-              </a>
-            </Button>
-          </div>
-        )}
       </CardContent>
     </Card>
   );

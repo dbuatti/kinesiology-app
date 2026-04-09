@@ -80,11 +80,11 @@ interface SessionContentSwitcherProps {
 }
 
 const TABS = [
-  { id: 'baseline', label: 'P', fullLabel: 'Preliminary', icon: Activity },
-  { id: 'sympathetic', label: 'E', fullLabel: 'Ease', icon: Zap },
-  { id: 'pathway', label: 'A', fullLabel: 'Align', icon: GitBranch },
-  { id: 'calibration', label: 'C', fullLabel: 'Correct', icon: Target },
-  { id: 'reassessment', label: 'E', fullLabel: 'Embed', icon: ClipboardCheck }
+  { id: 'baseline', label: 'P', fullLabel: 'Preliminary', icon: Activity, color: 'text-indigo-600', bgColor: 'bg-indigo-50' },
+  { id: 'sympathetic', label: 'E', fullLabel: 'Ease', icon: Zap, color: 'text-rose-600', bgColor: 'bg-rose-50' },
+  { id: 'pathway', label: 'A', fullLabel: 'Align', icon: GitBranch, color: 'text-amber-600', bgColor: 'bg-amber-50' },
+  { id: 'calibration', label: 'C', fullLabel: 'Correct', icon: Target, color: 'text-emerald-600', bgColor: 'bg-emerald-50' },
+  { id: 'reassessment', label: 'E', fullLabel: 'Embed', icon: ClipboardCheck, color: 'text-blue-600', bgColor: 'bg-blue-50' }
 ];
 
 const SessionContentSwitcher = ({ 
@@ -226,29 +226,44 @@ const SessionContentSwitcher = ({
         setActiveTab(v);
         if (v === 'calibration') scrollToWizard();
       }} className="w-full">
-        <div className="overflow-x-auto pb-2 no-scrollbar -mx-4 px-4">
-          <TabsList className="flex w-full h-16 md:h-24 bg-muted/50 p-1.5 md:p-2 rounded-2xl md:rounded-[2.5rem] gap-1">
-            {TABS.map((tab) => (
-              <TabsTrigger 
-                key={tab.id} 
-                value={tab.id} 
-                className="flex-1 flex flex-col items-center justify-center gap-1 data-[state=active]:bg-card data-[state=active]:text-indigo-600 data-[state=active]:shadow-lg rounded-xl md:rounded-2xl h-13 md:h-20 px-2 md:px-4 text-[9px] md:text-[10px] font-black uppercase tracking-wider relative transition-all duration-300"
-              >
-                <div className={cn(
-                  "w-6 h-6 md:w-8 md:h-8 rounded-lg md:rounded-xl flex items-center justify-center transition-all duration-300",
-                  (tabStatus as any)[tab.id] ? "bg-emerald-500 text-white" : "bg-white/50 text-muted-foreground"
-                )}>
-                  <tab.icon size={14} className="md:w-4 md:h-4" />
-                </div>
-                <div className="flex items-center gap-1">
-                  <span className="text-sm md:text-lg font-black">{tab.label}</span>
-                  <span className="hidden lg:inline text-[8px] opacity-50 font-bold tracking-widest">— {tab.fullLabel}</span>
-                </div>
-                {(tabStatus as any)[tab.id] && (
-                  <span className="absolute top-2 right-2 md:top-3 md:right-3 w-2 h-2 md:w-2.5 md:h-2.5 bg-emerald-500 rounded-full border-2 border-background shadow-sm" />
-                )}
-              </TabsTrigger>
-            ))}
+        <div className="overflow-x-auto pb-4 no-scrollbar -mx-4 px-4">
+          <TabsList className="flex w-full h-auto bg-transparent p-0 gap-2 md:gap-4">
+            {TABS.map((tab) => {
+              const isCompleted = (tabStatus as any)[tab.id];
+              return (
+                <TabsTrigger 
+                  key={tab.id} 
+                  value={tab.id} 
+                  className={cn(
+                    "flex-1 flex flex-col items-center justify-center gap-2 p-3 md:p-6 rounded-[1.5rem] md:rounded-[2rem] border-2 transition-all duration-500 relative group",
+                    "data-[state=active]:bg-white data-[state=active]:border-indigo-100 data-[state=active]:shadow-2xl data-[state=active]:scale-[1.02] data-[state=active]:z-10",
+                    "data-[state=inactive]:bg-slate-50/50 data-[state=inactive]:border-transparent data-[state=inactive]:hover:bg-white data-[state=inactive]:hover:border-slate-100"
+                  )}
+                >
+                  <div className={cn(
+                    "w-8 h-8 md:w-12 md:h-12 rounded-xl md:rounded-2xl flex items-center justify-center transition-all duration-500 shadow-sm",
+                    isCompleted ? "bg-emerald-500 text-white" : cn("bg-white", tab.color)
+                  )}>
+                    {isCompleted ? <CheckCircle2 size={20} className="md:w-6 md:h-6" /> : <tab.icon size={20} className="md:w-6 md:h-6" />}
+                  </div>
+                  
+                  <div className="flex flex-col items-center">
+                    <div className="flex items-center gap-1.5">
+                      <span className="text-base md:text-2xl font-black tracking-tighter">{tab.label}</span>
+                      <span className="hidden sm:inline text-[8px] md:text-[10px] font-black uppercase tracking-widest opacity-40">
+                        {tab.fullLabel}
+                      </span>
+                    </div>
+                  </div>
+
+                  {isCompleted && (
+                    <div className="absolute top-2 right-2 md:top-4 md:right-4">
+                      <div className="w-2 h-2 md:w-3 md:h-3 bg-emerald-500 rounded-full border-2 border-white shadow-sm" />
+                    </div>
+                  )}
+                </TabsTrigger>
+              );
+            })}
           </TabsList>
         </div>
 

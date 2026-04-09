@@ -147,22 +147,19 @@ const EditableField = ({
   const isSensitive = ['goal', 'issue', 'journal', 'notes', 'additional_notes', 'session_north_star'].includes(field.toLowerCase());
   const shouldBlur = isPrivate && isSensitive && !isFocused;
 
-  // Extract min-height from className if present to apply to the actual textarea
-  const minHeightClass = className.split(' ').find(c => c.startsWith('min-h-')) || (multiline ? "min-h-[100px]" : "");
-
-  // Check if we should use a transparent background when focused (for the Quick Note dialog)
-  const isTransparentMode = className.includes('bg-transparent');
+  const isNoBorder = className.includes('border-none');
 
   return (
     <div 
       className={cn(
-        "group relative p-4 transition-all duration-500 border-2",
+        "group relative p-4 transition-all duration-500",
+        !isNoBorder && "border-2",
         isFocused 
-          ? (isTransparentMode ? "border-indigo-500" : "bg-card border-indigo-500 shadow-xl shadow-indigo-100/50 dark:shadow-indigo-900/20") 
+          ? (isNoBorder ? "" : "bg-card border-indigo-500 shadow-xl shadow-indigo-100/50 dark:shadow-indigo-900/20") 
           : hasError 
-            ? "bg-rose-50 dark:bg-rose-950/10 border-rose-300 dark:border-rose-900/30"
-            : "bg-muted/50 border-transparent hover:bg-card hover:border-border hover:shadow-lg",
-        className.includes('border-none') ? "rounded-none" : "rounded-2xl",
+            ? (isNoBorder ? "" : "bg-rose-50 dark:bg-rose-950/10 border-rose-300 dark:border-rose-900/30")
+            : (isNoBorder ? "" : "bg-muted/50 border-transparent hover:bg-card hover:border-border hover:shadow-lg"),
+        isNoBorder ? "rounded-none p-0" : "rounded-2xl",
         className
       )}
       onClick={() => {
@@ -172,7 +169,7 @@ const EditableField = ({
         }
       }}
     >
-      <div className="flex items-center justify-between mb-2 h-4">
+      <div className="flex items-center justify-between mb-4 h-4">
         <div className="flex items-center gap-2">
           <p className={cn(
             "font-black uppercase text-[8px] tracking-[0.2em] transition-colors",
@@ -215,7 +212,7 @@ const EditableField = ({
       
       <div className={cn("relative", multiline && "h-full")}>
         {isFocused ? (
-          <div className={cn("space-y-3", multiline && "h-full flex flex-col")}>
+          <div className={cn("space-y-4", multiline && "h-full flex flex-col")}>
             <InputComponent
               ref={inputRef}
               value={localValue}
@@ -224,14 +221,13 @@ const EditableField = ({
               onBlur={handleBlur}
               placeholder={placeholder}
               className={cn(
-                "transition-all duration-300 border-none focus-visible:ring-0 p-0 text-sm font-bold text-foreground placeholder:text-muted-foreground/30 bg-transparent w-full",
-                multiline ? "resize-none flex-1 min-h-0" : "",
-                minHeightClass
+                "transition-all duration-300 border-none focus-visible:ring-0 p-0 text-base md:text-lg font-medium text-foreground placeholder:text-muted-foreground/30 bg-transparent w-full",
+                multiline ? "resize-none flex-1 min-h-0" : ""
               )}
             />
-            <div className="flex flex-wrap gap-1 pt-3 border-t border-border animate-in fade-in slide-in-from-bottom-1 duration-300 shrink-0 pb-2">
-              <div className="flex items-center gap-1 mr-1.5 text-[7px] font-black text-muted-foreground uppercase tracking-widest">
-                <Sparkles size={8} className="text-indigo-400" /> Tags:
+            <div className="flex flex-wrap gap-1.5 pt-4 border-t border-slate-100 dark:border-slate-800 animate-in fade-in slide-in-from-bottom-1 duration-300 shrink-0 pb-2">
+              <div className="flex items-center gap-1 mr-2 text-[8px] font-black text-slate-400 uppercase tracking-widest">
+                <Sparkles size={10} className="text-indigo-400" /> Quick Tags:
               </div>
               {SMART_CHIPS.map(chip => (
                 <button
@@ -241,7 +237,7 @@ const EditableField = ({
                     e.stopPropagation();
                     handleChipClick(chip);
                   }}
-                  className="px-1.5 py-0.5 rounded-md bg-muted hover:bg-indigo-600 hover:text-white text-[7px] font-black uppercase tracking-wider text-muted-foreground transition-all"
+                  className="px-2 py-1 rounded-lg bg-slate-100 dark:bg-slate-800 hover:bg-indigo-600 hover:text-white text-[8px] font-black uppercase tracking-wider text-slate-500 transition-all"
                 >
                   {chip}
                 </button>
@@ -250,9 +246,8 @@ const EditableField = ({
           </div>
         ) : (
           <p className={cn(
-            "text-sm leading-relaxed whitespace-pre-wrap transition-all duration-500",
-            minHeightClass,
-            isEmpty ? "text-muted-foreground/50 italic font-medium" : "text-foreground font-bold",
+            "text-base md:text-lg leading-relaxed whitespace-pre-wrap transition-all duration-500",
+            isEmpty ? "text-muted-foreground/50 italic font-medium" : "text-foreground font-medium",
             shouldBlur && "blur-md select-none opacity-40"
           )}>
             {isEmpty ? placeholder : localValue}

@@ -21,7 +21,11 @@ import {
   MousePointer2,
   ShieldAlert,
   Hand,
-  PlayCircle
+  PlayCircle,
+  AlertCircle,
+  ListChecks,
+  CheckCircle2,
+  ArrowRight
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
@@ -84,29 +88,65 @@ const BrainReflexModal = ({
         </DialogHeader>
 
         <div className="p-10 space-y-12 overflow-y-auto max-h-[calc(95vh-180px)]">
+          {/* Assessment Protocol - Highlighted */}
+          {point.assessmentProtocol && (
+            <section className="p-8 bg-indigo-50 rounded-[2.5rem] border-2 border-indigo-100 space-y-4 relative overflow-hidden">
+              <div className="absolute top-0 right-0 p-6 opacity-5 pointer-events-none"><ListChecks size={100} /></div>
+              <SectionHeader icon={ListChecks} title="Assessment Protocol" color="text-indigo-600" />
+              <p className="text-xl font-black text-indigo-900 leading-tight relative z-10">
+                {point.assessmentProtocol}
+              </p>
+            </section>
+          )}
+
           {/* Delineated Reflex vs Stimulus */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-            <div className="p-8 bg-indigo-50 rounded-[2.5rem] border-2 border-indigo-100 space-y-4 relative overflow-hidden">
+            <div className="p-8 bg-slate-50 rounded-[2.5rem] border-2 border-slate-100 space-y-4 relative overflow-hidden">
               <div className="absolute top-0 right-0 p-6 opacity-5 pointer-events-none"><Hand size={100} /></div>
-              <SectionHeader icon={Hand} title="1. Reflex Point (Touch)" color="text-indigo-600" />
-              <p className="text-xl font-black text-indigo-900 leading-tight relative z-10">
+              <SectionHeader icon={Hand} title="Reflex Point (Touch)" color="text-slate-600" />
+              <p className="text-lg font-bold text-slate-900 leading-tight relative z-10">
                 {point.location}
-              </p>
-              <p className="text-xs text-indigo-700 font-medium leading-relaxed relative z-10">
-                Touch or Therapy Localize (TL) this point while testing a clear indicator muscle.
               </p>
             </div>
 
             <div className="p-8 bg-amber-50 rounded-[2.5rem] border-2 border-amber-100 space-y-4 relative overflow-hidden">
               <div className="absolute top-0 right-0 p-6 opacity-5 pointer-events-none"><PlayCircle size={100} /></div>
-              <SectionHeader icon={PlayCircle} title="2. Stimulus (Action)" color="text-amber-600" />
-              <p className="text-xl font-black text-amber-900 leading-tight relative z-10">
+              <SectionHeader icon={PlayCircle} title="Stimulus (Action)" color="text-amber-600" />
+              <p className="text-lg font-bold text-amber-900 leading-tight relative z-10">
                 {point.stimulus || point.technique || "Standard challenge protocol."}
               </p>
-              <p className="text-xs text-amber-700 font-medium leading-relaxed relative z-10">
-                Perform this action to challenge the nerve pathway while holding the reflex point.
-              </p>
             </div>
+          </div>
+
+          {/* Functions & Dysfunction Signs */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-12">
+            {point.functions && (
+              <section className="space-y-4">
+                <SectionHeader icon={Activity} title="Key Functions" color="text-emerald-600" />
+                <ul className="space-y-3">
+                  {point.functions.map((f, i) => (
+                    <li key={i} className="flex items-start gap-3 text-sm font-medium text-slate-600">
+                      <CheckCircle2 size={18} className="text-emerald-500 shrink-0 mt-0.5" />
+                      {f}
+                    </li>
+                  ))}
+                </ul>
+              </section>
+            )}
+
+            {point.dysfunctionSigns && (
+              <section className="space-y-4">
+                <SectionHeader icon={AlertCircle} title="Dysfunction Signs" color="text-rose-600" />
+                <ul className="space-y-3">
+                  {point.dysfunctionSigns.map((s, i) => (
+                    <li key={i} className="flex items-start gap-3 text-sm font-medium text-slate-600">
+                      <ArrowRight size={18} className="text-rose-500 shrink-0 mt-0.5" />
+                      {s}
+                    </li>
+                  ))}
+                </ul>
+              </section>
+            )}
           </div>
 
           {/* Image Showcase */}
@@ -140,44 +180,18 @@ const BrainReflexModal = ({
             </div>
           </div>
 
-          {/* Clinical Details */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-12">
-            <div className="space-y-8">
-              {point.acupoint && (
-                <section>
-                  <SectionHeader icon={Zap} title="Associated Acupoint" color="text-amber-600" />
-                  <div className="p-6 bg-amber-50 rounded-3xl border border-amber-100 flex items-center justify-between">
-                    <span className="text-2xl font-black text-amber-900">{point.acupoint}</span>
-                    <Badge className="bg-amber-600 text-white border-none font-black text-[10px] uppercase tracking-widest">TCM Link</Badge>
-                  </div>
-                </section>
-              )}
-              
-              <section>
-                <SectionHeader icon={ShieldAlert} title="Lateralization Logic" color="text-rose-500" />
-                <div className="p-6 bg-rose-50 rounded-3xl border border-rose-100">
-                  <p className="text-sm font-bold text-rose-900 leading-relaxed">
-                    This region follows <span className="text-rose-600 font-black underline">{point.lateralization}</span> control. 
-                    {point.lateralization === 'Contralateral' 
-                      ? " Dysfunction on the left side of the body typically relates to the right hemisphere of this region."
-                      : " Dysfunction on one side of the body typically relates to the same side of this brain region."}
-                  </p>
-                </div>
-              </section>
-            </div>
-
-            <div className="space-y-8">
-              <section>
-                <SectionHeader icon={Sparkles} title="Clinical Pearl" color="text-purple-600" />
-                <div className="p-8 bg-slate-900 text-white rounded-[2.5rem] shadow-xl relative overflow-hidden">
-                  <div className="absolute top-0 right-0 p-6 opacity-10"><Sparkles size={80} /></div>
-                  <p className="text-lg font-medium leading-relaxed relative z-10 italic">
-                    "{point.pearl || "This region plays a critical role in the neurological hierarchy of threat and movement."}"
-                  </p>
-                </div>
-              </section>
-            </div>
-          </div>
+          {/* Clinical Pearl */}
+          {point.pearl && (
+            <section>
+              <div className="p-8 bg-slate-900 text-white rounded-[2.5rem] shadow-xl relative overflow-hidden">
+                <div className="absolute top-0 right-0 p-6 opacity-10"><Sparkles size={80} /></div>
+                <SectionHeader icon={Sparkles} title="Clinical Pearl" color="text-purple-400" />
+                <p className="text-lg font-medium leading-relaxed relative z-10 italic">
+                  "{point.pearl}"
+                </p>
+              </div>
+            </section>
+          )}
         </div>
       </DialogContent>
     </Dialog>

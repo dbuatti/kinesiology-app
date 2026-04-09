@@ -153,13 +153,13 @@ const EditableField = ({
     <div 
       className={cn(
         "group relative p-4 transition-all duration-500",
-        !isNoBorder && "border-2 rounded-2xl", // Only add border and rounding if not border-none
+        !isNoBorder && "border-2 rounded-2xl",
         isFocused 
           ? (isNoBorder ? "" : "bg-card border-indigo-500 shadow-xl shadow-indigo-100/50 dark:shadow-indigo-900/20") 
           : hasError 
             ? (isNoBorder ? "" : "bg-rose-50 dark:bg-rose-950/10 border-rose-300 dark:border-rose-900/30")
             : (isNoBorder ? "" : "bg-muted/50 border-transparent hover:bg-card hover:border-border hover:shadow-lg"),
-        isNoBorder && "p-0", // Remove padding if border-none
+        isNoBorder && "p-0", 
         className
       )}
       onClick={() => {
@@ -221,7 +221,8 @@ const EditableField = ({
               onBlur={handleBlur}
               placeholder={placeholder}
               className={cn(
-                "transition-all duration-300 border-none focus-visible:ring-0 p-0 text-base md:text-lg font-medium text-foreground placeholder:text-muted-foreground/30 bg-transparent w-full",
+                "transition-all duration-300 border-none focus-visible:ring-0 text-base md:text-lg font-medium text-foreground placeholder:text-muted-foreground/30 bg-transparent w-full",
+                isNoBorder ? "p-2" : "p-0", // Add internal padding if no border to prevent clipping
                 multiline ? "resize-none flex-1 min-h-0" : ""
               )}
             />
@@ -247,6 +248,7 @@ const EditableField = ({
         ) : (
           <p className={cn(
             "text-base md:text-lg leading-relaxed whitespace-pre-wrap transition-all duration-500",
+            isNoBorder ? "p-2" : "p-0",
             isEmpty ? "text-muted-foreground/50 italic font-medium" : "text-foreground font-medium",
             shouldBlur && "blur-md select-none opacity-40"
           )}>

@@ -441,8 +441,8 @@ const SessionContentSwitcher = ({
 
       <Dialog open={noteDialogOpen} onOpenChange={setNoteDialogOpen}>
         <DialogContent className="w-[95vw] max-w-5xl rounded-[3rem] p-0 overflow-visible border-none shadow-3xl bg-white dark:bg-slate-950">
-          <div className="p-8 md:p-12 relative flex flex-col h-[85vh]">
-            <div className="absolute top-6 right-6 z-50">
+          <div className="p-12 md:p-16 relative flex flex-col h-[85vh] overflow-visible">
+            <div className="absolute top-8 right-8 z-50">
               <Button variant="ghost" size="icon" onClick={() => setNoteDialogOpen(false)} className="text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 rounded-full">
                 <X size={24} />
               </Button>
@@ -458,7 +458,7 @@ const SessionContentSwitcher = ({
               </div>
             </div>
             
-            <div className="flex-1">
+            <div className="flex-1 overflow-visible">
               <EditableField 
                 field="notes" 
                 label="General Session Notes" 
@@ -470,7 +470,7 @@ const SessionContentSwitcher = ({
               />
             </div>
 
-            <div className="mt-8 flex justify-between items-center shrink-0">
+            <div className="mt-12 flex justify-between items-center shrink-0">
               <div className="flex items-center gap-2 text-[10px] font-black uppercase tracking-[0.3em] text-slate-400">
                 <CheckCircle2 size={14} className="text-emerald-500" /> Auto-saving to client record
               </div>

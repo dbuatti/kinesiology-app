@@ -60,7 +60,6 @@ export async function fetchMasteryStats(): Promise<MasteryStat[]> {
   });
 
   BRAIN_REFLEX_POINTS.forEach(point => {
-    // Handle the "CN I: Olfactory" style names for display but keep ID for lookup
     const displayName = point.name.includes(':') ? point.name.split(':')[0].trim() : point.name;
     statsMap[displayName] = {
       id: point.id, 
@@ -110,7 +109,6 @@ export async function fetchMasteryStats(): Promise<MasteryStat[]> {
         Object.values(pattern).forEach((items: any) => {
           Object.entries(items).forEach(([name, status]) => {
             const cleanName = name.replace(/ \([LR]\)$/, '');
-            // Try to find the key in statsMap that matches the start of the name (handles CN I vs CN I: Olfactory)
             const matchKey = Object.keys(statsMap).find(k => cleanName.startsWith(k));
             if (matchKey && statsMap[matchKey]) {
               statsMap[matchKey].count++;

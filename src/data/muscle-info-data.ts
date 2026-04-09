@@ -36,7 +36,8 @@ export const MUSCLE_INFO_DETAILS: Record<string, MuscleInfo> = {
     spinalFixation: 'C2-C3',
     testingPosition: 'Client supine. Drop the head down (flexion) and rotate the head away from the side being tested. Practitioner applies pressure to the temporal area, pushing the head back towards the table and into rotation.',
     pearl: 'After testing, "squeeze through here" (the muscle belly and associated NL points) to check for immediate neurological shift or tenderness.',
-    description: 'A key muscle for head orientation and a major player in the Medulla-driven flexor tone chain.'
+    description: 'A key muscle for head orientation and a major player in the Medulla-driven flexor tone chain.',
+    videoUrl: "https://embed-ssl.wistia.com/deliveries/8dc68372fa942300d450b03ec8487454cacb02c7.mp4"
   },
   'Upper Trapezius': {
     name: 'Upper Trapezius',
@@ -66,6 +67,7 @@ export const MUSCLE_INFO_DETAILS: Record<string, MuscleInfo> = {
     spinalFixation: 'T10-T1',
     testingPosition: 'Client supine, leg flexed to 45°, abducted and externally rotated. Pressure applied into extension and slight adduction.',
     description: 'The "Muscle of the Soul". Deeply connected to the fight-or-flight response and diaphragmatic breathing.',
+    videoUrl: "https://embed-ssl.wistia.com/deliveries/364abce3a360a7845926d9d775c0b462.mp4"
   },
   'Gluteus Medius': {
     name: 'Gluteus Medius',
@@ -89,7 +91,8 @@ export const MUSCLE_INFO_DETAILS: Record<string, MuscleInfo> = {
     nerveSupply: 'Suprascapular Nerve (C5-C6)',
     organGland: 'Brain / Thyroid',
     spinalFixation: 'C7-T11',
-    description: 'The "Starter" muscle of the shoulder. Often the first muscle to inhibit under general neurological threat.'
+    description: 'The "Starter" muscle of the shoulder. Often the first muscle to inhibit under general neurological threat.',
+    videoUrl: "https://embed-ssl.wistia.com/deliveries/8dc68372fa942300d450b03ec8487454cacb02c7.mp4"
   },
   'Latissimus Dorsi': {
     name: 'Latissimus Dorsi',
@@ -151,6 +154,36 @@ export const MUSCLE_INFO_DETAILS: Record<string, MuscleInfo> = {
     testingPosition: 'Elbow extension.',
     videoUrl: "https://embed-ssl.wistia.com/deliveries/006270ae8c685161a8a2c55053ee0fd5ecf69b18.mp4",
     pageUrl: "https://functional-neuro-health.mykajabi.com/products/functional-neuro-approach-foundations/categories/2152591139/posts/2167503394"
+  },
+  'Pelvic Floor (Anterior)': {
+    name: 'Pelvic Floor (Anterior)',
+    meridian: 'Bladder',
+    testingPosition: 'Specific pelvic floor engagement assessment.',
+    videoUrl: "https://embed-ssl.wistia.com/deliveries/57cf210cb9ae6a0aa951271be09f0f33.mp4"
+  },
+  'Pelvic Floor (Posterior)': {
+    name: 'Pelvic Floor (Posterior)',
+    meridian: 'Bladder',
+    testingPosition: 'Specific pelvic floor engagement assessment.',
+    videoUrl: "https://embed-ssl.wistia.com/deliveries/57cf210cb9ae6a0aa951271be09f0f33.mp4"
+  },
+  'Serratus Anterior': {
+    name: 'Serratus Anterior',
+    meridian: 'Pericardium',
+    testingPosition: 'Arm flexed to 90°, punch forward against resistance.',
+    videoUrl: "https://embed-ssl.wistia.com/deliveries/8dc68372fa942300d450b03ec8487454cacb02c7.mp4"
+  },
+  'Pectoralis Major (Clavicular)': {
+    name: 'Pectoralis Major (Clavicular)',
+    meridian: 'Stomach',
+    testingPosition: 'Arm flexed to 90°, horizontal adduction.',
+    videoUrl: "https://embed-ssl.wistia.com/deliveries/8dc68372fa942300d450b03ec8487454cacb02c7.mp4"
+  },
+  'Pectoralis Major (Sternal)': {
+    name: 'Pectoralis Major (Sternal)',
+    meridian: 'Pericardium',
+    testingPosition: 'Arm flexed to 120°, horizontal adduction.',
+    videoUrl: "https://embed-ssl.wistia.com/deliveries/8dc68372fa942300d450b03ec8487454cacb02c7.mp4"
   }
 };
 

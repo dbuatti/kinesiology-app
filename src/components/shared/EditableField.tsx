@@ -147,6 +147,9 @@ const EditableField = ({
   const isSensitive = ['goal', 'issue', 'journal', 'notes', 'additional_notes', 'session_north_star'].includes(field.toLowerCase());
   const shouldBlur = isPrivate && isSensitive && !isFocused;
 
+  // Extract min-height from className if present to apply to the actual textarea
+  const minHeightClass = className.split(' ').find(c => c.startsWith('min-h-')) || (multiline ? "min-h-[100px]" : "");
+
   return (
     <div 
       className={cn(
@@ -217,8 +220,9 @@ const EditableField = ({
               onBlur={handleBlur}
               placeholder={placeholder}
               className={cn(
-                multiline ? "min-h-[100px] resize-none" : "h-8",
-                "transition-all duration-300 border-none focus-visible:ring-0 p-0 text-sm font-bold text-foreground placeholder:text-muted-foreground/30 bg-transparent",
+                minHeightClass,
+                "transition-all duration-300 border-none focus-visible:ring-0 p-0 text-sm font-bold text-foreground placeholder:text-muted-foreground/30 bg-transparent w-full",
+                multiline && "resize-none"
               )}
             />
             <div className="flex flex-wrap gap-1 pt-1.5 border-t border-border animate-in fade-in slide-in-from-bottom-1 duration-300">
@@ -242,7 +246,8 @@ const EditableField = ({
           </div>
         ) : (
           <p className={cn(
-            "text-sm leading-relaxed whitespace-pre-wrap min-h-[20px] transition-all duration-500",
+            "text-sm leading-relaxed whitespace-pre-wrap transition-all duration-500",
+            minHeightClass,
             isEmpty ? "text-muted-foreground/50 italic font-medium" : "text-foreground font-bold",
             shouldBlur && "blur-md select-none opacity-40"
           )}>

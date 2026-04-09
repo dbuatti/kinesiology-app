@@ -440,24 +440,25 @@ const SessionContentSwitcher = ({
       </div>
 
       <Dialog open={noteDialogOpen} onOpenChange={setNoteDialogOpen}>
-        <DialogContent className="w-[95vw] max-w-4xl rounded-[3rem] p-0 overflow-hidden border-none shadow-3xl">
-          <div className="bg-slate-900 p-8 md:p-12 text-white relative">
+        <DialogContent className="w-[95vw] max-w-5xl rounded-[3rem] p-0 overflow-hidden border-none shadow-3xl bg-white dark:bg-slate-950">
+          <div className="p-8 md:p-12 relative flex flex-col h-[85vh]">
             <div className="absolute top-6 right-6">
-              <Button variant="ghost" size="icon" onClick={() => setNoteDialogOpen(false)} className="text-slate-400 hover:text-white hover:bg-white/10 rounded-full">
+              <Button variant="ghost" size="icon" onClick={() => setNoteDialogOpen(false)} className="text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 rounded-full">
                 <X size={24} />
               </Button>
             </div>
-            <div className="flex items-center gap-6 mb-8">
+            
+            <div className="flex items-center gap-6 mb-10 shrink-0">
               <div className="w-16 h-16 rounded-[1.5rem] bg-amber-500 text-white flex items-center justify-center shadow-2xl shadow-amber-500/20">
                 <StickyNote size={32} />
               </div>
               <div>
-                <h2 className="text-3xl md:text-4xl font-black tracking-tight">Quick Session Note</h2>
-                <p className="text-slate-400 font-medium text-lg mt-1">Capture observations and insights in real-time.</p>
+                <h2 className="text-3xl md:text-4xl font-black tracking-tight text-slate-900 dark:text-white">Quick Session Note</h2>
+                <p className="text-slate-500 font-medium text-lg mt-1">Capture observations and insights in real-time.</p>
               </div>
             </div>
             
-            <div className="bg-white/5 rounded-[2.5rem] border border-white/10 p-2">
+            <div className="flex-1 bg-slate-50 dark:bg-slate-900/50 rounded-[2.5rem] border border-slate-100 dark:border-slate-800 p-2 overflow-hidden">
               <EditableField 
                 field="notes" 
                 label="General Session Notes" 
@@ -465,17 +466,17 @@ const SessionContentSwitcher = ({
                 multiline 
                 placeholder="Start typing your observations here..." 
                 onSave={saveField} 
-                className="bg-transparent border-none shadow-none p-6 md:p-10 min-h-[400px] md:min-h-[600px]"
+                className="bg-transparent border-none shadow-none p-6 md:p-10 h-full w-full min-h-full"
               />
             </div>
 
-            <div className="mt-8 flex justify-between items-center">
-              <div className="flex items-center gap-2 text-[10px] font-black uppercase tracking-[0.3em] text-slate-500">
+            <div className="mt-8 flex justify-between items-center shrink-0">
+              <div className="flex items-center gap-2 text-[10px] font-black uppercase tracking-[0.3em] text-slate-400">
                 <CheckCircle2 size={14} className="text-emerald-500" /> Auto-saving to client record
               </div>
               <Button 
                 onClick={() => setNoteDialogOpen(false)} 
-                className="bg-white text-slate-900 hover:bg-slate-100 rounded-2xl h-14 px-10 font-black text-xs uppercase tracking-widest shadow-xl"
+                className="bg-indigo-600 hover:bg-indigo-700 text-white rounded-2xl h-14 px-10 font-black text-xs uppercase tracking-widest shadow-xl shadow-indigo-100"
               >
                 Finish Note
               </Button>

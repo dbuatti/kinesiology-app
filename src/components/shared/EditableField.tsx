@@ -153,13 +153,13 @@ const EditableField = ({
     <div 
       className={cn(
         "group relative p-4 transition-all duration-500",
-        !isNoBorder && "border-2",
+        !isNoBorder && "border-2 rounded-2xl", // Only add border and rounding if not border-none
         isFocused 
           ? (isNoBorder ? "" : "bg-card border-indigo-500 shadow-xl shadow-indigo-100/50 dark:shadow-indigo-900/20") 
           : hasError 
             ? (isNoBorder ? "" : "bg-rose-50 dark:bg-rose-950/10 border-rose-300 dark:border-rose-900/30")
             : (isNoBorder ? "" : "bg-muted/50 border-transparent hover:bg-card hover:border-border hover:shadow-lg"),
-        isNoBorder ? "rounded-none p-0" : "rounded-2xl",
+        isNoBorder && "p-0", // Remove padding if border-none
         className
       )}
       onClick={() => {

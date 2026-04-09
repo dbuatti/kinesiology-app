@@ -458,7 +458,7 @@ const SessionContentSwitcher = ({
               </div>
             </div>
             
-            <div className="flex-1 p-4 md:p-8">
+            <div className="flex-1">
               <EditableField 
                 field="notes" 
                 label="General Session Notes" 

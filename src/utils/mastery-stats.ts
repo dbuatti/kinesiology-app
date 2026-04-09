@@ -62,7 +62,16 @@ export async function fetchMasteryStats(): Promise<MasteryStat[]> {
   BRAIN_REFLEX_POINTS.forEach(point => {
     const name = point.name.includes(':') ? point.name.split(':')[0].trim() : point.name;
     statsMap[name] = {
-      id: name, name, category: 'Brain Zones', count: 0, dysfunctionCount: 0, dysfunctionRate: 0, lastLogged: null, masteryLevel: 'Novice'
+      id: name, 
+      name, 
+      category: 'Brain Zones', 
+      count: 0, 
+      dysfunctionCount: 0, 
+      dysfunctionRate: 0, 
+      lastLogged: null, 
+      masteryLevel: 'Novice',
+      videoUrl: (point as any).videoUrl,
+      pageUrl: (point as any).pageUrl
     };
   });
 

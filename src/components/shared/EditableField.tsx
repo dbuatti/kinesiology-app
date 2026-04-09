@@ -153,12 +153,14 @@ const EditableField = ({
   return (
     <div 
       className={cn(
-        "group relative p-4 rounded-2xl transition-all duration-500 border-2",
+        "group relative p-4 transition-all duration-500 border-2",
         isFocused 
-          ? "bg-card border-indigo-500 shadow-xl shadow-indigo-100/50 dark:shadow-indigo-900/20 scale-[1.01]" 
+          ? "bg-card border-indigo-500 shadow-xl shadow-indigo-100/50 dark:shadow-indigo-900/20" 
           : hasError 
             ? "bg-rose-50 dark:bg-rose-950/10 border-rose-300 dark:border-rose-900/30"
             : "bg-muted/50 border-transparent hover:bg-card hover:border-border hover:shadow-lg",
+        // Only apply large rounding if not in a "full" context (detected by border-none)
+        className.includes('border-none') ? "rounded-none" : "rounded-2xl",
         className
       )}
       onClick={() => {
@@ -209,9 +211,9 @@ const EditableField = ({
         </div>
       </div>
       
-      <div className="relative">
+      <div className={cn("relative", multiline && "h-full")}>
         {isFocused ? (
-          <div className="space-y-3">
+          <div className={cn("space-y-3", multiline && "h-full flex flex-col")}>
             <InputComponent
               ref={inputRef}
               value={localValue}
@@ -220,12 +222,12 @@ const EditableField = ({
               onBlur={handleBlur}
               placeholder={placeholder}
               className={cn(
-                minHeightClass,
                 "transition-all duration-300 border-none focus-visible:ring-0 p-0 text-sm font-bold text-foreground placeholder:text-muted-foreground/30 bg-transparent w-full",
-                multiline && "resize-none"
+                multiline ? "resize-none flex-1 min-h-0" : "",
+                minHeightClass
               )}
             />
-            <div className="flex flex-wrap gap-1 pt-1.5 border-t border-border animate-in fade-in slide-in-from-bottom-1 duration-300">
+            <div className="flex flex-wrap gap-1 pt-1.5 border-t border-border animate-in fade-in slide-in-from-bottom-1 duration-300 shrink-0">
               <div className="flex items-center gap-1 mr-1.5 text-[7px] font-black text-muted-foreground uppercase tracking-widest">
                 <Sparkles size={8} className="text-indigo-400" /> Tags:
               </div>

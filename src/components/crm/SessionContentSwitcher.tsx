@@ -27,7 +27,8 @@ import {
   StickyNote,
   UserCircle,
   LayoutGrid,
-  ChevronDown
+  ChevronDown,
+  X
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { AppointmentWithClient } from '@/types/crm';
@@ -439,29 +440,45 @@ const SessionContentSwitcher = ({
       </div>
 
       <Dialog open={noteDialogOpen} onOpenChange={setNoteDialogOpen}>
-        <DialogContent className="w-[95vw] max-w-[550px] rounded-[2rem] p-0 overflow-hidden">
-          <div className="p-6 md:p-8 max-h-[90vh] overflow-y-auto">
-            <DialogHeader>
-              <DialogTitle className="text-xl md:text-3xl font-black flex items-center gap-3">
-                <div className="w-10 h-10 rounded-xl bg-amber-500 text-white flex items-center justify-center shadow-xl">
-                  <StickyNote size={20} />
-                </div>
-                Quick Session Note
-              </DialogTitle>
-            </DialogHeader>
-            <div className="py-4 md:py-6">
+        <DialogContent className="w-[95vw] max-w-4xl rounded-[3rem] p-0 overflow-hidden border-none shadow-3xl">
+          <div className="bg-slate-900 p-8 md:p-12 text-white relative">
+            <div className="absolute top-6 right-6">
+              <Button variant="ghost" size="icon" onClick={() => setNoteDialogOpen(false)} className="text-slate-400 hover:text-white hover:bg-white/10 rounded-full">
+                <X size={24} />
+              </Button>
+            </div>
+            <div className="flex items-center gap-6 mb-8">
+              <div className="w-16 h-16 rounded-[1.5rem] bg-amber-500 text-white flex items-center justify-center shadow-2xl shadow-amber-500/20">
+                <StickyNote size={32} />
+              </div>
+              <div>
+                <h2 className="text-3xl md:text-4xl font-black tracking-tight">Quick Session Note</h2>
+                <p className="text-slate-400 font-medium text-lg mt-1">Capture observations and insights in real-time.</p>
+              </div>
+            </div>
+            
+            <div className="bg-white/5 rounded-[2.5rem] border border-white/10 p-2">
               <EditableField 
                 field="notes" 
                 label="General Session Notes" 
                 value={appointment.notes} 
                 multiline 
-                placeholder="Jot down a quick observation..." 
+                placeholder="Start typing your observations here..." 
                 onSave={saveField} 
-                className="bg-slate-50 p-5 md:p-8 rounded-2xl md:rounded-[2rem] border border-slate-100 shadow-inner"
+                className="bg-transparent border-none shadow-none p-6 md:p-10 min-h-[400px] md:min-h-[600px]"
               />
             </div>
-            <div className="flex justify-end">
-              <Button onClick={() => setNoteDialogOpen(false)} className="w-full sm:w-auto rounded-xl h-11 px-8 font-black text-xs uppercase tracking-widest">Close</Button>
+
+            <div className="mt-8 flex justify-between items-center">
+              <div className="flex items-center gap-2 text-[10px] font-black uppercase tracking-[0.3em] text-slate-500">
+                <CheckCircle2 size={14} className="text-emerald-500" /> Auto-saving to client record
+              </div>
+              <Button 
+                onClick={() => setNoteDialogOpen(false)} 
+                className="bg-white text-slate-900 hover:bg-slate-100 rounded-2xl h-14 px-10 font-black text-xs uppercase tracking-widest shadow-xl"
+              >
+                Finish Note
+              </Button>
             </div>
           </div>
         </DialogContent>

@@ -107,8 +107,8 @@ export const MUSCLE_INFO_DETAILS: Record<string, MuscleInfo> = {
     name: 'Transverse Abdominals',
     meridian: 'Stomach',
     testingPosition: 'Client supine, knees bent. Lift head and shoulders slightly. Practitioner applies pressure to the abdomen.',
-    videoUrl: "https://embed-ssl.wistia.com/deliveries/6b766a1d79b608a860d8b0b4886befb7.mp4",
-    pageUrl: "https://functional-neuro-health.mykajabi.com/products/functional-neuro-approach-foundations/categories/2152591139/posts/2164655470"
+    videoUrl: "https://embed-ssl.wistia.com/deliveries/06654b19dfccfcb0bf7333a032825f4a.mp4",
+    pageUrl: "https://functional-neuro-health.mykajabi.com/products/functional-neuro-approach-foundations/categories/2152591139/posts/2166239953"
   },
   'Diaphragm': {
     name: 'Diaphragm',

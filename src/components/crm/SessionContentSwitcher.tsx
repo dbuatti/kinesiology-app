@@ -313,8 +313,8 @@ const SessionContentSwitcher = ({
 
   return (
     <div className="space-y-6 md:space-y-8">
-      <div className="flex flex-col md:flex-row items-center justify-between bg-slate-100/80 backdrop-blur-md p-1.5 md:p-2.5 rounded-2xl md:rounded-[2.5rem] border border-slate-200 shadow-lg gap-2 md:gap-3">
-        <div className="flex items-center gap-1 overflow-x-auto no-scrollbar w-full md:w-auto px-1">
+      <div className="flex flex-col md:flex-row items-center justify-between bg-slate-100/80 backdrop-blur-md p-2 md:p-3 rounded-2xl md:rounded-[2.5rem] border border-slate-200 shadow-lg gap-2 md:gap-3">
+        <div className="flex items-center gap-1 overflow-x-auto no-scrollbar w-full md:w-auto px-1 py-1">
           <NavItem view="home" label="PEACE" Icon={LayoutGrid} />
           <NavItem view="previous" label="History" Icon={History} />
           

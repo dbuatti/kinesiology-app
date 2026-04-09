@@ -440,9 +440,9 @@ const SessionContentSwitcher = ({
       </div>
 
       <Dialog open={noteDialogOpen} onOpenChange={setNoteDialogOpen}>
-        <DialogContent className="w-[95vw] max-w-5xl rounded-[3rem] p-0 overflow-hidden border-none shadow-3xl bg-white dark:bg-slate-950">
+        <DialogContent className="w-[95vw] max-w-5xl rounded-[3rem] p-0 overflow-visible border-none shadow-3xl bg-white dark:bg-slate-950">
           <div className="p-8 md:p-12 relative flex flex-col h-[85vh]">
-            <div className="absolute top-6 right-6">
+            <div className="absolute top-6 right-6 z-50">
               <Button variant="ghost" size="icon" onClick={() => setNoteDialogOpen(false)} className="text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 rounded-full">
                 <X size={24} />
               </Button>
@@ -458,7 +458,7 @@ const SessionContentSwitcher = ({
               </div>
             </div>
             
-            <div className="flex-1 bg-slate-50 dark:bg-slate-900/50 rounded-[2.5rem] border border-slate-100 dark:border-slate-800 p-2 overflow-hidden">
+            <div className="flex-1 bg-slate-50 dark:bg-slate-900/50 rounded-[2rem] border border-slate-100 dark:border-slate-800 p-4 md:p-8">
               <EditableField 
                 field="notes" 
                 label="General Session Notes" 
@@ -466,7 +466,7 @@ const SessionContentSwitcher = ({
                 multiline 
                 placeholder="Start typing your observations here..." 
                 onSave={saveField} 
-                className="bg-transparent border-none shadow-none p-6 md:p-10 h-full w-full min-h-full"
+                className="bg-transparent border-none shadow-none p-0 h-full w-full min-h-full"
               />
             </div>
 

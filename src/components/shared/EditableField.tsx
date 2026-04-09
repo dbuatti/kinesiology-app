@@ -150,16 +150,18 @@ const EditableField = ({
   // Extract min-height from className if present to apply to the actual textarea
   const minHeightClass = className.split(' ').find(c => c.startsWith('min-h-')) || (multiline ? "min-h-[100px]" : "");
 
+  // Check if we should use a transparent background when focused (for the Quick Note dialog)
+  const isTransparentMode = className.includes('bg-transparent');
+
   return (
     <div 
       className={cn(
         "group relative p-4 transition-all duration-500 border-2",
         isFocused 
-          ? "bg-card border-indigo-500 shadow-xl shadow-indigo-100/50 dark:shadow-indigo-900/20" 
+          ? (isTransparentMode ? "border-indigo-500" : "bg-card border-indigo-500 shadow-xl shadow-indigo-100/50 dark:shadow-indigo-900/20") 
           : hasError 
             ? "bg-rose-50 dark:bg-rose-950/10 border-rose-300 dark:border-rose-900/30"
             : "bg-muted/50 border-transparent hover:bg-card hover:border-border hover:shadow-lg",
-        // Only apply large rounding if not in a "full" context (detected by border-none)
         className.includes('border-none') ? "rounded-none" : "rounded-2xl",
         className
       )}
@@ -227,7 +229,7 @@ const EditableField = ({
                 minHeightClass
               )}
             />
-            <div className="flex flex-wrap gap-1 pt-1.5 border-t border-border animate-in fade-in slide-in-from-bottom-1 duration-300 shrink-0">
+            <div className="flex flex-wrap gap-1 pt-3 border-t border-border animate-in fade-in slide-in-from-bottom-1 duration-300 shrink-0 pb-2">
               <div className="flex items-center gap-1 mr-1.5 text-[7px] font-black text-muted-foreground uppercase tracking-widest">
                 <Sparkles size={8} className="text-indigo-400" /> Tags:
               </div>

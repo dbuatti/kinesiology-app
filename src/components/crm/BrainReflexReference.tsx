@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect, useCallback, useRef } from "react";
 import { BRAIN_REFLEX_POINTS, BrainRegionCategory, BrainReflexPoint } from "@/data/brain-reflex-data";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { 
@@ -10,7 +10,8 @@ import {
   ArrowRightLeft, MousePointer2, 
   Layers, Activity, ShieldAlert,
   Upload, Image as ImageIcon, X, Loader2,
-  Plus, Sparkles, Target, Maximize2, Hand, PlayCircle
+  Plus, Sparkles, Target, Maximize2, Hand, PlayCircle,
+  ChevronDown, ChevronUp, ChevronRight, Map as MapIcon
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
@@ -204,6 +205,7 @@ const BrainReflexReference = () => {
   const [customizations, setCustomizations] = useState<Record<string, ReflexImageData>>({});
   const [selectedPoint, setSelectedPoint] = useState<BrainReflexPoint | null>(null);
   const [modalOpen, setModalOpen] = useState(false);
+  const [mapExpanded, setMapExpanded] = useState(false);
 
   useEffect(() => {
     const fetchCustomizations = async () => {
@@ -259,140 +261,213 @@ const BrainReflexReference = () => {
 
   const categories: (BrainRegionCategory | 'All')[] = ['All', 'Cortical', 'Subcortical', 'Cranial Nerve'];
 
+  const corticalCount = BRAIN_REFLEX_POINTS.filter(p => p.category === 'Cortical').length;
+  const subcorticalCount = BRAIN_REFLEX_POINTS.filter(p => p.category === 'Subcortical').length;
+
   return (
-    <div className="space-y-8">
-      <div className="flex flex-col md:flex-row gap-4">
-        <div className="relative flex-1">
-          <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
-          <Input 
-            placeholder="Search reflex areas (e.g. Limbic, M1, GV16)..." 
-            className="pl-12 bg-white border-slate-200 rounded-2xl h-14 shadow-sm font-medium focus:ring-2 focus:ring-indigo-500"
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-          />
+    <div className="space-y-10">
+      {/* Hero Section */}
+      <div className="space-y-6">
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+          <div className="space-y-1">
+            <h2 className="text-3xl font-black text-foreground tracking-tight">Brain Zone Reference</h2>
+            <p className="text-muted-foreground font-medium max-w-2xl">
+              A simplified, therapeutic zone-based guide to common neurological pathways — hand placements, acupoints, key functions, and correction protocols for FNH clinical practice.
+            </p>
+          </div>
+          <div className="flex gap-3">
+            <div className="px-4 py-2 bg-indigo-50 dark:bg-indigo-900/20 rounded-2xl border border-indigo-100 dark:border-indigo-900/30 text-center">
+              <p className="text-[8px] font-black text-indigo-400 uppercase tracking-widest">Cortical</p>
+              <p className="text-xl font-black text-indigo-600 dark:text-indigo-400">{corticalCount}</p>
+            </div>
+            <div className="px-4 py-2 bg-rose-50 dark:bg-rose-900/20 rounded-2xl border border-rose-100 dark:border-rose-900/30 text-center">
+              <p className="text-[8px] font-black text-rose-400 uppercase tracking-widest">Sub-Cortical</p>
+              <p className="text-xl font-black text-rose-600 dark:text-rose-400">{subcorticalCount}</p>
+            </div>
+          </div>
         </div>
-        <div className="flex gap-2 overflow-x-auto pb-2 md:pb-0">
-          {categories.map(cat => (
+
+        {/* Reference Map Card */}
+        <Card className="border-none shadow-lg rounded-[2.5rem] bg-slate-900 text-white overflow-hidden">
+          <CardHeader className="p-8 pb-4 flex flex-row items-center justify-between">
+            <div className="space-y-1">
+              <CardTitle className="text-xl font-black flex items-center gap-3">
+                <MapIcon size={24} className="text-indigo-400" /> Brain Zone Reference Map
+              </CardTitle>
+              <CardDescription className="text-slate-400 font-medium">
+                Use this diagram to locate zones on the skull before applying each protocol
+              </CardDescription>
+            </div>
             <Button 
-              key={cat}
-              variant={selectedCategory === cat ? "default" : "outline"}
-              onClick={() => setSelectedCategory(cat)}
-              className={cn(
-                "rounded-xl h-14 px-6 font-black text-[10px] uppercase tracking-widest whitespace-nowrap transition-all",
-                selectedCategory === cat ? "bg-slate-900 shadow-lg" : "border-slate-200 bg-white hover:bg-slate-50"
-              )}
+              variant="ghost" 
+              onClick={() => setMapExpanded(!mapExpanded)}
+              className="text-indigo-400 hover:text-white hover:bg-white/10 rounded-xl font-bold text-xs uppercase tracking-widest"
             >
-              {cat}
+              {mapExpanded ? <ChevronUp size={18} className="mr-2" /> : <Maximize2 size={18} className="mr-2" />}
+              {mapExpanded ? "Collapse map" : "Expand map"}
             </Button>
-          ))}
-        </div>
+          </CardHeader>
+          <CardContent className="p-8 pt-0">
+            <div className={cn(
+              "relative rounded-[2rem] overflow-hidden bg-slate-950 border border-slate-800 transition-all duration-700",
+              mapExpanded ? "aspect-auto" : "aspect-[21/9]"
+            )}>
+              <img 
+                src="/images/mechanoreceptive/homunculus.png" 
+                alt="FNH Brain Zone Reference Map" 
+                className="w-full h-full object-contain opacity-80 hover:opacity-100 transition-opacity"
+              />
+              {!mapExpanded && (
+                <div className="absolute inset-0 bg-gradient-to-t from-slate-950 via-transparent to-transparent flex items-end justify-center pb-8">
+                  <p className="text-[10px] font-black text-slate-500 uppercase tracking-[0.4em]">FNH Brain Zone Reference Map — all zones labelled with acupoints and hand placements</p>
+                </div>
+              )}
+            </div>
+          </CardContent>
+        </Card>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-        {filteredPoints.map(point => {
-          const data = customizations[point.id] || { primaryUrl: null, secondaryUrl: null };
-          
-          return (
-            <Card 
-              key={point.id} 
-              className="border-none shadow-lg rounded-[2.5rem] bg-white hover:shadow-2xl transition-all group overflow-hidden cursor-pointer"
-              onClick={() => handleCardClick(point)}
-            >
-              <CardHeader className={cn(
-                "pb-4 border-b transition-colors relative",
-                point.category === 'Cortical' ? "bg-purple-50/50 border-purple-100" :
-                point.category === 'Subcortical' ? "bg-indigo-50/50 border-indigo-100" :
-                "bg-emerald-50/50 border-emerald-100"
-              )}>
-                <div className="absolute top-4 right-4 opacity-0 group-hover:opacity-100 transition-opacity">
-                  <div className="w-8 h-8 rounded-full bg-white/80 backdrop-blur-sm flex items-center justify-center text-slate-400 shadow-sm">
-                    <Maximize2 size={14} />
-                  </div>
-                </div>
-                <div className="flex items-start justify-between">
-                  <div className="space-y-1">
-                    <div className="flex gap-2 mb-2">
-                      <Badge className={cn(
-                        "border-none font-black text-[8px] uppercase tracking-widest",
-                        point.category === 'Cortical' ? "bg-purple-100 text-purple-700" :
-                        point.category === 'Subcortical' ? "bg-indigo-100 text-indigo-700" :
-                        "bg-emerald-100 text-emerald-700"
-                      )}>
-                        {point.category}
-                      </Badge>
-                      <Badge variant="outline" className="border-slate-200 text-slate-500 font-black text-[8px] uppercase tracking-widest">
-                        {point.lateralization}
-                      </Badge>
+      {/* Search and Filter */}
+      <div className="space-y-8">
+        <div className="flex flex-col md:flex-row gap-4">
+          <div className="relative flex-1">
+            <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
+            <Input 
+              placeholder="Search zones, functions, acupoints..." 
+              className="pl-12 bg-white border-slate-200 rounded-2xl h-14 shadow-sm font-medium focus:ring-2 focus:ring-indigo-500"
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+            />
+          </div>
+          <div className="flex gap-2 overflow-x-auto pb-2 md:pb-0">
+            {categories.map(cat => (
+              <Button 
+                key={cat}
+                variant={selectedCategory === cat ? "default" : "outline"}
+                onClick={() => setSelectedCategory(cat)}
+                className={cn(
+                  "rounded-xl h-14 px-6 font-black text-[10px] uppercase tracking-widest whitespace-nowrap transition-all",
+                  selectedCategory === cat ? "bg-slate-900 shadow-lg" : "border-slate-200 bg-white hover:bg-slate-50"
+                )}
+              >
+                {cat}
+              </Button>
+            ))}
+          </div>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+          {filteredPoints.map(point => {
+            const data = customizations[point.id] || { primaryUrl: null, secondaryUrl: null };
+            
+            return (
+              <Card 
+                key={point.id} 
+                className="border-none shadow-lg rounded-[2.5rem] bg-white hover:shadow-2xl transition-all group overflow-hidden cursor-pointer flex flex-col"
+                onClick={() => handleCardClick(point)}
+              >
+                <CardHeader className={cn(
+                  "pb-4 border-b transition-colors relative",
+                  point.category === 'Cortical' ? "bg-purple-50/50 border-purple-100" :
+                  point.category === 'Subcortical' ? "bg-indigo-50/50 border-indigo-100" :
+                  "bg-emerald-50/50 border-emerald-100"
+                )}>
+                  <div className="absolute top-4 right-4 opacity-0 group-hover:opacity-100 transition-opacity">
+                    <div className="w-8 h-8 rounded-full bg-white/80 backdrop-blur-sm flex items-center justify-center text-slate-400 shadow-sm">
+                      <Maximize2 size={14} />
                     </div>
-                    <CardTitle className="text-xl font-black text-slate-900 group-hover:text-indigo-600 transition-colors">
-                      {point.name}
-                    </CardTitle>
                   </div>
-                  <div className={cn(
-                    "w-10 h-10 rounded-xl flex items-center justify-center shadow-sm transition-all",
-                    point.category === 'Cortical' ? "bg-purple-600 text-white" :
-                    point.category === 'Subcortical' ? "bg-indigo-600 text-white" :
-                    "bg-emerald-600 text-white"
-                  )}>
-                    {point.category === 'Cortical' ? <Brain size={20} /> : 
-                     point.category === 'Subcortical' ? <Layers size={20} /> : 
-                     <Zap size={20} />}
+                  <div className="flex items-start justify-between">
+                    <div className="space-y-1">
+                      <div className="flex gap-2 mb-2">
+                        <Badge className={cn(
+                          "border-none font-black text-[8px] uppercase tracking-widest",
+                          point.category === 'Cortical' ? "bg-purple-100 text-purple-700" :
+                          point.category === 'Subcortical' ? "bg-indigo-100 text-indigo-700" :
+                          "bg-emerald-100 text-emerald-700"
+                        )}>
+                          {point.category}
+                        </Badge>
+                        {point.acupoint && (
+                          <Badge variant="outline" className="border-slate-200 text-slate-500 font-black text-[8px] uppercase tracking-widest">
+                            {point.acupoint}
+                          </Badge>
+                        )}
+                      </div>
+                      <CardTitle className="text-xl font-black text-slate-900 group-hover:text-indigo-600 transition-colors">
+                        {point.name}
+                      </CardTitle>
+                    </div>
+                    <div className={cn(
+                      "w-10 h-10 rounded-xl flex items-center justify-center shadow-sm transition-all",
+                      point.category === 'Cortical' ? "bg-purple-600 text-white" :
+                      point.category === 'Subcortical' ? "bg-indigo-600 text-white" :
+                      "bg-emerald-600 text-white"
+                    )}>
+                      {point.category === 'Cortical' ? <Brain size={20} /> : 
+                       point.category === 'Subcortical' ? <Layers size={20} /> : 
+                       <Zap size={20} />}
+                    </div>
                   </div>
-                </div>
-              </CardHeader>
-              <CardContent className="p-6 space-y-6">
-                <div className="relative group/container" onClick={(e) => e.stopPropagation()}>
-                  <ReflexImageZone 
-                    reflexId={point.id} 
-                    type="primary"
-                    currentUrl={data.primaryUrl} 
-                    onUploadComplete={(url) => updateLocalCustomization(point.id, 'primary', url)}
-                  />
-                  
-                  <div className={cn(
-                    "absolute bottom-3 right-3 transition-all duration-500 z-20",
-                    data.secondaryUrl 
-                      ? "opacity-60 group-hover/container:opacity-100 group-hover/container:scale-105" 
-                      : "opacity-0 group-hover/container:opacity-100"
-                  )}>
+                </CardHeader>
+                <CardContent className="p-6 space-y-6 flex-1 flex flex-col">
+                  <div className="relative group/container" onClick={(e) => e.stopPropagation()}>
                     <ReflexImageZone 
                       reflexId={point.id} 
-                      type="secondary"
-                      currentUrl={data.secondaryUrl} 
-                      onUploadComplete={(url) => updateLocalCustomization(point.id, 'secondary', url)}
+                      type="primary"
+                      currentUrl={data.primaryUrl} 
+                      onUploadComplete={(url) => updateLocalCustomization(point.id, 'primary', url)}
                     />
+                    
+                    <div className={cn(
+                      "absolute bottom-3 right-3 transition-all duration-500 z-20",
+                      data.secondaryUrl 
+                        ? "opacity-60 group-hover/container:opacity-100 group-hover/container:scale-105" 
+                        : "opacity-0 group-hover/container:opacity-100"
+                    )}>
+                      <ReflexImageZone 
+                        reflexId={point.id} 
+                        type="secondary"
+                        currentUrl={data.secondaryUrl} 
+                        onUploadComplete={(url) => updateLocalCustomization(point.id, 'secondary', url)}
+                      />
+                    </div>
                   </div>
-                </div>
 
-                <div className="space-y-4">
-                  <div className="grid grid-cols-1 gap-3">
-                    <div className="p-3 bg-indigo-50/50 rounded-xl border border-indigo-100">
-                      <p className="text-[8px] font-black text-indigo-400 uppercase tracking-widest mb-1 flex items-center gap-1">
-                        <Hand size={10} /> Reflex Point
+                  <div className="space-y-4 flex-1">
+                    <div className="p-4 bg-slate-50 rounded-2xl border border-slate-100">
+                      <p className="text-[8px] font-black text-slate-400 uppercase tracking-widest mb-1 flex items-center gap-1">
+                        <Hand size={10} /> Location
                       </p>
-                      <p className="text-xs font-bold text-indigo-900 leading-tight line-clamp-1">{point.location}</p>
+                      <p className="text-xs font-bold text-slate-900 leading-relaxed">{point.location}</p>
                     </div>
-                    <div className="p-3 bg-amber-50/50 rounded-xl border border-amber-100">
-                      <p className="text-[8px] font-black text-amber-600 uppercase tracking-widest mb-1 flex items-center gap-1">
-                        <PlayCircle size={10} /> Stimulus
-                      </p>
-                      <p className="text-xs font-bold text-amber-900 leading-tight line-clamp-1">{point.stimulus || point.technique}</p>
+
+                    {point.functions && (
+                      <div className="space-y-2">
+                        <p className="text-[8px] font-black text-slate-400 uppercase tracking-widest">Key Functions</p>
+                        <div className="space-y-1">
+                          {point.functions.map(f => (
+                            <div key={f} className="flex items-start gap-2 text-[10px] font-bold text-slate-600">
+                              <div className="w-1 h-1 rounded-full bg-indigo-400 mt-1.5 shrink-0" />
+                              {f}
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+                  </div>
+
+                  <div className="pt-4 border-t border-slate-100 flex items-center justify-between">
+                    <span className="text-[8px] font-black text-indigo-600 uppercase tracking-widest">View full details</span>
+                    <div className="w-8 h-8 rounded-xl bg-slate-50 flex items-center justify-center text-slate-400 group-hover:bg-indigo-600 group-hover:text-white transition-all">
+                      <ChevronRight size={16} />
                     </div>
                   </div>
-                  
-                  {point.pearl && (
-                    <div className="p-4 bg-slate-50 rounded-2xl border border-slate-100 relative overflow-hidden">
-                      <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-1 flex items-center gap-1">
-                        <Info size={10} /> Clinical Pearl
-                      </p>
-                      <p className="text-xs text-slate-600 font-bold leading-relaxed line-clamp-1 italic">"{point.pearl}"</p>
-                    </div>
-                  )}
-                </div>
-              </CardContent>
-            </Card>
-          );
-        })}
+                </CardContent>
+              </Card>
+            );
+          })}
+        </div>
       </div>
 
       <BrainReflexModal 

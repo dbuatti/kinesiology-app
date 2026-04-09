@@ -92,6 +92,15 @@ const CORTICAL_POINTS: BrainReflexPoint[] = [
     lateralization: 'Contralateral',
     pearl: 'Interoception — sensing the internal state of the body.',
     videoUrl: "https://embed-ssl.wistia.com/deliveries/aca41508634a068fbda3d10c96f150a9.mp4"
+  },
+  {
+    id: 'corpus_callosum',
+    name: 'Corpus Callosum',
+    category: 'Cortical',
+    location: 'Midline of the skull, superior to the motor strip',
+    stimulus: 'Cross-lateral movement or bilateral coordination.',
+    lateralization: 'Bilateral',
+    pearl: 'The bridge between hemispheres. Essential for integration.',
   }
 ];
 
@@ -149,6 +158,69 @@ const SUBCORTICAL_POINTS: BrainReflexPoint[] = [
     lateralization: 'Ipsilateral',
     pearl: 'Visual and auditory reflex coordination.',
     videoUrl: "https://embed-ssl.wistia.com/deliveries/e469a668620604adbb0a0c69a192e7af50579078.mp4"
+  },
+  {
+    id: 'thalamus',
+    name: 'Thalamus',
+    category: 'Subcortical',
+    location: 'Deep central skull (TL via vertex)',
+    stimulus: 'Multi-sensory integration challenge.',
+    lateralization: 'Contralateral',
+    pearl: 'The grand relay station. Almost all sensory data passes here.',
+  },
+  {
+    id: 'hypothalamus',
+    name: 'Hypothalamus',
+    category: 'Subcortical',
+    location: 'Tongue to the roof of the mouth',
+    stimulus: 'Temperature or autonomic challenge.',
+    lateralization: 'Bilateral',
+    pearl: 'Master of the Autonomic Nervous System and Endocrine system.',
+  },
+  {
+    id: 'basal_ganglia',
+    name: 'Basal Ganglia',
+    category: 'Subcortical',
+    location: 'Deep lateral skull, superior to the ear',
+    stimulus: 'Initiation or cessation of movement.',
+    lateralization: 'Contralateral',
+    pearl: 'Movement gating and habit formation.',
+  },
+  {
+    id: 'amygdala',
+    name: 'Amygdala',
+    category: 'Subcortical',
+    location: 'Deep temporal lobe (anterior to ear)',
+    stimulus: 'Immediate threat or fear response.',
+    lateralization: 'Ipsilateral',
+    pearl: 'The emotional smoke detector. Processes fear and threat.',
+  },
+  {
+    id: 'hippocampus',
+    name: 'Hippocampus',
+    category: 'Subcortical',
+    location: 'Deep temporal lobe (posterior to amygdala)',
+    stimulus: 'Spatial memory or navigation task.',
+    lateralization: 'Ipsilateral',
+    pearl: 'Consolidation of information from short-term to long-term memory.',
+  },
+  {
+    id: 'pineal',
+    name: 'Pineal Gland',
+    category: 'Subcortical',
+    location: 'Tongue to the soft palate',
+    stimulus: 'Light/Dark cycle visualization.',
+    lateralization: 'Bilateral',
+    pearl: 'Regulates circadian rhythms and melatonin.',
+  },
+  {
+    id: 'pituitary',
+    name: 'Pituitary Gland',
+    category: 'Subcortical',
+    location: 'Sphenoid bone / Sella Turcica area',
+    stimulus: 'Endocrine/Hormonal challenge.',
+    lateralization: 'Bilateral',
+    pearl: 'The master gland of the endocrine system.',
   }
 ];
 

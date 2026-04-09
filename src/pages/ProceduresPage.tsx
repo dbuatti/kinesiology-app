@@ -36,6 +36,14 @@ const ProceduresPage = () => {
     setLoading(true);
     try {
       const data = await fetchMasteryStats();
+      console.log("[ProceduresPage] Loaded Mastery Stats:", data);
+      
+      // Specific log for CN I to debug video link
+      const cn1 = data.find(s => s.name.includes("CN I"));
+      if (cn1) {
+        console.log("[ProceduresPage] Debug CN I Data:", cn1);
+      }
+
       setStats(data);
     } catch (err) {
       console.error("Failed to load mastery stats", err);

@@ -17,6 +17,8 @@ export interface BrainReflexPoint {
   pearl?: string;
   nuclei?: 'Cortex' | 'Midbrain' | 'Pons' | 'Medulla';
   toneEffect?: 'Flexors' | 'Extensors' | 'None';
+  videoUrl?: string;
+  pageUrl?: string;
 }
 
 const CORTICAL_POINTS: BrainReflexPoint[] = [
@@ -195,7 +197,9 @@ const MAPPED_CRANIAL_NERVES: BrainReflexPoint[] = CRANIAL_NERVES.map(nerve => ({
   lateralization: nerve.id === 2 ? 'Contralateral' : 'Ipsilateral',
   pearl: nerve.clinicalPearl,
   nuclei: nerve.nuclei,
-  toneEffect: nerve.toneEffect
+  toneEffect: nerve.toneEffect,
+  videoUrl: nerve.videoUrl,
+  pageUrl: nerve.pageUrl
 }));
 
 export const BRAIN_REFLEX_POINTS: BrainReflexPoint[] = [

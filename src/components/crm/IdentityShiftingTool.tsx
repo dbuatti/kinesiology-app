@@ -223,13 +223,13 @@ const IdentityShiftingTool = () => {
     setSuggestions([]);
   };
 
-  // Phase 2 Loop Logic
+  // Phase 2 Loop Logic - Now consistently refers to the identity label
   const loopQuestions = [
-    (prev: string) => `What is the ${prev || formData.identity}?`,
-    (prev: string) => `Where did the ${prev} come from?`,
-    (prev: string) => `What is the ${prev} made of?`,
-    (prev: string) => `What is the ${prev} trying to do?`,
-    (prev: string) => `What is the ${prev} now?`,
+    (identity: string) => `What is "${identity}"?`,
+    (identity: string) => `Where did "${identity}" come from?`,
+    (identity: string) => `What is "${identity}" made of?`,
+    (identity: string) => `What is "${identity}" trying to do?`,
+    (identity: string) => `What is "${identity}" now?`,
   ];
 
   const handleLoopNext = () => {
@@ -347,8 +347,7 @@ const IdentityShiftingTool = () => {
   );
 
   const renderPhase2 = () => {
-    const lastResponse = formData.loopResponses[formData.loopResponses.length - 1] || formData.identity;
-    const question = loopQuestions[loopStep](lastResponse);
+    const question = loopQuestions[loopStep](formData.identity);
 
     return (
       <div className="space-y-8 animate-in fade-in zoom-in-95 duration-500">

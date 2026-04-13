@@ -5,6 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Progress } from "@/components/ui/progress";
+import { Badge } from "@/components/ui/badge";
 import {
   ArrowRight,
   ArrowLeft,
@@ -18,12 +19,15 @@ import {
   Loader2,
   History,
   Save,
-  Plus
+  Plus,
+  FileText,
+  Trash2
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { motion, AnimatePresence } from "framer-motion";
+import IdentityShiftingReport from './IdentityShiftingReport';
 
 type Phase = 1 | 2 | 3 | 4 | 5;
 
@@ -55,6 +59,7 @@ const IdentityShiftingTool = () => {
   const [isGenerating, setIsGenerating] = useState(false);
   const [pastSessions, setPastSessions] = useState<any[]>([]);
   const [showHistory, setShowHistory] = useState(false);
+  const [viewingReportId, setViewingReportId] = useState<string | null>(null);
   const [isSaving, setIsSaving] = useState(false);
 
   const progress = (phase / 5) * 100;
@@ -124,7 +129,26 @@ const IdentityShiftingTool = () => {
     });
     setPhase(1);
     setShowHistory(false);
-    toast.info("Session loaded.");
+    setViewingReportId(null);
+    toast.info("Session loaded into tool.");
+  };
+
+  const deleteSession = async (e: React.MouseEvent, id: string) => {
+    e.stopPropagation();
+    if (!confirm("Are you sure you want to delete this session?")) return;
+
+    try {
+      const { error } = await supabase
+        .from('identity_shifting_sessions')
+        .delete()
+        .eq('id', id);
+
+      if (error) throw error;
+      toast.success("Session deleted.");
+      fetchPastSessions();
+    } catch (error) {
+      toast.error("Failed to delete session.");
+    }
   };
 
   const startNewFromIntegration = () => {
@@ -218,8 +242,6 @@ const IdentityShiftingTool = () => {
       setLoopStep(loopStep + 1);
       setCurrentLoopResponse('');
     } else {
-      // End of one loop iteration
-      // In a real scenario, we might ask if they want to loop again or move to Phase 3
       setPhase(3);
     }
   };
@@ -516,22 +538,60 @@ const IdentityShiftingTool = () => {
           <p>No past sessions found.</p>
         </div>
       ) : (
-        <div className="space-y-4">
+        <div className="grid grid-cols-1 gap-4">
           {pastSessions.map((session) => (
-            <Card key={session.id} className="hover:border-primary/50 transition-colors cursor-pointer" onClick={() => loadSession(session)}>
-              <CardHeader className="p-4">
-                <div className="flex justify-between items-start">
-                  <CardTitle className="text-sm font-bold line-clamp-1">{session.problem}</CardTitle>
-                  <span className="text-[10px] text-muted-foreground">{new Date(session.created_at).toLocaleDateString()}</span>
+            <Card 
+              key={session.id} 
+              className="hover:border-primary/50 transition-all cursor-pointer group rounded-2xl overflow-hidden"
+              onClick={() => setViewingReportId(session.id)}
+            >
+              <CardContent className="p-6 flex items-center justify-between">
+                <div className="flex items-center gap-4 flex-1 min-w-0">
+                  <div className="w-10 h-10 rounded-xl bg-indigo-50 flex items-center justify-center text-indigo-600 group-hover:bg-indigo-600 group-hover:text-white transition-colors">
+                    <FileText size={20} />
+                  </div>
+                  <div className="min-w-0">
+                    <h4 className="font-bold text-slate-900 truncate">{session.problem}</h4>
+                    <div className="flex items-center gap-2 mt-1">
+                      <Badge variant="secondary" className="text-[8px] font-black uppercase tracking-widest bg-slate-100 text-slate-500 border-none">
+                        {session.identity}
+                      </Badge>
+                      <span className="text-[10px] text-slate-400 font-medium">
+                        {new Date(session.created_at).toLocaleDateString()}
+                      </span>
+                    </div>
+                  </div>
                 </div>
-                <CardDescription className="text-xs italic">Identity: {session.identity}</CardDescription>
-              </CardHeader>
+                <div className="flex items-center gap-2">
+                  <Button 
+                    variant="ghost" 
+                    size="icon" 
+                    className="h-8 w-8 rounded-xl text-slate-300 hover:text-rose-600 hover:bg-rose-50 opacity-0 group-hover:opacity-100 transition-all"
+                    onClick={(e) => deleteSession(e, session.id)}
+                  >
+                    <Trash2 size={16} />
+                  </Button>
+                  <div className="w-8 h-8 rounded-xl bg-slate-50 flex items-center justify-center text-slate-400 group-hover:bg-indigo-600 group-hover:text-white transition-all">
+                    <ArrowRight size={18} />
+                  </div>
+                </div>
+              </CardContent>
             </Card>
           ))}
         </div>
       )}
     </div>
   );
+
+  if (viewingReportId) {
+    const session = pastSessions.find(s => s.id === viewingReportId);
+    return (
+      <IdentityShiftingReport 
+        session={session} 
+        onBack={() => setViewingReportId(null)} 
+      />
+    );
+  }
 
   return (
     <div className="max-w-3xl mx-auto">
@@ -551,19 +611,21 @@ const IdentityShiftingTool = () => {
               <History size={14} />
               {showHistory ? "Back to Tool" : "History"}
             </Button>
-            <div className="text-right">
-              <span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Phase {phase} of 5</span>
-              <p className="text-sm font-bold text-primary">
-                {phase === 1 && "Isolating"}
-                {phase === 2 && "Dissolving"}
-                {phase === 3 && "Checking Identity"}
-                {phase === 4 && "Checking Problem"}
-                {phase === 5 && "Integration"}
-              </p>
-            </div>
+            {!showHistory && (
+              <div className="text-right">
+                <span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Phase {phase} of 5</span>
+                <p className="text-sm font-bold text-primary">
+                  {phase === 1 && "Isolating"}
+                  {phase === 2 && "Dissolving"}
+                  {phase === 3 && "Checking Identity"}
+                  {phase === 4 && "Checking Problem"}
+                  {phase === 5 && "Integration"}
+                </p>
+              </div>
+            )}
           </div>
         </div>
-        <Progress value={progress} className="h-2 bg-secondary" />
+        {!showHistory && <Progress value={progress} className="h-2 bg-secondary" />}
       </div>
 
       <div className="min-h-[400px]">

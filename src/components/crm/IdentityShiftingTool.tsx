@@ -15,7 +15,10 @@ import {
   Brain,
   Zap,
   MessageSquare,
-  Loader2
+  Loader2,
+  History,
+  Save,
+  Plus
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { supabase } from "@/integrations/supabase/client";
@@ -50,8 +53,102 @@ const IdentityShiftingTool = () => {
   const [currentLoopResponse, setCurrentLoopResponse] = useState('');
   const [suggestions, setSuggestions] = useState<string[]>([]);
   const [isGenerating, setIsGenerating] = useState(false);
+  const [pastSessions, setPastSessions] = useState<any[]>([]);
+  const [showHistory, setShowHistory] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
 
   const progress = (phase / 5) * 100;
+
+  useEffect(() => {
+    fetchPastSessions();
+  }, []);
+
+  const fetchPastSessions = async () => {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) return;
+
+    const { data, error } = await supabase
+      .from('identity_shifting_sessions')
+      .select('*')
+      .order('created_at', { ascending: false });
+
+    if (error) {
+      console.error("Error fetching sessions:", error);
+    } else {
+      setPastSessions(data || []);
+    }
+  };
+
+  const saveSession = async () => {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) {
+      toast.error("You must be logged in to save sessions.");
+      return;
+    }
+
+    setIsSaving(true);
+    try {
+      const { error } = await supabase
+        .from('identity_shifting_sessions')
+        .insert({
+          user_id: user.id,
+          problem: formData.problem,
+          emotion: formData.emotion,
+          felt_sense: formData.feltSense,
+          identity: formData.identity,
+          loop_responses: formData.loopResponses,
+          integration_awareness: formData.integrationAwareness,
+          integration_action: formData.integrationAction,
+        });
+
+      if (error) throw error;
+      toast.success("Session saved successfully!");
+      fetchPastSessions();
+    } catch (error) {
+      console.error("Error saving session:", error);
+      toast.error("Failed to save session.");
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
+  const loadSession = (session: any) => {
+    setFormData({
+      problem: session.problem,
+      emotion: session.emotion || '',
+      feltSense: session.felt_sense || '',
+      identity: session.identity,
+      loopResponses: session.loop_responses || [],
+      integrationAwareness: session.integration_awareness || '',
+      integrationAction: session.integration_action || '',
+    });
+    setPhase(1);
+    setShowHistory(false);
+    toast.info("Session loaded.");
+  };
+
+  const startNewFromIntegration = () => {
+    const newProblem = formData.integrationAction || formData.integrationAwareness;
+    if (!newProblem) {
+      toast.error("No integration action or awareness found to start from.");
+      return;
+    }
+
+    setFormData({
+      problem: newProblem,
+      emotion: '',
+      feltSense: '',
+      identity: '',
+      loopResponses: [],
+      integrationAwareness: '',
+      integrationAction: '',
+    });
+    setPhase(1);
+    setLoopStep(0);
+    setCurrentLoopResponse('');
+    setSuggestions([]);
+    toast.success("Started new session from integration!");
+  };
 
   const handleGenerateIdentity = async () => {
     if (!formData.problem) return;
@@ -349,9 +446,9 @@ const IdentityShiftingTool = () => {
       <div className="space-y-4">
         <div className="space-y-2">
           <Label htmlFor="awareness">What is the new awareness or perspective you're taking away?</Label>
-          <Textarea 
-            id="awareness" 
-            placeholder="I realized that..." 
+          <Textarea
+            id="awareness"
+            placeholder="I realized that..."
             value={formData.integrationAwareness}
             onChange={(e) => setFormData({ ...formData, integrationAwareness: e.target.value })}
             className="min-h-[100px] rounded-xl"
@@ -359,9 +456,9 @@ const IdentityShiftingTool = () => {
         </div>
         <div className="space-y-2">
           <Label htmlFor="action">What is one small action you can take from this new space?</Label>
-          <Input 
-            id="action" 
-            placeholder="I will..." 
+          <Input
+            id="action"
+            placeholder="I will..."
             value={formData.integrationAction}
             onChange={(e) => setFormData({ ...formData, integrationAction: e.target.value })}
             className="rounded-xl"
@@ -378,13 +475,61 @@ const IdentityShiftingTool = () => {
         </CardContent>
       </Card>
 
-      <Button 
-        onClick={reset} 
-        variant="outline"
-        className="w-full border-primary text-primary hover:bg-primary/5 rounded-xl h-12 font-bold"
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <Button
+          onClick={saveSession}
+          disabled={isSaving}
+          className="bg-primary text-white rounded-xl h-12 font-bold"
+        >
+          {isSaving ? <Loader2 className="mr-2 animate-spin" size={18} /> : <Save className="mr-2" size={18} />}
+          Save Session
+        </Button>
+        <Button
+          onClick={startNewFromIntegration}
+          variant="outline"
+          className="border-primary text-primary hover:bg-primary/5 rounded-xl h-12 font-bold"
+        >
+          <Plus className="mr-2" size={18} /> New Run from Action
+        </Button>
+      </div>
+
+      <Button
+        onClick={reset}
+        variant="ghost"
+        className="w-full text-muted-foreground rounded-xl h-12 font-bold"
       >
-        <RotateCcw className="mr-2" size={18} /> Start New Session
+        <RotateCcw className="mr-2" size={18} /> Start Fresh Session
       </Button>
+    </div>
+  );
+
+  const renderHistory = () => (
+    <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
+      <div className="flex items-center justify-between">
+        <h3 className="text-xl font-serif font-bold">Past Sessions</h3>
+        <Button variant="ghost" size="sm" onClick={() => setShowHistory(false)}>Close</Button>
+      </div>
+      
+      {pastSessions.length === 0 ? (
+        <div className="text-center py-12 text-muted-foreground">
+          <History className="mx-auto mb-4 opacity-20" size={48} />
+          <p>No past sessions found.</p>
+        </div>
+      ) : (
+        <div className="space-y-4">
+          {pastSessions.map((session) => (
+            <Card key={session.id} className="hover:border-primary/50 transition-colors cursor-pointer" onClick={() => loadSession(session)}>
+              <CardHeader className="p-4">
+                <div className="flex justify-between items-start">
+                  <CardTitle className="text-sm font-bold line-clamp-1">{session.problem}</CardTitle>
+                  <span className="text-[10px] text-muted-foreground">{new Date(session.created_at).toLocaleDateString()}</span>
+                </div>
+                <CardDescription className="text-xs italic">Identity: {session.identity}</CardDescription>
+              </CardHeader>
+            </Card>
+          ))}
+        </div>
+      )}
     </div>
   );
 
@@ -396,26 +541,41 @@ const IdentityShiftingTool = () => {
             <h1 className="text-3xl font-serif font-bold tracking-tight">Identity Shifting</h1>
             <p className="text-muted-foreground">Interactive Sandbox Tool</p>
           </div>
-          <div className="text-right">
-            <span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Phase {phase} of 5</span>
-            <p className="text-sm font-bold text-primary">
-              {phase === 1 && "Isolating"}
-              {phase === 2 && "Dissolving"}
-              {phase === 3 && "Checking Identity"}
-              {phase === 4 && "Checking Problem"}
-              {phase === 5 && "Integration"}
-            </p>
+          <div className="flex flex-col items-end gap-2">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setShowHistory(!showHistory)}
+              className="rounded-full h-8 px-3 text-xs gap-1.5"
+            >
+              <History size={14} />
+              {showHistory ? "Back to Tool" : "History"}
+            </Button>
+            <div className="text-right">
+              <span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Phase {phase} of 5</span>
+              <p className="text-sm font-bold text-primary">
+                {phase === 1 && "Isolating"}
+                {phase === 2 && "Dissolving"}
+                {phase === 3 && "Checking Identity"}
+                {phase === 4 && "Checking Problem"}
+                {phase === 5 && "Integration"}
+              </p>
+            </div>
           </div>
         </div>
         <Progress value={progress} className="h-2 bg-secondary" />
       </div>
 
       <div className="min-h-[400px]">
-        {phase === 1 && renderPhase1()}
-        {phase === 2 && renderPhase2()}
-        {phase === 3 && renderPhase3()}
-        {phase === 4 && renderPhase4()}
-        {phase === 5 && renderPhase5()}
+        {showHistory ? renderHistory() : (
+          <>
+            {phase === 1 && renderPhase1()}
+            {phase === 2 && renderPhase2()}
+            {phase === 3 && renderPhase3()}
+            {phase === 4 && renderPhase4()}
+            {phase === 5 && renderPhase5()}
+          </>
+        )}
       </div>
 
       {/* Footer Info */}

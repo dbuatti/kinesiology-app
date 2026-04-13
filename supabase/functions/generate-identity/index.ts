@@ -13,9 +13,9 @@ serve(async (req) => {
   try {
     const { problem, emotion, feltSense } = await req.json()
 
-    const openAiKey = Deno.env.get('OPENAI_API_KEY')
-    if (!openAiKey) {
-      throw new Error('Missing OPENAI_API_KEY')
+    const geminiKey = Deno.env.get('GEMINI_API_KEY')
+    if (!geminiKey) {
+      throw new Error('Missing GEMINI_API_KEY')
     }
 
     const prompt = `
@@ -27,49 +27,49 @@ serve(async (req) => {
       Emotion: ${emotion || 'Not specified'}
       Physical Sensations (Felt Sense): ${feltSense || 'Not specified'}
 
-      Return ONLY a JSON array of strings.
+      Return ONLY a JSON array of strings. No other text.
     `
 
-    console.log("[generate-identity] Request received", { problem, emotion, feltSense });
+    console.log("[generate-identity] Request received for Gemini", { problem, emotion, feltSense });
 
-    const response = await fetch('https://api.openai.com/v1/chat/completions', {
+    const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${geminiKey}`, {
       method: 'POST',
       headers: {
-        'Authorization': `Bearer ${openAiKey}`,
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        model: 'gpt-4o-mini',
-        messages: [
-          { role: 'system', content: 'You are a helpful assistant that suggests identity labels based on psychological and emotional context.' },
-          { role: 'user', content: prompt }
-        ],
-        temperature: 0.7,
+        contents: [{
+          parts: [{ text: prompt }]
+        }],
+        generationConfig: {
+          temperature: 0.7,
+          topK: 40,
+          topP: 0.95,
+          maxOutputTokens: 1024,
+          responseMimeType: "application/json",
+        }
       }),
     })
 
     if (!response.ok) {
       const errorData = await response.json();
-      console.error("[generate-identity] OpenAI API error:", errorData);
-      throw new Error(`OpenAI API error: ${errorData.error?.message || response.statusText}`);
+      console.error("[generate-identity] Gemini API error:", errorData);
+      throw new Error(`Gemini API error: ${errorData.error?.message || response.statusText}`);
     }
 
     const data = await response.json()
-    const content = data.choices[0].message.content.trim()
+    const content = data.candidates[0].content.parts[0].text.trim()
     
-    console.log("[generate-identity] AI response content:", content);
+    console.log("[generate-identity] Gemini response content:", content);
 
-    // Try to parse the JSON array from the response
     let suggestions = []
     try {
-      // Remove markdown code blocks if present
-      const jsonString = content.replace(/```json|```/g, '').trim()
-      suggestions = JSON.parse(jsonString)
+      suggestions = JSON.parse(content)
     } catch (e) {
-      console.warn("[generate-identity] Failed to parse AI response as JSON, attempting fallback parsing");
+      console.warn("[generate-identity] Failed to parse Gemini response as JSON, attempting fallback parsing");
       // Fallback: split by lines or commas if it's not valid JSON
-      suggestions = content.split('\n')
-        .map(s => s.replace(/^[0-9.-]+\s*/, '').trim())
+      suggestions = content.replace(/[\[\]"]/g, '').split(',')
+        .map(s => s.trim())
         .filter(s => s.length > 0 && s.length < 50)
         .slice(0, 4)
     }

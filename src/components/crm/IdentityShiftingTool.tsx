@@ -5,18 +5,22 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Progress } from "@/components/ui/progress";
-import { 
-  ArrowRight, 
-  ArrowLeft, 
-  RotateCcw, 
-  CheckCircle2, 
-  Fingerprint, 
-  Sparkles, 
-  Brain, 
+import {
+  ArrowRight,
+  ArrowLeft,
+  RotateCcw,
+  CheckCircle2,
+  Fingerprint,
+  Sparkles,
+  Brain,
   Zap,
-  MessageSquare
+  MessageSquare,
+  Loader2
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { supabase } from "@/integrations/supabase/client";
+import { toast } from "sonner";
+import { motion, AnimatePresence } from "framer-motion";
 
 type Phase = 1 | 2 | 3 | 4 | 5;
 
@@ -44,8 +48,35 @@ const IdentityShiftingTool = () => {
 
   const [loopStep, setLoopStep] = useState(0);
   const [currentLoopResponse, setCurrentLoopResponse] = useState('');
+  const [suggestions, setSuggestions] = useState<string[]>([]);
+  const [isGenerating, setIsGenerating] = useState(false);
 
   const progress = (phase / 5) * 100;
+
+  const handleGenerateIdentity = async () => {
+    if (!formData.problem) return;
+    
+    setIsGenerating(true);
+    try {
+      const { data, error } = await supabase.functions.invoke('generate-identity', {
+        body: {
+          problem: formData.problem,
+          emotion: formData.emotion,
+          feltSense: formData.feltSense
+        },
+      });
+
+      if (error) throw error;
+      if (data?.suggestions) {
+        setSuggestions(data.suggestions);
+      }
+    } catch (error) {
+      console.error("Error generating identity:", error);
+      toast.error("Failed to generate identity suggestions. Please try again.");
+    } finally {
+      setIsGenerating(false);
+    }
+  };
 
   const handleNext = () => {
     if (phase < 5) setPhase((p) => (p + 1) as Phase);
@@ -68,6 +99,7 @@ const IdentityShiftingTool = () => {
     });
     setLoopStep(0);
     setCurrentLoopResponse('');
+    setSuggestions([]);
   };
 
   // Phase 2 Loop Logic
@@ -131,14 +163,57 @@ const IdentityShiftingTool = () => {
           </div>
         </div>
         <div className="space-y-2">
-          <Label htmlFor="identity">Who are you being when you have this problem? (The Identity)</Label>
-          <Input 
-            id="identity" 
-            placeholder="e.g. The Failure, The Victim, The Perfectionist" 
+          <div className="flex items-center justify-between">
+            <Label htmlFor="identity">Who are you being when you have this problem? (The Identity)</Label>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={handleGenerateIdentity}
+              disabled={isGenerating || !formData.problem}
+              className="h-8 px-2 text-primary hover:text-primary/80 hover:bg-primary/10 gap-1.5"
+            >
+              {isGenerating ? (
+                <Loader2 className="h-3.5 w-3.5 animate-spin" />
+              ) : (
+                <Sparkles className="h-3.5 w-3.5" />
+              )}
+              <span className="text-xs font-bold">Magic Suggest</span>
+            </Button>
+          </div>
+          <Input
+            id="identity"
+            placeholder="e.g. The Failure, The Victim, The Perfectionist"
             value={formData.identity}
             onChange={(e) => setFormData({ ...formData, identity: e.target.value })}
             className="rounded-xl"
           />
+          
+          <AnimatePresence>
+            {suggestions.length > 0 && (
+              <motion.div
+                initial={{ opacity: 0, y: -10 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -10 }}
+                className="flex flex-wrap gap-2 mt-2"
+              >
+                {suggestions.map((suggestion, index) => (
+                  <motion.button
+                    key={index}
+                    whileHover={{ scale: 1.05 }}
+                    whileTap={{ scale: 0.95 }}
+                    onClick={() => {
+                      setFormData({ ...formData, identity: suggestion });
+                      toast.success(`Identity set to "${suggestion}"`, { duration: 2000 });
+                    }}
+                    className="text-[10px] font-bold px-3 py-1.5 bg-primary/10 text-primary rounded-full border border-primary/20 hover:bg-primary/20 transition-colors"
+                  >
+                    {suggestion}
+                  </motion.button>
+                ))}
+              </motion.div>
+            )}
+          </AnimatePresence>
+
           <p className="text-[10px] text-muted-foreground italic">Tip: Try to find a label that encapsulates the 'version' of you that experiences this.</p>
         </div>
       </div>

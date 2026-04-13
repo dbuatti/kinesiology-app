@@ -246,6 +246,18 @@ const IdentityShiftingTool = () => {
     }
   };
 
+  const handleLoopBack = () => {
+    if (loopStep > 0) {
+      const newResponses = [...formData.loopResponses];
+      const lastResponse = newResponses.pop();
+      setFormData({ ...formData, loopResponses: newResponses });
+      setCurrentLoopResponse(lastResponse || '');
+      setLoopStep(loopStep - 1);
+    } else {
+      setPhase(1);
+    }
+  };
+
   const renderPhase1 = () => (
     <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
       <div className="space-y-4">
@@ -382,7 +394,14 @@ const IdentityShiftingTool = () => {
               className="min-h-[120px] text-lg border-none focus-visible:ring-0 p-0 resize-none placeholder:text-muted-foreground/30"
             />
           </CardContent>
-          <CardFooter className="bg-secondary/10 p-4 flex justify-end">
+          <CardFooter className="bg-secondary/10 p-4 flex justify-between">
+            <Button 
+              variant="ghost"
+              onClick={handleLoopBack}
+              className="text-muted-foreground hover:text-primary font-bold"
+            >
+              <ArrowLeft className="mr-2" size={16} /> Back
+            </Button>
             <Button 
               onClick={handleLoopNext}
               disabled={!currentLoopResponse.trim()}

@@ -29,7 +29,8 @@ import {
   CalendarDays,
   Mic,
   ExternalLink,
-  GraduationCap
+  GraduationCap,
+  Fingerprint
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import SearchBar from "./SearchBar";
@@ -74,6 +75,7 @@ const Sidebar = ({ onHide }: SidebarProps) => {
   const isLabPath = (path: string) => path.startsWith("/practice/calibrate") || path.startsWith("/practice/procedures") || path.startsWith("/oversight");
   const isLibraryPath = (path: string) => path.startsWith("/resources") || path.startsWith("/practice/self") || path.startsWith("/peace-framework");
   const isBusinessPath = (path: string) => path.startsWith("/business");
+  const isSandboxPath = (path: string) => path.startsWith("/sandbox");
 
   const [opsOpen, setOpsOpen] = useState(() => {
     const saved = localStorage.getItem("sidebar_ops_open");
@@ -91,11 +93,16 @@ const Sidebar = ({ onHide }: SidebarProps) => {
     const saved = localStorage.getItem("sidebar_business_open");
     return saved !== null ? JSON.parse(saved) : isBusinessPath(location.pathname);
   });
+  const [sandboxOpen, setSandboxOpen] = useState(() => {
+    const saved = localStorage.getItem("sidebar_sandbox_open");
+    return saved !== null ? JSON.parse(saved) : isSandboxPath(location.pathname);
+  });
 
   useEffect(() => { localStorage.setItem("sidebar_ops_open", JSON.stringify(opsOpen)); }, [opsOpen]);
   useEffect(() => { localStorage.setItem("sidebar_lab_open", JSON.stringify(labOpen)); }, [labOpen]);
   useEffect(() => { localStorage.setItem("sidebar_library_open", JSON.stringify(libraryOpen)); }, [libraryOpen]);
   useEffect(() => { localStorage.setItem("sidebar_business_open", JSON.stringify(businessOpen)); }, [businessOpen]);
+  useEffect(() => { localStorage.setItem("sidebar_sandbox_open", JSON.stringify(sandboxOpen)); }, [sandboxOpen]);
   
   const activeSession = useActiveSession();
   const { practiceHealth } = usePracticeStats();
@@ -107,6 +114,7 @@ const Sidebar = ({ onHide }: SidebarProps) => {
     if (isLabPath(path)) setLabOpen(true);
     if (isLibraryPath(path)) setLibraryOpen(true);
     if (isBusinessPath(path)) setBusinessOpen(true);
+    if (isSandboxPath(path)) setSandboxOpen(true);
   }, [location.pathname]);
 
   const opsItems = [
@@ -132,6 +140,10 @@ const Sidebar = ({ onHide }: SidebarProps) => {
   const businessItems = [
     { label: "Business Hub", icon: Briefcase, path: "/business" },
     { label: "Marketing Engine", icon: Mic, path: "/business/marketing-engine" },
+  ];
+
+  const sandboxItems = [
+    { label: "Identity Shifting", icon: Fingerprint, path: "/sandbox/identity-shifting" },
   ];
 
   useEffect(() => {
@@ -299,6 +311,7 @@ const Sidebar = ({ onHide }: SidebarProps) => {
         <NavGroup title="Clinical Lab" icon={Zap} isOpen={labOpen} onToggle={() => setLabOpen(!labOpen)} items={labItems} />
         <NavGroup title="Library" icon={BookOpen} isOpen={libraryOpen} onToggle={() => setLibraryOpen(!libraryOpen)} items={libraryItems} />
         <NavGroup title="Business" icon={Briefcase} isOpen={businessOpen} onToggle={() => setBusinessOpen(!businessOpen)} items={businessItems} />
+        <NavGroup title="Sandbox" icon={Compass} isOpen={sandboxOpen} onToggle={() => setSandboxOpen(!sandboxOpen)} items={sandboxItems} />
 
         {/* Quick Links / Bookmarks */}
         <div className="space-y-1">

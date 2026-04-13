@@ -80,6 +80,9 @@ export default {
       },
       boxShadow: {
         '3xl': '0 35px 60px -15px rgba(30, 50, 97, 0.2)',
+      },
+      animation: {
+        'spin-slow': 'spin 8s linear infinite',
       }
     },
   },

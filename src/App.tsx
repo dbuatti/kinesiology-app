@@ -40,6 +40,7 @@ import PEACEFrameworkPage from "./pages/PEACEFrameworkPage";
 import MarketingEnginePage from "./pages/MarketingEnginePage";
 import BusinessHubPage from "./pages/BusinessHubPage";
 import AvailabilityPage from "./pages/AvailabilityPage";
+import IdentityShiftingPage from "./pages/IdentityShiftingPage";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -101,6 +102,9 @@ const AppRoutes = () => {
         {/* Business Tools */}
         <Route path="/business" element={<BusinessHubPage />} />
         <Route path="/business/marketing-engine" element={<MarketingEnginePage />} />
+
+        {/* Sandbox */}
+        <Route path="/sandbox/identity-shifting" element={<IdentityShiftingPage />} />
 
         {/* System */}
         <Route path="/settings" element={<SettingsPage />} />

@@ -9,7 +9,7 @@ const corsHeaders = {
 }
 
 serve(async (req) => {
-  console.log("--- [sync-calcom-bookings] v3.0 — Smart Match Enabled ---");
+  console.log("--- [sync-calcom-bookings] v4.0 — ID-First Matching ---");
 
   if (req.method === 'OPTIONS') return new Response('ok', { headers: corsHeaders })
 
@@ -63,34 +63,53 @@ serve(async (req) => {
 
       if (!dbClient) continue;
 
-      // 2. Smart Match: Check if an appointment already exists for this client at this time
-      const { data: existingApp } = await supabase
+      // 2. Match Strategy: ID first, then Date
+      const { data: appById } = await supabase
         .from('appointments')
         .select('id')
-        .eq('client_id', dbClient.id)
-        .eq('date', startTime)
+        .eq('calcom_booking_id', calcomId)
         .maybeSingle();
 
-      if (existingApp) {
+      if (appById) {
+        // Update existing linked record (handles reschedules)
         await supabase
           .from('appointments')
           .update({ 
-            calcom_booking_id: calcomId,
+            date: startTime,
             is_paid: booking.metadata?.is_paid === "true" || !!booking.payment?.[0]
           })
-          .eq('id', existingApp.id);
+          .eq('id', appById.id);
       } else {
-        await supabase
+        // Try Smart Match by date
+        const { data: appByDate } = await supabase
           .from('appointments')
-          .upsert({
-            user_id: PRACTITIONER_ID,
-            client_id: dbClient.id,
-            date: startTime,
-            tag: "Kinesiology",
-            status: "Scheduled",
-            calcom_booking_id: calcomId,
-            is_paid: booking.metadata?.is_paid === "true" || !!booking.payment?.[0]
-          }, { onConflict: 'calcom_booking_id' });
+          .select('id')
+          .eq('client_id', dbClient.id)
+          .eq('date', startTime)
+          .maybeSingle();
+
+        if (appByDate) {
+          await supabase
+            .from('appointments')
+            .update({ 
+              calcom_booking_id: calcomId,
+              is_paid: booking.metadata?.is_paid === "true" || !!booking.payment?.[0]
+            })
+            .eq('id', appByDate.id);
+        } else {
+          // Create new
+          await supabase
+            .from('appointments')
+            .insert({
+              user_id: PRACTITIONER_ID,
+              client_id: dbClient.id,
+              date: startTime,
+              tag: "Kinesiology",
+              status: "Scheduled",
+              calcom_booking_id: calcomId,
+              is_paid: booking.metadata?.is_paid === "true" || !!booking.payment?.[0]
+            });
+        }
       }
 
       syncedCount++;

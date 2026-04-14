@@ -11,7 +11,7 @@ const corsHeaders = {
 serve(async (req) => {
   if (req.method === 'OPTIONS') return new Response('ok', { headers: corsHeaders })
 
-  console.log("--- [calcom-webhook] v3.0 — Handling Reschedules ---");
+  console.log("--- [calcom-webhook] v4.0 — Robust Reschedule Handling ---");
 
   try {
     const supabaseUrl = Deno.env.get('SUPABASE_URL')
@@ -54,7 +54,6 @@ serve(async (req) => {
     if (eventTypeId === "4279898") priceAmount = 50;
     else if (eventTypeId === "5302336") priceAmount = 100;
     
-    // Override with actual payment data if present
     if (payload.payment && payload.payment[0]) {
       priceAmount = payload.payment[0].amount / 100;
     }
@@ -69,28 +68,18 @@ serve(async (req) => {
     if (!dbClient) throw new Error("Failed to upsert client.");
 
     // 3. Handle Reschedules or New Bookings
-    // Smart Match: Check if an appointment already exists for this client at this time
-    const { data: existingApp } = await supabase
+    // Strategy: 
+    // A. Try to match by Cal.com ID first (most reliable for reschedules)
+    // B. Fallback to Smart Match (Client + Date) for new/unlinked bookings
+    
+    const { data: appById } = await supabase
       .from('appointments')
       .select('id')
-      .eq('client_id', dbClient.id)
-      .eq('date', startTime)
+      .eq('calcom_booking_id', calcomId)
       .maybeSingle();
 
-    if (existingApp) {
-      console.log(`[calcom-webhook] Linking existing app ${existingApp.id} to Cal.com ID ${calcomId}`);
-      await supabase
-        .from('appointments')
-        .update({
-          calcom_booking_id: calcomId,
-          is_paid: payload.metadata?.is_paid === "true" || !!payload.payment?.[0],
-          price_amount: priceAmount,
-          price_currency: 'AUD'
-        })
-        .eq('id', existingApp.id);
-    } else if (triggerEvent === 'BOOKING_RESCHEDULED') {
-      // If rescheduled, update the record that matches the Cal.com ID
-      console.log(`[calcom-webhook] Updating rescheduled date for booking: ${calcomId}`);
+    if (appById) {
+      console.log(`[calcom-webhook] Updating existing record by ID: ${calcomId}`);
       await supabase
         .from('appointments')
         .update({
@@ -99,23 +88,44 @@ serve(async (req) => {
           price_amount: priceAmount,
           price_currency: 'AUD'
         })
-        .eq('calcom_booking_id', calcomId);
+        .eq('id', appById.id);
     } else {
-      // New Booking
-      console.log(`[calcom-webhook] Creating new record for booking: ${calcomId}`);
-      await supabase
+      // Try Smart Match by date to see if we should link an existing manual entry
+      const { data: appByDate } = await supabase
         .from('appointments')
-        .upsert({
-          user_id: PRACTITIONER_ID,
-          client_id: dbClient.id,
-          date: startTime,
-          tag: "Kinesiology",
-          status: "Scheduled",
-          calcom_booking_id: calcomId,
-          is_paid: payload.metadata?.is_paid === "true" || !!payload.payment?.[0],
-          price_amount: priceAmount,
-          price_currency: 'AUD'
-        }, { onConflict: 'calcom_booking_id' });
+        .select('id')
+        .eq('client_id', dbClient.id)
+        .eq('date', startTime)
+        .maybeSingle();
+
+      if (appByDate) {
+        console.log(`[calcom-webhook] Linking existing manual app ${appByDate.id} to Cal.com ID ${calcomId}`);
+        await supabase
+          .from('appointments')
+          .update({
+            calcom_booking_id: calcomId,
+            is_paid: payload.metadata?.is_paid === "true" || !!payload.payment?.[0],
+            price_amount: priceAmount,
+            price_currency: 'AUD'
+          })
+          .eq('id', appByDate.id);
+      } else {
+        // New Booking
+        console.log(`[calcom-webhook] Creating new record for booking: ${calcomId}`);
+        await supabase
+          .from('appointments')
+          .insert({
+            user_id: PRACTITIONER_ID,
+            client_id: dbClient.id,
+            date: startTime,
+            tag: "Kinesiology",
+            status: "Scheduled",
+            calcom_booking_id: calcomId,
+            is_paid: payload.metadata?.is_paid === "true" || !!payload.payment?.[0],
+            price_amount: priceAmount,
+            price_currency: 'AUD'
+          });
+      }
     }
 
     return new Response(JSON.stringify({ success: true }), { status: 200, headers: corsHeaders });

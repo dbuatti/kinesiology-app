@@ -9,7 +9,7 @@ const corsHeaders = {
 }
 
 serve(async (req) => {
-  console.log("[create-calcom-booking] v2.3 - Improved Conflict Handling");
+  console.log("[create-calcom-booking] v2.4 - Enhanced Error Messaging");
 
   if (req.method === 'OPTIONS') {
     return new Response('ok', { headers: corsHeaders })
@@ -81,9 +81,10 @@ serve(async (req) => {
       if (
         errorMsg.includes("can't be booked at the \"start\" time") || 
         errorMsg.includes("already has booking at this time") ||
-        errorMsg.includes("is not available")
+        errorMsg.includes("is not available") ||
+        errorMsg.includes("no availability")
       ) {
-        throw new Error(`Cal.com Conflict: This time slot is unavailable or conflicts with an existing booking. Please check your calendar or use the Live Availability tool.`);
+        throw new Error(`Cal.com Conflict: This time slot is unavailable or conflicts with an existing booking. If you are trying to override a block, please unblock the day in the Live Availability tool first.`);
       }
       
       throw new Error(errorMsg);

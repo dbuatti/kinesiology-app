@@ -28,7 +28,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { format } from "date-fns";
-import { CalendarIcon, Loader2, Globe, DollarSign, Mail, Clock, CheckCircle2, AlertCircle } from "lucide-react";
+import { CalendarIcon, Loader2, Globe, DollarSign, Mail, Clock, CheckCircle2, AlertCircle, Unlock } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { showSuccess, showError } from "@/utils/toast";
 import { APPOINTMENT_TAGS, APPOINTMENT_STATUSES } from "@/data/appointment-data";
@@ -60,13 +60,15 @@ interface AppointmentFormProps {
   eventTypeId?: string; // Selected event type ID
 }
 
-const AppointmentForm = ({ onSuccess, initialClientId, initialDate, initialTime, slotTime, eventTypeId: propEventTypeId }: AppointmentFormProps) => {
+const AppointmentForm = ({ onSuccess, initialClientId, initialDate, initialTime, slotTime: initialSlotTime, eventTypeId: propEventTypeId }: AppointmentFormProps) => {
   const { session } = useAuth();
   const [clients, setClients] = useState<{ id: string; name: string }[]>([]);
   const [loadingClients, setLoadingClients] = useState(true);
   const [submitting, setSubmitting] = useState(false);
   const [syncStatus, setSyncStatus] = useState<'idle' | 'calcom' | 'email'>('idle');
   const [conflictError, setConflictError] = useState<string | null>(null);
+  const [isTimeLocked, setIsTimeLocked] = useState(!!initialSlotTime);
+  const [currentSlotTime, setCurrentSlotTime] = useState(initialSlotTime);
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -77,8 +79,6 @@ const AppointmentForm = ({ onSuccess, initialClientId, initialDate, initialTime,
       name: "",
       tag: "Kinesiology",
       status: "Scheduled",
-      goal: "",
-      issue: "",
       is_paid: false,
       send_onboarding: true,
     },
@@ -113,8 +113,8 @@ const AppointmentForm = ({ onSuccess, initialClientId, initialDate, initialTime,
     try {
       // Determine the final ISO date string
       let isoDate = "";
-      if (slotTime) {
-        isoDate = slotTime;
+      if (currentSlotTime && isTimeLocked) {
+        isoDate = currentSlotTime;
       } else {
         const [hours, minutes] = values.time.split(":");
         const appointmentDate = new Date(values.date);
@@ -125,7 +125,7 @@ const AppointmentForm = ({ onSuccess, initialClientId, initialDate, initialTime,
       let calcomId = null;
 
       // 1. Sync with Cal.com if applicable
-      if (initialTime || slotTime) {
+      if (initialTime || currentSlotTime) {
         setSyncStatus('calcom');
         const eventTypeId = currentEventType.id;
 
@@ -146,10 +146,10 @@ const AppointmentForm = ({ onSuccess, initialClientId, initialDate, initialTime,
           calcomId = calcomData?.uid || calcomData?.bookingId;
         } catch (err: any) {
           console.error("Cal.com Sync Failed:", err);
-          if (err.message.includes("Conflict")) {
+          if (err.message.includes("Conflict") || err.message.includes("unavailable")) {
             setConflictError(err.message);
             setSubmitting(false);
-            return; // Stop here so user can pick a different time
+            return; 
           }
           throw err;
         }
@@ -215,7 +215,7 @@ const AppointmentForm = ({ onSuccess, initialClientId, initialDate, initialTime,
 
   const currentEventTypeId = propEventTypeId || localStorage.getItem('calcom_preferred_event_id') || CALCOM_CONFIG.DEFAULT_EVENT_TYPE_ID;
   const [selectedPrice, setSelectedPrice] = useState<number>(() => {
-    if (initialTime || slotTime) {
+    if (initialTime || currentSlotTime) {
       const type = CALCOM_CONFIG.EVENT_TYPES.find(t => t.id === currentEventTypeId);
       return type?.price || 50;
     }
@@ -286,7 +286,7 @@ const AppointmentForm = ({ onSuccess, initialClientId, initialDate, initialTime,
                           "w-full pl-3 text-left font-normal h-12 rounded-xl border-2 border-slate-100",
                           !field.value && "text-muted-foreground"
                         )}
-                        disabled={!!slotTime}
+                        disabled={isTimeLocked}
                       >
                         {field.value ? (
                           format(field.value, "MMMM do, yyyy")
@@ -316,10 +316,21 @@ const AppointmentForm = ({ onSuccess, initialClientId, initialDate, initialTime,
             name="time"
             render={({ field }) => (
               <FormItem>
-                <FormLabel className="text-xs font-black text-slate-900 uppercase tracking-widest">Time</FormLabel>
+                <div className="flex items-center justify-between">
+                  <FormLabel className="text-xs font-black text-slate-900 uppercase tracking-widest">Time</FormLabel>
+                  {isTimeLocked && (
+                    <button 
+                      type="button" 
+                      onClick={() => setIsTimeLocked(false)}
+                      className="text-[8px] font-black text-indigo-600 uppercase tracking-widest flex items-center gap-1 hover:underline"
+                    >
+                      <Unlock size={10} /> Override Slot
+                    </button>
+                  )}
+                </div>
                 <FormControl>
                   <div className="relative">
-                    <Input type="time" {...field} className="h-12 rounded-xl border-2 border-slate-100 pr-10" disabled={!!slotTime} />
+                    <Input type="time" {...field} className="h-12 rounded-xl border-2 border-slate-100 pr-10" disabled={isTimeLocked} />
                     <Clock className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400 pointer-events-none" />
                   </div>
                 </FormControl>

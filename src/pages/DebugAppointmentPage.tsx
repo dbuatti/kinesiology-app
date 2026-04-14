@@ -175,14 +175,14 @@ const DebugAppointmentPage = () => {
     if (!debugClient) return showError("Setup environment first");
     setActiveTest('offgrid');
     try {
-      // Create a "messy" time: Next Tuesday at 2:07 PM (More likely to be available)
+      // Create a "messy" time: Next Tuesday at 10:07 AM (More likely to be available)
       let targetDate = addDays(new Date(), 2);
       // Ensure it's a weekday (Monday-Friday)
       while (targetDate.getDay() === 0 || targetDate.getDay() === 6) {
         targetDate = addDays(targetDate, 1);
       }
       
-      const messyTime = setMinutes(setHours(targetDate, 14), 7).toISOString();
+      const messyTime = setMinutes(setHours(targetDate, 10), 7).toISOString();
 
       const { data, error } = await supabase.functions.invoke('create-calcom-booking', {
         body: {
@@ -330,7 +330,7 @@ const DebugAppointmentPage = () => {
                       </div>
                       <div className="text-left">
                         <p className="font-bold text-sm">Test: Off-Grid Booking</p>
-                        <p className="text-[10px] text-slate-500">Forces a booking at 2:07 PM (Weekday)</p>
+                        <p className="text-[10px] text-slate-500">Forces a booking at 10:07 AM (Weekday)</p>
                       </div>
                     </div>
                     {activeTest === 'offgrid' ? <Loader2 className="animate-spin" /> : <Zap size={18} className="opacity-0 group-hover:opacity-100 transition-all" />}
@@ -353,7 +353,7 @@ const DebugAppointmentPage = () => {
                   </Button>
                   <Button 
                     variant="outline" 
-                    size="sm"
+                    size="sm" 
                     disabled={!debugClient || !!activeTest}
                     onClick={testEmailOnboarding}
                     className="h-12 rounded-xl border-white/10 bg-white/5 text-white text-[10px] font-bold uppercase"
@@ -395,7 +395,7 @@ const DebugAppointmentPage = () => {
               "Slept like a baby — 9 hours and no wake ups or bad dreams — feeling good 🤗"
             </div>
             <Button 
-              onClick={seedSusansWin}
+              onClick={seedSusansWin} 
               disabled={loading}
               className="w-full h-14 rounded-2xl bg-rose-500 hover:bg-rose-600 text-white font-black text-xs uppercase tracking-widest shadow-lg"
             >
@@ -414,7 +414,7 @@ const DebugAppointmentPage = () => {
           </CardHeader>
           <CardContent className="p-8 pt-0 space-y-6">
             <Button 
-              onClick={simulateWebhook}
+              onClick={simulateWebhook} 
               disabled={loading || !debugApp}
               className="w-full h-14 rounded-2xl bg-emerald-500 hover:bg-emerald-600 text-white font-black text-xs uppercase tracking-widest shadow-lg"
             >

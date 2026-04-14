@@ -11,7 +11,6 @@ import {
   ArrowLeft,
   RotateCcw,
   CheckCircle2,
-  Fingerprint,
   Sparkles,
   Brain,
   Zap,
@@ -22,11 +21,11 @@ import {
   Plus,
   FileText,
   Trash2,
-  Shield,
   Activity,
   Target,
   Anchor,
-  Clock
+  Clock,
+  ShieldAlert
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { supabase } from "@/integrations/supabase/client";
@@ -37,19 +36,22 @@ import IdentityAlignmentReport from './IdentityAlignmentReport';
 type Phase = 1 | 2 | 3 | 4;
 
 interface ReconsolidationEntry {
-  resistance: string;
-  metabolized: string;
+  block: string;           // Waypoint 1: Why would you not be [Identity]?
+  resistance: string;      // Waypoint 2: Feel [block]. What does that feel like?
+  alternative: string;     // Waypoint 3: What would it feel like to not have that problem?
+  replacement: string;     // Waypoint 4: Feel [alternative]. What does that feel like?
 }
 
 interface FormData {
   id?: string;
   goal: string;
   targetIdentity: string;
-  somaticSensations: string;
-  emotionalStates: string;
+  physicalSensation: string;
+  emotionalState: string;
   reconsolidationData: ReconsolidationEntry[];
   presentCheck: string;
   futureCheck: string;
+  scenarioStability: string;
   finalAnchor: string;
 }
 
@@ -58,16 +60,19 @@ const IdentityAlignmentTool = () => {
   const [formData, setFormData] = useState<FormData>({
     goal: '',
     targetIdentity: '',
-    somaticSensations: '',
-    emotionalStates: '',
+    physicalSensation: '',
+    emotionalState: '',
     reconsolidationData: [],
     presentCheck: '',
     futureCheck: '',
+    scenarioStability: '',
     finalAnchor: '',
   });
 
-  const [currentResistance, setCurrentResistance] = useState('');
-  const [currentMetabolized, setCurrentMetabolized] = useState('');
+  // Phase 3 Sub-steps (Waypoints)
+  const [loopStep, setLoopStep] = useState<1 | 2 | 3 | 4>(1);
+  const [currentLoop, setCurrentLoop] = useState<Partial<ReconsolidationEntry>>({});
+
   const [pastSessions, setPastSessions] = useState<any[]>([]);
   const [showHistory, setShowHistory] = useState(false);
   const [viewingReportId, setViewingReportId] = useState<string | null>(null);
@@ -134,11 +139,12 @@ const IdentityAlignmentTool = () => {
         user_id: user.id,
         goal: formData.goal,
         target_identity: formData.targetIdentity,
-        somatic_sensations: formData.somaticSensations,
-        emotional_states: formData.emotionalStates,
+        somatic_sensations: formData.physicalSensation, // Mapping to existing DB column
+        emotional_states: formData.emotionalState,      // Mapping to existing DB column
         reconsolidation_data: formData.reconsolidationData,
         present_check: formData.presentCheck,
         future_check: formData.futureCheck,
+        scenario_stability: formData.scenarioStability,
         final_anchor: formData.finalAnchor,
         is_complete: isComplete,
         current_phase: phase
@@ -182,11 +188,12 @@ const IdentityAlignmentTool = () => {
       id: session.id,
       goal: session.goal,
       targetIdentity: session.target_identity || '',
-      somaticSensations: session.somatic_sensations || '',
-      emotionalStates: session.emotional_states || '',
+      physicalSensation: session.somatic_sensations || '',
+      emotionalState: session.emotional_states || '',
       reconsolidationData: session.reconsolidation_data || [],
       presentCheck: session.present_check || '',
       futureCheck: session.future_check || '',
+      scenarioStability: session.scenario_stability || '',
       finalAnchor: session.final_anchor || '',
     });
     setPhase((session.current_phase || 1) as Phase);
@@ -226,27 +233,28 @@ const IdentityAlignmentTool = () => {
     if (phase > 1) setPhase((p) => (p - 1) as Phase);
   };
 
-  const addReconsolidationEntry = () => {
-    if (!currentResistance || !currentMetabolized) return;
-    setFormData({
-      ...formData,
-      reconsolidationData: [
-        ...formData.reconsolidationData,
-        { resistance: currentResistance, metabolized: currentMetabolized }
-      ]
-    });
-    setCurrentResistance('');
-    setCurrentMetabolized('');
-    toast.success("Resistance metabolized.");
-  };
-
   const handleKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault();
       if (phase === 1 && formData.goal && formData.targetIdentity) handleNext();
-      else if (phase === 2 && formData.somaticSensations && formData.emotionalStates) handleNext();
-      else if (phase === 3 && currentResistance && currentMetabolized) addReconsolidationEntry();
-      else if (phase === 4 && formData.presentCheck && formData.futureCheck && formData.finalAnchor) saveProgress(true);
+      else if (phase === 2 && formData.physicalSensation && formData.emotionalState) handleNext();
+      else if (phase === 3) handleLoopNext();
+      else if (phase === 4 && formData.presentCheck && formData.futureCheck && formData.scenarioStability && formData.finalAnchor) saveProgress(true);
+    }
+  };
+
+  const handleLoopNext = () => {
+    if (loopStep === 1 && currentLoop.block) setLoopStep(2);
+    else if (loopStep === 2 && currentLoop.resistance) setLoopStep(3);
+    else if (loopStep === 3 && currentLoop.alternative) setLoopStep(4);
+    else if (loopStep === 4 && currentLoop.replacement) {
+      setFormData({
+        ...formData,
+        reconsolidationData: [...formData.reconsolidationData, currentLoop as ReconsolidationEntry]
+      });
+      setCurrentLoop({});
+      setLoopStep(1);
+      toast.success("Resistance metabolized.");
     }
   };
 
@@ -255,15 +263,16 @@ const IdentityAlignmentTool = () => {
     setFormData({
       goal: '',
       targetIdentity: '',
-      somaticSensations: '',
-      emotionalStates: '',
+      physicalSensation: '',
+      emotionalState: '',
       reconsolidationData: [],
       presentCheck: '',
       futureCheck: '',
+      scenarioStability: '',
       finalAnchor: '',
     });
-    setCurrentResistance('');
-    setCurrentMetabolized('');
+    setCurrentLoop({});
+    setLoopStep(1);
     setSuggestions([]);
   };
 
@@ -274,21 +283,29 @@ const IdentityAlignmentTool = () => {
           <Target size={24} />
         </div>
         <h3 className="text-xl font-serif font-bold">Phase 1: Setup & Extraction</h3>
-        <p className="text-sm text-muted-foreground">Define your goal and the identity required to achieve it.</p>
+        <p className="text-sm text-muted-foreground">Define your goal and extract the latent identity.</p>
       </div>
       <div className="space-y-4">
         <div className="space-y-2">
-          <Label htmlFor="goal">What is your primary goal or desired outcome?</Label>
-          <Textarea id="goal" placeholder="e.g. Building a successful practice..." value={formData.goal} onChange={(e) => setFormData({ ...formData, goal: e.target.value })} onKeyDown={handleKeyDown} className="min-h-[100px] rounded-xl" />
+          <Label htmlFor="goal">Step 1: Establish the Goal</Label>
+          <Textarea 
+            id="goal" 
+            placeholder="Define a specific outcome (e.g. $30k per month, waitlist by July...)" 
+            value={formData.goal} 
+            onChange={(e) => setFormData({ ...formData, goal: e.target.value })} 
+            onKeyDown={handleKeyDown} 
+            className="min-h-[100px] rounded-xl" 
+          />
         </div>
         <div className="space-y-2">
           <div className="flex items-center justify-between">
-            <Label htmlFor="targetIdentity">What is the Target Identity?</Label>
+            <Label htmlFor="targetIdentity">Step 2: Extract the Required Identity</Label>
             <Button variant="ghost" size="sm" onClick={handleGenerateTargetIdentity} disabled={isGenerating || !formData.goal} className="h-8 px-2 text-primary hover:bg-primary/10 gap-1.5">
               {isGenerating ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Sparkles className="h-3.5 w-3.5" />}
               <span className="text-xs font-bold">Magic Suggest</span>
             </Button>
           </div>
+          <p className="text-[10px] text-muted-foreground italic mb-2">"Imagine you have achieved that goal: What kind of person are you being?"</p>
           <Input id="targetIdentity" placeholder="e.g. The Confident Practitioner" value={formData.targetIdentity} onChange={(e) => setFormData({ ...formData, targetIdentity: e.target.value })} onKeyDown={handleKeyDown} className="rounded-xl" />
           
           <AnimatePresence>
@@ -309,7 +326,7 @@ const IdentityAlignmentTool = () => {
           <Save className="mr-2" size={18} /> Save Draft
         </Button>
         <Button onClick={handleNext} disabled={!formData.goal || !formData.targetIdentity} className="flex-[2] bg-primary hover:bg-primary/90 text-white rounded-xl h-12 font-bold">
-          Move to Somatic Mapping <ArrowRight className="ml-2" size={18} />
+          Move to Somatic Embodiment <ArrowRight className="ml-2" size={18} />
         </Button>
       </div>
     </div>
@@ -321,25 +338,27 @@ const IdentityAlignmentTool = () => {
         <div className="inline-flex items-center justify-center w-12 h-12 bg-indigo-100 dark:bg-indigo-900/30 rounded-full text-indigo-600 mb-2">
           <Activity size={24} />
         </div>
-        <h3 className="text-xl font-serif font-bold">Phase 2: Somatic Mapping</h3>
-        <p className="text-sm text-muted-foreground">Connect the identity to your physical and emotional experience.</p>
+        <h3 className="text-xl font-serif font-bold">Phase 2: Somatic Embodiment</h3>
+        <p className="text-sm text-muted-foreground">Anchor the target identity into a somatic baseline.</p>
       </div>
-      <div className="space-y-4">
+      <div className="space-y-6">
         <div className="space-y-2">
-          <Label htmlFor="somatic">What are the physical sensations of "{formData.targetIdentity}"?</Label>
-          <Textarea id="somatic" placeholder="e.g. Expansion in chest, grounded feet..." value={formData.somaticSensations} onChange={(e) => setFormData({ ...formData, somaticSensations: e.target.value })} onKeyDown={handleKeyDown} className="min-h-[100px] rounded-xl" />
+          <Label htmlFor="somatic">Step 3: Embody the Target Identity</Label>
+          <p className="text-[10px] text-muted-foreground italic mb-2">"Now feel yourself being {formData.targetIdentity}. What does that feel like?" (Map physical sensation)</p>
+          <Textarea id="somatic" placeholder="e.g. Standing tall, strong, expansion in chest..." value={formData.physicalSensation} onChange={(e) => setFormData({ ...formData, physicalSensation: e.target.value })} onKeyDown={handleKeyDown} className="min-h-[100px] rounded-xl" />
         </div>
         <div className="space-y-2">
-          <Label htmlFor="emotions">What are the core emotional states of "{formData.targetIdentity}"?</Label>
-          <Input id="emotions" placeholder="e.g. Peace, Certainty, Joy" value={formData.emotionalStates} onChange={(e) => setFormData({ ...formData, emotionalStates: e.target.value })} onKeyDown={handleKeyDown} className="rounded-xl" />
+          <Label htmlFor="emotions">Step 4: Deepen the Feeling</Label>
+          <p className="text-[10px] text-muted-foreground italic mb-2">"Now feel {formData.physicalSensation || 'that sensation'}. What does that feeling feel like?" (Core emotional state)</p>
+          <Input id="emotions" placeholder="e.g. Peaceful, Free, Certain" value={formData.emotionalState} onChange={(e) => setFormData({ ...formData, emotionalState: e.target.value })} onKeyDown={handleKeyDown} className="rounded-xl" />
         </div>
       </div>
       <div className="flex gap-4">
         <Button variant="outline" onClick={handleBack} className="flex-1 rounded-xl h-12 font-bold">
           <ArrowLeft className="mr-2" size={18} /> Back
         </Button>
-        <Button onClick={handleNext} disabled={!formData.somaticSensations || !formData.emotionalStates} className="flex-[2] bg-primary hover:bg-primary/90 text-white rounded-xl h-12 font-bold">
-          Begin Reconsolidation <ArrowRight className="ml-2" size={18} />
+        <Button onClick={handleNext} disabled={!formData.physicalSensation || !formData.emotionalState} className="flex-[2] bg-primary hover:bg-primary/90 text-white rounded-xl h-12 font-bold">
+          Begin Reconsolidation Loop <ArrowRight className="ml-2" size={18} />
         </Button>
       </div>
     </div>
@@ -351,54 +370,85 @@ const IdentityAlignmentTool = () => {
         <div className="inline-flex items-center justify-center w-12 h-12 bg-amber-100 dark:bg-amber-900/30 rounded-full text-amber-600 mb-2">
           <Zap size={24} />
         </div>
-        <h3 className="text-xl font-serif font-bold">Phase 3: Neural Reconsolidation Loop</h3>
-        <p className="text-sm text-muted-foreground">Surface and metabolize any resistance. Hit ENTER to add to loop.</p>
+        <h3 className="text-xl font-serif font-bold">Phase 3: The Reconsolidation Loop</h3>
+        <p className="text-sm text-muted-foreground">Metabolize shadow resistance. Hit ENTER to move through waypoints.</p>
       </div>
 
-      <Card className="border-2 border-amber-500/20 bg-amber-500/5 rounded-2xl">
-        <CardHeader>
-          <CardTitle className="text-sm font-bold flex items-center gap-2">
-            <MessageSquare size={16} className="text-amber-600" /> Metabolize Resistance
-          </CardTitle>
+      <Card className="border-2 border-amber-500/20 bg-amber-500/5 rounded-[2rem] overflow-hidden">
+        <CardHeader className="bg-amber-500/10 border-b border-amber-500/20">
+          <div className="flex justify-between items-center">
+            <span className="text-[10px] font-black uppercase tracking-widest text-amber-600">Waypoint {loopStep} of 4</span>
+            <div className="flex gap-1">
+              {[1, 2, 3, 4].map((i) => (
+                <div key={i} className={cn("w-2 h-2 rounded-full", i <= loopStep ? "bg-amber-500" : "bg-amber-200")} />
+              ))}
+            </div>
+          </div>
         </CardHeader>
-        <CardContent className="space-y-4">
-          <div className="space-y-2">
-            <Label className="text-xs">The Resistance (The "But...")</Label>
-            <Input placeholder="e.g. But I don't have enough experience yet..." value={currentResistance} onChange={(e) => setCurrentResistance(e.target.value)} onKeyDown={handleKeyDown} className="rounded-xl bg-white dark:bg-slate-950" />
-          </div>
-          <div className="space-y-2">
-            <Label className="text-xs">The Metabolized Truth (The Shift)</Label>
-            <Input placeholder="e.g. Experience is built through action..." value={currentMetabolized} onChange={(e) => setCurrentMetabolized(e.target.value)} onKeyDown={handleKeyDown} className="rounded-xl bg-white dark:bg-slate-950" />
-          </div>
-          <Button onClick={addReconsolidationEntry} disabled={!currentResistance || !currentMetabolized} variant="outline" className="w-full border-amber-500/50 text-amber-700 dark:text-amber-400 hover:bg-amber-500/10 rounded-xl">
-            <Plus className="mr-2" size={16} /> Add to Loop
-          </Button>
+        <CardContent className="p-8">
+          <AnimatePresence mode="wait">
+            {loopStep === 1 && (
+              <motion.div key="w1" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }} className="space-y-4">
+                <Label className="text-xl font-serif">"Why would you not be {formData.targetIdentity}?"</Label>
+                <Input autoFocus placeholder="Surface the block (e.g. Because I'm afraid...)" value={currentLoop.block || ''} onChange={e => setCurrentLoop({...currentLoop, block: e.target.value})} onKeyDown={handleKeyDown} className="h-14 text-lg rounded-xl bg-white" />
+              </motion.div>
+            )}
+            {loopStep === 2 && (
+              <motion.div key="w2" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }} className="space-y-4">
+                <Label className="text-xl font-serif">"Feel {currentLoop.block}. What does that feel like?"</Label>
+                <Input autoFocus placeholder="Feel the resistance (e.g. Tightness in throat...)" value={currentLoop.resistance || ''} onChange={e => setCurrentLoop({...currentLoop, resistance: e.target.value})} onKeyDown={handleKeyDown} className="h-14 text-lg rounded-xl bg-white" />
+              </motion.div>
+            )}
+            {loopStep === 3 && (
+              <motion.div key="w3" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }} className="space-y-4">
+                <Label className="text-xl font-serif">"What would it feel like to not have that problem?"</Label>
+                <Input autoFocus placeholder="Remove the problem (e.g. Light, expansive...)" value={currentLoop.alternative || ''} onChange={e => setCurrentLoop({...currentLoop, alternative: e.target.value})} onKeyDown={handleKeyDown} className="h-14 text-lg rounded-xl bg-white" />
+              </motion.div>
+            )}
+            {loopStep === 4 && (
+              <motion.div key="w4" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }} className="space-y-4">
+                <Label className="text-xl font-serif">"Feel {currentLoop.alternative}. What does that feel like?"</Label>
+                <Input autoFocus placeholder="Embody replacement state (e.g. Freedom, Joy...)" value={currentLoop.replacement || ''} onChange={e => setCurrentLoop({...currentLoop, replacement: e.target.value})} onKeyDown={handleKeyDown} className="h-14 text-lg rounded-xl bg-white" />
+              </motion.div>
+            )}
+          </AnimatePresence>
         </CardContent>
+        <CardFooter className="bg-amber-500/5 p-4 flex justify-between">
+          <Button variant="ghost" onClick={() => loopStep > 1 ? setLoopStep((loopStep - 1) as any) : handleBack()} className="text-amber-700 font-bold">
+            <ArrowLeft className="mr-2" size={16} /> Back
+          </Button>
+          <Button onClick={handleLoopNext} disabled={!(loopStep === 1 ? currentLoop.block : loopStep === 2 ? currentLoop.resistance : loopStep === 3 ? currentLoop.alternative : currentLoop.replacement)} className="bg-amber-600 text-white rounded-xl px-8">
+            {loopStep === 4 ? "Metabolize & Add" : "Next Waypoint"} <ArrowRight className="ml-2" size={16} />
+          </Button>
+        </CardFooter>
       </Card>
 
       {formData.reconsolidationData.length > 0 && (
         <div className="space-y-3">
-          <Label className="text-xs font-bold uppercase tracking-widest text-muted-foreground">Metabolized Resistance ({formData.reconsolidationData.length})</Label>
+          <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground px-2">Metabolized Resistance ({formData.reconsolidationData.length})</Label>
           <div className="space-y-2">
             {formData.reconsolidationData.map((entry, i) => (
-              <div key={i} className="p-3 bg-secondary/20 rounded-xl border border-secondary/30 text-xs flex justify-between items-start gap-4">
-                <div>
-                  <p className="font-bold text-rose-600 dark:text-rose-400 mb-1">Resistance: {entry.resistance}</p>
-                  <p className="text-emerald-600 dark:text-emerald-400">Shift: {entry.metabolized}</p>
+              <div key={i} className="p-4 bg-white dark:bg-slate-900 rounded-2xl border border-amber-100 dark:border-amber-900/30 text-xs flex justify-between items-center group">
+                <div className="flex items-center gap-4">
+                  <div className="w-8 h-8 rounded-lg bg-rose-50 text-rose-500 flex items-center justify-center"><ShieldAlert size={16} /></div>
+                  <div>
+                    <p className="font-bold text-slate-900 dark:text-slate-100">{entry.block}</p>
+                    <p className="text-emerald-600 font-medium">Shifted to: {entry.replacement}</p>
+                  </div>
                 </div>
-                <Button variant="ghost" size="icon" className="h-6 w-6 text-muted-foreground hover:text-rose-600" onClick={() => { const newData = [...formData.reconsolidationData]; newData.splice(i, 1); setFormData({ ...formData, reconsolidationData: newData }); }}><Trash2 size={14} /></Button>
+                <Button variant="ghost" size="icon" className="h-8 w-8 rounded-xl text-slate-300 hover:text-rose-600 opacity-0 group-hover:opacity-100 transition-all" onClick={() => { const newData = [...formData.reconsolidationData]; newData.splice(i, 1); setFormData({ ...formData, reconsolidationData: newData }); }}><Trash2 size={14} /></Button>
               </div>
             ))}
           </div>
         </div>
       )}
 
-      <div className="flex gap-4">
+      <div className="flex gap-4 pt-4">
         <Button variant="outline" onClick={handleBack} className="flex-1 rounded-xl h-12 font-bold">
-          <ArrowLeft className="mr-2" size={18} /> Back
+          <ArrowLeft className="mr-2" size={18} /> Back to Somatic
         </Button>
-        <Button onClick={handleNext} disabled={formData.reconsolidationData.length === 0} className="flex-[2] bg-primary hover:bg-primary/90 text-white rounded-xl h-12 font-bold">
-          Move to Testing <ArrowRight className="ml-2" size={18} />
+        <Button onClick={handleNext} disabled={formData.reconsolidationData.length === 0} className="flex-[2] bg-primary hover:bg-primary/90 text-white rounded-xl h-12 font-bold shadow-lg">
+          Move to Time-Space Testing <ArrowRight className="ml-2" size={18} />
         </Button>
       </div>
     </div>
@@ -410,32 +460,40 @@ const IdentityAlignmentTool = () => {
         <div className="inline-flex items-center justify-center w-12 h-12 bg-emerald-100 dark:bg-emerald-900/30 rounded-full text-emerald-600 mb-2">
           <CheckCircle2 size={24} />
         </div>
-        <h3 className="text-xl font-serif font-bold">Phase 4: Testing & Anchoring</h3>
-        <p className="text-sm text-muted-foreground">Verify the shift and anchor the new identity.</p>
+        <h3 className="text-xl font-serif font-bold">Phase 4: Time-Space Testing</h3>
+        <p className="text-sm text-muted-foreground">Prevent identity collapse by engaging future simulation networks.</p>
       </div>
 
-      <div className="space-y-4">
+      <div className="space-y-6">
         <div className="space-y-2">
-          <Label htmlFor="present">Present Check: How does the original goal feel right now?</Label>
-          <Input id="present" placeholder="e.g. It feels inevitable..." value={formData.presentCheck} onChange={(e) => setFormData({ ...formData, presentCheck: e.target.value })} onKeyDown={handleKeyDown} className="rounded-xl" />
+          <Label htmlFor="present">Step 9: Present Check</Label>
+          <p className="text-[10px] text-muted-foreground italic mb-2">"Do you feel like you are now {formData.targetIdentity}?"</p>
+          <Input id="present" placeholder="e.g. Yes, it feels solid and true..." value={formData.presentCheck} onChange={(e) => setFormData({ ...formData, presentCheck: e.target.value })} onKeyDown={handleKeyDown} className="rounded-xl" />
         </div>
         <div className="space-y-2">
-          <Label htmlFor="future">Future Check: Imagine a future challenge. How does this identity handle it?</Label>
-          <Input id="future" placeholder="e.g. With calm authority..." value={formData.futureCheck} onChange={(e) => setFormData({ ...formData, futureCheck: e.target.value })} onKeyDown={handleKeyDown} className="rounded-xl" />
+          <Label htmlFor="future">Step 10: Future Check</Label>
+          <p className="text-[10px] text-muted-foreground italic mb-2">"Do you feel like you will be {formData.targetIdentity} in the future?"</p>
+          <Input id="future" placeholder="e.g. Yes, I can see it clearly..." value={formData.futureCheck} onChange={(e) => setFormData({ ...formData, futureCheck: e.target.value })} onKeyDown={handleKeyDown} className="rounded-xl" />
         </div>
         <div className="space-y-2">
-          <Label htmlFor="anchor">Final Anchor: What is the somatic anchor of inevitability?</Label>
+          <Label htmlFor="scenario">Step 11: Scenario Stability</Label>
+          <p className="text-[10px] text-muted-foreground italic mb-2">"Is there any scenario in which you would not be {formData.targetIdentity}?"</p>
+          <Input id="scenario" placeholder="e.g. No, this is my new baseline..." value={formData.scenarioStability} onChange={(e) => setFormData({ ...formData, scenarioStability: e.target.value })} onKeyDown={handleKeyDown} className="rounded-xl" />
+        </div>
+        <div className="space-y-2">
+          <Label htmlFor="anchor">Step 12: Final Anchor</Label>
+          <p className="text-[10px] text-muted-foreground italic mb-2">"What is the somatic anchor of inevitability?"</p>
           <Input id="anchor" placeholder="e.g. A deep breath and a slight smile..." value={formData.finalAnchor} onChange={(e) => setFormData({ ...formData, finalAnchor: e.target.value })} onKeyDown={handleKeyDown} className="rounded-xl" />
         </div>
       </div>
 
-      <div className="flex flex-col gap-3">
-        <Button onClick={() => saveProgress(true)} disabled={isSaving || !formData.presentCheck || !formData.futureCheck || !formData.finalAnchor} className="w-full bg-primary hover:bg-primary/90 text-white rounded-xl h-12 font-bold">
-          {isSaving ? <Loader2 className="mr-2 animate-spin" size={18} /> : <Save className="mr-2" size={18} />} Complete & Save Session
+      <div className="flex flex-col gap-3 pt-4">
+        <Button onClick={() => saveProgress(true)} disabled={isSaving || !formData.presentCheck || !formData.futureCheck || !formData.scenarioStability || !formData.finalAnchor} className="w-full bg-primary hover:bg-primary/90 text-white rounded-xl h-14 font-black text-sm uppercase tracking-widest shadow-xl">
+          {isSaving ? <Loader2 className="mr-2 animate-spin" size={18} /> : <CheckCircle2 className="mr-2" size={18} />} Complete & Save Session
         </Button>
         <div className="flex gap-3">
-          <Button variant="outline" onClick={handleBack} className="flex-1 rounded-xl h-12 font-bold">
-            <ArrowLeft className="mr-2" size={18} /> Back
+          <Button variant="outline" onClick={() => { setPhase(3); setLoopStep(1); }} className="flex-1 rounded-xl h-12 font-bold text-rose-600 border-rose-100 hover:bg-rose-50">
+            <ShieldAlert className="mr-2" size={18} /> Return to Loop
           </Button>
           <Button variant="ghost" onClick={reset} className="flex-1 rounded-xl h-12 font-bold text-muted-foreground">
             <RotateCcw className="mr-2" size={18} /> Reset

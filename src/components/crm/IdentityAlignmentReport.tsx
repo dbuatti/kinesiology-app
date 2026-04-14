@@ -11,7 +11,9 @@ import {
   CheckCircle2, 
   Anchor,
   Download,
-  Share2
+  Share2,
+  ShieldAlert,
+  RefreshCw
 } from "lucide-react";
 
 interface IdentityAlignmentReportProps {
@@ -66,12 +68,12 @@ const IdentityAlignmentReport = ({ session, onBack }: IdentityAlignmentReportPro
           </CardHeader>
           <CardContent className="space-y-4">
             <div>
-              <h4 className="text-xs font-black uppercase tracking-widest text-muted-foreground mb-1">Somatic Sensations</h4>
-              <p className="text-sm leading-relaxed">{session.somatic_sensations}</p>
+              <h4 className="text-xs font-black uppercase tracking-widest text-muted-foreground mb-1">Physical Sensation</h4>
+              <p className="text-sm leading-relaxed font-medium">{session.somatic_sensations}</p>
             </div>
             <div>
-              <h4 className="text-xs font-black uppercase tracking-widest text-muted-foreground mb-1">Emotional States</h4>
-              <p className="text-sm leading-relaxed">{session.emotional_states}</p>
+              <h4 className="text-xs font-black uppercase tracking-widest text-muted-foreground mb-1">Core Emotional State</h4>
+              <p className="text-sm leading-relaxed font-medium">{session.emotional_states}</p>
             </div>
           </CardContent>
         </Card>
@@ -85,59 +87,84 @@ const IdentityAlignmentReport = ({ session, onBack }: IdentityAlignmentReportPro
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
-            <div>
-              <h4 className="text-xs font-black uppercase tracking-widest text-muted-foreground mb-1">Present Check</h4>
-              <p className="text-sm leading-relaxed">{session.present_check}</p>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div>
+                <h4 className="text-xs font-black uppercase tracking-widest text-muted-foreground mb-1">Present Check</h4>
+                <p className="text-sm leading-relaxed">{session.present_check}</p>
+              </div>
+              <div>
+                <h4 className="text-xs font-black uppercase tracking-widest text-muted-foreground mb-1">Future Check</h4>
+                <p className="text-sm leading-relaxed">{session.future_check}</p>
+              </div>
             </div>
             <div>
-              <h4 className="text-xs font-black uppercase tracking-widest text-muted-foreground mb-1">Future Check</h4>
-              <p className="text-sm leading-relaxed">{session.future_check}</p>
+              <h4 className="text-xs font-black uppercase tracking-widest text-muted-foreground mb-1">Scenario Stability</h4>
+              <p className="text-sm leading-relaxed">{session.scenario_stability}</p>
             </div>
             <div className="p-3 bg-emerald-50 dark:bg-emerald-900/20 rounded-xl border border-emerald-100 dark:border-emerald-900/30">
               <h4 className="text-xs font-black uppercase tracking-widest text-emerald-700 dark:text-emerald-400 mb-1 flex items-center gap-1.5">
                 <Anchor size={12} />
                 Final Anchor
               </h4>
-              <p className="text-sm font-medium text-emerald-900 dark:text-emerald-100">{session.final_anchor}</p>
+              <p className="text-sm font-bold text-emerald-900 dark:text-emerald-100">{session.final_anchor}</p>
             </div>
           </CardContent>
         </Card>
       </div>
 
       {/* Phase 3 Loop */}
-      <Card className="rounded-2xl border-none shadow-sm bg-white dark:bg-slate-900">
-        <CardHeader>
+      <Card className="rounded-[2.5rem] border-none shadow-sm bg-white dark:bg-slate-900 overflow-hidden">
+        <CardHeader className="bg-amber-500/5 border-b border-amber-500/10">
           <CardTitle className="text-lg font-bold flex items-center gap-2">
             <Zap className="text-amber-600" size={20} />
             Neural Reconsolidation Loop
           </CardTitle>
           <CardDescription>Metabolized resistance during the session.</CardDescription>
         </CardHeader>
-        <CardContent>
-          <div className="space-y-4">
+        <CardContent className="p-6">
+          <div className="space-y-6">
             {session.reconsolidation_data && session.reconsolidation_data.length > 0 ? (
               session.reconsolidation_data.map((entry: any, i: number) => (
-                <div key={i} className="grid grid-cols-1 md:grid-cols-2 gap-4 p-4 bg-secondary/10 rounded-2xl border border-secondary/20">
-                  <div>
-                    <h4 className="text-[10px] font-black uppercase tracking-widest text-rose-600 mb-1">Resistance</h4>
-                    <p className="text-sm italic">"{entry.resistance}"</p>
-                  </div>
-                  <div>
-                    <h4 className="text-[10px] font-black uppercase tracking-widest text-emerald-600 mb-1">Metabolized Shift</h4>
-                    <p className="text-sm font-medium">"{entry.metabolized}"</p>
+                <div key={i} className="space-y-4 p-6 bg-secondary/10 rounded-[2rem] border border-secondary/20 relative overflow-hidden">
+                  <div className="absolute top-0 right-0 p-4 opacity-5"><RefreshCw size={60} /></div>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6 relative z-10">
+                    <div className="space-y-3">
+                      <div>
+                        <h4 className="text-[10px] font-black uppercase tracking-widest text-rose-600 mb-1 flex items-center gap-1.5">
+                          <ShieldAlert size={12} /> Waypoint 1: The Block
+                        </h4>
+                        <p className="text-sm font-bold italic">"{entry.block}"</p>
+                      </div>
+                      <div>
+                        <h4 className="text-[10px] font-black uppercase tracking-widest text-slate-500 mb-1">Waypoint 2: The Resistance</h4>
+                        <p className="text-sm font-medium text-slate-600">{entry.resistance}</p>
+                      </div>
+                    </div>
+                    <div className="space-y-3">
+                      <div>
+                        <h4 className="text-[10px] font-black uppercase tracking-widest text-indigo-600 mb-1">Waypoint 3: The Alternative</h4>
+                        <p className="text-sm font-bold italic">"{entry.alternative}"</p>
+                      </div>
+                      <div>
+                        <h4 className="text-[10px] font-black uppercase tracking-widest text-emerald-600 mb-1 flex items-center gap-1.5">
+                          <CheckCircle2 size={12} /> Waypoint 4: Replacement State
+                        </h4>
+                        <p className="text-sm font-bold text-emerald-700">{entry.replacement}</p>
+                      </div>
+                    </div>
                   </div>
                 </div>
               ))
             ) : (
-              <p className="text-sm text-muted-foreground text-center py-4">No resistance data recorded.</p>
+              <p className="text-sm text-muted-foreground text-center py-8">No resistance data recorded.</p>
             )}
           </div>
         </CardContent>
       </Card>
 
-      <div className="bg-primary/5 border border-primary/10 rounded-3xl p-8 text-center">
+      <div className="bg-primary/5 border border-primary/10 rounded-[2.5rem] p-8 text-center">
         <h3 className="text-xl font-serif font-bold mb-2">Practitioner's Note</h3>
-        <p className="text-sm text-muted-foreground max-w-2xl mx-auto">
+        <p className="text-sm text-muted-foreground max-w-2xl mx-auto leading-relaxed">
           This alignment session represents a significant update to the nervous system's predictive model. 
           The Target Identity of <span className="font-bold text-foreground">"{session.target_identity}"</span> is now somatically anchored. 
           Continue to use the Final Anchor whenever the old predictive model attempts to re-assert itself.

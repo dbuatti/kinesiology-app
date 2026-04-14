@@ -41,6 +41,7 @@ import MarketingEnginePage from "./pages/MarketingEnginePage";
 import BusinessHubPage from "./pages/BusinessHubPage";
 import AvailabilityPage from "./pages/AvailabilityPage";
 import IdentityShiftingPage from "./pages/IdentityShiftingPage";
+import IdentityAlignmentPage from "./pages/IdentityAlignmentPage";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -105,6 +106,7 @@ const AppRoutes = () => {
 
         {/* Sandbox */}
         <Route path="/sandbox/identity-shifting" element={<IdentityShiftingPage />} />
+        <Route path="/sandbox/identity-alignment" element={<IdentityAlignmentPage />} />
 
         {/* System */}
         <Route path="/settings" element={<SettingsPage />} />

@@ -144,6 +144,7 @@ const Sidebar = ({ onHide }: SidebarProps) => {
 
   const sandboxItems = [
     { label: "Identity Shifting", icon: Fingerprint, path: "/sandbox/identity-shifting" },
+    { label: "Identity Alignment", icon: Target, path: "/sandbox/identity-alignment" },
   ];
 
   useEffect(() => {

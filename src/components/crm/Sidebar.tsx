@@ -165,7 +165,7 @@ const Sidebar = ({ onHide }: SidebarProps) => {
           case 'p': e.preventDefault(); navigate('/practice/procedures'); break;
           case 'q': e.preventDefault(); navigate('/practice/calibrate'); break;
           case 'h': e.preventDefault(); togglePrivacy(); break;
-          case '/': e.preventDefault(); setHelpOpen(true); break;
+          case 'y': e.preventDefault(); setHelpOpen(true); break;
           case '[': e.preventDefault(); onHide?.(); break;
         }
       }

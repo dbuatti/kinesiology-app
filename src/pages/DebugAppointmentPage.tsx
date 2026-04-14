@@ -13,7 +13,7 @@ import {
   Globe, CreditCard, Beaker, ArrowRight, Info, Clock,
   CalendarClock, MoveRight
 } from "lucide-react";
-import { addHours, format, addMinutes } from "date-fns";
+import { addHours, format, addMinutes, setHours, setMinutes, addDays } from "date-fns";
 import { CALCOM_CONFIG } from "@/config/integrations";
 
 const DebugAppointmentPage = () => {
@@ -175,10 +175,14 @@ const DebugAppointmentPage = () => {
     if (!debugClient) return showError("Setup environment first");
     setActiveTest('offgrid');
     try {
-      // Create a "messy" time: Tomorrow at 11:07 AM
-      const tomorrow = addMinutes(addHours(new Date(), 24), 7);
-      tomorrow.setMinutes(7); // Force 07 minutes
-      const messyTime = tomorrow.toISOString();
+      // Create a "messy" time: Next Tuesday at 2:07 PM (More likely to be available)
+      let targetDate = addDays(new Date(), 2);
+      // Ensure it's a weekday (Monday-Friday)
+      while (targetDate.getDay() === 0 || targetDate.getDay() === 6) {
+        targetDate = addDays(targetDate, 1);
+      }
+      
+      const messyTime = setMinutes(setHours(targetDate, 14), 7).toISOString();
 
       const { data, error } = await supabase.functions.invoke('create-calcom-booking', {
         body: {
@@ -191,7 +195,7 @@ const DebugAppointmentPage = () => {
       });
 
       if (error) throw error;
-      showSuccess(`Off-grid booking created for ${format(new Date(messyTime), "h:mm a")}!`);
+      showSuccess(`Off-grid booking created for ${format(new Date(messyTime), "EEEE, MMM d @ h:mm a")}!`);
     } catch (err: any) {
       showError(`Off-Grid Error: ${err.message}`);
     } finally {
@@ -326,7 +330,7 @@ const DebugAppointmentPage = () => {
                       </div>
                       <div className="text-left">
                         <p className="font-bold text-sm">Test: Off-Grid Booking</p>
-                        <p className="text-[10px] text-slate-500">Forces a booking at 11:07 AM (Tomorrow)</p>
+                        <p className="text-[10px] text-slate-500">Forces a booking at 2:07 PM (Weekday)</p>
                       </div>
                     </div>
                     {activeTest === 'offgrid' ? <Loader2 className="animate-spin" /> : <Zap size={18} className="opacity-0 group-hover:opacity-100 transition-all" />}
@@ -395,7 +399,7 @@ const DebugAppointmentPage = () => {
               disabled={loading}
               className="w-full h-14 rounded-2xl bg-rose-500 hover:bg-rose-600 text-white font-black text-xs uppercase tracking-widest shadow-lg"
             >
-              {loading ? <Loader2 className="animate-spin mr-2" /> : <Sparkles size={18} className="mr-2" />}
+              {loading ? <Loader2 className="mr-2 animate-spin" /> : <Sparkles size={18} className="mr-2" />}
               Add to Wins Vault
             </Button>
           </CardContent>
@@ -414,7 +418,7 @@ const DebugAppointmentPage = () => {
               disabled={loading || !debugApp}
               className="w-full h-14 rounded-2xl bg-emerald-500 hover:bg-emerald-600 text-white font-black text-xs uppercase tracking-widest shadow-lg"
             >
-              {loading ? <Loader2 className="animate-spin mr-2" /> : <Zap size={18} className="mr-2" />}
+              {loading ? <Loader2 className="mr-2 animate-spin" /> : <Zap size={18} className="mr-2" />}
               Simulate Payment
             </Button>
           </CardContent>

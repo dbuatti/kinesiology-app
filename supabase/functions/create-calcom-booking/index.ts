@@ -9,7 +9,7 @@ const corsHeaders = {
 }
 
 serve(async (req) => {
-  console.log("[create-calcom-booking] v2.4 - Enhanced Error Messaging");
+  console.log("[create-calcom-booking] v2.5 - Enhanced Time Logging");
 
   if (req.method === 'OPTIONS') {
     return new Response('ok', { headers: corsHeaders })
@@ -37,6 +37,9 @@ serve(async (req) => {
 
     // Ensure startTime is a clean ISO string
     const cleanStartTime = new Date(startTime).toISOString();
+    const localTimeStr = new Date(startTime).toLocaleString('en-AU', { timeZone: 'Australia/Melbourne' });
+
+    console.log(`[create-calcom-booking] Requesting slot: ${localTimeStr} (Melbourne) / ${cleanStartTime} (UTC)`);
 
     const bookingPayload = {
       start: cleanStartTime,
@@ -57,8 +60,6 @@ serve(async (req) => {
         is_paid: String(isPaidBool)
       }
     };
-
-    console.log("[create-calcom-booking] Sending payload:", JSON.stringify(bookingPayload));
 
     const response = await fetch("https://api.cal.com/v2/bookings", {
       method: "POST",
@@ -84,7 +85,7 @@ serve(async (req) => {
         errorMsg.includes("is not available") ||
         errorMsg.includes("no availability")
       ) {
-        throw new Error(`Cal.com Conflict: This time slot is unavailable or conflicts with an existing booking. If you are trying to override a block, please unblock the day in the Live Availability tool first.`);
+        throw new Error(`Cal.com Conflict: The time ${localTimeStr} is unavailable or conflicts with an existing booking. If you are trying to override a block, please unblock the day in the Live Availability tool first.`);
       }
       
       throw new Error(errorMsg);

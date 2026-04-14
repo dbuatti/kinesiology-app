@@ -2,7 +2,6 @@
 
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Input } from "@/components/ui/input";
@@ -12,19 +11,14 @@ import {
   Heart,
   Wind,
   Sparkles,
-  AlertCircle,
-  CheckCircle2,
   Printer,
   Save,
   Loader2,
   RefreshCw,
-  ShieldCheck,
   Volume2,
   Target,
   Activity,
-  ArrowRight,
-  PlayCircle,
-  ExternalLink
+  PlayCircle
 } from 'lucide-react';
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
@@ -108,20 +102,20 @@ const AngerFlowWorksheet = ({ submissionId, onBack }: AngerFlowWorksheetProps) =
   );
 
   return (
-    <div className="max-w-4xl mx-auto py-12 px-4 sm:px-6 lg:px-8 bg-slate-50/50 min-h-screen pb-32">
-      <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="space-y-12">
+    <div className="max-w-4xl mx-auto py-12 px-4 sm:px-6 lg:px-8 min-h-screen pb-32">
+      <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="space-y-20">
         {/* Header */}
         <div className="text-center space-y-4 relative">
           <div className="absolute right-0 top-0 flex gap-2 print:hidden">
-            <Button variant="outline" size="sm" asChild className="border-emerald-200 text-emerald-700 hover:bg-emerald-50">
+            <Button variant="outline" size="sm" asChild className="border-emerald-200 text-emerald-700 hover:bg-emerald-50 rounded-xl">
               <a href={LESSON_URL} target="_blank" rel="noopener noreferrer">
                 <PlayCircle size={16} className="mr-2" /> Watch Lesson
               </a>
             </Button>
-            <Button variant="outline" size="sm" onClick={() => handleSave()} disabled={saving} className="flex items-center gap-2 border-slate-200">
+            <Button variant="outline" size="sm" onClick={() => handleSave()} disabled={saving} className="flex items-center gap-2 border-slate-200 rounded-xl">
               {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />} Save
             </Button>
-            <Button variant="outline" size="sm" onClick={() => window.print()} className="flex items-center gap-2 border-slate-200">
+            <Button variant="outline" size="sm" onClick={() => window.print()} className="flex items-center gap-2 border-slate-200 rounded-xl">
               <Printer className="w-4 h-4" /> Print
             </Button>
           </div>
@@ -133,105 +127,96 @@ const AngerFlowWorksheet = ({ submissionId, onBack }: AngerFlowWorksheetProps) =
           <p className="max-w-2xl mx-auto text-slate-500 italic">"Anger arises when we feel we cannot express ourselves. The antidote is self-acceptance."</p>
         </div>
 
-        {/* Section 1: The Linguistic Prison */}
-        <Card className="border-none shadow-xl bg-white/80 backdrop-blur-sm overflow-hidden">
-          <CardHeader className="bg-emerald-50/50 border-b border-emerald-100">
-            <CardTitle className="flex items-center gap-2 text-emerald-900">
-              <Zap className="w-5 h-5" /> The "Must & Should" Audit
-            </CardTitle>
-            <CardDescription>Identify where you are imprisoning your own expression.</CardDescription>
-          </CardHeader>
-          <CardContent className="p-8 space-y-8">
-            <div className="grid gap-6">
-              <div className="space-y-3">
-                <Label className="text-lg font-bold text-slate-800">Where am I using "Must" or "Should" in my life right now?</Label>
-                <p className="text-sm text-slate-500">e.g., "I must be like my mother," "I shouldn't feel this way."</p>
-                <Textarea 
-                  placeholder="List your self-imposed limitations..."
-                  className="min-h-[120px] border-slate-200 focus:border-emerald-500"
-                  value={answers.must_should || ''}
-                  onChange={(e) => handleInputChange('must_should', e.target.value)}
-                />
-              </div>
-              <div className="space-y-3">
-                <Label className="text-lg font-bold text-slate-800">Who or what am I currently blaming for my lack of expression?</Label>
-                <Textarea 
-                  placeholder="Explore the strategy of blame..."
-                  className="min-h-[100px] border-slate-200 focus:border-emerald-500"
-                  value={answers.blame_audit || ''}
-                  onChange={(e) => handleInputChange('blame_audit', e.target.value)}
-                />
-              </div>
+        {/* Section 1: Linguistic Prison */}
+        <section className="space-y-10">
+          <div className="flex items-center gap-4">
+            <div className="w-12 h-12 rounded-2xl bg-emerald-50 text-emerald-600 flex items-center justify-center shrink-0">
+              <Zap size={24} />
             </div>
-          </CardContent>
-        </Card>
-
-        {/* Section 2: Perfectionism & Procrastination */}
-        <Card className="border-none shadow-xl bg-white/80 backdrop-blur-sm overflow-hidden">
-          <CardHeader className="bg-indigo-50/50 border-b border-indigo-100">
-            <CardTitle className="flex items-center gap-2 text-indigo-900">
-              <Target className="w-5 h-5" /> Perfectionism as Control
-            </CardTitle>
-            <CardDescription>Uncovering the "Not Good Enough" core belief.</CardDescription>
-          </CardHeader>
-          <CardContent className="p-8 space-y-8">
-            <div className="space-y-6">
-              <div className="p-4 bg-indigo-900 text-white rounded-2xl shadow-lg italic text-sm">
-                "Perfectionism is a control mechanism to avoid feeling not good enough. Fearing judgment leads to procrastination, which leads to frustration, which leads to anger."
-              </div>
-              <div className="space-y-3">
-                <Label className="text-lg font-bold text-slate-800">What am I currently procrastinating on because I fear being judged?</Label>
-                <Textarea 
-                  placeholder="Be specific about the task and the fear..."
-                  className="min-h-[100px] border-slate-200 focus:border-indigo-500"
-                  value={answers.procrastination || ''}
-                  onChange={(e) => handleInputChange('procrastination', e.target.value)}
-                />
-              </div>
-              <div className="space-y-3">
-                <Label className="text-lg font-bold text-slate-800">How would my life look if I allowed my growth to be messy and imperfect?</Label>
-                <Textarea 
-                  placeholder="Visualize the flow..."
-                  className="min-h-[100px] border-slate-200 focus:border-indigo-500"
-                  value={answers.messy_growth || ''}
-                  onChange={(e) => handleInputChange('messy_growth', e.target.value)}
-                />
-              </div>
+            <div>
+              <h2 className="text-2xl font-black text-slate-900">The "Must & Should" Audit</h2>
+              <p className="text-sm text-slate-500 font-medium">Identify where you are imprisoning your own expression.</p>
             </div>
-          </CardContent>
-        </Card>
+          </div>
 
-        {/* Section 3: Somatic Integration - The Shu Sound */}
-        <Card className="border-none shadow-xl bg-slate-900 text-white overflow-hidden">
-          <CardHeader className="border-b border-white/10">
-            <CardTitle className="flex items-center gap-2 text-emerald-400">
-              <Volume2 className="w-5 h-5" /> Healing Sound: "SHU"
-            </CardTitle>
-            <CardDescription className="text-slate-400">Physiologically clearing toxic anger from the Liver.</CardDescription>
-          </CardHeader>
-          <CardContent className="p-8 space-y-8">
-            <div className="grid md:grid-cols-2 gap-8">
+          <div className="space-y-12 pl-16">
+            <div className="space-y-4">
+              <Label className="text-lg font-bold text-slate-800">Where am I using "Must" or "Should" in my life right now?</Label>
+              <Textarea 
+                placeholder="List your self-imposed limitations..."
+                className="min-h-[150px] border-2 border-slate-100 focus:border-emerald-500 rounded-[2rem] p-8 text-lg font-medium leading-relaxed shadow-inner"
+                value={answers.must_should || ''}
+                onChange={(e) => handleInputChange('must_should', e.target.value)}
+              />
+            </div>
+            <div className="space-y-4">
+              <Label className="text-lg font-bold text-slate-800">Who or what am I currently blaming for my lack of expression?</Label>
+              <Textarea 
+                placeholder="Explore the strategy of blame..."
+                className="min-h-[150px] border-2 border-slate-100 focus:border-emerald-500 rounded-[2rem] p-8 text-lg font-medium leading-relaxed shadow-inner"
+                value={answers.blame_audit || ''}
+                onChange={(e) => handleInputChange('blame_audit', e.target.value)}
+              />
+            </div>
+          </div>
+        </section>
+
+        {/* Section 2: Perfectionism */}
+        <section className="space-y-10">
+          <div className="flex items-center gap-4">
+            <div className="w-12 h-12 rounded-2xl bg-indigo-50 text-indigo-600 flex items-center justify-center shrink-0">
+              <Target size={24} />
+            </div>
+            <div>
+              <h2 className="text-2xl font-black text-slate-900">Perfectionism as Control</h2>
+              <p className="text-sm text-slate-500 font-medium">Uncovering the "Not Good Enough" core belief.</p>
+            </div>
+          </div>
+
+          <div className="space-y-12 pl-16">
+            <div className="p-8 bg-indigo-900 text-white rounded-[2.5rem] shadow-xl italic text-lg leading-relaxed">
+              "Perfectionism is a control mechanism to avoid feeling not good enough. Fearing judgment leads to procrastination, which leads to frustration, which leads to anger."
+            </div>
+            <div className="space-y-4">
+              <Label className="text-lg font-bold text-slate-800">What am I currently procrastinating on because I fear being judged?</Label>
+              <Textarea 
+                placeholder="Be specific about the task and the fear..."
+                className="min-h-[150px] border-2 border-slate-100 focus:border-indigo-500 rounded-[2rem] p-8 text-lg font-medium leading-relaxed shadow-inner"
+                value={answers.procrastination || ''}
+                onChange={(e) => handleInputChange('procrastination', e.target.value)}
+              />
+            </div>
+          </div>
+        </section>
+
+        {/* Section 3: Somatic Integration */}
+        <section className="p-12 bg-slate-900 text-white rounded-[3rem] shadow-2xl relative overflow-hidden">
+          <div className="absolute top-0 right-0 p-12 opacity-10"><Volume2 size={150} /></div>
+          <div className="relative z-10 space-y-8">
+            <div className="flex items-center gap-4">
+              <div className="w-12 h-12 rounded-2xl bg-white/10 backdrop-blur-md flex items-center justify-center border border-white/20">
+                <Volume2 size={24} className="text-emerald-400" />
+              </div>
+              <h2 className="text-2xl font-black">Healing Sound: "SHU"</h2>
+            </div>
+            
+            <div className="grid md:grid-cols-2 gap-12">
               <div className="space-y-4">
-                <h4 className="font-black text-emerald-400 uppercase tracking-widest text-xs">The Protocol</h4>
+                <h4 className="font-black text-emerald-400 uppercase tracking-widest text-[10px]">The Protocol</h4>
                 <ol className="space-y-4 text-sm text-slate-300">
-                  <li className="flex gap-3"><span className="font-bold text-emerald-500">1.</span> Hold the Liver Pulse Point (Middle finger, Left wrist) or the Liver itself.</li>
-                  <li className="flex gap-3"><span className="font-bold text-emerald-500">2.</span> Inhale: Visualize the color Green and breathe in Compassion.</li>
+                  <li className="flex gap-3"><span className="font-bold text-emerald-500">1.</span> Hold the Liver Pulse Point or the Liver itself.</li>
+                  <li className="flex gap-3"><span className="font-bold text-emerald-500">2.</span> Inhale: Visualize Green and breathe in Compassion.</li>
                   <li className="flex gap-3"><span className="font-bold text-emerald-500">3.</span> Exhale: Make a long, whispering "SHUUUUUU" sound.</li>
-                  <li className="flex gap-3"><span className="font-bold text-emerald-500">4.</span> Feel the reverberation in the liver as you exhale the anger.</li>
+                  <li className="flex gap-3"><span className="font-bold text-emerald-500">4.</span> Feel the reverberation as you exhale the anger.</li>
                 </ol>
               </div>
-              <div className="p-6 bg-white/5 rounded-3xl border border-white/10 flex flex-col items-center justify-center text-center space-y-4">
-                <div className="w-16 h-16 rounded-2xl bg-emerald-500/20 flex items-center justify-center text-emerald-400 border border-emerald-500/30">
-                  <Activity size={32} />
-                </div>
-                <div>
-                  <p className="text-lg font-bold">"I fully accept myself now."</p>
-                  <p className="text-xs text-slate-400 mt-2">Repeat 10 times with the healed bounce.</p>
-                </div>
+              <div className="flex flex-col items-center justify-center text-center space-y-4 bg-white/5 rounded-[2rem] p-8 border border-white/10">
+                <Activity size={48} className="text-emerald-400" />
+                <p className="text-2xl font-black">"I fully accept myself now."</p>
               </div>
             </div>
-          </CardContent>
-        </Card>
+          </div>
+        </section>
 
         {/* Footer */}
         <div className="text-center pb-12">

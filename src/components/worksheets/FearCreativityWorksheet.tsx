@@ -2,7 +2,6 @@
 
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -11,15 +10,12 @@ import {
   Heart,
   Wind,
   Sparkles,
-  AlertCircle,
-  CheckCircle2,
   Printer,
   Save,
   Loader2,
   Palette,
   Zap,
   ShieldCheck,
-  ChevronLeft,
   Edit3
 } from 'lucide-react';
 import { toast } from "sonner";
@@ -110,10 +106,6 @@ const FearCreativityWorksheet = ({ submissionId, onBack }: FearCreativityWorkshe
     setAnswers(prev => ({ ...prev, [id]: value }));
   };
 
-  const handlePrint = () => {
-    window.print();
-  };
-
   if (loading) {
     return (
       <div className="flex flex-col items-center justify-center min-h-[400px] space-y-4">
@@ -123,36 +115,22 @@ const FearCreativityWorksheet = ({ submissionId, onBack }: FearCreativityWorkshe
     );
   }
 
-  const containerVariants = {
-    hidden: { opacity: 0 },
-    visible: {
-      opacity: 1,
-      transition: { staggerChildren: 0.1 }
-    }
-  };
-
-  const itemVariants = {
-    hidden: { y: 20, opacity: 0 },
-    visible: { y: 0, opacity: 1 }
-  };
-
   return (
-    <div className="max-w-4xl mx-auto py-12 px-4 sm:px-6 lg:px-8 bg-slate-50/50 min-h-screen pb-32">
+    <div className="max-w-4xl mx-auto py-12 px-4 sm:px-6 lg:px-8 min-h-screen pb-32">
       <motion.div 
-        initial="hidden"
-        animate="visible"
-        variants={containerVariants}
-        className="space-y-12"
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        className="space-y-20"
       >
         {/* Header */}
-        <motion.div variants={itemVariants} className="text-center space-y-4 relative">
+        <div className="text-center space-y-4 relative">
           <div className="absolute right-0 top-0 flex gap-2 print:hidden">
             <Button
               variant="outline"
               size="sm"
               onClick={() => handleSave()}
               disabled={saving}
-              className="flex items-center gap-2 border-slate-200 text-slate-600 hover:bg-slate-100"
+              className="flex items-center gap-2 border-slate-200 text-slate-600 hover:bg-slate-100 rounded-xl"
             >
               {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
               Save
@@ -160,8 +138,8 @@ const FearCreativityWorksheet = ({ submissionId, onBack }: FearCreativityWorkshe
             <Button
               variant="outline"
               size="sm"
-              onClick={handlePrint}
-              className="flex items-center gap-2 border-slate-200 text-slate-600 hover:bg-slate-100"
+              onClick={() => window.print()}
+              className="flex items-center gap-2 border-slate-200 text-slate-600 hover:bg-slate-100 rounded-xl"
             >
               <Printer className="w-4 h-4" />
               Print
@@ -178,234 +156,138 @@ const FearCreativityWorksheet = ({ submissionId, onBack }: FearCreativityWorkshe
               className="text-4xl font-bold tracking-tight text-slate-900 sm:text-5xl text-center border-none bg-transparent focus:ring-0 h-auto p-0 mb-2"
               placeholder="Reflection Title"
             />
-            <div className="absolute -right-8 top-1/2 -translate-y-1/2 opacity-0 group-hover:opacity-100 transition-opacity">
-              <Edit3 size={16} className="text-slate-300" />
-            </div>
           </div>
           
           <p className="text-xl text-rose-600 font-medium">Integrated Healer Program</p>
           <p className="max-w-2xl mx-auto text-slate-500 italic">
             "Create awareness of how fear manifests in the body, mind, and creativity."
           </p>
-        </motion.div>
+        </div>
 
-        {/* Section 1: General Awareness */}
-        <motion.div variants={itemVariants}>
-          <Card className="border-none shadow-xl bg-white/80 backdrop-blur-sm overflow-hidden">
-            <CardHeader className="bg-indigo-50/50 border-b border-indigo-100">
-              <CardTitle className="flex items-center gap-2 text-indigo-900">
-                <Brain className="w-5 h-5" />
-                Fill in the Blanks: Body & Mind
-              </CardTitle>
-              <CardDescription>Observe the physical and mental patterns of tension.</CardDescription>
-            </CardHeader>
-            <CardContent className="p-8 space-y-8">
-              <div className="space-y-6">
-                <div className="flex flex-wrap items-center gap-x-2 gap-y-4 text-lg leading-relaxed">
-                  <Input 
-                    className="w-64 h-10 border-b-2 border-t-0 border-x-0 rounded-none focus:ring-0 bg-transparent font-bold text-indigo-600"
-                    placeholder="[Situation/Thought]"
-                    value={answers.q1 || ''}
-                    onChange={(e) => handleInputChange('q1', e.target.value)}
-                  />
-                  <span className="font-medium text-slate-700">makes me tense.</span>
-                </div>
+        {/* Section 1: Body & Mind */}
+        <section className="space-y-10">
+          <div className="flex items-center gap-4">
+            <div className="w-12 h-12 rounded-2xl bg-indigo-50 text-indigo-600 flex items-center justify-center shrink-0">
+              <Brain size={24} />
+            </div>
+            <div>
+              <h2 className="text-2xl font-black text-slate-900">Fill in the Blanks: Body & Mind</h2>
+              <p className="text-sm text-slate-500 font-medium">Observe the physical and mental patterns of tension.</p>
+            </div>
+          </div>
 
-                <div className="flex flex-wrap items-center gap-x-2 gap-y-4 text-lg leading-relaxed">
-                  <span className="font-medium text-slate-700">I typically feel this tense sensation in my</span>
-                  <Input 
-                    className="w-64 h-10 border-b-2 border-t-0 border-x-0 rounded-none focus:ring-0 bg-transparent font-bold text-indigo-600"
-                    placeholder="[Body Part]"
-                    value={answers.q2 || ''}
-                    onChange={(e) => handleInputChange('q2', e.target.value)}
-                  />
-                </div>
+          <div className="space-y-8 pl-16">
+            <div className="flex flex-wrap items-center gap-x-2 gap-y-4 text-xl leading-relaxed">
+              <Input 
+                className="w-64 h-10 border-b-2 border-t-0 border-x-0 rounded-none focus:ring-0 bg-transparent font-bold text-indigo-600"
+                placeholder="[Situation/Thought]"
+                value={answers.q1 || ''}
+                onChange={(e) => handleInputChange('q1', e.target.value)}
+              />
+              <span className="font-medium text-slate-700">makes me tense.</span>
+            </div>
 
-                <div className="flex flex-wrap items-center gap-x-2 gap-y-4 text-lg leading-relaxed">
-                  <span className="font-medium text-slate-700">This makes me feel</span>
-                  <Input 
-                    className="w-full h-10 border-b-2 border-t-0 border-x-0 rounded-none focus:ring-0 bg-transparent font-bold text-indigo-600"
-                    placeholder="[Emotions/Feelings]"
-                    value={answers.q3 || ''}
-                    onChange={(e) => handleInputChange('q3', e.target.value)}
-                  />
-                </div>
+            <div className="flex flex-wrap items-center gap-x-2 gap-y-4 text-xl leading-relaxed">
+              <span className="font-medium text-slate-700">I typically feel this tense sensation in my</span>
+              <Input 
+                className="w-64 h-10 border-b-2 border-t-0 border-x-0 rounded-none focus:ring-0 bg-transparent font-bold text-indigo-600"
+                placeholder="[Body Part]"
+                value={answers.q2 || ''}
+                onChange={(e) => handleInputChange('q2', e.target.value)}
+              />
+            </div>
 
-                <div className="flex flex-wrap items-center gap-x-2 gap-y-4 text-lg leading-relaxed">
-                  <span className="font-medium text-slate-700">When this happens, I start to</span>
-                  <Input 
-                    className="w-full h-10 border-b-2 border-t-0 border-x-0 rounded-none focus:ring-0 bg-transparent font-bold text-indigo-600"
-                    placeholder="[Behavior/Reaction]"
-                    value={answers.q4 || ''}
-                    onChange={(e) => handleInputChange('q4', e.target.value)}
-                  />
-                </div>
+            <div className="flex flex-wrap items-center gap-x-2 gap-y-4 text-xl leading-relaxed">
+              <span className="font-medium text-slate-700">This makes me feel</span>
+              <Input 
+                className="w-full h-10 border-b-2 border-t-0 border-x-0 rounded-none focus:ring-0 bg-transparent font-bold text-indigo-600"
+                placeholder="[Emotions/Feelings]"
+                value={answers.q3 || ''}
+                onChange={(e) => handleInputChange('q3', e.target.value)}
+              />
+            </div>
 
-                <div className="flex flex-wrap items-center gap-x-2 gap-y-4 text-lg leading-relaxed">
-                  <span className="font-medium text-slate-700">I think this is because</span>
-                  <Input 
-                    className="w-64 h-10 border-b-2 border-t-0 border-x-0 rounded-none focus:ring-0 bg-transparent font-bold text-indigo-600"
-                    placeholder="[Reason 1]"
-                    value={answers.q5a || ''}
-                    onChange={(e) => handleInputChange('q5a', e.target.value)}
-                  />
-                  <span className="font-medium text-slate-700">and</span>
-                  <Input 
-                    className="w-64 h-10 border-b-2 border-t-0 border-x-0 rounded-none focus:ring-0 bg-transparent font-bold text-indigo-600"
-                    placeholder="[Reason 2]"
-                    value={answers.q5b || ''}
-                    onChange={(e) => handleInputChange('q5b', e.target.value)}
-                  />
-                </div>
+            <div className="flex flex-wrap items-center gap-x-2 gap-y-4 text-xl leading-relaxed">
+              <span className="font-medium text-slate-700">When this happens, I start to</span>
+              <Input 
+                className="w-full h-10 border-b-2 border-t-0 border-x-0 rounded-none focus:ring-0 bg-transparent font-bold text-indigo-600"
+                placeholder="[Behavior/Reaction]"
+                value={answers.q4 || ''}
+                onChange={(e) => handleInputChange('q4', e.target.value)}
+              />
+            </div>
+          </div>
+        </section>
 
-                {/* Bridge Questions */}
-                <div className="flex flex-wrap items-center gap-x-2 gap-y-4 text-lg leading-relaxed pt-4 border-t border-slate-100">
-                  <span className="font-medium text-slate-700">When I stay in this pattern, the cost to my creativity is</span>
-                  <Input 
-                    className="w-full h-10 border-b-2 border-t-0 border-x-0 rounded-none focus:ring-0 bg-transparent font-bold text-indigo-600"
-                    placeholder="[The cost/impact]"
-                    value={answers.q_bridge_1 || ''}
-                    onChange={(e) => handleInputChange('q_bridge_1', e.target.value)}
-                  />
-                </div>
+        {/* Section 2: Creativity */}
+        <section className="space-y-10">
+          <div className="flex items-center gap-4">
+            <div className="w-12 h-12 rounded-2xl bg-rose-50 text-rose-600 flex items-center justify-center shrink-0">
+              <Palette size={24} />
+            </div>
+            <div>
+              <h2 className="text-2xl font-black text-slate-900">Creativity-Related Awareness</h2>
+              <p className="text-sm text-slate-500 font-medium">Uncover the blocks in your creative expression.</p>
+            </div>
+          </div>
 
-                <div className="flex flex-wrap items-center gap-x-2 gap-y-4 text-lg leading-relaxed">
-                  <span className="font-medium text-slate-700">What I actually need in those moments is</span>
-                  <Input 
-                    className="w-full h-10 border-b-2 border-t-0 border-x-0 rounded-none focus:ring-0 bg-transparent font-bold text-indigo-600"
-                    placeholder="[The underlying need]"
-                    value={answers.q_bridge_2 || ''}
-                    onChange={(e) => handleInputChange('q_bridge_2', e.target.value)}
-                  />
-                </div>
+          <div className="space-y-8 pl-16">
+            <div className="flex flex-wrap items-center gap-x-2 gap-y-4 text-xl leading-relaxed">
+              <span className="font-medium text-slate-700">Fear stops me from creating</span>
+              <Input 
+                className="w-full h-10 border-b-2 border-t-0 border-x-0 rounded-none focus:ring-0 bg-transparent font-bold text-rose-600"
+                placeholder="[What would you create?]"
+                value={answers.c1 || ''}
+                onChange={(e) => handleInputChange('c1', e.target.value)}
+              />
+            </div>
 
-                <div className="flex flex-wrap items-center gap-x-2 gap-y-4 text-lg leading-relaxed">
-                  <span className="font-medium text-slate-700">I give myself permission to</span>
-                  <Input 
-                    className="w-full h-10 border-b-2 border-t-0 border-x-0 rounded-none focus:ring-0 bg-transparent font-bold text-indigo-600"
-                    placeholder="[New permission/belief]"
-                    value={answers.q_bridge_3 || ''}
-                    onChange={(e) => handleInputChange('q_bridge_3', e.target.value)}
-                  />
-                </div>
-
-                <div className="flex flex-wrap items-center gap-x-2 gap-y-4 text-lg leading-relaxed pt-4 border-t border-slate-100">
-                  <span className="font-medium text-slate-700">Next time I feel tense, I will soothe myself by</span>
-                  <Input 
-                    className="w-full h-10 border-b-2 border-t-0 border-x-0 rounded-none focus:ring-0 bg-transparent font-bold text-indigo-600"
-                    placeholder="[Self-Soothing Action]"
-                    value={answers.q6 || ''}
-                    onChange={(e) => handleInputChange('q6', e.target.value)}
-                  />
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        </motion.div>
-
-        {/* Section 2: Creativity Awareness */}
-        <motion.div variants={itemVariants}>
-          <Card className="border-none shadow-xl bg-white/80 backdrop-blur-sm overflow-hidden">
-            <CardHeader className="bg-rose-50/50 border-b border-rose-100">
-              <CardTitle className="flex items-center gap-2 text-rose-900">
-                <Palette className="w-5 h-5" />
-                Creativity-Related Awareness
-              </CardTitle>
-              <CardDescription>Uncover the blocks in your creative expression.</CardDescription>
-            </CardHeader>
-            <CardContent className="p-8 space-y-8">
-              <div className="space-y-6">
-                <div className="flex flex-wrap items-center gap-x-2 gap-y-4 text-lg leading-relaxed">
-                  <span className="font-medium text-slate-700">Fear stops me from creating</span>
-                  <Input 
-                    className="w-full h-10 border-b-2 border-t-0 border-x-0 rounded-none focus:ring-0 bg-transparent font-bold text-rose-600"
-                    placeholder="[What would you create?]"
-                    value={answers.c1 || ''}
-                    onChange={(e) => handleInputChange('c1', e.target.value)}
-                  />
-                </div>
-
-                <div className="flex flex-wrap items-center gap-x-2 gap-y-4 text-lg leading-relaxed">
-                  <span className="font-medium text-slate-700">I avoid taking risks in my work because I worry</span>
-                  <Input 
-                    className="w-full h-10 border-b-2 border-t-0 border-x-0 rounded-none focus:ring-0 bg-transparent font-bold text-rose-600"
-                    placeholder="[The worry/fear]"
-                    value={answers.c2 || ''}
-                    onChange={(e) => handleInputChange('c2', e.target.value)}
-                  />
-                </div>
-
-                <div className="flex flex-wrap items-center gap-x-2 gap-y-4 text-lg leading-relaxed">
-                  <span className="font-medium text-slate-700">When I feel uncertain about my next step, I</span>
-                  <Input 
-                    className="w-full h-10 border-b-2 border-t-0 border-x-0 rounded-none focus:ring-0 bg-transparent font-bold text-rose-600"
-                    placeholder="[Your default reaction]"
-                    value={answers.c3 || ''}
-                    onChange={(e) => handleInputChange('c3', e.target.value)}
-                  />
-                </div>
-
-                <div className="flex flex-wrap items-center gap-x-2 gap-y-4 text-lg leading-relaxed">
-                  <span className="font-medium text-slate-700">If I could create freely, without fear, I would</span>
-                  <Input 
-                    className="w-full h-10 border-b-2 border-t-0 border-x-0 rounded-none focus:ring-0 bg-transparent font-bold text-rose-600"
-                    placeholder="[Your vision]"
-                    value={answers.c4 || ''}
-                    onChange={(e) => handleInputChange('c4', e.target.value)}
-                  />
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        </motion.div>
+            <div className="flex flex-wrap items-center gap-x-2 gap-y-4 text-xl leading-relaxed">
+              <span className="font-medium text-slate-700">I avoid taking risks in my work because I worry</span>
+              <Input 
+                className="w-full h-10 border-b-2 border-t-0 border-x-0 rounded-none focus:ring-0 bg-transparent font-bold text-rose-600"
+                placeholder="[The worry/fear]"
+                value={answers.c2 || ''}
+                onChange={(e) => handleInputChange('c2', e.target.value)}
+              />
+            </div>
+          </div>
+        </section>
 
         {/* Section 3: Somatic Integration */}
-        <motion.div variants={itemVariants}>
-          <Card className="border-none shadow-xl bg-emerald-50/30 overflow-hidden">
-            <CardHeader className="bg-emerald-100/50 border-b border-emerald-200">
-              <CardTitle className="flex items-center gap-2 text-emerald-900">
-                <Wind className="w-5 h-5" />
-                Somatic Integration
-              </CardTitle>
-              <CardDescription>Anchor this awareness into your physical body.</CardDescription>
-            </CardHeader>
-            <CardContent className="p-8">
-              <div className="grid md:grid-cols-3 gap-6">
-                <div className="bg-white p-6 rounded-2xl shadow-sm border border-emerald-100 space-y-3">
-                  <div className="w-10 h-10 rounded-xl bg-emerald-50 flex items-center justify-center text-emerald-600">
-                    <Zap size={20} />
-                  </div>
-                  <h4 className="font-bold text-emerald-800">1. Locate the Tension</h4>
-                  <p className="text-sm text-slate-600 leading-relaxed">Close your eyes and find where that fear-based tension lives right now. Don't try to change it, just witness it.</p>
-                </div>
-                <div className="bg-white p-6 rounded-2xl shadow-sm border border-emerald-100 space-y-3">
-                  <div className="w-10 h-10 rounded-xl bg-emerald-50 flex items-center justify-center text-emerald-600">
-                    <Wind size={20} />
-                  </div>
-                  <h4 className="font-bold text-emerald-800">2. Breathe Into It</h4>
-                  <p className="text-sm text-slate-600 leading-relaxed">Send your breath directly to that spot. Imagine the breath softening the edges of the tension with every exhale.</p>
-                </div>
-                <div className="bg-white p-6 rounded-2xl shadow-sm border border-emerald-100 space-y-3">
-                  <div className="w-10 h-10 rounded-xl bg-emerald-50 flex items-center justify-center text-emerald-600">
-                    <ShieldCheck size={20} />
-                  </div>
-                  <h4 className="font-bold text-emerald-800">3. Safe Release</h4>
-                  <p className="text-sm text-slate-600 leading-relaxed">Gently shake your hands or sigh audibly. Tell your body: "It is safe to be aware. It is safe to create."</p>
-                </div>
+        <section className="p-12 bg-emerald-900 text-white rounded-[3rem] shadow-2xl relative overflow-hidden">
+          <div className="absolute top-0 right-0 p-12 opacity-10"><Wind size={150} /></div>
+          <div className="relative z-10 space-y-8">
+            <div className="flex items-center gap-4">
+              <div className="w-12 h-12 rounded-2xl bg-white/10 backdrop-blur-md flex items-center justify-center border border-white/20">
+                <Wind size={24} className="text-emerald-400" />
               </div>
-              <div className="mt-8 p-6 bg-emerald-900 text-emerald-50 rounded-2xl text-center italic shadow-lg">
-                "Awareness is the first step of integration. By naming the fear, you reduce its power over your creative spirit."
+              <h2 className="text-2xl font-black">Somatic Integration</h2>
+            </div>
+            
+            <div className="grid md:grid-cols-3 gap-8">
+              <div className="space-y-2">
+                <h4 className="font-black text-emerald-400 uppercase tracking-widest text-[10px]">1. Locate</h4>
+                <p className="text-sm text-slate-300 leading-relaxed">Close your eyes and find where that fear-based tension lives right now. Witness it.</p>
               </div>
-            </CardContent>
-          </Card>
-        </motion.div>
+              <div className="space-y-2">
+                <h4 className="font-black text-emerald-400 uppercase tracking-widest text-[10px]">2. Breathe</h4>
+                <p className="text-sm text-slate-300 leading-relaxed">Send your breath directly to that spot. Imagine the breath softening the edges.</p>
+              </div>
+              <div className="space-y-2">
+                <h4 className="font-black text-emerald-400 uppercase tracking-widest text-[10px]">3. Release</h4>
+                <p className="text-sm text-slate-300 leading-relaxed">Gently shake your hands or sigh audibly. "It is safe to be aware."</p>
+              </div>
+            </div>
+          </div>
+        </section>
 
         {/* Footer */}
-        <motion.div variants={itemVariants} className="text-center pb-12">
+        <div className="text-center pb-12">
           <p className="text-slate-400 text-sm">
             © {new Date().getFullYear()} The Integrated Healer Program. All rights reserved.
           </p>
-        </motion.div>
+        </div>
       </motion.div>
     </div>
   );

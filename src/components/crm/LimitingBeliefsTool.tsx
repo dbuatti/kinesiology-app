@@ -1,7 +1,6 @@
 "use client";
 
 import React, { useState, useEffect } from 'react';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -16,15 +15,17 @@ import {
   Sparkles,
   Brain,
   Zap,
-  MessageSquare,
   Loader2,
   History,
   Save,
-  FileText,
   Trash2,
   Clock,
   ShieldAlert,
-  RefreshCw
+  RefreshCw,
+  Info,
+  ChevronRight,
+  ShieldCheck,
+  FileText
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { supabase } from "@/integrations/supabase/client";
@@ -98,19 +99,12 @@ const LimitingBeliefsTool = () => {
       .select('*')
       .order('created_at', { ascending: false });
 
-    if (error) {
-      console.error("Error fetching sessions:", error);
-    } else {
-      setPastSessions(data || []);
-    }
+    if (!error) setPastSessions(data || []);
   };
 
   const saveProgress = async (isComplete: boolean = false) => {
     const { data: { user } } = await supabase.auth.getUser();
-    if (!user) {
-      toast.error("You must be logged in to save progress.");
-      return;
-    }
+    if (!user) return;
 
     setIsSaving(true);
     try {
@@ -131,31 +125,19 @@ const LimitingBeliefsTool = () => {
 
       let error;
       if (formData.id) {
-        const { error: updateError } = await supabase
-          .from('limiting_belief_sessions')
-          .update(payload)
-          .eq('id', formData.id);
+        const { error: updateError } = await supabase.from('limiting_belief_sessions').update(payload).eq('id', formData.id);
         error = updateError;
       } else {
-        const { data, error: insertError } = await supabase
-          .from('limiting_belief_sessions')
-          .insert(payload)
-          .select()
-          .single();
+        const { data, error: insertError } = await supabase.from('limiting_belief_sessions').insert(payload).select().single();
         error = insertError;
         if (data) setFormData(prev => ({ ...prev, id: data.id }));
       }
 
       if (error) throw error;
-      
-      if (isComplete) {
-        toast.success("Session completed and saved!");
-      } else {
-        toast.success("Draft saved.");
-      }
+      if (isComplete) toast.success("Session completed!");
+      else toast.success("Draft saved.");
       fetchPastSessions();
     } catch (error) {
-      console.error("Error saving session:", error);
       toast.error("Failed to save session.");
     } finally {
       setIsSaving(false);
@@ -178,7 +160,6 @@ const LimitingBeliefsTool = () => {
     setStep((session.current_step || 1) as Step);
     setShowHistory(false);
     setViewingReportId(null);
-    toast.info(session.is_complete ? "Viewing completed session." : "Resuming draft session.");
   };
 
   const deleteSession = async (e: React.MouseEvent, id: string) => {
@@ -201,10 +182,7 @@ const LimitingBeliefsTool = () => {
   };
 
   const handleGenerateBelief = async (type: 'limiting_belief' | 'positive_belief' | 'felt_sense') => {
-    if (!formData.problem) {
-      toast.error("Please describe the problem first.");
-      return;
-    }
+    if (!formData.problem) return;
     
     if (type === 'limiting_belief') setIsGeneratingLimiting(true);
     else if (type === 'positive_belief') setIsGeneratingPositive(true);
@@ -212,33 +190,26 @@ const LimitingBeliefsTool = () => {
 
     try {
       const { data, error } = await supabase.functions.invoke('generate-identity', {
-        body: {
-          problem: formData.problem,
-          feltSense: formData.feltSense,
-          type: type
-        },
+        body: { problem: formData.problem, feltSense: formData.feltSense, type: type },
       });
 
-      if (error) throw error;
-      if (data?.suggestions) {
+      if (!error && data?.suggestions) {
         if (type === 'limiting_belief') setLimitingSuggestions(data.suggestions);
         else if (type === 'positive_belief') setPositiveSuggestions(data.suggestions);
         else setSenseSuggestions(data.suggestions);
       }
     } catch (error) {
-      console.error("Error generating belief:", error);
-      toast.error("Failed to generate suggestions.");
+      console.error(error);
     } finally {
-      if (type === 'limiting_belief') setIsGeneratingLimiting(false);
-      else if (type === 'positive_belief') setIsGeneratingPositive(false);
-      else setIsGeneratingSense(false);
+      setIsGeneratingLimiting(false);
+      setIsGeneratingPositive(false);
+      setIsGeneratingSense(false);
     }
   };
 
   const handleNext = () => {
     if (step < 5) {
-      const nextStep = (step + 1) as Step;
-      setStep(nextStep);
+      setStep((s) => (s + 1) as Step);
       saveProgress(false);
     }
   };
@@ -285,8 +256,6 @@ const LimitingBeliefsTool = () => {
       }];
       
       setFormData({ ...formData, dissolveLog: newLog });
-      
-      // Reset for next part
       setCurrentIdentity('');
       setCurrentNotice1('');
       setCurrentNotice2('');
@@ -295,94 +264,48 @@ const LimitingBeliefsTool = () => {
     }
   };
 
-  const handleKeyDown = (e: React.KeyboardEvent) => {
-    if (e.key === 'Enter' && !e.shiftKey) {
-      if (step === 1 && formData.problem && formData.feltSense) {
-        e.preventDefault();
-        handleNext();
-      } else if (step === 2 && formData.limitingBelief && formData.positiveBelief) {
-        e.preventDefault();
-        handleNext();
-      } else if (step === 3) {
-        e.preventDefault();
-        handleLoopNext();
-      }
-    }
-  };
-
   const renderStep1 = () => (
-    <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
-      <div className="space-y-4">
-        <div className="space-y-2">
-          <Label htmlFor="problem">1. Clearly define the Problem</Label>
+    <div className="space-y-12 animate-in fade-in slide-in-from-bottom-4 duration-500">
+      <div className="space-y-8">
+        <div className="space-y-4">
+          <Label className="text-[10px] font-black uppercase tracking-[0.3em] text-slate-400 ml-1">1. The Problem</Label>
           <Textarea 
-            id="problem" 
-            placeholder="Describe the situation in a few words..." 
+            placeholder="Clearly define the problem..." 
             value={formData.problem}
             onChange={(e) => setFormData({ ...formData, problem: e.target.value })}
-            onKeyDown={handleKeyDown}
-            className="min-h-[100px] rounded-xl"
+            className="min-h-[120px] rounded-[2rem] border-2 border-slate-100 focus:border-indigo-500 bg-white p-8 text-xl font-medium leading-relaxed shadow-inner resize-none transition-all"
           />
         </div>
-        <div className="space-y-2">
-          <div className="flex items-center justify-between">
-            <Label htmlFor="feltSense">2. Feel the problem of "{formData.problem || '...'}"</Label>
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => handleGenerateBelief('felt_sense')}
-              disabled={isGeneratingSense || !formData.problem}
-              className="h-8 px-2 text-primary hover:text-primary/80 hover:bg-primary/10 gap-1.5"
-            >
-              {isGeneratingSense ? (
-                <>
-                  <Loader2 className="h-3.5 w-3.5 animate-spin" />
-                  <span className="text-xs font-bold">Analyzing...</span>
-                </>
-              ) : (
-                <>
-                  <Sparkles className="h-3.5 w-3.5" />
-                  <span className="text-xs font-bold">Magic Suggest</span>
-                </>
-              )}
+        <div className="space-y-4">
+          <div className="flex items-center justify-between px-1">
+            <Label className="text-[10px] font-black uppercase tracking-[0.3em] text-slate-400">2. The Felt Sense</Label>
+            <Button variant="ghost" size="sm" onClick={() => handleGenerateBelief('felt_sense')} disabled={isGeneratingSense || !formData.problem} className="h-8 text-indigo-600 hover:bg-indigo-50 gap-1.5 font-black text-[10px] uppercase tracking-widest">
+              {isGeneratingSense ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Sparkles className="h-3.5 w-3.5" />}
+              Suggest
             </Button>
           </div>
-          <p className="text-xs text-muted-foreground mb-2 italic">"What do you believe about yourself that’s causing you to experience this problem?"</p>
           <Input 
-            id="feltSense" 
-            placeholder="Where do you feel it in your body? (The Felt Sense)" 
+            placeholder="Where do you feel it in your body?" 
             value={formData.feltSense}
             onChange={(e) => setFormData({ ...formData, feltSense: e.target.value })}
-            onKeyDown={handleKeyDown}
-            className="rounded-xl"
+            className="h-14 rounded-2xl border-2 border-slate-100 px-6 text-lg font-bold bg-white"
           />
-          <AnimatePresence>
-            {senseSuggestions.length > 0 && (
-              <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }} className="space-y-2 mt-2">
-                <p className="text-[9px] font-black text-primary/50 uppercase tracking-widest px-1">Common Sensations:</p>
-                <div className="flex flex-wrap gap-2">
-                  {senseSuggestions.map((suggestion, index) => (
-                    <motion.button
-                      key={index}
-                      whileHover={{ scale: 1.05 }}
-                      whileTap={{ scale: 0.95 }}
-                      onClick={() => setFormData({ ...formData, feltSense: suggestion })}
-                      className="text-[10px] font-bold px-3 py-1.5 bg-indigo-50 text-indigo-600 rounded-full border border-indigo-100 hover:bg-indigo-100 transition-colors"
-                    >
-                      {suggestion}
-                    </motion.button>
-                  ))}
-                </div>
-              </motion.div>
-            )}
-          </AnimatePresence>
+          {senseSuggestions.length > 0 && (
+            <div className="flex flex-wrap gap-2 mt-4">
+              {senseSuggestions.map((s, i) => (
+                <button key={i} onClick={() => setFormData({ ...formData, feltSense: s })} className="text-[10px] font-bold px-4 py-2 bg-indigo-50 text-indigo-600 rounded-full border border-indigo-100 hover:bg-indigo-100 transition-all">
+                  {s}
+                </button>
+              ))}
+            </div>
+          )}
         </div>
       </div>
-      <div className="flex gap-3">
-        <Button variant="outline" onClick={() => saveProgress(false)} disabled={isSaving || !formData.problem} className="flex-1 rounded-xl h-12 font-bold">
+      <div className="pt-8 flex gap-4">
+        <Button variant="outline" onClick={() => saveProgress(false)} disabled={isSaving || !formData.problem} className="flex-1 rounded-2xl h-14 font-black text-xs uppercase tracking-widest border-slate-200">
           <Save className="mr-2" size={18} /> Save Draft
         </Button>
-        <Button onClick={handleNext} disabled={!formData.problem || !formData.feltSense} className="flex-[2] bg-primary hover:bg-primary/90 text-white rounded-xl h-12 font-bold">
+        <Button onClick={handleNext} disabled={!formData.problem || !formData.feltSense} className="flex-[2] bg-indigo-600 hover:bg-indigo-700 text-white rounded-2xl h-14 font-black text-xs uppercase tracking-widest shadow-xl shadow-indigo-100">
           Next: Extract Beliefs <ArrowRight className="ml-2" size={18} />
         </Button>
       </div>
@@ -390,125 +313,62 @@ const LimitingBeliefsTool = () => {
   );
 
   const renderStep2 = () => (
-    <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
-      <div className="space-y-4">
-        <div className="space-y-2">
-          <div className="flex items-center justify-between">
-            <Label htmlFor="limitingBelief">Write the LIMITING Belief down</Label>
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => handleGenerateBelief('limiting_belief')}
-              disabled={isGeneratingLimiting || !formData.problem}
-              className="h-8 px-2 text-primary hover:text-primary/80 hover:bg-primary/10 gap-1.5"
-            >
-              {isGeneratingLimiting ? (
-                <>
-                  <Loader2 className="h-3.5 w-3.5 animate-spin" />
-                  <span className="text-xs font-bold">Analyzing...</span>
-                </>
-              ) : (
-                <>
-                  <Sparkles className="h-3.5 w-3.5" />
-                  <span className="text-xs font-bold">Magic Suggest</span>
-                </>
-              )}
+    <div className="space-y-12 animate-in fade-in slide-in-from-bottom-4 duration-500">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+        <div className="space-y-4">
+          <div className="flex items-center justify-between px-1">
+            <Label className="text-[10px] font-black uppercase tracking-[0.3em] text-slate-400">Limiting Belief</Label>
+            <Button variant="ghost" size="sm" onClick={() => handleGenerateBelief('limiting_belief')} disabled={isGeneratingLimiting || !formData.problem} className="h-8 text-rose-600 hover:bg-rose-50 gap-1.5 font-black text-[10px] uppercase tracking-widest">
+              {isGeneratingLimiting ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Sparkles className="h-3.5 w-3.5" />}
+              Suggest
             </Button>
           </div>
           <Input
-            id="limitingBelief"
-            placeholder="e.g. I am not good enough"
+            placeholder="I am..."
             value={formData.limitingBelief}
             onChange={(e) => setFormData({ ...formData, limitingBelief: e.target.value })}
-            onKeyDown={handleKeyDown}
-            className="rounded-xl"
+            className="h-14 rounded-2xl border-2 border-slate-100 px-6 text-lg font-bold bg-white"
           />
-          <AnimatePresence>
-            {limitingSuggestions.length > 0 && (
-              <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }} className="space-y-2 mt-2">
-                <p className="text-[9px] font-black text-primary/50 uppercase tracking-widest px-1">AI Analysis Results:</p>
-                <div className="flex flex-wrap gap-2">
-                  {limitingSuggestions.map((suggestion, index) => (
-                    <motion.button
-                      key={index}
-                      whileHover={{ scale: 1.05 }}
-                      whileTap={{ scale: 0.95 }}
-                      onClick={() => {
-                        const clean = suggestion.replace(/^I am\s+/i, '');
-                        setFormData({ ...formData, limitingBelief: clean });
-                      }}
-                      className="text-[10px] font-bold px-3 py-1.5 bg-rose-50 text-rose-600 rounded-full border border-rose-100 hover:bg-rose-100 transition-colors"
-                    >
-                      {suggestion}
-                    </motion.button>
-                  ))}
-                </div>
-              </motion.div>
-            )}
-          </AnimatePresence>
+          {limitingSuggestions.length > 0 && (
+            <div className="flex flex-wrap gap-2 mt-4">
+              {limitingSuggestions.map((s, i) => (
+                <button key={i} onClick={() => setFormData({ ...formData, limitingBelief: s.replace(/^I am\s+/i, '') })} className="text-[10px] font-bold px-4 py-2 bg-rose-50 text-rose-600 rounded-full border border-rose-100 hover:bg-rose-100 transition-all">
+                  {s}
+                </button>
+              ))}
+            </div>
+          )}
         </div>
-        <div className="space-y-2">
-          <div className="flex items-center justify-between">
-            <Label htmlFor="positiveBelief">Write the POSITIVE Belief down</Label>
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => handleGenerateBelief('positive_belief')}
-              disabled={isGeneratingPositive || !formData.problem}
-              className="h-8 px-2 text-primary hover:text-primary/80 hover:bg-primary/10 gap-1.5"
-            >
-              {isGeneratingPositive ? (
-                <>
-                  <Loader2 className="h-3.5 w-3.5 animate-spin" />
-                  <span className="text-xs font-bold">Analyzing...</span>
-                </>
-              ) : (
-                <>
-                  <Sparkles className="h-3.5 w-3.5" />
-                  <span className="text-xs font-bold">Magic Suggest</span>
-                </>
-              )}
+        <div className="space-y-4">
+          <div className="flex items-center justify-between px-1">
+            <Label className="text-[10px] font-black uppercase tracking-[0.3em] text-slate-400">Positive Belief</Label>
+            <Button variant="ghost" size="sm" onClick={() => handleGenerateBelief('positive_belief')} disabled={isGeneratingPositive || !formData.problem} className="h-8 text-emerald-600 hover:bg-emerald-50 gap-1.5 font-black text-[10px] uppercase tracking-widest">
+              {isGeneratingPositive ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Sparkles className="h-3.5 w-3.5" />}
+              Suggest
             </Button>
           </div>
-          <p className="text-xs text-muted-foreground mb-2 italic">“What opposite belief about yourself would you rather have?”</p>
           <Input
-            id="positiveBelief"
-            placeholder="e.g. I am capable and worthy"
+            placeholder="I am..."
             value={formData.positiveBelief}
             onChange={(e) => setFormData({ ...formData, positiveBelief: e.target.value })}
-            onKeyDown={handleKeyDown}
-            className="rounded-xl"
+            className="h-14 rounded-2xl border-2 border-slate-100 px-6 text-lg font-bold bg-white"
           />
-          <AnimatePresence>
-            {positiveSuggestions.length > 0 && (
-              <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }} className="space-y-2 mt-2">
-                <p className="text-[9px] font-black text-primary/50 uppercase tracking-widest px-1">AI Analysis Results:</p>
-                <div className="flex flex-wrap gap-2">
-                  {positiveSuggestions.map((suggestion, index) => (
-                    <motion.button
-                      key={index}
-                      whileHover={{ scale: 1.05 }}
-                      whileTap={{ scale: 0.95 }}
-                      onClick={() => {
-                        const clean = suggestion.replace(/^I am\s+/i, '');
-                        setFormData({ ...formData, positiveBelief: clean });
-                      }}
-                      className="text-[10px] font-bold px-3 py-1.5 bg-emerald-50 text-emerald-600 rounded-full border border-emerald-100 hover:bg-emerald-100 transition-colors"
-                    >
-                      {suggestion}
-                    </motion.button>
-                  ))}
-                </div>
-              </motion.div>
-            )}
-          </AnimatePresence>
+          {positiveSuggestions.length > 0 && (
+            <div className="flex flex-wrap gap-2 mt-4">
+              {positiveSuggestions.map((s, i) => (
+                <button key={i} onClick={() => setFormData({ ...formData, positiveBelief: s.replace(/^I am\s+/i, '') })} className="text-[10px] font-bold px-4 py-2 bg-emerald-50 text-emerald-600 rounded-full border border-emerald-100 hover:bg-emerald-100 transition-all">
+                  {s}
+                </button>
+              ))}
+            </div>
+          )}
         </div>
       </div>
-      <div className="flex gap-3">
-        <Button variant="outline" onClick={handleBack} className="flex-1 rounded-xl h-12 font-bold">
+      <div className="pt-8 flex gap-4">
+        <Button variant="outline" onClick={handleBack} className="flex-1 rounded-2xl h-14 font-black text-xs uppercase tracking-widest border-slate-200">
           <ArrowLeft className="mr-2" size={18} /> Back
         </Button>
-        <Button onClick={handleNext} disabled={!formData.limitingBelief || !formData.positiveBelief} className="flex-[2] bg-primary hover:bg-primary/90 text-white rounded-xl h-12 font-bold">
+        <Button onClick={handleNext} disabled={!formData.limitingBelief || !formData.positiveBelief} className="flex-[2] bg-indigo-600 hover:bg-indigo-700 text-white rounded-2xl h-14 font-black text-xs uppercase tracking-widest shadow-xl shadow-indigo-100">
           Begin Dissolving Loop <ArrowRight className="ml-2" size={18} />
         </Button>
       </div>
@@ -517,7 +377,6 @@ const LimitingBeliefsTool = () => {
 
   const renderStep3 = () => {
     const currentBelief = currentLoopType === 'A' ? formData.limitingBelief : formData.positiveBelief;
-    const colorClass = currentLoopType === 'A' ? "text-rose-600 bg-rose-50 border-rose-100" : "text-emerald-600 bg-emerald-50 border-emerald-100";
     
     let question = "";
     let value = "";
@@ -530,178 +389,143 @@ const LimitingBeliefsTool = () => {
       onChange = setCurrentIdentity;
       placeholder = "Define the identity...";
     } else if (loopSubStep === 2) {
-      question = `Feel yourself being "${currentIdentity}" and tell me the first thing that you notice about it.`;
+      question = `Feel yourself being "${currentIdentity}"... what do you notice first?`;
       value = currentNotice1;
       onChange = setCurrentNotice1;
-      placeholder = "What do you notice first?";
+      placeholder = "First sensation or thought...";
     } else if (loopSubStep === 3) {
       question = `Now feel that... what do you notice about it now?`;
       value = currentNotice2;
       onChange = setCurrentNotice2;
-      placeholder = "What do you notice now?";
+      placeholder = "What has shifted?";
     }
 
     return (
-      <div className="space-y-8 animate-in fade-in zoom-in-95 duration-500">
-        <div className="text-center space-y-2">
-          <div className="inline-flex items-center justify-center w-12 h-12 bg-primary/10 rounded-full text-primary mb-2">
-            <RefreshCw className="animate-spin-slow" size={24} />
+      <div className="flex flex-col items-center text-center space-y-16 py-12 animate-in fade-in zoom-in-95 duration-500">
+        <div className="w-full max-w-md space-y-3">
+          <div className="flex justify-between text-[10px] font-black uppercase tracking-[0.3em] text-slate-400">
+            <span className={cn(currentLoopType === 'A' ? "text-rose-500" : "text-emerald-500")}>
+              Part {currentLoopType}: {currentLoopType === 'A' ? "Limiting" : "Positive"}
+            </span>
+            <span>Waypoint {loopSubStep} of 3</span>
           </div>
-          <h3 className="text-xl font-serif font-bold">Step 3: Dissolving Loop</h3>
-          <p className="text-sm text-muted-foreground max-w-md mx-auto">
-            Alternate between A and B until the shift occurs.
-          </p>
+          <Progress value={(loopSubStep / 3) * 100} className={cn("h-1 bg-slate-100", currentLoopType === 'A' ? "[&>div]:bg-rose-500" : "[&>div]:bg-emerald-500")} />
         </div>
 
-        <Card className={cn("border-2 shadow-xl rounded-3xl overflow-hidden transition-colors duration-500", currentLoopType === 'A' ? "border-rose-200" : "border-emerald-200")}>
-          <CardHeader className={cn("border-b transition-colors duration-500", currentLoopType === 'A' ? "bg-rose-50/50 border-rose-100" : "bg-emerald-50/50 border-emerald-100")}>
-            <div className="flex justify-between items-center">
-              <span className={cn("text-[10px] font-black uppercase tracking-widest", currentLoopType === 'A' ? "text-rose-500" : "text-emerald-500")}>
-                Part {currentLoopType}: {currentLoopType === 'A' ? "Limiting" : "Positive"}
-              </span>
-              <div className="flex gap-1">
-                {[1, 2, 3].map((i) => (
-                  <div key={i} className={cn("w-2 h-2 rounded-full", i <= loopSubStep ? (currentLoopType === 'A' ? "bg-rose-500" : "bg-emerald-500") : "bg-slate-200")} />
-                ))}
-              </div>
-            </div>
-            <CardTitle className="text-2xl font-serif pt-4 leading-tight">
-              {question}
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="p-8">
-            <Textarea 
+        <div className="space-y-8 w-full max-w-3xl">
+          <h2 className="text-3xl md:text-5xl font-serif font-bold leading-tight text-slate-900">
+            {question}
+          </h2>
+
+          <div className="w-full relative">
+            <textarea 
               autoFocus
-              placeholder={placeholder} 
+              className="w-full bg-transparent text-2xl md:text-3xl text-center border-none focus:ring-0 placeholder:text-slate-200 resize-none min-h-[120px] font-medium"
+              placeholder={placeholder}
               value={value}
               onChange={(e) => onChange(e.target.value)}
-              onKeyDown={handleKeyDown}
-              className="min-h-[120px] text-lg border-none focus-visible:ring-0 p-0 resize-none placeholder:text-muted-foreground/30"
+              onKeyDown={(e) => e.key === 'Enter' && !e.shiftKey && (e.preventDefault(), handleLoopNext())}
             />
-          </CardContent>
-          <CardFooter className="bg-secondary/10 p-4 flex justify-between">
-            <Button variant="ghost" onClick={handleBack} className="text-muted-foreground hover:text-primary font-bold">
-              <ArrowLeft className="mr-2" size={16} /> Back
-            </Button>
-            <div className="flex gap-2">
-              <Button onClick={handleLoopNext} disabled={!value.trim()} className={cn("text-white rounded-xl px-8", currentLoopType === 'A' ? "bg-rose-600 hover:bg-rose-700" : "bg-emerald-600 hover:bg-emerald-700")}>
-                {loopSubStep === 3 ? "Complete Part" : "Next Instruction"} <ArrowRight className="ml-2" size={16} />
-              </Button>
-              {formData.dissolveLog.length >= 2 && loopSubStep === 1 && (
-                <Button onClick={handleNext} variant="outline" className="rounded-xl border-primary text-primary font-bold">
-                  Shift Occurred
-                </Button>
-              )}
-            </div>
-          </CardFooter>
-        </Card>
+            <div className="h-px w-full bg-gradient-to-r from-transparent via-slate-200 to-transparent mt-4" />
+          </div>
+        </div>
 
-        <div className="bg-slate-50 rounded-2xl p-4 border border-slate-100">
-          <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2 text-center">Shift Criteria</p>
-          <p className="text-xs text-center text-slate-500 italic">
-            "Alternate until the client says ‘me’ in response to instruction B and ‘not-me’ or ‘I don’t know’ in response to instruction A"
-          </p>
+        <div className="flex gap-8 items-center">
+          <Button variant="ghost" onClick={handleBack} className="text-slate-400 uppercase tracking-widest text-[10px] font-black hover:text-indigo-600 hover:bg-transparent">
+            <ArrowLeft className="mr-2" size={14} /> Back
+          </Button>
+          <div className="flex gap-4">
+            <Button 
+              onClick={handleLoopNext} 
+              disabled={!value.trim()}
+              className={cn(
+                "rounded-full px-12 h-16 font-black uppercase tracking-widest text-xs shadow-2xl transition-all hover:scale-105 text-white",
+                currentLoopType === 'A' ? "bg-rose-600 hover:bg-rose-700 shadow-rose-200" : "bg-emerald-600 hover:bg-emerald-700 shadow-emerald-200"
+              )}
+            >
+              {loopSubStep === 3 ? "Complete Part" : "Continue"} <ArrowRight className="ml-2" size={18} />
+            </Button>
+            {formData.dissolveLog.length >= 2 && loopSubStep === 1 && (
+              <Button onClick={handleNext} variant="outline" className="rounded-full px-8 h-16 border-indigo-600 text-indigo-600 font-black uppercase tracking-widest text-xs">
+                Shift Occurred
+              </Button>
+            )}
+          </div>
         </div>
       </div>
     );
   };
 
   const renderStep4 = () => (
-    <div className="space-y-8 animate-in fade-in slide-in-from-right-4 duration-500 text-center">
+    <div className="space-y-12 animate-in fade-in slide-in-from-right-4 duration-500 text-center py-12">
       <div className="space-y-4">
-        <div className="inline-flex items-center justify-center w-16 h-16 bg-indigo-100 dark:bg-indigo-900/30 rounded-full text-indigo-600 mb-2">
-          <ShieldAlert size={32} />
+        <div className="inline-flex items-center justify-center w-16 h-16 bg-indigo-100 rounded-[1.5rem] text-indigo-600 mb-2 shadow-inner">
+          <ShieldCheck size={32} />
         </div>
-        <h3 className="text-2xl font-serif font-bold">Step 4: Check Belief and Problem</h3>
-        <p className="text-muted-foreground">Let's verify the results of the shift.</p>
+        <h3 className="text-3xl md:text-4xl font-serif font-bold">Verification</h3>
+        <p className="text-lg text-muted-foreground">Testing the stability of the shift.</p>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-2xl mx-auto">
-        <Card className="p-6 space-y-4 border-2 hover:border-primary/30 transition-colors">
-          <p className="text-sm font-bold">“Do you still believe (LIMITING BELIEF)?”</p>
-          <p className="text-xs italic text-muted-foreground">"I am {formData.limitingBelief}"</p>
-          <div className="flex gap-2 justify-center">
-            <Button 
-              variant={formData.checkBeliefResult === false ? "default" : "outline"} 
-              onClick={() => setFormData({ ...formData, checkBeliefResult: false })}
-              className="flex-1 rounded-xl"
-            >
-              No
-            </Button>
-            <Button 
-              variant={formData.checkBeliefResult === true ? "destructive" : "outline"} 
-              onClick={() => setFormData({ ...formData, checkBeliefResult: true })}
-              className="flex-1 rounded-xl"
-            >
-              Yes
-            </Button>
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+        <div className="p-10 rounded-[3rem] border-2 border-slate-100 hover:border-indigo-200 transition-all space-y-8 bg-white shadow-sm">
+          <p className="text-xl font-bold text-center leading-relaxed">"Do you still believe <span className="text-rose-600">"I am {formData.limitingBelief}"</span>?"</p>
+          <div className="flex gap-4 justify-center">
+            <Button variant="outline" onClick={() => setFormData({ ...formData, checkBeliefResult: false })} className={cn("flex-1 h-14 rounded-2xl border-emerald-200 text-emerald-600 font-black text-xs uppercase tracking-widest", formData.checkBeliefResult === false && "bg-emerald-50")}>No</Button>
+            <Button variant="outline" onClick={() => setFormData({ ...formData, checkBeliefResult: true })} className={cn("flex-1 h-14 rounded-2xl border-rose-200 text-rose-600 font-black text-xs uppercase tracking-widest", formData.checkBeliefResult === true && "bg-rose-50")}>Yes</Button>
           </div>
-        </Card>
+        </div>
 
-        <Card className="p-6 space-y-4 border-2 hover:border-primary/30 transition-colors">
-          <p className="text-sm font-bold">“Feel the initial problem of (PROBLEM)...does it still feel like a problem?”</p>
-          <p className="text-xs italic text-muted-foreground">"{formData.problem}"</p>
-          <div className="flex gap-2 justify-center">
-            <Button 
-              variant={formData.checkProblemResult === false ? "default" : "outline"} 
-              onClick={() => setFormData({ ...formData, checkProblemResult: false })}
-              className="flex-1 rounded-xl"
-            >
-              No
-            </Button>
-            <Button 
-              variant={formData.checkProblemResult === true ? "destructive" : "outline"} 
-              onClick={() => setFormData({ ...formData, checkProblemResult: true })}
-              className="flex-1 rounded-xl"
-            >
-              Yes
-            </Button>
+        <div className="p-10 rounded-[3rem] border-2 border-slate-100 hover:border-indigo-200 transition-all space-y-8 bg-white shadow-sm">
+          <p className="text-xl font-bold text-center leading-relaxed">"Feel the problem of <span className="text-indigo-600">"{formData.problem}"</span>... does it still feel like a problem?"</p>
+          <div className="flex gap-4 justify-center">
+            <Button variant="outline" onClick={() => setFormData({ ...formData, checkProblemResult: false })} className={cn("flex-1 h-14 rounded-2xl border-emerald-200 text-emerald-600 font-black text-xs uppercase tracking-widest", formData.checkProblemResult === false && "bg-emerald-50")}>No</Button>
+            <Button variant="outline" onClick={() => setFormData({ ...formData, checkProblemResult: true })} className={cn("flex-1 h-14 rounded-2xl border-rose-200 text-rose-600 font-black text-xs uppercase tracking-widest", formData.checkProblemResult === true && "bg-rose-50")}>Yes</Button>
           </div>
-        </Card>
+        </div>
       </div>
 
-      <div className="flex flex-col sm:flex-row gap-4 justify-center pt-4">
-        <Button variant="outline" onClick={() => setStep(3)} className="rounded-xl h-12 px-8">
-          <RotateCcw className="mr-2" size={18} /> Repeat Step 3
-        </Button>
-        <Button 
-          onClick={handleNext} 
-          disabled={formData.checkBeliefResult === null || formData.checkProblemResult === null}
-          className="bg-primary text-white rounded-xl h-12 px-8"
-        >
-          {formData.checkProblemResult === true ? "Start New Process" : "Continue to Integration"} <ArrowRight className="ml-2" size={18} />
+      <div className="flex justify-center pt-8">
+        <Button onClick={handleNext} className="bg-indigo-600 hover:bg-indigo-700 text-white rounded-2xl h-16 px-16 font-black text-xs uppercase tracking-widest shadow-2xl shadow-indigo-100">
+          Move to Integration <ArrowRight className="ml-2" size={18} />
         </Button>
       </div>
     </div>
   );
 
   const renderStep5 = () => (
-    <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
-      <div className="text-center space-y-2 mb-6">
-        <div className="inline-flex items-center justify-center w-12 h-12 bg-amber-100 dark:bg-amber-900/30 rounded-full text-amber-600 mb-2">
-          <Sparkles size={24} />
+    <div className="space-y-12 animate-in fade-in slide-in-from-bottom-4 duration-700 py-8">
+      <div className="text-center space-y-4">
+        <div className="inline-flex items-center justify-center w-16 h-16 bg-emerald-100 rounded-[1.5rem] text-emerald-600 mb-2 shadow-inner">
+          <Sparkles size={32} />
         </div>
-        <h3 className="text-xl font-serif font-bold">Step 5: Integration</h3>
-        <p className="text-sm text-muted-foreground">Final reflections to ground the shift.</p>
+        <h3 className="text-3xl md:text-4xl font-serif font-bold">Integration</h3>
+        <p className="text-lg text-muted-foreground">Final reflections to ground the shift.</p>
       </div>
 
-      <div className="space-y-4">
-        <div className="space-y-2">
-          <Label htmlFor="awareness">What is the new awareness or perspective you're taking away?</Label>
-          <Textarea id="awareness" placeholder="I realized that..." value={formData.integrationAwareness} onChange={(e) => setFormData({ ...formData, integrationAwareness: e.target.value })} className="min-h-[100px] rounded-xl" />
+      <div className="grid grid-cols-1 gap-12">
+        <div className="space-y-8">
+          <h4 className="text-[10px] font-black uppercase tracking-[0.4em] text-slate-400 px-2 border-l-4 border-indigo-500">Awareness</h4>
+          <div className="space-y-4">
+            <Label className="text-base font-bold text-slate-700 ml-1">What is the new awareness or perspective you're taking away?</Label>
+            <Textarea value={formData.integrationAwareness} onChange={e => setFormData({...formData, integrationAwareness: e.target.value})} className="rounded-[2rem] min-h-[120px] border-2 border-slate-100 p-8 text-lg font-medium bg-white" />
+          </div>
         </div>
-        <div className="space-y-2">
-          <Label htmlFor="action">What is one small action you can take from this new space?</Label>
-          <Input id="action" placeholder="I will..." value={formData.integrationAction} onChange={(e) => setFormData({ ...formData, integrationAction: e.target.value })} className="rounded-xl" />
+
+        <div className="space-y-8 pt-8 border-t border-slate-100">
+          <h4 className="text-[10px] font-black uppercase tracking-[0.4em] text-slate-400 px-2 border-l-4 border-emerald-500">Action</h4>
+          <div className="space-y-4">
+            <Label className="text-base font-bold text-slate-700 ml-1">What is one small action you can take from this new space?</Label>
+            <Input value={formData.integrationAction} onChange={e => setFormData({...formData, integrationAction: e.target.value})} className="rounded-2xl h-14 border-2 border-slate-100 px-6 text-lg font-medium bg-white" />
+          </div>
         </div>
       </div>
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-        <Button onClick={() => saveProgress(true)} disabled={isSaving || !formData.integrationAwareness} className="bg-primary text-white rounded-xl h-12 font-bold">
-          {isSaving ? <Loader2 className="mr-2 animate-spin" size={18} /> : <CheckCircle2 className="mr-2" size={18} />} Complete & Save
+      <div className="flex flex-col sm:flex-row gap-4 pt-12">
+        <Button onClick={() => saveProgress(true)} disabled={isSaving || !formData.integrationAwareness} className="flex-[2] bg-indigo-600 hover:bg-indigo-700 text-white rounded-2xl h-16 font-black text-xs uppercase tracking-widest shadow-2xl shadow-indigo-100">
+          {isSaving ? <Loader2 className="mr-2 animate-spin" /> : <CheckCircle2 className="mr-2" />} Complete & Save Session
         </Button>
-        <Button onClick={reset} variant="ghost" className="w-full text-muted-foreground rounded-xl h-12 font-bold">
-          <RotateCcw className="mr-2" size={18} /> Start Fresh Session
+        <Button onClick={reset} variant="ghost" className="flex-1 text-slate-400 rounded-2xl h-16 font-bold hover:bg-slate-50">
+          Start Fresh
         </Button>
       </div>
     </div>
@@ -712,68 +536,64 @@ const LimitingBeliefsTool = () => {
     const completedSessions = pastSessions.filter(s => s.is_complete);
 
     return (
-      <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
+      <div className="space-y-12 animate-in fade-in slide-in-from-bottom-4 duration-500">
         <div className="flex items-center justify-between">
-          <h3 className="text-xl font-serif font-bold">Session History</h3>
-          <Button variant="ghost" size="sm" onClick={() => setShowHistory(false)}>Close</Button>
+          <h3 className="text-2xl font-serif font-bold">Session History</h3>
+          <Button variant="ghost" size="sm" onClick={() => setShowHistory(false)} className="rounded-xl font-bold text-xs uppercase tracking-widest">Close</Button>
         </div>
         
         {activeDrafts.length > 0 && (
-          <div className="space-y-4">
-            <p className="text-[10px] font-black text-amber-600 uppercase tracking-widest px-2 flex items-center gap-2">
-              <Clock size={12} /> Active Drafts
+          <div className="space-y-6">
+            <p className="text-[10px] font-black text-amber-600 uppercase tracking-[0.3em] px-2 flex items-center gap-2">
+              <Clock size={14} /> Active Drafts
             </p>
-            <div className="grid grid-cols-1 gap-3">
+            <div className="grid grid-cols-1 gap-4">
               {activeDrafts.map((session) => (
-                <Card key={session.id} className="border-amber-200 bg-amber-50/30 hover:border-amber-400 transition-all cursor-pointer group rounded-2xl overflow-hidden" onClick={() => loadSession(session)}>
-                  <CardContent className="p-4 flex items-center justify-between">
-                    <div className="flex items-center gap-4 flex-1 min-w-0">
-                      <div className="w-10 h-10 rounded-xl bg-amber-100 flex items-center justify-center text-amber-600">
-                        <Zap size={20} />
-                      </div>
-                      <div className="min-w-0">
-                        <h4 className="font-bold text-slate-900 truncate">{session.problem}</h4>
-                        <p className="text-[10px] text-slate-500">Step {session.current_step} • {new Date(session.created_at).toLocaleDateString()}</p>
-                      </div>
+                <div key={session.id} className="p-6 bg-white rounded-[2rem] border-2 border-amber-100 hover:border-amber-400 transition-all cursor-pointer group flex items-center justify-between shadow-sm" onClick={() => loadSession(session)}>
+                  <div className="flex items-center gap-6 flex-1 min-w-0">
+                    <div className="w-12 h-12 rounded-2xl bg-amber-50 flex items-center justify-center text-amber-600 shadow-inner">
+                      <Zap size={24} />
                     </div>
-                    <Button variant="ghost" size="icon" className="h-8 w-8 rounded-xl text-slate-300 hover:text-rose-600" onClick={(e) => deleteSession(e, session.id)}><Trash2 size={16} /></Button>
-                  </CardContent>
-                </Card>
+                    <div className="min-w-0">
+                      <h4 className="font-black text-lg text-slate-900 truncate">{session.problem}</h4>
+                      <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mt-1">Step {session.current_step} • {new Date(session.created_at).toLocaleDateString()}</p>
+                    </div>
+                  </div>
+                  <Button variant="ghost" size="icon" className="h-10 w-10 rounded-xl text-slate-300 hover:text-rose-600" onClick={(e) => deleteSession(e, session.id)}><Trash2 size={18} /></Button>
+                </div>
               ))}
             </div>
           </div>
         )}
 
-        <div className="space-y-4">
-          <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest px-2">Completed Sessions</p>
+        <div className="space-y-6">
+          <p className="text-[10px] font-black text-slate-400 uppercase tracking-[0.3em] px-2">Completed Sessions</p>
           {completedSessions.length === 0 ? (
-            <div className="text-center py-12 text-muted-foreground bg-slate-50 rounded-3xl border-2 border-dashed border-slate-100">
-              <History className="mx-auto mb-4 opacity-20" size={48} />
-              <p>No completed sessions yet.</p>
+            <div className="text-center py-20 text-muted-foreground bg-slate-50 rounded-[3rem] border-2 border-dashed border-slate-200">
+              <History className="mx-auto mb-4 opacity-20" size={64} />
+              <p className="font-medium">No completed sessions yet.</p>
             </div>
           ) : (
-            <div className="grid grid-cols-1 gap-3">
+            <div className="grid grid-cols-1 gap-4">
               {completedSessions.map((session) => (
-                <Card key={session.id} className="hover:border-primary/50 transition-all cursor-pointer group rounded-2xl overflow-hidden" onClick={() => setViewingReportId(session.id)}>
-                  <CardContent className="p-4 flex items-center justify-between">
-                    <div className="flex items-center gap-4 flex-1 min-w-0">
-                      <div className="w-10 h-10 rounded-xl bg-indigo-50 flex items-center justify-center text-indigo-600 group-hover:bg-indigo-600 group-hover:text-white transition-colors">
-                        <FileText size={20} />
-                      </div>
-                      <div className="min-w-0">
-                        <h4 className="font-bold text-slate-900 truncate">{session.problem}</h4>
-                        <div className="flex items-center gap-2 mt-1">
-                          <Badge variant="secondary" className="text-[8px] font-black uppercase tracking-widest bg-slate-100 text-slate-500 border-none">{session.limiting_belief}</Badge>
-                          <span className="text-[10px] text-slate-400 font-medium">{new Date(session.created_at).toLocaleDateString()}</span>
-                        </div>
+                <div key={session.id} className="p-6 bg-white rounded-[2rem] border-2 border-border hover:border-indigo-400 transition-all cursor-pointer group flex items-center justify-between shadow-sm" onClick={() => setViewingReportId(session.id)}>
+                  <div className="flex items-center gap-6 flex-1 min-w-0">
+                    <div className="w-12 h-12 rounded-2xl bg-indigo-50 flex items-center justify-center text-indigo-600 group-hover:bg-indigo-600 group-hover:text-white transition-colors shadow-inner">
+                      <FileText size={24} />
+                    </div>
+                    <div className="min-w-0">
+                      <h4 className="font-black text-lg text-slate-900 truncate">{session.problem}</h4>
+                      <div className="flex items-center gap-3 mt-1">
+                        <Badge variant="secondary" className="text-[8px] font-black uppercase tracking-widest bg-slate-100 text-slate-500 border-none px-2 py-0.5">{session.limiting_belief}</Badge>
+                        <span className="text-[10px] text-slate-400 font-bold uppercase tracking-widest">{new Date(session.created_at).toLocaleDateString()}</span>
                       </div>
                     </div>
-                    <div className="flex items-center gap-2">
-                      <Button variant="ghost" size="icon" className="h-8 w-8 rounded-xl text-slate-300 hover:text-rose-600 opacity-0 group-hover:opacity-100 transition-all" onClick={(e) => deleteSession(e, session.id)}><Trash2 size={16} /></Button>
-                      <div className="w-8 h-8 rounded-xl bg-slate-50 flex items-center justify-center text-slate-400 group-hover:bg-indigo-600 group-hover:text-white transition-all"><ArrowRight size={18} /></div>
-                    </div>
-                  </CardContent>
-                </Card>
+                  </div>
+                  <div className="flex items-center gap-3">
+                    <Button variant="ghost" size="icon" className="h-10 w-10 rounded-xl text-slate-300 hover:text-rose-600 opacity-0 group-hover:opacity-100 transition-all" onClick={(e) => deleteSession(e, session.id)}><Trash2 size={18} /></Button>
+                    <div className="w-10 h-10 rounded-xl bg-slate-50 flex items-center justify-center text-slate-400 group-hover:bg-indigo-600 group-hover:text-white transition-all shadow-sm"><ArrowRight size={20} /></div>
+                  </div>
+                </div>
               ))}
             </div>
           )}
@@ -788,35 +608,34 @@ const LimitingBeliefsTool = () => {
   }
 
   return (
-    <div className="max-w-3xl mx-auto">
-      <div className="mb-8 space-y-4">
+    <div className="w-full">
+      <div className="mb-12 space-y-6">
         <div className="flex justify-between items-end">
-          <div>
-            <h1 className="text-3xl font-serif font-bold tracking-tight">Limiting Beliefs Shifting</h1>
-            <p className="text-muted-foreground">Interactive Sandbox Tool</p>
+          <div className="space-y-1">
+            <h2 className="text-[10px] font-black uppercase tracking-[0.4em] text-indigo-600">Step {step} of 5</h2>
+            <p className="text-2xl font-black text-slate-900">
+              {step === 1 && "Problem & Feeling"}
+              {step === 2 && "Belief Extraction"}
+              {step === 3 && "Dissolving Loop"}
+              {step === 4 && "Verification"}
+              {step === 5 && "Integration"}
+            </p>
           </div>
-          <div className="flex flex-col items-end gap-2">
-            <Button variant="outline" size="sm" onClick={() => setShowHistory(!showHistory)} className="rounded-full h-8 px-3 text-xs gap-1.5">
-              <History size={14} /> {showHistory ? "Back to Tool" : "History & Drafts"}
+          <div className="flex items-center gap-3">
+            <Button variant="ghost" size="sm" onClick={() => setShowHistory(!showHistory)} className="rounded-full h-10 px-5 text-[10px] font-black uppercase tracking-widest gap-2 text-slate-500 hover:bg-slate-100">
+              <History size={16} /> {showHistory ? "Back to Tool" : "History"}
             </Button>
-            {!showHistory && (
-              <div className="text-right">
-                <span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Step {step} of 5</span>
-                <p className="text-sm font-bold text-primary">
-                  {step === 1 && "Problem & Feeling"}
-                  {step === 2 && "Belief Extraction"}
-                  {step === 3 && "Dissolving Loop"}
-                  {step === 4 && "Verification"}
-                  {step === 5 && "Integration"}
-                </p>
-              </div>
+            {formData.id && !showHistory && (
+              <Button variant="ghost" size="sm" onClick={() => saveProgress(false)} disabled={isSaving} className="rounded-full h-10 px-5 text-[10px] font-black uppercase tracking-widest gap-2 text-indigo-600 hover:bg-indigo-50">
+                {isSaving ? <Loader2 size={16} className="animate-spin" /> : <Save size={16} />} Save
+              </Button>
             )}
           </div>
         </div>
-        {!showHistory && <Progress value={progress} className="h-2 bg-secondary" />}
+        {!showHistory && <Progress value={progress} className="h-1.5 bg-slate-100 [&>div]:bg-indigo-600" />}
       </div>
 
-      <div className="min-h-[400px]">
+      <div className="min-h-[500px]">
         {showHistory ? renderHistory() : (
           <>
             {step === 1 && renderStep1()}

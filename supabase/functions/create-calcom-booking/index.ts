@@ -9,7 +9,7 @@ const corsHeaders = {
 }
 
 serve(async (req) => {
-  console.log("[create-calcom-booking] v2.2 - Enhanced Error Logging");
+  console.log("[create-calcom-booking] v2.3 - Improved Conflict Handling");
 
   if (req.method === 'OPTIONS') {
     return new Response('ok', { headers: corsHeaders })
@@ -74,11 +74,18 @@ serve(async (req) => {
 
     if (!response.ok) {
       console.error(`[create-calcom-booking] Cal.com API Error:`, JSON.stringify(result));
-      // Provide a more helpful error message for common scheduling issues
+      
       const errorMsg = result.error?.message || result.message || "Cal.com API Error";
-      if (errorMsg.includes("can't be booked at the \"start\" time")) {
-        throw new Error(`Cal.com: This time slot is unavailable or violates booking rules (e.g. minimum notice). Please use the Live Availability tool.`);
+      
+      // Catch specific availability/conflict errors
+      if (
+        errorMsg.includes("can't be booked at the \"start\" time") || 
+        errorMsg.includes("already has booking at this time") ||
+        errorMsg.includes("is not available")
+      ) {
+        throw new Error(`Cal.com Conflict: This time slot is unavailable or conflicts with an existing booking. Please check your calendar or use the Live Availability tool.`);
       }
+      
       throw new Error(errorMsg);
     }
 

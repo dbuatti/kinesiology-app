@@ -34,6 +34,7 @@ import { showSuccess, showError } from "@/utils/toast";
 import { APPOINTMENT_TAGS, APPOINTMENT_STATUSES } from "@/data/appointment-data";
 import SearchableClientSelect from "./SearchableClientSelect";
 import { CALCOM_CONFIG } from "../../config/integrations";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 
 const formSchema = z.object({
   clientId: z.string().min(1, "Client is required"),
@@ -65,6 +66,7 @@ const AppointmentForm = ({ onSuccess, initialClientId, initialDate, initialTime,
   const [loadingClients, setLoadingClients] = useState(true);
   const [submitting, setSubmitting] = useState(false);
   const [syncStatus, setSyncStatus] = useState<'idle' | 'calcom' | 'email'>('idle');
+  const [conflictError, setConflictError] = useState<string | null>(null);
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -106,6 +108,7 @@ const AppointmentForm = ({ onSuccess, initialClientId, initialDate, initialTime,
     }
     
     setSubmitting(true);
+    setConflictError(null);
 
     try {
       // Determine the final ISO date string
@@ -120,7 +123,6 @@ const AppointmentForm = ({ onSuccess, initialClientId, initialDate, initialTime,
       }
 
       let calcomId = null;
-      let calcomError = null;
 
       // 1. Sync with Cal.com if applicable
       if (initialTime || slotTime) {
@@ -144,7 +146,12 @@ const AppointmentForm = ({ onSuccess, initialClientId, initialDate, initialTime,
           calcomId = calcomData?.uid || calcomData?.bookingId;
         } catch (err: any) {
           console.error("Cal.com Sync Failed:", err);
-          calcomError = err.message;
+          if (err.message.includes("Conflict")) {
+            setConflictError(err.message);
+            setSubmitting(false);
+            return; // Stop here so user can pick a different time
+          }
+          throw err;
         }
       }
 
@@ -186,7 +193,7 @@ const AppointmentForm = ({ onSuccess, initialClientId, initialDate, initialTime,
           const { error: emailError } = await supabase.functions.invoke('send-manual-onboarding', {
             body: { 
               clientId: values.clientId,
-              appointmentId: newApp?.id // Pass the specific appointment ID
+              appointmentId: newApp?.id 
             }
           });
           if (emailError) throw emailError;
@@ -196,12 +203,7 @@ const AppointmentForm = ({ onSuccess, initialClientId, initialDate, initialTime,
         }
       }
 
-      if (calcomError) {
-        showError(`CRM record created, but Cal.com sync failed: ${calcomError}`);
-      } else {
-        showSuccess(values.send_onboarding ? "Session booked and onboarding email sent!" : "Appointment scheduled successfully.");
-      }
-      
+      showSuccess(values.send_onboarding ? "Session booked and onboarding email sent!" : "Appointment scheduled successfully.");
       onSuccess();
     } catch (error: any) {
       showError(error.message || "Failed to schedule appointment");
@@ -217,7 +219,7 @@ const AppointmentForm = ({ onSuccess, initialClientId, initialDate, initialTime,
       const type = CALCOM_CONFIG.EVENT_TYPES.find(t => t.id === currentEventTypeId);
       return type?.price || 50;
     }
-    return 0; // Default to Free for manual bookings unless specified
+    return 0; 
   });
 
   const currentEventType = CALCOM_CONFIG.EVENT_TYPES.find(t => t.price === selectedPrice) || CALCOM_CONFIG.EVENT_TYPES[0];
@@ -225,6 +227,15 @@ const AppointmentForm = ({ onSuccess, initialClientId, initialDate, initialTime,
   return (
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+        {conflictError && (
+          <Alert variant="destructive" className="bg-rose-50 border-rose-200 rounded-2xl animate-in slide-in-from-top-2">
+            <AlertCircle className="h-5 w-5 text-rose-600" />
+            <AlertDescription className="text-sm text-rose-900 font-bold">
+              {conflictError}
+            </AlertDescription>
+          </Alert>
+        )}
+
         <FormField
           control={form.control}
           name="clientId"

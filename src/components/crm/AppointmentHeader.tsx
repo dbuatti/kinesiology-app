@@ -12,8 +12,9 @@ import {
   Activity,
   ShieldAlert,
   DollarSign,
-UserCircle,
-  ChevronDown
+  UserCircle,
+  ChevronDown,
+  CalendarClock
 } from "lucide-react";
 import { format, isToday } from "date-fns";
 import { cn } from "@/lib/utils";
@@ -25,9 +26,17 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import { APPOINTMENT_STATUSES } from "@/data/appointment-data";
 import { AppointmentWithClient } from "@/types/crm";
 import QuickAssessmentModal from "./QuickAssessmentModal";
+import AppointmentForm from "./AppointmentForm";
 import { calculateBrainstemTone } from "@/utils/brainstem-logic";
 import { showSuccess } from "@/utils/toast";
 
@@ -39,6 +48,7 @@ interface AppointmentHeaderProps {
 
 const AppointmentHeader = ({ appointment, onSaveField, onUpdate }: AppointmentHeaderProps) => {
   const [assessmentModal, setAssessmentModal] = useState<{ open: boolean; type: 'bolt' | 'coherence' } | null>(null);
+  const [rescheduleOpen, setRescheduleOpen] = useState(false);
   const clientBorn = appointment.clients.born ? new Date(appointment.clients.born) : null;
   const isSessionToday = isToday(appointment.date);
 
@@ -71,14 +81,20 @@ const AppointmentHeader = ({ appointment, onSaveField, onUpdate }: AppointmentHe
             </div>
             
             <div className="flex flex-wrap items-center gap-2 md:gap-4 text-[10px] md:text-xs font-bold text-muted-foreground">
-              <div className="flex items-center gap-1">
-                <Calendar size={12} className="text-indigo-400" /> 
+              <button 
+                onClick={() => setRescheduleOpen(true)}
+                className="flex items-center gap-1 hover:text-indigo-600 transition-colors group"
+              >
+                <Calendar size={12} className="text-indigo-400 group-hover:scale-110 transition-transform" /> 
                 {format(appointment.date, "MMM d")}
-              </div>
-              <div className="flex items-center gap-1">
-                <Clock size={12} className="text-indigo-400" /> 
+              </button>
+              <button 
+                onClick={() => setRescheduleOpen(true)}
+                className="flex items-center gap-1 hover:text-indigo-600 transition-colors group"
+              >
+                <Clock size={12} className="text-indigo-400 group-hover:scale-110 transition-transform" /> 
                 {format(appointment.date, "h:mm a")}
-              </div>
+              </button>
               <Select value={appointment.status} onValueChange={(newStatus) => onSaveField('status', newStatus)}>
                 <SelectTrigger className={cn(
                   "h-5 md:h-6 w-[80px] md:w-[100px] text-[7px] md:text-[8px] font-black uppercase tracking-widest border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 rounded-md",
@@ -98,6 +114,14 @@ const AppointmentHeader = ({ appointment, onSaveField, onUpdate }: AppointmentHe
                   ))}
                 </SelectContent>
               </Select>
+              <Button 
+                variant="ghost" 
+                size="sm" 
+                onClick={() => setRescheduleOpen(true)}
+                className="h-5 md:h-6 px-2 text-[7px] md:text-[8px] font-black uppercase tracking-widest text-indigo-600 hover:bg-indigo-50 rounded-md"
+              >
+                <CalendarClock size={10} className="mr-1" /> Reschedule
+              </Button>
             </div>
           </div>
         </div>
@@ -154,6 +178,31 @@ const AppointmentHeader = ({ appointment, onSaveField, onUpdate }: AppointmentHe
           onComplete={onUpdate}
         />
       )}
+
+      <Dialog open={rescheduleOpen} onOpenChange={setRescheduleOpen}>
+        <DialogContent className="sm:max-w-[550px] max-h-[90vh] overflow-y-auto rounded-[2rem] p-0">
+          <div className="p-8">
+            <DialogHeader className="mb-6">
+              <div className="flex items-center gap-4 mb-2">
+                <div className="w-12 h-12 rounded-2xl bg-indigo-600 text-white flex items-center justify-center shadow-lg">
+                  <CalendarClock size={24} />
+                </div>
+                <div>
+                  <DialogTitle className="text-2xl font-black">Reschedule Session</DialogTitle>
+                  <DialogDescription className="font-medium">Update the date, time, or details for this session.</DialogDescription>
+                </div>
+              </div>
+            </DialogHeader>
+            <AppointmentForm 
+              existingAppointment={appointment}
+              onSuccess={() => {
+                setRescheduleOpen(false);
+                onUpdate();
+              }} 
+            />
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };

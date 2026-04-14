@@ -32,7 +32,8 @@ import {
   ChevronRight,
   DollarSign,
   EyeOff,
-  RefreshCw
+  RefreshCw,
+  CalendarClock
 } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -87,6 +88,7 @@ const AppointmentsPage = () => {
   const [viewMode, setViewMode] = useState<'list' | 'calendar'>('list');
   
   const [assessmentModal, setAssessmentModal] = useState<{ open: boolean; type: 'bolt' | 'coherence'; clientId: string; clientName: string } | null>(null);
+  const [rescheduleModal, setRescheduleModal] = useState<{ open: boolean; appointment: any } | null>(null);
 
   const fetchAppointments = async (limit: number = PAGE_SIZE) => {
     if (limit === PAGE_SIZE) setLoading(true);
@@ -430,6 +432,12 @@ const AppointmentsPage = () => {
                         <ExternalLink size={16} className="text-indigo-500" /> View Details
                       </Link>
                     </DropdownMenuItem>
+                    <DropdownMenuItem 
+                      className="rounded-xl py-2.5 px-4 cursor-pointer flex items-center gap-3"
+                      onClick={() => setRescheduleModal({ open: true, appointment: app })}
+                    >
+                      <CalendarClock size={16} className="text-amber-500" /> Reschedule
+                    </DropdownMenuItem>
                     <DropdownMenuSeparator className="my-2" />
                     <DropdownMenuItem 
                       className="text-destructive focus:text-destructive rounded-xl py-2.5 px-4 cursor-pointer flex items-center gap-3"
@@ -658,6 +666,33 @@ const AppointmentsPage = () => {
             onComplete={() => fetchAppointments(displayLimit)}
           />
         )}
+
+        <Dialog open={!!rescheduleModal} onOpenChange={(open) => !open && setRescheduleModal(null)}>
+          <DialogContent className="sm:max-w-[550px] max-h-[90vh] overflow-y-auto rounded-[2rem] p-0">
+            <div className="p-8">
+              <DialogHeader className="mb-6">
+                <div className="flex items-center gap-4 mb-2">
+                  <div className="w-12 h-12 rounded-2xl bg-indigo-600 text-white flex items-center justify-center shadow-lg">
+                    <CalendarClock size={24} />
+                  </div>
+                  <div>
+                    <DialogTitle className="text-2xl font-black">Reschedule Session</DialogTitle>
+                    <DialogDescription className="font-medium">Update the date, time, or details for this session.</DialogDescription>
+                  </div>
+                </div>
+              </DialogHeader>
+              {rescheduleModal && (
+                <AppointmentForm 
+                  existingAppointment={rescheduleModal.appointment}
+                  onSuccess={() => {
+                    setRescheduleModal(null);
+                    fetchAppointments(displayLimit);
+                  }} 
+                />
+              )}
+            </div>
+          </DialogContent>
+        </Dialog>
       </div>
     </AppLayout>
   );

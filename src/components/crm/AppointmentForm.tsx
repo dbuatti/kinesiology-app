@@ -28,7 +28,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { format } from "date-fns";
-import { CalendarIcon, Loader2, Globe, DollarSign, Mail, Clock, CheckCircle2, AlertCircle, Unlock } from "lucide-react";
+import { CalendarIcon, Loader2, Globe, DollarSign, Mail, Clock, CheckCircle2, AlertCircle, Unlock, Save } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { showSuccess, showError } from "@/utils/toast";
 import { APPOINTMENT_TAGS, APPOINTMENT_STATUSES } from "@/data/appointment-data";
@@ -58,9 +58,18 @@ interface AppointmentFormProps {
   initialTime?: string;
   slotTime?: string; // Exact UTC time from Cal.com
   eventTypeId?: string; // Selected event type ID
+  existingAppointment?: any; // For editing
 }
 
-const AppointmentForm = ({ onSuccess, initialClientId, initialDate, initialTime, slotTime: initialSlotTime, eventTypeId: propEventTypeId }: AppointmentFormProps) => {
+const AppointmentForm = ({ 
+  onSuccess, 
+  initialClientId, 
+  initialDate, 
+  initialTime, 
+  slotTime: initialSlotTime, 
+  eventTypeId: propEventTypeId,
+  existingAppointment
+}: AppointmentFormProps) => {
   const { session } = useAuth();
   const [clients, setClients] = useState<{ id: string; name: string }[]>([]);
   const [loadingClients, setLoadingClients] = useState(true);
@@ -70,17 +79,21 @@ const AppointmentForm = ({ onSuccess, initialClientId, initialDate, initialTime,
   const [isTimeLocked, setIsTimeLocked] = useState(!!initialSlotTime);
   const [currentSlotTime, setCurrentSlotTime] = useState(initialSlotTime);
 
+  const isEditMode = !!existingAppointment;
+
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      clientId: initialClientId || "",
-      date: initialDate || new Date(),
-      time: initialTime || "10:00",
-      name: "",
-      tag: "Kinesiology",
-      status: "Scheduled",
-      is_paid: false,
-      send_onboarding: true,
+      clientId: existingAppointment?.client_id || initialClientId || "",
+      date: existingAppointment?.date ? new Date(existingAppointment.date) : (initialDate || new Date()),
+      time: existingAppointment?.date ? format(new Date(existingAppointment.date), "HH:mm") : (initialTime || "10:00"),
+      name: existingAppointment?.name || "",
+      tag: existingAppointment?.tag || "Kinesiology",
+      status: existingAppointment?.status || "Scheduled",
+      is_paid: existingAppointment?.is_paid || false,
+      send_onboarding: false, // Default to false for edits
+      goal: existingAppointment?.goal || "",
+      issue: existingAppointment?.issue || "",
     },
   });
 
@@ -122,10 +135,12 @@ const AppointmentForm = ({ onSuccess, initialClientId, initialDate, initialTime,
         isoDate = appointmentDate.toISOString();
       }
 
-      let calcomId = null;
+      let calcomId = existingAppointment?.calcom_booking_id || null;
 
-      // 1. Sync with Cal.com if applicable
-      if (initialTime || currentSlotTime) {
+      // 1. Sync with Cal.com if applicable (Only for new bookings or if specifically requested)
+      // Note: Manual rescheduling in CRM doesn't currently trigger a Cal.com reschedule API call
+      // but it updates the local record which is often what's needed for manual entries.
+      if (!isEditMode && (initialTime || currentSlotTime)) {
         setSyncStatus('calcom');
         const eventTypeId = currentEventType.id;
 
@@ -155,7 +170,7 @@ const AppointmentForm = ({ onSuccess, initialClientId, initialDate, initialTime,
         }
       }
 
-      // 2. Create CRM Record
+      // 2. Create or Update CRM Record
       let appointmentName = values.name?.trim() || '';
       if (!appointmentName) {
           const client = clients.find(c => c.id === values.clientId);
@@ -164,49 +179,63 @@ const AppointmentForm = ({ onSuccess, initialClientId, initialDate, initialTime,
           appointmentName = `${clientName} - ${values.tag || 'Session'} (${formattedDate})`;
       }
 
-      const { data: newApp, error: dbError } = await supabase
-        .from("appointments")
-        .insert({
-          user_id: session.user.id,
-          client_id: values.clientId,
-          name: appointmentName,
-          date: isoDate,
-          tag: values.tag,
-          status: values.status,
-          goal: values.goal,
-          issue: values.issue,
-          is_paid: values.is_paid,
-          send_onboarding: values.send_onboarding,
-          calcom_booking_id: calcomId ? String(calcomId) : null,
-          price_amount: currentEventType.price,
-          price_currency: currentEventType.currency
-        })
-        .select('id')
-        .single();
+      const payload = {
+        user_id: session.user.id,
+        client_id: values.clientId,
+        name: appointmentName,
+        date: isoDate,
+        tag: values.tag,
+        status: values.status,
+        goal: values.goal,
+        issue: values.issue,
+        is_paid: values.is_paid,
+        calcom_booking_id: calcomId ? String(calcomId) : null,
+        price_amount: currentEventType.price,
+        price_currency: currentEventType.currency
+      };
 
-      if (dbError) throw dbError;
+      if (isEditMode) {
+        const { error: dbError } = await supabase
+          .from("appointments")
+          .update(payload)
+          .eq('id', existingAppointment.id);
+        
+        if (dbError) throw dbError;
+        showSuccess("Session updated successfully.");
+      } else {
+        const { data: newApp, error: dbError } = await supabase
+          .from("appointments")
+          .insert({
+            ...payload,
+            send_onboarding: values.send_onboarding
+          })
+          .select('id')
+          .single();
 
-      // 3. Trigger Onboarding Email if requested
-      if (values.send_onboarding) {
-        setSyncStatus('email');
-        try {
-          const { error: emailError } = await supabase.functions.invoke('send-manual-onboarding', {
-            body: { 
-              clientId: values.clientId,
-              appointmentId: newApp?.id 
-            }
-          });
-          if (emailError) throw emailError;
-        } catch (err) {
-          console.error("Onboarding Email Failed:", err);
-          showError("Appointment created, but onboarding email failed to send.");
+        if (dbError) throw dbError;
+
+        // 3. Trigger Onboarding Email if requested
+        if (values.send_onboarding) {
+          setSyncStatus('email');
+          try {
+            const { error: emailError } = await supabase.functions.invoke('send-manual-onboarding', {
+              body: { 
+                clientId: values.clientId,
+                appointmentId: newApp?.id 
+              }
+            });
+            if (emailError) throw emailError;
+          } catch (err) {
+            console.error("Onboarding Email Failed:", err);
+            showError("Appointment created, but onboarding email failed to send.");
+          }
         }
+        showSuccess(values.send_onboarding ? "Session booked and onboarding email sent!" : "Appointment scheduled successfully.");
       }
 
-      showSuccess(values.send_onboarding ? "Session booked and onboarding email sent!" : "Appointment scheduled successfully.");
       onSuccess();
     } catch (error: any) {
-      showError(error.message || "Failed to schedule appointment");
+      showError(error.message || "Failed to save appointment");
     } finally {
       setSubmitting(false);
       setSyncStatus('idle');
@@ -215,6 +244,7 @@ const AppointmentForm = ({ onSuccess, initialClientId, initialDate, initialTime,
 
   const currentEventTypeId = propEventTypeId || localStorage.getItem('calcom_preferred_event_id') || CALCOM_CONFIG.DEFAULT_EVENT_TYPE_ID;
   const [selectedPrice, setSelectedPrice] = useState<number>(() => {
+    if (existingAppointment) return existingAppointment.price_amount || 0;
     if (initialTime || currentSlotTime) {
       const type = CALCOM_CONFIG.EVENT_TYPES.find(t => t.id === currentEventTypeId);
       return type?.price || 50;
@@ -247,7 +277,7 @@ const AppointmentForm = ({ onSuccess, initialClientId, initialDate, initialTime,
                   clients={clients}
                   value={field.value}
                   onSelect={field.onChange}
-                  disabled={loadingClients}
+                  disabled={loadingClients || isEditMode}
                   placeholder={loadingClients ? "Loading clients..." : "Search and select client"}
                 />
               </FormControl>
@@ -416,40 +446,42 @@ const AppointmentForm = ({ onSuccess, initialClientId, initialDate, initialTime,
             </div>
           </div>
 
-          <FormField
-            control={form.control}
-            name="send_onboarding"
-            render={({ field }) => (
-              <FormItem 
-                className={cn(
-                  "flex flex-row items-center justify-between rounded-[1.5rem] border-2 p-5 transition-all cursor-pointer",
-                  field.value ? "bg-emerald-50 border-emerald-200" : "bg-white border-slate-100 hover:border-emerald-100"
-                )}
-                onClick={() => field.onChange(!field.value)}
-              >
-                <div className="flex items-center gap-4">
+          {!isEditMode && (
+            <FormField
+              control={form.control}
+              name="send_onboarding"
+              render={({ field }) => (
+                <FormItem 
+                  className={cn(
+                    "flex flex-row items-center justify-between rounded-[1.5rem] border-2 p-5 transition-all cursor-pointer",
+                    field.value ? "bg-emerald-50 border-emerald-200" : "bg-white border-slate-100 hover:border-emerald-100"
+                  )}
+                  onClick={() => field.onChange(!field.value)}
+                >
+                  <div className="flex items-center gap-4">
+                    <div className={cn(
+                      "w-10 h-10 rounded-xl flex items-center justify-center transition-colors",
+                      field.value ? "bg-emerald-600 text-white" : "bg-slate-100 text-emerald-600"
+                    )}>
+                      <Mail size={20} />
+                    </div>
+                    <div className="space-y-0.5">
+                      <FormLabel className="text-base font-black text-slate-900 cursor-pointer">Send Onboarding Email</FormLabel>
+                      <p className="text-[9px] text-slate-500 font-bold uppercase tracking-widest">
+                        Automatically email the intake form to the client
+                      </p>
+                    </div>
+                  </div>
                   <div className={cn(
-                    "w-10 h-10 rounded-xl flex items-center justify-center transition-colors",
-                    field.value ? "bg-emerald-600 text-white" : "bg-slate-100 text-emerald-600"
+                    "w-6 h-6 rounded-full border-2 flex items-center justify-center transition-all",
+                    field.value ? "bg-emerald-600 border-emerald-600" : "border-slate-200"
                   )}>
-                    <Mail size={20} />
+                    {field.value && <CheckCircle2 size={16} className="text-white" />}
                   </div>
-                  <div className="space-y-0.5">
-                    <FormLabel className="text-base font-black text-slate-900 cursor-pointer">Send Onboarding Email</FormLabel>
-                    <p className="text-[9px] text-slate-500 font-bold uppercase tracking-widest">
-                      Automatically email the intake form to the client
-                    </p>
-                  </div>
-                </div>
-                <div className={cn(
-                  "w-6 h-6 rounded-full border-2 flex items-center justify-center transition-all",
-                  field.value ? "bg-emerald-600 border-emerald-600" : "border-slate-200"
-                )}>
-                  {field.value && <CheckCircle2 size={16} className="text-white" />}
-                </div>
-              </FormItem>
-            )}
-          />
+                </FormItem>
+              )}
+            />
+          )}
         </div>
 
         <FormField
@@ -489,10 +521,13 @@ const AppointmentForm = ({ onSuccess, initialClientId, initialDate, initialTime,
             <>
               <Loader2 className="mr-2 h-5 w-5 animate-spin" />
               {syncStatus === 'calcom' ? 'Syncing with Cal.com...' : 
-               syncStatus === 'email' ? 'Sending Onboarding...' : 'Scheduling...'}
+               syncStatus === 'email' ? 'Sending Onboarding...' : 'Saving...'}
             </>
           ) : (
-            'Schedule Appointment'
+            <>
+              {isEditMode ? <Save size={18} className="mr-2" /> : null}
+              {isEditMode ? 'Update Session' : 'Schedule Appointment'}
+            </>
           )}
         </Button>
       </form>

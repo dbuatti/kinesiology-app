@@ -69,8 +69,10 @@ const LimitingBeliefsTool = () => {
   const [isSaving, setIsSaving] = useState(false);
   const [isGeneratingLimiting, setIsGeneratingLimiting] = useState(false);
   const [isGeneratingPositive, setIsGeneratingPositive] = useState(false);
+  const [isGeneratingSense, setIsGeneratingSense] = useState(false);
   const [limitingSuggestions, setLimitingSuggestions] = useState<string[]>([]);
   const [positiveSuggestions, setPositiveSuggestions] = useState<string[]>([]);
+  const [senseSuggestions, setSenseSuggestions] = useState<string[]>([]);
 
   const progress = (step / 5) * 100;
 
@@ -189,14 +191,15 @@ const LimitingBeliefsTool = () => {
     }
   };
 
-  const handleGenerateBelief = async (type: 'limiting_belief' | 'positive_belief') => {
+  const handleGenerateBelief = async (type: 'limiting_belief' | 'positive_belief' | 'felt_sense') => {
     if (!formData.problem) {
       toast.error("Please describe the problem first.");
       return;
     }
     
     if (type === 'limiting_belief') setIsGeneratingLimiting(true);
-    else setIsGeneratingPositive(true);
+    else if (type === 'positive_belief') setIsGeneratingPositive(true);
+    else setIsGeneratingSense(true);
 
     try {
       const { data, error } = await supabase.functions.invoke('generate-identity', {
@@ -210,14 +213,16 @@ const LimitingBeliefsTool = () => {
       if (error) throw error;
       if (data?.suggestions) {
         if (type === 'limiting_belief') setLimitingSuggestions(data.suggestions);
-        else setPositiveSuggestions(data.suggestions);
+        else if (type === 'positive_belief') setPositiveSuggestions(data.suggestions);
+        else setSenseSuggestions(data.suggestions);
       }
     } catch (error) {
       console.error("Error generating belief:", error);
       toast.error("Failed to generate suggestions.");
     } finally {
       if (type === 'limiting_belief') setIsGeneratingLimiting(false);
-      else setIsGeneratingPositive(false);
+      else if (type === 'positive_belief') setIsGeneratingPositive(false);
+      else setIsGeneratingSense(false);
     }
   };
 
@@ -290,15 +295,56 @@ const LimitingBeliefsTool = () => {
           />
         </div>
         <div className="space-y-2">
-          <Label htmlFor="feltSense">Where do you feel it in your body? (The Felt Sense)</Label>
-          <Input 
-            id="feltSense" 
-            placeholder="e.g. Tightness in chest, Pit in stomach" 
+          <div className="flex items-center justify-between">
+            <Label htmlFor="feltSense">Where do you feel it in your body? (The Felt Sense)</Label>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => handleGenerateBelief('felt_sense')}
+              disabled={isGeneratingSense || !formData.problem}
+              className="h-8 px-2 text-primary hover:text-primary/80 hover:bg-primary/10 gap-1.5"
+            >
+              {isGeneratingSense ? (
+                <>
+                  <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                  <span className="text-xs font-bold">Analyzing...</span>
+                </>
+              ) : (
+                <>
+                  <Sparkles className="h-3.5 w-3.5" />
+                  <span className="text-xs font-bold">Magic Suggest</span>
+                </>
+              )}
+            </Button>
+          </div>
+          <Input
+            id="feltSense"
+            placeholder="e.g. Tightness in chest, Pit in stomach"
             value={formData.feltSense}
             onChange={(e) => setFormData({ ...formData, feltSense: e.target.value })}
             onKeyDown={handleKeyDown}
             className="rounded-xl"
           />
+          <AnimatePresence>
+            {senseSuggestions.length > 0 && (
+              <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }} className="space-y-2 mt-2">
+                <p className="text-[9px] font-black text-primary/50 uppercase tracking-widest px-1">Common Sensations:</p>
+                <div className="flex flex-wrap gap-2">
+                  {senseSuggestions.map((suggestion, index) => (
+                    <motion.button
+                      key={index}
+                      whileHover={{ scale: 1.05 }}
+                      whileTap={{ scale: 0.95 }}
+                      onClick={() => setFormData({ ...formData, feltSense: suggestion })}
+                      className="text-[10px] font-bold px-3 py-1.5 bg-indigo-50 text-indigo-600 rounded-full border border-indigo-100 hover:bg-indigo-100 transition-colors"
+                    >
+                      {suggestion}
+                    </motion.button>
+                  ))}
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
         </div>
       </div>
       <div className="flex gap-3">
@@ -325,8 +371,17 @@ const LimitingBeliefsTool = () => {
               disabled={isGeneratingLimiting || !formData.problem}
               className="h-8 px-2 text-primary hover:text-primary/80 hover:bg-primary/10 gap-1.5"
             >
-              {isGeneratingLimiting ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Sparkles className="h-3.5 w-3.5" />}
-              <span className="text-xs font-bold">Magic Suggest</span>
+              {isGeneratingLimiting ? (
+                <>
+                  <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                  <span className="text-xs font-bold">Analyzing...</span>
+                </>
+              ) : (
+                <>
+                  <Sparkles className="h-3.5 w-3.5" />
+                  <span className="text-xs font-bold">Magic Suggest</span>
+                </>
+              )}
             </Button>
           </div>
           <Input
@@ -339,21 +394,24 @@ const LimitingBeliefsTool = () => {
           />
           <AnimatePresence>
             {limitingSuggestions.length > 0 && (
-              <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }} className="flex flex-wrap gap-2 mt-2">
-                {limitingSuggestions.map((suggestion, index) => (
-                  <motion.button
-                    key={index}
-                    whileHover={{ scale: 1.05 }}
-                    whileTap={{ scale: 0.95 }}
-                    onClick={() => {
-                      const clean = suggestion.replace(/^I am\s+/i, '');
-                      setFormData({ ...formData, limitingBelief: clean });
-                    }}
-                    className="text-[10px] font-bold px-3 py-1.5 bg-rose-50 text-rose-600 rounded-full border border-rose-100 hover:bg-rose-100 transition-colors"
-                  >
-                    {suggestion}
-                  </motion.button>
-                ))}
+              <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }} className="space-y-2 mt-2">
+                <p className="text-[9px] font-black text-primary/50 uppercase tracking-widest px-1">AI Analysis Results:</p>
+                <div className="flex flex-wrap gap-2">
+                  {limitingSuggestions.map((suggestion, index) => (
+                    <motion.button
+                      key={index}
+                      whileHover={{ scale: 1.05 }}
+                      whileTap={{ scale: 0.95 }}
+                      onClick={() => {
+                        const clean = suggestion.replace(/^I am\s+/i, '');
+                        setFormData({ ...formData, limitingBelief: clean });
+                      }}
+                      className="text-[10px] font-bold px-3 py-1.5 bg-rose-50 text-rose-600 rounded-full border border-rose-100 hover:bg-rose-100 transition-colors"
+                    >
+                      {suggestion}
+                    </motion.button>
+                  ))}
+                </div>
               </motion.div>
             )}
           </AnimatePresence>
@@ -369,8 +427,17 @@ const LimitingBeliefsTool = () => {
               disabled={isGeneratingPositive || !formData.problem}
               className="h-8 px-2 text-primary hover:text-primary/80 hover:bg-primary/10 gap-1.5"
             >
-              {isGeneratingPositive ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Sparkles className="h-3.5 w-3.5" />}
-              <span className="text-xs font-bold">Magic Suggest</span>
+              {isGeneratingPositive ? (
+                <>
+                  <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                  <span className="text-xs font-bold">Analyzing...</span>
+                </>
+              ) : (
+                <>
+                  <Sparkles className="h-3.5 w-3.5" />
+                  <span className="text-xs font-bold">Magic Suggest</span>
+                </>
+              )}
             </Button>
           </div>
           <Input
@@ -383,21 +450,24 @@ const LimitingBeliefsTool = () => {
           />
           <AnimatePresence>
             {positiveSuggestions.length > 0 && (
-              <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }} className="flex flex-wrap gap-2 mt-2">
-                {positiveSuggestions.map((suggestion, index) => (
-                  <motion.button
-                    key={index}
-                    whileHover={{ scale: 1.05 }}
-                    whileTap={{ scale: 0.95 }}
-                    onClick={() => {
-                      const clean = suggestion.replace(/^I am\s+/i, '');
-                      setFormData({ ...formData, positiveBelief: clean });
-                    }}
-                    className="text-[10px] font-bold px-3 py-1.5 bg-emerald-50 text-emerald-600 rounded-full border border-emerald-100 hover:bg-emerald-100 transition-colors"
-                  >
-                    {suggestion}
-                  </motion.button>
-                ))}
+              <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }} className="space-y-2 mt-2">
+                <p className="text-[9px] font-black text-primary/50 uppercase tracking-widest px-1">AI Analysis Results:</p>
+                <div className="flex flex-wrap gap-2">
+                  {positiveSuggestions.map((suggestion, index) => (
+                    <motion.button
+                      key={index}
+                      whileHover={{ scale: 1.05 }}
+                      whileTap={{ scale: 0.95 }}
+                      onClick={() => {
+                        const clean = suggestion.replace(/^I am\s+/i, '');
+                        setFormData({ ...formData, positiveBelief: clean });
+                      }}
+                      className="text-[10px] font-bold px-3 py-1.5 bg-emerald-50 text-emerald-600 rounded-full border border-emerald-100 hover:bg-emerald-100 transition-colors"
+                    >
+                      {suggestion}
+                    </motion.button>
+                  ))}
+                </div>
               </motion.div>
             )}
           </AnimatePresence>

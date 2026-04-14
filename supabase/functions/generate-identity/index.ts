@@ -42,6 +42,15 @@ const FALLBACK_POSITIVE_BELIEFS = [
   "I am resilient and strong"
 ];
 
+const FALLBACK_SENSE_SUGGESTIONS = [
+  "Tightness in the chest",
+  "Knot in the stomach",
+  "Lump in the throat",
+  "Pressure behind the eyes",
+  "Heaviness in the shoulders",
+  "Coldness in the hands"
+];
+
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
     return new Response('ok', { headers: corsHeaders })
@@ -63,11 +72,17 @@ serve(async (req) => {
       prompt = `Suggest 3-4 "Target Identities" for the goal: ${goal || problem}. Return ONLY a JSON array of strings.`;
       fallback = FALLBACK_TARGET_SUGGESTIONS;
     } else if (type === 'limiting_belief') {
-      prompt = `Suggest 3-4 "Limiting Beliefs" (starting with "I am...") based on: Problem: ${problem}, Sense: ${feltSense}. Return ONLY a JSON array of strings.`;
+      prompt = `Analyze the following problem and physical sensation to extract the underlying "Limiting Identity" or "Limiting Belief". The belief should start with "I am..." and represent the version of self that is struggling.
+      Problem: "${problem}"
+      Physical Sensation (Felt Sense): "${feltSense}"
+      Return ONLY a JSON array of 3-4 strings.`;
       fallback = FALLBACK_LIMITING_BELIEFS;
     } else if (type === 'positive_belief') {
-      prompt = `Suggest 3-4 "Positive Beliefs" (starting with "I am...") that would counter this problem: ${problem}. Return ONLY a JSON array of strings.`;
+      prompt = `Suggest 3-4 "Positive Beliefs" (starting with "I am...") that would represent a shifted, empowered identity in response to this problem: "${problem}". Return ONLY a JSON array of strings.`;
       fallback = FALLBACK_POSITIVE_BELIEFS;
+    } else if (type === 'felt_sense') {
+      prompt = `Suggest 3-4 common physical sensations (felt senses) that someone might experience when facing this problem: "${problem}". Return ONLY a JSON array of strings.`;
+      fallback = FALLBACK_SENSE_SUGGESTIONS;
     } else {
       prompt = `Suggest 3-4 "Problem Identities" for: Problem: ${problem}, Emotion: ${emotion}, Sense: ${feltSense}. Return ONLY a JSON array of strings.`;
       fallback = FALLBACK_PROBLEM_SUGGESTIONS;

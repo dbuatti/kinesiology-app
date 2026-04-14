@@ -31,7 +31,8 @@ import {
   Mic,
   ExternalLink,
   GraduationCap,
-  Fingerprint
+  Fingerprint,
+  LayoutGrid
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import SearchBar from "./SearchBar";
@@ -144,6 +145,7 @@ const Sidebar = ({ onHide }: SidebarProps) => {
   ];
 
   const sandboxItems = [
+    { label: "Sandbox Hub", icon: LayoutGrid, path: "/sandbox" },
     { label: "Identity Shifting", icon: Fingerprint, path: "/sandbox/identity-shifting" },
     { label: "Identity Alignment", icon: Target, path: "/sandbox/identity-alignment" },
     { label: "Limiting Beliefs", icon: ShieldAlert, path: "/sandbox/limiting-beliefs" },

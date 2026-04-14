@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from 'react';
+import { useLocation } from 'react-router-dom';
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -54,11 +55,15 @@ interface FormData {
 }
 
 const LimitingBeliefsTool = () => {
+  const location = useLocation();
+  const prefillData = location.state?.prefill;
+  const backlogId = location.state?.backlogId;
+
   const [step, setStep] = useState<Step>(1);
   const [formData, setFormData] = useState<FormData>({
     problem: '',
     feltSense: '',
-    limitingBelief: '',
+    limitingBelief: prefillData || '',
     positiveBelief: '',
     dissolveLog: [],
     checkBeliefResult: null,
@@ -134,6 +139,15 @@ const LimitingBeliefsTool = () => {
       }
 
       if (error) throw error;
+
+      // If this was from a backlog item, mark it as completed
+      if (isComplete && backlogId) {
+        await supabase
+          .from('identity_backlog')
+          .update({ status: 'completed' })
+          .eq('id', backlogId);
+      }
+
       if (isComplete) toast.success("Session completed!");
       else toast.success("Draft saved.");
       fetchPastSessions();

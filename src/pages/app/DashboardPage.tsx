@@ -37,6 +37,7 @@ import { usePrivacyMode } from "@/hooks/use-privacy-mode";
 import { showSuccess } from "@/utils/toast";
 import Scratchpad from "@/components/crm/Scratchpad";
 import QuickActionsGrid from "@/components/crm/QuickActionsGrid";
+import IdentitySmartTool from "@/components/crm/IdentitySmartTool";
 
 const Index = () => {
   const { isPrivate } = usePrivacyMode();
@@ -210,6 +211,8 @@ const Index = () => {
         />
 
         <DashboardStats stats={stats} />
+
+        <IdentitySmartTool />
 
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 md:gap-12">
           <div className="lg:col-span-8 space-y-12 md:space-y-16">

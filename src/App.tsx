@@ -40,6 +40,7 @@ import PEACEFrameworkPage from "./pages/PEACEFrameworkPage";
 import MarketingEnginePage from "./pages/MarketingEnginePage";
 import BusinessHubPage from "./pages/BusinessHubPage";
 import AvailabilityPage from "./pages/AvailabilityPage";
+import SandboxPage from "./pages/SandboxPage";
 import IdentityShiftingPage from "./pages/IdentityShiftingPage";
 import IdentityAlignmentPage from "./pages/IdentityAlignmentPage";
 import LimitingBeliefsPage from "./pages/LimitingBeliefsPage";
@@ -106,6 +107,7 @@ const AppRoutes = () => {
         <Route path="/business/marketing-engine" element={<MarketingEnginePage />} />
 
         {/* Sandbox */}
+        <Route path="/sandbox" element={<SandboxPage />} />
         <Route path="/sandbox/identity-shifting" element={<IdentityShiftingPage />} />
         <Route path="/sandbox/identity-alignment" element={<IdentityAlignmentPage />} />
         <Route path="/sandbox/limiting-beliefs" element={<LimitingBeliefsPage />} />

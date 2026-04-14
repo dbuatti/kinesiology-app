@@ -12,9 +12,10 @@ import {
   BookOpen, 
   Heart, 
   TrendingUp,
-  ArrowRight, 
+  ArrowRight,
   Settings,
   ShieldCheck,
+  ShieldAlert,
   PanelLeftClose,
   Compass,
   ChevronDown,
@@ -145,6 +146,7 @@ const Sidebar = ({ onHide }: SidebarProps) => {
   const sandboxItems = [
     { label: "Identity Shifting", icon: Fingerprint, path: "/sandbox/identity-shifting" },
     { label: "Identity Alignment", icon: Target, path: "/sandbox/identity-alignment" },
+    { label: "Limiting Beliefs", icon: ShieldAlert, path: "/sandbox/limiting-beliefs" },
   ];
 
   useEffect(() => {

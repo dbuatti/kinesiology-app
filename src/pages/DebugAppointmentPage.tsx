@@ -10,9 +10,11 @@ import {
   Loader2, FlaskConical, Activity, RefreshCw, Sparkles, 
   UserPlus, Trash2, AlertTriangle, Mail, Send, 
   DollarSign, CheckCircle2, ShieldCheck, Zap, Heart,
-  Globe, CreditCard, Beaker, ArrowRight, Info
+  Globe, CreditCard, Beaker, ArrowRight, Info, Clock,
+  CalendarClock, MoveRight
 } from "lucide-react";
-import { subDays } from "date-fns";
+import { addHours, format, addMinutes } from "date-fns";
+import { CALCOM_CONFIG } from "@/config/integrations";
 
 const DebugAppointmentPage = () => {
   const [loading, setLoading] = useState(false);
@@ -44,7 +46,7 @@ const DebugAppointmentPage = () => {
       if (clientError) throw clientError;
       setDebugClient(client);
 
-      // Create Test Appointment
+      // Create Test Appointment with a dummy Cal.com ID for webhook testing
       const { data: app, error: appError } = await supabase
         .from('appointments')
         .insert({
@@ -56,7 +58,8 @@ const DebugAppointmentPage = () => {
           is_paid: true,
           payment_received: false,
           price_amount: 50,
-          price_currency: 'AUD'
+          price_currency: 'AUD',
+          calcom_booking_id: "DEBUG-BOOKING-123" // Dummy ID for matching
         })
         .select()
         .single();
@@ -131,6 +134,71 @@ const DebugAppointmentPage = () => {
     }
   };
 
+  // 5. Automated Reschedule Test (Webhook Simulation)
+  const simulateReschedule = async () => {
+    if (!debugApp) return showError("Setup environment first");
+    setActiveTest('reschedule');
+    try {
+      const newTime = addHours(new Date(debugApp.date), 2).toISOString();
+      
+      // Mock Cal.com Webhook Payload
+      const payload = {
+        triggerEvent: "BOOKING_RESCHEDULED",
+        payload: {
+          bookingId: "DEBUG-BOOKING-123",
+          startTime: newTime,
+          attendees: [{ name: "DEBUG TESTER", email: testEmail }],
+          eventTypeId: parseInt(CALCOM_CONFIG.DEFAULT_EVENT_TYPE_ID)
+        }
+      };
+
+      const { error } = await supabase.functions.invoke('calcom-webhook', {
+        body: payload
+      });
+
+      if (error) throw error;
+      
+      showSuccess(`Reschedule simulated! App moved to ${format(new Date(newTime), "h:mm a")}`);
+      
+      // Refresh local state to show the change
+      const { data: updatedApp } = await supabase.from('appointments').select('*').eq('id', debugApp.id).single();
+      setDebugApp(updatedApp);
+    } catch (err: any) {
+      showError(`Reschedule Error: ${err.message}`);
+    } finally {
+      setActiveTest(null);
+    }
+  };
+
+  // 6. Automated Off-Grid Booking Test
+  const testOffGridBooking = async () => {
+    if (!debugClient) return showError("Setup environment first");
+    setActiveTest('offgrid');
+    try {
+      // Create a "messy" time: Tomorrow at 11:07 AM
+      const tomorrow = addMinutes(addHours(new Date(), 24), 7);
+      tomorrow.setMinutes(7); // Force 07 minutes
+      const messyTime = tomorrow.toISOString();
+
+      const { data, error } = await supabase.functions.invoke('create-calcom-booking', {
+        body: {
+          clientId: debugClient.id,
+          startTime: messyTime,
+          eventTypeId: CALCOM_CONFIG.DEFAULT_EVENT_TYPE_ID,
+          title: "DEBUG: Off-Grid Test",
+          is_paid: true
+        }
+      });
+
+      if (error) throw error;
+      showSuccess(`Off-grid booking created for ${format(new Date(messyTime), "h:mm a")}!`);
+    } catch (err: any) {
+      showError(`Off-Grid Error: ${err.message}`);
+    } finally {
+      setActiveTest(null);
+    }
+  };
+
   const cleanupTestData = async () => {
     if (!debugClient) return;
     setLoading(true);
@@ -166,11 +234,11 @@ const DebugAppointmentPage = () => {
             </div>
             <div>
               <Badge className="bg-indigo-500/20 text-indigo-300 border-indigo-500/30 font-black text-[10px] uppercase tracking-widest mb-1 rounded-full">Automation Lab</Badge>
-              <CardTitle className="text-3xl font-black">Onboarding Debug Suite</CardTitle>
+              <CardTitle className="text-3xl font-black">Integration Debug Suite</CardTitle>
             </div>
           </div>
           <CardDescription className="text-slate-400 text-lg font-medium">
-            Test the full automation chain without disturbing real clients.
+            Test the full automation chain and Cal.com logic.
           </CardDescription>
         </CardHeader>
         <CardContent className="p-10 pt-0 space-y-10 relative z-10">
@@ -214,66 +282,82 @@ const DebugAppointmentPage = () => {
                       <p className="text-[10px] font-mono text-slate-300 truncate">{debugApp?.id}</p>
                     </div>
                   </div>
+                  {debugApp && (
+                    <div className="pt-2 border-t border-white/5">
+                      <p className="text-[8px] font-black text-slate-500 uppercase mb-1">Current App Time</p>
+                      <p className="text-sm font-bold text-emerald-400">{format(new Date(debugApp.date), "EEEE, MMM d @ h:mm a")}</p>
+                    </div>
+                  )}
                 </div>
               )}
             </div>
 
-            <div className="space-y-4">
-              <Label className="text-[10px] font-black uppercase tracking-widest text-indigo-400">Manual Function Triggers</Label>
-              <div className="grid grid-cols-1 gap-3">
-                <Button 
-                  variant="outline" 
-                  disabled={!debugClient || !!activeTest}
-                  onClick={testKitSync}
-                  className="h-16 justify-between px-6 rounded-2xl border-white/10 bg-white/5 hover:bg-white/10 text-white group"
-                >
-                  <div className="flex items-center gap-4">
-                    <div className="w-10 h-10 rounded-xl bg-emerald-500/20 flex items-center justify-center text-emerald-400">
-                      <Globe size={20} />
+            <div className="space-y-6">
+              <div className="space-y-4">
+                <Label className="text-[10px] font-black uppercase tracking-widest text-indigo-400">Cal.com Integration Lab</Label>
+                <div className="grid grid-cols-1 gap-3">
+                  <Button 
+                    variant="outline" 
+                    disabled={!debugApp || !!activeTest}
+                    onClick={simulateReschedule}
+                    className="h-16 justify-between px-6 rounded-2xl border-amber-500/30 bg-amber-500/5 hover:bg-amber-500/10 text-white group"
+                  >
+                    <div className="flex items-center gap-4">
+                      <div className="w-10 h-10 rounded-xl bg-amber-500/20 flex items-center justify-center text-amber-400">
+                        <CalendarClock size={20} />
+                      </div>
+                      <div className="text-left">
+                        <p className="font-bold text-sm">Test: External Reschedule</p>
+                        <p className="text-[10px] text-slate-500">Simulates Cal.com moving the session +2hrs</p>
+                      </div>
                     </div>
-                    <div className="text-left">
-                      <p className="font-bold text-sm">2. Test Kit Sync</p>
-                      <p className="text-[10px] text-slate-500">Invokes sync-to-kit</p>
-                    </div>
-                  </div>
-                  {activeTest === 'kit' ? <Loader2 className="animate-spin" /> : <ArrowRight size={18} className="opacity-0 group-hover:opacity-100 transition-all" />}
-                </Button>
+                    {activeTest === 'reschedule' ? <Loader2 className="animate-spin" /> : <MoveRight size={18} className="opacity-0 group-hover:opacity-100 transition-all" />}
+                  </Button>
 
-                <Button 
-                  variant="outline" 
-                  disabled={!debugClient || !!activeTest}
-                  onClick={testStripeSync}
-                  className="h-16 justify-between px-6 rounded-2xl border-white/10 bg-white/5 hover:bg-white/10 text-white group"
-                >
-                  <div className="flex items-center gap-4">
-                    <div className="w-10 h-10 rounded-xl bg-blue-500/20 flex items-center justify-center text-blue-400">
-                      <CreditCard size={20} />
+                  <Button 
+                    variant="outline" 
+                    disabled={!debugClient || !!activeTest}
+                    onClick={testOffGridBooking}
+                    className="h-16 justify-between px-6 rounded-2xl border-indigo-500/30 bg-indigo-500/5 hover:bg-indigo-500/10 text-white group"
+                  >
+                    <div className="flex items-center gap-4">
+                      <div className="w-10 h-10 rounded-xl bg-indigo-500/20 flex items-center justify-center text-indigo-400">
+                        <Clock size={20} />
+                      </div>
+                      <div className="text-left">
+                        <p className="font-bold text-sm">Test: Off-Grid Booking</p>
+                        <p className="text-[10px] text-slate-500">Forces a booking at 11:07 AM (Tomorrow)</p>
+                      </div>
                     </div>
-                    <div className="text-left">
-                      <p className="font-bold text-sm">3. Test Stripe Sync</p>
-                      <p className="text-[10px] text-slate-500">Invokes stripe-manager</p>
-                    </div>
-                  </div>
-                  {activeTest === 'stripe' ? <Loader2 className="animate-spin" /> : <ArrowRight size={18} className="opacity-0 group-hover:opacity-100 transition-all" />}
-                </Button>
+                    {activeTest === 'offgrid' ? <Loader2 className="animate-spin" /> : <Zap size={18} className="opacity-0 group-hover:opacity-100 transition-all" />}
+                  </Button>
+                </div>
+              </div>
 
-                <Button 
-                  variant="outline" 
-                  disabled={!debugClient || !!activeTest}
-                  onClick={testEmailOnboarding}
-                  className="h-16 justify-between px-6 rounded-2xl border-white/10 bg-white/5 hover:bg-white/10 text-white group"
-                >
-                  <div className="flex items-center gap-4">
-                    <div className="w-10 h-10 rounded-xl bg-rose-500/20 flex items-center justify-center text-rose-400">
-                      <Mail size={20} />
-                    </div>
-                    <div className="text-left">
-                      <p className="font-bold text-sm">4. Test Onboarding Email</p>
-                      <p className="text-[10px] text-slate-500">Invokes send-manual-onboarding</p>
-                    </div>
-                  </div>
-                  {activeTest === 'email' ? <Loader2 className="animate-spin" /> : <ArrowRight size={18} className="opacity-0 group-hover:opacity-100 transition-all" />}
-                </Button>
+              <div className="space-y-4 pt-4 border-t border-white/5">
+                <Label className="text-[10px] font-black uppercase tracking-widest text-slate-500">Other Triggers</Label>
+                <div className="grid grid-cols-2 gap-3">
+                  <Button 
+                    variant="outline" 
+                    size="sm"
+                    disabled={!debugClient || !!activeTest}
+                    onClick={testKitSync}
+                    className="h-12 rounded-xl border-white/10 bg-white/5 text-white text-[10px] font-bold uppercase"
+                  >
+                    {activeTest === 'kit' ? <Loader2 className="animate-spin mr-2" /> : <Globe size={14} className="mr-2" />}
+                    Kit Sync
+                  </Button>
+                  <Button 
+                    variant="outline" 
+                    size="sm"
+                    disabled={!debugClient || !!activeTest}
+                    onClick={testEmailOnboarding}
+                    className="h-12 rounded-xl border-white/10 bg-white/5 text-white text-[10px] font-bold uppercase"
+                  >
+                    {activeTest === 'email' ? <Loader2 className="animate-spin mr-2" /> : <Mail size={14} className="mr-2" />}
+                    Email Test
+                  </Button>
+                </div>
               </div>
             </div>
           </div>

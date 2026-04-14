@@ -24,6 +24,24 @@ const FALLBACK_TARGET_SUGGESTIONS = [
   "The Empowered Self"
 ];
 
+const FALLBACK_LIMITING_BELIEFS = [
+  "I am not good enough",
+  "I am a failure",
+  "I am unlovable",
+  "I am a burden",
+  "I am powerless",
+  "I am invisible"
+];
+
+const FALLBACK_POSITIVE_BELIEFS = [
+  "I am capable and worthy",
+  "I am enough exactly as I am",
+  "I am safe and supported",
+  "I am powerful and creative",
+  "I am seen and valued",
+  "I am resilient and strong"
+];
+
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
     return new Response('ok', { headers: corsHeaders })
@@ -39,10 +57,20 @@ serve(async (req) => {
     }
 
     let prompt = "";
+    let fallback = FALLBACK_PROBLEM_SUGGESTIONS;
+
     if (type === 'target') {
       prompt = `Suggest 3-4 "Target Identities" for the goal: ${goal || problem}. Return ONLY a JSON array of strings.`;
+      fallback = FALLBACK_TARGET_SUGGESTIONS;
+    } else if (type === 'limiting_belief') {
+      prompt = `Suggest 3-4 "Limiting Beliefs" (starting with "I am...") based on: Problem: ${problem}, Sense: ${feltSense}. Return ONLY a JSON array of strings.`;
+      fallback = FALLBACK_LIMITING_BELIEFS;
+    } else if (type === 'positive_belief') {
+      prompt = `Suggest 3-4 "Positive Beliefs" (starting with "I am...") that would counter this problem: ${problem}. Return ONLY a JSON array of strings.`;
+      fallback = FALLBACK_POSITIVE_BELIEFS;
     } else {
       prompt = `Suggest 3-4 "Problem Identities" for: Problem: ${problem}, Emotion: ${emotion}, Sense: ${feltSense}. Return ONLY a JSON array of strings.`;
+      fallback = FALLBACK_PROBLEM_SUGGESTIONS;
     }
 
     const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${geminiKey}`, {
@@ -56,11 +84,10 @@ serve(async (req) => {
 
     const data = await response.json()
     
-    // Handle Quota Exceeded (429) or other API errors
     if (!response.ok) {
       console.warn("[generate-identity] API Error or Quota Exceeded. Using fallbacks.", data.error?.message);
       return new Response(JSON.stringify({ 
-        suggestions: type === 'target' ? FALLBACK_TARGET_SUGGESTIONS : FALLBACK_PROBLEM_SUGGESTIONS,
+        suggestions: fallback,
         isFallback: true 
       }), {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
@@ -73,19 +100,18 @@ serve(async (req) => {
       const jsonMatch = content.match(/\[.*\]/s);
       suggestions = JSON.parse(jsonMatch ? jsonMatch[0] : content);
     } catch (e) {
-      suggestions = type === 'target' ? FALLBACK_TARGET_SUGGESTIONS : FALLBACK_PROBLEM_SUGGESTIONS;
+      suggestions = fallback;
     }
 
     return new Response(JSON.stringify({ suggestions, isFallback: false }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     })
   } catch (error) {
-    // Final safety fallback
     return new Response(JSON.stringify({ 
       suggestions: FALLBACK_PROBLEM_SUGGESTIONS,
       error: error.message 
     }), {
-      status: 200, // Return 200 so the UI doesn't crash
+      status: 200,
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     })
   }

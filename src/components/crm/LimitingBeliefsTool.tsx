@@ -67,6 +67,10 @@ const LimitingBeliefsTool = () => {
   const [showHistory, setShowHistory] = useState(false);
   const [viewingReportId, setViewingReportId] = useState<string | null>(null);
   const [isSaving, setIsSaving] = useState(false);
+  const [isGeneratingLimiting, setIsGeneratingLimiting] = useState(false);
+  const [isGeneratingPositive, setIsGeneratingPositive] = useState(false);
+  const [limitingSuggestions, setLimitingSuggestions] = useState<string[]>([]);
+  const [positiveSuggestions, setPositiveSuggestions] = useState<string[]>([]);
 
   const progress = (step / 5) * 100;
 
@@ -185,6 +189,38 @@ const LimitingBeliefsTool = () => {
     }
   };
 
+  const handleGenerateBelief = async (type: 'limiting_belief' | 'positive_belief') => {
+    if (!formData.problem) {
+      toast.error("Please describe the problem first.");
+      return;
+    }
+    
+    if (type === 'limiting_belief') setIsGeneratingLimiting(true);
+    else setIsGeneratingPositive(true);
+
+    try {
+      const { data, error } = await supabase.functions.invoke('generate-identity', {
+        body: {
+          problem: formData.problem,
+          feltSense: formData.feltSense,
+          type: type
+        },
+      });
+
+      if (error) throw error;
+      if (data?.suggestions) {
+        if (type === 'limiting_belief') setLimitingSuggestions(data.suggestions);
+        else setPositiveSuggestions(data.suggestions);
+      }
+    } catch (error) {
+      console.error("Error generating belief:", error);
+      toast.error("Failed to generate suggestions.");
+    } finally {
+      if (type === 'limiting_belief') setIsGeneratingLimiting(false);
+      else setIsGeneratingPositive(false);
+    }
+  };
+
   const handleNext = () => {
     if (step < 5) {
       const nextStep = (step + 1) as Step;
@@ -280,27 +316,91 @@ const LimitingBeliefsTool = () => {
     <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
       <div className="space-y-4">
         <div className="space-y-2">
-          <Label htmlFor="limitingBelief">What is the Limiting Belief? (I am...)</Label>
-          <Input 
-            id="limitingBelief" 
-            placeholder="e.g. I am not good enough" 
+          <div className="flex items-center justify-between">
+            <Label htmlFor="limitingBelief">What is the Limiting Belief? (I am...)</Label>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => handleGenerateBelief('limiting_belief')}
+              disabled={isGeneratingLimiting || !formData.problem}
+              className="h-8 px-2 text-primary hover:text-primary/80 hover:bg-primary/10 gap-1.5"
+            >
+              {isGeneratingLimiting ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Sparkles className="h-3.5 w-3.5" />}
+              <span className="text-xs font-bold">Magic Suggest</span>
+            </Button>
+          </div>
+          <Input
+            id="limitingBelief"
+            placeholder="e.g. I am not good enough"
             value={formData.limitingBelief}
             onChange={(e) => setFormData({ ...formData, limitingBelief: e.target.value })}
             onKeyDown={handleKeyDown}
             className="rounded-xl"
           />
+          <AnimatePresence>
+            {limitingSuggestions.length > 0 && (
+              <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }} className="flex flex-wrap gap-2 mt-2">
+                {limitingSuggestions.map((suggestion, index) => (
+                  <motion.button
+                    key={index}
+                    whileHover={{ scale: 1.05 }}
+                    whileTap={{ scale: 0.95 }}
+                    onClick={() => {
+                      const clean = suggestion.replace(/^I am\s+/i, '');
+                      setFormData({ ...formData, limitingBelief: clean });
+                    }}
+                    className="text-[10px] font-bold px-3 py-1.5 bg-rose-50 text-rose-600 rounded-full border border-rose-100 hover:bg-rose-100 transition-colors"
+                  >
+                    {suggestion}
+                  </motion.button>
+                ))}
+              </motion.div>
+            )}
+          </AnimatePresence>
           <p className="text-[10px] text-muted-foreground italic">Identify the identity statement that explains the felt sense.</p>
         </div>
         <div className="space-y-2">
-          <Label htmlFor="positiveBelief">What is the desired Positive Belief? (I am...)</Label>
-          <Input 
-            id="positiveBelief" 
-            placeholder="e.g. I am capable and worthy" 
+          <div className="flex items-center justify-between">
+            <Label htmlFor="positiveBelief">What is the desired Positive Belief? (I am...)</Label>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => handleGenerateBelief('positive_belief')}
+              disabled={isGeneratingPositive || !formData.problem}
+              className="h-8 px-2 text-primary hover:text-primary/80 hover:bg-primary/10 gap-1.5"
+            >
+              {isGeneratingPositive ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Sparkles className="h-3.5 w-3.5" />}
+              <span className="text-xs font-bold">Magic Suggest</span>
+            </Button>
+          </div>
+          <Input
+            id="positiveBelief"
+            placeholder="e.g. I am capable and worthy"
             value={formData.positiveBelief}
             onChange={(e) => setFormData({ ...formData, positiveBelief: e.target.value })}
             onKeyDown={handleKeyDown}
             className="rounded-xl"
           />
+          <AnimatePresence>
+            {positiveSuggestions.length > 0 && (
+              <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }} className="flex flex-wrap gap-2 mt-2">
+                {positiveSuggestions.map((suggestion, index) => (
+                  <motion.button
+                    key={index}
+                    whileHover={{ scale: 1.05 }}
+                    whileTap={{ scale: 0.95 }}
+                    onClick={() => {
+                      const clean = suggestion.replace(/^I am\s+/i, '');
+                      setFormData({ ...formData, positiveBelief: clean });
+                    }}
+                    className="text-[10px] font-bold px-3 py-1.5 bg-emerald-50 text-emerald-600 rounded-full border border-emerald-100 hover:bg-emerald-100 transition-colors"
+                  >
+                    {suggestion}
+                  </motion.button>
+                ))}
+              </motion.div>
+            )}
+          </AnimatePresence>
           <p className="text-[10px] text-muted-foreground italic">What would you rather believe about yourself in this situation?</p>
         </div>
       </div>

@@ -70,6 +70,8 @@ const IdentityAlignmentTool = () => {
   const [showHistory, setShowHistory] = useState(false);
   const [viewingReportId, setViewingReportId] = useState<string | null>(null);
   const [isSaving, setIsSaving] = useState(false);
+  const [isGenerating, setIsGenerating] = useState(false);
+  const [suggestions, setSuggestions] = useState<string[]>([]);
 
   const progress = (phase / 4) * 100;
 
@@ -90,6 +92,30 @@ const IdentityAlignmentTool = () => {
       console.error("Error fetching sessions:", error);
     } else {
       setPastSessions(data || []);
+    }
+  };
+
+  const handleGenerateTargetIdentity = async () => {
+    if (!formData.goal) return;
+    
+    setIsGenerating(true);
+    try {
+      const { data, error } = await supabase.functions.invoke('generate-identity', {
+        body: {
+          goal: formData.goal,
+          type: 'target'
+        },
+      });
+
+      if (error) throw error;
+      if (data?.suggestions) {
+        setSuggestions(data.suggestions);
+      }
+    } catch (error) {
+      console.error("Error generating identity:", error);
+      toast.error("Failed to generate identity suggestions.");
+    } finally {
+      setIsGenerating(false);
     }
   };
 
@@ -163,6 +189,7 @@ const IdentityAlignmentTool = () => {
     });
     setCurrentResistance('');
     setCurrentMetabolized('');
+    setSuggestions([]);
   };
 
   const renderPhase1 = () => (
@@ -186,7 +213,23 @@ const IdentityAlignmentTool = () => {
           />
         </div>
         <div className="space-y-2">
-          <Label htmlFor="targetIdentity">What is the Target Identity that naturally achieves this goal?</Label>
+          <div className="flex items-center justify-between">
+            <Label htmlFor="targetIdentity">What is the Target Identity that naturally achieves this goal?</Label>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={handleGenerateTargetIdentity}
+              disabled={isGenerating || !formData.goal}
+              className="h-8 px-2 text-primary hover:text-primary/80 hover:bg-primary/10 gap-1.5"
+            >
+              {isGenerating ? (
+                <Loader2 className="h-3.5 w-3.5 animate-spin" />
+              ) : (
+                <Sparkles className="h-3.5 w-3.5" />
+              )}
+              <span className="text-xs font-bold">Magic Suggest</span>
+            </Button>
+          </div>
           <Input 
             id="targetIdentity" 
             placeholder="e.g. The Confident Practitioner, The Vital Leader" 
@@ -194,6 +237,33 @@ const IdentityAlignmentTool = () => {
             onChange={(e) => setFormData({ ...formData, targetIdentity: e.target.value })}
             className="rounded-xl"
           />
+
+          <AnimatePresence>
+            {suggestions.length > 0 && (
+              <motion.div
+                initial={{ opacity: 0, y: -10 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -10 }}
+                className="flex flex-wrap gap-2 mt-2"
+              >
+                {suggestions.map((suggestion, index) => (
+                  <motion.button
+                    key={index}
+                    whileHover={{ scale: 1.05 }}
+                    whileTap={{ scale: 0.95 }}
+                    onClick={() => {
+                      setFormData({ ...formData, targetIdentity: suggestion });
+                      toast.success(`Target Identity set to "${suggestion}"`, { duration: 2000 });
+                    }}
+                    className="text-[10px] font-bold px-3 py-1.5 bg-primary/10 text-primary rounded-full border border-primary/20 hover:bg-primary/20 transition-colors"
+                  >
+                    {suggestion}
+                  </motion.button>
+                ))}
+              </motion.div>
+            )}
+          </AnimatePresence>
+
           <p className="text-[10px] text-muted-foreground italic">Tip: This is the version of you for whom the goal is already a reality.</p>
         </div>
       </div>

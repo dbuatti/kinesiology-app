@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
 
 const corsHeaders = {
@@ -6,38 +7,46 @@ const corsHeaders = {
 }
 
 serve(async (req) => {
-  console.log("[generate-identity] Function invoked", { method: req.method });
-
   if (req.method === 'OPTIONS') {
     return new Response('ok', { headers: corsHeaders })
   }
 
   try {
     const body = await req.json();
-    const { problem, emotion, feltSense } = body;
-    console.log("[generate-identity] Request body:", { problem, emotion, feltSense });
+    const { problem, emotion, feltSense, goal, type = 'problem' } = body;
 
     const geminiKey = Deno.env.get('GEMINI_API_KEY')
     if (!geminiKey) {
-      console.error("[generate-identity] GEMINI_API_KEY is not set in environment variables");
       throw new Error('Missing GEMINI_API_KEY in Supabase Secrets');
     }
 
-    const prompt = `
-      You are an expert in the "Identity Shifting" framework. 
-      Based on the following user input, suggest 3-4 "Identities" (archetypes or personas) that the user might be inhabiting.
-      These should be concise, evocative labels (e.g., "The Perfectionist", "The Invisible One", "The Fixer", "The Martyr").
+    let prompt = "";
+    
+    if (type === 'target') {
+      prompt = `
+        You are an expert in the "Identity Shifting" and "Identity Alignment" frameworks. 
+        Based on the following user goal, suggest 3-4 "Target Identities" (empowered archetypes or personas) that would naturally and effortlessly achieve this goal.
+        These should be concise, evocative, and empowering labels (e.g., "The Vital Leader", "The Grounded Healer", "The Sovereign Creator", "The Intuitive Guide").
 
-      Problem: ${problem}
-      Emotion: ${emotion || 'Not specified'}
-      Physical Sensations (Felt Sense): ${feltSense || 'Not specified'}
+        Goal: ${goal || problem}
+        
+        Return ONLY a JSON array of strings. No other text.
+      `;
+    } else {
+      prompt = `
+        You are an expert in the "Identity Shifting" framework. 
+        Based on the following user input, suggest 3-4 "Problem Identities" (archetypes or personas) that the user might be inhabiting.
+        These should be concise, evocative labels (e.g., "The Perfectionist", "The Invisible One", "The Fixer", "The Martyr").
 
-      Return ONLY a JSON array of strings. No other text.
-    `;
+        Problem: ${problem}
+        Emotion: ${emotion || 'Not specified'}
+        Physical Sensations (Felt Sense): ${feltSense || 'Not specified'}
 
-    console.log("[generate-identity] Calling Gemini API...");
+        Return ONLY a JSON array of strings. No other text.
+      `;
+    }
 
-    const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${geminiKey}`, {
+    const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${geminiKey}`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -48,50 +57,28 @@ serve(async (req) => {
         }],
         generationConfig: {
           temperature: 0.7,
-          topK: 40,
-          topP: 0.95,
-          maxOutputTokens: 1024,
           responseMimeType: "application/json",
         }
       }),
     })
 
-    if (!response.ok) {
-      const errorData = await response.json();
-      console.error("[generate-identity] Gemini API error response:", errorData);
-      throw new Error(`Gemini API error: ${errorData.error?.message || response.statusText}`);
-    }
-
     const data = await response.json()
-    console.log("[generate-identity] Gemini API raw response:", JSON.stringify(data));
-
-    if (!data.candidates || !data.candidates[0] || !data.candidates[0].content || !data.candidates[0].content.parts[0]) {
-      console.error("[generate-identity] Unexpected Gemini API response structure:", data);
-      throw new Error('Unexpected response structure from Gemini API');
-    }
-
     const content = data.candidates[0].content.parts[0].text.trim()
-    console.log("[generate-identity] Gemini response content text:", content);
 
     let suggestions = []
     try {
       suggestions = JSON.parse(content)
     } catch (e) {
-      console.warn("[generate-identity] Failed to parse Gemini response as JSON, attempting fallback parsing", { content });
-      // Fallback: split by lines or commas if it's not valid JSON
       suggestions = content.replace(/[\[\]"]/g, '').split(',')
         .map(s => s.trim())
-        .filter(s => s.length > 0 && s.length < 50)
+        .filter(s => s.length > 0)
         .slice(0, 4)
     }
-
-    console.log("[generate-identity] Returning suggestions:", suggestions);
 
     return new Response(JSON.stringify({ suggestions }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     })
   } catch (error) {
-    console.error("[generate-identity] Caught error:", error.message)
     return new Response(JSON.stringify({ error: error.message }), {
       status: 500,
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },

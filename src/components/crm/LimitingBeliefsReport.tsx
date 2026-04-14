@@ -5,9 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { 
-  Brain, 
   Zap, 
-  Heart, 
   Activity, 
   ShieldAlert, 
   RotateCcw, 
@@ -15,8 +13,7 @@ import {
   ArrowLeft,
   Calendar,
   Quote,
-  CheckCircle2,
-  XCircle
+  CheckCircle2
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -131,28 +128,33 @@ const LimitingBeliefsReport = ({ session, onBack }: LimitingBeliefsReportProps) 
             <h3 className="text-xl font-black text-slate-900 px-2 flex items-center gap-3">
               <RotateCcw size={20} className="text-indigo-600" /> The Dissolving Loop
             </h3>
-            <div className="space-y-3">
+            <div className="space-y-6">
               {session.dissolve_log?.map((log: any, index: number) => (
-                <div key={index} className="flex gap-4 group">
-                  <div className="flex flex-col items-center">
-                    <div className={cn(
-                      "w-8 h-8 rounded-full border flex items-center justify-center text-[10px] font-black shrink-0",
-                      log.type === 'A' ? "bg-rose-50 border-rose-100 text-rose-600" : "bg-emerald-50 border-emerald-100 text-emerald-600"
+                <div key={index} className="space-y-3 p-6 bg-white rounded-[2rem] border border-slate-100 shadow-sm">
+                  <div className="flex items-center justify-between mb-4">
+                    <Badge className={cn(
+                      "font-black uppercase tracking-widest",
+                      log.type === 'A' ? "bg-rose-100 text-rose-700" : "bg-emerald-100 text-emerald-700"
                     )}>
-                      {log.type}
-                    </div>
-                    {index < session.dissolve_log.length - 1 && (
-                      <div className="w-0.5 flex-1 bg-slate-100 my-1" />
-                    )}
+                      Part {log.type}: {log.type === 'A' ? "Limiting" : "Positive"}
+                    </Badge>
+                    <span className="text-[10px] font-black text-slate-300 uppercase tracking-widest">Cycle {Math.floor(index / 2) + 1}</span>
                   </div>
-                  <div className="flex-1 pb-4">
-                    <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-1">
-                      {log.type === 'A' ? `I am ${session.limiting_belief}` : `I am ${session.positive_belief}`}
-                    </p>
-                    <div className="p-4 bg-white rounded-2xl border border-slate-100 shadow-sm group-hover:border-indigo-200 transition-colors">
-                      <p className="text-sm font-medium text-slate-700 leading-relaxed">
-                        {log.response}
-                      </p>
+                  
+                  <div className="space-y-4">
+                    <div>
+                      <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-1">Identity</p>
+                      <p className="text-sm font-bold text-slate-900 italic">"{log.identity}"</p>
+                    </div>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div>
+                        <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-1">First Notice</p>
+                        <p className="text-xs text-slate-600 leading-relaxed">{log.notice1}</p>
+                      </div>
+                      <div>
+                        <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-1">Second Notice</p>
+                        <p className="text-xs text-slate-600 leading-relaxed">{log.notice2}</p>
+                      </div>
                     </div>
                   </div>
                 </div>
@@ -197,7 +199,7 @@ const LimitingBeliefsReport = ({ session, onBack }: LimitingBeliefsReportProps) 
             <div className="space-y-1">
               <h4 className="text-sm font-black text-rose-400 uppercase tracking-widest">Clinical Reflection</h4>
               <p className="text-slate-300 text-sm font-medium leading-relaxed italic">
-                "Suffering is the result of the nervous system's inability to process a specific felt sense. By alternating between the limiting and positive identities, we create the flexibility needed for the shift to occur."
+                "The shift occurs when the client can distinguish between the 'me' (the observer) and the 'not-me' (the identity). By alternating between the limiting and positive identities, we create the flexibility needed for this realization."
               </p>
             </div>
           </div>

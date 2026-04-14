@@ -39,7 +39,7 @@
     --input: 214.3 31.8% 91.4%;
     --ring: 222 53% 25%;
 
-    --radius: 2rem; /* Standardized premium large radius */
+    --radius: 0.5rem; /* Reduced from 2rem to prevent text clipping in inputs */
   }
 
   .dark {

@@ -503,12 +503,12 @@ const LymphaticAssessment = ({
                   <ClipboardCheck size={14} className="mr-2" /> Auto-Populate Summary
                 </Button>
               </div>
-              <Textarea 
-                value={notes || ""} 
+              <Textarea
+                value={notes || ""}
                 onChange={(e) => setNotes(e.target.value)}
                 onBlur={() => onSaveField('lymphatic_notes', notes)}
                 placeholder="Document specific findings, tenderness levels, or client feedback..."
-                className="rounded-[2rem] border-border focus:ring-blue-500 min-h-[150px] p-8 text-base font-medium bg-muted/30 shadow-inner"
+                className="rounded-2xl border-border focus:ring-blue-500 min-h-[150px] p-8 text-base font-medium bg-muted/30 shadow-inner"
               />
             </div>
           </CardContent>

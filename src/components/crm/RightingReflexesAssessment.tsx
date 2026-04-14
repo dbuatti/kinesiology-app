@@ -137,7 +137,7 @@ const RightingReflexesAssessment = ({
             placeholder="e.g., Ocular reflex clear. Labyrinthine (eyes closed) showed significant lag on right tilt. Corrected via Right Knee MCL ligament stretch + GV16."
             value={notes}
             onChange={(e) => setNotes(e.target.value)}
-            className="min-h-[300px] rounded-[2rem] border-2 border-slate-100 p-6 text-base font-medium leading-relaxed resize-none"
+            className="min-h-[300px] rounded-2xl border-2 border-slate-100 p-6 text-base font-medium leading-relaxed resize-none"
           />
           <div className="flex gap-3">
             <Button 

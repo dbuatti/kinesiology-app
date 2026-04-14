@@ -280,8 +280,8 @@ const InteractiveIntentionWorksheet = () => {
                   <label className="text-lg font-black text-slate-900">{question.label}</label>
                   <p className="text-sm text-slate-500 font-medium">{question.sub}</p>
                 </div>
-                <Textarea 
-                  className="min-h-[150px] rounded-[2rem] border-2 border-slate-100 focus:border-indigo-500 bg-white p-8 text-lg font-medium leading-relaxed shadow-inner resize-none transition-all"
+                <Textarea
+                  className="min-h-[150px] rounded-2xl border-2 border-slate-100 focus:border-indigo-500 bg-white p-8 text-lg font-medium leading-relaxed shadow-inner resize-none transition-all"
                   placeholder="Write freely here..."
                   value={formData[question.id] || ""}
                   onChange={(e) => handleInputChange(question.id, e.target.value)}

@@ -120,11 +120,11 @@ const CogsAssessment = ({
             </button>
           ))}
         </div>
-        <Textarea 
-          value={notes} 
-          onChange={(e) => setNotes(e.target.value)} 
-          placeholder="Notes..." 
-          className="min-h-[60px] rounded-xl border-none bg-card/80 focus:ring-1 focus:ring-indigo-500 font-medium text-[11px] p-2"
+        <Textarea
+          value={notes}
+          onChange={(e) => setNotes(e.target.value)}
+          placeholder="Notes..."
+          className="min-h-[60px] rounded-lg border-none bg-card/80 focus:ring-1 focus:ring-indigo-500 font-medium text-[11px] p-2"
         />
       </div>
     </div>

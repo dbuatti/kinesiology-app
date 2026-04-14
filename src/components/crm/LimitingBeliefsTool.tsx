@@ -40,7 +40,12 @@ interface FormData {
   feltSense: string;
   limitingBelief: string;
   positiveBelief: string;
-  dissolveLog: { type: 'A' | 'B', response: string }[];
+  dissolveLog: { 
+    type: 'A' | 'B', 
+    identity: string,
+    notice1: string, 
+    notice2: string 
+  }[];
   checkBeliefResult: boolean | null;
   checkProblemResult: boolean | null;
   integrationAwareness: string;
@@ -62,7 +67,11 @@ const LimitingBeliefsTool = () => {
   });
 
   const [currentLoopType, setCurrentLoopType] = useState<'A' | 'B'>('A');
-  const [currentLoopResponse, setCurrentLoopResponse] = useState('');
+  const [loopSubStep, setLoopSubStep] = useState<1 | 2 | 3>(1);
+  const [currentIdentity, setCurrentIdentity] = useState('');
+  const [currentNotice1, setCurrentNotice1] = useState('');
+  const [currentNotice2, setCurrentNotice2] = useState('');
+  
   const [pastSessions, setPastSessions] = useState<any[]>([]);
   const [showHistory, setShowHistory] = useState(false);
   const [viewingReportId, setViewingReportId] = useState<string | null>(null);
@@ -252,17 +261,38 @@ const LimitingBeliefsTool = () => {
       integrationAction: '',
     });
     setCurrentLoopType('A');
-    setCurrentLoopResponse('');
+    setLoopSubStep(1);
+    setCurrentIdentity('');
+    setCurrentNotice1('');
+    setCurrentNotice2('');
   };
 
   const handleLoopNext = () => {
-    if (currentLoopResponse.trim() === '') return;
-    
-    const newLog = [...formData.dissolveLog, { type: currentLoopType, response: currentLoopResponse }];
-    setFormData({ ...formData, dissolveLog: newLog });
-    
-    setCurrentLoopResponse('');
-    setCurrentLoopType(currentLoopType === 'A' ? 'B' : 'A');
+    if (loopSubStep === 1) {
+      if (!currentIdentity.trim()) return;
+      setLoopSubStep(2);
+    } else if (loopSubStep === 2) {
+      if (!currentNotice1.trim()) return;
+      setLoopSubStep(3);
+    } else if (loopSubStep === 3) {
+      if (!currentNotice2.trim()) return;
+      
+      const newLog = [...formData.dissolveLog, { 
+        type: currentLoopType, 
+        identity: currentIdentity,
+        notice1: currentNotice1,
+        notice2: currentNotice2
+      }];
+      
+      setFormData({ ...formData, dissolveLog: newLog });
+      
+      // Reset for next part
+      setCurrentIdentity('');
+      setCurrentNotice1('');
+      setCurrentNotice2('');
+      setLoopSubStep(1);
+      setCurrentLoopType(currentLoopType === 'A' ? 'B' : 'A');
+    }
   };
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
@@ -273,7 +303,7 @@ const LimitingBeliefsTool = () => {
       } else if (step === 2 && formData.limitingBelief && formData.positiveBelief) {
         e.preventDefault();
         handleNext();
-      } else if (step === 3 && currentLoopResponse.trim()) {
+      } else if (step === 3) {
         e.preventDefault();
         handleLoopNext();
       }
@@ -284,10 +314,10 @@ const LimitingBeliefsTool = () => {
     <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
       <div className="space-y-4">
         <div className="space-y-2">
-          <Label htmlFor="problem">What is the problem or challenge you're facing?</Label>
+          <Label htmlFor="problem">1. Clearly define the Problem</Label>
           <Textarea 
             id="problem" 
-            placeholder="Describe the situation..." 
+            placeholder="Describe the situation in a few words..." 
             value={formData.problem}
             onChange={(e) => setFormData({ ...formData, problem: e.target.value })}
             onKeyDown={handleKeyDown}
@@ -296,7 +326,7 @@ const LimitingBeliefsTool = () => {
         </div>
         <div className="space-y-2">
           <div className="flex items-center justify-between">
-            <Label htmlFor="feltSense">Where do you feel it in your body? (The Felt Sense)</Label>
+            <Label htmlFor="feltSense">2. Feel the problem of "{formData.problem || '...'}"</Label>
             <Button
               variant="ghost"
               size="sm"
@@ -317,9 +347,10 @@ const LimitingBeliefsTool = () => {
               )}
             </Button>
           </div>
-          <Input
-            id="feltSense"
-            placeholder="e.g. Tightness in chest, Pit in stomach"
+          <p className="text-xs text-muted-foreground mb-2 italic">"What do you believe about yourself that’s causing you to experience this problem?"</p>
+          <Input 
+            id="feltSense" 
+            placeholder="Where do you feel it in your body? (The Felt Sense)" 
             value={formData.feltSense}
             onChange={(e) => setFormData({ ...formData, feltSense: e.target.value })}
             onKeyDown={handleKeyDown}
@@ -363,7 +394,7 @@ const LimitingBeliefsTool = () => {
       <div className="space-y-4">
         <div className="space-y-2">
           <div className="flex items-center justify-between">
-            <Label htmlFor="limitingBelief">What is the Limiting Belief? (I am...)</Label>
+            <Label htmlFor="limitingBelief">Write the LIMITING Belief down</Label>
             <Button
               variant="ghost"
               size="sm"
@@ -415,11 +446,10 @@ const LimitingBeliefsTool = () => {
               </motion.div>
             )}
           </AnimatePresence>
-          <p className="text-[10px] text-muted-foreground italic">Identify the identity statement that explains the felt sense.</p>
         </div>
         <div className="space-y-2">
           <div className="flex items-center justify-between">
-            <Label htmlFor="positiveBelief">What is the desired Positive Belief? (I am...)</Label>
+            <Label htmlFor="positiveBelief">Write the POSITIVE Belief down</Label>
             <Button
               variant="ghost"
               size="sm"
@@ -440,6 +470,7 @@ const LimitingBeliefsTool = () => {
               )}
             </Button>
           </div>
+          <p className="text-xs text-muted-foreground mb-2 italic">“What opposite belief about yourself would you rather have?”</p>
           <Input
             id="positiveBelief"
             placeholder="e.g. I am capable and worthy"
@@ -471,7 +502,6 @@ const LimitingBeliefsTool = () => {
               </motion.div>
             )}
           </AnimatePresence>
-          <p className="text-[10px] text-muted-foreground italic">What would you rather believe about yourself in this situation?</p>
         </div>
       </div>
       <div className="flex gap-3">
@@ -488,6 +518,28 @@ const LimitingBeliefsTool = () => {
   const renderStep3 = () => {
     const currentBelief = currentLoopType === 'A' ? formData.limitingBelief : formData.positiveBelief;
     const colorClass = currentLoopType === 'A' ? "text-rose-600 bg-rose-50 border-rose-100" : "text-emerald-600 bg-emerald-50 border-emerald-100";
+    
+    let question = "";
+    let value = "";
+    let onChange = (val: string) => {};
+    let placeholder = "";
+
+    if (loopSubStep === 1) {
+      question = `What kind of person believes "I am ${currentBelief}"?`;
+      value = currentIdentity;
+      onChange = setCurrentIdentity;
+      placeholder = "Define the identity...";
+    } else if (loopSubStep === 2) {
+      question = `Feel yourself being "${currentIdentity}" and tell me the first thing that you notice about it.`;
+      value = currentNotice1;
+      onChange = setCurrentNotice1;
+      placeholder = "What do you notice first?";
+    } else if (loopSubStep === 3) {
+      question = `Now feel that... what do you notice about it now?`;
+      value = currentNotice2;
+      onChange = setCurrentNotice2;
+      placeholder = "What do you notice now?";
+    }
 
     return (
       <div className="space-y-8 animate-in fade-in zoom-in-95 duration-500">
@@ -496,7 +548,9 @@ const LimitingBeliefsTool = () => {
             <RefreshCw className="animate-spin-slow" size={24} />
           </div>
           <h3 className="text-xl font-serif font-bold">Step 3: Dissolving Loop</h3>
-          <p className="text-sm text-muted-foreground max-w-md mx-auto">Alternate between the beliefs until you feel a shift in identity.</p>
+          <p className="text-sm text-muted-foreground max-w-md mx-auto">
+            Alternate between A and B until the shift occurs.
+          </p>
         </div>
 
         <Card className={cn("border-2 shadow-xl rounded-3xl overflow-hidden transition-colors duration-500", currentLoopType === 'A' ? "border-rose-200" : "border-emerald-200")}>
@@ -505,25 +559,22 @@ const LimitingBeliefsTool = () => {
               <span className={cn("text-[10px] font-black uppercase tracking-widest", currentLoopType === 'A' ? "text-rose-500" : "text-emerald-500")}>
                 Part {currentLoopType}: {currentLoopType === 'A' ? "Limiting" : "Positive"}
               </span>
-              <Badge variant="outline" className={cn("font-bold", colorClass)}>
-                {formData.dissolveLog.length} cycles completed
-              </Badge>
+              <div className="flex gap-1">
+                {[1, 2, 3].map((i) => (
+                  <div key={i} className={cn("w-2 h-2 rounded-full", i <= loopSubStep ? (currentLoopType === 'A' ? "bg-rose-500" : "bg-emerald-500") : "bg-slate-200")} />
+                ))}
+              </div>
             </div>
-            <CardTitle className="text-2xl font-serif pt-4">
-              "I am {currentBelief}"
+            <CardTitle className="text-2xl font-serif pt-4 leading-tight">
+              {question}
             </CardTitle>
-            <CardDescription>
-              {currentLoopType === 'A' 
-                ? "Notice how this feels in your body. What comes up?" 
-                : "Now step into this truth. What do you notice now?"}
-            </CardDescription>
           </CardHeader>
           <CardContent className="p-8">
             <Textarea 
               autoFocus
-              placeholder="Describe what you notice..." 
-              value={currentLoopResponse}
-              onChange={(e) => setCurrentLoopResponse(e.target.value)}
+              placeholder={placeholder} 
+              value={value}
+              onChange={(e) => onChange(e.target.value)}
               onKeyDown={handleKeyDown}
               className="min-h-[120px] text-lg border-none focus-visible:ring-0 p-0 resize-none placeholder:text-muted-foreground/30"
             />
@@ -533,30 +584,24 @@ const LimitingBeliefsTool = () => {
               <ArrowLeft className="mr-2" size={16} /> Back
             </Button>
             <div className="flex gap-2">
-              <Button onClick={handleLoopNext} disabled={!currentLoopResponse.trim()} className={cn("text-white rounded-xl px-8", currentLoopType === 'A' ? "bg-rose-600 hover:bg-rose-700" : "bg-emerald-600 hover:bg-emerald-700")}>
-                Next Part <ArrowRight className="ml-2" size={16} />
+              <Button onClick={handleLoopNext} disabled={!value.trim()} className={cn("text-white rounded-xl px-8", currentLoopType === 'A' ? "bg-rose-600 hover:bg-rose-700" : "bg-emerald-600 hover:bg-emerald-700")}>
+                {loopSubStep === 3 ? "Complete Part" : "Next Instruction"} <ArrowRight className="ml-2" size={16} />
               </Button>
-              {formData.dissolveLog.length >= 2 && (
+              {formData.dissolveLog.length >= 2 && loopSubStep === 1 && (
                 <Button onClick={handleNext} variant="outline" className="rounded-xl border-primary text-primary font-bold">
-                  I feel a shift
+                  Shift Occurred
                 </Button>
               )}
             </div>
           </CardFooter>
         </Card>
 
-        {formData.dissolveLog.length > 0 && (
-          <div className="space-y-2">
-            <p className="text-[10px] font-black text-muted-foreground uppercase tracking-widest text-center">Recent Log</p>
-            <div className="flex flex-wrap justify-center gap-2">
-              {formData.dissolveLog.slice(-4).map((log, i) => (
-                <Badge key={i} variant="secondary" className={cn("text-[10px]", log.type === 'A' ? "bg-rose-100 text-rose-700" : "bg-emerald-100 text-emerald-700")}>
-                  {log.type}: {log.response.substring(0, 20)}...
-                </Badge>
-              ))}
-            </div>
-          </div>
-        )}
+        <div className="bg-slate-50 rounded-2xl p-4 border border-slate-100">
+          <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2 text-center">Shift Criteria</p>
+          <p className="text-xs text-center text-slate-500 italic">
+            "Alternate until the client says ‘me’ in response to instruction B and ‘not-me’ or ‘I don’t know’ in response to instruction A"
+          </p>
+        </div>
       </div>
     );
   };
@@ -567,13 +612,13 @@ const LimitingBeliefsTool = () => {
         <div className="inline-flex items-center justify-center w-16 h-16 bg-indigo-100 dark:bg-indigo-900/30 rounded-full text-indigo-600 mb-2">
           <ShieldAlert size={32} />
         </div>
-        <h3 className="text-2xl font-serif font-bold">Step 4: Verification</h3>
-        <p className="text-muted-foreground">Let's check the results of the shift.</p>
+        <h3 className="text-2xl font-serif font-bold">Step 4: Check Belief and Problem</h3>
+        <p className="text-muted-foreground">Let's verify the results of the shift.</p>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-2xl mx-auto">
         <Card className="p-6 space-y-4 border-2 hover:border-primary/30 transition-colors">
-          <p className="text-sm font-bold">Does the Limiting Belief still feel true?</p>
+          <p className="text-sm font-bold">“Do you still believe (LIMITING BELIEF)?”</p>
           <p className="text-xs italic text-muted-foreground">"I am {formData.limitingBelief}"</p>
           <div className="flex gap-2 justify-center">
             <Button 
@@ -581,20 +626,20 @@ const LimitingBeliefsTool = () => {
               onClick={() => setFormData({ ...formData, checkBeliefResult: false })}
               className="flex-1 rounded-xl"
             >
-              No / Shifted
+              No
             </Button>
             <Button 
               variant={formData.checkBeliefResult === true ? "destructive" : "outline"} 
               onClick={() => setFormData({ ...formData, checkBeliefResult: true })}
               className="flex-1 rounded-xl"
             >
-              Yes / Still Solid
+              Yes
             </Button>
           </div>
         </Card>
 
         <Card className="p-6 space-y-4 border-2 hover:border-primary/30 transition-colors">
-          <p className="text-sm font-bold">Does the original problem still feel the same?</p>
+          <p className="text-sm font-bold">“Feel the initial problem of (PROBLEM)...does it still feel like a problem?”</p>
           <p className="text-xs italic text-muted-foreground">"{formData.problem}"</p>
           <div className="flex gap-2 justify-center">
             <Button 
@@ -602,14 +647,14 @@ const LimitingBeliefsTool = () => {
               onClick={() => setFormData({ ...formData, checkProblemResult: false })}
               className="flex-1 rounded-xl"
             >
-              No / Different
+              No
             </Button>
             <Button 
               variant={formData.checkProblemResult === true ? "destructive" : "outline"} 
               onClick={() => setFormData({ ...formData, checkProblemResult: true })}
               className="flex-1 rounded-xl"
             >
-              Yes / Same
+              Yes
             </Button>
           </div>
         </Card>
@@ -617,14 +662,14 @@ const LimitingBeliefsTool = () => {
 
       <div className="flex flex-col sm:flex-row gap-4 justify-center pt-4">
         <Button variant="outline" onClick={() => setStep(3)} className="rounded-xl h-12 px-8">
-          <RotateCcw className="mr-2" size={18} /> Need more dissolving
+          <RotateCcw className="mr-2" size={18} /> Repeat Step 3
         </Button>
         <Button 
           onClick={handleNext} 
           disabled={formData.checkBeliefResult === null || formData.checkProblemResult === null}
           className="bg-primary text-white rounded-xl h-12 px-8"
         >
-          Continue to Integration <ArrowRight className="ml-2" size={18} />
+          {formData.checkProblemResult === true ? "Start New Process" : "Continue to Integration"} <ArrowRight className="ml-2" size={18} />
         </Button>
       </div>
     </div>

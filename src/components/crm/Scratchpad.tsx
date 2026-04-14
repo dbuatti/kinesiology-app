@@ -52,11 +52,11 @@ const Scratchpad = () => {
           ))}
         </div>
         <div className="relative group">
-          <Textarea 
+          <Textarea
             value={scratchpad}
             onChange={(e) => handleScratchpadChange(e.target.value)}
             placeholder="Type something here..."
-            className="min-h-[250px] md:min-h-[300px] bg-white dark:bg-slate-900/50 border-secondary/30 focus:ring-amber-500 focus:border-amber-500 resize-none text-foreground placeholder:text-slate-300 dark:placeholder:text-slate-800 rounded-[2.5rem] p-8 md:p-12 text-xl md:text-2xl font-medium leading-relaxed shadow-xl transition-all"
+            className="min-h-[250px] md:min-h-[300px] bg-white dark:bg-slate-900/50 border-secondary/30 focus:ring-amber-500 focus:border-amber-500 resize-none text-foreground placeholder:text-slate-300 dark:placeholder:text-slate-800 rounded-3xl p-8 md:p-12 text-xl md:text-2xl font-medium leading-relaxed shadow-xl transition-all"
           />
           <div className="absolute bottom-6 right-8 md:bottom-10 md:right-12 flex items-center gap-2 text-[10px] font-black text-amber-600 uppercase tracking-[0.3em] opacity-0 group-hover:opacity-100 transition-opacity">
             <CheckCircle2 size={14} /> {lastSaved ? `Last saved at ${lastSaved}` : 'Auto-saved'}

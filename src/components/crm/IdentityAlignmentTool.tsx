@@ -326,11 +326,11 @@ const IdentityAlignmentTool = () => {
       </div>
       <div className="space-y-4">
         <div className="space-y-2">
-          <Label htmlFor="somatic">What are the physical sensations of this Target Identity?</Label>
+          <Label htmlFor="somatic">What are the physical sensations of "{formData.targetIdentity}"?</Label>
           <Textarea id="somatic" placeholder="e.g. Expansion in chest, grounded feet..." value={formData.somaticSensations} onChange={(e) => setFormData({ ...formData, somaticSensations: e.target.value })} onKeyDown={handleKeyDown} className="min-h-[100px] rounded-xl" />
         </div>
         <div className="space-y-2">
-          <Label htmlFor="emotions">What are the core emotional states?</Label>
+          <Label htmlFor="emotions">What are the core emotional states of "{formData.targetIdentity}"?</Label>
           <Input id="emotions" placeholder="e.g. Peace, Certainty, Joy" value={formData.emotionalStates} onChange={(e) => setFormData({ ...formData, emotionalStates: e.target.value })} onKeyDown={handleKeyDown} className="rounded-xl" />
         </div>
       </div>
@@ -508,7 +508,7 @@ const IdentityAlignmentTool = () => {
                     </div>
                     <div className="flex items-center gap-2">
                       <Button variant="ghost" size="icon" className="h-8 w-8 rounded-xl text-slate-300 hover:text-rose-600 opacity-0 group-hover:opacity-100 transition-all" onClick={(e) => deleteSession(e, session.id)}><Trash2 size={16} /></Button>
-                      <div className="w-8 h-8 rounded-xl bg-slate-50 flex items-center justify-center text-slate-400 group-hover:bg-emerald-600 group-hover:text-white transition-all"><ArrowRight size={18} /></div>
+                      <div className="w-8 h-8 rounded-xl bg-slate-50 flex items-center justify-center text-slate-400 group-hover:bg-indigo-600 group-hover:text-white transition-all"><ArrowRight size={18} /></div>
                     </div>
                   </CardContent>
                 </Card>

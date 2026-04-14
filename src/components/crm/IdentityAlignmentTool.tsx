@@ -6,6 +6,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Progress } from "@/components/ui/progress";
 import { Badge } from "@/components/ui/badge";
+import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import {
   ArrowRight,
   ArrowLeft,
@@ -25,7 +26,8 @@ import {
   Target,
   Anchor,
   Clock,
-  ShieldAlert
+  ShieldAlert,
+  XCircle
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { supabase } from "@/integrations/supabase/client";
@@ -33,13 +35,13 @@ import { toast } from "sonner";
 import { motion, AnimatePresence } from "framer-motion";
 import IdentityAlignmentReport from './IdentityAlignmentReport';
 
-type Phase = 1 | 2 | 3 | 4;
+type Phase = 1 | 2 | 3 | 4 | 5;
 
 interface ReconsolidationEntry {
-  block: string;           // Waypoint 1: Why would you not be [Identity]?
-  resistance: string;      // Waypoint 2: Feel [block]. What does that feel like?
-  alternative: string;     // Waypoint 3: What would it feel like to not have that problem?
-  replacement: string;     // Waypoint 4: Feel [alternative]. What does that feel like?
+  block: string;
+  resistance: string;
+  alternative: string;
+  replacement: string;
 }
 
 interface FormData {
@@ -49,9 +51,11 @@ interface FormData {
   physicalSensation: string;
   emotionalState: string;
   reconsolidationData: ReconsolidationEntry[];
-  presentCheck: string;
-  futureCheck: string;
-  scenarioStability: string;
+  presentCheck: boolean | null;
+  futureCheck: boolean | null;
+  scenarioStability: boolean | null;
+  maintenanceCapacity: boolean | null;
+  goalInevitable: boolean | null;
   finalAnchor: string;
 }
 
@@ -63,16 +67,16 @@ const IdentityAlignmentTool = () => {
     physicalSensation: '',
     emotionalState: '',
     reconsolidationData: [],
-    presentCheck: '',
-    futureCheck: '',
-    scenarioStability: '',
+    presentCheck: null,
+    futureCheck: null,
+    scenarioStability: null,
+    maintenanceCapacity: null,
+    goalInevitable: null,
     finalAnchor: '',
   });
 
-  // Phase 3 Sub-steps (Waypoints)
   const [loopStep, setLoopStep] = useState<1 | 2 | 3 | 4>(1);
   const [currentLoop, setCurrentLoop] = useState<Partial<ReconsolidationEntry>>({});
-
   const [pastSessions, setPastSessions] = useState<any[]>([]);
   const [showHistory, setShowHistory] = useState(false);
   const [viewingReportId, setViewingReportId] = useState<string | null>(null);
@@ -80,7 +84,7 @@ const IdentityAlignmentTool = () => {
   const [isGenerating, setIsGenerating] = useState(false);
   const [suggestions, setSuggestions] = useState<string[]>([]);
 
-  const progress = (phase / 4) * 100;
+  const progress = (phase / 5) * 100;
 
   useEffect(() => {
     fetchPastSessions();
@@ -104,20 +108,13 @@ const IdentityAlignmentTool = () => {
 
   const handleGenerateTargetIdentity = async () => {
     if (!formData.goal) return;
-    
     setIsGenerating(true);
     try {
       const { data, error } = await supabase.functions.invoke('generate-identity', {
-        body: {
-          goal: formData.goal,
-          type: 'target'
-        },
+        body: { goal: formData.goal, type: 'target' },
       });
-
       if (error) throw error;
-      if (data?.suggestions) {
-        setSuggestions(data.suggestions);
-      }
+      if (data?.suggestions) setSuggestions(data.suggestions);
     } catch (error) {
       console.error("Error generating identity:", error);
       toast.error("Failed to generate identity suggestions.");
@@ -128,10 +125,7 @@ const IdentityAlignmentTool = () => {
 
   const saveProgress = async (isComplete: boolean = false) => {
     const { data: { user } } = await supabase.auth.getUser();
-    if (!user) {
-      toast.error("You must be logged in to save progress.");
-      return;
-    }
+    if (!user) return;
 
     setIsSaving(true);
     try {
@@ -139,12 +133,14 @@ const IdentityAlignmentTool = () => {
         user_id: user.id,
         goal: formData.goal,
         target_identity: formData.targetIdentity,
-        somatic_sensations: formData.physicalSensation, // Mapping to existing DB column
-        emotional_states: formData.emotionalState,      // Mapping to existing DB column
+        somatic_sensations: formData.physicalSensation,
+        emotional_states: formData.emotionalState,
         reconsolidation_data: formData.reconsolidationData,
         present_check: formData.presentCheck,
         future_check: formData.futureCheck,
         scenario_stability: formData.scenarioStability,
+        maintenance_capacity: formData.maintenanceCapacity,
+        goal_inevitable: formData.goalInevitable,
         final_anchor: formData.finalAnchor,
         is_complete: isComplete,
         current_phase: phase
@@ -152,28 +148,17 @@ const IdentityAlignmentTool = () => {
 
       let error;
       if (formData.id) {
-        const { error: updateError } = await supabase
-          .from('identity_alignment_sessions')
-          .update(payload)
-          .eq('id', formData.id);
+        const { error: updateError } = await supabase.from('identity_alignment_sessions').update(payload).eq('id', formData.id);
         error = updateError;
       } else {
-        const { data, error: insertError } = await supabase
-          .from('identity_alignment_sessions')
-          .insert(payload)
-          .select()
-          .single();
+        const { data, error: insertError } = await supabase.from('identity_alignment_sessions').insert(payload).select().single();
         error = insertError;
         if (data) setFormData(prev => ({ ...prev, id: data.id }));
       }
 
       if (error) throw error;
-      
-      if (isComplete) {
-        toast.success("Alignment session completed!");
-      } else {
-        toast.success("Draft saved.");
-      }
+      if (isComplete) toast.success("Alignment session completed!");
+      else toast.success("Draft saved.");
       fetchPastSessions();
     } catch (error) {
       console.error("Error saving session:", error);
@@ -191,15 +176,16 @@ const IdentityAlignmentTool = () => {
       physicalSensation: session.somatic_sensations || '',
       emotionalState: session.emotional_states || '',
       reconsolidationData: session.reconsolidation_data || [],
-      presentCheck: session.present_check || '',
-      futureCheck: session.future_check || '',
-      scenarioStability: session.scenario_stability || '',
+      presentCheck: session.present_check,
+      futureCheck: session.future_check,
+      scenarioStability: session.scenario_stability,
+      maintenanceCapacity: session.maintenance_capacity,
+      goalInevitable: session.goal_inevitable,
       finalAnchor: session.final_anchor || '',
     });
     setPhase((session.current_phase || 1) as Phase);
     setShowHistory(false);
     setViewingReportId(null);
-    toast.info(session.is_complete ? "Viewing completed session." : "Resuming draft session.");
   };
 
   const deleteSession = async (e: React.MouseEvent, id: string) => {
@@ -217,12 +203,13 @@ const IdentityAlignmentTool = () => {
       if (formData.id === id) reset();
       fetchPastSessions();
     } catch (error) {
+      console.error("Error deleting session:", error);
       toast.error("Failed to delete session.");
     }
   };
 
   const handleNext = () => {
-    if (phase < 4) {
+    if (phase < 5) {
       const nextPhase = (phase + 1) as Phase;
       setPhase(nextPhase);
       saveProgress(false);
@@ -231,16 +218,6 @@ const IdentityAlignmentTool = () => {
 
   const handleBack = () => {
     if (phase > 1) setPhase((p) => (p - 1) as Phase);
-  };
-
-  const handleKeyDown = (e: React.KeyboardEvent) => {
-    if (e.key === 'Enter' && !e.shiftKey) {
-      e.preventDefault();
-      if (phase === 1 && formData.goal && formData.targetIdentity) handleNext();
-      else if (phase === 2 && formData.physicalSensation && formData.emotionalState) handleNext();
-      else if (phase === 3) handleLoopNext();
-      else if (phase === 4 && formData.presentCheck && formData.futureCheck && formData.scenarioStability && formData.finalAnchor) saveProgress(true);
-    }
   };
 
   const handleLoopNext = () => {
@@ -258,6 +235,12 @@ const IdentityAlignmentTool = () => {
     }
   };
 
+  const handleCheckFailure = (targetPhase: Phase = 3) => {
+    toast.error("Check failed. Returning to Reconsolidation Loop to clear the block.");
+    setPhase(targetPhase);
+    if (targetPhase === 3) setLoopStep(1);
+  };
+
   const reset = () => {
     setPhase(1);
     setFormData({
@@ -266,9 +249,11 @@ const IdentityAlignmentTool = () => {
       physicalSensation: '',
       emotionalState: '',
       reconsolidationData: [],
-      presentCheck: '',
-      futureCheck: '',
-      scenarioStability: '',
+      presentCheck: null,
+      futureCheck: null,
+      scenarioStability: null,
+      maintenanceCapacity: null,
+      goalInevitable: null,
       finalAnchor: '',
     });
     setCurrentLoop({});
@@ -288,14 +273,7 @@ const IdentityAlignmentTool = () => {
       <div className="space-y-4">
         <div className="space-y-2">
           <Label htmlFor="goal">Step 1: Establish the Goal</Label>
-          <Textarea 
-            id="goal" 
-            placeholder="Define a specific outcome (e.g. $30k per month, waitlist by July...)" 
-            value={formData.goal} 
-            onChange={(e) => setFormData({ ...formData, goal: e.target.value })} 
-            onKeyDown={handleKeyDown} 
-            className="min-h-[100px] rounded-xl" 
-          />
+          <Textarea id="goal" placeholder="Define a specific outcome..." value={formData.goal} onChange={(e) => setFormData({ ...formData, goal: e.target.value })} className="min-h-[100px] rounded-xl" />
         </div>
         <div className="space-y-2">
           <div className="flex items-center justify-between">
@@ -305,9 +283,7 @@ const IdentityAlignmentTool = () => {
               <span className="text-xs font-bold">Magic Suggest</span>
             </Button>
           </div>
-          <p className="text-[10px] text-muted-foreground italic mb-2">"Imagine you have achieved that goal: What kind of person are you being?"</p>
-          <Input id="targetIdentity" placeholder="e.g. The Confident Practitioner" value={formData.targetIdentity} onChange={(e) => setFormData({ ...formData, targetIdentity: e.target.value })} onKeyDown={handleKeyDown} className="rounded-xl" />
-          
+          <Input id="targetIdentity" placeholder="e.g. The Confident Practitioner" value={formData.targetIdentity} onChange={(e) => setFormData({ ...formData, targetIdentity: e.target.value })} className="rounded-xl" />
           <AnimatePresence>
             {suggestions.length > 0 && (
               <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }} className="flex flex-wrap gap-2 mt-2">
@@ -344,13 +320,13 @@ const IdentityAlignmentTool = () => {
       <div className="space-y-6">
         <div className="space-y-2">
           <Label htmlFor="somatic">Step 3: Embody the Target Identity</Label>
-          <p className="text-[10px] text-muted-foreground italic mb-2">"Now feel yourself being {formData.targetIdentity}. What does that feel like?" (Map physical sensation)</p>
-          <Textarea id="somatic" placeholder="e.g. Standing tall, strong, expansion in chest..." value={formData.physicalSensation} onChange={(e) => setFormData({ ...formData, physicalSensation: e.target.value })} onKeyDown={handleKeyDown} className="min-h-[100px] rounded-xl" />
+          <p className="text-[10px] text-muted-foreground italic mb-2">"Now feel yourself being {formData.targetIdentity}. What does that feel like?"</p>
+          <Textarea id="somatic" placeholder="Map physical sensation (e.g. Standing tall, strong...)" value={formData.physicalSensation} onChange={(e) => setFormData({ ...formData, physicalSensation: e.target.value })} className="min-h-[100px] rounded-xl" />
         </div>
         <div className="space-y-2">
           <Label htmlFor="emotions">Step 4: Deepen the Feeling</Label>
-          <p className="text-[10px] text-muted-foreground italic mb-2">"Now feel {formData.physicalSensation || 'that sensation'}. What does that feeling feel like?" (Core emotional state)</p>
-          <Input id="emotions" placeholder="e.g. Peaceful, Free, Certain" value={formData.emotionalState} onChange={(e) => setFormData({ ...formData, emotionalState: e.target.value })} onKeyDown={handleKeyDown} className="rounded-xl" />
+          <p className="text-[10px] text-muted-foreground italic mb-2">"Now feel {formData.physicalSensation || 'that sensation'}. What does that feeling feel like?"</p>
+          <Input id="emotions" placeholder="Core emotional state (e.g. Peaceful, Free...)" value={formData.emotionalState} onChange={(e) => setFormData({ ...formData, emotionalState: e.target.value })} className="rounded-xl" />
         </div>
       </div>
       <div className="flex gap-4">
@@ -374,7 +350,7 @@ const IdentityAlignmentTool = () => {
         <p className="text-sm text-muted-foreground">Metabolize shadow resistance. Hit ENTER to move through waypoints.</p>
       </div>
 
-      <Card className="border-2 border-amber-500/20 bg-amber-500/5 rounded-[2rem] overflow-hidden">
+      <Card className="border-2 border-amber-500/20 bg-amber-50/5 rounded-[2rem] overflow-hidden">
         <CardHeader className="bg-amber-500/10 border-b border-amber-500/20">
           <div className="flex justify-between items-center">
             <span className="text-[10px] font-black uppercase tracking-widest text-amber-600">Waypoint {loopStep} of 4</span>
@@ -390,25 +366,25 @@ const IdentityAlignmentTool = () => {
             {loopStep === 1 && (
               <motion.div key="w1" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }} className="space-y-4">
                 <Label className="text-xl font-serif">"Why would you not be {formData.targetIdentity}?"</Label>
-                <Input autoFocus placeholder="Surface the block (e.g. Because I'm afraid...)" value={currentLoop.block || ''} onChange={e => setCurrentLoop({...currentLoop, block: e.target.value})} onKeyDown={handleKeyDown} className="h-14 text-lg rounded-xl bg-white" />
+                <Input autoFocus placeholder="Surface the block (e.g. Because I'm afraid...)" value={currentLoop.block || ''} onChange={e => setCurrentLoop({...currentLoop, block: e.target.value})} onKeyDown={(e) => e.key === 'Enter' && handleLoopNext()} className="h-14 text-lg rounded-xl bg-white" />
               </motion.div>
             )}
             {loopStep === 2 && (
               <motion.div key="w2" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }} className="space-y-4">
                 <Label className="text-xl font-serif">"Feel {currentLoop.block}. What does that feel like?"</Label>
-                <Input autoFocus placeholder="Feel the resistance (e.g. Tightness in throat...)" value={currentLoop.resistance || ''} onChange={e => setCurrentLoop({...currentLoop, resistance: e.target.value})} onKeyDown={handleKeyDown} className="h-14 text-lg rounded-xl bg-white" />
+                <Input autoFocus placeholder="Feel the resistance (e.g. Tightness in throat...)" value={currentLoop.resistance || ''} onChange={e => setCurrentLoop({...currentLoop, resistance: e.target.value})} onKeyDown={(e) => e.key === 'Enter' && handleLoopNext()} className="h-14 text-lg rounded-xl bg-white" />
               </motion.div>
             )}
             {loopStep === 3 && (
               <motion.div key="w3" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }} className="space-y-4">
                 <Label className="text-xl font-serif">"What would it feel like to not have that problem?"</Label>
-                <Input autoFocus placeholder="Remove the problem (e.g. Light, expansive...)" value={currentLoop.alternative || ''} onChange={e => setCurrentLoop({...currentLoop, alternative: e.target.value})} onKeyDown={handleKeyDown} className="h-14 text-lg rounded-xl bg-white" />
+                <Input autoFocus placeholder="Remove the problem (e.g. Light, expansive...)" value={currentLoop.alternative || ''} onChange={e => setCurrentLoop({...currentLoop, alternative: e.target.value})} onKeyDown={(e) => e.key === 'Enter' && handleLoopNext()} className="h-14 text-lg rounded-xl bg-white" />
               </motion.div>
             )}
             {loopStep === 4 && (
               <motion.div key="w4" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }} className="space-y-4">
                 <Label className="text-xl font-serif">"Feel {currentLoop.alternative}. What does that feel like?"</Label>
-                <Input autoFocus placeholder="Embody replacement state (e.g. Freedom, Joy...)" value={currentLoop.replacement || ''} onChange={e => setCurrentLoop({...currentLoop, replacement: e.target.value})} onKeyDown={handleKeyDown} className="h-14 text-lg rounded-xl bg-white" />
+                <Input autoFocus placeholder="Embody replacement state (e.g. Freedom, Joy...)" value={currentLoop.replacement || ''} onChange={e => setCurrentLoop({...currentLoop, replacement: e.target.value})} onKeyDown={(e) => e.key === 'Enter' && handleLoopNext()} className="h-14 text-lg rounded-xl bg-white" />
               </motion.div>
             )}
           </AnimatePresence>
@@ -417,7 +393,7 @@ const IdentityAlignmentTool = () => {
           <Button variant="ghost" onClick={() => loopStep > 1 ? setLoopStep((loopStep - 1) as any) : handleBack()} className="text-amber-700 font-bold">
             <ArrowLeft className="mr-2" size={16} /> Back
           </Button>
-          <Button onClick={handleLoopNext} disabled={!(loopStep === 1 ? currentLoop.block : loopStep === 2 ? currentLoop.resistance : loopStep === 3 ? currentLoop.alternative : currentLoop.replacement)} className="bg-amber-600 text-white rounded-xl px-8">
+          <Button onClick={handleLoopNext} disabled={!(loopStep === 1 ? currentLoop.block : loopStep === 2 ? currentLoop.resistance : loopStep === 3 ? currentLoop.alternative : loopStep === 4 ? currentLoop.replacement : false)} className="bg-amber-600 text-white rounded-xl px-8">
             {loopStep === 4 ? "Metabolize & Add" : "Next Waypoint"} <ArrowRight className="ml-2" size={16} />
           </Button>
         </CardFooter>
@@ -436,7 +412,7 @@ const IdentityAlignmentTool = () => {
                     <p className="text-emerald-600 font-medium">Shifted to: {entry.replacement}</p>
                   </div>
                 </div>
-                <Button variant="ghost" size="icon" className="h-8 w-8 rounded-xl text-slate-300 hover:text-rose-600 opacity-0 group-hover:opacity-100 transition-all" onClick={() => { const newData = [...formData.reconsolidationData]; newData.splice(i, 1); setFormData({ ...formData, reconsolidationData: newData }); }}><Trash2 size={14} /></Button>
+                <Button variant="ghost" size="icon" className="h-8 w-8 rounded-xl text-slate-300 hover:text-rose-600 opacity-0 group-hover:opacity-100 transition-all" onClick={(e) => { e.stopPropagation(); const newData = [...formData.reconsolidationData]; newData.splice(i, 1); setFormData({ ...formData, reconsolidationData: newData }); }}><Trash2 size={14} /></Button>
               </div>
             ))}
           </div>
@@ -454,51 +430,118 @@ const IdentityAlignmentTool = () => {
     </div>
   );
 
-  const renderPhase4 = () => (
+  const renderPhase4 = () => {
+    const CheckRow = ({ label, value, onChange, onFail }: { label: string, value: boolean | null, onChange: (v: boolean) => void, onFail: () => void }) => (
+      <div className="p-6 bg-white dark:bg-slate-900 rounded-2xl border border-border flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <Label className="text-base font-bold text-slate-900 dark:text-slate-100">{label}</Label>
+        <ToggleGroup type="single" value={value === null ? "" : value ? "yes" : "no"} onValueChange={(v) => {
+          if (v === "yes") onChange(true);
+          if (v === "no") { onChange(false); onFail(); }
+        }} className="bg-muted p-1 rounded-xl">
+          <ToggleGroupItem value="yes" className="rounded-lg px-6 h-10 data-[state=on]:bg-emerald-600 data-[state=on]:text-white font-black text-xs uppercase tracking-widest">YES</ToggleGroupItem>
+          <ToggleGroupItem value="no" className="rounded-lg px-6 h-10 data-[state=on]:bg-rose-600 data-[state=on]:text-white font-black text-xs uppercase tracking-widest">NO</ToggleGroupItem>
+        </ToggleGroup>
+      </div>
+    );
+
+    return (
+      <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
+        <div className="text-center space-y-2 mb-4">
+          <div className="inline-flex items-center justify-center w-12 h-12 bg-emerald-100 dark:bg-emerald-900/30 rounded-full text-emerald-600 mb-2">
+            <Clock size={24} />
+          </div>
+          <h3 className="text-xl font-serif font-bold">Phase 4: Time-Space Testing</h3>
+          <p className="text-sm text-muted-foreground">Prevent identity collapse by engaging future simulation networks.</p>
+        </div>
+
+        <div className="space-y-4">
+          <CheckRow 
+            label={`Step 9: Do you feel like you are now ${formData.targetIdentity}?`} 
+            value={formData.presentCheck} 
+            onChange={(v) => setFormData({...formData, presentCheck: v})} 
+            onFail={() => handleCheckFailure(3)} 
+          />
+          <CheckRow 
+            label={`Step 10: Do you feel like you will be ${formData.targetIdentity} in the future?`} 
+            value={formData.futureCheck} 
+            onChange={(v) => setFormData({...formData, futureCheck: v})} 
+            onFail={() => handleCheckFailure(3)} 
+          />
+          
+          <div className="p-6 bg-white dark:bg-slate-900 rounded-2xl border border-border flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+            <Label className="text-base font-bold text-slate-900 dark:text-slate-100">{`Step 11: Is there any scenario in which you would not be ${formData.targetIdentity}?`}</Label>
+            <ToggleGroup type="single" value={formData.scenarioStability === null ? "" : formData.scenarioStability ? "yes" : "no"} onValueChange={(v) => {
+              if (v === "yes") { setFormData({...formData, scenarioStability: true}); handleCheckFailure(3); }
+              if (v === "no") setFormData({...formData, scenarioStability: false});
+            }} className="bg-muted p-1 rounded-xl">
+              <ToggleGroupItem value="yes" className="rounded-lg px-6 h-10 data-[state=on]:bg-rose-600 data-[state=on]:text-white font-black text-xs uppercase tracking-widest">YES</ToggleGroupItem>
+              <ToggleGroupItem value="no" className="rounded-lg px-6 h-10 data-[state=on]:bg-emerald-600 data-[state=on]:text-white font-black text-xs uppercase tracking-widest">NO</ToggleGroupItem>
+            </ToggleGroup>
+          </div>
+        </div>
+
+        <div className="flex gap-4 pt-4">
+          <Button variant="outline" onClick={handleBack} className="flex-1 rounded-xl h-12 font-bold">
+            <ArrowLeft className="mr-2" size={18} /> Back
+          </Button>
+          <Button 
+            onClick={handleNext} 
+            disabled={formData.presentCheck !== true || formData.futureCheck !== true || formData.scenarioStability !== false} 
+            className="flex-[2] bg-primary hover:bg-primary/90 text-white rounded-xl h-12 font-bold shadow-lg"
+          >
+            Move to Final Anchoring <ArrowRight className="ml-2" size={18} />
+          </Button>
+        </div>
+      </div>
+    );
+  };
+
+  const renderPhase5 = () => (
     <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
       <div className="text-center space-y-2 mb-4">
-        <div className="inline-flex items-center justify-center w-12 h-12 bg-emerald-100 dark:bg-emerald-900/30 rounded-full text-emerald-600 mb-2">
-          <CheckCircle2 size={24} />
+        <div className="inline-flex items-center justify-center w-12 h-12 bg-indigo-100 dark:bg-indigo-900/30 rounded-full text-indigo-600 mb-2">
+          <Anchor size={24} />
         </div>
-        <h3 className="text-xl font-serif font-bold">Phase 4: Time-Space Testing</h3>
-        <p className="text-sm text-muted-foreground">Prevent identity collapse by engaging future simulation networks.</p>
+        <h3 className="text-xl font-serif font-bold">Phase 5: Final Anchoring</h3>
+        <p className="text-sm text-muted-foreground">Lock in behavioral congruence and long-term capacity.</p>
       </div>
 
       <div className="space-y-6">
-        <div className="space-y-2">
-          <Label htmlFor="present">Step 9: Present Check</Label>
-          <p className="text-[10px] text-muted-foreground italic mb-2">"Do you feel like you are now {formData.targetIdentity}?"</p>
-          <Input id="present" placeholder="e.g. Yes, it feels solid and true..." value={formData.presentCheck} onChange={(e) => setFormData({ ...formData, presentCheck: e.target.value })} onKeyDown={handleKeyDown} className="rounded-xl" />
+        <div className="p-6 bg-white dark:bg-slate-900 rounded-2xl border border-border flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+          <Label className="text-base font-bold text-slate-900 dark:text-slate-100">{`Step 12: Do you know that you can maintain being ${formData.targetIdentity} to achieve that reality?`}</Label>
+          <ToggleGroup type="single" value={formData.maintenanceCapacity === null ? "" : formData.maintenanceCapacity ? "yes" : "no"} onValueChange={(v) => {
+            if (v === "yes") setFormData({...formData, maintenanceCapacity: true});
+            if (v === "no") { setFormData({...formData, maintenanceCapacity: false}); handleCheckFailure(3); }
+          }} className="bg-muted p-1 rounded-xl">
+            <ToggleGroupItem value="yes" className="rounded-lg px-6 h-10 data-[state=on]:bg-emerald-600 data-[state=on]:text-white font-black text-xs uppercase tracking-widest">YES</ToggleGroupItem>
+            <ToggleGroupItem value="no" className="rounded-lg px-6 h-10 data-[state=on]:bg-rose-600 data-[state=on]:text-white font-black text-xs uppercase tracking-widest">NO</ToggleGroupItem>
+          </ToggleGroup>
         </div>
-        <div className="space-y-2">
-          <Label htmlFor="future">Step 10: Future Check</Label>
-          <p className="text-[10px] text-muted-foreground italic mb-2">"Do you feel like you will be {formData.targetIdentity} in the future?"</p>
-          <Input id="future" placeholder="e.g. Yes, I can see it clearly..." value={formData.futureCheck} onChange={(e) => setFormData({ ...formData, futureCheck: e.target.value })} onKeyDown={handleKeyDown} className="rounded-xl" />
+
+        <div className="p-6 bg-indigo-900 text-white rounded-[2rem] border border-indigo-800 flex flex-col sm:flex-row sm:items-center justify-between gap-4 shadow-xl">
+          <Label className="text-base font-bold">{`Final Anchor: Does it now feel like that goal is inevitable?`}</Label>
+          <ToggleGroup type="single" value={formData.goalInevitable === null ? "" : formData.goalInevitable ? "yes" : "no"} onValueChange={(v) => {
+            if (v === "yes") setFormData({...formData, goalInevitable: true});
+            if (v === "no") { setFormData({...formData, goalInevitable: false}); handleCheckFailure(1); }
+          }} className="bg-white/10 p-1 rounded-xl">
+            <ToggleGroupItem value="yes" className="rounded-lg px-6 h-10 data-[state=on]:bg-emerald-500 data-[state=on]:text-white font-black text-xs uppercase tracking-widest">YES</ToggleGroupItem>
+            <ToggleGroupItem value="no" className="rounded-lg px-6 h-10 data-[state=on]:bg-rose-500 data-[state=on]:text-white font-black text-xs uppercase tracking-widest">NO</ToggleGroupItem>
+          </ToggleGroup>
         </div>
+
         <div className="space-y-2">
-          <Label htmlFor="scenario">Step 11: Scenario Stability</Label>
-          <p className="text-[10px] text-muted-foreground italic mb-2">"Is there any scenario in which you would not be {formData.targetIdentity}?"</p>
-          <Input id="scenario" placeholder="e.g. No, this is my new baseline..." value={formData.scenarioStability} onChange={(e) => setFormData({ ...formData, scenarioStability: e.target.value })} onKeyDown={handleKeyDown} className="rounded-xl" />
-        </div>
-        <div className="space-y-2">
-          <Label htmlFor="anchor">Step 12: Final Anchor</Label>
-          <p className="text-[10px] text-muted-foreground italic mb-2">"What is the somatic anchor of inevitability?"</p>
-          <Input id="anchor" placeholder="e.g. A deep breath and a slight smile..." value={formData.finalAnchor} onChange={(e) => setFormData({ ...formData, finalAnchor: e.target.value })} onKeyDown={handleKeyDown} className="rounded-xl" />
+          <Label htmlFor="finalAnchor">Somatic Anchor of Inevitability</Label>
+          <Input id="finalAnchor" placeholder="e.g. A deep breath and a slight smile..." value={formData.finalAnchor} onChange={(e) => setFormData({ ...formData, finalAnchor: e.target.value })} className="h-14 rounded-xl text-lg font-medium" />
         </div>
       </div>
 
       <div className="flex flex-col gap-3 pt-4">
-        <Button onClick={() => saveProgress(true)} disabled={isSaving || !formData.presentCheck || !formData.futureCheck || !formData.scenarioStability || !formData.finalAnchor} className="w-full bg-primary hover:bg-primary/90 text-white rounded-xl h-14 font-black text-sm uppercase tracking-widest shadow-xl">
+        <Button onClick={() => saveProgress(true)} disabled={isSaving || formData.maintenanceCapacity !== true || formData.goalInevitable !== true || !formData.finalAnchor} className="w-full bg-primary hover:bg-primary/90 text-white rounded-xl h-14 font-black text-sm uppercase tracking-widest shadow-xl">
           {isSaving ? <Loader2 className="mr-2 animate-spin" size={18} /> : <CheckCircle2 className="mr-2" size={18} />} Complete & Save Session
         </Button>
-        <div className="flex gap-3">
-          <Button variant="outline" onClick={() => { setPhase(3); setLoopStep(1); }} className="flex-1 rounded-xl h-12 font-bold text-rose-600 border-rose-100 hover:bg-rose-50">
-            <ShieldAlert className="mr-2" size={18} /> Return to Loop
-          </Button>
-          <Button variant="ghost" onClick={reset} className="flex-1 rounded-xl h-12 font-bold text-muted-foreground">
-            <RotateCcw className="mr-2" size={18} /> Reset
-          </Button>
-        </div>
+        <Button variant="ghost" onClick={reset} className="w-full text-muted-foreground rounded-xl h-12 font-bold">
+          <RotateCcw className="mr-2" size={18} /> Start Fresh Session
+        </Button>
       </div>
     </div>
   );
@@ -597,12 +640,13 @@ const IdentityAlignmentTool = () => {
             </Button>
             {!showHistory && (
               <div className="text-right">
-                <span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Phase {phase} of 4</span>
+                <span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Phase {phase} of 5</span>
                 <p className="text-sm font-bold text-primary">
                   {phase === 1 && "Setup"}
                   {phase === 2 && "Somatic"}
                   {phase === 3 && "Reconsolidation"}
                   {phase === 4 && "Testing"}
+                  {phase === 5 && "Anchoring"}
                 </p>
               </div>
             )}
@@ -618,6 +662,7 @@ const IdentityAlignmentTool = () => {
             {phase === 2 && renderPhase2()}
             {phase === 3 && renderPhase3()}
             {phase === 4 && renderPhase4()}
+            {phase === 5 && renderPhase5()}
           </>
         )}
       </div>

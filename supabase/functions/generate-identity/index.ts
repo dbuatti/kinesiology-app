@@ -1,5 +1,5 @@
 // @ts-nocheck
-import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
+import { serve } from "https://deno.land/std@0.190.0/http/server.ts"
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -7,9 +7,12 @@ const corsHeaders = {
 }
 
 serve(async (req) => {
+  // Handle CORS preflight
   if (req.method === 'OPTIONS') {
     return new Response('ok', { headers: corsHeaders })
   }
+
+  console.log("[generate-identity] Function invoked");
 
   try {
     const body = await req.json();
@@ -17,6 +20,7 @@ serve(async (req) => {
 
     const geminiKey = Deno.env.get('GEMINI_API_KEY')
     if (!geminiKey) {
+      console.error("[generate-identity] Error: Missing GEMINI_API_KEY");
       throw new Error('Missing GEMINI_API_KEY in Supabase Secrets');
     }
 
@@ -46,6 +50,8 @@ serve(async (req) => {
       `;
     }
 
+    console.log("[generate-identity] Sending request to Gemini API");
+
     const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${geminiKey}`, {
       method: 'POST',
       headers: {
@@ -57,28 +63,47 @@ serve(async (req) => {
         }],
         generationConfig: {
           temperature: 0.7,
-          responseMimeType: "application/json",
+          // Note: responseMimeType is supported in newer models but we'll handle the parsing manually to be safe
         }
       }),
     })
 
     const data = await response.json()
+    
+    if (!response.ok) {
+      console.error("[generate-identity] Gemini API Error:", JSON.stringify(data));
+      throw new Error(data.error?.message || "Gemini API Error");
+    }
+
+    if (!data.candidates || !data.candidates[0]?.content?.parts?.[0]?.text) {
+      console.error("[generate-identity] Unexpected Gemini response structure:", JSON.stringify(data));
+      throw new Error("Invalid response from AI provider");
+    }
+
     const content = data.candidates[0].content.parts[0].text.trim()
+    console.log("[generate-identity] Raw AI content:", content);
 
     let suggestions = []
     try {
-      suggestions = JSON.parse(content)
+      // Try to find a JSON array in the text if it's wrapped in markdown or other text
+      const jsonMatch = content.match(/\[.*\]/s);
+      const jsonString = jsonMatch ? jsonMatch[0] : content;
+      suggestions = JSON.parse(jsonString);
     } catch (e) {
+      console.warn("[generate-identity] JSON parse failed, falling back to regex split");
       suggestions = content.replace(/[\[\]"]/g, '').split(',')
         .map(s => s.trim())
         .filter(s => s.length > 0)
         .slice(0, 4)
     }
 
+    console.log("[generate-identity] Final suggestions:", suggestions);
+
     return new Response(JSON.stringify({ suggestions }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     })
   } catch (error) {
+    console.error("[generate-identity] Critical Error:", error.message);
     return new Response(JSON.stringify({ error: error.message }), {
       status: 500,
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },

@@ -17,14 +17,16 @@ import {
   Sparkles,
   Brain,
   Zap,
-  MessageSquare,
   Loader2,
   History,
   Save,
-  Plus,
   FileText,
   Trash2,
-  Clock
+  Clock,
+  AlertCircle,
+  ShieldCheck,
+  RefreshCw,
+  Info
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { supabase } from "@/integrations/supabase/client";
@@ -41,8 +43,12 @@ interface FormData {
   feltSense: string;
   identity: string;
   loopResponses: string[];
-  integrationAwareness: string;
-  integrationAction: string;
+  // Phase 5 fields
+  feelingsNow: string;
+  moreConsciousOf: string;
+  newIntention: string;
+  actionPlan: string;
+  no1Thing: string;
 }
 
 const IdentityShiftingTool = () => {
@@ -53,14 +59,19 @@ const IdentityShiftingTool = () => {
     feltSense: '',
     identity: '',
     loopResponses: [],
-    integrationAwareness: '',
-    integrationAction: '',
+    feelingsNow: '',
+    moreConsciousOf: '',
+    newIntention: '',
+    actionPlan: '',
+    no1Thing: '',
   });
 
   const [loopStep, setLoopStep] = useState(0);
   const [currentLoopResponse, setCurrentLoopResponse] = useState('');
-  const [suggestions, setSuggestions] = useState<string[]>([]);
+  const [loopContext, setLoopContext] = useState<string | null>(null); // For "Future" or "Scenario" checks
+  
   const [isGenerating, setIsGenerating] = useState(false);
+  const [suggestions, setSuggestions] = useState<string[]>([]);
   const [pastSessions, setPastSessions] = useState<any[]>([]);
   const [showHistory, setShowHistory] = useState(false);
   const [viewingReportId, setViewingReportId] = useState<string | null>(null);
@@ -81,19 +92,12 @@ const IdentityShiftingTool = () => {
       .select('*')
       .order('created_at', { ascending: false });
 
-    if (error) {
-      console.error("Error fetching sessions:", error);
-    } else {
-      setPastSessions(data || []);
-    }
+    if (!error) setPastSessions(data || []);
   };
 
   const saveProgress = async (isComplete: boolean = false) => {
     const { data: { user } } = await supabase.auth.getUser();
-    if (!user) {
-      toast.error("You must be logged in to save progress.");
-      return;
-    }
+    if (!user) return;
 
     setIsSaving(true);
     try {
@@ -104,8 +108,9 @@ const IdentityShiftingTool = () => {
         felt_sense: formData.feltSense,
         identity: formData.identity,
         loop_responses: formData.loopResponses,
-        integration_awareness: formData.integrationAwareness,
-        integration_action: formData.integrationAction,
+        // Map Phase 5 fields to existing schema columns for now
+        integration_awareness: `Feelings Now: ${formData.feelingsNow}\nConscious Of: ${formData.moreConsciousOf}\nIntention: ${formData.newIntention}`,
+        integration_action: `Action: ${formData.actionPlan}\nNo. 1 Thing: ${formData.no1Thing}`,
         is_complete: isComplete,
         current_phase: phase,
         loop_step: loopStep
@@ -113,94 +118,34 @@ const IdentityShiftingTool = () => {
 
       let error;
       if (formData.id) {
-        const { error: updateError } = await supabase
-          .from('identity_shifting_sessions')
-          .update(payload)
-          .eq('id', formData.id);
+        const { error: updateError } = await supabase.from('identity_shifting_sessions').update(payload).eq('id', formData.id);
         error = updateError;
       } else {
-        const { data, error: insertError } = await supabase
-          .from('identity_shifting_sessions')
-          .insert(payload)
-          .select()
-          .single();
+        const { data, error: insertError } = await supabase.from('identity_shifting_sessions').insert(payload).select().single();
         error = insertError;
         if (data) setFormData(prev => ({ ...prev, id: data.id }));
       }
 
       if (error) throw error;
-      
-      if (isComplete) {
-        toast.success("Session completed and saved!");
-      } else {
-        toast.success("Draft saved.");
-      }
+      toast.success(isComplete ? "Session completed!" : "Draft saved.");
       fetchPastSessions();
     } catch (error) {
-      console.error("Error saving session:", error);
       toast.error("Failed to save session.");
     } finally {
       setIsSaving(false);
     }
   };
 
-  const loadSession = (session: any) => {
-    setFormData({
-      id: session.id,
-      problem: session.problem,
-      emotion: session.emotion || '',
-      feltSense: session.felt_sense || '',
-      identity: session.identity,
-      loopResponses: session.loop_responses || [],
-      integrationAwareness: session.integration_awareness || '',
-      integrationAction: session.integration_action || '',
-    });
-    setPhase((session.current_phase || 1) as Phase);
-    setLoopStep(session.loop_step || 0);
-    setShowHistory(false);
-    setViewingReportId(null);
-    toast.info(session.is_complete ? "Viewing completed session." : "Resuming draft session.");
-  };
-
-  const deleteSession = async (e: React.MouseEvent, id: string) => {
-    e.stopPropagation();
-    if (!confirm("Are you sure you want to delete this session?")) return;
-
-    try {
-      const { error } = await supabase
-        .from('identity_shifting_sessions')
-        .delete()
-        .eq('id', id);
-
-      if (error) throw error;
-      toast.success("Session deleted.");
-      if (formData.id === id) reset();
-      fetchPastSessions();
-    } catch (error) {
-      toast.error("Failed to delete session.");
-    }
-  };
-
   const handleGenerateIdentity = async () => {
     if (!formData.problem) return;
-    
     setIsGenerating(true);
     try {
       const { data, error } = await supabase.functions.invoke('generate-identity', {
-        body: {
-          problem: formData.problem,
-          emotion: formData.emotion,
-          feltSense: formData.feltSense
-        },
+        body: { problem: formData.problem, emotion: formData.emotion, feltSense: formData.feltSense },
       });
-
-      if (error) throw error;
-      if (data?.suggestions) {
-        setSuggestions(data.suggestions);
-      }
+      if (!error && data?.suggestions) setSuggestions(data.suggestions);
     } catch (error) {
-      console.error("Error generating identity:", error);
-      toast.error("Failed to generate identity suggestions.");
+      console.error(error);
     } finally {
       setIsGenerating(false);
     }
@@ -208,8 +153,7 @@ const IdentityShiftingTool = () => {
 
   const handleNext = () => {
     if (phase < 5) {
-      const nextPhase = (phase + 1) as Phase;
-      setPhase(nextPhase);
+      setPhase((p) => (p + 1) as Phase);
       saveProgress(false);
     }
   };
@@ -226,55 +170,115 @@ const IdentityShiftingTool = () => {
       feltSense: '',
       identity: '',
       loopResponses: [],
-      integrationAwareness: '',
-      integrationAction: '',
+      feelingsNow: '',
+      moreConsciousOf: '',
+      newIntention: '',
+      actionPlan: '',
+      no1Thing: '',
     });
     setLoopStep(0);
     setCurrentLoopResponse('');
-    setSuggestions([]);
+    setLoopContext(null);
   };
 
-  const loopQuestions = [
-    (identity: string) => `What is "${identity}"?`,
-    (identity: string) => `Where did "${identity}" come from?`,
-    (identity: string) => `What is "${identity}" made of?`,
-    (identity: string) => `What is "${identity}" trying to do?`,
-    (identity: string) => `What is "${identity}" now?`,
-  ];
+  // Phase 2 Loop Logic
+  const getLoopQuestion = () => {
+    const identity = loopContext || formData.identity;
+    const lastResp = formData.loopResponses[formData.loopResponses.length - 1];
+
+    switch (loopStep) {
+      case 0: return `Feel yourself being "${identity}"... what does it feel like?`;
+      case 1: return `Feel "${lastResp}"... what happens in yourself when you feel "${lastResp}"?`;
+      case 2: return `Who are you when you are not being "${identity}"?`;
+      case 3: return `Feel yourself being "${lastResp}"... what does "${lastResp}" feel like?`;
+      case 4: return `Feel "${lastResp}"... what happens in yourself when you feel "${lastResp}"?`;
+      default: return "";
+    }
+  };
 
   const handleLoopNext = () => {
     if (currentLoopResponse.trim() === '') return;
     
     const newResponses = [...formData.loopResponses, currentLoopResponse];
-    const updatedData = { ...formData, loopResponses: newResponses };
-    setFormData(updatedData);
+    setFormData({ ...formData, loopResponses: newResponses });
     
     if (loopStep < 4) {
       setLoopStep(loopStep + 1);
       setCurrentLoopResponse('');
     } else {
-      setPhase(3);
+      // End of loop - move to check
+      setLoopStep(5); 
     }
   };
 
   const handleLoopBack = () => {
     if (loopStep > 0) {
-      const newResponses = [...formData.loopResponses];
-      const lastResponse = newResponses.pop();
-      setFormData({ ...formData, loopResponses: newResponses });
-      setCurrentLoopResponse(lastResponse || '');
       setLoopStep(loopStep - 1);
+      const newResponses = [...formData.loopResponses];
+      newResponses.pop();
+      setFormData({ ...formData, loopResponses: newResponses });
+      setCurrentLoopResponse('');
     } else {
-      setPhase(1);
+      handleBack();
     }
   };
 
-  const handleKeyDown = (e: React.KeyboardEvent) => {
-    if (e.key === 'Enter' && !e.shiftKey) {
-      e.preventDefault();
-      if (phase === 1 && formData.problem && formData.identity) handleNext();
-      else if (phase === 2 && currentLoopResponse.trim()) handleLoopNext();
-      else if (phase === 5 && formData.integrationAwareness && formData.integrationAction) saveProgress(true);
+  const handleCheckIdentity = (stillFeelsSolid: boolean) => {
+    if (stillFeelsSolid) {
+      handleLoopRestart();
+    } else {
+      handleNext(); // Move to Phase 3 (Future/Scenario checks)
+    }
+  };
+
+  const handleLoopRestart = () => {
+    setLoopStep(0);
+    setCurrentLoopResponse('');
+    setFormData(prev => ({ ...prev, loopResponses: [] }));
+  };
+
+  const handlePhase3Check = (failed: boolean, context: string) => {
+    if (failed) {
+      setLoopContext(context);
+      setPhase(2);
+      handleLoopRestart();
+    }
+  };
+
+  const loadSession = (session: any) => {
+    setFormData({
+      id: session.id,
+      problem: session.problem,
+      emotion: session.emotion || '',
+      feltSense: session.felt_sense || '',
+      identity: session.identity || '',
+      loopResponses: session.loop_responses || [],
+      feelingsNow: '', // These would need parsing from integration_awareness if needed
+      moreConsciousOf: '',
+      newIntention: '',
+      actionPlan: '',
+      no1Thing: '',
+    });
+    setPhase((session.current_phase || 1) as Phase);
+    setLoopStep(session.loop_step || 0);
+    setShowHistory(false);
+  };
+
+  const deleteSession = async (e: React.MouseEvent, id: string) => {
+    e.stopPropagation();
+    if (!confirm("Are you sure you want to delete this session?")) return;
+
+    try {
+      const { error } = await supabase
+        .from('identity_shifting_sessions')
+        .delete()
+        .eq('id', id);
+
+      if (error) throw error;
+      toast.success("Session deleted.");
+      fetchPastSessions();
+    } catch (error) {
+      toast.error("Failed to delete session.");
     }
   };
 
@@ -282,128 +286,125 @@ const IdentityShiftingTool = () => {
     <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
       <div className="space-y-4">
         <div className="space-y-2">
-          <Label htmlFor="problem">What is the problem or challenge you're facing?</Label>
+          <Label className="text-xs font-black uppercase tracking-widest text-slate-500">1. Identify Problem / Trigger / Pattern</Label>
           <Textarea 
-            id="problem" 
-            placeholder="Describe the situation..." 
+            placeholder="What is the challenge you're facing?" 
             value={formData.problem}
             onChange={(e) => setFormData({ ...formData, problem: e.target.value })}
-            onKeyDown={handleKeyDown}
-            className="min-h-[100px] rounded-xl"
+            className="min-h-[100px] rounded-2xl border-2 border-slate-100 focus:border-indigo-500"
           />
         </div>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div className="space-y-2">
-            <Label htmlFor="emotion">What is the primary emotion?</Label>
+            <Label className="text-xs font-black uppercase tracking-widest text-slate-500">2. Associated Emotion</Label>
             <Input 
-              id="emotion" 
-              placeholder="e.g. Anxiety, Anger, Sadness" 
+              placeholder="Fear, Worry, Anger, etc." 
               value={formData.emotion}
               onChange={(e) => setFormData({ ...formData, emotion: e.target.value })}
-              onKeyDown={handleKeyDown}
-              className="rounded-xl"
+              className="rounded-xl border-2 border-slate-100"
             />
           </div>
           <div className="space-y-2">
-            <Label htmlFor="feltSense">Where do you feel it in your body?</Label>
+            <Label className="text-xs font-black uppercase tracking-widest text-slate-500">3. Associated Felt Sense</Label>
             <Input 
-              id="feltSense" 
-              placeholder="e.g. Tightness in chest, Pit in stomach" 
+              placeholder="Where do you feel it in the body?" 
               value={formData.feltSense}
               onChange={(e) => setFormData({ ...formData, feltSense: e.target.value })}
-              onKeyDown={handleKeyDown}
-              className="rounded-xl"
+              className="rounded-xl border-2 border-slate-100"
             />
           </div>
         </div>
         <div className="space-y-2">
           <div className="flex items-center justify-between">
-            <Label htmlFor="identity">Who are you being when you have this problem? (The Identity)</Label>
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={handleGenerateIdentity}
-              disabled={isGenerating || !formData.problem}
-              className="h-8 px-2 text-primary hover:text-primary/80 hover:bg-primary/10 gap-1.5"
-            >
+            <Label className="text-xs font-black uppercase tracking-widest text-slate-500">4. Stuck Identity / Behavior</Label>
+            <Button variant="ghost" size="sm" onClick={handleGenerateIdentity} disabled={isGenerating || !formData.problem} className="h-8 text-indigo-600 hover:bg-indigo-50 gap-1.5">
               {isGenerating ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Sparkles className="h-3.5 w-3.5" />}
-              <span className="text-xs font-bold">Magic Suggest</span>
+              <span className="text-[10px] font-black uppercase">Suggest</span>
             </Button>
           </div>
           <Input
-            id="identity"
-            placeholder="e.g. The Failure, The Victim, The Perfectionist"
+            placeholder="Who are you being when you have this problem?"
             value={formData.identity}
             onChange={(e) => setFormData({ ...formData, identity: e.target.value })}
-            onKeyDown={handleKeyDown}
-            className="rounded-xl"
+            className="rounded-xl border-2 border-slate-100"
           />
-          
-          <AnimatePresence>
-            {suggestions.length > 0 && (
-              <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }} className="flex flex-wrap gap-2 mt-2">
-                {suggestions.map((suggestion, index) => (
-                  <motion.button key={index} whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }} onClick={() => setFormData({ ...formData, identity: suggestion })} className="text-[10px] font-bold px-3 py-1.5 bg-primary/10 text-primary rounded-full border border-primary/20 hover:bg-primary/20 transition-colors">
-                    {suggestion}
-                  </motion.button>
-                ))}
-              </motion.div>
-            )}
-          </AnimatePresence>
+          {suggestions.length > 0 && (
+            <div className="flex flex-wrap gap-2 mt-2">
+              {suggestions.map((s, i) => (
+                <button key={i} onClick={() => setFormData({ ...formData, identity: s })} className="text-[10px] font-bold px-3 py-1 bg-indigo-50 text-indigo-600 rounded-full border border-indigo-100 hover:bg-indigo-100 transition-all">
+                  {s}
+                </button>
+              ))}
+            </div>
+          )}
         </div>
       </div>
-      <div className="flex gap-3">
-        <Button variant="outline" onClick={() => saveProgress(false)} disabled={isSaving || !formData.problem} className="flex-1 rounded-xl h-12 font-bold">
-          <Save className="mr-2" size={18} /> Save Draft
-        </Button>
-        <Button onClick={handleNext} disabled={!formData.problem || !formData.identity} className="flex-[2] bg-primary hover:bg-primary/90 text-white rounded-xl h-12 font-bold">
-          Begin Dissolving <ArrowRight className="ml-2" size={18} />
-        </Button>
-      </div>
+      <Button onClick={handleNext} disabled={!formData.problem || !formData.identity} className="w-full bg-indigo-600 hover:bg-indigo-700 text-white rounded-2xl h-14 font-black text-xs uppercase tracking-widest shadow-xl shadow-indigo-100">
+        Begin Dissolving <ArrowRight className="ml-2" size={18} />
+      </Button>
     </div>
   );
 
   const renderPhase2 = () => {
-    const question = loopQuestions[loopStep](formData.identity);
+    if (loopStep === 5) {
+      return (
+        <div className="space-y-8 animate-in zoom-in-95 duration-500 text-center py-8">
+          <div className="w-20 h-20 bg-indigo-50 rounded-full flex items-center justify-center mx-auto mb-4">
+            <RefreshCw className="text-indigo-600" size={40} />
+          </div>
+          <div className="space-y-2">
+            <h3 className="text-2xl font-serif font-bold">Check Identity</h3>
+            <p className="text-muted-foreground">"Can you still feel yourself being <span className="text-foreground font-bold">"{loopContext || formData.identity}"</span>?"</p>
+          </div>
+          <div className="flex gap-4 justify-center">
+            <Button variant="outline" onClick={() => handleCheckIdentity(true)} className="h-14 px-10 rounded-2xl border-2 border-indigo-100 text-indigo-600 font-black text-xs uppercase tracking-widest">
+              Yes, it's still there
+            </Button>
+            <Button onClick={() => handleCheckIdentity(false)} className="h-14 px-10 rounded-2xl bg-indigo-600 hover:bg-indigo-700 text-white font-black text-xs uppercase tracking-widest shadow-lg">
+              No, it has dissolved
+            </Button>
+          </div>
+        </div>
+      );
+    }
 
     return (
       <div className="space-y-8 animate-in fade-in zoom-in-95 duration-500">
-        <div className="text-center space-y-2">
-          <div className="inline-flex items-center justify-center w-12 h-12 bg-primary/10 rounded-full text-primary mb-2">
-            <RotateCcw className="animate-spin-slow" size={24} />
-          </div>
-          <h3 className="text-xl font-serif font-bold">Phase 2: Dissolving the Identity</h3>
-          <p className="text-sm text-muted-foreground max-w-md mx-auto">Answer intuitively. Hit ENTER to continue.</p>
+        <div className="bg-indigo-50 p-4 rounded-2xl border border-indigo-100 flex items-start gap-3">
+          <Info size={18} className="text-indigo-600 shrink-0 mt-0.5" />
+          <p className="text-xs text-indigo-900 font-medium leading-relaxed">
+            <strong>Instructions:</strong> Keep your answers brief. Tell me the first thing that comes up (emotion, sensation, thought, or image).
+          </p>
         </div>
 
-        <Card className="border-2 border-primary/20 shadow-xl rounded-3xl overflow-hidden">
-          <CardHeader className="bg-primary/5 border-b border-primary/10">
-            <div className="flex justify-between items-center">
-              <span className="text-[10px] font-black uppercase tracking-widest text-primary">Question {loopStep + 1} of 5</span>
+        <Card className="border-2 border-indigo-600/20 shadow-2xl rounded-[2.5rem] overflow-hidden">
+          <CardHeader className="bg-indigo-600/5 border-b border-indigo-600/10 p-8">
+            <div className="flex justify-between items-center mb-4">
+              <Badge className="bg-indigo-600 text-white border-none font-black text-[8px] uppercase tracking-widest">Step {loopStep + 1} of 5</Badge>
               <div className="flex gap-1">
                 {[0, 1, 2, 3, 4].map((i) => (
-                  <div key={i} className={cn("w-2 h-2 rounded-full", i <= loopStep ? "bg-primary" : "bg-primary/20")} />
+                  <div key={i} className={cn("w-2 h-2 rounded-full", i <= loopStep ? "bg-indigo-600" : "bg-indigo-200")} />
                 ))}
               </div>
             </div>
-            <CardTitle className="text-2xl font-serif pt-4">{question}</CardTitle>
+            <CardTitle className="text-2xl font-serif leading-tight">{getLoopQuestion()}</CardTitle>
           </CardHeader>
           <CardContent className="p-8">
             <Textarea 
               autoFocus
-              placeholder="Your answer..." 
+              placeholder="First thing that comes up..." 
               value={currentLoopResponse}
               onChange={(e) => setCurrentLoopResponse(e.target.value)}
-              onKeyDown={handleKeyDown}
-              className="min-h-[120px] text-lg border-none focus-visible:ring-0 p-0 resize-none placeholder:text-muted-foreground/30"
+              onKeyDown={(e) => e.key === 'Enter' && !e.shiftKey && (e.preventDefault(), handleLoopNext())}
+              className="min-h-[120px] text-xl border-none focus-visible:ring-0 p-0 resize-none placeholder:text-slate-300"
             />
           </CardContent>
-          <CardFooter className="bg-secondary/10 p-4 flex justify-between">
-            <Button variant="ghost" onClick={handleLoopBack} className="text-muted-foreground hover:text-primary font-bold">
+          <CardFooter className="bg-slate-50 p-4 flex justify-between">
+            <Button variant="ghost" onClick={handleLoopBack} className="text-slate-400 font-bold">
               <ArrowLeft className="mr-2" size={16} /> Back
             </Button>
-            <Button onClick={handleLoopNext} disabled={!currentLoopResponse.trim()} className="bg-primary text-white rounded-xl px-8">
-              {loopStep === 4 ? "Complete Loop" : "Next Question"} <ArrowRight className="ml-2" size={16} />
+            <Button onClick={handleLoopNext} disabled={!currentLoopResponse.trim()} className="bg-indigo-600 text-white rounded-xl px-8 font-black text-xs uppercase tracking-widest h-11">
+              Next <ArrowRight className="ml-2" size={16} />
             </Button>
           </CardFooter>
         </Card>
@@ -412,78 +413,111 @@ const IdentityShiftingTool = () => {
   };
 
   const renderPhase3 = () => (
-    <div className="space-y-8 animate-in fade-in slide-in-from-right-4 duration-500 text-center">
-      <div className="space-y-4">
-        <div className="inline-flex items-center justify-center w-16 h-16 bg-emerald-100 dark:bg-emerald-900/30 rounded-full text-emerald-600 mb-2">
-          <Fingerprint size={32} />
+    <div className="space-y-8 animate-in fade-in slide-in-from-right-4 duration-500">
+      <div className="text-center space-y-2">
+        <div className="inline-flex items-center justify-center w-16 h-16 bg-indigo-100 rounded-full text-indigo-600 mb-2">
+          <ShieldCheck size={32} />
         </div>
-        <h3 className="text-2xl font-serif font-bold">Phase 3: Checking the Identity</h3>
-        <p className="text-muted-foreground">Look back at the identity: <span className="font-bold text-foreground">"{formData.identity}"</span>.</p>
-        <div className="p-6 bg-secondary/20 rounded-2xl border border-secondary/30 max-w-md mx-auto">
-          <p className="text-lg italic">"Does that identity still feel solid, true, or relevant?"</p>
-        </div>
+        <h3 className="text-2xl font-serif font-bold">Phase 3: Checking Identity</h3>
+        <p className="text-muted-foreground">Testing the stability of the shift across time and space.</p>
       </div>
-      <div className="flex flex-col sm:flex-row gap-4 justify-center">
-        <Button variant="outline" onClick={() => { setPhase(2); setLoopStep(0); }} className="rounded-xl h-12 px-8">
-          <RotateCcw className="mr-2" size={18} /> It's still there, loop again
-        </Button>
-        <Button onClick={handleNext} className="bg-primary text-white rounded-xl h-12 px-8">
-          It has dissolved/shifted <ArrowRight className="ml-2" size={18} />
+
+      <div className="grid grid-cols-1 gap-4">
+        <Card className="p-8 rounded-[2rem] border-2 border-slate-100 hover:border-indigo-200 transition-all space-y-6">
+          <p className="text-lg font-bold text-center">"Do you think you might feel yourself being <span className="text-indigo-600">"{formData.identity}"</span> in the future?"</p>
+          <div className="flex gap-4 justify-center">
+            <Button variant="outline" onClick={() => handlePhase3Check(true, `${formData.identity} in the future`)} className="flex-1 h-12 rounded-xl border-rose-200 text-rose-600 hover:bg-rose-50 font-bold">Yes</Button>
+            <Button variant="outline" className="flex-1 h-12 rounded-xl border-emerald-200 text-emerald-600 hover:bg-emerald-50 font-bold">No</Button>
+          </div>
+        </Card>
+
+        <Card className="p-8 rounded-[2rem] border-2 border-slate-100 hover:border-indigo-200 transition-all space-y-6">
+          <p className="text-lg font-bold text-center">"Is there any scenario in which you might still feel yourself being <span className="text-indigo-600">"{formData.identity}"</span>?"</p>
+          <div className="flex gap-4 justify-center">
+            <Button variant="outline" onClick={() => handlePhase3Check(true, `${formData.identity} in that scenario`)} className="flex-1 h-12 rounded-xl border-rose-200 text-rose-600 hover:bg-rose-50 font-bold">Yes</Button>
+            <Button variant="outline" className="flex-1 h-12 rounded-xl border-emerald-200 text-emerald-600 hover:bg-emerald-50 font-bold">No</Button>
+          </div>
+        </Card>
+      </div>
+
+      <div className="flex justify-center pt-4">
+        <Button onClick={handleNext} className="bg-indigo-600 hover:bg-indigo-700 text-white rounded-2xl h-14 px-12 font-black text-xs uppercase tracking-widest shadow-xl">
+          Move to Phase 4 <ArrowRight className="ml-2" size={18} />
         </Button>
       </div>
     </div>
   );
 
   const renderPhase4 = () => (
-    <div className="space-y-8 animate-in fade-in slide-in-from-right-4 duration-500 text-center">
+    <div className="space-y-8 animate-in fade-in slide-in-from-right-4 duration-500 text-center py-8">
       <div className="space-y-4">
-        <div className="inline-flex items-center justify-center w-16 h-16 bg-indigo-100 dark:bg-indigo-900/30 rounded-full text-indigo-600 mb-2">
-          <Brain size={32} />
+        <div className="inline-flex items-center justify-center w-16 h-16 bg-amber-100 rounded-full text-amber-600 mb-2">
+          <Zap size={32} />
         </div>
-        <h3 className="text-2xl font-serif font-bold">Phase 4: Checking the Problem</h3>
-        <p className="text-muted-foreground">Now think about the original problem: <span className="font-bold text-foreground">"{formData.problem}"</span>.</p>
-        <div className="p-6 bg-secondary/20 rounded-2xl border border-secondary/30 max-w-md mx-auto">
-          <p className="text-lg italic">"How does that problem look or feel to you now?"</p>
-        </div>
+        <h3 className="text-2xl font-serif font-bold">Phase 4: Re-assessing the Problem</h3>
+        <p className="text-muted-foreground">"Feel <span className="text-foreground font-bold">"{formData.problem}"</span>... does it still feel like a problem?"</p>
       </div>
-      <div className="flex flex-col sm:flex-row gap-4 justify-center">
-        <Button variant="outline" onClick={() => setPhase(1)} className="rounded-xl h-12 px-8">
-          <ArrowLeft className="mr-2" size={18} /> Re-evaluate Phase 1
+      <div className="flex gap-4 justify-center">
+        <Button variant="outline" onClick={() => { reset(); setPhase(1); }} className="h-14 px-10 rounded-2xl border-2 border-rose-200 text-rose-600 font-black text-xs uppercase tracking-widest">
+          Yes, start new process
         </Button>
-        <Button onClick={handleNext} className="bg-primary text-white rounded-xl h-12 px-8">
-          It feels different/resolved <ArrowRight className="ml-2" size={18} />
+        <Button onClick={handleNext} className="h-14 px-10 rounded-2xl bg-emerald-600 hover:bg-emerald-700 text-white font-black text-xs uppercase tracking-widest shadow-lg">
+          No, it's clear
         </Button>
       </div>
     </div>
   );
 
   const renderPhase5 = () => (
-    <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
-      <div className="text-center space-y-2 mb-6">
-        <div className="inline-flex items-center justify-center w-12 h-12 bg-amber-100 dark:bg-amber-900/30 rounded-full text-amber-600 mb-2">
-          <Sparkles size={24} />
+    <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-700">
+      <div className="text-center space-y-2">
+        <div className="inline-flex items-center justify-center w-16 h-16 bg-emerald-100 rounded-full text-emerald-600 mb-2">
+          <Sparkles size={32} />
         </div>
-        <h3 className="text-xl font-serif font-bold">Phase 5: Integration</h3>
-        <p className="text-sm text-muted-foreground">Final reflections to ground the shift.</p>
+        <h3 className="text-2xl font-serif font-bold">Phase 5: Conscious Integration</h3>
+        <p className="text-muted-foreground">Final reflections to ground the new state.</p>
       </div>
 
-      <div className="space-y-4">
-        <div className="space-y-2">
-          <Label htmlFor="awareness">What is the new awareness or perspective you're taking away?</Label>
-          <Textarea id="awareness" placeholder="I realized that..." value={formData.integrationAwareness} onChange={(e) => setFormData({ ...formData, integrationAwareness: e.target.value })} onKeyDown={handleKeyDown} className="min-h-[100px] rounded-xl" />
+      <div className="grid grid-cols-1 gap-6">
+        <div className="space-y-4">
+          <h4 className="text-[10px] font-black uppercase tracking-[0.3em] text-slate-400 px-2">Awareness</h4>
+          <div className="space-y-4">
+            <div className="space-y-2">
+              <Label className="text-sm font-bold">1. How do you feel about the problem now?</Label>
+              <Input value={formData.feelingsNow} onChange={e => setFormData({...formData, feelingsNow: e.target.value})} className="rounded-xl h-12" />
+            </div>
+            <div className="space-y-2">
+              <Label className="text-sm font-bold">2. What are you more conscious of now than before?</Label>
+              <Input value={formData.moreConsciousOf} onChange={e => setFormData({...formData, moreConsciousOf: e.target.value})} className="rounded-xl h-12" />
+            </div>
+            <div className="space-y-2">
+              <Label className="text-sm font-bold">3. What's your new intention?</Label>
+              <Input value={formData.newIntention} onChange={e => setFormData({...formData, newIntention: e.target.value})} className="rounded-xl h-12" />
+            </div>
+          </div>
         </div>
-        <div className="space-y-2">
-          <Label htmlFor="action">What is one small action you can take from this new space?</Label>
-          <Input id="action" placeholder="I will..." value={formData.integrationAction} onChange={(e) => setFormData({ ...formData, integrationAction: e.target.value })} onKeyDown={handleKeyDown} className="rounded-xl" />
+
+        <div className="space-y-4 pt-4 border-t border-slate-100">
+          <h4 className="text-[10px] font-black uppercase tracking-[0.3em] text-slate-400 px-2">Action & Next Steps</h4>
+          <div className="space-y-4">
+            <div className="space-y-2">
+              <Label className="text-sm font-bold">1. How are you going to put that intention or awareness into action?</Label>
+              <Input value={formData.actionPlan} onChange={e => setFormData({...formData, actionPlan: e.target.value})} className="rounded-xl h-12" />
+            </div>
+            <div className="space-y-2">
+              <Label className="text-sm font-bold">2. What is the No.1 thing to do to make that happen?</Label>
+              <Input value={formData.no1Thing} onChange={e => setFormData({...formData, no1Thing: e.target.value})} className="rounded-xl h-12" />
+            </div>
+          </div>
         </div>
       </div>
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-        <Button onClick={() => saveProgress(true)} disabled={isSaving || !formData.integrationAwareness} className="bg-primary text-white rounded-xl h-12 font-bold">
-          {isSaving ? <Loader2 className="mr-2 animate-spin" size={18} /> : <CheckCircle2 className="mr-2" size={18} />} Complete & Save
+      <div className="flex gap-4 pt-6">
+        <Button onClick={() => saveProgress(true)} disabled={isSaving || !formData.newIntention} className="flex-[2] bg-indigo-600 hover:bg-indigo-700 text-white rounded-2xl h-14 font-black text-xs uppercase tracking-widest shadow-xl">
+          {isSaving ? <Loader2 className="mr-2 animate-spin" /> : <CheckCircle2 className="mr-2" />} Complete & Save Session
         </Button>
-        <Button onClick={reset} variant="ghost" className="w-full text-muted-foreground rounded-xl h-12 font-bold">
-          <RotateCcw className="mr-2" size={18} /> Start Fresh Session
+        <Button onClick={reset} variant="ghost" className="flex-1 text-slate-400 rounded-2xl h-14 font-bold">
+          Start Fresh
         </Button>
       </div>
     </div>

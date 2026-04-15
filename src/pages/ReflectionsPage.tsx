@@ -60,8 +60,7 @@ const ReflectionsPage = () => {
   const [selectedAppointmentId, setSelectedAppointmentId] = useState<string | null>(preselectedAppId || null);
   
   // AI Analysis State
-  const [analyzingId, setAnalyzingId] = useState<string | null>(null);
-  const [extractions, setExtractions] = useState<Record<string, any[]>>({});
+  const [analyzingIds, setAnalyzingIds] = useState<Set<string>>(new Set());
   const [addingToBacklog, setAddingToBacklog] = useState<string | null>(null);
 
   const fetchData = async () => {
@@ -104,20 +103,28 @@ const ReflectionsPage = () => {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error("Not authenticated");
 
-      const { error } = await supabase
+      const { data, error } = await supabase
         .from('practitioner_reflections')
         .insert({
           user_id: user.id,
           content: content.trim(),
           category,
           appointment_id: selectedAppointmentId === "none" ? null : selectedAppointmentId
-        });
+        })
+        .select()
+        .single();
 
       if (error) throw error;
 
-      showSuccess("Reflection saved to your log.");
+      showSuccess("Reflection saved. Analyzing for insights...");
       setContent("");
       setSelectedAppointmentId(null);
+      
+      // Trigger background analysis immediately
+      if (data) {
+        handleAnalyze(data);
+      }
+      
       fetchData();
     } catch (err: any) {
       showError(err.message);
@@ -126,24 +133,8 @@ const ReflectionsPage = () => {
     }
   };
 
-  const handleDelete = async (id: string) => {
-    if (!confirm("Delete this reflection?")) return;
-    try {
-      const { error } = await supabase
-        .from('practitioner_reflections')
-        .delete()
-        .eq('id', id);
-
-      if (error) throw error;
-      setReflections(reflections.filter(r => r.id !== id));
-      showSuccess("Reflection removed.");
-    } catch (err) {
-      showError("Failed to delete.");
-    }
-  };
-
   const handleAnalyze = async (reflection: any) => {
-    setAnalyzingId(reflection.id);
+    setAnalyzingIds(prev => new Set(prev).add(reflection.id));
     try {
       const { data, error } = await supabase.functions.invoke('analyze-reflections', {
         body: { content: reflection.content }
@@ -151,19 +142,28 @@ const ReflectionsPage = () => {
 
       if (error) throw error;
 
-      if (data?.extractions) {
-        setExtractions(prev => ({
-          ...prev,
-          [reflection.id]: data.extractions
-        }));
-        showSuccess(`Extracted ${data.extractions.length} items from reflection.`);
-      } else {
-        showError("No identities or beliefs found in this text.");
+      if (data?.extractions && data.extractions.length > 0) {
+        // Persist the extractions to the database
+        await supabase
+          .from('practitioner_reflections')
+          .update({ ai_extractions: data.extractions })
+          .eq('id', reflection.id);
+        
+        // Refresh local state to show the new items
+        setReflections(prev => prev.map(r => 
+          r.id === reflection.id ? { ...r, ai_extractions: data.extractions } : r
+        ));
+        
+        showSuccess(`AI found ${data.extractions.length} potential identities/beliefs.`);
       }
     } catch (err: any) {
-      showError(err.message || "AI Analysis failed.");
+      console.error("Background analysis failed:", err);
     } finally {
-      setAnalyzingId(null);
+      setAnalyzingIds(prev => {
+        const next = new Set(prev);
+        next.delete(reflection.id);
+        return next;
+      });
     }
   };
 
@@ -186,15 +186,47 @@ const ReflectionsPage = () => {
 
       showSuccess(`"${item.content}" added to your Sandbox Backlog.`);
       
-      // Remove from local extractions list
-      setExtractions(prev => ({
-        ...prev,
-        [reflectionId]: prev[reflectionId].filter(i => i.content !== item.content)
+      // Update the local reflection state to remove the item from the "suggested" list
+      setReflections(prev => prev.map(r => {
+        if (r.id === reflectionId) {
+          return {
+            ...r,
+            ai_extractions: r.ai_extractions.filter((i: any) => i.content !== item.content)
+          };
+        }
+        return r;
       }));
+
+      // Also update the DB to reflect it's been handled
+      const reflection = reflections.find(r => r.id === reflectionId);
+      if (reflection) {
+        const remaining = reflection.ai_extractions.filter((i: any) => i.content !== item.content);
+        await supabase
+          .from('practitioner_reflections')
+          .update({ ai_extractions: remaining })
+          .eq('id', reflectionId);
+      }
+
     } catch (err: any) {
       showError(err.message);
     } finally {
       setAddingToBacklog(null);
+    }
+  };
+
+  const handleDelete = async (id: string) => {
+    if (!confirm("Delete this reflection?")) return;
+    try {
+      const { error } = await supabase
+        .from('practitioner_reflections')
+        .delete()
+        .eq('id', id);
+
+      if (error) throw error;
+      setReflections(reflections.filter(r => r.id !== id));
+      showSuccess("Reflection removed.");
+    } catch (err) {
+      showError("Failed to delete.");
     }
   };
 
@@ -291,7 +323,8 @@ const ReflectionsPage = () => {
               {reflections.map((ref) => {
                 const catInfo = CATEGORIES.find(c => c.id === ref.category) || CATEGORIES[0];
                 const linkedApp = ref.appointments;
-                const currentExtractions = extractions[ref.id] || [];
+                const currentExtractions = ref.ai_extractions || [];
+                const isAnalyzing = analyzingIds.has(ref.id);
 
                 return (
                   <Card key={ref.id} className="border-none shadow-md rounded-[2rem] bg-white group hover:shadow-xl transition-all duration-500 overflow-hidden">
@@ -320,16 +353,24 @@ const ReflectionsPage = () => {
                           </div>
                         </div>
                         <div className="flex items-center gap-2">
-                          <Button 
-                            variant="ghost" 
-                            size="sm" 
-                            onClick={() => handleAnalyze(ref)}
-                            disabled={analyzingId === ref.id}
-                            className="h-9 px-4 rounded-xl text-indigo-600 hover:bg-indigo-50 font-black text-[10px] uppercase tracking-widest"
-                          >
-                            {analyzingId === ref.id ? <Loader2 size={14} className="mr-2 animate-spin" /> : <Wand2 size={14} className="mr-2" />}
-                            PULL Insights
-                          </Button>
+                          {isAnalyzing ? (
+                            <div className="flex items-center gap-2 px-4 py-2 bg-indigo-50 text-indigo-600 rounded-xl font-black text-[10px] uppercase tracking-widest">
+                              <Loader2 size={14} className="animate-spin" />
+                              Analyzing...
+                            </div>
+                          ) : (
+                            currentExtractions.length === 0 && (
+                              <Button 
+                                variant="ghost" 
+                                size="sm" 
+                                onClick={() => handleAnalyze(ref)}
+                                className="h-9 px-4 rounded-xl text-indigo-600 hover:bg-indigo-50 font-black text-[10px] uppercase tracking-widest"
+                              >
+                                <Wand2 size={14} className="mr-2" />
+                                PULL Insights
+                              </Button>
+                            )
+                          )}
                           <Button 
                             variant="ghost" 
                             size="icon" 
@@ -353,12 +394,12 @@ const ReflectionsPage = () => {
                             <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Extracted for Backlog</p>
                           </div>
                           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                            {currentExtractions.map((item, i) => (
+                            {currentExtractions.map((item: any, i: number) => (
                               <div key={i} className="flex items-center justify-between p-3 bg-slate-50 rounded-xl border border-slate-100 group/item">
                                 <div className="flex items-center gap-3 min-w-0">
                                   <div className={cn(
                                     "w-7 h-7 rounded-lg flex items-center justify-center shrink-0",
-                                    item.type === 'identity' ? "bg-indigo-100 text-indigo-600" : "bg-rose-100 text-rose-600"
+                                    item.type === 'identity' ? "bg-indigo-100 text-indigo-600" : "bg-rose-100 text-rose-700"
                                   )}>
                                     {item.type === 'identity' ? <Fingerprint size={14} /> : <ShieldAlert size={14} />}
                                   </div>

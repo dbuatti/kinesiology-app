@@ -84,7 +84,7 @@ const AppointmentsPage = () => {
   const [totalCount, setTotalCount] = useState(0);
   const [open, setOpen] = useState(false);
   const [search, setSearch] = useState("");
-  const [statusFilter, setStatusFilter] = useState<string>("all");
+  const [statusFilter, setStatusFilter] = useState<string>("Scheduled");
   const [viewMode, setViewMode] = useState<'list' | 'calendar'>('list');
   
   const [assessmentModal, setAssessmentModal] = useState<{ open: boolean; type: 'bolt' | 'coherence'; clientId: string; clientName: string } | null>(null);

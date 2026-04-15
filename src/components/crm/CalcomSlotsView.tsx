@@ -34,7 +34,8 @@ import {
   ArrowLeft,
   ArrowRight,
   Mail,
-  Send
+  Send,
+  Sparkles
 } from "lucide-react";
 import { format, addWeeks, subWeeks, startOfToday, endOfDay, eachDayOfInterval, addDays, isBefore, startOfDay } from "date-fns";
 import { supabase } from "@/integrations/supabase/client";
@@ -64,6 +65,8 @@ import {
 import AppointmentForm from "./AppointmentForm";
 import { CALCOM_CONFIG } from "../../config/integrations";
 
+const DAYS_OF_WEEK = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"];
+
 const CalcomSlotsView = () => {
   const [loading, setLoading] = useState(false);
   const [processingDate, setProcessingDate] = useState<string | null>(null);
@@ -76,7 +79,7 @@ const CalcomSlotsView = () => {
   const [error, setError] = useState<string | null>(null);
   const [weeks, setWeeks] = useState(4); 
   const [weeksOffset, setWeeksOffset] = useState(0); 
-  const [copied, setCopied] = useState(false);
+  const [copied, setCopied] = useState<string | null>(null);
   const [showOnlyAvailable, setShowOnlyAvailable] = useState(false);
   const [configOpen, setConfigOpen] = useState(false);
   
@@ -104,6 +107,18 @@ const CalcomSlotsView = () => {
     Object.values(bookings).forEach(dayBookings => totalBookings += dayBookings.length);
     return { totalSlots, totalBookings };
   }, [slots, bookings]);
+
+  const availableDaysOfWeek = useMemo(() => {
+    const days = new Set<string>();
+    dateRange.forEach(date => {
+      const isBlocked = blockedDates.includes(date);
+      const daySlots = slots[date] || [];
+      if (!isBlocked && daySlots.length > 0) {
+        days.add(format(new Date(date), "EEEE"));
+      }
+    });
+    return DAYS_OF_WEEK.filter(d => days.has(d));
+  }, [dateRange, slots, blockedDates]);
 
   const fetchSlots = async () => {
     setLoading(true);
@@ -252,6 +267,48 @@ const CalcomSlotsView = () => {
     setBookingDialogOpen(true);
   };
 
+  const handleCopyDay = (dayName: string) => {
+    if (dateRange.length === 0) return;
+
+    let text = `Hi! Here is my current availability for ${dayName}s:\n\n`;
+    let hasAny = false;
+
+    dateRange.forEach(date => {
+      const dateObj = new Date(date);
+      const currentDayName = format(dateObj, "EEEE");
+      
+      if (currentDayName !== dayName) return;
+
+      const isBlocked = blockedDates.includes(date);
+      const daySlots = slots[date] || [];
+      
+      if (!isBlocked && daySlots.length > 0) {
+        hasAny = true;
+        const formattedDate = format(dateObj, "MMMM do");
+        
+        const morning = daySlots.filter(s => new Date(s.time || s.start).getHours() < 12);
+        const afternoon = daySlots.filter(s => new Date(s.time || s.start).getHours() >= 12);
+        
+        text += `${formattedDate}\n`;
+        if (morning.length > 0) text += `  Morning: ${morning.map(s => format(new Date(s.time || s.start), "h:mm a")).join(", ")}\n`;
+        if (afternoon.length > 0) text += `  Afternoon: ${afternoon.map(s => format(new Date(s.time || s.start), "h:mm a")).join(", ")}\n`;
+        text += "\n";
+      }
+    });
+
+    if (!hasAny) {
+      showError(`No available slots found for ${dayName}s.`);
+      return;
+    }
+
+    text += `You can book directly here: ${CALCOM_CONFIG.BOOKING_URL}`;
+
+    navigator.clipboard.writeText(text);
+    setCopied(dayName);
+    showSuccess(`${dayName} availability copied!`);
+    setTimeout(() => setCopied(null), 2000);
+  };
+
   const handleCopyAll = () => {
     if (dateRange.length === 0) return;
 
@@ -284,9 +341,9 @@ const CalcomSlotsView = () => {
     text += `You can book directly here: ${CALCOM_CONFIG.BOOKING_URL}`;
 
     navigator.clipboard.writeText(text);
-    setCopied(true);
-    showSuccess("Availability copied!");
-    setTimeout(() => setCopied(false), 2000);
+    setCopied('all');
+    showSuccess("All availability copied!");
+    setTimeout(() => setCopied(null), 2000);
   };
 
   const toggleDayExpansion = (date: string) => {
@@ -376,8 +433,8 @@ const CalcomSlotsView = () => {
                 disabled={loading}
                 className="rounded-xl h-10 px-4 border-indigo-100 text-indigo-600 hover:bg-indigo-100 rounded-xl font-black text-[10px] uppercase tracking-widest"
               >
-                {copied ? <Check size={14} className="mr-2" /> : <Copy size={14} className="mr-2" />}
-                Copy Text
+                {copied === 'all' ? <Check size={14} className="mr-2" /> : <Copy size={14} className="mr-2" />}
+                Copy All
               </Button>
               <Button 
                 onClick={fetchSlots} 
@@ -390,7 +447,7 @@ const CalcomSlotsView = () => {
             </div>
           </div>
 
-          <div className="flex items-center justify-between px-4">
+          <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 px-4">
             <div className="flex items-center gap-6">
               <button
                 onClick={() => setShowOnlyAvailable(!showOnlyAvailable)}
@@ -437,6 +494,31 @@ const CalcomSlotsView = () => {
               </CollapsibleTrigger>
             </Collapsible>
           </div>
+
+          {/* Copy by Day Bar */}
+          {availableDaysOfWeek.length > 0 && (
+            <div className="px-4 py-3 bg-indigo-50/50 dark:bg-indigo-900/10 rounded-2xl border border-indigo-100 dark:border-indigo-900/30 flex flex-wrap items-center gap-3 animate-in slide-in-from-top-2 duration-500">
+              <div className="flex items-center gap-2 mr-2">
+                <Sparkles size={14} className="text-indigo-500" />
+                <span className="text-[10px] font-black uppercase tracking-widest text-indigo-600 dark:text-indigo-400">Copy by Day:</span>
+              </div>
+              {availableDaysOfWeek.map(day => (
+                <Button
+                  key={day}
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => handleCopyDay(day)}
+                  className={cn(
+                    "h-8 px-3 rounded-lg text-[10px] font-black uppercase tracking-widest transition-all",
+                    copied === day ? "bg-emerald-500 text-white hover:bg-emerald-600" : "text-slate-500 hover:bg-indigo-100 dark:hover:bg-indigo-900/30 hover:text-indigo-600"
+                  )}
+                >
+                  {copied === day ? <Check size={12} className="mr-1.5" /> : <Copy size={12} className="mr-1.5" />}
+                  {day}s
+                </Button>
+              ))}
+            </div>
+          )}
 
           <Collapsible open={configOpen}>
             <CollapsibleContent className="animate-in slide-in-from-top-2 duration-300">

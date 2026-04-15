@@ -204,11 +204,15 @@ const AppointmentForm = ({
         if (dbError) throw dbError;
         showSuccess("Session updated and synced with Cal.com.");
       } else {
+        // Use UPSERT here to handle the race condition with the Cal.com webhook
+        // If the webhook beat us to it, we update that record instead of creating a new one
         const { data: newApp, error: dbError } = await supabase
           .from("appointments")
-          .insert({
+          .upsert({
             ...payload,
             send_onboarding: values.send_onboarding
+          }, { 
+            onConflict: calcomId ? 'calcom_booking_id' : 'id' 
           })
           .select('id')
           .single();

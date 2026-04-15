@@ -9,7 +9,7 @@ const corsHeaders = {
 }
 
 serve(async (req) => {
-  console.log("--- [sync-calcom-bookings] v5.0 — Aggressive Date Matching ---");
+  console.log("--- [sync-calcom-bookings] v6.0 — Upsert Logic ---");
 
   if (req.method === 'OPTIONS') return new Response('ok', { headers: corsHeaders })
 
@@ -63,57 +63,30 @@ serve(async (req) => {
 
       if (!dbClient) continue;
 
-      // 2. Match Strategy: ID first
-      const { data: appById } = await supabase
+      // 2. Use UPSERT for the appointment to handle race conditions
+      // We also try to match by date for manual entries that aren't linked yet
+      const { data: existingManual } = await supabase
         .from('appointments')
         .select('id')
-        .eq('calcom_booking_id', calcomId)
+        .eq('client_id', dbClient.id)
+        .eq('date', startTime)
+        .is('calcom_booking_id', null)
         .maybeSingle();
 
-      if (appById) {
-        console.log(`[sync] Found by ID: ${calcomId}. Updating date to ${startTime}`);
-        await supabase
-          .from('appointments')
-          .update({ 
-            date: startTime,
-            is_paid: booking.metadata?.is_paid === "true" || !!booking.payment?.[0]
-          })
-          .eq('id', appById.id);
-      } else {
-        // 3. Aggressive Match by Date + Client (Fixes 404/ID mismatch issues)
-        console.log(`[sync] ID ${calcomId} not found in CRM. Searching by date ${startTime} for client ${dbClient.id}`);
-        const { data: appByDate } = await supabase
-          .from('appointments')
-          .select('id')
-          .eq('client_id', dbClient.id)
-          .eq('date', startTime)
-          .maybeSingle();
-
-        if (appByDate) {
-          console.log(`[sync] Match found by date! Linking CRM app ${appByDate.id} to Cal.com ID ${calcomId}`);
-          await supabase
-            .from('appointments')
-            .update({ 
-              calcom_booking_id: calcomId,
-              is_paid: booking.metadata?.is_paid === "true" || !!booking.payment?.[0]
-            })
-            .eq('id', appByDate.id);
-        } else {
-          // 4. Create new if no match at all
-          console.log(`[sync] No match found. Creating new record for ${calcomId}`);
-          await supabase
-            .from('appointments')
-            .insert({
-              user_id: PRACTITIONER_ID,
-              client_id: dbClient.id,
-              date: startTime,
-              tag: "Kinesiology",
-              status: "Scheduled",
-              calcom_booking_id: calcomId,
-              is_paid: booking.metadata?.is_paid === "true" || !!booking.payment?.[0]
-            });
-        }
-      }
+      await supabase
+        .from('appointments')
+        .upsert({
+          id: existingManual?.id,
+          user_id: PRACTITIONER_ID,
+          client_id: dbClient.id,
+          date: startTime,
+          tag: "Kinesiology",
+          status: "Scheduled",
+          calcom_booking_id: calcomId,
+          is_paid: booking.metadata?.is_paid === "true" || !!booking.payment?.[0]
+        }, { 
+          onConflict: 'calcom_booking_id' 
+        });
 
       syncedCount++;
     }

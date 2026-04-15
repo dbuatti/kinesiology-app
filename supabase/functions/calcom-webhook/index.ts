@@ -78,61 +78,39 @@ serve(async (req) => {
       throw new Error("Failed to upsert client.");
     }
 
-    // 3. Handle Reschedules or New Bookings
-    const { data: appById } = await supabase
+    // 3. Handle Reschedules or New Bookings using UPSERT
+    // This is the core fix for the race condition duplication
+    console.log(`[${functionName}] Upserting record for booking: ${calcomId}`);
+    
+    // First, try to find if there's a manual entry for this client and date that isn't linked yet
+    const { data: existingManual } = await supabase
       .from('appointments')
       .select('id')
-      .eq('calcom_booking_id', calcomId)
+      .eq('client_id', dbClient.id)
+      .eq('date', startTime)
+      .is('calcom_booking_id', null)
       .maybeSingle();
 
-    if (appById) {
-      console.log(`[${functionName}] Updating existing record by ID: ${calcomId}`);
-      await supabase
-        .from('appointments')
-        .update({
-          date: startTime,
-          is_paid: payload.metadata?.is_paid === "true" || !!payload.payment?.[0],
-          price_amount: priceAmount,
-          price_currency: 'AUD'
-        })
-        .eq('id', appById.id);
-    } else {
-      // Try Smart Match by date to see if we should link an existing manual entry
-      const { data: appByDate } = await supabase
-        .from('appointments')
-        .select('id')
-        .eq('client_id', dbClient.id)
-        .eq('date', startTime)
-        .maybeSingle();
+    const { error: appError } = await supabase
+      .from('appointments')
+      .upsert({
+        id: existingManual?.id, // If we found a manual match, use its ID to link it
+        user_id: PRACTITIONER_ID,
+        client_id: dbClient.id,
+        date: startTime,
+        tag: "Kinesiology",
+        status: "Scheduled",
+        calcom_booking_id: calcomId,
+        is_paid: payload.metadata?.is_paid === "true" || !!payload.payment?.[0],
+        price_amount: priceAmount,
+        price_currency: 'AUD'
+      }, { 
+        onConflict: 'calcom_booking_id' 
+      });
 
-      if (appByDate) {
-        console.log(`[${functionName}] Linking existing manual app ${appByDate.id} to Cal.com ID ${calcomId}`);
-        await supabase
-          .from('appointments')
-          .update({
-            calcom_booking_id: calcomId,
-            is_paid: payload.metadata?.is_paid === "true" || !!payload.payment?.[0],
-            price_amount: priceAmount,
-            price_currency: 'AUD'
-          })
-          .eq('id', appByDate.id);
-      } else {
-        // New Booking
-        console.log(`[${functionName}] Creating new record for booking: ${calcomId}`);
-        await supabase
-          .from('appointments')
-          .insert({
-            user_id: PRACTITIONER_ID,
-            client_id: dbClient.id,
-            date: startTime,
-            tag: "Kinesiology",
-            status: "Scheduled",
-            calcom_booking_id: calcomId,
-            is_paid: payload.metadata?.is_paid === "true" || !!payload.payment?.[0],
-            price_amount: priceAmount,
-            price_currency: 'AUD'
-          });
-      }
+    if (appError) {
+      console.error(`[${functionName}] Upsert Error:`, appError);
+      throw appError;
     }
 
     console.log(`[${functionName}] Webhook processed successfully`);

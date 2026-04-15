@@ -32,7 +32,7 @@ serve(async (req) => {
       });
     }
 
-    console.log("[analyze-reflections] Analyzing content...");
+    console.log("[analyze-reflections] Analyzing content with gemini-2.5-flash...");
 
     const prompt = `Act as a clinical supervisor for a Kinesiology practitioner. 
     Analyze the following reflection text and extract potential "Limiting Beliefs" or "Stuck Identities".
@@ -46,7 +46,7 @@ serve(async (req) => {
     TEXT TO ANALYZE:
     "${content}"`;
 
-    const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${geminiKey}`, {
+    const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${geminiKey}`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({

@@ -18,7 +18,12 @@ import {
   Calendar,
   Link as LinkIcon,
   User,
-  X
+  X,
+  Wand2,
+  Fingerprint,
+  ShieldAlert,
+  PlusCircle,
+  CheckCircle2
 } from "lucide-react";
 import { format } from "date-fns";
 import { showSuccess, showError } from "@/utils/toast";
@@ -53,6 +58,11 @@ const ReflectionsPage = () => {
   const [content, setContent] = useState("");
   const [category, setCategory] = useState("General");
   const [selectedAppointmentId, setSelectedAppointmentId] = useState<string | null>(preselectedAppId || null);
+  
+  // AI Analysis State
+  const [analyzingId, setAnalyzingId] = useState<string | null>(null);
+  const [extractions, setExtractions] = useState<Record<string, any[]>>({});
+  const [addingToBacklog, setAddingToBacklog] = useState<string | null>(null);
 
   const fetchData = async () => {
     try {
@@ -129,6 +139,62 @@ const ReflectionsPage = () => {
       showSuccess("Reflection removed.");
     } catch (err) {
       showError("Failed to delete.");
+    }
+  };
+
+  const handleAnalyze = async (reflection: any) => {
+    setAnalyzingId(reflection.id);
+    try {
+      const { data, error } = await supabase.functions.invoke('analyze-reflections', {
+        body: { content: reflection.content }
+      });
+
+      if (error) throw error;
+
+      if (data?.extractions) {
+        setExtractions(prev => ({
+          ...prev,
+          [reflection.id]: data.extractions
+        }));
+        showSuccess(`Extracted ${data.extractions.length} items from reflection.`);
+      } else {
+        showError("No identities or beliefs found in this text.");
+      }
+    } catch (err: any) {
+      showError(err.message || "AI Analysis failed.");
+    } finally {
+      setAnalyzingId(null);
+    }
+  };
+
+  const handleAddToBacklog = async (reflectionId: string, item: any) => {
+    setAddingToBacklog(`${reflectionId}-${item.content}`);
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) throw new Error("Not authenticated");
+
+      const { error } = await supabase
+        .from('identity_backlog')
+        .insert({
+          user_id: user.id,
+          content: item.content,
+          type: item.type,
+          status: 'pending'
+        });
+
+      if (error) throw error;
+
+      showSuccess(`"${item.content}" added to your Sandbox Backlog.`);
+      
+      // Remove from local extractions list
+      setExtractions(prev => ({
+        ...prev,
+        [reflectionId]: prev[reflectionId].filter(i => i.content !== item.content)
+      }));
+    } catch (err: any) {
+      showError(err.message);
+    } finally {
+      setAddingToBacklog(null);
     }
   };
 
@@ -221,14 +287,15 @@ const ReflectionsPage = () => {
           {loading ? (
             <div className="py-20 flex justify-center"><Loader2 className="animate-spin text-indigo-500" size={32} /></div>
           ) : reflections.length > 0 ? (
-            <div className="grid grid-cols-1 gap-4">
+            <div className="grid grid-cols-1 gap-6">
               {reflections.map((ref) => {
                 const catInfo = CATEGORIES.find(c => c.id === ref.category) || CATEGORIES[0];
                 const linkedApp = ref.appointments;
+                const currentExtractions = extractions[ref.id] || [];
 
                 return (
-                  <Card key={ref.id} className="border-none shadow-md rounded-[2rem] bg-white group hover:shadow-xl transition-all duration-500">
-                    <CardContent className="p-8 space-y-4">
+                  <Card key={ref.id} className="border-none shadow-md rounded-[2rem] bg-white group hover:shadow-xl transition-all duration-500 overflow-hidden">
+                    <CardContent className="p-8 space-y-6">
                       <div className="flex items-start justify-between">
                         <div className="flex items-center gap-3">
                           <div className={cn("w-10 h-10 rounded-xl flex items-center justify-center shadow-sm", catInfo.bg, catInfo.color)}>
@@ -252,18 +319,66 @@ const ReflectionsPage = () => {
                             </p>
                           </div>
                         </div>
-                        <Button 
-                          variant="ghost" 
-                          size="icon" 
-                          className="rounded-xl text-slate-200 hover:text-rose-600 opacity-0 group-hover:opacity-100 transition-all"
-                          onClick={() => handleDelete(ref.id)}
-                        >
-                          <Trash2 size={18} />
-                        </Button>
+                        <div className="flex items-center gap-2">
+                          <Button 
+                            variant="ghost" 
+                            size="sm" 
+                            onClick={() => handleAnalyze(ref)}
+                            disabled={analyzingId === ref.id}
+                            className="h-9 px-4 rounded-xl text-indigo-600 hover:bg-indigo-50 font-black text-[10px] uppercase tracking-widest"
+                          >
+                            {analyzingId === ref.id ? <Loader2 size={14} className="mr-2 animate-spin" /> : <Wand2 size={14} className="mr-2" />}
+                            PULL Insights
+                          </Button>
+                          <Button 
+                            variant="ghost" 
+                            size="icon" 
+                            className="rounded-xl text-slate-200 hover:text-rose-600 opacity-0 group-hover:opacity-100 transition-all"
+                            onClick={() => handleDelete(ref.id)}
+                          >
+                            <Trash2 size={18} />
+                          </Button>
+                        </div>
                       </div>
+                      
                       <p className="text-lg font-medium text-slate-700 leading-relaxed whitespace-pre-wrap">
                         {ref.content}
                       </p>
+
+                      {/* AI Extractions Display */}
+                      {currentExtractions.length > 0 && (
+                        <div className="pt-6 border-t border-slate-100 space-y-4 animate-in slide-in-from-top-2 duration-500">
+                          <div className="flex items-center gap-2">
+                            <Sparkles size={14} className="text-amber-500" />
+                            <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Extracted for Backlog</p>
+                          </div>
+                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                            {currentExtractions.map((item, i) => (
+                              <div key={i} className="flex items-center justify-between p-3 bg-slate-50 rounded-xl border border-slate-100 group/item">
+                                <div className="flex items-center gap-3 min-w-0">
+                                  <div className={cn(
+                                    "w-7 h-7 rounded-lg flex items-center justify-center shrink-0",
+                                    item.type === 'identity' ? "bg-indigo-100 text-indigo-600" : "bg-rose-100 text-rose-600"
+                                  )}>
+                                    {item.type === 'identity' ? <Fingerprint size={14} /> : <ShieldAlert size={14} />}
+                                  </div>
+                                  <p className="text-xs font-bold text-slate-700 truncate">"{item.content}"</p>
+                                </div>
+                                <Button 
+                                  variant="ghost" 
+                                  size="sm" 
+                                  disabled={addingToBacklog === `${ref.id}-${item.content}`}
+                                  onClick={() => handleAddToBacklog(ref.id, item)}
+                                  className="h-7 px-2 rounded-lg text-indigo-600 hover:bg-indigo-100 font-black text-[8px] uppercase tracking-widest"
+                                >
+                                  {addingToBacklog === `${ref.id}-${item.content}` ? <Loader2 size={10} className="animate-spin" /> : <PlusCircle size={10} className="mr-1" />}
+                                  Add to Backlog
+                                </Button>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      )}
                     </CardContent>
                   </Card>
                 );

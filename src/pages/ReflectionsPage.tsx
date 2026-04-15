@@ -30,7 +30,10 @@ import {
   GraduationCap,
   ArrowRight,
   RotateCcw,
-  Target
+  Target,
+  MessageCircle,
+  ChevronDown,
+  ChevronUp
 } from "lucide-react";
 import { format } from "date-fns";
 import { showSuccess, showError } from "@/utils/toast";
@@ -72,6 +75,11 @@ const ReflectionsPage = () => {
   const [analyzingIds, setAnalyzingIds] = useState<Set<string>>(new Set());
   const [updatingStatus, setUpdatingStatus] = useState<string | null>(null);
   const [addingToBacklog, setAddingToBacklog] = useState<string | null>(null);
+  
+  // Response State
+  const [respondingToId, setRespondingToId] = useState<string | null>(null);
+  const [tempResponse, setTempResponse] = useState("");
+  const [showHistory, setShowHistory] = useState(false);
 
   const fetchData = async () => {
     try {
@@ -125,7 +133,8 @@ const ReflectionsPage = () => {
           content: ref.content,
           date: ref.created_at,
           source: 'Manual Entry',
-          status: 'pending',
+          status: ref.response ? 'asked' : 'pending',
+          response: ref.response,
           clientName: ref.appointments?.clients?.name
         });
       }
@@ -140,6 +149,7 @@ const ReflectionsPage = () => {
             date: ref.created_at,
             source: 'AI Extracted',
             status: ext.status || 'pending',
+            response: ext.response,
             clientName: ref.appointments?.clients?.name,
             extractionIndex: idx
           });
@@ -149,6 +159,9 @@ const ReflectionsPage = () => {
 
     return questions.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
   }, [reflections]);
+
+  const pendingQuestions = useMemo(() => meetupQuestions.filter(q => q.status === 'pending'), [meetupQuestions]);
+  const answeredQuestions = useMemo(() => meetupQuestions.filter(q => q.status === 'asked'), [meetupQuestions]);
 
   const handleSave = async () => {
     if (!content.trim()) return;
@@ -247,28 +260,69 @@ const ReflectionsPage = () => {
     }
   };
 
+  const handleSaveResponse = async (question: any) => {
+    if (!tempResponse.trim()) return;
+    setUpdatingStatus(question.id);
+    
+    try {
+      if (question.id.startsWith('manual-')) {
+        const { error } = await supabase
+          .from('practitioner_reflections')
+          .update({ response: tempResponse.trim() })
+          .eq('id', question.reflectionId);
+        if (error) throw error;
+      } else {
+        const reflection = reflections.find(r => r.id === question.reflectionId);
+        if (reflection) {
+          const newExtractions = [...reflection.ai_extractions];
+          newExtractions[question.extractionIndex].status = 'asked';
+          newExtractions[question.extractionIndex].response = tempResponse.trim();
+          
+          const { error } = await supabase
+            .from('practitioner_reflections')
+            .update({ ai_extractions: newExtractions })
+            .eq('id', reflection.id);
+          if (error) throw error;
+        }
+      }
+      
+      showSuccess("Response logged and question archived.");
+      setRespondingToId(null);
+      setTempResponse("");
+      fetchData();
+    } catch (err) {
+      showError("Failed to save response.");
+    } finally {
+      setUpdatingStatus(null);
+    }
+  };
+
   const handleToggleQuestionStatus = async (question: any) => {
     setUpdatingStatus(question.id);
     try {
       const newStatus = question.status === 'asked' ? 'pending' : 'asked';
       
       if (question.id.startsWith('manual-')) {
-        showSuccess("Question status updated.");
+        const { error } = await supabase
+          .from('practitioner_reflections')
+          .update({ response: newStatus === 'pending' ? null : question.response })
+          .eq('id', question.reflectionId);
+        if (error) throw error;
       } else {
         const reflection = reflections.find(r => r.id === question.reflectionId);
         if (reflection) {
           const newExtractions = [...reflection.ai_extractions];
           newExtractions[question.extractionIndex].status = newStatus;
+          if (newStatus === 'pending') delete newExtractions[question.extractionIndex].response;
           
           await supabase
             .from('practitioner_reflections')
             .update({ ai_extractions: newExtractions })
             .eq('id', reflection.id);
-          
-          fetchData();
-          showSuccess(newStatus === 'asked' ? "Marked as asked!" : "Moved back to pending.");
         }
       }
+      fetchData();
+      showSuccess(newStatus === 'asked' ? "Marked as asked!" : "Moved back to pending.");
     } catch (err) {
       showError("Failed to update status.");
     } finally {
@@ -309,7 +363,7 @@ const ReflectionsPage = () => {
           <div className="flex items-center gap-3 bg-white p-2 rounded-2xl border border-slate-100 shadow-sm">
             <div className="px-4 py-2 text-center border-r border-slate-100">
               <p className="text-[8px] font-black text-slate-400 uppercase tracking-widest">Meetup Log</p>
-              <p className="text-xl font-black text-indigo-600">{meetupQuestions.filter(q => q.status === 'pending').length}</p>
+              <p className="text-xl font-black text-indigo-600">{pendingQuestions.length}</p>
             </div>
             <div className="px-4 py-2 text-center">
               <p className="text-[8px] font-black text-slate-400 uppercase tracking-widest">Total Logs</p>
@@ -527,74 +581,161 @@ const ReflectionsPage = () => {
               </div>
             </div>
 
-            <div className="grid grid-cols-1 gap-4">
-              {meetupQuestions.length > 0 ? (
-                meetupQuestions.map((q) => (
-                  <Card key={q.id} className={cn(
-                    "border-none shadow-md rounded-[2rem] transition-all duration-500 overflow-hidden group",
-                    q.status === 'asked' ? "bg-slate-50 opacity-60" : "bg-white hover:shadow-xl"
-                  )}>
-                    <CardContent className="p-8 flex items-center justify-between gap-8">
-                      <div className="flex items-start gap-6 flex-1 min-w-0">
-                        <div className={cn(
-                          "w-12 h-12 rounded-2xl flex items-center justify-center shrink-0 shadow-sm transition-all",
-                          q.status === 'asked' ? "bg-slate-200 text-slate-400" : "bg-indigo-50 text-indigo-600 group-hover:scale-110"
-                        )}>
-                          <HelpCircle size={24} />
-                        </div>
-                        <div className="space-y-2 min-w-0">
-                          <div className="flex items-center gap-3">
-                            <Badge variant="outline" className="border-none font-black text-[8px] uppercase tracking-widest p-0 text-slate-400">
-                              {q.source}
-                            </Badge>
-                            {q.clientName && (
-                              <Badge className="bg-slate-100 text-slate-500 border-none font-black text-[8px] uppercase tracking-widest px-2 py-0.5 rounded-full">
-                                Client: {q.clientName}
-                              </Badge>
-                            )}
+            <div className="space-y-12">
+              {/* Pending Questions */}
+              <div className="space-y-6">
+                <div className="flex items-center justify-between px-2">
+                  <h3 className="text-xl font-black text-slate-900 flex items-center gap-3">
+                    <Clock size={20} className="text-indigo-600" /> Pending Questions
+                  </h3>
+                  <Badge className="bg-indigo-600 text-white border-none font-black text-[10px] uppercase tracking-widest px-3 py-1 rounded-full">
+                    {pendingQuestions.length} Active
+                  </Badge>
+                </div>
+
+                <div className="grid grid-cols-1 gap-4">
+                  {pendingQuestions.map((q) => (
+                    <Card key={q.id} className="border-none shadow-md rounded-[2rem] bg-white hover:shadow-xl transition-all duration-500 overflow-hidden group">
+                      <CardContent className="p-8 space-y-6">
+                        <div className="flex items-start justify-between gap-8">
+                          <div className="flex items-start gap-6 flex-1 min-w-0">
+                            <div className="w-12 h-12 rounded-2xl bg-indigo-50 text-indigo-600 flex items-center justify-center shrink-0 shadow-sm group-hover:scale-110 transition-all">
+                              <HelpCircle size={24} />
+                            </div>
+                            <div className="space-y-2 min-w-0">
+                              <div className="flex items-center gap-3">
+                                <Badge variant="outline" className="border-none font-black text-[8px] uppercase tracking-widest p-0 text-slate-400">
+                                  {q.source}
+                                </Badge>
+                                {q.clientName && (
+                                  <Badge className="bg-slate-100 text-slate-500 border-none font-black text-[8px] uppercase tracking-widest px-2 py-0.5 rounded-full">
+                                    Client: {q.clientName}
+                                  </Badge>
+                                )}
+                              </div>
+                              <p className="text-xl font-bold leading-tight text-slate-900">
+                                {q.content}
+                              </p>
+                              <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">
+                                Logged {format(new Date(q.date), "MMM d, yyyy")}
+                              </p>
+                            </div>
                           </div>
-                          <p className={cn(
-                            "text-xl font-bold leading-tight",
-                            q.status === 'asked' ? "text-slate-400 line-through" : "text-slate-900"
-                          )}>
-                            {q.content}
-                          </p>
-                          <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">
-                            Logged {format(new Date(q.date), "MMM d, yyyy")}
-                          </p>
+                          
+                          <div className="flex items-center gap-3 shrink-0">
+                            <Button 
+                              onClick={() => {
+                                setRespondingToId(q.id);
+                                setTempResponse("");
+                              }}
+                              className="rounded-xl h-11 px-6 bg-indigo-600 hover:bg-indigo-700 text-white shadow-lg shadow-indigo-100 font-black text-[10px] uppercase tracking-widest"
+                            >
+                              <MessageCircle size={14} className="mr-2" /> Add Response
+                            </Button>
+                          </div>
                         </div>
+
+                        {respondingToId === q.id && (
+                          <div className="pt-6 border-t border-slate-100 space-y-4 animate-in slide-in-from-top-2 duration-300">
+                            <div className="space-y-2">
+                              <Label className="text-[10px] font-black uppercase tracking-widest text-indigo-600 ml-1">Teacher's Response</Label>
+                              <Textarea 
+                                placeholder="Type the answer or insight from the teacher here..."
+                                className="min-h-[120px] rounded-2xl border-2 border-indigo-100 focus:border-indigo-500 bg-indigo-50/30 p-6 text-base font-medium leading-relaxed"
+                                value={tempResponse}
+                                onChange={(e) => setTempResponse(e.target.value)}
+                                autoFocus
+                              />
+                            </div>
+                            <div className="flex justify-end gap-3">
+                              <Button variant="ghost" onClick={() => setRespondingToId(null)} className="rounded-xl h-10 px-4 font-bold text-xs">Cancel</Button>
+                              <Button 
+                                onClick={() => handleSaveResponse(q)}
+                                disabled={updatingStatus === q.id || !tempResponse.trim()}
+                                className="bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl h-10 px-6 font-black text-[10px] uppercase tracking-widest shadow-lg shadow-emerald-100"
+                              >
+                                {updatingStatus === q.id ? <Loader2 size={14} className="animate-spin mr-2" /> : <CheckCircle2 size={14} className="mr-2" />}
+                                Save & Archive
+                              </Button>
+                            </div>
+                          </div>
+                        )}
+                      </CardContent>
+                    </Card>
+                  ))}
+
+                  {pendingQuestions.length === 0 && (
+                    <div className="text-center py-32 bg-slate-50 rounded-[3rem] border-2 border-dashed border-slate-200">
+                      <div className="w-20 h-20 bg-white rounded-3xl flex items-center justify-center mx-auto mb-6 shadow-sm">
+                        <CheckCircle2 size={40} className="text-emerald-500" />
                       </div>
-                      
-                      <div className="flex items-center gap-3 shrink-0">
-                        <Button 
-                          variant={q.status === 'asked' ? "outline" : "default"}
-                          size="sm"
-                          onClick={() => handleToggleQuestionStatus(q)}
-                          disabled={updatingStatus === q.id}
-                          className={cn(
-                            "rounded-xl h-11 px-6 font-black text-[10px] uppercase tracking-widest transition-all",
-                            q.status === 'asked' ? "border-slate-200 text-slate-400" : "bg-indigo-600 hover:bg-indigo-700 text-white shadow-lg shadow-indigo-100"
-                          )}
-                        >
-                          {updatingStatus === q.id ? <Loader2 size={14} className="animate-spin mr-2" /> : q.status === 'asked' ? <RotateCcw size={14} className="mr-2" /> : <CheckCircle2 size={14} className="mr-2" />}
-                          {q.status === 'asked' ? "Re-open" : "Mark as Asked"}
-                        </Button>
-                        <Button variant="ghost" size="icon" className="h-11 w-11 rounded-xl text-slate-300 hover:text-indigo-600 hover:bg-indigo-50" asChild>
-                          <Link to={`/practice/reflections`} onClick={() => { /* Logic to scroll to specific ref */ }}>
-                            <ArrowRight size={20} />
-                          </Link>
-                        </Button>
-                      </div>
-                    </CardContent>
-                  </Card>
-                ))
-              ) : (
-                <div className="text-center py-32 bg-slate-50 rounded-[3rem] border-2 border-dashed border-slate-200">
-                  <div className="w-20 h-20 bg-white rounded-3xl flex items-center justify-center mx-auto mb-6 shadow-sm">
-                    <HelpCircle size={40} className="text-slate-200" />
+                      <h3 className="text-xl font-black text-slate-900">All questions answered!</h3>
+                      <p className="text-slate-500 mt-2">You're fully prepped for your next meetup.</p>
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              {/* Answered History */}
+              {answeredQuestions.length > 0 && (
+                <div className="space-y-6 pt-12 border-t border-slate-100">
+                  <div className="flex items-center justify-between px-2">
+                    <h3 className="text-xl font-black text-slate-400 flex items-center gap-3">
+                      <History size={20} /> Answered History
+                    </h3>
+                    <Button 
+                      variant="ghost" 
+                      size="sm" 
+                      onClick={() => setShowHistory(!showHistory)}
+                      className="text-[10px] font-black uppercase tracking-widest text-slate-400 hover:text-indigo-600"
+                    >
+                      {showHistory ? <ChevronUp size={14} className="mr-2" /> : <ChevronDown size={14} className="mr-2" />}
+                      {showHistory ? "Hide History" : `Show ${answeredQuestions.length} Answered`}
+                    </Button>
                   </div>
-                  <h3 className="text-xl font-black text-slate-900">No questions logged yet</h3>
-                  <p className="text-slate-500 mt-2">Manually tag a reflection as a "Meetup Question" or use AI to extract them from your notes.</p>
+
+                  {showHistory && (
+                    <div className="grid grid-cols-1 gap-4 animate-in fade-in slide-in-from-top-4 duration-500">
+                      {answeredQuestions.map((q) => (
+                        <Card key={q.id} className="border-none shadow-sm rounded-[2rem] bg-slate-50/50 opacity-80 hover:opacity-100 transition-all overflow-hidden">
+                          <CardContent className="p-8 space-y-6">
+                            <div className="flex items-start justify-between">
+                              <div className="space-y-2">
+                                <div className="flex items-center gap-3">
+                                  <Badge variant="outline" className="border-none font-black text-[8px] uppercase tracking-widest p-0 text-slate-400">
+                                    {q.source}
+                                  </Badge>
+                                  <Badge className="bg-emerald-500 text-white border-none font-black text-[8px] uppercase tracking-widest px-2 py-0.5 rounded-full">
+                                    Answered
+                                  </Badge>
+                                </div>
+                                <p className="text-lg font-bold text-slate-500 line-through decoration-slate-300">
+                                  {q.content}
+                                </p>
+                              </div>
+                              <Button 
+                                variant="ghost" 
+                                size="sm" 
+                                onClick={() => handleToggleQuestionStatus(q)}
+                                disabled={updatingStatus === q.id}
+                                className="h-8 px-3 rounded-lg text-[10px] font-black uppercase tracking-widest text-indigo-600 hover:bg-indigo-50"
+                              >
+                                <RotateCcw size={12} className="mr-1.5" /> Re-open
+                              </Button>
+                            </div>
+
+                            <div className="p-6 bg-white rounded-2xl border border-slate-200 shadow-sm relative overflow-hidden">
+                              <div className="absolute top-0 right-0 p-4 opacity-5"><MessageCircle size={40} /></div>
+                              <p className="text-[9px] font-black text-indigo-400 uppercase tracking-widest mb-2">Teacher's Insight</p>
+                              <p className="text-sm font-medium text-slate-700 leading-relaxed italic">
+                                "{q.response}"
+                              </p>
+                            </div>
+                          </CardContent>
+                        </Card>
+                      ))}
+                    </div>
+                  )}
                 </div>
               )}
             </div>

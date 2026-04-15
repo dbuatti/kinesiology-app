@@ -9,9 +9,10 @@ const corsHeaders = {
 }
 
 serve(async (req) => {
-  if (req.method === 'OPTIONS') return new Response('ok', { headers: corsHeaders })
+  const functionName = "calcom-webhook";
+  console.log(`[${functionName}] Webhook received`);
 
-  console.log("--- [calcom-webhook] v4.0 — Robust Reschedule Handling ---");
+  if (req.method === 'OPTIONS') return new Response('ok', { headers: corsHeaders })
 
   try {
     const supabaseUrl = Deno.env.get('SUPABASE_URL')
@@ -24,14 +25,19 @@ serve(async (req) => {
     const body = await req.json();
     const triggerEvent = body.triggerEvent || body.type;
     
-    if (triggerEvent === 'PING') return new Response(JSON.stringify({ success: true }), { status: 200, headers: corsHeaders });
+    console.log(`[${functionName}] Event Type: ${triggerEvent}`);
+
+    if (triggerEvent === 'PING') {
+      console.log(`[${functionName}] Ping received, responding OK`);
+      return new Response(JSON.stringify({ success: true }), { status: 200, headers: corsHeaders });
+    }
 
     const payload = body.payload || body.data || body;
     const calcomId = String(payload.bookingId || payload.id || payload.uid);
 
     // 1. Handle Cancellations
     if (triggerEvent === 'BOOKING_CANCELLED') {
-      console.log(`[calcom-webhook] Deleting cancelled booking: ${calcomId}`);
+      console.log(`[${functionName}] Deleting cancelled booking: ${calcomId}`);
       await supabase.from('appointments').delete().eq('calcom_booking_id', calcomId);
       return new Response(JSON.stringify({ success: true }), { status: 200, headers: corsHeaders });
     }
@@ -40,7 +46,7 @@ serve(async (req) => {
                      (payload.responses && { name: payload.responses.name, email: payload.responses.email });
     
     if (!attendee || !attendee.email) {
-      console.log("[calcom-webhook] Skipping: No attendee email found.");
+      console.log(`[${functionName}] Skipping: No attendee email found in payload.`);
       return new Response(JSON.stringify({ success: true }), { status: 200, headers: corsHeaders });
     }
 
@@ -48,6 +54,8 @@ serve(async (req) => {
     const email = String(attendee.email || "").toLowerCase().trim();
     const startTime = payload.startTime || payload.start;
     const eventTypeId = String(payload.eventTypeId || "");
+
+    console.log(`[${functionName}] Processing booking for: ${name} (${email}) at ${startTime}`);
 
     // Price Mapping
     let priceAmount = 0;
@@ -65,13 +73,12 @@ serve(async (req) => {
       .select('*')
       .single();
 
-    if (!dbClient) throw new Error("Failed to upsert client.");
+    if (!dbClient) {
+      console.error(`[${functionName}] Error: Failed to upsert client.`);
+      throw new Error("Failed to upsert client.");
+    }
 
     // 3. Handle Reschedules or New Bookings
-    // Strategy: 
-    // A. Try to match by Cal.com ID first (most reliable for reschedules)
-    // B. Fallback to Smart Match (Client + Date) for new/unlinked bookings
-    
     const { data: appById } = await supabase
       .from('appointments')
       .select('id')
@@ -79,7 +86,7 @@ serve(async (req) => {
       .maybeSingle();
 
     if (appById) {
-      console.log(`[calcom-webhook] Updating existing record by ID: ${calcomId}`);
+      console.log(`[${functionName}] Updating existing record by ID: ${calcomId}`);
       await supabase
         .from('appointments')
         .update({
@@ -99,7 +106,7 @@ serve(async (req) => {
         .maybeSingle();
 
       if (appByDate) {
-        console.log(`[calcom-webhook] Linking existing manual app ${appByDate.id} to Cal.com ID ${calcomId}`);
+        console.log(`[${functionName}] Linking existing manual app ${appByDate.id} to Cal.com ID ${calcomId}`);
         await supabase
           .from('appointments')
           .update({
@@ -111,7 +118,7 @@ serve(async (req) => {
           .eq('id', appByDate.id);
       } else {
         // New Booking
-        console.log(`[calcom-webhook] Creating new record for booking: ${calcomId}`);
+        console.log(`[${functionName}] Creating new record for booking: ${calcomId}`);
         await supabase
           .from('appointments')
           .insert({
@@ -128,9 +135,10 @@ serve(async (req) => {
       }
     }
 
+    console.log(`[${functionName}] Webhook processed successfully`);
     return new Response(JSON.stringify({ success: true }), { status: 200, headers: corsHeaders });
   } catch (error) {
-    console.error("[calcom-webhook] Error:", error.message);
+    console.error(`[${functionName}] Error:`, error.message);
     return new Response(JSON.stringify({ error: error.message }), { status: 400, headers: corsHeaders });
   }
 })

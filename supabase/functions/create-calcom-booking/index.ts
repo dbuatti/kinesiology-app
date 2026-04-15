@@ -9,38 +9,82 @@ const corsHeaders = {
 }
 
 serve(async (req) => {
-  console.log("[create-calcom-booking] v2.5 - Enhanced Time Logging");
+  const functionName = "create-calcom-booking";
+  console.log(`[${functionName}] Request received`);
 
   if (req.method === 'OPTIONS') {
     return new Response('ok', { headers: corsHeaders })
   }
 
   try {
-    const supabaseUrl = Deno.env.get('SUPABASE_URL');
-    const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY');
     const CALCOM_KEY = Deno.env.get('CALCOM_API_KEY');
-    
-    if (!CALCOM_KEY) throw new Error("Missing CALCOM_API_KEY secret.");
+    if (!CALCOM_KEY) {
+      console.error(`[${functionName}] Error: Missing CALCOM_API_KEY secret.`);
+      throw new Error("Missing CALCOM_API_KEY secret.");
+    }
 
     const body = await req.json();
-    const { clientId, startTime, eventTypeId, title, notes, is_paid } = body;
-    const isPaidBool = is_paid === true || is_paid === 'true';
+    const { clientId, startTime, eventTypeId, title, notes, is_paid, bookingUid } = body;
+    
+    console.log(`[${functionName}] Payload:`, { clientId, startTime, eventTypeId, bookingUid });
 
+    const supabaseUrl = Deno.env.get('SUPABASE_URL');
+    const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY');
     const supabase = createClient(supabaseUrl, supabaseKey);
+
     const { data: client, error: clientError } = await supabase
       .from('clients')
       .select('name, email')
       .eq('id', clientId)
       .single();
 
-    if (clientError || !client?.email) throw new Error("Client not found or missing email.");
+    if (clientError || !client?.email) {
+      console.error(`[${functionName}] Error: Client not found or missing email.`, clientError);
+      throw new Error("Client not found or missing email.");
+    }
 
-    // Ensure startTime is a clean ISO string
     const cleanStartTime = new Date(startTime).toISOString();
-    const localTimeStr = new Date(startTime).toLocaleString('en-AU', { timeZone: 'Australia/Melbourne' });
+    const isPaidBool = is_paid === true || is_paid === 'true';
 
-    console.log(`[create-calcom-booking] Requesting slot: ${localTimeStr} (Melbourne) / ${cleanStartTime} (UTC)`);
+    // If bookingUid exists, we are UPDATING (Rescheduling)
+    if (bookingUid) {
+      console.log(`[${functionName}] Action: UPDATE booking ${bookingUid}`);
+      
+      const updatePayload = {
+        start: cleanStartTime,
+        metadata: {
+          crm_title: title || "Kinesiology Session",
+          crm_notes: notes || "",
+          is_paid: String(isPaidBool)
+        }
+      };
 
+      const response = await fetch(`https://api.cal.com/v2/bookings/${bookingUid}`, {
+        method: "PATCH",
+        headers: {
+          'Authorization': `Bearer ${CALCOM_KEY}`,
+          'cal-api-version': '2024-08-13',
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(updatePayload),
+      });
+
+      const result = await response.json();
+      console.log(`[${functionName}] Cal.com PATCH Response Status: ${response.status}`);
+
+      if (!response.ok) {
+        console.error(`[${functionName}] Cal.com PATCH Error:`, JSON.stringify(result));
+        throw new Error(result.error?.message || result.message || "Cal.com Update Error");
+      }
+
+      return new Response(JSON.stringify({ success: true, data: result.data }), { 
+        status: 200, 
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
+      });
+    } 
+    
+    // Otherwise, we are CREATING
+    console.log(`[${functionName}] Action: CREATE new booking`);
     const bookingPayload = {
       start: cleanStartTime,
       eventTypeId: parseInt(eventTypeId, 10),
@@ -72,23 +116,11 @@ serve(async (req) => {
     });
 
     const result = await response.json();
+    console.log(`[${functionName}] Cal.com POST Response Status: ${response.status}`);
 
     if (!response.ok) {
-      console.error(`[create-calcom-booking] Cal.com API Error:`, JSON.stringify(result));
-      
-      const errorMsg = result.error?.message || result.message || "Cal.com API Error";
-      
-      // Catch specific availability/conflict errors
-      if (
-        errorMsg.includes("can't be booked at the \"start\" time") || 
-        errorMsg.includes("already has booking at this time") ||
-        errorMsg.includes("is not available") ||
-        errorMsg.includes("no availability")
-      ) {
-        throw new Error(`Cal.com Conflict: The time ${localTimeStr} is unavailable or conflicts with an existing booking. If you are trying to override a block, please unblock the day in the Live Availability tool first.`);
-      }
-      
-      throw new Error(errorMsg);
+      console.error(`[${functionName}] Cal.com POST Error:`, JSON.stringify(result));
+      throw new Error(result.error?.message || result.message || "Cal.com Create Error");
     }
 
     return new Response(JSON.stringify({ 
@@ -101,7 +133,7 @@ serve(async (req) => {
     });
 
   } catch (error) {
-    console.error("[create-calcom-booking] Function Error:", error.message);
+    console.error(`[${functionName}] Critical Error:`, error.message);
     return new Response(JSON.stringify({ error: error.message }), { 
       status: 400, 
       headers: { ...corsHeaders, 'Content-Type': 'application/json' } 

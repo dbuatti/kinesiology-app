@@ -137,10 +137,9 @@ const AppointmentForm = ({
 
       let calcomId = existingAppointment?.calcom_booking_id || null;
 
-      // 1. Sync with Cal.com if applicable (Only for new bookings or if specifically requested)
-      // Note: Manual rescheduling in CRM doesn't currently trigger a Cal.com reschedule API call
-      // but it updates the local record which is often what's needed for manual entries.
-      if (!isEditMode && (initialTime || currentSlotTime)) {
+      // 1. Sync with Cal.com if applicable
+      // Trigger for NEW bookings with a slot OR EDITS with an existing Cal.com ID
+      if ((!isEditMode && (initialTime || currentSlotTime)) || (isEditMode && calcomId)) {
         setSyncStatus('calcom');
         const eventTypeId = currentEventType.id;
 
@@ -153,12 +152,16 @@ const AppointmentForm = ({
               title: values.name || values.tag || "Kinesiology Session",
               notes: values.goal || values.issue || "",
               is_paid: values.is_paid,
-              send_onboarding: values.send_onboarding
+              bookingUid: calcomId // Passing this triggers the UPDATE logic in the edge function
             }
           });
 
           if (invokeError) throw invokeError;
-          calcomId = calcomData?.uid || calcomData?.bookingId;
+          
+          // If it was a new booking, save the ID
+          if (!isEditMode) {
+            calcomId = calcomData?.uid || calcomData?.bookingId;
+          }
         } catch (err: any) {
           console.error("Cal.com Sync Failed:", err);
           if (err.message.includes("Conflict") || err.message.includes("unavailable")) {
@@ -201,7 +204,7 @@ const AppointmentForm = ({
           .eq('id', existingAppointment.id);
         
         if (dbError) throw dbError;
-        showSuccess("Session updated successfully.");
+        showSuccess("Session updated and synced with Cal.com.");
       } else {
         const { data: newApp, error: dbError } = await supabase
           .from("appointments")

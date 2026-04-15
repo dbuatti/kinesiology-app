@@ -12,8 +12,8 @@ const BusinessModelWorksheetPage = () => {
   const navigate = useNavigate();
 
   return (
-    <AppLayout>
-      <div className="max-w-7xl mx-auto pt-6 print:hidden">
+    <AppLayout variant="wide">
+      <div className="max-w-full mx-auto pt-6 print:hidden">
         <Breadcrumbs 
           items={[
             { label: "Resources", path: "/resources" },

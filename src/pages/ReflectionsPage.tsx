@@ -29,7 +29,8 @@ import {
   ChevronRight,
   GraduationCap,
   ArrowRight,
-  RotateCcw
+  RotateCcw,
+  Target
 } from "lucide-react";
 import { format } from "date-fns";
 import { showSuccess, showError } from "@/utils/toast";
@@ -92,15 +93,12 @@ const ReflectionsPage = () => {
       if (refRes.error) throw refRes.error;
       if (appRes.error) throw appRes.error;
 
-      const allRefs = refRes.data || [];
-      const allApps = appRes.data || [];
+      setReflections(refRes.data || []);
+      setAppointments(appRes.data || []);
 
-      setReflections(allRefs);
-      setAppointments(allApps);
-
-      if (!preselectedAppId && allApps.length > 0) {
+      if (!preselectedAppId && appRes.data && appRes.data.length > 0) {
         const now = new Date();
-        const mostRecentPast = allApps.find(app => new Date(app.date) <= now);
+        const mostRecentPast = appRes.data.find(app => new Date(app.date) <= now);
         if (mostRecentPast) {
           setSelectedAppointmentId(mostRecentPast.id);
         }
@@ -120,7 +118,6 @@ const ReflectionsPage = () => {
     const questions: any[] = [];
     
     reflections.forEach(ref => {
-      // 1. Add manually categorized questions
       if (ref.category === 'Meetup Question') {
         questions.push({
           id: `manual-${ref.id}`,
@@ -133,7 +130,6 @@ const ReflectionsPage = () => {
         });
       }
       
-      // 2. Add AI extracted questions
       const extractions = ref.ai_extractions || [];
       extractions.forEach((ext: any, idx: number) => {
         if (ext.type === 'question') {
@@ -225,13 +221,12 @@ const ReflectionsPage = () => {
         .insert({
           user_id: user.id,
           content: item.content,
-          type: item.type === 'belief' ? 'belief' : 'identity',
+          type: item.type, // belief, identity, or goal
           status: 'pending'
         });
 
       if (error) throw error;
 
-      // Update the status in the reflection's extractions array
       const reflection = reflections.find(r => r.id === reflectionId);
       if (reflection) {
         const newExtractions = [...reflection.ai_extractions];
@@ -243,7 +238,7 @@ const ReflectionsPage = () => {
           .eq('id', reflectionId);
       }
 
-      showSuccess(`"${item.content}" added to Sandbox Backlog.`);
+      showSuccess(`Added to Sandbox Backlog.`);
       fetchData();
     } catch (err: any) {
       showError(err.message);
@@ -289,6 +284,15 @@ const ReflectionsPage = () => {
       showSuccess("Reflection removed.");
     } catch (err) {
       showError("Failed to delete.");
+    }
+  };
+
+  const getToolRecommendation = (type: string) => {
+    switch (type) {
+      case 'belief': return { label: 'Limiting Beliefs', icon: ShieldAlert, color: 'text-rose-600' };
+      case 'identity': return { label: 'Identity Shifting', icon: Fingerprint, color: 'text-indigo-600' };
+      case 'goal': return { label: 'Identity Alignment', icon: Target, color: 'text-emerald-600' };
+      default: return null;
     }
   };
 
@@ -450,40 +454,53 @@ const ReflectionsPage = () => {
                             <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Extracted Insights</p>
                           </div>
                           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                            {extractions.map((item: any, i: number) => (
-                              <div key={i} className="flex items-center justify-between p-3 bg-slate-50 rounded-xl border border-slate-100 group/item">
-                                <div className="flex items-center gap-3 min-w-0">
-                                  <div className={cn(
-                                    "w-7 h-7 rounded-lg flex items-center justify-center shrink-0",
-                                    item.type === 'question' ? "bg-indigo-50 text-indigo-700" :
-                                    item.type === 'belief' ? "bg-rose-50 text-rose-700" : "bg-slate-100 text-slate-600"
-                                  )}>
-                                    {item.type === 'question' ? <HelpCircle size={14} /> : item.type === 'belief' ? <ShieldAlert size={14} /> : <Fingerprint size={14} />}
+                            {extractions.map((item: any, i: number) => {
+                              const tool = getToolRecommendation(item.type);
+                              return (
+                                <div key={i} className="flex items-center justify-between p-3 bg-slate-50 rounded-xl border border-slate-100 group/item">
+                                  <div className="flex items-center gap-3 min-w-0">
+                                    <div className={cn(
+                                      "w-7 h-7 rounded-lg flex items-center justify-center shrink-0",
+                                      item.type === 'question' ? "bg-indigo-50 text-indigo-700" :
+                                      item.type === 'belief' ? "bg-rose-50 text-rose-700" : 
+                                      item.type === 'goal' ? "bg-emerald-50 text-emerald-700" : "bg-slate-100 text-slate-600"
+                                    )}>
+                                      {item.type === 'question' ? <HelpCircle size={14} /> : 
+                                       item.type === 'belief' ? <ShieldAlert size={14} /> : 
+                                       item.type === 'goal' ? <Target size={14} /> : <Fingerprint size={14} />}
+                                    </div>
+                                    <div className="min-w-0">
+                                      <p className={cn(
+                                        "text-xs font-bold truncate",
+                                        item.status === 'added' ? "text-slate-400 line-through" : "text-slate-700"
+                                      )}>
+                                        {item.content}
+                                      </p>
+                                      {tool && item.status !== 'added' && (
+                                        <p className={cn("text-[7px] font-black uppercase tracking-widest mt-0.5", tool.color)}>
+                                          For {tool.label}
+                                        </p>
+                                      )}
+                                    </div>
                                   </div>
-                                  <p className={cn(
-                                    "text-xs font-bold truncate",
-                                    item.status === 'added' ? "text-slate-400 line-through" : "text-slate-700"
-                                  )}>
-                                    {item.content}
-                                  </p>
+                                  {item.type !== 'question' && item.status !== 'added' && (
+                                    <Button 
+                                      variant="ghost" 
+                                      size="sm" 
+                                      disabled={addingToBacklog === `${ref.id}-${i}`}
+                                      onClick={() => handleAddToBacklog(ref.id, item, i)}
+                                      className="h-7 px-2 rounded-lg text-indigo-600 hover:bg-indigo-100 font-black text-[8px] uppercase tracking-widest"
+                                    >
+                                      {addingToBacklog === `${ref.id}-${i}` ? <Loader2 size={10} className="animate-spin" /> : <PlusCircle size={10} className="mr-1" />}
+                                      Add to Backlog
+                                    </Button>
+                                  )}
+                                  {item.status === 'added' && (
+                                    <Badge className="bg-emerald-500 text-white border-none font-black text-[7px] uppercase tracking-widest">Added</Badge>
+                                  )}
                                 </div>
-                                {item.type !== 'question' && item.status !== 'added' && (
-                                  <Button 
-                                    variant="ghost" 
-                                    size="sm" 
-                                    disabled={addingToBacklog === `${ref.id}-${i}`}
-                                    onClick={() => handleAddToBacklog(ref.id, item, i)}
-                                    className="h-7 px-2 rounded-lg text-indigo-600 hover:bg-indigo-100 font-black text-[8px] uppercase tracking-widest"
-                                  >
-                                    {addingToBacklog === `${ref.id}-${i}` ? <Loader2 size={10} className="animate-spin" /> : <PlusCircle size={10} className="mr-1" />}
-                                    Add to Backlog
-                                  </Button>
-                                )}
-                                {item.status === 'added' && (
-                                  <Badge className="bg-emerald-500 text-white border-none font-black text-[7px] uppercase tracking-widest">Added</Badge>
-                                )}
-                              </div>
-                            ))}
+                              );
+                            })}
                           </div>
                         </div>
                       )}

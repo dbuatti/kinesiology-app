@@ -35,7 +35,8 @@ import {
   MessageCircle,
   ChevronDown,
   ChevronUp,
-  BookOpen
+  BookOpen,
+  Lock
 } from "lucide-react";
 import { format } from "date-fns";
 import { showSuccess, showError } from "@/utils/toast";
@@ -54,7 +55,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Link, useLocation } from "react-router-dom";
 
 const CATEGORIES = [
-  { id: 'General', icon: MessageSquare, color: 'text-slate-500', bg: 'bg-slate-50' },
+  { id: 'General', icon: Lock, color: 'text-slate-500', bg: 'bg-slate-50' },
   { id: 'Meetup Question', icon: HelpCircle, color: 'text-indigo-600', bg: 'bg-indigo-50' },
   { id: 'Doubt', icon: Brain, color: 'text-rose-600', bg: 'bg-rose-50' },
   { id: 'Reflection', icon: Sparkles, color: 'text-amber-600', bg: 'bg-amber-50' },
@@ -80,7 +81,6 @@ const JournalPage = () => {
   // Response State
   const [respondingToId, setRespondingToId] = useState<string | null>(null);
   const [tempResponse, setTempResponse] = useState("");
-  const [showHistory, setShowHistory] = useState(false);
 
   const fetchData = async () => {
     try {
@@ -104,14 +104,6 @@ const JournalPage = () => {
 
       setReflections(refRes.data || []);
       setAppointments(appRes.data || []);
-
-      if (!preselectedAppId && appRes.data && appRes.data.length > 0) {
-        const now = new Date();
-        const mostRecentPast = appRes.data.find(app => new Date(app.date) <= now);
-        if (mostRecentPast) {
-          setSelectedAppointmentId(mostRecentPast.id);
-        }
-      }
     } catch (err) {
       console.error(err);
     } finally {
@@ -322,7 +314,7 @@ const JournalPage = () => {
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
           <div className="space-y-1">
             <h1 className="text-4xl font-black tracking-tight text-slate-900">Practitioner Journal</h1>
-            <p className="text-slate-500 font-medium text-lg">Process your growth and extract Sandbox insights.</p>
+            <p className="text-slate-500 font-medium text-lg">Private reflections and session-linked insights.</p>
           </div>
           <div className="flex items-center gap-3 bg-white p-2 rounded-2xl border border-slate-100 shadow-sm">
             <div className="px-4 py-2 text-center border-r border-slate-100">
@@ -380,7 +372,7 @@ const JournalPage = () => {
                         </div>
                       </SelectTrigger>
                       <SelectContent className="rounded-2xl border-none shadow-2xl p-2">
-                        <SelectItem value="none" className="rounded-xl">No Session Linked</SelectItem>
+                        <SelectItem value="none" className="rounded-xl">Private (No Session)</SelectItem>
                         {appointments.map(app => (
                           <SelectItem key={app.id} value={app.id} className="rounded-xl">
                             {app.clients?.name} ({format(new Date(app.date), "MMM d")})
@@ -392,7 +384,7 @@ const JournalPage = () => {
                 </div>
 
                 <Textarea 
-                  placeholder="Write your reflections here. AI will automatically extract beliefs, identities, and goals for your Sandbox..."
+                  placeholder="Write your thoughts here. AI will automatically extract beliefs, identities, and goals for your Sandbox..."
                   className="min-h-[200px] rounded-[2rem] border-2 border-slate-100 focus:border-indigo-500 p-8 text-xl font-medium leading-relaxed shadow-inner resize-none"
                   value={content}
                   onChange={(e) => setContent(e.target.value)}
@@ -430,13 +422,17 @@ const JournalPage = () => {
                               <Badge variant="outline" className="border-none font-black text-[8px] uppercase tracking-widest p-0 text-slate-400">
                                 {ref.category}
                               </Badge>
-                              {ref.appointments && (
+                              {ref.appointments ? (
                                 <Link to={`/appointments/${ref.appointments.id}`}>
                                   <Badge className="bg-indigo-600 text-white border-none font-black text-[8px] uppercase tracking-widest px-3 py-1 rounded-full shadow-sm flex items-center gap-1.5">
                                     <Zap size={10} className="fill-current" />
                                     Session: {ref.appointments.clients?.name}
                                   </Badge>
                                 </Link>
+                              ) : (
+                                <Badge className="bg-slate-100 text-slate-500 border-none font-black text-[8px] uppercase tracking-widest px-3 py-1 rounded-full">
+                                  Private Entry
+                                </Badge>
                               )}
                             </div>
                             <p className="text-[10px] font-bold text-slate-400 flex items-center gap-1 mt-1">

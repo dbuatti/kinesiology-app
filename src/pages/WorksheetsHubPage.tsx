@@ -14,7 +14,8 @@ import {
   Brain,
   Zap,
   CheckCircle2,
-  PlayCircle
+  PlayCircle,
+  Briefcase
 } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -24,6 +25,16 @@ import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 
 const WORKSHEETS = [
+  {
+    id: "business-model",
+    label: "FNH Business Model",
+    desc: "Transition from hourly to program-based practice. Calculate LCV and forecast growth.",
+    icon: Briefcase,
+    path: "/resources/worksheets/business-model",
+    color: "text-emerald-600",
+    bgColor: "bg-emerald-50 dark:bg-emerald-900/20",
+    category: "Business Strategy"
+  },
   {
     id: "north-star",
     label: "Setting Your North Star",
@@ -119,9 +130,7 @@ const WorksheetsHubPage = () => {
                     </div>
                     
                     <div className="space-y-2">
-                      <h3 className="text-xl font-black text-foreground group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors">
-                        {ws.label}
-                      </h3>
+                      <h3 className="text-xl font-black text-foreground group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors">{ws.label}</h3>
                       <p className="text-sm text-muted-foreground font-medium leading-relaxed">
                         {ws.desc}
                       </p>

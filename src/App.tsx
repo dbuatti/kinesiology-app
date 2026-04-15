@@ -35,6 +35,7 @@ import Week3WorksheetPage from "./pages/Week3WorksheetPage";
 import FearCreativityWorksheetPage from "./pages/FearCreativityWorksheetPage";
 import InnerAwarenessWorksheetPage from "./pages/InnerAwarenessWorksheetPage";
 import AngerFlowWorksheetPage from "./pages/AngerFlowWorksheetPage";
+import BusinessModelWorksheetPage from "./pages/BusinessModelWorksheetPage";
 import QuickCalibratePage from "./pages/QuickCalibratePage";
 import PEACEFrameworkPage from "./pages/PEACEFrameworkPage";
 import MarketingEnginePage from "./pages/MarketingEnginePage";
@@ -101,6 +102,7 @@ const AppRoutes = () => {
         <Route path="/resources/worksheets/fear-creativity" element={<FearCreativityWorksheetPage />} />
         <Route path="/resources/worksheets/inner-awareness" element={<InnerAwarenessWorksheetPage />} />
         <Route path="/resources/worksheets/anger-flow" element={<AngerFlowWorksheetPage />} />
+        <Route path="/resources/worksheets/business-model" element={<BusinessModelWorksheetPage />} />
         
         {/* Business Tools */}
         <Route path="/business" element={<BusinessHubPage />} />

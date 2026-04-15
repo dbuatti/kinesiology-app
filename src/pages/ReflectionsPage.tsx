@@ -70,6 +70,7 @@ const ReflectionsPage = () => {
   // AI Analysis State
   const [analyzingIds, setAnalyzingIds] = useState<Set<string>>(new Set());
   const [updatingStatus, setUpdatingStatus] = useState<string | null>(null);
+  const [addingToBacklog, setAddingToBacklog] = useState<string | null>(null);
 
   const fetchData = async () => {
     try {
@@ -213,17 +214,52 @@ const ReflectionsPage = () => {
     }
   };
 
+  const handleAddToBacklog = async (reflectionId: string, item: any, index: number) => {
+    setAddingToBacklog(`${reflectionId}-${index}`);
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) throw new Error("Not authenticated");
+
+      const { error } = await supabase
+        .from('identity_backlog')
+        .insert({
+          user_id: user.id,
+          content: item.content,
+          type: item.type === 'belief' ? 'belief' : 'identity',
+          status: 'pending'
+        });
+
+      if (error) throw error;
+
+      // Update the status in the reflection's extractions array
+      const reflection = reflections.find(r => r.id === reflectionId);
+      if (reflection) {
+        const newExtractions = [...reflection.ai_extractions];
+        newExtractions[index].status = 'added';
+        
+        await supabase
+          .from('practitioner_reflections')
+          .update({ ai_extractions: newExtractions })
+          .eq('id', reflectionId);
+      }
+
+      showSuccess(`"${item.content}" added to Sandbox Backlog.`);
+      fetchData();
+    } catch (err: any) {
+      showError(err.message);
+    } finally {
+      setAddingToBacklog(null);
+    }
+  };
+
   const handleToggleQuestionStatus = async (question: any) => {
     setUpdatingStatus(question.id);
     try {
       const newStatus = question.status === 'asked' ? 'pending' : 'asked';
       
       if (question.id.startsWith('manual-')) {
-        // For manual entries, we just update the category or add a tag in content
-        // For now, let's just show success as it's a UI state for manual
         showSuccess("Question status updated.");
       } else {
-        // For AI extractions, update the JSONB array
         const reflection = reflections.find(r => r.id === question.reflectionId);
         if (reflection) {
           const newExtractions = [...reflection.ai_extractions];
@@ -413,15 +449,40 @@ const ReflectionsPage = () => {
                             <Sparkles size={14} className="text-amber-500" />
                             <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Extracted Insights</p>
                           </div>
-                          <div className="flex flex-wrap gap-2">
+                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                             {extractions.map((item: any, i: number) => (
-                              <Badge key={i} variant="secondary" className={cn(
-                                "px-3 py-1 rounded-lg border-none font-bold text-[10px]",
-                                item.type === 'question' ? "bg-indigo-50 text-indigo-700" :
-                                item.type === 'belief' ? "bg-rose-50 text-rose-700" : "bg-slate-100 text-slate-600"
-                              )}>
-                                {item.type === 'question' ? '?' : item.type === 'belief' ? '!' : '•'} {item.content}
-                              </Badge>
+                              <div key={i} className="flex items-center justify-between p-3 bg-slate-50 rounded-xl border border-slate-100 group/item">
+                                <div className="flex items-center gap-3 min-w-0">
+                                  <div className={cn(
+                                    "w-7 h-7 rounded-lg flex items-center justify-center shrink-0",
+                                    item.type === 'question' ? "bg-indigo-50 text-indigo-700" :
+                                    item.type === 'belief' ? "bg-rose-50 text-rose-700" : "bg-slate-100 text-slate-600"
+                                  )}>
+                                    {item.type === 'question' ? <HelpCircle size={14} /> : item.type === 'belief' ? <ShieldAlert size={14} /> : <Fingerprint size={14} />}
+                                  </div>
+                                  <p className={cn(
+                                    "text-xs font-bold truncate",
+                                    item.status === 'added' ? "text-slate-400 line-through" : "text-slate-700"
+                                  )}>
+                                    {item.content}
+                                  </p>
+                                </div>
+                                {item.type !== 'question' && item.status !== 'added' && (
+                                  <Button 
+                                    variant="ghost" 
+                                    size="sm" 
+                                    disabled={addingToBacklog === `${ref.id}-${i}`}
+                                    onClick={() => handleAddToBacklog(ref.id, item, i)}
+                                    className="h-7 px-2 rounded-lg text-indigo-600 hover:bg-indigo-100 font-black text-[8px] uppercase tracking-widest"
+                                  >
+                                    {addingToBacklog === `${ref.id}-${i}` ? <Loader2 size={10} className="animate-spin" /> : <PlusCircle size={10} className="mr-1" />}
+                                    Add to Backlog
+                                  </Button>
+                                )}
+                                {item.status === 'added' && (
+                                  <Badge className="bg-emerald-500 text-white border-none font-black text-[7px] uppercase tracking-widest">Added</Badge>
+                                )}
+                              </div>
                             ))}
                           </div>
                         </div>

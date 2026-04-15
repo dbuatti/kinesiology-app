@@ -33,13 +33,17 @@ serve(async (req) => {
     }
 
     const prompt = `Act as a clinical supervisor for a Kinesiology practitioner. 
-    Analyze the following reflection text and extract potential "Limiting Beliefs", "Stuck Identities", or "Target Identities/Goals".
+    Analyze the following reflection text and extract:
+    1. "Limiting Beliefs" (I am...)
+    2. "Stuck Identities" (The ...)
+    3. "Target Identities/Goals"
+    4. "Meetup Questions" - Specific clinical, technical, or philosophical questions the practitioner should ask their teacher or mentor.
     
     RULES:
-    1. Limiting Beliefs must start with "I am..." and represent a struggle (e.g., "I am not good enough").
-    2. Stuck Identities should be labels for a current problematic state (e.g., "The Perfectionist", "The Doubter").
-    3. Target Identities/Goals should be labels for a desired future state or outcome (e.g., "The Confident Leader", "The Sovereign Healer").
-    4. Return the result as a JSON object with a key "extractions" containing an array of objects with "content" and "type" (either 'belief', 'identity', or 'goal').
+    - Limiting Beliefs must start with "I am..." and represent a struggle.
+    - Stuck Identities should be labels for a current problematic state.
+    - Meetup Questions should be clear, concise questions for a mentor.
+    - Return the result as a JSON object with a key "extractions" containing an array of objects with "content", "type" (belief, identity, goal, or question), and "status" (default to 'pending').
     
     TEXT TO ANALYZE:
     "${content}"`;

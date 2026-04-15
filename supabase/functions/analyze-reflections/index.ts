@@ -7,6 +7,9 @@ const corsHeaders = {
 }
 
 serve(async (req) => {
+  const functionName = "analyze-reflections";
+  console.log(`[${functionName}] Request received`);
+
   if (req.method === 'OPTIONS') {
     return new Response('ok', { headers: corsHeaders })
   }
@@ -15,6 +18,7 @@ serve(async (req) => {
     const { content } = await req.json();
     
     if (!content || content.trim().length < 10) {
+      console.error(`[${functionName}] Error: Content too short`);
       return new Response(JSON.stringify({ error: 'Journal text is too short to analyze.' }), {
         status: 400,
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
@@ -23,6 +27,7 @@ serve(async (req) => {
 
     const geminiKey = Deno.env.get('GEMINI_API_KEY')
     if (!geminiKey) {
+      console.error(`[${functionName}] Error: GEMINI_API_KEY is missing`);
       return new Response(JSON.stringify({ error: 'GEMINI_API_KEY is missing.' }), {
         status: 400,
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
@@ -47,6 +52,8 @@ serve(async (req) => {
     TEXT TO ANALYZE:
     "${content}"`;
 
+    console.log(`[${functionName}] Calling Gemini API...`);
+    
     const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${geminiKey}`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -62,20 +69,27 @@ serve(async (req) => {
     const data = await response.json()
     
     if (!response.ok) {
-      return new Response(JSON.stringify({ error: 'AI Service Error' }), {
+      console.error(`[${functionName}] Gemini API Error:`, JSON.stringify(data));
+      return new Response(JSON.stringify({ 
+        error: 'AI Service Error', 
+        details: data.error?.message || 'Unknown Gemini error' 
+      }), {
         status: 400,
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       });
     }
 
     const resultText = data.candidates[0].content.parts[0].text.trim();
+    console.log(`[${functionName}] Gemini Response:`, resultText);
+    
     const parsed = JSON.parse(resultText);
 
     return new Response(JSON.stringify({ extractions: parsed.extractions || [] }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     })
   } catch (error) {
-    return new Response(JSON.stringify({ error: 'Internal Server Error' }), {
+    console.error(`[${functionName}] Critical Error:`, error.message);
+    return new Response(JSON.stringify({ error: 'Internal Server Error', message: error.message }), {
       status: 400,
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     })

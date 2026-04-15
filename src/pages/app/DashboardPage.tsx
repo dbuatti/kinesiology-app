@@ -175,29 +175,29 @@ const Index = () => {
 
   return (
     <AppLayout>
-      <div className="space-y-8 md:space-y-12">
+      <div className="space-y-12 md:space-y-16">
         {/* Header Section */}
         <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 md:gap-8">
           <div className="space-y-1 md:space-y-2">
-            <Badge className="bg-indigo-100 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-400 border-none font-black text-[8px] md:text-[10px] uppercase tracking-[0.3em] px-4 md:px-6 py-1.5 md:py-2 rounded-full mb-1 md:mb-2">
+            <Badge className="bg-indigo-50 dark:bg-indigo-900/20 text-indigo-600 dark:text-indigo-400 border-none font-black text-[8px] md:text-[9px] uppercase tracking-[0.3em] px-4 md:px-5 py-1.5 rounded-full mb-1 md:mb-2">
               Practitioner Command Center
             </Badge>
-            <h1 className="text-3xl md:text-6xl font-serif font-bold tracking-tighter text-primary">Practice Hub</h1>
-            <p className="text-sm md:text-xl text-muted-foreground font-medium max-w-2xl">Welcome back, Daniele. Here is your clinical landscape for today.</p>
+            <h1 className="text-3xl md:text-5xl font-serif font-bold tracking-tighter text-primary">Practice Hub</h1>
+            <p className="text-sm md:text-lg text-muted-foreground font-medium max-w-2xl">Welcome back, Daniele. Here is your clinical landscape for today.</p>
           </div>
           <div className="flex items-center gap-3 md:gap-4">
             <div className="hidden lg:flex flex-col items-end">
-              <p className="text-[10px] font-black text-muted-foreground uppercase tracking-widest">Current Time</p>
-              <p className="text-2xl font-serif font-bold text-primary">{format(currentTime, "h:mm a")}</p>
+              <p className="text-[9px] font-black text-muted-foreground uppercase tracking-widest">Current Time</p>
+              <p className="text-xl font-serif font-bold text-primary">{format(currentTime, "h:mm a")}</p>
             </div>
             <div className="w-px h-10 md:h-12 bg-border hidden lg:block" />
-            <div className="flex items-center gap-3 md:gap-4 bg-white dark:bg-slate-900 p-3 md:p-4 rounded-2xl md:rounded-[2rem] border border-secondary/30 shadow-sm">
-              <div className="w-10 h-10 md:w-12 md:h-12 bg-muted rounded-xl md:rounded-2xl flex items-center justify-center text-primary shadow-inner">
-                <Calendar size={20} className="md:w-6 md:h-6" />
+            <div className="flex items-center gap-3 md:gap-4 bg-white dark:bg-slate-900 p-3 md:p-4 rounded-2xl md:rounded-[1.5rem] border border-secondary/30 shadow-sm">
+              <div className="w-10 h-10 md:w-11 md:h-11 bg-muted rounded-xl md:rounded-2xl flex items-center justify-center text-primary shadow-inner">
+                <Calendar size={18} className="md:w-5 md:h-5" />
               </div>
               <div className="pr-2 md:pr-4">
-                <p className="text-[8px] md:text-[10px] font-black text-muted-foreground uppercase tracking-widest">Today</p>
-                <p className="text-sm md:text-lg font-bold text-primary">{format(currentTime, "EEEE, MMM d")}</p>
+                <p className="text-[8px] md:text-[9px] font-black text-muted-foreground uppercase tracking-widest">Today</p>
+                <p className="text-sm md:text-base font-bold text-primary">{format(currentTime, "EEEE, MMM d")}</p>
               </div>
             </div>
           </div>
@@ -227,21 +227,21 @@ const Index = () => {
                     </h2>
                     <p className="text-xs md:text-base text-muted-foreground font-medium">New client submissions ready for review.</p>
                   </div>
-                  <Badge className="bg-accent text-white border-none font-black text-[8px] md:text-[10px] uppercase tracking-widest px-3 md:px-4 py-1 md:py-1.5 rounded-full shadow-lg shadow-accent/20">
+                  <Badge className="bg-accent text-white border-none font-black text-[8px] md:text-[9px] uppercase tracking-widest px-3 md:px-4 py-1 md:py-1.5 rounded-full shadow-lg shadow-accent/10">
                     {pendingOnboarding.length} New
                   </Badge>
                 </div>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-3 md:gap-4">
                   {pendingOnboarding.map(client => (
-                    <div key={client.id} className="p-4 md:p-6 bg-white dark:bg-slate-900 rounded-2xl md:rounded-[2.5rem] border border-secondary/30 flex items-center justify-between group hover:shadow-xl transition-all duration-500">
+                    <div key={client.id} className="p-4 md:p-6 bg-white dark:bg-slate-900 rounded-2xl md:rounded-[2rem] border border-secondary/30 flex items-center justify-between group hover:shadow-xl transition-all duration-500">
                       <Link to={`/clients/${client.id}`} className="flex items-center gap-3 md:gap-5 flex-1 min-w-0">
-                        <div className="w-10 h-10 md:w-14 md:h-14 rounded-xl md:rounded-2xl bg-muted text-primary flex items-center justify-center font-black text-lg md:text-xl shadow-inner shrink-0">
+                        <div className="w-10 h-10 md:w-12 md:h-12 rounded-xl md:rounded-2xl bg-muted text-primary flex items-center justify-center font-black text-base md:text-lg shadow-inner shrink-0">
                           {client.name.charAt(0)}
                         </div>
                         <div className="min-w-0">
                           <p className={cn("font-black text-base md:text-lg text-foreground group-hover:text-accent transition-colors truncate", isPrivate && "blur-sm")}>{client.name}</p>
-                          <p className="text-[8px] md:text-[10px] font-black text-muted-foreground uppercase tracking-widest flex items-center gap-1.5 mt-0.5 md:mt-1">
-                            <Clock size={12} className="md:w-3.5 md:h-3.5 text-accent" /> {formatDistanceToNow(new Date(client.created_at), { addSuffix: true })}
+                          <p className="text-[8px] md:text-[9px] font-black text-muted-foreground uppercase tracking-widest flex items-center gap-1.5 mt-0.5 md:mt-1">
+                            <Clock size={12} className="md:w-3 md:h-3 text-accent" /> {formatDistanceToNow(new Date(client.created_at), { addSuffix: true })}
                           </p>
                         </div>
                       </Link>
@@ -249,14 +249,14 @@ const Index = () => {
                         <Button 
                           variant="ghost" 
                           size="sm" 
-                          className="h-8 md:h-10 px-2 md:px-4 rounded-lg md:rounded-xl text-indigo-600 hover:bg-indigo-50 font-black text-[8px] md:text-[10px] uppercase tracking-widest"
+                          className="h-8 md:h-9 px-2 md:px-4 rounded-lg md:rounded-xl text-indigo-600 hover:bg-indigo-50 font-black text-[8px] md:text-[9px] uppercase tracking-widest"
                           onClick={(e) => handleCopyLink(e, client.id)}
                         >
                           {copiedId === client.id ? <Check size={14} className="md:mr-2 text-emerald-500" /> : <LinkIcon size={14} className="md:mr-2" />}
                           <span className="hidden sm:inline">{copiedId === client.id ? "Copied" : "Link"}</span>
                         </Button>
                         <Link to={`/clients/${client.id}`}>
-                          <div className="w-8 h-8 md:w-10 md:h-10 rounded-lg md:rounded-xl bg-muted text-primary flex items-center justify-center group-hover:bg-primary group-hover:text-white transition-all shadow-sm">
+                          <div className="w-8 h-8 md:w-9 md:h-9 rounded-lg md:rounded-xl bg-muted text-primary flex items-center justify-center group-hover:bg-primary group-hover:text-white transition-all shadow-sm">
                             <ArrowRight className="w-4 h-4 md:w-5 md:h-5" />
                           </div>
                         </Link>
@@ -276,8 +276,8 @@ const Index = () => {
             <UpcomingAppointments />
             <RecentActivity />
 
-            <div className="p-8 md:p-10 bg-primary text-white rounded-2xl md:rounded-[3rem] shadow-2xl relative overflow-hidden group">
-              <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(255,255,255,0.15),transparent_50%)]" />
+            <div className="p-8 md:p-10 bg-primary text-white rounded-2xl md:rounded-[2.5rem] shadow-2xl relative overflow-hidden group">
+              <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(255,255,255,0.1),transparent_50%)]" />
               <div className="absolute top-0 right-0 p-6 md:p-8 opacity-10 group-hover:scale-110 transition-transform duration-700"><Wind size={100} className="md:w-[150px] md:h-[150px]" /></div>
               <div className="relative z-10 space-y-6 md:space-y-8">
                 <div className="flex items-center gap-3 md:gap-4">
@@ -286,16 +286,16 @@ const Index = () => {
                   </div>
                   <h3 className="text-xl md:text-2xl font-serif font-bold">Clinical Focus</h3>
                 </div>
-                <div className="p-4 md:p-6 bg-white/10 rounded-xl md:rounded-[2rem] border border-white/10 shadow-inner">
-                  <p className="text-[8px] md:text-[10px] font-black text-secondary uppercase tracking-widest mb-2 md:mb-3">Practice Goal</p>
+                <div className="p-4 md:p-6 bg-white/5 rounded-xl md:rounded-[1.5rem] border border-white/10 shadow-inner">
+                  <p className="text-[8px] md:text-[9px] font-black text-secondary uppercase tracking-widest mb-2 md:mb-3">Practice Goal</p>
                   <p className="text-base md:text-xl font-bold leading-snug">Improve practice-wide BOLT scores by 15% this quarter.</p>
                 </div>
                 <div className="space-y-3 md:space-y-4">
-                  <div className="flex items-center justify-between text-[8px] md:text-[10px] font-black uppercase tracking-widest">
+                  <div className="flex items-center justify-between text-[8px] md:text-[9px] font-black uppercase tracking-widest">
                     <span className="text-secondary">Quarterly Progress</span>
                     <span className="text-white">68%</span>
                   </div>
-                  <div className="h-2 md:h-2.5 bg-white/10 rounded-full overflow-hidden shadow-inner">
+                  <div className="h-1.5 md:h-2 bg-white/10 rounded-full overflow-hidden shadow-inner">
                     <div className="h-full bg-white rounded-full shadow-lg" style={{ width: '68%' }} />
                   </div>
                 </div>
@@ -309,7 +309,7 @@ const Index = () => {
       </div>
 
       <Dialog open={clientDialogOpen} onOpenChange={setClientDialogOpen}>
-        <DialogContent className="sm:max-w-[600px] max-h-[90vh] overflow-y-auto rounded-2xl md:rounded-[3rem] p-0">
+        <DialogContent className="sm:max-w-[600px] max-h-[90vh] overflow-y-auto rounded-2xl md:rounded-[2.5rem] p-0">
           <div className="p-6 md:p-10">
             <DialogHeader className="mb-6 md:mb-8">
               <DialogTitle className="text-2xl md:text-3xl font-serif font-bold tracking-tight">Add New Client</DialogTitle>
@@ -321,7 +321,7 @@ const Index = () => {
       </Dialog>
 
       <Dialog open={appDialogOpen} onOpenChange={setAppDialogOpen}>
-        <DialogContent className="sm:max-w-[550px] max-h-[90vh] overflow-y-auto rounded-2xl md:rounded-[3rem] p-0">
+        <DialogContent className="sm:max-w-[550px] max-h-[90vh] overflow-y-auto rounded-2xl md:rounded-[2.5rem] p-0">
           <div className="p-6 md:p-10">
             <DialogHeader className="mb-6 md:mb-8">
               <DialogTitle className="text-2xl md:text-3xl font-serif font-bold tracking-tight">Schedule New Session</DialogTitle>

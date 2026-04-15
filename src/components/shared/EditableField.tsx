@@ -153,12 +153,12 @@ const EditableField = ({
     <div 
       className={cn(
         "group relative p-4 transition-all duration-500",
-        !isNoBorder && "border-2 rounded-2xl",
+        !isNoBorder && "border border-border rounded-2xl",
         isFocused 
-          ? (isNoBorder ? "" : "bg-card border-indigo-500 shadow-xl shadow-indigo-100/50 dark:shadow-indigo-900/20") 
+          ? (isNoBorder ? "" : "bg-card border-indigo-500 shadow-lg shadow-indigo-100/20 dark:shadow-indigo-900/10") 
           : hasError 
-            ? (isNoBorder ? "" : "bg-rose-50 dark:bg-rose-950/10 border-rose-300 dark:border-rose-900/30")
-            : (isNoBorder ? "" : "bg-muted/50 border-transparent hover:bg-card hover:border-border hover:shadow-lg"),
+            ? (isNoBorder ? "" : "bg-rose-50 dark:bg-rose-950/10 border-rose-200 dark:border-rose-900/30")
+            : (isNoBorder ? "" : "bg-muted/30 border-transparent hover:bg-card hover:border-border"),
         isNoBorder && "p-0", 
         className
       )}
@@ -169,7 +169,7 @@ const EditableField = ({
         }
       }}
     >
-      <div className="flex items-center justify-between mb-4 h-4">
+      <div className="flex items-center justify-between mb-3 h-4">
         <div className="flex items-center gap-2">
           <p className={cn(
             "font-black uppercase text-[8px] tracking-[0.2em] transition-colors",
@@ -204,7 +204,7 @@ const EditableField = ({
               <Button variant="ghost" size="icon" className="h-6 w-6 rounded-lg text-muted-foreground hover:text-indigo-600 hover:bg-accent" onClick={handleCopy}>
                 {isCopied ? <Check size={12} className="text-emerald-500" /> : <Copy size={12} />}
               </Button>
-              <Edit3 size={12} className="text-muted-foreground/50" />
+              <Edit3 size={12} className="text-muted-foreground/30" />
             </div>
           )}
         </div>
@@ -221,12 +221,12 @@ const EditableField = ({
               onBlur={handleBlur}
               placeholder={placeholder}
               className={cn(
-                "transition-all duration-300 border-none focus-visible:ring-0 text-base md:text-lg font-medium text-foreground placeholder:text-muted-foreground/30 bg-transparent w-full",
-                isNoBorder ? "p-2" : "p-0", // Add internal padding if no border to prevent clipping
+                "transition-all duration-300 border-none focus-visible:ring-0 text-base font-medium text-foreground placeholder:text-muted-foreground/20 bg-transparent w-full",
+                isNoBorder ? "p-2" : "p-0",
                 multiline ? "resize-none flex-1 min-h-0" : ""
               )}
             />
-            <div className="flex flex-wrap gap-1.5 pt-4 border-t border-slate-100 dark:border-slate-800 animate-in fade-in slide-in-from-bottom-1 duration-300 shrink-0 pb-2">
+            <div className="flex flex-wrap gap-1.5 pt-3 border-t border-slate-100 dark:border-slate-800 animate-in fade-in slide-in-from-bottom-1 duration-300 shrink-0 pb-1">
               <div className="flex items-center gap-1 mr-2 text-[8px] font-black text-slate-400 uppercase tracking-widest">
                 <Sparkles size={10} className="text-indigo-400" /> Quick Tags:
               </div>
@@ -238,7 +238,7 @@ const EditableField = ({
                     e.stopPropagation();
                     handleChipClick(chip);
                   }}
-                  className="px-2 py-1 rounded-lg bg-slate-100 dark:bg-slate-800 hover:bg-indigo-600 hover:text-white text-[8px] font-black uppercase tracking-wider text-slate-500 transition-all"
+                  className="px-2 py-0.5 rounded-lg bg-slate-100 dark:bg-slate-800 hover:bg-indigo-600 hover:text-white text-[8px] font-black uppercase tracking-wider text-slate-500 transition-all"
                 >
                   {chip}
                 </button>
@@ -247,9 +247,9 @@ const EditableField = ({
           </div>
         ) : (
           <p className={cn(
-            "text-base md:text-lg leading-relaxed whitespace-pre-wrap transition-all duration-500",
+            "text-base leading-relaxed whitespace-pre-wrap transition-all duration-500",
             isNoBorder ? "p-2" : "p-0",
-            isEmpty ? "text-muted-foreground/50 italic font-medium" : "text-foreground font-medium",
+            isEmpty ? "text-muted-foreground/30 italic font-medium" : "text-foreground font-medium",
             shouldBlur && "blur-md select-none opacity-40"
           )}>
             {isEmpty ? placeholder : localValue}

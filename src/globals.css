@@ -4,24 +4,24 @@
 
 @layer base {
   :root {
-    /* Resonance Premium Brand Identity */
-    --background: 30 40% 99%; /* #FDFCFB - Warm Off-White */
-    --foreground: 222 53% 15%; /* Deeper Navy for better contrast */
+    /* Resonance Premium Brand Identity - Refined for Minimalism */
+    --background: 30 20% 98%; /* Softer, warmer off-white */
+    --foreground: 222 47% 11%; /* Deeper, softer navy */
 
     --card: 0 0% 100%;
-    --card-foreground: 222 53% 20%;
+    --card-foreground: 222 47% 15%;
 
     --popover: 0 0% 100%;
-    --popover-foreground: 222 53% 20%;
+    --popover-foreground: 222 47% 15%;
 
-    --primary: 222 53% 25%; /* #1E3261 - Signature Navy */
-    --primary-foreground: 30 40% 99%;
+    --primary: 222 47% 20%; /* Refined Signature Navy */
+    --primary-foreground: 30 20% 98%;
 
-    --secondary: 231 93% 88%; /* Softer Indigo */
-    --secondary-foreground: 222 53% 25%;
+    --secondary: 210 40% 96.1%;
+    --secondary-foreground: 222 47% 20%;
 
-    --accent: 332 56% 62%; /* #D46A9B - Signature Rose */
-    --accent-foreground: 30 40% 99%;
+    --accent: 332 50% 60%; /* Softer Signature Rose */
+    --accent-foreground: 30 20% 98%;
 
     --muted: 210 40% 96.1%;
     --muted-foreground: 215.4 16.3% 46.9%;
@@ -29,7 +29,7 @@
     --destructive: 0 84.2% 60.2%;
     --destructive-foreground: 210 40% 98%;
 
-    --success: 160 84% 39%;
+    --success: 160 60% 45%;
     --success-foreground: 210 40% 98%;
 
     --warning: 38 92% 50%;
@@ -37,35 +37,35 @@
 
     --border: 214.3 31.8% 91.4%;
     --input: 214.3 31.8% 91.4%;
-    --ring: 222 53% 25%;
+    --ring: 222 47% 20%;
 
-    --radius: 0.5rem; /* Reduced from 2rem to prevent text clipping in inputs */
+    --radius: 1rem; /* Consistent, softer radius */
   }
 
   .dark {
-    --background: 222 53% 4%;
-    --foreground: 30 40% 99%;
+    --background: 222 47% 4%;
+    --foreground: 30 20% 98%;
 
-    --card: 222 53% 6%;
-    --card-foreground: 30 40% 99%;
+    --card: 222 47% 6%;
+    --card-foreground: 30 20% 98%;
 
-    --popover: 222 53% 6%;
-    --popover-foreground: 30 40% 99%;
+    --popover: 222 47% 6%;
+    --popover-foreground: 30 20% 98%;
 
-    --primary: 30 40% 99%;
-    --primary-foreground: 222 53% 25%;
+    --primary: 30 20% 98%;
+    --primary-foreground: 222 47% 20%;
 
-    --secondary: 222 53% 12%;
-    --secondary-foreground: 30 40% 99%;
+    --secondary: 222 47% 12%;
+    --secondary-foreground: 30 20% 98%;
 
-    --accent: 332 56% 72%;
-    --accent-foreground: 222 53% 5%;
+    --accent: 332 50% 70%;
+    --accent-foreground: 222 47% 5%;
 
-    --muted: 222 53% 12%;
+    --muted: 222 47% 12%;
     --muted-foreground: 215 20.2% 65.1%;
 
-    --border: 222 53% 12%;
-    --input: 222 53% 12%;
+    --border: 222 47% 12%;
+    --input: 222 47% 12%;
     --ring: 212.7 26.8% 83.9%;
   }
 }
@@ -82,33 +82,29 @@
   }
 
   h1, h2, h3, h4, h5, h6 {
-    @apply font-serif font-bold tracking-tight;
+    @apply font-serif font-semibold tracking-tight;
     letter-spacing: -0.02em;
   }
 }
 
 @layer components {
   .premium-card {
-    @apply rounded-[2.5rem] border-none bg-white shadow-xl shadow-primary/5 dark:bg-slate-900/50 dark:shadow-none transition-all duration-500 hover:shadow-2xl hover:-translate-y-1;
+    @apply rounded-[2rem] border-none bg-white shadow-lg shadow-primary/5 dark:bg-slate-900/50 dark:shadow-none transition-all duration-500 hover:shadow-xl;
   }
 
   .glass-panel {
     @apply bg-white/70 backdrop-blur-md border border-white/20 dark:bg-slate-900/70 dark:border-slate-800/50;
   }
-
-  .resonance-gradient {
-    @apply bg-gradient-to-br from-[#1E3261] to-[#D46A9B];
-  }
   
-  /* Custom Scrollbar for Premium Feel */
+  /* Custom Scrollbar */
   ::-webkit-scrollbar {
-    width: 6px;
-    height: 6px;
+    width: 5px;
+    height: 5px;
   }
   ::-webkit-scrollbar-track {
     @apply bg-transparent;
   }
   ::-webkit-scrollbar-thumb {
-    @apply bg-muted-foreground/20 rounded-full hover:bg-muted-foreground/40 transition-colors;
+    @apply bg-muted-foreground/10 rounded-full hover:bg-muted-foreground/20 transition-colors;
   }
 }

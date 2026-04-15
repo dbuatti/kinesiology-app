@@ -15,7 +15,7 @@ serve(async (req) => {
     const { content } = await req.json();
     
     if (!content || content.trim().length < 10) {
-      return new Response(JSON.stringify({ error: 'Journal text is too short to analyze. Please write a bit more.' }), {
+      return new Response(JSON.stringify({ error: 'Journal text is too short to analyze.' }), {
         status: 400,
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       });
@@ -23,10 +23,7 @@ serve(async (req) => {
 
     const geminiKey = Deno.env.get('GEMINI_API_KEY')
     if (!geminiKey) {
-      return new Response(JSON.stringify({ 
-        error: 'GEMINI_API_KEY is missing.', 
-        details: 'Please add GEMINI_API_KEY to your Supabase Project Secrets.' 
-      }), {
+      return new Response(JSON.stringify({ error: 'GEMINI_API_KEY is missing.' }), {
         status: 400,
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       });
@@ -36,14 +33,15 @@ serve(async (req) => {
     Analyze the following journal entry and extract specific items for the practitioner's "Identity Sandbox".
     
     CATEGORIZATION RULES:
-    1. "belief" -> Maps to LIMITING BELIEFS tool. Must start with "I am..." and represent a struggle (e.g., "I am not good enough").
-    2. "identity" -> Maps to IDENTITY SHIFTING tool. Labels for a current problematic state (e.g., "The Perfectionist", "The Fixer").
-    3. "goal" -> Maps to IDENTITY ALIGNMENT tool. Desired future states or target identities (e.g., "The Grounded Healer").
-    4. "question" -> Maps to MEETUP LOG. Specific clinical or technical questions for a mentor.
+    1. "belief" -> Maps to LIMITING BELIEFS tool. Must start with "I am..." and represent a struggle or a core truth (e.g., "I am not good enough", "I am connected to gratitude").
+    2. "identity" -> Maps to IDENTITY SHIFTING tool. Labels for a current problematic state or a metaphorical archetype (e.g., "The Perfectionist", "The Horse").
+    3. "goal" -> Maps to IDENTITY ALIGNMENT tool. Desired future states or target identities (e.g., "The Grounded Healer", "The Sovereign Creator").
+    4. "felt_sense" -> Maps to SOMATIC TRACKING. Physical sensations mentioned (e.g., "Tightness in stomach", "Skin pulling down").
+    5. "question" -> Maps to MEETUP LOG. Specific clinical or technical questions for a mentor.
     
     Return the result as a JSON object with a key "extractions" containing an array of objects with:
     - "content": The text of the insight.
-    - "type": Exactly one of: "belief", "identity", "goal", or "question".
+    - "type": Exactly one of: "belief", "identity", "goal", "felt_sense", or "question".
     - "status": "pending"
     
     TEXT TO ANALYZE:

@@ -36,7 +36,9 @@ import {
   ChevronDown,
   ChevronUp,
   BookOpen,
-  Lock
+  Lock,
+  Activity,
+  Wind
 } from "lucide-react";
 import { format } from "date-fns";
 import { showSuccess, showError } from "@/utils/toast";
@@ -74,11 +76,9 @@ const JournalPage = () => {
   const [category, setCategory] = useState("General");
   const [selectedAppointmentId, setSelectedAppointmentId] = useState<string | null>(preselectedAppId || null);
   
-  // AI Analysis State
   const [analyzingIds, setAnalyzingIds] = useState<Set<string>>(new Set());
   const [addingToBacklog, setAddingToBacklog] = useState<string | null>(null);
   
-  // Response State
   const [respondingToId, setRespondingToId] = useState<string | null>(null);
   const [tempResponse, setTempResponse] = useState("");
 
@@ -117,7 +117,6 @@ const JournalPage = () => {
 
   const meetupQuestions = useMemo(() => {
     const questions: any[] = [];
-    
     reflections.forEach(ref => {
       if (ref.category === 'Meetup Question') {
         questions.push({
@@ -131,7 +130,6 @@ const JournalPage = () => {
           clientName: ref.appointments?.clients?.name
         });
       }
-      
       const extractions = ref.ai_extractions || [];
       extractions.forEach((ext: any, idx: number) => {
         if (ext.type === 'question') {
@@ -149,7 +147,6 @@ const JournalPage = () => {
         }
       });
     });
-
     return questions.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
   }, [reflections]);
 
@@ -226,7 +223,7 @@ const JournalPage = () => {
         .insert({
           user_id: user.id,
           content: item.content,
-          type: item.type, 
+          type: item.type === 'felt_sense' ? 'identity' : item.type, 
           status: 'pending'
         });
 
@@ -254,13 +251,9 @@ const JournalPage = () => {
 
   const handleSaveResponse = async (question: any) => {
     if (!tempResponse.trim()) return;
-    
     try {
       if (question.id.startsWith('manual-')) {
-        const { error } = await supabase
-          .from('practitioner_reflections')
-          .update({ response: tempResponse.trim() })
-          .eq('id', question.reflectionId);
+        const { error } = await supabase.from('practitioner_reflections').update({ response: tempResponse.trim() }).eq('id', question.reflectionId);
         if (error) throw error;
       } else {
         const reflection = reflections.find(r => r.id === question.reflectionId);
@@ -268,15 +261,10 @@ const JournalPage = () => {
           const newExtractions = [...reflection.ai_extractions];
           newExtractions[question.extractionIndex].status = 'asked';
           newExtractions[question.extractionIndex].response = tempResponse.trim();
-          
-          const { error } = await supabase
-            .from('practitioner_reflections')
-            .update({ ai_extractions: newExtractions })
-            .eq('id', reflection.id);
+          const { error } = await supabase.from('practitioner_reflections').update({ ai_extractions: newExtractions }).eq('id', reflection.id);
           if (error) throw error;
         }
       }
-      
       showSuccess("Response logged.");
       setRespondingToId(null);
       setTempResponse("");
@@ -302,6 +290,7 @@ const JournalPage = () => {
       case 'belief': return { label: 'Limiting Beliefs', icon: ShieldAlert, color: 'text-rose-600' };
       case 'identity': return { label: 'Identity Shifting', icon: Fingerprint, color: 'text-indigo-600' };
       case 'goal': return { label: 'Identity Alignment', icon: Target, color: 'text-emerald-600' };
+      case 'felt_sense': return { label: 'Somatic Tracking', icon: Wind, color: 'text-blue-600' };
       default: return null;
     }
   };
@@ -476,11 +465,13 @@ const JournalPage = () => {
                                       "w-7 h-7 rounded-lg flex items-center justify-center shrink-0",
                                       item.type === 'question' ? "bg-indigo-50 text-indigo-700" :
                                       item.type === 'belief' ? "bg-rose-50 text-rose-700" : 
-                                      item.type === 'goal' ? "bg-emerald-50 text-emerald-600" : "bg-slate-100 text-slate-600"
+                                      item.type === 'goal' ? "bg-emerald-50 text-emerald-600" : 
+                                      item.type === 'felt_sense' ? "bg-blue-50 text-blue-600" : "bg-slate-100 text-slate-600"
                                     )}>
                                       {item.type === 'question' ? <HelpCircle size={14} /> : 
                                        item.type === 'belief' ? <ShieldAlert size={14} /> : 
-                                       item.type === 'goal' ? <Target size={14} /> : <Fingerprint size={14} />}
+                                       item.type === 'goal' ? <Target size={14} /> : 
+                                       item.type === 'felt_sense' ? <Wind size={14} /> : <Fingerprint size={14} />}
                                     </div>
                                     <div className="min-w-0">
                                       <p className={cn(

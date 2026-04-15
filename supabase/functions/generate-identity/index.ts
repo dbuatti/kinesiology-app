@@ -69,7 +69,9 @@ serve(async (req) => {
     let fallback = FALLBACK_PROBLEM_SUGGESTIONS;
 
     if (type === 'target') {
-      prompt = `Suggest 3-4 "Target Identities" for the goal: ${goal || problem}. Return ONLY a JSON array of strings.`;
+      prompt = `Suggest 3-4 "Target Identities" for the goal: ${goal || problem}. 
+      The identities should be archetypal and empowering (e.g., "The Sovereign Creator", "The Grounded Leader"). 
+      Return ONLY a JSON array of strings.`;
       fallback = FALLBACK_TARGET_SUGGESTIONS;
     } else if (type === 'limiting_belief') {
       prompt = `Analyze the following problem and physical sensation to extract the underlying "Limiting Identity" or "Limiting Belief". The belief should start with "I am..." and represent the version of self that is struggling.
@@ -84,11 +86,13 @@ serve(async (req) => {
       prompt = `Suggest 3-4 common physical sensations (felt senses) that someone might experience when facing this problem: "${problem}". Return ONLY a JSON array of strings.`;
       fallback = FALLBACK_SENSE_SUGGESTIONS;
     } else {
-      prompt = `Suggest 3-4 "Problem Identities" for: Problem: ${problem}, Emotion: ${emotion}, Sense: ${feltSense}. Return ONLY a JSON array of strings.`;
+      prompt = `Suggest 3-4 "Problem Identities" for: Problem: ${problem}, Emotion: ${emotion}, Sense: ${feltSense}. 
+      Use archetypal labels like "The Fixer" or "The Invisible One". 
+      Return ONLY a JSON array of strings.`;
       fallback = FALLBACK_PROBLEM_SUGGESTIONS;
     }
 
-    const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${geminiKey}`, {
+    const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${geminiKey}`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
@@ -100,11 +104,7 @@ serve(async (req) => {
     const data = await response.json()
     
     if (!response.ok) {
-      console.warn("[generate-identity] API Error or Quota Exceeded. Using fallbacks.", data.error?.message);
-      return new Response(JSON.stringify({ 
-        suggestions: fallback,
-        isFallback: true 
-      }), {
+      return new Response(JSON.stringify({ suggestions: fallback, isFallback: true }), {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       });
     }
@@ -122,10 +122,7 @@ serve(async (req) => {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     })
   } catch (error) {
-    return new Response(JSON.stringify({ 
-      suggestions: FALLBACK_PROBLEM_SUGGESTIONS,
-      error: error.message 
-    }), {
+    return new Response(JSON.stringify({ suggestions: FALLBACK_PROBLEM_SUGGESTIONS, error: error.message }), {
       status: 200,
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     })

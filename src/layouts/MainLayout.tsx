@@ -7,6 +7,7 @@ import MobileNav from '@/components/crm/MobileNav';
 import QuickActions from '@/components/crm/QuickActions';
 import AppFooter from '@/components/crm/AppFooter';
 import BackToTop from '@/components/shared/BackToTop';
+import UpcomingMarquee from '@/components/crm/UpcomingMarquee';
 import { Button } from '@/components/ui/button';
 import { PanelLeftOpen } from 'lucide-react';
 
@@ -19,7 +20,6 @@ const MainLayout = () => {
     return saved !== null ? JSON.parse(saved) : true;
   });
   
-  // Automatically hide sidebar when entering an appointment detail page
   useEffect(() => {
     if (isAppointmentDetail) {
       setIsSidebarVisible(false);
@@ -31,30 +31,33 @@ const MainLayout = () => {
   }, [isSidebarVisible]);
 
   return (
-    <div className="flex flex-col lg:flex-row min-h-screen bg-background">
-      <MobileNav />
-      {isSidebarVisible && <Sidebar onHide={() => setIsSidebarVisible(false)} />}
-      
-      <main id="main-scroll-container" className="flex-1 flex flex-col overflow-auto relative">
-        {!isSidebarVisible && (
-          <div className="hidden lg:block fixed top-6 left-6 z-[60]">
-            <Button 
-              variant="outline" 
-              size="icon" 
-              onClick={() => setIsSidebarVisible(true)}
-              className="h-12 w-12 rounded-2xl bg-card border-border shadow-xl hover:bg-accent hover:text-indigo-600 transition-all group"
-            >
-              <PanelLeftOpen size={24} className="group-hover:scale-110 transition-transform" />
-            </Button>
+    <div className="flex flex-col min-h-screen bg-background">
+      <UpcomingMarquee />
+      <div className="flex flex-col lg:flex-row flex-1">
+        <MobileNav />
+        {isSidebarVisible && <Sidebar onHide={() => setIsSidebarVisible(false)} />}
+        
+        <main id="main-scroll-container" className="flex-1 flex flex-col overflow-auto relative">
+          {!isSidebarVisible && (
+            <div className="hidden lg:block fixed top-14 left-6 z-[60]">
+              <Button 
+                variant="outline" 
+                size="icon" 
+                onClick={() => setIsSidebarVisible(true)}
+                className="h-12 w-12 rounded-2xl bg-card border-border shadow-xl hover:bg-accent hover:text-indigo-600 transition-all group"
+              >
+                <PanelLeftOpen size={24} className="group-hover:scale-110 transition-transform" />
+              </Button>
+            </div>
+          )}
+          
+          <div className="flex-1 p-0">
+            <Outlet />
           </div>
-        )}
-        
-        <div className="flex-1 p-0">
-          <Outlet />
-        </div>
-        
-        <AppFooter />
-      </main>
+          
+          <AppFooter />
+        </main>
+      </div>
       <QuickActions />
       <BackToTop />
     </div>

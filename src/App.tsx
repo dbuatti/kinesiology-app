@@ -45,6 +45,7 @@ import SandboxPage from "./pages/SandboxPage";
 import IdentityShiftingPage from "./pages/IdentityShiftingPage";
 import IdentityAlignmentPage from "./pages/IdentityAlignmentPage";
 import LimitingBeliefsPage from "./pages/LimitingBeliefsPage";
+import ReflectionsPage from "./pages/ReflectionsPage";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -92,6 +93,7 @@ const AppRoutes = () => {
         <Route path="/practice/calibrate" element={<QuickCalibratePage />} />
         <Route path="/practice/self" element={<SelfPracticePage />} />
         <Route path="/practice/procedures" element={<ProceduresPage />} />
+        <Route path="/practice/reflections" element={<ReflectionsPage />} />
 
         {/* Knowledge Base */}
         <Route path="/resources" element={<ResourcesPage />} />

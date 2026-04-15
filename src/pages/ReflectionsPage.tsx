@@ -141,8 +141,16 @@ const ReflectionsPage = () => {
       });
 
       if (error) {
+        // Try to parse the error message from the function response
+        let errorMsg = "AI Analysis failed.";
+        try {
+          const body = await error.context.json();
+          errorMsg = body.details || body.error || errorMsg;
+        } catch (e) {}
+        
+        showError(errorMsg);
         console.error("Analysis error:", error);
-        return; // Silent fail for background auto-analysis
+        return;
       }
 
       if (data?.extractions && data.extractions.length > 0) {
@@ -158,9 +166,12 @@ const ReflectionsPage = () => {
         ));
         
         showSuccess(`AI found ${data.extractions.length} potential identities/beliefs.`);
+      } else {
+        showSuccess("Analysis complete: No specific identities or beliefs detected.");
       }
     } catch (err: any) {
       console.error("Background analysis failed:", err);
+      showError("An unexpected error occurred during analysis.");
     } finally {
       setAnalyzingIds(prev => {
         const next = new Set(prev);

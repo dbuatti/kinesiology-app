@@ -13,26 +13,35 @@ serve(async (req) => {
 
   try {
     const { content } = await req.json();
-    const geminiKey = Deno.env.get('GEMINI_API_KEY')
     
-    if (!geminiKey) {
-      console.error("[analyze-reflections] Error: Missing GEMINI_API_KEY in Supabase Secrets.");
-      return new Response(JSON.stringify({ error: 'Missing API Key. Please set GEMINI_API_KEY in Supabase secrets.' }), {
+    if (!content || content.trim().length < 10) {
+      return new Response(JSON.stringify({ error: 'Reflection text is too short to analyze. Please write a bit more.' }), {
         status: 400,
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       });
     }
 
-    console.log("[analyze-reflections] Analyzing content length:", content?.length);
+    const geminiKey = Deno.env.get('GEMINI_API_KEY')
+    if (!geminiKey) {
+      return new Response(JSON.stringify({ 
+        error: 'GEMINI_API_KEY is missing.', 
+        details: 'Please add GEMINI_API_KEY to your Supabase Project Secrets (Settings > Edge Functions > Manage Secrets).' 
+      }), {
+        status: 400,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+    }
 
-    const prompt = `Act as a clinical supervisor and linguistic analyst for a Kinesiology practitioner. 
-    Analyze the following reflection text and extract potential "Limiting Beliefs" or "Stuck Identities" that the practitioner or their client might be experiencing.
+    console.log("[analyze-reflections] Analyzing content...");
+
+    const prompt = `Act as a clinical supervisor for a Kinesiology practitioner. 
+    Analyze the following reflection text and extract potential "Limiting Beliefs" or "Stuck Identities".
     
     RULES:
     1. Limiting Beliefs must start with "I am..." (e.g., "I am not good enough").
     2. Identities should be labels (e.g., "The Perfectionist", "The Invisible One").
     3. Only extract items that are clearly implied or stated in the text.
-    4. Return ONLY a JSON array of objects with "content" and "type" (either 'belief' or 'identity').
+    4. Return the result as a JSON object with a key "extractions" containing an array of objects with "content" and "type" (either 'belief' or 'identity').
     
     TEXT TO ANALYZE:
     "${content}"`;
@@ -43,7 +52,7 @@ serve(async (req) => {
       body: JSON.stringify({
         contents: [{ parts: [{ text: prompt }] }],
         generationConfig: { 
-          temperature: 0.4,
+          temperature: 0.2,
           response_mime_type: "application/json"
         }
       }),
@@ -52,31 +61,25 @@ serve(async (req) => {
     const data = await response.json()
     
     if (!response.ok) {
-      console.error("[analyze-reflections] Gemini API Error:", data.error?.message || 'Unknown error');
-      return new Response(JSON.stringify({ error: data.error?.message || 'Gemini API Error' }), {
+      console.error("[analyze-reflections] Gemini API Error:", data.error);
+      return new Response(JSON.stringify({ 
+        error: 'AI Service Error', 
+        details: data.error?.message || 'The AI service returned an error.' 
+      }), {
         status: 400,
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       });
     }
 
-    if (!data.candidates || data.candidates.length === 0 || !data.candidates[0].content) {
-      console.warn("[analyze-reflections] No candidates returned from Gemini.");
-      return new Response(JSON.stringify({ extractions: [] }), {
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-      });
-    }
-
     const resultText = data.candidates[0].content.parts[0].text.trim();
-    console.log("[analyze-reflections] Raw AI response:", resultText);
-    
-    const extractions = JSON.parse(resultText);
+    const parsed = JSON.parse(resultText);
 
-    return new Response(JSON.stringify({ extractions }), {
+    return new Response(JSON.stringify({ extractions: parsed.extractions || [] }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     })
   } catch (error) {
     console.error("[analyze-reflections] Critical Error:", error.message);
-    return new Response(JSON.stringify({ error: error.message }), {
+    return new Response(JSON.stringify({ error: 'Internal Server Error', details: error.message }), {
       status: 400,
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     })

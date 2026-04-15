@@ -15,7 +15,9 @@ import {
   Brain,
   Zap,
   History,
-  Loader2
+  Loader2,
+  Lightbulb,
+  ChevronRight
 } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -84,6 +86,41 @@ const SandboxPage = () => {
   useEffect(() => {
     fetchBacklog();
   }, []);
+
+  const getRecommendation = (item: any) => {
+    const content = item.content.toLowerCase();
+    
+    // 1. Check for Goals/Alignment
+    if (item.type === 'goal' || content.includes('want to') || content.includes('become') || content.includes('future')) {
+      return {
+        tool: 'Identity Alignment',
+        path: '/sandbox/identity-alignment',
+        icon: Target,
+        color: 'text-emerald-600',
+        bg: 'bg-emerald-50'
+      };
+    }
+
+    // 2. Check for Beliefs
+    if (item.type === 'belief' || content.startsWith('i am')) {
+      return {
+        tool: 'Limiting Beliefs',
+        path: '/sandbox/limiting-beliefs',
+        icon: ShieldAlert,
+        color: 'text-rose-600',
+        bg: 'bg-rose-50'
+      };
+    }
+
+    // 3. Default to Shifting
+    return {
+      tool: 'Identity Shifting',
+      path: '/sandbox/identity-shifting',
+      icon: Fingerprint,
+      color: 'text-indigo-600',
+      bg: 'bg-indigo-50'
+    };
+  };
 
   const handleDelete = async (id: string) => {
     try {
@@ -177,48 +214,58 @@ const SandboxPage = () => {
               <Loader2 className="animate-spin text-indigo-600" size={32} />
             </div>
           ) : backlog.length > 0 ? (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-              {backlog.map((item) => (
-                <Card key={item.id} className="border-none shadow-sm bg-card rounded-2xl overflow-hidden group">
-                  <CardContent className="p-6 space-y-4">
-                    <div className="flex items-start justify-between">
-                      <Badge className={cn(
-                        "border-none font-black text-[8px] uppercase tracking-widest px-2 py-0.5 rounded-full",
-                        item.type === 'identity' ? "bg-indigo-100 text-indigo-700" : "bg-rose-100 text-rose-700"
-                      )}>
-                        {item.type}
-                      </Badge>
-                      <Button 
-                        variant="ghost" 
-                        size="icon" 
-                        className="h-8 w-8 rounded-xl text-muted-foreground hover:text-rose-600 opacity-0 group-hover:opacity-100 transition-all"
-                        onClick={() => handleDelete(item.id)}
-                      >
-                        <Trash2 size={14} />
-                      </Button>
-                    </div>
-                    <p className="font-bold text-lg text-foreground leading-tight">"{item.content}"</p>
-                    <div className="pt-4 flex items-center justify-between border-t border-border">
-                      <div className="flex items-center gap-2 text-[10px] font-bold text-muted-foreground uppercase tracking-widest">
-                        <Clock size={12} />
-                        {format(new Date(item.created_at), "MMM d")}
-                      </div>
-                      <div className="flex gap-2">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {backlog.map((item) => {
+                const rec = getRecommendation(item);
+                return (
+                  <Card key={item.id} className="border-none shadow-sm bg-card rounded-[2rem] overflow-hidden group hover:shadow-md transition-all">
+                    <CardContent className="p-6 space-y-4">
+                      <div className="flex items-start justify-between">
+                        <Badge className={cn(
+                          "border-none font-black text-[8px] uppercase tracking-widest px-2 py-0.5 rounded-full",
+                          item.type === 'identity' ? "bg-indigo-100 text-indigo-700" : 
+                          item.type === 'goal' ? "bg-emerald-100 text-emerald-700" : "bg-rose-100 text-rose-700"
+                        )}>
+                          {item.type || 'identity'}
+                        </Badge>
                         <Button 
                           variant="ghost" 
-                          size="sm" 
-                          className="h-8 px-3 rounded-xl text-[10px] font-black uppercase tracking-widest text-indigo-600 hover:bg-indigo-50"
+                          size="icon" 
+                          className="h-8 w-8 rounded-xl text-muted-foreground hover:text-rose-600 opacity-0 group-hover:opacity-100 transition-all"
+                          onClick={() => handleDelete(item.id)}
+                        >
+                          <Trash2 size={14} />
+                        </Button>
+                      </div>
+                      
+                      <p className="font-bold text-lg text-foreground leading-tight">"{item.content}"</p>
+                      
+                      <div className={cn("p-3 rounded-xl border flex items-center gap-3", rec.bg, "border-transparent")}>
+                        <rec.icon size={14} className={rec.color} />
+                        <div className="flex-1">
+                          <p className="text-[8px] font-black text-slate-400 uppercase tracking-widest">Recommended Tool</p>
+                          <p className={cn("text-[10px] font-bold", rec.color)}>{rec.tool}</p>
+                        </div>
+                      </div>
+
+                      <div className="pt-4 flex items-center justify-between border-t border-border">
+                        <div className="flex items-center gap-2 text-[10px] font-bold text-muted-foreground uppercase tracking-widest">
+                          <Clock size={12} />
+                          {format(new Date(item.created_at), "MMM d")}
+                        </div>
+                        <Button 
+                          className="h-9 px-4 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-black text-[10px] uppercase tracking-widest shadow-lg shadow-indigo-100"
                           asChild
                         >
-                          <Link to={item.type === 'identity' ? "/sandbox/identity-shifting" : "/sandbox/limiting-beliefs"} state={{ prefill: item.content, backlogId: item.id }}>
-                            Process
+                          <Link to={rec.path} state={{ prefill: item.content, backlogId: item.id }}>
+                            Process Now <ChevronRight size={14} className="ml-1" />
                           </Link>
                         </Button>
                       </div>
-                    </div>
-                  </CardContent>
-                </Card>
-              ))}
+                    </CardContent>
+                  </Card>
+                );
+              })}
             </div>
           ) : (
             <div className="text-center py-20 bg-muted/30 rounded-[3rem] border-2 border-dashed border-border">

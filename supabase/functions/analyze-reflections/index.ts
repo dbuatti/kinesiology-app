@@ -25,23 +25,21 @@ serve(async (req) => {
     if (!geminiKey) {
       return new Response(JSON.stringify({ 
         error: 'GEMINI_API_KEY is missing.', 
-        details: 'Please add GEMINI_API_KEY to your Supabase Project Secrets (Settings > Edge Functions > Manage Secrets).' 
+        details: 'Please add GEMINI_API_KEY to your Supabase Project Secrets.' 
       }), {
         status: 400,
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       });
     }
 
-    console.log("[analyze-reflections] Analyzing content with gemini-2.5-flash...");
-
     const prompt = `Act as a clinical supervisor for a Kinesiology practitioner. 
-    Analyze the following reflection text and extract potential "Limiting Beliefs" or "Stuck Identities".
+    Analyze the following reflection text and extract potential "Limiting Beliefs", "Stuck Identities", or "Target Identities/Goals".
     
     RULES:
-    1. Limiting Beliefs must start with "I am..." (e.g., "I am not good enough").
-    2. Identities should be labels (e.g., "The Perfectionist", "The Invisible One").
-    3. Only extract items that are clearly implied or stated in the text.
-    4. Return the result as a JSON object with a key "extractions" containing an array of objects with "content" and "type" (either 'belief' or 'identity').
+    1. Limiting Beliefs must start with "I am..." and represent a struggle (e.g., "I am not good enough").
+    2. Stuck Identities should be labels for a current problematic state (e.g., "The Perfectionist", "The Doubter").
+    3. Target Identities/Goals should be labels for a desired future state or outcome (e.g., "The Confident Leader", "The Sovereign Healer").
+    4. Return the result as a JSON object with a key "extractions" containing an array of objects with "content" and "type" (either 'belief', 'identity', or 'goal').
     
     TEXT TO ANALYZE:
     "${content}"`;
@@ -61,11 +59,7 @@ serve(async (req) => {
     const data = await response.json()
     
     if (!response.ok) {
-      console.error("[analyze-reflections] Gemini API Error:", data.error);
-      return new Response(JSON.stringify({ 
-        error: 'AI Service Error', 
-        details: data.error?.message || 'The AI service returned an error.' 
-      }), {
+      return new Response(JSON.stringify({ error: 'AI Service Error' }), {
         status: 400,
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       });
@@ -78,8 +72,7 @@ serve(async (req) => {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     })
   } catch (error) {
-    console.error("[analyze-reflections] Critical Error:", error.message);
-    return new Response(JSON.stringify({ error: 'Internal Server Error', details: error.message }), {
+    return new Response(JSON.stringify({ error: 'Internal Server Error' }), {
       status: 400,
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     })

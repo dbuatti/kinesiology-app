@@ -85,8 +85,20 @@ const ReflectionsPage = () => {
       if (refRes.error) throw refRes.error;
       if (appRes.error) throw appRes.error;
 
-      setReflections(refRes.data || []);
-      setAppointments(appRes.data || []);
+      const allRefs = refRes.data || [];
+      const allApps = appRes.data || [];
+
+      setReflections(allRefs);
+      setAppointments(allApps);
+
+      // Pre-populate logic: If no ID was passed via state, find the most recent session before PRESENT time
+      if (!preselectedAppId && allApps.length > 0) {
+        const now = new Date();
+        const mostRecentPast = allApps.find(app => new Date(app.date) <= now);
+        if (mostRecentPast) {
+          setSelectedAppointmentId(mostRecentPast.id);
+        }
+      }
     } catch (err) {
       console.error(err);
     } finally {
@@ -120,7 +132,6 @@ const ReflectionsPage = () => {
 
       showSuccess("Reflection saved. Analyzing for insights...");
       setContent("");
-      setSelectedAppointmentId(null);
       
       // Trigger background analysis immediately
       if (data) {

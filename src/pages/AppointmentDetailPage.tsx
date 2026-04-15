@@ -1,12 +1,12 @@
 "use client";
 
 import { useState, useEffect, useMemo } from "react";
-import { useParams, useNavigate } from "react-router-dom";
+import { useParams, useNavigate, Link } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { 
   Loader2, Trash2, MoreHorizontal, History, Printer, Copy, Check, Play,
   FileText, Zap, Activity, Target, ClipboardList, PanelRightOpen, PanelRightClose,
-  Brain, ShieldCheck, Sparkles, Share, Link as LinkIcon, ChevronRight, ExternalLink, DollarSign, AlertCircle, Settings2, ChevronDown
+  Brain, ShieldCheck, Sparkles, Share, Link as LinkIcon, ChevronRight, ExternalLink, DollarSign, AlertCircle, Settings2, ChevronDown, MessageSquare
 } from "lucide-react";
 import { format, isToday } from "date-fns";
 import { AppointmentWithClient } from "@/types/crm";
@@ -35,7 +35,7 @@ import {
   CollapsibleContent,
   CollapsibleTrigger,
 } from "@/components/ui/collapsible";
-import { Card, CardContent } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import Breadcrumbs from "@/components/shared/Breadcrumbs";
 import { Button } from "@/components/ui/button";
 import { TCM_CHANNELS } from "@/data/tcm-channel-data";
@@ -60,11 +60,26 @@ const AppointmentDetailPage = () => {
   const [showSidebar, setShowSidebar] = useState(false); 
   const [showSetup, setShowSetup] = useState(false);
   const [nucleiFilter, setNucleiFilter] = useState<Nuclei | null>(null);
+  const [reflections, setReflections] = useState<any[]>([]);
 
   useEffect(() => {
     const timer = setInterval(() => setCurrentTime(new Date()), 60000);
     return () => clearInterval(timer);
   }, []);
+
+  useEffect(() => {
+    const fetchReflections = async () => {
+      if (!id) return;
+      const { data } = await supabase
+        .from('practitioner_reflections')
+        .select('*')
+        .eq('appointment_id', id)
+        .order('created_at', { ascending: false });
+      
+      if (data) setReflections(data);
+    };
+    fetchReflections();
+  }, [id]);
 
   const currentPeakMeridian = useMemo(() => {
     const hour = currentTime.getHours();
@@ -172,7 +187,7 @@ const AppointmentDetailPage = () => {
         refresh();
       }
     } catch (err: any) {
-      showError("Failed to clone previous session data.");
+      showError(err.message || "Failed to clone previous session data.");
     } finally {
       setCloning(false);
     }
@@ -352,6 +367,35 @@ const AppointmentDetailPage = () => {
 
             {showSidebar && (
               <div className="xl:col-span-4 space-y-12 print:hidden animate-in fade-in slide-in-from-right-4 duration-500">
+                {reflections.length > 0 && (
+                  <div className="space-y-4">
+                    <div className="flex items-center justify-between px-2">
+                      <div className="flex items-center gap-2">
+                        <MessageSquare size={18} className="text-indigo-600" />
+                        <h3 className="text-sm font-black text-slate-400 uppercase tracking-[0.3em]">Practitioner Reflections</h3>
+                      </div>
+                      <Button variant="ghost" size="sm" className="h-7 text-[8px] font-black uppercase tracking-widest text-indigo-600" asChild>
+                        <Link to="/practice/reflections" state={{ appointmentId: id }}>+ Add</Link>
+                      </Button>
+                    </div>
+                    <div className="space-y-3">
+                      {reflections.map(ref => (
+                        <Card key={ref.id} className="border-none shadow-sm bg-indigo-50/50 rounded-2xl overflow-hidden">
+                          <CardContent className="p-4 space-y-2">
+                            <div className="flex items-center justify-between">
+                              <Badge variant="outline" className="bg-white border-indigo-100 text-indigo-600 text-[7px] font-black uppercase px-1.5 py-0">
+                                {ref.category}
+                              </Badge>
+                              <span className="text-[8px] font-bold text-slate-400 uppercase">{format(new Date(ref.created_at), "MMM d")}</span>
+                            </div>
+                            <p className="text-xs font-medium text-slate-700 leading-relaxed line-clamp-3 italic">"{ref.content}"</p>
+                          </CardContent>
+                        </Card>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
                 <div className="space-y-6">
                   <div className="flex items-center justify-between px-2">
                     <div className="flex items-center gap-2">

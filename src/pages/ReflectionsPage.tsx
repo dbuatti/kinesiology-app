@@ -15,7 +15,10 @@ import {
   Brain, 
   HelpCircle,
   Save,
-  Calendar
+  Calendar,
+  Link as LinkIcon,
+  User,
+  X
 } from "lucide-react";
 import { format } from "date-fns";
 import { showSuccess, showError } from "@/utils/toast";
@@ -23,6 +26,14 @@ import AppLayout from "@/components/crm/AppLayout";
 import Breadcrumbs from "@/components/shared/Breadcrumbs";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Link, useLocation } from "react-router-dom";
 
 const CATEGORIES = [
   { id: 'General', icon: MessageSquare, color: 'text-slate-500', bg: 'bg-slate-50' },
@@ -32,21 +43,39 @@ const CATEGORIES = [
 ];
 
 const ReflectionsPage = () => {
+  const location = useLocation();
+  const preselectedAppId = location.state?.appointmentId;
+
   const [reflections, setReflections] = useState<any[]>([]);
+  const [appointments, setAppointments] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [content, setContent] = useState("");
   const [category, setCategory] = useState("General");
+  const [selectedAppointmentId, setSelectedAppointmentId] = useState<string | null>(preselectedAppId || null);
 
-  const fetchReflections = async () => {
+  const fetchData = async () => {
     try {
-      const { data, error } = await supabase
-        .from('practitioner_reflections')
-        .select('*')
-        .order('created_at', { ascending: false });
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
 
-      if (error) throw error;
-      setReflections(data || []);
+      const [refRes, appRes] = await Promise.all([
+        supabase
+          .from('practitioner_reflections')
+          .select('*, appointments(id, name, date, clients(name))')
+          .order('created_at', { ascending: false }),
+        supabase
+          .from('appointments')
+          .select('id, name, date, clients(name)')
+          .order('date', { ascending: false })
+          .limit(20)
+      ]);
+
+      if (refRes.error) throw refRes.error;
+      if (appRes.error) throw appRes.error;
+
+      setReflections(refRes.data || []);
+      setAppointments(appRes.data || []);
     } catch (err) {
       console.error(err);
     } finally {
@@ -55,7 +84,7 @@ const ReflectionsPage = () => {
   };
 
   useEffect(() => {
-    fetchReflections();
+    fetchData();
   }, []);
 
   const handleSave = async () => {
@@ -70,14 +99,16 @@ const ReflectionsPage = () => {
         .insert({
           user_id: user.id,
           content: content.trim(),
-          category
+          category,
+          appointment_id: selectedAppointmentId === "none" ? null : selectedAppointmentId
         });
 
       if (error) throw error;
 
       showSuccess("Reflection saved to your log.");
       setContent("");
-      fetchReflections();
+      setSelectedAppointmentId(null);
+      fetchData();
     } catch (err: any) {
       showError(err.message);
     } finally {
@@ -114,22 +145,46 @@ const ReflectionsPage = () => {
         {/* Input Section */}
         <Card className="border-none shadow-xl rounded-[2.5rem] bg-white overflow-hidden">
           <CardContent className="p-8 space-y-6">
-            <div className="flex flex-wrap gap-2">
-              {CATEGORIES.map(cat => (
-                <button
-                  key={cat.id}
-                  onClick={() => setCategory(cat.id)}
-                  className={cn(
-                    "px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all flex items-center gap-2 border-2",
-                    category === cat.id 
-                      ? "bg-slate-900 border-slate-900 text-white shadow-lg" 
-                      : "bg-white border-slate-100 text-slate-400 hover:border-indigo-200 hover:text-indigo-600"
-                  )}
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+              <div className="flex flex-wrap gap-2">
+                {CATEGORIES.map(cat => (
+                  <button
+                    key={cat.id}
+                    onClick={() => setCategory(cat.id)}
+                    className={cn(
+                      "px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all flex items-center gap-2 border-2",
+                      category === cat.id 
+                        ? "bg-slate-900 border-slate-900 text-white shadow-lg" 
+                        : "bg-white border-slate-100 text-slate-400 hover:border-indigo-200 hover:text-indigo-600"
+                    )}
+                  >
+                    <cat.icon size={14} />
+                    {cat.id}
+                  </button>
+                ))}
+              </div>
+
+              <div className="w-full md:w-64">
+                <Select 
+                  value={selectedAppointmentId || "none"} 
+                  onValueChange={(v) => setSelectedAppointmentId(v === "none" ? null : v)}
                 >
-                  <cat.icon size={14} />
-                  {cat.id}
-                </button>
-              ))}
+                  <SelectTrigger className="h-10 rounded-xl border-slate-200 bg-slate-50 font-bold text-[10px] uppercase tracking-widest">
+                    <div className="flex items-center gap-2">
+                      <LinkIcon size={14} className="text-indigo-500" />
+                      <SelectValue placeholder="Link to Session" />
+                    </div>
+                  </SelectTrigger>
+                  <SelectContent className="rounded-2xl border-none shadow-2xl p-2">
+                    <SelectItem value="none" className="rounded-xl">No Session Linked</SelectItem>
+                    {appointments.map(app => (
+                      <SelectItem key={app.id} value={app.id} className="rounded-xl">
+                        {app.clients?.name} ({format(new Date(app.date), "MMM d")})
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
             </div>
 
             <Textarea 
@@ -169,6 +224,8 @@ const ReflectionsPage = () => {
             <div className="grid grid-cols-1 gap-4">
               {reflections.map((ref) => {
                 const catInfo = CATEGORIES.find(c => c.id === ref.category) || CATEGORIES[0];
+                const linkedApp = ref.appointments;
+
                 return (
                   <Card key={ref.id} className="border-none shadow-md rounded-[2rem] bg-white group hover:shadow-xl transition-all duration-500">
                     <CardContent className="p-8 space-y-4">
@@ -178,9 +235,18 @@ const ReflectionsPage = () => {
                             <catInfo.icon size={20} />
                           </div>
                           <div>
-                            <Badge variant="outline" className="border-none font-black text-[8px] uppercase tracking-widest p-0 text-slate-400">
-                              {ref.category}
-                            </Badge>
+                            <div className="flex items-center gap-2">
+                              <Badge variant="outline" className="border-none font-black text-[8px] uppercase tracking-widest p-0 text-slate-400">
+                                {ref.category}
+                              </Badge>
+                              {linkedApp && (
+                                <Link to={`/appointments/${linkedApp.id}`}>
+                                  <Badge className="bg-indigo-50 text-indigo-600 border-none font-black text-[8px] uppercase tracking-widest px-2 py-0.5 rounded-md hover:bg-indigo-100 transition-colors">
+                                    <LinkIcon size={8} className="mr-1" /> {linkedApp.clients?.name}
+                                  </Badge>
+                                </Link>
+                              )}
+                            </div>
                             <p className="text-[10px] font-bold text-slate-400 flex items-center gap-1">
                               <Calendar size={10} /> {format(new Date(ref.created_at), "MMMM d, yyyy • h:mm a")}
                             </p>

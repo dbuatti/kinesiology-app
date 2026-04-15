@@ -23,7 +23,9 @@ import {
   Fingerprint,
   ShieldAlert,
   PlusCircle,
-  CheckCircle2
+  CheckCircle2,
+  Clock,
+  Zap
 } from "lucide-react";
 import { format } from "date-fns";
 import { showSuccess, showError } from "@/utils/toast";
@@ -355,13 +357,14 @@ const ReflectionsPage = () => {
                               </Badge>
                               {linkedApp && (
                                 <Link to={`/appointments/${linkedApp.id}`}>
-                                  <Badge className="bg-indigo-50 text-indigo-600 border-none font-black text-[8px] uppercase tracking-widest px-2 py-0.5 rounded-md hover:bg-indigo-100 transition-colors">
-                                    <LinkIcon size={8} className="mr-1" /> {linkedApp.clients?.name}
+                                  <Badge className="bg-indigo-600 text-white border-none font-black text-[8px] uppercase tracking-widest px-3 py-1 rounded-full hover:bg-indigo-700 transition-all shadow-sm flex items-center gap-1.5">
+                                    <Zap size={10} className="fill-current" />
+                                    Session: {linkedApp.clients?.name} ({format(new Date(linkedApp.date), "MMM d")})
                                   </Badge>
                                 </Link>
                               )}
                             </div>
-                            <p className="text-[10px] font-bold text-slate-400 flex items-center gap-1">
+                            <p className="text-[10px] font-bold text-slate-400 flex items-center gap-1 mt-1">
                               <Calendar size={10} /> {format(new Date(ref.created_at), "MMMM d, yyyy • h:mm a")}
                             </p>
                           </div>

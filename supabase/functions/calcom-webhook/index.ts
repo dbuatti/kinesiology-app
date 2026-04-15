@@ -64,7 +64,6 @@ serve(async (req) => {
     if (!dbClient) throw new Error("Failed to upsert client.");
 
     // 3. Smart Upsert Logic
-    // Only CREATE a new record if it's a CREATED or RESCHEDULED event
     const isCreationEvent = ['BOOKING_CREATED', 'BOOKING_RESCHEDULED'].includes(triggerEvent);
     
     // Check if we already have this booking
@@ -102,6 +101,8 @@ serve(async (req) => {
     else if (eventTypeId === "5302336") priceAmount = 100;
     if (payload.payment && payload.payment[0]) priceAmount = payload.payment[0].amount / 100;
 
+    console.log(`[${functionName}] Upserting record for booking: ${calcomId} at ${startTime}`);
+
     const { error: appError } = await supabase
       .from('appointments')
       .upsert({
@@ -110,6 +111,7 @@ serve(async (req) => {
         client_id: dbClient.id,
         date: startTime,
         calcom_booking_id: calcomId,
+        status: triggerEvent === 'BOOKING_RESCHEDULED' ? 'Scheduled' : undefined,
         is_paid: payload.metadata?.is_paid === "true" || !!payload.payment?.[0],
         price_amount: priceAmount,
         price_currency: 'AUD'

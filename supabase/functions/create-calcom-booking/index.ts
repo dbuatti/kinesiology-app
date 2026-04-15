@@ -38,32 +38,44 @@ serve(async (req) => {
       'Content-Type': 'application/json',
     };
 
-    // 1. Attempt UPDATE if ID exists
-    if (bookingUid && bookingUid !== "undefined" && bookingUid !== "null") {
-      console.log(`[${functionName}] Attempting UPDATE for booking ${bookingUid}`);
+    // 1. STRICT UPDATE: If we have a UID, we MUST update it. 
+    // Falling back to CREATE is what causes duplicates.
+    if (bookingUid && bookingUid !== "undefined" && bookingUid !== "null" && bookingUid !== "") {
+      console.log(`[${functionName}] Action: UPDATE booking ${bookingUid}`);
       
       const res = await fetch(`https://api.cal.com/v2/bookings/${bookingUid}`, {
         method: "PATCH",
         headers,
         body: JSON.stringify({
           start: cleanStartTime,
-          metadata: { crm_title: title, crm_notes: notes, is_paid: String(isPaidBool) }
+          metadata: { 
+            crm_title: title, 
+            crm_notes: notes, 
+            is_paid: String(isPaidBool) 
+          }
         }),
       });
 
+      const result = await res.json();
+
       if (res.ok) {
-        const result = await res.json();
-        return new Response(JSON.stringify({ success: true, data: result.data }), { status: 200, headers: corsHeaders });
+        console.log(`[${functionName}] Update successful for ${bookingUid}`);
+        return new Response(JSON.stringify({ success: true, uid: bookingUid, data: result.data }), { 
+          status: 200, 
+          headers: corsHeaders 
+        });
       }
 
-      if (res.status !== 404) {
-        const err = await res.json();
-        throw new Error(err.error?.message || "Cal.com Update Error");
+      // If it's a 404, the booking might have been deleted on Cal.com but still exists in our DB
+      if (res.status === 404) {
+        console.warn(`[${functionName}] Booking ${bookingUid} not found on Cal.com. Proceeding to CREATE new.`);
+      } else {
+        console.error(`[${functionName}] Cal.com Update Error:`, result);
+        throw new Error(result.error?.message || "Failed to update Cal.com booking");
       }
-      console.warn(`[${functionName}] Booking ${bookingUid} not found. Falling back to CREATE/REPAIR.`);
     } 
     
-    // 2. CREATE new booking
+    // 2. CREATE new booking (only if no UID or UID was 404)
     console.log(`[${functionName}] Action: CREATE new booking`);
     const createRes = await fetch("https://api.cal.com/v2/bookings", {
       method: "POST",
@@ -71,15 +83,29 @@ serve(async (req) => {
       body: JSON.stringify({
         start: cleanStartTime,
         eventTypeId: parseInt(eventTypeId, 10),
-        attendee: { name: client.name, email: client.email, timeZone: "Australia/Melbourne", language: "en" },
-        metadata: { crm_title: title, crm_notes: notes, source: "Antigravity CRM", is_paid: String(isPaidBool) }
+        attendee: { 
+          name: client.name, 
+          email: client.email, 
+          timeZone: "Australia/Melbourne", 
+          language: "en" 
+        },
+        metadata: { 
+          crm_title: title, 
+          crm_notes: notes, 
+          source: "Antigravity CRM", 
+          is_paid: String(isPaidBool) 
+        }
       }),
     });
 
     const createResult = await createRes.json();
 
     if (createRes.ok) {
-      return new Response(JSON.stringify({ success: true, uid: createResult.data.uid }), { status: 200, headers: corsHeaders });
+      console.log(`[${functionName}] Create successful: ${createResult.data.uid}`);
+      return new Response(JSON.stringify({ success: true, uid: createResult.data.uid }), { 
+        status: 200, 
+        headers: corsHeaders 
+      });
     }
 
     // 3. CONFLICT RESOLUTION: If slot is taken, find the existing booking and adopt its ID

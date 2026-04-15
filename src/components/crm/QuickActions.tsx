@@ -35,9 +35,6 @@ const QuickActions = () => {
   const [isOpen, setIsOpen] = useState(false);
   const navigate = useNavigate();
 
-  // Keyboard shortcuts are now handled globally in the Sidebar component 
-  // to prevent duplicate modal triggers.
-
   return (
     <>
       <div className="fixed bottom-8 right-8 z-50 print:hidden">
@@ -48,30 +45,30 @@ const QuickActions = () => {
                 <Button
                   size="lg"
                   className={cn(
-                    "h-16 w-16 rounded-[2rem] shadow-2xl bg-indigo-600 hover:bg-indigo-700 transition-all duration-500",
+                    "h-16 w-16 md:h-20 md:w-20 rounded-[2rem] md:rounded-[2.5rem] shadow-2xl bg-indigo-600 hover:bg-indigo-700 transition-all duration-500",
                     isOpen ? "rotate-45 scale-110" : "hover:scale-110 hover:rotate-90"
                   )}
                 >
-                  <Plus size={32} />
+                  <Plus size={36} />
                 </Button>
               </DropdownMenuTrigger>
-              <DropdownMenuContent align="end" className="w-80 p-3 rounded-[2rem] shadow-3xl border-none mb-4">
-                <div className="px-2 py-1 mb-2">
-                  <p className="text-[9px] font-black text-slate-400 uppercase tracking-[0.3em]">Quick Actions</p>
+              <DropdownMenuContent align="end" className="w-80 p-4 rounded-[2.5rem] shadow-3xl border-none mb-6">
+                <div className="px-2 py-1 mb-3">
+                  <p className="text-[10px] font-black text-slate-400 uppercase tracking-[0.3em]">Quick Actions</p>
                 </div>
                 
                 <DropdownMenuItem 
                   onClick={() => { navigate("/practice/calibrate"); setIsOpen(false); }} 
-                  className="rounded-2xl py-3 px-4 cursor-pointer group"
+                  className="rounded-2xl py-4 px-5 cursor-pointer group"
                 >
-                  <div className="w-10 h-10 rounded-xl bg-amber-50 flex items-center justify-center mr-3 group-hover:bg-amber-100 transition-colors">
-                    <Zap size={20} className="text-amber-600" />
+                  <div className="w-11 h-11 rounded-xl bg-amber-50 flex items-center justify-center mr-4 group-hover:bg-amber-100 transition-colors">
+                    <Zap size={22} className="text-amber-600" />
                   </div>
                   <div className="flex-1">
-                    <span className="font-bold block">Quick Calibrate</span>
+                    <span className="font-bold text-base block">Quick Calibrate</span>
                     <span className="text-[10px] text-slate-400">Instant Pathway Logic</span>
                   </div>
-                  <kbd className="ml-auto pointer-events-none inline-flex h-5 select-none items-center gap-1 rounded border bg-slate-100 px-1.5 font-mono text-[10px] font-black text-slate-600">
+                  <kbd className="hidden md:inline-flex ml-auto pointer-events-none h-5 select-none items-center gap-1 rounded border bg-slate-100 px-1.5 font-mono text-[10px] font-black text-slate-600">
                     ⌘Q
                   </kbd>
                 </DropdownMenuItem>
@@ -80,32 +77,32 @@ const QuickActions = () => {
 
                 <DropdownMenuItem 
                   onClick={() => { setClientDialogOpen(true); setIsOpen(false); }} 
-                  className="rounded-2xl py-3 px-4 cursor-pointer group"
+                  className="rounded-2xl py-4 px-5 cursor-pointer group"
                 >
-                  <div className="w-10 h-10 rounded-xl bg-indigo-50 flex items-center justify-center mr-3 group-hover:bg-indigo-100 transition-colors">
-                    <UserPlus size={20} className="text-indigo-600" />
+                  <div className="w-11 h-11 rounded-xl bg-indigo-50 flex items-center justify-center mr-4 group-hover:bg-indigo-100 transition-colors">
+                    <UserPlus size={22} className="text-indigo-600" />
                   </div>
                   <div className="flex-1">
-                    <span className="font-bold block">New Client</span>
+                    <span className="font-bold text-base block">New Client</span>
                     <span className="text-[10px] text-slate-400">Add to database</span>
                   </div>
-                  <kbd className="ml-auto pointer-events-none inline-flex h-5 select-none items-center gap-1 rounded border bg-slate-100 px-1.5 font-mono text-[10px] font-black text-slate-600">
+                  <kbd className="hidden md:inline-flex ml-auto pointer-events-none h-5 select-none items-center gap-1 rounded border bg-slate-100 px-1.5 font-mono text-[10px] font-black text-slate-600">
                     ⌘N
                   </kbd>
                 </DropdownMenuItem>
 
                 <DropdownMenuItem 
                   onClick={() => { setAppointmentDialogOpen(true); setIsOpen(false); }} 
-                  className="rounded-2xl py-3 px-4 cursor-pointer group"
+                  className="rounded-2xl py-4 px-5 cursor-pointer group"
                 >
-                  <div className="w-10 h-10 rounded-xl bg-rose-50 flex items-center justify-center mr-3 group-hover:bg-rose-100 transition-colors">
-                    <Calendar size={20} className="text-rose-600" />
+                  <div className="w-11 h-11 rounded-xl bg-rose-50 flex items-center justify-center mr-4 group-hover:bg-rose-100 transition-colors">
+                    <Calendar size={22} className="text-rose-600" />
                   </div>
                   <div className="flex-1">
-                    <span className="font-bold block">Book Session</span>
+                    <span className="font-bold text-base block">Book Session</span>
                     <span className="text-[10px] text-slate-400">Schedule appointment</span>
                   </div>
-                  <kbd className="ml-auto pointer-events-none inline-flex h-5 select-none items-center gap-1 rounded border bg-slate-100 px-1.5 font-mono text-[10px] font-black text-slate-600">
+                  <kbd className="hidden md:inline-flex ml-auto pointer-events-none h-5 select-none items-center gap-1 rounded border bg-slate-100 px-1.5 font-mono text-[10px] font-black text-slate-600">
                     ⌘B
                   </kbd>
                 </DropdownMenuItem>
@@ -114,42 +111,42 @@ const QuickActions = () => {
 
                 <DropdownMenuItem 
                   onClick={() => { navigate("/practice/procedures"); setIsOpen(false); }} 
-                  className="rounded-2xl py-3 px-4 cursor-pointer group"
+                  className="rounded-2xl py-4 px-5 cursor-pointer group"
                 >
-                  <div className="w-10 h-10 rounded-xl bg-emerald-50 flex items-center justify-center mr-3 group-hover:bg-emerald-100 transition-colors">
-                    <Target size={20} className="text-emerald-600" />
+                  <div className="w-11 h-11 rounded-xl bg-emerald-50 flex items-center justify-center mr-4 group-hover:bg-emerald-100 transition-colors">
+                    <Target size={22} className="text-emerald-600" />
                   </div>
                   <div className="flex-1">
-                    <span className="font-bold block">Procedures</span>
+                    <span className="font-bold text-base block">Procedures</span>
                     <span className="text-[10px] text-slate-400">Track progress</span>
                   </div>
-                  <kbd className="ml-auto pointer-events-none inline-flex h-5 select-none items-center gap-1 rounded border bg-slate-100 px-1.5 font-mono text-[10px] font-black text-slate-600">
+                  <kbd className="hidden md:inline-flex ml-auto pointer-events-none h-5 select-none items-center gap-1 rounded border bg-slate-100 px-1.5 font-mono text-[10px] font-black text-slate-600">
                     ⌘P
                   </kbd>
                 </DropdownMenuItem>
 
                 <DropdownMenuItem 
                   onClick={() => { navigate("/settings/import"); setIsOpen(false); }} 
-                  className="rounded-2xl py-3 px-4 cursor-pointer"
+                  className="rounded-2xl py-4 px-5 cursor-pointer"
                 >
-                  <Upload size={20} className="mr-3 text-slate-500" />
-                  <span className="font-bold">Import Data</span>
+                  <Upload size={22} className="mr-4 text-slate-500" />
+                  <span className="font-bold text-base">Import Data</span>
                 </DropdownMenuItem>
 
                 <DropdownMenuSeparator className="my-2" />
 
                 <DropdownMenuItem 
                   onClick={() => { setHelpOpen(true); setIsOpen(false); }} 
-                  className="rounded-2xl py-3 px-4 cursor-pointer group"
+                  className="rounded-2xl py-4 px-5 cursor-pointer group"
                 >
-                  <div className="w-10 h-10 rounded-xl bg-amber-50 flex items-center justify-center mr-3 group-hover:bg-amber-100 transition-colors">
-                    <HelpCircle size={20} className="text-amber-600" />
+                  <div className="w-11 h-11 rounded-xl bg-amber-50 flex items-center justify-center mr-4 group-hover:bg-amber-100 transition-colors">
+                    <HelpCircle size={22} className="text-amber-600" />
                   </div>
                   <div className="flex-1">
-                    <span className="font-bold block">Help & Shortcuts</span>
+                    <span className="font-bold text-base block">Help & Shortcuts</span>
                     <span className="text-[10px] text-slate-400">View all commands</span>
                   </div>
-                  <kbd className="ml-auto pointer-events-none inline-flex h-5 select-none items-center gap-1 rounded border bg-slate-100 px-1.5 font-mono text-[10px] font-black text-slate-600">
+                  <kbd className="hidden md:inline-flex ml-auto pointer-events-none h-5 select-none items-center gap-1 rounded border bg-slate-100 px-1.5 font-mono text-[10px] font-black text-slate-600">
                     ⌘/
                   </kbd>
                 </DropdownMenuItem>
@@ -164,7 +161,7 @@ const QuickActions = () => {
       </div>
 
       <Dialog open={clientDialogOpen} onOpenChange={setClientDialogOpen}>
-        <DialogContent className="sm:max-w-[550px] max-h-[90vh] overflow-y-auto rounded-[2.5rem]">
+        <DialogContent className="w-[95vw] max-w-[550px] max-h-[90vh] overflow-y-auto rounded-[2.5rem]">
           <DialogHeader>
             <DialogTitle className="text-2xl font-black">Add New Client</DialogTitle>
             <DialogDescription>Enter the details for the new client profile.</DialogDescription>
@@ -178,7 +175,7 @@ const QuickActions = () => {
       </Dialog>
 
       <Dialog open={appointmentDialogOpen} onOpenChange={setAppointmentDialogOpen}>
-        <DialogContent className="sm:max-w-[500px] max-h-[90vh] overflow-y-auto rounded-[2.5rem]">
+        <DialogContent className="w-[95vw] max-w-[500px] max-h-[90vh] overflow-y-auto rounded-[2.5rem]">
           <DialogHeader>
             <DialogTitle className="text-2xl font-black">Schedule New Session</DialogTitle>
             <DialogDescription>Select a client and set the appointment details.</DialogDescription>

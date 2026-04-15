@@ -28,7 +28,6 @@ serve(async (req) => {
     console.log(`[${functionName}] Event Type: ${triggerEvent}`);
 
     if (triggerEvent === 'PING') {
-      console.log(`[${functionName}] Ping received, responding OK`);
       return new Response(JSON.stringify({ success: true }), { status: 200, headers: corsHeaders });
     }
 
@@ -46,7 +45,7 @@ serve(async (req) => {
                      (payload.responses && { name: payload.responses.name, email: payload.responses.email });
     
     if (!attendee || !attendee.email) {
-      console.log(`[${functionName}] Skipping: No attendee email found in payload.`);
+      console.log(`[${functionName}] Skipping: No attendee email found.`);
       return new Response(JSON.stringify({ success: true }), { status: 200, headers: corsHeaders });
     }
 
@@ -55,17 +54,6 @@ serve(async (req) => {
     const startTime = payload.startTime || payload.start;
     const eventTypeId = String(payload.eventTypeId || "");
 
-    console.log(`[${functionName}] Processing booking for: ${name} (${email}) at ${startTime}`);
-
-    // Price Mapping
-    let priceAmount = 0;
-    if (eventTypeId === "4279898") priceAmount = 50;
-    else if (eventTypeId === "5302336") priceAmount = 100;
-    
-    if (payload.payment && payload.payment[0]) {
-      priceAmount = payload.payment[0].amount / 100;
-    }
-
     // 2. Ensure Client exists
     const { data: dbClient } = await supabase
       .from('clients')
@@ -73,33 +61,54 @@ serve(async (req) => {
       .select('*')
       .single();
 
-    if (!dbClient) {
-      console.error(`[${functionName}] Error: Failed to upsert client.`);
-      throw new Error("Failed to upsert client.");
-    }
+    if (!dbClient) throw new Error("Failed to upsert client.");
 
-    // 3. Handle Reschedules or New Bookings using UPSERT
-    // This is the core fix for the race condition duplication
-    console.log(`[${functionName}] Upserting record for booking: ${calcomId}`);
+    // 3. Smart Upsert Logic
+    // Only CREATE a new record if it's a CREATED or RESCHEDULED event
+    const isCreationEvent = ['BOOKING_CREATED', 'BOOKING_RESCHEDULED'].includes(triggerEvent);
     
-    // First, try to find if there's a manual entry for this client and date that isn't linked yet
-    const { data: existingManual } = await supabase
+    // Check if we already have this booking
+    const { data: existingApp } = await supabase
       .from('appointments')
       .select('id')
-      .eq('client_id', dbClient.id)
-      .eq('date', startTime)
-      .is('calcom_booking_id', null)
+      .eq('calcom_booking_id', calcomId)
       .maybeSingle();
+
+    if (!existingApp && !isCreationEvent) {
+      console.log(`[${functionName}] Skipping: Received ${triggerEvent} for non-existent booking ${calcomId}`);
+      return new Response(JSON.stringify({ success: true, message: "Ignored non-creation event for unknown booking" }), { status: 200, headers: corsHeaders });
+    }
+
+    // If it's a new booking, try to find a manual entry to link first
+    let targetId = existingApp?.id;
+    if (!targetId && isCreationEvent) {
+      const { data: manualMatch } = await supabase
+        .from('appointments')
+        .select('id')
+        .eq('client_id', dbClient.id)
+        .eq('date', startTime)
+        .is('calcom_booking_id', null)
+        .maybeSingle();
+      
+      if (manualMatch) {
+        console.log(`[${functionName}] Linking manual entry ${manualMatch.id} to Cal.com booking ${calcomId}`);
+        targetId = manualMatch.id;
+      }
+    }
+
+    // Price Mapping
+    let priceAmount = 0;
+    if (eventTypeId === "4279898") priceAmount = 50;
+    else if (eventTypeId === "5302336") priceAmount = 100;
+    if (payload.payment && payload.payment[0]) priceAmount = payload.payment[0].amount / 100;
 
     const { error: appError } = await supabase
       .from('appointments')
       .upsert({
-        id: existingManual?.id, // If we found a manual match, use its ID to link it
+        id: targetId,
         user_id: PRACTITIONER_ID,
         client_id: dbClient.id,
         date: startTime,
-        tag: "Kinesiology",
-        status: "Scheduled",
         calcom_booking_id: calcomId,
         is_paid: payload.metadata?.is_paid === "true" || !!payload.payment?.[0],
         price_amount: priceAmount,
@@ -108,10 +117,7 @@ serve(async (req) => {
         onConflict: 'calcom_booking_id' 
       });
 
-    if (appError) {
-      console.error(`[${functionName}] Upsert Error:`, appError);
-      throw appError;
-    }
+    if (appError) throw appError;
 
     console.log(`[${functionName}] Webhook processed successfully`);
     return new Response(JSON.stringify({ success: true }), { status: 200, headers: corsHeaders });

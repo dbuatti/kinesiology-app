@@ -9,7 +9,7 @@ const corsHeaders = {
 }
 
 serve(async (req) => {
-  console.log("--- [sync-calcom-bookings] v6.0 — Upsert Logic ---");
+  console.log("--- [sync-calcom-bookings] v7.0 — Robust Matching ---");
 
   if (req.method === 'OPTIONS') return new Response('ok', { headers: corsHeaders })
 
@@ -63,20 +63,33 @@ serve(async (req) => {
 
       if (!dbClient) continue;
 
-      // 2. Use UPSERT for the appointment to handle race conditions
-      // We also try to match by date for manual entries that aren't linked yet
-      const { data: existingManual } = await supabase
+      // 2. Check for existing record by Calcom ID
+      const { data: existingApp } = await supabase
         .from('appointments')
         .select('id')
-        .eq('client_id', dbClient.id)
-        .eq('date', startTime)
-        .is('calcom_booking_id', null)
+        .eq('calcom_booking_id', calcomId)
         .maybeSingle();
 
+      let targetId = existingApp?.id;
+
+      // 3. If not found by ID, try to match manual entry by date
+      if (!targetId) {
+        const { data: manualMatch } = await supabase
+          .from('appointments')
+          .select('id')
+          .eq('client_id', dbClient.id)
+          .eq('date', startTime)
+          .is('calcom_booking_id', null)
+          .maybeSingle();
+        
+        if (manualMatch) targetId = manualMatch.id;
+      }
+
+      // 4. Upsert with the matched ID
       await supabase
         .from('appointments')
         .upsert({
-          id: existingManual?.id,
+          id: targetId,
           user_id: PRACTITIONER_ID,
           client_id: dbClient.id,
           date: startTime,

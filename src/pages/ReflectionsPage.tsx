@@ -140,7 +140,10 @@ const ReflectionsPage = () => {
         body: { content: reflection.content }
       });
 
-      if (error) throw error;
+      if (error) {
+        console.error("Analysis error:", error);
+        return; // Silent fail for background auto-analysis
+      }
 
       if (data?.extractions && data.extractions.length > 0) {
         // Persist the extractions to the database

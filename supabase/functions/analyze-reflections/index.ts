@@ -16,8 +16,14 @@ serve(async (req) => {
     const geminiKey = Deno.env.get('GEMINI_API_KEY')
     
     if (!geminiKey) {
-      throw new Error('Missing GEMINI_API_KEY in Supabase Secrets.');
+      console.error("[analyze-reflections] Error: Missing GEMINI_API_KEY in Supabase Secrets.");
+      return new Response(JSON.stringify({ error: 'Missing API Key. Please set GEMINI_API_KEY in Supabase secrets.' }), {
+        status: 400,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
     }
+
+    console.log("[analyze-reflections] Analyzing content length:", content?.length);
 
     const prompt = `Act as a clinical supervisor and linguistic analyst for a Kinesiology practitioner. 
     Analyze the following reflection text and extract potential "Limiting Beliefs" or "Stuck Identities" that the practitioner or their client might be experiencing.
@@ -31,7 +37,7 @@ serve(async (req) => {
     TEXT TO ANALYZE:
     "${content}"`;
 
-    const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${geminiKey}`, {
+    const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${geminiKey}`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
@@ -46,16 +52,30 @@ serve(async (req) => {
     const data = await response.json()
     
     if (!response.ok) {
-      throw new Error(data.error?.message || 'Gemini API Error');
+      console.error("[analyze-reflections] Gemini API Error:", data.error?.message || 'Unknown error');
+      return new Response(JSON.stringify({ error: data.error?.message || 'Gemini API Error' }), {
+        status: 400,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+    }
+
+    if (!data.candidates || data.candidates.length === 0 || !data.candidates[0].content) {
+      console.warn("[analyze-reflections] No candidates returned from Gemini.");
+      return new Response(JSON.stringify({ extractions: [] }), {
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
     }
 
     const resultText = data.candidates[0].content.parts[0].text.trim();
+    console.log("[analyze-reflections] Raw AI response:", resultText);
+    
     const extractions = JSON.parse(resultText);
 
     return new Response(JSON.stringify({ extractions }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     })
   } catch (error) {
+    console.error("[analyze-reflections] Critical Error:", error.message);
     return new Response(JSON.stringify({ error: error.message }), {
       status: 400,
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },

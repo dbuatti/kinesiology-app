@@ -15,7 +15,7 @@ serve(async (req) => {
     const { content } = await req.json();
     
     if (!content || content.trim().length < 10) {
-      return new Response(JSON.stringify({ error: 'Reflection text is too short to analyze. Please write a bit more.' }), {
+      return new Response(JSON.stringify({ error: 'Journal text is too short to analyze. Please write a bit more.' }), {
         status: 400,
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       });
@@ -33,7 +33,7 @@ serve(async (req) => {
     }
 
     const prompt = `Act as a clinical supervisor for a Kinesiology practitioner. 
-    Analyze the following reflection text and extract specific items for the practitioner's "Identity Sandbox".
+    Analyze the following journal entry and extract specific items for the practitioner's "Identity Sandbox".
     
     CATEGORIZATION RULES:
     1. "belief" -> Maps to LIMITING BELIEFS tool. Must start with "I am..." and represent a struggle (e.g., "I am not good enough").
@@ -49,7 +49,7 @@ serve(async (req) => {
     TEXT TO ANALYZE:
     "${content}"`;
 
-    const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${geminiKey}`, {
+    const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${geminiKey}`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({

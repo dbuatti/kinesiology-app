@@ -24,7 +24,8 @@ import {
   Mic,
   ShieldCheck,
   ChevronDown,
-  ChevronUp
+  ChevronUp,
+  MessageSquare
 } from "lucide-react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { cn } from "@/lib/utils";
@@ -77,29 +78,29 @@ const MobileNav = () => {
         to={item.path}
         onClick={onClick}
         className={cn(
-          "flex items-center gap-4 px-5 py-4 rounded-2xl transition-all",
+          "flex items-center gap-3 px-4 py-2.5 rounded-xl transition-all",
           isActive 
             ? "bg-indigo-600 text-white shadow-lg" 
             : "text-slate-400 hover:text-white hover:bg-slate-800"
         )}
       >
-        <item.icon size={20} />
-        <span className="font-bold text-base">{item.label}</span>
+        <item.icon size={18} />
+        <span className="font-bold text-sm">{item.label}</span>
       </Link>
     );
   };
 
   const NavGroup = ({ title, icon: Icon, isOpen, onToggle, items }: any) => (
-    <div className="space-y-2">
+    <div className="space-y-1">
       <button
         onClick={onToggle}
-        className="flex items-center justify-between w-full px-5 py-3 rounded-2xl text-slate-500 hover:text-white transition-all"
+        className="flex items-center justify-between w-full px-4 py-2 rounded-xl text-slate-500 hover:text-white transition-all"
       >
-        <div className="flex items-center gap-4">
-          <Icon size={18} />
-          <span className="text-[10px] font-black uppercase tracking-[0.2em]">{title}</span>
+        <div className="flex items-center gap-3">
+          <Icon size={16} />
+          <span className="text-[9px] font-black uppercase tracking-[0.2em]">{title}</span>
         </div>
-        {isOpen ? <ChevronUp size={14} /> : <ChevronDown size={14} />}
+        {isOpen ? <ChevronUp size={12} /> : <ChevronDown size={12} />}
       </button>
       {isOpen && (
         <div className="space-y-1 animate-in fade-in slide-in-from-top-1 duration-300">
@@ -113,55 +114,55 @@ const MobileNav = () => {
 
   return (
     <>
-      <div className="lg:hidden flex items-center justify-between p-4 bg-white dark:bg-slate-900 border-b dark:border-slate-800 sticky top-0 z-50 shadow-sm">
-        <div className="flex items-center gap-3">
-          <div className="w-9 h-9 bg-indigo-600 rounded-xl flex items-center justify-center text-white font-bold text-lg">A</div>
-          <span className="font-black text-slate-900 dark:text-white tracking-tight text-lg">Antigravity</span>
+      <div className="lg:hidden flex items-center justify-between p-3 bg-white dark:bg-slate-900 border-b dark:border-slate-800 sticky top-0 z-50 shadow-sm">
+        <div className="flex items-center gap-2">
+          <div className="w-7 h-7 bg-indigo-600 rounded-lg flex items-center justify-center text-white font-bold text-sm">A</div>
+          <span className="font-black text-slate-900 dark:text-white tracking-tight text-sm">Antigravity</span>
         </div>
         
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-1">
           <ModeToggle />
           <Sheet open={open} onOpenChange={setOpen}>
             <SheetTrigger asChild>
-              <Button variant="ghost" size="icon" className="rounded-xl h-11 w-11">
-                <Menu size={24} />
+              <Button variant="ghost" size="icon" className="rounded-xl h-9 w-9">
+                <Menu size={20} />
               </Button>
             </SheetTrigger>
-            <SheetContent side="left" className="w-[85vw] max-w-sm bg-slate-950 text-white border-none p-0 flex flex-col">
-              <SheetHeader className="p-6 border-b border-slate-900 text-left">
-                <SheetTitle className="text-white flex items-center gap-4">
-                  <div className="w-11 h-11 bg-indigo-600 rounded-xl flex items-center justify-center font-black text-xl">A</div>
+            <SheetContent side="left" className="w-[85vw] max-sm bg-slate-950 text-white border-none p-0 flex flex-col">
+              <SheetHeader className="p-5 border-b border-slate-900 text-left">
+                <SheetTitle className="text-white flex items-center gap-3">
+                  <div className="w-9 h-9 bg-indigo-600 rounded-xl flex items-center justify-center font-black text-lg">A</div>
                   <div>
-                    <p className="font-black text-lg leading-none">Antigravity</p>
-                    <p className="text-[8px] font-black uppercase tracking-[0.3em] text-slate-500 mt-1.5">Clinical CRM</p>
+                    <p className="font-black text-base leading-none">Antigravity</p>
+                    <p className="text-[7px] font-black uppercase tracking-[0.3em] text-slate-500 mt-1">Clinical CRM</p>
                   </div>
                 </SheetTitle>
               </SheetHeader>
 
               <ScrollArea className="flex-1">
-                <div className="p-5 space-y-8">
-                  <div className="space-y-3">
-                    <p className="text-[9px] font-black text-slate-600 uppercase tracking-[0.3em] px-2">Quick Actions</p>
-                    <div className="grid grid-cols-2 gap-3">
+                <div className="p-4 space-y-6">
+                  <div className="space-y-2">
+                    <p className="text-[8px] font-black text-slate-600 uppercase tracking-[0.3em] px-2">Quick Actions</p>
+                    <div className="grid grid-cols-2 gap-2">
                       <Button 
                         onClick={() => { setClientDialogOpen(true); setOpen(false); }}
                         variant="outline"
-                        className="flex-col h-20 bg-white/5 border-white/10 text-white hover:bg-white/10 rounded-2xl gap-2"
+                        className="flex-col h-16 bg-white/5 border-white/10 text-white hover:bg-white/10 rounded-xl gap-1"
                       >
-                        <UserPlus size={20} className="text-indigo-400" />
-                        <span className="text-[10px] font-black uppercase">New Client</span>
+                        <UserPlus size={16} className="text-indigo-400" />
+                        <span className="text-[9px] font-black uppercase">New Client</span>
                       </Button>
                       <Button 
                         onClick={() => { setAppDialogOpen(true); setOpen(false); }}
-                        className="flex-col h-20 bg-rose-600 hover:bg-rose-700 text-white rounded-2xl gap-2 border-none"
+                        className="flex-col h-16 bg-rose-600 hover:bg-rose-700 text-white rounded-xl gap-1 border-none"
                       >
-                        <CalendarPlus size={20} />
-                        <span className="text-[10px] font-black uppercase">Book Session</span>
+                        <CalendarPlus size={16} />
+                        <span className="text-[9px] font-black uppercase">Book Session</span>
                       </Button>
                     </div>
                   </div>
 
-                  <div className="space-y-4">
+                  <div className="space-y-3">
                     <NavGroup 
                       title="Operations" 
                       icon={LayoutDashboard} 
@@ -183,6 +184,7 @@ const MobileNav = () => {
                       items={[
                         { label: "Quick Calibrate", icon: Zap, path: "/practice/calibrate" },
                         { label: "Procedures", icon: Target, path: "/practice/procedures" },
+                        { label: "Journal", icon: MessageSquare, path: "/practice/journal" },
                         { label: "Oversight", icon: TrendingUp, path: "/oversight" },
                       ]} 
                     />
@@ -213,22 +215,22 @@ const MobileNav = () => {
                   </div>
 
                   {recentClients.length > 0 && (
-                    <div className="space-y-3">
-                      <p className="text-[9px] font-black text-slate-600 uppercase tracking-[0.3em] px-2 flex items-center gap-2">
-                        <Clock size={12} /> Recent Clients
+                    <div className="space-y-2">
+                      <p className="text-[8px] font-black text-slate-600 uppercase tracking-[0.3em] px-2 flex items-center gap-2">
+                        <Clock size={10} /> Recent Clients
                       </p>
-                      <div className="space-y-1">
+                      <div className="space-y-0.5">
                         {recentClients.map(client => (
                           <Link 
                             key={client.id} 
                             to={`/clients/${client.id}`}
                             onClick={() => setOpen(false)}
-                            className="flex items-center gap-4 text-base text-slate-400 hover:text-white transition-all py-3 px-5 rounded-2xl hover:bg-slate-900 group"
+                            className="flex items-center gap-3 text-sm text-slate-400 hover:text-white transition-all py-2 px-4 rounded-xl hover:bg-slate-900 group"
                           >
-                            <div className="w-8 h-8 rounded-lg bg-slate-900 border border-slate-800 flex items-center justify-center text-[10px] font-black group-hover:border-indigo-500/40 transition-all">
+                            <div className="w-6 h-6 rounded-lg bg-slate-900 border border-slate-800 flex items-center justify-center text-[9px] font-black group-hover:border-indigo-500/40 transition-all">
                               {client.name.charAt(0)}
                             </div>
-                            <span className="font-bold text-sm">{client.name}</span>
+                            <span className="font-bold text-xs">{client.name}</span>
                           </Link>
                         ))}
                       </div>
@@ -237,28 +239,28 @@ const MobileNav = () => {
                 </div>
               </ScrollArea>
 
-              <div className="p-5 border-t border-slate-900 bg-slate-950 space-y-2">
+              <div className="p-4 border-t border-slate-900 bg-slate-950 space-y-1">
                 <button 
                   onClick={() => { setHelpOpen(true); setOpen(false); }}
-                  className="flex items-center gap-4 px-5 py-3.5 text-slate-400 hover:text-white hover:bg-slate-900 transition-all rounded-2xl w-full"
+                  className="flex items-center gap-3 px-4 py-2.5 text-slate-400 hover:text-white hover:bg-slate-900 transition-all rounded-xl w-full"
                 >
-                  <HelpCircle size={20} />
-                  <span className="font-bold text-sm">Help & Shortcuts</span>
+                  <HelpCircle size={18} />
+                  <span className="font-bold text-xs">Help & Shortcuts</span>
                 </button>
                 <Link 
                   to="/settings"
                   onClick={() => setOpen(false)}
-                  className="flex items-center gap-4 px-5 py-3.5 text-slate-400 hover:text-white hover:bg-slate-900 transition-all rounded-2xl"
+                  className="flex items-center gap-3 px-4 py-2.5 text-slate-400 hover:text-white hover:bg-slate-900 transition-all rounded-xl"
                 >
-                  <Settings size={20} />
-                  <span className="font-bold text-sm">Settings</span>
+                  <Settings size={18} />
+                  <span className="font-bold text-xs">Settings</span>
                 </Link>
                 <button 
                   onClick={handleSignOut}
-                  className="flex items-center gap-4 px-5 py-3.5 text-rose-400 hover:bg-rose-500/10 transition-all rounded-2xl w-full"
+                  className="flex items-center gap-3 px-4 py-2.5 text-rose-400 hover:bg-rose-500/10 transition-all rounded-xl w-full"
                 >
-                  <LogOut size={20} />
-                  <span className="font-bold text-sm">Sign Out</span>
+                  <LogOut size={18} />
+                  <span className="font-bold text-xs">Sign Out</span>
                 </button>
               </div>
             </SheetContent>
@@ -267,10 +269,10 @@ const MobileNav = () => {
       </div>
 
       <Dialog open={clientDialogOpen} onOpenChange={setClientDialogOpen}>
-        <DialogContent className="w-[95vw] max-w-[550px] rounded-3xl p-0 overflow-hidden">
+        <DialogContent className="w-[95vw] max-w-[550px] rounded-2xl p-0 overflow-hidden">
           <div className="p-6 max-h-[90vh] overflow-y-auto">
-            <DialogHeader className="mb-6">
-              <DialogTitle className="text-2xl font-black">Add New Client</DialogTitle>
+            <DialogHeader className="mb-4">
+              <DialogTitle className="text-xl font-black">Add New Client</DialogTitle>
             </DialogHeader>
             <ClientForm onSuccess={() => setClientDialogOpen(false)} />
           </div>
@@ -278,10 +280,10 @@ const MobileNav = () => {
       </Dialog>
 
       <Dialog open={appDialogOpen} onOpenChange={setAppDialogOpen}>
-        <DialogContent className="w-[95vw] max-w-[500px] rounded-3xl p-0 overflow-hidden">
+        <DialogContent className="w-[95vw] max-w-[500px] rounded-2xl p-0 overflow-hidden">
           <div className="p-6 max-h-[90vh] overflow-y-auto">
-            <DialogHeader className="mb-6">
-              <DialogTitle className="text-2xl font-black">Schedule New Session</DialogTitle>
+            <DialogHeader className="mb-4">
+              <DialogTitle className="text-xl font-black">Schedule New Session</DialogTitle>
             </DialogHeader>
             <AppointmentForm onSuccess={() => setAppDialogOpen(false)} />
           </div>

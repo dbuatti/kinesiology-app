@@ -75,7 +75,7 @@ const Sidebar = ({ onHide }: SidebarProps) => {
   const { isPrivate, togglePrivacy } = usePrivacyMode();
   
   const isOpsPath = (path: string) => path === "/" || path.startsWith("/appointments") || path.startsWith("/clients") || path === "/availability";
-  const isLabPath = (path: string) => path.startsWith("/practice/calibrate") || path.startsWith("/practice/procedures") || path.startsWith("/oversight") || path.startsWith("/practice/reflections");
+  const isLabPath = (path: string) => path.startsWith("/practice/calibrate") || path.startsWith("/practice/procedures") || path.startsWith("/oversight") || path.startsWith("/practice/journal");
   const isLibraryPath = (path: string) => path.startsWith("/resources") || path.startsWith("/practice/self") || path.startsWith("/peace-framework");
   const isBusinessPath = (path: string) => path.startsWith("/business");
   const isSandboxPath = (path: string) => path.startsWith("/sandbox");
@@ -130,7 +130,7 @@ const Sidebar = ({ onHide }: SidebarProps) => {
   const labItems = [
     { label: "Quick Calibrate", icon: Zap, path: "/practice/calibrate", shortcut: "⌘Q" },
     { label: "Procedures", icon: Target, path: "/practice/procedures", shortcut: "⌘P" },
-    { label: "Reflections", icon: MessageSquare, path: "/practice/reflections", shortcut: "⌘R" },
+    { label: "Journal", icon: MessageSquare, path: "/practice/journal", shortcut: "⌘R" },
     { label: "Oversight", icon: TrendingUp, path: "/oversight", shortcut: "⌘O" },
   ];
 
@@ -165,7 +165,7 @@ const Sidebar = ({ onHide }: SidebarProps) => {
           case 'o': e.preventDefault(); navigate('/oversight'); break;
           case 's': e.preventDefault(); navigate('/practice/self'); break;
           case 'p': e.preventDefault(); navigate('/practice/procedures'); break;
-          case 'r': e.preventDefault(); navigate('/practice/reflections'); break;
+          case 'r': e.preventDefault(); navigate('/practice/journal'); break;
           case 'q': e.preventDefault(); navigate('/practice/calibrate'); break;
           case 'h': e.preventDefault(); togglePrivacy(); break;
           case 'y': e.preventDefault(); setHelpOpen(true); break;

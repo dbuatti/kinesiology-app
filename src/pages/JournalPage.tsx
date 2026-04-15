@@ -34,7 +34,8 @@ import {
   Target,
   MessageCircle,
   ChevronDown,
-  ChevronUp
+  ChevronUp,
+  BookOpen
 } from "lucide-react";
 import { format } from "date-fns";
 import { showSuccess, showError } from "@/utils/toast";
@@ -59,7 +60,7 @@ const CATEGORIES = [
   { id: 'Reflection', icon: Sparkles, color: 'text-amber-600', bg: 'bg-amber-50' },
 ];
 
-const ReflectionsPage = () => {
+const JournalPage = () => {
   const location = useLocation();
   const preselectedAppId = location.state?.appointmentId;
 
@@ -74,7 +75,6 @@ const ReflectionsPage = () => {
   
   // AI Analysis State
   const [analyzingIds, setAnalyzingIds] = useState<Set<string>>(new Set());
-  const [updatingStatus, setUpdatingStatus] = useState<string | null>(null);
   const [addingToBacklog, setAddingToBacklog] = useState<string | null>(null);
   
   // Response State
@@ -162,7 +162,6 @@ const ReflectionsPage = () => {
   }, [reflections]);
 
   const pendingQuestions = useMemo(() => meetupQuestions.filter(q => q.status === 'pending'), [meetupQuestions]);
-  const answeredQuestions = useMemo(() => meetupQuestions.filter(q => q.status === 'asked'), [meetupQuestions]);
 
   const handleSave = async () => {
     if (!content.trim()) return;
@@ -184,7 +183,7 @@ const ReflectionsPage = () => {
 
       if (error) throw error;
 
-      showSuccess("Reflection saved. Analyzing for insights...");
+      showSuccess("Journal entry saved. Analyzing for insights...");
       setContent("");
       if (data) handleAnalyze(data);
       fetchData();
@@ -211,7 +210,7 @@ const ReflectionsPage = () => {
           .eq('id', reflection.id);
         
         fetchData();
-        showSuccess(`AI found ${data.extractions.length} insights.`);
+        showSuccess(`AI extracted ${data.extractions.length} insights for your Sandbox.`);
       }
     } catch (err: any) {
       console.error(err);
@@ -235,7 +234,7 @@ const ReflectionsPage = () => {
         .insert({
           user_id: user.id,
           content: item.content,
-          type: item.type, // belief, identity, or goal
+          type: item.type, 
           status: 'pending'
         });
 
@@ -263,7 +262,6 @@ const ReflectionsPage = () => {
 
   const handleSaveResponse = async (question: any) => {
     if (!tempResponse.trim()) return;
-    setUpdatingStatus(question.id);
     
     try {
       if (question.id.startsWith('manual-')) {
@@ -287,56 +285,21 @@ const ReflectionsPage = () => {
         }
       }
       
-      showSuccess("Response logged and question archived.");
+      showSuccess("Response logged.");
       setRespondingToId(null);
       setTempResponse("");
       fetchData();
     } catch (err) {
       showError("Failed to save response.");
-    } finally {
-      setUpdatingStatus(null);
-    }
-  };
-
-  const handleToggleQuestionStatus = async (question: any) => {
-    setUpdatingStatus(question.id);
-    try {
-      const newStatus = question.status === 'asked' ? 'pending' : 'asked';
-      
-      if (question.id.startsWith('manual-')) {
-        const { error } = await supabase
-          .from('practitioner_reflections')
-          .update({ response: newStatus === 'pending' ? null : question.response })
-          .eq('id', question.reflectionId);
-        if (error) throw error;
-      } else {
-        const reflection = reflections.find(r => r.id === question.reflectionId);
-        if (reflection) {
-          const newExtractions = [...reflection.ai_extractions];
-          newExtractions[question.extractionIndex].status = newStatus;
-          if (newStatus === 'pending') delete newExtractions[question.extractionIndex].response;
-          
-          await supabase
-            .from('practitioner_reflections')
-            .update({ ai_extractions: newExtractions })
-            .eq('id', reflection.id);
-        }
-      }
-      fetchData();
-      showSuccess(newStatus === 'asked' ? "Marked as asked!" : "Moved back to pending.");
-    } catch (err) {
-      showError("Failed to update status.");
-    } finally {
-      setUpdatingStatus(null);
     }
   };
 
   const handleDelete = async (id: string) => {
-    if (!confirm("Delete this reflection?")) return;
+    if (!confirm("Delete this entry?")) return;
     try {
       await supabase.from('practitioner_reflections').delete().eq('id', id);
       fetchData();
-      showSuccess("Reflection removed.");
+      showSuccess("Entry removed.");
     } catch (err) {
       showError("Failed to delete.");
     }
@@ -354,12 +317,12 @@ const ReflectionsPage = () => {
   return (
     <AppLayout>
       <div className="max-w-5xl mx-auto space-y-10 animate-in fade-in duration-700">
-        <Breadcrumbs items={[{ label: "Practitioner Log" }]} />
+        <Breadcrumbs items={[{ label: "Practitioner Journal" }]} />
 
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
           <div className="space-y-1">
-            <h1 className="text-4xl font-black tracking-tight text-slate-900">Practitioner Reflections</h1>
-            <p className="text-slate-500 font-medium text-lg">Process sessions, prep for meetups, and track your growth.</p>
+            <h1 className="text-4xl font-black tracking-tight text-slate-900">Practitioner Journal</h1>
+            <p className="text-slate-500 font-medium text-lg">Process your growth and extract Sandbox insights.</p>
           </div>
           <div className="flex items-center gap-3 bg-white p-2 rounded-2xl border border-slate-100 shadow-sm">
             <div className="px-4 py-2 text-center border-r border-slate-100">
@@ -367,7 +330,7 @@ const ReflectionsPage = () => {
               <p className="text-xl font-black text-indigo-600">{pendingQuestions.length}</p>
             </div>
             <div className="px-4 py-2 text-center">
-              <p className="text-[8px] font-black text-slate-400 uppercase tracking-widest">Total Logs</p>
+              <p className="text-[8px] font-black text-slate-400 uppercase tracking-widest">Total Entries</p>
               <p className="text-xl font-black text-slate-900">{reflections.length}</p>
             </div>
           </div>
@@ -376,15 +339,14 @@ const ReflectionsPage = () => {
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
           <TabsList className="grid w-full grid-cols-2 h-14 bg-slate-200/50 p-1.5 rounded-2xl mb-8">
             <TabsTrigger value="log" className="flex items-center gap-2 data-[state=active]:bg-white data-[state=active]:text-indigo-600 data-[state=active]:shadow-sm rounded-xl h-11 font-black uppercase tracking-wider text-[10px]">
-              <History size={14} /> Reflection Log
+              <BookOpen size={14} /> Journal Log
             </TabsTrigger>
             <TabsTrigger value="meetup" className="flex items-center gap-2 data-[state=active]:bg-white data-[state=active]:text-indigo-600 data-[state=active]:shadow-sm rounded-xl h-11 font-black uppercase tracking-wider text-[10px]">
-              <GraduationCap size={14} /> Meetup Question Log
+              <GraduationCap size={14} /> Meetup Questions
             </TabsTrigger>
           </TabsList>
 
           <TabsContent value="log" className="space-y-10 mt-0">
-            {/* Input Section */}
             <Card className="border-none shadow-xl rounded-[2.5rem] bg-white overflow-hidden">
               <CardContent className="p-8 space-y-6">
                 <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
@@ -430,7 +392,7 @@ const ReflectionsPage = () => {
                 </div>
 
                 <Textarea 
-                  placeholder="What's on your mind? Post-session thoughts, questions for the next meetup, or clinical doubts..."
+                  placeholder="Write your reflections here. AI will automatically extract beliefs, identities, and goals for your Sandbox..."
                   className="min-h-[200px] rounded-[2rem] border-2 border-slate-100 focus:border-indigo-500 p-8 text-xl font-medium leading-relaxed shadow-inner resize-none"
                   value={content}
                   onChange={(e) => setContent(e.target.value)}
@@ -443,7 +405,7 @@ const ReflectionsPage = () => {
                     className="bg-indigo-600 hover:bg-indigo-700 text-white rounded-2xl h-14 px-10 font-black text-xs uppercase tracking-widest shadow-xl shadow-indigo-100"
                   >
                     {saving ? <Loader2 className="mr-2 animate-spin" /> : <Save size={18} className="mr-2" />}
-                    Save to Log
+                    Save & Analyze
                   </Button>
                 </div>
               </CardContent>
@@ -490,7 +452,7 @@ const ReflectionsPage = () => {
                           ) : (
                             extractions.length === 0 && (
                               <Button variant="ghost" size="sm" onClick={() => handleAnalyze(ref)} className="h-9 px-4 rounded-xl text-indigo-600 hover:bg-indigo-50 font-black text-[10px] uppercase tracking-widest">
-                                <Wand2 size={14} className="mr-2" /> PULL Insights
+                                <Wand2 size={14} className="mr-2" /> Extract Insights
                               </Button>
                             )
                           )}
@@ -506,7 +468,7 @@ const ReflectionsPage = () => {
                         <div className="pt-6 border-t border-slate-100 space-y-4">
                           <div className="flex items-center gap-2">
                             <Sparkles size={14} className="text-amber-500" />
-                            <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Extracted Insights</p>
+                            <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Extracted Sandbox Insights</p>
                           </div>
                           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                             {extractions.map((item: any, i: number) => {
@@ -518,7 +480,7 @@ const ReflectionsPage = () => {
                                       "w-7 h-7 rounded-lg flex items-center justify-center shrink-0",
                                       item.type === 'question' ? "bg-indigo-50 text-indigo-700" :
                                       item.type === 'belief' ? "bg-rose-50 text-rose-700" : 
-                                      item.type === 'goal' ? "bg-emerald-50 text-emerald-700" : "bg-slate-100 text-slate-600"
+                                      item.type === 'goal' ? "bg-emerald-50 text-emerald-600" : "bg-slate-100 text-slate-600"
                                     )}>
                                       {item.type === 'question' ? <HelpCircle size={14} /> : 
                                        item.type === 'belief' ? <ShieldAlert size={14} /> : 
@@ -542,12 +504,10 @@ const ReflectionsPage = () => {
                                     <Button 
                                       variant="ghost" 
                                       size="sm" 
-                                      disabled={addingToBacklog === `${ref.id}-${i}`}
                                       onClick={() => handleAddToBacklog(ref.id, item, i)}
                                       className="h-7 px-2 rounded-lg text-indigo-600 hover:bg-indigo-100 font-black text-[8px] uppercase tracking-widest"
                                     >
-                                      {addingToBacklog === `${ref.id}-${i}` ? <Loader2 size={10} className="animate-spin" /> : <PlusCircle size={10} className="mr-1" />}
-                                      Add to Backlog
+                                      <PlusCircle size={10} className="mr-1" /> Add to Backlog
                                     </Button>
                                   )}
                                   {item.status === 'added' && (
@@ -567,176 +527,81 @@ const ReflectionsPage = () => {
           </TabsContent>
 
           <TabsContent value="meetup" className="space-y-8 mt-0">
-            <div className="p-8 bg-indigo-900 text-white rounded-[3rem] shadow-2xl relative overflow-hidden">
-              <div className="absolute top-0 right-0 p-12 opacity-10"><GraduationCap size={150} /></div>
-              <div className="relative z-10 flex flex-col md:flex-row items-center gap-10">
-                <div className="w-24 h-24 rounded-[2rem] bg-indigo-600 flex items-center justify-center shrink-0 shadow-2xl shadow-indigo-500/40">
-                  <HelpCircle size={48} className="text-white" />
-                </div>
-                <div className="space-y-4">
-                  <h4 className="text-2xl font-black">Your Meetup Question Log</h4>
-                  <p className="text-indigo-200 font-medium text-lg leading-relaxed">
-                    Every question you've asked or the AI has extracted from your reflections is gathered here. Use this list during your next session with the teacher.
-                  </p>
-                </div>
-              </div>
-            </div>
-
-            <div className="space-y-12">
-              {/* Pending Questions */}
-              <div className="space-y-6">
-                <div className="flex items-center justify-between px-2">
-                  <h3 className="text-xl font-black text-slate-900 flex items-center gap-3">
-                    <Clock size={20} className="text-indigo-600" /> Pending Questions
-                  </h3>
-                  <Badge className="bg-indigo-600 text-white border-none font-black text-[10px] uppercase tracking-widest px-3 py-1 rounded-full">
-                    {pendingQuestions.length} Active
-                  </Badge>
-                </div>
-
-                <div className="grid grid-cols-1 gap-4">
-                  {pendingQuestions.map((q) => (
-                    <Card key={q.id} className="border-none shadow-md rounded-[2rem] bg-white hover:shadow-xl transition-all duration-500 overflow-hidden group">
-                      <CardContent className="p-8 space-y-6">
-                        <div className="flex items-start justify-between gap-8">
-                          <div className="flex items-start gap-6 flex-1 min-w-0">
-                            <div className="w-12 h-12 rounded-2xl bg-indigo-50 text-indigo-600 flex items-center justify-center shrink-0 shadow-sm group-hover:scale-110 transition-all">
-                              <HelpCircle size={24} />
-                            </div>
-                            <div className="space-y-2 min-w-0">
-                              <div className="flex items-center gap-3">
-                                <Badge variant="outline" className="border-none font-black text-[8px] uppercase tracking-widest p-0 text-slate-400">
-                                  {q.source}
-                                </Badge>
-                                {q.clientName && (
-                                  <Badge className="bg-slate-100 text-slate-500 border-none font-black text-[8px] uppercase tracking-widest px-2 py-0.5 rounded-full">
-                                    Client: {q.clientName}
-                                  </Badge>
-                                )}
-                              </div>
-                              <p className="text-xl font-bold leading-tight text-slate-900">
-                                {q.content}
-                              </p>
-                              <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">
-                                Logged {format(new Date(q.date), "MMM d, yyyy")}
-                              </p>
-                            </div>
-                          </div>
-                          
-                          <div className="flex items-center gap-3 shrink-0">
-                            <Button 
-                              onClick={() => {
-                                setRespondingToId(q.id);
-                                setTempResponse("");
-                              }}
-                              className="rounded-xl h-11 px-6 bg-indigo-600 hover:bg-indigo-700 text-white shadow-lg shadow-indigo-100 font-black text-[10px] uppercase tracking-widest"
-                            >
-                              <MessageCircle size={14} className="mr-2" /> Add Response
-                            </Button>
-                          </div>
+            <div className="grid grid-cols-1 gap-4">
+              {pendingQuestions.map((q) => (
+                <Card key={q.id} className="border-none shadow-md rounded-[2rem] bg-white hover:shadow-xl transition-all duration-500 overflow-hidden group">
+                  <CardContent className="p-8 space-y-6">
+                    <div className="flex items-start justify-between gap-8">
+                      <div className="flex items-start gap-6 flex-1 min-w-0">
+                        <div className="w-12 h-12 rounded-2xl bg-indigo-50 text-indigo-600 flex items-center justify-center shrink-0 shadow-sm group-hover:scale-110 transition-all">
+                          <HelpCircle size={24} />
                         </div>
-
-                        {respondingToId === q.id && (
-                          <div className="pt-6 border-t border-slate-100 space-y-4 animate-in slide-in-from-top-2 duration-300">
-                            <div className="space-y-2">
-                              <Label className="text-[10px] font-black uppercase tracking-widest text-indigo-600 ml-1">Teacher's Response</Label>
-                              <Textarea 
-                                placeholder="Type the answer or insight from the teacher here..."
-                                className="min-h-[120px] rounded-2xl border-2 border-indigo-100 focus:border-indigo-500 bg-indigo-50/30 p-6 text-base font-medium leading-relaxed"
-                                value={tempResponse}
-                                onChange={(e) => setTempResponse(e.target.value)}
-                                autoFocus
-                              />
-                            </div>
-                            <div className="flex justify-end gap-3">
-                              <Button variant="ghost" onClick={() => setRespondingToId(null)} className="rounded-xl h-10 px-4 font-bold text-xs">Cancel</Button>
-                              <Button 
-                                onClick={() => handleSaveResponse(q)}
-                                disabled={updatingStatus === q.id || !tempResponse.trim()}
-                                className="bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl h-10 px-6 font-black text-[10px] uppercase tracking-widest shadow-lg shadow-emerald-100"
-                              >
-                                {updatingStatus === q.id ? <Loader2 size={14} className="animate-spin mr-2" /> : <CheckCircle2 size={14} className="mr-2" />}
-                                Save & Archive
-                              </Button>
-                            </div>
+                        <div className="space-y-2 min-w-0">
+                          <div className="flex items-center gap-3">
+                            <Badge variant="outline" className="border-none font-black text-[8px] uppercase tracking-widest p-0 text-slate-400">
+                              {q.source}
+                            </Badge>
+                            {q.clientName && (
+                              <Badge className="bg-slate-100 text-slate-500 border-none font-black text-[8px] uppercase tracking-widest px-2 py-0.5 rounded-full">
+                                Client: {q.clientName}
+                              </Badge>
+                            )}
                           </div>
-                        )}
-                      </CardContent>
-                    </Card>
-                  ))}
-
-                  {pendingQuestions.length === 0 && (
-                    <div className="text-center py-32 bg-slate-50 rounded-[3rem] border-2 border-dashed border-slate-200">
-                      <div className="w-20 h-20 bg-white rounded-3xl flex items-center justify-center mx-auto mb-6 shadow-sm">
-                        <CheckCircle2 size={40} className="text-emerald-500" />
+                          <p className="text-xl font-bold leading-tight text-slate-900">
+                            {q.content}
+                          </p>
+                          <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">
+                            Logged {format(new Date(q.date), "MMM d, yyyy")}
+                          </p>
+                        </div>
                       </div>
-                      <h3 className="text-xl font-black text-slate-900">All questions answered!</h3>
-                      <p className="text-slate-500 mt-2">You're fully prepped for your next meetup.</p>
+                      
+                      <Button 
+                        onClick={() => {
+                          setRespondingToId(q.id);
+                          setTempResponse("");
+                        }}
+                        className="rounded-xl h-11 px-6 bg-indigo-600 hover:bg-indigo-700 text-white shadow-lg shadow-indigo-100 font-black text-[10px] uppercase tracking-widest"
+                      >
+                        <MessageCircle size={14} className="mr-2" /> Add Response
+                      </Button>
                     </div>
-                  )}
-                </div>
-              </div>
 
-              {/* Answered History */}
-              {answeredQuestions.length > 0 && (
-                <div className="space-y-6 pt-12 border-t border-slate-100">
-                  <div className="flex items-center justify-between px-2">
-                    <h3 className="text-xl font-black text-slate-400 flex items-center gap-3">
-                      <History size={20} /> Answered History
-                    </h3>
-                    <Button 
-                      variant="ghost" 
-                      size="sm" 
-                      onClick={() => setShowHistory(!showHistory)}
-                      className="text-[10px] font-black uppercase tracking-widest text-slate-400 hover:text-indigo-600"
-                    >
-                      {showHistory ? <ChevronUp size={14} className="mr-2" /> : <ChevronDown size={14} className="mr-2" />}
-                      {showHistory ? "Hide History" : `Show ${answeredQuestions.length} Answered`}
-                    </Button>
+                    {respondingToId === q.id && (
+                      <div className="pt-6 border-t border-slate-100 space-y-4 animate-in slide-in-from-top-2 duration-300">
+                        <div className="space-y-2">
+                          <Label className="text-[10px] font-black uppercase tracking-widest text-indigo-600 ml-1">Teacher's Response</Label>
+                          <Textarea 
+                            placeholder="Type the answer or insight from the teacher here..."
+                            className="min-h-[120px] rounded-2xl border-2 border-indigo-100 focus:border-indigo-500 bg-indigo-50/30 p-6 text-base font-medium leading-relaxed"
+                            value={tempResponse}
+                            onChange={(e) => setTempResponse(e.target.value)}
+                            autoFocus
+                          />
+                        </div>
+                        <div className="flex justify-end gap-3">
+                          <Button variant="ghost" onClick={() => setRespondingToId(null)} className="rounded-xl h-10 px-4 font-bold text-xs">Cancel</Button>
+                          <Button 
+                            onClick={() => handleSaveResponse(q)}
+                            disabled={!tempResponse.trim()}
+                            className="bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl h-10 px-6 font-black text-[10px] uppercase tracking-widest shadow-lg shadow-emerald-100"
+                          >
+                            Save & Archive
+                          </Button>
+                        </div>
+                      </div>
+                    )}
+                  </CardContent>
+                </Card>
+              ))}
+
+              {pendingQuestions.length === 0 && (
+                <div className="text-center py-32 bg-slate-50 rounded-[3rem] border-2 border-dashed border-slate-200">
+                  <div className="w-20 h-20 bg-white rounded-3xl flex items-center justify-center mx-auto mb-6 shadow-sm">
+                    <CheckCircle2 size={40} className="text-emerald-500" />
                   </div>
-
-                  {showHistory && (
-                    <div className="grid grid-cols-1 gap-4 animate-in fade-in slide-in-from-top-4 duration-500">
-                      {answeredQuestions.map((q) => (
-                        <Card key={q.id} className="border-none shadow-sm rounded-[2rem] bg-slate-50/50 opacity-80 hover:opacity-100 transition-all overflow-hidden">
-                          <CardContent className="p-8 space-y-6">
-                            <div className="flex items-start justify-between">
-                              <div className="space-y-2">
-                                <div className="flex items-center gap-3">
-                                  <Badge variant="outline" className="border-none font-black text-[8px] uppercase tracking-widest p-0 text-slate-400">
-                                    {q.source}
-                                  </Badge>
-                                  <Badge className="bg-emerald-500 text-white border-none font-black text-[8px] uppercase tracking-widest px-2 py-0.5 rounded-full">
-                                    Answered
-                                  </Badge>
-                                </div>
-                                <p className="text-lg font-bold text-slate-500 line-through decoration-slate-300">
-                                  {q.content}
-                                </p>
-                              </div>
-                              <Button 
-                                variant="ghost" 
-                                size="sm" 
-                                onClick={() => handleToggleQuestionStatus(q)}
-                                disabled={updatingStatus === q.id}
-                                className="h-8 px-3 rounded-lg text-[10px] font-black uppercase tracking-widest text-indigo-600 hover:bg-indigo-50"
-                              >
-                                <RotateCcw size={12} className="mr-1.5" /> Re-open
-                              </Button>
-                            </div>
-
-                            <div className="p-6 bg-white rounded-2xl border border-slate-200 shadow-sm relative overflow-hidden">
-                              <div className="absolute top-0 right-0 p-4 opacity-5"><MessageCircle size={40} /></div>
-                              <p className="text-[9px] font-black text-indigo-400 uppercase tracking-widest mb-2">Teacher's Insight</p>
-                              <p className="text-sm font-medium text-slate-700 leading-relaxed italic">
-                                "{q.response}"
-                              </p>
-                            </div>
-                          </CardContent>
-                        </Card>
-                      ))}
-                    </div>
-                  )}
+                  <h3 className="text-xl font-black text-slate-900">All questions answered!</h3>
+                  <p className="text-slate-500 mt-2">You're fully prepped for your next meetup.</p>
                 </div>
               )}
             </div>
@@ -747,4 +612,4 @@ const ReflectionsPage = () => {
   );
 };
 
-export default ReflectionsPage;
+export default JournalPage;

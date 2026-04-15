@@ -20,10 +20,10 @@ export interface MasteryStat {
 }
 
 const TECHNIQUES = [
-  { key: 'harmonic_rocking_notes', name: 'Harmonic Rocking', videoUrl: "https://embed-ssl.wistia.com/deliveries/a8c771702cf0998e7caee0f064316544.mp4", pageUrl: "https://functional-neuro-health.mykajabi.com/products/functional-neuro-approach-foundations/categories/2152099725/posts/2164655471" },
+  { key: 'harmonic_rocking_notes', name: 'Harmonic Rocking', videoUrl: "https://embed-ssl.wistia.com/deliveries/192e983c5bd791df2ba8ee6006a40f63682a1415.mp4", pageUrl: "https://functional-neuro-health.mykajabi.com/products/functional-neuro-approach-foundations/categories/2152099725/posts/2164655471" },
   { key: 't1_reset_notes', name: 'T1 Sympathetic Reset', videoUrl: "https://embed-ssl.wistia.com/deliveries/ac0d803e766ec7535b8b981303df93bcc177c920.mp4", pageUrl: "https://functional-neuro-health.mykajabi.com/products/functional-neuro-approach-foundations/categories/2152099725/posts/2164655472" },
   { key: 'diaphragm_reset_notes', name: 'Diaphragm Reset', videoUrl: "https://embed-ssl.wistia.com/deliveries/fc38346a4cb0b8fd1fa8cfba2a74102ed3d5a641.mp4", pageUrl: "https://functional-neuro-health.mykajabi.com/products/functional-neuro-approach-foundations/categories/2152099725/posts/2164663189" },
-  { key: 'vagus_nerve_notes', name: 'Vagus Nerve Protocol', videoUrl: "https://embed-ssl.wistia.com/deliveries/fde31242dde2c7536f59b7c3a46f6070.mp4", pageUrl: "https://functional-neuro-health.mykajabi.com/products/functional-neuro-approach-foundations/categories/2152152431/posts/2166291753" },
+  { key: 'vagus_nerve_notes', name: 'Vagus Nerve Protocol', videoUrl: "https://embed-ssl.wistia.com/deliveries/347fefe7d351b6760c82e9cc68a47d37b0d53906.mp4", pageUrl: "https://functional-neuro-health.mykajabi.com/products/functional-neuro-approach-foundations/categories/2152152431/posts/2166291753" },
   { key: 'gait_notes', name: 'Gait Integration', videoUrl: "https://embed-ssl.wistia.com/deliveries/14f550f77b125c6afb95ef30dd7bb5cafccc62c1.mp4", pageUrl: "https://functional-neuro-health.mykajabi.com/products/functional-neuro-approach-foundations/categories/2152099726/posts/2164757718" },
   { key: 'lymphatic_notes', name: 'Lymphatic Drainage', videoUrl: "https://embed-ssl.wistia.com/deliveries/ba06079f4c7f3429554fe6c97a8e8cf0b8e48460.mp4", pageUrl: "https://functional-neuro-health.mykajabi.com/products/functional-neuro-approach-foundations/categories/2158539300/posts/2164719983" }
 ];

@@ -37,7 +37,8 @@ export const MUSCLE_INFO_DETAILS: Record<string, MuscleInfo> = {
     testingPosition: 'Client supine. Drop the head down (flexion) and rotate the head away from the side being tested. Practitioner applies pressure to the temporal area, pushing the head back towards the table and into rotation.',
     pearl: 'After testing, "squeeze through here" (the muscle belly and associated NL points) to check for immediate neurological shift or tenderness.',
     description: 'A key muscle for head orientation and a major player in the Medulla-driven flexor tone chain.',
-    videoUrl: "https://embed-ssl.wistia.com/deliveries/8dc68372fa942300d450b03ec8487454cacb02c7.mp4"
+    videoUrl: "https://embed-ssl.wistia.com/deliveries/37764185e445a8aed45bc5ac5ffbd5108b075252.mp4",
+    pageUrl: "https://functional-neuro-health.mykajabi.com/products/functional-neuro-approach-foundations/categories/2152591139/posts/2167833423"
   },
   'Upper Trapezius': {
     name: 'Upper Trapezius',
@@ -52,8 +53,8 @@ export const MUSCLE_INFO_DETAILS: Record<string, MuscleInfo> = {
     testingPosition: 'Primary: Shrug shoulder up, rotate head away, bring them together; practitioner pulls apart. Alternate: Lift the shoulder girdle vertically and test for lock.',
     pearl: 'The alternate vertical lift method allows you to test the Upper Trapezius "like an indicator" to check general system integrity.',
     description: 'The primary "stress" muscle. Closely linked to the Lung meridian and the body\'s ability to take in Qi and release grief.',
-    videoUrl: "https://embed-ssl.wistia.com/deliveries/8dc68372fa942300d450b03ec8487454cacb02c7.mp4",
-    pageUrl: "https://functional-neuro-health.mykajabi.com/products/functional-neuro-approach-foundations/categories/2152591139/posts/2166647725"
+    videoUrl: "https://embed-ssl.wistia.com/deliveries/37764185e445a8aed45bc5ac5ffbd5108b075252.mp4",
+    pageUrl: "https://functional-neuro-health.mykajabi.com/products/functional-neuro-approach-foundations/categories/2152591139/posts/2167833423"
   },
   'Psoas': {
     name: 'Psoas',
@@ -79,7 +80,9 @@ export const MUSCLE_INFO_DETAILS: Record<string, MuscleInfo> = {
     nerveSupply: 'Superior Gluteal Nerve (L4-S1)',
     organGland: 'Reproductive Organs',
     spinalFixation: 'L5-S1',
-    description: 'Primary lateral stabilizer of the pelvis. Essential for efficient walking and running mechanics.'
+    description: 'Primary lateral stabilizer of the pelvis. Essential for efficient walking and running mechanics.',
+    videoUrl: "https://embed-ssl.wistia.com/deliveries/31d6aeb20c5938a0b44f3dddbb8c954df877f43b.mp4",
+    pageUrl: "https://functional-neuro-health.mykajabi.com/products/functional-neuro-approach-foundations/categories/2152591139/posts/2167833410"
   },
   'Supraspinatus': {
     name: 'Supraspinatus',
@@ -92,7 +95,8 @@ export const MUSCLE_INFO_DETAILS: Record<string, MuscleInfo> = {
     organGland: 'Brain / Thyroid',
     spinalFixation: 'C7-T11',
     description: 'The "Starter" muscle of the shoulder. Often the first muscle to inhibit under general neurological threat.',
-    videoUrl: "https://embed-ssl.wistia.com/deliveries/8dc68372fa942300d450b03ec8487454cacb02c7.mp4"
+    videoUrl: "https://embed-ssl.wistia.com/deliveries/8dc68372fa942300d450b03ec8487454cacb02c7.mp4",
+    pageUrl: "https://functional-neuro-health.mykajabi.com/products/functional-neuro-approach-foundations/categories/2152591139/posts/2166647725"
   },
   'Latissimus Dorsi': {
     name: 'Latissimus Dorsi',
@@ -110,7 +114,7 @@ export const MUSCLE_INFO_DETAILS: Record<string, MuscleInfo> = {
     name: 'Transverse Abdominals',
     meridian: 'Stomach',
     testingPosition: 'Client supine, knees bent. Lift head and shoulders slightly. Practitioner applies pressure to the abdomen.',
-    videoUrl: "https://embed-ssl.wistia.com/deliveries/06654b19dfccfcb0bf7333a032825f4a.mp4",
+    videoUrl: "https://embed-ssl.wistia.com/deliveries/9b588212f338df39c1aaa347a5b143009e2bb547.mp4",
     pageUrl: "https://functional-neuro-health.mykajabi.com/products/functional-neuro-approach-foundations/categories/2152591139/posts/2166239953"
   },
   'Diaphragm': {
@@ -138,7 +142,7 @@ export const MUSCLE_INFO_DETAILS: Record<string, MuscleInfo> = {
     name: 'Quadriceps Group',
     meridian: 'Stomach',
     testingPosition: 'Client supine, leg extended. Practitioner applies pressure into flexion.',
-    videoUrl: "https://embed-ssl.wistia.com/deliveries/e3568b13d3b8ecaa2e2c7e363a064435.mp4",
+    videoUrl: "https://embed-ssl.wistia.com/deliveries/84a671ca73575c93a18cb9a867c0670c8cb4ea63.mp4",
     pageUrl: "https://functional-neuro-health.mykajabi.com/products/functional-neuro-approach-foundations/categories/2152591139/posts/2166288733"
   },
   'Biceps': {
@@ -159,31 +163,57 @@ export const MUSCLE_INFO_DETAILS: Record<string, MuscleInfo> = {
     name: 'Pelvic Floor (Anterior)',
     meridian: 'Bladder',
     testingPosition: 'Specific pelvic floor engagement assessment.',
-    videoUrl: "https://embed-ssl.wistia.com/deliveries/57cf210cb9ae6a0aa951271be09f0f33.mp4"
+    videoUrl: "https://embed-ssl.wistia.com/deliveries/df6e708227eb9ad1433a71387743208c330843c1.mp4",
+    pageUrl: "https://functional-neuro-health.mykajabi.com/products/functional-neuro-approach-foundations/categories/2152591139/posts/2166647569"
   },
   'Pelvic Floor (Posterior)': {
     name: 'Pelvic Floor (Posterior)',
     meridian: 'Bladder',
     testingPosition: 'Specific pelvic floor engagement assessment.',
-    videoUrl: "https://embed-ssl.wistia.com/deliveries/57cf210cb9ae6a0aa951271be09f0f33.mp4"
+    videoUrl: "https://embed-ssl.wistia.com/deliveries/df6e708227eb9ad1433a71387743208c330843c1.mp4",
+    pageUrl: "https://functional-neuro-health.mykajabi.com/products/functional-neuro-approach-foundations/categories/2152591139/posts/2166647569"
   },
   'Serratus Anterior': {
     name: 'Serratus Anterior',
     meridian: 'Pericardium',
     testingPosition: 'Arm flexed to 90°, punch forward against resistance.',
-    videoUrl: "https://embed-ssl.wistia.com/deliveries/8dc68372fa942300d450b03ec8487454cacb02c7.mp4"
+    videoUrl: "https://embed-ssl.wistia.com/deliveries/8dc68372fa942300d450b03ec8487454cacb02c7.mp4",
+    pageUrl: "https://functional-neuro-health.mykajabi.com/products/functional-neuro-approach-foundations/categories/2152591139/posts/2166647725"
   },
   'Pectoralis Major (Clavicular)': {
     name: 'Pectoralis Major (Clavicular)',
     meridian: 'Stomach',
     testingPosition: 'Arm flexed to 90°, horizontal adduction.',
-    videoUrl: "https://embed-ssl.wistia.com/deliveries/8dc68372fa942300d450b03ec8487454cacb02c7.mp4"
+    videoUrl: "https://embed-ssl.wistia.com/deliveries/8dc68372fa942300d450b03ec8487454cacb02c7.mp4",
+    pageUrl: "https://functional-neuro-health.mykajabi.com/products/functional-neuro-approach-foundations/categories/2152591139/posts/2166647725"
   },
   'Pectoralis Major (Sternal)': {
     name: 'Pectoralis Major (Sternal)',
     meridian: 'Pericardium',
     testingPosition: 'Arm flexed to 120°, horizontal adduction.',
-    videoUrl: "https://embed-ssl.wistia.com/deliveries/8dc68372fa942300d450b03ec8487454cacb02c7.mp4"
+    videoUrl: "https://embed-ssl.wistia.com/deliveries/8dc68372fa942300d450b03ec8487454cacb02c7.mp4",
+    pageUrl: "https://functional-neuro-health.mykajabi.com/products/functional-neuro-approach-foundations/categories/2152591139/posts/2166647725"
+  },
+  'Hamstrings': {
+    name: 'Hamstrings',
+    meridian: 'Bladder',
+    testingPosition: 'Knee flexion against resistance.',
+    videoUrl: "https://embed-ssl.wistia.com/deliveries/9f0b6c405192834a12a8581540f296ee30a65676.mp4",
+    pageUrl: "https://functional-neuro-health.mykajabi.com/products/functional-neuro-approach-foundations/categories/2152591139/posts/2167833404"
+  },
+  'Tensor Fasciae Latae (TFL)': {
+    name: 'Tensor Fasciae Latae (TFL)',
+    meridian: 'Gall Bladder',
+    testingPosition: 'Hip abduction with internal rotation.',
+    videoUrl: "https://embed-ssl.wistia.com/deliveries/3eb66b56dc090f72a7555b8d89b62498930cb6ab.mp4",
+    pageUrl: "https://functional-neuro-health.mykajabi.com/products/functional-neuro-approach-foundations/categories/2152591139/posts/2167833407"
+  },
+  'Gluteus Maximus': {
+    name: 'Gluteus Maximus',
+    meridian: 'Bladder',
+    testingPosition: 'Hip extension with knee flexed.',
+    videoUrl: "https://embed-ssl.wistia.com/deliveries/c1e61933c8c2f127535acf940838eb4765ceb24a.mp4",
+    pageUrl: "https://functional-neuro-health.mykajabi.com/products/functional-neuro-approach-foundations/categories/2152591139/posts/2167833413"
   }
 };
 

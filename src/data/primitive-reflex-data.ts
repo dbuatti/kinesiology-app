@@ -78,8 +78,8 @@ export const PRIMITIVE_REFLEXES: PrimitiveReflex[] = [
     pearl: 'Essential for sensory mapping of the neck. Retained TLR often manifests as sleep issues or "somersaulting" sensations.',
     clinicalSigns: ['Sleep issues', 'Somersaulting sensation', 'Poor posture', 'Dizziness/Vertigo', 'Neck instability'],
     fractalPartners: ['Moro', 'ATNR', 'STNR'],
-    videoUrl: "https://embed-ssl.wistia.com/deliveries/710dba831b6b97eb558e3e4f1ad866800076dd0b.mp4",
-    pageUrl: "https://functional-neuro-health.mykajabi.com/products/functional-neuro-approach-foundations/categories/2152127437/posts/2164729000"
+    videoUrl: "https://embed-ssl.wistia.com/deliveries/e408efa2796ae592f7a4e66f18c5fc3f6072865e.mp4",
+    pageUrl: "https://functional-neuro-health.mykajabi.com/products/functional-neuro-approach-foundations/categories/2152127437/posts/2167502436"
   },
   {
     id: 'atnr',
@@ -108,8 +108,8 @@ export const PRIMITIVE_REFLEXES: PrimitiveReflex[] = [
     pearl: 'The "cat" reflex. Retained STNR is a major factor in poor desk posture and "W-sitting".',
     clinicalSigns: ['Poor desk posture', 'W-sitting', 'Slumping', 'Difficulty with swimming/crawling'],
     fractalPartners: ['Moro', 'TLR', 'ATNR'],
-    videoUrl: "https://embed-ssl.wistia.com/deliveries/0ac1da7790c7d8bff65b957bcad11e0a.mp4",
-    pageUrl: "https://functional-neuro-health.mykajabi.com/products/functional-neuro-approach-foundations/categories/2154487237/posts/2187520560"
+    videoUrl: "https://embed-ssl.wistia.com/deliveries/aabf70381b505e23b702daababd25c1cd36e94e1.mp4",
+    pageUrl: "https://functional-neuro-health.mykajabi.com/products/functional-neuro-approach-foundations/categories/2152127437/posts/2167502433"
   },
   {
     id: 'spinal-galant',
@@ -123,8 +123,8 @@ export const PRIMITIVE_REFLEXES: PrimitiveReflex[] = [
     pearl: 'Linked to bedwetting and concentration issues. In adults, manifests as functional scoliosis.',
     clinicalSigns: ['Bedwetting', 'Concentration issues', 'Functional scoliosis', 'Lower back pain', 'Fidgeting in chairs'],
     fractalPartners: ['ATNR'],
-    videoUrl: "https://embed-ssl.wistia.com/deliveries/ace191c3994201b6b30d5d5ba6a88f88834f537d.mp4",
-    pageUrl: "https://functional-neuro-health.mykajabi.com/products/functional-neuro-approach-foundations/categories/2152127437/posts/2169016216"
+    videoUrl: "https://embed-ssl.wistia.com/deliveries/f2469cc91db04dd15d9f35717be09af96691be5d.mp4",
+    pageUrl: "https://functional-neuro-health.mykajabi.com/products/functional-neuro-approach-foundations/categories/2152127437/posts/2167502438"
   },
   {
     id: 'babinski',
@@ -153,8 +153,8 @@ export const PRIMITIVE_REFLEXES: PrimitiveReflex[] = [
     pearl: 'Massive effect on neck/shoulder stability. Often shows up in cases of torticollis or chronic TMJ tension.',
     clinicalSigns: ['TMJ tension', 'Neck instability', 'Torticollis', 'Shoulder pain', 'Speech issues'],
     fractalPartners: ['Sucking', 'Palmar'],
-    videoUrl: "https://embed-ssl.wistia.com/deliveries/aca41508634a068fbda3d10c96f150a9.mp4",
-    pageUrl: "https://functional-neuro-health.mykajabi.com/products/functional-neuro-approach-foundations/categories/2152127509/posts/2167205372"
+    videoUrl: "https://embed-ssl.wistia.com/deliveries/41602c6f9a8558cd636f09d1f791a90095949ddc.mp4",
+    pageUrl: "https://functional-neuro-health.mykajabi.com/products/functional-neuro-approach-foundations/categories/2152127437/posts/2170115837"
   },
   {
     id: 'palmar',
@@ -167,7 +167,9 @@ export const PRIMITIVE_REFLEXES: PrimitiveReflex[] = [
     description: 'Involuntary hand grasp. Part of the gait integration chain.',
     pearl: 'Affects manual dexterity and handwriting. The palms are part of the gait integration circuit.',
     clinicalSigns: ['Poor handwriting', 'Weak grip', 'Gait integration issues', 'Manual dexterity issues'],
-    fractalPartners: ['Rooting', 'Sucking', 'Babinski']
+    fractalPartners: ['Rooting', 'Sucking', 'Babinski'],
+    videoUrl: "https://embed-ssl.wistia.com/deliveries/47c826247d5f8aa9592a5a681c8dff91feb137d3.mp4",
+    pageUrl: "https://functional-neuro-health.mykajabi.com/products/functional-neuro-approach-foundations/categories/2152127437/posts/2190363557"
   },
   {
     id: 'sucking',

@@ -51,7 +51,7 @@ export const CRANIAL_NERVES: CranialNerve[] = [
     stimulus: "Hold Yin Tang as the reflex point. Stimulus: smell an essential oil in the nostril.",
     clinicalPearl: "The only sense that bypasses the thalamus. Essential for deep emotional memory work.",
     color: "bg-purple-500",
-    videoUrl: "https://embed-ssl.wistia.com/deliveries/aca41508634a068fbda3d10c96f150a9.mp4",
+    videoUrl: "https://embed-ssl.wistia.com/deliveries/d2a02ad26550033565f709c63fa2d85a18ff2c5d.mp4",
     pageUrl: "https://functional-neuro-health.mykajabi.com/products/functional-neuro-approach-foundations/categories/2152127509/posts/2167205372"
   },
   {
@@ -164,7 +164,7 @@ export const CRANIAL_NERVES: CranialNerve[] = [
     functions: ["Taste — posterior 1/3 of tongue", "Swallowing"],
     stimulus: "Hold GB21. Stimulus: humming.",
     clinicalPearl: "Works in a tight neurological cluster with CN 10 and CN 11.",
-    color: "bg-rose-500",
+    color: "bg-rose-50",
     videoUrl: "https://embed-ssl.wistia.com/deliveries/c951c07cedadced7e1d2291c60a8dc22d90ac90a.mp4",
     pageUrl: "https://functional-neuro-health.mykajabi.com/products/functional-neuro-approach-foundations/categories/2152127509/posts/2167780916"
   },
@@ -179,7 +179,7 @@ export const CRANIAL_NERVES: CranialNerve[] = [
     stimulus: "Place hand along Occiput-Atlas. Stimulus: humming, swallowing, 'Aaah'.",
     clinicalPearl: "The 'King' of the parasympathetic nervous system. Arises from the medulla.",
     color: "bg-rose-600",
-    videoUrl: "https://embed-ssl.wistia.com/deliveries/fde31242dde2c7536f59b7c3a46f6070.mp4",
+    videoUrl: "https://embed-ssl.wistia.com/deliveries/347fefe7d351b6760c82e9cc68a47d37b0d53906.mp4",
     pageUrl: "https://functional-neuro-health.mykajabi.com/products/functional-neuro-approach-foundations/categories/2152152431/posts/2166291753"
   },
   {

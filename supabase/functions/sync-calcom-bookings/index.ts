@@ -9,7 +9,7 @@ const corsHeaders = {
 }
 
 serve(async (req) => {
-  console.log("--- [sync-calcom-bookings] v4.0 — ID-First Matching ---");
+  console.log("--- [sync-calcom-bookings] v5.0 — Aggressive Date Matching ---");
 
   if (req.method === 'OPTIONS') return new Response('ok', { headers: corsHeaders })
 
@@ -63,7 +63,7 @@ serve(async (req) => {
 
       if (!dbClient) continue;
 
-      // 2. Match Strategy: ID first, then Date
+      // 2. Match Strategy: ID first
       const { data: appById } = await supabase
         .from('appointments')
         .select('id')
@@ -71,7 +71,7 @@ serve(async (req) => {
         .maybeSingle();
 
       if (appById) {
-        // Update existing linked record (handles reschedules)
+        console.log(`[sync] Found by ID: ${calcomId}. Updating date to ${startTime}`);
         await supabase
           .from('appointments')
           .update({ 
@@ -80,7 +80,8 @@ serve(async (req) => {
           })
           .eq('id', appById.id);
       } else {
-        // Try Smart Match by date
+        // 3. Aggressive Match by Date + Client (Fixes 404/ID mismatch issues)
+        console.log(`[sync] ID ${calcomId} not found in CRM. Searching by date ${startTime} for client ${dbClient.id}`);
         const { data: appByDate } = await supabase
           .from('appointments')
           .select('id')
@@ -89,6 +90,7 @@ serve(async (req) => {
           .maybeSingle();
 
         if (appByDate) {
+          console.log(`[sync] Match found by date! Linking CRM app ${appByDate.id} to Cal.com ID ${calcomId}`);
           await supabase
             .from('appointments')
             .update({ 
@@ -97,7 +99,8 @@ serve(async (req) => {
             })
             .eq('id', appByDate.id);
         } else {
-          // Create new
+          // 4. Create new if no match at all
+          console.log(`[sync] No match found. Creating new record for ${calcomId}`);
           await supabase
             .from('appointments')
             .insert({

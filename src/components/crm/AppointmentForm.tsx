@@ -138,7 +138,6 @@ const AppointmentForm = ({
       let calcomId = existingAppointment?.calcom_booking_id || null;
 
       // 1. Sync with Cal.com if applicable
-      // Trigger for NEW bookings with a slot OR EDITS with an existing Cal.com ID
       if ((!isEditMode && (initialTime || currentSlotTime)) || (isEditMode && calcomId)) {
         setSyncStatus('calcom');
         const eventTypeId = currentEventType.id;
@@ -152,13 +151,12 @@ const AppointmentForm = ({
               title: values.name || values.tag || "Kinesiology Session",
               notes: values.goal || values.issue || "",
               is_paid: values.is_paid,
-              bookingUid: calcomId // Passing this triggers the UPDATE logic in the edge function
+              bookingUid: calcomId ? String(calcomId) : null
             }
           });
 
           if (invokeError) throw invokeError;
           
-          // If it was a new booking, save the ID
           if (!isEditMode) {
             calcomId = calcomData?.uid || calcomData?.bookingId;
           }
@@ -217,7 +215,6 @@ const AppointmentForm = ({
 
         if (dbError) throw dbError;
 
-        // 3. Trigger Onboarding Email if requested
         if (values.send_onboarding) {
           setSyncStatus('email');
           try {

@@ -26,7 +26,7 @@ serve(async (req) => {
     const body = await req.json();
     const { clientId, startTime, eventTypeId, title, notes, is_paid, bookingUid } = body;
     
-    console.log(`[${functionName}] Payload:`, { clientId, startTime, eventTypeId, bookingUid });
+    console.log(`[${functionName}] Incoming Payload:`, JSON.stringify(body, null, 2));
 
     const supabaseUrl = Deno.env.get('SUPABASE_URL');
     const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY');
@@ -46,8 +46,8 @@ serve(async (req) => {
     const cleanStartTime = new Date(startTime).toISOString();
     const isPaidBool = is_paid === true || is_paid === 'true';
 
-    // If bookingUid exists, we are UPDATING (Rescheduling)
-    if (bookingUid) {
+    // If bookingUid exists and is valid, we are UPDATING (Rescheduling)
+    if (bookingUid && bookingUid !== "undefined" && bookingUid !== "null") {
       console.log(`[${functionName}] Action: UPDATE booking ${bookingUid}`);
       
       const updatePayload = {
@@ -58,6 +58,8 @@ serve(async (req) => {
           is_paid: String(isPaidBool)
         }
       };
+
+      console.log(`[${functionName}] Sending PATCH to Cal.com:`, JSON.stringify(updatePayload, null, 2));
 
       const response = await fetch(`https://api.cal.com/v2/bookings/${bookingUid}`, {
         method: "PATCH",
@@ -71,10 +73,12 @@ serve(async (req) => {
 
       const result = await response.json();
       console.log(`[${functionName}] Cal.com PATCH Response Status: ${response.status}`);
+      console.log(`[${functionName}] Cal.com PATCH Response Body:`, JSON.stringify(result, null, 2));
 
       if (!response.ok) {
-        console.error(`[${functionName}] Cal.com PATCH Error:`, JSON.stringify(result));
-        throw new Error(result.error?.message || result.message || "Cal.com Update Error");
+        const errorMsg = result.error?.message || result.message || "Cal.com Update Error";
+        console.error(`[${functionName}] Cal.com Error Detail:`, errorMsg);
+        throw new Error(errorMsg);
       }
 
       return new Response(JSON.stringify({ success: true, data: result.data }), { 
@@ -105,6 +109,8 @@ serve(async (req) => {
       }
     };
 
+    console.log(`[${functionName}] Sending POST to Cal.com:`, JSON.stringify(bookingPayload, null, 2));
+
     const response = await fetch("https://api.cal.com/v2/bookings", {
       method: "POST",
       headers: {
@@ -117,10 +123,12 @@ serve(async (req) => {
 
     const result = await response.json();
     console.log(`[${functionName}] Cal.com POST Response Status: ${response.status}`);
+    console.log(`[${functionName}] Cal.com POST Response Body:`, JSON.stringify(result, null, 2));
 
     if (!response.ok) {
-      console.error(`[${functionName}] Cal.com POST Error:`, JSON.stringify(result));
-      throw new Error(result.error?.message || result.message || "Cal.com Create Error");
+      const errorMsg = result.error?.message || result.message || "Cal.com Create Error";
+      console.error(`[${functionName}] Cal.com Error Detail:`, errorMsg);
+      throw new Error(errorMsg);
     }
 
     return new Response(JSON.stringify({ 
@@ -133,7 +141,7 @@ serve(async (req) => {
     });
 
   } catch (error) {
-    console.error(`[${functionName}] Critical Error:`, error.message);
+    console.error(`[${functionName}] CRITICAL FAILURE:`, error.message);
     return new Response(JSON.stringify({ error: error.message }), { 
       status: 400, 
       headers: { ...corsHeaders, 'Content-Type': 'application/json' } 

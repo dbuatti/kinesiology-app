@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { motion } from 'framer-motion';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -27,11 +27,15 @@ import {
   Calculator,
   ShieldCheck,
   Layers,
-  Lightbulb
+  Lightbulb,
+  Calendar,
+  ChevronRight,
+  BarChart3
 } from 'lucide-react';
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { cn } from "@/lib/utils";
+import { Progress } from "@/components/ui/progress";
 
 const BusinessModelWorksheet = () => {
   const [answers, setAnswers] = useState<Record<string, any>>({});
@@ -84,6 +88,53 @@ const BusinessModelWorksheet = () => {
     setAnswers(prev => ({ ...prev, [id]: value }));
   };
 
+  // --- AUTO CALCULATIONS ---
+
+  // 1. LCV Total
+  const lcvTotal = useMemo(() => {
+    const entry = parseFloat(answers.lcv_entry_price) || 0;
+    const core = parseFloat(answers.lcv_core_price) || 0;
+    const advanced = parseFloat(answers.lcv_advanced_price) || 0;
+    const maintenance = parseFloat(answers.lcv_maintenance_price) || 0;
+    return entry + core + advanced + maintenance;
+  }, [answers]);
+
+  // 2. Section 3 Calculations
+  const sessionsNeeded = useMemo(() => {
+    const target = parseFloat(answers.rev_target) || 0;
+    const rate = parseFloat(answers.hourly_rate) || 0;
+    if (rate === 0) return 0;
+    return Math.ceil(target / rate);
+  }, [answers.rev_target, answers.hourly_rate]);
+
+  const programsNeeded = useMemo(() => {
+    const target = parseFloat(answers.rev_target) || 0;
+    const price = parseFloat(answers.program_price) || 0;
+    if (price === 0) return 0;
+    return (target / price).toFixed(1);
+  }, [answers.rev_target, answers.program_price]);
+
+  // 3. Section 7 Calculations
+  const forecastNeeded = useMemo(() => {
+    const goal = parseFloat(answers.forecast_rev) || 0;
+    const price = parseFloat(answers.forecast_price) || 0;
+    if (price === 0) return 0;
+    return Math.ceil(goal / price);
+  }, [answers.forecast_rev, answers.forecast_price]);
+
+  const forecastGap = useMemo(() => {
+    const needed = forecastNeeded;
+    const pipeline = parseFloat(answers.forecast_pipeline) || 0;
+    return Math.max(0, needed - pipeline);
+  }, [forecastNeeded, answers.forecast_pipeline]);
+
+  // 4. Overall Progress
+  const completionProgress = useMemo(() => {
+    const totalFields = 25; // Estimated key fields
+    const filledFields = Object.values(answers).filter(v => v && v !== '').length;
+    return Math.min(100, Math.round((filledFields / totalFields) * 100));
+  }, [answers]);
+
   if (loading) {
     return (
       <div className="flex flex-col items-center justify-center min-h-[400px] space-y-4">
@@ -107,23 +158,40 @@ const BusinessModelWorksheet = () => {
 
   return (
     <div className="max-w-5xl mx-auto py-12 px-4 sm:px-6 lg:px-8 min-h-screen pb-32">
-      <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="space-y-20">
+      {/* Sticky Progress Header */}
+      <div className="fixed top-0 left-0 right-0 z-50 bg-white/80 backdrop-blur-md border-b border-slate-100 px-6 py-3 flex items-center justify-between print:hidden">
+        <div className="flex items-center gap-4 flex-1 max-w-md">
+          <div className="w-8 h-8 rounded-lg bg-emerald-600 flex items-center justify-center text-white font-black text-xs">B</div>
+          <div className="flex-1 space-y-1">
+            <div className="flex justify-between text-[8px] font-black uppercase tracking-widest text-slate-400">
+              <span>Worksheet Progress</span>
+              <span>{completionProgress}%</span>
+            </div>
+            <Progress value={completionProgress} className="h-1 bg-slate-100 [&>div]:bg-emerald-600" />
+          </div>
+        </div>
+        <div className="flex items-center gap-3">
+          <Button variant="ghost" size="sm" onClick={() => window.print()} className="text-slate-500 hover:text-slate-900">
+            <Printer size={16} className="mr-2" /> Print
+          </Button>
+          <Button size="sm" onClick={() => handleSave()} disabled={saving} className="bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl px-6 font-bold shadow-lg shadow-emerald-100">
+            {saving ? <Loader2 size={16} className="animate-spin" /> : <Save size={16} className="mr-2" />} Save Plan
+          </Button>
+        </div>
+      </div>
+
+      <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="space-y-20 pt-12">
         
         {/* Header */}
         <div className="text-center space-y-4 relative">
-          <div className="absolute right-0 top-0 flex gap-2 print:hidden">
-            <Button variant="outline" size="sm" onClick={() => handleSave()} disabled={saving} className="rounded-xl border-slate-200">
-              {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />} Save
-            </Button>
-            <Button variant="outline" size="sm" onClick={() => window.print()} className="rounded-xl border-slate-200">
-              <Printer className="w-4 h-4" /> Print
-            </Button>
-          </div>
           <div className="inline-flex items-center justify-center p-2 bg-emerald-100 rounded-full text-emerald-600 mb-4">
             <Briefcase className="w-6 h-6" />
           </div>
           <h1 className="text-4xl font-black tracking-tight text-slate-900 sm:text-6xl">FNH Business Model</h1>
           <p className="text-xl text-emerald-600 font-medium">Mastery Program — Student Worksheet</p>
+          <p className="max-w-2xl mx-auto text-slate-500 italic">
+            "Transition from a practitioner who owns a job to a business owner who delivers outcomes."
+          </p>
         </div>
 
         {/* Video Section */}
@@ -209,7 +277,10 @@ const BusinessModelWorksheet = () => {
           </div>
 
           <div className="space-y-6">
-            <h3 className="text-xl font-black text-slate-900 px-2">Build Your LCV</h3>
+            <div className="flex items-center justify-between px-2">
+              <h3 className="text-xl font-black text-slate-900">Build Your LCV</h3>
+              <Badge className="bg-emerald-500 text-white border-none font-black text-[10px] uppercase tracking-widest px-3 py-1">Auto-Calculating</Badge>
+            </div>
             <div className="overflow-hidden rounded-[2rem] border-2 border-slate-100 shadow-sm">
               <table className="w-full text-left border-collapse">
                 <thead>
@@ -229,16 +300,20 @@ const BusinessModelWorksheet = () => {
                     <tr key={row.id}>
                       <td className="p-6 font-bold text-slate-700">{row.label}</td>
                       <td className="p-4">
-                        <Input 
-                          type="number" 
-                          className="border-none bg-slate-50 focus:ring-0 font-bold" 
-                          value={answers[`lcv_${row.id}_price`] || ''}
-                          onChange={(e) => handleInputChange(`lcv_${row.id}_price`, e.target.value)}
-                        />
+                        <div className="flex items-center gap-2">
+                          <span className="text-slate-400 font-bold">$</span>
+                          <Input 
+                            type="number" 
+                            className="border-none bg-slate-50 focus:ring-0 font-bold" 
+                            value={answers[`lcv_${row.id}_price`] || ''}
+                            onChange={(e) => handleInputChange(`lcv_${row.id}_price`, e.target.value)}
+                          />
+                        </div>
                       </td>
                       <td className="p-4">
                         <Input 
                           className="border-none bg-slate-50 focus:ring-0" 
+                          placeholder="e.g. 4 weeks / Online"
                           value={answers[`lcv_${row.id}_format`] || ''}
                           onChange={(e) => handleInputChange(`lcv_${row.id}_format`, e.target.value)}
                         />
@@ -248,13 +323,8 @@ const BusinessModelWorksheet = () => {
                   <tr className="bg-emerald-50">
                     <td className="p-6 font-black text-emerald-700 uppercase tracking-widest">TOTAL POTENTIAL LCV</td>
                     <td className="p-4" colSpan={2}>
-                      <div className="flex items-center gap-2 text-2xl font-black text-emerald-700">
-                        $<Input 
-                          type="number" 
-                          className="border-none bg-transparent focus:ring-0 text-2xl font-black w-48" 
-                          value={answers.lcv_total || ''}
-                          onChange={(e) => handleInputChange('lcv_total', e.target.value)}
-                        />
+                      <div className="flex items-center gap-2 text-3xl font-black text-emerald-700">
+                        ${lcvTotal.toLocaleString()}
                       </div>
                     </td>
                   </tr>
@@ -307,26 +377,51 @@ const BusinessModelWorksheet = () => {
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-slate-100">
-                    {[
-                      { id: 'rev_target', label: 'Monthly revenue target ($)' },
-                      { id: 'hourly_rate', label: 'Your current hourly rate ($)' },
-                      { id: 'sessions_month', label: 'Sessions needed per month (target ÷ rate)' },
-                      { id: 'sessions_week', label: 'Sessions needed per week (÷ 4)' },
-                      { id: 'program_price', label: 'Your core program price ($)' },
-                      { id: 'programs_month', label: 'Programs needed per month (target ÷ price)' },
-                      { id: 'clients_week', label: 'Clients you need to see per week' }
-                    ].map(row => (
-                      <tr key={row.id}>
-                        <td className="p-6 font-bold text-slate-700">{row.label}</td>
-                        <td className="p-4">
-                          <Input 
-                            className="border-none bg-slate-50 focus:ring-0 font-bold text-blue-600" 
-                            value={answers[row.id] || ''}
-                            onChange={(e) => handleInputChange(row.id, e.target.value)}
-                          />
-                        </td>
-                      </tr>
-                    ))}
+                    <tr>
+                      <td className="p-6 font-bold text-slate-700">Monthly revenue target ($)</td>
+                      <td className="p-4">
+                        <Input 
+                          type="number"
+                          className="border-none bg-slate-50 focus:ring-0 font-bold text-blue-600" 
+                          value={answers.rev_target || ''}
+                          onChange={(e) => handleInputChange('rev_target', e.target.value)}
+                        />
+                      </td>
+                    </tr>
+                    <tr>
+                      <td className="p-6 font-bold text-slate-700">Your current hourly rate ($)</td>
+                      <td className="p-4">
+                        <Input 
+                          type="number"
+                          className="border-none bg-slate-50 focus:ring-0 font-bold text-blue-600" 
+                          value={answers.hourly_rate || ''}
+                          onChange={(e) => handleInputChange('hourly_rate', e.target.value)}
+                        />
+                      </td>
+                    </tr>
+                    <tr className="bg-blue-50/30">
+                      <td className="p-6 font-bold text-blue-900">Sessions needed per month (target ÷ rate)</td>
+                      <td className="p-6 font-black text-blue-600 text-xl">{sessionsNeeded}</td>
+                    </tr>
+                    <tr className="bg-blue-50/30">
+                      <td className="p-6 font-bold text-blue-900">Sessions needed per week (÷ 4)</td>
+                      <td className="p-6 font-black text-blue-600 text-xl">{Math.ceil(sessionsNeeded / 4)}</td>
+                    </tr>
+                    <tr>
+                      <td className="p-6 font-bold text-slate-700">Your core program price ($)</td>
+                      <td className="p-4">
+                        <Input 
+                          type="number"
+                          className="border-none bg-slate-50 focus:ring-0 font-bold text-blue-600" 
+                          value={answers.program_price || ''}
+                          onChange={(e) => handleInputChange('program_price', e.target.value)}
+                        />
+                      </td>
+                    </tr>
+                    <tr className="bg-emerald-50/30">
+                      <td className="p-6 font-bold text-emerald-900">Programs needed per month (target ÷ price)</td>
+                      <td className="p-6 font-black text-emerald-600 text-xl">{programsNeeded}</td>
+                    </tr>
                   </tbody>
                 </table>
               </div>
@@ -489,25 +584,64 @@ const BusinessModelWorksheet = () => {
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-slate-100">
-                    {[
-                      { id: 'forecast_rev', label: 'What is your 3-month monthly revenue goal?' },
-                      { id: 'forecast_price', label: 'What is your core program price?' },
-                      { id: 'forecast_needed', label: 'Programs to sell each month (goal ÷ price)?' },
-                      { id: 'forecast_pipeline', label: 'Current pipeline — how many warm leads do you have now?' },
-                      { id: 'forecast_gap', label: 'Gap — how many new leads do you need this month?' },
-                      { id: 'forecast_channels', label: 'How will you find those leads? (list 1–2 channels)' }
-                    ].map(row => (
-                      <tr key={row.id}>
-                        <td className="p-6 font-bold text-slate-700">{row.label}</td>
-                        <td className="p-4">
+                    <tr>
+                      <td className="p-6 font-bold text-slate-700">What is your 3-month monthly revenue goal?</td>
+                      <td className="p-4">
+                        <div className="flex items-center gap-2">
+                          <span className="text-slate-400 font-bold">$</span>
                           <Input 
+                            type="number"
                             className="border-none bg-slate-50 focus:ring-0 font-bold" 
-                            value={answers[row.id] || ''}
-                            onChange={(e) => handleInputChange(row.id, e.target.value)}
+                            value={answers.forecast_rev || ''}
+                            onChange={(e) => handleInputChange('forecast_rev', e.target.value)}
                           />
-                        </td>
-                      </tr>
-                    ))}
+                        </div>
+                      </td>
+                    </tr>
+                    <tr>
+                      <td className="p-6 font-bold text-slate-700">What is your core program price?</td>
+                      <td className="p-4">
+                        <div className="flex items-center gap-2">
+                          <span className="text-slate-400 font-bold">$</span>
+                          <Input 
+                            type="number"
+                            className="border-none bg-slate-50 focus:ring-0 font-bold" 
+                            value={answers.forecast_price || ''}
+                            onChange={(e) => handleInputChange('forecast_price', e.target.value)}
+                          />
+                        </div>
+                      </td>
+                    </tr>
+                    <tr className="bg-indigo-50/30">
+                      <td className="p-6 font-bold text-indigo-900">Programs to sell each month (goal ÷ price)?</td>
+                      <td className="p-6 font-black text-indigo-600 text-xl">{forecastNeeded}</td>
+                    </tr>
+                    <tr>
+                      <td className="p-6 font-bold text-slate-700">Current pipeline — how many warm leads do you have now?</td>
+                      <td className="p-4">
+                        <Input 
+                          type="number"
+                          className="border-none bg-slate-50 focus:ring-0 font-bold" 
+                          value={answers.forecast_pipeline || ''}
+                          onChange={(e) => handleInputChange('forecast_pipeline', e.target.value)}
+                        />
+                      </td>
+                    </tr>
+                    <tr className="bg-rose-50/30">
+                      <td className="p-6 font-bold text-rose-900">Gap — how many new leads do you need this month?</td>
+                      <td className="p-6 font-black text-rose-600 text-xl">{forecastGap}</td>
+                    </tr>
+                    <tr>
+                      <td className="p-6 font-bold text-slate-700">How will you find those leads? (list 1–2 channels)</td>
+                      <td className="p-4">
+                        <Input 
+                          className="border-none bg-slate-50 focus:ring-0 font-bold" 
+                          placeholder="e.g. Instagram, Referrals"
+                          value={answers.forecast_channels || ''}
+                          onChange={(e) => handleInputChange('forecast_channels', e.target.value)}
+                        />
+                      </td>
+                    </tr>
                   </tbody>
                 </table>
               </div>
@@ -528,35 +662,62 @@ const BusinessModelWorksheet = () => {
         <section className="space-y-10">
           <SectionHeader icon={ShieldCheck} title="SECTION 8: Action Steps & Commitments" subtitle="Final Integration" color="bg-emerald-600" />
           
+          <div className="space-y-6">
+            <h3 className="text-xl font-black text-slate-900 px-2">Commitments</h3>
+            <div className="overflow-hidden rounded-[2rem] border-2 border-slate-100 shadow-sm">
+              <table className="w-full text-left border-collapse">
+                <thead>
+                  <tr className="bg-slate-50 border-b-2 border-slate-100">
+                    <th className="p-6 font-black text-[10px] uppercase tracking-widest text-slate-500">Action Item</th>
+                    <th className="p-6 font-black text-[10px] uppercase tracking-widest text-slate-500">By When</th>
+                    <th className="p-6 font-black text-[10px] uppercase tracking-widest text-slate-500 text-center">Done</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-slate-100">
+                  {[
+                    "Define and write down your core program offer",
+                    "Calculate your LCV and monthly sales target",
+                    "Identify your ICP and write a one-paragraph description",
+                    "List 3 warm leads you could have a discovery call with",
+                    "Draft your verbal offer script"
+                  ].map(item => (
+                    <tr key={item} className={cn(answers[`done_${item}`] && "bg-emerald-50/30")}>
+                      <td className="p-6 font-bold text-slate-700">{item}</td>
+                      <td className="p-4">
+                        <Input 
+                          type="date"
+                          className="border-none bg-slate-50 focus:ring-0 font-bold text-xs" 
+                          value={answers[`date_${item}`] || ''}
+                          onChange={(e) => handleInputChange(`date_${item}`, e.target.value)}
+                        />
+                      </td>
+                      <td className="p-4 text-center">
+                        <button 
+                          onClick={() => handleInputChange(`done_${item}`, !answers[`done_${item}`])}
+                          className={cn(
+                            "w-8 h-8 rounded-full border-2 mx-auto flex items-center justify-center transition-all",
+                            answers[`done_${item}`] ? "bg-emerald-600 border-emerald-600 text-white" : "border-slate-200 hover:border-emerald-400"
+                          )}
+                        >
+                          {answers[`done_${item}`] && <CheckCircle2 size={18} />}
+                        </button>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
+
           <div className="grid grid-cols-1 md:grid-cols-2 gap-12">
             <div className="space-y-6">
-              <h3 className="text-xl font-black text-slate-900 px-2">Commitments</h3>
-              <div className="space-y-3">
-                {[
-                  "Define and write down your core program offer",
-                  "Calculate your LCV and monthly sales target",
-                  "Identify your ICP and write a one-paragraph description",
-                  "List 3 warm leads you could have a discovery call with",
-                  "Draft your verbal offer script"
-                ].map(item => (
-                  <div 
-                    key={item} 
-                    className={cn(
-                      "flex items-center justify-between p-5 rounded-2xl border-2 transition-all cursor-pointer",
-                      answers[`done_${item}`] ? "bg-emerald-50 border-emerald-200" : "bg-white border-slate-100 hover:border-emerald-100"
-                    )}
-                    onClick={() => handleInputChange(`done_${item}`, !answers[`done_${item}`])}
-                  >
-                    <span className={cn("text-sm font-bold", answers[`done_${item}`] ? "text-emerald-700" : "text-slate-600")}>{item}</span>
-                    <div className={cn(
-                      "w-6 h-6 rounded-full border-2 flex items-center justify-center transition-all",
-                      answers[`done_${item}`] ? "bg-emerald-600 border-emerald-600" : "border-slate-200"
-                    )}>
-                      {answers[`done_${item}`] && <CheckCircle2 size={16} className="text-white" />}
-                    </div>
-                  </div>
-                ))}
-              </div>
+              <h3 className="text-xl font-black text-slate-900 px-2">My Own Commitment</h3>
+              <Textarea 
+                placeholder="What is your personal commitment to this shift?"
+                className="min-h-[150px] rounded-[2rem] border-2 border-slate-100 focus:border-emerald-600 p-8 text-lg italic"
+                value={answers.personal_commitment || ''}
+                onChange={(e) => handleInputChange('personal_commitment', e.target.value)}
+              />
             </div>
 
             <div className="space-y-6">
@@ -565,7 +726,7 @@ const BusinessModelWorksheet = () => {
                 <Label className="text-sm font-bold text-slate-500 uppercase tracking-widest">What is the biggest mindset shift this session has triggered for you?</Label>
                 <Textarea 
                   placeholder="What does it mean to be a business owner rather than a practitioner who owns a job?"
-                  className="min-h-[250px] rounded-[2rem] border-2 border-slate-100 focus:border-emerald-600 p-8 text-lg italic leading-relaxed"
+                  className="min-h-[150px] rounded-[2rem] border-2 border-slate-100 focus:border-emerald-600 p-8 text-lg italic leading-relaxed"
                   value={answers.mindset_shift || ''}
                   onChange={(e) => handleInputChange('mindset_shift', e.target.value)}
                 />

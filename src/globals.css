@@ -4,7 +4,6 @@
 
 @layer base {
   :root {
-    /* Resonance Premium Brand Identity - Refined for Clinical Precision */
     --background: 210 20% 98%; 
     --foreground: 222 47% 11%; 
 
@@ -39,7 +38,7 @@
     --input: 214.3 31.8% 91.4%;
     --ring: 222 47% 20%;
 
-    --radius: 1.25rem; /* Standardized radius */
+    --radius: 1.25rem;
   }
 
   .dark {
@@ -79,34 +78,19 @@
     font-family: 'Inter', sans-serif;
     font-weight: 400;
     letter-spacing: -0.01em;
-    -webkit-text-size-adjust: 100%;
   }
 
-  /* Restrict Serif to specific display contexts */
   .font-serif {
     font-family: 'Playfair Display', serif;
     letter-spacing: -0.02em;
   }
   
-  /* Default headings to Sans for better scanning */
   h1, h2, h3, h4, h5, h6 {
     @apply font-sans font-bold tracking-tight;
   }
 
-  /* Improve mobile touch targets */
   button, a, [role="button"] {
     @apply min-h-[44px] min-w-[44px] md:min-h-0 md:min-w-0;
-  }
-
-  /* Prevent text from becoming too small on mobile */
-  .text-\[8px\] {
-    @apply text-[10px] md:text-[8px];
-  }
-  .text-\[9px\] {
-    @apply text-[11px] md:text-[9px];
-  }
-  .text-\[10px\] {
-    @apply text-[12px] md:text-[10px];
   }
 }
 
@@ -117,17 +101,5 @@
 
   .glass-panel {
     @apply bg-white/70 backdrop-blur-md border border-white/20 dark:bg-slate-900/70 dark:border-slate-800/50;
-  }
-  
-  /* Custom Scrollbar */
-  ::-webkit-scrollbar {
-    width: 6px;
-    height: 6px;
-  }
-  ::-webkit-scrollbar-track {
-    @apply bg-transparent;
-  }
-  ::-webkit-scrollbar-thumb {
-    @apply bg-muted-foreground/20 rounded-full hover:bg-muted-foreground/30 transition-colors;
   }
 }

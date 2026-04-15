@@ -5,7 +5,6 @@ import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type, x-supabase-client-platform',
-  'Access-Control-Allow-Methods': 'POST, OPTIONS',
 }
 
 serve(async (req) => {
@@ -19,7 +18,6 @@ serve(async (req) => {
   try {
     const CALCOM_KEY = Deno.env.get('CALCOM_API_KEY');
     if (!CALCOM_KEY) {
-      console.error(`[${functionName}] Error: Missing CALCOM_API_KEY secret.`);
       throw new Error("Missing CALCOM_API_KEY secret.");
     }
 
@@ -39,16 +37,15 @@ serve(async (req) => {
       .single();
 
     if (clientError || !client?.email) {
-      console.error(`[${functionName}] Error: Client not found or missing email.`, clientError);
       throw new Error("Client not found or missing email.");
     }
 
     const cleanStartTime = new Date(startTime).toISOString();
     const isPaidBool = is_paid === true || is_paid === 'true';
 
-    // If bookingUid exists and is valid, we are UPDATING (Rescheduling)
+    // 1. Attempt UPDATE if ID exists
     if (bookingUid && bookingUid !== "undefined" && bookingUid !== "null") {
-      console.log(`[${functionName}] Action: UPDATE booking ${bookingUid}`);
+      console.log(`[${functionName}] Attempting UPDATE for booking ${bookingUid}`);
       
       const updatePayload = {
         start: cleanStartTime,
@@ -58,8 +55,6 @@ serve(async (req) => {
           is_paid: String(isPaidBool)
         }
       };
-
-      console.log(`[${functionName}] Sending PATCH to Cal.com:`, JSON.stringify(updatePayload, null, 2));
 
       const response = await fetch(`https://api.cal.com/v2/bookings/${bookingUid}`, {
         method: "PATCH",
@@ -72,22 +67,25 @@ serve(async (req) => {
       });
 
       const result = await response.json();
-      console.log(`[${functionName}] Cal.com PATCH Response Status: ${response.status}`);
-      console.log(`[${functionName}] Cal.com PATCH Response Body:`, JSON.stringify(result, null, 2));
-
-      if (!response.ok) {
-        const errorMsg = result.error?.message || result.message || "Cal.com Update Error";
-        console.error(`[${functionName}] Cal.com Error Detail:`, errorMsg);
-        throw new Error(errorMsg);
+      
+      if (response.ok) {
+        console.log(`[${functionName}] Update successful`);
+        return new Response(JSON.stringify({ success: true, data: result.data }), { 
+          status: 200, 
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
+        });
       }
 
-      return new Response(JSON.stringify({ success: true, data: result.data }), { 
-        status: 200, 
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
-      });
+      // If 404, the booking is gone from Cal.com, so we fall through to CREATE
+      if (response.status === 404) {
+        console.warn(`[${functionName}] Booking ${bookingUid} not found on Cal.com. Falling back to CREATE.`);
+      } else {
+        console.error(`[${functionName}] Cal.com PATCH Error:`, JSON.stringify(result));
+        throw new Error(result.error?.message || result.message || "Cal.com Update Error");
+      }
     } 
     
-    // Otherwise, we are CREATING
+    // 2. CREATE new booking (Fallback or New)
     console.log(`[${functionName}] Action: CREATE new booking`);
     const bookingPayload = {
       start: cleanStartTime,
@@ -109,8 +107,6 @@ serve(async (req) => {
       }
     };
 
-    console.log(`[${functionName}] Sending POST to Cal.com:`, JSON.stringify(bookingPayload, null, 2));
-
     const response = await fetch("https://api.cal.com/v2/bookings", {
       method: "POST",
       headers: {
@@ -122,14 +118,13 @@ serve(async (req) => {
     });
 
     const result = await response.json();
-    console.log(`[${functionName}] Cal.com POST Response Status: ${response.status}`);
-    console.log(`[${functionName}] Cal.com POST Response Body:`, JSON.stringify(result, null, 2));
 
     if (!response.ok) {
-      const errorMsg = result.error?.message || result.message || "Cal.com Create Error";
-      console.error(`[${functionName}] Cal.com Error Detail:`, errorMsg);
-      throw new Error(errorMsg);
+      console.error(`[${functionName}] Cal.com POST Error:`, JSON.stringify(result));
+      throw new Error(result.error?.message || result.message || "Cal.com Create Error");
     }
+
+    console.log(`[${functionName}] Create successful: ${result.data.uid}`);
 
     return new Response(JSON.stringify({ 
       success: true, 

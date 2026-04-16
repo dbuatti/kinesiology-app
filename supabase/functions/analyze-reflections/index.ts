@@ -33,9 +33,9 @@ serve(async (req) => {
     Analyze the following journal entry and extract specific items for the practitioner's "Identity Sandbox".
     
     CRITICAL LOGIC:
-    1. "identity" -> Maps to IDENTITY SHIFTING. These are labels for a CURRENT problematic state or a version of self the practitioner wants to LET GO of (e.g., "The Perfectionist", "The Martyr").
-    2. "goal" -> Maps to IDENTITY ALIGNMENT. These are DESIRED future states or target identities the practitioner wants to MOVE INTO to achieve a goal (e.g., "The Sovereign Creator", "The Vital Leader").
-    3. "belief" -> Maps to LIMITING BELIEFS. Core "I am..." statements representing a struggle or rule (e.g., "I am not good enough").
+    1. "identity" -> Maps to IDENTITY SHIFTING. These are labels for a CURRENT problematic state or a version of self the practitioner wants to LET GO of (e.g., "The Perfectionist", "The Martyr", "The Fixer").
+    2. "goal" -> Maps to IDENTITY ALIGNMENT. These are DESIRED future states or target identities the practitioner wants to MOVE INTO to achieve a goal (e.g., "The Sovereign Creator", "The Vital Leader", "The Confident Speaker"). Look for phrases like "I want to be", "I am becoming", or "My goal is".
+    3. "belief" -> Maps to LIMITING BELIEFS. Core "I am..." statements representing a struggle or rule (e.g., "I am not good enough", "I am a burden").
     
     Also extract:
     4. "felt_sense" -> Physical sensations or somatic markers mentioned.

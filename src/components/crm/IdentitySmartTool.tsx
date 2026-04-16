@@ -16,7 +16,8 @@ import {
   Target,
   ChevronRight,
   MessageSquare,
-  RefreshCw
+  RefreshCw,
+  ChevronDown
 } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -26,12 +27,21 @@ import { cn } from "@/lib/utils";
 import { supabase } from "@/integrations/supabase/client";
 import { showSuccess, showError } from "@/utils/toast";
 import { format, differenceInDays } from "date-fns";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+
+type IdentityType = 'identity' | 'goal' | 'belief' | 'auto';
 
 const IdentitySmartTool = () => {
   const [backlog, setBacklog] = useState<any[]>([]);
   const [recentSessions, setRecentSessions] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [newContent, setNewContent] = useState("");
+  const [selectedType, setSelectedType] = useState<IdentityType>('auto');
   const [isAdding, setIsAdding] = useState(false);
 
   const fetchData = async () => {
@@ -52,7 +62,7 @@ const IdentitySmartTool = () => {
         ...(shiftingRes.data || []).map(s => ({ ...s, type: 'shifting', label: s.identity })),
         ...(alignmentRes.data || []).map(s => ({ ...s, type: 'alignment', label: s.target_identity })),
         ...(beliefsRes.data || []).map(s => ({ ...s, type: 'belief', label: s.limiting_belief }))
-      ].sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
+      ].sort((a, b) => b.created_at.localeCompare(a.created_at));
 
       setRecentSessions(combined);
     } catch (err) {
@@ -75,19 +85,28 @@ const IdentitySmartTool = () => {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error("Not authenticated");
 
+      let finalType = selectedType;
+      if (finalType === 'auto') {
+        const content = newContent.toLowerCase();
+        if (content.includes('i am')) finalType = 'belief';
+        else if (content.includes('want to') || content.includes('become') || content.includes('goal')) finalType = 'goal';
+        else finalType = 'identity';
+      }
+
       const { error } = await supabase
         .from('identity_backlog')
         .insert({
           user_id: user.id,
           content: newContent.trim(),
-          type: newContent.toLowerCase().includes('i am') ? 'belief' : 'identity',
+          type: finalType,
           status: 'pending'
         });
 
       if (error) throw error;
       
-      showSuccess("Added to identity backlog.");
+      showSuccess(`Added to ${finalType === 'goal' ? 'Alignment' : finalType === 'belief' ? 'Beliefs' : 'Shifting'} backlog.`);
       setNewContent("");
+      setSelectedType('auto');
       fetchData();
     } catch (err: any) {
       showError(err.message);
@@ -154,8 +173,8 @@ const IdentitySmartTool = () => {
                       asChild
                       className="bg-white text-slate-900 hover:bg-indigo-50 h-10 px-6 rounded-xl font-black text-[10px] uppercase tracking-widest shadow-lg"
                     >
-                      <Link to="/sandbox/identity-shifting" state={{ prefill: smartSuggestion.label }}>
-                        Shift Again
+                      <Link to={smartSuggestion.type === 'alignment' ? "/sandbox/identity-alignment" : "/sandbox/identity-shifting"} state={{ prefill: smartSuggestion.label }}>
+                        {smartSuggestion.type === 'alignment' ? 'Align Again' : 'Shift Again'}
                       </Link>
                     </Button>
                     <Button 
@@ -163,9 +182,7 @@ const IdentitySmartTool = () => {
                       variant="outline"
                       className="bg-transparent border-white/20 text-white hover:bg-white/10 h-10 px-6 rounded-xl font-black text-[10px] uppercase tracking-widest"
                     >
-                      <Link to="/sandbox/identity-alignment" state={{ prefill: smartSuggestion.label }}>
-                        Align
-                      </Link>
+                      <Link to="/sandbox">View Map</Link>
                     </Button>
                   </div>
                 </>
@@ -234,10 +251,32 @@ const IdentitySmartTool = () => {
         <Card className="border-none shadow-lg rounded-[2.5rem] bg-card overflow-hidden flex flex-col h-full">
           <CardContent className="p-6 space-y-6 flex-1 flex flex-col">
             <form onSubmit={handleAddToBacklog} className="space-y-3">
-              <label className="text-[10px] font-black text-muted-foreground uppercase tracking-widest ml-1">Quick Add</label>
+              <div className="flex items-center justify-between px-1">
+                <label className="text-[10px] font-black text-muted-foreground uppercase tracking-widest">Quick Add</label>
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <button type="button" className="flex items-center gap-1.5 text-[9px] font-black uppercase tracking-widest text-indigo-600 hover:text-indigo-700 transition-colors">
+                      Type: {selectedType === 'auto' ? 'Auto-Detect' : selectedType === 'goal' ? 'Alignment' : selectedType === 'belief' ? 'Belief' : 'Shifting'}
+                      <ChevronDown size={10} />
+                    </button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end" className="w-40 rounded-xl p-1 shadow-2xl border-none bg-card">
+                    <DropdownMenuItem onClick={() => setSelectedType('auto')} className="rounded-lg text-[9px] font-bold uppercase py-2">Auto-Detect</DropdownMenuItem>
+                    <DropdownMenuItem onClick={() => setSelectedType('identity')} className="rounded-lg text-[9px] font-bold uppercase py-2 flex items-center gap-2">
+                      <Fingerprint size={12} className="text-indigo-500" /> Stuck Identity
+                    </DropdownMenuItem>
+                    <DropdownMenuItem onClick={() => setSelectedType('goal')} className="rounded-lg text-[9px] font-bold uppercase py-2 flex items-center gap-2">
+                      <Target size={12} className="text-emerald-500" /> Target Identity
+                    </DropdownMenuItem>
+                    <DropdownMenuItem onClick={() => setSelectedType('belief')} className="rounded-lg text-[9px] font-bold uppercase py-2 flex items-center gap-2">
+                      <ShieldAlert size={12} className="text-rose-500" /> Limiting Belief
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
+              </div>
               <div className="flex gap-2">
                 <Input 
-                  placeholder="e.g. The Perfectionist..." 
+                  placeholder={selectedType === 'goal' ? "e.g. The Sovereign Creator..." : "e.g. The Perfectionist..."} 
                   value={newContent}
                   onChange={e => setNewContent(e.target.value)}
                   className="h-11 rounded-xl bg-muted/50 border-none focus:ring-2 focus:ring-amber-500 font-medium"
@@ -260,9 +299,11 @@ const IdentitySmartTool = () => {
                       <div className="relative">
                         <div className={cn(
                           "w-7 h-7 rounded-lg flex items-center justify-center shrink-0",
-                          item.type === 'belief' ? "bg-rose-50 text-rose-600" : "bg-indigo-50 text-indigo-600"
+                          item.type === 'belief' ? "bg-rose-50 text-rose-600" : 
+                          item.type === 'goal' ? "bg-emerald-50 text-emerald-600" : "bg-indigo-50 text-indigo-600"
                         )}>
-                          {item.type === 'belief' ? <ShieldAlert size={14} /> : <Fingerprint size={14} />}
+                          {item.type === 'belief' ? <ShieldAlert size={14} /> : 
+                           item.type === 'goal' ? <Target size={14} /> : <Fingerprint size={14} />}
                         </div>
                         {item.priority_score > 0 && (
                           <div className="absolute -top-1.5 -right-1.5 w-4 h-4 rounded-full bg-indigo-600 text-white flex items-center justify-center text-[6px] font-black border border-background">
@@ -278,7 +319,7 @@ const IdentitySmartTool = () => {
                       className="h-7 w-7 rounded-lg text-muted-foreground hover:text-indigo-600 shrink-0"
                       asChild
                     >
-                      <Link to={item.type === 'identity' ? "/sandbox/identity-shifting" : "/sandbox/limiting-beliefs"} state={{ prefill: item.content, backlogId: item.id }}>
+                      <Link to={item.type === 'identity' ? "/sandbox/identity-shifting" : item.type === 'goal' ? "/sandbox/identity-alignment" : "/sandbox/limiting-beliefs"} state={{ prefill: item.content, backlogId: item.id }}>
                         <ChevronRight size={16} />
                       </Link>
                     </Button>

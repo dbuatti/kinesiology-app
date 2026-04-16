@@ -335,13 +335,14 @@ const CalcomSlotsView = () => {
       return;
     }
 
+    const prefix = "Next week (Kin/FNH apt) ";
     const suffix = " ✦ Link in bio";
-    let note = `Next week: ${availableEntries.join(', ')}${suffix}`;
+    let note = `${prefix}${availableEntries.join(', ')}${suffix}`;
     
     // If over 60 chars, try removing entries one by one until it fits
     while (note.length > 60 && availableEntries.length > 1) {
       availableEntries.pop();
-      note = `Next week: ${availableEntries.join(', ')}...${suffix}`;
+      note = `${prefix}${availableEntries.join(', ')}...${suffix}`;
     }
 
     // Final safety truncate
@@ -552,7 +553,7 @@ const CalcomSlotsView = () => {
               onClick={handleCopyInstaNote}
               className={cn(
                 "h-8 px-3 rounded-lg text-[10px] font-black uppercase tracking-widest transition-all",
-                copied === 'insta' ? "bg-rose-500 text-white hover:bg-rose-600" : "text-rose-600 hover:bg-rose-100 dark:hover:bg-rose-900/30"
+                copied === 'insta' ? "bg-rose-50 text-white hover:bg-rose-600" : "text-rose-600 hover:bg-rose-100 dark:hover:bg-rose-900/30"
               )}
             >
               {copied === 'insta' ? <Check size={12} className="mr-1.5" /> : <Instagram size={12} className="mr-1.5" />}

@@ -6,51 +6,6 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type, x-supabase-client-platform',
 }
 
-const FALLBACK_PROBLEM_SUGGESTIONS = [
-  "The Perfectionist",
-  "The Invisible One",
-  "The Fixer",
-  "The Martyr",
-  "The Imposter",
-  "The Caretaker"
-];
-
-const FALLBACK_TARGET_SUGGESTIONS = [
-  "The Grounded Healer",
-  "The Sovereign Creator",
-  "The Intuitive Guide",
-  "The Vital Leader",
-  "The Present Observer",
-  "The Empowered Self"
-];
-
-const FALLBACK_LIMITING_BELIEFS = [
-  "I am not good enough",
-  "I am a failure",
-  "I am unlovable",
-  "I am a burden",
-  "I am powerless",
-  "I am invisible"
-];
-
-const FALLBACK_POSITIVE_BELIEFS = [
-  "I am capable and worthy",
-  "I am enough exactly as I am",
-  "I am safe and supported",
-  "I am powerful and creative",
-  "I am seen and valued",
-  "I am resilient and strong"
-];
-
-const FALLBACK_SENSE_SUGGESTIONS = [
-  "Tightness in the chest",
-  "Knot in the stomach",
-  "Lump in the throat",
-  "Pressure behind the eyes",
-  "Heaviness in the shoulders",
-  "Coldness in the hands"
-];
-
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
     return new Response('ok', { headers: corsHeaders })
@@ -58,73 +13,50 @@ serve(async (req) => {
 
   try {
     const body = await req.json();
-    const { problem, emotion, feltSense, goal, type = 'problem' } = body;
+    const { problem, feltSense, goal, type = 'identity' } = body;
 
     const geminiKey = Deno.env.get('GEMINI_API_KEY')
-    if (!geminiKey) {
-      throw new Error('Missing API Key');
-    }
+    if (!geminiKey) throw new Error('Missing API Key');
 
     let prompt = "";
-    let fallback = FALLBACK_PROBLEM_SUGGESTIONS;
-
-    if (type === 'target') {
-      prompt = `Suggest 3-4 "Target Identities" for the goal: ${goal || problem}. 
-      The identities should be archetypal and empowering (e.g., "The Sovereign Creator", "The Grounded Leader"). 
+    
+    if (type === 'target' || type === 'goal') {
+      prompt = `Suggest 4 "Target Identities" for the goal: "${goal || problem}". 
+      These should be empowering, archetypal labels for the IDENTITY ALIGNMENT tool (e.g., "The Sovereign Creator", "The Grounded Leader"). 
       Return ONLY a JSON array of strings.`;
-      fallback = FALLBACK_TARGET_SUGGESTIONS;
-    } else if (type === 'limiting_belief') {
-      prompt = `Analyze the following problem and physical sensation to extract the underlying "Limiting Identity" or "Limiting Belief". The belief should start with "I am..." and represent the version of self that is struggling.
-      Problem: "${problem}"
-      Physical Sensation (Felt Sense): "${feltSense}"
-      Return ONLY a JSON array of 3-4 strings.`;
-      fallback = FALLBACK_LIMITING_BELIEFS;
-    } else if (type === 'positive_belief') {
-      prompt = `Suggest 3-4 "Positive Beliefs" (starting with "I am...") that would represent a shifted, empowered identity in response to this problem: "${problem}". Return ONLY a JSON array of strings.`;
-      fallback = FALLBACK_POSITIVE_BELIEFS;
-    } else if (type === 'felt_sense') {
-      prompt = `Suggest 3-4 common physical sensations (felt senses) that someone might experience when facing this problem: "${problem}". Return ONLY a JSON array of strings.`;
-      fallback = FALLBACK_SENSE_SUGGESTIONS;
+    } else if (type === 'limiting_belief' || type === 'belief') {
+      prompt = `Suggest 4 "Limiting Beliefs" based on this problem: "${problem}" and sensation: "${feltSense}". 
+      The beliefs MUST start with "I am..." and represent the core story holding the pattern in place (e.g., "I am a burden", "I am not safe to be seen"). 
+      Return ONLY a JSON array of strings.`;
     } else {
-      prompt = `Suggest 3-4 "Problem Identities" for: Problem: ${problem}, Emotion: ${emotion}, Sense: ${feltSense}. 
-      Use archetypal labels like "The Fixer" or "The Invisible One". 
+      prompt = `Suggest 4 "Problem Identities" for: "${problem}". 
+      Use archetypal, descriptive labels for the IDENTITY SHIFTING tool (e.g., "The Perfectionist", "The Invisible One", "The Fixer"). 
       Return ONLY a JSON array of strings.`;
-      fallback = FALLBACK_PROBLEM_SUGGESTIONS;
     }
-
-    console.log(`[generate-identity] Calling Gemini 2.5 Flash API...`);
 
     const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${geminiKey}`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         contents: [{ parts: [{ text: prompt }] }],
-        generationConfig: { temperature: 0.7 }
+        generationConfig: { 
+          temperature: 0.7,
+          response_mime_type: "application/json"
+        }
       }),
     })
 
     const data = await response.json()
-    
-    if (!response.ok) {
-      return new Response(JSON.stringify({ suggestions: fallback, isFallback: true }), {
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-      });
-    }
+    if (!response.ok) throw new Error('AI Error');
 
-    const content = data.candidates[0].content.parts[0].text.trim()
-    let suggestions = []
-    try {
-      const jsonMatch = content.match(/\[.*\]/s);
-      suggestions = JSON.parse(jsonMatch ? jsonMatch[0] : content);
-    } catch (e) {
-      suggestions = fallback;
-    }
+    const content = data.candidates[0].content.parts[0].text.trim();
+    const suggestions = JSON.parse(content);
 
-    return new Response(JSON.stringify({ suggestions, isFallback: false }), {
+    return new Response(JSON.stringify({ suggestions }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     })
   } catch (error) {
-    return new Response(JSON.stringify({ suggestions: FALLBACK_PROBLEM_SUGGESTIONS, error: error.message }), {
+    return new Response(JSON.stringify({ suggestions: ["The Perfectionist", "The Fixer", "The Observer"], error: error.message }), {
       status: 200,
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     })

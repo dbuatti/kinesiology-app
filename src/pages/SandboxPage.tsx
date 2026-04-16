@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { Link } from 'react-router-dom';
 import { 
   Fingerprint, 
@@ -21,7 +21,9 @@ import {
   Layers,
   Wand2,
   TrendingUp,
-  Info
+  Info,
+  ArrowDownWideNarrow,
+  Calendar
 } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -38,7 +40,12 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
-import JournalRefresher from "@/components/crm/JournalRefresher";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 
 const TOOLS = [
   {
@@ -73,19 +80,20 @@ const TOOLS = [
   }
 ];
 
+type SortOption = 'priority' | 'newest' | 'oldest' | 'type';
+
 const SandboxPage = () => {
   const [backlog, setBacklog] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [isPrioritizing, setIsPrioritizing] = useState(false);
+  const [sortBy, setSortBy] = useState<SortOption>('priority');
 
   const fetchBacklog = async () => {
     try {
       const { data, error } = await supabase
         .from('identity_backlog')
         .select('*')
-        .eq('status', 'pending')
-        .order('priority_score', { ascending: false })
-        .order('created_at', { ascending: false });
+        .eq('status', 'pending');
 
       if (error) throw error;
       setBacklog(data || []);
@@ -100,6 +108,24 @@ const SandboxPage = () => {
     fetchBacklog();
   }, []);
 
+  const sortedBacklog = useMemo(() => {
+    return [...backlog].sort((a, b) => {
+      if (sortBy === 'priority') {
+        return (b.priority_score || 0) - (a.priority_score || 0);
+      }
+      if (sortBy === 'newest') {
+        return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
+      }
+      if (sortBy === 'oldest') {
+        return new Date(a.created_at).getTime() - new Date(b.created_at).getTime();
+      }
+      if (sortBy === 'type') {
+        return a.type.localeCompare(b.type);
+      }
+      return 0;
+    });
+  }, [backlog, sortBy]);
+
   const handlePrioritize = async () => {
     setIsPrioritizing(true);
     try {
@@ -107,6 +133,7 @@ const SandboxPage = () => {
       if (error) throw error;
       showSuccess("AI has re-prioritized your backlog based on your journal history.");
       fetchBacklog();
+      setSortBy('priority');
     } catch (err: any) {
       showError(err.message || "Failed to prioritize backlog.");
     } finally {
@@ -229,18 +256,39 @@ const SandboxPage = () => {
 
         {/* Backlog Section */}
         <div className="space-y-6">
-          <div className="flex items-center justify-between px-2">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 px-2">
             <div className="flex items-center gap-3">
               <div className="w-10 h-10 rounded-xl bg-amber-500 text-white flex items-center justify-center shadow-lg">
                 <History size={20} />
               </div>
               <h2 className="text-2xl font-black text-foreground tracking-tight">Identity Backlog</h2>
             </div>
-            <div className="flex items-center gap-4">
-              <div className="flex items-center gap-2 text-[10px] font-black text-slate-400 uppercase tracking-widest">
-                <TrendingUp size={14} className="text-indigo-500" /> Sorted by AI Priority
-              </div>
-              <Badge variant="outline" className="font-bold border-border">
+            
+            <div className="flex items-center gap-3">
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="outline" size="sm" className="rounded-xl h-10 px-4 border-border font-bold text-[10px] uppercase tracking-widest">
+                    <ArrowDownWideNarrow size={14} className="mr-2" />
+                    Sort: {sortBy.charAt(0).toUpperCase() + sortBy.slice(1)}
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end" className="w-48 rounded-2xl p-2 shadow-2xl border-none bg-card">
+                  <DropdownMenuItem onClick={() => setSortBy('priority')} className="rounded-xl py-2.5 px-4 cursor-pointer flex items-center gap-3">
+                    <TrendingUp size={14} className="text-indigo-500" /> AI Priority
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => setSortBy('newest')} className="rounded-xl py-2.5 px-4 cursor-pointer flex items-center gap-3">
+                    <Calendar size={14} className="text-emerald-500" /> Newest First
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => setSortBy('oldest')} className="rounded-xl py-2.5 px-4 cursor-pointer flex items-center gap-3">
+                    <Clock size={14} className="text-slate-500" /> Oldest First
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => setSortBy('type')} className="rounded-xl py-2.5 px-4 cursor-pointer flex items-center gap-3">
+                    <Layers size={14} className="text-purple-500" /> By Tool Type
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+              
+              <Badge variant="outline" className="font-bold border-border h-10 px-4 rounded-xl">
                 {backlog.length} Pending Items
               </Badge>
             </div>
@@ -250,9 +298,9 @@ const SandboxPage = () => {
             <div className="flex justify-center py-12">
               <Loader2 className="animate-spin text-indigo-600" size={32} />
             </div>
-          ) : backlog.length > 0 ? (
+          ) : sortedBacklog.length > 0 ? (
             <div className="space-y-2">
-              {backlog.map((item) => {
+              {sortedBacklog.map((item) => {
                 const rec = getRecommendation(item);
                 const hasPriority = item.priority_score > 0;
 
@@ -311,10 +359,6 @@ const SandboxPage = () => {
                     </div>
 
                     <div className="flex items-center gap-4 shrink-0">
-                      {item.reflection_id && (
-                        <JournalRefresher reflectionId={item.reflection_id} />
-                      )}
-
                       <div className={cn(
                         "hidden sm:flex items-center gap-2 px-3 py-1.5 rounded-xl border border-transparent",
                         rec.bg
@@ -338,7 +382,7 @@ const SandboxPage = () => {
                           className="h-9 px-6 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-black text-[10px] uppercase tracking-widest shadow-lg shadow-indigo-100"
                           asChild
                         >
-                          <Link to={rec.path} state={{ prefill: item.content, backlogId: item.id, reflectionId: item.reflection_id }}>
+                          <Link to={rec.path} state={{ prefill: item.content, backlogId: item.id }}>
                             Process <ChevronRight size={14} className="ml-1" />
                           </Link>
                         </Button>

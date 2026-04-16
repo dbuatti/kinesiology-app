@@ -219,7 +219,7 @@ const JournalPage = () => {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error("Not authenticated");
 
-      const dbType = item.type === 'belief' ? 'belief' : 'identity';
+      const dbType = item.type === 'belief' ? 'belief' : (item.type === 'goal' ? 'goal' : 'identity');
 
       const { error } = await supabase
         .from('identity_backlog')
@@ -227,8 +227,7 @@ const JournalPage = () => {
           user_id: user.id,
           content: item.content,
           type: dbType, 
-          status: 'pending',
-          reflection_id: reflectionId // Link to source reflection
+          status: 'pending'
         });
 
       if (error) throw error;
@@ -271,9 +270,8 @@ const JournalPage = () => {
       const inserts = itemsToAdd.map((item: any) => ({
         user_id: user.id,
         content: item.content,
-        type: item.type === 'belief' ? 'belief' : 'identity',
-        status: 'pending',
-        reflection_id: reflectionId // Link to source reflection
+        type: item.type === 'belief' ? 'belief' : (item.type === 'goal' ? 'goal' : 'identity'),
+        status: 'pending'
       }));
 
       const { error } = await supabase.from('identity_backlog').insert(inserts);
@@ -338,10 +336,10 @@ const JournalPage = () => {
 
   const getToolRecommendation = (type: string) => {
     switch (type) {
-      case 'belief': return { label: 'Limiting Beliefs', icon: ShieldAlert, color: 'text-rose-600' };
-      case 'identity': return { label: 'Identity Shifting', icon: Fingerprint, color: 'text-indigo-600' };
-      case 'goal': return { label: 'Identity Alignment', icon: Target, color: 'text-emerald-600' };
-      case 'felt_sense': return { label: 'Somatic Tracking', icon: Wind, color: 'text-blue-600' };
+      case 'belief': return { label: 'Limiting Beliefs', icon: ShieldAlert, color: 'text-rose-600', bg: 'bg-rose-50' };
+      case 'identity': return { label: 'Identity Shifting', icon: Fingerprint, color: 'text-indigo-600', bg: 'bg-indigo-50' };
+      case 'goal': return { label: 'Identity Alignment', icon: Target, color: 'text-emerald-600', bg: 'bg-emerald-50' };
+      case 'felt_sense': return { label: 'Somatic Tracking', icon: Wind, color: 'text-blue-600', bg: 'bg-blue-50' };
       default: return null;
     }
   };
@@ -407,7 +405,7 @@ const JournalPage = () => {
                     >
                       <SelectTrigger className="h-10 rounded-xl border-slate-200 bg-slate-50 font-bold text-[10px] uppercase tracking-widest">
                         <div className="flex items-center gap-2">
-                          <LinkIcon size={14} className="text-indigo-500" />
+                          <LinkIcon size={14} className="text-indigo-50" />
                           <SelectValue placeholder="Link to Session" />
                         </div>
                       </SelectTrigger>
@@ -527,31 +525,33 @@ const JournalPage = () => {
                               const isAddingThis = addingToBacklog === `${ref.id}-${i}`;
 
                               return (
-                                <div key={i} className="flex items-center justify-between p-3 bg-slate-50 rounded-xl border border-slate-100 group/item">
-                                  <div className="flex items-center gap-3 min-w-0">
+                                <div key={i} className="flex items-center justify-between p-4 bg-slate-50 rounded-2xl border border-slate-100 group/item hover:border-indigo-200 transition-all">
+                                  <div className="flex items-center gap-4 min-w-0">
                                     <div className={cn(
-                                      "w-7 h-7 rounded-lg flex items-center justify-center shrink-0",
+                                      "w-10 h-10 rounded-xl flex items-center justify-center shrink-0 shadow-sm",
                                       item.type === 'question' ? "bg-indigo-50 text-indigo-700" :
                                       item.type === 'belief' ? "bg-rose-50 text-rose-700" : 
                                       item.type === 'goal' ? "bg-emerald-50 text-emerald-600" : 
                                       item.type === 'felt_sense' ? "bg-blue-50 text-blue-600" : "bg-slate-100 text-slate-600"
                                     )}>
-                                      {item.type === 'question' ? <HelpCircle size={14} /> : 
-                                       item.type === 'belief' ? <ShieldAlert size={14} /> : 
-                                       item.type === 'goal' ? <Target size={14} /> : 
-                                       item.type === 'felt_sense' ? <Wind size={14} /> : <Fingerprint size={14} />}
+                                      {item.type === 'question' ? <HelpCircle size={18} /> : 
+                                       item.type === 'belief' ? <ShieldAlert size={18} /> : 
+                                       item.type === 'goal' ? <Target size={18} /> : 
+                                       item.type === 'felt_sense' ? <Wind size={18} /> : <Fingerprint size={18} />}
                                     </div>
                                     <div className="min-w-0">
                                       <p className={cn(
-                                        "text-xs font-bold truncate",
-                                        item.status === 'added' ? "text-slate-400 line-through" : "text-slate-700"
+                                        "text-sm font-bold truncate",
+                                        item.status === 'added' ? "text-slate-400 line-through" : "text-slate-900"
                                       )}>
                                         {item.content}
                                       </p>
                                       {tool && item.status !== 'added' && (
-                                        <p className={cn("text-[7px] font-black uppercase tracking-widest mt-0.5", tool.color)}>
-                                          For {tool.label}
-                                        </p>
+                                        <div className="flex items-center gap-1.5 mt-1">
+                                          <span className={cn("text-[8px] font-black uppercase tracking-widest px-2 py-0.5 rounded-md", tool.bg, tool.color)}>
+                                            For {tool.label}
+                                          </span>
+                                        </div>
                                       )}
                                     </div>
                                   </div>
@@ -561,14 +561,16 @@ const JournalPage = () => {
                                       size="sm" 
                                       onClick={() => handleAddToBacklog(ref.id, item, i)}
                                       disabled={isAddingThis}
-                                      className="h-7 px-2 rounded-lg text-indigo-600 hover:bg-indigo-100 font-black text-[8px] uppercase tracking-widest"
+                                      className="h-9 px-3 rounded-xl text-indigo-600 hover:bg-indigo-100 font-black text-[9px] uppercase tracking-widest"
                                     >
-                                      {isAddingThis ? <Loader2 size={10} className="animate-spin mr-1" /> : <PlusCircle size={10} className="mr-1" />}
+                                      {isAddingThis ? <Loader2 size={12} className="animate-spin mr-1.5" /> : <PlusCircle size={14} className="mr-1.5" />}
                                       Add
                                     </Button>
                                   )}
                                   {item.status === 'added' && (
-                                    <Badge className="bg-emerald-500 text-white border-none font-black text-[7px] uppercase tracking-widest">Added</Badge>
+                                    <Badge className="bg-emerald-500 text-white border-none font-black text-[8px] uppercase tracking-widest px-3 py-1 rounded-full">
+                                      <CheckCircle2 size={10} className="mr-1" /> Added
+                                    </Badge>
                                   )}
                                 </div>
                               );

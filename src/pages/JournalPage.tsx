@@ -218,12 +218,15 @@ const JournalPage = () => {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error("Not authenticated");
 
+      // Map AI types to valid database types (identity or belief)
+      const dbType = item.type === 'belief' ? 'belief' : 'identity';
+
       const { error } = await supabase
         .from('identity_backlog')
         .insert({
           user_id: user.id,
           content: item.content,
-          type: item.type === 'felt_sense' ? 'identity' : item.type, 
+          type: dbType, 
           status: 'pending'
         });
 
@@ -381,7 +384,7 @@ const JournalPage = () => {
 
                 <div className="flex justify-end">
                   <Button 
-                    onClick={handleSave}
+                    onClick={handleSave} 
                     disabled={saving || !content.trim()}
                     className="bg-indigo-600 hover:bg-indigo-700 text-white rounded-2xl h-14 px-10 font-black text-xs uppercase tracking-widest shadow-xl shadow-indigo-100"
                   >

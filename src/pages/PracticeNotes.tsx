@@ -63,8 +63,8 @@ const PracticeNotes = () => {
     </section>
   );
 
-  const Item = ({ id, label, subtext, bold = false }: { id: string; label: string; subtext?: string; bold?: boolean }) => (
-    <div className="flex items-start gap-3 group">
+  const Item = ({ id, label, subtext, bold = false, indent = false }: { id: string; label: string; subtext?: string; bold?: boolean; indent?: boolean }) => (
+    <div className={cn("flex items-start gap-3 group", indent && "ml-8")}>
       <Checkbox 
         id={id} 
         checked={!!checkedItems[id]} 
@@ -167,17 +167,43 @@ const PracticeNotes = () => {
 
         {/* 3. Preliminary & SNS Resets */}
         <Section title="III. Preliminary & SNS Resets">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-6">
-            <div className="space-y-3">
-              <h3 className="text-xs font-black text-slate-400 uppercase tracking-widest mb-2">Preliminary Vitals</h3>
-              <Item id="v-bolt" label="BOLT Score" subtext="Measure CO2 tolerance. Target: 25s+ (Functional), 40s+ (Optimal)." />
-              <Item id="v-coherence" label="Heart Coherence" subtext="Autonomic sync. HR/BR ratio. Check for coherence vs discordance." />
+          <div className="space-y-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-6">
+              <div className="space-y-3">
+                <h3 className="text-xs font-black text-slate-400 uppercase tracking-widest mb-2">Preliminary Vitals</h3>
+                <Item id="v-bolt" label="BOLT Score" subtext="Measure CO2 tolerance. Target: 25s+ (Functional), 40s+ (Optimal)." />
+                <Item id="v-coherence" label="Heart Coherence" subtext="Autonomic sync. HR/BR ratio. Check for coherence vs discordance." />
+              </div>
             </div>
-            <div className="space-y-3">
-              <h3 className="text-xs font-black text-slate-400 uppercase tracking-widest mb-2">SNS Down-Regulation</h3>
-              <Item id="sns-t1" label="T1 Sympathetic Reset" subtext="External rotation of ipsilateral shoulder (45-90s) until tenderness dissolves." />
-              <Item id="sns-diaphragm" label="Diaphragm Reset" subtext="Move ribcage superiorly towards neck (45-90s). Release slowly." />
-              <Item id="sns-vagus" label="Vagus Nerve Procedure" subtext="Stimulation (Auricular/Cervical) or Screen & Reset (Organ/Gland reflex)." />
+
+            <div className="space-y-4">
+              <h3 className="text-xs font-black text-slate-400 uppercase tracking-widest mb-2">SNS Down-Regulation Procedures</h3>
+              
+              <div className="space-y-2">
+                <Item id="sns-t1-main" label="T1 Sympathetic Reset" bold />
+                <Item id="sns-t1-s1" label="1. Palpate bilateral anterior first rib (T1) to find restricted/tender side." indent />
+                <Item id="sns-t1-s2" label="2. Test contralateral Psoas muscle (should be inhibited)." indent />
+                <Item id="sns-t1-s3" label="3. Monitor tender spot; move ipsilateral shoulder into external rotation." indent />
+                <Item id="sns-t1-s4" label="4. Hold for 45-90s until tenderness dissolves." indent />
+                <Item id="sns-t1-s5" label="5. Re-assess tenderness and Psoas." indent />
+              </div>
+
+              <div className="space-y-2">
+                <Item id="sns-diaphragm-main" label="Diaphragm Reset" bold />
+                <Item id="sns-diaphragm-s1" label="1. Challenge tender points either side of sternum (Phrenic nerve)." indent />
+                <Item id="sns-diaphragm-s2" label="2. Palpate neck at C4 level (usually opposite to sternum tender point)." indent />
+                <Item id="sns-diaphragm-s3" label="3. Move ribcage superiorly towards neck." indent />
+                <Item id="sns-diaphragm-s4" label="4. Hold for 45-90s. Release very slowly." indent />
+              </div>
+
+              <div className="space-y-2">
+                <Item id="sns-vagus-main" label="Vagus Nerve Procedure" bold />
+                <Item id="sns-vagus-stim" label="Stimulation: Target branch (Auricular/Cervical/Abdominal) for 60s." indent />
+                <Item id="sns-vagus-sr1" label="Screen & Reset: Challenge Vagal reflex point (Occiput/Auricular) + IM." indent />
+                <Item id="sns-vagus-sr2" label="Identify dysfunctional function (Humming, Swallowing, etc.)." indent />
+                <Item id="sns-vagus-sr3" label="Challenge Organ/Gland reflex + Polarity." indent />
+                <Item id="sns-vagus-sr4" label="Correction: Hold Vagal Reflex + Stim Function + Hold Organ/Gland Reflex + Medulla Breathing (15-30s)." indent />
+              </div>
             </div>
           </div>
         </Section>

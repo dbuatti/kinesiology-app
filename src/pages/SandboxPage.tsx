@@ -23,11 +23,14 @@ import {
   TrendingUp,
   Info,
   ArrowDownWideNarrow,
-  Calendar
+  Calendar,
+  LayoutGrid
 } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { Input } from "@/components/ui/input";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import AppLayout from "@/components/crm/AppLayout";
 import Breadcrumbs from "@/components/shared/Breadcrumbs";
 import { cn } from "@/lib/utils";
@@ -46,6 +49,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import IdentityHistoryList from "@/components/crm/IdentityHistoryList";
 
 const TOOLS = [
   {
@@ -88,6 +92,7 @@ const SandboxPage = () => {
   const [isPrioritizing, setIsPrioritizing] = useState(false);
   const [isClearing, setIsClearing] = useState(false);
   const [sortBy, setSortBy] = useState<SortOption>('priority');
+  const [activeTab, setActiveTab] = useState("backlog");
 
   const fetchBacklog = async () => {
     try {
@@ -292,153 +297,173 @@ const SandboxPage = () => {
           ))}
         </div>
 
-        {/* Backlog Section */}
-        <div className="space-y-6">
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 px-2">
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-xl bg-amber-500 text-white flex items-center justify-center shadow-lg">
-                <History size={20} />
-              </div>
-              <h2 className="text-2xl font-black text-foreground tracking-tight">Identity Backlog</h2>
-            </div>
-            
-            <div className="flex items-center gap-3">
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <Button variant="outline" size="sm" className="rounded-xl h-10 px-4 border-border font-bold text-[10px] uppercase tracking-widest">
-                    <ArrowDownWideNarrow size={14} className="mr-2" />
-                    Sort: {sortBy.charAt(0).toUpperCase() + sortBy.slice(1)}
-                  </Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent align="end" className="w-48 rounded-2xl p-2 shadow-2xl border-none bg-card">
-                  <DropdownMenuItem onClick={() => setSortBy('priority')} className="rounded-xl py-2.5 px-4 cursor-pointer flex items-center gap-3">
-                    <TrendingUp size={14} className="text-indigo-500" /> AI Priority
-                  </DropdownMenuItem>
-                  <DropdownMenuItem onClick={() => setSortBy('newest')} className="rounded-xl py-2.5 px-4 cursor-pointer flex items-center gap-3">
-                    <Calendar size={14} className="text-emerald-500" /> Newest First
-                  </DropdownMenuItem>
-                  <DropdownMenuItem onClick={() => setSortBy('oldest')} className="rounded-xl py-2.5 px-4 cursor-pointer flex items-center gap-3">
-                    <Clock size={14} className="text-slate-500" /> Oldest First
-                  </DropdownMenuItem>
-                  <DropdownMenuItem onClick={() => setSortBy('type')} className="rounded-xl py-2.5 px-4 cursor-pointer flex items-center gap-3">
-                    <Layers size={14} className="text-purple-500" /> By Tool Type
-                  </DropdownMenuItem>
-                </DropdownMenuContent>
-              </DropdownMenu>
-              
-              <Badge variant="outline" className="font-bold border-border h-10 px-4 rounded-xl">
-                {backlog.length} Pending Items
-              </Badge>
-            </div>
-          </div>
+        {/* Backlog & History Section */}
+        <div className="space-y-8">
+          <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-6 mb-8 px-2">
+              <TabsList className="bg-slate-200/50 p-1 rounded-2xl h-12 border border-slate-200">
+                <TabsTrigger 
+                  value="backlog" 
+                  className="rounded-xl px-8 h-10 data-[state=active]:bg-white data-[state=active]:text-indigo-600 data-[state=active]:shadow-sm transition-all font-bold text-xs uppercase tracking-widest"
+                >
+                  <Zap className="mr-2" size={16} />
+                  Backlog
+                </TabsTrigger>
+                <TabsTrigger 
+                  value="history" 
+                  className="rounded-xl px-8 h-10 data-[state=active]:bg-white data-[state=active]:text-indigo-600 data-[state=active]:shadow-sm transition-all font-bold text-xs uppercase tracking-widest"
+                >
+                  <History className="mr-2" size={16} />
+                  History
+                </TabsTrigger>
+              </TabsList>
 
-          {loading ? (
-            <div className="flex justify-center py-12">
-              <Loader2 className="animate-spin text-indigo-600" size={32} />
+              {activeTab === 'backlog' && (
+                <div className="flex items-center gap-3">
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <Button variant="outline" size="sm" className="rounded-xl h-10 px-4 border-border font-bold text-[10px] uppercase tracking-widest">
+                        <ArrowDownWideNarrow size={14} className="mr-2" />
+                        Sort: {sortBy.charAt(0).toUpperCase() + sortBy.slice(1)}
+                      </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end" className="w-48 rounded-2xl p-2 shadow-2xl border-none bg-card">
+                      <DropdownMenuItem onClick={() => setSortBy('priority')} className="rounded-xl py-2.5 px-4 cursor-pointer flex items-center gap-3">
+                        <TrendingUp size={14} className="text-indigo-500" /> AI Priority
+                      </DropdownMenuItem>
+                      <DropdownMenuItem onClick={() => setSortBy('newest')} className="rounded-xl py-2.5 px-4 cursor-pointer flex items-center gap-3">
+                        <Calendar size={14} className="text-emerald-500" /> Newest First
+                      </DropdownMenuItem>
+                      <DropdownMenuItem onClick={() => setSortBy('oldest')} className="rounded-xl py-2.5 px-4 cursor-pointer flex items-center gap-3">
+                        <Clock size={14} className="text-slate-500" /> Oldest First
+                      </DropdownMenuItem>
+                      <DropdownMenuItem onClick={() => setSortBy('type')} className="rounded-xl py-2.5 px-4 cursor-pointer flex items-center gap-3">
+                        <Layers size={14} className="text-purple-500" /> By Tool Type
+                      </DropdownMenuItem>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
+                  
+                  <Badge variant="outline" className="font-bold border-border h-10 px-4 rounded-xl">
+                    {backlog.length} Pending Items
+                  </Badge>
+                </div>
+              )}
             </div>
-          ) : sortedBacklog.length > 0 ? (
-            <div className="space-y-2">
-              {sortedBacklog.map((item) => {
-                const rec = getRecommendation(item);
-                const hasPriority = item.priority_score > 0;
 
-                return (
-                  <div 
-                    key={item.id} 
-                    className={cn(
-                      "flex flex-col md:flex-row md:items-center justify-between p-4 bg-card rounded-2xl border transition-all gap-4 group",
-                      hasPriority ? "border-indigo-200 shadow-sm" : "border-border"
-                    )}
-                  >
-                    <div className="flex items-center gap-4 flex-1 min-w-0">
-                      <div className="relative">
-                        <div className={cn(
-                          "w-10 h-10 rounded-xl flex items-center justify-center shrink-0 shadow-sm",
-                          item.type === 'belief' ? "bg-rose-50 text-rose-600" : 
-                          item.type === 'goal' ? "bg-emerald-50 text-emerald-600" : "bg-indigo-50 text-indigo-600"
-                        )}>
-                          {item.type === 'belief' ? <ShieldAlert size={20} /> : 
-                           item.type === 'goal' ? <Target size={20} /> : <Fingerprint size={20} />}
-                        </div>
-                        {hasPriority && (
-                          <div className="absolute -top-2 -right-2 w-6 h-6 rounded-full bg-indigo-600 text-white flex items-center justify-center text-[8px] font-black border-2 border-background shadow-lg">
-                            {item.priority_score}
-                          </div>
+            <TabsContent value="backlog" className="mt-0 focus-visible:ring-0">
+              {loading ? (
+                <div className="flex justify-center py-12">
+                  <Loader2 className="animate-spin text-indigo-600" size={32} />
+                </div>
+              ) : sortedBacklog.length > 0 ? (
+                <div className="space-y-2">
+                  {sortedBacklog.map((item) => {
+                    const rec = getRecommendation(item);
+                    const hasPriority = item.priority_score > 0;
+
+                    return (
+                      <div 
+                        key={item.id} 
+                        className={cn(
+                          "flex flex-col md:flex-row md:items-center justify-between p-4 bg-card rounded-2xl border transition-all gap-4 group",
+                          hasPriority ? "border-indigo-200 shadow-sm" : "border-border"
                         )}
-                      </div>
-                      <div className="min-w-0 flex-1">
-                        <div className="flex items-center gap-3">
-                          <p className="font-bold text-base text-foreground truncate">"{item.content}"</p>
-                          {item.priority_reasoning && (
-                            <TooltipProvider>
-                              <Tooltip>
-                                <TooltipTrigger asChild>
-                                  <button className="text-indigo-400 hover:text-indigo-600 transition-colors">
-                                    <Lightbulb size={14} />
-                                  </button>
-                                </TooltipTrigger>
-                                <TooltipContent className="max-w-xs p-4 rounded-xl bg-slate-900 text-white border-none shadow-2xl">
-                                  <p className="text-[10px] font-black uppercase tracking-widest text-indigo-400 mb-1">AI Reasoning</p>
-                                  <p className="text-xs font-medium leading-relaxed">{item.priority_reasoning}</p>
-                                </TooltipContent>
-                              </Tooltip>
-                            </TooltipProvider>
-                          )}
+                      >
+                        <div className="flex items-center gap-4 flex-1 min-w-0">
+                          <div className="relative">
+                            <div className={cn(
+                              "w-10 h-10 rounded-xl flex items-center justify-center shrink-0 shadow-sm",
+                              item.type === 'belief' ? "bg-rose-50 text-rose-600" : 
+                              item.type === 'goal' ? "bg-emerald-50 text-emerald-600" : "bg-indigo-50 text-indigo-600"
+                            )}>
+                              {item.type === 'belief' ? <ShieldAlert size={20} /> : 
+                               item.type === 'goal' ? <Target size={20} /> : <Fingerprint size={20} />}
+                            </div>
+                            {hasPriority && (
+                              <div className="absolute -top-2 -right-2 w-6 h-6 rounded-full bg-indigo-600 text-white flex items-center justify-center text-[8px] font-black border-2 border-background shadow-lg">
+                                {item.priority_score}
+                              </div>
+                            )}
+                          </div>
+                          <div className="min-w-0 flex-1">
+                            <div className="flex items-center gap-3">
+                              <p className="font-bold text-base text-foreground truncate">"{item.content}"</p>
+                              {item.priority_reasoning && (
+                                <TooltipProvider>
+                                  <Tooltip>
+                                    <TooltipTrigger asChild>
+                                      <button className="text-indigo-400 hover:text-indigo-600 transition-colors">
+                                        <Lightbulb size={14} />
+                                      </button>
+                                    </TooltipTrigger>
+                                    <TooltipContent className="max-w-xs p-4 rounded-xl bg-slate-900 text-white border-none shadow-2xl">
+                                      <p className="text-[10px] font-black uppercase tracking-widest text-indigo-400 mb-1">AI Reasoning</p>
+                                      <p className="text-xs font-medium leading-relaxed">{item.priority_reasoning}</p>
+                                    </TooltipContent>
+                                  </Tooltip>
+                                </TooltipProvider>
+                              )}
+                            </div>
+                            <div className="flex items-center gap-3 mt-0.5">
+                              <Badge variant="outline" className="text-[7px] font-black uppercase border-none bg-muted px-1.5 py-0">
+                                {item.type || 'identity'}
+                              </Badge>
+                              <span className="text-[8px] font-bold text-muted-foreground uppercase flex items-center gap-1">
+                                <Clock size={10} /> {format(new Date(item.created_at), "MMM d, yyyy")}
+                              </span>
+                            </div>
+                          </div>
                         </div>
-                        <div className="flex items-center gap-3 mt-0.5">
-                          <Badge variant="outline" className="text-[7px] font-black uppercase border-none bg-muted px-1.5 py-0">
-                            {item.type || 'identity'}
-                          </Badge>
-                          <span className="text-[8px] font-bold text-muted-foreground uppercase flex items-center gap-1">
-                            <Clock size={10} /> {format(new Date(item.created_at), "MMM d, yyyy")}
-                          </span>
-                        </div>
-                      </div>
-                    </div>
 
-                    <div className="flex items-center gap-4 shrink-0">
-                      <div className={cn(
-                        "hidden sm:flex items-center gap-2 px-3 py-1.5 rounded-xl border border-transparent",
-                        rec.bg
-                      )}>
-                        <rec.icon size={12} className={rec.color} />
-                        <span className={cn("text-[9px] font-black uppercase tracking-widest", rec.color)}>
-                          {rec.tool}
-                        </span>
+                        <div className="flex items-center gap-4 shrink-0">
+                          <div className={cn(
+                            "hidden sm:flex items-center gap-2 px-3 py-1.5 rounded-xl border border-transparent",
+                            rec.bg
+                          )}>
+                            <rec.icon size={12} className={rec.color} />
+                            <span className={cn("text-[9px] font-black uppercase tracking-widest", rec.color)}>
+                              {rec.tool}
+                            </span>
+                          </div>
+                          
+                          <div className="flex items-center gap-2">
+                            <Button 
+                              variant="ghost" 
+                              size="icon" 
+                              className="h-9 w-9 rounded-xl text-muted-foreground hover:text-rose-600 hover:bg-rose-50"
+                              onClick={() => handleDelete(item.id)}
+                            >
+                              <Trash2 size={16} />
+                            </Button>
+                            <Button 
+                              className="h-9 px-6 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-black text-[10px] uppercase tracking-widest shadow-lg shadow-indigo-100"
+                              asChild
+                            >
+                              <Link to={rec.path} state={{ prefill: item.content, backlogId: item.id, reflectionId: item.reflection_id }}>
+                                Process <ChevronRight size={14} className="ml-1" />
+                              </Link>
+                            </Button>
+                          </div>
+                        </div>
                       </div>
-                      
-                      <div className="flex items-center gap-2">
-                        <Button 
-                          variant="ghost" 
-                          size="icon" 
-                          className="h-9 w-9 rounded-xl text-muted-foreground hover:text-rose-600 hover:bg-rose-50"
-                          onClick={() => handleDelete(item.id)}
-                        >
-                          <Trash2 size={16} />
-                        </Button>
-                        <Button 
-                          className="h-9 px-6 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-black text-[10px] uppercase tracking-widest shadow-lg shadow-indigo-100"
-                          asChild
-                        >
-                          <Link to={rec.path} state={{ prefill: item.content, backlogId: item.id }}>
-                            Process <ChevronRight size={14} className="ml-1" />
-                          </Link>
-                        </Button>
-                      </div>
-                    </div>
+                    );
+                  })}
+                </div>
+              ) : (
+                <div className="text-center py-20 bg-muted/30 rounded-[3rem] border-2 border-dashed border-border">
+                  <div className="w-16 h-16 bg-card rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-sm">
+                    <Zap className="text-muted-foreground" size={32} />
                   </div>
-                );
-              })}
-            </div>
-          ) : (
-            <div className="text-center py-20 bg-muted/30 rounded-[3rem] border-2 border-dashed border-border">
-              <div className="w-16 h-16 bg-card rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-sm">
-                <Zap className="text-muted-foreground" size={32} />
-              </div>
-              <p className="text-foreground font-black text-xl">Your backlog is clear</p>
-              <p className="text-muted-foreground mt-1 font-medium">Add identities or beliefs from the dashboard to track them for later.</p>
-            </div>
-          )}
+                  <p className="text-foreground font-black text-xl">Your backlog is clear</p>
+                  <p className="text-muted-foreground mt-1 font-medium">Add identities or beliefs from the dashboard to track them for later.</p>
+                </div>
+              )}
+            </TabsContent>
+
+            <TabsContent value="history" className="mt-0 focus-visible:ring-0">
+              <IdentityHistoryList />
+            </TabsContent>
+          </Tabs>
         </div>
 
         {/* Philosophy Card */}

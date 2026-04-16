@@ -37,6 +37,9 @@ serve(async (req) => {
     2. "goal" -> Maps to IDENTITY ALIGNMENT. These are DESIRED future states, specific outcomes, or income targets the practitioner wants to MOVE INTO (e.g., "Making $1500/week", "The Sovereign Creator", "The Vital Leader").
     3. "belief" -> Maps to LIMITING BELIEFS. Core "I am..." statements representing a struggle or rule (e.g., "I am not good enough", "I am a burden").
     
+    CRITICAL RULE:
+    Any mention of money, income, revenue, or specific numerical results (e.g., "$1000/week", "10 clients") MUST be categorized as a "goal". Even if phrased as "I am making...", it is a target outcome for Identity Alignment.
+    
     Also extract:
     4. "felt_sense" -> Physical sensations or somatic markers mentioned.
     5. "question" -> Specific technical or clinical questions for a meetup.

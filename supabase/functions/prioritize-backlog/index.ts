@@ -62,7 +62,7 @@ serve(async (req) => {
     const journalContext = reflections?.map(r => `[${r.category}]: ${r.content}`).join('\n\n');
     const backlogList = backlog?.map(b => `[${b.status}] ID: ${b.id} | Type: ${b.type} | Content: ${b.content}`).join('\n');
 
-    const prompt = `Act as a master clinical supervisor and pattern recognition expert. 
+    const prompt = `Act as a master clinical supervisor and pattern recognition expert.
     Analyze my journal entries and my current "Identity Map" to perform a DEEP DISCOVERY.
     
     YOUR TASKS:
@@ -74,6 +74,9 @@ serve(async (req) => {
     - "goal" -> IDENTITY ALIGNMENT. Use this for specific outcomes, income targets, or desired future states (e.g., "Making $1500/week", "The Vital Leader").
     - "identity" -> IDENTITY SHIFTING. Use this for CURRENT problematic versions of self or "stuck" roles (e.g., "The Procrastinator", "The Invisible One").
     - "belief" -> LIMITING BELIEFS. Core "I am..." statements representing a struggle or rule (e.g., "I am a burden").
+    
+    CRITICAL RULE:
+    Any item that mentions money, income, revenue, or a specific numerical result (e.g., "$1000/week", "10 clients") MUST be categorized as a "goal". Even if phrased as "I am making...", it is a target outcome for Identity Alignment.
     
     JOURNAL CONTEXT:
     ${journalContext}
@@ -100,7 +103,7 @@ serve(async (req) => {
       body: JSON.stringify({
         contents: [{ parts: [{ text: prompt }] }],
         generationConfig: {
-          temperature: 0.2,
+          temperature: 0.1, // Lower temperature for more consistent logic
           response_mime_type: "application/json"
         }
       }),
@@ -113,6 +116,7 @@ serve(async (req) => {
     }
 
     let resultText = data.candidates[0].content.parts[0].text.trim();
+    console.log(`[${functionName}] Raw AI Response:`, resultText);
     
     // Sanitize: Remove markdown code blocks if present
     if (resultText.includes('```')) {
@@ -124,18 +128,19 @@ serve(async (req) => {
     // 3. Update existing items in parallel
     if (parsed.rankings && parsed.rankings.length > 0) {
       console.log(`[${functionName}] Updating ${parsed.rankings.length} items...`);
-      const updatePromises = parsed.rankings.map(rank => 
-        supabase
+      const updatePromises = parsed.rankings.map(rank => {
+        const cleanType = String(rank.type).toLowerCase().trim();
+        return supabase
           .from('identity_backlog')
-          .update({ 
-            type: rank.type,
+          .update({
+            type: cleanType,
             priority_score: rank.score,
             priority_reasoning: rank.reasoning,
             polarity_insight: rank.polarity_insight
           })
           .eq('id', rank.id)
-          .eq('user_id', userId)
-      );
+          .eq('user_id', userId);
+      });
       await Promise.all(updatePromises);
     }
 

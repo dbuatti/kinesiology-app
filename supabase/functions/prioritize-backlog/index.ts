@@ -38,24 +38,25 @@ serve(async (req) => {
       .eq('status', 'pending');
 
     if (!backlog || backlog.length === 0) {
-      console.log(`[${functionName}] No pending items found.`);
       return new Response(JSON.stringify({ success: true, message: "No pending items to prioritize." }), {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       });
     }
 
     const journalContext = reflections?.map(r => `[${r.category}]: ${r.content}`).join('\n\n');
-    const backlogList = backlog.map(b => `ID: ${b.id} | Type: ${b.type} | Content: ${b.content}`).join('\n');
+    const backlogList = backlog.map(b => `ID: ${b.id} | Current Type: ${b.type} | Content: ${b.content}`).join('\n');
 
-    const prompt = `Act as a master clinical supervisor. Analyze my journal entries and my "Identity Backlog" to perform a DEEP POLARITY ANALYSIS.
+    const prompt = `Act as a master clinical supervisor. Analyze my journal entries and my "Identity Backlog" to perform a DEEP POLARITY ANALYSIS and RE-CATEGORIZATION.
     
-    POLARITY LOGIC:
-    Every "Goal" has a "Shadow" (the identity that fears the goal).
-    Every "Problem Identity" has a "Target" (the version of self that is free).
+    CATEGORIZATION LOGIC:
+    - "goal" -> IDENTITY ALIGNMENT: A desired future state or outcome (e.g., "Stable income", "Belief in Kinesiology").
+    - "identity" -> IDENTITY SHIFTING: A current problematic version of self (e.g., "The Perfectionist", "The Skeptic").
+    - "belief" -> LIMITING BELIEFS: A core "I am..." statement (e.g., "I am not good enough").
     
     FOR EACH BACKLOG ITEM:
-    1. Rank it (1-100) based on its "Keystone" potential.
-    2. Identify its "Polarity Insight" (1 sentence).
+    1. Re-evaluate the "type" based on the logic above.
+    2. Rank it (1-100) based on its "Keystone" potential.
+    3. Identify its "Polarity Insight" (1 sentence).
     
     JOURNAL CONTEXT:
     ${journalContext}
@@ -66,7 +67,7 @@ serve(async (req) => {
     Return ONLY a JSON object with this structure:
     {
       "rankings": [
-        { "id": "uuid", "score": 85, "reasoning": "...", "polarity_insight": "..." }
+        { "id": "uuid", "type": "goal|identity|belief", "score": 85, "reasoning": "...", "polarity_insight": "..." }
       ]
     }`;
 
@@ -88,18 +89,7 @@ serve(async (req) => {
     if (!response.ok) throw new Error(`Gemini API Error: ${data.error?.message || 'Unknown'}`);
 
     const resultText = data.candidates[0].content.parts[0].text.trim();
-    let parsed;
-    
-    try {
-      parsed = JSON.parse(resultText);
-    } catch (e) {
-      console.error(`[${functionName}] Failed to parse AI response:`, resultText);
-      throw new Error("AI returned an invalid format. Please try again.");
-    }
-
-    if (!parsed.rankings || !Array.isArray(parsed.rankings)) {
-      throw new Error("AI response missing rankings array.");
-    }
+    let parsed = JSON.parse(resultText);
 
     console.log(`[${functionName}] Updating ${parsed.rankings.length} items...`);
 
@@ -108,6 +98,7 @@ serve(async (req) => {
       supabase
         .from('identity_backlog')
         .update({ 
+          type: rank.type,
           priority_score: rank.score,
           priority_reasoning: rank.reasoning,
           polarity_insight: rank.polarity_insight

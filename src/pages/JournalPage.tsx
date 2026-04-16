@@ -38,7 +38,8 @@ import {
   BookOpen,
   Lock,
   Activity,
-  Wind
+  Wind,
+  Layers
 } from "lucide-react";
 import { format } from "date-fns";
 import { showSuccess, showError } from "@/utils/toast";
@@ -218,7 +219,6 @@ const JournalPage = () => {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error("Not authenticated");
 
-      // Map AI types to valid database types (identity or belief)
       const dbType = item.type === 'belief' ? 'belief' : 'identity';
 
       const { error } = await supabase
@@ -244,6 +244,52 @@ const JournalPage = () => {
       }
 
       showSuccess(`Added to Sandbox Backlog.`);
+      fetchData();
+    } catch (err: any) {
+      showError(err.message);
+    } finally {
+      setAddingToBacklog(null);
+    }
+  };
+
+  const handleAddAllToBacklog = async (reflectionId: string) => {
+    const reflection = reflections.find(r => r.id === reflectionId);
+    if (!reflection || !reflection.ai_extractions) return;
+
+    const itemsToAdd = reflection.ai_extractions.filter((item: any) => 
+      item.type !== 'question' && item.status !== 'added'
+    );
+
+    if (itemsToAdd.length === 0) return;
+
+    setAddingToBacklog(`all-${reflectionId}`);
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) throw new Error("Not authenticated");
+
+      const inserts = itemsToAdd.map((item: any) => ({
+        user_id: user.id,
+        content: item.content,
+        type: item.type === 'belief' ? 'belief' : 'identity',
+        status: 'pending'
+      }));
+
+      const { error } = await supabase.from('identity_backlog').insert(inserts);
+      if (error) throw error;
+
+      const newExtractions = reflection.ai_extractions.map((item: any) => {
+        if (item.type !== 'question' && item.status !== 'added') {
+          return { ...item, status: 'added' };
+        }
+        return item;
+      });
+
+      await supabase
+        .from('practitioner_reflections')
+        .update({ ai_extractions: newExtractions })
+        .eq('id', reflectionId);
+      
+      showSuccess(`Added ${itemsToAdd.length} items to Sandbox Backlog.`);
       fetchData();
     } catch (err: any) {
       showError(err.message);
@@ -400,6 +446,7 @@ const JournalPage = () => {
                 const catInfo = CATEGORIES.find(c => c.id === ref.category) || CATEGORIES[0];
                 const extractions = ref.ai_extractions || [];
                 const isAnalyzing = analyzingIds.has(ref.id);
+                const pendingExtractions = extractions.filter((e: any) => e.type !== 'question' && e.status !== 'added');
 
                 return (
                   <Card key={ref.id} className="border-none shadow-md rounded-[2rem] bg-white group hover:shadow-xl transition-all duration-500 overflow-hidden">
@@ -454,13 +501,29 @@ const JournalPage = () => {
 
                       {extractions.length > 0 && (
                         <div className="pt-6 border-t border-slate-100 space-y-4">
-                          <div className="flex items-center gap-2">
-                            <Sparkles size={14} className="text-amber-500" />
-                            <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Extracted Sandbox Insights</p>
+                          <div className="flex items-center justify-between">
+                            <div className="flex items-center gap-2">
+                              <Sparkles size={14} className="text-amber-500" />
+                              <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Extracted Sandbox Insights</p>
+                            </div>
+                            {pendingExtractions.length > 1 && (
+                              <Button 
+                                variant="outline" 
+                                size="sm" 
+                                onClick={() => handleAddAllToBacklog(ref.id)}
+                                disabled={addingToBacklog === `all-${ref.id}`}
+                                className="h-7 px-3 rounded-lg border-indigo-200 text-indigo-600 hover:bg-indigo-50 font-black text-[8px] uppercase tracking-widest"
+                              >
+                                {addingToBacklog === `all-${ref.id}` ? <Loader2 size={10} className="animate-spin mr-1.5" /> : <Layers size={10} className="mr-1.5" />}
+                                Add All to Backlog
+                              </Button>
+                            )}
                           </div>
                           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                             {extractions.map((item: any, i: number) => {
                               const tool = getToolRecommendation(item.type);
+                              const isAddingThis = addingToBacklog === `${ref.id}-${i}`;
+
                               return (
                                 <div key={i} className="flex items-center justify-between p-3 bg-slate-50 rounded-xl border border-slate-100 group/item">
                                   <div className="flex items-center gap-3 min-w-0">
@@ -495,9 +558,11 @@ const JournalPage = () => {
                                       variant="ghost" 
                                       size="sm" 
                                       onClick={() => handleAddToBacklog(ref.id, item, i)}
+                                      disabled={isAddingThis}
                                       className="h-7 px-2 rounded-lg text-indigo-600 hover:bg-indigo-100 font-black text-[8px] uppercase tracking-widest"
                                     >
-                                      <PlusCircle size={10} className="mr-1" /> Add to Backlog
+                                      {isAddingThis ? <Loader2 size={10} className="animate-spin mr-1" /> : <PlusCircle size={10} className="mr-1" />}
+                                      Add
                                     </Button>
                                   )}
                                   {item.status === 'added' && (

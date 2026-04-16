@@ -17,7 +17,8 @@ import {
   History,
   Loader2,
   Lightbulb,
-  ChevronRight
+  ChevronRight,
+  Layers
 } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -90,35 +91,32 @@ const SandboxPage = () => {
   const getRecommendation = (item: any) => {
     const content = item.content.toLowerCase();
     
-    // 1. Check for Goals/Alignment
     if (item.type === 'goal' || content.includes('want to') || content.includes('become') || content.includes('future')) {
       return {
         tool: 'Identity Alignment',
         path: '/sandbox/identity-alignment',
         icon: Target,
         color: 'text-emerald-600',
-        bg: 'bg-emerald-50'
+        bg: 'bg-emerald-50 dark:bg-emerald-900/20'
       };
     }
 
-    // 2. Check for Beliefs
     if (item.type === 'belief' || content.startsWith('i am')) {
       return {
         tool: 'Limiting Beliefs',
         path: '/sandbox/limiting-beliefs',
         icon: ShieldAlert,
         color: 'text-rose-600',
-        bg: 'bg-rose-50'
+        bg: 'bg-rose-50 dark:bg-rose-900/20'
       };
     }
 
-    // 3. Default to Shifting
     return {
       tool: 'Identity Shifting',
       path: '/sandbox/identity-shifting',
       icon: Fingerprint,
       color: 'text-indigo-600',
-      bg: 'bg-indigo-50'
+      bg: 'bg-indigo-50 dark:bg-indigo-900/20'
     };
   };
 
@@ -138,7 +136,7 @@ const SandboxPage = () => {
   };
 
   return (
-    <AppLayout>
+    <AppLayout variant="wide">
       <div className="space-y-12 animate-in fade-in slide-in-from-bottom-4 duration-700">
         <Breadcrumbs items={[{ label: "Sandbox Hub" }]} />
 
@@ -195,11 +193,11 @@ const SandboxPage = () => {
           ))}
         </div>
 
-        {/* Backlog Section */}
+        {/* Backlog Section - Redesigned as Thin Rows */}
         <div className="space-y-6">
           <div className="flex items-center justify-between px-2">
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-xl bg-amber-50 text-amber-600 flex items-center justify-center shadow-sm">
+              <div className="w-10 h-10 rounded-xl bg-amber-500 text-white flex items-center justify-center shadow-lg">
                 <History size={20} />
               </div>
               <h2 className="text-2xl font-black text-foreground tracking-tight">Identity Backlog</h2>
@@ -214,56 +212,67 @@ const SandboxPage = () => {
               <Loader2 className="animate-spin text-indigo-600" size={32} />
             </div>
           ) : backlog.length > 0 ? (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <div className="space-y-2">
               {backlog.map((item) => {
                 const rec = getRecommendation(item);
                 return (
-                  <Card key={item.id} className="border-none shadow-sm bg-card rounded-[2rem] overflow-hidden group hover:shadow-md transition-all">
-                    <CardContent className="p-6 space-y-4">
-                      <div className="flex items-start justify-between">
-                        <Badge className={cn(
-                          "border-none font-black text-[8px] uppercase tracking-widest px-2 py-0.5 rounded-full",
-                          item.type === 'identity' ? "bg-indigo-100 text-indigo-700" : 
-                          item.type === 'goal' ? "bg-emerald-100 text-emerald-700" : "bg-rose-100 text-rose-700"
-                        )}>
-                          {item.type || 'identity'}
-                        </Badge>
+                  <div 
+                    key={item.id} 
+                    className="flex flex-col md:flex-row md:items-center justify-between p-4 bg-card rounded-2xl border border-border group hover:shadow-md hover:border-indigo-200 transition-all gap-4"
+                  >
+                    <div className="flex items-center gap-4 flex-1 min-w-0">
+                      <div className={cn(
+                        "w-10 h-10 rounded-xl flex items-center justify-center shrink-0 shadow-sm",
+                        item.type === 'belief' ? "bg-rose-50 text-rose-600" : 
+                        item.type === 'goal' ? "bg-emerald-50 text-emerald-600" : "bg-indigo-50 text-indigo-600"
+                      )}>
+                        {item.type === 'belief' ? <ShieldAlert size={20} /> : 
+                         item.type === 'goal' ? <Target size={20} /> : <Fingerprint size={20} />}
+                      </div>
+                      <div className="min-w-0 flex-1">
+                        <p className="font-bold text-base text-foreground truncate">"{item.content}"</p>
+                        <div className="flex items-center gap-3 mt-0.5">
+                          <Badge variant="outline" className="text-[7px] font-black uppercase border-none bg-muted px-1.5 py-0">
+                            {item.type || 'identity'}
+                          </Badge>
+                          <span className="text-[8px] font-bold text-muted-foreground uppercase flex items-center gap-1">
+                            <Clock size={10} /> {format(new Date(item.created_at), "MMM d, yyyy")}
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="flex items-center gap-4 shrink-0">
+                      <div className={cn(
+                        "hidden sm:flex items-center gap-2 px-3 py-1.5 rounded-xl border border-transparent",
+                        rec.bg
+                      )}>
+                        <rec.icon size={12} className={rec.color} />
+                        <span className={cn("text-[9px] font-black uppercase tracking-widest", rec.color)}>
+                          {rec.tool}
+                        </span>
+                      </div>
+                      
+                      <div className="flex items-center gap-2">
                         <Button 
                           variant="ghost" 
                           size="icon" 
-                          className="h-8 w-8 rounded-xl text-muted-foreground hover:text-rose-600 opacity-0 group-hover:opacity-100 transition-all"
+                          className="h-9 w-9 rounded-xl text-muted-foreground hover:text-rose-600 hover:bg-rose-50"
                           onClick={() => handleDelete(item.id)}
                         >
-                          <Trash2 size={14} />
+                          <Trash2 size={16} />
                         </Button>
-                      </div>
-                      
-                      <p className="font-bold text-lg text-foreground leading-tight">"{item.content}"</p>
-                      
-                      <div className={cn("p-3 rounded-xl border flex items-center gap-3", rec.bg, "border-transparent")}>
-                        <rec.icon size={14} className={rec.color} />
-                        <div className="flex-1">
-                          <p className="text-[8px] font-black text-slate-400 uppercase tracking-widest">Recommended Tool</p>
-                          <p className={cn("text-[10px] font-bold", rec.color)}>{rec.tool}</p>
-                        </div>
-                      </div>
-
-                      <div className="pt-4 flex items-center justify-between border-t border-border">
-                        <div className="flex items-center gap-2 text-[10px] font-bold text-muted-foreground uppercase tracking-widest">
-                          <Clock size={12} />
-                          {format(new Date(item.created_at), "MMM d")}
-                        </div>
                         <Button 
-                          className="h-9 px-4 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-black text-[10px] uppercase tracking-widest shadow-lg shadow-indigo-100"
+                          className="h-9 px-6 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-black text-[10px] uppercase tracking-widest shadow-lg shadow-indigo-100"
                           asChild
                         >
                           <Link to={rec.path} state={{ prefill: item.content, backlogId: item.id }}>
-                            Process Now <ChevronRight size={14} className="ml-1" />
+                            Process <ChevronRight size={14} className="ml-1" />
                           </Link>
                         </Button>
                       </div>
-                    </CardContent>
-                  </Card>
+                    </div>
+                  </div>
                 );
               })}
             </div>

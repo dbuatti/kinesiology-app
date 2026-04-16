@@ -40,7 +40,7 @@ const IdentitySmartTool = () => {
       if (!user) return;
 
       const [backlogRes, shiftingRes, alignmentRes, beliefsRes] = await Promise.all([
-        supabase.from('identity_backlog').select('*').eq('status', 'pending').order('created_at', { ascending: false }).limit(3),
+        supabase.from('identity_backlog').select('*').eq('status', 'pending').order('created_at', { ascending: false }).limit(5),
         supabase.from('identity_shifting_sessions').select('id, identity, created_at, is_complete').order('created_at', { ascending: false }).limit(5),
         supabase.from('identity_alignment_sessions').select('id, target_identity, created_at, is_complete').order('created_at', { ascending: false }).limit(5),
         supabase.from('limiting_belief_sessions').select('id, limiting_belief, created_at, is_complete').order('created_at', { ascending: false }).limit(5)
@@ -48,7 +48,6 @@ const IdentitySmartTool = () => {
 
       setBacklog(backlogRes.data || []);
       
-      // Combine and sort recent sessions
       const combined = [
         ...(shiftingRes.data || []).map(s => ({ ...s, type: 'shifting', label: s.identity })),
         ...(alignmentRes.data || []).map(s => ({ ...s, type: 'alignment', label: s.target_identity })),
@@ -100,7 +99,6 @@ const IdentitySmartTool = () => {
   const smartSuggestion = useMemo(() => {
     if (recentSessions.length === 0) return null;
     
-    // Find a session that is complete but hasn't been revisited in 7 days
     const candidate = recentSessions.find(s => 
       s.is_complete && differenceInDays(new Date(), new Date(s.created_at)) >= 7
     );
@@ -122,8 +120,7 @@ const IdentitySmartTool = () => {
 
   return (
     <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
-      {/* Left: Smart Suggestions & Patterns */}
-      <div className="lg:col-span-8 space-y-6">
+      <div className="lg:col-span-7 space-y-6">
         <div className="flex items-center gap-3 px-2">
           <div className="w-10 h-10 rounded-xl bg-indigo-600 text-white flex items-center justify-center shadow-lg">
             <Brain size={20} />
@@ -134,8 +131,7 @@ const IdentitySmartTool = () => {
           </div>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          {/* Smart Suggestion Card */}
+        <div className="grid grid-cols-1 gap-6">
           <Card className="border-none shadow-xl rounded-[2.5rem] bg-slate-900 text-white overflow-hidden relative group">
             <div className="absolute inset-0 bg-gradient-to-br from-indigo-600/20 to-transparent" />
             <div className="absolute top-0 right-0 p-6 opacity-10 group-hover:scale-110 transition-transform duration-700">
@@ -184,7 +180,6 @@ const IdentitySmartTool = () => {
             </CardContent>
           </Card>
 
-          {/* Recent Patterns Card */}
           <Card className="border-none shadow-lg rounded-[2.5rem] bg-card overflow-hidden">
             <CardHeader className="pb-2">
               <CardTitle className="text-sm font-black uppercase tracking-widest text-muted-foreground flex items-center gap-2">
@@ -218,16 +213,12 @@ const IdentitySmartTool = () => {
               ) : (
                 <p className="text-xs text-muted-foreground italic py-4 text-center">No recent identity work recorded.</p>
               )}
-              <Button variant="ghost" size="sm" className="w-full h-8 text-[9px] font-black uppercase tracking-widest text-indigo-600 hover:bg-indigo-50 rounded-lg" asChild>
-                <Link to="/sandbox">View Sandbox Hub <ArrowRight size={12} className="ml-1" /></Link>
-              </Button>
             </CardContent>
           </Card>
         </div>
       </div>
 
-      {/* Right: Backlog Management */}
-      <div className="lg:col-span-4 space-y-6">
+      <div className="lg:col-span-5 space-y-6">
         <div className="flex items-center justify-between px-2">
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 rounded-xl bg-amber-500 text-white flex items-center justify-center shadow-lg">
@@ -235,12 +226,15 @@ const IdentitySmartTool = () => {
             </div>
             <h2 className="text-2xl font-black text-foreground tracking-tight">Backlog</h2>
           </div>
+          <Button variant="ghost" size="sm" className="text-[9px] font-black uppercase tracking-widest text-indigo-600" asChild>
+            <Link to="/sandbox">View All <ArrowRight size={12} className="ml-1" /></Link>
+          </Button>
         </div>
 
         <Card className="border-none shadow-lg rounded-[2.5rem] bg-card overflow-hidden flex flex-col h-full">
           <CardContent className="p-6 space-y-6 flex-1 flex flex-col">
             <form onSubmit={handleAddToBacklog} className="space-y-3">
-              <label className="text-[10px] font-black text-muted-foreground uppercase tracking-widest ml-1">Quick Add Identity/Belief</label>
+              <label className="text-[10px] font-black text-muted-foreground uppercase tracking-widest ml-1">Quick Add</label>
               <div className="flex gap-2">
                 <Input 
                   placeholder="e.g. The Perfectionist..." 
@@ -251,41 +245,38 @@ const IdentitySmartTool = () => {
                 <Button 
                   type="submit" 
                   disabled={isAdding || !newContent.trim()}
-                  className="h-11 w-11 rounded-xl bg-amber-500 hover:bg-amber-600 text-white shadow-lg shadow-amber-100 dark:shadow-none shrink-0"
+                  className="h-11 w-11 rounded-xl bg-amber-500 hover:bg-amber-600 text-white shadow-lg shrink-0"
                 >
                   {isAdding ? <Loader2 className="animate-spin" size={18} /> : <Plus size={20} />}
                 </Button>
               </div>
             </form>
 
-            <div className="space-y-3 flex-1">
-              <p className="text-[10px] font-black text-muted-foreground uppercase tracking-widest ml-1">Pending Work</p>
+            <div className="space-y-2 flex-1">
               {backlog.length > 0 ? (
-                <div className="space-y-2">
-                  {backlog.map((item) => (
-                    <div key={item.id} className="p-4 bg-muted/30 rounded-2xl border border-border group hover:bg-card hover:shadow-md transition-all">
-                      <div className="flex items-start justify-between gap-4">
-                        <p className="text-sm font-bold text-foreground leading-tight">"{item.content}"</p>
-                        <Button 
-                          variant="ghost" 
-                          size="icon" 
-                          className="h-7 w-7 rounded-lg text-muted-foreground hover:text-indigo-600 hover:bg-indigo-50 shrink-0"
-                          asChild
-                        >
-                          <Link to={item.type === 'identity' ? "/sandbox/identity-shifting" : "/sandbox/limiting-beliefs"} state={{ prefill: item.content, backlogId: item.id }}>
-                            <ChevronRight size={16} />
-                          </Link>
-                        </Button>
+                backlog.map((item) => (
+                  <div key={item.id} className="flex items-center justify-between p-3 bg-muted/30 rounded-xl border border-border group hover:bg-card transition-all">
+                    <div className="flex items-center gap-3 min-w-0">
+                      <div className={cn(
+                        "w-7 h-7 rounded-lg flex items-center justify-center shrink-0",
+                        item.type === 'belief' ? "bg-rose-50 text-rose-600" : "bg-indigo-50 text-indigo-600"
+                      )}>
+                        {item.type === 'belief' ? <ShieldAlert size={14} /> : <Fingerprint size={14} />}
                       </div>
-                      <div className="flex items-center gap-2 mt-2">
-                        <Badge variant="outline" className="text-[7px] font-black uppercase border-none bg-muted px-1.5 py-0">
-                          {item.type}
-                        </Badge>
-                        <span className="text-[8px] font-bold text-muted-foreground uppercase">{format(new Date(item.created_at), "MMM d")}</span>
-                      </div>
+                      <p className="text-xs font-bold text-foreground truncate">"{item.content}"</p>
                     </div>
-                  ))}
-                </div>
+                    <Button 
+                      variant="ghost" 
+                      size="icon" 
+                      className="h-7 w-7 rounded-lg text-muted-foreground hover:text-indigo-600 shrink-0"
+                      asChild
+                    >
+                      <Link to={item.type === 'identity' ? "/sandbox/identity-shifting" : "/sandbox/limiting-beliefs"} state={{ prefill: item.content, backlogId: item.id }}>
+                        <ChevronRight size={16} />
+                      </Link>
+                    </Button>
+                  </div>
+                ))
               ) : (
                 <div className="flex-1 flex flex-col items-center justify-center text-center py-8 space-y-3">
                   <div className="w-12 h-12 rounded-2xl bg-muted flex items-center justify-center text-muted-foreground/30">
@@ -295,10 +286,6 @@ const IdentitySmartTool = () => {
                 </div>
               )}
             </div>
-
-            <Button variant="outline" className="w-full h-10 rounded-xl text-[10px] font-black uppercase tracking-widest border-border hover:bg-muted" asChild>
-              <Link to="/sandbox">Open Full Sandbox Hub</Link>
-            </Button>
           </CardContent>
         </Card>
       </div>

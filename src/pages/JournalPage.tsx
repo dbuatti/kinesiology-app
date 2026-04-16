@@ -245,7 +245,8 @@ const JournalPage = () => {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error("Not authenticated");
 
-      const dbType = item.type === 'belief' ? 'belief' : (item.type === 'goal' ? 'goal' : 'identity');
+      // Map types to match the new database constraints
+      const dbType = item.type === 'belief' ? 'belief' : (item.type === 'alignment' || item.type === 'goal' ? 'alignment' : 'shifting');
 
       const { error } = await supabase
         .from('identity_backlog')
@@ -253,7 +254,8 @@ const JournalPage = () => {
           user_id: user.id,
           content: item.content,
           type: dbType, 
-          status: 'pending'
+          status: 'pending',
+          reflection_id: reflectionId
         });
 
       if (error) throw error;
@@ -300,8 +302,9 @@ const JournalPage = () => {
         const inserts = itemsToAdd.map((item: any) => ({
           user_id: user.id,
           content: item.content,
-          type: item.type === 'belief' ? 'belief' : (item.type === 'goal' ? 'goal' : 'identity'),
-          status: 'pending'
+          type: item.type === 'belief' ? 'belief' : (item.type === 'alignment' || item.type === 'goal' ? 'alignment' : 'shifting'),
+          status: 'pending',
+          reflection_id: ref.id
         }));
 
         const { error } = await supabase.from('identity_backlog').insert(inserts);
@@ -374,8 +377,8 @@ const JournalPage = () => {
   const getToolRecommendation = (type: string) => {
     switch (type) {
       case 'belief': return { label: 'Limiting Beliefs', icon: ShieldAlert, color: 'text-rose-600', bg: 'bg-rose-50' };
-      case 'identity': return { label: 'Identity Shifting', icon: Fingerprint, color: 'text-indigo-600', bg: 'bg-indigo-50' };
-      case 'goal': return { label: 'Identity Alignment', icon: Target, color: 'text-emerald-600', bg: 'bg-emerald-50' };
+      case 'shifting': return { label: 'Identity Shifting', icon: Fingerprint, color: 'text-indigo-600', bg: 'bg-indigo-50' };
+      case 'alignment': return { label: 'Identity Alignment', icon: Target, color: 'text-emerald-600', bg: 'bg-emerald-50' };
       case 'felt_sense': return { label: 'Somatic Tracking', icon: Wind, color: 'text-blue-600', bg: 'bg-blue-50' };
       default: return null;
     }
@@ -559,7 +562,7 @@ const JournalPage = () => {
                                 size="sm" 
                                 onClick={() => handleAddAllToBacklog(ref.id)}
                                 disabled={addingToBacklog === `all-${ref.id}`}
-                                className="h-7 px-3 rounded-lg border-indigo-200 text-indigo-600 hover:bg-indigo-50 font-black text-[8px] uppercase tracking-widest"
+                                className="h-7 px-3 rounded-lg border-indigo-200 text-indigo-600 hover:bg-indigo-50 font-black text-[10px] uppercase tracking-widest"
                               >
                                 {addingToBacklog === `all-${ref.id}` ? <Loader2 size={10} className="animate-spin mr-1.5" /> : <Layers size={10} className="mr-1.5" />}
                                 Add All to Backlog
@@ -578,12 +581,12 @@ const JournalPage = () => {
                                       "w-10 h-10 rounded-xl flex items-center justify-center shrink-0 shadow-sm",
                                       item.type === 'question' ? "bg-indigo-50 text-indigo-700" :
                                       item.type === 'belief' ? "bg-rose-50 text-rose-700" : 
-                                      item.type === 'goal' ? "bg-emerald-50 text-emerald-600" : 
+                                      item.type === 'alignment' ? "bg-emerald-50 text-emerald-600" : 
                                       item.type === 'felt_sense' ? "bg-blue-50 text-blue-600" : "bg-slate-100 text-slate-600"
                                     )}>
                                       {item.type === 'question' ? <HelpCircle size={18} /> : 
                                        item.type === 'belief' ? <ShieldAlert size={18} /> : 
-                                       item.type === 'goal' ? <Target size={18} /> : 
+                                       item.type === 'alignment' ? <Target size={18} /> : 
                                        item.type === 'felt_sense' ? <Wind size={18} /> : <Fingerprint size={18} />}
                                     </div>
                                     <div className="min-w-0">

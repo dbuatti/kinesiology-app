@@ -130,11 +130,19 @@ serve(async (req) => {
     if (parsed.rankings && parsed.rankings.length > 0) {
       console.log(`[${functionName}] Updating ${parsed.rankings.length} items...`);
       const updatePromises = parsed.rankings.map(rank => {
-        const cleanType = String(rank.type).toLowerCase().trim();
+        const originalItem = backlog.find(b => b.id === rank.id);
+        let finalType = String(rank.type).toLowerCase().trim();
+
+        // Hardcoded Safety Override: Force financial items to 'goal'
+        if (originalItem && (originalItem.content.includes('$') || originalItem.content.toLowerCase().includes('income') || originalItem.content.toLowerCase().includes('revenue'))) {
+          console.log(`[${functionName}] Overriding type to 'goal' for financial item: ${originalItem.content}`);
+          finalType = 'goal';
+        }
+
         return supabase
           .from('identity_backlog')
           .update({
-            type: cleanType,
+            type: finalType,
             priority_score: rank.score,
             priority_reasoning: rank.reasoning,
             polarity_insight: rank.polarity_insight
@@ -148,14 +156,23 @@ serve(async (req) => {
     // 4. Insert new suggestions
     if (parsed.new_suggestions && parsed.new_suggestions.length > 0) {
       console.log(`[${functionName}] Inserting ${parsed.new_suggestions.length} new suggestions...`);
-      const inserts = parsed.new_suggestions.map(s => ({
-        user_id: userId,
-        content: s.content,
-        type: s.type,
-        status: 'suggested',
-        priority_reasoning: s.reasoning,
-        polarity_insight: s.polarity_insight
-      }));
+      const inserts = parsed.new_suggestions.map(s => {
+        let finalType = String(s.type).toLowerCase().trim();
+        
+        // Hardcoded Safety Override for suggestions
+        if (s.content.includes('$') || s.content.toLowerCase().includes('income') || s.content.toLowerCase().includes('revenue')) {
+          finalType = 'goal';
+        }
+
+        return {
+          user_id: userId,
+          content: s.content,
+          type: finalType,
+          status: 'suggested',
+          priority_reasoning: s.reasoning,
+          polarity_insight: s.polarity_insight
+        };
+      });
 
       await supabase.from('identity_backlog').insert(inserts);
     }

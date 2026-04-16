@@ -38,20 +38,16 @@ serve(async (req) => {
       .eq('status', 'pending');
 
     if (!backlog || backlog.length === 0) {
-      return new Response(JSON.stringify({ message: "No pending items to prioritize." }), {
+      console.log(`[${functionName}] No pending items found.`);
+      return new Response(JSON.stringify({ success: true, message: "No pending items to prioritize." }), {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       });
     }
 
-    const journalContext = reflections?.map(r => `[${r.category} - ${r.created_at}]: ${r.content}`).join('\n\n');
+    const journalContext = reflections?.map(r => `[${r.category}]: ${r.content}`).join('\n\n');
     const backlogList = backlog.map(b => `ID: ${b.id} | Type: ${b.type} | Content: ${b.content}`).join('\n');
 
-    const prompt = `Act as a master clinical supervisor and psychological strategist. 
-    I am a Kinesiology practitioner working on my own identity shifts and blocks.
-    
-    YOUR TASK:
-    Analyze my journal entries to understand my core personality, my larger goals, and the recurring patterns (blocks) I face.
-    Then, look at my "Identity Backlog" and perform a DEEP POLARITY ANALYSIS.
+    const prompt = `Act as a master clinical supervisor. Analyze my journal entries and my "Identity Backlog" to perform a DEEP POLARITY ANALYSIS.
     
     POLARITY LOGIC:
     Every "Goal" has a "Shadow" (the identity that fears the goal).
@@ -59,25 +55,22 @@ serve(async (req) => {
     
     FOR EACH BACKLOG ITEM:
     1. Rank it (1-100) based on its "Keystone" potential.
-    2. Identify its "Polarity Insight":
-       - If it's a GOAL: What is the likely "Shadow Identity" or "Limiting Belief" blocking it?
-       - If it's an IDENTITY/BELIEF: What is the "Target Identity" waiting on the other side?
+    2. Identify its "Polarity Insight" (1 sentence).
     
     JOURNAL CONTEXT:
     ${journalContext}
     
-    BACKLOG ITEMS TO ANALYZE:
+    BACKLOG ITEMS:
     ${backlogList}
     
-    Return the result as a JSON object with a key "rankings" containing an array of objects:
-    - "id": The ID of the backlog item.
-    - "score": A priority score from 1 to 100.
-    - "reasoning": A brief (1 sentence) clinical explanation.
-    - "polarity_insight": A 1-sentence insight about the "Shadow" or "Target" of this item.
-    
-    Return ONLY the JSON.`;
+    Return ONLY a JSON object with this structure:
+    {
+      "rankings": [
+        { "id": "uuid", "score": 85, "reasoning": "...", "polarity_insight": "..." }
+      ]
+    }`;
 
-    console.log(`[${functionName}] Calling Gemini 2.5 Flash for Polarity Analysis...`);
+    console.log(`[${functionName}] Calling Gemini for analysis...`);
     
     const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${geminiKey}`, {
       method: 'POST',
@@ -85,36 +78,51 @@ serve(async (req) => {
       body: JSON.stringify({
         contents: [{ parts: [{ text: prompt }] }],
         generationConfig: { 
-          temperature: 0.3,
+          temperature: 0.2,
           response_mime_type: "application/json"
         }
       }),
     })
 
     const data = await response.json()
-    if (!response.ok) throw new Error(data.error?.message || 'Gemini Error');
+    if (!response.ok) throw new Error(`Gemini API Error: ${data.error?.message || 'Unknown'}`);
 
     const resultText = data.candidates[0].content.parts[0].text.trim();
-    const parsed = JSON.parse(resultText);
+    let parsed;
+    
+    try {
+      parsed = JSON.parse(resultText);
+    } catch (e) {
+      console.error(`[${functionName}] Failed to parse AI response:`, resultText);
+      throw new Error("AI returned an invalid format. Please try again.");
+    }
 
-    // 3. Update the database with new scores and polarity insights
-    for (const rank of parsed.rankings) {
-      await supabase
+    if (!parsed.rankings || !Array.isArray(parsed.rankings)) {
+      throw new Error("AI response missing rankings array.");
+    }
+
+    console.log(`[${functionName}] Updating ${parsed.rankings.length} items...`);
+
+    // 3. Update the database
+    const updates = parsed.rankings.map(rank => 
+      supabase
         .from('identity_backlog')
         .update({ 
           priority_score: rank.score,
           priority_reasoning: rank.reasoning,
           polarity_insight: rank.polarity_insight
         })
-        .eq('id', rank.id);
-    }
+        .eq('id', rank.id)
+    );
+
+    await Promise.all(updates);
 
     return new Response(JSON.stringify({ success: true, count: parsed.rankings.length }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     })
 
   } catch (error) {
-    console.error(`[prioritize-backlog] Error:`, error.message);
+    console.error(`[${functionName}] CRITICAL ERROR:`, error.message);
     return new Response(JSON.stringify({ error: error.message }), {
       status: 400,
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },

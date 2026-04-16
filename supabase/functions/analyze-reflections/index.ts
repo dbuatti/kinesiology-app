@@ -39,7 +39,7 @@ serve(async (req) => {
     
     Also extract:
     4. "felt_sense" -> Physical sensations or somatic markers mentioned.
-    5. "question" -> Specific technical or clinical questions for a mentor.
+    5. "question" -> Specific technical or clinical questions for a meetup.
     
     Return the result as a JSON object with a key "extractions" containing an array of objects with:
     - "content": The text of the insight.

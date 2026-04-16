@@ -22,7 +22,7 @@ serve(async (req) => {
     
     if (type === 'target' || type === 'goal') {
       prompt = `Suggest 4 "Target Identities" for the goal: "${goal || problem}". 
-      These should be empowering, archetypal labels for the IDENTITY ALIGNMENT tool (e.g., "The Sovereign Creator", "The Grounded Leader"). 
+      These should be empowering, archetypal labels for the IDENTITY ALIGNMENT tool (e.g., "The Sovereign Creator", "The Vital Leader"). 
       Focus on who the person is BECOMING to achieve the goal.
       Return ONLY a JSON array of strings.`;
     } else if (type === 'limiting_belief' || type === 'belief') {

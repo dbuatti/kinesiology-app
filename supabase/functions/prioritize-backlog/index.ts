@@ -118,6 +118,7 @@ serve(async (req) => {
     if (parsed.rankings && parsed.rankings.length > 0) {
       const updatePromises = parsed.rankings.map(rank => {
         const originalItem = backlog.find(b => b.id === rank.id);
+        // CRITICAL FIX: Apply normalizeType here!
         const finalType = normalizeType(rank.type);
 
         if (originalItem && originalItem.type !== finalType) {

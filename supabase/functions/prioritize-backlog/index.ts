@@ -24,17 +24,34 @@ serve(async (req) => {
 
     const supabase = createClient(supabaseUrl, supabaseKey)
 
-    // 1. Fetch context: Last 50 journal entries
+    // 0. Get User ID from Auth Header
+    const authHeader = req.headers.get('Authorization')
+    if (!authHeader) throw new Error("No authorization header provided.");
+    
+    const token = authHeader.replace('Bearer ', '')
+    const { data: { user }, error: userError } = await supabase.auth.getUser(token)
+    
+    if (userError || !user) {
+      console.error(`[${functionName}] Auth Error:`, userError);
+      throw new Error("Invalid or expired user session.");
+    }
+    
+    const userId = user.id;
+    console.log(`[${functionName}] Processing for user: ${userId}`);
+
+    // 1. Fetch context: Last 50 journal entries for THIS user
     const { data: reflections } = await supabase
       .from('practitioner_reflections')
       .select('content, category, created_at')
+      .eq('user_id', userId)
       .order('created_at', { ascending: false })
       .limit(50);
 
-    // 2. Fetch targets: All pending backlog items
+    // 2. Fetch targets: All pending backlog items for THIS user
     const { data: backlog } = await supabase
       .from('identity_backlog')
-      .select('id, content, type, status');
+      .select('id, content, type, status')
+      .eq('user_id', userId);
 
     if (!backlog || backlog.length === 0) {
       return new Response(JSON.stringify({ success: true, message: "No items to prioritize." }), {
@@ -74,9 +91,10 @@ serve(async (req) => {
       ]
     }`;
 
-    console.log(`[${functionName}] Calling Gemini 1.5 Flash for Deep Discovery...`);
+    console.log(`[${functionName}] Calling Gemini 1.5 Flash...`);
     
-    const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${geminiKey}`, {
+    // Using v1 endpoint for better stability
+    const response = await fetch(`https://generativelanguage.googleapis.com/v1/models/gemini-1.5-flash:generateContent?key=${geminiKey}`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
@@ -91,9 +109,6 @@ serve(async (req) => {
     const data = await response.json()
     if (!response.ok) {
       const errorMsg = data.error?.message || 'Unknown AI Error';
-      if (errorMsg.includes("high demand")) {
-        throw new Error("The AI is currently busy. Please wait 30 seconds and try again.");
-      }
       throw new Error(`Gemini API Error: ${errorMsg}`);
     }
 
@@ -119,6 +134,7 @@ serve(async (req) => {
             polarity_insight: rank.polarity_insight
           })
           .eq('id', rank.id)
+          .eq('user_id', userId) // Security check
       );
       await Promise.all(updatePromises);
     }
@@ -126,9 +142,8 @@ serve(async (req) => {
     // 4. Insert new suggestions
     if (parsed.new_suggestions && parsed.new_suggestions.length > 0) {
       console.log(`[${functionName}] Inserting ${parsed.new_suggestions.length} new suggestions...`);
-      const { data: { user } } = await supabase.auth.getUser();
       const inserts = parsed.new_suggestions.map(s => ({
-        user_id: user.id,
+        user_id: userId,
         content: s.content,
         type: s.type,
         status: 'suggested',

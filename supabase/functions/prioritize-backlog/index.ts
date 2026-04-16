@@ -31,13 +31,19 @@ serve(async (req) => {
       .order('created_at', { ascending: false })
       .limit(50);
 
-    // 2. Fetch targets: All backlog items (pending, suggested, and integrated)
+    // 2. Fetch targets: All pending backlog items
     const { data: backlog } = await supabase
       .from('identity_backlog')
       .select('id, content, type, status');
 
+    if (!backlog || backlog.length === 0) {
+      return new Response(JSON.stringify({ success: true, message: "No items to prioritize." }), {
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+    }
+
     const journalContext = reflections?.map(r => `[${r.category}]: ${r.content}`).join('\n\n');
-    const backlogList = backlog?.map(b => `[${b.status}] ${b.type}: ${b.content}`).join('\n');
+    const backlogList = backlog?.map(b => `[${b.status}] ID: ${b.id} | Type: ${b.type} | Content: ${b.content}`).join('\n');
 
     const prompt = `Act as a master clinical supervisor and pattern recognition expert. 
     Analyze my journal entries and my current "Identity Map" to perform a DEEP DISCOVERY.
@@ -85,13 +91,20 @@ serve(async (req) => {
     const data = await response.json()
     if (!response.ok) throw new Error(`Gemini API Error: ${data.error?.message || 'Unknown'}`);
 
-    const resultText = data.candidates[0].content.parts[0].text.trim();
-    let parsed = JSON.parse(resultText);
+    let resultText = data.candidates[0].content.parts[0].text.trim();
+    
+    // Sanitize: Remove markdown code blocks if present
+    if (resultText.startsWith('```')) {
+      resultText = resultText.replace(/^```json\n?/, '').replace(/\n?```$/, '');
+    }
 
-    // 3. Update existing items
-    if (parsed.rankings) {
-      for (const rank of parsed.rankings) {
-        await supabase
+    const parsed = JSON.parse(resultText);
+
+    // 3. Update existing items in parallel to prevent timeout
+    if (parsed.rankings && parsed.rankings.length > 0) {
+      console.log(`[${functionName}] Updating ${parsed.rankings.length} items in parallel...`);
+      const updatePromises = parsed.rankings.map(rank => 
+        supabase
           .from('identity_backlog')
           .update({ 
             type: rank.type,
@@ -99,12 +112,14 @@ serve(async (req) => {
             priority_reasoning: rank.reasoning,
             polarity_insight: rank.polarity_insight
           })
-          .eq('id', rank.id);
-      }
+          .eq('id', rank.id)
+      );
+      await Promise.all(updatePromises);
     }
 
     // 4. Insert new suggestions
-    if (parsed.new_suggestions) {
+    if (parsed.new_suggestions && parsed.new_suggestions.length > 0) {
+      console.log(`[${functionName}] Inserting ${parsed.new_suggestions.length} new suggestions...`);
       const { data: { user } } = await supabase.auth.getUser();
       const inserts = parsed.new_suggestions.map(s => ({
         user_id: user.id,
@@ -115,11 +130,10 @@ serve(async (req) => {
         polarity_insight: s.polarity_insight
       }));
 
-      if (inserts.length > 0) {
-        await supabase.from('identity_backlog').insert(inserts);
-      }
+      await supabase.from('identity_backlog').insert(inserts);
     }
 
+    console.log(`[${functionName}] Success.`);
     return new Response(JSON.stringify({ 
       success: true, 
       updated: parsed.rankings?.length || 0,
@@ -129,7 +143,7 @@ serve(async (req) => {
     })
 
   } catch (error) {
-    console.error(`[${functionName}] Error:`, error.message);
+    console.error(`[${functionName}] CRITICAL ERROR:`, error.message);
     return new Response(JSON.stringify({ error: error.message }), {
       status: 400,
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },

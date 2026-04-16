@@ -51,12 +51,17 @@ serve(async (req) => {
     
     YOUR TASK:
     Analyze my journal entries to understand my core personality, my larger goals, and the recurring patterns (blocks) I face.
-    Then, look at my "Identity Backlog" and perform a DEEP RE-ANALYSIS.
+    Then, look at my "Identity Backlog" and perform a DEEP POLARITY ANALYSIS.
     
-    PRIORITIZATION & CLUSTERING LOGIC:
-    1. Keystone Blocks (Score 90-100): Identify the "Keystone" identities or beliefs. These are the foundational patterns that drive multiple other symptomatic blocks. If this one shifts, the others will likely collapse.
-    2. Goal Alignment (Score 70-89): Identify items that are the direct "gatekeepers" to my stated long-term goals.
-    3. Symptomatic Patterns (Score 1-69): Identify items that are likely just surface-level expressions of deeper Keystone blocks.
+    POLARITY LOGIC:
+    Every "Goal" has a "Shadow" (the identity that fears the goal).
+    Every "Problem Identity" has a "Target" (the version of self that is free).
+    
+    FOR EACH BACKLOG ITEM:
+    1. Rank it (1-100) based on its "Keystone" potential.
+    2. Identify its "Polarity Insight":
+       - If it's a GOAL: What is the likely "Shadow Identity" or "Limiting Belief" blocking it?
+       - If it's an IDENTITY/BELIEF: What is the "Target Identity" waiting on the other side?
     
     JOURNAL CONTEXT:
     ${journalContext}
@@ -67,11 +72,12 @@ serve(async (req) => {
     Return the result as a JSON object with a key "rankings" containing an array of objects:
     - "id": The ID of the backlog item.
     - "score": A priority score from 1 to 100.
-    - "reasoning": A brief (1-2 sentence) clinical explanation of why this item is ranked this way, specifically referencing patterns found in the journal context.
+    - "reasoning": A brief (1 sentence) clinical explanation.
+    - "polarity_insight": A 1-sentence insight about the "Shadow" or "Target" of this item.
     
     Return ONLY the JSON.`;
 
-    console.log(`[${functionName}] Calling Gemini 2.5 Flash for Deep Analysis...`);
+    console.log(`[${functionName}] Calling Gemini 2.5 Flash for Polarity Analysis...`);
     
     const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${geminiKey}`, {
       method: 'POST',
@@ -91,13 +97,14 @@ serve(async (req) => {
     const resultText = data.candidates[0].content.parts[0].text.trim();
     const parsed = JSON.parse(resultText);
 
-    // 3. Update the database with new scores and reasoning
+    // 3. Update the database with new scores and polarity insights
     for (const rank of parsed.rankings) {
       await supabase
         .from('identity_backlog')
         .update({ 
           priority_score: rank.score,
-          priority_reasoning: rank.reasoning
+          priority_reasoning: rank.reasoning,
+          polarity_insight: rank.polarity_insight
         })
         .eq('id', rank.id);
     }

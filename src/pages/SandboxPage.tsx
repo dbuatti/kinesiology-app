@@ -32,7 +32,8 @@ import {
   MoreHorizontal,
   Activity,
   Check,
-  X
+  X,
+  ArrowRightLeft
 } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -321,10 +322,23 @@ const SandboxPage = () => {
               </div>
             )}
             
-            {!isIntegrated && item.priority_reasoning && (
-              <p className="text-[10px] text-slate-500 font-medium italic leading-relaxed">
-                {item.priority_reasoning}
-              </p>
+            {!isIntegrated && (item.priority_reasoning || item.polarity_insight) && (
+              <div className="space-y-2 pt-1">
+                {item.priority_reasoning && (
+                  <p className="text-[10px] text-slate-500 font-medium italic leading-relaxed">
+                    {item.priority_reasoning}
+                  </p>
+                )}
+                {item.polarity_insight && (
+                  <div className="flex items-start gap-2 p-2 bg-indigo-50/50 dark:bg-indigo-900/10 rounded-xl border border-indigo-100/50 dark:border-indigo-900/20">
+                    <ArrowRightLeft size={12} className="text-indigo-400 shrink-0 mt-0.5" />
+                    <p className="text-[10px] font-bold text-indigo-600 dark:text-indigo-400 leading-tight">
+                      <span className="uppercase text-[8px] font-black opacity-60 mr-1">Polarity:</span>
+                      {item.polarity_insight}
+                    </p>
+                  </div>
+                )}
+              </div>
             )}
           </div>
         </div>

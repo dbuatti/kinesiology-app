@@ -124,26 +124,29 @@ const LimitingBeliefsTool = () => {
     if (!error) setPastSessions(data || []);
   };
 
-  const saveProgress = async (isComplete: boolean = false) => {
+  const saveProgress = async (isComplete: boolean = false, overrideData?: Partial<FormData>, overrideStep?: number) => {
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) return;
+
+    const dataToSave = { ...formData, ...overrideData };
+    const stepToSave = overrideStep ?? step;
 
     setIsSaving(true);
     try {
       const payload = {
         user_id: user.id,
         backlog_id: backlogId || null,
-        problem: formData.problem,
-        felt_sense: formData.feltSense,
-        limiting_belief: formData.limitingBelief,
-        positive_belief: formData.positiveBelief,
-        dissolve_log: formData.dissolveLog,
-        check_belief_result: formData.checkBeliefResult,
-        check_problem_result: formData.checkProblemResult,
-        integration_awareness: formData.integrationAwareness,
-        integration_action: formData.integrationAction,
+        problem: dataToSave.problem,
+        felt_sense: dataToSave.feltSense,
+        limiting_belief: dataToSave.limitingBelief,
+        positive_belief: dataToSave.positiveBelief,
+        dissolve_log: dataToSave.dissolveLog,
+        check_belief_result: dataToSave.checkBeliefResult,
+        check_problem_result: dataToSave.checkProblemResult,
+        integration_awareness: dataToSave.integrationAwareness,
+        integration_action: dataToSave.integrationAction,
         is_complete: isComplete,
-        current_step: step
+        current_step: stepToSave
       };
 
       let error;
@@ -166,7 +169,6 @@ const LimitingBeliefsTool = () => {
       }
 
       if (isComplete) toast.success("Session completed!");
-      else toast.success("Draft saved.");
       fetchPastSessions();
     } catch (error) {
       toast.error("Failed to save session.");
@@ -240,8 +242,9 @@ const LimitingBeliefsTool = () => {
 
   const handleNext = () => {
     if (step < 5) {
-      setStep((s) => (s + 1) as Step);
-      saveProgress(false);
+      const nextStep = (step + 1) as Step;
+      setStep(nextStep);
+      saveProgress(false, {}, nextStep);
     }
   };
 
@@ -292,6 +295,9 @@ const LimitingBeliefsTool = () => {
       setCurrentNotice2('');
       setLoopSubStep(1);
       setCurrentLoopType(currentLoopType === 'A' ? 'B' : 'A');
+      
+      // Save every cycle completion
+      saveProgress(false, { dissolveLog: newLog });
     }
   };
 
@@ -501,16 +507,16 @@ const LimitingBeliefsTool = () => {
         <div className="p-10 rounded-[3rem] border-2 border-slate-100 hover:border-indigo-200 transition-all space-y-8 bg-white shadow-sm">
           <p className="text-xl font-bold text-center leading-relaxed">"Do you still believe <span className="text-rose-600">"I am {formData.limitingBelief}"</span>?"</p>
           <div className="flex gap-4 justify-center">
-            <Button variant="outline" onClick={() => setFormData({ ...formData, checkBeliefResult: false })} className={cn("flex-1 h-14 rounded-2xl border-emerald-200 text-emerald-600 font-black text-xs uppercase tracking-widest", formData.checkBeliefResult === false && "bg-emerald-50")}>No</Button>
-            <Button variant="outline" onClick={() => setFormData({ ...formData, checkBeliefResult: true })} className={cn("flex-1 h-14 rounded-2xl border-rose-200 text-rose-600 font-black text-xs uppercase tracking-widest", formData.checkBeliefResult === true && "bg-rose-50")}>Yes</Button>
+            <Button variant="outline" onClick={() => { setFormData({ ...formData, checkBeliefResult: false }); saveProgress(false, { checkBeliefResult: false }); }} className={cn("flex-1 h-14 rounded-2xl border-emerald-200 text-emerald-600 font-black text-xs uppercase tracking-widest", formData.checkBeliefResult === false && "bg-emerald-50")}>No</Button>
+            <Button variant="outline" onClick={() => { setFormData({ ...formData, checkBeliefResult: true }); saveProgress(false, { checkBeliefResult: true }); }} className={cn("flex-1 h-14 rounded-2xl border-rose-200 text-rose-600 font-black text-xs uppercase tracking-widest", formData.checkBeliefResult === true && "bg-rose-50")}>Yes</Button>
           </div>
         </div>
 
         <div className="p-10 rounded-[3rem] border-2 border-slate-100 hover:border-indigo-200 transition-all space-y-8 bg-white shadow-sm">
           <p className="text-xl font-bold text-center leading-relaxed">"Feel the problem of <span className="text-indigo-600">"{formData.problem}"</span>... does it still feel like a problem?"</p>
           <div className="flex gap-4 justify-center">
-            <Button variant="outline" onClick={() => setFormData({ ...formData, checkProblemResult: false })} className={cn("flex-1 h-14 rounded-2xl border-emerald-200 text-emerald-600 font-black text-xs uppercase tracking-widest", formData.checkProblemResult === false && "bg-emerald-50")}>No</Button>
-            <Button variant="outline" onClick={() => setFormData({ ...formData, checkProblemResult: true })} className={cn("flex-1 h-14 rounded-2xl border-rose-200 text-rose-600 font-black text-xs uppercase tracking-widest", formData.checkProblemResult === true && "bg-rose-50")}>Yes</Button>
+            <Button variant="outline" onClick={() => { setFormData({ ...formData, checkProblemResult: false }); saveProgress(false, { checkProblemResult: false }); }} className={cn("flex-1 h-14 rounded-2xl border-emerald-200 text-emerald-600 font-black text-xs uppercase tracking-widest", formData.checkProblemResult === false && "bg-emerald-50")}>No</Button>
+            <Button variant="outline" onClick={() => { setFormData({ ...formData, checkProblemResult: true }); saveProgress(false, { checkProblemResult: true }); }} className={cn("flex-1 h-14 rounded-2xl border-rose-200 text-rose-600 font-black text-xs uppercase tracking-widest", formData.checkProblemResult === true && "bg-rose-50")}>Yes</Button>
           </div>
         </div>
       </div>
@@ -661,7 +667,7 @@ const LimitingBeliefsTool = () => {
             </Button>
             {formData.id && !showHistory && (
               <Button variant="ghost" size="sm" onClick={() => saveProgress(false)} disabled={isSaving} className="rounded-full h-10 px-5 text-[10px] font-black uppercase tracking-widest gap-2 text-indigo-600 hover:bg-indigo-50">
-                {isSaving ? <Loader2 className="animate-spin" /> : <Save size={16} />} Save
+                {isSaving ? <Loader2 size={16} className="animate-spin" /> : <Save size={16} />} Save
               </Button>
             )}
           </div>

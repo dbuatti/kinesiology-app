@@ -126,28 +126,31 @@ const IdentityAlignmentTool = () => {
     if (!error) setPastSessions(data || []);
   };
 
-  const saveProgress = async (isComplete: boolean = false) => {
+  const saveProgress = async (isComplete: boolean = false, overrideData?: Partial<FormData>, overridePhase?: number) => {
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) return;
+
+    const dataToSave = { ...formData, ...overrideData };
+    const phaseToSave = overridePhase ?? phase;
 
     setIsSaving(true);
     try {
       const payload = {
         user_id: user.id,
         backlog_id: backlogId || null,
-        goal: formData.goal,
-        target_identity: formData.targetIdentity,
-        somatic_sensations: formData.physicalSensation,
-        emotional_states: formData.emotionalState,
-        reconsolidation_data: formData.reconsolidationData,
-        present_check: formData.presentCheck,
-        future_check: formData.futureCheck,
-        scenario_stability: formData.scenarioStability,
-        maintenance_capacity: formData.maintenanceCapacity,
-        goal_inevitable: formData.goalInevitable,
-        final_anchor: formData.finalAnchor,
+        goal: dataToSave.goal,
+        target_identity: dataToSave.targetIdentity,
+        somatic_sensations: dataToSave.physicalSensation,
+        emotional_states: dataToSave.emotionalState,
+        reconsolidation_data: dataToSave.reconsolidationData,
+        present_check: dataToSave.presentCheck,
+        future_check: dataToSave.futureCheck,
+        scenario_stability: dataToSave.scenarioStability,
+        maintenance_capacity: dataToSave.maintenanceCapacity,
+        goal_inevitable: dataToSave.goalInevitable,
+        final_anchor: dataToSave.finalAnchor,
         is_complete: isComplete,
-        current_phase: phase
+        current_phase: phaseToSave
       };
 
       let error;
@@ -170,7 +173,6 @@ const IdentityAlignmentTool = () => {
       }
 
       if (isComplete) toast.success("Alignment session completed!");
-      else toast.success("Draft saved.");
       fetchPastSessions();
     } catch (error) {
       toast.error("Failed to save session.");
@@ -235,8 +237,9 @@ const IdentityAlignmentTool = () => {
 
   const handleNext = () => {
     if (phase < 5) {
-      setPhase((p) => (p + 1) as Phase);
-      saveProgress(false);
+      const nextPhase = (phase + 1) as Phase;
+      setPhase(nextPhase);
+      saveProgress(false, {}, nextPhase);
     }
   };
 
@@ -249,12 +252,16 @@ const IdentityAlignmentTool = () => {
     else if (loopStep === 2 && currentLoop.resistance) setLoopStep(3);
     else if (loopStep === 3 && currentLoop.alternative) setLoopStep(4);
     else if (loopStep === 4 && currentLoop.replacement) {
+      const newData = [...formData.reconsolidationData, currentLoop as ReconsolidationEntry];
       setFormData({
         ...formData,
-        reconsolidationData: [...formData.reconsolidationData, currentLoop as ReconsolidationEntry]
+        reconsolidationData: newData
       });
       setCurrentLoop({});
       setLoopStep(1);
+      
+      // Save every loop completion
+      saveProgress(false, { reconsolidationData: newData });
       toast.success("Resistance metabolized.");
     }
   };
@@ -460,8 +467,8 @@ const IdentityAlignmentTool = () => {
         </div>
 
         <div className="space-y-6">
-          <CheckRow label={`Do you feel like you are now ${formData.targetIdentity}?`} value={formData.presentCheck} onChange={(v) => setFormData({...formData, presentCheck: v})} />
-          <CheckRow label={`Do you feel like you will be ${formData.targetIdentity} in the future?`} value={formData.futureCheck} onChange={(v) => setFormData({...formData, futureCheck: v})} />
+          <CheckRow label={`Do you feel like you are now ${formData.targetIdentity}?`} value={formData.presentCheck} onChange={(v) => { setFormData({...formData, presentCheck: v}); saveProgress(false, { presentCheck: v }); }} />
+          <CheckRow label={`Do you feel like you will be ${formData.targetIdentity} in the future?`} value={formData.futureCheck} onChange={(v) => { setFormData({...formData, futureCheck: v}); saveProgress(false, { futureCheck: v }); }} />
         </div>
 
         <div className="flex justify-center pt-8">
@@ -486,7 +493,7 @@ const IdentityAlignmentTool = () => {
       <div className="space-y-8">
         <div className="p-8 bg-indigo-900 text-white rounded-[3rem] border border-indigo-800 flex flex-col sm:flex-row sm:items-center justify-between gap-6 shadow-xl">
           <Label className="text-xl font-bold text-left leading-tight">Does it now feel like that goal is inevitable?</Label>
-          <ToggleGroup type="single" value={formData.goalInevitable === null ? "" : formData.goalInevitable ? "yes" : "no"} onValueChange={(v) => setFormData({...formData, goalInevitable: v === "yes"})} className="bg-white/10 p-1 rounded-xl shrink-0">
+          <ToggleGroup type="single" value={formData.goalInevitable === null ? "" : formData.goalInevitable ? "yes" : "no"} onValueChange={(v) => { setFormData({...formData, goalInevitable: v === "yes"}); saveProgress(false, { goalInevitable: v === "yes" }); }} className="bg-white/10 p-1 rounded-xl shrink-0">
             <ToggleGroupItem value="yes" className="rounded-lg px-8 h-12 data-[state=on]:bg-emerald-500 data-[state=on]:text-white font-black text-xs uppercase tracking-widest">YES</ToggleGroupItem>
             <ToggleGroupItem value="no" className="rounded-lg px-8 h-12 data-[state=on]:bg-rose-500 data-[state=on]:text-white font-black text-xs uppercase tracking-widest">NO</ToggleGroupItem>
           </ToggleGroup>

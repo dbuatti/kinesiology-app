@@ -155,25 +155,29 @@ const IdentityShiftingTool = () => {
     }
   };
 
-  const saveProgress = async (isComplete: boolean = false) => {
+  const saveProgress = async (isComplete: boolean = false, overrideData?: Partial<FormData>, overridePhase?: number, overrideLoopStep?: number) => {
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) return;
+
+    const dataToSave = { ...formData, ...overrideData };
+    const phaseToSave = overridePhase ?? phase;
+    const loopStepToSave = overrideLoopStep ?? loopStep;
 
     setIsSaving(true);
     try {
       const payload = {
         user_id: user.id,
         backlog_id: backlogId || null,
-        problem: formData.problem,
-        emotion: formData.emotion,
-        felt_sense: formData.feltSense,
-        identity: formData.identity,
-        loop_responses: formData.loopResponses,
-        integration_awareness: `Feelings Now: ${formData.feelingsNow}\nConscious Of: ${formData.moreConsciousOf}\nIntention: ${formData.newIntention}`,
-        integration_action: `Action: ${formData.actionPlan}\nNo. 1 Thing: ${formData.no1Thing}`,
+        problem: dataToSave.problem,
+        emotion: dataToSave.emotion,
+        felt_sense: dataToSave.feltSense,
+        identity: dataToSave.identity,
+        loop_responses: dataToSave.loopResponses,
+        integration_awareness: `Feelings Now: ${dataToSave.feelingsNow}\nConscious Of: ${dataToSave.moreConsciousOf}\nIntention: ${dataToSave.newIntention}`,
+        integration_action: `Action: ${dataToSave.actionPlan}\nNo. 1 Thing: ${dataToSave.no1Thing}`,
         is_complete: isComplete,
-        current_phase: phase,
-        loop_step: loopStep
+        current_phase: phaseToSave,
+        loop_step: loopStepToSave
       };
 
       let error;
@@ -196,7 +200,6 @@ const IdentityShiftingTool = () => {
       }
 
       if (isComplete) toast.success("Session completed!");
-      else toast.success("Draft saved.");
       fetchPastSessions();
     } catch (error) {
       toast.error("Failed to save session.");
@@ -222,8 +225,9 @@ const IdentityShiftingTool = () => {
 
   const handleNext = () => {
     if (phase < 5) {
-      setPhase((p) => (p + 1) as Phase);
-      saveProgress(false);
+      const nextPhase = (phase + 1) as Phase;
+      setPhase(nextPhase);
+      saveProgress(false, {}, nextPhase);
     }
   };
 
@@ -248,22 +252,27 @@ const IdentityShiftingTool = () => {
   const handleLoopNext = () => {
     if (currentLoopResponse.trim() === '') return;
     const newResponses = [...formData.loopResponses, currentLoopResponse];
+    const nextLoopStep = loopStep < 4 ? loopStep + 1 : 5;
+    
     setFormData({ ...formData, loopResponses: newResponses });
-    if (loopStep < 4) {
-      setLoopStep(loopStep + 1);
-      setCurrentLoopResponse('');
-    } else {
-      setLoopStep(5); 
-    }
+    setLoopStep(nextLoopStep);
+    setCurrentLoopResponse('');
+    
+    // Save every loop step
+    saveProgress(false, { loopResponses: newResponses }, phase, nextLoopStep);
   };
 
   const handleLoopBack = () => {
     if (loopStep > 0) {
-      setLoopStep(loopStep - 1);
+      const nextLoopStep = loopStep - 1;
       const newResponses = [...formData.loopResponses];
       newResponses.pop();
+      
       setFormData({ ...formData, loopResponses: newResponses });
+      setLoopStep(nextLoopStep);
       setCurrentLoopResponse('');
+      
+      saveProgress(false, { loopResponses: newResponses }, phase, nextLoopStep);
     } else {
       handleBack();
     }
@@ -281,6 +290,7 @@ const IdentityShiftingTool = () => {
     setLoopStep(0);
     setCurrentLoopResponse('');
     setFormData(prev => ({ ...prev, loopResponses: [] }));
+    saveProgress(false, { loopResponses: [] }, phase, 0);
   };
 
   const handlePhase3Check = (failed: boolean, context: string) => {

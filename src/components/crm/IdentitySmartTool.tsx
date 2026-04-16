@@ -256,7 +256,7 @@ const IdentitySmartTool = () => {
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
                     <button type="button" className="flex items-center gap-1.5 text-[9px] font-black uppercase tracking-widest text-indigo-600 hover:text-indigo-700 transition-colors">
-                      Type: {selectedType === 'auto' ? 'Auto-Detect' : selectedType === 'goal' ? 'Alignment' : selectedType === 'belief' ? 'Belief' : 'Shifting'}
+                      Type: {selectedType === 'auto' ? 'Auto-Detect' : selectedType === 'alignment' ? 'Alignment' : selectedType === 'belief' ? 'Belief' : 'Shifting'}
                       <ChevronDown size={10} />
                     </button>
                   </DropdownMenuTrigger>
@@ -300,10 +300,10 @@ const IdentitySmartTool = () => {
                         <div className={cn(
                           "w-7 h-7 rounded-lg flex items-center justify-center shrink-0",
                           item.type === 'belief' ? "bg-rose-50 text-rose-600" : 
-                          item.type === 'goal' ? "bg-emerald-50 text-emerald-600" : "bg-indigo-50 text-indigo-600"
+                          item.type === 'alignment' ? "bg-emerald-50 text-emerald-600" : "bg-indigo-50 text-indigo-600"
                         )}>
                           {item.type === 'belief' ? <ShieldAlert size={14} /> : 
-                           item.type === 'goal' ? <Target size={14} /> : <Fingerprint size={14} />}
+                           item.type === 'alignment' ? <Target size={14} /> : <Fingerprint size={14} />}
                         </div>
                         {item.priority_score > 0 && (
                           <div className="absolute -top-1.5 -right-1.5 w-4 h-4 rounded-full bg-indigo-600 text-white flex items-center justify-center text-[6px] font-black border border-background">
@@ -319,7 +319,7 @@ const IdentitySmartTool = () => {
                       className="h-7 w-7 rounded-lg text-muted-foreground hover:text-indigo-600 shrink-0"
                       asChild
                     >
-                      <Link to={item.type === 'identity' ? "/sandbox/identity-shifting" : item.type === 'goal' ? "/sandbox/identity-alignment" : "/sandbox/limiting-beliefs"} state={{ prefill: item.content, backlogId: item.id }}>
+                      <Link to={item.type === 'shifting' ? "/sandbox/identity-shifting" : item.type === 'alignment' ? "/sandbox/identity-alignment" : "/sandbox/limiting-beliefs"} state={{ prefill: item.content, backlogId: item.id }}>
                         <ChevronRight size={16} />
                       </Link>
                     </Button>

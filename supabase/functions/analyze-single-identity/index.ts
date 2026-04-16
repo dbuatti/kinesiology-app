@@ -6,6 +6,13 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type, x-supabase-client-platform',
 }
 
+const normalizeType = (type: string): 'alignment' | 'shifting' | 'belief' => {
+  const t = String(type).toLowerCase().trim();
+  if (t === 'goal' || t === 'alignment') return 'alignment';
+  if (t === 'identity' || t === 'shifting') return 'shifting';
+  return 'belief';
+};
+
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
     return new Response('ok', { headers: corsHeaders })
@@ -40,10 +47,7 @@ serve(async (req) => {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         contents: [{ parts: [{ text: prompt }] }],
-        generationConfig: {
-          temperature: 0.1,
-          response_mime_type: "application/json"
-        }
+        generationConfig: { temperature: 0.1, response_mime_type: "application/json" }
       }),
     })
 
@@ -55,7 +59,10 @@ serve(async (req) => {
       resultText = resultText.replace(/```json\n?/, '').replace(/```\n?/, '').trim();
     }
 
-    return new Response(resultText, {
+    const parsed = JSON.parse(resultText);
+    parsed.type = normalizeType(parsed.type);
+
+    return new Response(JSON.stringify(parsed), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     })
   } catch (error) {

@@ -69,6 +69,7 @@ serve(async (req) => {
     1. RE-PRIORITIZE: Rank existing "pending" items (1-100) based on their "Keystone" potential.
     2. RE-CATEGORIZE: Ensure every item is in the correct tool (goal, identity, or belief).
     3. DISCOVER: Identify 3-5 NEW items that are missing from the map but are clearly recurring "Shadow" themes or "Target" identities in the journal.
+    4. DEDUPLICATE: If you see two items that are essentially the same, give the redundant one a score of 0 and set the reasoning to "Redundant duplicate".
     
     LOGIC:
     - "goal" -> IDENTITY ALIGNMENT. Use this for specific outcomes, income targets, or desired future states (e.g., "Making $1500/week", "The Vital Leader").

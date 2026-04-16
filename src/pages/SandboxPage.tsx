@@ -377,7 +377,7 @@ const SandboxPage = () => {
                   <Button 
                     className={cn(
                       "h-10 px-6 rounded-xl font-black text-[10px] uppercase tracking-widest shadow-lg transition-all",
-                      isWIP ? "bg-amber-500 hover:bg-amber-600 text-white" : "bg-indigo-600 hover:bg-indigo-700 text-white"
+                      isWIP ? "bg-amber-50 hover:bg-amber-600 text-white" : "bg-indigo-600 hover:bg-indigo-700 text-white"
                     )}
                     asChild
                   >
@@ -466,10 +466,10 @@ const SandboxPage = () => {
                       </Button>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align="end" className="w-48 rounded-2xl p-2 shadow-2xl border-none bg-card">
-                      <DropdownMenuItem onClick={() => setSortBy('priority')} className="rounded-xl py-2.5 px-4 cursor-pointer flex items-center gap-3"><TrendingUp size={14} className="text-indigo-50" /> AI Priority</DropdownMenuItem>
-                      <DropdownMenuItem onClick={() => setSortBy('progress')} className="rounded-xl py-2.5 px-4 cursor-pointer flex items-center gap-3"><Activity size={14} className="text-emerald-50" /> Most Worked</DropdownMenuItem>
-                      <DropdownMenuItem onClick={() => setSortBy('newest')} className="rounded-xl py-2.5 px-4 cursor-pointer flex items-center gap-3"><Calendar size={14} className="text-indigo-50" /> Newest First</DropdownMenuItem>
-                      <DropdownMenuItem onClick={() => setSortBy('type')} className="rounded-xl py-2.5 px-4 cursor-pointer flex items-center gap-3"><Layers size={14} className="text-purple-50" /> By Tool Type</DropdownMenuItem>
+                      <DropdownMenuItem onClick={() => setSortBy('priority')} className="rounded-xl py-2.5 px-4 cursor-pointer flex items-center gap-3"><TrendingUp size={14} className="text-indigo-500" /> AI Priority</DropdownMenuItem>
+                      <DropdownMenuItem onClick={() => setSortBy('progress')} className="rounded-xl py-2.5 px-4 cursor-pointer flex items-center gap-3"><Activity size={14} className="text-emerald-500" /> Most Worked</DropdownMenuItem>
+                      <DropdownMenuItem onClick={() => setSortBy('newest')} className="rounded-xl py-2.5 px-4 cursor-pointer flex items-center gap-3"><Calendar size={14} className="text-indigo-500" /> Newest First</DropdownMenuItem>
+                      <DropdownMenuItem onClick={() => setSortBy('type')} className="rounded-xl py-2.5 px-4 cursor-pointer flex items-center gap-3"><Layers size={14} className="text-purple-500" /> By Tool Type</DropdownMenuItem>
                     </DropdownMenuContent>
                   </DropdownMenu>
                 </div>

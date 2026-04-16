@@ -28,8 +28,7 @@ import {
   RefreshCw,
   Info,
   ChevronRight,
-  Wand2,
-  X
+  Wand2
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { supabase } from "@/integrations/supabase/client";

@@ -81,7 +81,8 @@ serve(async (req) => {
     CURRENT MAP:
     ${backlogList}
     
-    Return ONLY a JSON object with this structure:
+    Return ONLY a JSON object. Do not include any markdown formatting or explanation.
+    Structure:
     {
       "rankings": [
         { "id": "uuid", "type": "goal|identity|belief", "score": 85, "reasoning": "...", "polarity_insight": "..." }
@@ -93,15 +94,13 @@ serve(async (req) => {
 
     console.log(`[${functionName}] Calling Gemini 1.5 Flash...`);
     
-    // Using v1 endpoint for better stability
     const response = await fetch(`https://generativelanguage.googleapis.com/v1/models/gemini-1.5-flash:generateContent?key=${geminiKey}`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         contents: [{ parts: [{ text: prompt }] }],
         generationConfig: { 
-          temperature: 0.3,
-          response_mime_type: "application/json"
+          temperature: 0.2
         }
       }),
     })
@@ -134,7 +133,7 @@ serve(async (req) => {
             polarity_insight: rank.polarity_insight
           })
           .eq('id', rank.id)
-          .eq('user_id', userId) // Security check
+          .eq('user_id', userId)
       );
       await Promise.all(updatePromises);
     }

@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from 'react';
-import { useLocation } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -66,6 +66,7 @@ interface FormData {
 
 const IdentityAlignmentTool = () => {
   const location = useLocation();
+  const navigate = useNavigate();
   const prefillData = location.state?.prefill;
   const backlogId = location.state?.backlogId;
   const reflectionId = location.state?.reflectionId;
@@ -181,6 +182,11 @@ const IdentityAlignmentTool = () => {
     } finally {
       setIsSaving(false);
     }
+  };
+
+  const handleLeave = async () => {
+    await saveProgress(false);
+    navigate('/sandbox');
   };
 
   const handleDeepScan = async () => {
@@ -658,6 +664,9 @@ const IdentityAlignmentTool = () => {
             {reflectionId && (
               <JournalRefresher reflectionId={reflectionId} />
             )}
+            <Button variant="ghost" size="sm" onClick={handleLeave} className="rounded-full h-10 px-5 text-[10px] font-black uppercase tracking-widest gap-2 text-slate-500 hover:bg-slate-100">
+              <ArrowLeft size={16} /> Leave for now
+            </Button>
             <Button variant="ghost" size="sm" onClick={() => setShowHistory(!showHistory)} className="rounded-full h-10 px-5 text-[10px] font-black uppercase tracking-widest gap-2 text-slate-500 hover:bg-slate-100">
               <History size={16} /> {showHistory ? "Back to Tool" : "History"}
             </Button>

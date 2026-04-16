@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from 'react';
-import { useLocation } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -58,6 +58,7 @@ interface FormData {
 
 const LimitingBeliefsTool = () => {
   const location = useLocation();
+  const navigate = useNavigate();
   const prefillData = location.state?.prefill;
   const backlogId = location.state?.backlogId;
   const reflectionId = location.state?.reflectionId;
@@ -177,6 +178,11 @@ const LimitingBeliefsTool = () => {
     } finally {
       setIsSaving(false);
     }
+  };
+
+  const handleLeave = async () => {
+    await saveProgress(false);
+    navigate('/sandbox');
   };
 
   const handleDeepScan = async () => {
@@ -601,7 +607,7 @@ const LimitingBeliefsTool = () => {
         >
           {isAnalyzing ? <Loader2 className="mr-2 animate-spin" /> : <Wand2 className="mr-2" />} Scan for Deeper Patterns
         </Button>
-        <Button onClick={() => saveProgress(true)} disabled={isSaving || !formData.integrationAwareness} className="flex-[2] bg-indigo-600 hover:bg-indigo-700 text-white rounded-2xl h-16 font-black text-xs uppercase tracking-widest shadow-2xl shadow-indigo-100">
+        <Button onClick={() => saveProgress(true)} disabled={isSaving || !formData.integrationAwareness} className="flex-[2] bg-indigo-600 hover:bg-indigo-700 text-white rounded-2xl h-16 font-black text-xs uppercase tracking-widest shadow-xl shadow-indigo-100">
           {isSaving ? <Loader2 className="mr-2 animate-spin" /> : <CheckCircle2 className="mr-2" />} Complete & Save Session
         </Button>
         <Button onClick={reset} variant="ghost" className="flex-1 text-slate-400 rounded-2xl h-16 font-bold hover:bg-slate-50">
@@ -705,12 +711,15 @@ const LimitingBeliefsTool = () => {
             {reflectionId && (
               <JournalRefresher reflectionId={reflectionId} />
             )}
+            <Button variant="ghost" size="sm" onClick={handleLeave} className="rounded-full h-10 px-5 text-[10px] font-black uppercase tracking-widest gap-2 text-slate-500 hover:bg-slate-100">
+              <ArrowLeft size={16} /> Leave for now
+            </Button>
             <Button variant="ghost" size="sm" onClick={() => setShowHistory(!showHistory)} className="rounded-full h-10 px-5 text-[10px] font-black uppercase tracking-widest gap-2 text-slate-500 hover:bg-slate-100">
               <History size={16} /> {showHistory ? "Back to Tool" : "History"}
             </Button>
             {formData.id && !showHistory && (
               <Button variant="ghost" size="sm" onClick={() => saveProgress(false)} disabled={isSaving} className="rounded-full h-10 px-5 text-[10px] font-black uppercase tracking-widest gap-2 text-indigo-600 hover:bg-indigo-50">
-                {isSaving ? <Loader2 className="mr-2 animate-spin" /> : <Save size={16} />} Save
+                {isSaving ? <Loader2 size={16} className="animate-spin" /> : <Save size={16} />} Save
               </Button>
             )}
           </div>

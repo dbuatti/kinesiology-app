@@ -103,6 +103,7 @@ const SandboxPage = () => {
   const [drafts, setDrafts] = useState<Record<string, boolean>>({});
   const [loading, setLoading] = useState(true);
   const [isPrioritizing, setIsPrioritizing] = useState(false);
+  const [scanningId, setScanningId] = useState<string | null>(null);
   const [sortBy, setSortBy] = useState<SortOption>('priority');
   const [activeTab, setActiveTab] = useState("active");
 
@@ -187,6 +188,35 @@ const SandboxPage = () => {
     }
   };
 
+  const handleRescanItem = async (item: any) => {
+    setScanningId(item.id);
+    try {
+      const { data, error } = await supabase.functions.invoke('analyze-single-identity', {
+        body: { content: item.content }
+      });
+
+      if (error) throw error;
+
+      const { error: updateError } = await supabase
+        .from('identity_backlog')
+        .update({
+          type: data.type,
+          priority_reasoning: data.reasoning,
+          polarity_insight: data.polarity_insight
+        })
+        .eq('id', item.id);
+
+      if (updateError) throw updateError;
+
+      showSuccess(`"${item.content}" re-analyzed and updated.`);
+      fetchData();
+    } catch (err: any) {
+      showError(err.message || "Rescan failed.");
+    } finally {
+      setScanningId(null);
+    }
+  };
+
   const handleAcceptSuggestion = async (id: string) => {
     try {
       const { error } = await supabase
@@ -266,13 +296,15 @@ const SandboxPage = () => {
     
     const progressValue = isIntegrated ? 100 : Math.min(count * 25, 100);
     const progressLabel = isIntegrated ? "Integrated" : count === 0 ? "New" : count === 1 ? "Initiated" : count < 4 ? "Processing" : "Deep Work";
+    const isScanning = scanningId === item.id;
 
     return (
       <div className={cn(
         "flex flex-col md:flex-row md:items-center justify-between p-5 bg-card rounded-[2rem] border transition-all gap-6 group",
         item.priority_score > 80 ? "border-indigo-200 shadow-md" : "border-border",
         isWIP && "border-amber-200 bg-amber-50/5",
-        isSuggested && "border-dashed border-indigo-300 bg-indigo-50/10"
+        isSuggested && "border-dashed border-indigo-300 bg-indigo-50/10",
+        isScanning && "opacity-70 grayscale"
       )}>
         <div className="flex items-center gap-5 flex-1 min-w-0">
           <div className="relative shrink-0">
@@ -280,13 +312,14 @@ const SandboxPage = () => {
               "w-12 h-12 rounded-2xl flex items-center justify-center shadow-inner transition-transform group-hover:scale-110",
               isIntegrated ? "bg-emerald-500 text-white" :
               isSuggested ? "bg-indigo-100 text-indigo-600" :
-              item.type === 'belief' ? "bg-rose-50 text-rose-600" : 
-              item.type === 'goal' ? "bg-emerald-50 text-emerald-600" : "bg-indigo-50 text-indigo-600"
+              rec.tool === 'Limiting Beliefs' ? "bg-rose-50 text-rose-600" :
+              rec.tool === 'Identity Alignment' ? "bg-emerald-50 text-emerald-600" : "bg-indigo-50 text-indigo-600"
             )}>
-              {isIntegrated ? <CheckCircle size={24} /> :
+              {isScanning ? <Loader2 size={24} className="animate-spin" /> :
+               isIntegrated ? <CheckCircle size={24} /> :
                isSuggested ? <Sparkles size={24} /> :
-               item.type === 'belief' ? <ShieldAlert size={24} /> : 
-               item.type === 'goal' ? <Target size={24} /> : <Fingerprint size={24} />}
+               rec.tool === 'Limiting Beliefs' ? <ShieldAlert size={24} /> :
+               rec.tool === 'Identity Alignment' ? <Target size={24} /> : <Fingerprint size={24} />}
             </div>
             {!isIntegrated && !isSuggested && item.priority_score > 0 && (
               <div className="absolute -top-2 -right-2 w-6 h-6 rounded-full bg-indigo-600 text-white flex items-center justify-center text-[8px] font-black border-2 border-background shadow-lg">
@@ -383,9 +416,14 @@ const SandboxPage = () => {
                         <RefreshCw size={16} className="text-indigo-500" /> Reactivate
                       </DropdownMenuItem>
                     ) : (
-                      <DropdownMenuItem onClick={() => handleMarkIntegrated(item.id)} className="rounded-xl py-2.5 px-4 cursor-pointer flex items-center gap-3 text-emerald-600 font-bold">
-                        <CheckCircle2 size={16} /> Mark Integrated
-                      </DropdownMenuItem>
+                      <>
+                        <DropdownMenuItem onClick={() => handleRescanItem(item)} disabled={isScanning} className="rounded-xl py-2.5 px-4 cursor-pointer flex items-center gap-3">
+                          <Wand2 size={16} className="text-indigo-500" /> Rescan with AI
+                        </DropdownMenuItem>
+                        <DropdownMenuItem onClick={() => handleMarkIntegrated(item.id)} className="rounded-xl py-2.5 px-4 cursor-pointer flex items-center gap-3 text-emerald-600 font-bold">
+                          <CheckCircle2 size={16} /> Mark Integrated
+                        </DropdownMenuItem>
+                      </>
                     )}
                     <DropdownMenuItem onClick={() => handleDelete(item.id)} className="text-destructive focus:text-destructive rounded-xl py-2.5 px-4 cursor-pointer flex items-center gap-3">
                       <Trash2 size={16} /> Delete

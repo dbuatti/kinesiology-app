@@ -62,22 +62,23 @@ serve(async (req) => {
     const journalContext = reflections?.map(r => `[${r.category}]: ${r.content}`).join('\n\n');
     const backlogList = backlog?.map(b => `[${b.status}] ID: ${b.id} | Type: ${b.type} | Content: ${b.content}`).join('\n');
 
+    console.log(`[${functionName}] Analyzing ${reflections?.length || 0} journal entries against ${backlog.length} map items.`);
+
     const prompt = `Act as a master clinical supervisor and pattern recognition expert.
     Analyze my journal entries and my current "Identity Map" to perform a DEEP DISCOVERY.
     
-    YOUR TASKS:
-    1. RE-PRIORITIZE: Rank existing "pending" items (1-100) based on their "Keystone" potential.
-    2. RE-CATEGORIZE: Ensure every item is in the correct tool (goal, identity, or belief).
-    3. DISCOVER: Identify 3-5 NEW items that are missing from the map but are clearly recurring "Shadow" themes or "Target" identities in the journal.
-    4. DEDUPLICATE: If you see two items that are essentially the same, give the redundant one a score of 0 and set the reasoning to "Redundant duplicate".
+    PRIMARY TASK: TOOL REASSESSMENT
+    For every item in the "CURRENT MAP", re-evaluate if it is assigned to the correct clinical tool.
     
-    LOGIC:
-    - "goal" -> IDENTITY ALIGNMENT. Use this for specific outcomes, income targets, or desired future states (e.g., "Making $1500/week", "The Vital Leader").
-    - "identity" -> IDENTITY SHIFTING. Use this for CURRENT problematic versions of self or "stuck" roles (e.g., "The Procrastinator", "The Invisible One").
-    - "belief" -> LIMITING BELIEFS. Core "I am..." statements representing a struggle or rule (e.g., "I am a burden").
+    LOGIC FOR CATEGORIZATION:
+    1. "goal" -> IDENTITY ALIGNMENT. Use this for any DESIRED FUTURE STATE, specific outcome, income target, or version of self you are moving TOWARDS (e.g., "Making $1500/week", "The Sovereign Creator").
+    2. "identity" -> IDENTITY SHIFTING. Use this for any CURRENT PROBLEMATIC version of self, "stuck" role, or construct you are letting go of (e.g., "The Procrastinator", "The Invisible One").
+    3. "belief" -> LIMITING BELIEFS. Use this for core "I am..." struggle statements or rules that hold a pattern in place (e.g., "I am a burden", "I am not safe to be seen").
     
-    CRITICAL RULE:
-    Any item that mentions money, income, revenue, or a specific numerical result (e.g., "$1000/week", "10 clients") MUST be categorized as a "goal". Even if phrased as "I am making...", it is a target outcome for Identity Alignment.
+    SECONDARY TASKS:
+    1. RE-PRIORITIZE: Rank existing items (1-100) based on their "Keystone" potential (how much they drive other patterns).
+    2. DISCOVER: Identify 3-5 NEW items missing from the map but clearly recurring in the journal.
+    3. DEDUPLICATE: If two items are essentially the same, give the redundant one a score of 0.
     
     JOURNAL CONTEXT:
     ${journalContext}
@@ -125,13 +126,18 @@ serve(async (req) => {
     }
 
     const parsed = JSON.parse(resultText);
+    console.log(`[${functionName}] AI Analysis complete. Received ${parsed.rankings?.length || 0} re-rankings and ${parsed.new_suggestions?.length || 0} new suggestions.`);
 
     // 3. Update existing items in parallel
     if (parsed.rankings && parsed.rankings.length > 0) {
-      console.log(`[${functionName}] Updating ${parsed.rankings.length} items...`);
+      console.log(`[${functionName}] Applying re-categorization and priority updates...`);
       const updatePromises = parsed.rankings.map(rank => {
         const originalItem = backlog.find(b => b.id === rank.id);
-        let finalType = String(rank.type).toLowerCase().trim();
+        const finalType = String(rank.type).toLowerCase().trim();
+
+        if (originalItem && originalItem.type !== finalType) {
+          console.log(`[${functionName}] Re-assigning tool for "${originalItem.content}": ${originalItem.type} -> ${finalType}`);
+        }
 
         return supabase
           .from('identity_backlog')

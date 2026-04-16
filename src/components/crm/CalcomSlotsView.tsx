@@ -315,23 +315,36 @@ const CalcomSlotsView = () => {
     const startOfNextWeek = isMonday(today) ? addDays(today, 7) : nextMonday(today);
     const nextWeekDays = Array.from({ length: 5 }).map((_, i) => format(addDays(startOfNextWeek, i), 'yyyy-MM-dd'));
     
-    const availableDays: string[] = [];
+    const availableEntries: string[] = [];
     nextWeekDays.forEach(date => {
       const isBlocked = blockedDates.includes(date);
       const daySlots = slots[date] || [];
       if (!isBlocked && daySlots.length > 0) {
-        availableDays.push(format(new Date(date), "E"));
+        const dayLabel = format(new Date(date), "E");
+        const firstSlot = new Date(daySlots[0].time || daySlots[0].start);
+        const hour = firstSlot.getHours();
+        const ampm = hour >= 12 ? 'p' : 'a';
+        const displayHour = hour % 12 || 12;
+        
+        availableEntries.push(`${dayLabel} ${displayHour}${ampm}`);
       }
     });
 
-    if (availableDays.length === 0) {
+    if (availableEntries.length === 0) {
       showError("No availability found for next Mon-Fri.");
       return;
     }
 
-    const note = `Next week spots: ${availableDays.join(', ')} ✦ Link in bio`;
+    const suffix = " ✦ Link in bio";
+    let note = `Next week: ${availableEntries.join(', ')}${suffix}`;
     
-    // Strict 60 char check
+    // If over 60 chars, try removing entries one by one until it fits
+    while (note.length > 60 && availableEntries.length > 1) {
+      availableEntries.pop();
+      note = `Next week: ${availableEntries.join(', ')}...${suffix}`;
+    }
+
+    // Final safety truncate
     const finalNote = note.length > 60 ? note.substring(0, 57) + "..." : note;
 
     navigator.clipboard.writeText(finalNote);
@@ -605,7 +618,7 @@ const CalcomSlotsView = () => {
               </div>
               <h4 className="text-xl font-black">Availability Logic</h4>
               <p className="text-sm text-slate-400 leading-relaxed font-medium">
-                Blocking a day creates an "Out of Office" entry in Cal.com. This overrides your standard schedule and prevents any new bookings for that date.
+                Blocking a day avoids "Out of Office" entry in Cal.com. This overrides your standard schedule and prevents any new bookings for that date.
               </p>
             </CardContent>
           </Card>

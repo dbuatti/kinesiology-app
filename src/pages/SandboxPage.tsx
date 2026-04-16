@@ -86,6 +86,7 @@ const SandboxPage = () => {
   const [backlog, setBacklog] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [isPrioritizing, setIsPrioritizing] = useState(false);
+  const [isClearing, setIsClearing] = useState(false);
   const [sortBy, setSortBy] = useState<SortOption>('priority');
 
   const fetchBacklog = async () => {
@@ -138,6 +139,32 @@ const SandboxPage = () => {
       showError(err.message || "Failed to prioritize backlog.");
     } finally {
       setIsPrioritizing(false);
+    }
+  };
+
+  const handleClearAll = async () => {
+    if (backlog.length === 0) return;
+    if (!confirm(`Are you sure you want to delete all ${backlog.length} items from your backlog? This cannot be undone.`)) return;
+
+    setIsClearing(true);
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) throw new Error("Not authenticated");
+
+      const { error } = await supabase
+        .from('identity_backlog')
+        .delete()
+        .eq('user_id', user.id)
+        .eq('status', 'pending');
+
+      if (error) throw error;
+      
+      showSuccess("Backlog cleared.");
+      setBacklog([]);
+    } catch (err: any) {
+      showError(err.message || "Failed to clear backlog.");
+    } finally {
+      setIsClearing(false);
     }
   };
 
@@ -203,14 +230,25 @@ const SandboxPage = () => {
               <p className="text-muted-foreground font-medium mt-1 text-lg">A laboratory for self-inquiry and neural reconsolidation.</p>
             </div>
           </div>
-          <Button 
-            onClick={handlePrioritize}
-            disabled={isPrioritizing || backlog.length === 0}
-            className="bg-indigo-600 hover:bg-indigo-700 text-white rounded-2xl h-14 px-8 font-black text-xs uppercase tracking-widest shadow-xl shadow-indigo-100"
-          >
-            {isPrioritizing ? <Loader2 className="mr-2 animate-spin" /> : <Wand2 size={18} className="mr-2" />}
-            Prioritize with AI
-          </Button>
+          <div className="flex items-center gap-3">
+            <Button 
+              variant="ghost"
+              onClick={handleClearAll}
+              disabled={isClearing || backlog.length === 0}
+              className="h-14 px-6 rounded-2xl font-black text-xs uppercase tracking-widest text-rose-600 hover:bg-rose-50"
+            >
+              {isClearing ? <Loader2 className="animate-spin" /> : <Trash2 size={18} className="mr-2" />}
+              Clear Backlog
+            </Button>
+            <Button 
+              onClick={handlePrioritize}
+              disabled={isPrioritizing || backlog.length === 0}
+              className="bg-indigo-600 hover:bg-indigo-700 text-white rounded-2xl h-14 px-8 font-black text-xs uppercase tracking-widest shadow-xl shadow-indigo-100"
+            >
+              {isPrioritizing ? <Loader2 className="mr-2 animate-spin" /> : <Wand2 size={18} className="mr-2" />}
+              Prioritize with AI
+            </Button>
+          </div>
         </div>
 
         {/* Tool Grid */}

@@ -73,6 +73,8 @@ const JournalPage = () => {
   const [appointments, setAppointments] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [isScanning, setIsScanning] = useState(false);
+  const [isAddingAll, setIsAddingAll] = useState(false);
   const [content, setContent] = useState("");
   const [category, setCategory] = useState("General");
   const [selectedAppointmentId, setSelectedAppointmentId] = useState<string | null>(preselectedAppId || null);
@@ -200,16 +202,40 @@ const JournalPage = () => {
           .eq('id', reflection.id);
         
         fetchData();
-        showSuccess(`AI extracted ${data.extractions.length} insights for your Sandbox.`);
+        return data.extractions.length;
       }
+      return 0;
     } catch (err: any) {
       console.error(err);
+      return 0;
     } finally {
       setAnalyzingIds(prev => {
         const next = new Set(prev);
         next.delete(reflection.id);
         return next;
       });
+    }
+  };
+
+  const handleScanAll = async () => {
+    const unanalyzed = reflections.filter(r => !r.ai_extractions || r.ai_extractions.length === 0);
+    if (unanalyzed.length === 0) {
+      showSuccess("All entries have already been analyzed.");
+      return;
+    }
+
+    setIsScanning(true);
+    let totalExtracted = 0;
+    try {
+      for (const ref of unanalyzed) {
+        const count = await handleAnalyze(ref);
+        totalExtracted += count;
+      }
+      showSuccess(`Scan complete! Extracted ${totalExtracted} new insights across ${unanalyzed.length} entries.`);
+    } catch (err) {
+      showError("Failed to complete full scan.");
+    } finally {
+      setIsScanning(false);
     }
   };
 
@@ -243,7 +269,6 @@ const JournalPage = () => {
           .eq('id', reflectionId);
       }
 
-      showSuccess(`Added to Sandbox Backlog.`);
       fetchData();
     } catch (err: any) {
       showError(err.message);
@@ -252,49 +277,61 @@ const JournalPage = () => {
     }
   };
 
-  const handleAddAllToBacklog = async (reflectionId: string) => {
-    const reflection = reflections.find(r => r.id === reflectionId);
-    if (!reflection || !reflection.ai_extractions) return;
+  const handleAddAllToBacklog = async (reflectionId?: string) => {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) return;
 
-    const itemsToAdd = reflection.ai_extractions.filter((item: any) => 
-      item.type !== 'question' && item.status !== 'added'
-    );
-
-    if (itemsToAdd.length === 0) return;
-
-    setAddingToBacklog(`all-${reflectionId}`);
+    setIsAddingAll(true);
     try {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) throw new Error("Not authenticated");
+      let totalAdded = 0;
+      const targetReflections = reflectionId 
+        ? reflections.filter(r => r.id === reflectionId)
+        : reflections;
 
-      const inserts = itemsToAdd.map((item: any) => ({
-        user_id: user.id,
-        content: item.content,
-        type: item.type === 'belief' ? 'belief' : (item.type === 'goal' ? 'goal' : 'identity'),
-        status: 'pending'
-      }));
+      for (const ref of targetReflections) {
+        if (!ref.ai_extractions) continue;
 
-      const { error } = await supabase.from('identity_backlog').insert(inserts);
-      if (error) throw error;
+        const itemsToAdd = ref.ai_extractions.filter((item: any) => 
+          item.type !== 'question' && item.status !== 'added'
+        );
 
-      const newExtractions = reflection.ai_extractions.map((item: any) => {
-        if (item.type !== 'question' && item.status !== 'added') {
-          return { ...item, status: 'added' };
-        }
-        return item;
-      });
+        if (itemsToAdd.length === 0) continue;
 
-      await supabase
-        .from('practitioner_reflections')
-        .update({ ai_extractions: newExtractions })
-        .eq('id', reflectionId);
-      
-      showSuccess(`Added ${itemsToAdd.length} items to Sandbox Backlog.`);
-      fetchData();
+        const inserts = itemsToAdd.map((item: any) => ({
+          user_id: user.id,
+          content: item.content,
+          type: item.type === 'belief' ? 'belief' : (item.type === 'goal' ? 'goal' : 'identity'),
+          status: 'pending'
+        }));
+
+        const { error } = await supabase.from('identity_backlog').insert(inserts);
+        if (error) throw error;
+
+        const newExtractions = ref.ai_extractions.map((item: any) => {
+          if (item.type !== 'question' && item.status !== 'added') {
+            return { ...item, status: 'added' };
+          }
+          return item;
+        });
+
+        await supabase
+          .from('practitioner_reflections')
+          .update({ ai_extractions: newExtractions })
+          .eq('id', ref.id);
+        
+        totalAdded += itemsToAdd.length;
+      }
+
+      if (totalAdded > 0) {
+        showSuccess(`Added ${totalAdded} items to Sandbox Backlog.`);
+        fetchData();
+      } else {
+        showSuccess("No new items to add.");
+      }
     } catch (err: any) {
       showError(err.message);
     } finally {
-      setAddingToBacklog(null);
+      setIsAddingAll(false);
     }
   };
 
@@ -354,15 +391,25 @@ const JournalPage = () => {
             <h1 className="text-4xl font-black tracking-tight text-slate-900">Practitioner Journal</h1>
             <p className="text-slate-500 font-medium text-lg">Private reflections and session-linked insights.</p>
           </div>
-          <div className="flex items-center gap-3 bg-white p-2 rounded-2xl border border-slate-100 shadow-sm">
-            <div className="px-4 py-2 text-center border-r border-slate-100">
-              <p className="text-[8px] font-black text-slate-400 uppercase tracking-widest">Meetup Log</p>
-              <p className="text-xl font-black text-indigo-600">{pendingQuestions.length}</p>
-            </div>
-            <div className="px-4 py-2 text-center">
-              <p className="text-[8px] font-black text-slate-400 uppercase tracking-widest">Total Entries</p>
-              <p className="text-xl font-black text-slate-900">{reflections.length}</p>
-            </div>
+          <div className="flex items-center gap-3">
+            <Button 
+              variant="outline" 
+              onClick={handleScanAll}
+              disabled={isScanning || reflections.length === 0}
+              className="rounded-xl h-12 px-6 font-bold text-xs uppercase tracking-widest border-indigo-100 text-indigo-600 hover:bg-indigo-50"
+            >
+              {isScanning ? <Loader2 className="animate-spin mr-2" /> : <Wand2 size={18} className="mr-2" />}
+              Scan All Entries
+            </Button>
+            <Button 
+              variant="outline" 
+              onClick={() => handleAddAllToBacklog()}
+              disabled={isAddingAll || reflections.length === 0}
+              className="rounded-xl h-12 px-6 font-bold text-xs uppercase tracking-widest border-emerald-100 text-emerald-600 hover:bg-emerald-50"
+            >
+              {isAddingAll ? <Loader2 className="animate-spin mr-2" /> : <Layers size={18} className="mr-2" />}
+              Add All to Backlog
+            </Button>
           </div>
         </div>
 

@@ -26,9 +26,6 @@ serve(async (req) => {
     - "identity" -> IDENTITY SHIFTING. Use this for CURRENT problematic versions of self or "stuck" roles (e.g., "The Procrastinator", "The Invisible One").
     - "belief" -> LIMITING BELIEFS. Core "I am..." statements representing a struggle or rule (e.g., "I am a burden").
     
-    CRITICAL RULE:
-    Any mention of money, income, revenue, or specific numerical results MUST be categorized as a "goal".
-    
     Return the result as a JSON object:
     {
       "type": "goal|identity|belief",

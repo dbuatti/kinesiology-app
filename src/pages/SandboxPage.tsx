@@ -277,11 +277,10 @@ const SandboxPage = () => {
   };
 
   const getRecommendation = (item: any) => {
-    const content = item.content.toLowerCase();
-    if (item.type === 'goal' || content.includes('want to') || content.includes('become') || content.includes('$') || content.includes('income')) {
+    if (item.type === 'goal') {
       return { tool: 'Identity Alignment', path: '/sandbox/identity-alignment', icon: Target, color: 'text-emerald-600', bg: 'bg-emerald-50 dark:bg-emerald-900/20' };
     }
-    if (item.type === 'belief' || content.startsWith('i am')) {
+    if (item.type === 'belief') {
       return { tool: 'Limiting Beliefs', path: '/sandbox/limiting-beliefs', icon: ShieldAlert, color: 'text-rose-600', bg: 'bg-rose-50 dark:bg-rose-900/20' };
     }
     return { tool: 'Identity Shifting', path: '/sandbox/identity-shifting', icon: Fingerprint, color: 'text-indigo-600', bg: 'bg-indigo-50 dark:bg-indigo-900/20' };

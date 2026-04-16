@@ -97,7 +97,22 @@ const IdentityAlignmentTool = () => {
 
   useEffect(() => {
     fetchPastSessions();
-  }, []);
+    if (backlogId) checkForDraft();
+  }, [backlogId]);
+
+  const checkForDraft = async () => {
+    const { data, error } = await supabase
+      .from('identity_alignment_sessions')
+      .select('*')
+      .eq('backlog_id', backlogId)
+      .eq('is_complete', false)
+      .maybeSingle();
+
+    if (data) {
+      loadSession(data);
+      toast.info("Resuming your work in progress.");
+    }
+  };
 
   const fetchPastSessions = async () => {
     const { data: { user } } = await supabase.auth.getUser();
@@ -119,6 +134,7 @@ const IdentityAlignmentTool = () => {
     try {
       const payload = {
         user_id: user.id,
+        backlog_id: backlogId || null,
         goal: formData.goal,
         target_identity: formData.targetIdentity,
         somatic_sensations: formData.physicalSensation,
@@ -319,7 +335,7 @@ const IdentityAlignmentTool = () => {
             placeholder="What does being this identity feel like in your body?" 
             value={formData.physicalSensation}
             onChange={(e) => setFormData({ ...formData, physicalSensation: e.target.value })}
-            className="min-h-[120px] rounded-[2rem] border-2 border-slate-100 focus:border-indigo-500 bg-white p-8 text-lg font-medium leading-relaxed shadow-inner resize-none transition-all"
+            className="min-h-[120px] rounded-[2rem] border-2 border-slate-100 focus:border-indigo-500 bg-white p-8 text-xl font-medium leading-relaxed shadow-inner resize-none transition-all"
           />
         </div>
         <div className="space-y-4">
@@ -488,7 +504,7 @@ const IdentityAlignmentTool = () => {
       </div>
 
       <div className="flex flex-col sm:flex-row gap-4 pt-12">
-        <Button onClick={() => saveProgress(true)} disabled={isSaving || formData.goalInevitable !== true || !formData.finalAnchor} className="flex-[2] bg-indigo-600 hover:bg-indigo-700 text-white rounded-2xl h-16 font-black text-xs uppercase tracking-widest shadow-2xl shadow-indigo-100">
+        <Button onClick={() => saveProgress(true)} disabled={isSaving || formData.goalInevitable !== true || !formData.finalAnchor} className="flex-[2] bg-indigo-600 hover:bg-indigo-700 text-white rounded-2xl h-16 font-black text-xs uppercase tracking-widest shadow-xl shadow-indigo-100">
           {isSaving ? <Loader2 className="mr-2 animate-spin" /> : <CheckCircle2 className="mr-2" />} Complete & Save Session
         </Button>
         <Button onClick={reset} variant="ghost" className="flex-1 text-slate-400 rounded-2xl h-16 font-bold hover:bg-slate-50">

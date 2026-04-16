@@ -11,20 +11,22 @@ import {
   Clock, 
   CheckCircle2, 
   Trash2,
-  Sparkles,
-  Brain,
-  Zap,
-  History,
-  Loader2,
-  Lightbulb,
-  ChevronRight,
-  Layers,
-  Wand2,
-  TrendingUp,
-  Info,
-  ArrowDownWideNarrow,
-  Calendar,
-  LayoutGrid
+  Sparkles, 
+  Brain, 
+  Zap, 
+  History, 
+  Loader2, 
+  Lightbulb, 
+  ChevronRight, 
+  Layers, 
+  Wand2, 
+  TrendingUp, 
+  Info, 
+  ArrowDownWideNarrow, 
+  Calendar, 
+  LayoutGrid, 
+  PlayCircle,
+  RefreshCw
 } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -88,30 +90,44 @@ type SortOption = 'priority' | 'newest' | 'oldest' | 'type';
 
 const SandboxPage = () => {
   const [backlog, setBacklog] = useState<any[]>([]);
+  const [drafts, setDrafts] = useState<Record<string, boolean>>({});
   const [loading, setLoading] = useState(true);
   const [isPrioritizing, setIsPrioritizing] = useState(false);
   const [isClearing, setIsClearing] = useState(false);
   const [sortBy, setSortBy] = useState<SortOption>('priority');
   const [activeTab, setActiveTab] = useState("backlog");
 
-  const fetchBacklog = async () => {
+  const fetchData = async () => {
     try {
-      const { data, error } = await supabase
-        .from('identity_backlog')
-        .select('*')
-        .eq('status', 'pending');
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
 
-      if (error) throw error;
-      setBacklog(data || []);
+      const [backlogRes, shiftingRes, alignmentRes, beliefsRes] = await Promise.all([
+        supabase.from('identity_backlog').select('*').eq('status', 'pending'),
+        supabase.from('identity_shifting_sessions').select('backlog_id').eq('is_complete', false).not('backlog_id', 'is', null),
+        supabase.from('identity_alignment_sessions').select('backlog_id').eq('is_complete', false).not('backlog_id', 'is', null),
+        supabase.from('limiting_belief_sessions').select('backlog_id').eq('is_complete', false).not('backlog_id', 'is', null)
+      ]);
+
+      if (backlogRes.error) throw backlogRes.error;
+      setBacklog(backlogRes.data || []);
+
+      // Map backlog IDs that have active drafts
+      const draftMap: Record<string, boolean> = {};
+      [...(shiftingRes.data || []), ...(alignmentRes.data || []), ...(beliefsRes.data || [])].forEach(s => {
+        if (s.backlog_id) draftMap[s.backlog_id] = true;
+      });
+      setDrafts(draftMap);
+
     } catch (err) {
-      console.error("Error fetching backlog:", err);
+      console.error("Error fetching sandbox data:", err);
     } finally {
       setLoading(false);
     }
   };
 
   useEffect(() => {
-    fetchBacklog();
+    fetchData();
   }, []);
 
   const sortedBacklog = useMemo(() => {
@@ -138,7 +154,7 @@ const SandboxPage = () => {
       const { data, error } = await supabase.functions.invoke('prioritize-backlog');
       if (error) throw error;
       showSuccess("AI has re-prioritized your backlog based on your journal history.");
-      fetchBacklog();
+      fetchData();
       setSortBy('priority');
     } catch (err: any) {
       showError(err.message || "Failed to prioritize backlog.");
@@ -360,13 +376,15 @@ const SandboxPage = () => {
                   {sortedBacklog.map((item) => {
                     const rec = getRecommendation(item);
                     const hasPriority = item.priority_score > 0;
+                    const isWIP = drafts[item.id];
 
                     return (
                       <div 
                         key={item.id} 
                         className={cn(
                           "flex flex-col md:flex-row md:items-center justify-between p-4 bg-card rounded-2xl border transition-all gap-4 group",
-                          hasPriority ? "border-indigo-200 shadow-sm" : "border-border"
+                          hasPriority ? "border-indigo-200 shadow-sm" : "border-border",
+                          isWIP && "border-amber-200 bg-amber-50/10"
                         )}
                       >
                         <div className="flex items-center gap-4 flex-1 min-w-0">
@@ -403,6 +421,11 @@ const SandboxPage = () => {
                                   </Tooltip>
                                 </TooltipProvider>
                               )}
+                              {isWIP && (
+                                <Badge className="bg-amber-500 text-white border-none font-black text-[7px] uppercase tracking-widest px-1.5 py-0 rounded-full animate-pulse">
+                                  WIP
+                                </Badge>
+                              )}
                             </div>
                             <div className="flex items-center gap-3 mt-0.5">
                               <Badge variant="outline" className="text-[7px] font-black uppercase border-none bg-muted px-1.5 py-0">
@@ -436,11 +459,20 @@ const SandboxPage = () => {
                               <Trash2 size={16} />
                             </Button>
                             <Button 
-                              className="h-9 px-6 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-black text-[10px] uppercase tracking-widest shadow-lg shadow-indigo-100"
+                              className={cn(
+                                "h-9 px-6 rounded-xl font-black text-[10px] uppercase tracking-widest shadow-lg shadow-indigo-100 transition-all",
+                                isWIP 
+                                  ? "bg-amber-500 hover:bg-amber-600 text-white" 
+                                  : "bg-indigo-600 hover:bg-indigo-700 text-white"
+                              )}
                               asChild
                             >
                               <Link to={rec.path} state={{ prefill: item.content, backlogId: item.id, reflectionId: item.reflection_id }}>
-                                Process <ChevronRight size={14} className="ml-1" />
+                                {isWIP ? (
+                                  <><RefreshCw size={14} className="mr-2 animate-spin-slow" /> Continue</>
+                                ) : (
+                                  <>Process <ChevronRight size={14} className="ml-1" /></>
+                                )}
                               </Link>
                             </Button>
                           </div>

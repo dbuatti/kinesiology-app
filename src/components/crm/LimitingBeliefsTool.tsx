@@ -95,7 +95,22 @@ const LimitingBeliefsTool = () => {
 
   useEffect(() => {
     fetchPastSessions();
-  }, []);
+    if (backlogId) checkForDraft();
+  }, [backlogId]);
+
+  const checkForDraft = async () => {
+    const { data, error } = await supabase
+      .from('limiting_belief_sessions')
+      .select('*')
+      .eq('backlog_id', backlogId)
+      .eq('is_complete', false)
+      .maybeSingle();
+
+    if (data) {
+      loadSession(data);
+      toast.info("Resuming your work in progress.");
+    }
+  };
 
   const fetchPastSessions = async () => {
     const { data: { user } } = await supabase.auth.getUser();
@@ -117,6 +132,7 @@ const LimitingBeliefsTool = () => {
     try {
       const payload = {
         user_id: user.id,
+        backlog_id: backlogId || null,
         problem: formData.problem,
         felt_sense: formData.feltSense,
         limiting_belief: formData.limitingBelief,
@@ -645,7 +661,7 @@ const LimitingBeliefsTool = () => {
             </Button>
             {formData.id && !showHistory && (
               <Button variant="ghost" size="sm" onClick={() => saveProgress(false)} disabled={isSaving} className="rounded-full h-10 px-5 text-[10px] font-black uppercase tracking-widest gap-2 text-indigo-600 hover:bg-indigo-50">
-                {isSaving ? <Loader2 size={16} className="animate-spin" /> : <Save size={16} />} Save
+                {isSaving ? <Loader2 className="animate-spin" /> : <Save size={16} />} Save
               </Button>
             )}
           </div>

@@ -87,7 +87,22 @@ const IdentityShiftingTool = () => {
 
   useEffect(() => {
     fetchPastSessions();
-  }, []);
+    if (backlogId) checkForDraft();
+  }, [backlogId]);
+
+  const checkForDraft = async () => {
+    const { data, error } = await supabase
+      .from('identity_shifting_sessions')
+      .select('*')
+      .eq('backlog_id', backlogId)
+      .eq('is_complete', false)
+      .maybeSingle();
+
+    if (data) {
+      loadSession(data);
+      toast.info("Resuming your work in progress.");
+    }
+  };
 
   const fetchPastSessions = async () => {
     const { data: { user } } = await supabase.auth.getUser();
@@ -148,6 +163,7 @@ const IdentityShiftingTool = () => {
     try {
       const payload = {
         user_id: user.id,
+        backlog_id: backlogId || null,
         problem: formData.problem,
         emotion: formData.emotion,
         felt_sense: formData.feltSense,

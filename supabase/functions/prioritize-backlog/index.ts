@@ -74,9 +74,9 @@ serve(async (req) => {
       ]
     }`;
 
-    console.log(`[${functionName}] Calling Gemini for Deep Discovery...`);
+    console.log(`[${functionName}] Calling Gemini 1.5 Flash for Deep Discovery...`);
     
-    const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${geminiKey}`, {
+    const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${geminiKey}`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
@@ -89,7 +89,13 @@ serve(async (req) => {
     })
 
     const data = await response.json()
-    if (!response.ok) throw new Error(`Gemini API Error: ${data.error?.message || 'Unknown'}`);
+    if (!response.ok) {
+      const errorMsg = data.error?.message || 'Unknown AI Error';
+      if (errorMsg.includes("high demand")) {
+        throw new Error("The AI is currently busy. Please wait 30 seconds and try again.");
+      }
+      throw new Error(`Gemini API Error: ${errorMsg}`);
+    }
 
     let resultText = data.candidates[0].content.parts[0].text.trim();
     
@@ -100,9 +106,9 @@ serve(async (req) => {
 
     const parsed = JSON.parse(resultText);
 
-    // 3. Update existing items in parallel to prevent timeout
+    // 3. Update existing items in parallel
     if (parsed.rankings && parsed.rankings.length > 0) {
-      console.log(`[${functionName}] Updating ${parsed.rankings.length} items in parallel...`);
+      console.log(`[${functionName}] Updating ${parsed.rankings.length} items...`);
       const updatePromises = parsed.rankings.map(rank => 
         supabase
           .from('identity_backlog')

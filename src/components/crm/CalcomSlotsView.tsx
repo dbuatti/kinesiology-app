@@ -35,9 +35,10 @@ import {
   ArrowRight,
   Mail,
   Send,
-  Sparkles
+  Sparkles,
+  Instagram
 } from "lucide-react";
-import { format, addWeeks, subWeeks, startOfToday, endOfDay, eachDayOfInterval, addDays, isBefore, startOfDay } from "date-fns";
+import { format, addWeeks, subWeeks, startOfToday, endOfDay, eachDayOfInterval, addDays, isBefore, startOfDay, nextMonday, isMonday } from "date-fns";
 import { supabase } from "@/integrations/supabase/client";
 import { cn } from "@/lib/utils";
 import { showSuccess, showError } from "@/utils/toast";
@@ -309,6 +310,36 @@ const CalcomSlotsView = () => {
     setTimeout(() => setCopied(null), 2000);
   };
 
+  const handleCopyInstaNote = () => {
+    const today = startOfToday();
+    const startOfNextWeek = isMonday(today) ? addDays(today, 7) : nextMonday(today);
+    const nextWeekDays = Array.from({ length: 5 }).map((_, i) => format(addDays(startOfNextWeek, i), 'yyyy-MM-dd'));
+    
+    const availableDays: string[] = [];
+    nextWeekDays.forEach(date => {
+      const isBlocked = blockedDates.includes(date);
+      const daySlots = slots[date] || [];
+      if (!isBlocked && daySlots.length > 0) {
+        availableDays.push(format(new Date(date), "E"));
+      }
+    });
+
+    if (availableDays.length === 0) {
+      showError("No availability found for next Mon-Fri.");
+      return;
+    }
+
+    const note = `Next week spots: ${availableDays.join(', ')} ✦ Link in bio`;
+    
+    // Strict 60 char check
+    const finalNote = note.length > 60 ? note.substring(0, 57) + "..." : note;
+
+    navigator.clipboard.writeText(finalNote);
+    setCopied('insta');
+    showSuccess("Instagram Note copied!");
+    setTimeout(() => setCopied(null), 2000);
+  };
+
   const handleCopyAll = () => {
     if (dateRange.length === 0) return;
 
@@ -496,29 +527,43 @@ const CalcomSlotsView = () => {
           </div>
 
           {/* Copy by Day Bar */}
-          {availableDaysOfWeek.length > 0 && (
-            <div className="px-4 py-3 bg-indigo-50/50 dark:bg-indigo-900/10 rounded-2xl border border-indigo-100 dark:border-indigo-900/30 flex flex-wrap items-center gap-3 animate-in slide-in-from-top-2 duration-500">
-              <div className="flex items-center gap-2 mr-2">
-                <Sparkles size={14} className="text-indigo-500" />
-                <span className="text-[10px] font-black uppercase tracking-widest text-indigo-600 dark:text-indigo-400">Copy by Day:</span>
-              </div>
-              {availableDaysOfWeek.map(day => (
-                <Button
-                  key={day}
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => handleCopyDay(day)}
-                  className={cn(
-                    "h-8 px-3 rounded-lg text-[10px] font-black uppercase tracking-widest transition-all",
-                    copied === day ? "bg-emerald-500 text-white hover:bg-emerald-600" : "text-slate-500 hover:bg-indigo-100 dark:hover:bg-indigo-900/30 hover:text-indigo-600"
-                  )}
-                >
-                  {copied === day ? <Check size={12} className="mr-1.5" /> : <Copy size={12} className="mr-1.5" />}
-                  {day}s
-                </Button>
-              ))}
+          <div className="px-4 py-3 bg-indigo-50/50 dark:bg-indigo-900/10 rounded-2xl border border-indigo-100 dark:border-indigo-900/30 flex flex-wrap items-center gap-3 animate-in slide-in-from-top-2 duration-500">
+            <div className="flex items-center gap-2 mr-2">
+              <Sparkles size={14} className="text-indigo-500" />
+              <span className="text-[10px] font-black uppercase tracking-widest text-indigo-600 dark:text-indigo-400">Quick Copy:</span>
             </div>
-          )}
+            
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={handleCopyInstaNote}
+              className={cn(
+                "h-8 px-3 rounded-lg text-[10px] font-black uppercase tracking-widest transition-all",
+                copied === 'insta' ? "bg-rose-500 text-white hover:bg-rose-600" : "text-rose-600 hover:bg-rose-100 dark:hover:bg-rose-900/30"
+              )}
+            >
+              {copied === 'insta' ? <Check size={12} className="mr-1.5" /> : <Instagram size={12} className="mr-1.5" />}
+              Insta Note (Next Week)
+            </Button>
+
+            <div className="w-px h-4 bg-indigo-200 dark:bg-indigo-800 mx-1" />
+
+            {availableDaysOfWeek.map(day => (
+              <Button
+                key={day}
+                variant="ghost"
+                size="sm"
+                onClick={() => handleCopyDay(day)}
+                className={cn(
+                  "h-8 px-3 rounded-lg text-[10px] font-black uppercase tracking-widest transition-all",
+                  copied === day ? "bg-emerald-500 text-white hover:bg-emerald-600" : "text-slate-500 hover:bg-indigo-100 dark:hover:bg-indigo-900/30 hover:text-indigo-600"
+                )}
+              >
+                {copied === day ? <Check size={12} className="mr-1.5" /> : <Copy size={12} className="mr-1.5" />}
+                {day}s
+              </Button>
+            ))}
+          </div>
 
           <Collapsible open={configOpen}>
             <CollapsibleContent className="animate-in slide-in-from-top-2 duration-300">

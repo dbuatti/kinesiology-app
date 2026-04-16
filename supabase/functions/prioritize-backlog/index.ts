@@ -46,32 +46,32 @@ serve(async (req) => {
     const journalContext = reflections?.map(r => `[${r.category} - ${r.created_at}]: ${r.content}`).join('\n\n');
     const backlogList = backlog.map(b => `ID: ${b.id} | Type: ${b.type} | Content: ${b.content}`).join('\n');
 
-    const prompt = `Act as a high-level clinical supervisor and psychological strategist. 
+    const prompt = `Act as a master clinical supervisor and psychological strategist. 
     I am a Kinesiology practitioner working on my own identity shifts and blocks.
     
     YOUR TASK:
     Analyze my journal entries to understand my core personality, my larger goals, and the recurring patterns (blocks) I face.
-    Then, look at my "Identity Backlog" and rank the items from most important to least important.
+    Then, look at my "Identity Backlog" and perform a DEEP RE-ANALYSIS.
     
-    PRIORITIZATION LOGIC:
-    1. Keystone Blocks: Identify "small" blocks or identities that are actually the foundation for larger issues. Prioritize these highest (Score 90-100).
-    2. Goal Alignment: Prioritize identities that directly bridge the gap between my current state and my stated long-term goals (Score 70-89).
-    3. Symptomatic Items: Lower priority for items that are just surface-level expressions of deeper patterns (Score 1-69).
+    PRIORITIZATION & CLUSTERING LOGIC:
+    1. Keystone Blocks (Score 90-100): Identify the "Keystone" identities or beliefs. These are the foundational patterns that drive multiple other symptomatic blocks. If this one shifts, the others will likely collapse.
+    2. Goal Alignment (Score 70-89): Identify items that are the direct "gatekeepers" to my stated long-term goals.
+    3. Symptomatic Patterns (Score 1-69): Identify items that are likely just surface-level expressions of deeper Keystone blocks.
     
     JOURNAL CONTEXT:
     ${journalContext}
     
-    BACKLOG ITEMS TO RANK:
+    BACKLOG ITEMS TO ANALYZE:
     ${backlogList}
     
     Return the result as a JSON object with a key "rankings" containing an array of objects:
     - "id": The ID of the backlog item.
     - "score": A priority score from 1 to 100.
-    - "reasoning": A brief (1 sentence) clinical explanation of why this item is ranked this way based on my journal history.
+    - "reasoning": A brief (1-2 sentence) clinical explanation of why this item is ranked this way, specifically referencing patterns found in the journal context.
     
     Return ONLY the JSON.`;
 
-    console.log(`[${functionName}] Calling Gemini 2.5 Flash...`);
+    console.log(`[${functionName}] Calling Gemini 2.5 Flash for Deep Analysis...`);
     
     const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${geminiKey}`, {
       method: 'POST',
@@ -91,7 +91,7 @@ serve(async (req) => {
     const resultText = data.candidates[0].content.parts[0].text.trim();
     const parsed = JSON.parse(resultText);
 
-    // 3. Update the database with new scores
+    // 3. Update the database with new scores and reasoning
     for (const rank of parsed.rankings) {
       await supabase
         .from('identity_backlog')

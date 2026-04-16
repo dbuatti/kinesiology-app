@@ -176,7 +176,7 @@ const SandboxPage = () => {
     try {
       const { data, error } = await supabase.functions.invoke('prioritize-backlog');
       if (error) throw error;
-      showSuccess("AI has re-prioritized your active identities.");
+      showSuccess("AI has re-analyzed and prioritized your active map.");
       fetchData();
       setSortBy('priority');
     } catch (err: any) {
@@ -320,6 +320,12 @@ const SandboxPage = () => {
                 </span>
               </div>
             )}
+            
+            {!isIntegrated && item.priority_reasoning && (
+              <p className="text-[10px] text-slate-500 font-medium italic leading-relaxed">
+                {item.priority_reasoning}
+              </p>
+            )}
           </div>
         </div>
 
@@ -459,6 +465,16 @@ const SandboxPage = () => {
 
               {activeTab !== 'history' && (
                 <div className="flex items-center gap-3">
+                  <Button 
+                    variant="ghost" 
+                    size="sm" 
+                    onClick={handlePrioritize}
+                    disabled={isPrioritizing || sortedBacklog.length === 0}
+                    className="h-10 px-4 rounded-xl text-indigo-600 hover:bg-indigo-50 font-black text-[10px] uppercase tracking-widest"
+                  >
+                    {isPrioritizing ? <Loader2 size={14} className="mr-2 animate-spin" /> : <Wand2 size={14} className="mr-2" />}
+                    Reanalyze Map
+                  </Button>
                   <DropdownMenu>
                     <DropdownMenuTrigger asChild>
                       <Button variant="outline" size="sm" className="rounded-xl h-10 px-4 border-border font-bold text-[10px] uppercase tracking-widest">
@@ -467,9 +483,9 @@ const SandboxPage = () => {
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align="end" className="w-48 rounded-2xl p-2 shadow-2xl border-none bg-card">
                       <DropdownMenuItem onClick={() => setSortBy('priority')} className="rounded-xl py-2.5 px-4 cursor-pointer flex items-center gap-3"><TrendingUp size={14} className="text-indigo-500" /> AI Priority</DropdownMenuItem>
-                      <DropdownMenuItem onClick={() => setSortBy('progress')} className="rounded-xl py-2.5 px-4 cursor-pointer flex items-center gap-3"><Activity size={14} className="text-emerald-500" /> Most Worked</DropdownMenuItem>
-                      <DropdownMenuItem onClick={() => setSortBy('newest')} className="rounded-xl py-2.5 px-4 cursor-pointer flex items-center gap-3"><Calendar size={14} className="text-indigo-500" /> Newest First</DropdownMenuItem>
-                      <DropdownMenuItem onClick={() => setSortBy('type')} className="rounded-xl py-2.5 px-4 cursor-pointer flex items-center gap-3"><Layers size={14} className="text-purple-500" /> By Tool Type</DropdownMenuItem>
+                      <DropdownMenuItem onClick={() => setSortBy('progress')} className="rounded-xl py-2.5 px-4 cursor-pointer flex items-center gap-3"><Activity size={14} className="text-emerald-50" /> Most Worked</DropdownMenuItem>
+                      <DropdownMenuItem onClick={() => setSortBy('newest')} className="rounded-xl py-2.5 px-4 cursor-pointer flex items-center gap-3"><Calendar size={14} className="text-indigo-50" /> Newest First</DropdownMenuItem>
+                      <DropdownMenuItem onClick={() => setSortBy('type')} className="rounded-xl py-2.5 px-4 cursor-pointer flex items-center gap-3"><Layers size={14} className="text-purple-50" /> By Tool Type</DropdownMenuItem>
                     </DropdownMenuContent>
                   </DropdownMenu>
                 </div>

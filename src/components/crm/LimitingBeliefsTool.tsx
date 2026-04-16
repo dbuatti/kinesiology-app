@@ -26,7 +26,8 @@ import {
   Info,
   ChevronRight,
   ShieldCheck,
-  FileText
+  FileText,
+  Wand2
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { supabase } from "@/integrations/supabase/client";
@@ -87,6 +88,7 @@ const LimitingBeliefsTool = () => {
   const [isGeneratingLimiting, setIsGeneratingLimiting] = useState(false);
   const [isGeneratingPositive, setIsGeneratingPositive] = useState(false);
   const [isGeneratingSense, setIsGeneratingSense] = useState(false);
+  const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [limitingSuggestions, setLimitingSuggestions] = useState<string[]>([]);
   const [positiveSuggestions, setPositiveSuggestions] = useState<string[]>([]);
   const [senseSuggestions, setSenseSuggestions] = useState<string[]>([]);
@@ -174,6 +176,39 @@ const LimitingBeliefsTool = () => {
       toast.error("Failed to save session.");
     } finally {
       setIsSaving(false);
+    }
+  };
+
+  const handleDeepScan = async () => {
+    setIsAnalyzing(true);
+    try {
+      const { data, error } = await supabase.functions.invoke('analyze-session', {
+        body: { type: 'belief', data: formData }
+      });
+
+      if (error) throw error;
+
+      if (data.suggestions && data.suggestions.length > 0) {
+        const { data: { user } } = await supabase.auth.getUser();
+        const inserts = data.suggestions.map((s: any) => ({
+          user_id: user.id,
+          content: s.content,
+          type: s.type,
+          status: 'suggested',
+          priority_reasoning: s.reasoning,
+          source_session_id: formData.id,
+          source_session_type: 'belief'
+        }));
+
+        await supabase.from('identity_backlog').insert(inserts);
+        toast.success(`AI found ${data.suggestions.length} deeper patterns. Check the "Suggested" tab in your map.`);
+      } else {
+        toast.info("AI scan complete. No new patterns detected this time.");
+      }
+    } catch (err) {
+      toast.error("AI scan failed.");
+    } finally {
+      setIsAnalyzing(false);
     }
   };
 
@@ -558,6 +593,14 @@ const LimitingBeliefsTool = () => {
       </div>
 
       <div className="flex flex-col sm:flex-row gap-4 pt-12">
+        <Button 
+          onClick={handleDeepScan} 
+          disabled={isAnalyzing || !formData.integrationAwareness}
+          variant="outline"
+          className="flex-1 h-16 rounded-2xl border-indigo-200 text-indigo-600 font-black text-xs uppercase tracking-widest hover:bg-indigo-50"
+        >
+          {isAnalyzing ? <Loader2 className="mr-2 animate-spin" /> : <Wand2 className="mr-2" />} Scan for Deeper Patterns
+        </Button>
         <Button onClick={() => saveProgress(true)} disabled={isSaving || !formData.integrationAwareness} className="flex-[2] bg-indigo-600 hover:bg-indigo-700 text-white rounded-2xl h-16 font-black text-xs uppercase tracking-widest shadow-2xl shadow-indigo-100">
           {isSaving ? <Loader2 className="mr-2 animate-spin" /> : <CheckCircle2 className="mr-2" />} Complete & Save Session
         </Button>
@@ -667,7 +710,7 @@ const LimitingBeliefsTool = () => {
             </Button>
             {formData.id && !showHistory && (
               <Button variant="ghost" size="sm" onClick={() => saveProgress(false)} disabled={isSaving} className="rounded-full h-10 px-5 text-[10px] font-black uppercase tracking-widest gap-2 text-indigo-600 hover:bg-indigo-50">
-                {isSaving ? <Loader2 size={16} className="animate-spin" /> : <Save size={16} />} Save
+                {isSaving ? <Loader2 className="mr-2 animate-spin" /> : <Save size={16} />} Save
               </Button>
             )}
           </div>

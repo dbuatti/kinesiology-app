@@ -30,7 +30,9 @@ import {
   Archive,
   CheckCircle,
   MoreHorizontal,
-  Activity
+  Activity,
+  Check,
+  X
 } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -56,6 +58,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 import IdentityHistoryList from "@/components/crm/IdentityHistoryList";
 
 const TOOLS = [
@@ -99,7 +102,6 @@ const SandboxPage = () => {
   const [drafts, setDrafts] = useState<Record<string, boolean>>({});
   const [loading, setLoading] = useState(true);
   const [isPrioritizing, setIsPrioritizing] = useState(false);
-  const [isClearing, setIsClearing] = useState(false);
   const [sortBy, setSortBy] = useState<SortOption>('priority');
   const [activeTab, setActiveTab] = useState("active");
 
@@ -108,14 +110,12 @@ const SandboxPage = () => {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) return;
 
-      // 1. Fetch all backlog items (Active and Integrated)
       const { data: backlogData, error: backlogError } = await supabase
         .from('identity_backlog')
         .select('*');
 
       if (backlogError) throw backlogError;
 
-      // 2. Fetch all sessions to calculate progress
       const [shiftingRes, alignmentRes, beliefsRes] = await Promise.all([
         supabase.from('identity_shifting_sessions').select('backlog_id, is_complete'),
         supabase.from('identity_alignment_sessions').select('backlog_id, is_complete'),
@@ -128,7 +128,6 @@ const SandboxPage = () => {
         ...(beliefsRes.data || [])
       ];
 
-      // Calculate session counts and draft status
       const counts: Record<string, number> = {};
       const draftMap: Record<string, boolean> = {};
 
@@ -155,9 +154,12 @@ const SandboxPage = () => {
   }, []);
 
   const sortedBacklog = useMemo(() => {
-    const filtered = backlog.filter(item => 
-      activeTab === 'active' ? item.status !== 'integrated' : item.status === 'integrated'
-    );
+    const filtered = backlog.filter(item => {
+      if (activeTab === 'active') return item.status === 'pending';
+      if (activeTab === 'suggested') return item.status === 'suggested';
+      if (activeTab === 'archive') return item.status === 'integrated';
+      return false;
+    });
 
     return filtered.sort((a, b) => {
       if (sortBy === 'priority') return (b.priority_score || 0) - (a.priority_score || 0);
@@ -181,6 +183,21 @@ const SandboxPage = () => {
       showError(err.message || "Failed to prioritize.");
     } finally {
       setIsPrioritizing(false);
+    }
+  };
+
+  const handleAcceptSuggestion = async (id: string) => {
+    try {
+      const { error } = await supabase
+        .from('identity_backlog')
+        .update({ status: 'pending' })
+        .eq('id', id);
+
+      if (error) throw error;
+      showSuccess("Identity added to active map.");
+      fetchData();
+    } catch (err) {
+      showError("Failed to accept suggestion.");
     }
   };
 
@@ -244,8 +261,8 @@ const SandboxPage = () => {
     const count = sessionCounts[item.id] || 0;
     const isWIP = drafts[item.id];
     const isIntegrated = item.status === 'integrated';
+    const isSuggested = item.status === 'suggested';
     
-    // Progress logic: 0=0%, 1=25%, 2=50%, 3=75%, 4+=100%
     const progressValue = isIntegrated ? 100 : Math.min(count * 25, 100);
     const progressLabel = isIntegrated ? "Integrated" : count === 0 ? "New" : count === 1 ? "Initiated" : count < 4 ? "Processing" : "Deep Work";
 
@@ -253,21 +270,24 @@ const SandboxPage = () => {
       <div className={cn(
         "flex flex-col md:flex-row md:items-center justify-between p-5 bg-card rounded-[2rem] border transition-all gap-6 group",
         item.priority_score > 80 ? "border-indigo-200 shadow-md" : "border-border",
-        isWIP && "border-amber-200 bg-amber-50/5"
+        isWIP && "border-amber-200 bg-amber-50/5",
+        isSuggested && "border-dashed border-indigo-300 bg-indigo-50/10"
       )}>
         <div className="flex items-center gap-5 flex-1 min-w-0">
           <div className="relative shrink-0">
             <div className={cn(
               "w-12 h-12 rounded-2xl flex items-center justify-center shadow-inner transition-transform group-hover:scale-110",
               isIntegrated ? "bg-emerald-500 text-white" :
+              isSuggested ? "bg-indigo-100 text-indigo-600" :
               item.type === 'belief' ? "bg-rose-50 text-rose-600" : 
               item.type === 'goal' ? "bg-emerald-50 text-emerald-600" : "bg-indigo-50 text-indigo-600"
             )}>
               {isIntegrated ? <CheckCircle size={24} /> :
+               isSuggested ? <Sparkles size={24} /> :
                item.type === 'belief' ? <ShieldAlert size={24} /> : 
                item.type === 'goal' ? <Target size={24} /> : <Fingerprint size={24} />}
             </div>
-            {!isIntegrated && item.priority_score > 0 && (
+            {!isIntegrated && !isSuggested && item.priority_score > 0 && (
               <div className="absolute -top-2 -right-2 w-6 h-6 rounded-full bg-indigo-600 text-white flex items-center justify-center text-[8px] font-black border-2 border-background shadow-lg">
                 {item.priority_score}
               </div>
@@ -278,69 +298,97 @@ const SandboxPage = () => {
             <div className="flex items-center gap-3">
               <p className={cn("font-black text-lg text-foreground truncate", isIntegrated && "text-slate-400")}>"{item.content}"</p>
               {isWIP && <Badge className="bg-amber-500 text-white border-none font-black text-[7px] uppercase tracking-widest px-2 py-0.5 rounded-full animate-pulse">WIP</Badge>}
+              {isSuggested && <Badge className="bg-indigo-600 text-white border-none font-black text-[7px] uppercase tracking-widest px-2 py-0.5 rounded-full">AI Insight</Badge>}
             </div>
             
-            <div className="flex items-center gap-4">
-              <div className="flex-1 max-w-[120px] space-y-1">
-                <div className="flex justify-between text-[7px] font-black uppercase tracking-widest text-muted-foreground">
-                  <span>{progressLabel}</span>
-                  <span>{count} Sessions</span>
+            {isSuggested ? (
+              <p className="text-xs text-slate-500 font-medium italic leading-relaxed">
+                {item.priority_reasoning || "AI suggested this based on your recent session patterns."}
+              </p>
+            ) : (
+              <div className="flex items-center gap-4">
+                <div className="flex-1 max-w-[120px] space-y-1">
+                  <div className="flex justify-between text-[7px] font-black uppercase tracking-widest text-muted-foreground">
+                    <span>{progressLabel}</span>
+                    <span>{count} Sessions</span>
+                  </div>
+                  <Progress value={progressValue} className={cn("h-1 bg-muted", isIntegrated ? "[&>div]:bg-emerald-500" : "[&>div]:bg-indigo-500")} />
                 </div>
-                <Progress value={progressValue} className={cn("h-1 bg-muted", isIntegrated ? "[&>div]:bg-emerald-500" : "[&>div]:bg-indigo-500")} />
+                <div className="h-4 w-px bg-border" />
+                <span className="text-[8px] font-bold text-muted-foreground uppercase flex items-center gap-1">
+                  <Calendar size={10} /> {format(new Date(item.created_at), "MMM d")}
+                </span>
               </div>
-              <div className="h-4 w-px bg-border" />
-              <span className="text-[8px] font-bold text-muted-foreground uppercase flex items-center gap-1">
-                <Calendar size={10} /> {format(new Date(item.created_at), "MMM d")}
-              </span>
-            </div>
+            )}
           </div>
         </div>
 
         <div className="flex items-center gap-4 shrink-0">
-          {!isIntegrated && (
-            <div className={cn("hidden sm:flex items-center gap-2 px-3 py-1.5 rounded-xl border border-transparent", rec.bg)}>
-              <rec.icon size={12} className={rec.color} />
-              <span className={cn("text-[9px] font-black uppercase tracking-widest", rec.color)}>{rec.tool}</span>
-            </div>
-          )}
-          
-          <div className="flex items-center gap-2">
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button variant="ghost" size="icon" className="h-9 w-9 rounded-xl text-muted-foreground hover:bg-muted">
-                  <MoreHorizontal size={18} />
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end" className="w-48 rounded-2xl p-2 shadow-2xl border-none bg-card">
-                {isIntegrated ? (
-                  <DropdownMenuItem onClick={() => handleReactivate(item.id)} className="rounded-xl py-2.5 px-4 cursor-pointer flex items-center gap-3">
-                    <RefreshCw size={16} className="text-indigo-500" /> Reactivate
-                  </DropdownMenuItem>
-                ) : (
-                  <DropdownMenuItem onClick={() => handleMarkIntegrated(item.id)} className="rounded-xl py-2.5 px-4 cursor-pointer flex items-center gap-3 text-emerald-600 font-bold">
-                    <CheckCircle2 size={16} /> Mark Integrated
-                  </DropdownMenuItem>
-                )}
-                <DropdownMenuItem onClick={() => handleDelete(item.id)} className="text-destructive focus:text-destructive rounded-xl py-2.5 px-4 cursor-pointer flex items-center gap-3">
-                  <Trash2 size={16} /> Delete
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
-
-            {!isIntegrated && (
+          {isSuggested ? (
+            <div className="flex items-center gap-2">
               <Button 
-                className={cn(
-                  "h-10 px-6 rounded-xl font-black text-[10px] uppercase tracking-widest shadow-lg transition-all",
-                  isWIP ? "bg-amber-500 hover:bg-amber-600 text-white" : "bg-indigo-600 hover:bg-indigo-700 text-white"
-                )}
-                asChild
+                variant="ghost" 
+                size="sm" 
+                onClick={() => handleDelete(item.id)}
+                className="h-10 px-4 rounded-xl text-slate-400 hover:text-rose-600 hover:bg-rose-50 font-bold text-[10px] uppercase tracking-widest"
               >
-                <Link to={rec.path} state={{ prefill: item.content, backlogId: item.id, reflectionId: item.reflection_id }}>
-                  {isWIP ? <><RefreshCw size={14} className="mr-2 animate-spin-slow" /> Continue</> : <>Process <ChevronRight size={14} className="ml-1" /></>}
-                </Link>
+                <X size={16} className="mr-1.5" /> Dismiss
               </Button>
-            )}
-          </div>
+              <Button 
+                onClick={() => handleAcceptSuggestion(item.id)}
+                className="h-10 px-6 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-black text-[10px] uppercase tracking-widest shadow-lg"
+              >
+                <Check size={16} className="mr-1.5" /> Accept & Add
+              </Button>
+            </div>
+          ) : (
+            <>
+              {!isIntegrated && (
+                <div className={cn("hidden sm:flex items-center gap-2 px-3 py-1.5 rounded-xl border border-transparent", rec.bg)}>
+                  <rec.icon size={12} className={rec.color} />
+                  <span className={cn("text-[9px] font-black uppercase tracking-widest", rec.color)}>{rec.tool}</span>
+                </div>
+              )}
+              
+              <div className="flex items-center gap-2">
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button variant="ghost" size="icon" className="h-9 w-9 rounded-xl text-muted-foreground hover:bg-muted">
+                      <MoreHorizontal size={18} />
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end" className="w-48 rounded-2xl p-2 shadow-2xl border-none bg-card">
+                    {isIntegrated ? (
+                      <DropdownMenuItem onClick={() => handleReactivate(item.id)} className="rounded-xl py-2.5 px-4 cursor-pointer flex items-center gap-3">
+                        <RefreshCw size={16} className="text-indigo-500" /> Reactivate
+                      </DropdownMenuItem>
+                    ) : (
+                      <DropdownMenuItem onClick={() => handleMarkIntegrated(item.id)} className="rounded-xl py-2.5 px-4 cursor-pointer flex items-center gap-3 text-emerald-600 font-bold">
+                        <CheckCircle2 size={16} /> Mark Integrated
+                      </DropdownMenuItem>
+                    )}
+                    <DropdownMenuItem onClick={() => handleDelete(item.id)} className="text-destructive focus:text-destructive rounded-xl py-2.5 px-4 cursor-pointer flex items-center gap-3">
+                      <Trash2 size={16} /> Delete
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
+
+                {!isIntegrated && (
+                  <Button 
+                    className={cn(
+                      "h-10 px-6 rounded-xl font-black text-[10px] uppercase tracking-widest shadow-lg transition-all",
+                      isWIP ? "bg-amber-500 hover:bg-amber-600 text-white" : "bg-indigo-600 hover:bg-indigo-700 text-white"
+                    )}
+                    asChild
+                  >
+                    <Link to={rec.path} state={{ prefill: item.content, backlogId: item.id, reflectionId: item.reflection_id }}>
+                      {isWIP ? <><RefreshCw size={14} className="mr-2 animate-spin-slow" /> Continue</> : <>Process <ChevronRight size={14} className="ml-1" /></>}
+                    </Link>
+                  </Button>
+                )}
+              </div>
+            </>
+          )}
         </div>
       </div>
     );
@@ -399,6 +447,12 @@ const SandboxPage = () => {
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-6 mb-8 px-2">
               <TabsList className="bg-slate-200/50 p-1 rounded-2xl h-12 border border-slate-200">
                 <TabsTrigger value="active" className="rounded-xl px-8 h-10 data-[state=active]:bg-white data-[state=active]:text-indigo-600 data-[state=active]:shadow-sm transition-all font-bold text-xs uppercase tracking-widest"><Zap className="mr-2" size={16} /> Active Map</TabsTrigger>
+                <TabsTrigger value="suggested" className="rounded-xl px-8 h-10 data-[state=active]:bg-white data-[state=active]:text-indigo-600 data-[state=active]:shadow-sm transition-all font-bold text-xs uppercase tracking-widest">
+                  <Sparkles className="mr-2" size={16} /> Suggested
+                  {backlog.filter(i => i.status === 'suggested').length > 0 && (
+                    <span className="ml-2 w-2 h-2 rounded-full bg-rose-500 animate-pulse" />
+                  )}
+                </TabsTrigger>
                 <TabsTrigger value="archive" className="rounded-xl px-8 h-10 data-[state=active]:bg-white data-[state=active]:text-indigo-600 data-[state=active]:shadow-sm transition-all font-bold text-xs uppercase tracking-widest"><Archive className="mr-2" size={16} /> Integrated</TabsTrigger>
                 <TabsTrigger value="history" className="rounded-xl px-8 h-10 data-[state=active]:bg-white data-[state=active]:text-indigo-600 data-[state=active]:shadow-sm transition-all font-bold text-xs uppercase tracking-widest"><History className="mr-2" size={16} /> Session History</TabsTrigger>
               </TabsList>
@@ -412,10 +466,10 @@ const SandboxPage = () => {
                       </Button>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align="end" className="w-48 rounded-2xl p-2 shadow-2xl border-none bg-card">
-                      <DropdownMenuItem onClick={() => setSortBy('priority')} className="rounded-xl py-2.5 px-4 cursor-pointer flex items-center gap-3"><TrendingUp size={14} className="text-indigo-500" /> AI Priority</DropdownMenuItem>
-                      <DropdownMenuItem onClick={() => setSortBy('progress')} className="rounded-xl py-2.5 px-4 cursor-pointer flex items-center gap-3"><Activity size={14} className="text-emerald-500" /> Most Worked</DropdownMenuItem>
-                      <DropdownMenuItem onClick={() => setSortBy('newest')} className="rounded-xl py-2.5 px-4 cursor-pointer flex items-center gap-3"><Calendar size={14} className="text-indigo-500" /> Newest First</DropdownMenuItem>
-                      <DropdownMenuItem onClick={() => setSortBy('type')} className="rounded-xl py-2.5 px-4 cursor-pointer flex items-center gap-3"><Layers size={14} className="text-purple-500" /> By Tool Type</DropdownMenuItem>
+                      <DropdownMenuItem onClick={() => setSortBy('priority')} className="rounded-xl py-2.5 px-4 cursor-pointer flex items-center gap-3"><TrendingUp size={14} className="text-indigo-50" /> AI Priority</DropdownMenuItem>
+                      <DropdownMenuItem onClick={() => setSortBy('progress')} className="rounded-xl py-2.5 px-4 cursor-pointer flex items-center gap-3"><Activity size={14} className="text-emerald-50" /> Most Worked</DropdownMenuItem>
+                      <DropdownMenuItem onClick={() => setSortBy('newest')} className="rounded-xl py-2.5 px-4 cursor-pointer flex items-center gap-3"><Calendar size={14} className="text-indigo-50" /> Newest First</DropdownMenuItem>
+                      <DropdownMenuItem onClick={() => setSortBy('type')} className="rounded-xl py-2.5 px-4 cursor-pointer flex items-center gap-3"><Layers size={14} className="text-purple-50" /> By Tool Type</DropdownMenuItem>
                     </DropdownMenuContent>
                   </DropdownMenu>
                 </div>
@@ -432,6 +486,26 @@ const SandboxPage = () => {
                   <div className="w-16 h-16 bg-card rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-sm"><Zap className="text-muted-foreground" size={32} /></div>
                   <p className="text-foreground font-black text-xl">Your map is clear</p>
                   <p className="text-muted-foreground mt-1 font-medium">Add identities or beliefs from the dashboard to track them here.</p>
+                </div>
+              )}
+            </TabsContent>
+
+            <TabsContent value="suggested" className="mt-0 focus-visible:ring-0">
+              {sortedBacklog.length > 0 ? (
+                <div className="space-y-3">
+                  <Alert className="bg-indigo-50 border-indigo-100 rounded-2xl mb-6">
+                    <Info className="h-4 w-4 text-indigo-600" />
+                    <AlertDescription className="text-sm text-indigo-900 font-medium">
+                      These insights were extracted by AI from your recent sessions. Review them and add the ones that resonate to your active map.
+                    </AlertDescription>
+                  </Alert>
+                  {sortedBacklog.map((item) => <IdentityCard key={item.id} item={item} />)}
+                </div>
+              ) : (
+                <div className="text-center py-20 bg-muted/30 rounded-[3rem] border-2 border-dashed border-border">
+                  <div className="w-16 h-16 bg-card rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-sm"><Sparkles className="text-muted-foreground" size={32} /></div>
+                  <p className="text-foreground font-black text-xl">No suggestions yet</p>
+                  <p className="text-muted-foreground mt-1 font-medium">Complete a session and run a "Deep Scan" to see AI insights here.</p>
                 </div>
               )}
             </TabsContent>

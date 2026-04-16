@@ -250,7 +250,7 @@ const EditableField = ({
             "text-base leading-relaxed whitespace-pre-wrap transition-all duration-500",
             isNoBorder ? "p-2" : "p-0",
             isEmpty ? "text-muted-foreground/30 italic font-medium" : "text-foreground font-medium",
-            shouldBlur && "blur-md select-none opacity-40"
+            shouldBlur && "blur-sensitive"
           )}>
             {isEmpty ? placeholder : localValue}
           </p>

@@ -32,10 +32,10 @@ serve(async (req) => {
     const prompt = `Act as a clinical supervisor for a Kinesiology practitioner. 
     Analyze the following journal entry and extract specific items for the practitioner's "Identity Sandbox".
     
-    You MUST look for items that fit into these THREE specific tools:
-    1. "belief" -> Maps to LIMITING BELIEFS tool. These are core "I am..." statements that represent a struggle, a rule, or a perceived limitation (e.g., "I am not good enough", "I am always the one who has to fix things").
-    2. "identity" -> Maps to IDENTITY SHIFTING tool. These are labels for a current problematic state, often metaphorical or archetypal (e.g., "The Perfectionist", "The Invisible One", "The Martyr").
-    3. "goal" -> Maps to IDENTITY ALIGNMENT tool. These are desired future states or target identities the practitioner wants to embody (e.g., "The Grounded Healer", "The Sovereign Creator", "The Vital Leader").
+    CRITICAL LOGIC:
+    1. "identity" -> Maps to IDENTITY SHIFTING. These are labels for a CURRENT problematic state or a version of self the practitioner wants to LET GO of (e.g., "The Perfectionist", "The Martyr").
+    2. "goal" -> Maps to IDENTITY ALIGNMENT. These are DESIRED future states or target identities the practitioner wants to MOVE INTO to achieve a goal (e.g., "The Sovereign Creator", "The Vital Leader").
+    3. "belief" -> Maps to LIMITING BELIEFS. Core "I am..." statements representing a struggle or rule (e.g., "I am not good enough").
     
     Also extract:
     4. "felt_sense" -> Physical sensations or somatic markers mentioned.

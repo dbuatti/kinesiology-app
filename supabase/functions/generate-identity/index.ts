@@ -23,14 +23,16 @@ serve(async (req) => {
     if (type === 'target' || type === 'goal') {
       prompt = `Suggest 4 "Target Identities" for the goal: "${goal || problem}". 
       These should be empowering, archetypal labels for the IDENTITY ALIGNMENT tool (e.g., "The Sovereign Creator", "The Grounded Leader"). 
+      Focus on who the person is BECOMING to achieve the goal.
       Return ONLY a JSON array of strings.`;
     } else if (type === 'limiting_belief' || type === 'belief') {
       prompt = `Suggest 4 "Limiting Beliefs" based on this problem: "${problem}" and sensation: "${feltSense}". 
       The beliefs MUST start with "I am..." and represent the core story holding the pattern in place (e.g., "I am a burden", "I am not safe to be seen"). 
       Return ONLY a JSON array of strings.`;
     } else {
-      prompt = `Suggest 4 "Problem Identities" for: "${problem}". 
+      prompt = `Suggest 4 "Problem Identities" for the problem: "${problem}". 
       Use archetypal, descriptive labels for the IDENTITY SHIFTING tool (e.g., "The Perfectionist", "The Invisible One", "The Fixer"). 
+      Focus on the version of self the person is LETTING GO of.
       Return ONLY a JSON array of strings.`;
     }
 

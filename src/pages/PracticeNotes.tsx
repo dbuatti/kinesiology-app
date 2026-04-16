@@ -165,8 +165,25 @@ const PracticeNotes = () => {
           </div>
         </Section>
 
-        {/* 3. Lymphatic Assessment */}
-        <Section title="III. Lymphatic Assessment">
+        {/* 3. Preliminary & SNS Resets */}
+        <Section title="III. Preliminary & SNS Resets">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-6">
+            <div className="space-y-3">
+              <h3 className="text-xs font-black text-slate-400 uppercase tracking-widest mb-2">Preliminary Vitals</h3>
+              <Item id="v-bolt" label="BOLT Score" subtext="Measure CO2 tolerance. Target: 25s+ (Functional), 40s+ (Optimal)." />
+              <Item id="v-coherence" label="Heart Coherence" subtext="Autonomic sync. HR/BR ratio. Check for coherence vs discordance." />
+            </div>
+            <div className="space-y-3">
+              <h3 className="text-xs font-black text-slate-400 uppercase tracking-widest mb-2">SNS Down-Regulation</h3>
+              <Item id="sns-t1" label="T1 Sympathetic Reset" subtext="External rotation of ipsilateral shoulder (45-90s) until tenderness dissolves." />
+              <Item id="sns-diaphragm" label="Diaphragm Reset" subtext="Move ribcage superiorly towards neck (45-90s). Release slowly." />
+              <Item id="sns-vagus" label="Vagus Nerve Procedure" subtext="Stimulation (Auricular/Cervical) or Screen & Reset (Organ/Gland reflex)." />
+            </div>
+          </div>
+        </Section>
+
+        {/* 4. Lymphatic Assessment */}
+        <Section title="IV. Lymphatic Assessment">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
             {['Cervical', 'Thoracic L', 'Thoracic R', 'Cisterna Chyli', 'Inguinal', 'Popliteal', 'Maxillary', 'Axillary'].map(zone => (
               <Item key={zone} id={`lymph-${zone.toLowerCase().replace(' ', '-')}`} label={zone} />
@@ -174,8 +191,8 @@ const PracticeNotes = () => {
           </div>
         </Section>
 
-        {/* 4. Primitive Reflexes */}
-        <Section title="IV. Primitive Reflexes">
+        {/* 5. Primitive Reflexes */}
+        <Section title="V. Primitive Reflexes">
           <div className="space-y-4">
             {PRIMITIVE_REFLEXES.map(reflex => (
               <Item 
@@ -188,8 +205,8 @@ const PracticeNotes = () => {
           </div>
         </Section>
 
-        {/* 5. Cranial Nerves */}
-        <Section title="V. Cranial Nerves">
+        {/* 6. Cranial Nerves */}
+        <Section title="VI. Cranial Nerves">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-4">
             {CRANIAL_NERVES.map(cn => (
               <Item 
@@ -202,8 +219,8 @@ const PracticeNotes = () => {
           </div>
         </Section>
 
-        {/* 6. Key Muscles */}
-        <Section title="VI. Key Muscles (Clinical Indicators)">
+        {/* 7. Key Muscles */}
+        <Section title="VII. Key Muscles (Clinical Indicators)">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-4">
             {nickMuscles.map(muscle => (
               <Item 

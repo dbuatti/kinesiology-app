@@ -94,13 +94,14 @@ serve(async (req) => {
 
     console.log(`[${functionName}] Calling Gemini 1.5 Flash...`);
     
-    const response = await fetch(`https://generativelanguage.googleapis.com/v1/models/gemini-1.5-flash:generateContent?key=${geminiKey}`, {
+    const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${geminiKey}`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         contents: [{ parts: [{ text: prompt }] }],
-        generationConfig: { 
-          temperature: 0.2
+        generationConfig: {
+          temperature: 0.2,
+          response_mime_type: "application/json"
         }
       }),
     })
@@ -114,8 +115,8 @@ serve(async (req) => {
     let resultText = data.candidates[0].content.parts[0].text.trim();
     
     // Sanitize: Remove markdown code blocks if present
-    if (resultText.startsWith('```')) {
-      resultText = resultText.replace(/^```json\n?/, '').replace(/\n?```$/, '');
+    if (resultText.includes('```')) {
+      resultText = resultText.replace(/```json\n?/, '').replace(/```\n?/, '').trim();
     }
 
     const parsed = JSON.parse(resultText);

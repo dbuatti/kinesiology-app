@@ -58,12 +58,12 @@ serve(async (req) => {
     
     Return ONLY the JSON.`;
 
-    const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${geminiKey}`, {
+    const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${geminiKey}`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         contents: [{ parts: [{ text: prompt }] }],
-        generationConfig: { 
+        generationConfig: {
           temperature: 0.4,
           response_mime_type: "application/json"
         }
@@ -73,7 +73,13 @@ serve(async (req) => {
     const resData = await response.json()
     if (!response.ok) throw new Error(resData.error?.message || 'Gemini Error');
 
-    const resultText = resData.candidates[0].content.parts[0].text.trim();
+    let resultText = resData.candidates[0].content.parts[0].text.trim();
+    
+    // Sanitize: Remove markdown code blocks if present
+    if (resultText.includes('```')) {
+      resultText = resultText.replace(/```json\n?/, '').replace(/```\n?/, '').trim();
+    }
+
     const parsed = JSON.parse(resultText);
 
     return new Response(JSON.stringify({ suggestions: parsed.suggestions || [] }), {

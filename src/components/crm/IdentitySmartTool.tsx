@@ -34,7 +34,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 
-type IdentityType = 'identity' | 'goal' | 'belief' | 'auto';
+type IdentityType = 'shifting' | 'alignment' | 'belief' | 'auto';
 
 const IdentitySmartTool = () => {
   const [backlog, setBacklog] = useState<any[]>([]);
@@ -89,8 +89,8 @@ const IdentitySmartTool = () => {
       if (finalType === 'auto') {
         const content = newContent.toLowerCase();
         if (content.includes('i am')) finalType = 'belief';
-        else if (content.includes('want to') || content.includes('become') || content.includes('goal')) finalType = 'goal';
-        else finalType = 'identity';
+        else if (content.includes('want to') || content.includes('become') || content.includes('goal')) finalType = 'alignment';
+        else finalType = 'shifting';
       }
 
       const { error } = await supabase
@@ -104,7 +104,7 @@ const IdentitySmartTool = () => {
 
       if (error) throw error;
       
-      showSuccess(`Added to ${finalType === 'goal' ? 'Alignment' : finalType === 'belief' ? 'Beliefs' : 'Shifting'} backlog.`);
+      showSuccess(`Added to ${finalType === 'alignment' ? 'Alignment' : finalType === 'belief' ? 'Beliefs' : 'Shifting'} backlog.`);
       setNewContent("");
       setSelectedType('auto');
       fetchData();
@@ -262,10 +262,10 @@ const IdentitySmartTool = () => {
                   </DropdownMenuTrigger>
                   <DropdownMenuContent align="end" className="w-40 rounded-xl p-1 shadow-2xl border-none bg-card">
                     <DropdownMenuItem onClick={() => setSelectedType('auto')} className="rounded-lg text-[9px] font-bold uppercase py-2">Auto-Detect</DropdownMenuItem>
-                    <DropdownMenuItem onClick={() => setSelectedType('identity')} className="rounded-lg text-[9px] font-bold uppercase py-2 flex items-center gap-2">
+                    <DropdownMenuItem onClick={() => setSelectedType('shifting')} className="rounded-lg text-[9px] font-bold uppercase py-2 flex items-center gap-2">
                       <Fingerprint size={12} className="text-indigo-500" /> Stuck Identity
                     </DropdownMenuItem>
-                    <DropdownMenuItem onClick={() => setSelectedType('goal')} className="rounded-lg text-[9px] font-bold uppercase py-2 flex items-center gap-2">
+                    <DropdownMenuItem onClick={() => setSelectedType('alignment')} className="rounded-lg text-[9px] font-bold uppercase py-2 flex items-center gap-2">
                       <Target size={12} className="text-emerald-500" /> Target Identity
                     </DropdownMenuItem>
                     <DropdownMenuItem onClick={() => setSelectedType('belief')} className="rounded-lg text-[9px] font-bold uppercase py-2 flex items-center gap-2">
@@ -275,8 +275,8 @@ const IdentitySmartTool = () => {
                 </DropdownMenu>
               </div>
               <div className="flex gap-2">
-                <Input 
-                  placeholder={selectedType === 'goal' ? "e.g. The Sovereign Creator..." : "e.g. The Perfectionist..."} 
+                <Input
+                  placeholder={selectedType === 'alignment' ? "e.g. The Sovereign Creator..." : "e.g. The Perfectionist..."}
                   value={newContent}
                   onChange={e => setNewContent(e.target.value)}
                   className="h-11 rounded-xl bg-muted/50 border-none focus:ring-2 focus:ring-amber-500 font-medium"

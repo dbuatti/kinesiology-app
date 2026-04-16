@@ -277,7 +277,7 @@ const SandboxPage = () => {
   };
 
   const getRecommendation = (item: any) => {
-    if (item.type === 'goal') {
+    if (item.type === 'alignment') {
       return { tool: 'Identity Alignment', path: '/sandbox/identity-alignment', icon: Target, color: 'text-emerald-600', bg: 'bg-emerald-50 dark:bg-emerald-900/20' };
     }
     if (item.type === 'belief') {
@@ -431,7 +431,7 @@ const SandboxPage = () => {
                 </DropdownMenu>
 
                 {!isIntegrated && (
-                  <Button 
+                  <Button
                     className={cn(
                       "h-10 px-6 rounded-xl font-black text-[10px] uppercase tracking-widest shadow-lg transition-all",
                       isWIP ? "bg-amber-50 hover:bg-amber-600 text-white" : "bg-indigo-600 hover:bg-indigo-700 text-white"

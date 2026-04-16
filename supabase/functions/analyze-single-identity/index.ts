@@ -22,13 +22,13 @@ serve(async (req) => {
     STATEMENT: "${content}"
     
     LOGIC:
-    - "goal" -> IDENTITY ALIGNMENT. Use this for specific outcomes, income targets, or desired future states (e.g., "Making $1500/week", "The Vital Leader").
-    - "identity" -> IDENTITY SHIFTING. Use this for CURRENT problematic versions of self or "stuck" roles (e.g., "The Procrastinator", "The Invisible One").
+    - "alignment" -> IDENTITY ALIGNMENT. Use this for specific outcomes, income targets, or desired future states (e.g., "Making $1500/week", "The Vital Leader").
+    - "shifting" -> IDENTITY SHIFTING. Use this for CURRENT problematic versions of self or "stuck" roles (e.g., "The Procrastinator", "The Invisible One").
     - "belief" -> LIMITING BELIEFS. Core "I am..." statements representing a struggle or rule (e.g., "I am a burden").
     
     Return the result as a JSON object:
     {
-      "type": "goal|identity|belief",
+      "type": "alignment|shifting|belief",
       "reasoning": "A 1-sentence clinical explanation",
       "polarity_insight": "A 1-sentence insight into the shadow or target of this pattern"
     }

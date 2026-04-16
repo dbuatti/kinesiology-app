@@ -71,8 +71,8 @@ serve(async (req) => {
     For every item in the "CURRENT MAP", re-evaluate if it is assigned to the correct clinical tool.
     
     LOGIC FOR CATEGORIZATION:
-    1. "goal" -> IDENTITY ALIGNMENT. Use this for any DESIRED FUTURE STATE, specific outcome, income target, or version of self you are moving TOWARDS (e.g., "Making $1500/week", "The Sovereign Creator").
-    2. "identity" -> IDENTITY SHIFTING. Use this for any CURRENT PROBLEMATIC version of self, "stuck" role, or construct you are letting go of (e.g., "The Procrastinator", "The Invisible One").
+    1. "alignment" -> IDENTITY ALIGNMENT. Use this for any DESIRED FUTURE STATE, specific outcome, income target, or version of self you are moving TOWARDS (e.g., "Making $1500/week", "The Sovereign Creator").
+    2. "shifting" -> IDENTITY SHIFTING. Use this for any CURRENT PROBLEMATIC version of self, "stuck" role, or construct you are letting go of (e.g., "The Procrastinator", "The Invisible One").
     3. "belief" -> LIMITING BELIEFS. Use this for core "I am..." struggle statements or rules that hold a pattern in place (e.g., "I am a burden", "I am not safe to be seen").
     
     SECONDARY TASKS:
@@ -90,10 +90,10 @@ serve(async (req) => {
     Structure:
     {
       "rankings": [
-        { "id": "uuid", "type": "goal|identity|belief", "score": 85, "reasoning": "...", "polarity_insight": "..." }
+        { "id": "uuid", "type": "alignment|shifting|belief", "score": 85, "reasoning": "...", "polarity_insight": "..." }
       ],
       "new_suggestions": [
-        { "content": "...", "type": "goal|identity|belief", "reasoning": "Why this is a pattern", "polarity_insight": "The shadow/target" }
+        { "content": "...", "type": "alignment|shifting|belief", "reasoning": "Why this is a pattern", "polarity_insight": "The shadow/target" }
       ]
     }`;
 

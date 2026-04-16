@@ -71,9 +71,9 @@ serve(async (req) => {
     3. DISCOVER: Identify 3-5 NEW items that are missing from the map but are clearly recurring "Shadow" themes or "Target" identities in the journal.
     
     LOGIC:
-    - "goal" -> IDENTITY ALIGNMENT (Future state)
-    - "identity" -> IDENTITY SHIFTING (Current block)
-    - "belief" -> LIMITING BELIEFS (Core "I am..." story)
+    - "goal" -> IDENTITY ALIGNMENT. Use this for specific outcomes, income targets, or desired future states (e.g., "Making $1500/week", "The Vital Leader").
+    - "identity" -> IDENTITY SHIFTING. Use this for CURRENT problematic versions of self or "stuck" roles (e.g., "The Procrastinator", "The Invisible One").
+    - "belief" -> LIMITING BELIEFS. Core "I am..." statements representing a struggle or rule (e.g., "I am a burden").
     
     JOURNAL CONTEXT:
     ${journalContext}

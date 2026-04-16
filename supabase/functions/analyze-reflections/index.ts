@@ -34,7 +34,7 @@ serve(async (req) => {
     
     CRITICAL LOGIC:
     1. "identity" -> Maps to IDENTITY SHIFTING. These are labels for a CURRENT problematic state or a version of self the practitioner wants to LET GO of (e.g., "The Perfectionist", "The Martyr", "The Fixer").
-    2. "goal" -> Maps to IDENTITY ALIGNMENT. These are DESIRED future states or target identities the practitioner wants to MOVE INTO to achieve a goal (e.g., "The Sovereign Creator", "The Vital Leader", "The Confident Speaker"). Look for phrases like "I want to be", "I am becoming", or "My goal is".
+    2. "goal" -> Maps to IDENTITY ALIGNMENT. These are DESIRED future states, specific outcomes, or income targets the practitioner wants to MOVE INTO (e.g., "Making $1500/week", "The Sovereign Creator", "The Vital Leader").
     3. "belief" -> Maps to LIMITING BELIEFS. Core "I am..." statements representing a struggle or rule (e.g., "I am not good enough", "I am a burden").
     
     Also extract:

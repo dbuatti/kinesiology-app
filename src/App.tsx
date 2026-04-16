@@ -46,6 +46,7 @@ import IdentityShiftingPage from "./pages/IdentityShiftingPage";
 import IdentityAlignmentPage from "./pages/IdentityAlignmentPage";
 import LimitingBeliefsPage from "./pages/LimitingBeliefsPage";
 import JournalPage from "./pages/JournalPage";
+import PracticeNotes from "./pages/PracticeNotes";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -76,9 +77,12 @@ const AppRoutes = () => {
       </Route>
 
       {/* Protected App Routes */}
-      <Route 
+      <Route path="/notes-doc" element={session ? <PracticeNotes /> : <Navigate to="/login" replace />} />
+      
+      <Route
         element={session ? <MainLayout /> : <Navigate to="/login" replace />}
       >
+
         <Route path="/" element={<DashboardPage />} />
         
         {/* Clinical Hub */}

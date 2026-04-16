@@ -40,7 +40,7 @@ const IdentitySmartTool = () => {
       if (!user) return;
 
       const [backlogRes, shiftingRes, alignmentRes, beliefsRes] = await Promise.all([
-        supabase.from('identity_backlog').select('*').eq('status', 'pending').order('created_at', { ascending: false }).limit(5),
+        supabase.from('identity_backlog').select('*').eq('status', 'pending').order('priority_score', { ascending: false }).order('created_at', { ascending: false }).limit(5),
         supabase.from('identity_shifting_sessions').select('id, identity, created_at, is_complete').order('created_at', { ascending: false }).limit(5),
         supabase.from('identity_alignment_sessions').select('id, target_identity, created_at, is_complete').order('created_at', { ascending: false }).limit(5),
         supabase.from('limiting_belief_sessions').select('id, limiting_belief, created_at, is_complete').order('created_at', { ascending: false }).limit(5)
@@ -257,11 +257,18 @@ const IdentitySmartTool = () => {
                 backlog.map((item) => (
                   <div key={item.id} className="flex items-center justify-between p-3 bg-muted/30 rounded-xl border border-border group hover:bg-card transition-all">
                     <div className="flex items-center gap-3 min-w-0">
-                      <div className={cn(
-                        "w-7 h-7 rounded-lg flex items-center justify-center shrink-0",
-                        item.type === 'belief' ? "bg-rose-50 text-rose-600" : "bg-indigo-50 text-indigo-600"
-                      )}>
-                        {item.type === 'belief' ? <ShieldAlert size={14} /> : <Fingerprint size={14} />}
+                      <div className="relative">
+                        <div className={cn(
+                          "w-7 h-7 rounded-lg flex items-center justify-center shrink-0",
+                          item.type === 'belief' ? "bg-rose-50 text-rose-600" : "bg-indigo-50 text-indigo-600"
+                        )}>
+                          {item.type === 'belief' ? <ShieldAlert size={14} /> : <Fingerprint size={14} />}
+                        </div>
+                        {item.priority_score > 0 && (
+                          <div className="absolute -top-1.5 -right-1.5 w-4 h-4 rounded-full bg-indigo-600 text-white flex items-center justify-center text-[6px] font-black border border-background">
+                            {item.priority_score}
+                          </div>
+                        )}
                       </div>
                       <p className="text-xs font-bold text-foreground truncate">"{item.content}"</p>
                     </div>

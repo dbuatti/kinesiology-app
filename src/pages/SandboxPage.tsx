@@ -18,7 +18,10 @@ import {
   Loader2,
   Lightbulb,
   ChevronRight,
-  Layers
+  Layers,
+  Wand2,
+  TrendingUp,
+  Info
 } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -29,6 +32,12 @@ import { cn } from "@/lib/utils";
 import { supabase } from "@/integrations/supabase/client";
 import { showSuccess, showError } from "@/utils/toast";
 import { format } from "date-fns";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 
 const TOOLS = [
   {
@@ -66,6 +75,7 @@ const TOOLS = [
 const SandboxPage = () => {
   const [backlog, setBacklog] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const [isPrioritizing, setIsPrioritizing] = useState(false);
 
   const fetchBacklog = async () => {
     try {
@@ -73,6 +83,7 @@ const SandboxPage = () => {
         .from('identity_backlog')
         .select('*')
         .eq('status', 'pending')
+        .order('priority_score', { ascending: false })
         .order('created_at', { ascending: false });
 
       if (error) throw error;
@@ -87,6 +98,20 @@ const SandboxPage = () => {
   useEffect(() => {
     fetchBacklog();
   }, []);
+
+  const handlePrioritize = async () => {
+    setIsPrioritizing(true);
+    try {
+      const { data, error } = await supabase.functions.invoke('prioritize-backlog');
+      if (error) throw error;
+      showSuccess("AI has re-prioritized your backlog based on your journal history.");
+      fetchBacklog();
+    } catch (err: any) {
+      showError(err.message || "Failed to prioritize backlog.");
+    } finally {
+      setIsPrioritizing(false);
+    }
+  };
 
   const getRecommendation = (item: any) => {
     const content = item.content.toLowerCase();
@@ -150,6 +175,14 @@ const SandboxPage = () => {
               <p className="text-muted-foreground font-medium mt-1 text-lg">A laboratory for self-inquiry and neural reconsolidation.</p>
             </div>
           </div>
+          <Button 
+            onClick={handlePrioritize}
+            disabled={isPrioritizing || backlog.length === 0}
+            className="bg-indigo-600 hover:bg-indigo-700 text-white rounded-2xl h-14 px-8 font-black text-xs uppercase tracking-widest shadow-xl shadow-indigo-100"
+          >
+            {isPrioritizing ? <Loader2 className="mr-2 animate-spin" /> : <Wand2 size={18} className="mr-2" />}
+            Prioritize with AI
+          </Button>
         </div>
 
         {/* Tool Grid */}
@@ -193,7 +226,7 @@ const SandboxPage = () => {
           ))}
         </div>
 
-        {/* Backlog Section - Redesigned as Thin Rows */}
+        {/* Backlog Section */}
         <div className="space-y-6">
           <div className="flex items-center justify-between px-2">
             <div className="flex items-center gap-3">
@@ -202,9 +235,14 @@ const SandboxPage = () => {
               </div>
               <h2 className="text-2xl font-black text-foreground tracking-tight">Identity Backlog</h2>
             </div>
-            <Badge variant="outline" className="font-bold border-border">
-              {backlog.length} Pending Items
-            </Badge>
+            <div className="flex items-center gap-4">
+              <div className="flex items-center gap-2 text-[10px] font-black text-slate-400 uppercase tracking-widest">
+                <TrendingUp size={14} className="text-indigo-500" /> Sorted by AI Priority
+              </div>
+              <Badge variant="outline" className="font-bold border-border">
+                {backlog.length} Pending Items
+              </Badge>
+            </div>
           </div>
 
           {loading ? (
@@ -215,22 +253,51 @@ const SandboxPage = () => {
             <div className="space-y-2">
               {backlog.map((item) => {
                 const rec = getRecommendation(item);
+                const hasPriority = item.priority_score > 0;
+
                 return (
                   <div 
                     key={item.id} 
-                    className="flex flex-col md:flex-row md:items-center justify-between p-4 bg-card rounded-2xl border border-border group hover:shadow-md hover:border-indigo-200 transition-all gap-4"
+                    className={cn(
+                      "flex flex-col md:flex-row md:items-center justify-between p-4 bg-card rounded-2xl border transition-all gap-4 group",
+                      hasPriority ? "border-indigo-200 shadow-sm" : "border-border"
+                    )}
                   >
                     <div className="flex items-center gap-4 flex-1 min-w-0">
-                      <div className={cn(
-                        "w-10 h-10 rounded-xl flex items-center justify-center shrink-0 shadow-sm",
-                        item.type === 'belief' ? "bg-rose-50 text-rose-600" : 
-                        item.type === 'goal' ? "bg-emerald-50 text-emerald-600" : "bg-indigo-50 text-indigo-600"
-                      )}>
-                        {item.type === 'belief' ? <ShieldAlert size={20} /> : 
-                         item.type === 'goal' ? <Target size={20} /> : <Fingerprint size={20} />}
+                      <div className="relative">
+                        <div className={cn(
+                          "w-10 h-10 rounded-xl flex items-center justify-center shrink-0 shadow-sm",
+                          item.type === 'belief' ? "bg-rose-50 text-rose-600" : 
+                          item.type === 'goal' ? "bg-emerald-50 text-emerald-600" : "bg-indigo-50 text-indigo-600"
+                        )}>
+                          {item.type === 'belief' ? <ShieldAlert size={20} /> : 
+                           item.type === 'goal' ? <Target size={20} /> : <Fingerprint size={20} />}
+                        </div>
+                        {hasPriority && (
+                          <div className="absolute -top-2 -right-2 w-6 h-6 rounded-full bg-indigo-600 text-white flex items-center justify-center text-[8px] font-black border-2 border-background shadow-lg">
+                            {item.priority_score}
+                          </div>
+                        )}
                       </div>
                       <div className="min-w-0 flex-1">
-                        <p className="font-bold text-base text-foreground truncate">"{item.content}"</p>
+                        <div className="flex items-center gap-3">
+                          <p className="font-bold text-base text-foreground truncate">"{item.content}"</p>
+                          {item.priority_reasoning && (
+                            <TooltipProvider>
+                              <Tooltip>
+                                <TooltipTrigger asChild>
+                                  <button className="text-indigo-400 hover:text-indigo-600 transition-colors">
+                                    <Lightbulb size={14} />
+                                  </button>
+                                </TooltipTrigger>
+                                <TooltipContent className="max-w-xs p-4 rounded-xl bg-slate-900 text-white border-none shadow-2xl">
+                                  <p className="text-[10px] font-black uppercase tracking-widest text-indigo-400 mb-1">AI Reasoning</p>
+                                  <p className="text-xs font-medium leading-relaxed">{item.priority_reasoning}</p>
+                                </TooltipContent>
+                              </Tooltip>
+                            </TooltipProvider>
+                          )}
+                        </div>
                         <div className="flex items-center gap-3 mt-0.5">
                           <Badge variant="outline" className="text-[7px] font-black uppercase border-none bg-muted px-1.5 py-0">
                             {item.type || 'identity'}

@@ -38,6 +38,7 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
+import JournalRefresher from "@/components/crm/JournalRefresher";
 
 const TOOLS = [
   {
@@ -310,6 +311,10 @@ const SandboxPage = () => {
                     </div>
 
                     <div className="flex items-center gap-4 shrink-0">
+                      {item.reflection_id && (
+                        <JournalRefresher reflectionId={item.reflection_id} />
+                      )}
+
                       <div className={cn(
                         "hidden sm:flex items-center gap-2 px-3 py-1.5 rounded-xl border border-transparent",
                         rec.bg
@@ -333,7 +338,7 @@ const SandboxPage = () => {
                           className="h-9 px-6 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-black text-[10px] uppercase tracking-widest shadow-lg shadow-indigo-100"
                           asChild
                         >
-                          <Link to={rec.path} state={{ prefill: item.content, backlogId: item.id }}>
+                          <Link to={rec.path} state={{ prefill: item.content, backlogId: item.id, reflectionId: item.reflection_id }}>
                             Process <ChevronRight size={14} className="ml-1" />
                           </Link>
                         </Button>

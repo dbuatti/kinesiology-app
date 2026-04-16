@@ -37,6 +37,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { motion, AnimatePresence } from "framer-motion";
 import IdentityAlignmentReport from './IdentityAlignmentReport';
+import JournalRefresher from './JournalRefresher';
 
 type Phase = 1 | 2 | 3 | 4 | 5;
 
@@ -66,6 +67,7 @@ const IdentityAlignmentTool = () => {
   const location = useLocation();
   const prefillData = location.state?.prefill;
   const backlogId = location.state?.backlogId;
+  const reflectionId = location.state?.reflectionId;
 
   const [phase, setPhase] = useState<Phase>(1);
   const [formData, setFormData] = useState<FormData>({
@@ -144,7 +146,6 @@ const IdentityAlignmentTool = () => {
 
       if (error) throw error;
 
-      // If this was from a backlog item, mark it as completed
       if (isComplete && backlogId) {
         await supabase
           .from('identity_backlog')
@@ -588,6 +589,9 @@ const IdentityAlignmentTool = () => {
             </p>
           </div>
           <div className="flex items-center gap-3">
+            {reflectionId && (
+              <JournalRefresher reflectionId={reflectionId} />
+            )}
             <Button variant="ghost" size="sm" onClick={() => setShowHistory(!showHistory)} className="rounded-full h-10 px-5 text-[10px] font-black uppercase tracking-widest gap-2 text-slate-500 hover:bg-slate-100">
               <History size={16} /> {showHistory ? "Back to Tool" : "History"}
             </Button>

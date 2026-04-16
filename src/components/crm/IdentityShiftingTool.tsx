@@ -34,6 +34,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { motion, AnimatePresence } from "framer-motion";
 import IdentityShiftingReport from './IdentityShiftingReport';
+import JournalRefresher from './JournalRefresher';
 
 type Phase = 1 | 2 | 3 | 4 | 5;
 
@@ -55,6 +56,7 @@ const IdentityShiftingTool = () => {
   const location = useLocation();
   const prefillData = location.state?.prefill;
   const backlogId = location.state?.backlogId;
+  const reflectionId = location.state?.reflectionId;
 
   const [phase, setPhase] = useState<Phase>(1);
   const [formData, setFormData] = useState<FormData>({
@@ -170,7 +172,6 @@ const IdentityShiftingTool = () => {
 
       if (error) throw error;
 
-      // If this was from a backlog item, mark it as completed
       if (isComplete && backlogId) {
         await supabase
           .from('identity_backlog')
@@ -538,7 +539,7 @@ const IdentityShiftingTool = () => {
       </div>
 
       <div className="flex flex-col sm:flex-row gap-4 pt-12">
-        <Button onClick={() => saveProgress(true)} disabled={isSaving || !formData.newIntention} className="flex-[2] bg-indigo-600 hover:bg-indigo-700 text-white rounded-2xl h-16 font-black text-xs uppercase tracking-widest shadow-2xl shadow-indigo-100">
+        <Button onClick={() => saveProgress(true)} disabled={isSaving || !formData.newIntention} className="flex-[2] bg-indigo-600 hover:bg-indigo-700 text-white rounded-2xl h-16 font-black text-xs uppercase tracking-widest shadow-xl shadow-indigo-100">
           {isSaving ? <Loader2 className="mr-2 animate-spin" /> : <CheckCircle2 className="mr-2" />} Complete & Save Session
         </Button>
         <Button onClick={reset} variant="ghost" className="flex-1 text-slate-400 rounded-2xl h-16 font-bold hover:bg-slate-50">
@@ -639,6 +640,9 @@ const IdentityShiftingTool = () => {
             </p>
           </div>
           <div className="flex items-center gap-3">
+            {reflectionId && (
+              <JournalRefresher reflectionId={reflectionId} />
+            )}
             <Button variant="ghost" size="sm" onClick={() => setShowHistory(!showHistory)} className="rounded-full h-10 px-5 text-[10px] font-black uppercase tracking-widest gap-2 text-slate-500 hover:bg-slate-100">
               <History size={16} /> {showHistory ? "Back to Tool" : "History"}
             </Button>

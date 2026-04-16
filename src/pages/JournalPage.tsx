@@ -227,7 +227,8 @@ const JournalPage = () => {
           user_id: user.id,
           content: item.content,
           type: dbType, 
-          status: 'pending'
+          status: 'pending',
+          reflection_id: reflectionId // Link to source reflection
         });
 
       if (error) throw error;
@@ -271,7 +272,8 @@ const JournalPage = () => {
         user_id: user.id,
         content: item.content,
         type: item.type === 'belief' ? 'belief' : 'identity',
-        status: 'pending'
+        status: 'pending',
+        reflection_id: reflectionId // Link to source reflection
       }));
 
       const { error } = await supabase.from('identity_backlog').insert(inserts);

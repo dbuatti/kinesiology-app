@@ -23,9 +23,15 @@ import {
   CalendarDays,
   Mic,
   ShieldCheck,
+  ShieldAlert,
   ChevronDown,
   ChevronUp,
-  MessageSquare
+  MessageSquare,
+  Compass,
+  Fingerprint,
+  LayoutGrid,
+  Eye,
+  EyeOff
 } from "lucide-react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { cn } from "@/lib/utils";
@@ -33,6 +39,7 @@ import { useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { showSuccess } from "@/utils/toast";
 import { useRecentClients } from "@/hooks/use-recent-clients";
+import { usePrivacyMode } from "@/hooks/use-privacy-mode";
 import {
   Dialog,
   DialogContent,
@@ -55,10 +62,12 @@ const MobileNav = () => {
   const [labOpen, setLabOpen] = useState(false);
   const [libraryOpen, setLibraryOpen] = useState(false);
   const [businessOpen, setBusinessOpen] = useState(false);
+  const [sandboxOpen, setSandboxOpen] = useState(false);
 
   const location = useLocation();
   const navigate = useNavigate();
   const { recentClients } = useRecentClients();
+  const { isPrivate, togglePrivacy } = usePrivacyMode();
 
   const handleSignOut = async () => {
     try {
@@ -134,7 +143,7 @@ const MobileNav = () => {
                   <div className="w-9 h-9 bg-indigo-600 rounded-xl flex items-center justify-center font-black text-lg">A</div>
                   <div>
                     <p className="font-black text-base leading-none">Antigravity</p>
-                    <p className="text-[7px] font-black uppercase tracking-[0.3em] text-slate-500 mt-1">Clinical CRM</p>
+                    <p className="text-[7px] font-black uppercase tracking-0.3em text-slate-500 mt-1">Clinical CRM</p>
                   </div>
                 </SheetTitle>
               </SheetHeader>
@@ -212,6 +221,19 @@ const MobileNav = () => {
                         { label: "Marketing Engine", icon: Mic, path: "/business/marketing-engine" },
                       ]} 
                     />
+
+                    <NavGroup 
+                      title="Sandbox" 
+                      icon={Compass} 
+                      isOpen={sandboxOpen} 
+                      onToggle={() => setSandboxOpen(!sandboxOpen)} 
+                      items={[
+                        { label: "Sandbox Hub", icon: LayoutGrid, path: "/sandbox" },
+                        { label: "Identity Shifting", icon: Fingerprint, path: "/sandbox/identity-shifting" },
+                        { label: "Identity Alignment", icon: Target, path: "/sandbox/identity-alignment" },
+                        { label: "Limiting Beliefs", icon: ShieldAlert, path: "/sandbox/limiting-beliefs" },
+                      ]} 
+                    />
                   </div>
 
                   {recentClients.length > 0 && (
@@ -241,6 +263,16 @@ const MobileNav = () => {
 
               <div className="p-4 border-t border-slate-900 bg-slate-950 space-y-1">
                 <button 
+                  onClick={() => { togglePrivacy(); setOpen(false); }}
+                  className={cn(
+                    "flex items-center gap-3 px-4 py-2.5 transition-all rounded-xl w-full",
+                    isPrivate ? "text-rose-400 bg-rose-500/10" : "text-slate-400 hover:text-white hover:bg-slate-900"
+                  )}
+                >
+                  {isPrivate ? <EyeOff size={18} /> : <Eye size={18} />}
+                  <span className="font-bold text-xs">{isPrivate ? "Disable Privacy Mode" : "Enable Privacy Mode"}</span>
+                </button>
+                <button 
                   onClick={() => { setHelpOpen(true); setOpen(false); }}
                   className="flex items-center gap-3 px-4 py-2.5 text-slate-400 hover:text-white hover:bg-slate-900 transition-all rounded-xl w-full"
                 >
@@ -257,7 +289,7 @@ const MobileNav = () => {
                 </Link>
                 <button 
                   onClick={handleSignOut}
-                  className="flex items-center gap-3 px-4 py-2.5 text-rose-400 hover:bg-rose-500/10 transition-all rounded-xl w-full"
+                  className="flex items-center gap-3 px-4 py-2.5 text-rose-400 hover:bg-rose-50/10 transition-all rounded-xl w-full"
                 >
                   <LogOut size={18} />
                   <span className="font-bold text-xs">Sign Out</span>

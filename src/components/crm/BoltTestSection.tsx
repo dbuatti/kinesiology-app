@@ -1,12 +1,13 @@
 "use client";
 
 import React, { useState } from "react";
-import { FlaskConical, ChevronDown, AlertCircle, BookOpen, RotateCcw, Info, Target, CheckCircle2 } from "lucide-react";
+import { FlaskConical, ChevronDown, AlertCircle, BookOpen, RotateCcw, Info, Target, CheckCircle2, PlayCircle, X } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { showSuccess, showError } from "@/utils/toast";
 import { Badge } from "@/components/ui/badge";
 import BoltTimer from "./BoltTimer";
 import BoltResourcesModal from "./BoltResourcesModal";
+import BreathingRecoveryTimer from "./BreathingRecoveryTimer";
 import { cn } from "@/lib/utils";
 import {
   Collapsible,
@@ -25,6 +26,7 @@ const BoltTestSection = ({ appointmentId, initialBoltScore, onUpdate }: BoltTest
   const [loading, setLoading] = useState(false);
   const [isOpen, setIsOpen] = useState(false);
   const [resourcesOpen, setResourcesOpen] = useState(false);
+  const [showExercise, setShowExercise] = useState(false);
 
   const handleSaveScore = async (score: number) => {
     setLoading(true);
@@ -110,51 +112,75 @@ const BoltTestSection = ({ appointmentId, initialBoltScore, onUpdate }: BoltTest
 
         <CollapsibleContent>
           <div className="p-6 border-t border-border space-y-6 animate-in fade-in slide-in-from-top-1 duration-300">
-            {needsImprovement && (
-              <div className="bg-rose-500/10 border border-rose-500/20 p-3 rounded-2xl flex items-center justify-between gap-4">
-                <div className="flex items-center gap-3">
-                  <AlertCircle size={18} className="text-rose-600 dark:text-rose-400 shrink-0" />
-                  <p className="text-[10px] font-bold text-rose-900 dark:text-rose-100 uppercase tracking-tight">Clinical Alert: Low CO2 Tolerance</p>
-                </div>
-                <Button onClick={() => setResourcesOpen(true)} variant="ghost" size="sm" className="h-7 text-[9px] font-black uppercase tracking-widest text-rose-600 dark:text-rose-400 hover:bg-rose-500/20 rounded-lg">
-                  Protocol
-                </Button>
-              </div>
-            )}
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 items-start">
-              <div className="max-w-xs mx-auto w-full">
-                <BoltTimer initialScore={initialBoltScore} onScoreRecorded={handleSaveScore} isSaving={loading} />
-              </div>
-
-              <div className="space-y-4">
-                <div className="grid grid-cols-1 gap-2">
-                  <div className="flex items-center justify-between p-2.5 rounded-xl bg-muted/50 border border-border">
-                    <span className="text-[9px] font-black text-muted-foreground uppercase tracking-widest">Below 20s</span>
-                    <span className="text-[10px] font-bold text-rose-600 dark:text-rose-400">Compromised</span>
+            {showExercise ? (
+              <div className="space-y-4 animate-in zoom-in-95 duration-300">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <PlayCircle size={16} className="text-indigo-600" />
+                    <span className="text-[10px] font-black uppercase tracking-widest text-slate-500">Interactive Recovery Exercise</span>
                   </div>
-                  <div className="flex items-center justify-between p-2.5 rounded-xl bg-muted/50 border border-border">
-                    <span className="text-[9px] font-black text-muted-foreground uppercase tracking-widest">25-35s</span>
-                    <span className="text-[10px] font-bold text-blue-600 dark:text-blue-400">Functional</span>
-                  </div>
-                  <div className="flex items-center justify-between p-2.5 rounded-xl bg-emerald-500/10 border border-emerald-500/20">
-                    <span className="text-[9px] font-black text-emerald-600 dark:text-emerald-400 uppercase tracking-widest">40s+</span>
-                    <CheckCircle2 size={14} className="text-emerald-600 dark:text-emerald-400" />
-                  </div>
-                </div>
-
-                <div className="flex gap-2">
-                  <Button variant="outline" onClick={() => setResourcesOpen(true)} className="flex-1 rounded-xl border-border text-muted-foreground h-9 font-bold text-[10px] uppercase tracking-widest">
-                    <BookOpen size={14} className="mr-2" /> Resources
+                  <Button variant="ghost" size="sm" onClick={() => setShowExercise(false)} className="h-7 px-2 text-slate-400 hover:text-rose-600">
+                    <X size={14} className="mr-1" /> Close Timer
                   </Button>
-                  {initialBoltScore !== null && (
-                    <Button variant="ghost" onClick={handleReset} className="text-rose-600 dark:text-rose-400 hover:bg-rose-500/10 h-9 px-3 rounded-xl font-bold text-[10px] uppercase tracking-widest">
-                      <RotateCcw size={14} />
-                    </Button>
-                  )}
                 </div>
+                <BreathingRecoveryTimer />
               </div>
-            </div>
+            ) : (
+              <>
+                {needsImprovement && (
+                  <div className="bg-rose-500/10 border border-rose-500/20 p-3 rounded-2xl flex items-center justify-between gap-4">
+                    <div className="flex items-center gap-3">
+                      <AlertCircle size={18} className="text-rose-600 dark:text-rose-400 shrink-0" />
+                      <p className="text-[10px] font-bold text-rose-900 dark:text-rose-100 uppercase tracking-tight">Clinical Alert: Low CO2 Tolerance</p>
+                    </div>
+                    <Button onClick={() => setShowExercise(true)} variant="ghost" size="sm" className="h-7 text-[9px] font-black uppercase tracking-widest text-rose-600 dark:text-rose-400 hover:bg-rose-500/20 rounded-lg">
+                      Run Exercise
+                    </Button>
+                  </div>
+                )}
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6 items-start">
+                  <div className="max-w-xs mx-auto w-full">
+                    <BoltTimer initialScore={initialBoltScore} onScoreRecorded={handleSaveScore} isSaving={loading} />
+                  </div>
+
+                  <div className="space-y-4">
+                    <div className="grid grid-cols-1 gap-2">
+                      <div className="flex items-center justify-between p-2.5 rounded-xl bg-muted/50 border border-border">
+                        <span className="text-[9px] font-black text-muted-foreground uppercase tracking-widest">Below 20s</span>
+                        <span className="text-[10px] font-bold text-rose-600 dark:text-rose-400">Compromised</span>
+                      </div>
+                      <div className="flex items-center justify-between p-2.5 rounded-xl bg-muted/50 border border-border">
+                        <span className="text-[9px] font-black text-muted-foreground uppercase tracking-widest">25-35s</span>
+                        <span className="text-[10px] font-bold text-blue-600 dark:text-blue-400">Functional</span>
+                      </div>
+                      <div className="flex items-center justify-between p-2.5 rounded-xl bg-emerald-500/10 border border-emerald-500/20">
+                        <span className="text-[9px] font-black text-emerald-600 dark:text-emerald-400 uppercase tracking-widest">40s+</span>
+                        <CheckCircle2 size={14} className="text-emerald-600 dark:text-emerald-400" />
+                      </div>
+                    </div>
+
+                    <div className="flex gap-2">
+                      <Button 
+                        variant="outline" 
+                        onClick={() => setShowExercise(true)} 
+                        className="flex-1 rounded-xl border-indigo-100 text-indigo-600 h-9 font-bold text-[10px] uppercase tracking-widest hover:bg-indigo-50"
+                      >
+                        <PlayCircle size={14} className="mr-2" /> Run Exercise
+                      </Button>
+                      <Button variant="outline" onClick={() => setResourcesOpen(true)} className="flex-1 rounded-xl border-border text-muted-foreground h-9 font-bold text-[10px] uppercase tracking-widest">
+                        <BookOpen size={14} className="mr-2" /> Resources
+                      </Button>
+                      {initialBoltScore !== null && (
+                        <Button variant="ghost" onClick={handleReset} className="text-rose-600 dark:text-rose-400 hover:bg-rose-500/10 h-9 px-3 rounded-xl font-bold text-[10px] uppercase tracking-widest">
+                          <RotateCcw size={14} />
+                        </Button>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              </>
+            )}
           </div>
         </CollapsibleContent>
       </Collapsible>

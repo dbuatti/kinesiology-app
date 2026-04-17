@@ -15,21 +15,24 @@ import DocsHeader from "@/components/docs/DocsHeader";
 import DocsToolbar from "@/components/docs/DocsToolbar";
 import DocsRuler from "@/components/docs/DocsRuler";
 
-const STORAGE_KEY = "practice_notes_checked_items";
+const CHECKED_STORAGE_KEY = "practice_notes_checked_items";
+const TEXT_STORAGE_KEY = "practice_notes_text_data";
 
 const PracticeNotes = () => {
   const [checkedItems, setCheckedItems] = useState<Record<string, boolean>>({});
+  const [textData, setTextData] = useState<Record<string, string>>({});
   const [customImages, setCustomImages] = useState<Record<string, string>>({});
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const saved = localStorage.getItem(STORAGE_KEY);
-    if (saved) {
-      try {
-        setCheckedItems(JSON.parse(saved));
-      } catch (e) {
-        console.error("Failed to parse checked items", e);
-      }
+    const savedChecked = localStorage.getItem(CHECKED_STORAGE_KEY);
+    const savedText = localStorage.getItem(TEXT_STORAGE_KEY);
+    
+    if (savedChecked) {
+      try { setCheckedItems(JSON.parse(savedChecked)); } catch (e) { console.error(e); }
+    }
+    if (savedText) {
+      try { setTextData(JSON.parse(savedText)); } catch (e) { console.error(e); }
     }
 
     const fetchImages = async () => {
@@ -65,20 +68,27 @@ const PracticeNotes = () => {
   }, []);
 
   useEffect(() => {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(checkedItems));
+    localStorage.setItem(CHECKED_STORAGE_KEY, JSON.stringify(checkedItems));
   }, [checkedItems]);
 
+  useEffect(() => {
+    localStorage.setItem(TEXT_STORAGE_KEY, JSON.stringify(textData));
+  }, [textData]);
+
   const toggleItem = (id: string) => {
-    setCheckedItems((prev) => ({
-      ...prev,
-      [id]: !prev[id],
-    }));
+    setCheckedItems((prev) => ({ ...prev, [id]: !prev[id] }));
+  };
+
+  const handleTextChange = (id: string, value: string) => {
+    setTextData((prev) => ({ ...prev, [id]: value }));
   };
 
   const resetDocument = () => {
     if (window.confirm("Are you sure you want to clear all notes and checkboxes?")) {
       setCheckedItems({});
-      localStorage.removeItem(STORAGE_KEY);
+      setTextData({});
+      localStorage.removeItem(CHECKED_STORAGE_KEY);
+      localStorage.removeItem(TEXT_STORAGE_KEY);
     }
   };
 
@@ -97,7 +107,7 @@ const PracticeNotes = () => {
     </section>
   );
 
-  const Item = ({ id, label, subtext, bold = false }: { id: string; label: string; subtext?: string; bold?: boolean }) => (
+  const Item = ({ id, label, subtext, bold = false, hasInput = false }: { id: string; label: string; subtext?: string; bold?: boolean; hasInput?: boolean }) => (
     <div className="flex items-start gap-3">
       <Checkbox 
         id={id} 
@@ -105,17 +115,28 @@ const PracticeNotes = () => {
         onCheckedChange={() => toggleItem(id)}
         className="mt-1 h-4 w-4 border-black rounded-none"
       />
-      <div className="grid gap-0.5">
-        <label
-          htmlFor={id}
-          className={cn(
-            "text-sm cursor-pointer select-none",
-            bold ? "font-bold" : "font-normal",
-            checkedItems[id] && "line-through text-gray-400"
+      <div className="grid gap-0.5 flex-1">
+        <div className="flex items-center gap-2">
+          <label
+            htmlFor={id}
+            className={cn(
+              "text-sm cursor-pointer select-none shrink-0",
+              bold ? "font-bold" : "font-normal",
+              checkedItems[id] && "line-through text-gray-400"
+            )}
+          >
+            {label}
+          </label>
+          {hasInput && (
+            <input 
+              type="text"
+              value={textData[id] || ""}
+              onChange={(e) => handleTextChange(id, e.target.value)}
+              className="flex-1 border-b border-black bg-transparent outline-none text-sm px-1 min-w-[60px] focus:border-blue-500 transition-colors"
+              placeholder="..."
+            />
           )}
-        >
-          {label}
-        </label>
+        </div>
         {subtext && (
           <p className={cn("text-xs text-gray-600 leading-relaxed", checkedItems[id] && "text-gray-300")}>
             {subtext}
@@ -127,19 +148,27 @@ const PracticeNotes = () => {
 
   const ReflexCard = ({ reflex }: { reflex: any }) => {
     const imageUrl = customImages[reflex.id];
+    const id = `reflex-${reflex.id}`;
     return (
       <div className="p-4 border border-black mb-4 break-inside-avoid">
         <div className="flex justify-between items-start mb-2">
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-3 flex-1">
             <Checkbox 
-              id={`reflex-${reflex.id}`} 
-              checked={!!checkedItems[`reflex-${reflex.id}`]} 
-              onCheckedChange={() => toggleItem(`reflex-${reflex.id}`)}
+              id={id} 
+              checked={!!checkedItems[id]} 
+              onCheckedChange={() => toggleItem(id)}
               className="h-4 w-4 border-black rounded-none"
             />
-            <h3 className={cn("font-bold text-base", checkedItems[`reflex-${reflex.id}`] && "line-through text-gray-400")}>
-              {reflex.name} ({reflex.category})
+            <h3 className={cn("font-bold text-base shrink-0", checkedItems[id] && "line-through text-gray-400")}>
+              {reflex.name}
             </h3>
+            <input 
+              type="text"
+              value={textData[`${id}-note`] || ""}
+              onChange={(e) => handleTextChange(`${id}-note`, e.target.value)}
+              className="flex-1 border-b border-black/20 bg-transparent outline-none text-xs px-2 focus:border-blue-500 transition-colors"
+              placeholder="Add assessment note..."
+            />
           </div>
         </div>
         
@@ -147,7 +176,6 @@ const PracticeNotes = () => {
           <div className="flex-1 space-y-2 text-xs">
             <p><strong>Stimulus:</strong> {reflex.stimulus}</p>
             <p><strong>Inhibition Pattern:</strong> {reflex.inhibitionPattern}</p>
-            <p className="italic text-gray-600"><strong>Assessment:</strong> {reflex.howTo}</p>
           </div>
           
           {imageUrl && (
@@ -162,19 +190,27 @@ const PracticeNotes = () => {
 
   const NerveCard = ({ nerve }: { nerve: any }) => {
     const imageUrl = customImages[`cn${nerve.id}`];
+    const id = `cn-${nerve.id}`;
     return (
       <div className="p-4 border border-black mb-4 break-inside-avoid">
         <div className="flex justify-between items-start mb-2">
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-3 flex-1">
             <Checkbox 
-              id={`cn-${nerve.id}`} 
-              checked={!!checkedItems[`cn-${nerve.id}`]} 
-              onCheckedChange={() => toggleItem(`cn-${nerve.id}`)}
+              id={id} 
+              checked={!!checkedItems[id]} 
+              onCheckedChange={() => toggleItem(id)}
               className="h-4 w-4 border-black rounded-none"
             />
-            <h3 className={cn("font-bold text-base", checkedItems[`cn-${nerve.id}`] && "line-through text-gray-400")}>
-              {nerve.name}: {nerve.latinName} ({nerve.nuclei} Nuclei)
+            <h3 className={cn("font-bold text-base shrink-0", checkedItems[id] && "line-through text-gray-400")}>
+              {nerve.name}: {nerve.latinName}
             </h3>
+            <input 
+              type="text"
+              value={textData[`${id}-note`] || ""}
+              onChange={(e) => handleTextChange(`${id}-note`, e.target.value)}
+              className="flex-1 border-b border-black/20 bg-transparent outline-none text-xs px-2 focus:border-blue-500 transition-colors"
+              placeholder="Add nerve note..."
+            />
           </div>
         </div>
         
@@ -216,10 +252,37 @@ const PracticeNotes = () => {
           {/* Document Header */}
           <header className="mb-16 text-center">
             <h1 className="text-4xl font-serif font-bold mb-2 tracking-tight">Clinical Practice Notes</h1>
-            <div className="mt-10 grid grid-cols-3 gap-4 text-xs font-bold border-y border-black py-4">
-              <span>Date: ____________________</span>
-              <span>Practitioner: ____________________</span>
-              <span>Client ID: ____________________</span>
+            <div className="mt-10 grid grid-cols-3 gap-8 text-xs font-bold border-y border-black py-6">
+              <div className="flex items-center gap-2">
+                <span>Date:</span>
+                <input 
+                  type="text" 
+                  value={textData.header_date || ""} 
+                  onChange={(e) => handleTextChange('header_date', e.target.value)}
+                  className="flex-1 border-b border-black bg-transparent outline-none px-1 focus:border-blue-500 transition-colors"
+                  placeholder="________________"
+                />
+              </div>
+              <div className="flex items-center gap-2">
+                <span>Practitioner:</span>
+                <input 
+                  type="text" 
+                  value={textData.header_practitioner || ""} 
+                  onChange={(e) => handleTextChange('header_practitioner', e.target.value)}
+                  className="flex-1 border-b border-black bg-transparent outline-none px-1 focus:border-blue-500 transition-colors"
+                  placeholder="________________"
+                />
+              </div>
+              <div className="flex items-center gap-2">
+                <span>Client ID:</span>
+                <input 
+                  type="text" 
+                  value={textData.header_clientid || ""} 
+                  onChange={(e) => handleTextChange('header_clientid', e.target.value)}
+                  className="flex-1 border-b border-black bg-transparent outline-none px-1 focus:border-blue-500 transition-colors"
+                  placeholder="________________"
+                />
+              </div>
             </div>
           </header>
 
@@ -273,8 +336,8 @@ const PracticeNotes = () => {
               <div className="grid grid-cols-2 gap-x-12">
                 <div className="space-y-3">
                   <h3 className="text-xs font-bold text-gray-500 uppercase tracking-widest mb-2">Preliminary Vitals</h3>
-                  <Item id="v-bolt" label="BOLT Score" subtext="Measure CO2 tolerance. Target: 25s+ (Functional), 40s+ (Optimal)." />
-                  <Item id="v-coherence" label="Heart Coherence" subtext="Autonomic sync. HR/BR ratio. Check for coherence vs discordance." />
+                  <Item id="v-bolt" label="BOLT Score" subtext="Measure CO2 tolerance. Target: 25s+ (Functional), 40s+ (Optimal)." hasInput />
+                  <Item id="v-coherence" label="Heart Coherence" subtext="Autonomic sync. HR/BR ratio. Check for coherence vs discordance." hasInput />
                 </div>
                 <div className="p-4 border border-black italic text-xs leading-relaxed">
                   "If the client's BOLT score is below 25s, the system is in a state of chronic threat. Deep work will not stick until CO2 tolerance is improved."
@@ -345,12 +408,18 @@ const PracticeNotes = () => {
           {/* Footer Notes */}
           <div className="mt-16 pt-8 border-t border-black">
             <h3 className="text-xs font-bold text-gray-500 uppercase tracking-widest mb-6">Clinical Observations & Integration Notes</h3>
-            <div className="space-y-8">
-              <div className="border-b border-gray-200 w-full h-4" />
-              <div className="border-b border-gray-200 w-full h-4" />
-              <div className="border-b border-gray-200 w-full h-4" />
-              <div className="border-b border-gray-200 w-full h-4" />
-              <div className="border-b border-gray-200 w-full h-4" />
+            <div className="relative">
+              <textarea 
+                value={textData.observations || ""}
+                onChange={(e) => handleTextChange('observations', e.target.value)}
+                className="w-full min-h-[300px] bg-transparent border-none outline-none resize-none text-sm leading-[32px] font-medium"
+                style={{
+                  backgroundImage: 'linear-gradient(to bottom, transparent 31px, #e5e7eb 31px)',
+                  backgroundSize: '100% 32px',
+                  backgroundAttachment: 'local'
+                }}
+                placeholder="Type your clinical observations here..."
+              />
             </div>
           </div>
         </div>

@@ -6,15 +6,35 @@ import { PRIMITIVE_REFLEXES } from "@/data/primitive-reflex-data";
 import { CRANIAL_NERVES } from "@/data/cranial-nerve-data";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Button } from "@/components/ui/button";
-import { Printer, RotateCcw, FileText } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
+import { 
+  Printer, 
+  RotateCcw, 
+  FileText, 
+  Zap, 
+  Baby, 
+  Brain, 
+  Activity, 
+  Hand, 
+  PlayCircle, 
+  ShieldAlert,
+  Loader2,
+  Calendar,
+  Sparkles,
+  Layers,
+  ShieldCheck
+} from "lucide-react";
 import { cn } from "@/lib/utils";
+import { supabase } from "@/integrations/supabase/client";
 
 const STORAGE_KEY = "practice_notes_checked_items";
 
 const PracticeNotes = () => {
   const [checkedItems, setCheckedItems] = useState<Record<string, boolean>>({});
+  const [customImages, setCustomImages] = useState<Record<string, string>>({});
+  const [loading, setLoading] = useState(true);
 
-  // Load checked items from localStorage
+  // Load checked items and custom images
   useEffect(() => {
     const saved = localStorage.getItem(STORAGE_KEY);
     if (saved) {
@@ -24,9 +44,39 @@ const PracticeNotes = () => {
         console.error("Failed to parse checked items", e);
       }
     }
+
+    const fetchImages = async () => {
+      try {
+        const { data: { user } } = await supabase.auth.getUser();
+        if (!user) return;
+
+        const [brainRes, reflexRes] = await Promise.all([
+          supabase.from('brain_reflex_customizations').select('reflex_id, image_url, secondary_image_url').eq('user_id', user.id),
+          supabase.from('primitive_reflex_customizations').select('reflex_id, image_url').eq('user_id', user.id)
+        ]);
+
+        const mapping: Record<string, string> = {};
+        brainRes.data?.forEach(item => {
+          if (item.secondary_image_url || item.image_url) {
+            mapping[item.reflex_id] = item.secondary_image_url || item.image_url;
+          }
+        });
+        reflexRes.data?.forEach(item => {
+          if (item.image_url) {
+            mapping[item.reflex_id] = item.image_url;
+          }
+        });
+        setCustomImages(mapping);
+      } catch (err) {
+        console.error("Failed to fetch images:", err);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchImages();
   }, []);
 
-  // Save checked items to localStorage
   useEffect(() => {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(checkedItems));
   }, [checkedItems]);
@@ -49,41 +99,39 @@ const PracticeNotes = () => {
     window.print();
   };
 
-  // Filter muscles that have video links (taught by Nick)
-  const nickMuscles = Object.values(MUSCLE_INFO_DETAILS).filter(m => m.videoUrl);
-
+  // Helper components defined inside to access state
   const Section = ({ title, children, className }: { title: string; children: React.ReactNode; className?: string }) => (
-    <section className={cn("mb-8 break-inside-avoid", className)}>
-      <h2 className="text-xl font-serif font-bold border-b border-slate-300 pb-1 mb-4 text-slate-900 uppercase tracking-tight">
+    <section className={cn("mb-12 break-inside-avoid", className)}>
+      <h2 className="text-2xl font-serif font-black border-b-4 border-slate-900 pb-2 mb-6 text-slate-900 uppercase tracking-tighter">
         {title}
       </h2>
-      <div className="space-y-3">
+      <div className="space-y-4">
         {children}
       </div>
     </section>
   );
 
   const Item = ({ id, label, subtext, bold = false, indent = false }: { id: string; label: string; subtext?: string; bold?: boolean; indent?: boolean }) => (
-    <div className={cn("flex items-start gap-3 group", indent && "ml-8")}>
+    <div className={cn("flex items-start gap-4 group", indent && "ml-10")}>
       <Checkbox 
         id={id} 
         checked={!!checkedItems[id]} 
         onCheckedChange={() => toggleItem(id)}
-        className="mt-1 border-slate-400 data-[state=checked]:bg-slate-700 data-[state=checked]:border-slate-700"
+        className="mt-1.5 h-5 w-5 border-slate-400 data-[state=checked]:bg-slate-900 data-[state=checked]:border-slate-900"
       />
-      <div className="grid gap-0.5 leading-none">
+      <div className="grid gap-1 leading-tight">
         <label
           htmlFor={id}
           className={cn(
-            "text-sm font-medium leading-none cursor-pointer select-none",
-            bold ? "font-bold text-slate-900" : "text-slate-700",
+            "text-base font-semibold cursor-pointer select-none transition-colors",
+            bold ? "font-black text-slate-900 text-lg" : "text-slate-800",
             checkedItems[id] && "line-through text-slate-400"
           )}
         >
           {label}
         </label>
         {subtext && (
-          <p className={cn("text-xs text-slate-500 italic", checkedItems[id] && "text-slate-300")}>
+          <p className={cn("text-sm text-slate-500 font-medium leading-relaxed", checkedItems[id] && "text-slate-300")}>
             {subtext}
           </p>
         )}
@@ -91,73 +139,197 @@ const PracticeNotes = () => {
     </div>
   );
 
-  return (
-    <div className="min-h-screen bg-slate-50 py-12 px-4 print:bg-white print:py-0 print:px-0">
-      {/* Stealth Toolbar */}
-      <div className="max-w-[800px] mx-auto mb-6 flex items-center justify-between print:hidden">
-        <div className="flex items-center gap-2 text-slate-400">
-          <FileText size={18} />
-          <span className="text-xs font-medium uppercase tracking-widest">Clinical Practice Document</span>
+  const ReflexCard = ({ reflex }: { reflex: any }) => {
+    const imageUrl = customImages[reflex.id];
+    return (
+      <div className="p-6 bg-slate-50 rounded-3xl border border-slate-200 mb-4 break-inside-avoid">
+        <div className="flex justify-between items-start mb-4">
+          <div className="flex items-center gap-3">
+            <Checkbox 
+              id={`reflex-${reflex.id}`} 
+              checked={!!checkedItems[`reflex-${reflex.id}`]} 
+              onCheckedChange={() => toggleItem(`reflex-${reflex.id}`)}
+              className="h-5 w-5 border-slate-400"
+            />
+            <div>
+              <h3 className={cn("font-black text-lg text-slate-900", checkedItems[`reflex-${reflex.id}`] && "line-through text-slate-400")}>
+                {reflex.name}
+              </h3>
+              <Badge variant="outline" className="text-[8px] font-black uppercase tracking-widest border-slate-300">{reflex.category}</Badge>
+            </div>
+          </div>
+          <Baby size={20} className="text-indigo-400" />
         </div>
-        <div className="flex items-center gap-2">
-          <Button variant="outline" size="sm" onClick={resetDocument} className="h-8 text-xs gap-2 border-slate-200 hover:bg-slate-100">
-            <RotateCcw size={14} /> Reset
+        
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div className="space-y-3">
+            <div className="flex items-start gap-2">
+              <PlayCircle size={14} className="text-indigo-500 shrink-0 mt-0.5" />
+              <p className="text-xs font-bold text-slate-700"><span className="uppercase text-[9px] font-black text-slate-400 block">Stimulus</span> {reflex.stimulus}</p>
+            </div>
+            <div className="flex items-start gap-2">
+              <ShieldAlert size={14} className="text-rose-500 shrink-0 mt-0.5" />
+              <p className="text-xs font-bold text-slate-700"><span className="uppercase text-[9px] font-black text-slate-400 block">Inhibition Pattern</span> {reflex.inhibitionPattern}</p>
+            </div>
+            <div className="flex items-start gap-2">
+              <Hand size={14} className="text-slate-400 shrink-0 mt-0.5" />
+              <p className="text-xs text-slate-500 italic"><span className="uppercase text-[9px] font-black text-slate-400 block">How to Assess</span> {reflex.howTo}</p>
+            </div>
+          </div>
+          
+          {imageUrl && (
+            <div className="aspect-video rounded-2xl overflow-hidden border border-slate-200 bg-white shadow-inner">
+              <img src={imageUrl} alt={reflex.name} className="w-full h-full object-cover opacity-90" />
+            </div>
+          )}
+        </div>
+      </div>
+    );
+  };
+
+  const NerveCard = ({ nerve }: { nerve: any }) => {
+    const imageUrl = customImages[`cn${nerve.id}`];
+    return (
+      <div className="p-6 bg-white rounded-3xl border border-slate-100 shadow-sm mb-4 break-inside-avoid">
+        <div className="flex justify-between items-start mb-4">
+          <div className="flex items-center gap-3">
+            <Checkbox 
+              id={`cn-${nerve.id}`} 
+              checked={!!checkedItems[`cn-${nerve.id}`]} 
+              onCheckedChange={() => toggleItem(`cn-${nerve.id}`)}
+              className="h-5 w-5 border-slate-400"
+            />
+            <div>
+              <h3 className={cn("font-black text-lg text-slate-900", checkedItems[`cn-${nerve.id}`] && "line-through text-slate-400")}>
+                {nerve.name}: {nerve.latinName}
+              </h3>
+              <Badge className={cn("text-[8px] font-black uppercase tracking-widest border-none", 
+                nerve.nuclei === 'Pons' ? "bg-indigo-100 text-indigo-700" : 
+                nerve.nuclei === 'Medulla' ? "bg-rose-100 text-rose-700" : "bg-slate-100 text-slate-600"
+              )}>
+                {nerve.nuclei} Nuclei
+              </Badge>
+            </div>
+          </div>
+          <Zap size={20} className="text-amber-400" />
+        </div>
+        
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div className="space-y-3">
+            <div className="flex items-start gap-2">
+              <Hand size={14} className="text-indigo-500 shrink-0 mt-0.5" />
+              <p className="text-xs font-bold text-slate-700"><span className="uppercase text-[9px] font-black text-slate-400 block">Reflex Point</span> {nerve.reflexPoint}</p>
+            </div>
+            <div className="flex items-start gap-2">
+              <PlayCircle size={14} className="text-amber-500 shrink-0 mt-0.5" />
+              <p className="text-xs font-bold text-slate-700"><span className="uppercase text-[9px] font-black text-slate-400 block">Stimulus</span> {nerve.stimulus}</p>
+            </div>
+          </div>
+          
+          {imageUrl && (
+            <div className="aspect-video rounded-2xl overflow-hidden border border-slate-200 bg-slate-50 shadow-inner">
+              <img src={imageUrl} alt={nerve.name} className="w-full h-full object-cover opacity-80" />
+            </div>
+          )}
+        </div>
+      </div>
+    );
+  };
+
+  if (loading) {
+    return (
+      <div className="min-h-screen flex flex-col items-center justify-center bg-slate-50 gap-4">
+        <Loader2 className="animate-spin text-indigo-600" size={32} />
+        <p className="text-xs font-black uppercase tracking-widest text-slate-400">Loading Practice Notes...</p>
+      </div>
+    );
+  }
+
+  return (
+    <div className="min-h-screen bg-slate-100 py-12 px-4 print:bg-white print:py-0 print:px-0">
+      {/* Stealth Toolbar */}
+      <div className="max-w-[1100px] mx-auto mb-8 flex items-center justify-between print:hidden">
+        <div className="flex items-center gap-3 text-slate-500">
+          <div className="w-10 h-10 rounded-xl bg-white flex items-center justify-center shadow-sm">
+            <FileText size={20} className="text-indigo-600" />
+          </div>
+          <div>
+            <span className="text-xs font-black uppercase tracking-[0.2em] block">Clinical Practice Notes</span>
+            <span className="text-[10px] font-medium text-slate-400">Comprehensive Assessment Guide</span>
+          </div>
+        </div>
+        <div className="flex items-center gap-3">
+          <Button variant="outline" size="sm" onClick={resetDocument} className="h-10 px-6 rounded-xl text-xs font-bold gap-2 border-slate-200 bg-white hover:bg-slate-50">
+            <RotateCcw size={16} /> Reset Document
           </Button>
-          <Button variant="default" size="sm" onClick={handlePrint} className="h-8 text-xs gap-2 bg-slate-800 hover:bg-slate-900">
-            <Printer size={14} /> Print Notes
+          <Button variant="default" size="sm" onClick={handlePrint} className="h-10 px-8 rounded-xl text-xs font-black uppercase tracking-widest gap-2 bg-slate-900 hover:bg-black shadow-lg">
+            <Printer size={16} /> Print Notes
           </Button>
         </div>
       </div>
 
       {/* Document Container */}
-      <div className="max-w-[800px] mx-auto bg-white shadow-xl border border-slate-200 p-12 md:p-16 min-h-[1056px] print:shadow-none print:border-none print:p-0">
+      <div className="max-w-[1100px] mx-auto bg-white shadow-2xl border border-slate-200 p-16 md:p-24 min-h-[1056px] print:shadow-none print:border-none print:p-0">
         
         {/* Document Header */}
-        <header className="mb-12 text-center">
-          <h1 className="text-3xl font-serif font-black text-slate-900 mb-2">Clinical Practice Notes</h1>
-          <p className="text-slate-500 text-sm font-medium uppercase tracking-[0.2em]">PEACE Process & Neurological Assessment</p>
-          <div className="mt-6 flex justify-center gap-8 text-xs text-slate-400 border-y border-slate-100 py-3">
-            <span>Date: ____________________</span>
-            <span>Practitioner: ____________________</span>
-            <span>Client ID: ____________________</span>
+        <header className="mb-20 text-center relative">
+          <div className="absolute top-0 left-1/2 -translate-x-1/2 -mt-12 opacity-5">
+            <Brain size={120} />
+          </div>
+          <h1 className="text-5xl font-serif font-black text-slate-900 mb-4 tracking-tighter">Clinical Practice Notes</h1>
+          <p className="text-slate-400 text-sm font-black uppercase tracking-[0.5em]">PEACE Process & Neurological Assessment</p>
+          <div className="mt-12 flex justify-center gap-12 text-xs font-bold text-slate-400 border-y-2 border-slate-100 py-6">
+            <span className="flex items-center gap-2"><Calendar size={14} /> Date: ____________________</span>
+            <span className="flex items-center gap-2"><Activity size={14} /> Practitioner: ____________________</span>
+            <span className="flex items-center gap-2"><Hand size={14} /> Client ID: ____________________</span>
           </div>
         </header>
 
         {/* 1. PEACE Process */}
         <Section title="I. The PEACE Process">
-          <Item id="p-step" label="P - Preliminary Assessment" subtext="Gather story, run baseline, identify current organisation." bold />
-          <Item id="e1-step" label="E - Ease the System" subtext="Create safety. Ease must come before correction." bold />
-          <Item id="a-step" label="A - Align the Hierarchy" subtext="Find the keystone priority." bold />
-          <Item id="c-step" label="C - Correct" subtext="Facilitate primary change / reset." bold />
-          <Item id="e2-step" label="E - Embed" subtext="Stabilise and integrate for lasting transformation." bold />
+          <div className="grid grid-cols-1 gap-6">
+            <Item id="p-step" label="P - Preliminary Assessment" subtext="Gather the story, run the baseline (BOLT/Coherence), and identify how the system is currently organised." bold />
+            <Item id="e1-step" label="E - Ease the System" subtext="Create safety before change. Address SNS dominance (Harmonic Rocking, T1, Diaphragm). Ease must come before correction." bold />
+            <Item id="a-step" label="A - Align the Hierarchy" subtext="Find the keystone — the true priority that the nervous system wants to address first (Reflexes, Nerves, Muscles)." bold />
+            <Item id="c-step" label="C - Correct" subtext="Facilitate the primary change. Use Afferent (Bottom-Up) or Efferent (Top-Down) logic to reset the circuit." bold />
+            <Item id="e2-step" label="E - Embed" subtext="Stabilise and integrate so change becomes lasting transformation. Prescribe specific neurological homework." bold />
+          </div>
         </Section>
 
         {/* 2. Clinical Hierarchy */}
         <Section title="II. Clinical Hierarchy">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-4">
-            <div className="space-y-3">
-              <h3 className="text-xs font-black text-slate-400 uppercase tracking-widest mb-2">Asterisk Tier</h3>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-x-12 gap-y-8">
+            <div className="space-y-4">
+              <h3 className="text-[10px] font-black text-slate-400 uppercase tracking-[0.3em] mb-4 flex items-center gap-2">
+                <Sparkles size={14} className="text-purple-500" /> Asterisk Tier
+              </h3>
               <Item id="h-emotional" label="Emotional Charge" />
               <Item id="h-assemblage" label="Assemblage Point" />
               <Item id="h-hara" label="Hara Line" />
               <Item id="h-heartwall" label="Heart Wall" />
             </div>
-            <div className="space-y-3">
-              <h3 className="text-xs font-black text-slate-400 uppercase tracking-widest mb-2">1° Primary Tier</h3>
+            <div className="space-y-4">
+              <h3 className="text-[10px] font-black text-slate-400 uppercase tracking-[0.3em] mb-4 flex items-center gap-2">
+                <Zap size={14} className="text-indigo-500" /> 1° Primary Tier
+              </h3>
               <Item id="h-primitive" label="Primitive Reflexes" />
               <Item id="h-nociception" label="Nociception" />
               <Item id="h-cranial" label="Cranial Nerves" />
               <Item id="h-eyes" label="Eye Systems" />
             </div>
-            <div className="space-y-3">
-              <h3 className="text-xs font-black text-slate-400 uppercase tracking-widest mb-2">2° Secondary Tier</h3>
+            <div className="space-y-4">
+              <h3 className="text-[10px] font-black text-slate-400 uppercase tracking-[0.3em] mb-4 flex items-center gap-2">
+                <Activity size={14} className="text-emerald-500" /> 2° Secondary Tier
+              </h3>
               <Item id="h-immune" label="Immune Vials (TH1/2/17/9)" />
               <Item id="h-infections" label="Infections" />
               <Item id="h-krebs" label="Krebs Cycle" />
               <Item id="h-organ" label="Organ/Gland Balance" />
             </div>
-            <div className="space-y-3">
-              <h3 className="text-xs font-black text-slate-400 uppercase tracking-widest mb-2">3° Tertiary Tier</h3>
+            <div className="space-y-4">
+              <h3 className="text-[10px] font-black text-slate-400 uppercase tracking-[0.3em] mb-4 flex items-center gap-2">
+                <Layers size={14} className="text-amber-500" /> 3° Tertiary Tier
+              </h3>
               <Item id="h-icv" label="Ileocecal Valve (ICV)" />
               <Item id="h-cranialbones" label="Cranial Bones" />
               <Item id="h-musculo" label="Musculoskeletal" />
@@ -167,112 +339,98 @@ const PracticeNotes = () => {
 
         {/* 3. Preliminary & SNS Resets */}
         <Section title="III. Preliminary & SNS Resets">
-          <div className="space-y-6">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-6">
-              <div className="space-y-3">
-                <h3 className="text-xs font-black text-slate-400 uppercase tracking-widest mb-2">Preliminary Vitals</h3>
-                <Item id="v-bolt" label="BOLT Score" subtext="Measure CO2 tolerance. Target: 25s+ (Functional), 40s+ (Optimal)." />
-                <Item id="v-coherence" label="Heart Coherence" subtext="Autonomic sync. HR/BR ratio. Check for coherence vs discordance." />
+          <div className="space-y-10">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-x-12 gap-y-8">
+              <div className="space-y-4">
+                <h3 className="text-[10px] font-black text-slate-400 uppercase tracking-[0.3em] mb-4">Preliminary Vitals</h3>
+                <Item id="v-bolt" label="BOLT Score" subtext="Measure CO2 tolerance. Target: 25s+ (Functional), 40s+ (Optimal). Low score = Imperative Breathing Recovery." />
+                <Item id="v-coherence" label="Heart Coherence" subtext="Autonomic sync. HR/BR ratio. Check for coherence vs discordance. High ratio = High stress." />
+              </div>
+              <div className="p-6 bg-indigo-900 text-white rounded-[2rem] shadow-xl">
+                <h4 className="text-xs font-black uppercase tracking-widest text-indigo-300 mb-2">Practitioner Rule</h4>
+                <p className="text-sm italic leading-relaxed">"If the client's BOLT score is below 25s, the system is in a state of chronic threat. Deep work will not stick until CO2 tolerance is improved."</p>
               </div>
             </div>
 
-            <div className="space-y-4">
-              <h3 className="text-xs font-black text-slate-400 uppercase tracking-widest mb-2">SNS Down-Regulation Procedures</h3>
+            <div className="space-y-8">
+              <h3 className="text-[10px] font-black text-slate-400 uppercase tracking-[0.3em] mb-4">SNS Down-Regulation Procedures</h3>
               
-              <div className="space-y-2">
-                <Item id="sns-t1-main" label="T1 Sympathetic Reset" bold />
-                <Item id="sns-t1-s1" label="1. Palpate bilateral anterior first rib (T1) to find restricted/tender side." indent />
-                <Item id="sns-t1-s2" label="2. Test contralateral Psoas muscle (should be inhibited)." indent />
-                <Item id="sns-t1-s3" label="3. Monitor tender spot; move ipsilateral shoulder into external rotation." indent />
-                <Item id="sns-t1-s4" label="4. Hold for 45-90s until tenderness dissolves." indent />
-                <Item id="sns-t1-s5" label="5. Re-assess tenderness and Psoas." indent />
-              </div>
+              <div className="grid grid-cols-1 gap-6">
+                <div className="p-8 bg-slate-50 rounded-[2.5rem] border border-slate-200 space-y-4">
+                  <Item id="sns-t1-main" label="T1 Sympathetic Reset" bold />
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pl-10">
+                    <p className="text-xs text-slate-600 font-medium">1. Palpate bilateral anterior first rib (T1) to find restricted/tender side.</p>
+                    <p className="text-xs text-slate-600 font-medium">2. Test contralateral Psoas muscle (should be inhibited).</p>
+                    <p className="text-xs text-slate-600 font-medium">3. Monitor tender spot; move ipsilateral shoulder into external rotation.</p>
+                    <p className="text-xs text-slate-600 font-medium">4. Hold for 45-90s until tenderness dissolves. Re-assess Psoas.</p>
+                  </div>
+                </div>
 
-              <div className="space-y-2">
-                <Item id="sns-diaphragm-main" label="Diaphragm Reset" bold />
-                <Item id="sns-diaphragm-s1" label="1. Challenge tender points either side of sternum (Phrenic nerve)." indent />
-                <Item id="sns-diaphragm-s2" label="2. Palpate neck at C4 level (usually opposite to sternum tender point)." indent />
-                <Item id="sns-diaphragm-s3" label="3. Move ribcage superiorly towards neck." indent />
-                <Item id="sns-diaphragm-s4" label="4. Hold for 45-90s. Release very slowly." indent />
-              </div>
-
-              <div className="space-y-2">
-                <Item id="sns-vagus-main" label="Vagus Nerve Procedure" bold />
-                <Item id="sns-vagus-stim" label="Stimulation: Target branch (Auricular/Cervical/Abdominal) for 60s." indent />
-                <Item id="sns-vagus-sr1" label="Screen & Reset: Challenge Vagal reflex point (Occiput/Auricular) + IM." indent />
-                <Item id="sns-vagus-sr2" label="Identify dysfunctional function (Humming, Swallowing, etc.)." indent />
-                <Item id="sns-vagus-sr3" label="Challenge Organ/Gland reflex + Polarity." indent />
-                <Item id="sns-vagus-sr4" label="Correction: Hold Vagal Reflex + Stim Function + Hold Organ/Gland Reflex + Medulla Breathing (15-30s)." indent />
+                <div className="p-8 bg-slate-50 rounded-[2.5rem] border border-slate-200 space-y-4">
+                  <Item id="sns-diaphragm-main" label="Diaphragm Reset" bold />
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pl-10">
+                    <p className="text-xs text-slate-600 font-medium">1. Challenge tender points either side of sternum (Phrenic nerve).</p>
+                    <p className="text-xs text-slate-600 font-medium">2. Palpate neck at C4 level (usually opposite to sternum tender point).</p>
+                    <p className="text-xs text-slate-600 font-medium">3. Move ribcage superiorly towards neck. Hold for 45-90s.</p>
+                    <p className="text-xs text-slate-600 font-medium">4. Release very slowly. Observe for deep sigh or yawn.</p>
+                  </div>
+                </div>
               </div>
             </div>
           </div>
         </Section>
 
-        {/* 4. Lymphatic Assessment */}
-        <Section title="IV. Lymphatic Assessment">
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-            {['Cervical', 'Thoracic L', 'Thoracic R', 'Cisterna Chyli', 'Inguinal', 'Popliteal', 'Maxillary', 'Axillary'].map(zone => (
-              <Item key={zone} id={`lymph-${zone.toLowerCase().replace(' ', '-')}`} label={zone} />
-            ))}
-          </div>
-        </Section>
-
-        {/* 5. Primitive Reflexes */}
-        <Section title="V. Primitive Reflexes">
-          <div className="space-y-4">
+        {/* 4. Primitive Reflexes */}
+        <Section title="IV. Primitive Reflexes (Foundational OS)">
+          <div className="grid grid-cols-1 gap-4">
             {PRIMITIVE_REFLEXES.map(reflex => (
-              <Item 
-                key={reflex.id} 
-                id={`reflex-${reflex.id}`} 
-                label={reflex.name} 
-                subtext={`Stim: ${reflex.stimulus} | Pattern: ${reflex.inhibitionPattern}`}
-              />
+              <ReflexCard key={reflex.id} reflex={reflex} />
             ))}
           </div>
         </Section>
 
-        {/* 6. Cranial Nerves */}
-        <Section title="VI. Cranial Nerves">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-4">
+        {/* 5. Cranial Nerves */}
+        <Section title="V. Cranial Nerves (Brainstem Pathways)">
+          <div className="grid grid-cols-1 gap-4">
             {CRANIAL_NERVES.map(cn => (
-              <Item 
-                key={cn.id} 
-                id={`cn-${cn.id}`} 
-                label={`${cn.name} (${cn.latinName})`} 
-                subtext={cn.stimulus}
-              />
+              <NerveCard key={cn.id} nerve={cn} />
             ))}
           </div>
         </Section>
 
-        {/* 7. Key Muscles */}
-        <Section title="VII. Key Muscles (Clinical Indicators)">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-4">
-            {nickMuscles.map(muscle => (
-              <Item 
-                key={muscle.name} 
-                id={`muscle-${muscle.name.toLowerCase().replace(/[^a-z0-9]/g, '-')}`} 
-                label={muscle.name} 
-                subtext={muscle.meridian ? `Meridian: ${muscle.meridian}` : undefined}
-              />
+        {/* 6. Key Muscles */}
+        <Section title="VI. Key Muscles (Clinical Indicators)">
+          <div className="grid grid-cols-2 md:grid-cols-3 gap-x-8 gap-y-6">
+            {Object.values(MUSCLE_INFO_DETAILS).filter(m => m.videoUrl).map(muscle => (
+              <div key={muscle.name} className="flex items-center gap-3">
+                <Checkbox id={`muscle-${muscle.name}`} onCheckedChange={() => toggleItem(`muscle-${muscle.name}`)} checked={!!checkedItems[`muscle-${muscle.name}`]} />
+                <div>
+                  <p className={cn("text-sm font-bold text-slate-900", checkedItems[`muscle-${muscle.name}`] && "line-through text-slate-400")}>{muscle.name}</p>
+                  <p className="text-[8px] font-black text-indigo-500 uppercase tracking-widest">{muscle.meridian} Meridian</p>
+                </div>
+              </div>
             ))}
           </div>
         </Section>
 
         {/* Footer Notes */}
-        <div className="mt-12 pt-8 border-t border-slate-100">
-          <h3 className="text-xs font-black text-slate-400 uppercase tracking-widest mb-4">Clinical Observations & Notes</h3>
-          <div className="space-y-6">
-            <div className="h-px bg-slate-100 w-full" />
-            <div className="h-px bg-slate-100 w-full" />
-            <div className="h-px bg-slate-100 w-full" />
-            <div className="h-px bg-slate-100 w-full" />
-            <div className="h-px bg-slate-100 w-full" />
+        <div className="mt-20 pt-12 border-t-4 border-slate-900">
+          <h3 className="text-xs font-black text-slate-400 uppercase tracking-[0.4em] mb-8">Clinical Observations & Integration Notes</h3>
+          <div className="space-y-10">
+            <div className="h-px bg-slate-200 w-full" />
+            <div className="h-px bg-slate-200 w-full" />
+            <div className="h-px bg-slate-200 w-full" />
+            <div className="h-px bg-slate-200 w-full" />
+            <div className="h-px bg-slate-200 w-full" />
+            <div className="h-px bg-slate-200 w-full" />
           </div>
         </div>
 
-        <footer className="mt-16 text-center text-[10px] text-slate-300 uppercase tracking-[0.3em]">
-          Confidential Clinical Document • For Professional Use Only
+        <footer className="mt-24 text-center">
+          <div className="inline-flex items-center gap-3 px-6 py-2 bg-slate-900 text-white rounded-full text-[10px] font-black uppercase tracking-[0.3em] mb-4">
+            <ShieldCheck size={14} className="text-emerald-400" /> Confidential Clinical Document
+          </div>
+          <p className="text-slate-300 text-[8px] font-bold uppercase tracking-widest">For Professional Use Only • Resonance Kinesiology Practice Management</p>
         </footer>
       </div>
     </div>

@@ -7,7 +7,6 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type, x-supabase-client-platform',
 }
 
-// Helper to ensure AI types match DB constraints
 const normalizeType = (type: string): 'alignment' | 'shifting' | 'belief' => {
   const t = String(type).toLowerCase().trim();
   if (t === 'goal' || t === 'alignment') return 'alignment';
@@ -16,9 +15,6 @@ const normalizeType = (type: string): 'alignment' | 'shifting' | 'belief' => {
 };
 
 serve(async (req) => {
-  const functionName = "prioritize-backlog";
-  console.log(`[${functionName}] Request received`);
-
   if (req.method === 'OPTIONS') {
     return new Response('ok', { headers: corsHeaders })
   }
@@ -74,10 +70,6 @@ serve(async (req) => {
     2. "shifting" -> IDENTITY SHIFTING. Use this for any CURRENT PROBLEMATIC version of self, "stuck" role, or construct you are letting go of (e.g., "The Procrastinator", "The Invisible One").
     3. "belief" -> LIMITING BELIEFS. Use this for core "I am..." struggle statements or rules that hold a pattern in place (e.g., "I am a burden", "I am not safe to be seen").
     
-    SECONDARY TASKS:
-    1. RE-PRIORITIZE: Rank existing items (1-100) based on their "Keystone" potential.
-    2. DISCOVER: Identify 3-5 NEW items missing from the map but clearly recurring in the journal.
-    
     JOURNAL CONTEXT:
     ${journalContext}
     
@@ -95,7 +87,7 @@ serve(async (req) => {
       ]
     }`;
 
-    const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${geminiKey}`, {
+    const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${geminiKey}`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
@@ -114,17 +106,9 @@ serve(async (req) => {
 
     const parsed = JSON.parse(resultText);
 
-    // 3. Update existing items with normalization
     if (parsed.rankings && parsed.rankings.length > 0) {
       const updatePromises = parsed.rankings.map(rank => {
-        const originalItem = backlog.find(b => b.id === rank.id);
-        // CRITICAL FIX: Apply normalizeType here!
         const finalType = normalizeType(rank.type);
-
-        if (originalItem && originalItem.type !== finalType) {
-          console.log(`[${functionName}] Re-assigning tool for "${originalItem.content}": ${originalItem.type} -> ${finalType}`);
-        }
-
         return supabase
           .from('identity_backlog')
           .update({
@@ -139,7 +123,6 @@ serve(async (req) => {
       await Promise.all(updatePromises);
     }
 
-    // 4. Insert new suggestions with normalization
     if (parsed.new_suggestions && parsed.new_suggestions.length > 0) {
       const inserts = parsed.new_suggestions.map(s => ({
         user_id: userId,
@@ -162,7 +145,6 @@ serve(async (req) => {
     })
 
   } catch (error) {
-    console.error(`[${functionName}] Error:`, error.message);
     return new Response(JSON.stringify({ error: error.message }), {
       status: 400,
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },

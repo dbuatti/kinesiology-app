@@ -11,7 +11,7 @@ const normalizeType = (type: string): string => {
   if (t === 'goal' || t === 'alignment') return 'alignment';
   if (t === 'identity' || t === 'shifting') return 'shifting';
   if (t === 'belief') return 'belief';
-  return t; // Keep felt_sense and question as is
+  return t; 
 };
 
 serve(async (req) => {
@@ -52,7 +52,7 @@ serve(async (req) => {
     TEXT TO ANALYZE:
     "${content}"`;
 
-    const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${geminiKey}`, {
+    const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${geminiKey}`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({

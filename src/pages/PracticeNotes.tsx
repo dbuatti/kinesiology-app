@@ -6,9 +6,14 @@ import { PRIMITIVE_REFLEXES } from "@/data/primitive-reflex-data";
 import { CRANIAL_NERVES } from "@/data/cranial-nerve-data";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Button } from "@/components/ui/button";
-import { Loader2, RotateCcw, Printer, FileText } from "lucide-react";
+import { Loader2, RotateCcw, Printer } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { supabase } from "@/integrations/supabase/client";
+
+// Docs Components
+import DocsHeader from "@/components/docs/DocsHeader";
+import DocsToolbar from "@/components/docs/DocsToolbar";
+import DocsRuler from "@/components/docs/DocsRuler";
 
 const STORAGE_KEY = "practice_notes_checked_items";
 
@@ -199,165 +204,166 @@ const PracticeNotes = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 py-12 px-4 print:bg-white print:py-0 print:px-0">
-      {/* Toolbar */}
-      <div className="max-w-[1200px] mx-auto mb-6 flex items-center justify-between print:hidden">
-        <div className="flex items-center gap-2 text-gray-500">
-          <span className="text-xs font-bold uppercase tracking-widest">Clinical Practice Notes</span>
-        </div>
-        <div className="flex items-center gap-3">
-          <Button variant="outline" size="sm" onClick={resetDocument} className="h-9 px-4 text-xs border-gray-300 bg-white hover:bg-gray-50 rounded-none">
-            <RotateCcw size={14} className="mr-2" /> Reset
-          </Button>
-          <Button variant="default" size="sm" onClick={handlePrint} className="h-9 px-6 text-xs font-bold bg-black text-white hover:bg-gray-800 rounded-none">
-            <Printer size={14} className="mr-2" /> Print Document
-          </Button>
+    <div className="min-h-screen bg-[#F9FBFD] flex flex-col">
+      <DocsHeader />
+      <DocsToolbar />
+      <DocsRuler />
+
+      <div className="flex-1 overflow-auto p-8 md:p-12 flex justify-center print:p-0 print:bg-white">
+        {/* Document Container */}
+        <div className="w-full max-w-[816px] bg-white border border-slate-200 shadow-sm p-16 md:p-20 min-h-[1056px] print:border-none print:p-0 text-black font-sans relative">
+          
+          {/* Document Header */}
+          <header className="mb-16 text-center">
+            <h1 className="text-4xl font-serif font-bold mb-2 tracking-tight">Clinical Practice Notes</h1>
+            <div className="mt-10 grid grid-cols-3 gap-4 text-xs font-bold border-y border-black py-4">
+              <span>Date: ____________________</span>
+              <span>Practitioner: ____________________</span>
+              <span>Client ID: ____________________</span>
+            </div>
+          </header>
+
+          {/* 1. PEACE Process */}
+          <Section title="I. The PEACE Process">
+            <div className="space-y-4">
+              <Item id="p-step" label="P - Preliminary Assessment" subtext="Gather the story, run the baseline (BOLT/Coherence), and identify how the system is currently organised." bold />
+              <Item id="e1-step" label="E - Ease the System" subtext="Create safety before change. Address SNS dominance (Harmonic Rocking, T1, Diaphragm). Ease must come before correction." bold />
+              <Item id="a-step" label="A - Align the Hierarchy" subtext="Find the keystone — the true priority that the nervous system wants to address first (Reflexes, Nerves, Muscles)." bold />
+              <Item id="c-step" label="C - Correct" subtext="Facilitate the primary change. Use Afferent (Bottom-Up) or Efferent (Top-Down) logic to reset the circuit." bold />
+              <Item id="e2-step" label="E - Embed" subtext="Stabilise and integrate so change becomes lasting transformation. Prescribe specific neurological homework." bold />
+            </div>
+          </Section>
+
+          {/* 2. Clinical Hierarchy */}
+          <Section title="II. Clinical Hierarchy">
+            <div className="grid grid-cols-2 gap-x-12 gap-y-6">
+              <div className="space-y-3">
+                <h3 className="text-xs font-bold text-gray-500 uppercase tracking-widest mb-2">Asterisk Tier</h3>
+                <Item id="h-emotional" label="Emotional Charge" />
+                <Item id="h-assemblage" label="Assemblage Point" />
+                <Item id="h-hara" label="Hara Line" />
+                <Item id="h-heartwall" label="Heart Wall" />
+              </div>
+              <div className="space-y-3">
+                <h3 className="text-xs font-bold text-gray-500 uppercase tracking-widest mb-2">1. Primary Tier</h3>
+                <Item id="h-primitive" label="Primitive Reflexes" />
+                <Item id="h-nociception" label="Nociception" />
+                <Item id="h-cranial" label="Cranial Nerves" />
+                <Item id="h-eyes" label="Eye Systems" />
+              </div>
+              <div className="space-y-3">
+                <h3 className="text-xs font-bold text-gray-500 uppercase tracking-widest mb-2">2. Secondary Tier</h3>
+                <Item id="h-immune" label="Immune Vials (TH1/2/17/9)" />
+                <Item id="h-infections" label="Infections" />
+                <Item id="h-krebs" label="Krebs Cycle" />
+                <Item id="h-organ" label="Organ/Gland Balance" />
+              </div>
+              <div className="space-y-3">
+                <h3 className="text-xs font-bold text-gray-500 uppercase tracking-widest mb-2">3. Tertiary Tier</h3>
+                <Item id="h-icv" label="Ileocecal Valve (ICV)" />
+                <Item id="h-cranialbones" label="Cranial Bones" />
+                <Item id="h-musculo" label="Musculoskeletal" />
+              </div>
+            </div>
+          </Section>
+
+          {/* 3. Preliminary & SNS Resets */}
+          <Section title="III. Preliminary & SNS Resets">
+            <div className="space-y-8">
+              <div className="grid grid-cols-2 gap-x-12">
+                <div className="space-y-3">
+                  <h3 className="text-xs font-bold text-gray-500 uppercase tracking-widest mb-2">Preliminary Vitals</h3>
+                  <Item id="v-bolt" label="BOLT Score" subtext="Measure CO2 tolerance. Target: 25s+ (Functional), 40s+ (Optimal)." />
+                  <Item id="v-coherence" label="Heart Coherence" subtext="Autonomic sync. HR/BR ratio. Check for coherence vs discordance." />
+                </div>
+                <div className="p-4 border border-black italic text-xs leading-relaxed">
+                  "If the client's BOLT score is below 25s, the system is in a state of chronic threat. Deep work will not stick until CO2 tolerance is improved."
+                </div>
+              </div>
+
+              <div className="space-y-6">
+                <h3 className="text-xs font-bold text-gray-500 uppercase tracking-widest mb-2">SNS Down-Regulation Procedures</h3>
+                
+                <div className="grid grid-cols-1 gap-4">
+                  <div className="p-4 border border-black">
+                    <Item id="sns-t1-main" label="T1 Sympathetic Reset" bold />
+                    <div className="mt-2 grid grid-cols-2 gap-4 pl-7 text-[10px] text-gray-700">
+                      <p>1. Palpate bilateral anterior T1 to find restricted side.</p>
+                      <p>2. Test contralateral Psoas (should be inhibited).</p>
+                      <p>3. Move ipsilateral shoulder into external rotation.</p>
+                      <p>4. Hold 45-90s until tenderness dissolves. Re-assess.</p>
+                    </div>
+                  </div>
+
+                  <div className="p-4 border border-black">
+                    <Item id="sns-diaphragm-main" label="Diaphragm Reset" bold />
+                    <div className="mt-2 grid grid-cols-2 gap-4 pl-7 text-[10px] text-gray-700">
+                      <p>1. Challenge tender points either side of sternum.</p>
+                      <p>2. Palpate neck at C4 level (opposite to tender point).</p>
+                      <p>3. Move ribcage superiorly towards neck. Hold 45-90s.</p>
+                      <p>4. Release very slowly. Observe for deep sigh or yawn.</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </Section>
+
+          {/* 4. Primitive Reflexes */}
+          <Section title="IV. Primitive Reflexes (Foundational OS)">
+            <div className="grid grid-cols-1 gap-2">
+              {PRIMITIVE_REFLEXES.map(reflex => (
+                <ReflexCard key={reflex.id} reflex={reflex} />
+              ))}
+            </div>
+          </Section>
+
+          {/* 5. Cranial Nerves */}
+          <Section title="V. Cranial Nerves (Brainstem Pathways)">
+            <div className="grid grid-cols-1 gap-2">
+              {CRANIAL_NERVES.map(cn => (
+                <NerveCard key={cn.id} nerve={cn} />
+              ))}
+            </div>
+          </Section>
+
+          {/* 6. Key Muscles */}
+          <Section title="VI. Key Muscles (Clinical Indicators)">
+            <div className="grid grid-cols-3 gap-x-8 gap-y-4">
+              {Object.values(MUSCLE_INFO_DETAILS).filter(m => m.videoUrl).map(muscle => (
+                <div key={muscle.name} className="flex items-center gap-2">
+                  <Checkbox id={`muscle-${muscle.name}`} onCheckedChange={() => toggleItem(`muscle-${muscle.name}`)} checked={!!checkedItems[`muscle-${muscle.name}`]} className="h-3 w-3 border-black rounded-none" />
+                  <div className="leading-tight">
+                    <p className={cn("text-xs font-bold", checkedItems[`muscle-${muscle.name}`] && "line-through text-gray-400")}>{muscle.name}</p>
+                    <p className="text-[9px] text-gray-500 italic">{muscle.meridian} Meridian</p>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </Section>
+
+          {/* Footer Notes */}
+          <div className="mt-16 pt-8 border-t border-black">
+            <h3 className="text-xs font-bold text-gray-500 uppercase tracking-widest mb-6">Clinical Observations & Integration Notes</h3>
+            <div className="space-y-8">
+              <div className="border-b border-gray-200 w-full h-4" />
+              <div className="border-b border-gray-200 w-full h-4" />
+              <div className="border-b border-gray-200 w-full h-4" />
+              <div className="border-b border-gray-200 w-full h-4" />
+              <div className="border-b border-gray-200 w-full h-4" />
+            </div>
+          </div>
         </div>
       </div>
 
-      {/* Document Container */}
-      <div className="max-w-[1200px] mx-auto bg-white border border-gray-300 p-16 md:p-20 min-h-[1056px] print:border-none print:p-0 text-black font-sans">
-        
-        {/* Document Header */}
-        <header className="mb-16 text-center">
-          <h1 className="text-4xl font-serif font-bold mb-2 tracking-tight">Clinical Practice Notes</h1>
-          <div className="mt-10 grid grid-cols-3 gap-4 text-xs font-bold border-y border-black py-4">
-            <span>Date: ____________________</span>
-            <span>Practitioner: ____________________</span>
-            <span>Client ID: ____________________</span>
-          </div>
-        </header>
-
-        {/* 1. PEACE Process */}
-        <Section title="I. The PEACE Process">
-          <div className="space-y-4">
-            <Item id="p-step" label="P - Preliminary Assessment" subtext="Gather the story, run the baseline (BOLT/Coherence), and identify how the system is currently organised." bold />
-            <Item id="e1-step" label="E - Ease the System" subtext="Create safety before change. Address SNS dominance (Harmonic Rocking, T1, Diaphragm). Ease must come before correction." bold />
-            <Item id="a-step" label="A - Align the Hierarchy" subtext="Find the keystone — the true priority that the nervous system wants to address first (Reflexes, Nerves, Muscles)." bold />
-            <Item id="c-step" label="C - Correct" subtext="Facilitate the primary change. Use Afferent (Bottom-Up) or Efferent (Top-Down) logic to reset the circuit." bold />
-            <Item id="e2-step" label="E - Embed" subtext="Stabilise and integrate so change becomes lasting transformation. Prescribe specific neurological homework." bold />
-          </div>
-        </Section>
-
-        {/* 2. Clinical Hierarchy */}
-        <Section title="II. Clinical Hierarchy">
-          <div className="grid grid-cols-2 gap-x-12 gap-y-6">
-            <div className="space-y-3">
-              <h3 className="text-xs font-bold text-gray-500 uppercase tracking-widest mb-2">Asterisk Tier</h3>
-              <Item id="h-emotional" label="Emotional Charge" />
-              <Item id="h-assemblage" label="Assemblage Point" />
-              <Item id="h-hara" label="Hara Line" />
-              <Item id="h-heartwall" label="Heart Wall" />
-            </div>
-            <div className="space-y-3">
-              <h3 className="text-xs font-bold text-gray-500 uppercase tracking-widest mb-2">1. Primary Tier</h3>
-              <Item id="h-primitive" label="Primitive Reflexes" />
-              <Item id="h-nociception" label="Nociception" />
-              <Item id="h-cranial" label="Cranial Nerves" />
-              <Item id="h-eyes" label="Eye Systems" />
-            </div>
-            <div className="space-y-3">
-              <h3 className="text-xs font-bold text-gray-500 uppercase tracking-widest mb-2">2. Secondary Tier</h3>
-              <Item id="h-immune" label="Immune Vials (TH1/2/17/9)" />
-              <Item id="h-infections" label="Infections" />
-              <Item id="h-krebs" label="Krebs Cycle" />
-              <Item id="h-organ" label="Organ/Gland Balance" />
-            </div>
-            <div className="space-y-3">
-              <h3 className="text-xs font-bold text-gray-500 uppercase tracking-widest mb-2">3. Tertiary Tier</h3>
-              <Item id="h-icv" label="Ileocecal Valve (ICV)" />
-              <Item id="h-cranialbones" label="Cranial Bones" />
-              <Item id="h-musculo" label="Musculoskeletal" />
-            </div>
-          </div>
-        </Section>
-
-        {/* 3. Preliminary & SNS Resets */}
-        <Section title="III. Preliminary & SNS Resets">
-          <div className="space-y-8">
-            <div className="grid grid-cols-2 gap-x-12">
-              <div className="space-y-3">
-                <h3 className="text-xs font-bold text-gray-500 uppercase tracking-widest mb-2">Preliminary Vitals</h3>
-                <Item id="v-bolt" label="BOLT Score" subtext="Measure CO2 tolerance. Target: 25s+ (Functional), 40s+ (Optimal)." />
-                <Item id="v-coherence" label="Heart Coherence" subtext="Autonomic sync. HR/BR ratio. Check for coherence vs discordance." />
-              </div>
-              <div className="p-4 border border-black italic text-xs leading-relaxed">
-                "If the client's BOLT score is below 25s, the system is in a state of chronic threat. Deep work will not stick until CO2 tolerance is improved."
-              </div>
-            </div>
-
-            <div className="space-y-6">
-              <h3 className="text-xs font-bold text-gray-500 uppercase tracking-widest mb-2">SNS Down-Regulation Procedures</h3>
-              
-              <div className="grid grid-cols-1 gap-4">
-                <div className="p-4 border border-black">
-                  <Item id="sns-t1-main" label="T1 Sympathetic Reset" bold />
-                  <div className="mt-2 grid grid-cols-2 gap-4 pl-7 text-[10px] text-gray-700">
-                    <p>1. Palpate bilateral anterior T1 to find restricted side.</p>
-                    <p>2. Test contralateral Psoas (should be inhibited).</p>
-                    <p>3. Move ipsilateral shoulder into external rotation.</p>
-                    <p>4. Hold 45-90s until tenderness dissolves. Re-assess.</p>
-                  </div>
-                </div>
-
-                <div className="p-4 border border-black">
-                  <Item id="sns-diaphragm-main" label="Diaphragm Reset" bold />
-                  <div className="mt-2 grid grid-cols-2 gap-4 pl-7 text-[10px] text-gray-700">
-                    <p>1. Challenge tender points either side of sternum.</p>
-                    <p>2. Palpate neck at C4 level (opposite to tender point).</p>
-                    <p>3. Move ribcage superiorly towards neck. Hold 45-90s.</p>
-                    <p>4. Release very slowly. Observe for deep sigh or yawn.</p>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </Section>
-
-        {/* 4. Primitive Reflexes */}
-        <Section title="IV. Primitive Reflexes (Foundational OS)">
-          <div className="grid grid-cols-1 gap-2">
-            {PRIMITIVE_REFLEXES.map(reflex => (
-              <ReflexCard key={reflex.id} reflex={reflex} />
-            ))}
-          </div>
-        </Section>
-
-        {/* 5. Cranial Nerves */}
-        <Section title="V. Cranial Nerves (Brainstem Pathways)">
-          <div className="grid grid-cols-1 gap-2">
-            {CRANIAL_NERVES.map(cn => (
-              <NerveCard key={cn.id} nerve={cn} />
-            ))}
-          </div>
-        </Section>
-
-        {/* 6. Key Muscles */}
-        <Section title="VI. Key Muscles (Clinical Indicators)">
-          <div className="grid grid-cols-3 gap-x-8 gap-y-4">
-            {Object.values(MUSCLE_INFO_DETAILS).filter(m => m.videoUrl).map(muscle => (
-              <div key={muscle.name} className="flex items-center gap-2">
-                <Checkbox id={`muscle-${muscle.name}`} onCheckedChange={() => toggleItem(`muscle-${muscle.name}`)} checked={!!checkedItems[`muscle-${muscle.name}`]} className="h-3 w-3 border-black rounded-none" />
-                <div className="leading-tight">
-                  <p className={cn("text-xs font-bold", checkedItems[`muscle-${muscle.name}`] && "line-through text-gray-400")}>{muscle.name}</p>
-                  <p className="text-[9px] text-gray-500 italic">{muscle.meridian} Meridian</p>
-                </div>
-              </div>
-            ))}
-          </div>
-        </Section>
-
-        {/* Footer Notes */}
-        <div className="mt-16 pt-8 border-t border-black">
-          <h3 className="text-xs font-bold text-gray-500 uppercase tracking-widest mb-6">Clinical Observations & Integration Notes</h3>
-          <div className="space-y-8">
-            <div className="border-b border-gray-200 w-full h-4" />
-            <div className="border-b border-gray-200 w-full h-4" />
-            <div className="border-b border-gray-200 w-full h-4" />
-            <div className="border-b border-gray-200 w-full h-4" />
-            <div className="border-b border-gray-200 w-full h-4" />
-          </div>
-        </div>
+      {/* Floating Action Buttons for Docs feel */}
+      <div className="fixed bottom-8 right-8 flex flex-col gap-3 print:hidden">
+        <Button variant="outline" size="icon" onClick={resetDocument} className="h-12 w-12 rounded-full shadow-xl bg-white border-slate-200 text-slate-500 hover:text-rose-600">
+          <RotateCcw size={20} />
+        </Button>
+        <Button onClick={handlePrint} className="h-14 w-14 rounded-full shadow-2xl bg-blue-600 hover:bg-blue-700 text-white">
+          <Printer size={24} />
+        </Button>
       </div>
     </div>
   );

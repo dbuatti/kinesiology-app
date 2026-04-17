@@ -6,7 +6,7 @@ import { PRIMITIVE_REFLEXES } from "@/data/primitive-reflex-data";
 import { CRANIAL_NERVES } from "@/data/cranial-nerve-data";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Button } from "@/components/ui/button";
-import { Printer, RotateCcw, Loader2, FileText } from "lucide-react";
+import { Loader2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { supabase } from "@/integrations/supabase/client";
 
@@ -173,8 +173,8 @@ const PracticeNotes = () => {
           </div>
         </div>
         
-        <div className="flex gap-6">
-          <div className="flex-1 space-y-2 text-xs">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div className="space-y-2 text-xs">
             <p><strong>Reflex Point:</strong> {nerve.reflexPoint}</p>
             <p><strong>Stimulus:</strong> {nerve.stimulus}</p>
           </div>
@@ -203,15 +203,14 @@ const PracticeNotes = () => {
       {/* Toolbar */}
       <div className="max-w-[1200px] mx-auto mb-6 flex items-center justify-between print:hidden">
         <div className="flex items-center gap-2 text-gray-500">
-          <FileText size={18} />
           <span className="text-xs font-bold uppercase tracking-widest">Clinical Practice Notes</span>
         </div>
         <div className="flex items-center gap-3">
           <Button variant="outline" size="sm" onClick={resetDocument} className="h-9 px-4 text-xs border-gray-300 bg-white hover:bg-gray-50 rounded-none">
-            <RotateCcw size={14} className="mr-2" /> Reset
+            Reset
           </Button>
           <Button variant="default" size="sm" onClick={handlePrint} className="h-9 px-6 text-xs font-bold bg-black text-white hover:bg-gray-800 rounded-none">
-            <Printer size={14} className="mr-2" /> Print Document
+            Print Document
           </Button>
         </div>
       </div>
@@ -252,21 +251,21 @@ const PracticeNotes = () => {
               <Item id="h-heartwall" label="Heart Wall" />
             </div>
             <div className="space-y-3">
-              <h3 className="text-xs font-bold text-gray-500 uppercase tracking-widest mb-2">1° Primary Tier</h3>
+              <h3 className="text-xs font-bold text-gray-500 uppercase tracking-widest mb-2">1. Primary Tier</h3>
               <Item id="h-primitive" label="Primitive Reflexes" />
               <Item id="h-nociception" label="Nociception" />
               <Item id="h-cranial" label="Cranial Nerves" />
               <Item id="h-eyes" label="Eye Systems" />
             </div>
             <div className="space-y-3">
-              <h3 className="text-xs font-bold text-gray-500 uppercase tracking-widest mb-2">2° Secondary Tier</h3>
+              <h3 className="text-xs font-bold text-gray-500 uppercase tracking-widest mb-2">2. Secondary Tier</h3>
               <Item id="h-immune" label="Immune Vials (TH1/2/17/9)" />
               <Item id="h-infections" label="Infections" />
               <Item id="h-krebs" label="Krebs Cycle" />
               <Item id="h-organ" label="Organ/Gland Balance" />
             </div>
             <div className="space-y-3">
-              <h3 className="text-xs font-bold text-gray-500 uppercase tracking-widest mb-2">3° Tertiary Tier</h3>
+              <h3 className="text-xs font-bold text-gray-500 uppercase tracking-widest mb-2">3. Tertiary Tier</h3>
               <Item id="h-icv" label="Ileocecal Valve (ICV)" />
               <Item id="h-cranialbones" label="Cranial Bones" />
               <Item id="h-musculo" label="Musculoskeletal" />

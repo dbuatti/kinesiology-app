@@ -28,13 +28,15 @@ import {
   UserCircle,
   LayoutGrid,
   ChevronDown,
-  X
+  X,
+  BookOpen
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { AppointmentWithClient } from '@/types/crm';
 import BaselineTab from './session-tabs/BaselineTab';
 import SympatheticTab from './session-tabs/SympatheticTab';
 import ClientContextTab from './session-tabs/ClientContextTab';
+import JournalTab from './session-tabs/JournalTab';
 import EditableField from '@/components/shared/EditableField';
 import LuscherColourAssessment from './LuscherColourAssessment';
 import MuscleTestingTab from './MuscleTestingTab';
@@ -60,7 +62,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 
-type ActiveView = 'home' | 'kinesiology' | 'muscles' | 'gait' | 'previous' | 'context';
+type ActiveView = 'home' | 'kinesiology' | 'muscles' | 'gait' | 'previous' | 'context' | 'journal';
 
 interface SessionContentSwitcherProps {
   appointment: AppointmentWithClient;
@@ -314,7 +316,7 @@ const SessionContentSwitcher = ({
     </div>
   );
 
-  const isToolActive = ['kinesiology', 'muscles', 'gait', 'context'].includes(activeView);
+  const isToolActive = ['kinesiology', 'muscles', 'gait', 'context', 'journal'].includes(activeView);
 
   return (
     <div className="space-y-6 md:space-y-8">
@@ -339,6 +341,9 @@ const SessionContentSwitcher = ({
             <DropdownMenuContent align="start" className="w-64 p-2 rounded-2xl border-none shadow-3xl bg-card">
               <DropdownMenuItem onClick={() => setActiveView('context')} className="rounded-xl py-3 px-4 cursor-pointer">
                 <UserCircle size={16} className="mr-3 text-indigo-500" /> Client Context
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => setActiveView('journal')} className="rounded-xl py-3 px-4 cursor-pointer">
+                <BookOpen size={16} className="mr-3 text-amber-500" /> Session Journal
               </DropdownMenuItem>
               <DropdownMenuItem onClick={() => setActiveView('kinesiology')} className="rounded-xl py-3 px-4 cursor-pointer">
                 <Heart size={16} className="mr-3 text-rose-500" /> Kinesiology Tools
@@ -405,6 +410,7 @@ const SessionContentSwitcher = ({
       <div className="animate-in fade-in slide-in-from-bottom-2 duration-500">
         {activeView === 'home' && renderHomeView()}
         {activeView === 'context' && <ClientContextTab appointment={appointment} />}
+        {activeView === 'journal' && <JournalTab appointmentId={appointment.id} clientName={appointment.clients.name} />}
         {activeView === 'kinesiology' && (
           <div className="space-y-6 md:space-y-10">
             <LuscherColourAssessment appointmentId={appointment.id} initialColor1={appointment.luscher_color_1} initialColor2={appointment.luscher_color_2} onSaveColors={(c1, c2) => { saveField('luscher_color_1', c1); return saveField('luscher_color_2', c2); }} />

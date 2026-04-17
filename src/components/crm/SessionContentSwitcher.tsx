@@ -60,6 +60,7 @@ import {
   DialogContent,
   DialogHeader,
   DialogTitle,
+  DialogDescription,
 } from "@/components/ui/dialog";
 
 type ActiveView = 'home' | 'kinesiology' | 'muscles' | 'gait' | 'previous' | 'context' | 'journal';
@@ -447,6 +448,10 @@ const SessionContentSwitcher = ({
 
       <Dialog open={noteDialogOpen} onOpenChange={setNoteDialogOpen}>
         <DialogContent className="w-[95vw] max-w-5xl rounded-[3rem] p-0 overflow-visible border-none shadow-3xl bg-white dark:bg-slate-950">
+          <DialogHeader className="sr-only">
+            <DialogTitle>Quick Session Note</DialogTitle>
+            <DialogDescription>Capture observations and insights in real-time.</DialogDescription>
+          </DialogHeader>
           <div className="p-12 md:p-16 relative flex flex-col h-[85vh] overflow-visible">
             <div className="absolute top-8 right-8 z-50">
               <Button variant="ghost" size="icon" onClick={() => setNoteDialogOpen(false)} className="text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 rounded-full">

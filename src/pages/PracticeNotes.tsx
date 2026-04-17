@@ -173,8 +173,8 @@ const PracticeNotes = () => {
           </div>
         </div>
         
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <div className="space-y-2 text-xs">
+        <div className="flex gap-6">
+          <div className="flex-1 space-y-2 text-xs">
             <p><strong>Reflex Point:</strong> {nerve.reflexPoint}</p>
             <p><strong>Stimulus:</strong> {nerve.stimulus}</p>
           </div>
@@ -359,10 +359,6 @@ const PracticeNotes = () => {
             <div className="border-b border-gray-200 w-full h-4" />
           </div>
         </div>
-
-        <footer className="mt-20 text-center border-t border-gray-100 pt-8">
-          <p className="text-gray-400 text-[9px] font-bold uppercase tracking-widest">Confidential Clinical Document • For Professional Use Only • Resonance Kinesiology</p>
-        </footer>
       </div>
     </div>
   );

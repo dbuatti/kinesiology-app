@@ -14,7 +14,8 @@ import {
   DollarSign,
   UserCircle,
   ChevronDown,
-  CalendarClock
+  CalendarClock,
+  Cake
 } from "lucide-react";
 import { format, isToday } from "date-fns";
 import { cn } from "@/lib/utils";
@@ -75,6 +76,11 @@ const AppointmentHeader = ({ appointment, onSaveField, onUpdate }: AppointmentHe
               <h1 className="text-xl md:text-3xl font-black text-foreground tracking-tighter truncate">
                 {appointment.clients.name}
               </h1>
+              {clientBorn && (
+                <Badge variant="outline" className="h-6 px-2 text-[10px] font-black border-indigo-100 text-indigo-600 bg-indigo-50/50 rounded-lg shrink-0">
+                  {calculateAge(clientBorn)} yrs
+                </Badge>
+              )}
               <Button variant="ghost" size="icon" className="h-7 w-7 md:h-8 md:w-8 rounded-lg md:rounded-xl text-slate-300 hover:text-indigo-600" asChild>
                 <a href={`/clients/${appointment.clients.id}`}><UserCircle size={18} /></a>
               </Button>
@@ -95,6 +101,12 @@ const AppointmentHeader = ({ appointment, onSaveField, onUpdate }: AppointmentHe
                 <Clock size={12} className="text-indigo-400 group-hover:scale-110 transition-transform" /> 
                 {format(appointment.date, "h:mm a")}
               </button>
+              {clientBorn && (
+                <span className="flex items-center gap-1 text-slate-400">
+                  <Cake size={12} className="text-slate-300" />
+                  {format(clientBorn, "MMM d, yyyy")}
+                </span>
+              )}
               <Select value={appointment.status} onValueChange={(newStatus) => onSaveField('status', newStatus)}>
                 <SelectTrigger className={cn(
                   "h-5 md:h-6 w-[80px] md:w-[100px] text-[7px] md:text-[8px] font-black uppercase tracking-widest border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 rounded-md",

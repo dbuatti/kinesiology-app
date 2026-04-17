@@ -39,17 +39,29 @@ const PreviousSessionInsightsBar = ({ clientId, currentAppointmentId, manualData
       }
 
       try {
-        const { data, error } = await supabase
+        // Fetch the last 20 sessions to find the most recent non-null scores
+        const { data: recentApps, error } = await supabase
           .from('appointments')
           .select('*')
           .eq('client_id', clientId)
           .neq('id', currentAppointmentId)
           .order('date', { ascending: false })
-          .limit(1)
-          .maybeSingle();
+          .limit(20);
 
-        if (!error && data) {
-          setPreviousSession(data);
+        if (!error && recentApps && recentApps.length > 0) {
+          const latest = recentApps[0];
+          
+          // Find the most recent BOLT score in the history
+          const lastBolt = recentApps.find(a => a.bolt_score !== null)?.bolt_score;
+          
+          // Find the most recent Coherence score in the history
+          const lastCoh = recentApps.find(a => a.coherence_score !== null)?.coherence_score;
+
+          setPreviousSession({
+            ...latest,
+            bolt_score: lastBolt ?? null,
+            coherence_score: lastCoh ?? null
+          });
         }
       } catch (err) {
         console.error("Error fetching previous session for bar:", err);
@@ -89,10 +101,10 @@ const PreviousSessionInsightsBar = ({ clientId, currentAppointmentId, manualData
                   <Calendar size={14} className="text-indigo-400" />
                   {format(new Date(previousSession.date), "MMM d")}
                 </span>
-                {previousSession.bolt_score && (
+                {previousSession.bolt_score !== null && (
                   <span className="flex items-center gap-1.5">
                     <FlaskConical size={14} className="text-indigo-400" />
-                    BOLT: {previousSession.bolt_score}s
+                    Last BOLT: {previousSession.bolt_score}s
                   </span>
                 )}
                 {previousSession.goal && (
@@ -133,15 +145,15 @@ const PreviousSessionInsightsBar = ({ clientId, currentAppointmentId, manualData
 
             <div className="space-y-4">
               <div>
-                <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-2">Key Assessments</p>
+                <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-2">Last Recorded Vitals</p>
                 <div className="grid grid-cols-2 gap-3">
                   <div className="p-3 bg-white/5 rounded-xl border border-white/10">
                     <p className="text-[10px] font-bold text-slate-400 uppercase mb-1">BOLT Score</p>
-                    <p className="text-xl font-black text-indigo-400">{previousSession.bolt_score ? `${previousSession.bolt_score}s` : 'N/A'}</p>
+                    <p className="text-xl font-black text-indigo-400">{previousSession.bolt_score !== null ? `${previousSession.bolt_score}s` : 'N/A'}</p>
                   </div>
                   <div className="p-3 bg-white/5 rounded-xl border border-white/10">
                     <p className="text-[10px] font-bold text-slate-400 uppercase mb-1">Coherence</p>
-                    <p className="text-xl font-black text-rose-400">{previousSession.coherence_score ? previousSession.coherence_score.toFixed(2) : 'N/A'}</p>
+                    <p className="text-xl font-black text-rose-400">{previousSession.coherence_score !== null ? previousSession.coherence_score.toFixed(2) : 'N/A'}</p>
                   </div>
                 </div>
               </div>

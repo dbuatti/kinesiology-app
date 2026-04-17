@@ -123,8 +123,8 @@ const PracticeNotes = () => {
   const ReflexCard = ({ reflex }: { reflex: any }) => {
     const imageUrl = customImages[reflex.id];
     return (
-      <div className="p-4 border border-black mb-6 break-inside-avoid">
-        <div className="flex justify-between items-start mb-3">
+      <div className="p-4 border border-black mb-4 break-inside-avoid">
+        <div className="flex justify-between items-start mb-2">
           <div className="flex items-center gap-3">
             <Checkbox 
               id={`reflex-${reflex.id}`} 
@@ -138,16 +138,16 @@ const PracticeNotes = () => {
           </div>
         </div>
         
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <div className="space-y-2 text-xs">
+        <div className="flex gap-6">
+          <div className="flex-1 space-y-2 text-xs">
             <p><strong>Stimulus:</strong> {reflex.stimulus}</p>
             <p><strong>Inhibition Pattern:</strong> {reflex.inhibitionPattern}</p>
             <p className="italic text-gray-600"><strong>Assessment:</strong> {reflex.howTo}</p>
           </div>
           
           {imageUrl && (
-            <div className="border border-gray-200 p-1">
-              <img src={imageUrl} alt={reflex.name} className="w-full h-auto grayscale contrast-125" />
+            <div className="w-32 h-24 border border-gray-300 p-0.5 shrink-0">
+              <img src={imageUrl} alt={reflex.name} className="w-full h-full object-cover grayscale contrast-125" />
             </div>
           )}
         </div>
@@ -158,8 +158,8 @@ const PracticeNotes = () => {
   const NerveCard = ({ nerve }: { nerve: any }) => {
     const imageUrl = customImages[`cn${nerve.id}`];
     return (
-      <div className="p-4 border border-black mb-6 break-inside-avoid">
-        <div className="flex justify-between items-start mb-3">
+      <div className="p-4 border border-black mb-4 break-inside-avoid">
+        <div className="flex justify-between items-start mb-2">
           <div className="flex items-center gap-3">
             <Checkbox 
               id={`cn-${nerve.id}`} 
@@ -173,15 +173,15 @@ const PracticeNotes = () => {
           </div>
         </div>
         
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <div className="space-y-2 text-xs">
+        <div className="flex gap-6">
+          <div className="flex-1 space-y-2 text-xs">
             <p><strong>Reflex Point:</strong> {nerve.reflexPoint}</p>
             <p><strong>Stimulus:</strong> {nerve.stimulus}</p>
           </div>
           
           {imageUrl && (
-            <div className="border border-gray-200 p-1">
-              <img src={imageUrl} alt={nerve.name} className="w-full h-auto grayscale contrast-125" />
+            <div className="w-32 h-24 border border-gray-300 p-0.5 shrink-0">
+              <img src={imageUrl} alt={nerve.name} className="w-full h-full object-cover grayscale contrast-125" />
             </div>
           )}
         </div>

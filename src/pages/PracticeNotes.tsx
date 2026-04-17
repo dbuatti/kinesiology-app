@@ -6,7 +6,7 @@ import { PRIMITIVE_REFLEXES } from "@/data/primitive-reflex-data";
 import { CRANIAL_NERVES } from "@/data/cranial-nerve-data";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Button } from "@/components/ui/button";
-import { Loader2 } from "lucide-react";
+import { Loader2, RotateCcw, Printer, FileText } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { supabase } from "@/integrations/supabase/client";
 
@@ -173,8 +173,8 @@ const PracticeNotes = () => {
           </div>
         </div>
         
-        <div className="flex gap-6">
-          <div className="flex-1 space-y-2 text-xs">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div className="space-y-2 text-xs">
             <p><strong>Reflex Point:</strong> {nerve.reflexPoint}</p>
             <p><strong>Stimulus:</strong> {nerve.stimulus}</p>
           </div>
@@ -207,10 +207,10 @@ const PracticeNotes = () => {
         </div>
         <div className="flex items-center gap-3">
           <Button variant="outline" size="sm" onClick={resetDocument} className="h-9 px-4 text-xs border-gray-300 bg-white hover:bg-gray-50 rounded-none">
-            Reset
+            <RotateCcw size={14} className="mr-2" /> Reset
           </Button>
           <Button variant="default" size="sm" onClick={handlePrint} className="h-9 px-6 text-xs font-bold bg-black text-white hover:bg-gray-800 rounded-none">
-            Print Document
+            <Printer size={14} className="mr-2" /> Print Document
           </Button>
         </div>
       </div>
@@ -221,7 +221,6 @@ const PracticeNotes = () => {
         {/* Document Header */}
         <header className="mb-16 text-center">
           <h1 className="text-4xl font-serif font-bold mb-2 tracking-tight">Clinical Practice Notes</h1>
-          <p className="text-gray-500 text-xs font-bold uppercase tracking-[0.3em]">PEACE Process & Neurological Assessment Guide</p>
           <div className="mt-10 grid grid-cols-3 gap-4 text-xs font-bold border-y border-black py-4">
             <span>Date: ____________________</span>
             <span>Practitioner: ____________________</span>

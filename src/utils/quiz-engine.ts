@@ -4,6 +4,7 @@ import { PRIMITIVE_REFLEXES } from "@/data/primitive-reflex-data";
 import { CRANIAL_NERVES } from "@/data/cranial-nerve-data";
 import { TCM_CHANNELS } from "@/data/tcm-channel-data";
 import { QUIZ_IMAGES } from "@/data/quiz-image-data";
+import { PRIMARY_EMOTIONS, SIGNS_OF_SHIFT } from "@/data/emotion-data";
 
 export type QuestionType = 'mcq' | 'fill-in-the-blank' | 'image' | 'flashcard';
 
@@ -34,7 +35,7 @@ const getRandomOptions = (correct: string, allOptions: string[], count: number =
 };
 
 export const generateQuestion = (): Question => {
-  const categories = ['Anatomy', 'TCM', 'Clinical', 'Image'];
+  const categories = ['Anatomy', 'TCM', 'Clinical', 'Image', 'Methodology'];
   const category = categories[Math.floor(Math.random() * categories.length)];
 
   switch (category) {
@@ -46,6 +47,8 @@ export const generateQuestion = (): Question => {
       return generateClinicalQuestion();
     case 'Image':
       return generateImageQuestion();
+    case 'Methodology':
+      return generateMethodologyQuestion();
     default:
       return generateAnatomyQuestion();
   }
@@ -56,7 +59,6 @@ const generateAnatomyQuestion = (): Question => {
   
   if (subType === 'muscle') {
     const muscle = PRIMARY_14_MUSCLES[Math.floor(Math.random() * PRIMARY_14_MUSCLES.length)];
-    const allMuscles = Object.values(MUSCLE_GROUPS).flat();
     
     return {
       id: `muscle-${Date.now()}`,
@@ -232,4 +234,85 @@ const generateImageQuestion = (): Question => {
     explanation: image.explanation,
     imageUrl: image.url
   };
+};
+
+const generateMethodologyQuestion = (): Question => {
+  const templates = ['peace', 'hierarchy', 'sns', 'nei', 'shift'];
+  const template = templates[Math.floor(Math.random() * templates.length)];
+
+  if (template === 'peace') {
+    const steps = [
+      { l: 'P', n: 'Preliminary Assessment' },
+      { l: 'E', n: 'Ease the System' },
+      { l: 'A', n: 'Align the Hierarchy' },
+      { l: 'C', n: 'Correct' },
+      { l: 'E', n: 'Embed' }
+    ];
+    const step = steps[Math.floor(Math.random() * steps.length)];
+    return {
+      id: `peace-${step.l}-${Date.now()}`,
+      type: 'mcq',
+      category: 'Methodology',
+      question: `In the PEACE process, what does the '${step.l}' stand for?`,
+      options: getRandomOptions(step.n, steps.map(s => s.n)),
+      correctAnswer: step.n,
+      explanation: `The PEACE process stands for: Preliminary Assessment, Ease the System, Align the Hierarchy, Correct, and Embed.`
+    };
+  } else if (template === 'hierarchy') {
+    const tiers = [
+      { t: 'Asterisk Tier', i: 'Emotional Charge' },
+      { t: 'Primary Tier', i: 'Primitive Reflexes' },
+      { t: 'Secondary Tier', i: 'Immune Vials' },
+      { t: 'Tertiary Tier', i: 'Ileocecal Valve' }
+    ];
+    const tier = tiers[Math.floor(Math.random() * tiers.length)];
+    return {
+      id: `hierarchy-${tier.t}-${Date.now()}`,
+      type: 'mcq',
+      category: 'Methodology',
+      question: `Which clinical finding belongs to the ${tier.t}?`,
+      options: getRandomOptions(tier.i, tiers.map(t => t.i)),
+      correctAnswer: tier.i,
+      explanation: `The clinical hierarchy organizes findings into tiers: Asterisk (Energetic), Primary (Neural), Secondary (Immune), and Tertiary (Structural).`
+    };
+  } else if (template === 'sns') {
+    const resets = [
+      { n: 'T1 Sympathetic Reset', p: 'External rotation of the shoulder' },
+      { n: 'Diaphragm Reset', p: 'Moving ribcage superiorly towards neck' },
+      { n: 'Vagus Nerve Process', p: 'Medulla Breathing (Blocked Inhale/Forced Exhale)' }
+    ];
+    const reset = resets[Math.floor(Math.random() * resets.length)];
+    return {
+      id: `sns-${Date.now()}`,
+      type: 'mcq',
+      category: 'Methodology',
+      question: `What is a key correction step in the ${reset.n}?`,
+      options: getRandomOptions(reset.p, resets.map(r => r.p)),
+      correctAnswer: reset.p,
+      explanation: `The ${reset.n} protocol involves ${reset.p} to down-regulate the sympathetic nervous system.`
+    };
+  } else if (template === 'nei') {
+    const emotions = PRIMARY_EMOTIONS;
+    const emotion = emotions[Math.floor(Math.random() * emotions.length)];
+    return {
+      id: `nei-emo-${emotion.id}`,
+      type: 'mcq',
+      category: 'Methodology',
+      question: `In Neuro-Emotional Integration, which organs are associated with the emotion '${emotion.label}'?`,
+      options: getRandomOptions(emotion.organs.join(', '), emotions.map(e => e.organs.join(', '))),
+      correctAnswer: emotion.organs.join(', '),
+      explanation: `${emotion.label} is associated with the ${emotion.organs.join(' and ')} in the ${emotion.element} element.`
+    };
+  } else {
+    const shift = SIGNS_OF_SHIFT[Math.floor(Math.random() * SIGNS_OF_SHIFT.length)];
+    return {
+      id: `shift-${Date.now()}`,
+      type: 'mcq',
+      category: 'Methodology',
+      question: `Which of these is a recognized sign of a neurological shift during a session?`,
+      options: getRandomOptions(shift, ['Increased heart rate', 'Muscle cramping', 'Sudden headache', 'Cold sweat']),
+      correctAnswer: shift,
+      explanation: `Signs of a parasympathetic shift include: ${SIGNS_OF_SHIFT.join(', ')}.`
+    };
+  }
 };

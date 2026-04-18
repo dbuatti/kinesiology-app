@@ -4,6 +4,7 @@ import React, { useState, useEffect } from "react";
 import { MUSCLE_INFO_DETAILS } from "@/data/muscle-info-data";
 import { PRIMITIVE_REFLEXES } from "@/data/primitive-reflex-data";
 import { CRANIAL_NERVES } from "@/data/cranial-nerve-data";
+import { BRAIN_REFLEX_POINTS } from "@/data/brain-reflex-data";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Button } from "@/components/ui/button";
 import { Loader2, RotateCcw, Printer } from "lucide-react";
@@ -230,14 +231,47 @@ const PracticeNotes = () => {
     );
   };
 
-  if (loading) {
+  const BrainZoneCard = ({ point }: { point: any }) => {
+    const imageUrl = customImages[point.id];
+    const id = `brain-${point.id}`;
     return (
-      <div className="min-h-screen flex flex-col items-center justify-center bg-white gap-4">
-        <Loader2 className="animate-spin text-black" size={32} />
-        <p className="text-xs font-bold uppercase tracking-widest">Loading Document...</p>
+      <div className="p-4 border border-black mb-4 break-inside-avoid">
+        <div className="flex justify-between items-start mb-2">
+          <div className="flex items-center gap-3 flex-1">
+            <Checkbox 
+              id={id} 
+              checked={!!checkedItems[id]} 
+              onCheckedChange={() => toggleItem(id)}
+              className="h-4 w-4 border-black rounded-none"
+            />
+            <h3 className={cn("font-bold text-base shrink-0", checkedItems[id] && "line-through text-gray-400")}>
+              {point.name}
+            </h3>
+            <input 
+              type="text"
+              value={textData[`${id}-note`] || ""}
+              onChange={(e) => handleTextChange(`${id}-note`, e.target.value)}
+              className="flex-1 border-b border-black/20 bg-transparent outline-none text-xs px-2 focus:border-blue-500 transition-colors"
+              placeholder="Add zone note..."
+            />
+          </div>
+        </div>
+        
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div className="space-y-2 text-xs">
+            <p><strong>Location:</strong> {point.location}</p>
+            <p><strong>Stimulus:</strong> {point.stimulus || point.technique || "Standard challenge."}</p>
+          </div>
+          
+          {imageUrl && (
+            <div className="w-32 h-24 border border-gray-300 p-0.5 shrink-0">
+              <img src={imageUrl} alt={point.name} className="w-full h-full object-cover grayscale contrast-125" />
+            </div>
+          )}
+        </div>
       </div>
     );
-  }
+  };
 
   return (
     <div className="min-h-screen bg-[#F9FBFD] flex flex-col">
@@ -390,8 +424,17 @@ const PracticeNotes = () => {
             </div>
           </Section>
 
-          {/* 6. Key Muscles */}
-          <Section title="VI. Key Muscles (Clinical Indicators)">
+          {/* 6. Brain Zones */}
+          <Section title="VI. Brain Zones (Cortical & Subcortical)">
+            <div className="grid grid-cols-1 gap-2">
+              {BRAIN_REFLEX_POINTS.filter(p => p.category !== 'Cranial Nerve').map(point => (
+                <BrainZoneCard key={point.id} point={point} />
+              ))}
+            </div>
+          </Section>
+
+          {/* 7. Key Muscles */}
+          <Section title="VII. Key Muscles (Clinical Indicators)">
             <div className="grid grid-cols-3 gap-x-8 gap-y-4">
               {Object.values(MUSCLE_INFO_DETAILS).filter(m => m.videoUrl).map(muscle => (
                 <div key={muscle.name} className="flex items-center gap-2">

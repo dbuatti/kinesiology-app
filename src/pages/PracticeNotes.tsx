@@ -5,9 +5,11 @@ import { MUSCLE_INFO_DETAILS } from "@/data/muscle-info-data";
 import { PRIMITIVE_REFLEXES } from "@/data/primitive-reflex-data";
 import { CRANIAL_NERVES } from "@/data/cranial-nerve-data";
 import { BRAIN_REFLEX_POINTS } from "@/data/brain-reflex-data";
+import { HAND_REFLEXOLOGY } from "@/data/vagus-data";
+import { EYE_POSITIONS, PRIMARY_EMOTIONS, SIGNS_OF_SHIFT } from "@/data/emotion-data";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Button } from "@/components/ui/button";
-import { Loader2, RotateCcw, Printer, Eye, Hand, Zap, Activity, ImageIcon, Brain, Layers, MousePointer2, ShieldAlert, PlayCircle, FileText } from "lucide-react";
+import { Loader2, RotateCcw, Printer, Eye, Hand, Zap, Activity, ImageIcon, Brain, Layers, MousePointer2, ShieldAlert, PlayCircle, FileText, Heart, Sparkles, Clock, History } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { supabase } from "@/integrations/supabase/client";
 
@@ -494,57 +496,104 @@ const PracticeNotes = () => {
 
           {/* 4. Neuro-Emotional Integration */}
           <Section id="nei" title="IV. Neuro-Emotional Integration">
-            <div className="space-y-12">
-              <div className="space-y-8">
-                <div className="space-y-4">
-                  <h3 className="text-xs font-bold text-gray-500 uppercase tracking-widest mb-4 flex items-center gap-2">
-                    <Hand size={14} className="text-indigo-600" /> Organ Pulse Points Diagram
-                  </h3>
-                  <div className="max-w-2xl mx-auto">
-                    <div className="rounded-2xl border border-black overflow-hidden shadow-sm">
-                      <img 
-                        src="/images/pulse-points.png" 
-                        alt="Organ Pulse Points Reference" 
-                        className="w-full h-auto"
-                        onError={(e) => {
-                          e.currentTarget.style.display = 'none';
-                          console.error("Failed to load pulse-points.png from public/images/");
-                        }}
-                      />
+            <div className="space-y-10">
+              {/* The 9-Step Hierarchy */}
+              <div className="p-6 border border-black bg-gray-50/50">
+                <h3 className="text-xs font-black text-gray-500 uppercase tracking-[0.3em] mb-6 flex items-center gap-2">
+                  <Layers size={16} className="text-indigo-600" /> The 9-Step Integration Hierarchy
+                </h3>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-x-12 gap-y-4">
+                  {[
+                    { s: 1, t: "ESR Indicator Check", d: "Hold GB14 points to see if system is ready." },
+                    { s: 2, t: "Permission Check", d: "Ask: 'Do we have permission to correct this?'" },
+                    { s: 3, t: "Timeline Selection", d: "Determine if stress is Current or Historic." },
+                    { s: 4, t: "Timeline Regression", d: "Narrow down specific Age and Month of origin." },
+                    { s: 5, t: "Primary Emotion", d: "Identify core feeling (Hurt, Worry, Sadness, Fear, Anger)." },
+                    { s: 6, t: "Priority Organ", d: "Find the organ acting as a surrogate for the charge." },
+                    { s: 7, t: "Energy Polarity", d: "Challenge for Energy IN (+) or Energy OUT (-)." },
+                    { s: 8, t: "Eye Position", d: "Identify sensory access point (NLP logic)." },
+                    { s: 9, t: "Correction & Upload", d: "Hold points + Replay Stress + Positive Upload." }
+                  ].map(step => (
+                    <div key={step.s} className="flex gap-4">
+                      <span className="w-6 h-6 rounded-full border border-black flex items-center justify-center font-black text-[10px] shrink-0">{step.s}</span>
+                      <div>
+                        <p className="text-xs font-bold uppercase tracking-tight">{step.t}</p>
+                        <p className="text-[10px] text-gray-600 leading-tight mt-0.5">{step.d}</p>
+                      </div>
                     </div>
-                  </div>
-                  <p className="text-[8px] text-gray-500 italic mt-2 text-center">Hold the relevant position with Light or Deep pressure to challenge the associated organ circuit.</p>
-                </div>
-
-                <div className="space-y-4">
-                  <h3 className="text-xs font-bold text-gray-500 uppercase tracking-widest mb-4 flex items-center gap-2">
-                    <Eye size={14} className="text-rose-600" /> Eye Accessing Cues (NLP) Diagram
-                  </h3>
-                  <div className="max-w-2xl mx-auto">
-                    <div className="rounded-2xl border border-black overflow-hidden shadow-sm">
-                      <img 
-                        src="/images/eye-modes.png" 
-                        alt="Eye Accessing Cues Reference" 
-                        className="w-full h-auto"
-                        onError={(e) => {
-                          e.currentTarget.style.display = 'none';
-                          console.error("Failed to load eye-modes.png from public/images/");
-                        }}
-                      />
-                    </div>
-                  </div>
-                  <p className="text-[8px] text-gray-500 italic mt-2 text-center">Identify the sensory access point for the emotional stress using the NLP eye position logic.</p>
+                  ))}
                 </div>
               </div>
 
-              <div className="p-4 border border-black">
-                <Item id="nei-protocol" label="Integration Protocol" bold />
-                <div className="mt-2 text-[10px] text-gray-700 leading-relaxed">
-                  <p>1. Identify Timeline (Age/Month) and Primary Emotion.</p>
-                  <p>2. Locate surrogate Organ Pulse Point and Energy Polarity.</p>
-                  <p>3. Hold ESR + Pulse Point + Eye Position while client replays stress.</p>
-                  <p>4. Monitor for Shift (Sigh/Yawn). Finish with Positive Upload.</p>
+              {/* Emotion-Organ Mapping */}
+              <div className="space-y-4">
+                <h3 className="text-xs font-bold text-gray-500 uppercase tracking-widest mb-4 flex items-center gap-2">
+                  <Heart size={14} className="text-rose-600" /> Primary Emotion & Organ Mapping
+                </h3>
+                <div className="grid grid-cols-5 gap-2">
+                  {PRIMARY_EMOTIONS.map(e => (
+                    <div key={e.id} className="p-3 border border-black text-center space-y-1">
+                      <p className="text-[10px] font-black uppercase tracking-widest">{e.label}</p>
+                      <p className="text-[8px] font-bold text-gray-500">{e.element}</p>
+                      <div className="h-px bg-black/10 my-1" />
+                      <p className="text-[9px] font-medium leading-tight">{e.organs.join(', ')}</p>
+                    </div>
+                  ))}
                 </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-12">
+                {/* Pulse Points Diagram Placeholder */}
+                <div className="space-y-4">
+                  <h3 className="text-xs font-bold text-gray-500 uppercase tracking-widest mb-4 flex items-center gap-2">
+                    <Hand size={14} className="text-indigo-600" /> Organ Pulse Points
+                  </h3>
+                  <div className="rounded-2xl border border-black overflow-hidden shadow-sm">
+                    <img 
+                      src="/images/pulse-points.png" 
+                      alt="Organ Pulse Points Reference" 
+                      className="w-full h-auto"
+                      onError={(e) => { e.currentTarget.style.display = 'none'; }}
+                    />
+                  </div>
+                  <p className="text-[8px] text-gray-500 italic text-center">Hold relevant position with Light or Deep pressure.</p>
+                </div>
+
+                {/* Eye Accessing Cues Diagram Placeholder */}
+                <div className="space-y-4">
+                  <h3 className="text-xs font-bold text-gray-500 uppercase tracking-widest mb-4 flex items-center gap-2">
+                    <Eye size={14} className="text-rose-600" /> Eye Accessing Cues (NLP)
+                  </h3>
+                  <div className="rounded-2xl border border-black overflow-hidden shadow-sm">
+                    <img 
+                      src="/images/eye-modes.png" 
+                      alt="Eye Accessing Cues Reference" 
+                      className="w-full h-auto"
+                      onError={(e) => { e.currentTarget.style.display = 'none'; }}
+                    />
+                  </div>
+                  <p className="text-[8px] text-gray-500 italic text-center">Identify sensory access point for emotional stress.</p>
+                </div>
+              </div>
+
+              {/* Signs of Shift */}
+              <div className="p-6 border border-black bg-emerald-50/30">
+                <h3 className="text-xs font-black text-emerald-700 uppercase tracking-[0.3em] mb-4 flex items-center gap-2">
+                  <Sparkles size={16} /> Signs of Neurological Shift
+                </h3>
+                <div className="flex flex-wrap gap-x-8 gap-y-2">
+                  {SIGNS_OF_SHIFT.map(s => (
+                    <div key={s} className="flex items-center gap-2">
+                      <div className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
+                      <span className="text-xs font-bold text-emerald-900">{s}</span>
+                    </div>
+                  ))}
+                </div>
+                <p className="text-[10px] text-emerald-600 mt-4 italic">"Wait for a parasympathetic response before proceeding to the Positive Upload phase."</p>
+              </div>
+
+              <div className="p-4 border border-black">
+                <Item id="nei-positive" label="Positive Upload Phase" subtext="Once the negative charge is cleared, identify the opposite state and anchor it using the same eye position and pulse point." bold />
               </div>
             </div>
           </Section>

@@ -5,6 +5,8 @@ import { MUSCLE_INFO_DETAILS } from "@/data/muscle-info-data";
 import { PRIMITIVE_REFLEXES } from "@/data/primitive-reflex-data";
 import { CRANIAL_NERVES } from "@/data/cranial-nerve-data";
 import { BRAIN_REFLEX_POINTS } from "@/data/brain-reflex-data";
+import { EYE_POSITIONS } from "@/data/emotion-data";
+import { HAND_REFLEXOLOGY } from "@/data/vagus-data";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Button } from "@/components/ui/button";
 import { Loader2, RotateCcw, Printer, Eye, Hand, Zap, Activity, ImageIcon } from "lucide-react";
@@ -513,6 +515,9 @@ const PracticeNotes = () => {
                     <p><strong>Mid Right:</strong> Auditory Constructed</p>
                     <p><strong>Down Left:</strong> Internal Monologue</p>
                     <p><strong>Down Right:</strong> Kinesthetic / Felt Sense</p>
+                  </div>
+                  <div className="mt-4 aspect-video rounded-2xl overflow-hidden border border-slate-200 bg-slate-50 shadow-inner">
+                    <img src="/images/eye-modes.png" alt="Eye Accessing Cues Diagram" className="w-full h-full object-contain grayscale contrast-125" />
                   </div>
                 </div>
               </div>

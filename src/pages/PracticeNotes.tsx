@@ -5,11 +5,9 @@ import { MUSCLE_INFO_DETAILS } from "@/data/muscle-info-data";
 import { PRIMITIVE_REFLEXES } from "@/data/primitive-reflex-data";
 import { CRANIAL_NERVES } from "@/data/cranial-nerve-data";
 import { BRAIN_REFLEX_POINTS } from "@/data/brain-reflex-data";
-import { EYE_POSITIONS } from "@/data/emotion-data";
-import { HAND_REFLEXOLOGY } from "@/data/vagus-data";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Button } from "@/components/ui/button";
-import { Loader2, RotateCcw, Printer, Eye, Hand, Zap, Activity } from "lucide-react";
+import { Loader2, RotateCcw, Printer, Eye, Hand, Zap, Activity, ImageIcon } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { supabase } from "@/integrations/supabase/client";
 
@@ -475,7 +473,7 @@ const PracticeNotes = () => {
           {/* 4. Neuro-Emotional Integration */}
           <Section title="IV. Neuro-Emotional Integration">
             <div className="space-y-8">
-              <div className="grid grid-cols-2 gap-12">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-12">
                 <div className="space-y-4">
                   <h3 className="text-xs font-bold text-gray-500 uppercase tracking-widest mb-2 flex items-center gap-2">
                     <Hand size={14} className="text-indigo-600" /> Organ Pulse Points
@@ -497,6 +495,9 @@ const PracticeNotes = () => {
                         <p><strong>Proximal:</strong> TW (L) / PC (D)</p>
                       </div>
                     </div>
+                  </div>
+                  <div className="mt-4 aspect-video rounded-2xl overflow-hidden border border-slate-200 bg-slate-50 shadow-inner">
+                    <img src="/images/pulse-points.png" alt="Organ Pulse Points Diagram" className="w-full h-full object-contain grayscale contrast-125" />
                   </div>
                   <p className="text-[8px] text-gray-500 italic mt-2">(L) = Light/Superficial, (D) = Deep</p>
                 </div>

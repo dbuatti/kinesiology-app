@@ -423,16 +423,18 @@ const PracticeNotes = () => {
                       />
                     </div>
                     <div className="mt-2 grid grid-cols-2 gap-6 pl-7 text-[10px] text-gray-700">
-                      <div className="space-y-1">
-                        <p className="font-bold uppercase text-[8px] text-indigo-600">Stimulation</p>
-                        <p>• Target: Auricular, Cervical, or Abdominal.</p>
-                        <p>• Hold for 60s. Observe for sigh, yawn, or gurgle.</p>
+                      <div className="space-y-2">
+                        <p className="font-bold uppercase text-[8px] text-indigo-600">1. Stimulation Protocol</p>
+                        <p>• Select Branch: Auricular, Cervical, or Abdominal.</p>
+                        <p>• Apply gentle stimulation for 60s.</p>
+                        <p>• Monitor for Shift: Sigh, yawn, gurgle, salivation.</p>
                       </div>
-                      <div className="space-y-1">
-                        <p className="font-bold uppercase text-[8px] text-rose-600">Screen & Reset</p>
-                        <p>• Check Vagal Function (Humming, Swallowing).</p>
-                        <p>• Challenge Organ/Gland + Polarity + Spinal Match.</p>
-                        <p>• Correct with Medulla Breathing (30s).</p>
+                      <div className="space-y-2">
+                        <p className="font-bold uppercase text-[8px] text-rose-600">2. Screen & Reset Protocol</p>
+                        <p>• Functional Check: Test Humming/Swallowing vs IM.</p>
+                        <p>• Challenge: Identify Organ/Gland + Polarity + Spinal Match.</p>
+                        <p>• Correction: Medulla Breathing (Blocked Inhale/Forced Exhale) 30s.</p>
+                        <p>• Verify: Re-test function and IM.</p>
                       </div>
                     </div>
                   </div>

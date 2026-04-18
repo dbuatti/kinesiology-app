@@ -5,13 +5,24 @@ import { MUSCLE_INFO_DETAILS } from "@/data/muscle-info-data";
 import { PRIMITIVE_REFLEXES } from "@/data/primitive-reflex-data";
 import { CRANIAL_NERVES } from "@/data/cranial-nerve-data";
 import { BRAIN_REFLEX_POINTS } from "@/data/brain-reflex-data";
+import { PRIMARY_EMOTIONS, SIGNS_OF_SHIFT } from "@/data/emotion-data";
 import { HAND_REFLEXOLOGY } from "@/data/vagus-data";
-import { EYE_POSITIONS, PRIMARY_EMOTIONS, SIGNS_OF_SHIFT } from "@/data/emotion-data";
+import { EYE_POSITIONS } from "@/data/emotion-data";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Button } from "@/components/ui/button";
-import { Loader2, RotateCcw, Printer, Eye, Hand, Zap, Activity, ImageIcon, Brain, Layers, MousePointer2, ShieldAlert, PlayCircle, FileText, Heart, Sparkles, Clock, History } from "lucide-react";
+import { 
+  Loader2, RotateCcw, Printer, Eye, Hand, Zap, Activity, 
+  ImageIcon, Brain, Layers, MousePointer2, ShieldAlert, 
+  PlayCircle, FileText, Heart, Sparkles, Clock, History,
+  ChevronDown, ChevronUp
+} from "lucide-react";
 import { cn } from "@/lib/utils";
 import { supabase } from "@/integrations/supabase/client";
+import {
+  Collapsible,
+  CollapsibleContent,
+  CollapsibleTrigger,
+} from "@/components/ui/collapsible";
 
 // Docs Components
 import DocsHeader from "@/components/docs/DocsHeader";
@@ -21,6 +32,7 @@ import DocsOutline from "@/components/docs/DocsOutline";
 
 const CHECKED_STORAGE_KEY = "practice_notes_checked_items";
 const TEXT_STORAGE_KEY = "practice_notes_text_data";
+const COLLAPSED_STORAGE_KEY = "practice_notes_collapsed_sections";
 
 interface ReflexImages {
   primary?: string;
@@ -43,18 +55,23 @@ const OUTLINE_ITEMS = [
 const PracticeNotes = () => {
   const [checkedItems, setCheckedItems] = useState<Record<string, boolean>>({});
   const [textData, setTextData] = useState<Record<string, string>>({});
+  const [collapsedSections, setCollapsedSections] = useState<Record<string, boolean>>({});
   const [customImages, setCustomImages] = useState<Record<string, ReflexImages>>({});
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const savedChecked = localStorage.getItem(CHECKED_STORAGE_KEY);
     const savedText = localStorage.getItem(TEXT_STORAGE_KEY);
+    const savedCollapsed = localStorage.getItem(COLLAPSED_STORAGE_KEY);
     
     if (savedChecked) {
       try { setCheckedItems(JSON.parse(savedChecked)); } catch (e) { console.error(e); }
     }
     if (savedText) {
       try { setTextData(JSON.parse(savedText)); } catch (e) { console.error(e); }
+    }
+    if (savedCollapsed) {
+      try { setCollapsedSections(JSON.parse(savedCollapsed)); } catch (e) { console.error(e); }
     }
 
     const fetchImages = async () => {
@@ -101,6 +118,10 @@ const PracticeNotes = () => {
     localStorage.setItem(TEXT_STORAGE_KEY, JSON.stringify(textData));
   }, [textData]);
 
+  useEffect(() => {
+    localStorage.setItem(COLLAPSED_STORAGE_KEY, JSON.stringify(collapsedSections));
+  }, [collapsedSections]);
+
   const toggleItem = (id: string) => {
     setCheckedItems((prev) => ({ ...prev, [id]: !prev[id] }));
   };
@@ -109,12 +130,18 @@ const PracticeNotes = () => {
     setTextData((prev) => ({ ...prev, [id]: value }));
   };
 
+  const toggleSection = (id: string) => {
+    setCollapsedSections((prev) => ({ ...prev, [id]: !prev[id] }));
+  };
+
   const resetDocument = () => {
     if (window.confirm("Are you sure you want to clear all notes and checkboxes?")) {
       setCheckedItems({});
       setTextData({});
+      setCollapsedSections({});
       localStorage.removeItem(CHECKED_STORAGE_KEY);
       localStorage.removeItem(TEXT_STORAGE_KEY);
+      localStorage.removeItem(COLLAPSED_STORAGE_KEY);
     }
   };
 
@@ -122,16 +149,34 @@ const PracticeNotes = () => {
     window.print();
   };
 
-  const Section = ({ id, title, children }: { id: string; title: string; children: React.ReactNode }) => (
-    <section id={id} className="mb-10 break-inside-avoid scroll-mt-32">
-      <h2 className="text-xl font-serif font-bold border-b border-black pb-1 mb-4 text-black uppercase">
-        {title}
-      </h2>
-      <div className="space-y-3">
-        {children}
-      </div>
-    </section>
-  );
+  const Section = ({ id, title, children }: { id: string; title: string; children: React.ReactNode }) => {
+    const isCollapsed = !!collapsedSections[id];
+    return (
+      <Collapsible 
+        id={id} 
+        open={!isCollapsed} 
+        onOpenChange={() => toggleSection(id)}
+        className="mb-10 break-inside-avoid scroll-mt-32"
+      >
+        <CollapsibleTrigger asChild>
+          <div className="flex items-center justify-between border-b border-black pb-1 mb-4 cursor-pointer group">
+            <h2 className="text-xl font-serif font-bold text-black uppercase">
+              {title}
+            </h2>
+            <div className="flex items-center gap-2 text-gray-400 group-hover:text-black transition-colors print:hidden">
+              <span className="text-[10px] font-black uppercase tracking-widest opacity-0 group-hover:opacity-100 transition-opacity">
+                {isCollapsed ? 'Expand' : 'Collapse'}
+              </span>
+              {isCollapsed ? <ChevronDown size={18} /> : <ChevronUp size={18} />}
+            </div>
+          </div>
+        </CollapsibleTrigger>
+        <CollapsibleContent className="space-y-3 animate-in fade-in slide-in-from-top-1 duration-200">
+          {children}
+        </CollapsibleContent>
+      </Collapsible>
+    );
+  };
 
   const Item = ({ id, label, subtext, bold = false, hasInput = false }: { id: string; label: string; subtext?: string; bold?: boolean; hasInput?: boolean }) => (
     <div className="flex items-start gap-3">
@@ -543,7 +588,7 @@ const PracticeNotes = () => {
               </div>
 
               <div className="grid grid-cols-2 gap-12">
-                {/* Pulse Points Diagram Placeholder */}
+                {/* Pulse Points Diagram */}
                 <div className="space-y-4">
                   <h3 className="text-xs font-bold text-gray-500 uppercase tracking-widest mb-4 flex items-center gap-2">
                     <Hand size={14} className="text-indigo-600" /> Organ Pulse Points
@@ -559,7 +604,7 @@ const PracticeNotes = () => {
                   <p className="text-[8px] text-gray-500 italic text-center">Hold relevant position with Light or Deep pressure.</p>
                 </div>
 
-                {/* Eye Accessing Cues Diagram Placeholder */}
+                {/* Eye Accessing Cues Diagram */}
                 <div className="space-y-4">
                   <h3 className="text-xs font-bold text-gray-500 uppercase tracking-widest mb-4 flex items-center gap-2">
                     <Eye size={14} className="text-rose-600" /> Eye Accessing Cues (NLP)

@@ -163,17 +163,17 @@ const PracticeNotes = () => {
       <div className="grid grid-cols-3 gap-4 mt-4">
         {images.primary && (
           <div className="aspect-video border border-gray-300 p-0.5">
-            <img src={images.primary} alt="Primary" className="w-full h-full object-cover grayscale contrast-125" />
+            <img src={images.primary} alt="Primary" className="w-full h-full object-cover" />
           </div>
         )}
         {images.secondary && (
           <div className="aspect-video border border-gray-300 p-0.5">
-            <img src={images.secondary} alt="Secondary" className="w-full h-full object-cover grayscale contrast-125" />
+            <img src={images.secondary} alt="Secondary" className="w-full h-full object-cover" />
           </div>
         )}
         {images.tertiary && (
           <div className="aspect-video border border-gray-300 p-0.5">
-            <img src={images.tertiary} alt="Tertiary" className="w-full h-full object-cover grayscale contrast-125" />
+            <img src={images.tertiary} alt="Tertiary" className="w-full h-full object-cover" />
           </div>
         )}
       </div>
@@ -487,13 +487,13 @@ const PracticeNotes = () => {
 
           {/* 4. Neuro-Emotional Integration */}
           <Section title="IV. Neuro-Emotional Integration">
-            <div className="space-y-8">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-12">
+            <div className="space-y-12">
+              <div className="space-y-6">
                 <div className="space-y-4">
                   <h3 className="text-xs font-bold text-gray-500 uppercase tracking-widest mb-2 flex items-center gap-2">
                     <Hand size={14} className="text-indigo-600" /> Organ Pulse Points
                   </h3>
-                  <div className="grid grid-cols-2 gap-4">
+                  <div className="grid grid-cols-2 gap-8">
                     <div className="space-y-2">
                       <p className="text-[9px] font-black uppercase text-slate-400">Left Wrist</p>
                       <div className="text-[10px] space-y-1">
@@ -511,8 +511,8 @@ const PracticeNotes = () => {
                       </div>
                     </div>
                   </div>
-                  <div className="mt-4 aspect-video rounded-2xl overflow-hidden border border-slate-200 bg-slate-50 shadow-inner">
-                    <img src="/images/pulse-points.png" alt="Organ Pulse Points Diagram" className="w-full h-full object-contain grayscale contrast-125" />
+                  <div className="aspect-video rounded-2xl overflow-hidden border border-slate-200 bg-slate-50 shadow-inner">
+                    <img src="/images/pulse-points.png" alt="Organ Pulse Points Diagram" className="w-full h-full object-contain" />
                   </div>
                   <p className="text-[8px] text-gray-500 italic mt-2">(L) = Light/Superficial, (D) = Deep</p>
                 </div>
@@ -521,16 +521,16 @@ const PracticeNotes = () => {
                   <h3 className="text-xs font-bold text-gray-500 uppercase tracking-widest mb-2 flex items-center gap-2">
                     <Eye size={14} className="text-rose-600" /> Eye Accessing Cues (NLP)
                   </h3>
-                  <div className="grid grid-cols-2 gap-x-4 gap-y-2 text-[10px]">
+                  <div className="grid grid-cols-3 gap-x-4 gap-y-2 text-[10px]">
                     <p><strong>Up Left:</strong> Visual Memory</p>
-                    <p><strong>Up Right:</strong> Visual Constructed</p>
                     <p><strong>Mid Left:</strong> Auditory Memory</p>
-                    <p><strong>Mid Right:</strong> Auditory Constructed</p>
                     <p><strong>Down Left:</strong> Internal Monologue</p>
+                    <p><strong>Up Right:</strong> Visual Constructed</p>
+                    <p><strong>Mid Right:</strong> Auditory Constructed</p>
                     <p><strong>Down Right:</strong> Kinesthetic / Felt Sense</p>
                   </div>
-                  <div className="mt-4 aspect-video rounded-2xl overflow-hidden border border-slate-200 bg-slate-50 shadow-inner">
-                    <img src="/images/eye-modes.png" alt="Eye Accessing Cues Diagram" className="w-full h-full object-contain grayscale contrast-125" />
+                  <div className="aspect-video rounded-2xl overflow-hidden border border-slate-200 bg-slate-50 shadow-inner">
+                    <img src="/images/eye-modes.png" alt="Eye Accessing Cues Diagram" className="w-full h-full object-contain" />
                   </div>
                 </div>
               </div>

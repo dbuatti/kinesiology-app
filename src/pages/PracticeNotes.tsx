@@ -488,50 +488,50 @@ const PracticeNotes = () => {
           {/* 4. Neuro-Emotional Integration */}
           <Section title="IV. Neuro-Emotional Integration">
             <div className="space-y-12">
-              <div className="space-y-6">
-                <div className="space-y-4">
-                  <h3 className="text-xs font-bold text-gray-500 uppercase tracking-widest mb-2 flex items-center gap-2">
-                    <Hand size={14} className="text-indigo-600" /> Organ Pulse Points
-                  </h3>
-                  <div className="grid grid-cols-2 gap-8">
-                    <div className="space-y-2">
-                      <p className="text-[9px] font-black uppercase text-slate-400">Left Wrist</p>
-                      <div className="text-[10px] space-y-1">
-                        <p><strong>Distal:</strong> SI (L) / HT (D)</p>
-                        <p><strong>Middle:</strong> GB (L) / LV (D)</p>
-                        <p><strong>Proximal:</strong> BL (L) / KI (D)</p>
-                      </div>
-                    </div>
-                    <div className="space-y-2">
-                      <p className="text-[9px] font-black uppercase text-slate-400">Right Wrist</p>
-                      <div className="text-[10px] space-y-1">
-                        <p><strong>Distal:</strong> LI (L) / LU (D)</p>
-                        <p><strong>Middle:</strong> ST (L) / SP (D)</p>
-                        <p><strong>Proximal:</strong> TW (L) / PC (D)</p>
-                      </div>
+              {/* Pulse Points Band */}
+              <div className="space-y-4">
+                <h3 className="text-xs font-bold text-gray-500 uppercase tracking-widest mb-2 flex items-center gap-2">
+                  <Hand size={14} className="text-indigo-600" /> Organ Pulse Points
+                </h3>
+                <div className="grid grid-cols-2 gap-8 mb-4">
+                  <div className="space-y-2">
+                    <p className="text-[9px] font-black uppercase text-slate-400">Left Wrist</p>
+                    <div className="text-[10px] space-y-1">
+                      <p><strong>Distal:</strong> SI (L) / HT (D)</p>
+                      <p><strong>Middle:</strong> GB (L) / LV (D)</p>
+                      <p><strong>Proximal:</strong> BL (L) / KI (D)</p>
                     </div>
                   </div>
-                  <div className="aspect-video rounded-2xl overflow-hidden border border-slate-200 bg-slate-50 shadow-inner">
-                    <img src="dyad-media://media/%2FUsers%2Fdanielebuatti%2Fdyad-apps%2Fkinesiology-app/.dyad/media/3e86de346781feedff43e544ffd0b8c9.png" alt="Organ Pulse Points Diagram" className="w-full h-auto object-contain" />
+                  <div className="space-y-2">
+                    <p className="text-[9px] font-black uppercase text-slate-400">Right Wrist</p>
+                    <div className="text-[10px] space-y-1">
+                      <p><strong>Distal:</strong> LI (L) / LU (D)</p>
+                      <p><strong>Middle:</strong> ST (L) / SP (D)</p>
+                      <p><strong>Proximal:</strong> TW (L) / PC (D)</p>
+                    </div>
                   </div>
-                  <p className="text-[8px] text-gray-500 italic mt-2">(L) = Light/Superficial, (D) = Deep</p>
                 </div>
+                <div className="w-full rounded-2xl overflow-hidden border border-slate-200 bg-slate-50 shadow-inner">
+                  <img src="dyad-media://media/%2FUsers%2Fdanielebuatti%2Fdyad-apps%2Fkinesiology-app/.dyad/media/3e86de346781feedff43e544ffd0b8c9.png" alt="Organ Pulse Points Diagram" className="w-full h-auto object-contain" />
+                </div>
+                <p className="text-[8px] text-gray-500 italic mt-2">(L) = Light/Superficial, (D) = Deep</p>
+              </div>
 
-                <div className="space-y-4">
-                  <h3 className="text-xs font-bold text-gray-500 uppercase tracking-widest mb-2 flex items-center gap-2">
-                    <Eye size={14} className="text-rose-600" /> Eye Accessing Cues (NLP)
-                  </h3>
-                  <div className="grid grid-cols-3 gap-x-4 gap-y-2 text-[10px] mb-4">
-                    <p><strong>Up Left:</strong> Visual Memory</p>
-                    <p><strong>Mid Left:</strong> Auditory Memory</p>
-                    <p><strong>Down Left:</strong> Internal Monologue</p>
-                    <p><strong>Up Right:</strong> Visual Constructed</p>
-                    <p><strong>Mid Right:</strong> Auditory Constructed</p>
-                    <p><strong>Down Right:</strong> Kinesthetic / Felt Sense</p>
-                  </div>
-                  <div className="aspect-video rounded-2xl overflow-hidden border border-slate-200 bg-slate-50 shadow-inner">
-                    <img src="dyad-media://media/%2FUsers%2Fdanielebuatti%2Fdyad-apps%2Fkinesiology-app/.dyad/media/796b17e08c4ddfab9356182efa60dd9d.png" alt="Eye Accessing Cues Diagram" className="w-full h-auto object-contain" />
-                  </div>
+              {/* Eye Modes Band */}
+              <div className="space-y-4">
+                <h3 className="text-xs font-bold text-gray-500 uppercase tracking-widest mb-2 flex items-center gap-2">
+                  <Eye size={14} className="text-rose-600" /> Eye Accessing Cues (NLP)
+                </h3>
+                <div className="grid grid-cols-3 gap-x-4 gap-y-2 text-[10px] mb-4">
+                  <p><strong>Up Left:</strong> Visual Memory</p>
+                  <p><strong>Mid Left:</strong> Auditory Memory</p>
+                  <p><strong>Down Left:</strong> Internal Monologue</p>
+                  <p><strong>Up Right:</strong> Visual Constructed</p>
+                  <p><strong>Mid Right:</strong> Auditory Constructed</p>
+                  <p><strong>Down Right:</strong> Kinesthetic / Felt Sense</p>
+                </div>
+                <div className="w-full rounded-2xl overflow-hidden border border-slate-200 bg-slate-50 shadow-inner">
+                  <img src="dyad-media://media/%2FUsers%2Fdanielebuatti%2Fdyad-apps%2Fkinesiology-app/.dyad/media/796b17e08c4ddfab9356182efa60dd9d.png" alt="Eye Accessing Cues Diagram" className="w-full h-auto object-contain" />
                 </div>
               </div>
 

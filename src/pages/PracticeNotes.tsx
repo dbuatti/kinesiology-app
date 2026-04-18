@@ -343,17 +343,17 @@ const PracticeNotes = () => {
   };
 
   return (
-    <div className="min-h-screen bg-[#F9FBFD] flex flex-col">
+    <div className="min-h-screen bg-white md:bg-[#F9FBFD] flex flex-col">
       <DocsHeader />
       <DocsToolbar />
       <DocsRuler />
 
-      <div className="flex-1 overflow-auto p-8 md:p-12 flex justify-center print:p-0 print:bg-white">
+      <div className="flex-1 overflow-auto p-0 md:p-12 flex justify-center print:p-0 print:bg-white">
         {/* Outline Sidebar */}
         <DocsOutline items={OUTLINE_ITEMS} />
 
         {/* Document Container */}
-        <div className="w-full max-w-[1000px] bg-white border border-slate-200 shadow-sm p-16 md:p-20 min-h-[1056px] print:border-none print:p-0 text-black font-sans relative">
+        <div className="w-full max-w-[1000px] bg-white border-none md:border md:border-slate-200 md:shadow-sm p-6 sm:p-10 md:p-20 min-h-[1056px] print:border-none print:p-0 text-black font-sans relative">
           
           {loading && (
             <div className="absolute inset-0 bg-white/50 backdrop-blur-sm z-50 flex flex-col items-center justify-center gap-4">

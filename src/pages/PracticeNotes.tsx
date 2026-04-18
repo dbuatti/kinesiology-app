@@ -5,11 +5,9 @@ import { MUSCLE_INFO_DETAILS } from "@/data/muscle-info-data";
 import { PRIMITIVE_REFLEXES } from "@/data/primitive-reflex-data";
 import { CRANIAL_NERVES } from "@/data/cranial-nerve-data";
 import { BRAIN_REFLEX_POINTS } from "@/data/brain-reflex-data";
-import { HAND_REFLEXOLOGY } from "@/data/vagus-data";
-import { EYE_POSITIONS } from "@/data/emotion-data";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Button } from "@/components/ui/button";
-import { Loader2, RotateCcw, Printer, Eye, Hand, Zap, Activity, ImageIcon, Brain, Layers, MousePointer2 } from "lucide-react";
+import { Loader2, RotateCcw, Printer, Eye, Hand, Zap, Activity, ImageIcon, Brain, Layers, MousePointer2, ShieldAlert, PlayCircle, FileText } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { supabase } from "@/integrations/supabase/client";
 
@@ -159,7 +157,7 @@ const PracticeNotes = () => {
               value={textData[id] || ""}
               onChange={(e) => handleTextChange(id, e.target.value)}
               className="flex-1 border-b border-black bg-transparent outline-none text-sm px-1 min-w-[60px] focus:border-blue-500 transition-colors"
-              placeholder="..."
+              placeholder="________________"
             />
           )}
         </div>
@@ -502,42 +500,17 @@ const PracticeNotes = () => {
                   <h3 className="text-xs font-bold text-gray-500 uppercase tracking-widest mb-4 flex items-center gap-2">
                     <Hand size={14} className="text-indigo-600" /> Organ Pulse Points Diagram
                   </h3>
-                  <div className="grid grid-cols-2 gap-12">
-                    {/* Left Wrist Visual */}
-                    <div className="space-y-4">
-                      <p className="text-[10px] font-black uppercase text-slate-400 text-center">Left Wrist</p>
-                      <div className="border border-black rounded-xl overflow-hidden">
-                        <div className="grid grid-cols-3 bg-gray-50 border-b border-black text-[8px] font-black uppercase text-center">
-                          <div className="p-2 border-r border-black">Position</div>
-                          <div className="p-2 border-r border-black">Light (L)</div>
-                          <div className="p-2">Deep (D)</div>
-                        </div>
-                        {HAND_REFLEXOLOGY.Left.Light.map((point, i) => (
-                          <div key={i} className="grid grid-cols-3 border-b border-black last:border-b-0 text-[10px] text-center">
-                            <div className="p-3 border-r border-black font-bold bg-gray-50">{point.position.split(' ')[0]}</div>
-                            <div className="p-3 border-r border-black font-medium">{point.name}</div>
-                            <div className="p-3 font-medium">{HAND_REFLEXOLOGY.Left.Deep[i].name}</div>
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-                    {/* Right Wrist Visual */}
-                    <div className="space-y-4">
-                      <p className="text-[10px] font-black uppercase text-slate-400 text-center">Right Wrist</p>
-                      <div className="border border-black rounded-xl overflow-hidden">
-                        <div className="grid grid-cols-3 bg-gray-50 border-b border-black text-[8px] font-black uppercase text-center">
-                          <div className="p-2 border-r border-black">Position</div>
-                          <div className="p-2 border-r border-black">Light (L)</div>
-                          <div className="p-2">Deep (D)</div>
-                        </div>
-                        {HAND_REFLEXOLOGY.Right.Light.map((point, i) => (
-                          <div key={i} className="grid grid-cols-3 border-b border-black last:border-b-0 text-[10px] text-center">
-                            <div className="p-3 border-r border-black font-bold bg-gray-50">{point.position.split(' ')[0]}</div>
-                            <div className="p-3 border-r border-black font-medium">{point.name}</div>
-                            <div className="p-3 font-medium">{HAND_REFLEXOLOGY.Right.Deep[i].name}</div>
-                          </div>
-                        ))}
-                      </div>
+                  <div className="max-w-2xl mx-auto">
+                    <div className="rounded-2xl border border-black overflow-hidden shadow-sm">
+                      <img 
+                        src="/images/pulse-points.png" 
+                        alt="Organ Pulse Points Reference" 
+                        className="w-full h-auto"
+                        onError={(e) => {
+                          e.currentTarget.style.display = 'none';
+                          console.error("Failed to load pulse-points.png from public/images/");
+                        }}
+                      />
                     </div>
                   </div>
                   <p className="text-[8px] text-gray-500 italic mt-2 text-center">Hold the relevant position with Light or Deep pressure to challenge the associated organ circuit.</p>
@@ -548,33 +521,19 @@ const PracticeNotes = () => {
                     <Eye size={14} className="text-rose-600" /> Eye Accessing Cues (NLP) Diagram
                   </h3>
                   <div className="max-w-2xl mx-auto">
-                    <div className="grid grid-cols-2 gap-4">
-                      {/* Left Side Cues */}
-                      <div className="space-y-3">
-                        <p className="text-[9px] font-black uppercase text-slate-400 text-center">Past / Memory (Left)</p>
-                        <div className="grid grid-rows-3 gap-2">
-                          {EYE_POSITIONS.filter(p => p.pos.includes('Left')).map(p => (
-                            <div key={p.id} className="p-3 border border-black rounded-xl bg-gray-50 flex flex-col items-center text-center">
-                              <span className="text-[10px] font-black uppercase text-rose-600 mb-1">{p.pos}</span>
-                              <span className="text-xs font-bold">{p.label}</span>
-                            </div>
-                          ))}
-                        </div>
-                      </div>
-                      {/* Right Side Cues */}
-                      <div className="space-y-3">
-                        <p className="text-[9px] font-black uppercase text-slate-400 text-center">Future / Construct (Right)</p>
-                        <div className="grid grid-rows-3 gap-2">
-                          {EYE_POSITIONS.filter(p => p.pos.includes('Right')).map(p => (
-                            <div key={p.id} className="p-3 border border-black rounded-xl bg-gray-50 flex flex-col items-center text-center">
-                              <span className="text-[10px] font-black uppercase text-indigo-600 mb-1">{p.pos}</span>
-                              <span className="text-xs font-bold">{p.label}</span>
-                            </div>
-                          ))}
-                        </div>
-                      </div>
+                    <div className="rounded-2xl border border-black overflow-hidden shadow-sm">
+                      <img 
+                        src="/images/eye-modes.png" 
+                        alt="Eye Accessing Cues Reference" 
+                        className="w-full h-auto"
+                        onError={(e) => {
+                          e.currentTarget.style.display = 'none';
+                          console.error("Failed to load eye-modes.png from public/images/");
+                        }}
+                      />
                     </div>
                   </div>
+                  <p className="text-[8px] text-gray-500 italic mt-2 text-center">Identify the sensory access point for the emotional stress using the NLP eye position logic.</p>
                 </div>
               </div>
 

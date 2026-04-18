@@ -5,8 +5,6 @@ import { MUSCLE_INFO_DETAILS } from "@/data/muscle-info-data";
 import { PRIMITIVE_REFLEXES } from "@/data/primitive-reflex-data";
 import { CRANIAL_NERVES } from "@/data/cranial-nerve-data";
 import { BRAIN_REFLEX_POINTS } from "@/data/brain-reflex-data";
-import { EYE_POSITIONS } from "@/data/emotion-data";
-import { HAND_REFLEXOLOGY } from "@/data/vagus-data";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Button } from "@/components/ui/button";
 import { Loader2, RotateCcw, Printer, Eye, Hand, Zap, Activity, ImageIcon } from "lucide-react";
@@ -21,10 +19,16 @@ import DocsRuler from "@/components/docs/DocsRuler";
 const CHECKED_STORAGE_KEY = "practice_notes_checked_items";
 const TEXT_STORAGE_KEY = "practice_notes_text_data";
 
+interface ReflexImages {
+  primary?: string;
+  secondary?: string;
+  tertiary?: string;
+}
+
 const PracticeNotes = () => {
   const [checkedItems, setCheckedItems] = useState<Record<string, boolean>>({});
   const [textData, setTextData] = useState<Record<string, string>>({});
-  const [customImages, setCustomImages] = useState<Record<string, string>>({});
+  const [customImages, setCustomImages] = useState<Record<string, ReflexImages>>({});
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -44,21 +48,25 @@ const PracticeNotes = () => {
         if (!user) return;
 
         const [brainRes, reflexRes] = await Promise.all([
-          supabase.from('brain_reflex_customizations').select('reflex_id, image_url, secondary_image_url').eq('user_id', user.id),
+          supabase.from('brain_reflex_customizations').select('reflex_id, image_url, secondary_image_url, tertiary_image_url').eq('user_id', user.id),
           supabase.from('primitive_reflex_customizations').select('reflex_id, image_url').eq('user_id', user.id)
         ]);
 
-        const mapping: Record<string, string> = {};
+        const mapping: Record<string, ReflexImages> = {};
+        
         brainRes.data?.forEach(item => {
-          if (item.secondary_image_url || item.image_url) {
-            mapping[item.reflex_id] = item.secondary_image_url || item.image_url;
-          }
+          mapping[item.reflex_id] = {
+            primary: item.image_url || undefined,
+            secondary: item.secondary_image_url || undefined,
+            tertiary: item.tertiary_image_url || undefined
+          };
         });
+
         reflexRes.data?.forEach(item => {
-          if (item.image_url) {
-            mapping[item.reflex_id] = item.image_url;
-          }
+          if (!mapping[item.reflex_id]) mapping[item.reflex_id] = {};
+          mapping[item.reflex_id].primary = item.image_url || undefined;
         });
+
         setCustomImages(mapping);
       } catch (err) {
         console.error("Failed to fetch images:", err);
@@ -149,8 +157,31 @@ const PracticeNotes = () => {
     </div>
   );
 
+  const ImageRow = ({ images }: { images?: ReflexImages }) => {
+    if (!images || (!images.primary && !images.secondary && !images.tertiary)) return null;
+    return (
+      <div className="grid grid-cols-3 gap-4 mt-4">
+        {images.primary && (
+          <div className="aspect-video border border-gray-300 p-0.5">
+            <img src={images.primary} alt="Primary" className="w-full h-full object-cover grayscale contrast-125" />
+          </div>
+        )}
+        {images.secondary && (
+          <div className="aspect-video border border-gray-300 p-0.5">
+            <img src={images.secondary} alt="Secondary" className="w-full h-full object-cover grayscale contrast-125" />
+          </div>
+        )}
+        {images.tertiary && (
+          <div className="aspect-video border border-gray-300 p-0.5">
+            <img src={images.tertiary} alt="Tertiary" className="w-full h-full object-cover grayscale contrast-125" />
+          </div>
+        )}
+      </div>
+    );
+  };
+
   const ReflexCard = ({ reflex }: { reflex: any }) => {
-    const imageUrl = customImages[reflex.id];
+    const images = customImages[reflex.id];
     const id = `reflex-${reflex.id}`;
     return (
       <div className="p-4 border border-black mb-4 break-inside-avoid">
@@ -175,24 +206,18 @@ const PracticeNotes = () => {
           </div>
         </div>
         
-        <div className="flex gap-6">
-          <div className="flex-1 space-y-2 text-xs">
-            <p><strong>Stimulus:</strong> {reflex.stimulus}</p>
-            <p><strong>Inhibition Pattern:</strong> {reflex.inhibitionPattern}</p>
-          </div>
-          
-          {imageUrl && (
-            <div className="w-32 h-24 border border-gray-300 p-0.5 shrink-0">
-              <img src={imageUrl} alt={reflex.name} className="w-full h-full object-cover grayscale contrast-125" />
-            </div>
-          )}
+        <div className="space-y-2 text-xs">
+          <p><strong>Stimulus:</strong> {reflex.stimulus}</p>
+          <p><strong>Inhibition Pattern:</strong> {reflex.inhibitionPattern}</p>
         </div>
+        
+        <ImageRow images={images} />
       </div>
     );
   };
 
   const NerveCard = ({ nerve }: { nerve: any }) => {
-    const imageUrl = customImages[`cn${nerve.id}`];
+    const images = customImages[`cn${nerve.id}`];
     const id = `cn-${nerve.id}`;
     return (
       <div className="p-4 border border-black mb-4 break-inside-avoid">
@@ -217,24 +242,18 @@ const PracticeNotes = () => {
           </div>
         </div>
         
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <div className="space-y-2 text-xs">
-            <p><strong>Reflex Point:</strong> {nerve.reflexPoint}</p>
-            <p><strong>Stimulus:</strong> {nerve.stimulus}</p>
-          </div>
-          
-          {imageUrl && (
-            <div className="w-32 h-24 border border-gray-300 p-0.5 shrink-0">
-              <img src={imageUrl} alt={nerve.name} className="w-full h-full object-cover grayscale contrast-125" />
-            </div>
-          )}
+        <div className="space-y-2 text-xs">
+          <p><strong>Reflex Point:</strong> {nerve.reflexPoint}</p>
+          <p><strong>Stimulus:</strong> {nerve.stimulus}</p>
         </div>
+        
+        <ImageRow images={images} />
       </div>
     );
   };
 
   const BrainZoneCard = ({ point }: { point: any }) => {
-    const imageUrl = customImages[point.id];
+    const images = customImages[point.id];
     const id = `brain-${point.id}`;
     return (
       <div className="p-4 border border-black mb-4 break-inside-avoid">
@@ -259,18 +278,12 @@ const PracticeNotes = () => {
           </div>
         </div>
         
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <div className="space-y-2 text-xs">
-            <p><strong>Location:</strong> {point.location}</p>
-            <p><strong>Stimulus:</strong> {point.stimulus || point.technique || "Standard challenge."}</p>
-          </div>
-          
-          {imageUrl && (
-            <div className="w-32 h-24 border border-gray-300 p-0.5 shrink-0">
-              <img src={imageUrl} alt={point.name} className="w-full h-full object-cover grayscale contrast-125" />
-            </div>
-          )}
+        <div className="space-y-2 text-xs">
+          <p><strong>Location:</strong> {point.location}</p>
+          <p><strong>Stimulus:</strong> {point.stimulus || point.technique || "Standard challenge."}</p>
         </div>
+        
+        <ImageRow images={images} />
       </div>
     );
   };
@@ -291,8 +304,8 @@ const PracticeNotes = () => {
       <DocsRuler />
 
       <div className="flex-1 overflow-auto p-8 md:p-12 flex justify-center print:p-0 print:bg-white">
-        {/* Document Container */}
-        <div className="w-full max-w-[816px] bg-white border border-slate-200 shadow-sm p-16 md:p-20 min-h-[1056px] print:border-none print:p-0 text-black font-sans relative">
+        {/* Document Container - Widened to 1000px */}
+        <div className="w-full max-w-[1000px] bg-white border border-slate-200 shadow-sm p-16 md:p-20 min-h-[1056px] print:border-none print:p-0 text-black font-sans relative">
           
           {/* Document Header */}
           <header className="mb-16 text-center">

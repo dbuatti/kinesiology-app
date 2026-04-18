@@ -25,7 +25,8 @@ import {
   AlertCircle,
   ListChecks,
   CheckCircle2,
-  ArrowRight
+  ArrowRight,
+  ImageIcon
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
@@ -34,6 +35,7 @@ interface BrainReflexModalProps {
   point: BrainReflexPoint | null;
   primaryUrl: string | null;
   secondaryUrl: string | null;
+  tertiaryUrl?: string | null;
   open: boolean;
   onOpenChange: (open: boolean) => void;
 }
@@ -42,6 +44,7 @@ const BrainReflexModal = ({
   point, 
   primaryUrl, 
   secondaryUrl, 
+  tertiaryUrl,
   open, 
   onOpenChange 
 }: BrainReflexModalProps) => {
@@ -118,6 +121,45 @@ const BrainReflexModal = ({
             </div>
           </div>
 
+          {/* Image Showcase - Three in a row */}
+          <section className="space-y-4">
+            <SectionHeader icon={ImageIcon} title="Visual References" color="text-slate-600" />
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              <div className="aspect-video rounded-[2rem] bg-slate-50 border-2 border-slate-100 overflow-hidden flex items-center justify-center group relative shadow-inner">
+                {primaryUrl ? (
+                  <img src={primaryUrl} alt="Primary" className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" />
+                ) : (
+                  <div className="text-center p-4">
+                    <Brain size={32} className="mx-auto text-slate-200 mb-2" />
+                    <p className="text-[8px] font-bold text-slate-400 uppercase tracking-widest">No Primary Image</p>
+                  </div>
+                )}
+              </div>
+
+              <div className="aspect-video rounded-[2rem] bg-slate-50 border-2 border-slate-100 overflow-hidden flex items-center justify-center group relative shadow-inner">
+                {secondaryUrl ? (
+                  <img src={secondaryUrl} alt="Secondary" className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" />
+                ) : (
+                  <div className="text-center p-4">
+                    <Target size={32} className="mx-auto text-slate-200 mb-2" />
+                    <p className="text-[8px] font-bold text-slate-400 uppercase tracking-widest">No Secondary Image</p>
+                  </div>
+                )}
+              </div>
+
+              <div className="aspect-video rounded-[2rem] bg-slate-50 border-2 border-slate-100 overflow-hidden flex items-center justify-center group relative shadow-inner">
+                {tertiaryUrl ? (
+                  <img src={tertiaryUrl} alt="Tertiary" className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" />
+                ) : (
+                  <div className="text-center p-4">
+                    <Zap size={32} className="mx-auto text-slate-200 mb-2" />
+                    <p className="text-[8px] font-bold text-slate-400 uppercase tracking-widest">No Tertiary Image</p>
+                  </div>
+                )}
+              </div>
+            </div>
+          </section>
+
           {/* Functions & Dysfunction Signs */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-12">
             {point.functions && (
@@ -147,37 +189,6 @@ const BrainReflexModal = ({
                 </ul>
               </section>
             )}
-          </div>
-
-          {/* Image Showcase */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-            <div className="space-y-4">
-              <SectionHeader icon={Brain} title="Brain Region / Anatomy" color="text-slate-600" />
-              <div className="aspect-video rounded-[2.5rem] bg-slate-50 border-2 border-slate-100 overflow-hidden flex items-center justify-center group relative shadow-inner">
-                {primaryUrl ? (
-                  <img src={primaryUrl} alt="Brain Anatomy" className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" />
-                ) : (
-                  <div className="text-center p-8">
-                    <Brain size={48} className="mx-auto text-slate-200 mb-4" />
-                    <p className="text-xs font-bold text-slate-400 uppercase tracking-widest">No Anatomy Image</p>
-                  </div>
-                )}
-              </div>
-            </div>
-
-            <div className="space-y-4">
-              <SectionHeader icon={Target} title="Reflex Point Location" color="text-slate-600" />
-              <div className="aspect-video rounded-[2.5rem] bg-slate-50 border-2 border-slate-100 overflow-hidden flex items-center justify-center group relative shadow-inner">
-                {secondaryUrl ? (
-                  <img src={secondaryUrl} alt="Reflex Point" className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" />
-                ) : (
-                  <div className="text-center p-8">
-                    <Target size={48} className="mx-auto text-slate-200 mb-4" />
-                    <p className="text-xs font-bold text-slate-400 uppercase tracking-widest">No Reflex Image</p>
-                  </div>
-                )}
-              </div>
-            </div>
           </div>
 
           {/* Clinical Pearl */}

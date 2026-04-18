@@ -24,6 +24,7 @@ const BUCKET_NAME = 'reflex-images';
 interface ReflexImageData {
   primaryUrl: string | null;
   secondaryUrl: string | null;
+  tertiaryUrl: string | null;
 }
 
 const ReflexImageZone = ({ 
@@ -33,7 +34,7 @@ const ReflexImageZone = ({
   onUploadComplete 
 }: { 
   reflexId: string; 
-  type: 'primary' | 'secondary';
+  type: 'primary' | 'secondary' | 'tertiary';
   currentUrl?: string | null; 
   onUploadComplete: (url: string | null) => void 
 }) => {
@@ -69,7 +70,7 @@ const ReflexImageZone = ({
         .getPublicUrl(filePath);
 
       const cacheBustedUrl = `${publicUrl}?t=${Date.now()}`;
-      const dbField = type === 'primary' ? 'image_url' : 'secondary_image_url';
+      const dbField = type === 'primary' ? 'image_url' : type === 'secondary' ? 'secondary_image_url' : 'tertiary_image_url';
 
       const { error: dbError } = await supabase
         .from('brain_reflex_customizations')
@@ -84,7 +85,7 @@ const ReflexImageZone = ({
       if (dbError) throw dbError;
 
       onUploadComplete(cacheBustedUrl);
-      showSuccess(`${type === 'primary' ? 'Main' : 'Reflex'} image updated!`);
+      showSuccess(`${type.charAt(0).toUpperCase() + type.slice(1)} image updated!`);
     } catch (error: any) {
       console.error("[ReflexImageZone] Upload error:", error);
       showError(error.message || "Failed to upload image.");
@@ -101,7 +102,7 @@ const ReflexImageZone = ({
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) return;
 
-      const dbField = type === 'primary' ? 'image_url' : 'secondary_image_url';
+      const dbField = type === 'primary' ? 'image_url' : type === 'secondary' ? 'secondary_image_url' : 'tertiary_image_url';
 
       const { error } = await supabase
         .from('brain_reflex_customizations')
@@ -189,7 +190,7 @@ const ReflexImageZone = ({
                 {isPrimary ? <Plus size={24} /> : <Target size={18} />}
               </div>
               <p className={cn("font-black text-slate-500 uppercase tracking-widest", isPrimary ? "text-[10px]" : "text-[8px]")}>
-                {isPrimary ? "Click or Drop Main Image" : "Click or Drop Reflex"}
+                {isPrimary ? "Click or Drop Main Image" : `Add ${type}`}
               </p>
             </>
           )}
@@ -214,7 +215,7 @@ const BrainReflexReference = () => {
         if (!user) return;
         const { data } = await supabase
           .from('brain_reflex_customizations')
-          .select('reflex_id, image_url, secondary_image_url')
+          .select('reflex_id, image_url, secondary_image_url, tertiary_image_url')
           .eq('user_id', user.id);
         
         const mapping: Record<string, ReflexImageData> = {};
@@ -222,7 +223,8 @@ const BrainReflexReference = () => {
           const timestamp = Date.now();
           mapping[item.reflex_id] = {
             primaryUrl: item.image_url ? `${item.image_url}?t=${timestamp}` : null,
-            secondaryUrl: item.secondary_image_url ? `${item.secondary_image_url}?t=${timestamp}` : null
+            secondaryUrl: item.secondary_image_url ? `${item.secondary_image_url}?t=${timestamp}` : null,
+            tertiaryUrl: item.tertiary_image_url ? `${item.tertiary_image_url}?t=${timestamp}` : null
           };
         });
         setCustomizations(mapping);
@@ -233,14 +235,14 @@ const BrainReflexReference = () => {
     fetchCustomizations();
   }, []);
 
-  const updateLocalCustomization = (reflexId: string, type: 'primary' | 'secondary', url: string | null) => {
+  const updateLocalCustomization = (reflexId: string, type: 'primary' | 'secondary' | 'tertiary', url: string | null) => {
     setCustomizations(prev => {
-      const current = prev[reflexId] || { primaryUrl: null, secondaryUrl: null };
+      const current = prev[reflexId] || { primaryUrl: null, secondaryUrl: null, tertiaryUrl: null };
       return {
         ...prev,
         [reflexId]: {
           ...current,
-          [type === 'primary' ? 'primaryUrl' : 'secondaryUrl']: url
+          [type === 'primary' ? 'primaryUrl' : type === 'secondary' ? 'secondaryUrl' : 'tertiaryUrl']: url
         }
       };
     });
@@ -358,7 +360,7 @@ const BrainReflexReference = () => {
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
           {filteredPoints.map(point => {
-            const data = customizations[point.id] || { primaryUrl: null, secondaryUrl: null };
+            const data = customizations[point.id] || { primaryUrl: null, secondaryUrl: null, tertiaryUrl: null };
             
             return (
               <Card 
@@ -419,18 +421,33 @@ const BrainReflexReference = () => {
                       onUploadComplete={(url) => updateLocalCustomization(point.id, 'primary', url)}
                     />
                     
-                    <div className={cn(
-                      "absolute bottom-3 right-3 transition-all duration-500 z-20",
-                      data.secondaryUrl 
-                        ? "opacity-60 group-hover/container:opacity-100 group-hover/container:scale-105" 
-                        : "opacity-0 group-hover/container:opacity-100"
-                    )}>
-                      <ReflexImageZone 
-                        reflexId={point.id} 
-                        type="secondary"
-                        currentUrl={data.secondaryUrl} 
-                        onUploadComplete={(url) => updateLocalCustomization(point.id, 'secondary', url)}
-                      />
+                    <div className="absolute bottom-3 right-3 flex flex-col gap-2 transition-all duration-500 z-20">
+                      <div className={cn(
+                        "transition-all duration-500",
+                        data.secondaryUrl 
+                          ? "opacity-60 group-hover/container:opacity-100 group-hover/container:scale-105" 
+                          : "opacity-0 group-hover/container:opacity-100"
+                      )}>
+                        <ReflexImageZone 
+                          reflexId={point.id} 
+                          type="secondary"
+                          currentUrl={data.secondaryUrl} 
+                          onUploadComplete={(url) => updateLocalCustomization(point.id, 'secondary', url)}
+                        />
+                      </div>
+                      <div className={cn(
+                        "transition-all duration-500",
+                        data.tertiaryUrl 
+                          ? "opacity-60 group-hover/container:opacity-100 group-hover/container:scale-105" 
+                          : "opacity-0 group-hover/container:opacity-100"
+                      )}>
+                        <ReflexImageZone 
+                          reflexId={point.id} 
+                          type="tertiary"
+                          currentUrl={data.tertiaryUrl} 
+                          onUploadComplete={(url) => updateLocalCustomization(point.id, 'tertiary', url)}
+                        />
+                      </div>
                     </div>
                   </div>
 
@@ -474,6 +491,7 @@ const BrainReflexReference = () => {
         point={selectedPoint}
         primaryUrl={selectedPoint ? customizations[selectedPoint.id]?.primaryUrl : null}
         secondaryUrl={selectedPoint ? customizations[selectedPoint.id]?.secondaryUrl : null}
+        tertiaryUrl={selectedPoint ? customizations[selectedPoint.id]?.tertiaryUrl : null}
         open={modalOpen}
         onOpenChange={setModalOpen}
       />

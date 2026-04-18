@@ -110,7 +110,7 @@ const LimitingBeliefsTool = () => {
   const fetchBacklogItem = async () => {
     const { data } = await supabase
       .from('identity_backlog')
-      .select('*')
+      .select('*, practitioner_reflections(content)')
       .eq('id', backlogId)
       .single();
     if (data) setBacklogItem(data);
@@ -368,15 +368,25 @@ const LimitingBeliefsTool = () => {
             </div>
             <h4 className="text-sm font-black text-rose-900 dark:text-rose-100 uppercase tracking-widest">Source Context</h4>
           </div>
-          <div className="space-y-4 relative z-10">
-            {backlogItem.priority_reasoning && (
+          <div className="space-y-6 relative z-10">
+            {backlogItem.practitioner_reflections?.content && (
               <div className="space-y-1">
-                <p className="text-[10px] font-black text-rose-400 uppercase tracking-widest">AI Reasoning</p>
-                <p className="text-sm font-medium text-rose-800 dark:text-rose-200 leading-relaxed italic">
-                  "{backlogItem.priority_reasoning}"
+                <p className="text-[10px] font-black text-rose-400 uppercase tracking-widest">Original Journal Entry</p>
+                <p className="text-sm font-medium text-slate-600 dark:text-slate-400 leading-relaxed line-clamp-4 italic">
+                  "{backlogItem.practitioner_reflections.content}"
                 </p>
               </div>
             )}
+
+            {backlogItem.priority_reasoning && (
+              <div className="space-y-1">
+                <p className="text-[10px] font-black text-rose-400 uppercase tracking-widest">AI Reasoning</p>
+                <p className="text-sm font-medium text-rose-800 dark:text-rose-100 leading-relaxed">
+                  {backlogItem.priority_reasoning}
+                </p>
+              </div>
+            )}
+            
             {backlogItem.polarity_insight && (
               <div className="flex items-start gap-3 p-4 bg-white/50 dark:bg-slate-900/50 rounded-2xl border border-rose-200 dark:border-rose-900/30">
                 <ArrowRightLeft size={16} className="text-rose-500 shrink-0 mt-0.5" />

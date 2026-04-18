@@ -10,8 +10,9 @@ import {
   UserPlus, Zap, Wind,
   ArrowRight, Clock,
   ClipboardCheck, Link as LinkIcon, Check,
-  Coffee, CalendarPlus, Target
+  Coffee, CalendarPlus, Target, GraduationCap
 } from "lucide-react";
+
 import {
   Dialog,
   DialogContent,
@@ -212,9 +213,42 @@ const Index = () => {
 
         <DashboardStats stats={stats} />
 
-        <IdentitySmartTool />
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <IdentitySmartTool />
+          <div className="p-8 md:p-10 bg-indigo-600 text-white rounded-[2.5rem] shadow-2xl relative overflow-hidden group">
+            <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(255,255,255,0.1),transparent_50%)]" />
+            <div className="absolute top-0 right-0 p-8 opacity-10 group-hover:scale-110 transition-transform duration-700">
+              <GraduationCap size={120} />
+            </div>
+            <div className="relative z-10 space-y-6">
+              <div className="flex items-center gap-4">
+                <div className="w-12 h-12 bg-white/10 backdrop-blur-md flex items-center justify-center border border-white/10 shadow-xl rounded-2xl">
+                  <Zap size={24} className="text-amber-400 fill-amber-400" />
+                </div>
+                <h3 className="text-2xl font-serif font-bold">Knowledge Quiz</h3>
+              </div>
+              <p className="text-indigo-100 font-medium leading-relaxed">
+                Test your clinical reasoning with infinite questions across Anatomy, TCM, and FNH protocols.
+              </p>
+              <div className="flex items-center gap-4">
+                <div className="flex -space-x-2">
+                  {[1, 2, 3].map(i => (
+                    <div key={i} className="w-8 h-8 rounded-full border-2 border-indigo-600 bg-indigo-400 flex items-center justify-center text-[10px] font-black">
+                      {i === 1 ? 'A' : i === 2 ? 'T' : 'C'}
+                    </div>
+                  ))}
+                </div>
+                <span className="text-[10px] font-black uppercase tracking-widest text-indigo-200">300+ Questions</span>
+              </div>
+              <Button className="w-full bg-white text-indigo-600 hover:bg-indigo-50 rounded-2xl font-black text-[10px] uppercase tracking-[0.2em] h-14 shadow-lg" asChild>
+                <Link to="/practice/quiz">Start Infinite Quiz</Link>
+              </Button>
+            </div>
+          </div>
+        </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 md:gap-12">
+
           <div className="lg:col-span-8 space-y-12 md:space-y-16">
             <DailyBriefing todaySessions={todaySessions} activeSession={activeSession} />
             

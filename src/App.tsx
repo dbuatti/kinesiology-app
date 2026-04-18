@@ -47,6 +47,7 @@ import IdentityAlignmentPage from "./pages/IdentityAlignmentPage";
 import LimitingBeliefsPage from "./pages/LimitingBeliefsPage";
 import JournalPage from "./pages/JournalPage";
 import PracticeNotes from "./pages/PracticeNotes";
+import QuizPage from "./pages/QuizPage";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -98,8 +99,10 @@ const AppRoutes = () => {
         <Route path="/practice/self" element={<SelfPracticePage />} />
         <Route path="/practice/procedures" element={<ProceduresPage />} />
         <Route path="/practice/journal" element={<JournalPage />} />
+        <Route path="/practice/quiz" element={<QuizPage />} />
 
         {/* Knowledge Base */}
+
         <Route path="/resources" element={<ResourcesPage />} />
         <Route path="/peace-framework" element={<PEACEFrameworkPage />} />
         <Route path="/resources/worksheets" element={<WorksheetsHubPage />} />

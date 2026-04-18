@@ -130,6 +130,7 @@ const Sidebar = ({ onHide }: SidebarProps) => {
   const labItems = [
     { label: "Quick Calibrate", icon: Zap, path: "/practice/calibrate", shortcut: "⌘Q" },
     { label: "Procedures", icon: Target, path: "/practice/procedures", shortcut: "⌘P" },
+    { label: "Knowledge Quiz", icon: GraduationCap, path: "/practice/quiz", shortcut: "⌘K" },
     { label: "Journal", icon: MessageSquare, path: "/practice/journal", shortcut: "⌘R" },
     { label: "Oversight", icon: TrendingUp, path: "/oversight", shortcut: "⌘O" },
   ];
@@ -165,7 +166,9 @@ const Sidebar = ({ onHide }: SidebarProps) => {
           case 'o': e.preventDefault(); navigate('/oversight'); break;
           case 's': e.preventDefault(); navigate('/practice/self'); break;
           case 'p': e.preventDefault(); navigate('/practice/procedures'); break;
+          case 'k': e.preventDefault(); navigate('/practice/quiz'); break;
           case 'r': e.preventDefault(); navigate('/practice/journal'); break;
+
           case 'q': e.preventDefault(); navigate('/practice/calibrate'); break;
           case 'h': e.preventDefault(); togglePrivacy(); break;
           case 'y': e.preventDefault(); setHelpOpen(true); break;

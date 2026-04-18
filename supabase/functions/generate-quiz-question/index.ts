@@ -1,14 +1,15 @@
+// @ts-nocheck
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts"
-import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.45.0'
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type, x-supabase-client-platform',
+  'Access-Control-Allow-Methods': 'POST, OPTIONS',
 }
 
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
-    return new Response(null, { headers: corsHeaders })
+    return new Response('ok', { headers: corsHeaders })
   }
 
   try {
@@ -61,8 +62,6 @@ serve(async (req) => {
 
     const data = await response.json();
     const quizData = JSON.parse(data.choices[0].message.content);
-
-    console.log("[generate-quiz-question] Generated question", { quizData });
 
     return new Response(JSON.stringify(quizData), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },

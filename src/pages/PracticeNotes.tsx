@@ -436,6 +436,33 @@ const PracticeNotes = () => {
                       </div>
                     </div>
                   </div>
+
+                  <div className="p-4 border border-black">
+                    <div className="flex items-center justify-between mb-2">
+                      <Item id="sns-lymphatic-main" label="Lymphatic System Assessment" bold />
+                      <input 
+                        type="text"
+                        value={textData['sns-lymphatic-note'] || ""}
+                        onChange={(e) => handleTextChange('sns-lymphatic-note', e.target.value)}
+                        className="flex-1 border-b border-black/20 bg-transparent outline-none text-xs px-2 ml-4 focus:border-blue-500 transition-colors"
+                        placeholder="Add lymphatic findings..."
+                      />
+                    </div>
+                    <div className="mt-2 grid grid-cols-2 gap-6 pl-7 text-[10px] text-gray-700">
+                      <div className="space-y-1">
+                        <p className="font-bold uppercase text-[8px] text-blue-600">Diagnosis</p>
+                        <p>• Palpate Suture (Glide/Tenderness).</p>
+                        <p>• Work neck down to find priority node.</p>
+                        <p>• Confirm with K27 Priority Check.</p>
+                      </div>
+                      <div className="space-y-1">
+                        <p className="font-bold uppercase text-[8px] text-emerald-600">Correction</p>
+                        <p>• Move tissue into 'Position of Ease'.</p>
+                        <p>• Hold for 45-90s (Counterstrain).</p>
+                        <p>• Re-test suture glide & tenderness.</p>
+                      </div>
+                    </div>
+                  </div>
                 </div>
               </div>
             </div>

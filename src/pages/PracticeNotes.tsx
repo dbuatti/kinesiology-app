@@ -8,7 +8,7 @@ import { BRAIN_REFLEX_POINTS } from "@/data/brain-reflex-data";
 import { PRIMARY_EMOTIONS, SIGNS_OF_SHIFT } from "@/data/emotion-data";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Button } from "@/components/ui/button";
-import { RotateCcw, Printer, ChevronDown, ChevronUp } from "lucide-react";
+import { RotateCcw, Printer, ChevronDown, ChevronUp, Loader2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { supabase } from "@/integrations/supabase/client";
 import {
@@ -70,7 +70,10 @@ const PracticeNotes = () => {
     const fetchImages = async () => {
       try {
         const { data: { user } } = await supabase.auth.getUser();
-        if (!user) return;
+        if (!user) {
+          setLoading(false);
+          return;
+        }
 
         const [brainRes, reflexRes] = await Promise.all([
           supabase.from('brain_reflex_customizations').select('reflex_id, image_url, secondary_image_url, tertiary_image_url').eq('user_id', user.id),
@@ -78,18 +81,19 @@ const PracticeNotes = () => {
         ]);
 
         const mapping: Record<string, ReflexImages> = {};
+        const timestamp = Date.now();
         
         brainRes.data?.forEach(item => {
           mapping[item.reflex_id] = {
-            primary: item.image_url || undefined,
-            secondary: item.secondary_image_url || undefined,
-            tertiary: item.tertiary_image_url || undefined
+            primary: item.image_url ? `${item.image_url}?t=${timestamp}` : undefined,
+            secondary: item.secondary_image_url ? `${item.secondary_image_url}?t=${timestamp}` : undefined,
+            tertiary: item.tertiary_image_url ? `${item.tertiary_image_url}?t=${timestamp}` : undefined
           };
         });
 
         reflexRes.data?.forEach(item => {
           if (!mapping[item.reflex_id]) mapping[item.reflex_id] = {};
-          mapping[item.reflex_id].primary = item.image_url || undefined;
+          mapping[item.reflex_id].primary = item.image_url ? `${item.image_url}?t=${timestamp}` : undefined;
         });
 
         setCustomImages(mapping);
@@ -212,17 +216,17 @@ const PracticeNotes = () => {
     return (
       <div className="grid grid-cols-3 gap-4 mt-4">
         {images.primary && (
-          <div className="aspect-video border border-gray-300 p-0.5">
+          <div className="aspect-video border border-gray-300 p-0.5 rounded-sm overflow-hidden bg-slate-50">
             <img src={images.primary} alt="Primary" className="w-full h-full object-cover" />
           </div>
         )}
         {images.secondary && (
-          <div className="aspect-video border border-gray-300 p-0.5">
+          <div className="aspect-video border border-gray-300 p-0.5 rounded-sm overflow-hidden bg-slate-50">
             <img src={images.secondary} alt="Secondary" className="w-full h-full object-cover" />
           </div>
         )}
         {images.tertiary && (
-          <div className="aspect-video border border-gray-300 p-0.5">
+          <div className="aspect-video border border-gray-300 p-0.5 rounded-sm overflow-hidden bg-slate-50">
             <img src={images.tertiary} alt="Tertiary" className="w-full h-full object-cover" />
           </div>
         )}
@@ -351,6 +355,13 @@ const PracticeNotes = () => {
         {/* Document Container */}
         <div className="w-full max-w-[1000px] bg-white border border-slate-200 shadow-sm p-16 md:p-20 min-h-[1056px] print:border-none print:p-0 text-black font-sans relative">
           
+          {loading && (
+            <div className="absolute inset-0 bg-white/50 backdrop-blur-sm z-50 flex flex-col items-center justify-center gap-4">
+              <Loader2 className="w-10 h-10 text-blue-600 animate-spin" />
+              <p className="text-xs font-bold uppercase tracking-widest text-slate-500">Loading Clinical Data...</p>
+            </div>
+          )}
+
           {/* Document Header */}
           <header className="mb-16 text-center">
             <h1 className="text-4xl font-serif font-bold mb-2 tracking-tight">Clinical Practice Notes</h1>

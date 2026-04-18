@@ -6,16 +6,9 @@ import { PRIMITIVE_REFLEXES } from "@/data/primitive-reflex-data";
 import { CRANIAL_NERVES } from "@/data/cranial-nerve-data";
 import { BRAIN_REFLEX_POINTS } from "@/data/brain-reflex-data";
 import { PRIMARY_EMOTIONS, SIGNS_OF_SHIFT } from "@/data/emotion-data";
-import { HAND_REFLEXOLOGY } from "@/data/vagus-data";
-import { EYE_POSITIONS } from "@/data/emotion-data";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Button } from "@/components/ui/button";
-import { 
-  Loader2, RotateCcw, Printer, Eye, Hand, Zap, Activity, 
-  ImageIcon, Brain, Layers, MousePointer2, ShieldAlert, 
-  PlayCircle, FileText, Heart, Sparkles, Clock, History,
-  ChevronDown, ChevronUp
-} from "lucide-react";
+import { RotateCcw, Printer, Eye, Hand, Zap, Activity, Brain, Layers, ChevronDown, ChevronUp } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { supabase } from "@/integrations/supabase/client";
 import {
@@ -164,9 +157,6 @@ const PracticeNotes = () => {
               {title}
             </h2>
             <div className="flex items-center gap-2 text-gray-400 group-hover:text-black transition-colors print:hidden">
-              <span className="text-[10px] font-black uppercase tracking-widest opacity-0 group-hover:opacity-100 transition-opacity">
-                {isCollapsed ? 'Expand' : 'Collapse'}
-              </span>
               {isCollapsed ? <ChevronDown size={18} /> : <ChevronUp size={18} />}
             </div>
           </div>
@@ -541,47 +531,31 @@ const PracticeNotes = () => {
 
           {/* 4. Neuro-Emotional Integration */}
           <Section id="nei" title="IV. Neuro-Emotional Integration">
-            <div className="space-y-10">
+            <div className="space-y-8">
               {/* The 9-Step Hierarchy */}
-              <div className="p-6 border border-black bg-gray-50/50">
-                <h3 className="text-xs font-black text-gray-500 uppercase tracking-[0.3em] mb-6 flex items-center gap-2">
-                  <Layers size={16} className="text-indigo-600" /> The 9-Step Integration Hierarchy
-                </h3>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-x-12 gap-y-4">
-                  {[
-                    { s: 1, t: "ESR Indicator Check", d: "Hold GB14 points to see if system is ready." },
-                    { s: 2, t: "Permission Check", d: "Ask: 'Do we have permission to correct this?'" },
-                    { s: 3, t: "Timeline Selection", d: "Determine if stress is Current or Historic." },
-                    { s: 4, t: "Timeline Regression", d: "Narrow down specific Age and Month of origin." },
-                    { s: 5, t: "Primary Emotion", d: "Identify core feeling (Hurt, Worry, Sadness, Fear, Anger)." },
-                    { s: 6, t: "Priority Organ", d: "Find the organ acting as a surrogate for the charge." },
-                    { s: 7, t: "Energy Polarity", d: "Challenge for Energy IN (+) or Energy OUT (-)." },
-                    { s: 8, t: "Eye Position", d: "Identify sensory access point (NLP logic)." },
-                    { s: 9, t: "Correction & Upload", d: "Hold points + Replay Stress + Positive Upload." }
-                  ].map(step => (
-                    <div key={step.s} className="flex gap-4">
-                      <span className="w-6 h-6 rounded-full border border-black flex items-center justify-center font-black text-[10px] shrink-0">{step.s}</span>
-                      <div>
-                        <p className="text-xs font-bold uppercase tracking-tight">{step.t}</p>
-                        <p className="text-[10px] text-gray-600 leading-tight mt-0.5">{step.d}</p>
-                      </div>
-                    </div>
-                  ))}
+              <div className="p-6 border border-black">
+                <h3 className="text-xs font-bold text-gray-500 uppercase tracking-widest mb-4">The 9-Step Integration Hierarchy</h3>
+                <div className="space-y-2 text-xs">
+                  <p>1. <strong>ESR Indicator Check:</strong> Hold GB14 points to see if system is ready.</p>
+                  <p>2. <strong>Permission Check:</strong> Ask: 'Do we have permission to correct this?'</p>
+                  <p>3. <strong>Timeline Selection:</strong> Determine if stress is Current or Historic.</p>
+                  <p>4. <strong>Timeline Regression:</strong> Narrow down specific Age and Month of origin.</p>
+                  <p>5. <strong>Primary Emotion:</strong> Identify core feeling (Hurt, Worry, Sadness, Fear, Anger).</p>
+                  <p>6. <strong>Priority Organ:</strong> Find the organ acting as a surrogate for the charge.</p>
+                  <p>7. <strong>Energy Polarity:</strong> Challenge for Energy IN (+) or Energy OUT (-).</p>
+                  <p>8. <strong>Eye Position:</strong> Identify sensory access point (NLP logic).</p>
+                  <p>9. <strong>Correction & Upload:</strong> Hold points + Replay Stress + Positive Upload.</p>
                 </div>
               </div>
 
               {/* Emotion-Organ Mapping */}
               <div className="space-y-4">
-                <h3 className="text-xs font-bold text-gray-500 uppercase tracking-widest mb-4 flex items-center gap-2">
-                  <Heart size={14} className="text-rose-600" /> Primary Emotion & Organ Mapping
-                </h3>
-                <div className="grid grid-cols-5 gap-2">
+                <h3 className="text-xs font-bold text-gray-500 uppercase tracking-widest mb-2">Primary Emotion & Organ Mapping</h3>
+                <div className="grid grid-cols-1 gap-1 text-xs">
                   {PRIMARY_EMOTIONS.map(e => (
-                    <div key={e.id} className="p-3 border border-black text-center space-y-1">
-                      <p className="text-[10px] font-black uppercase tracking-widest">{e.label}</p>
-                      <p className="text-[8px] font-bold text-gray-500">{e.element}</p>
-                      <div className="h-px bg-black/10 my-1" />
-                      <p className="text-[9px] font-medium leading-tight">{e.organs.join(', ')}</p>
+                    <div key={e.id} className="flex gap-2">
+                      <span className="font-bold w-20">{e.label}:</span>
+                      <span className="text-gray-600">{e.organs.join(', ')} ({e.element})</span>
                     </div>
                   ))}
                 </div>
@@ -590,10 +564,8 @@ const PracticeNotes = () => {
               <div className="grid grid-cols-2 gap-12">
                 {/* Pulse Points Diagram */}
                 <div className="space-y-4">
-                  <h3 className="text-xs font-bold text-gray-500 uppercase tracking-widest mb-4 flex items-center gap-2">
-                    <Hand size={14} className="text-indigo-600" /> Organ Pulse Points
-                  </h3>
-                  <div className="rounded-2xl border border-black overflow-hidden shadow-sm">
+                  <h3 className="text-xs font-bold text-gray-500 uppercase tracking-widest mb-2">Organ Pulse Points</h3>
+                  <div className="border border-black p-1">
                     <img 
                       src="/images/pulse-points.png" 
                       alt="Organ Pulse Points Reference" 
@@ -601,15 +573,12 @@ const PracticeNotes = () => {
                       onError={(e) => { e.currentTarget.style.display = 'none'; }}
                     />
                   </div>
-                  <p className="text-[8px] text-gray-500 italic text-center">Hold relevant position with Light or Deep pressure.</p>
                 </div>
 
                 {/* Eye Accessing Cues Diagram */}
                 <div className="space-y-4">
-                  <h3 className="text-xs font-bold text-gray-500 uppercase tracking-widest mb-4 flex items-center gap-2">
-                    <Eye size={14} className="text-rose-600" /> Eye Accessing Cues (NLP)
-                  </h3>
-                  <div className="rounded-2xl border border-black overflow-hidden shadow-sm">
+                  <h3 className="text-xs font-bold text-gray-500 uppercase tracking-widest mb-2">Eye Accessing Cues (NLP)</h3>
+                  <div className="border border-black p-1">
                     <img 
                       src="/images/eye-modes.png" 
                       alt="Eye Accessing Cues Reference" 
@@ -617,24 +586,18 @@ const PracticeNotes = () => {
                       onError={(e) => { e.currentTarget.style.display = 'none'; }}
                     />
                   </div>
-                  <p className="text-[8px] text-gray-500 italic text-center">Identify sensory access point for emotional stress.</p>
                 </div>
               </div>
 
               {/* Signs of Shift */}
-              <div className="p-6 border border-black bg-emerald-50/30">
-                <h3 className="text-xs font-black text-emerald-700 uppercase tracking-[0.3em] mb-4 flex items-center gap-2">
-                  <Sparkles size={16} /> Signs of Neurological Shift
-                </h3>
-                <div className="flex flex-wrap gap-x-8 gap-y-2">
+              <div className="p-6 border border-black">
+                <h3 className="text-xs font-bold text-gray-500 uppercase tracking-widest mb-4">Signs of Neurological Shift</h3>
+                <ul className="list-disc pl-5 space-y-1 text-xs font-medium">
                   {SIGNS_OF_SHIFT.map(s => (
-                    <div key={s} className="flex items-center gap-2">
-                      <div className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
-                      <span className="text-xs font-bold text-emerald-900">{s}</span>
-                    </div>
+                    <li key={s}>{s}</li>
                   ))}
-                </div>
-                <p className="text-[10px] text-emerald-600 mt-4 italic">"Wait for a parasympathetic response before proceeding to the Positive Upload phase."</p>
+                </ul>
+                <p className="text-[10px] text-gray-500 mt-4 italic">"Wait for a parasympathetic response before proceeding to the Positive Upload phase."</p>
               </div>
 
               <div className="p-4 border border-black">
@@ -665,9 +628,7 @@ const PracticeNotes = () => {
           <Section id="brain-zones" title="VII. Brain Zones (Cortical & Subcortical)">
             <div className="space-y-8">
               <div className="space-y-4">
-                <h3 className="text-xs font-bold text-gray-500 uppercase tracking-widest mb-2 flex items-center gap-2">
-                  <Brain size={14} className="text-purple-600" /> Cortical Zones
-                </h3>
+                <h3 className="text-xs font-bold text-gray-500 uppercase tracking-widest mb-2">Cortical Zones</h3>
                 <div className="grid grid-cols-1 gap-2">
                   {BRAIN_REFLEX_POINTS.filter(p => p.category === 'Cortical').map(point => (
                     <BrainZoneCard key={point.id} point={point} />
@@ -676,9 +637,7 @@ const PracticeNotes = () => {
               </div>
 
               <div className="space-y-4">
-                <h3 className="text-xs font-bold text-gray-500 uppercase tracking-widest mb-2 flex items-center gap-2">
-                  <Layers size={14} className="text-indigo-600" /> Subcortical Zones
-                </h3>
+                <h3 className="text-xs font-bold text-gray-500 uppercase tracking-widest mb-2">Subcortical Zones</h3>
                 <div className="grid grid-cols-1 gap-2">
                   {BRAIN_REFLEX_POINTS.filter(p => p.category === 'Subcortical').map(point => (
                     <BrainZoneCard key={point.id} point={point} />

@@ -28,7 +28,9 @@ import {
   RefreshCw,
   Info,
   ChevronRight,
-  Wand2
+  Wand2,
+  Quote,
+  ArrowRightLeft
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { supabase } from "@/integrations/supabase/client";
@@ -61,6 +63,7 @@ const IdentityShiftingTool = () => {
   const reflectionId = location.state?.reflectionId;
 
   const [phase, setPhase] = useState<Phase>(1);
+  const [backlogItem, setBacklogItem] = useState<any>(null);
   const [formData, setFormData] = useState<FormData>({
     problem: '',
     emotion: '',
@@ -90,8 +93,20 @@ const IdentityShiftingTool = () => {
 
   useEffect(() => {
     fetchPastSessions();
-    if (backlogId) checkForDraft();
+    if (backlogId) {
+      fetchBacklogItem();
+      checkForDraft();
+    }
   }, [backlogId]);
+
+  const fetchBacklogItem = async () => {
+    const { data } = await supabase
+      .from('identity_backlog')
+      .select('*')
+      .eq('id', backlogId)
+      .single();
+    if (data) setBacklogItem(data);
+  };
 
   const checkForDraft = async () => {
     const { data, error } = await supabase
@@ -124,7 +139,7 @@ const IdentityShiftingTool = () => {
       id: session.id,
       problem: session.problem || '',
       emotion: session.emotion || '',
-      feltSense: session.felt_sense || '',
+      felt_sense: session.felt_sense || '',
       identity: session.identity || '',
       loopResponses: session.loop_responses || [],
       feelingsNow: '',
@@ -132,7 +147,7 @@ const IdentityShiftingTool = () => {
       newIntention: '',
       actionPlan: '',
       no1Thing: '',
-    });
+    } as any);
     setPhase((session.current_phase || 1) as Phase);
     setLoopStep(session.loop_step || 0);
     setShowHistory(false);
@@ -363,6 +378,37 @@ const IdentityShiftingTool = () => {
 
   const renderPhase1 = () => (
     <div className="space-y-12 animate-in fade-in slide-in-from-bottom-4 duration-500">
+      {backlogItem && (
+        <div className="p-8 bg-indigo-50 dark:bg-indigo-900/20 rounded-[2.5rem] border-2 border-indigo-100 dark:border-indigo-900/30 space-y-6 relative overflow-hidden">
+          <div className="absolute top-0 right-0 p-6 opacity-5 pointer-events-none"><Quote size={120} /></div>
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-xl bg-indigo-600 text-white flex items-center justify-center shadow-lg">
+              <History size={20} />
+            </div>
+            <h4 className="text-sm font-black text-indigo-900 dark:text-indigo-100 uppercase tracking-widest">Source Context</h4>
+          </div>
+          <div className="space-y-4 relative z-10">
+            {backlogItem.priority_reasoning && (
+              <div className="space-y-1">
+                <p className="text-[10px] font-black text-indigo-400 uppercase tracking-widest">AI Reasoning</p>
+                <p className="text-sm font-medium text-indigo-800 dark:text-indigo-200 leading-relaxed italic">
+                  "{backlogItem.priority_reasoning}"
+                </p>
+              </div>
+            )}
+            {backlogItem.polarity_insight && (
+              <div className="flex items-start gap-3 p-4 bg-white/50 dark:bg-slate-900/50 rounded-2xl border border-indigo-200 dark:border-indigo-900/30">
+                <ArrowRightLeft size={16} className="text-indigo-500 shrink-0 mt-0.5" />
+                <div>
+                  <p className="text-[10px] font-black text-indigo-400 uppercase tracking-widest mb-1">Polarity Insight</p>
+                  <p className="text-xs font-bold text-indigo-900 dark:text-indigo-100">{backlogItem.polarity_insight}</p>
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+
       <div className="space-y-8">
         <div className="space-y-4">
           <Label className="text-[10px] font-black uppercase tracking-[0.3em] text-slate-400 ml-1">1. The Challenge</Label>

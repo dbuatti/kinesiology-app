@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -27,7 +27,9 @@ import {
   ChevronRight,
   ShieldCheck,
   FileText,
-  Wand2
+  Wand2,
+  Quote,
+  ArrowRightLeft
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { supabase } from "@/integrations/supabase/client";
@@ -64,6 +66,7 @@ const LimitingBeliefsTool = () => {
   const reflectionId = location.state?.reflectionId;
 
   const [step, setStep] = useState<Step>(1);
+  const [backlogItem, setBacklogItem] = useState<any>(null);
   const [formData, setFormData] = useState<FormData>({
     problem: '',
     feltSense: '',
@@ -98,8 +101,20 @@ const LimitingBeliefsTool = () => {
 
   useEffect(() => {
     fetchPastSessions();
-    if (backlogId) checkForDraft();
+    if (backlogId) {
+      fetchBacklogItem();
+      checkForDraft();
+    }
   }, [backlogId]);
+
+  const fetchBacklogItem = async () => {
+    const { data } = await supabase
+      .from('identity_backlog')
+      .select('*')
+      .eq('id', backlogId)
+      .single();
+    if (data) setBacklogItem(data);
+  };
 
   const checkForDraft = async () => {
     const { data, error } = await supabase
@@ -344,6 +359,37 @@ const LimitingBeliefsTool = () => {
 
   const renderStep1 = () => (
     <div className="space-y-12 animate-in fade-in slide-in-from-bottom-4 duration-500">
+      {backlogItem && (
+        <div className="p-8 bg-rose-50 dark:bg-rose-950/10 rounded-[2.5rem] border-2 border-rose-200 dark:border-rose-900/30 space-y-6 relative overflow-hidden">
+          <div className="absolute top-0 right-0 p-6 opacity-5 pointer-events-none"><Quote size={120} /></div>
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-xl bg-rose-600 text-white flex items-center justify-center shadow-lg">
+              <History size={20} />
+            </div>
+            <h4 className="text-sm font-black text-rose-900 dark:text-rose-100 uppercase tracking-widest">Source Context</h4>
+          </div>
+          <div className="space-y-4 relative z-10">
+            {backlogItem.priority_reasoning && (
+              <div className="space-y-1">
+                <p className="text-[10px] font-black text-rose-400 uppercase tracking-widest">AI Reasoning</p>
+                <p className="text-sm font-medium text-rose-800 dark:text-rose-200 leading-relaxed italic">
+                  "{backlogItem.priority_reasoning}"
+                </p>
+              </div>
+            )}
+            {backlogItem.polarity_insight && (
+              <div className="flex items-start gap-3 p-4 bg-white/50 dark:bg-slate-900/50 rounded-2xl border border-rose-200 dark:border-rose-900/30">
+                <ArrowRightLeft size={16} className="text-rose-500 shrink-0 mt-0.5" />
+                <div>
+                  <p className="text-[10px] font-black text-rose-400 uppercase tracking-widest mb-1">Polarity Insight</p>
+                  <p className="text-xs font-bold text-rose-900 dark:text-rose-100">{backlogItem.polarity_insight}</p>
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+
       <div className="space-y-8">
         <div className="space-y-4">
           <Label className="text-[10px] font-black uppercase tracking-[0.3em] text-slate-400 ml-1">1. The Problem</Label>

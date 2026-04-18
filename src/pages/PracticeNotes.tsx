@@ -273,6 +273,15 @@ const PracticeNotes = () => {
     );
   };
 
+  if (loading) {
+    return (
+      <div className="min-h-screen flex flex-col items-center justify-center bg-white gap-4">
+        <Loader2 className="animate-spin text-black" size={32} />
+        <p className="text-xs font-bold uppercase tracking-widest">Loading Document...</p>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-[#F9FBFD] flex flex-col">
       <DocsHeader />
@@ -399,6 +408,32 @@ const PracticeNotes = () => {
                       <p>2. Palpate neck at C4 level (opposite to tender point).</p>
                       <p>3. Move ribcage superiorly towards neck. Hold 45-90s.</p>
                       <p>4. Release very slowly. Observe for deep sigh or yawn.</p>
+                    </div>
+                  </div>
+
+                  <div className="p-4 border border-black">
+                    <div className="flex items-center justify-between mb-2">
+                      <Item id="sns-vagus-main" label="Vagus Nerve Process" bold />
+                      <input 
+                        type="text"
+                        value={textData['sns-vagus-note'] || ""}
+                        onChange={(e) => handleTextChange('sns-vagus-note', e.target.value)}
+                        className="flex-1 border-b border-black/20 bg-transparent outline-none text-xs px-2 ml-4 focus:border-blue-500 transition-colors"
+                        placeholder="Add vagus note..."
+                      />
+                    </div>
+                    <div className="mt-2 grid grid-cols-2 gap-6 pl-7 text-[10px] text-gray-700">
+                      <div className="space-y-1">
+                        <p className="font-bold uppercase text-[8px] text-indigo-600">Stimulation</p>
+                        <p>• Target: Auricular, Cervical, or Abdominal.</p>
+                        <p>• Hold for 60s. Observe for sigh, yawn, or gurgle.</p>
+                      </div>
+                      <div className="space-y-1">
+                        <p className="font-bold uppercase text-[8px] text-rose-600">Screen & Reset</p>
+                        <p>• Check Vagal Function (Humming, Swallowing).</p>
+                        <p>• Challenge Organ/Gland + Polarity + Spinal Match.</p>
+                        <p>• Correct with Medulla Breathing (30s).</p>
+                      </div>
                     </div>
                   </div>
                 </div>

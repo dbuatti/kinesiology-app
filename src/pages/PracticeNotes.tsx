@@ -8,7 +8,7 @@ import { BRAIN_REFLEX_POINTS } from "@/data/brain-reflex-data";
 import { PRIMARY_EMOTIONS, SIGNS_OF_SHIFT } from "@/data/emotion-data";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Button } from "@/components/ui/button";
-import { RotateCcw, Printer, Eye, Hand, Zap, Activity, Brain, Layers, ChevronDown, ChevronUp } from "lucide-react";
+import { RotateCcw, Printer, ChevronDown, ChevronUp } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { supabase } from "@/integrations/supabase/client";
 import {
@@ -536,15 +536,15 @@ const PracticeNotes = () => {
               <div className="p-6 border border-black">
                 <h3 className="text-xs font-bold text-gray-500 uppercase tracking-widest mb-4">The 9-Step Integration Hierarchy</h3>
                 <div className="space-y-2 text-xs">
-                  <p>1. <strong>ESR Indicator Check:</strong> Hold GB14 points to see if system is ready.</p>
-                  <p>2. <strong>Permission Check:</strong> Ask: 'Do we have permission to correct this?'</p>
-                  <p>3. <strong>Timeline Selection:</strong> Determine if stress is Current or Historic.</p>
-                  <p>4. <strong>Timeline Regression:</strong> Narrow down specific Age and Month of origin.</p>
-                  <p>5. <strong>Primary Emotion:</strong> Identify core feeling (Hurt, Worry, Sadness, Fear, Anger).</p>
-                  <p>6. <strong>Priority Organ:</strong> Find the organ acting as a surrogate for the charge.</p>
-                  <p>7. <strong>Energy Polarity:</strong> Challenge for Energy IN (+) or Energy OUT (-).</p>
-                  <p>8. <strong>Eye Position:</strong> Identify sensory access point (NLP logic).</p>
-                  <p>9. <strong>Correction & Upload:</strong> Hold points + Replay Stress + Positive Upload.</p>
+                  <p>1. <strong>Indicator Change:</strong> Hold Frontal Lobe (ESR) points to see if system is ready.</p>
+                  <p>2. <strong>Current or Historic:</strong> Determine if the stress is happening now or in the past.</p>
+                  <p>3. <strong>Find Age (if historic):</strong> Narrow down the specific age of origin.</p>
+                  <p>4. <strong>Find Primary Emotion:</strong> Identify core feeling (Hurt, Worry, Sadness, Fear, Anger).</p>
+                  <p>5. <strong>Find Priority Organ:</strong> Identify the organ related to the emotion.</p>
+                  <p>6. <strong>Eye Position:</strong> Identify the sensory access point (Visual, Auditory, Kinesthetic).</p>
+                  <p>7. <strong>Correction:</strong> Hold Frontal Lobe + Occipital Lobe + Organ Reflex (Energy in or Out). Visualise/Hear/Feel stress and related pathway.</p>
+                  <p>8. <strong>Wait for Parasympathetic Response:</strong> Monitor for sigh, yawn, or gurgle.</p>
+                  <p>9. <strong>Re-assess:</strong> Re-test the indicator muscle and original stimulus.</p>
                 </div>
               </div>
 
@@ -592,9 +592,9 @@ const PracticeNotes = () => {
               {/* Signs of Shift */}
               <div className="p-6 border border-black">
                 <h3 className="text-xs font-bold text-gray-500 uppercase tracking-widest mb-4">Signs of Neurological Shift</h3>
-                <ul className="list-disc pl-5 space-y-1 text-xs font-medium">
+                <ul className="list-none space-y-1 text-xs font-medium">
                   {SIGNS_OF_SHIFT.map(s => (
-                    <li key={s}>{s}</li>
+                    <li key={s}>• {s}</li>
                   ))}
                 </ul>
                 <p className="text-[10px] text-gray-500 mt-4 italic">"Wait for a parasympathetic response before proceeding to the Positive Upload phase."</p>

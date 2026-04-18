@@ -5,9 +5,11 @@ import { MUSCLE_INFO_DETAILS } from "@/data/muscle-info-data";
 import { PRIMITIVE_REFLEXES } from "@/data/primitive-reflex-data";
 import { CRANIAL_NERVES } from "@/data/cranial-nerve-data";
 import { BRAIN_REFLEX_POINTS } from "@/data/brain-reflex-data";
+import { EYE_POSITIONS } from "@/data/emotion-data";
+import { HAND_REFLEXOLOGY } from "@/data/vagus-data";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Button } from "@/components/ui/button";
-import { Loader2, RotateCcw, Printer } from "lucide-react";
+import { Loader2, RotateCcw, Printer, Eye, Hand, Zap, Activity } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { supabase } from "@/integrations/supabase/client";
 
@@ -470,8 +472,64 @@ const PracticeNotes = () => {
             </div>
           </Section>
 
-          {/* 4. Primitive Reflexes */}
-          <Section title="IV. Primitive Reflexes (Foundational OS)">
+          {/* 4. Neuro-Emotional Integration */}
+          <Section title="IV. Neuro-Emotional Integration">
+            <div className="space-y-8">
+              <div className="grid grid-cols-2 gap-12">
+                <div className="space-y-4">
+                  <h3 className="text-xs font-bold text-gray-500 uppercase tracking-widest mb-2 flex items-center gap-2">
+                    <Hand size={14} className="text-indigo-600" /> Organ Pulse Points
+                  </h3>
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <p className="text-[9px] font-black uppercase text-slate-400">Left Wrist</p>
+                      <div className="text-[10px] space-y-1">
+                        <p><strong>Distal:</strong> SI (L) / HT (D)</p>
+                        <p><strong>Middle:</strong> GB (L) / LV (D)</p>
+                        <p><strong>Proximal:</strong> BL (L) / KI (D)</p>
+                      </div>
+                    </div>
+                    <div className="space-y-2">
+                      <p className="text-[9px] font-black uppercase text-slate-400">Right Wrist</p>
+                      <div className="text-[10px] space-y-1">
+                        <p><strong>Distal:</strong> LI (L) / LU (D)</p>
+                        <p><strong>Middle:</strong> ST (L) / SP (D)</p>
+                        <p><strong>Proximal:</strong> TW (L) / PC (D)</p>
+                      </div>
+                    </div>
+                  </div>
+                  <p className="text-[8px] text-gray-500 italic mt-2">(L) = Light/Superficial, (D) = Deep</p>
+                </div>
+
+                <div className="space-y-4">
+                  <h3 className="text-xs font-bold text-gray-500 uppercase tracking-widest mb-2 flex items-center gap-2">
+                    <Eye size={14} className="text-rose-600" /> Eye Accessing Cues (NLP)
+                  </h3>
+                  <div className="grid grid-cols-2 gap-x-4 gap-y-2 text-[10px]">
+                    <p><strong>Up Left:</strong> Visual Memory</p>
+                    <p><strong>Up Right:</strong> Visual Constructed</p>
+                    <p><strong>Mid Left:</strong> Auditory Memory</p>
+                    <p><strong>Mid Right:</strong> Auditory Constructed</p>
+                    <p><strong>Down Left:</strong> Internal Monologue</p>
+                    <p><strong>Down Right:</strong> Kinesthetic / Felt Sense</p>
+                  </div>
+                </div>
+              </div>
+
+              <div className="p-4 border border-black">
+                <Item id="nei-protocol" label="Integration Protocol" bold />
+                <div className="mt-2 text-[10px] text-gray-700 leading-relaxed">
+                  <p>1. Identify Timeline (Age/Month) and Primary Emotion.</p>
+                  <p>2. Locate surrogate Organ Pulse Point and Energy Polarity.</p>
+                  <p>3. Hold ESR + Pulse Point + Eye Position while client replays stress.</p>
+                  <p>4. Monitor for Shift (Sigh/Yawn). Finish with Positive Upload.</p>
+                </div>
+              </div>
+            </div>
+          </Section>
+
+          {/* 5. Primitive Reflexes */}
+          <Section title="V. Primitive Reflexes (Foundational OS)">
             <div className="grid grid-cols-1 gap-2">
               {PRIMITIVE_REFLEXES.map(reflex => (
                 <ReflexCard key={reflex.id} reflex={reflex} />
@@ -479,8 +537,8 @@ const PracticeNotes = () => {
             </div>
           </Section>
 
-          {/* 5. Cranial Nerves */}
-          <Section title="V. Cranial Nerves (Brainstem Pathways)">
+          {/* 6. Cranial Nerves */}
+          <Section title="VI. Cranial Nerves (Brainstem Pathways)">
             <div className="grid grid-cols-1 gap-2">
               {CRANIAL_NERVES.map(cn => (
                 <NerveCard key={cn.id} nerve={cn} />
@@ -488,8 +546,8 @@ const PracticeNotes = () => {
             </div>
           </Section>
 
-          {/* 6. Brain Zones */}
-          <Section title="VI. Brain Zones (Cortical & Subcortical)">
+          {/* 7. Brain Zones */}
+          <Section title="VII. Brain Zones (Cortical & Subcortical)">
             <div className="grid grid-cols-1 gap-2">
               {BRAIN_REFLEX_POINTS.filter(p => p.category !== 'Cranial Nerve').map(point => (
                 <BrainZoneCard key={point.id} point={point} />
@@ -497,8 +555,8 @@ const PracticeNotes = () => {
             </div>
           </Section>
 
-          {/* 7. Key Muscles */}
-          <Section title="VII. Key Muscles (Clinical Indicators)">
+          {/* 8. Key Muscles */}
+          <Section title="VIII. Key Muscles (Clinical Indicators)">
             <div className="grid grid-cols-3 gap-x-8 gap-y-4">
               {Object.values(MUSCLE_INFO_DETAILS).filter(m => m.videoUrl).map(muscle => (
                 <div key={muscle.name} className="flex items-center gap-2">

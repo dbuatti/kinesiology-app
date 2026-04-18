@@ -15,6 +15,7 @@ import { supabase } from "@/integrations/supabase/client";
 import DocsHeader from "@/components/docs/DocsHeader";
 import DocsToolbar from "@/components/docs/DocsToolbar";
 import DocsRuler from "@/components/docs/DocsRuler";
+import DocsOutline from "@/components/docs/DocsOutline";
 
 const CHECKED_STORAGE_KEY = "practice_notes_checked_items";
 const TEXT_STORAGE_KEY = "practice_notes_text_data";
@@ -24,6 +25,18 @@ interface ReflexImages {
   secondary?: string;
   tertiary?: string;
 }
+
+const OUTLINE_ITEMS = [
+  { id: "peace-process", label: "I. The PEACE Process" },
+  { id: "clinical-hierarchy", label: "II. Clinical Hierarchy" },
+  { id: "sns-resets", label: "III. Preliminary & SNS Resets" },
+  { id: "nei", label: "IV. Neuro-Emotional Integration" },
+  { id: "primitive-reflexes", label: "V. Primitive Reflexes" },
+  { id: "cranial-nerves", label: "VI. Cranial Nerves" },
+  { id: "brain-zones", label: "VII. Brain Zones" },
+  { id: "key-muscles", label: "VIII. Key Muscles" },
+  { id: "observations", label: "Clinical Observations" },
+];
 
 const PracticeNotes = () => {
   const [checkedItems, setCheckedItems] = useState<Record<string, boolean>>({});
@@ -107,8 +120,8 @@ const PracticeNotes = () => {
     window.print();
   };
 
-  const Section = ({ title, children }: { title: string; children: React.ReactNode }) => (
-    <section className="mb-10 break-inside-avoid">
+  const Section = ({ id, title, children }: { id: string; title: string; children: React.ReactNode }) => (
+    <section id={id} className="mb-10 break-inside-avoid scroll-mt-32">
       <h2 className="text-xl font-serif font-bold border-b border-black pb-1 mb-4 text-black uppercase">
         {title}
       </h2>
@@ -304,6 +317,9 @@ const PracticeNotes = () => {
       <DocsRuler />
 
       <div className="flex-1 overflow-auto p-8 md:p-12 flex justify-center print:p-0 print:bg-white">
+        {/* Outline Sidebar */}
+        <DocsOutline items={OUTLINE_ITEMS} />
+
         {/* Document Container - Widened to 1000px */}
         <div className="w-full max-w-[1000px] bg-white border border-slate-200 shadow-sm p-16 md:p-20 min-h-[1056px] print:border-none print:p-0 text-black font-sans relative">
           
@@ -345,7 +361,7 @@ const PracticeNotes = () => {
           </header>
 
           {/* 1. PEACE Process */}
-          <Section title="I. The PEACE Process">
+          <Section id="peace-process" title="I. The PEACE Process">
             <div className="space-y-4">
               <Item id="p-step" label="P - Preliminary Assessment" subtext="Gather the story, run the baseline (BOLT/Coherence), and identify how the system is currently organised." bold />
               <Item id="e1-step" label="E - Ease the System" subtext="Create safety before change. Address SNS dominance (Harmonic Rocking, T1, Diaphragm). Ease must come before correction." bold />
@@ -356,7 +372,7 @@ const PracticeNotes = () => {
           </Section>
 
           {/* 2. Clinical Hierarchy */}
-          <Section title="II. Clinical Hierarchy">
+          <Section id="clinical-hierarchy" title="II. Clinical Hierarchy">
             <div className="grid grid-cols-2 gap-x-12 gap-y-6">
               <div className="space-y-3">
                 <h3 className="text-xs font-bold text-gray-500 uppercase tracking-widest mb-2">Asterisk Tier</h3>
@@ -389,7 +405,7 @@ const PracticeNotes = () => {
           </Section>
 
           {/* 3. Preliminary & SNS Resets */}
-          <Section title="III. Preliminary & SNS Resets">
+          <Section id="sns-resets" title="III. Preliminary & SNS Resets">
             <div className="space-y-8">
               <div className="grid grid-cols-2 gap-x-12">
                 <div className="space-y-3">
@@ -486,52 +502,52 @@ const PracticeNotes = () => {
           </Section>
 
           {/* 4. Neuro-Emotional Integration */}
-          <Section title="IV. Neuro-Emotional Integration">
+          <Section id="nei" title="IV. Neuro-Emotional Integration">
             <div className="space-y-12">
-              <div className="space-y-6">
-                <div className="space-y-4">
-                  <h3 className="text-xs font-bold text-gray-500 uppercase tracking-widest mb-2 flex items-center gap-2">
-                    <Hand size={14} className="text-indigo-600" /> Organ Pulse Points
-                  </h3>
-                  <div className="grid grid-cols-2 gap-8">
-                    <div className="space-y-2">
-                      <p className="text-[9px] font-black uppercase text-slate-400">Left Wrist</p>
-                      <div className="text-[10px] space-y-1">
-                        <p><strong>Distal:</strong> SI (L) / HT (D)</p>
-                        <p><strong>Middle:</strong> GB (L) / LV (D)</p>
-                        <p><strong>Proximal:</strong> BL (L) / KI (D)</p>
-                      </div>
-                    </div>
-                    <div className="space-y-2">
-                      <p className="text-[9px] font-black uppercase text-slate-400">Right Wrist</p>
-                      <div className="text-[10px] space-y-1">
-                        <p><strong>Distal:</strong> LI (L) / LU (D)</p>
-                        <p><strong>Middle:</strong> ST (L) / SP (D)</p>
-                        <p><strong>Proximal:</strong> TW (L) / PC (D)</p>
-                      </div>
+              {/* Pulse Points Band */}
+              <div className="space-y-4">
+                <h3 className="text-xs font-bold text-gray-500 uppercase tracking-widest mb-2 flex items-center gap-2">
+                  <Hand size={14} className="text-indigo-600" /> Organ Pulse Points
+                </h3>
+                <div className="grid grid-cols-2 gap-8 mb-4">
+                  <div className="space-y-2">
+                    <p className="text-[9px] font-black uppercase text-slate-400">Left Wrist</p>
+                    <div className="text-[10px] space-y-1">
+                      <p><strong>Distal:</strong> SI (L) / HT (D)</p>
+                      <p><strong>Middle:</strong> GB (L) / LV (D)</p>
+                      <p><strong>Proximal:</strong> BL (L) / KI (D)</p>
                     </div>
                   </div>
-                  <div className="w-full rounded-2xl overflow-hidden border border-slate-200 bg-slate-50 shadow-inner">
-                    <img src="dyad-media://media/%2FUsers%2Fdanielebuatti%2Fdyad-apps%2Fkinesiology-app/.dyad/media/6b515278e62bc8acdeac83abe07f3d83.png" alt="Organ Pulse Points Diagram" className="w-full h-auto object-contain" />
+                  <div className="space-y-2">
+                    <p className="text-[9px] font-black uppercase text-slate-400">Right Wrist</p>
+                    <div className="text-[10px] space-y-1">
+                      <p><strong>Distal:</strong> LI (L) / LU (D)</p>
+                      <p><strong>Middle:</strong> ST (L) / SP (D)</p>
+                      <p><strong>Proximal:</strong> TW (L) / PC (D)</p>
+                    </div>
                   </div>
-                  <p className="text-[8px] text-gray-500 italic mt-2">(L) = Light/Superficial, (D) = Deep</p>
                 </div>
+                <div className="w-full rounded-2xl overflow-hidden border border-slate-200 bg-slate-50 shadow-inner">
+                  <img src="/pulse-points.png" alt="Organ Pulse Points Diagram" className="w-full h-auto object-contain" />
+                </div>
+                <p className="text-[8px] text-gray-500 italic mt-2">(L) = Light/Superficial, (D) = Deep</p>
+              </div>
 
-                <div className="space-y-4">
-                  <h3 className="text-xs font-bold text-gray-500 uppercase tracking-widest mb-2 flex items-center gap-2">
-                    <Eye size={14} className="text-rose-600" /> Eye Accessing Cues (NLP)
-                  </h3>
-                  <div className="grid grid-cols-3 gap-x-4 gap-y-2 text-[10px]">
-                    <p><strong>Up Left:</strong> Visual Memory</p>
-                    <p><strong>Mid Left:</strong> Auditory Memory</p>
-                    <p><strong>Down Left:</strong> Internal Monologue</p>
-                    <p><strong>Up Right:</strong> Visual Constructed</p>
-                    <p><strong>Mid Right:</strong> Auditory Constructed</p>
-                    <p><strong>Down Right:</strong> Kinesthetic / Felt Sense</p>
-                  </div>
-                  <div className="w-full rounded-2xl overflow-hidden border border-slate-200 bg-slate-50 shadow-inner">
-                    <img src="dyad-media://media/%2FUsers%2Fdanielebuatti%2Fdyad-apps%2Fkinesiology-app/.dyad/media/569e8128dc17c5ea5e63f6326acc851d.png" alt="Eye Accessing Cues Diagram" className="w-full h-auto object-contain" />
-                  </div>
+              {/* Eye Modes Band */}
+              <div className="space-y-4">
+                <h3 className="text-xs font-bold text-gray-500 uppercase tracking-widest mb-2 flex items-center gap-2">
+                  <Eye size={14} className="text-rose-600" /> Eye Accessing Cues (NLP)
+                </h3>
+                <div className="grid grid-cols-3 gap-x-4 gap-y-2 text-[10px] mb-4">
+                  <p><strong>Up Left:</strong> Visual Memory</p>
+                  <p><strong>Mid Left:</strong> Auditory Memory</p>
+                  <p><strong>Down Left:</strong> Internal Monologue</p>
+                  <p><strong>Up Right:</strong> Visual Constructed</p>
+                  <p><strong>Mid Right:</strong> Auditory Constructed</p>
+                  <p><strong>Down Right:</strong> Kinesthetic / Felt Sense</p>
+                </div>
+                <div className="w-full rounded-2xl overflow-hidden border border-slate-200 bg-slate-50 shadow-inner">
+                  <img src="/eye-modes.png" alt="Eye Accessing Cues Diagram" className="w-full h-auto object-contain" />
                 </div>
               </div>
 
@@ -548,7 +564,7 @@ const PracticeNotes = () => {
           </Section>
 
           {/* 5. Primitive Reflexes */}
-          <Section title="V. Primitive Reflexes (Foundational OS)">
+          <Section id="primitive-reflexes" title="V. Primitive Reflexes (Foundational OS)">
             <div className="grid grid-cols-1 gap-2">
               {PRIMITIVE_REFLEXES.map(reflex => (
                 <ReflexCard key={reflex.id} reflex={reflex} />
@@ -557,7 +573,7 @@ const PracticeNotes = () => {
           </Section>
 
           {/* 6. Cranial Nerves */}
-          <Section title="VI. Cranial Nerves (Brainstem Pathways)">
+          <Section id="cranial-nerves" title="VI. Cranial Nerves (Brainstem Pathways)">
             <div className="grid grid-cols-1 gap-2">
               {CRANIAL_NERVES.map(cn => (
                 <NerveCard key={cn.id} nerve={cn} />
@@ -566,7 +582,7 @@ const PracticeNotes = () => {
           </Section>
 
           {/* 7. Brain Zones */}
-          <Section title="VII. Brain Zones (Cortical & Subcortical)">
+          <Section id="brain-zones" title="VII. Brain Zones (Cortical & Subcortical)">
             <div className="space-y-8">
               <div className="space-y-4">
                 <h3 className="text-xs font-bold text-gray-500 uppercase tracking-widest mb-2 flex items-center gap-2">
@@ -593,7 +609,7 @@ const PracticeNotes = () => {
           </Section>
 
           {/* 8. Key Muscles */}
-          <Section title="VIII. Key Muscles (Clinical Indicators)">
+          <Section id="key-muscles" title="VIII. Key Muscles (Clinical Indicators)">
             <div className="grid grid-cols-3 gap-x-8 gap-y-4">
               {Object.values(MUSCLE_INFO_DETAILS).filter(m => m.videoUrl).map(muscle => (
                 <div key={muscle.name} className="flex items-center gap-2">
@@ -608,7 +624,7 @@ const PracticeNotes = () => {
           </Section>
 
           {/* Footer Notes */}
-          <div className="mt-16 pt-8 border-t border-black">
+          <div id="observations" className="mt-16 pt-8 border-t border-black scroll-mt-32">
             <h3 className="text-xs font-bold text-gray-500 uppercase tracking-widest mb-6">Clinical Observations & Integration Notes</h3>
             <div className="relative">
               <textarea 

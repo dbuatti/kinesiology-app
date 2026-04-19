@@ -6,9 +6,10 @@ import { PRIMITIVE_REFLEXES } from "@/data/primitive-reflex-data";
 import { CRANIAL_NERVES } from "@/data/cranial-nerve-data";
 import { BRAIN_REFLEX_POINTS } from "@/data/brain-reflex-data";
 import { PRIMARY_EMOTIONS, SIGNS_OF_SHIFT } from "@/data/emotion-data";
+import { VAGUS_ASSOCIATIONS } from "@/data/vagus-data";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Button } from "@/components/ui/button";
-import { RotateCcw, Printer, ChevronDown, ChevronUp, Loader2 } from "lucide-react";
+import { RotateCcw, Printer, ChevronDown, ChevronUp, Loader2, RefreshCw, Activity, Zap } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { supabase } from "@/integrations/supabase/client";
 import {
@@ -41,7 +42,8 @@ const OUTLINE_ITEMS = [
   { id: "primitive-reflexes", label: "V. Primitive Reflexes" },
   { id: "cranial-nerves", label: "VI. Cranial Nerves" },
   { id: "brain-zones", label: "VII. Brain Zones" },
-  { id: "key-muscles", label: "VIII. Key Muscles" },
+  { id: "lovett-brother", label: "VIII. Lovett-Brother Partners" },
+  { id: "key-muscles", label: "IX. Key Muscles" },
   { id: "observations", label: "Clinical Observations" },
 ];
 
@@ -658,15 +660,47 @@ const PracticeNotes = () => {
             </div>
           </Section>
 
-          {/* 8. Key Muscles */}
-          <Section id="key-muscles" title="VIII. Key Muscles (Clinical Indicators)">
+          {/* 8. Lovett-Brother Partners */}
+          <Section id="lovett-brother" title="VIII. Lovett-Brother Partners (Spinal Reciprocation)">
+            <div className="space-y-6">
+              <div className="p-4 bg-rose-50 border border-rose-100 rounded-sm italic text-xs leading-relaxed">
+                "Spinal segments work in pairs. Tension or fixation at one end of the spine (e.g. C1) often creates a compensatory dysfunction at the reciprocating partner (e.g. L5)."
+              </div>
+              
+              <div className="overflow-hidden border border-black">
+                <table className="w-full text-left border-collapse">
+                  <thead>
+                    <tr className="bg-slate-50 border-b border-black">
+                      <th className="p-3 font-bold text-[10px] uppercase tracking-widest border-r border-black">Segment</th>
+                      <th className="p-3 font-bold text-[10px] uppercase tracking-widest border-r border-black">Partner</th>
+                      <th className="p-3 font-bold text-[10px] uppercase tracking-widest border-r border-black">Associated Muscle</th>
+                      <th className="p-3 font-bold text-[10px] uppercase tracking-widest">Organ / Gland</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-black/10 text-[11px]">
+                    {VAGUS_ASSOCIATIONS.map((assoc) => (
+                      <tr key={assoc.spinalSegment} className="hover:bg-slate-50 transition-colors">
+                        <td className="p-3 font-black border-r border-black/10">{assoc.spinalSegment}</td>
+                        <td className="p-3 font-black text-rose-600 border-r border-black/10">{assoc.reciprocatingSegment}</td>
+                        <td className="p-3 font-medium border-r border-black/10">{assoc.muscle}</td>
+                        <td className="p-3 text-gray-600">{assoc.organ}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </Section>
+
+          {/* 9. Key Muscles */}
+          <Section id="key-muscles" title="IX. Key Muscles (Clinical Indicators)">
             <div className="grid grid-cols-3 gap-x-8 gap-y-4">
               {Object.values(MUSCLE_INFO_DETAILS).filter(m => m.videoUrl).map(muscle => (
                 <div key={muscle.name} className="flex items-center gap-2">
                   <Checkbox id={`muscle-${muscle.name}`} onCheckedChange={() => toggleItem(`muscle-${muscle.name}`)} checked={!!checkedItems[`muscle-${muscle.name}`]} className="h-3 w-3 border-black rounded-none" />
                   <div className="leading-tight">
                     <p className={cn("text-xs font-bold", checkedItems[`muscle-${muscle.name}`] && "line-through text-gray-400")}>{muscle.name}</p>
-                    <p className="text-[9px] text-gray-500 italic">{muscle.meridian} Meridian</p>
+                    <p className="text-[9px] font-gray-500 italic">{muscle.meridian} Meridian</p>
                   </div>
                 </div>
               ))}

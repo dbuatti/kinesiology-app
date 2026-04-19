@@ -74,7 +74,7 @@ const generateAnatomyQuestion = (): Question => {
     };
   } else {
     const nerve = CRANIAL_NERVES[Math.floor(Math.random() * CRANIAL_NERVES.length)];
-    const templates = ['function', 'nuclei', 'tone'];
+    const templates = ['function', 'nuclei', 'tone', 'identification'];
     const template = templates[Math.floor(Math.random() * templates.length)];
 
     if (template === 'function') {
@@ -100,7 +100,7 @@ const generateAnatomyQuestion = (): Question => {
         correctAnswer: nerve.nuclei,
         explanation: `The nuclei for ${nerve.name} are located in the ${nerve.nuclei}.`
       };
-    } else {
+    } else if (template === 'tone') {
       return {
         id: `nerve-tone-${nerve.id}`,
         type: 'mcq',
@@ -109,6 +109,17 @@ const generateAnatomyQuestion = (): Question => {
         options: getRandomOptions(nerve.toneEffect, ['Flexors', 'Extensors', 'None']),
         correctAnswer: nerve.toneEffect,
         explanation: `${nerve.name} is associated with ${nerve.toneEffect} tone.`
+      };
+    } else {
+      // Identification Template
+      return {
+        id: `nerve-id-${nerve.id}`,
+        type: 'mcq',
+        category: 'Anatomy',
+        question: `Which cranial nerve is responsible for ${nerve.functions.join(' and ')}?`,
+        options: getRandomOptions(nerve.name, CRANIAL_NERVES.map(n => n.name)),
+        correctAnswer: nerve.name,
+        explanation: `${nerve.name} (${nerve.latinName}) handles these functions and is housed in the ${nerve.nuclei}.`
       };
     }
   }
@@ -185,7 +196,7 @@ const generateTCMQuestion = (): Question => {
 
 const generateClinicalQuestion = (): Question => {
   const reflex = PRIMITIVE_REFLEXES[Math.floor(Math.random() * PRIMITIVE_REFLEXES.length)];
-  const templates = ['stimulus', 'inhibition', 'sign'];
+  const templates = ['stimulus', 'inhibition', 'sign', 'identification'];
   const template = templates[Math.floor(Math.random() * templates.length)];
 
   if (template === 'stimulus') {
@@ -208,7 +219,7 @@ const generateClinicalQuestion = (): Question => {
       correctAnswer: reflex.inhibitionPattern,
       explanation: `When the ${reflex.name} reflex is active, the pattern is: ${reflex.inhibitionPattern}`
     };
-  } else {
+  } else if (template === 'sign') {
     const sign = reflex.clinicalSigns?.[0] || "Developmental issues";
     return {
       id: `reflex-sign-${reflex.id}`,
@@ -218,6 +229,17 @@ const generateClinicalQuestion = (): Question => {
       options: getRandomOptions(sign, PRIMITIVE_REFLEXES.flatMap(r => r.clinicalSigns || [])),
       correctAnswer: sign,
       explanation: `Retained ${reflex.name} can manifest as: ${reflex.clinicalSigns?.join(', ')}.`
+    };
+  } else {
+    // Identification Template
+    return {
+      id: `reflex-id-${reflex.id}`,
+      type: 'mcq',
+      category: 'Clinical',
+      question: `Which reflex is triggered by ${reflex.stimulus} and results in ${reflex.inhibitionPattern}?`,
+      options: getRandomOptions(reflex.name, PRIMITIVE_REFLEXES.map(r => r.name)),
+      correctAnswer: reflex.name,
+      explanation: `This describes the ${reflex.name} reflex, which is part of the ${reflex.category} category.`
     };
   }
 };

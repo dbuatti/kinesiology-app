@@ -77,11 +77,6 @@ export default function CranialNerveAssessmentPage() {
       </div>
 
       <div className="bg-card border rounded-xl p-6 shadow-sm">
-        <div className="mb-6">
-          <h2 className="text-lg font-semibold mb-1">Session Goal</h2>
-          <p className="text-muted-foreground italic">"{appointment.goal || "No goal set for this session"}"</p>
-        </div>
-        
         <CranialNerveAssessment appointmentId={id!} />
       </div>
     </div>

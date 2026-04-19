@@ -134,7 +134,7 @@ const RandomJointCard = () => {
           <p className="text-[8px] font-black text-slate-400 uppercase tracking-widest mb-1 flex items-center gap-1">
             <Lightbulb size={10} className="text-amber-500" /> Clinical Pearl
           </p>
-          <p className="text-[11px] text-slate-600 dark:text-slate-400 font-medium leading-relaxed italic">
+          <p className="text-[11px] text-slate-600 dark:text-slate-400 font-medium leading-relaxed">
             "{joint.pearl}"
           </p>
         </div>

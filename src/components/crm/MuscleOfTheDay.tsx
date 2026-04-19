@@ -88,7 +88,7 @@ const MuscleOfTheDay = ({ onViewDetails }: MuscleOfTheDayProps) => {
             </div>
 
             <div className="p-6 bg-white/5 rounded-3xl border border-white/10 backdrop-blur-sm max-w-2xl">
-              <p className="text-lg font-medium text-slate-300 leading-relaxed italic">
+              <p className="text-lg font-medium text-slate-300 leading-relaxed">
                 "{info.description || 'Master the clinical details and testing position for this muscle.'}"
               </p>
             </div>

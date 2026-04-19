@@ -137,7 +137,7 @@ const PrimitiveReflexModal = ({
                     <p className="text-[10px] font-bold text-amber-900">Tilt head back + Nasal breathing.</p>
                   </div>
                 </div>
-                <p className="text-[10px] text-amber-700 italic">"Once you find the actual functional cause, it turns off straight away."</p>
+                <p className="text-[10px] text-amber-700">"Once you find the actual functional cause, it turns off straight away."</p>
               </div>
             </div>
           )}
@@ -153,7 +153,7 @@ const PrimitiveReflexModal = ({
                   </Badge>
                 ))}
               </div>
-              <p className="text-[10px] text-indigo-200 mt-4 italic relative z-10">
+              <p className="text-[10px] text-indigo-200 mt-4 relative z-10">
                 "If you correct the highest level reflex, you can knock out 3-4 others in one go because they are cascaded together."
               </p>
             </section>
@@ -171,7 +171,7 @@ const PrimitiveReflexModal = ({
               <div className="p-6 bg-slate-900 text-white rounded-[2rem] shadow-xl relative overflow-hidden">
                 <div className="absolute top-0 right-0 p-4 opacity-10"><Sparkles size={60} /></div>
                 <SectionHeader icon={Sparkles} title="Clinical Pearl" color="text-amber-400" />
-                <p className="text-sm font-medium leading-relaxed relative z-10 italic">
+                <p className="text-sm font-medium leading-relaxed relative z-10">
                   "{reflex.pearl}"
                 </p>
               </div>

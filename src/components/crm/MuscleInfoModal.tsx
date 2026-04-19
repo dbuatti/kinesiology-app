@@ -34,7 +34,8 @@ import {
   Loader2,
   Plus,
   Target,
-  ImageIcon
+  ImageIcon,
+  Sparkles
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -206,10 +207,13 @@ const MuscleImageZone = ({
             <Loader2 className="mx-auto text-indigo-500 animate-spin" size={24} />
           ) : (
             <>
-              <div className="w-10 h-10 rounded-xl bg-white shadow-sm border border-slate-100 flex items-center justify-center mx-auto text-slate-400 group-hover/image:text-indigo-600 group-hover/image:scale-110 transition-all">
-                <Plus size={20} />
+              <div className={cn(
+                "rounded-xl bg-white shadow-sm border border-slate-100 flex items-center justify-center mx-auto text-slate-400 group-hover/image:text-indigo-600 group-hover/image:scale-110 transition-all",
+                isPrimary ? "w-12 h-12" : "w-8 h-8"
+              )}>
+                {isPrimary ? <Plus size={24} /> : <Target size={18} />}
               </div>
-              <p className="font-black text-slate-500 uppercase tracking-widest text-[9px]">
+              <p className={cn("font-black text-slate-500 uppercase tracking-widest", isPrimary ? "text-[10px]" : "text-[8px]")}>
                 {isPrimary ? "Add Main Image" : "Add Secondary Image"}
               </p>
             </>
@@ -553,6 +557,19 @@ const MuscleInfoModal = ({ muscleName, open, onOpenChange }: MuscleInfoModalProp
               </div>
             </div>
           </section>
+
+          {/* Clinical Pearl */}
+          {info.pearl && (
+            <section>
+              <div className="p-8 bg-slate-900 text-white rounded-[2.5rem] shadow-xl relative overflow-hidden">
+                <div className="absolute top-0 right-0 p-6 opacity-10"><Sparkles size={80} /></div>
+                <SectionHeader icon={Sparkles} title="Clinical Pearl" color="text-purple-400" />
+                <p className="text-lg font-medium leading-relaxed relative z-10">
+                  "{info.pearl}"
+                </p>
+              </div>
+            </section>
+          )}
         </div>
       </DialogContent>
     </Dialog>

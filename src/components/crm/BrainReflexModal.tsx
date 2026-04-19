@@ -29,6 +29,7 @@ import {
   ImageIcon
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
 interface BrainReflexModalProps {
@@ -197,7 +198,7 @@ const BrainReflexModal = ({
               <div className="p-8 bg-slate-900 text-white rounded-[2.5rem] shadow-xl relative overflow-hidden">
                 <div className="absolute top-0 right-0 p-6 opacity-10"><Sparkles size={80} /></div>
                 <SectionHeader icon={Sparkles} title="Clinical Pearl" color="text-purple-400" />
-                <p className="text-lg font-medium leading-relaxed relative z-10 italic">
+                <p className="text-lg font-medium leading-relaxed relative z-10">
                   "{point.pearl}"
                 </p>
               </div>

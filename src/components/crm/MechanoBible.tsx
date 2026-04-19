@@ -434,7 +434,7 @@ const MechanoBible = () => {
         <div className="space-y-2">
           <h4 className="text-xl font-black text-amber-900">Practitioner Pro-Tip</h4>
           <p className="text-amber-800 font-medium leading-relaxed">
-            If you're struggling to find the restricted action, ask the client to perform the movement that causes their pain. Observe which plane they are moving in. The restriction is often in the <strong>opposite</strong> action or a different plane entirely. The brain is a master of compensation—look where the movement <em>isn't</em> happening.
+            If you're struggling to find the restricted action, ask the client to perform the movement that causes their pain. Observe which plane they are moving in. The restriction is often in the <strong>opposite</strong> action or a different plane entirely. The brain is a master of compensation—look where the movement isn't happening.
           </p>
         </div>
       </div>

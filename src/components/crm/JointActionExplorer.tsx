@@ -133,7 +133,7 @@ const JointActionExplorer = () => {
             </div>
             <div className="space-y-1">
               <h5 className="font-black text-indigo-900 text-xs uppercase tracking-widest">Clinical Pearl</h5>
-              <p className="text-sm text-indigo-700 font-medium leading-relaxed italic">
+              <p className="text-sm text-indigo-700 font-medium leading-relaxed">
                 "{selectedJoint.pearl}"
               </p>
             </div>

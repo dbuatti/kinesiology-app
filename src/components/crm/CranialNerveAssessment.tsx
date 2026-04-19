@@ -323,7 +323,7 @@ export function CranialNerveAssessment({ appointmentId }: CranialNerveAssessment
                       <p className="text-[9px] font-black text-amber-600 uppercase tracking-widest mb-2 flex items-center gap-2">
                         <Info size={14} /> Clinical Pearl
                       </p>
-                      <p className="text-xs text-amber-900 font-bold leading-relaxed italic">
+                      <p className="text-xs text-amber-900 font-bold leading-relaxed">
                         "{nerve.clinicalPearl}"
                       </p>
                     </div>

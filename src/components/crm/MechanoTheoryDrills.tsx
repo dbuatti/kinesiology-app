@@ -119,7 +119,7 @@ const MechanoTheoryDrills = () => {
         </div>
         <div className="space-y-1">
           <h5 className="font-black text-amber-900 text-xs uppercase tracking-widest">Study Tip</h5>
-          <p className="text-sm text-amber-800 font-medium leading-relaxed italic">
+          <p className="text-sm text-amber-800 font-medium leading-relaxed">
             "Mastering the theory is the first step to clinical intuition. Try to explain these concepts to a peer to solidify your understanding."
           </p>
         </div>

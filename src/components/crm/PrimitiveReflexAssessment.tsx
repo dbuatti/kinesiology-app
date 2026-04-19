@@ -50,41 +50,70 @@ const ReflexTestItem = ({ reflex, test, images, onUpdate }: ReflexTestItemProps)
 
   return (
     <section className={cn(
-      "space-y-2 p-4 rounded-2xl border transition-all",
-      test.is_primary_priority ? "bg-indigo-50/30 border-indigo-200 ring-1 ring-indigo-100" : 
-      test.is_priority ? "bg-amber-50/30 border-amber-200" : "border-slate-100"
+      "p-2 px-3 rounded-xl border transition-all",
+      test.is_primary_priority ? "bg-indigo-50/40 border-indigo-300 ring-1 ring-indigo-100" : 
+      test.is_priority ? "bg-amber-50/40 border-amber-200" : "border-slate-100 bg-white"
     )}>
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-2 border-b border-slate-100/50 pb-2">
-        <div className="flex items-center gap-3">
-          <h2 className="text-lg font-serif font-bold text-slate-900">
-            {reflex.name}
-          </h2>
-          <Badge variant="outline" className="border-slate-200 text-slate-400 font-black text-[7px] uppercase tracking-widest px-1.5 py-0 rounded-none">
-            {reflex.category} • {reflex.developmentalWindow}
-          </Badge>
+      <div className="flex items-center justify-between gap-4">
+        {/* Left: Name and Info */}
+        <div className="flex-1 min-w-0 space-y-0.5">
+          <div className="flex items-center gap-2">
+            <h2 className="text-sm font-bold text-slate-900 truncate">
+              {reflex.name}
+            </h2>
+            <span className="text-[8px] font-black text-slate-400 uppercase tracking-widest hidden sm:inline">
+              {reflex.category} • {reflex.developmentalWindow}
+            </span>
+          </div>
+          
+          <div className="flex items-center gap-3 text-[9px] leading-tight">
+            <div className="flex items-center gap-1 text-slate-500">
+              <Zap size={10} className="text-indigo-400 shrink-0" />
+              <span className="truncate max-w-[200px]">{reflex.stimulus}</span>
+            </div>
+            <div className="flex items-center gap-1 text-rose-600/70 font-bold">
+              <Activity size={10} className="shrink-0" />
+              <span className="truncate max-w-[200px]">{reflex.inhibitionPattern}</span>
+            </div>
+          </div>
         </div>
 
-        <div className="flex items-center gap-4 print:hidden">
-          <div className="flex items-center gap-1.5">
+        {/* Middle: Images (Compact) */}
+        <div className="hidden md:flex items-center gap-1.5 shrink-0">
+          {images?.primary && (
+            <div className="h-8 w-12 rounded border border-slate-100 overflow-hidden bg-slate-50">
+              <img src={images.primary} alt="P" className="w-full h-full object-cover opacity-80" />
+            </div>
+          )}
+          {images?.secondary && (
+            <div className="h-8 w-12 rounded border border-slate-100 overflow-hidden bg-slate-50">
+              <img src={images.secondary} alt="S" className="w-full h-full object-cover opacity-80" />
+            </div>
+          )}
+        </div>
+
+        {/* Right: Controls */}
+        <div className="flex items-center gap-3 shrink-0 print:hidden">
+          <div className="flex items-center gap-1">
             <Checkbox 
               id={`inhib-reflex-${reflex.id}`}
               checked={test.is_inhibited}
               onCheckedChange={(checked) => onUpdate(reflex.id, { is_inhibited: !!checked })}
-              className="h-3.5 w-3.5 border-slate-400 rounded-none"
+              className="h-3 w-3 border-slate-400 rounded-none"
             />
             <label htmlFor={`inhib-reflex-${reflex.id}`} className="text-[8px] font-black uppercase tracking-widest cursor-pointer text-slate-500">
-              Inhibited
+              Inhib
             </label>
           </div>
-          <div className="flex items-center gap-1.5">
+          <div className="flex items-center gap-1">
             <Checkbox 
               id={`priority-reflex-${reflex.id}`}
               checked={test.is_priority}
               onCheckedChange={(checked) => onUpdate(reflex.id, { is_priority: !!checked })}
-              className="h-3.5 w-3.5 border-slate-400 rounded-none"
+              className="h-3 w-3 border-slate-400 rounded-none"
             />
             <label htmlFor={`priority-reflex-${reflex.id}`} className="text-[8px] font-black uppercase tracking-widest cursor-pointer text-slate-500">
-              Priority
+              Prio
             </label>
           </div>
           <Button 
@@ -92,66 +121,24 @@ const ReflexTestItem = ({ reflex, test, images, onUpdate }: ReflexTestItemProps)
             size="sm" 
             onClick={() => onUpdate(reflex.id, { is_primary_priority: !test.is_primary_priority })}
             className={cn(
-              "h-5 px-2 text-[7px] font-black uppercase tracking-widest transition-all rounded-md",
+              "h-5 px-1.5 text-[7px] font-black uppercase tracking-widest transition-all rounded",
               test.is_primary_priority ? "bg-slate-900 text-white" : "text-slate-400 hover:text-slate-900"
             )}
           >
-            {test.is_primary_priority ? "Primary" : "Set Primary"}
+            {test.is_primary_priority ? "Primary" : "Set 1°"}
           </Button>
         </div>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-4">
-        <div className="lg:col-span-8 space-y-3">
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-            <div className="space-y-0.5">
-              <div className="flex items-center gap-1 text-[8px] font-black uppercase tracking-widest text-slate-400">
-                <Zap size={10} /> Stimulus
-              </div>
-              <p className="text-xs font-bold text-slate-700 leading-tight">{reflex.stimulus}</p>
-            </div>
-            
-            <div className="space-y-0.5">
-              <div className="flex items-center gap-1 text-[8px] font-black uppercase tracking-widest text-slate-400">
-                <Activity size={10} /> Inhibition Pattern
-              </div>
-              <p className="text-xs font-bold text-slate-700 leading-tight">{reflex.inhibitionPattern}</p>
-            </div>
-          </div>
-
-          <div className="space-y-1">
-            <div className="flex items-center gap-1 text-[8px] font-black uppercase tracking-widest text-slate-400">
-              <FileText size={10} /> Notes
-            </div>
-            <textarea 
-              value={localNotes}
-              onChange={(e) => handleNotesChange(e.target.value)}
-              className="w-full min-h-[40px] bg-slate-50/30 border-none rounded-lg p-2 text-xs font-medium focus:ring-1 focus:ring-indigo-500 transition-all resize-none"
-              placeholder="Findings..."
-            />
-          </div>
-        </div>
-
-        <div className="lg:col-span-4">
-          {hasImages ? (
-            <div className="grid grid-cols-2 gap-2">
-              {images.primary && (
-                <div className="aspect-video border border-slate-100 p-0.5 rounded-lg bg-slate-50 overflow-hidden">
-                  <img src={images.primary} alt="Primary" className="w-full h-full object-cover rounded-md opacity-80 hover:opacity-100 transition-opacity" />
-                </div>
-              )}
-              {images.secondary && (
-                <div className="aspect-video border border-slate-100 p-0.5 rounded-lg bg-slate-50 overflow-hidden">
-                  <img src={images.secondary} alt="Secondary" className="w-full h-full object-cover rounded-md opacity-80 hover:opacity-100 transition-opacity" />
-                </div>
-              )}
-            </div>
-          ) : (
-            <div className="h-full min-h-[60px] border border-dashed border-slate-100 rounded-xl flex items-center justify-center text-slate-200 bg-slate-50/20">
-              <ImageIcon size={16} className="opacity-10" />
-            </div>
-          )}
-        </div>
+      {/* Bottom: Notes (Compact) */}
+      <div className="mt-1.5 pt-1.5 border-t border-slate-100/50 flex items-center gap-2">
+        <FileText size={10} className="text-slate-300 shrink-0" />
+        <input 
+          value={localNotes}
+          onChange={(e) => handleNotesChange(e.target.value)}
+          className="flex-1 bg-transparent border-none p-0 text-[10px] font-medium focus:ring-0 placeholder:text-slate-300"
+          placeholder="Add assessment findings..."
+        />
       </div>
     </section>
   );
@@ -212,33 +199,33 @@ export function PrimitiveReflexAssessment({ appointmentId }: { appointmentId: st
   }
 
   return (
-    <div className="space-y-4">
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-slate-50/50 p-3 rounded-2xl border border-slate-100 shadow-inner print:hidden">
-        <div className="flex items-center gap-4">
-          <div className="relative w-full md:w-64">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-slate-400" />
+    <div className="space-y-1.5">
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-2 bg-slate-50/50 p-2 rounded-xl border border-slate-100 shadow-inner print:hidden mb-2">
+        <div className="flex items-center gap-3">
+          <div className="relative w-full md:w-48">
+            <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3 w-3 text-slate-400" />
             <Input
-              placeholder="Search reflexes..."
-              className="pl-9 h-9 rounded-xl border-slate-200 bg-white text-xs"
+              placeholder="Search..."
+              className="pl-8 h-7 rounded-lg border-slate-200 bg-white text-[10px]"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
             />
           </div>
-          <div className="flex items-center space-x-3 px-4 border-l border-slate-200">
+          <div className="flex items-center space-x-2 px-3 border-l border-slate-200">
             <Switch
               id="inhibited-filter-reflex"
               checked={showOnlyInhibited}
               onCheckedChange={setShowOnlyInhibited}
-              className="data-[state=checked]:bg-rose-600 scale-75"
+              className="data-[state=checked]:bg-rose-600 scale-[0.6]"
             />
-            <Label htmlFor="inhibited-filter-reflex" className="text-[9px] font-black uppercase tracking-widest cursor-pointer text-slate-500">
-              Show Only Inhibited
+            <Label htmlFor="inhibited-filter-reflex" className="text-[8px] font-black uppercase tracking-widest cursor-pointer text-slate-500">
+              Only Inhibited
             </Label>
           </div>
         </div>
         <div className="flex items-center gap-2">
-          <Badge variant="outline" className="bg-white border-slate-200 font-black text-[8px] uppercase tracking-widest px-2 py-0.5 rounded-full">
-            {tests.filter(t => t.is_inhibited).length} Inhibited
+          <Badge variant="outline" className="bg-white border-slate-200 font-black text-[7px] uppercase tracking-widest px-2 py-0.5 rounded-full">
+            {tests.filter(t => t.is_inhibited).length} Active
           </Badge>
         </div>
       </div>

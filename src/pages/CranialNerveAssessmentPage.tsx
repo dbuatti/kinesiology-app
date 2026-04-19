@@ -16,32 +16,17 @@ import { PRIMITIVE_REFLEXES } from "@/data/primitive-reflex-data";
 
 // Docs Components
 
-import DocsHeader from "@/components/docs/DocsHeader";
-import DocsToolbar from "@/components/docs/DocsToolbar";
-import DocsRuler from "@/components/docs/DocsRuler";
-import DocsOutline from "@/components/docs/DocsOutline";
-
 export default function CranialNerveAssessmentPage() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const { appointment, loading } = useAppointment(id);
   const [activeTab, setActiveTab] = React.useState("cranial-nerves");
 
-  const outlineItems = activeTab === "cranial-nerves"
-    ? CRANIAL_NERVES.map(n => ({
-        id: `nerve-section-${n.id}`,
-        label: `${n.name}: ${n.latinName}`
-      }))
-    : PRIMITIVE_REFLEXES.map(r => ({
-        id: `reflex-section-${r.id}`,
-        label: r.name
-      }));
-
   if (loading) {
     return (
-      <div className="min-h-screen bg-[#F9FBFD] flex flex-col items-center justify-center gap-4">
+      <div className="min-h-screen flex flex-col items-center justify-center gap-4">
         <Loader2 className="w-10 h-10 text-blue-600 animate-spin" />
-        <p className="text-xs font-bold uppercase tracking-widest text-slate-500">Loading Clinical Document...</p>
+        <p className="text-xs font-bold uppercase tracking-widest text-slate-500">Loading Assessment...</p>
       </div>
     );
   }
@@ -58,98 +43,81 @@ export default function CranialNerveAssessmentPage() {
   }
 
   return (
-    <div className="min-h-screen bg-white md:bg-[#F9FBFD] flex flex-col">
-      <DocsHeader />
-      <DocsToolbar />
-      <DocsRuler />
-
-      <div className="flex-1 overflow-auto p-0 md:p-12 flex justify-center print:p-0 print:bg-white">
-        {/* Outline Sidebar */}
-        <DocsOutline items={outlineItems} />
-
-        {/* Document Container */}
-        <div className="w-full max-w-[1000px] bg-white border-none md:border md:border-slate-200 md:shadow-sm p-6 sm:p-10 md:p-20 min-h-[1056px] print:border-none print:p-0 text-black font-sans relative">
-          
-          {/* Document Header */}
-          <header className="mb-16 text-center">
-            <div className="flex items-center justify-center gap-3 mb-4">
-              <div className="w-12 h-12 rounded-2xl bg-indigo-600 text-white flex items-center justify-center shadow-lg">
-                <Brain size={28} />
-              </div>
-              <h1 className="text-4xl font-serif font-bold tracking-tight">Neurological Assessment</h1>
-            </div>
-
-            <div className="mt-10 grid grid-cols-2 gap-8 text-xs font-bold border-y border-black py-6">
-              <div className="flex items-center gap-2">
-                <span className="text-slate-500 uppercase tracking-widest">Client:</span>
-                <span className="text-lg font-black">{appointment.clients.name}</span>
-              </div>
-              <div className="flex items-center gap-2 justify-end">
-                <span className="text-slate-500 uppercase tracking-widest">Date:</span>
-                <span className="text-lg font-black">{format(appointment.date, "MMMM do, yyyy")}</span>
+    <div className="min-h-screen bg-slate-50 dark:bg-slate-950 p-4 md:p-8">
+      <div className="max-w-5xl mx-auto space-y-8">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+          <div className="flex items-center gap-4">
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={() => navigate(`/appointments/${id}`)}
+              className="rounded-xl"
+            >
+              <ChevronLeft size={20} />
+            </Button>
+            <div>
+              <h1 className="text-3xl font-black tracking-tight text-foreground">Neurological Assessment</h1>
+              <div className="flex items-center gap-4 mt-1 text-sm font-medium text-muted-foreground">
+                <span className="flex items-center gap-1.5"><User size={14} className="text-indigo-500" /> {appointment.clients.name}</span>
+                <span className="flex items-center gap-1.5"><Calendar size={14} className="text-indigo-500" /> {format(appointment.date, "MMMM do, yyyy")}</span>
               </div>
             </div>
-          </header>
-
-          {/* Assessment Content */}
-          <div className="space-y-12">
-            <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-              <TabsList className="grid w-full max-w-md grid-cols-2 mb-12 h-12 p-1 bg-slate-100 rounded-xl mx-auto print:hidden">
-
-                <TabsTrigger value="cranial-nerves" className="rounded-lg font-black text-[10px] uppercase tracking-widest data-[state=active]:bg-white data-[state=active]:shadow-sm">
-                  <Brain className="h-3.5 w-3.5 mr-2" />
-                  Cranial Nerves
-                </TabsTrigger>
-                <TabsTrigger value="primitive-reflexes" className="rounded-lg font-black text-[10px] uppercase tracking-widest data-[state=active]:bg-white data-[state=active]:shadow-sm">
-                  <Zap className="h-3.5 w-3.5 mr-2" />
-                  Primitive Reflexes
-                </TabsTrigger>
-              </TabsList>
-              
-              <TabsContent value="cranial-nerves" className="mt-0 focus-visible:ring-0">
-                <CranialNerveAssessment appointmentId={id!} />
-              </TabsContent>
-              
-              <TabsContent value="primitive-reflexes" className="mt-0 focus-visible:ring-0">
-                <PrimitiveReflexAssessment appointmentId={id!} />
-              </TabsContent>
-            </Tabs>
           </div>
-
-          {/* Footer Notes */}
-          <div className="mt-20 pt-8 border-t border-black">
-            <h3 className="text-xs font-bold text-gray-500 uppercase tracking-widest mb-6">Clinical Summary & Integration</h3>
-            <div className="relative">
-              <textarea 
-                className="w-full min-h-[200px] bg-transparent border-none outline-none resize-none text-sm leading-[32px] font-medium"
-                style={{
-                  backgroundImage: 'linear-gradient(to bottom, transparent 31px, #e5e7eb 31px)',
-                  backgroundSize: '100% 32px',
-                  backgroundAttachment: 'local'
-                }}
-                placeholder="Type your clinical summary here..."
-              />
-            </div>
+          <div className="flex items-center gap-2">
+            <Button
+              variant="outline"
+              onClick={() => window.print()}
+              className="rounded-xl h-10 px-4 font-bold text-xs uppercase tracking-widest border-border bg-card"
+            >
+              <Printer size={16} className="mr-2" /> Print
+            </Button>
+            <Button
+              onClick={() => navigate(`/appointments/${id}`)}
+              className="bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl h-10 px-6 font-black text-xs uppercase tracking-widest shadow-lg shadow-indigo-100"
+            >
+              Finish Assessment
+            </Button>
           </div>
         </div>
-      </div>
 
-      {/* Floating Action Buttons */}
-      <div className="fixed bottom-8 right-8 flex flex-col gap-3 print:hidden">
-        <Button 
-          variant="outline" 
-          size="icon" 
-          onClick={() => navigate(`/appointments/${id}`)}
-          className="h-12 w-12 rounded-full shadow-xl bg-white border-slate-200 text-slate-500 hover:text-indigo-600"
-        >
-          <ChevronLeft size={20} />
-        </Button>
-        <Button 
-          onClick={() => window.print()} 
-          className="h-14 w-14 rounded-full shadow-2xl bg-blue-600 hover:bg-blue-700 text-white"
-        >
-          <Printer size={24} />
-        </Button>
+        <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+          <TabsList className="grid w-full max-w-md grid-cols-2 mb-8 h-12 p-1 bg-muted/50 rounded-xl mx-auto">
+            <TabsTrigger value="cranial-nerves" className="rounded-lg font-black text-[10px] uppercase tracking-widest data-[state=active]:bg-card data-[state=active]:shadow-sm">
+              <Brain className="h-3.5 w-3.5 mr-2" />
+              Cranial Nerves
+            </TabsTrigger>
+            <TabsTrigger value="primitive-reflexes" className="rounded-lg font-black text-[10px] uppercase tracking-widest data-[state=active]:bg-card data-[state=active]:shadow-sm">
+              <Zap className="h-3.5 w-3.5 mr-2" />
+              Primitive Reflexes
+            </TabsTrigger>
+          </TabsList>
+          
+          <TabsContent value="cranial-nerves" className="mt-0 focus-visible:ring-0 animate-in fade-in duration-500">
+            <div className="bg-card border border-border rounded-[2rem] p-6 md:p-10 shadow-sm">
+              <CranialNerveAssessment appointmentId={id!} />
+            </div>
+          </TabsContent>
+          
+          <TabsContent value="primitive-reflexes" className="mt-0 focus-visible:ring-0 animate-in fade-in duration-500">
+            <div className="bg-card border border-border rounded-[2rem] p-6 md:p-10 shadow-sm">
+              <PrimitiveReflexAssessment appointmentId={id!} />
+            </div>
+          </TabsContent>
+        </Tabs>
+
+        <Card className="border-none shadow-lg rounded-[2rem] bg-slate-900 text-white overflow-hidden">
+          <CardHeader className="p-8 pb-4">
+            <CardTitle className="text-sm font-black uppercase tracking-widest text-indigo-400 flex items-center gap-2">
+              <FileText size={16} /> Clinical Summary & Integration
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="p-8 pt-0">
+            <textarea
+              className="w-full min-h-[200px] bg-white/5 border border-white/10 rounded-2xl p-6 text-sm font-medium focus:ring-1 focus:ring-indigo-500 transition-all resize-none text-slate-200"
+              placeholder="Type your clinical summary here..."
+            />
+          </CardContent>
+        </Card>
       </div>
     </div>
   );

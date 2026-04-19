@@ -4,14 +4,18 @@ import React from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { useAppointment } from "@/hooks/useAppointment";
 import { CranialNerveAssessment } from "@/components/crm/CranialNerveAssessment";
+import { PrimitiveReflexAssessment } from "@/components/crm/PrimitiveReflexAssessment";
 import { Button } from "@/components/ui/button";
-import { ChevronLeft, Brain, Calendar, User, Loader2, RotateCcw, Printer } from "lucide-react";
+import { ChevronLeft, Brain, Calendar, User, Loader2, RotateCcw, Printer, Zap } from "lucide-react";
 import { format } from "date-fns";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Badge } from "@/components/ui/badge";
 import { CRANIAL_NERVES } from "@/data/cranial-nerve-data";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { PRIMITIVE_REFLEXES } from "@/data/primitive-reflex-data";
 
 // Docs Components
+
 import DocsHeader from "@/components/docs/DocsHeader";
 import DocsToolbar from "@/components/docs/DocsToolbar";
 import DocsRuler from "@/components/docs/DocsRuler";
@@ -21,11 +25,17 @@ export default function CranialNerveAssessmentPage() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const { appointment, loading } = useAppointment(id);
+  const [activeTab, setActiveTab] = React.useState("cranial-nerves");
 
-  const outlineItems = CRANIAL_NERVES.map(n => ({
-    id: `nerve-section-${n.id}`,
-    label: `${n.name}: ${n.latinName}`
-  }));
+  const outlineItems = activeTab === "cranial-nerves"
+    ? CRANIAL_NERVES.map(n => ({
+        id: `nerve-section-${n.id}`,
+        label: `${n.name}: ${n.latinName}`
+      }))
+    : PRIMITIVE_REFLEXES.map(r => ({
+        id: `reflex-section-${r.id}`,
+        label: r.name
+      }));
 
   if (loading) {
     return (
@@ -66,9 +76,9 @@ export default function CranialNerveAssessmentPage() {
               <div className="w-12 h-12 rounded-2xl bg-indigo-600 text-white flex items-center justify-center shadow-lg">
                 <Brain size={28} />
               </div>
-              <h1 className="text-4xl font-serif font-bold tracking-tight">Cranial Nerve Assessment</h1>
+              <h1 className="text-4xl font-serif font-bold tracking-tight">Neurological Assessment</h1>
             </div>
-            
+
             <div className="mt-10 grid grid-cols-2 gap-8 text-xs font-bold border-y border-black py-6">
               <div className="flex items-center gap-2">
                 <span className="text-slate-500 uppercase tracking-widest">Client:</span>
@@ -83,7 +93,27 @@ export default function CranialNerveAssessmentPage() {
 
           {/* Assessment Content */}
           <div className="space-y-12">
-            <CranialNerveAssessment appointmentId={id!} />
+            <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+              <TabsList className="grid w-full max-w-md grid-cols-2 mb-12 h-12 p-1 bg-slate-100 rounded-xl mx-auto print:hidden">
+
+                <TabsTrigger value="cranial-nerves" className="rounded-lg font-black text-[10px] uppercase tracking-widest data-[state=active]:bg-white data-[state=active]:shadow-sm">
+                  <Brain className="h-3.5 w-3.5 mr-2" />
+                  Cranial Nerves
+                </TabsTrigger>
+                <TabsTrigger value="primitive-reflexes" className="rounded-lg font-black text-[10px] uppercase tracking-widest data-[state=active]:bg-white data-[state=active]:shadow-sm">
+                  <Zap className="h-3.5 w-3.5 mr-2" />
+                  Primitive Reflexes
+                </TabsTrigger>
+              </TabsList>
+              
+              <TabsContent value="cranial-nerves" className="mt-0 focus-visible:ring-0">
+                <CranialNerveAssessment appointmentId={id!} />
+              </TabsContent>
+              
+              <TabsContent value="primitive-reflexes" className="mt-0 focus-visible:ring-0">
+                <PrimitiveReflexAssessment appointmentId={id!} />
+              </TabsContent>
+            </Tabs>
           </div>
 
           {/* Footer Notes */}

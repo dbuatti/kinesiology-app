@@ -3,35 +3,26 @@
 import React, { useState, useEffect } from "react";
 import { PRIMITIVE_REFLEXES, PrimitiveReflex } from "@/data/primitive-reflex-data";
 import { usePrimitiveReflexTests } from "@/hooks/usePrimitiveReflexTests";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Input } from "@/components/ui/input";
-import { Switch } from "@/components/ui/switch";
-import { Label } from "@/components/ui/label";
-import { 
-  Activity, 
-  Zap, 
-  Star, 
-  Trophy, 
-  Filter, 
-  Info, 
-  ChevronDown, 
-  ChevronUp,
+import { Checkbox } from "@/components/ui/checkbox";
+import {
+  Activity,
+  Zap,
+  Info,
   Search,
   ImageIcon,
   Loader2,
   Sparkles,
-  ExternalLink
+  ExternalLink,
+  FileText,
+  Filter
 } from "lucide-react";
 import { cn } from "@/lib/utils";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
 import { supabase } from "@/integrations/supabase/client";
+import { Input } from "@/components/ui/input";
+import { Switch } from "@/components/ui/switch";
+import { Label } from "@/components/ui/label";
 
 interface PrimitiveReflexAssessmentProps {
   appointmentId: string;
@@ -155,214 +146,140 @@ export function PrimitiveReflexAssessment({ appointmentId }: PrimitiveReflexAsse
         </div>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {filteredReflexes.map((reflex) => {
-          const test = getTestData(reflex.id);
-          const isExpanded = expandedReflexes.has(reflex.id);
-          const images = customImages[reflex.id];
-          const hasImages = images?.primary || images?.secondary;
+      {filteredReflexes.map((reflex) => {
+        const test = getTestData(reflex.id);
+        const images = customImages[reflex.id];
+        const hasImages = images?.primary || images?.secondary;
+        const id = `reflex-section-${reflex.id}`;
 
-          return (
-            <Card 
-              key={reflex.id} 
-              className={cn(
-                "transition-all duration-500 border-2 rounded-[2rem] overflow-hidden group",
-                test.is_primary_priority ? "border-indigo-600 shadow-xl ring-4 ring-indigo-50" : 
-                test.is_priority ? "border-amber-400 shadow-lg" : 
-                test.is_inhibited ? "border-rose-200 bg-rose-50/30" : "border-slate-100 hover:border-indigo-200"
-              )}
-            >
-              <CardHeader className="p-6 pb-4 flex flex-row items-start justify-between space-y-0">
-                <div className="flex items-center gap-4">
-                  <div className={cn(
-                    "w-12 h-12 rounded-xl flex items-center justify-center text-white shadow-lg transition-transform group-hover:scale-110",
-                    reflex.category === 'Foundational' ? 'bg-rose-500' : 
-                    reflex.category === 'Postural' ? 'bg-amber-500' : 'bg-indigo-500'
-                  )}>
-                    <Activity size={24} />
+        return (
+          <section
+            key={reflex.id}
+            id={id}
+            className={cn(
+              "space-y-6 scroll-mt-40 pb-12 border-b border-slate-100 last:border-0 transition-colors",
+              test.is_inhibited && "bg-rose-50/30 -mx-10 px-10 rounded-3xl"
+            )}
+          >
+            <div className="flex items-start justify-between">
+              <div className="space-y-1">
+                <div className="flex items-center gap-3">
+                  <h2 className="text-2xl font-serif font-bold text-black">
+                    {reflex.name}
+                  </h2>
+                  <Badge variant="outline" className="border-black text-black font-black text-[8px] uppercase tracking-widest px-2 py-0.5 rounded-none">
+                    {reflex.category} • {reflex.developmentalWindow}
+                  </Badge>
+                </div>
+                <p className="text-xs text-slate-500 font-medium uppercase tracking-widest">Primitive Reflex Assessment</p>
+              </div>
+
+              <div className="flex items-center gap-4 print:hidden">
+                <div className="flex items-center gap-2">
+                  <Checkbox
+                    id={`inhib-reflex-${reflex.id}`}
+                    checked={test.is_inhibited}
+                    onCheckedChange={(checked) => updateTest(reflex.id, { is_inhibited: !!checked })}
+                    className="h-5 w-5 border-black rounded-none"
+                  />
+                  <label htmlFor={`inhib-reflex-${reflex.id}`} className="text-[10px] font-black uppercase tracking-widest cursor-pointer">
+                    Inhibited
+                  </label>
+                </div>
+                <div className="flex items-center gap-2">
+                  <Checkbox
+                    id={`priority-reflex-${reflex.id}`}
+                    checked={test.is_priority}
+                    onCheckedChange={(checked) => updateTest(reflex.id, { is_priority: !!checked })}
+                    className="h-5 w-5 border-black rounded-none"
+                  />
+                  <label htmlFor={`priority-reflex-${reflex.id}`} className="text-[10px] font-black uppercase tracking-widest cursor-pointer">
+                    Priority
+                  </label>
+                </div>
+                {test.is_primary_priority ? (
+                  <Badge className="bg-black text-white border-none font-black text-[8px] uppercase tracking-widest px-3 py-1 rounded-none">
+                    Primary
+                  </Badge>
+                ) : (
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => updateTest(reflex.id, { is_primary_priority: true })}
+                    className="h-7 px-2 text-[8px] font-black uppercase tracking-widest text-slate-400 hover:text-black"
+                  >
+                    Set Primary
+                  </Button>
+                )}
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+              <div className="space-y-4">
+                <div className="space-y-2">
+                  <div className="flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-slate-400">
+                    <Zap size={12} /> Stimulus
                   </div>
-                  <div className="space-y-0.5">
-                    <div className="flex items-center gap-2">
-                      <span className="text-[10px] font-black uppercase tracking-widest text-slate-400">
-                        {reflex.category}
-                      </span>
-                      <CardTitle className="text-lg font-black tracking-tight">{reflex.name}</CardTitle>
+                  <p className="text-sm font-bold text-slate-900 leading-relaxed">{reflex.stimulus}</p>
+                </div>
+                <div className="space-y-2">
+                  <div className="flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-slate-400">
+                    <Activity size={12} /> Inhibition Pattern
+                  </div>
+                  <p className="text-sm font-bold text-slate-900 leading-relaxed">{reflex.inhibitionPattern}</p>
+                </div>
+                {reflex.pearl && (
+                  <div className="pt-4">
+                    <div className="flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-amber-600 mb-2">
+                      <Sparkles size={12} /> Clinical Pearl
                     </div>
-                    <p className="text-[9px] font-bold text-muted-foreground uppercase tracking-widest">
-                      {reflex.developmentalWindow}
+                    <p className="text-xs text-slate-600 leading-relaxed font-medium">
+                      {reflex.pearl}
                     </p>
                   </div>
-                </div>
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  className="h-8 w-8 rounded-xl text-slate-300 hover:text-indigo-600 hover:bg-indigo-50"
-                  onClick={() => toggleReflex(reflex.id)}
-                >
-                  {isExpanded ? <ChevronUp size={20} /> : <ChevronDown size={20} />}
-                </Button>
-              </CardHeader>
+                )}
+              </div>
 
-              <CardContent className="p-6 pt-0 space-y-6">
-                {hasImages && (
+              <div className="space-y-4">
+                {hasImages ? (
                   <div className={cn(
-                    "grid gap-2 mb-4",
+                    "grid gap-4",
                     images.primary && images.secondary ? "grid-cols-2" : "grid-cols-1"
                   )}>
                     {images.primary && (
-                      <div className="aspect-video rounded-xl overflow-hidden border border-slate-100 bg-slate-50 shadow-inner">
-                        <img src={images.primary} alt="Primary Reference" className="w-full h-full object-cover opacity-90 group-hover:opacity-100 transition-opacity" />
+                      <div className="aspect-video border border-slate-200 p-1 rounded-sm bg-slate-50 overflow-hidden">
+                        <img src={images.primary} alt="Primary" className="w-full h-full object-cover" />
                       </div>
                     )}
                     {images.secondary && (
-                      <div className="aspect-video rounded-xl overflow-hidden border border-slate-100 bg-slate-50 shadow-inner">
-                        <img src={images.secondary} alt="Secondary Reference" className="w-full h-full object-cover opacity-90 group-hover:opacity-100 transition-opacity" />
+                      <div className="aspect-video border border-slate-200 p-1 rounded-sm bg-slate-50 overflow-hidden">
+                        <img src={images.secondary} alt="Secondary" className="w-full h-full object-cover" />
                       </div>
                     )}
                   </div>
-                )}
-
-                <div className="grid grid-cols-4 gap-2">
-                  <TooltipProvider>
-                    <Tooltip>
-                      <TooltipTrigger asChild>
-                        <Button
-                          variant={test.is_inhibited ? "destructive" : "outline"}
-                          size="sm"
-                          className="h-10 px-0 flex flex-col gap-0.5 rounded-xl border-2"
-                          onClick={() => updateTest(reflex.id, { is_inhibited: !test.is_inhibited })}
-                        >
-                          <Activity className="h-4 w-4" />
-                          <span className="text-[8px] uppercase font-black tracking-widest">Reflex</span>
-                        </Button>
-                      </TooltipTrigger>
-                      <TooltipContent className="rounded-xl font-bold text-xs">
-                        <p>{test.is_inhibited ? "Mark as Clear" : "Mark as Inhibited"}</p>
-                      </TooltipContent>
-                    </Tooltip>
-
-                    <Tooltip>
-                      <TooltipTrigger asChild>
-                        <Button
-                          variant={test.is_stimulated ? "secondary" : "outline"}
-                          size="sm"
-                          disabled={!test.is_inhibited}
-                          className={cn(
-                            "h-10 px-0 flex flex-col gap-0.5 rounded-xl border-2",
-                            test.is_stimulated && "bg-indigo-600 text-white border-indigo-600"
-                          )}
-                          onClick={() => updateTest(reflex.id, { is_stimulated: !test.is_stimulated })}
-                        >
-                          <Zap className="h-4 w-4" />
-                          <span className="text-[8px] uppercase font-black tracking-widest">Stim</span>
-                        </Button>
-                      </TooltipTrigger>
-                      <TooltipContent className="rounded-xl font-bold text-xs">
-                        <p>Toggle Stimulation</p>
-                      </TooltipContent>
-                    </Tooltip>
-
-                    <Tooltip>
-                      <TooltipTrigger asChild>
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          className={cn(
-                            "h-10 px-0 flex flex-col gap-0.5 rounded-xl border-2 transition-all",
-                            test.is_priority && "bg-amber-500 text-white hover:bg-amber-600 border-amber-500 shadow-lg shadow-amber-100"
-                          )}
-                          onClick={() => updateTest(reflex.id, { is_priority: !test.is_priority })}
-                        >
-                          <Star className="h-4 w-4" />
-                          <span className="text-[8px] uppercase font-black tracking-widest">Priority</span>
-                        </Button>
-                      </TooltipTrigger>
-                      <TooltipContent className="rounded-xl font-bold text-xs">
-                        <p>Mark as Priority</p>
-                      </TooltipContent>
-                    </Tooltip>
-
-                    <Tooltip>
-                      <TooltipTrigger asChild>
-                        <Button
-                          variant={test.is_primary_priority ? "default" : "outline"}
-                          size="sm"
-                          className={cn(
-                            "h-10 px-0 flex flex-col gap-0.5 rounded-xl border-2 transition-all",
-                            test.is_primary_priority && "bg-indigo-600 text-white border-indigo-600 shadow-lg shadow-indigo-100"
-                          )}
-                          onClick={() => updateTest(reflex.id, { is_primary_priority: !test.is_primary_priority })}
-                        >
-                          <Trophy className="h-4 w-4" />
-                          <span className="text-[8px] uppercase font-black tracking-widest">Primary</span>
-                        </Button>
-                      </TooltipTrigger>
-                      <TooltipContent className="rounded-xl font-bold text-xs">
-                        <p>Mark as Primary Priority</p>
-                      </TooltipContent>
-                    </Tooltip>
-                  </TooltipProvider>
-                </div>
-
-                {isExpanded && (
-                  <div className="space-y-6 pt-4 border-t border-slate-100 animate-in fade-in slide-in-from-top-2 duration-300">
-                    <div className="grid grid-cols-1 gap-4">
-                      <div className="p-4 bg-slate-50 rounded-2xl border border-slate-100">
-                        <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-1 flex items-center gap-1">
-                          <Info size={12} className="text-indigo-500" /> Stimulus
-                        </p>
-                        <p className="text-xs font-bold text-slate-900 leading-relaxed">{reflex.stimulus}</p>
-                      </div>
-                      <div className="p-4 bg-indigo-50/50 rounded-2xl border border-indigo-100">
-                        <p className="text-[9px] font-black text-indigo-400 uppercase tracking-widest mb-1 flex items-center gap-1">
-                          <Zap size={12} /> Inhibition Pattern
-                        </p>
-                        <p className="text-xs font-bold text-indigo-900 leading-relaxed">{reflex.inhibitionPattern}</p>
-                      </div>
-                    </div>
-
-                    {reflex.pearl && (
-                      <div className="p-5 bg-amber-50 rounded-2xl border border-amber-100 relative overflow-hidden">
-                        <div className="absolute top-0 right-0 p-4 opacity-10"><Sparkles size={40} className="text-amber-600" /></div>
-                        <p className="text-[9px] font-black text-amber-600 uppercase tracking-widest mb-2 flex items-center gap-2">
-                          <Info size={14} /> Clinical Pearl
-                        </p>
-                        <p className="text-xs text-amber-900 font-bold leading-relaxed">
-                          "{reflex.pearl}"
-                        </p>
-                      </div>
-                    )}
-
-                    {reflex.pageUrl && (
-                      <Button 
-                        variant="outline" 
-                        size="sm" 
-                        className="w-full rounded-xl text-[10px] font-black uppercase tracking-widest"
-                        onClick={() => window.open(reflex.pageUrl, '_blank')}
-                      >
-                        <ExternalLink className="mr-2 h-3 w-3" />
-                        View Full Protocol
-                      </Button>
-                    )}
+                ) : (
+                  <div className="aspect-video border-2 border-dashed border-slate-100 rounded-xl flex flex-col items-center justify-center text-slate-300">
+                    <ImageIcon size={32} className="mb-2 opacity-20" />
+                    <p className="text-[8px] font-black uppercase tracking-widest">No Reference Images</p>
                   </div>
                 )}
-
-                <div className="relative group/notes">
-                  <Input
-                    placeholder="Add clinical notes..."
-                    className="h-10 rounded-xl border-slate-100 bg-slate-50/50 focus:bg-white transition-all text-xs pr-10 font-medium"
+                
+                <div className="space-y-2">
+                  <div className="flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-slate-400">
+                    <FileText size={12} /> Assessment Notes
+                  </div>
+                  <textarea
                     value={test.notes || ""}
                     onChange={(e) => updateTest(reflex.id, { notes: e.target.value })}
+                    className="w-full min-h-[80px] bg-slate-50 border-none rounded-xl p-4 text-sm font-medium focus:ring-1 focus:ring-indigo-500 transition-all resize-none"
+                    placeholder="Document findings..."
                   />
-                  <div className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-300 group-focus-within/notes:text-indigo-500 transition-colors">
-                    <ImageIcon size={16} />
-                  </div>
                 </div>
-              </CardContent>
-            </Card>
-          );
-        })}
-      </div>
+              </div>
+            </div>
+          </section>
+        );
+      })}
 
       {filteredReflexes.length === 0 && (
         <div className="flex flex-col items-center justify-center py-32 border-2 border-dashed rounded-[3rem] bg-muted/10 border-border">

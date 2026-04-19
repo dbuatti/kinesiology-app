@@ -29,9 +29,11 @@ import {
   LayoutGrid,
   ChevronDown,
   X,
-  BookOpen
+  BookOpen,
+  Brain
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { useNavigate } from 'react-router-dom';
 import { AppointmentWithClient } from '@/types/crm';
 import BaselineTab from './session-tabs/BaselineTab';
 import SympatheticTab from './session-tabs/SympatheticTab';
@@ -108,6 +110,7 @@ const SessionContentSwitcher = ({
   isCloning,
   isCopied
 }: SessionContentSwitcherProps) => {
+  const navigate = useNavigate();
   const [activeView, setActiveView] = useState<ActiveView>('home');
   const [activeTab, setActiveTab] = useState('baseline');
   const [preselectedFinding, setPreselectedFinding] = useState<string | null>(null);
@@ -345,6 +348,9 @@ const SessionContentSwitcher = ({
               </DropdownMenuItem>
               <DropdownMenuItem onClick={() => setActiveView('journal')} className="rounded-xl py-3 px-4 cursor-pointer">
                 <BookOpen size={16} className="mr-3 text-amber-500" /> Session Journal
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => navigate(`/appointments/${appointment.id}/cranial-nerves`)} className="rounded-xl py-3 px-4 cursor-pointer">
+                <Brain size={16} className="mr-3 text-purple-500" /> Cranial Nerve Assessment
               </DropdownMenuItem>
               <DropdownMenuItem onClick={() => setActiveView('kinesiology')} className="rounded-xl py-3 px-4 cursor-pointer">
                 <Heart size={16} className="mr-3 text-rose-500" /> Kinesiology Tools

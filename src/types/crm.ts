@@ -10,6 +10,20 @@ export interface MuscleTestResult {
   created_at: string;
 }
 
+export interface CranialNerveTest {
+  id: string;
+  appointment_id: string;
+  user_id: string;
+  nerve_id: string;
+  is_inhibited: boolean;
+  is_stimulated: boolean;
+  is_priority: boolean;
+  is_primary_priority: boolean;
+  notes: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
 export interface Appointment {
   id: string; 
   display_id?: string;

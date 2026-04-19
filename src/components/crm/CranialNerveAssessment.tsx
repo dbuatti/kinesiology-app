@@ -159,6 +159,7 @@ export function CranialNerveAssessment({ appointmentId }: CranialNerveAssessment
           const test = getTestData(nerve.id);
           const isExpanded = expandedNerves.has(nerve.id);
           const images = customImages[`cn${nerve.id}`];
+          const hasImages = images?.primary || images?.secondary;
 
           return (
             <Card 
@@ -199,10 +200,22 @@ export function CranialNerveAssessment({ appointmentId }: CranialNerveAssessment
               </CardHeader>
 
               <CardContent className="p-6 pt-0 space-y-6">
-                {/* Small Preview Image - only shown when collapsed */}
-                {!isExpanded && images?.primary && (
-                  <div className="aspect-[21/9] rounded-xl overflow-hidden border border-slate-100 bg-slate-50 shadow-inner mb-4">
-                    <img src={images.primary} alt={nerve.name} className="w-full h-full object-cover opacity-80 group-hover:opacity-100 transition-opacity" />
+                {/* Unified Image Grid - Shown in both states if images exist */}
+                {hasImages && (
+                  <div className={cn(
+                    "grid gap-2 mb-4",
+                    images.primary && images.secondary ? "grid-cols-2" : "grid-cols-1"
+                  )}>
+                    {images.primary && (
+                      <div className="aspect-video rounded-xl overflow-hidden border border-slate-100 bg-slate-50 shadow-inner">
+                        <img src={images.primary} alt="Primary Reference" className="w-full h-full object-cover opacity-90 group-hover:opacity-100 transition-opacity" />
+                      </div>
+                    )}
+                    {images.secondary && (
+                      <div className="aspect-video rounded-xl overflow-hidden border border-slate-100 bg-slate-50 shadow-inner">
+                        <img src={images.secondary} alt="Secondary Reference" className="w-full h-full object-cover opacity-90 group-hover:opacity-100 transition-opacity" />
+                      </div>
+                    )}
                   </div>
                 )}
 
@@ -290,22 +303,6 @@ export function CranialNerveAssessment({ appointmentId }: CranialNerveAssessment
 
                 {isExpanded && (
                   <div className="space-y-6 pt-4 border-t border-slate-100 animate-in fade-in slide-in-from-top-2 duration-300">
-                    {/* Full Images in Expanded View */}
-                    {(images?.primary || images?.secondary) && (
-                      <div className="grid grid-cols-2 gap-3">
-                        {images.primary && (
-                          <div className="aspect-square rounded-2xl overflow-hidden border border-slate-100 bg-slate-50 shadow-inner">
-                            <img src={images.primary} alt="Primary Reference" className="w-full h-full object-cover" />
-                          </div>
-                        )}
-                        {images.secondary && (
-                          <div className="aspect-square rounded-2xl overflow-hidden border border-slate-100 bg-slate-50 shadow-inner">
-                            <img src={images.secondary} alt="Secondary Reference" className="w-full h-full object-cover" />
-                          </div>
-                        )}
-                      </div>
-                    )}
-
                     <div className="grid grid-cols-1 gap-4">
                       <div className="p-4 bg-slate-50 rounded-2xl border border-slate-100">
                         <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-1 flex items-center gap-1">

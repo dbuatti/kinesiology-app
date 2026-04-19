@@ -160,7 +160,8 @@ const AssessmentItem = ({
         )}
       </div>
 
-      <div className="absolute inset-0 bg-slate-900/5 backdrop-blur-[1px] opacity-0 group-hover:opacity-100 transition-all duration-300 flex flex-col items-center justify-center gap-2 md:gap-3">
+      {/* Improved Hover Overlay */}
+      <div className="absolute inset-0 bg-slate-900/90 backdrop-blur-sm opacity-0 group-hover:opacity-100 transition-all duration-300 flex flex-col items-center justify-center gap-2 md:gap-3 z-40">
         <div className="flex flex-wrap items-center justify-center gap-1.5 md:gap-2 px-2">
           <Button 
             size="sm" 

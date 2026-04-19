@@ -17,6 +17,10 @@ import {
 import { cn } from "@/lib/utils";
 import { supabase } from "@/integrations/supabase/client";
 
+interface CranialNerveAssessmentProps {
+  appointmentId: string;
+}
+
 interface NerveTestItemProps {
   nerve: any;
   test: any;
@@ -152,7 +156,7 @@ const NerveTestItem = ({ nerve, test, images, onUpdate }: NerveTestItemProps) =>
   );
 };
 
-export function CranialNerveAssessment({ appointmentId }: CranialNerveAssessmentProps) {
+export function CranialNerveAssessment({ appointmentId }: { appointmentId: string }) {
   const { tests, loading, updateTest } = useCranialNerveTests(appointmentId);
   const [customImages, setCustomImages] = useState<Record<string, { primary: string | null, secondary: string | null }>>({});
   const [loadingImages, setLoadingImages] = useState(true);

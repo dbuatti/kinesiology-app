@@ -21,6 +21,10 @@ import { Input } from "@/components/ui/input";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 
+interface PrimitiveReflexAssessmentProps {
+  appointmentId: string;
+}
+
 interface ReflexTestItemProps {
   reflex: PrimitiveReflex;
   test: any;
@@ -155,7 +159,7 @@ const ReflexTestItem = ({ reflex, test, images, onUpdate }: ReflexTestItemProps)
   );
 };
 
-export function PrimitiveReflexAssessment({ appointmentId }: PrimitiveReflexAssessmentProps) {
+export function PrimitiveReflexAssessment({ appointmentId }: { appointmentId: string }) {
   const { tests, loading, updateTest } = usePrimitiveReflexTests(appointmentId);
   const [showOnlyInhibited, setShowOnlyInhibited] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");

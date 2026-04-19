@@ -43,7 +43,7 @@ export default function CranialNerveAssessmentPage() {
 
   return (
     <div className="min-h-screen bg-white p-4 md:p-8">
-      <div className="max-w-6xl mx-auto space-y-8">
+      <div className="max-w-full mx-auto space-y-8">
         {/* Top Navigation - Tabs only as per image */}
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
           <div className="flex justify-center mb-12">

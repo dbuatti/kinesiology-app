@@ -43,8 +43,10 @@ export function PrimitiveReflexAssessment({ appointmentId }: PrimitiveReflexAsse
   const [searchQuery, setSearchQuery] = useState("");
   
   // Track multiple expanded reflexes
-  const [expandedReflexes, setExpandedReflexes] = useState<Set<string>>(new Set());
-  
+  const [expandedReflexes, setExpandedReflexes] = useState<Set<string>>(
+    new Set(PRIMITIVE_REFLEXES.map(r => r.id))
+  );
+
   const [customImages, setCustomImages] = useState<Record<string, { primary: string | null, secondary: string | null }>>({});
   const [loadingImages, setLoadingImages] = useState(true);
 

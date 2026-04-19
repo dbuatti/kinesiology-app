@@ -78,135 +78,122 @@ export function CranialNerveAssessment({ appointmentId }: CranialNerveAssessment
   }
 
   return (
-    <div className="space-y-16">
+    <div className="space-y-24">
       {CRANIAL_NERVES.map((nerve) => {
         const test = getTestData(nerve.id);
         const images = customImages[`cn${nerve.id}`];
         const hasImages = images?.primary || images?.secondary;
-        const id = `nerve-section-${nerve.id}`;
 
         return (
           <section 
             key={nerve.id} 
-            id={id}
-            className={cn(
-              "space-y-6 scroll-mt-40 pb-12 border-b border-slate-100 last:border-0 transition-colors",
-              test.is_inhibited && "bg-rose-50/30 -mx-10 px-10 rounded-3xl"
-            )}
+            className="space-y-8"
           >
-            <div className="flex items-start justify-between">
-              <div className="space-y-1">
-                <div className="flex items-center gap-3">
-                  <h2 className="text-2xl font-serif font-bold text-black">
+            {/* Header Row */}
+            <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 border-b border-slate-100 pb-6">
+              <div className="space-y-2">
+                <div className="flex items-center gap-4">
+                  <h2 className="text-4xl font-serif font-bold text-slate-900">
                     {nerve.name}: {nerve.latinName}
                   </h2>
-                  <Badge variant="outline" className="border-black text-black font-black text-[8px] uppercase tracking-widest px-2 py-0.5 rounded-none">
+                  <Badge variant="outline" className="border-slate-900 text-slate-900 font-black text-[10px] uppercase tracking-widest px-3 py-1 rounded-none">
                     {nerve.nuclei} • {nerve.toneEffect} Tone
                   </Badge>
                 </div>
-                <p className="text-xs text-slate-500 font-medium uppercase tracking-widest">Cranial Nerve Assessment</p>
+                <p className="text-[10px] font-black text-slate-400 uppercase tracking-[0.3em]">Cranial Nerve Assessment</p>
               </div>
 
-              <div className="flex items-center gap-4 print:hidden">
-                <div className="flex items-center gap-2">
+              <div className="flex items-center gap-8 print:hidden">
+                <div className="flex items-center gap-3">
                   <Checkbox 
                     id={`inhib-${nerve.id}`}
                     checked={test.is_inhibited}
                     onCheckedChange={(checked) => updateTest(nerve.id.toString(), { is_inhibited: !!checked })}
-                    className="h-5 w-5 border-black rounded-none"
+                    className="h-6 w-6 border-slate-900 rounded-none"
                   />
-                  <label htmlFor={`inhib-${nerve.id}`} className="text-[10px] font-black uppercase tracking-widest cursor-pointer">
+                  <label htmlFor={`inhib-${nerve.id}`} className="text-[10px] font-black uppercase tracking-widest cursor-pointer text-slate-900">
                     Inhibited
                   </label>
                 </div>
-                <div className="flex items-center gap-2">
+                <div className="flex items-center gap-3">
                   <Checkbox 
                     id={`priority-${nerve.id}`}
                     checked={test.is_priority}
                     onCheckedChange={(checked) => updateTest(nerve.id.toString(), { is_priority: !!checked })}
-                    className="h-5 w-5 border-black rounded-none"
+                    className="h-6 w-6 border-slate-900 rounded-none"
                   />
-                  <label htmlFor={`priority-${nerve.id}`} className="text-[10px] font-black uppercase tracking-widest cursor-pointer">
+                  <label htmlFor={`priority-${nerve.id}`} className="text-[10px] font-black uppercase tracking-widest cursor-pointer text-slate-900">
                     Priority
                   </label>
                 </div>
-                {test.is_primary_priority ? (
-                  <Badge className="bg-black text-white border-none font-black text-[8px] uppercase tracking-widest px-3 py-1 rounded-none">
-                    Primary
-                  </Badge>
-                ) : (
-                  <Button 
-                    variant="ghost" 
-                    size="sm" 
-                    onClick={() => updateTest(nerve.id.toString(), { is_primary_priority: true })}
-                    className="h-7 px-2 text-[8px] font-black uppercase tracking-widest text-slate-400 hover:text-black"
-                  >
-                    Set Primary
-                  </Button>
-                )}
+                <Button 
+                  variant="ghost" 
+                  size="sm" 
+                  onClick={() => updateTest(nerve.id.toString(), { is_primary_priority: !test.is_primary_priority })}
+                  className={cn(
+                    "h-8 px-3 text-[10px] font-black uppercase tracking-widest transition-all",
+                    test.is_primary_priority ? "bg-slate-900 text-white" : "text-slate-400 hover:text-slate-900"
+                  )}
+                >
+                  {test.is_primary_priority ? "Primary Set" : "Set Primary"}
+                </Button>
               </div>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-              <div className="space-y-4">
-                <div className="space-y-2">
+            {/* Content Grid */}
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-12">
+              {/* Left Column: Info */}
+              <div className="lg:col-span-6 space-y-10">
+                <div className="space-y-3">
                   <div className="flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-slate-400">
-                    <Hand size={12} /> Reflex Point
+                    <Hand size={14} /> Reflex Point
                   </div>
-                  <p className="text-sm font-bold text-slate-900 leading-relaxed">{nerve.reflexPoint}</p>
+                  <p className="text-xl font-bold text-slate-900 leading-tight">{nerve.reflexPoint}</p>
                 </div>
-                <div className="space-y-2">
+                
+                <div className="space-y-3">
                   <div className="flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-slate-400">
-                    <PlayCircle size={12} /> Stimulus
+                    <PlayCircle size={14} /> Stimulus
                   </div>
-                  <p className="text-sm font-bold text-slate-900 leading-relaxed">{nerve.stimulus}</p>
-                </div>
-                <div className="pt-4">
-                  <div className="flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-amber-600 mb-2">
-                    <Sparkles size={12} /> Clinical Pearl
-                  </div>
-                  <p className="text-xs text-slate-600 leading-relaxed font-medium">
-                    {nerve.clinicalPearl}
-                  </p>
+                  <p className="text-xl font-bold text-slate-900 leading-tight">{nerve.stimulus}</p>
                 </div>
               </div>
 
-              <div className="space-y-4">
+              {/* Right Column: Images */}
+              <div className="lg:col-span-6">
                 {hasImages ? (
-                  <div className={cn(
-                    "grid gap-4",
-                    images.primary && images.secondary ? "grid-cols-2" : "grid-cols-1"
-                  )}>
+                  <div className="grid grid-cols-2 gap-4">
                     {images.primary && (
-                      <div className="aspect-video border border-slate-200 p-1 rounded-sm bg-slate-50 overflow-hidden">
-                        <img src={images.primary} alt="Primary" className="w-full h-full object-cover" />
+                      <div className="aspect-video border-2 border-slate-100 p-1 rounded-2xl bg-slate-50 overflow-hidden shadow-sm">
+                        <img src={images.primary} alt="Primary" className="w-full h-full object-cover rounded-xl" />
                       </div>
                     )}
                     {images.secondary && (
-                      <div className="aspect-video border border-slate-200 p-1 rounded-sm bg-slate-50 overflow-hidden">
-                        <img src={images.secondary} alt="Secondary" className="w-full h-full object-cover" />
+                      <div className="aspect-video border-2 border-slate-100 p-1 rounded-2xl bg-slate-50 overflow-hidden shadow-sm">
+                        <img src={images.secondary} alt="Secondary" className="w-full h-full object-cover rounded-xl" />
                       </div>
                     )}
                   </div>
                 ) : (
-                  <div className="aspect-video border-2 border-dashed border-slate-100 rounded-xl flex flex-col items-center justify-center text-slate-300">
+                  <div className="aspect-video border-2 border-dashed border-slate-100 rounded-[2rem] flex flex-col items-center justify-center text-slate-300 bg-slate-50/50">
                     <ImageIcon size={32} className="mb-2 opacity-20" />
                     <p className="text-[8px] font-black uppercase tracking-widest">No Reference Images</p>
                   </div>
                 )}
-                
-                <div className="space-y-2">
-                  <div className="flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-slate-400">
-                    <FileText size={12} /> Assessment Notes
-                  </div>
-                  <textarea 
-                    value={test.notes || ""}
-                    onChange={(e) => updateTest(nerve.id.toString(), { notes: e.target.value })}
-                    className="w-full min-h-[80px] bg-slate-50 border-none rounded-xl p-4 text-sm font-medium focus:ring-1 focus:ring-indigo-500 transition-all resize-none"
-                    placeholder="Document findings..."
-                  />
-                </div>
               </div>
+            </div>
+
+            {/* Notes Section */}
+            <div className="space-y-4">
+              <div className="flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-slate-400">
+                <FileText size={14} /> Assessment Notes
+              </div>
+              <textarea 
+                value={test.notes || ""}
+                onChange={(e) => updateTest(nerve.id.toString(), { notes: e.target.value })}
+                className="w-full min-h-[100px] bg-slate-50/50 border-none rounded-[2rem] p-8 text-base font-medium focus:ring-2 focus:ring-indigo-500 transition-all resize-none shadow-inner"
+                placeholder="Document findings..."
+              />
             </div>
           </section>
         );

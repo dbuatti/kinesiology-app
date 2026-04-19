@@ -327,21 +327,6 @@ export function CranialNerveAssessment({ appointmentId }: CranialNerveAssessment
                         "{nerve.clinicalPearl}"
                       </p>
                     </div>
-
-                    {(nerve.videoUrl || nerve.pageUrl) && (
-                      <div className="flex gap-2 pt-2">
-                        {nerve.videoUrl && (
-                          <Button variant="outline" size="sm" className="flex-1 h-9 rounded-xl text-[10px] font-black uppercase tracking-widest border-indigo-100 text-indigo-600 hover:bg-indigo-50" asChild>
-                            <a href={nerve.videoUrl} target="_blank" rel="noopener noreferrer">Watch Video</a>
-                          </Button>
-                        )}
-                        {nerve.pageUrl && (
-                          <Button variant="outline" size="sm" className="flex-1 h-9 rounded-xl text-[10px] font-black uppercase tracking-widest border-slate-200 text-slate-600" asChild>
-                            <a href={nerve.pageUrl} target="_blank" rel="noopener noreferrer">View Details</a>
-                          </Button>
-                        )}
-                      </div>
-                    )}
                   </div>
                 )}
 

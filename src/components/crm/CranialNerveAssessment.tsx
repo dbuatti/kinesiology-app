@@ -40,7 +40,12 @@ export function CranialNerveAssessment({ appointmentId }: CranialNerveAssessment
   const { tests, loading, updateTest } = useCranialNerveTests(appointmentId);
   const [showOnlyInhibited, setShowOnlyInhibited] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
-  const [expandedNerve, setExpandedNerve] = useState<number | null>(null);
+  
+  // Track multiple expanded nerves, initialized with all nerve IDs
+  const [expandedNerves, setExpandedNerves] = useState<Set<number>>(
+    new Set(CRANIAL_NERVES.map(n => n.id))
+  );
+  
   const [customImages, setCustomImages] = useState<Record<string, { primary: string | null, secondary: string | null }>>({});
   const [loadingImages, setLoadingImages] = useState(true);
 
@@ -72,6 +77,15 @@ export function CranialNerveAssessment({ appointmentId }: CranialNerveAssessment
 
     fetchImages();
   }, []);
+
+  const toggleNerve = (id: number) => {
+    setExpandedNerves(prev => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
+  };
 
   const getTestData = (nerveId: number) => {
     return tests.find(t => t.nerve_id === nerveId.toString()) || {
@@ -143,7 +157,7 @@ export function CranialNerveAssessment({ appointmentId }: CranialNerveAssessment
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {filteredNerves.map((nerve) => {
           const test = getTestData(nerve.id);
-          const isExpanded = expandedNerve === nerve.id;
+          const isExpanded = expandedNerves.has(nerve.id);
           const images = customImages[`cn${nerve.id}`];
 
           return (
@@ -178,14 +192,14 @@ export function CranialNerveAssessment({ appointmentId }: CranialNerveAssessment
                   variant="ghost"
                   size="icon"
                   className="h-8 w-8 rounded-xl text-slate-300 hover:text-indigo-600 hover:bg-indigo-50"
-                  onClick={() => setExpandedNerve(isExpanded ? null : nerve.id)}
+                  onClick={() => toggleNerve(nerve.id)}
                 >
                   {isExpanded ? <ChevronUp size={20} /> : <ChevronDown size={20} />}
                 </Button>
               </CardHeader>
 
               <CardContent className="p-6 pt-0 space-y-6">
-                {/* Small Preview Image */}
+                {/* Small Preview Image - only shown when collapsed */}
                 {!isExpanded && images?.primary && (
                   <div className="aspect-[21/9] rounded-xl overflow-hidden border border-slate-100 bg-slate-50 shadow-inner mb-4">
                     <img src={images.primary} alt={nerve.name} className="w-full h-full object-cover opacity-80 group-hover:opacity-100 transition-opacity" />

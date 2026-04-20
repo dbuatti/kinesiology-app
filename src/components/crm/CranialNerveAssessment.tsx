@@ -69,7 +69,7 @@ const NerveTestItem = ({ nerve, test, statusL, statusR, images, onUpdate }: Nerv
       test.is_primary_priority ? "bg-indigo-50/30 border-indigo-200 ring-1 ring-indigo-100" : 
       test.is_priority ? "bg-amber-50/30 border-amber-200" : 
       !isAnyInhibited && (statusL === 'Clear' || statusR === 'Clear') ? "bg-emerald-50/10 border-emerald-100 opacity-80" :
-      "border-slate-100"
+      "border-slate-100 bg-white"
     )}>
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-2 border-b border-slate-100/50 pb-2">
         <div className="flex items-center gap-3">

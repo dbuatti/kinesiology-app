@@ -18,6 +18,7 @@ export interface CranialNerve {
   videoUrl?: string;
   pageUrl?: string;
   delineationGuide?: string;
+  isLateralized?: boolean; // Added to explicitly control L/R display
 }
 
 export const BRAINSTEM_KEYS: Record<BrainstemNuclei, { description: string; stim: string }> = {
@@ -52,6 +53,7 @@ export const CRANIAL_NERVES: CranialNerve[] = [
     stimulus: "Hold Yin Tang as the reflex point. Stimulus: smell an essential oil in the nostril.",
     clinicalPearl: "The only sense that bypasses the thalamus. Essential for deep emotional memory work.",
     color: "bg-purple-50",
+    isLateralized: true,
     videoUrl: "https://embed-ssl.wistia.com/deliveries/d2a02ad26550033565f709c63fa2d85a18ff2c5d.mp4",
     pageUrl: "https://functional-neuro-health.mykajabi.com/products/functional-neuro-approach-foundations/categories/2152127509/posts/2167205372"
   },
@@ -67,6 +69,7 @@ export const CRANIAL_NERVES: CranialNerve[] = [
     stimulus: "Hold BL2 as the reflex point. Stimulus: shine light into the eye from specific quadrants (Superior, Inferior, Nasal, Temporal) to isolate visual field deficits.",
     clinicalPearl: "Right eye projects to left occipital cortex. Use directional light to isolate specific visual field deficits. Nasal field of one eye and temporal of the other map to the same hemisphere.",
     color: "bg-purple-600",
+    isLateralized: true,
     videoUrl: "https://embed-ssl.wistia.com/deliveries/b874823f0dc614160512b66bcb5b516f50f9eb2d.mp4",
     pageUrl: "https://functional-neuro-health.mykajabi.com/products/functional-neuro-approach-foundations/categories/2152127509/posts/2167779783"
   },
@@ -81,6 +84,7 @@ export const CRANIAL_NERVES: CranialNerve[] = [
     stimulus: "Lightly touch the eye lids. Stimulus: move eyes up, down, medial.",
     clinicalPearl: "Shares midbrain housing with CN IV. Midbrain nuclei control flexor tone.",
     color: "bg-amber-500",
+    isLateralized: true,
     videoUrl: "https://embed-ssl.wistia.com/deliveries/e469a668620604adbb0a0c69a192e7af50579078.mp4",
     pageUrl: "https://functional-neuro-health.mykajabi.com/products/functional-neuro-approach-foundations/categories/2152127509/posts/2167779787"
   },
@@ -95,6 +99,7 @@ export const CRANIAL_NERVES: CranialNerve[] = [
     stimulus: "Lightly touch the eyes. Stimulus: move eyes towards the tip of the nose.",
     clinicalPearl: "The only cranial nerve that exits dorsally from the brainstem.",
     color: "bg-amber-600",
+    isLateralized: true,
     videoUrl: "https://embed-ssl.wistia.com/deliveries/e469a668620604adbb0a0c69a192e7af50579078.mp4",
     pageUrl: "https://functional-neuro-health.mykajabi.com/products/functional-neuro-approach-foundations/categories/2152127509/posts/2167779806"
   },
@@ -109,6 +114,7 @@ export const CRANIAL_NERVES: CranialNerve[] = [
     stimulus: "Place hand across the mandible. Stimulate three sensory branches: V1 (Forehead/Eyes), V2 (Cheeks/Upper Lip), and V3 (Jaw/Lower Lip) using light touch or brushing.",
     clinicalPearl: "The 'negative antidote' to the Vagus nerve. Heavily tied to the sympathetic nervous system.",
     color: "bg-indigo-500",
+    isLateralized: true,
     videoUrl: "https://embed-ssl.wistia.com/deliveries/10de3ccab10de3ccab1d8595c4c3e451aea5b91c84cf6213f.mp4",
     pageUrl: "https://functional-neuro-health.mykajabi.com/products/functional-neuro-approach-foundations/categories/2152127509/posts/2167780073"
   },
@@ -123,6 +129,7 @@ export const CRANIAL_NERVES: CranialNerve[] = [
     stimulus: "Lightly touch the eyes. Stimulus: move eyes laterally (look far left/right).",
     clinicalPearl: "Tests the lateral rectus muscle. Essential for horizontal scanning.",
     color: "bg-indigo-600",
+    isLateralized: true,
     videoUrl: "https://embed-ssl.wistia.com/deliveries/e469a668620604adbb0a0c69a192e7af50579078.mp4",
     pageUrl: "https://functional-neuro-health.mykajabi.com/products/functional-neuro-approach-foundations/categories/2152127509/posts/2167780077"
   },
@@ -137,6 +144,7 @@ export const CRANIAL_NERVES: CranialNerve[] = [
     stimulus: "Place hand along temporal area. Stimulus: squeeze eye shut, facial expressions.",
     clinicalPearl: "Test facial symmetry. High relationship to loud sounds and protective startle responses.",
     color: "bg-indigo-700",
+    isLateralized: true,
     videoUrl: "https://embed-ssl.wistia.com/deliveries/e80792dddb73e4f494dd7f56a6cb1958e571e5ae.mp4",
     pageUrl: "https://functional-neuro-health.mykajabi.com/products/functional-neuro-approach-foundations/categories/2152127509/posts/2167780903"
   },
@@ -152,6 +160,7 @@ export const CRANIAL_NERVES: CranialNerve[] = [
     delineationGuide: "To delineate: 1. Hold reflex point (finger in ear). 2. Test with sound only (snap fingers or use tuning fork) -> if IM inhibits, it's a Cochlear priority. 3. Test with head motion only (slow rotation or tilt) -> if IM inhibits, it's a Vestibular priority.",
     clinicalPearl: "A highly powerful nerve frequently involved in head injuries and anxiety.",
     color: "bg-indigo-800",
+    isLateralized: true,
     videoUrl: "https://embed-ssl.wistia.com/deliveries/465c56ed15ec74012154656cd87ff84d9307a40c.mp4",
     pageUrl: "https://functional-neuro-health.mykajabi.com/products/functional-neuro-approach-foundations/categories/2152127509/posts/2167780911"
   },
@@ -167,6 +176,7 @@ export const CRANIAL_NERVES: CranialNerve[] = [
     stimulus: "Hold GB21. Stimulus: humming.",
     clinicalPearl: "Works in a tight neurological cluster with CN 10 and CN 11.",
     color: "bg-rose-50",
+    isLateralized: true,
     videoUrl: "https://embed-ssl.wistia.com/deliveries/c951c07cedadced7e1d2291c60a8dc22d90ac90a.mp4",
     pageUrl: "https://functional-neuro-health.mykajabi.com/products/functional-neuro-approach-foundations/categories/2152127509/posts/2167780916"
   },
@@ -181,6 +191,7 @@ export const CRANIAL_NERVES: CranialNerve[] = [
     stimulus: "Place hand along Occiput-Atlas. Stimulus: humming, swallowing, 'Aaah'.",
     clinicalPearl: "The 'King' of the parasympathetic nervous system. Arises from the medulla.",
     color: "bg-rose-600",
+    isLateralized: true,
     videoUrl: "https://embed-ssl.wistia.com/deliveries/347fefe7d351b6760c82e9cc68a47d37b0d53906.mp4",
     pageUrl: "https://functional-neuro-health.mykajabi.com/products/functional-neuro-health-the-peace-method-28beacafb4a88026b9a9ccdefa4e1de9"
   },
@@ -195,6 +206,7 @@ export const CRANIAL_NERVES: CranialNerve[] = [
     stimulus: "Hold posterior ramus of jaw. Stimulus: shoulder shrug + head rotation.",
     clinicalPearl: "Key player in head, neck, shoulder, and visual issues.",
     color: "bg-rose-700",
+    isLateralized: true,
     videoUrl: "https://embed-ssl.wistia.com/deliveries/8dc68372fa942300d450b03ec8487454cacb02c7.mp4",
     pageUrl: "https://functional-neuro-health.mykajabi.com/products/functional-neuro-approach-foundations/categories/2152591139/posts/2166647725"
   },
@@ -209,6 +221,7 @@ export const CRANIAL_NERVES: CranialNerve[] = [
     stimulus: "Hold sulcus under chin. Stimulus: tongue movement in all directions.",
     clinicalPearl: "Vital for midline stability. Deviation indicates weakness in contralateral medulla.",
     color: "bg-rose-800",
+    isLateralized: true,
     videoUrl: "https://embed-ssl.wistia.com/deliveries/c951c07cedadced7e1d2291c60a8dc22d90ac90a.mp4",
     pageUrl: "https://functional-neuro-health.mykajabi.com/products/functional-neuro-approach-foundations/categories/2152127509/posts/2167780916"
   }

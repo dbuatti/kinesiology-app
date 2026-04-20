@@ -13,7 +13,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 export default function ClinicalProtocolsPage() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
-  const { appointment, loading } = useAppointment(id);
+  const { appointment, loading, updatePriorityPattern } = useAppointment(id);
   const [activeTab, setActiveTab] = React.useState("cranial-nerves");
 
   if (loading) {
@@ -68,11 +68,19 @@ export default function ClinicalProtocolsPage() {
           </div>
           
           <TabsContent value="cranial-nerves" className="mt-0 focus-visible:ring-0 animate-in fade-in duration-300">
-            <CranialNerveAssessment appointmentId={id!} />
+            <CranialNerveAssessment 
+              appointmentId={id!} 
+              priorityPattern={appointment.priority_pattern}
+              updatePriorityPattern={updatePriorityPattern}
+            />
           </TabsContent>
           
           <TabsContent value="primitive-reflexes" className="mt-0 focus-visible:ring-0 animate-in fade-in duration-300">
-            <PrimitiveReflexAssessment appointmentId={id!} />
+            <PrimitiveReflexAssessment 
+              appointmentId={id!} 
+              priorityPattern={appointment.priority_pattern}
+              updatePriorityPattern={updatePriorityPattern}
+            />
           </TabsContent>
 
           <TabsContent value="emotions" className="mt-0 focus-visible:ring-0 animate-in fade-in duration-300">

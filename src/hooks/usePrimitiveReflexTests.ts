@@ -5,7 +5,11 @@ import { supabase } from "@/integrations/supabase/client";
 import { PrimitiveReflexTest } from "@/types/crm";
 import { showError } from "@/utils/toast";
 
-export function usePrimitiveReflexTests(appointmentId: string | undefined) {
+export function usePrimitiveReflexTests(
+  appointmentId: string | undefined,
+  priorityPattern?: string | null,
+  updatePriorityPattern?: (category: string, itemName: string, status: 'Clear' | 'Inhibited' | null, side?: 'L' | 'R') => Promise<void>
+) {
   const [tests, setTests] = useState<PrimitiveReflexTest[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -28,7 +32,7 @@ export function usePrimitiveReflexTests(appointmentId: string | undefined) {
     }
   }, [appointmentId]);
 
-  const updateTest = async (reflexId: string, updates: Partial<PrimitiveReflexTest>) => {
+  const updateTest = async (reflexId: string, updates: Partial<PrimitiveReflexTest>, side?: 'L' | 'R') => {
     if (!appointmentId) return;
 
     try {
@@ -36,6 +40,13 @@ export function usePrimitiveReflexTests(appointmentId: string | undefined) {
       if (!userData.user) throw new Error("User not authenticated");
 
       const existingTest = tests.find(t => t.reflex_id === reflexId);
+
+      // Handle inhibition sync to priority_pattern
+      if (updates.is_inhibited !== undefined && updatePriorityPattern) {
+        // We need the reflex name for the pattern. reflexId is usually the name or a slug.
+        // For primitive reflexes, we'll use the ID as the name in the pattern.
+        await updatePriorityPattern('primitiveReflexes', reflexId, updates.is_inhibited ? 'Inhibited' : 'Clear', side);
+      }
 
       // If setting primary priority, unset others in the local state and DB
       if (updates.is_primary_priority) {

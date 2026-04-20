@@ -20,15 +20,20 @@ import { supabase } from "@/integrations/supabase/client";
 import { Input } from "@/components/ui/input";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
+import { safeParse } from "@/utils/safe-json";
 
 interface ReflexTestItemProps {
   reflex: PrimitiveReflex;
   test: any;
+  statusL?: 'Clear' | 'Inhibited';
+  statusR?: 'Clear' | 'Inhibited';
+  statusMidline?: 'Clear' | 'Inhibited';
+  isLateralized: boolean;
   images: { primary: string | null, secondary: string | null } | undefined;
-  onUpdate: (reflexId: string, updates: any) => Promise<void>;
+  onUpdate: (reflexId: string, updates: any, side?: 'L' | 'R') => Promise<void>;
 }
 
-const ReflexTestItem = ({ reflex, test, images, onUpdate }: ReflexTestItemProps) => {
+const ReflexTestItem = ({ reflex, test, statusL, statusR, statusMidline, isLateralized, images, onUpdate }: ReflexTestItemProps) => {
   const [localNotes, setLocalNotes] = useState(test.notes || "");
   const saveTimeoutRef = React.useRef<NodeJS.Timeout | null>(null);
 
@@ -94,17 +99,47 @@ const ReflexTestItem = ({ reflex, test, images, onUpdate }: ReflexTestItemProps)
 
         {/* Right: Controls */}
         <div className="flex items-center gap-3 shrink-0 print:hidden">
-          <div className="flex items-center gap-1">
-            <Checkbox 
-              id={`inhib-reflex-${reflex.id}`}
-              checked={test.is_inhibited}
-              onCheckedChange={(checked) => onUpdate(reflex.id, { is_inhibited: !!checked })}
-              className="h-3 w-3 border-slate-400 rounded-none"
-            />
-            <label htmlFor={`inhib-reflex-${reflex.id}`} className="text-[8px] font-black uppercase tracking-widest cursor-pointer text-slate-500">
-              Inhib
-            </label>
+          <div className="flex items-center gap-3 border-r border-slate-100 pr-3">
+            {isLateralized ? (
+              <>
+                <div className="flex items-center gap-1">
+                  <Checkbox 
+                    id={`inhib-l-${reflex.id}`}
+                    checked={statusL === 'Inhibited'}
+                    onCheckedChange={(checked) => onUpdate(reflex.id, { is_inhibited: !!checked }, 'L')}
+                    className="h-3 w-3 border-slate-400 rounded-none"
+                  />
+                  <label htmlFor={`inhib-l-${reflex.id}`} className="text-[8px] font-black uppercase tracking-widest cursor-pointer text-slate-500">
+                    L
+                  </label>
+                </div>
+                <div className="flex items-center gap-1">
+                  <Checkbox 
+                    id={`inhib-r-${reflex.id}`}
+                    checked={statusR === 'Inhibited'}
+                    onCheckedChange={(checked) => onUpdate(reflex.id, { is_inhibited: !!checked }, 'R')}
+                    className="h-3 w-3 border-slate-400 rounded-none"
+                  />
+                  <label htmlFor={`inhib-r-${reflex.id}`} className="text-[8px] font-black uppercase tracking-widest cursor-pointer text-slate-500">
+                    R
+                  </label>
+                </div>
+              </>
+            ) : (
+              <div className="flex items-center gap-1">
+                <Checkbox 
+                  id={`inhib-mid-${reflex.id}`}
+                  checked={statusMidline === 'Inhibited'}
+                  onCheckedChange={(checked) => onUpdate(reflex.id, { is_inhibited: !!checked })}
+                  className="h-3 w-3 border-slate-400 rounded-none"
+                />
+                <label htmlFor={`inhib-mid-${reflex.id}`} className="text-[8px] font-black uppercase tracking-widest cursor-pointer text-slate-500">
+                  Inhib
+                </label>
+              </div>
+            )}
           </div>
+
           <div className="flex items-center gap-1">
             <Checkbox 
               id={`priority-reflex-${reflex.id}`}
@@ -144,11 +179,22 @@ const ReflexTestItem = ({ reflex, test, images, onUpdate }: ReflexTestItemProps)
   );
 };
 
-export function PrimitiveReflexAssessment({ appointmentId }: { appointmentId: string }) {
-  const { tests, loading, updateTest } = usePrimitiveReflexTests(appointmentId);
+export function PrimitiveReflexAssessment({ 
+  appointmentId, 
+  priorityPattern, 
+  updatePriorityPattern 
+}: { 
+  appointmentId: string;
+  priorityPattern?: string | null;
+  updatePriorityPattern?: (category: string, itemName: string, status: 'Clear' | 'Inhibited' | null, side?: 'L' | 'R') => Promise<void>;
+}) {
+  const { tests, loading, updateTest } = usePrimitiveReflexTests(appointmentId, priorityPattern, updatePriorityPattern);
   const [showOnlyInhibited, setShowOnlyInhibited] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [customImages, setCustomImages] = useState<Record<string, { primary: string | null, secondary: string | null }>>({});
+
+  const pattern = useMemo(() => safeParse(priorityPattern, {} as any), [priorityPattern]);
+  const reflexPattern = pattern.primitiveReflexes || {};
 
   useEffect(() => {
     const fetchImages = async () => {
@@ -167,6 +213,11 @@ export function PrimitiveReflexAssessment({ appointmentId }: { appointmentId: st
     };
     fetchImages();
   }, []);
+
+  const isLateralizedReflex = (name: string) => {
+    const lateralized = ['ATNR', 'Spinal Galant', 'Babinski', 'Rooting', 'Palmar'];
+    return lateralized.some(l => name.includes(l));
+  };
 
   const sortedReflexes = useMemo(() => {
     return [...PRIMITIVE_REFLEXES]
@@ -193,7 +244,7 @@ export function PrimitiveReflexAssessment({ appointmentId }: { appointmentId: st
     return (
       <div className="flex flex-col items-center justify-center p-12 gap-4">
         <Loader2 className="animate-spin text-indigo-600" size={32} />
-        <p className="text-xs font-black uppercase tracking-widest text-slate-400">Loading Assessment...</p>
+        <p className="text-xs font-bold uppercase tracking-widest text-slate-400">Loading Assessment...</p>
       </div>
     );
   }
@@ -230,15 +281,22 @@ export function PrimitiveReflexAssessment({ appointmentId }: { appointmentId: st
         </div>
       </div>
 
-      {sortedReflexes.map((reflex) => (
-        <ReflexTestItem 
-          key={reflex.id}
-          reflex={reflex}
-          test={tests.find(t => t.reflex_id === reflex.id) || {}}
-          images={customImages[reflex.id]}
-          onUpdate={updateTest}
-        />
-      ))}
+      {sortedReflexes.map((reflex) => {
+        const isLateralized = isLateralizedReflex(reflex.name);
+        return (
+          <ReflexTestItem 
+            key={reflex.id}
+            reflex={reflex}
+            test={tests.find(t => t.reflex_id === reflex.id) || {}}
+            statusL={reflexPattern[`${reflex.name} (L)`]}
+            statusR={reflexPattern[`${reflex.name} (R)`]}
+            statusMidline={reflexPattern[reflex.name]}
+            isLateralized={isLateralized}
+            images={customImages[reflex.id]}
+            onUpdate={updateTest}
+          />
+        );
+      })}
     </div>
   );
 }

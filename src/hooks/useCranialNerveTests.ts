@@ -4,8 +4,13 @@ import { useState, useEffect, useCallback } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { CranialNerveTest } from "@/types/crm";
 import { showError } from "@/utils/toast";
+import { safeParse } from "@/utils/safe-json";
 
-export function useCranialNerveTests(appointmentId: string | undefined) {
+export function useCranialNerveTests(
+  appointmentId: string | undefined,
+  priorityPattern?: string | null,
+  updatePriorityPattern?: (category: string, itemName: string, status: 'Clear' | 'Inhibited' | null, side?: 'L' | 'R') => Promise<void>
+) {
   const [tests, setTests] = useState<CranialNerveTest[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -28,7 +33,7 @@ export function useCranialNerveTests(appointmentId: string | undefined) {
     }
   }, [appointmentId]);
 
-  const updateTest = async (nerveId: string, updates: Partial<CranialNerveTest>) => {
+  const updateTest = async (nerveId: string, updates: Partial<CranialNerveTest>, side?: 'L' | 'R') => {
     if (!appointmentId) return;
 
     try {
@@ -36,6 +41,14 @@ export function useCranialNerveTests(appointmentId: string | undefined) {
       if (!userData.user) throw new Error("User not authenticated");
 
       const existingTest = tests.find(t => t.nerve_id === nerveId);
+
+      // Handle inhibition sync to priority_pattern
+      if (updates.is_inhibited !== undefined && updatePriorityPattern) {
+        const nerveName = `CN ${nerveId}`; // This should match the naming convention in data files
+        // We need to find the actual name from the data if possible, but CN ID is usually enough for mapping
+        // For now, we'll rely on the component passing the correct side
+        await updatePriorityPattern('cranialNerves', nerveName, updates.is_inhibited ? 'Inhibited' : 'Clear', side);
+      }
 
       // If setting primary priority, unset others in the local state and DB
       if (updates.is_primary_priority) {

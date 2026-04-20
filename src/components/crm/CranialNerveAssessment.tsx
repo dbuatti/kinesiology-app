@@ -16,15 +16,18 @@ import {
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { supabase } from "@/integrations/supabase/client";
+import { safeParse } from "@/utils/safe-json";
 
 interface NerveTestItemProps {
   nerve: any;
   test: any;
+  statusL?: 'Clear' | 'Inhibited';
+  statusR?: 'Clear' | 'Inhibited';
   images: { primary: string | null, secondary: string | null } | undefined;
-  onUpdate: (nerveId: string, updates: any) => Promise<void>;
+  onUpdate: (nerveId: string, updates: any, side?: 'L' | 'R') => Promise<void>;
 }
 
-const NerveTestItem = ({ nerve, test, images, onUpdate }: NerveTestItemProps) => {
+const NerveTestItem = ({ nerve, test, statusL, statusR, images, onUpdate }: NerveTestItemProps) => {
   const [localNotes, setLocalNotes] = useState(test.notes || "");
   const saveTimeoutRef = React.useRef<NodeJS.Timeout | null>(null);
 
@@ -61,17 +64,31 @@ const NerveTestItem = ({ nerve, test, images, onUpdate }: NerveTestItemProps) =>
         </div>
 
         <div className="flex items-center gap-4 print:hidden">
-          <div className="flex items-center gap-1.5">
-            <Checkbox 
-              id={`inhib-${nerve.id}`}
-              checked={test.is_inhibited}
-              onCheckedChange={(checked) => onUpdate(nerve.id.toString(), { is_inhibited: !!checked })}
-              className="h-3.5 w-3.5 border-slate-400 rounded-none"
-            />
-            <label htmlFor={`inhib-${nerve.id}`} className="text-[8px] font-black uppercase tracking-widest cursor-pointer text-slate-500">
-              Inhibited
-            </label>
+          <div className="flex items-center gap-3 border-r border-slate-100 pr-4">
+            <div className="flex items-center gap-1.5">
+              <Checkbox 
+                id={`inhib-l-${nerve.id}`}
+                checked={statusL === 'Inhibited'}
+                onCheckedChange={(checked) => onUpdate(nerve.id.toString(), { is_inhibited: !!checked }, 'L')}
+                className="h-3.5 w-3.5 border-slate-400 rounded-none"
+              />
+              <label htmlFor={`inhib-l-${nerve.id}`} className="text-[8px] font-black uppercase tracking-widest cursor-pointer text-slate-500">
+                L Inhib
+              </label>
+            </div>
+            <div className="flex items-center gap-1.5">
+              <Checkbox 
+                id={`inhib-r-${nerve.id}`}
+                checked={statusR === 'Inhibited'}
+                onCheckedChange={(checked) => onUpdate(nerve.id.toString(), { is_inhibited: !!checked }, 'R')}
+                className="h-3.5 w-3.5 border-slate-400 rounded-none"
+              />
+              <label htmlFor={`inhib-r-${nerve.id}`} className="text-[8px] font-black uppercase tracking-widest cursor-pointer text-slate-500">
+                R Inhib
+              </label>
+            </div>
           </div>
+
           <div className="flex items-center gap-1.5">
             <Checkbox 
               id={`priority-${nerve.id}`}
@@ -153,9 +170,20 @@ const NerveTestItem = ({ nerve, test, images, onUpdate }: NerveTestItemProps) =>
   );
 };
 
-export function CranialNerveAssessment({ appointmentId }: { appointmentId: string }) {
-  const { tests, loading, updateTest } = useCranialNerveTests(appointmentId);
+export function CranialNerveAssessment({ 
+  appointmentId, 
+  priorityPattern, 
+  updatePriorityPattern 
+}: { 
+  appointmentId: string;
+  priorityPattern?: string | null;
+  updatePriorityPattern?: (category: string, itemName: string, status: 'Clear' | 'Inhibited' | null, side?: 'L' | 'R') => Promise<void>;
+}) {
+  const { tests, loading, updateTest } = useCranialNerveTests(appointmentId, priorityPattern, updatePriorityPattern);
   const [customImages, setCustomImages] = useState<Record<string, { primary: string | null, secondary: string | null }>>({});
+
+  const pattern = useMemo(() => safeParse(priorityPattern, {} as any), [priorityPattern]);
+  const nervePattern = pattern.cranialNerves || {};
 
   useEffect(() => {
     const fetchImages = async () => {
@@ -199,15 +227,20 @@ export function CranialNerveAssessment({ appointmentId }: { appointmentId: strin
 
   return (
     <div className="space-y-4">
-      {sortedNerves.map((nerve) => (
-        <NerveTestItem 
-          key={nerve.id}
-          nerve={nerve}
-          test={tests.find(t => t.nerve_id === nerve.id.toString()) || {}}
-          images={customImages[`cn${nerve.id}`]}
-          onUpdate={updateTest}
-        />
-      ))}
+      {sortedNerves.map((nerve) => {
+        const nerveName = `CN ${nerve.id}`;
+        return (
+          <NerveTestItem 
+            key={nerve.id}
+            nerve={nerve}
+            test={tests.find(t => t.nerve_id === nerve.id.toString()) || {}}
+            statusL={nervePattern[`${nerveName} (L)`]}
+            statusR={nervePattern[`${nerveName} (R)`]}
+            images={customImages[`cn${nerve.id}`]}
+            onUpdate={updateTest}
+          />
+        );
+      })}
     </div>
   );
 }

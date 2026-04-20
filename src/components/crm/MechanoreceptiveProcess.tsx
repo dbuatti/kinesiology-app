@@ -14,8 +14,6 @@ import {
   RefreshCw, 
   Sparkles,
   Info,
-  Search,
-  ImageIcon,
   Loader2,
   Move
 } from 'lucide-react';
@@ -26,9 +24,9 @@ import { JOINT_ACTION_LIBRARY } from '@/data/joint-action-data';
 
 type MechanoStep = 
   | 'TYPE_SELECT'
-  | 'LOCALIZE_SKELETON'
   | 'LOCALIZE_REGION'
   | 'LOCALIZE_SIDE'
+  | 'LOCALIZE_SKELETON'
   | 'LOCALIZE_JOINT'
   | 'CONSCIOUS_ACTION'
   | 'UNCONSCIOUS_LIGAMENT'
@@ -56,9 +54,9 @@ const MechanoreceptiveProcess = ({
   const [history, setHistory] = useState<MechanoStep[]>([]);
   
   const [type, setType] = useState<'Conscious' | 'Unconscious' | null>(null);
-  const [skeletonType, setSkeletonType] = useState<'Axial' | 'Appendicular' | null>(null);
   const [region, setRegion] = useState<'Upper' | 'Lower' | null>(null);
   const [side, setSide] = useState<'Left' | 'Right' | 'Midline' | null>(null);
+  const [skeletonType, setSkeletonType] = useState<'Axial' | 'Appendicular' | null>(null);
   const [selectedJoint, setSelectedJoint] = useState('');
   
   const [plane, setPlane] = useState('');
@@ -91,23 +89,14 @@ const MechanoreceptiveProcess = ({
     if (!selectedJoint || !plane) return [];
     const jointData = JOINT_ACTION_LIBRARY.find(j => j.name === selectedJoint);
     if (!jointData) return [];
-    
-    const planeKey = plane as keyof typeof jointData.actions;
-    const actions = jointData.actions[planeKey];
-    
-    return actions.filter(a => a.label !== '-');
+    return jointData.actions[plane as keyof typeof jointData.actions] || [];
   }, [selectedJoint, plane]);
 
   const movementClue = useMemo(() => {
     if (type !== 'Conscious' || !selectedJoint || !plane || !action) return null;
-    const jointData = JOINT_ACTION_LIBRARY.find(j => j.name === selectedJoint);
-    if (!jointData) return null;
-    
-    const planeKey = plane as keyof typeof jointData.actions;
-    const actionData = jointData.actions[planeKey].find(a => a.label === action);
-    
+    const actionData = availableActions.find(a => a.label === action);
     return actionData?.howTo || null;
-  }, [type, selectedJoint, plane, action]);
+  }, [type, selectedJoint, plane, action, availableActions]);
 
   const handleFinish = () => {
     const detail = type === 'Conscious' 
@@ -136,7 +125,6 @@ const MechanoreceptiveProcess = ({
     <div className="space-y-6 animate-in fade-in slide-in-from-right-4 duration-300">
       {step === 'TYPE_SELECT' && (
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
-          {/* Left Column: Controls */}
           <div className="lg:col-span-5 space-y-6">
             <div className="p-5 bg-blue-50 border border-blue-100 rounded-2xl text-xs text-blue-800 space-y-3">
               <p className="font-black uppercase tracking-widest flex items-center gap-2">
@@ -151,7 +139,7 @@ const MechanoreceptiveProcess = ({
 
             <div className="space-y-3">
               <button 
-                onClick={() => { setType('Conscious'); goToStep('LOCALIZE_SKELETON'); }} 
+                onClick={() => { setType('Conscious'); goToStep('LOCALIZE_REGION'); }} 
                 className="p-6 rounded-2xl border-2 border-blue-100 bg-blue-50/50 hover:border-blue-300 hover:bg-blue-50 transition-all text-left group w-full shadow-sm"
               >
                 <div className="flex items-center justify-between">
@@ -169,7 +157,7 @@ const MechanoreceptiveProcess = ({
               </button>
 
               <button 
-                onClick={() => { setType('Unconscious'); goToStep('LOCALIZE_SKELETON'); }} 
+                onClick={() => { setType('Unconscious'); goToStep('LOCALIZE_REGION'); }} 
                 className="p-6 rounded-2xl border-2 border-emerald-100 bg-emerald-50/50 hover:border-emerald-300 hover:bg-emerald-50 transition-all text-left group w-full shadow-sm"
               >
                 <div className="flex items-center justify-between">
@@ -192,7 +180,6 @@ const MechanoreceptiveProcess = ({
             </Button>
           </div>
 
-          {/* Right Column: Reference Image */}
           <div className="lg:col-span-7">
             <div className="bg-white rounded-[2.5rem] border-2 border-slate-100 p-6 overflow-hidden shadow-sm relative group">
               <div className="absolute top-4 right-4">
@@ -205,38 +192,14 @@ const MechanoreceptiveProcess = ({
                 alt="Cortical Homunculus Reference" 
                 className="w-full h-auto rounded-2xl transition-transform duration-700 group-hover:scale-[1.02]"
               />
-              <div className="mt-4 flex items-center justify-center gap-2">
-                <div className="w-1.5 h-1.5 rounded-full bg-blue-500" />
-                <p className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">
-                  Cortical Homunculus: Sensory & Motor Mapping
-                </p>
-                <div className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
-              </div>
             </div>
           </div>
         </div>
       )}
 
-      {step === 'LOCALIZE_SKELETON' && (
-        <div className="space-y-4">
-          <StepHeader title="1. Skeleton Type" sub="Is the priority axial or appendicular?" />
-          <div className="grid grid-cols-1 gap-3">
-            <Button variant="outline" className="h-20 justify-between px-8 rounded-2xl border-2 border-slate-100 hover:border-indigo-200" onClick={() => { setSkeletonType('Axial'); goToStep('LOCALIZE_REGION'); }}>
-              <div className="text-left"><div className="font-black text-lg">Axial Skeleton</div><div className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Spine, Skull, Pelvis</div></div>
-              <ChevronRight size={20} />
-            </Button>
-            <Button variant="outline" className="h-20 justify-between px-8 rounded-2xl border-2 border-slate-100 hover:border-indigo-200" onClick={() => { setSkeletonType('Appendicular'); goToStep('LOCALIZE_REGION'); }}>
-              <div className="text-left"><div className="font-black text-lg">Appendicular Skeleton</div><div className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Limbs, Shoulders, Hips</div></div>
-              <ChevronRight size={20} />
-            </Button>
-          </div>
-          <Button variant="ghost" onClick={goBack} className="w-full h-12 rounded-xl"><ChevronLeft size={16} className="mr-2" /> Back</Button>
-        </div>
-      )}
-
       {step === 'LOCALIZE_REGION' && (
         <div className="space-y-4">
-          <StepHeader title="2. Region" sub="Is the priority in the upper or lower body?" />
+          <StepHeader title="1. Region" sub="Test top or bottom of the body." />
           <div className="grid grid-cols-1 gap-3">
             <Button variant="outline" className="h-20 justify-between px-8 rounded-2xl border-2 border-slate-100 hover:border-indigo-200" onClick={() => { setRegion('Upper'); goToStep('LOCALIZE_SIDE'); }}>
               <div className="text-left"><div className="font-black text-lg">Upper Body</div><div className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Above T12</div></div>
@@ -253,10 +216,10 @@ const MechanoreceptiveProcess = ({
 
       {step === 'LOCALIZE_SIDE' && (
         <div className="space-y-4">
-          <StepHeader title="3. Laterality" sub="Which side is the priority?" />
+          <StepHeader title="2. Laterality" sub="Test left or right side." />
           <div className="grid grid-cols-1 gap-3">
             {['Left', 'Right', 'Midline'].map(s => (
-              <Button key={s} variant="outline" className="h-16 justify-between px-8 rounded-2xl border-2 border-slate-100 hover:border-indigo-200" onClick={() => { setSide(s as any); goToStep('LOCALIZE_JOINT'); }}>
+              <Button key={s} variant="outline" className="h-16 justify-between px-8 rounded-2xl border-2 border-slate-100 hover:border-indigo-200" onClick={() => { setSide(s as any); goToStep('LOCALIZE_SKELETON'); }}>
                 <span className="font-black text-lg">{s}</span>
                 <ChevronRight size={20} />
               </Button>
@@ -266,9 +229,26 @@ const MechanoreceptiveProcess = ({
         </div>
       )}
 
+      {step === 'LOCALIZE_SKELETON' && (
+        <div className="space-y-4">
+          <StepHeader title="3. Skeleton Type" sub="Test spine (Axial) or outside of body (Appendicular)." />
+          <div className="grid grid-cols-1 gap-3">
+            <Button variant="outline" className="h-20 justify-between px-8 rounded-2xl border-2 border-slate-100 hover:border-indigo-200" onClick={() => { setSkeletonType('Axial'); goToStep('LOCALIZE_JOINT'); }}>
+              <div className="text-left"><div className="font-black text-lg">Axial (Spine/Skull)</div><div className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Central Axis</div></div>
+              <ChevronRight size={20} />
+            </Button>
+            <Button variant="outline" className="h-20 justify-between px-8 rounded-2xl border-2 border-slate-100 hover:border-indigo-200" onClick={() => { setSkeletonType('Appendicular'); goToStep('LOCALIZE_JOINT'); }}>
+              <div className="text-left"><div className="font-black text-lg">Appendicular (Limbs)</div><div className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Shoulders, Hips, Extremities</div></div>
+              <ChevronRight size={20} />
+            </Button>
+          </div>
+          <Button variant="ghost" onClick={goBack} className="w-full h-12 rounded-xl"><ChevronLeft size={16} className="mr-2" /> Back</Button>
+        </div>
+      )}
+
       {step === 'LOCALIZE_JOINT' && (
         <div className="space-y-4">
-          <StepHeader title="4. Localize Joint" sub="Select the specific joint from the filtered list." />
+          <StepHeader title="4. Find Joint" sub="Select the specific joint from the filtered list." />
           <div className="grid grid-cols-1 gap-2 max-h-[300px] overflow-y-auto p-1 custom-scrollbar">
             {filteredJoints.map(j => (
               <Button key={j.name} variant="outline" className="h-12 justify-start px-6 rounded-xl border-slate-100 hover:border-indigo-200 font-bold" onClick={() => { setSelectedJoint(j.name); goToStep(type === 'Conscious' ? 'CONSCIOUS_ACTION' : 'UNCONSCIOUS_LIGAMENT'); }}>
@@ -332,7 +312,7 @@ const MechanoreceptiveProcess = ({
 
       {step === 'UNCONSCIOUS_LIGAMENT' && (
         <div className="space-y-6">
-          <StepHeader title="Unconscious Ligament" sub="Localize the specific ligament or tendon." />
+          <StepHeader title="5. Find Ligament" sub="Localize the specific ligament or tendon." />
           
           <div className="p-4 bg-emerald-50 rounded-2xl border border-emerald-100 flex items-center justify-between">
             <div>

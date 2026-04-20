@@ -35,7 +35,7 @@ const MechanoBible = () => {
       joint: "L4/L5 Lumbar",
       action: "Isometric Extension",
       logic: "Contralateral S1",
-      localization: "Axial -> Lower -> Midline -> L4/L5",
+      localization: "Lower -> Midline -> Axial -> L4/L5",
       plane: "Sagittal",
       protocol: "Hold the sensory cortex representation for the opposite side of the low back. Perform a 30% isometric extension for 60s."
     },
@@ -44,7 +44,7 @@ const MechanoBible = () => {
       joint: "GH Joint",
       action: "Isometric External Rotation",
       logic: "Contralateral M1/S1",
-      localization: "Appendicular -> Upper -> Right -> GH Joint",
+      localization: "Upper -> Right -> Appendicular -> GH Joint",
       plane: "Transverse",
       protocol: "Identify the restricted rotation. Hold the opposite motor strip zone while the client performs a light isometric hold."
     },
@@ -53,7 +53,7 @@ const MechanoBible = () => {
       joint: "Talocrural",
       action: "Isometric Dorsiflexion",
       logic: "Contralateral S1 (Foot Map)",
-      localization: "Appendicular -> Lower -> Left -> Ankle",
+      localization: "Lower -> Left -> Appendicular -> Ankle",
       plane: "Sagittal",
       protocol: "Reset the 'smudged' sensory map by providing clear, conscious resistance in the plane of greatest restriction."
     }
@@ -65,7 +65,7 @@ const MechanoBible = () => {
       tissue: "ATFL Ligament",
       stimulus: "Ligament Stretch",
       logic: "Ipsilateral GV16",
-      localization: "Appendicular -> Lower -> Right -> Ankle",
+      localization: "Lower -> Right -> Appendicular -> Ankle",
       protocol: "Hold GV16 (Cerebellum) while stretching the ATFL. Apply a tuning fork to the cranium for 5s to clear the threat."
     },
     {
@@ -73,7 +73,7 @@ const MechanoBible = () => {
       tissue: "Cervical Ligaments",
       stimulus: "Posterior Stretch",
       logic: "Ipsilateral GV16",
-      localization: "Axial -> Upper -> Midline -> C3/C4",
+      localization: "Upper -> Midline -> Axial -> C3/C4",
       protocol: "Gently stretch the posterior cervical ligaments while holding the base of the skull. Use simultaneous tapping to reset."
     },
     {
@@ -81,7 +81,7 @@ const MechanoBible = () => {
       tissue: "MCL (Medial Collateral)",
       stimulus: "Valgus Stress Stretch",
       logic: "Ipsilateral GV16",
-      localization: "Appendicular -> Lower -> Left -> Knee",
+      localization: "Lower -> Left -> Appendicular -> Knee",
       protocol: "Challenge the MCL with a light stretch. Hold GV16 to update the cerebellum's unconscious map of knee stability."
     }
   ];
@@ -126,9 +126,9 @@ const MechanoBible = () => {
           <CardContent className="p-8 space-y-6">
             <div className="space-y-4">
               {[
-                { label: "Skeleton Type", value: "Axial vs. Appendicular" },
-                { label: "Region", value: "Upper vs. Lower" },
+                { label: "Region", value: "Upper vs. Lower (Top or Bottom)" },
                 { label: "Laterality", value: "Left vs. Right" },
+                { label: "Skeleton Type", value: "Axial vs. Appendicular (Spine or Outside)" },
                 { label: "Specific Joint", value: "e.g. L4/L5, GH Joint, Talocrural" }
               ].map((step, i) => (
                 <div key={i} className="flex items-center gap-4 p-4 bg-slate-50 rounded-2xl border border-slate-100">

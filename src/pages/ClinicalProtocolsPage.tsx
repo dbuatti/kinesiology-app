@@ -5,11 +5,12 @@ import { useParams, useNavigate } from "react-router-dom";
 import { useAppointment } from "@/hooks/useAppointment";
 import { CranialNerveAssessment } from "@/components/crm/CranialNerveAssessment";
 import { PrimitiveReflexAssessment } from "@/components/crm/PrimitiveReflexAssessment";
+import EmotionsProtocolReference from "@/components/crm/EmotionsProtocolReference";
 import { Button } from "@/components/ui/button";
-import { ChevronLeft, Brain, Loader2, Zap, FileText } from "lucide-react";
+import { ChevronLeft, Brain, Loader2, Zap, FileText, Heart } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
-export default function CranialNerveAssessmentPage() {
+export default function ClinicalProtocolsPage() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const { appointment, loading } = useAppointment(id);
@@ -19,7 +20,7 @@ export default function CranialNerveAssessmentPage() {
     return (
       <div className="min-h-screen flex flex-col items-center justify-center gap-4">
         <Loader2 className="w-10 h-10 text-blue-600 animate-spin" />
-        <p className="text-xs font-bold uppercase tracking-widest text-slate-500">Loading Assessment...</p>
+        <p className="text-xs font-bold uppercase tracking-widest text-slate-500">Loading Protocols...</p>
       </div>
     );
   }
@@ -56,6 +57,13 @@ export default function CranialNerveAssessmentPage() {
                 <Zap className="h-3.5 w-3.5 mr-2" />
                 Primitive Reflexes
               </TabsTrigger>
+              <TabsTrigger 
+                value="emotions" 
+                className="inline-flex items-center justify-center whitespace-nowrap rounded-lg px-6 py-2 text-xs font-black uppercase tracking-widest ring-offset-background transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 data-[state=active]:bg-white data-[state=active]:text-slate-900 data-[state=active]:shadow-sm"
+              >
+                <Heart className="h-3.5 w-3.5 mr-2" />
+                Emotions
+              </TabsTrigger>
             </TabsList>
           </div>
           
@@ -65,6 +73,10 @@ export default function CranialNerveAssessmentPage() {
           
           <TabsContent value="primitive-reflexes" className="mt-0 focus-visible:ring-0 animate-in fade-in duration-300">
             <PrimitiveReflexAssessment appointmentId={id!} />
+          </TabsContent>
+
+          <TabsContent value="emotions" className="mt-0 focus-visible:ring-0 animate-in fade-in duration-300">
+            <EmotionsProtocolReference />
           </TabsContent>
         </Tabs>
 

@@ -350,7 +350,7 @@ const SessionContentSwitcher = ({
                 <BookOpen size={16} className="mr-3 text-amber-500" /> Session Journal
               </DropdownMenuItem>
               <DropdownMenuItem onClick={() => navigate(`/appointments/${appointment.id}/cranial-nerves`)} className="rounded-xl py-3 px-4 cursor-pointer">
-                <Brain size={16} className="mr-3 text-purple-500" /> Neurological Assessment
+                <Brain size={16} className="mr-3 text-purple-500" /> Clinical Protocols
               </DropdownMenuItem>
 
               <DropdownMenuItem onClick={() => setActiveView('kinesiology')} className="rounded-xl py-3 px-4 cursor-pointer">

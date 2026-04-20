@@ -21,7 +21,7 @@ import ClientsPage from "./pages/ClientsPage";
 import ClientDetailPage from "./pages/ClientDetailPage";
 import AppointmentsPage from "./pages/AppointmentsPage";
 import AppointmentDetailPage from "./pages/AppointmentDetailPage";
-import CranialNerveAssessmentPage from "./pages/CranialNerveAssessmentPage";
+import ClinicalProtocolsPage from "./pages/ClinicalProtocolsPage";
 import ImportPage from "./pages/ImportPage";
 import ProceduresPage from "./pages/ProceduresPage";
 import ResourcesPage from "./pages/ResourcesPage";
@@ -92,7 +92,7 @@ const AppRoutes = () => {
         <Route path="/clients/:id" element={<ClientDetailPage />} />
         <Route path="/appointments" element={<AppointmentsPage />} />
         <Route path="/appointments/:id" element={<AppointmentDetailPage />} />
-        <Route path="/appointments/:id/cranial-nerves" element={<CranialNerveAssessmentPage />} />
+        <Route path="/appointments/:id/cranial-nerves" element={<ClinicalProtocolsPage />} />
         <Route path="/oversight" element={<ClinicalOversightPage />} />
         <Route path="/availability" element={<AvailabilityPage />} />
         

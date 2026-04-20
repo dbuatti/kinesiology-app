@@ -12,7 +12,8 @@ import {
   Loader2, 
   Hand, 
   PlayCircle,
-  FileText
+  FileText,
+  CheckCircle2
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { supabase } from "@/integrations/supabase/client";
@@ -45,13 +46,28 @@ const NerveTestItem = ({ nerve, test, statusL, statusR, images, onUpdate }: Nerv
     }, 1000);
   };
 
+  const handleClear = async () => {
+    // Clear both sides if lateralized
+    await onUpdate(nerve.id.toString(), { is_inhibited: false }, 'L');
+    await onUpdate(nerve.id.toString(), { is_inhibited: false }, 'R');
+    // Also clear the main inhibited flag and priorities if needed
+    await onUpdate(nerve.id.toString(), { 
+      is_inhibited: false, 
+      is_priority: false, 
+      is_primary_priority: false 
+    });
+  };
+
   const hasImages = images?.primary || images?.secondary;
+  const isAnyInhibited = statusL === 'Inhibited' || statusR === 'Inhibited' || test.is_inhibited;
 
   return (
     <section className={cn(
       "space-y-2 p-4 rounded-2xl border transition-all",
       test.is_primary_priority ? "bg-indigo-50/30 border-indigo-200 ring-1 ring-indigo-100" : 
-      test.is_priority ? "bg-amber-50/30 border-amber-200" : "border-slate-100"
+      test.is_priority ? "bg-amber-50/30 border-amber-200" : 
+      !isAnyInhibited && (statusL === 'Clear' || statusR === 'Clear') ? "bg-emerald-50/10 border-emerald-100 opacity-80" :
+      "border-slate-100"
     )}>
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-2 border-b border-slate-100/50 pb-2">
         <div className="flex items-center gap-3">
@@ -89,28 +105,38 @@ const NerveTestItem = ({ nerve, test, statusL, statusR, images, onUpdate }: Nerv
             </div>
           </div>
 
-          <div className="flex items-center gap-1.5">
-            <Checkbox 
-              id={`priority-${nerve.id}`}
-              checked={test.is_priority}
-              onCheckedChange={(checked) => onUpdate(nerve.id.toString(), { is_priority: !!checked })}
-              className="h-3.5 w-3.5 border-slate-400 rounded-none"
-            />
-            <label htmlFor={`priority-${nerve.id}`} className="text-[8px] font-black uppercase tracking-widest cursor-pointer text-slate-500">
-              Priority
-            </label>
+          <div className="flex items-center gap-3">
+            <div className="flex items-center gap-1.5">
+              <Checkbox 
+                id={`priority-${nerve.id}`}
+                checked={test.is_priority}
+                onCheckedChange={(checked) => onUpdate(nerve.id.toString(), { is_priority: !!checked })}
+                className="h-3.5 w-3.5 border-slate-400 rounded-none"
+              />
+              <label htmlFor={`priority-${nerve.id}`} className="text-[8px] font-black uppercase tracking-widest cursor-pointer text-slate-500">
+                Priority
+              </label>
+            </div>
+            <Button 
+              variant="ghost" 
+              size="sm" 
+              onClick={() => onUpdate(nerve.id.toString(), { is_primary_priority: !test.is_primary_priority })}
+              className={cn(
+                "h-5 px-2 text-[7px] font-black uppercase tracking-widest transition-all rounded-md",
+                test.is_primary_priority ? "bg-slate-900 text-white" : "text-slate-400 hover:text-slate-900"
+              )}
+            >
+              {test.is_primary_priority ? "Primary" : "Set 1°"}
+            </Button>
+            <Button 
+              variant="ghost" 
+              size="sm" 
+              onClick={handleClear}
+              className="h-5 px-2 text-[7px] font-black uppercase tracking-widest text-emerald-600 hover:bg-emerald-50 rounded-md"
+            >
+              <CheckCircle2 size={10} className="mr-1" /> Clear
+            </Button>
           </div>
-          <Button 
-            variant="ghost" 
-            size="sm" 
-            onClick={() => onUpdate(nerve.id.toString(), { is_primary_priority: !test.is_primary_priority })}
-            className={cn(
-              "h-5 px-2 text-[7px] font-black uppercase tracking-widest transition-all rounded-md",
-              test.is_primary_priority ? "bg-slate-900 text-white" : "text-slate-400 hover:text-slate-900"
-            )}
-          >
-            {test.is_primary_priority ? "Primary" : "Set Primary"}
-          </Button>
         </div>
       </div>
 
@@ -208,13 +234,19 @@ export function CranialNerveAssessment({
       const testA = tests.find(t => t.nerve_id === a.id.toString());
       const testB = tests.find(t => t.nerve_id === b.id.toString());
       
-      const scoreA = (testA?.is_primary_priority ? 100 : 0) + (testA?.is_priority ? 50 : 0) + (testA?.is_inhibited ? 10 : 0);
-      const scoreB = (testB?.is_primary_priority ? 100 : 0) + (testB?.is_priority ? 50 : 0) + (testB?.is_inhibited ? 10 : 0);
+      const nerveNameA = `CN ${a.id}`;
+      const nerveNameB = `CN ${b.id}`;
+      
+      const isAnyInhibA = nervePattern[`${nerveNameA} (L)`] === 'Inhibited' || nervePattern[`${nerveNameA} (R)`] === 'Inhibited' || testA?.is_inhibited;
+      const isAnyInhibB = nervePattern[`${nerveNameB} (L)`] === 'Inhibited' || nervePattern[`${nerveNameB} (R)`] === 'Inhibited' || testB?.is_inhibited;
+
+      const scoreA = (testA?.is_primary_priority ? 1000 : 0) + (testA?.is_priority ? 500 : 0) + (isAnyInhibA ? 100 : 0);
+      const scoreB = (testB?.is_primary_priority ? 1000 : 0) + (testB?.is_priority ? 500 : 0) + (isAnyInhibB ? 100 : 0);
       
       if (scoreA !== scoreB) return scoreB - scoreA;
       return a.id - b.id;
     });
-  }, [tests]);
+  }, [tests, nervePattern]);
 
   if (loading) {
     return (

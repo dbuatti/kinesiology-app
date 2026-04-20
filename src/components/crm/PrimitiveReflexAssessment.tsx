@@ -13,7 +13,8 @@ import {
   Activity, 
   Hand, 
   FileText,
-  Search
+  Search,
+  CheckCircle2
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { supabase } from "@/integrations/supabase/client";
@@ -51,13 +52,31 @@ const ReflexTestItem = ({ reflex, test, statusL, statusR, statusMidline, isLater
     }, 1000);
   };
 
+  const handleClear = async () => {
+    if (isLateralized) {
+      await onUpdate(reflex.id, { is_inhibited: false }, 'L');
+      await onUpdate(reflex.id, { is_inhibited: false }, 'R');
+    } else {
+      await onUpdate(reflex.id, { is_inhibited: false });
+    }
+    // Clear priorities
+    await onUpdate(reflex.id, { 
+      is_inhibited: false, 
+      is_priority: false, 
+      is_primary_priority: false 
+    });
+  };
+
   const hasImages = images?.primary || images?.secondary;
+  const isAnyInhibited = statusL === 'Inhibited' || statusR === 'Inhibited' || statusMidline === 'Inhibited' || test.is_inhibited;
 
   return (
     <section className={cn(
       "p-2 px-3 rounded-xl border transition-all",
       test.is_primary_priority ? "bg-indigo-50/40 border-indigo-300 ring-1 ring-indigo-100" : 
-      test.is_priority ? "bg-amber-50/40 border-amber-200" : "border-slate-100 bg-white"
+      test.is_priority ? "bg-amber-50/40 border-amber-200" : 
+      !isAnyInhibited && (statusL === 'Clear' || statusR === 'Clear' || statusMidline === 'Clear') ? "bg-emerald-50/10 border-emerald-100 opacity-80" :
+      "border-slate-100 bg-white"
     )}>
       <div className="flex items-center justify-between gap-4">
         {/* Left: Name and Info */}
@@ -162,6 +181,14 @@ const ReflexTestItem = ({ reflex, test, statusL, statusR, statusMidline, isLater
           >
             {test.is_primary_priority ? "Primary" : "Set 1°"}
           </Button>
+          <Button 
+            variant="ghost" 
+            size="sm" 
+            onClick={handleClear}
+            className="h-5 px-1.5 text-[7px] font-black uppercase tracking-widest text-emerald-600 hover:bg-emerald-50 rounded"
+          >
+            <CheckCircle2 size={10} className="mr-1" /> Clear
+          </Button>
         </div>
       </div>
 
@@ -232,13 +259,16 @@ export function PrimitiveReflexAssessment({
         const testA = tests.find(t => t.reflex_id === a.id);
         const testB = tests.find(t => t.reflex_id === b.id);
         
-        const scoreA = (testA?.is_primary_priority ? 100 : 0) + (testA?.is_priority ? 50 : 0) + (testA?.is_inhibited ? 10 : 0);
-        const scoreB = (testB?.is_primary_priority ? 100 : 0) + (testB?.is_priority ? 50 : 0) + (testB?.is_inhibited ? 10 : 0);
+        const isAnyInhibA = reflexPattern[`${a.name} (L)`] === 'Inhibited' || reflexPattern[`${a.name} (R)`] === 'Inhibited' || reflexPattern[a.name] === 'Inhibited' || testA?.is_inhibited;
+        const isAnyInhibB = reflexPattern[`${b.name} (L)`] === 'Inhibited' || reflexPattern[`${b.name} (R)`] === 'Inhibited' || reflexPattern[b.name] === 'Inhibited' || testB?.is_inhibited;
+
+        const scoreA = (testA?.is_primary_priority ? 1000 : 0) + (testA?.is_priority ? 500 : 0) + (isAnyInhibA ? 100 : 0);
+        const scoreB = (testB?.is_primary_priority ? 1000 : 0) + (testB?.is_priority ? 500 : 0) + (isAnyInhibB ? 100 : 0);
         
         if (scoreA !== scoreB) return scoreB - scoreA;
         return a.name.localeCompare(b.name);
       });
-  }, [tests, searchQuery, showOnlyInhibited]);
+  }, [tests, searchQuery, showOnlyInhibited, reflexPattern]);
 
   if (loading) {
     return (

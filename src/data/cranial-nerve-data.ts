@@ -50,7 +50,7 @@ export const CRANIAL_NERVES: CranialNerve[] = [
     functions: ["Sense of smell (olfaction)", "Olfactory memory and emotional memory recall"],
     stimulus: "Hold Yin Tang as the reflex point. Stimulus: smell an essential oil in the nostril.",
     clinicalPearl: "The only sense that bypasses the thalamus. Essential for deep emotional memory work.",
-    color: "bg-purple-500",
+    color: "bg-purple-50",
     videoUrl: "https://embed-ssl.wistia.com/deliveries/d2a02ad26550033565f709c63fa2d85a18ff2c5d.mp4",
     pageUrl: "https://functional-neuro-health.mykajabi.com/products/functional-neuro-approach-foundations/categories/2152127509/posts/2167205372"
   },
@@ -63,8 +63,8 @@ export const CRANIAL_NERVES: CranialNerve[] = [
     acupoint: "BL2",
     reflexPoint: "Bladder 2 (BL2) acupoint — inner end of eyebrow",
     functions: ["Vision and visual processing", "Depth perception and spatial awareness"],
-    stimulus: "Hold BL2 as the reflex point. Stimulus: shine light into the eye.",
-    clinicalPearl: "Right eye projects to left occipital cortex. Use directional light to isolate specific visual field deficits.",
+    stimulus: "Hold BL2 as the reflex point. Stimulus: shine light into the eye from specific quadrants (Superior, Inferior, Nasal, Temporal) to isolate visual field deficits.",
+    clinicalPearl: "Right eye projects to left occipital cortex. Use directional light to isolate specific visual field deficits. Nasal field of one eye and temporal of the other map to the same hemisphere.",
     color: "bg-purple-600",
     videoUrl: "https://embed-ssl.wistia.com/deliveries/b874823f0dc614160512b66bcb5b516f50f9eb2d.mp4",
     pageUrl: "https://functional-neuro-health.mykajabi.com/products/functional-neuro-approach-foundations/categories/2152127509/posts/2167779783"

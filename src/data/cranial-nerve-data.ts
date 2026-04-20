@@ -18,7 +18,7 @@ export interface CranialNerve {
   videoUrl?: string;
   pageUrl?: string;
   delineationGuide?: string;
-  isLateralized?: boolean; // Added to explicitly control L/R display
+  isLateralized?: boolean;
 }
 
 export const BRAINSTEM_KEYS: Record<BrainstemNuclei, { description: string; stim: string }> = {
@@ -203,8 +203,9 @@ export const CRANIAL_NERVES: CranialNerve[] = [
     toneEffect: "Flexors",
     reflexPoint: "Bilateral Posterior Ramus of Jaw",
     functions: ["Motor to SCM and upper trapezius"],
-    stimulus: "Hold posterior ramus of jaw. Stimulus: shoulder shrug + head rotation.",
-    clinicalPearl: "Key player in head, neck, shoulder, and visual issues.",
+    stimulus: "Hold posterior ramus of jaw. Stimulus: shoulder shrug (Upper Trapezius) + head rotation (SCM).",
+    delineationGuide: "To delineate: 1. Hold reflex point (jaw). 2. Test shoulder shrug only (Trapezius) -> if IM inhibits, it's a Trapezius priority. 3. Test head rotation only (SCM) -> if IM inhibits, it's an SCM priority.",
+    clinicalPearl: "Key player in head, neck, shoulder, and visual issues. Often involved in 'carrying the weight of the world' stress patterns.",
     color: "bg-rose-700",
     isLateralized: true,
     videoUrl: "https://embed-ssl.wistia.com/deliveries/8dc68372fa942300d450b03ec8487454cacb02c7.mp4",

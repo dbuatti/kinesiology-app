@@ -105,7 +105,7 @@ export const CRANIAL_NERVES: CranialNerve[] = [
     toneEffect: "Extensors",
     reflexPoint: "Hand across the mandible (cheek)",
     functions: ["Facial sensation", "Jaw movement and mastication"],
-    stimulus: "Place hand across the mandible. Stimulate three sensory branches (V1, V2, V3).",
+    stimulus: "Place hand across the mandible. Stimulate three sensory branches: V1 (Forehead/Eyes), V2 (Cheeks/Upper Lip), and V3 (Jaw/Lower Lip) using light touch or brushing.",
     clinicalPearl: "The 'negative antidote' to the Vagus nerve. Heavily tied to the sympathetic nervous system.",
     color: "bg-indigo-500",
     videoUrl: "https://embed-ssl.wistia.com/deliveries/10de3ccab10de3ccab1d8595c4c3e451aea5b91c84cf6213f.mp4",
@@ -180,7 +180,7 @@ export const CRANIAL_NERVES: CranialNerve[] = [
     clinicalPearl: "The 'King' of the parasympathetic nervous system. Arises from the medulla.",
     color: "bg-rose-600",
     videoUrl: "https://embed-ssl.wistia.com/deliveries/347fefe7d351b6760c82e9cc68a47d37b0d53906.mp4",
-    pageUrl: "https://functional-neuro-health.mykajabi.com/products/functional-neuro-approach-foundations/categories/2152152431/posts/2166291753"
+    pageUrl: "https://functional-neuro-health.mykajabi.com/products/functional-neuro-health-the-peace-method-28beacafb4a88026b9a9ccdefa4e1de9"
   },
   {
     id: 11,

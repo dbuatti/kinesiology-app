@@ -262,6 +262,7 @@ export function PrimitiveReflexAssessment({
         const isAnyInhibA = reflexPattern[`${a.name} (L)`] === 'Inhibited' || reflexPattern[`${a.name} (R)`] === 'Inhibited' || reflexPattern[a.name] === 'Inhibited' || testA?.is_inhibited;
         const isAnyInhibB = reflexPattern[`${b.name} (L)`] === 'Inhibited' || reflexPattern[`${b.name} (R)`] === 'Inhibited' || reflexPattern[b.name] === 'Inhibited' || testB?.is_inhibited;
 
+        // Priority score: Primary (1000) > Priority (500) > Inhibited (100) > Clear (0)
         const scoreA = (testA?.is_primary_priority ? 1000 : 0) + (testA?.is_priority ? 500 : 0) + (isAnyInhibA ? 100 : 0);
         const scoreB = (testB?.is_primary_priority ? 1000 : 0) + (testB?.is_priority ? 500 : 0) + (isAnyInhibB ? 100 : 0);
         

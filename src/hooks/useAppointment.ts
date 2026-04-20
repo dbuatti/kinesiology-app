@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { AppointmentWithClient } from "@/types/crm";
 import { showError } from "@/utils/toast";
@@ -10,6 +10,9 @@ export function useAppointment(id: string | undefined) {
   const [appointment, setAppointment] = useState<AppointmentWithClient | null>(null);
   const [history, setHistory] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  
+  // Use a ref to track the latest pattern to prevent race conditions during rapid updates
+  const latestPatternRef = useRef<any>(null);
 
   const fetchData = useCallback(async () => {
     if (!id) return;
@@ -40,6 +43,7 @@ export function useAppointment(id: string | undefined) {
       } as unknown as AppointmentWithClient;
 
       setAppointment(app);
+      latestPatternRef.current = safeParse(app.priority_pattern, {});
 
       // Fetch client history
       const { data: historyData } = await supabase
@@ -74,6 +78,10 @@ export function useAppointment(id: string | undefined) {
       if (error) throw error;
       
       setAppointment(prev => prev ? { ...prev, [field]: normalized } as AppointmentWithClient : null);
+      
+      if (field === 'priority_pattern') {
+        latestPatternRef.current = safeParse(normalized, {});
+      }
     } catch (err: any) {
       console.error(`Save failed for ${field}:`, err);
       showError(`Failed to save ${field}`);
@@ -84,7 +92,8 @@ export function useAppointment(id: string | undefined) {
   const updatePriorityPattern = async (category: string, itemName: string, status: 'Clear' | 'Inhibited' | null, side?: 'L' | 'R') => {
     if (!id || !appointment) return;
 
-    const currentPattern = safeParse(appointment.priority_pattern, {} as any);
+    // Always work off the latest ref to avoid overwriting parallel updates
+    const currentPattern = { ...latestPatternRef.current };
     
     if (!currentPattern[category]) {
       currentPattern[category] = {};
@@ -99,7 +108,21 @@ export function useAppointment(id: string | undefined) {
     }
 
     const newJson = safeStringify(currentPattern);
-    await saveField('priority_pattern', newJson);
+    latestPatternRef.current = currentPattern; // Update ref immediately
+    
+    // Update local state immediately for UI responsiveness
+    setAppointment(prev => prev ? { ...prev, priority_pattern: newJson } as AppointmentWithClient : null);
+    
+    // Persist to DB
+    try {
+      const { error } = await supabase
+        .from('appointments')
+        .update({ priority_pattern: newJson })
+        .eq('id', id);
+      if (error) throw error;
+    } catch (e) {
+      console.error("Failed to persist pattern update:", e);
+    }
   };
 
   useEffect(() => {
@@ -118,6 +141,12 @@ export function useAppointment(id: string | undefined) {
         setAppointment((prev) => {
           if (!prev) return prev;
           const updatedData = { ...payload.new };
+          
+          // If the update came from elsewhere, sync our ref
+          if (updatedData.priority_pattern) {
+            latestPatternRef.current = safeParse(updatedData.priority_pattern, {});
+          }
+
           if (updatedData.date && typeof updatedData.date === 'string') {
             updatedData.date = new Date(updatedData.date);
           }

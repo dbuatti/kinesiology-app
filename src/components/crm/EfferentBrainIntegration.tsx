@@ -37,8 +37,7 @@ interface EfferentBrainIntegrationProps {
   onSave: (summary: string) => void;
   onInhibited?: (summary: string) => void;
   onCancel?: () => void;
-  initialValue?: string;
-  initialEntryPoint?: string;
+  initialEntryPoint: string;
 }
 
 const ZoneCard = ({ point, images, isSelected, onSelect, onShowInfo, isLoading }: { 
@@ -166,14 +165,24 @@ const EfferentBrainIntegration = ({ onSave, onInhibited, onCancel, initialEntryP
     setInfoOpen(true);
   };
 
+  const formatCoordLabel = (coord: Coordinate) => {
+    if (!coord.point) return 'Pending...';
+    if (coord.side === 'Bilateral') return coord.point.name;
+    return `${coord.side} ${coord.point.name}`;
+  };
+
   const handleComplete = () => {
-    const summary = `Efferent Integration: ${entryPoint} -> ${coord1.side} ${coord1.point?.name} + ${coord2.side} ${coord2.point?.name} via ${method}`;
+    const label1 = formatCoordLabel(coord1);
+    const label2 = formatCoordLabel(coord2);
+    const summary = `Efferent Integration: ${entryPoint} -> ${label1} + ${label2} via ${method}`;
     onSave(summary);
     setIsComplete(true);
   };
 
   const handleInhibited = () => {
-    const summary = `Efferent Integration (STILL INHIBITED): ${entryPoint} -> ${coord1.side} ${coord1.point?.name} + ${coord2.side} ${coord2.point?.name} via ${method}`;
+    const label1 = formatCoordLabel(coord1);
+    const label2 = formatCoordLabel(coord2);
+    const summary = `Efferent Integration (STILL INHIBITED): ${entryPoint} -> ${label1} + ${label2} via ${method}`;
     onInhibited?.(summary);
   };
 
@@ -257,11 +266,11 @@ const EfferentBrainIntegration = ({ onSave, onInhibited, onCancel, initialEntryP
     <div className="grid grid-cols-2 gap-2 mb-4">
       <div className={cn("p-3 rounded-xl border transition-all", coord1.point ? "bg-indigo-50 border-indigo-200" : "bg-slate-50 border-slate-100")}>
         <p className="text-[7px] font-black text-slate-400 uppercase tracking-widest mb-0.5">Coordinate 1</p>
-        <p className="text-[11px] font-black text-slate-900 truncate">{coord1.point ? `${coord1.side} ${coord1.point.name}` : 'Pending...'}</p>
+        <p className="text-[11px] font-black text-slate-900 truncate">{formatCoordLabel(coord1)}</p>
       </div>
       <div className={cn("p-3 rounded-xl border transition-all", coord2.point ? "bg-purple-50 border-purple-200" : "bg-slate-50 border-slate-100")}>
         <p className="text-[7px] font-black text-slate-400 uppercase tracking-widest mb-0.5">Coordinate 2</p>
-        <p className="text-[11px] font-black text-slate-900 truncate">{coord2.point ? `${coord2.side} ${coord2.point.name}` : 'Pending...'}</p>
+        <p className="text-[11px] font-black text-slate-900 truncate">{formatCoordLabel(coord2)}</p>
       </div>
     </div>
   );
@@ -327,13 +336,13 @@ const EfferentBrainIntegration = ({ onSave, onInhibited, onCancel, initialEntryP
                 <div className="flex items-center gap-2 mb-2"><Info size={14} className="text-indigo-600" /><p className="text-[8px] font-black text-slate-400 uppercase tracking-widest">Instructions</p></div>
                 <div className="space-y-4">
                   {method === 'Tapping' && <p className="text-base font-black leading-tight text-slate-900">Simultaneously <span className="text-indigo-600 underline decoration-indigo-200 underline-offset-4">TAP</span> both reflex points for 3-5 seconds.</p>}
-                  {method === 'Holding + Intention' && <div className="space-y-3"><p className="text-xs font-bold leading-tight text-slate-700">Hold both points lightly and mentally repeat:</p><div className="p-3 bg-indigo-50 rounded-xl border border-indigo-100 text-center italic font-black text-indigo-600 text-sm">"{entryPoint} — {coord1.side} {coord1.point?.name} — {coord2.side} {coord2.point?.name}"</div></div>}
+                  {method === 'Holding + Intention' && <div className="space-y-3"><p className="text-xs font-bold leading-tight text-slate-700">Hold both points lightly and mentally repeat:</p><div className="p-3 bg-indigo-50 rounded-xl border border-indigo-100 text-center italic font-black text-indigo-600 text-sm">"{entryPoint} — {formatCoordLabel(coord1)} — {formatCoordLabel(coord2)}"</div></div>}
                   {method === 'Tuning Fork' && <p className="text-base font-black leading-tight text-slate-900">TL both points and strike tuning fork on the <span className="text-indigo-600 underline decoration-indigo-200 underline-offset-4">Cranium</span>.</p>}
                 </div>
               </div>
               <div className="grid grid-cols-2 gap-4 relative z-10">
-                <div className="space-y-2"><div className="p-3 bg-white/5 rounded-xl border border-white/10 text-center"><p className="text-[8px] font-black text-indigo-400 uppercase tracking-widest mb-0.5">Coord 1</p><p className="text-[10px] font-black truncate">{coord1.side} {coord1.point?.name}</p></div>{coord1.point && (customizations[coord1.point.id]?.secondaryUrl || customizations[coord1.point.id]?.primaryUrl) && <div className="aspect-square rounded-xl overflow-hidden border-2 border-white/5 bg-white/5"><img src={customizations[coord1.point.id].secondaryUrl || customizations[coord1.point.id].primaryUrl || ""} alt="Reflex 1" className="w-full h-full object-cover opacity-80" /></div>}</div>
-                <div className="space-y-2"><div className="p-3 bg-white/5 rounded-xl border border-white/10 text-center"><p className="text-[8px] font-black text-purple-400 uppercase tracking-widest mb-0.5">Coord 2</p><p className="text-[10px] font-black truncate">{coord2.side} {coord2.point?.name}</p></div>{coord2.point && (customizations[coord2.point.id]?.secondaryUrl || customizations[coord2.point.id]?.primaryUrl) && <div className="aspect-square rounded-xl overflow-hidden border-2 border-white/5 bg-white/5"><img src={customizations[coord2.point.id].secondaryUrl || customizations[coord2.point.id].primaryUrl || ""} alt="Reflex 2" className="w-full h-full object-cover opacity-80" /></div>}</div>
+                <div className="space-y-2"><div className="p-3 bg-white/5 rounded-xl border border-white/10 text-center"><p className="text-[8px] font-black text-indigo-400 uppercase tracking-widest mb-0.5">Coord 1</p><p className="text-[10px] font-black truncate">{formatCoordLabel(coord1)}</p></div>{coord1.point && (customizations[coord1.point.id]?.secondaryUrl || customizations[coord1.point.id]?.primaryUrl) && <div className="aspect-square rounded-xl overflow-hidden border-2 border-white/5 bg-white/5"><img src={customizations[coord1.point.id].secondaryUrl || customizations[coord1.point.id].primaryUrl || ""} alt="Reflex 1" className="w-full h-full object-cover opacity-80" /></div>}</div>
+                <div className="space-y-2"><div className="p-3 bg-white/5 rounded-xl border border-white/10 text-center"><p className="text-[8px] font-black text-purple-400 uppercase tracking-widest mb-0.5">Coord 2</p><p className="text-[10px] font-black truncate">{formatCoordLabel(coord2)}</p></div>{coord2.point && (customizations[coord2.point.id]?.secondaryUrl || customizations[coord2.point.id]?.primaryUrl) && <div className="aspect-square rounded-xl overflow-hidden border-2 border-white/5 bg-white/5"><img src={customizations[coord2.point.id].secondaryUrl || customizations[coord2.point.id].primaryUrl || ""} alt="Reflex 2" className="w-full h-full object-cover opacity-80" /></div>}</div>
               </div>
             </div>
             <div className="flex gap-2">

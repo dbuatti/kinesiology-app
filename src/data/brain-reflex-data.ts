@@ -186,7 +186,7 @@ const SUBCORTICAL_POINTS: BrainReflexPoint[] = [
     category: 'Subcortical',
     acupoint: 'GV16',
     location: 'GV16 — Suboccipital hollow just below the external occipital protuberance, on the midline',
-    lateralization: 'Ipsilateral',
+    lateralization: 'Bilateral',
     functions: [
       'Motor coordination, balance, and posture',
       'Timing and rhythm of movement',
@@ -312,7 +312,7 @@ const SUBCORTICAL_POINTS: BrainReflexPoint[] = [
       'Emotional regulation via limbic connections'
     ],
     dysfunctionSigns: [
-      'Parkinson\'s-like movement patterns (rigidity, bradykinesia)',
+      'Parkinson\'s-like movement patterns (rigidity, braykinesia)',
       'Obsessive-compulsive patterns',
       'Difficulty initiating or stopping actions',
       'Reduced motivation or anhedonia',

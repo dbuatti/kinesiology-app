@@ -88,12 +88,12 @@ const STEPS = [
     color: "text-cyan-600",
     bg: "bg-cyan-50",
     details: [
-      { label: "Up & Left", items: "Visual Memory" },
-      { label: "Horizontal Left", items: "Auditory Memory" },
-      { label: "Down & Left", items: "Internal Monologue" },
-      { label: "Up & Right", items: "Visual Constructed" },
-      { label: "Horizontal Right", items: "Auditory Constructed" },
-      { label: "Down & Right", items: "Kinesthetic / Felt Sense" }
+      { label: "Up & Left", items: "Visual Memory", sub: "Seeing a scene from the past." },
+      { label: "Horizontal Left", items: "Auditory Memory", sub: "Hearing sounds or words from the past." },
+      { label: "Down & Left", items: "Internal Monologue", sub: "What you say to yourself (e.g. 'I am not good enough')." },
+      { label: "Up & Right", items: "Visual Constructed", sub: "Predicting what you think you will see." },
+      { label: "Horizontal Right", items: "Auditory Constructed", sub: "Predicting what you think you will hear." },
+      { label: "Down & Right", items: "Kinesthetic / Felt Sense", sub: "Physical sensation or body association." }
     ]
   },
   { 
@@ -133,11 +133,18 @@ const EmotionsProtocolReference = () => {
                 {step.details && (
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 pt-2">
                     {step.details.map((detail, idx) => (
-                      <div key={idx} className="flex items-center gap-2 p-2 rounded-xl bg-slate-50 border border-slate-100">
-                        <Badge variant="outline" className="bg-white border-slate-200 text-[8px] font-black uppercase tracking-widest px-1.5 py-0">
-                          {detail.label}
-                        </Badge>
-                        <span className="text-[11px] font-bold text-slate-700">{detail.items}</span>
+                      <div key={idx} className="flex flex-col p-3 rounded-xl bg-slate-50 border border-slate-100">
+                        <div className="flex items-center gap-2 mb-1">
+                          <Badge variant="outline" className="bg-white border-slate-200 text-[8px] font-black uppercase tracking-widest px-1.5 py-0">
+                            {detail.label}
+                          </Badge>
+                          <span className="text-[11px] font-bold text-slate-900">{detail.items}</span>
+                        </div>
+                        {detail.sub && (
+                          <p className="text-[10px] text-slate-500 font-medium leading-tight italic">
+                            {detail.sub}
+                          </p>
+                        )}
                       </div>
                     ))}
                   </div>

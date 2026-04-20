@@ -4,6 +4,7 @@ import { useState, useEffect, useCallback } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { CranialNerveTest } from "@/types/crm";
 import { showError } from "@/utils/toast";
+import { safeParse } from "@/utils/safe-json";
 
 export function useCranialNerveTests(
   appointmentId: string | undefined,
@@ -43,6 +44,20 @@ export function useCranialNerveTests(
       if (updates.is_inhibited !== undefined && updatePriorityPattern) {
         const nerveName = `CN ${nerveId}`;
         await updatePriorityPattern('cranialNerves', nerveName, updates.is_inhibited ? 'Inhibited' : 'Clear', side);
+        
+        // Determine if the nerve is still inhibited globally (either L or R)
+        if (side) {
+          const otherSide = side === 'L' ? 'R' : 'L';
+          const pattern = safeParse(priorityPattern, {} as any);
+          const nervePattern = pattern.cranialNerves || {};
+          const isOtherSideInhibited = nervePattern[`${nerveName} (${otherSide})`] === 'Inhibited';
+          
+          // If we are unchecking one side, but the other side is still inhibited, 
+          // keep the global is_inhibited as true in the cranial_nerve_tests table.
+          if (!updates.is_inhibited && isOtherSideInhibited) {
+            updates.is_inhibited = true;
+          }
+        }
       }
 
       // If setting primary priority, unset others in the local state and DB

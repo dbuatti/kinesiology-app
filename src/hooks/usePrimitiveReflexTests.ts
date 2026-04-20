@@ -4,6 +4,7 @@ import { useState, useEffect, useCallback } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { PrimitiveReflexTest } from "@/types/crm";
 import { showError } from "@/utils/toast";
+import { safeParse } from "@/utils/safe-json";
 
 export function usePrimitiveReflexTests(
   appointmentId: string | undefined,
@@ -42,6 +43,20 @@ export function usePrimitiveReflexTests(
       // Handle inhibition sync to priority_pattern
       if (updates.is_inhibited !== undefined && updatePriorityPattern) {
         await updatePriorityPattern('primitiveReflexes', reflexId, updates.is_inhibited ? 'Inhibited' : 'Clear', side);
+        
+        // Determine if the reflex is still inhibited globally (either L or R)
+        if (side) {
+          const otherSide = side === 'L' ? 'R' : 'L';
+          const pattern = safeParse(priorityPattern, {} as any);
+          const reflexPattern = pattern.primitiveReflexes || {};
+          const isOtherSideInhibited = reflexPattern[`${reflexId} (${otherSide})`] === 'Inhibited';
+          
+          // If we are unchecking one side, but the other side is still inhibited, 
+          // keep the global is_inhibited as true in the primitive_reflex_tests table.
+          if (!updates.is_inhibited && isOtherSideInhibited) {
+            updates.is_inhibited = true;
+          }
+        }
       }
 
       // If setting primary priority, unset others in the local state and DB

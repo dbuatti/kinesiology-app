@@ -81,7 +81,7 @@ export function useAppointment(id: string | undefined) {
     }
   };
 
-  const updatePriorityPattern = async (category: string, itemName: string, status: 'Clear' | 'Inhibited' | null) => {
+  const updatePriorityPattern = async (category: string, itemName: string, status: 'Clear' | 'Inhibited' | null, side?: 'L' | 'R') => {
     if (!id || !appointment) return;
 
     const currentPattern = safeParse(appointment.priority_pattern, {} as any);
@@ -90,10 +90,12 @@ export function useAppointment(id: string | undefined) {
       currentPattern[category] = {};
     }
 
+    const finalItemName = side ? `${itemName} (${side})` : itemName;
+
     if (status === null) {
-      delete currentPattern[category][itemName];
+      delete currentPattern[category][finalItemName];
     } else {
-      currentPattern[category][itemName] = status;
+      currentPattern[category][finalItemName] = status;
     }
 
     const newJson = safeStringify(currentPattern);

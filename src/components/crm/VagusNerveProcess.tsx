@@ -65,6 +65,7 @@ const VagusNerveProcess = ({ appointmentId, initialNotes, onSaveField, onUpdate 
   
   const [reflexPoint, setReflexPoint] = useState<string>("Occiput");
   const [auricularSide, setAuricularSide] = useState<string>("Left");
+  const [vagusSide, setVagusSide] = useState<"Left" | "Right">("Left");
   const [selectedFunction, setSelectedFunction] = useState<string>("");
   
   const [challengeType, setChallengeType] = useState<'hand' | 'gland'>('hand');
@@ -170,6 +171,7 @@ const VagusNerveProcess = ({ appointmentId, initialNotes, onSaveField, onUpdate 
     setSelectedShifts([]);
     setReflexPoint("Occiput");
     setAuricularSide("Left");
+    setVagusSide("Left");
     setSelectedFunction("");
     setChallengeType('hand');
     setSelectedOrgan("");
@@ -200,7 +202,7 @@ const VagusNerveProcess = ({ appointmentId, initialNotes, onSaveField, onUpdate 
         ? `Organ Pulse: ${pulseSide} Hand (${pulseDepth}) - ${selectedOrgan}`
         : `Gland Challenge: ${selectedGland} (${VAGAL_GLANDS.find(g => g.name === selectedGland)?.reflex})`;
       
-      summary = `${screenHeader}\n- Reflex Point: ${reflexLabel}\n- Dysfunctional Function: ${selectedFunction}\n- ${challengeLabel}\n- Polarity: ${polarity || 'Not set'}\n- Associated Spinal: ${selectedAssociation} (${partnerInfo?.currentOrgan})\n- Muscle: ${assoc?.muscle}\n- Lovett-Brother: ${assoc?.reciprocatingSegment} (${partnerInfo?.partnerOrgan}) - ${partnerInfo?.partnerMuscle}\n- Correction: ${breathingPattern} for ${30 - correctionTime}s\n- Status: ${isCleared ? 'Cleared/Balanced' : 'In Progress'}`;
+      summary = `${screenHeader}\n- Side: ${vagusSide}\n- Reflex Point: ${reflexLabel}\n- Dysfunctional Function: ${selectedFunction}\n- ${challengeLabel}\n- Polarity: ${polarity || 'Not set'}\n- Associated Spinal: ${selectedAssociation} (${partnerInfo?.currentOrgan})\n- Muscle: ${assoc?.muscle}\n- Lovett-Brother: ${assoc?.reciprocatingSegment} (${partnerInfo?.partnerOrgan}) - ${partnerInfo?.partnerMuscle}\n- Correction: ${breathingPattern} for ${30 - correctionTime}s\n- Status: ${isCleared ? 'Cleared/Balanced' : 'In Progress'}`;
     }
     
     const currentNotes = initialNotes ? `${initialNotes}\n\n${summary}` : summary;
@@ -298,20 +300,30 @@ const VagusNerveProcess = ({ appointmentId, initialNotes, onSaveField, onUpdate 
               </>
             ) : (
               <div className="space-y-6">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                   <div className="space-y-3">
                     <label className="text-xs font-black uppercase tracking-widest text-slate-400 flex items-center gap-2">
-                      <Zap size={14} className="text-amber-500" /> 1. Reflex Point + IM
+                      <Zap size={14} className="text-amber-500" /> 1. Side
+                    </label>
+                    <ToggleGroup type="single" value={vagusSide} onValueChange={(v) => v && setVagusSide(v as any)} className="justify-start gap-2">
+                      <ToggleGroupItem value="Left" className="flex-1 rounded-xl border border-slate-200 data-[state=on]:bg-indigo-600 data-[state=on]:text-white font-bold">Left</ToggleGroupItem>
+                      <ToggleGroupItem value="Right" className="flex-1 rounded-xl border border-slate-200 data-[state=on]:bg-indigo-600 data-[state=on]:text-white font-bold">Right</ToggleGroupItem>
+                    </ToggleGroup>
+                  </div>
+
+                  <div className="space-y-3">
+                    <label className="text-xs font-black uppercase tracking-widest text-slate-400 flex items-center gap-2">
+                      <Hand size={14} className="text-indigo-500" /> 2. Reflex Point
                     </label>
                     <div className="space-y-2">
                       <ToggleGroup type="single" value={reflexPoint} onValueChange={(v) => v && setReflexPoint(v)} className="justify-start gap-2">
-                        <ToggleGroupItem value="Occiput" className="flex-1 rounded-xl border border-slate-200 data-[state=on]:bg-indigo-600 data-[state=on]:text-white font-bold">Occiput (Both)</ToggleGroupItem>
+                        <ToggleGroupItem value="Occiput" className="flex-1 rounded-xl border border-slate-200 data-[state=on]:bg-indigo-600 data-[state=on]:text-white font-bold">Occiput</ToggleGroupItem>
                         <ToggleGroupItem value="Auricular" className="flex-1 rounded-xl border border-slate-200 data-[state=on]:bg-indigo-600 data-[state=on]:text-white font-bold">Auricular</ToggleGroupItem>
                       </ToggleGroup>
                       {reflexPoint === 'Auricular' && (
                         <ToggleGroup type="single" value={auricularSide} onValueChange={(v) => v && setAuricularSide(v)} className="justify-start gap-2 animate-in fade-in slide-in-from-top-1">
-                          <ToggleGroupItem value="Left" className="flex-1 rounded-xl border border-slate-200 data-[state=on]:bg-indigo-500 data-[state=on]:text-white font-bold text-xs">Left Vagus</ToggleGroupItem>
-                          <ToggleGroupItem value="Right" className="flex-1 rounded-xl border border-slate-200 data-[state=on]:bg-indigo-500 data-[state=on]:text-white font-bold text-xs">Right Vagus</ToggleGroupItem>
+                          <ToggleGroupItem value="Left" className="flex-1 rounded-xl border border-slate-200 data-[state=on]:bg-indigo-500 data-[state=on]:text-white font-bold text-xs">L</ToggleGroupItem>
+                          <ToggleGroupItem value="Right" className="flex-1 rounded-xl border border-slate-200 data-[state=on]:bg-indigo-500 data-[state=on]:text-white font-bold text-xs">R</ToggleGroupItem>
                         </ToggleGroup>
                       )}
                     </div>
@@ -319,11 +331,11 @@ const VagusNerveProcess = ({ appointmentId, initialNotes, onSaveField, onUpdate 
 
                   <div className="space-y-3">
                     <label className="text-xs font-black uppercase tracking-widest text-slate-400 flex items-center gap-2">
-                      <Brain size={14} className="text-purple-500" /> 2. Vagal Function
+                      <Brain size={14} className="text-purple-500" /> 3. Vagal Function
                     </label>
                     <Select value={selectedFunction} onValueChange={setSelectedFunction}>
                       <SelectTrigger className="rounded-xl border-slate-200 h-11 font-bold">
-                        <SelectValue placeholder="Select dysfunctional pathway..." />
+                        <SelectValue placeholder="Select function..." />
                       </SelectTrigger>
                       <SelectContent>
                         {VAGAL_FUNCTIONS.map(f => <SelectItem key={f} value={f}>{f}</SelectItem>)}
@@ -335,7 +347,7 @@ const VagusNerveProcess = ({ appointmentId, initialNotes, onSaveField, onUpdate 
                 <div className="space-y-4 p-6 bg-slate-50 rounded-[2rem] border border-slate-100">
                   <div className="flex items-center justify-between mb-2">
                     <label className="text-xs font-black uppercase tracking-widest text-slate-400 flex items-center gap-2">
-                      <Heart size={14} className="text-rose-500" /> 3. Organ / Gland Challenge
+                      <Heart size={14} className="text-rose-500" /> 4. Organ / Gland Challenge
                     </label>
                     <ToggleGroup type="single" value={challengeType} onValueChange={(v) => v && setChallengeType(v as any)} className="bg-white p-1 rounded-xl border border-slate-200">
                       <ToggleGroupItem value="hand" className="rounded-lg px-4 py-1.5 text-[10px] font-black uppercase tracking-widest data-[state=on]:bg-indigo-600 data-[state=on]:text-white">Hand Reflex</ToggleGroupItem>
@@ -416,7 +428,7 @@ const VagusNerveProcess = ({ appointmentId, initialNotes, onSaveField, onUpdate 
                       ) : (
                         <div className="border-2 border-dashed border-slate-200 rounded-2xl flex flex-col items-center justify-center text-center p-4 text-slate-400">
                           <MousePointer2 size={24} className="mb-2 opacity-20" />
-                          <p className="text-xs font-medium">Select a gland to see <br/>its reflex challenge</p>
+                          <p className="text-sm font-medium">Select a gland to see <br/>its reflex challenge</p>
                         </div>
                       )}
                     </div>
@@ -425,7 +437,7 @@ const VagusNerveProcess = ({ appointmentId, initialNotes, onSaveField, onUpdate 
 
                 <div className="space-y-3">
                   <label className="text-xs font-black uppercase tracking-widest text-slate-400 flex items-center gap-2">
-                    <Zap size={14} className="text-amber-500" /> 4. Energy Polarity
+                    <Zap size={14} className="text-amber-500" /> 5. Energy Polarity
                   </label>
                   <div className="grid grid-cols-2 gap-3">
                     <Button 
@@ -455,7 +467,7 @@ const VagusNerveProcess = ({ appointmentId, initialNotes, onSaveField, onUpdate 
 
                 <div className="space-y-3">
                   <label className="text-xs font-black uppercase tracking-widest text-slate-400 flex items-center gap-2">
-                    <Search size={14} className="text-indigo-500" /> 5. Associated Spinal Segment
+                    <Search size={14} className="text-indigo-500" /> 6. Associated Spinal Segment
                   </label>
                   <Select value={selectedAssociation} onValueChange={setSelectedAssociation}>
                     <SelectTrigger className="rounded-xl border-slate-200 h-11 font-bold">
@@ -505,7 +517,7 @@ const VagusNerveProcess = ({ appointmentId, initialNotes, onSaveField, onUpdate 
                 <div className="space-y-4 p-6 bg-emerald-50 rounded-[2rem] border-2 border-emerald-100">
                   <div className="flex items-center justify-between mb-2">
                     <label className="text-xs font-black uppercase tracking-widest text-emerald-600 flex items-center gap-2">
-                      <Wind size={14} /> 6. Correction Phase
+                      <Wind size={14} /> 7. Correction Phase
                     </label>
                     <div className="text-2xl font-black text-emerald-700 tabular-nums">{formatTime(correctionTime)}</div>
                   </div>
@@ -521,10 +533,12 @@ const VagusNerveProcess = ({ appointmentId, initialNotes, onSaveField, onUpdate 
                       </p>
                     </div>
 
-                    <ToggleGroup type="single" value={breathingPattern} onValueChange={setBreathingPattern} className="justify-start gap-2">
-                      <ToggleGroupItem value="Blocked Inhalation" className="rounded-xl px-4 py-2 h-auto data-[state=on]:bg-emerald-600 data-[state=on]:text-white border border-emerald-200 font-bold text-xs">Blocked Inhalation</ToggleGroupItem>
-                      <ToggleGroupItem value="Forced Exhalation" className="rounded-xl px-4 py-2 h-auto data-[state=on]:bg-emerald-600 data-[state=on]:text-white border border-emerald-200 font-bold text-xs">Forced Exhalation</ToggleGroupItem>
-                    </ToggleGroup>
+                    <div className="flex flex-wrap gap-2">
+                      <ToggleGroup type="single" value={breathingPattern} onValueChange={setBreathingPattern} className="justify-start gap-2">
+                        <ToggleGroupItem value="Blocked Inhalation" className="rounded-xl px-4 py-2 h-auto data-[state=on]:bg-emerald-600 data-[state=on]:text-white border border-emerald-200 font-bold text-xs">Blocked Inhalation</ToggleGroupItem>
+                        <ToggleGroupItem value="Forced Exhalation" className="rounded-xl px-4 py-2 h-auto data-[state=on]:bg-emerald-600 data-[state=on]:text-white border border-emerald-200 font-bold text-xs">Forced Exhalation</ToggleGroupItem>
+                      </ToggleGroup>
+                    </div>
 
                     <div className="flex gap-3">
                       <Button onClick={toggleCorrectionTimer} variant={isCorrectionActive ? "outline" : "default"} className={cn("flex-1 rounded-2xl h-12 font-bold transition-all", !isCorrectionActive && "bg-emerald-600 hover:bg-emerald-700 shadow-md shadow-emerald-200")}>
@@ -543,7 +557,7 @@ const VagusNerveProcess = ({ appointmentId, initialNotes, onSaveField, onUpdate 
                 <div className="pt-4 flex items-center justify-between border-t border-slate-100">
                   <div className="flex items-center gap-2">
                     <RefreshCw size={16} className="text-slate-400" />
-                    <span className="text-xs font-bold text-slate-600">7. Re-assess all indicators</span>
+                    <span className="text-xs font-bold text-slate-600">8. Re-assess all indicators</span>
                   </div>
                   <Button 
                     variant={isCleared ? "default" : "outline"} 

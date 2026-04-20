@@ -7,6 +7,7 @@ import { QUIZ_IMAGES } from "@/data/quiz-image-data";
 import { PRIMARY_EMOTIONS, SIGNS_OF_SHIFT } from "@/data/emotion-data";
 
 export type QuestionType = 'mcq' | 'fill-in-the-blank' | 'image' | 'flashcard';
+export type QuizCategory = 'Anatomy' | 'TCM' | 'Clinical' | 'Methodology' | 'Priority Logic' | 'All';
 
 export interface Question {
   id: string;
@@ -34,9 +35,11 @@ const getRandomOptions = (correct: string, allOptions: string[], count: number =
   return shuffleArray([correct, ...shuffled.slice(0, count)]);
 };
 
-export const generateQuestion = (): Question => {
-  const categories = ['Anatomy', 'TCM', 'Clinical', 'Image', 'Methodology'];
-  const category = categories[Math.floor(Math.random() * categories.length)];
+export const generateQuestion = (selectedCategory: QuizCategory = 'All'): Question => {
+  const categories: QuizCategory[] = ['Anatomy', 'TCM', 'Clinical', 'Methodology', 'Priority Logic'];
+  const category = selectedCategory === 'All' 
+    ? categories[Math.floor(Math.random() * categories.length)]
+    : selectedCategory;
 
   switch (category) {
     case 'Anatomy':
@@ -45,8 +48,8 @@ export const generateQuestion = (): Question => {
       return generateTCMQuestion();
     case 'Clinical':
       return generateClinicalQuestion();
-    case 'Image':
-      return generateImageQuestion();
+    case 'Priority Logic':
+      return generatePriorityLogicQuestion();
     case 'Methodology':
       return generateMethodologyQuestion();
     default:
@@ -111,7 +114,6 @@ const generateAnatomyQuestion = (): Question => {
         explanation: `${nerve.name} is associated with ${nerve.toneEffect} tone.`
       };
     } else {
-      // Identification Template
       return {
         id: `nerve-id-${nerve.id}`,
         type: 'mcq',
@@ -221,7 +223,6 @@ const generateClinicalQuestion = (): Question => {
     };
   } else if (template === 'sign') {
     const sign = reflex.clinicalSigns?.[0] || "Developmental issues";
-    // Check if reflex name already contains "Reflex" to avoid repetition
     const reflexDisplayName = reflex.name.toLowerCase().includes('reflex') ? reflex.name : `${reflex.name} reflex`;
     return {
       id: `reflex-sign-${reflex.id}`,
@@ -233,7 +234,6 @@ const generateClinicalQuestion = (): Question => {
       explanation: `Retained ${reflex.name} can manifest as: ${reflex.clinicalSigns?.join(', ')}.`
     };
   } else {
-    // Identification Template
     return {
       id: `reflex-id-${reflex.id}`,
       type: 'mcq',
@@ -244,6 +244,43 @@ const generateClinicalQuestion = (): Question => {
       explanation: `This describes the ${reflex.name} reflex, which is part of the ${reflex.category} category.`
     };
   }
+};
+
+const generatePriorityLogicQuestion = (): Question => {
+  const scenarios = [
+    {
+      q: "If both Fear Paralysis and Moro reflexes are active, which should you correct first?",
+      a: "Fear Paralysis",
+      e: "Fear Paralysis is the 'Master Reflex' and often drives the Moro response. Correcting it first may resolve Moro automatically via fractal logic."
+    },
+    {
+      q: "A client presents with high sympathetic arousal and a BOLT score of 12s. What is your first priority?",
+      a: "SNS Down-regulation (e.g. Harmonic Rocking)",
+      e: "Safety precedes change. You must shift the system out of threat before deep neurological work will stick."
+    },
+    {
+      q: "If a Cranial Nerve reflex point test produces an indicator response, what is the next step?",
+      a: "Determine direction (Afferent vs Efferent)",
+      e: "Once a dysfunction is found, you must determine if it requires bottom-up (Afferent) or top-down (Efferent) correction."
+    },
+    {
+      q: "Which brainstem region regulates extensor tone and is associated with CN V-VIII?",
+      a: "Pons",
+      e: "The Pons regulates extensor tone. If a client has poor extensor control, look to the Pontine nuclei."
+    }
+  ];
+
+  const scenario = scenarios[Math.floor(Math.random() * scenarios.length)];
+  
+  return {
+    id: `priority-${Date.now()}`,
+    type: 'mcq',
+    category: 'Priority Logic',
+    question: scenario.q,
+    options: getRandomOptions(scenario.a, scenarios.map(s => s.a)),
+    correctAnswer: scenario.a,
+    explanation: scenario.e
+  };
 };
 
 const generateImageQuestion = (): Question => {

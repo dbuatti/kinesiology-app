@@ -62,7 +62,7 @@ export function useAppointment(id: string | undefined) {
     }
   }, [id]);
 
-  const saveField = async (field: string, value: any) => {
+  const saveField = useCallback(async (field: string, value: any) => {
     if (!id || !appointment) return;
     
     const normalized = Array.isArray(value) 
@@ -87,9 +87,9 @@ export function useAppointment(id: string | undefined) {
       showError(`Failed to save ${field}`);
       throw err;
     }
-  };
+  }, [id, appointment]);
 
-  const updatePriorityPattern = async (category: string, itemName: string, status: 'Clear' | 'Inhibited' | null, side?: 'L' | 'R') => {
+  const updatePriorityPattern = useCallback(async (category: string, itemName: string, status: 'Clear' | 'Inhibited' | null, side?: 'L' | 'R') => {
     if (!id || !appointment) return;
 
     // Always work off the latest ref to avoid overwriting parallel updates
@@ -123,7 +123,7 @@ export function useAppointment(id: string | undefined) {
     } catch (e) {
       console.error("Failed to persist pattern update:", e);
     }
-  };
+  }, [id, appointment]);
 
   useEffect(() => {
     fetchData();

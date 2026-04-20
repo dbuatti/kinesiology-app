@@ -230,6 +230,8 @@ export function CranialNerveAssessment({
   }, []);
 
   const sortedNerves = useMemo(() => {
+    console.log("[CranialNerveAssessment] Sorting nerves...");
+
     return [...CRANIAL_NERVES].sort((a, b) => {
       const testA = tests.find(t => t.nerve_id === a.id.toString());
       const testB = tests.find(t => t.nerve_id === b.id.toString());
@@ -240,10 +242,15 @@ export function CranialNerveAssessment({
       const isAnyInhibA = nervePattern[`${nerveNameA} (L)`] === 'Inhibited' || nervePattern[`${nerveNameA} (R)`] === 'Inhibited' || testA?.is_inhibited;
       const isAnyInhibB = nervePattern[`${nerveNameB} (L)`] === 'Inhibited' || nervePattern[`${nerveNameB} (R)`] === 'Inhibited' || testB?.is_inhibited;
 
-      // Priority score: Primary (1000) > Priority (500) > Inhibited (100) > Clear (0)
-      const scoreA = (testA?.is_primary_priority ? 1000 : 0) + (testA?.is_priority ? 500 : 0) + (isAnyInhibA ? 100 : 0);
-      const scoreB = (testB?.is_primary_priority ? 1000 : 0) + (testB?.is_priority ? 500 : 0) + (isAnyInhibB ? 100 : 0);
+      const isAnyClearA = nervePattern[`${nerveNameA} (L)`] === 'Clear' || nervePattern[`${nerveNameA} (R)`] === 'Clear';
+      const isAnyClearB = nervePattern[`${nerveNameB} (L)`] === 'Clear' || nervePattern[`${nerveNameB} (R)`] === 'Clear';
+
+      // Priority score: Primary (1000) > Priority (500) > Inhibited (100) > Not Tested (0) > Clear (-100)
+      const scoreA = (testA?.is_primary_priority ? 1000 : 0) + (testA?.is_priority ? 500 : 0) + (isAnyInhibA ? 100 : 0) + (isAnyClearA ? -100 : 0);
+      const scoreB = (testB?.is_primary_priority ? 1000 : 0) + (testB?.is_priority ? 500 : 0) + (isAnyInhibB ? 100 : 0) + (isAnyClearB ? -100 : 0);
       
+      console.log(`[Sort] ${a.name}: ${scoreA} vs ${b.name}: ${scoreB}`);
+
       if (scoreA !== scoreB) return scoreB - scoreA;
       return a.id - b.id;
     });

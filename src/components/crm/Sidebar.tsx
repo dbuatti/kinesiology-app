@@ -33,7 +33,8 @@ import {
   GraduationCap,
   Fingerprint,
   LayoutGrid,
-  MessageSquare
+  MessageSquare,
+  Brain
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import SearchBar from "./SearchBar";

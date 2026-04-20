@@ -221,11 +221,13 @@ const generateClinicalQuestion = (): Question => {
     };
   } else if (template === 'sign') {
     const sign = reflex.clinicalSigns?.[0] || "Developmental issues";
+    // Check if reflex name already contains "Reflex" to avoid repetition
+    const reflexDisplayName = reflex.name.toLowerCase().includes('reflex') ? reflex.name : `${reflex.name} reflex`;
     return {
       id: `reflex-sign-${reflex.id}`,
       type: 'mcq',
       category: 'Clinical',
-      question: `Which of these is a clinical sign of a retained ${reflex.name} reflex?`,
+      question: `Which of these is a clinical sign of a retained ${reflexDisplayName}?`,
       options: getRandomOptions(sign, PRIMITIVE_REFLEXES.flatMap(r => r.clinicalSigns || [])),
       correctAnswer: sign,
       explanation: `Retained ${reflex.name} can manifest as: ${reflex.clinicalSigns?.join(', ')}.`

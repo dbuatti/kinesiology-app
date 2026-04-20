@@ -43,13 +43,14 @@ const MultipleChoice: React.FC<MultipleChoiceProps> = ({
               className += " opacity-40 border-slate-100 dark:border-slate-800 grayscale-[0.5]";
             }
           } else {
-            className += " bg-white dark:bg-slate-900 border-slate-100 dark:border-slate-800 text-slate-700 dark:text-slate-300 hover:border-indigo-500 hover:bg-indigo-50 dark:hover:bg-indigo-900/20 hover:text-indigo-700 dark:hover:text-indigo-400 hover:shadow-md hover:-translate-y-0.5";
+            // Using explicit text colors to prevent theme/variant conflicts
+            className += " bg-white dark:bg-slate-900 border-slate-100 dark:border-slate-800 text-slate-900 dark:text-slate-100 hover:border-indigo-500 hover:bg-indigo-50 dark:hover:bg-indigo-900/20 hover:text-indigo-700 dark:hover:text-indigo-300 hover:shadow-md hover:-translate-y-0.5";
           }
 
           return (
             <Button
               key={index}
-              variant="ghost"
+              variant="outline"
               className={className}
               onClick={() => !selectedAnswer && onAnswer(option)}
               disabled={!!selectedAnswer}

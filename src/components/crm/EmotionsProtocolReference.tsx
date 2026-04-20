@@ -10,9 +10,11 @@ import {
   Activity, 
   Sparkles,
   CheckCircle2,
-  Info
+  Info,
+  ArrowRight
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { Badge } from '@/components/ui/badge';
 
 const STEPS = [
   { 
@@ -58,10 +60,17 @@ const STEPS = [
   { 
     id: 6, 
     title: "Priority Organ", 
-    desc: "Find the organ acting as a surrogate for the charge (e.g., Liver for Anger, Kidney for Fear).",
+    desc: "Find the organ acting as a surrogate for the charge. Challenge the following pairs:",
     icon: Activity,
     color: "text-emerald-600",
-    bg: "bg-emerald-50"
+    bg: "bg-emerald-50",
+    details: [
+      { label: "Wood", items: "Liver / Gallbladder" },
+      { label: "Fire", items: "Heart / Small Intestine" },
+      { label: "Earth", items: "Spleen / Stomach" },
+      { label: "Metal", items: "Lung / Large Intestine" },
+      { label: "Water", items: "Kidney / Bladder" }
+    ]
   },
   { 
     id: 7, 
@@ -73,11 +82,19 @@ const STEPS = [
   },
   { 
     id: 8, 
-    title: "Eye Position", 
-    desc: "Identify the sensory access point (Visual, Auditory, or Kinesthetic) using NLP logic.",
+    title: "Eye Position (NLP Logic)", 
+    desc: "Identify the sensory access point for the stress:",
     icon: Eye,
     color: "text-cyan-600",
-    bg: "bg-cyan-50"
+    bg: "bg-cyan-50",
+    details: [
+      { label: "Up & Left", items: "Visual Memory" },
+      { label: "Horizontal Left", items: "Auditory Memory" },
+      { label: "Down & Left", items: "Internal Monologue" },
+      { label: "Up & Right", items: "Visual Constructed" },
+      { label: "Horizontal Right", items: "Auditory Constructed" },
+      { label: "Down & Right", items: "Kinesthetic / Felt Sense" }
+    ]
   },
   { 
     id: 9, 
@@ -91,41 +108,55 @@ const STEPS = [
 
 const EmotionsProtocolReference = () => {
   return (
-    <div className="space-y-8 animate-in fade-in duration-500">
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+    <div className="space-y-6 animate-in fade-in duration-500 max-w-3xl mx-auto">
+      <div className="grid grid-cols-1 gap-4">
         {STEPS.map((step) => (
           <div 
             key={step.id} 
-            className="p-5 rounded-2xl border border-slate-100 bg-white shadow-sm hover:shadow-md transition-all group"
+            className="p-6 rounded-[2rem] border border-slate-100 bg-white shadow-sm hover:shadow-md transition-all group"
           >
-            <div className="flex items-start gap-4">
+            <div className="flex items-start gap-6">
               <div className={cn(
-                "w-10 h-10 rounded-xl flex items-center justify-center shrink-0 font-black text-sm shadow-sm",
+                "w-12 h-12 rounded-2xl flex items-center justify-center shrink-0 font-black text-lg shadow-sm transition-transform group-hover:scale-110",
                 step.bg, step.color
               )}>
                 {step.id}
               </div>
-              <div className="space-y-1">
-                <h4 className="font-bold text-slate-900 text-sm uppercase tracking-tight group-hover:text-indigo-600 transition-colors">
+              <div className="space-y-3 flex-1">
+                <h4 className="font-black text-slate-900 text-lg uppercase tracking-tight group-hover:text-indigo-600 transition-colors">
                   {step.title}
                 </h4>
-                <p className="text-xs text-slate-500 leading-relaxed font-medium">
+                <p className="text-sm text-slate-600 leading-relaxed font-medium">
                   {step.desc}
                 </p>
+                
+                {step.details && (
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 pt-2">
+                    {step.details.map((detail, idx) => (
+                      <div key={idx} className="flex items-center gap-2 p-2 rounded-xl bg-slate-50 border border-slate-100">
+                        <Badge variant="outline" className="bg-white border-slate-200 text-[8px] font-black uppercase tracking-widest px-1.5 py-0">
+                          {detail.label}
+                        </Badge>
+                        <span className="text-[11px] font-bold text-slate-700">{detail.items}</span>
+                      </div>
+                    ))}
+                  </div>
+                )}
               </div>
             </div>
           </div>
         ))}
       </div>
 
-      <div className="p-6 bg-slate-50 rounded-[2rem] border border-slate-100 flex items-start gap-4">
-        <div className="w-10 h-10 rounded-xl bg-white flex items-center justify-center text-indigo-600 shadow-sm shrink-0">
-          <Info size={20} />
+      <div className="p-8 bg-slate-900 text-white rounded-[2.5rem] border border-slate-800 flex items-start gap-6 shadow-xl">
+        <div className="w-12 h-12 rounded-2xl bg-indigo-600 flex items-center justify-center text-white shadow-lg shrink-0">
+          <Info size={24} />
         </div>
-        <div className="space-y-1">
-          <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Clinical Note</p>
-          <p className="text-xs text-slate-600 font-medium leading-relaxed">
-            The shift occurs when the client can distinguish between the 'me' (the observer) and the 'not-me' (the identity/emotion). Always wait for a clear parasympathetic response (sigh, yawn, or gurgle) before finishing.
+        <div className="space-y-2">
+          <p className="text-[10px] font-black text-indigo-400 uppercase tracking-[0.3em]">Clinical Mastery Note</p>
+          <p className="text-sm text-slate-300 font-medium leading-relaxed">
+            The shift occurs when the client can distinguish between the 'me' (the observer) and the 'not-me' (the identity/emotion). 
+            <strong> Always wait for a clear parasympathetic response:</strong> Yawning, Sighing, Swallowing, Gurgling, or a spontaneous Deep Breath before proceeding to the Positive Upload.
           </p>
         </div>
       </div>

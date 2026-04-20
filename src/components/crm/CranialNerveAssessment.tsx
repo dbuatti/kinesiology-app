@@ -13,7 +13,9 @@ import {
   Hand, 
   PlayCircle,
   FileText,
-  CheckCircle2
+  CheckCircle2,
+  Info,
+  ArrowRightLeft
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { supabase } from "@/integrations/supabase/client";
@@ -157,6 +159,18 @@ const NerveTestItem = ({ nerve, test, statusL, statusR, images, onUpdate }: Nerv
               <p className="text-xs font-bold text-slate-700 leading-tight">{nerve.stimulus}</p>
             </div>
           </div>
+
+          {nerve.delineationGuide && (
+            <div className="p-3 bg-indigo-50/50 rounded-xl border border-indigo-100 animate-in fade-in slide-in-from-top-1 duration-300">
+              <div className="flex items-center gap-2 mb-1.5">
+                <ArrowRightLeft size={12} className="text-indigo-500" />
+                <span className="text-[8px] font-black uppercase tracking-widest text-indigo-600">Delineation Guide</span>
+              </div>
+              <p className="text-[10px] font-medium text-indigo-900 leading-relaxed">
+                {nerve.delineationGuide}
+              </p>
+            </div>
+          )}
 
           <div className="space-y-1">
             <div className="flex items-center gap-1 text-[8px] font-black uppercase tracking-widest text-slate-400">

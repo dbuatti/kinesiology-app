@@ -17,6 +17,7 @@ export interface CranialNerve {
   acupoint?: string;
   videoUrl?: string;
   pageUrl?: string;
+  delineationGuide?: string;
 }
 
 export const BRAINSTEM_KEYS: Record<BrainstemNuclei, { description: string; stim: string }> = {
@@ -148,6 +149,7 @@ export const CRANIAL_NERVES: CranialNerve[] = [
     reflexPoint: "Finger in the ear canal",
     functions: ["Hearing", "Balance and spatial orientation"],
     stimulus: "Place finger in ear canal. Delineate: Cochlear (sound) vs. Vestibular (head motion).",
+    delineationGuide: "To delineate: 1. Hold reflex point (finger in ear). 2. Test with sound only (snap fingers or use tuning fork) -> if IM inhibits, it's a Cochlear priority. 3. Test with head motion only (slow rotation or tilt) -> if IM inhibits, it's a Vestibular priority.",
     clinicalPearl: "A highly powerful nerve frequently involved in head injuries and anxiety.",
     color: "bg-indigo-800",
     videoUrl: "https://embed-ssl.wistia.com/deliveries/465c56ed15ec74012154656cd87ff84d9307a40c.mp4",

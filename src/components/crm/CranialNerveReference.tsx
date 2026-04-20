@@ -20,7 +20,8 @@ import {
   Sparkles,
   ImageIcon,
   Target,
-  ChevronRight
+  ChevronRight,
+  ArrowRightLeft
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
@@ -190,6 +191,18 @@ const CranialNerveReference = () => {
                     <p className="text-sm font-bold text-indigo-900 leading-relaxed">{nerve.stimulus}</p>
                   </div>
                 </div>
+
+                {nerve.delineationGuide && (
+                  <div className="p-5 bg-indigo-50/50 rounded-3xl border-2 border-indigo-100 animate-in fade-in slide-in-from-top-2 duration-500">
+                    <div className="flex items-center gap-2 mb-2">
+                      <ArrowRightLeft size={16} className="text-indigo-600" />
+                      <span className="text-[10px] font-black uppercase tracking-widest text-indigo-600">Delineation Guide</span>
+                    </div>
+                    <p className="text-xs font-bold text-indigo-900 leading-relaxed">
+                      {nerve.delineationGuide}
+                    </p>
+                  </div>
+                )}
 
                 <div className="space-y-3">
                   <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest">Key Functions</p>

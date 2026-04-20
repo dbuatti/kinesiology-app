@@ -39,12 +39,8 @@ export function usePrimitiveReflexTests(
       const { data: userData } = await supabase.auth.getUser();
       if (!userData.user) throw new Error("User not authenticated");
 
-      const existingTest = tests.find(t => t.reflex_id === reflexId);
-
       // Handle inhibition sync to priority_pattern
       if (updates.is_inhibited !== undefined && updatePriorityPattern) {
-        // We need the reflex name for the pattern. reflexId is usually the name or a slug.
-        // For primitive reflexes, we'll use the ID as the name in the pattern.
         await updatePriorityPattern('primitiveReflexes', reflexId, updates.is_inhibited ? 'Inhibited' : 'Clear', side);
       }
 
@@ -58,40 +54,33 @@ export function usePrimitiveReflexTests(
         setTests(prev => prev.map(t => ({ ...t, is_primary_priority: false })));
       }
 
-      if (existingTest) {
-        const { data, error } = await supabase
-          .from('primitive_reflex_tests')
-          .update({ ...updates, updated_at: new Date().toISOString() })
-          .eq('id', existingTest.id)
-          .select()
-          .single();
+      // Use upsert to avoid 409 Conflict errors
+      const { data, error } = await supabase
+        .from('primitive_reflex_tests')
+        .upsert({
+          ...updates,
+          appointment_id: appointmentId,
+          reflex_id: reflexId,
+          user_id: userData.user.id,
+          updated_at: new Date().toISOString()
+        }, { 
+          onConflict: 'appointment_id,reflex_id' 
+        })
+        .select()
+        .single();
 
-        if (error) throw error;
-        setTests(prev => {
-          const exists = prev.some(t => t.id === data.id);
-          if (exists) {
-            return prev.map(t => t.id === data.id ? data : t);
-          }
-          return [...prev, data];
-        });
-      } else {
-        const { data, error } = await supabase
-          .from('primitive_reflex_tests')
-          .insert([{
-            ...updates,
-            appointment_id: appointmentId,
-            reflex_id: reflexId,
-            user_id: userData.user.id
-          }])
-          .select()
-          .single();
+      if (error) throw error;
 
-        if (error) throw error;
-        setTests(prev => [...prev, data]);
-      }
-    } catch (err) {
+      setTests(prev => {
+        const exists = prev.some(t => t.id === data.id);
+        if (exists) {
+          return prev.map(t => t.id === data.id ? data : t);
+        }
+        return [...prev, data];
+      });
+    } catch (err: any) {
       console.error("Error updating primitive reflex test:", err);
-      showError("Failed to save changes.");
+      showError(err.message || "Failed to save changes.");
     }
   };
 

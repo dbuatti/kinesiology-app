@@ -32,6 +32,7 @@ import JointActionTableModal from './JointActionTableModal';
 import { BRAIN_REFLEX_POINTS } from '@/data/brain-reflex-data';
 import { getMuscleInfo } from '@/data/muscle-info-data';
 import { PRIMITIVE_REFLEXES } from '@/data/primitive-reflex-data';
+import { safeParse } from '@/utils/safe-json';
 
 type Step = 
   | 'SELECT_START'
@@ -64,36 +65,50 @@ const PathwayLogicWizard = ({ onSave, onClearItem, priorityPattern, initialFindi
   useEffect(() => {
     if (initialFinding) {
       setSelectedFinding(initialFinding);
-      setStep('SELECT_START'); // Ensure we are at the start to see the selection
+      setStep('SELECT_START'); 
     }
   }, [initialFinding]);
 
-  // The actual item name being corrected
   const effectiveItem = selectedFinding === 'CUSTOM' ? customText : selectedFinding;
 
   const inhibitedItems = useMemo(() => {
     const items = new Set<string>();
+    const baseNames = new Map<string, Set<'L' | 'R'>>();
     
-    // Add items from the priority pattern
     if (priorityPattern) {
       try {
-        const parsed = JSON.parse(priorityPattern);
+        const parsed = safeParse(priorityPattern, {});
         Object.values(parsed).forEach((category: any) => {
           Object.entries(category).forEach(([name, status]) => {
-            if (status === 'Inhibited') items.add(name);
+            if (status === 'Inhibited') {
+              items.add(name);
+              
+              // Track L/R pairs for Bilateral grouping
+              const match = name.match(/(.+) \(([LR])\)$/);
+              if (match) {
+                const base = match[1];
+                const side = match[2] as 'L' | 'R';
+                if (!baseNames.has(base)) baseNames.set(base, new Set());
+                baseNames.get(base)!.add(side);
+              }
+            }
           });
         });
-      } catch (e) {
-        console.error("Failed to parse priority pattern", e);
-      }
+      } catch (e) {}
     }
 
-    // Always include the initialFinding if it exists, even if not in pattern
+    // Add Bilateral options if both L and R are inhibited
+    baseNames.forEach((sides, base) => {
+      if (sides.has('L') && sides.has('R')) {
+        items.add(`${base} (Bilateral)`);
+      }
+    });
+
     if (initialFinding && initialFinding !== 'CUSTOM') {
       items.add(initialFinding);
     }
 
-    return Array.from(items);
+    return Array.from(items).sort();
   }, [priorityPattern, initialFinding]);
 
   useEffect(() => {
@@ -135,7 +150,14 @@ const PathwayLogicWizard = ({ onSave, onClearItem, priorityPattern, initialFindi
 
   const handleSave = (summary: string) => {
     if (effectiveItem && selectedFinding !== 'CUSTOM' && onClearItem) {
-      onClearItem(effectiveItem);
+      // If Bilateral was selected, clear both L and R
+      if (effectiveItem.includes('(Bilateral)')) {
+        const base = effectiveItem.replace(' (Bilateral)', '');
+        onClearItem(`${base} (L)`);
+        onClearItem(`${base} (R)`);
+      } else {
+        onClearItem(effectiveItem);
+      }
     }
     onSave(summary);
     resetWizard();
@@ -149,10 +171,11 @@ const PathwayLogicWizard = ({ onSave, onClearItem, priorityPattern, initialFindi
 
   const clinicalTip = useMemo(() => {
     if (!effectiveItem) return null;
+    const cleanItem = effectiveItem.replace(' (Bilateral)', '').replace(/ \([LR]\)$/, '');
 
     const primitive = PRIMITIVE_REFLEXES.find(r => 
-      effectiveItem.toLowerCase().includes(r.name.toLowerCase()) || 
-      r.name.toLowerCase().includes(effectiveItem.toLowerCase())
+      cleanItem.toLowerCase().includes(r.name.toLowerCase()) || 
+      r.name.toLowerCase().includes(cleanItem.toLowerCase())
     );
 
     if (primitive) {
@@ -169,8 +192,8 @@ const PathwayLogicWizard = ({ onSave, onClearItem, priorityPattern, initialFindi
     }
 
     const brainPoint = BRAIN_REFLEX_POINTS.find(p => 
-      effectiveItem.toLowerCase().includes(p.name.toLowerCase()) || 
-      p.name.toLowerCase().includes(effectiveItem.toLowerCase())
+      cleanItem.toLowerCase().includes(p.name.toLowerCase()) || 
+      p.name.toLowerCase().includes(cleanItem.toLowerCase())
     );
 
     if (brainPoint) {
@@ -186,7 +209,7 @@ const PathwayLogicWizard = ({ onSave, onClearItem, priorityPattern, initialFindi
       };
     }
 
-    const muscle = getMuscleInfo(effectiveItem);
+    const muscle = getMuscleInfo(cleanItem);
     if (muscle && muscle.meridian !== 'General') {
       return {
         type: 'Muscle',
@@ -221,7 +244,12 @@ const PathwayLogicWizard = ({ onSave, onClearItem, priorityPattern, initialFindi
                   </SelectTrigger>
                   <SelectContent className="rounded-2xl border-none shadow-2xl p-2">
                     {inhibitedItems.map(item => (
-                      <SelectItem key={item} value={item} className="rounded-xl py-3 font-bold">{item}</SelectItem>
+                      <SelectItem key={item} value={item} className={cn(
+                        "rounded-xl py-3 font-bold",
+                        item.includes('(Bilateral)') && "text-indigo-600 bg-indigo-50/50"
+                      )}>
+                        {item}
+                      </SelectItem>
                     ))}
                     <SelectItem value="CUSTOM" className="rounded-xl py-3 font-bold text-indigo-600">+ New Correction Entry</SelectItem>
                   </SelectContent>

@@ -31,7 +31,7 @@ serve(async (req) => {
     
     const prompt = `Act as a master clinical supervisor. Analyze the journal and backlog to prioritize the identity map. Return ONLY a JSON object with "rankings" and "new_suggestions".`;
 
-    const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${geminiKey}`, {
+    const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${geminiKey}`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({

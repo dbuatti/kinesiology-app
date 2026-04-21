@@ -39,7 +39,6 @@ serve(async (req) => {
     };
 
     // 1. STRICT UPDATE: If we have a UID, we MUST update it. 
-    // Falling back to CREATE is what causes duplicates.
     if (bookingUid && bookingUid !== "undefined" && bookingUid !== "null" && bookingUid !== "") {
       console.log(`[${functionName}] Action: UPDATE booking ${bookingUid}`);
       
@@ -66,16 +65,19 @@ serve(async (req) => {
         });
       }
 
-      // If it's a 404, the booking might have been deleted on Cal.com but still exists in our DB
       if (res.status === 404) {
         console.warn(`[${functionName}] Booking ${bookingUid} not found on Cal.com. Proceeding to CREATE new.`);
       } else {
-        console.error(`[${functionName}] Cal.com Update Error:`, result);
-        throw new Error(result.error?.message || "Failed to update Cal.com booking");
+        const errorMsg = result.error?.message || result.message || "Failed to update Cal.com booking";
+        // If it's an availability error during update, throw it clearly
+        if (errorMsg.includes("already has booking") || errorMsg.includes("not available")) {
+          throw new Error("The new time slot is not available in your calendar.");
+        }
+        throw new Error(errorMsg);
       }
     } 
     
-    // 2. CREATE new booking (only if no UID or UID was 404)
+    // 2. CREATE new booking
     console.log(`[${functionName}] Action: CREATE new booking`);
     const createRes = await fetch("https://api.cal.com/v2/bookings", {
       method: "POST",
@@ -108,17 +110,23 @@ serve(async (req) => {
       });
     }
 
-    // 3. CONFLICT RESOLUTION: If slot is taken, find the existing booking and adopt its ID
-    if (createRes.status === 400 && createResult.error?.message?.includes("already has booking")) {
+    // 3. CONFLICT RESOLUTION: If slot is taken, check if it's an existing booking we can adopt
+    const errorMsg = createResult.error?.message || createResult.message || "";
+    if (createRes.status === 400 && (errorMsg.includes("already has booking") || errorMsg.includes("not available"))) {
       console.log(`[${functionName}] Conflict detected. Searching for existing booking at ${cleanStartTime}`);
       
+      // Search for bookings around this time
       const listRes = await fetch(`https://api.cal.com/v2/bookings?startTime=${cleanStartTime}&status=upcoming`, {
         method: "GET",
         headers
       });
       
       const listData = await listRes.json();
-      const existing = (listData.data || []).find(b => b.start === cleanStartTime);
+      // Find exact match
+      const existing = (listData.data || []).find(b => {
+        const bStart = new Date(b.start).toISOString();
+        return bStart === cleanStartTime;
+      });
 
       if (existing) {
         console.log(`[${functionName}] Found existing booking: ${existing.uid}. Repairing CRM link.`);
@@ -129,12 +137,18 @@ serve(async (req) => {
           message: "Existing booking found and linked."
         }), { status: 200, headers: corsHeaders });
       }
+
+      // If no booking found but still "not available", it's likely an OOO block
+      throw new Error("This slot is unavailable (it may be blocked by an Out-of-Office entry or another event).");
     }
 
-    throw new Error(createResult.error?.message || "Cal.com Create Error");
+    throw new Error(errorMsg || "Cal.com Create Error");
 
   } catch (error) {
     console.error(`[${functionName}] CRITICAL FAILURE:`, error.message);
-    return new Response(JSON.stringify({ error: error.message }), { status: 400, headers: corsHeaders });
+    return new Response(JSON.stringify({ error: error.message }), { 
+      status: 400, 
+      headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
+    });
   }
 })

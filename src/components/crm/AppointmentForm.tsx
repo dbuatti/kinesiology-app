@@ -162,8 +162,9 @@ const AppointmentForm = ({
           }
         } catch (err: any) {
           console.error("Cal.com Sync Failed:", err);
-          if (err.message.includes("Conflict") || err.message.includes("unavailable")) {
-            setConflictError(err.message);
+          const msg = err.message || "";
+          if (msg.includes("Conflict") || msg.includes("available") || msg.includes("booking")) {
+            setConflictError(msg);
             setSubmitting(false);
             return; 
           }
@@ -204,8 +205,6 @@ const AppointmentForm = ({
         if (dbError) throw dbError;
         showSuccess("Session updated and synced with Cal.com.");
       } else {
-        // Use UPSERT here to handle the race condition with the Cal.com webhook
-        // If the webhook beat us to it, we update that record instead of creating a new one
         const { data: newApp, error: dbError } = await supabase
           .from("appointments")
           .upsert({

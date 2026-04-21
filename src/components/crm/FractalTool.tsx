@@ -16,7 +16,10 @@ import {
   ShieldAlert,
   Fingerprint,
   History,
-  LayoutGrid
+  LayoutGrid,
+  CheckCircle2,
+  ChevronRight,
+  Plus
 } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -91,6 +94,28 @@ const FractalTool = () => {
     }
   };
 
+  const handleAcceptAll = async (parentId: string, rels: any[]) => {
+    try {
+      const promises = rels.map(rel => 
+        supabase
+          .from('identity_backlog')
+          .update({ parent_id: rel.parent_id })
+          .eq('id', rel.child_id)
+      );
+
+      const results = await Promise.all(promises);
+      const errors = results.filter(r => r.error);
+      
+      if (errors.length > 0) throw new Error("Some updates failed");
+
+      setProposedRelationships(prev => prev.filter(r => r.parent_id !== parentId));
+      fetchData();
+      showSuccess(`Accepted ${rels.length} relationships under parent.`);
+    } catch (err) {
+      showError("Failed to update relationships.");
+    }
+  };
+
   const handleUpdateRating = async (id: string, rating: number) => {
     try {
       const { error } = await supabase
@@ -156,6 +181,15 @@ const FractalTool = () => {
     return roots.sort((a, b) => (b.priority_score || 0) - (a.priority_score || 0));
   }, [backlog]);
 
+  const groupedSuggestions = useMemo(() => {
+    const groups: Record<string, any[]> = {};
+    proposedRelationships.forEach(rel => {
+      if (!groups[rel.parent_id]) groups[rel.parent_id] = [];
+      groups[rel.parent_id].push(rel);
+    });
+    return groups;
+  }, [proposedRelationships]);
+
   const renderTree = (nodes: any[], level = 0) => {
     return nodes.map(node => (
       <FractalNode 
@@ -183,48 +217,81 @@ const FractalTool = () => {
     <div className="space-y-10 animate-in fade-in duration-700">
       {/* Proposed Relationships Bar */}
       {proposedRelationships.length > 0 && (
-        <div className="space-y-4 animate-in slide-in-from-top-4 duration-500">
-          <div className="flex items-center gap-3 px-2">
-            <Sparkles size={20} className="text-amber-500" />
-            <h3 className="text-lg font-black text-slate-900">Proposed Fractal Relationships</h3>
+        <div className="space-y-6 animate-in slide-in-from-top-4 duration-500">
+          <div className="flex items-center justify-between px-2">
+            <div className="flex items-center gap-3">
+              <Sparkles size={20} className="text-amber-500" />
+              <h3 className="text-xl font-black text-slate-900">Proposed Fractal Groups</h3>
+            </div>
+            <Badge className="bg-amber-500 text-white border-none font-black text-[10px] uppercase tracking-widest px-3 py-1 rounded-full">
+              {proposedRelationships.length} Patterns Detected
+            </Badge>
           </div>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {proposedRelationships.map((rel, idx) => {
-              const child = backlog.find(b => b.id === rel.child_id);
-              const parent = backlog.find(b => b.id === rel.parent_id);
-              if (!child || !parent) return null;
+          
+          <div className="grid grid-cols-1 gap-6">
+            {Object.entries(groupedSuggestions).map(([parentId, rels]) => {
+              const parent = backlog.find(b => b.id === parentId);
+              if (!parent) return null;
 
               return (
-                <Card key={idx} className="border-none shadow-md bg-indigo-50/50 border-2 border-indigo-100 rounded-[2rem] overflow-hidden">
-                  <CardContent className="p-6 space-y-4">
-                    <div className="flex items-center justify-between gap-4">
-                      <div className="flex items-center gap-3 min-w-0">
-                        <Badge variant="outline" className="bg-white border-indigo-200 text-indigo-600 text-[8px] font-black uppercase px-2 py-0.5">Child</Badge>
-                        <p className="text-sm font-bold truncate">"{child.content}"</p>
+                <Card key={parentId} className="border-none shadow-xl bg-white rounded-[2.5rem] overflow-hidden border-2 border-indigo-100">
+                  <CardHeader className="bg-indigo-600 p-8 text-white">
+                    <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
+                      <div className="flex items-center gap-4">
+                        <div className="w-12 h-12 rounded-2xl bg-white/20 flex items-center justify-center shadow-inner">
+                          <Layers size={24} />
+                        </div>
+                        <div>
+                          <p className="text-[10px] font-black uppercase tracking-[0.3em] text-indigo-200">Parent Pattern</p>
+                          <h4 className="text-2xl font-black tracking-tight">"{parent.content}"</h4>
+                        </div>
                       </div>
-                      <ArrowRight size={16} className="text-indigo-400 shrink-0" />
-                      <div className="flex items-center gap-3 min-w-0">
-                        <Badge className="bg-indigo-600 text-white border-none text-[8px] font-black uppercase px-2 py-0.5">Parent</Badge>
-                        <p className="text-sm font-bold truncate">"{parent.content}"</p>
-                      </div>
+                      <Button 
+                        onClick={() => handleAcceptAll(parentId, rels)}
+                        className="bg-white text-indigo-600 hover:bg-indigo-50 h-12 px-8 rounded-xl font-black text-xs uppercase tracking-widest shadow-lg"
+                      >
+                        <CheckCircle2 size={18} className="mr-2" /> Accept All ({rels.length})
+                      </Button>
                     </div>
-                    <p className="text-xs text-slate-500 font-medium italic leading-relaxed">
-                      {rel.reasoning}
-                    </p>
-                    <div className="flex gap-2 pt-2">
-                      <Button 
-                        onClick={() => handleAcceptRelationship(rel)}
-                        className="flex-1 h-10 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-black text-[10px] uppercase tracking-widest shadow-lg"
-                      >
-                        Accept Relationship
-                      </Button>
-                      <Button 
-                        variant="ghost" 
-                        onClick={() => setProposedRelationships(prev => prev.filter(r => r.child_id !== rel.child_id))}
-                        className="h-10 w-10 rounded-xl text-slate-400 hover:text-rose-600"
-                      >
-                        <X size={18} />
-                      </Button>
+                  </CardHeader>
+                  <CardContent className="p-8 space-y-4">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      {rels.map((rel, idx) => {
+                        const child = backlog.find(b => b.id === rel.child_id);
+                        if (!child) return null;
+
+                        return (
+                          <div key={idx} className="p-5 bg-slate-50 rounded-3xl border border-slate-100 group hover:border-indigo-200 transition-all">
+                            <div className="flex items-start justify-between gap-4 mb-3">
+                              <div className="flex items-center gap-2">
+                                <Badge variant="outline" className="bg-white border-indigo-100 text-indigo-600 text-[8px] font-black uppercase px-2 py-0.5">Child</Badge>
+                                <p className="text-sm font-bold text-slate-900">"{child.content}"</p>
+                              </div>
+                              <Button 
+                                variant="ghost" 
+                                size="icon" 
+                                onClick={() => setProposedRelationships(prev => prev.filter(r => r.child_id !== rel.child_id))}
+                                className="h-8 w-8 rounded-lg text-slate-300 hover:text-rose-600"
+                              >
+                                <X size={16} />
+                              </Button>
+                            </div>
+                            <p className="text-xs text-slate-500 font-medium italic leading-relaxed pl-1 border-l-2 border-indigo-200">
+                              {rel.reasoning}
+                            </p>
+                            <div className="mt-4 flex justify-end">
+                              <Button 
+                                variant="ghost" 
+                                size="sm" 
+                                onClick={() => handleAcceptRelationship(rel)}
+                                className="h-8 px-3 rounded-lg text-[10px] font-black uppercase tracking-widest text-indigo-600 hover:bg-indigo-50"
+                              >
+                                Accept Single <ChevronRight size={14} className="ml-1" />
+                              </Button>
+                            </div>
+                          </div>
+                        );
+                      })}
                     </div>
                   </CardContent>
                 </Card>

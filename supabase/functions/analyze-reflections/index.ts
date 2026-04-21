@@ -24,10 +24,8 @@ serve(async (req) => {
 
   try {
     const { content } = await req.json();
-    console.log(`[${functionName}] Content length: ${content?.length || 0}`);
     
     if (!content || content.trim().length < 10) {
-      console.warn(`[${functionName}] Warning: Content too short.`);
       return new Response(JSON.stringify({ error: 'Journal text is too short to analyze.' }), {
         status: 400,
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
@@ -35,10 +33,7 @@ serve(async (req) => {
     }
 
     const geminiKey = Deno.env.get('GEMINI_API_KEY')
-    if (!geminiKey) {
-      console.error(`[${functionName}] Error: GEMINI_API_KEY is missing.`);
-      throw new Error("GEMINI_API_KEY is missing.");
-    }
+    if (!geminiKey) throw new Error("GEMINI_API_KEY is missing.");
 
     const prompt = `Act as a clinical supervisor for a Kinesiology practitioner. 
     Analyze the following journal entry and extract specific items for the practitioner's "Identity Sandbox".
@@ -51,8 +46,8 @@ serve(async (req) => {
     TEXT TO ANALYZE:
     "${content}"`;
 
-    console.log(`[${functionName}] Calling Gemini API...`);
-    const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${geminiKey}`, {
+    console.log(`[${functionName}] Calling Gemini API (1.5-flash)...`);
+    const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${geminiKey}`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
@@ -64,7 +59,7 @@ serve(async (req) => {
     const data = await response.json()
     if (!response.ok) {
       console.error(`[${functionName}] Gemini API Error:`, data);
-      throw new Error('AI Service Error');
+      throw new Error(data.error?.message || 'AI Service Error');
     }
 
     let resultText = data.candidates[0].content.parts[0].text.trim();
@@ -79,8 +74,6 @@ serve(async (req) => {
         type: normalizeType(e.type)
       }));
     }
-
-    console.log(`[${functionName}] Analysis complete. Extractions found: ${parsed.extractions?.length || 0}`);
 
     return new Response(JSON.stringify({ extractions: parsed.extractions || [] }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },

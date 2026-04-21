@@ -28,13 +28,14 @@ serve(async (req) => {
     console.log(`[${functionName}] Event Type: ${triggerEvent}`);
 
     if (triggerEvent === 'PING') {
+      console.log(`[${functionName}] Ping received.`);
       return new Response(JSON.stringify({ success: true }), { status: 200, headers: corsHeaders });
     }
 
     const payload = body.payload || body.data || body;
     const calcomId = String(payload.bookingId || payload.id || payload.uid);
+    console.log(`[${functionName}] Processing booking: ${calcomId}`);
 
-    // 1. Handle Cancellations
     if (triggerEvent === 'BOOKING_CANCELLED') {
       console.log(`[${functionName}] Deleting cancelled booking: ${calcomId}`);
       await supabase.from('appointments').delete().eq('calcom_booking_id', calcomId);
@@ -45,7 +46,7 @@ serve(async (req) => {
                      (payload.responses && { name: payload.responses.name, email: payload.responses.email });
     
     if (!attendee || !attendee.email) {
-      console.log(`[${functionName}] Skipping: No attendee email found.`);
+      console.warn(`[${functionName}] Skipping: No attendee email found in payload.`);
       return new Response(JSON.stringify({ success: true }), { status: 200, headers: corsHeaders });
     }
 
@@ -54,19 +55,21 @@ serve(async (req) => {
     const startTime = payload.startTime || payload.start;
     const eventTypeId = String(payload.eventTypeId || "");
 
-    // 2. Ensure Client exists
+    console.log(`[${functionName}] Attendee: ${name} (${email}) at ${startTime}`);
+
     const { data: dbClient } = await supabase
       .from('clients')
       .upsert({ user_id: PRACTITIONER_ID, name, email }, { onConflict: 'email' })
       .select('*')
       .single();
 
-    if (!dbClient) throw new Error("Failed to upsert client.");
+    if (!dbClient) {
+      console.error(`[${functionName}] Error: Failed to upsert client.`);
+      throw new Error("Failed to upsert client.");
+    }
 
-    // 3. Smart Upsert Logic
     const isCreationEvent = ['BOOKING_CREATED', 'BOOKING_RESCHEDULED'].includes(triggerEvent);
     
-    // Check if we already have this booking
     const { data: existingApp } = await supabase
       .from('appointments')
       .select('id')
@@ -74,11 +77,10 @@ serve(async (req) => {
       .maybeSingle();
 
     if (!existingApp && !isCreationEvent) {
-      console.log(`[${functionName}] Skipping: Received ${triggerEvent} for non-existent booking ${calcomId}`);
-      return new Response(JSON.stringify({ success: true, message: "Ignored non-creation event for unknown booking" }), { status: 200, headers: corsHeaders });
+      console.log(`[${functionName}] Ignoring non-creation event for unknown booking ${calcomId}`);
+      return new Response(JSON.stringify({ success: true, message: "Ignored" }), { status: 200, headers: corsHeaders });
     }
 
-    // If it's a new booking, try to find a manual entry to link first
     let targetId = existingApp?.id;
     if (!targetId && isCreationEvent) {
       const { data: manualMatch } = await supabase
@@ -95,13 +97,12 @@ serve(async (req) => {
       }
     }
 
-    // Price Mapping
     let priceAmount = 0;
     if (eventTypeId === "4279898") priceAmount = 50;
     else if (eventTypeId === "5302336") priceAmount = 100;
     if (payload.payment && payload.payment[0]) priceAmount = payload.payment[0].amount / 100;
 
-    console.log(`[${functionName}] Upserting record for booking: ${calcomId} at ${startTime}`);
+    console.log(`[${functionName}] Upserting appointment record...`);
 
     const { error: appError } = await supabase
       .from('appointments')
@@ -119,12 +120,15 @@ serve(async (req) => {
         onConflict: 'calcom_booking_id' 
       });
 
-    if (appError) throw appError;
+    if (appError) {
+      console.error(`[${functionName}] Database Error:`, appError);
+      throw appError;
+    }
 
-    console.log(`[${functionName}] Webhook processed successfully`);
+    console.log(`[${functionName}] Webhook processed successfully.`);
     return new Response(JSON.stringify({ success: true }), { status: 200, headers: corsHeaders });
   } catch (error) {
-    console.error(`[${functionName}] Error:`, error.message);
+    console.error(`[${functionName}] Critical Error:`, error.message);
     return new Response(JSON.stringify({ error: error.message }), { status: 400, headers: corsHeaders });
   }
 })

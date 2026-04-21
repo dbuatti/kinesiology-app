@@ -19,7 +19,10 @@ import {
   LayoutGrid,
   CheckCircle2,
   ChevronRight,
-  Plus
+  Plus,
+  Crown,
+  ShieldCheck,
+  Zap
 } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -28,26 +31,60 @@ import { showSuccess, showError } from "@/utils/toast";
 import FractalNode from './FractalNode';
 import { useNavigate } from 'react-router-dom';
 
+const SUGGESTIONS_CACHE_KEY = "antigravity_fractal_suggestions_cache";
+
 const FractalTool = () => {
   const navigate = useNavigate();
   const [backlog, setBacklog] = useState<any[]>([]);
+  const [sessionCounts, setSessionCounts] = useState<Record<string, number>>({});
   const [loading, setLoading] = useState(true);
   const [isScanning, setIsScanning] = useState(false);
+  
+  // Suggestions State
   const [proposedRelationships, setProposedRelationships] = useState<any[]>([]);
+  const [proposedPrimary, setProposedPrimary] = useState<any>(null);
 
   const fetchData = async () => {
     try {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) return;
 
-      const { data, error } = await supabase
+      const { data: backlogData, error: backlogError } = await supabase
         .from('identity_backlog')
         .select('*')
         .eq('user_id', user.id)
         .eq('status', 'pending');
 
-      if (error) throw error;
-      setBacklog(data || []);
+      if (backlogError) throw backlogError;
+
+      const [shiftingRes, alignmentRes, beliefsRes] = await Promise.all([
+        supabase.from('identity_shifting_sessions').select('backlog_id, is_complete'),
+        supabase.from('identity_alignment_sessions').select('backlog_id, is_complete'),
+        supabase.from('limiting_belief_sessions').select('backlog_id, is_complete')
+      ]);
+
+      const allSessions = [
+        ...(shiftingRes.data || []),
+        ...(alignmentRes.data || []),
+        ...(beliefsRes.data || [])
+      ];
+
+      const counts: Record<string, number> = {};
+      allSessions.forEach(s => {
+        if (s.backlog_id) counts[s.backlog_id] = (counts[s.backlog_id] || 0) + 1;
+      });
+
+      setBacklog(backlogData || []);
+      setSessionCounts(counts);
+
+      // Load cached suggestions
+      const cached = localStorage.getItem(SUGGESTIONS_CACHE_KEY);
+      if (cached) {
+        const parsed = JSON.parse(cached);
+        setProposedRelationships(parsed.suggestions || []);
+        setProposedPrimary(parsed.primary_primary || null);
+      }
+
     } catch (err) {
       console.error("Error fetching backlog:", err);
     } finally {
@@ -65,12 +102,13 @@ const FractalTool = () => {
       const { data, error } = await supabase.functions.invoke('analyze-fractals');
       if (error) throw error;
       
-      if (data.suggestions && data.suggestions.length > 0) {
-        setProposedRelationships(data.suggestions);
-        showSuccess(`AI found ${data.suggestions.length} potential fractal relationships.`);
-      } else {
-        showSuccess("No new fractal patterns detected.");
-      }
+      setProposedRelationships(data.suggestions || []);
+      setProposedPrimary(data.primary_primary || null);
+      
+      // Cache the results
+      localStorage.setItem(SUGGESTIONS_CACHE_KEY, JSON.stringify(data));
+      
+      showSuccess("AI analysis complete. Review the proposed patterns.");
     } catch (err: any) {
       showError(err.message || "Scan failed.");
     } finally {
@@ -87,7 +125,9 @@ const FractalTool = () => {
 
       if (error) throw error;
       
-      setProposedRelationships(prev => prev.filter(r => r.child_id !== rel.child_id));
+      const newRels = proposedRelationships.filter(r => r.child_id !== rel.child_id);
+      setProposedRelationships(newRels);
+      updateCache(newRels, proposedPrimary);
       fetchData();
     } catch (err) {
       showError("Failed to update relationship.");
@@ -103,17 +143,52 @@ const FractalTool = () => {
           .eq('id', rel.child_id)
       );
 
-      const results = await Promise.all(promises);
-      const errors = results.filter(r => r.error);
-      
-      if (errors.length > 0) throw new Error("Some updates failed");
+      await Promise.all(promises);
 
-      setProposedRelationships(prev => prev.filter(r => r.parent_id !== parentId));
+      const newRels = proposedRelationships.filter(r => r.parent_id !== parentId);
+      setProposedRelationships(newRels);
+      updateCache(newRels, proposedPrimary);
       fetchData();
-      showSuccess(`Accepted ${rels.length} relationships under parent.`);
+      showSuccess(`Accepted ${rels.length} relationships.`);
     } catch (err) {
       showError("Failed to update relationships.");
     }
+  };
+
+  const handleAcceptPrimary = async () => {
+    if (!proposedPrimary) return;
+    try {
+      // Reset any existing primary
+      await supabase.from('identity_backlog').update({ is_primary_primary: false }).eq('is_primary_primary', true);
+      
+      // Set new primary
+      const { error } = await supabase
+        .from('identity_backlog')
+        .update({ is_primary_primary: true })
+        .eq('id', proposedPrimary.id);
+
+      if (error) throw error;
+      
+      setProposedPrimary(null);
+      updateCache(proposedRelationships, null);
+      fetchData();
+      showSuccess("Primary Primary pattern established.");
+    } catch (err) {
+      showError("Failed to set primary.");
+    }
+  };
+
+  const updateCache = (rels: any[], primary: any) => {
+    localStorage.setItem(SUGGESTIONS_CACHE_KEY, JSON.stringify({
+      suggestions: rels,
+      primary_primary: primary
+    }));
+  };
+
+  const clearSuggestions = () => {
+    setProposedRelationships([]);
+    setProposedPrimary(null);
+    localStorage.removeItem(SUGGESTIONS_CACHE_KEY);
   };
 
   const handleUpdateRating = async (id: string, rating: number) => {
@@ -178,7 +253,11 @@ const FractalTool = () => {
       }
     });
 
-    return roots.sort((a, b) => (b.priority_score || 0) - (a.priority_score || 0));
+    return roots.sort((a, b) => {
+        if (a.is_primary_primary) return -1;
+        if (b.is_primary_primary) return 1;
+        return (b.priority_score || 0) - (a.priority_score || 0);
+    });
   }, [backlog]);
 
   const groupedSuggestions = useMemo(() => {
@@ -215,17 +294,47 @@ const FractalTool = () => {
 
   return (
     <div className="space-y-10 animate-in fade-in duration-700">
-      {/* Proposed Relationships Bar */}
+      {/* Primary Primary Suggestion */}
+      {proposedPrimary && (
+        <Card className="border-none shadow-2xl bg-slate-900 text-white rounded-[3rem] overflow-hidden animate-in slide-in-from-top-4 duration-500">
+          <CardContent className="p-10 flex flex-col md:flex-row items-center gap-10 relative">
+            <div className="absolute top-0 right-0 p-8 opacity-10"><Crown size={150} /></div>
+            <div className="w-24 h-24 rounded-[2rem] bg-amber-500 flex items-center justify-center shrink-0 shadow-2xl shadow-amber-500/40 relative z-10">
+              <Crown size={48} className="text-white" />
+            </div>
+            <div className="space-y-4 relative z-10 flex-1">
+              <Badge className="bg-amber-400 text-slate-900 border-none font-black text-[10px] uppercase tracking-[0.3em] px-4 py-1">AI Root Discovery</Badge>
+              <h3 className="text-3xl font-black tracking-tight">Proposed Primary Primary</h3>
+              <p className="text-xl font-serif italic text-amber-100">
+                "{backlog.find(b => b.id === proposedPrimary.id)?.content}"
+              </p>
+              <p className="text-sm text-slate-400 leading-relaxed max-w-2xl">
+                {proposedPrimary.reasoning}
+              </p>
+              <div className="flex gap-3 pt-2">
+                <Button onClick={handleAcceptPrimary} className="bg-white text-slate-900 hover:bg-amber-50 h-12 px-8 rounded-xl font-black text-xs uppercase tracking-widest shadow-lg">
+                  Establish as Root
+                </Button>
+                <Button variant="ghost" onClick={() => { setProposedPrimary(null); updateCache(proposedRelationships, null); }} className="text-slate-400 hover:text-white">
+                  Dismiss
+                </Button>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
+      {/* Proposed Relationships */}
       {proposedRelationships.length > 0 && (
-        <div className="space-y-6 animate-in slide-in-from-top-4 duration-500">
+        <div className="space-y-6">
           <div className="flex items-center justify-between px-2">
             <div className="flex items-center gap-3">
               <Sparkles size={20} className="text-amber-500" />
               <h3 className="text-xl font-black text-slate-900">Proposed Fractal Groups</h3>
             </div>
-            <Badge className="bg-amber-500 text-white border-none font-black text-[10px] uppercase tracking-widest px-3 py-1 rounded-full">
-              {proposedRelationships.length} Patterns Detected
-            </Badge>
+            <Button variant="ghost" size="sm" onClick={clearSuggestions} className="text-[10px] font-black uppercase tracking-widest text-slate-400 hover:text-rose-600">
+              Clear All Suggestions
+            </Button>
           </div>
           
           <div className="grid grid-cols-1 gap-6">
@@ -270,7 +379,11 @@ const FractalTool = () => {
                               <Button 
                                 variant="ghost" 
                                 size="icon" 
-                                onClick={() => setProposedRelationships(prev => prev.filter(r => r.child_id !== rel.child_id))}
+                                onClick={() => {
+                                    const newRels = proposedRelationships.filter(r => r.child_id !== rel.child_id);
+                                    setProposedRelationships(newRels);
+                                    updateCache(newRels, proposedPrimary);
+                                }}
                                 className="h-8 w-8 rounded-lg text-slate-300 hover:text-rose-600"
                               >
                                 <X size={16} />

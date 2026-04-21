@@ -31,10 +31,9 @@ serve(async (req) => {
     
     const userId = user.id;
 
-    // Fetch all pending items in the backlog
     const { data: backlog } = await supabase
       .from('identity_backlog')
-      .select('id, content, type')
+      .select('id, content, type, parent_id')
       .eq('user_id', userId)
       .eq('status', 'pending');
 
@@ -44,39 +43,42 @@ serve(async (req) => {
       });
     }
 
-    const backlogList = backlog.map(b => `ID: ${b.id} | Content: ${b.content}`).join('\n');
+    const backlogList = backlog.map(b => `ID: ${b.id} | Content: ${b.content} | Current Parent: ${b.parent_id || 'None'}`).join('\n');
 
     const prompt = `Act as a master clinical supervisor and pattern recognition expert in Kinesiology.
     Analyze the following list of limiting beliefs and identities. 
     
     YOUR TASK:
-    Identify "Fractal Relationships". A fractal relationship exists when a specific belief or identity is a subset or a manifestation of a larger, more overarching "Parent" pattern.
+    1. Identify "Fractal Relationships". Look for multi-tier hierarchies (Child -> Parent -> Grandparent).
+    2. Identify the "Primary Primary" — the single most overarching root pattern that drives everything else in this list.
     
-    Example:
-    - Parent: "The Invisible One" (Overarching Identity)
-    - Child: "I am a burden" (Specific Belief)
-    - Child: "I should be more affordable" (Specific Rule)
+    Example Hierarchy:
+    - Grandparent (Tier 3): "The Unworthy Soul"
+    - Parent (Tier 2): "The Invisible One"
+    - Child (Tier 1): "I am a burden"
     
     LIST TO ANALYZE:
     ${backlogList}
     
-    Return a JSON object with a key "suggestions" containing an array of objects:
+    Return a JSON object:
     {
       "suggestions": [
         { 
           "child_id": "uuid", 
           "parent_id": "uuid", 
-          "reasoning": "1-sentence explanation of why the child belongs under this parent" 
+          "reasoning": "1-sentence explanation" 
         }
-      ]
+      ],
+      "primary_primary": {
+        "id": "uuid",
+        "reasoning": "Why this is the ultimate root pattern"
+      }
     }
     
     RULES:
-    1. Only suggest relationships that are semantically strong.
-    2. Do NOT create circular references (A cannot be a parent of B if B is already a parent of A).
-    3. An item can only have ONE parent.
-    
-    Return ONLY the JSON.`;
+    1. Suggest relationships that create a deep, logical hierarchy.
+    2. Do NOT create circular references.
+    3. Return ONLY the JSON.`;
 
     const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${geminiKey}`, {
       method: 'POST',
@@ -95,9 +97,7 @@ serve(async (req) => {
       resultText = resultText.replace(/```json\n?/, '').replace(/```\n?/, '').trim();
     }
 
-    const parsed = JSON.parse(resultText);
-
-    return new Response(JSON.stringify({ suggestions: parsed.suggestions || [] }), {
+    return new Response(resultText, {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     })
 

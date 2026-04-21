@@ -49,8 +49,11 @@ serve(async (req) => {
     Analyze the following list of limiting beliefs and identities. 
     
     YOUR TASK:
-    1. Identify "Fractal Relationships". Look for multi-tier hierarchies (Child -> Parent -> Grandparent).
-    2. Identify the "Primary Primary" — the single most overarching root pattern that drives everything else in this list.
+    1. Identify "Fractal Relationships". Look for 3-tier hierarchies:
+       - Tier 3 (Grandparent): Core Existential Drivers (e.g., "The Unworthy Soul").
+       - Tier 2 (Parent): Behavioral Identities (e.g., "The People Pleaser").
+       - Tier 1 (Child): Specific Limiting Beliefs (e.g., "I am a burden").
+    2. Identify the "Primary Primary" — the single most overarching root pattern (Grandparent) that drives everything else in this list.
     
     LIST TO ANALYZE:
     ${backlogList}
@@ -61,12 +64,12 @@ serve(async (req) => {
         { 
           "child_id": "uuid", 
           "parent_id": "uuid", 
-          "reasoning": "1-sentence explanation" 
+          "reasoning": "1-sentence explanation of the fractal link" 
         }
       ],
       "primary_primary": {
         "id": "uuid",
-        "reasoning": "Why this is the ultimate root pattern"
+        "reasoning": "Why this is the ultimate root pattern (Grandparent) of the entire system"
       }
     }
     

@@ -105,7 +105,6 @@ const FractalTool = () => {
       const { data, error } = await supabase.functions.invoke('analyze-fractals');
       
       if (error) {
-        // Handle specific network or connection errors
         if (error.message?.includes('Failed to fetch') || error.message?.includes('Disconnected')) {
           throw new Error("Connection to AI service failed. Please check your internet or try again in a moment.");
         }
@@ -288,6 +287,7 @@ const FractalTool = () => {
         onMove={handleMove}
         onProcess={handleProcess}
         allPossibleParents={backlog}
+        sessionCount={sessionCounts[node.id] || 0}
       >
         {node.children.length > 0 && renderTree(node.children, level + 1)}
       </FractalNode>

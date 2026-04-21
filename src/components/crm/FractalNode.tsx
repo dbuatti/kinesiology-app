@@ -11,9 +11,10 @@ import {
   Trash2,
   ArrowRight,
   RefreshCw,
-  GripVertical,
   Plus,
-  Zap
+  Zap,
+  Crown,
+  Layers
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Badge } from '@/components/ui/badge';
@@ -25,6 +26,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { Progress } from "@/components/ui/progress";
 
 interface FractalNodeProps {
   item: any;
@@ -35,6 +37,7 @@ interface FractalNodeProps {
   onMove: (id: string, parentId: string | null) => void;
   onProcess: (item: any) => void;
   allPossibleParents: any[];
+  sessionCount: number;
 }
 
 const FractalNode = ({ 
@@ -45,86 +48,102 @@ const FractalNode = ({
   onDelete, 
   onMove,
   onProcess,
-  allPossibleParents 
+  allPossibleParents,
+  sessionCount
 }: FractalNodeProps) => {
   const [isExpanded, setIsExpanded] = useState(true);
   const hasChildren = React.Children.count(children) > 0;
 
+  // Tier Logic: 0 = Grandparent (Root), 1 = Parent, 2+ = Child
+  const tier = level === 0 ? 3 : level === 1 ? 2 : 1;
+  const progress = Math.min(sessionCount * 20, 100);
+
   const getIcon = () => {
+    if (item.is_primary_primary) return <Crown size={18} className="text-amber-500" />;
     if (item.type === 'alignment') return <Target size={18} className="text-emerald-600" />;
     if (item.type === 'belief') return <ShieldAlert size={18} className="text-rose-600" />;
     return <Fingerprint size={18} className="text-indigo-600" />;
-  };
-
-  const getBgColor = () => {
-    if (item.type === 'alignment') return "bg-emerald-50 dark:bg-emerald-900/20";
-    if (item.type === 'belief') return "bg-rose-50 dark:bg-rose-900/20";
-    return "bg-indigo-50 dark:bg-indigo-900/20";
   };
 
   return (
     <div className="space-y-1">
       <div 
         className={cn(
-          "flex items-center gap-3 p-3 rounded-2xl border transition-all group",
-          level === 0 ? "bg-card border-border shadow-sm" : "bg-muted/30 border-transparent hover:border-border",
-          item.priority_score > 80 && "ring-1 ring-indigo-500/30"
+          "flex items-center gap-3 p-4 rounded-[2rem] border transition-all group",
+          level === 0 ? "bg-card border-indigo-100 shadow-md" : "bg-muted/30 border-transparent hover:border-border",
+          item.is_primary_primary && "ring-2 ring-amber-500/20 border-amber-200 bg-amber-50/5"
         )}
-        style={{ marginLeft: `${level * 24}px` }}
+        style={{ marginLeft: `${level * 32}px` }}
       >
         <div className="flex items-center gap-2 shrink-0">
           {hasChildren ? (
             <button 
               onClick={() => setIsExpanded(!isExpanded)}
-              className="w-6 h-6 rounded-lg hover:bg-muted flex items-center justify-center text-slate-400 transition-colors"
+              className="w-8 h-8 rounded-xl hover:bg-muted flex items-center justify-center text-slate-400 transition-colors"
             >
-              {isExpanded ? <ChevronDown size={16} /> : <ChevronRight size={16} />}
+              {isExpanded ? <ChevronDown size={18} /> : <ChevronRight size={18} />}
             </button>
           ) : (
-            <div className="w-6" />
+            <div className="w-8" />
           )}
-          <div className={cn("w-9 h-9 rounded-xl flex items-center justify-center shadow-inner", getBgColor())}>
+          <div className={cn(
+            "w-10 h-10 rounded-xl flex items-center justify-center shadow-inner transition-transform group-hover:scale-110",
+            item.is_primary_primary ? "bg-amber-100" : 
+            item.type === 'alignment' ? "bg-emerald-50" : 
+            item.type === 'belief' ? "bg-rose-50" : "bg-indigo-50"
+          )}>
             {getIcon()}
           </div>
         </div>
 
         <div className="flex-1 min-w-0">
-          <div className="flex items-center gap-2">
-            <p className="font-bold text-sm text-foreground truncate">"{item.content}"</p>
-            {item.priority_score > 0 && (
-              <Badge variant="outline" className="text-[7px] font-black px-1.5 py-0 border-indigo-200 text-indigo-600">
-                {item.priority_score}
-              </Badge>
-            )}
+          <div className="flex items-center gap-2 mb-1">
+            <Badge className={cn(
+              "border-none font-black text-[7px] uppercase tracking-widest px-2 py-0.5 rounded-md",
+              tier === 3 ? "bg-slate-900 text-white" : tier === 2 ? "bg-indigo-600 text-white" : "bg-slate-200 text-slate-600"
+            )}>
+              Tier {tier}: {tier === 3 ? 'Grandparent' : tier === 2 ? 'Parent' : 'Child'}
+            </Badge>
+            <p className={cn(
+              "font-bold text-sm truncate",
+              tier === 3 ? "text-lg font-black" : "text-foreground"
+            )}>"{item.content}"</p>
           </div>
-          <div className="flex items-center gap-3 mt-1">
-            <StarRating 
-              rating={item.muscle_test_stars || 0} 
-              onRatingChange={(r) => onUpdateRating(item.id, r)}
-              size={12}
-            />
-            <span className="text-[8px] font-black text-muted-foreground uppercase tracking-widest">
-              Muscle Test Priority
-            </span>
+          
+          <div className="flex items-center gap-4">
+            <div className="flex items-center gap-2">
+              <StarRating 
+                rating={item.muscle_test_stars || 0} 
+                onRatingChange={(r) => onUpdateRating(item.id, r)}
+                size={10}
+              />
+            </div>
+            <div className="flex-1 max-w-[100px] space-y-1">
+              <div className="flex justify-between text-[6px] font-black uppercase text-muted-foreground">
+                <span>Progress</span>
+                <span>{sessionCount} Sessions</span>
+              </div>
+              <Progress value={progress} className="h-1 bg-muted [&>div]:bg-indigo-500" />
+            </div>
           </div>
         </div>
 
         <div className="flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button variant="ghost" size="icon" className="h-8 w-8 rounded-lg">
-                <MoreHorizontal size={16} />
+              <Button variant="ghost" size="icon" className="h-8 w-8 rounded-xl">
+                <MoreHorizontal size={18} />
               </Button>
             </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" className="w-56 rounded-xl p-1 shadow-2xl border-none bg-card">
-              <DropdownMenuItem onClick={() => onProcess(item)} className="rounded-lg py-2 px-3 cursor-pointer flex items-center gap-2">
-                <Zap size={14} className="text-indigo-500" /> Process in Sandbox
+            <DropdownMenuContent align="end" className="w-56 rounded-2xl p-2 shadow-3xl border-none bg-card">
+              <DropdownMenuItem onClick={() => onProcess(item)} className="rounded-xl py-2.5 px-4 cursor-pointer flex items-center gap-3">
+                <Zap size={16} className="text-indigo-500" /> Process in Sandbox
               </DropdownMenuItem>
               
-              <div className="px-2 py-1.5 text-[8px] font-black uppercase tracking-widest text-slate-400">Move to Parent</div>
+              <div className="px-4 py-2 text-[8px] font-black uppercase tracking-widest text-slate-400">Move Hierarchy</div>
               {item.parent_id && (
-                <DropdownMenuItem onClick={() => onMove(item.id, null)} className="rounded-lg py-2 px-3 cursor-pointer flex items-center gap-2">
-                  <ArrowRight size={14} className="rotate-180" /> Move to Top Level
+                <DropdownMenuItem onClick={() => onMove(item.id, null)} className="rounded-xl py-2.5 px-4 cursor-pointer flex items-center gap-3">
+                  <ArrowRight size={16} className="rotate-180" /> Move to Top Level
                 </DropdownMenuItem>
               )}
               {allPossibleParents
@@ -134,30 +153,30 @@ const FractalNode = ({
                   <DropdownMenuItem 
                     key={parent.id} 
                     onClick={() => onMove(item.id, parent.id)}
-                    className="rounded-lg py-2 px-3 cursor-pointer flex items-center gap-2 truncate"
+                    className="rounded-xl py-2.5 px-4 cursor-pointer flex items-center gap-3 truncate"
                   >
-                    <Plus size={14} /> Under: {parent.content}
+                    <Plus size={16} /> Under: {parent.content}
                   </DropdownMenuItem>
                 ))}
               
-              <DropdownMenuItem onClick={() => onDelete(item.id)} className="text-destructive focus:text-destructive rounded-lg py-2 px-3 cursor-pointer flex items-center gap-2">
-                <Trash2 size={14} /> Delete
+              <DropdownMenuItem onClick={() => onDelete(item.id)} className="text-destructive focus:text-destructive rounded-xl py-2.5 px-4 cursor-pointer flex items-center gap-3">
+                <Trash2 size={16} /> Delete
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
           
           <Button 
             size="sm" 
-            className="h-8 px-3 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-black text-[9px] uppercase tracking-widest shadow-sm"
+            className="h-9 px-4 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-black text-[10px] uppercase tracking-widest shadow-lg"
             onClick={() => onProcess(item)}
           >
-            Process <ChevronRight size={12} className="ml-1" />
+            Process <ChevronRight size={14} className="ml-1" />
           </Button>
         </div>
       </div>
 
       {isExpanded && hasChildren && (
-        <div className="animate-in fade-in slide-in-from-top-1 duration-200">
+        <div className="animate-in fade-in slide-in-from-top-1 duration-300 border-l-2 border-slate-100 dark:border-slate-800 ml-4">
           {children}
         </div>
       )}

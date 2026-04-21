@@ -286,14 +286,8 @@ const CalcomSlotsView = () => {
       if (!isBlocked && daySlots.length > 0) {
         hasAny = true;
         const formattedDate = format(dateObj, "MMMM do");
-        
-        const morning = daySlots.filter(s => new Date(s.time || s.start).getHours() < 12);
-        const afternoon = daySlots.filter(s => new Date(s.time || s.start).getHours() >= 12);
-        
-        text += `${formattedDate}\n`;
-        if (morning.length > 0) text += `  Morning: ${morning.map(s => format(new Date(s.time || s.start), "h:mm a")).join(", ")}\n`;
-        if (afternoon.length > 0) text += `  Afternoon: ${afternoon.map(s => format(new Date(s.time || s.start), "h:mm a")).join(", ")}\n`;
-        text += "\n";
+        const times = daySlots.map(s => format(new Date(s.time || s.start), "h:mm a")).join(", ");
+        text += `${formattedDate}: ${times}\n`;
       }
     });
 
@@ -302,7 +296,7 @@ const CalcomSlotsView = () => {
       return;
     }
 
-    text += `You can book directly here: ${CALCOM_CONFIG.BOOKING_URL}`;
+    text += `\nYou can book directly here: ${CALCOM_CONFIG.BOOKING_URL}`;
 
     navigator.clipboard.writeText(text);
     setCopied(dayName);
@@ -367,14 +361,8 @@ const CalcomSlotsView = () => {
       if (!isBlocked && daySlots.length > 0) {
         hasAny = true;
         const formattedDate = format(new Date(date), "EEEE, MMMM do");
-        
-        const morning = daySlots.filter(s => new Date(s.time || s.start).getHours() < 12);
-        const afternoon = daySlots.filter(s => new Date(s.time || s.start).getHours() >= 12);
-        
-        text += `${formattedDate}\n`;
-        if (morning.length > 0) text += `  Morning: ${morning.map(s => format(new Date(s.time || s.start), "h:mm a")).join(", ")}\n`;
-        if (afternoon.length > 0) text += `  Afternoon: ${afternoon.map(s => format(new Date(s.time || s.start), "h:mm a")).join(", ")}\n`;
-        text += "\n";
+        const times = daySlots.map(s => format(new Date(s.time || s.start), "h:mm a")).join(", ");
+        text += `${formattedDate}: ${times}\n`;
       }
     });
 
@@ -383,7 +371,7 @@ const CalcomSlotsView = () => {
       return;
     }
 
-    text += `You can book directly here: ${CALCOM_CONFIG.BOOKING_URL}`;
+    text += `\nYou can book directly here: ${CALCOM_CONFIG.BOOKING_URL}`;
 
     navigator.clipboard.writeText(text);
     setCopied('all');

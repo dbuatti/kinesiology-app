@@ -14,7 +14,8 @@ import {
   Plus,
   Zap,
   Crown,
-  Layers
+  Layers,
+  Star
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Badge } from '@/components/ui/badge';
@@ -54,8 +55,23 @@ const FractalNode = ({
   const [isExpanded, setIsExpanded] = useState(true);
   const hasChildren = React.Children.count(children) > 0;
 
-  // Tier Logic: 0 = Grandparent (Root), 1 = Parent, 2+ = Child
-  const tier = level === 0 ? 3 : level === 1 ? 2 : 1;
+  // Tier Logic: 
+  // Level 0 + Children = Grandparent (Tier 3)
+  // Level 0 + No Children = Root (Tier 3)
+  // Level 1 = Parent (Tier 2)
+  // Level 2+ = Child (Tier 1)
+  
+  const getTierInfo = () => {
+    if (level === 0) {
+      return { label: hasChildren ? 'Grandparent' : 'Root', tier: 3, color: 'bg-slate-900' };
+    }
+    if (level === 1) {
+      return { label: 'Parent', tier: 2, color: 'bg-indigo-600' };
+    }
+    return { label: 'Child', tier: 1, color: 'bg-slate-200 text-slate-600' };
+  };
+
+  const tierInfo = getTierInfo();
   const progress = Math.min(sessionCount * 20, 100);
 
   const getIcon = () => {
@@ -98,15 +114,21 @@ const FractalNode = ({
 
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2 mb-1">
+            {item.is_primary_primary && (
+              <Badge className="bg-amber-500 text-white border-none font-black text-[7px] uppercase tracking-widest px-2 py-0.5 rounded-md flex items-center gap-1">
+                <Star size={8} className="fill-current" /> Primary Root
+              </Badge>
+            )}
             <Badge className={cn(
               "border-none font-black text-[7px] uppercase tracking-widest px-2 py-0.5 rounded-md",
-              tier === 3 ? "bg-slate-900 text-white" : tier === 2 ? "bg-indigo-600 text-white" : "bg-slate-200 text-slate-600"
+              tierInfo.color,
+              tierInfo.tier < 2 && "text-slate-600"
             )}>
-              Tier {tier}: {tier === 3 ? 'Grandparent' : tier === 2 ? 'Parent' : 'Child'}
+              Tier {tierInfo.tier}: {tierInfo.label}
             </Badge>
             <p className={cn(
               "font-bold text-sm truncate",
-              tier === 3 ? "text-lg font-black" : "text-foreground"
+              level === 0 ? "text-lg font-black" : "text-foreground"
             )}>"{item.content}"</p>
           </div>
           
@@ -120,7 +142,7 @@ const FractalNode = ({
             </div>
             <div className="flex-1 max-w-[100px] space-y-1">
               <div className="flex justify-between text-[6px] font-black uppercase text-muted-foreground">
-                <span>Progress</span>
+                <span>Metabolized</span>
                 <span>{sessionCount} Sessions</span>
               </div>
               <Progress value={progress} className="h-1 bg-muted [&>div]:bg-indigo-500" />

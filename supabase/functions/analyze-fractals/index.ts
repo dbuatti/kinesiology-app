@@ -20,17 +20,26 @@ serve(async (req) => {
     const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')
     const geminiKey = Deno.env.get('GEMINI_API_KEY')
     
-    if (!geminiKey) throw new Error("GEMINI_API_KEY is missing.");
+    if (!geminiKey) {
+      console.error(`[${functionName}] Error: GEMINI_API_KEY is missing.`);
+      throw new Error("GEMINI_API_KEY is missing.");
+    }
 
     const supabase = createClient(supabaseUrl, supabaseKey)
 
     const authHeader = req.headers.get('Authorization')
-    if (!authHeader) throw new Error("No authorization header provided.");
+    if (!authHeader) {
+      console.error(`[${functionName}] Error: No authorization header provided.`);
+      throw new Error("No authorization header provided.");
+    }
     
     const token = authHeader.replace('Bearer ', '')
     const { data: { user }, error: userError } = await supabase.auth.getUser(token)
     
-    if (userError || !user) throw new Error("Invalid or expired user session.");
+    if (userError || !user) {
+      console.error(`[${functionName}] Error: Invalid or expired user session.`, { userError });
+      throw new Error("Invalid or expired user session.");
+    }
     
     const userId = user.id;
 
@@ -40,9 +49,13 @@ serve(async (req) => {
       .eq('user_id', userId)
       .eq('status', 'pending');
 
-    if (fetchError) throw fetchError;
+    if (fetchError) {
+      console.error(`[${functionName}] Error fetching backlog:`, fetchError);
+      throw fetchError;
+    }
 
     if (!backlog || backlog.length < 2) {
+      console.log(`[${functionName}] Not enough items to analyze. Count: ${backlog?.length || 0}`);
       return new Response(JSON.stringify({ success: true, suggestions: [], message: "Not enough items to analyze." }), {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       });
@@ -81,8 +94,8 @@ serve(async (req) => {
     
     Return ONLY the JSON.`;
 
-    console.log(`[${functionName}] Calling Gemini API (1.5-flash)...`);
-    const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${geminiKey}`, {
+    console.log(`[${functionName}] Calling Gemini API (3.1-pro-preview)...`);
+    const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-3.1-pro-preview:generateContent?key=${geminiKey}`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
@@ -104,6 +117,8 @@ serve(async (req) => {
     if (resultText.includes('```')) {
       resultText = resultText.replace(/```json\n?/, '').replace(/```\n?/, '').trim();
     }
+
+    console.log(`[${functionName}] Analysis complete.`);
 
     return new Response(resultText, {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },

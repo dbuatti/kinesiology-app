@@ -7,6 +7,9 @@ const corsHeaders = {
 }
 
 serve(async (req) => {
+  const functionName = "analyze-session";
+  console.log(`[${functionName}] Request received`);
+
   if (req.method === 'OPTIONS') {
     return new Response('ok', { headers: corsHeaders })
   }
@@ -15,7 +18,10 @@ serve(async (req) => {
     const { type, data } = await req.json();
     const geminiKey = Deno.env.get('GEMINI_API_KEY')
     
-    if (!geminiKey) throw new Error("GEMINI_API_KEY is missing.");
+    if (!geminiKey) {
+      console.error(`[${functionName}] Error: GEMINI_API_KEY is missing.`);
+      throw new Error("GEMINI_API_KEY is missing.");
+    }
 
     const prompt = `Act as a master clinical supervisor. Analyze this identity session data to find DEEPER, hidden patterns.
     
@@ -26,6 +32,7 @@ serve(async (req) => {
     
     Return ONLY the JSON.`;
 
+    console.log(`[${functionName}] Calling Gemini API (2.5-flash)...`);
     const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${geminiKey}`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -39,7 +46,10 @@ serve(async (req) => {
     })
 
     const resData = await response.json()
-    if (!response.ok) throw new Error(resData.error?.message || 'Gemini Error');
+    if (!response.ok) {
+      console.error(`[${functionName}] Gemini API Error:`, resData);
+      throw new Error(resData.error?.message || 'Gemini Error');
+    }
 
     let resultText = resData.candidates[0].content.parts[0].text.trim();
     if (resultText.includes('```')) {
@@ -47,12 +57,13 @@ serve(async (req) => {
     }
 
     const parsed = JSON.parse(resultText);
+    console.log(`[${functionName}] Analysis complete.`);
 
     return new Response(JSON.stringify({ suggestions: parsed.suggestions || [] }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     })
   } catch (error) {
-    console.error(error);
+    console.error(`[${functionName}] Critical Error:`, error.message);
     return new Response(JSON.stringify({ error: error.message }), {
       status: 400,
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },

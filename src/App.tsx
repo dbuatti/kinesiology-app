@@ -46,6 +46,7 @@ import SandboxPage from "./pages/SandboxPage";
 import IdentityShiftingPage from "./pages/IdentityShiftingPage";
 import IdentityAlignmentPage from "./pages/IdentityAlignmentPage";
 import LimitingBeliefsPage from "./pages/LimitingBeliefsPage";
+import FractalToolPage from "./pages/FractalToolPage";
 import JournalPage from "./pages/JournalPage";
 import PracticeNotes from "./pages/PracticeNotes";
 import QuizPage from "./pages/QuizPage";
@@ -124,6 +125,7 @@ const AppRoutes = () => {
         <Route path="/sandbox/identity-shifting" element={<IdentityShiftingPage />} />
         <Route path="/sandbox/identity-alignment" element={<IdentityAlignmentPage />} />
         <Route path="/sandbox/limiting-beliefs" element={<LimitingBeliefsPage />} />
+        <Route path="/sandbox/fractals" element={<FractalToolPage />} />
 
         {/* System */}
         <Route path="/settings" element={<SettingsPage />} />

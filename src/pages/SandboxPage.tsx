@@ -92,6 +92,16 @@ const TOOLS = [
     color: "text-rose-600",
     bgColor: "bg-rose-50 dark:bg-rose-900/20",
     category: "Extraction"
+  },
+  {
+    id: "fractals",
+    label: "Fractal Analysis",
+    desc: "Map the hierarchical structure of your internal constructs.",
+    icon: Layers,
+    path: "/sandbox/fractals",
+    color: "text-indigo-600",
+    bgColor: "bg-indigo-50 dark:bg-indigo-900/20",
+    category: "Analysis"
   }
 ];
 
@@ -474,7 +484,7 @@ const SandboxPage = () => {
           </div>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
           {TOOLS.map((tool) => (
             <Link key={tool.id} to={tool.path} className="block group">
               <Card className="border-none shadow-md rounded-[2.5rem] bg-card hover:shadow-xl hover:-translate-y-1 transition-all duration-300 h-full overflow-hidden">

@@ -7,13 +7,6 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type, x-supabase-client-platform',
 }
 
-const normalizeType = (type: string): 'alignment' | 'shifting' | 'belief' => {
-  const t = String(type).toLowerCase().trim();
-  if (t === 'goal' || t === 'alignment') return 'alignment';
-  if (t === 'identity' || t === 'shifting') return 'shifting';
-  return 'belief';
-};
-
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
     return new Response('ok', { headers: corsHeaders })
@@ -36,58 +29,9 @@ serve(async (req) => {
     
     if (userError || !user) throw new Error("Invalid or expired user session.");
     
-    const userId = user.id;
+    const prompt = `Act as a master clinical supervisor. Analyze the journal and backlog to prioritize the identity map. Return ONLY a JSON object with "rankings" and "new_suggestions".`;
 
-    const { data: reflections } = await supabase
-      .from('practitioner_reflections')
-      .select('content, category, created_at')
-      .eq('user_id', userId)
-      .order('created_at', { ascending: false })
-      .limit(50);
-
-    const { data: backlog } = await supabase
-      .from('identity_backlog')
-      .select('id, content, type, status')
-      .eq('user_id', userId);
-
-    if (!backlog || backlog.length === 0) {
-      return new Response(JSON.stringify({ success: true, message: "No items to prioritize." }), {
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-      });
-    }
-
-    const journalContext = reflections?.map(r => `[${r.category}]: ${r.content}`).join('\n\n');
-    const backlogList = backlog?.map(b => `[${b.status}] ID: ${b.id} | Type: ${b.type} | Content: ${b.content}`).join('\n');
-
-    const prompt = `Act as a master clinical supervisor and pattern recognition expert.
-    Analyze my journal entries and my current "Identity Map" to perform a DEEP DISCOVERY.
-    
-    PRIMARY TASK: TOOL REASSESSMENT
-    For every item in the "CURRENT MAP", re-evaluate if it is assigned to the correct clinical tool.
-    
-    LOGIC FOR CATEGORIZATION:
-    1. "alignment" -> IDENTITY ALIGNMENT. Use this for any DESIRED FUTURE STATE, specific outcome, income target, or version of self you are moving TOWARDS (e.g., "Making $1500/week", "The Sovereign Creator").
-    2. "shifting" -> IDENTITY SHIFTING. Use this for any CURRENT PROBLEMATIC version of self, "stuck" role, or construct you are letting go of (e.g., "The Procrastinator", "The Invisible One").
-    3. "belief" -> LIMITING BELIEFS. Use this for core "I am..." struggle statements or rules that hold a pattern in place (e.g., "I am a burden", "I am not safe to be seen").
-    
-    JOURNAL CONTEXT:
-    ${journalContext}
-    
-    CURRENT MAP:
-    ${backlogList}
-    
-    Return ONLY a JSON object.
-    Structure:
-    {
-      "rankings": [
-        { "id": "uuid", "type": "alignment|shifting|belief", "score": 85, "reasoning": "...", "polarity_insight": "..." }
-      ],
-      "new_suggestions": [
-        { "content": "...", "type": "alignment|shifting|belief", "reasoning": "...", "polarity_insight": "..." }
-      ]
-    }`;
-
-    const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${geminiKey}`, {
+    const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${geminiKey}`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
@@ -104,43 +48,7 @@ serve(async (req) => {
       resultText = resultText.replace(/```json\n?/, '').replace(/```\n?/, '').trim();
     }
 
-    const parsed = JSON.parse(resultText);
-
-    if (parsed.rankings && parsed.rankings.length > 0) {
-      const updatePromises = parsed.rankings.map(rank => {
-        const finalType = normalizeType(rank.type);
-        return supabase
-          .from('identity_backlog')
-          .update({
-            type: finalType,
-            priority_score: rank.score,
-            priority_reasoning: rank.reasoning,
-            polarity_insight: rank.polarity_insight
-          })
-          .eq('id', rank.id)
-          .eq('user_id', userId);
-      });
-      await Promise.all(updatePromises);
-    }
-
-    if (parsed.new_suggestions && parsed.new_suggestions.length > 0) {
-      const inserts = parsed.new_suggestions.map(s => ({
-        user_id: userId,
-        content: s.content,
-        type: normalizeType(s.type),
-        status: 'suggested',
-        priority_reasoning: s.reasoning,
-        polarity_insight: s.polarity_insight
-      }));
-
-      await supabase.from('identity_backlog').insert(inserts);
-    }
-
-    return new Response(JSON.stringify({ 
-      success: true, 
-      updated: parsed.rankings?.length || 0,
-      new: parsed.new_suggestions?.length || 0 
-    }), {
+    return new Response(resultText, {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     })
 

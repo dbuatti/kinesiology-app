@@ -17,48 +17,16 @@ serve(async (req) => {
     
     if (!geminiKey) throw new Error("GEMINI_API_KEY is missing.");
 
-    let contextDescription = "";
-    if (type === 'shifting') {
-      contextDescription = `IDENTITY SHIFTING SESSION:
-      Problem: ${data.problem}
-      Identity: ${data.identity}
-      Loop Responses: ${data.loopResponses?.join(' -> ')}
-      Final Awareness: ${data.feelingsNow}`;
-    } else if (type === 'alignment') {
-      contextDescription = `IDENTITY ALIGNMENT SESSION:
-      Goal: ${data.goal}
-      Target Identity: ${data.targetIdentity}
-      Reconsolidation Data: ${JSON.stringify(data.reconsolidationData)}`;
-    } else {
-      contextDescription = `LIMITING BELIEF SESSION:
-      Problem: ${data.problem}
-      Limiting Belief: I am ${data.limitingBelief}
-      Positive Belief: I am ${data.positiveBelief}
-      Dissolve Log: ${JSON.stringify(data.dissolveLog)}`;
-    }
-
-    const prompt = `Act as a master clinical supervisor. Analyze this identity session data to find DEEPER, hidden patterns that the practitioner might have missed.
-    
-    YOUR TASK:
-    1. Identify "The Shadow behind the Shadow" — what is the even deeper identity or belief driving this whole pattern?
-    2. Suggest 2-3 NEW items for the practitioner's Identity Map.
-    
-    LOGIC:
-    - "identity" -> A current problematic version of self (e.g., "The Invisible Child").
-    - "belief" -> A core "I am..." statement (e.g., "I am only safe when I am small").
-    - "goal" -> A future target identity (e.g., "The Unapologetic Leader").
-    
-    SESSION CONTEXT:
-    ${contextDescription}
+    const prompt = `Act as a master clinical supervisor. Analyze this identity session data to find DEEPER, hidden patterns.
     
     Return the result as a JSON object with a key "suggestions" containing an array of objects:
     - "content": The text of the insight.
     - "type": "identity", "belief", or "goal".
-    - "reasoning": A 1-sentence explanation of why you extracted this from the session data.
+    - "reasoning": A 1-sentence explanation.
     
     Return ONLY the JSON.`;
 
-    const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${geminiKey}`, {
+    const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${geminiKey}`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
@@ -74,7 +42,6 @@ serve(async (req) => {
     if (!response.ok) throw new Error(resData.error?.message || 'Gemini Error');
 
     let resultText = resData.candidates[0].content.parts[0].text.trim();
-    
     if (resultText.includes('```')) {
       resultText = resultText.replace(/```json\n?/, '').replace(/```\n?/, '').trim();
     }

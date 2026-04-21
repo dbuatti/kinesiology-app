@@ -52,11 +52,6 @@ serve(async (req) => {
     1. Identify "Fractal Relationships". Look for multi-tier hierarchies (Child -> Parent -> Grandparent).
     2. Identify the "Primary Primary" — the single most overarching root pattern that drives everything else in this list.
     
-    Example Hierarchy:
-    - Grandparent (Tier 3): "The Unworthy Soul"
-    - Parent (Tier 2): "The Invisible One"
-    - Child (Tier 1): "I am a burden"
-    
     LIST TO ANALYZE:
     ${backlogList}
     
@@ -75,12 +70,9 @@ serve(async (req) => {
       }
     }
     
-    RULES:
-    1. Suggest relationships that create a deep, logical hierarchy.
-    2. Do NOT create circular references.
-    3. Return ONLY the JSON.`;
+    Return ONLY the JSON.`;
 
-    const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${geminiKey}`, {
+    const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${geminiKey}`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({

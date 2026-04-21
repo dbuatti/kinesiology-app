@@ -22,7 +22,8 @@ import {
   Plus,
   Crown,
   ShieldCheck,
-  Zap
+  Zap,
+  AlertCircle
 } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -30,6 +31,7 @@ import { Badge } from "@/components/ui/badge";
 import { showSuccess, showError } from "@/utils/toast";
 import FractalNode from './FractalNode';
 import { useNavigate } from 'react-router-dom';
+import { Alert, AlertDescription } from "@/components/ui/alert";
 
 const SUGGESTIONS_CACHE_KEY = "antigravity_fractal_suggestions_cache";
 
@@ -39,6 +41,7 @@ const FractalTool = () => {
   const [sessionCounts, setSessionCounts] = useState<Record<string, number>>({});
   const [loading, setLoading] = useState(true);
   const [isScanning, setIsScanning] = useState(false);
+  const [scanError, setScanError] = useState<string | null>(null);
   
   // Suggestions State
   const [proposedRelationships, setProposedRelationships] = useState<any[]>([]);
@@ -77,7 +80,6 @@ const FractalTool = () => {
       setBacklog(backlogData || []);
       setSessionCounts(counts);
 
-      // Load cached suggestions
       const cached = localStorage.getItem(SUGGESTIONS_CACHE_KEY);
       if (cached) {
         const parsed = JSON.parse(cached);
@@ -98,18 +100,26 @@ const FractalTool = () => {
 
   const handleScan = async () => {
     setIsScanning(true);
+    setScanError(null);
     try {
       const { data, error } = await supabase.functions.invoke('analyze-fractals');
-      if (error) throw error;
+      
+      if (error) {
+        // Handle specific network or connection errors
+        if (error.message?.includes('Failed to fetch') || error.message?.includes('Disconnected')) {
+          throw new Error("Connection to AI service failed. Please check your internet or try again in a moment.");
+        }
+        throw error;
+      }
       
       setProposedRelationships(data.suggestions || []);
       setProposedPrimary(data.primary_primary || null);
       
-      // Cache the results
       localStorage.setItem(SUGGESTIONS_CACHE_KEY, JSON.stringify(data));
-      
-      showSuccess("AI analysis complete. Review the proposed patterns.");
+      showSuccess("AI analysis complete.");
     } catch (err: any) {
+      console.error("[FractalTool] Scan Error:", err);
+      setScanError(err.message || "An unexpected error occurred during the scan.");
       showError(err.message || "Scan failed.");
     } finally {
       setIsScanning(false);
@@ -158,10 +168,8 @@ const FractalTool = () => {
   const handleAcceptPrimary = async () => {
     if (!proposedPrimary) return;
     try {
-      // Reset any existing primary
       await supabase.from('identity_backlog').update({ is_primary_primary: false }).eq('is_primary_primary', true);
       
-      // Set new primary
       const { error } = await supabase
         .from('identity_backlog')
         .update({ is_primary_primary: true })
@@ -294,7 +302,18 @@ const FractalTool = () => {
 
   return (
     <div className="space-y-10 animate-in fade-in duration-700">
-      {/* Primary Primary Suggestion */}
+      {scanError && (
+        <Alert variant="destructive" className="bg-rose-50 border-rose-200 rounded-2xl animate-in slide-in-from-top-2">
+          <AlertCircle className="h-5 w-5 text-rose-600" />
+          <AlertDescription className="text-sm text-rose-900 font-bold flex items-center justify-between">
+            {scanError}
+            <Button variant="outline" size="sm" onClick={handleScan} className="h-8 border-rose-200 text-rose-600 hover:bg-rose-100">
+              Retry Scan
+            </Button>
+          </AlertDescription>
+        </Alert>
+      )}
+
       {proposedPrimary && (
         <Card className="border-none shadow-2xl bg-slate-900 text-white rounded-[3rem] overflow-hidden animate-in slide-in-from-top-4 duration-500">
           <CardContent className="p-10 flex flex-col md:flex-row items-center gap-10 relative">
@@ -324,7 +343,6 @@ const FractalTool = () => {
         </Card>
       )}
 
-      {/* Proposed Relationships */}
       {proposedRelationships.length > 0 && (
         <div className="space-y-6">
           <div className="flex items-center justify-between px-2">

@@ -6,13 +6,6 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type, x-supabase-client-platform',
 }
 
-const normalizeType = (type: string): 'alignment' | 'shifting' | 'belief' => {
-  const t = String(type).toLowerCase().trim();
-  if (t === 'goal' || t === 'alignment') return 'alignment';
-  if (t === 'identity' || t === 'shifting') return 'shifting';
-  return 'belief';
-};
-
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
     return new Response('ok', { headers: corsHeaders })
@@ -24,25 +17,9 @@ serve(async (req) => {
     
     if (!geminiKey) throw new Error("GEMINI_API_KEY is missing.");
 
-    const prompt = `Act as a master clinical supervisor. Analyze this specific identity statement and categorize it into the correct clinical tool.
-    
-    STATEMENT: "${content}"
-    
-    LOGIC:
-    - "alignment" -> IDENTITY ALIGNMENT. Use this for specific outcomes, income targets, or desired future states (e.g., "Making $1500/week", "The Vital Leader").
-    - "shifting" -> IDENTITY SHIFTING. Use this for CURRENT problematic versions of self or "stuck" roles (e.g., "The Procrastinator", "The Invisible One").
-    - "belief" -> LIMITING BELIEFS. Core "I am..." statements representing a struggle or rule (e.g., "I am a burden").
-    
-    Return the result as a JSON object:
-    {
-      "type": "alignment|shifting|belief",
-      "reasoning": "A 1-sentence clinical explanation",
-      "polarity_insight": "A 1-sentence insight into the shadow or target of this pattern"
-    }
-    
-    Return ONLY the JSON.`;
+    const prompt = `Act as a master clinical supervisor. Analyze this identity statement and categorize it. Return ONLY JSON.`;
 
-    const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${geminiKey}`, {
+    const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${geminiKey}`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
@@ -59,10 +36,7 @@ serve(async (req) => {
       resultText = resultText.replace(/```json\n?/, '').replace(/```\n?/, '').trim();
     }
 
-    const parsed = JSON.parse(resultText);
-    parsed.type = normalizeType(parsed.type);
-
-    return new Response(JSON.stringify(parsed), {
+    return new Response(resultText, {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     })
   } catch (error) {

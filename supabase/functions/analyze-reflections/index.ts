@@ -35,15 +35,6 @@ serve(async (req) => {
     const prompt = `Act as a clinical supervisor for a Kinesiology practitioner. 
     Analyze the following journal entry and extract specific items for the practitioner's "Identity Sandbox".
     
-    CRITICAL LOGIC:
-    1. "shifting" -> Maps to IDENTITY SHIFTING. These are labels for a CURRENT problematic state or a version of self the practitioner wants to LET GO of (e.g., "The Perfectionist", "The Martyr", "The Fixer").
-    2. "alignment" -> Maps to IDENTITY ALIGNMENT. These are DESIRED future states, specific outcomes, or income targets the practitioner wants to MOVE INTO (e.g., "Making $1500/week", "The Sovereign Creator", "The Vital Leader").
-    3. "belief" -> Maps to LIMITING BELIEFS. Core "I am..." statements representing a struggle or rule (e.g., "I am not good enough", "I am a burden").
-    
-    Also extract:
-    4. "felt_sense" -> Physical sensations or somatic markers mentioned.
-    5. "question" -> Specific technical or clinical questions for a meetup.
-    
     Return the result as a JSON object with a key "extractions" containing an array of objects with:
     - "content": The text of the insight.
     - "type": Exactly one of: "belief", "shifting", "alignment", "felt_sense", or "question".
@@ -52,7 +43,7 @@ serve(async (req) => {
     TEXT TO ANALYZE:
     "${content}"`;
 
-    const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${geminiKey}`, {
+    const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${geminiKey}`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({

@@ -19,10 +19,10 @@ async function callAI(prompt: string, config: { openRouterKey?: string, geminiKe
       body: { model: "qwen/qwen-2.5-72b-instruct", messages: [{ role: "user", content: prompt }], response_format: { type: "json_object" } }
     });
     providers.push({
-      name: 'OpenRouter (Gemini 3 Flash)',
+      name: 'OpenRouter (Gemini 2.0 Flash)',
       url: "https://openrouter.ai/api/v1/chat/completions",
       headers: { "Authorization": `Bearer ${config.openRouterKey}`, "Content-Type": "application/json" },
-      body: { model: "google/gemini-3-flash-preview", messages: [{ role: "user", content: prompt }], response_format: { type: "json_object" } }
+      body: { model: "google/gemini-2.0-flash-001", messages: [{ role: "user", content: prompt }], response_format: { type: "json_object" } }
     });
   }
   if (config.geminiKey) {
@@ -67,7 +67,7 @@ serve(async (req) => {
     const supabase = createClient(supabaseUrl, supabaseKey)
     const authHeader = req.headers.get('Authorization')
     const token = authHeader.replace('Bearer ', '')
-    const { data: { user } } = await supabase.auth.getUser(token)
+    const { data: { user }, error: userError } = await supabase.auth.getUser(token)
     
     const { data: backlog } = await supabase.from('identity_backlog').select('id, content, type').eq('user_id', user.id).eq('status', 'pending');
     const { data: journal } = await supabase.from('practitioner_reflections').select('content').eq('user_id', user.id).order('created_at', { ascending: false }).limit(10);

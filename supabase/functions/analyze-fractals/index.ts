@@ -13,21 +13,24 @@ async function callAI(prompt: string, config: { openRouterKey?: string, geminiKe
   const providers = [];
   
   if (config.openRouterKey) {
+    // 1. OpenRouter Qwen (High reasoning)
     providers.push({
       name: 'OpenRouter (Qwen 2.5)',
       url: "https://openrouter.ai/api/v1/chat/completions",
       headers: { "Authorization": `Bearer ${config.openRouterKey}`, "Content-Type": "application/json" },
       body: { model: "qwen/qwen-2.5-72b-instruct", messages: [{ role: "user", content: prompt }], response_format: { type: "json_object" } }
     });
+    // 2. OpenRouter Gemini (Free tier fallback)
     providers.push({
-      name: 'OpenRouter (Gemini 3 Flash)',
+      name: 'OpenRouter (Gemini 2.0 Flash)',
       url: "https://openrouter.ai/api/v1/chat/completions",
       headers: { "Authorization": `Bearer ${config.openRouterKey}`, "Content-Type": "application/json" },
-      body: { model: "google/gemini-3-flash-preview", messages: [{ role: "user", content: prompt }], response_format: { type: "json_object" } }
+      body: { model: "google/gemini-2.0-flash-001", messages: [{ role: "user", content: prompt }], response_format: { type: "json_object" } }
     });
   }
 
   if (config.geminiKey) {
+    // 3. Direct Gemini 2.5 (Stable)
     providers.push({
       name: 'Direct Gemini (2.5-Flash)',
       url: `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${config.geminiKey}`,

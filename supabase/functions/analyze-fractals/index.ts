@@ -7,13 +7,87 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type, x-supabase-client-platform',
 }
 
+// Helper for exponential backoff
+const wait = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
+
+async function callAI(prompt: string, config: { openRouterKey?: string, geminiKey?: string }) {
+  const providers = [];
+  
+  // 1. OpenRouter Preferred
+  if (config.openRouterKey) {
+    providers.push({
+      name: 'OpenRouter (Qwen)',
+      url: "https://openrouter.ai/api/v1/chat/completions",
+      headers: { "Authorization": `Bearer ${config.openRouterKey}`, "Content-Type": "application/json" },
+      body: { model: "qwen/qwen3-coder:free", messages: [{ role: "user", content: prompt }], response_format: { type: "json_object" } }
+    });
+    // 2. OpenRouter Backup (Gemini 2.0 Flash Lite - usually very high limits)
+    providers.push({
+      name: 'OpenRouter (Gemini 2.0 Flash Lite)',
+      url: "https://openrouter.ai/api/v1/chat/completions",
+      headers: { "Authorization": `Bearer ${config.openRouterKey}`, "Content-Type": "application/json" },
+      body: { model: "google/gemini-2.0-flash-lite-preview-02-05:free", messages: [{ role: "user", content: prompt }], response_format: { type: "json_object" } }
+    });
+  }
+
+  // 3. Direct Gemini Fallback
+  if (config.geminiKey) {
+    providers.push({
+      name: 'Direct Gemini (1.5-Flash)',
+      url: `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${config.geminiKey}`,
+      headers: { 'Content-Type': 'application/json' },
+      body: { contents: [{ parts: [{ text: prompt }] }], generationConfig: { temperature: 0.1, response_mime_type: "application/json" } }
+    });
+  }
+
+  for (const provider of providers) {
+    let retries = 2;
+    let delay = 1000;
+
+    while (retries > 0) {
+      try {
+        console.log(`[AI] Attempting ${provider.name}...`);
+        const response = await fetch(provider.url, {
+          method: 'POST',
+          headers: provider.headers,
+          body: JSON.stringify(provider.body)
+        });
+
+        const data = await response.json();
+
+        if (response.ok) {
+          if (provider.name.includes('OpenRouter')) {
+            return data.choices[0].message.content;
+          } else {
+            return data.candidates[0].content.parts[0].text;
+          }
+        }
+
+        // Handle Rate Limits or Service Unavailable
+        if (response.status === 429 || response.status === 503) {
+          console.warn(`[AI] ${provider.name} busy (${response.status}). Retrying in ${delay}ms...`);
+          await wait(delay);
+          retries--;
+          delay *= 2; // Exponential backoff
+          continue;
+        }
+
+        console.error(`[AI] ${provider.name} failed with status ${response.status}:`, data);
+        break; // Move to next provider
+
+      } catch (e) {
+        console.error(`[AI] ${provider.name} exception:`, e.message);
+        break; // Move to next provider
+      }
+    }
+  }
+
+  throw new Error("All AI providers are currently unavailable or rate-limited. Please try again in a few minutes.");
+}
+
 serve(async (req) => {
   const functionName = "analyze-fractals";
-  console.log(`[${functionName}] Request received`);
-
-  if (req.method === 'OPTIONS') {
-    return new Response('ok', { headers: corsHeaders })
-  }
+  if (req.method === 'OPTIONS') return new Response('ok', { headers: corsHeaders })
 
   try {
     const supabaseUrl = Deno.env.get('SUPABASE_URL')
@@ -22,138 +96,41 @@ serve(async (req) => {
     const openRouterKey = Deno.env.get('OPENROUTER_API_KEY')
     
     const supabase = createClient(supabaseUrl, supabaseKey)
-
     const authHeader = req.headers.get('Authorization')
     if (!authHeader) throw new Error("No authorization header provided.");
     
     const token = authHeader.replace('Bearer ', '')
     const { data: { user }, error: userError } = await supabase.auth.getUser(token)
-    if (userError || !user) throw new Error("Invalid or expired user session.");
+    if (userError || !user) throw new Error("Invalid session.");
     
-    const userId = user.id;
-
     const { data: backlog, error: fetchError } = await supabase
       .from('identity_backlog')
       .select('id, content, type, parent_id')
-      .eq('user_id', userId)
+      .eq('user_id', user.id)
       .eq('status', 'pending');
 
     if (fetchError) throw fetchError;
-
     if (!backlog || backlog.length < 2) {
-      return new Response(JSON.stringify({ success: true, suggestions: [], message: "Not enough items to analyze." }), {
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-      });
+      return new Response(JSON.stringify({ success: true, suggestions: [] }), { headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
     }
 
-    const backlogList = backlog.map(b => `ID: ${b.id} | Content: ${b.content} | Current Parent: ${b.parent_id || 'None'}`).join('\n');
-
-    const prompt = `Act as a master clinical supervisor and pattern recognition expert in Kinesiology.
-    Analyze the following list of limiting beliefs and identities. 
-    
-    YOUR TASK:
-    1. Identify "Fractal Relationships". Look for 3-tier hierarchies:
-       - Tier 3 (Grandparent): Core Existential Drivers (e.g., "The Unworthy Soul").
-       - Tier 2 (Parent): Behavioral Identities (e.g., "The People Pleaser").
-       - Tier 1 (Child): Specific Limiting Beliefs (e.g., "I am a burden").
-    2. Identify the "Primary Primary" — the single most overarching root pattern (Grandparent) that drives everything else in this list.
-    
-    LIST TO ANALYZE:
+    const backlogList = backlog.map(b => `ID: ${b.id} | Content: ${b.content}`).join('\n');
+    const prompt = `Act as a master clinical supervisor. Analyze these identities and identify fractal hierarchies (Grandparent/Parent/Child). Identify the "Primary Primary" root.
+    LIST:
     ${backlogList}
+    Return ONLY a JSON object with "suggestions" (array of {child_id, parent_id, reasoning}) and "primary_primary" ({id, reasoning}).`;
+
+    const resultText = await callAI(prompt, { openRouterKey, geminiKey });
     
-    Return a JSON object:
-    {
-      "suggestions": [
-        { 
-          "child_id": "uuid", 
-          "parent_id": "uuid", 
-          "reasoning": "1-sentence explanation of the fractal link" 
-        }
-      ],
-      "primary_primary": {
-        "id": "uuid",
-        "reasoning": "Why this is the ultimate root pattern (Grandparent) of the entire system"
-      }
-    }
-    
-    Return ONLY the JSON.`;
-
-    let resultText = "";
-    let success = false;
-
-    // 1. Try OpenRouter First
-    if (openRouterKey) {
-      try {
-        console.log(`[${functionName}] Attempting OpenRouter (qwen3-coder)...`);
-        const response = await fetch("https://openrouter.ai/api/v1/chat/completions", {
-          method: "POST",
-          headers: {
-            "Authorization": `Bearer ${openRouterKey}`,
-            "Content-Type": "application/json"
-          },
-          body: JSON.stringify({
-            model: "qwen/qwen3-coder:free",
-            messages: [{ role: "user", content: prompt }],
-            response_format: { type: "json_object" }
-          })
-        });
-        
-        const data = await response.json();
-        if (response.ok && data.choices?.[0]?.message?.content) {
-          resultText = data.choices[0].message.content;
-          success = true;
-          console.log(`[${functionName}] OpenRouter success.`);
-        } else {
-          console.warn(`[${functionName}] OpenRouter failed or rate-limited.`, data.error || data);
-        }
-      } catch (e) {
-        console.error(`[${functionName}] OpenRouter exception:`, e.message);
-      }
+    let cleanJson = resultText.trim();
+    if (cleanJson.includes('```')) {
+      cleanJson = cleanJson.replace(/```json\n?/, '').replace(/```\n?/, '').trim();
     }
 
-    // 2. Fallback to Gemini if OpenRouter failed
-    if (!success && geminiKey) {
-      try {
-        console.log(`[${functionName}] Falling back to Gemini (2.5-flash)...`);
-        const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${geminiKey}`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            contents: [{ parts: [{ text: prompt }] }],
-            generationConfig: { temperature: 0.1, response_mime_type: "application/json" }
-          }),
-        });
-        
-        const data = await response.json();
-        if (response.ok && data.candidates?.[0]?.content?.parts?.[0]?.text) {
-          resultText = data.candidates[0].content.parts[0].text;
-          success = true;
-          console.log(`[${functionName}] Gemini fallback success.`);
-        } else {
-          console.error(`[${functionName}] Gemini fallback failed.`, data.error || data);
-        }
-      } catch (e) {
-        console.error(`[${functionName}] Gemini exception:`, e.message);
-      }
-    }
-
-    if (!success) {
-      throw new Error("All AI providers failed or are currently rate-limited. Please try again in a few minutes.");
-    }
-
-    if (resultText.includes('```')) {
-      resultText = resultText.replace(/```json\n?/, '').replace(/```\n?/, '').trim();
-    }
-
-    return new Response(resultText, {
-      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-    })
+    return new Response(cleanJson, { headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
 
   } catch (error) {
     console.error(`[${functionName}] Critical Error:`, error.message);
-    return new Response(JSON.stringify({ error: error.message }), {
-      status: 400,
-      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-    })
+    return new Response(JSON.stringify({ error: error.message }), { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
   }
 })

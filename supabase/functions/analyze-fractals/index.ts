@@ -13,24 +13,15 @@ async function callAI(prompt: string, config: { openRouterKey?: string, geminiKe
   const providers = [];
   
   if (config.openRouterKey) {
-    // 1. OpenRouter Qwen (High reasoning)
     providers.push({
       name: 'OpenRouter (Qwen 2.5)',
       url: "https://openrouter.ai/api/v1/chat/completions",
       headers: { "Authorization": `Bearer ${config.openRouterKey}`, "Content-Type": "application/json" },
       body: { model: "qwen/qwen-2.5-72b-instruct", messages: [{ role: "user", content: prompt }], response_format: { type: "json_object" } }
     });
-    // 2. OpenRouter Gemini (Free tier fallback)
-    providers.push({
-      name: 'OpenRouter (Gemini 2.0 Flash)',
-      url: "https://openrouter.ai/api/v1/chat/completions",
-      headers: { "Authorization": `Bearer ${config.openRouterKey}`, "Content-Type": "application/json" },
-      body: { model: "google/gemini-2.0-flash-001", messages: [{ role: "user", content: prompt }], response_format: { type: "json_object" } }
-    });
   }
 
   if (config.geminiKey) {
-    // 3. Direct Gemini 2.5 (Stable)
     providers.push({
       name: 'Direct Gemini (2.5-Flash)',
       url: `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${config.geminiKey}`,
@@ -63,28 +54,22 @@ async function callAI(prompt: string, config: { openRouterKey?: string, geminiKe
         }
 
         if (response.status === 429 || response.status === 503) {
-          console.warn(`[AI] ${provider.name} busy (${response.status}). Retrying in ${delay}ms...`);
           await wait(delay);
           retries--;
           delay *= 2;
           continue;
         }
-
-        console.error(`[AI] ${provider.name} failed with status ${response.status}:`, data);
         break;
-
       } catch (e) {
-        console.error(`[AI] ${provider.name} exception:`, e.message);
         break;
       }
     }
   }
 
-  throw new Error("All AI providers are currently unavailable or rate-limited. Please try again in a few minutes.");
+  throw new Error("AI service busy. Try again in a moment.");
 }
 
 serve(async (req) => {
-  const functionName = "analyze-fractals";
   if (req.method === 'OPTIONS') return new Response('ok', { headers: corsHeaders })
 
   try {
@@ -95,28 +80,43 @@ serve(async (req) => {
     
     const supabase = createClient(supabaseUrl, supabaseKey)
     const authHeader = req.headers.get('Authorization')
-    if (!authHeader) throw new Error("No authorization header provided.");
-    
     const token = authHeader.replace('Bearer ', '')
-    const { data: { user }, error: userError } = await supabase.auth.getUser(token)
-    if (userError || !user) throw new Error("Invalid session.");
+    const { data: { user } } = await supabase.auth.getUser(token)
     
-    const { data: backlog, error: fetchError } = await supabase
+    const { data: backlog } = await supabase
       .from('identity_backlog')
       .select('id, content, type, parent_id')
       .eq('user_id', user.id)
       .eq('status', 'pending');
 
-    if (fetchError) throw fetchError;
     if (!backlog || backlog.length < 2) {
-      return new Response(JSON.stringify({ success: true, suggestions: [] }), { headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
+      return new Response(JSON.stringify({ success: true, suggestions: [] }), { headers: corsHeaders });
     }
 
     const backlogList = backlog.map(b => `ID: ${b.id} | Content: ${b.content}`).join('\n');
-    const prompt = `Act as a master clinical supervisor. Analyze these identities and identify fractal hierarchies (Grandparent/Parent/Child). Identify the "Primary Primary" root.
-    LIST:
+    
+    const prompt = `Act as a master clinical supervisor specializing in fractal psychology and identity work. 
+    Your task is to organize the following list of identities and beliefs into a deep fractal hierarchy.
+    
+    CRITICAL RULES:
+    1. COMPREHENSIVENESS: Attempt to find a parent for EVERY item. Do not leave items as "Grandparents" unless they are truly foundational roots.
+    2. THEMATIC CLUSTERING: Group items by their underlying motivator (e.g., "Fear of Failure", "Need for External Validation", "Relational Guilt").
+    3. PRIMARY ROOT: Identify the single most foundational "Primary Primary" root that drives the majority of other patterns.
+    4. REASONING: For every suggestion, provide a brief clinical explanation of the fractal link.
+    
+    LIST OF ITEMS:
     ${backlogList}
-    Return ONLY a JSON object with "suggestions" (array of {child_id, parent_id, reasoning}) and "primary_primary" ({id, reasoning}).`;
+    
+    Return ONLY a JSON object:
+    {
+      "suggestions": [
+        {"child_id": "uuid", "parent_id": "uuid", "reasoning": "string"}
+      ],
+      "primary_primary": {
+        "id": "uuid",
+        "reasoning": "string"
+      }
+    }`;
 
     const resultText = await callAI(prompt, { openRouterKey, geminiKey });
     
@@ -128,7 +128,6 @@ serve(async (req) => {
     return new Response(cleanJson, { headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
 
   } catch (error) {
-    console.error(`[${functionName}] Critical Error:`, error.message);
-    return new Response(JSON.stringify({ error: error.message }), { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
+    return new Response(JSON.stringify({ error: error.message }), { status: 400, headers: corsHeaders });
   }
 })

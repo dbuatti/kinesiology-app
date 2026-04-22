@@ -336,6 +336,8 @@ const FractalTool = () => {
     </div>
   );
 
+  const proposedPrimaryContent = proposedPrimary ? backlog.find(b => b.id === proposedPrimary.id)?.content : null;
+
   return (
     <div className="space-y-10 animate-in fade-in duration-700">
       {scanError && (
@@ -350,7 +352,7 @@ const FractalTool = () => {
         </Alert>
       )}
 
-      {proposedPrimary && (
+      {proposedPrimary && proposedPrimaryContent && (
         <Card className="border-none shadow-2xl bg-slate-900 text-white rounded-[3rem] overflow-hidden animate-in slide-in-from-top-4 duration-500">
           <CardContent className="p-10 flex flex-col md:flex-row items-center gap-10 relative">
             <div className="absolute top-0 right-0 p-8 opacity-10"><Crown size={150} /></div>
@@ -361,7 +363,7 @@ const FractalTool = () => {
               <Badge className="bg-amber-400 text-slate-900 border-none font-black text-[10px] uppercase tracking-[0.3em] px-4 py-1">AI Root Discovery</Badge>
               <h3 className="text-3xl font-black tracking-tight">Proposed Primary Primary</h3>
               <p className="text-xl font-serif italic text-amber-100">
-                "{backlog.find(b => b.id === proposedPrimary.id)?.content}"
+                "{proposedPrimaryContent}"
               </p>
               <p className="text-sm text-slate-400 leading-relaxed max-w-2xl">
                 {proposedPrimary.reasoning}

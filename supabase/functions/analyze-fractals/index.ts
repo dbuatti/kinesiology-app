@@ -111,7 +111,7 @@ serve(async (req) => {
     
     CRITICAL OBJECTIVES:
     1. AGGRESSIVE GROUPING: You MUST attempt to find a parent for EVERY item in the list. Do not leave items orphaned. If an item doesn't have a perfect parent, find the closest thematic match.
-    2. SEMANTIC MERGING: Identify items that are essentially the same. List their IDs for merging.
+    2. SEMANTIC MERGING: Identify items that are essentially the same (e.g. "I am unsure" and "I don't know"). List their IDs for merging.
     3. ROOT DISCOVERY: Identify the 3-5 most foundational "Root" patterns.
     4. PRIMARY PRIMARY: Identify the single most dominant root that drives the entire system.
     
@@ -131,7 +131,9 @@ serve(async (req) => {
         "reasoning": "string"
       },
       "last_scanned": "${new Date().toISOString()}"
-    }`;
+    }
+    
+    IMPORTANT: Use ONLY the UUIDs provided in the list above. Do not invent new IDs.`;
 
     const resultText = await callAI(prompt, { openRouterKey, geminiKey });
     

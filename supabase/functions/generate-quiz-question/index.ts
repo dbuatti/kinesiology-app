@@ -13,9 +13,9 @@ serve(async (req) => {
   }
 
   try {
-    const openAiKey = Deno.env.get('OPENAI_API_KEY');
-    if (!openAiKey) {
-      throw new Error('OPENAI_API_KEY is not set');
+    const geminiKey = Deno.env.get('GEMINI_API_KEY');
+    if (!geminiKey) {
+      throw new Error('GEMINI_API_KEY is not set');
     }
 
     const { category } = await req.json();
@@ -44,26 +44,25 @@ serve(async (req) => {
       Make it challenging and clinically relevant.
     `;
 
-    const response = await fetch('https://api.openai.com/v1/chat/completions', {
+    console.log("[generate-quiz-question] Calling Gemini 2.5 Flash...");
+    const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${geminiKey}`, {
       method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${openAiKey}`,
-        'Content-Type': 'application/json',
-      },
+      headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        model: 'gpt-4o-mini',
-        messages: [
-          { role: 'system', content: 'You are a clinical education assistant for functional neurology practitioners.' },
-          { role: 'user', content: prompt }
-        ],
-        response_format: { type: "json_object" }
+        contents: [{ parts: [{ text: prompt }] }],
+        generationConfig: { temperature: 0.7, response_mime_type: "application/json" }
       }),
     });
 
     const data = await response.json();
-    const quizData = JSON.parse(data.choices[0].message.content);
+    if (!response.ok) throw new Error(data.error?.message || 'Gemini Error');
 
-    return new Response(JSON.stringify(quizData), {
+    let resultText = data.candidates[0].content.parts[0].text.trim();
+    if (resultText.includes('```')) {
+      resultText = resultText.replace(/```json\n?/, '').replace(/```\n?/, '').trim();
+    }
+
+    return new Response(resultText, {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     });
 

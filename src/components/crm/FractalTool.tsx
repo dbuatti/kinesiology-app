@@ -24,7 +24,8 @@ import {
   ShieldCheck,
   Zap,
   AlertCircle,
-  Merge
+  Merge,
+  Clock
 } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -33,6 +34,7 @@ import { showSuccess, showError } from "@/utils/toast";
 import FractalNode from './FractalNode';
 import { useNavigate } from 'react-router-dom';
 import { Alert, AlertDescription } from "@/components/ui/alert";
+import { formatDistanceToNow } from 'date-fns';
 
 const SUGGESTIONS_CACHE_KEY = "antigravity_fractal_suggestions_cache";
 
@@ -43,6 +45,7 @@ const FractalTool = () => {
   const [loading, setLoading] = useState(true);
   const [isScanning, setIsScanning] = useState(false);
   const [scanError, setScanError] = useState<string | null>(null);
+  const [lastScanned, setLastScanned] = useState<string | null>(null);
   
   // Suggestions State
   const [proposedRelationships, setProposedRelationships] = useState<any[]>([]);
@@ -88,6 +91,7 @@ const FractalTool = () => {
         setProposedRelationships(parsed.suggestions || []);
         setProposedMerges(parsed.merges || []);
         setProposedPrimary(parsed.primary_primary || null);
+        setLastScanned(parsed.last_scanned || null);
       }
 
     } catch (err) {
@@ -112,6 +116,7 @@ const FractalTool = () => {
       setProposedRelationships(data.suggestions || []);
       setProposedMerges(data.merges || []);
       setProposedPrimary(data.primary_primary || null);
+      setLastScanned(data.last_scanned || new Date().toISOString());
       
       localStorage.setItem(SUGGESTIONS_CACHE_KEY, JSON.stringify(data));
       showSuccess("AI analysis complete. Review the suggestions below.");
@@ -146,19 +151,16 @@ const FractalTool = () => {
     try {
       const [keepId, ...removeIds] = merge.ids;
       
-      // 1. Update the content of the kept item
       await supabase
         .from('identity_backlog')
         .update({ content: merge.suggested_content })
         .eq('id', keepId);
 
-      // 2. Move any children from removed items to the kept item
       await supabase
         .from('identity_backlog')
         .update({ parent_id: keepId })
         .in('parent_id', removeIds);
 
-      // 3. Delete the duplicates
       await supabase
         .from('identity_backlog')
         .delete()
@@ -220,7 +222,8 @@ const FractalTool = () => {
     localStorage.setItem(SUGGESTIONS_CACHE_KEY, JSON.stringify({
       suggestions: rels,
       merges: merges,
-      primary_primary: primary
+      primary_primary: primary,
+      last_scanned: lastScanned
     }));
   };
 
@@ -459,18 +462,16 @@ const FractalTool = () => {
                                 <Badge variant="outline" className="bg-white border-indigo-100 text-indigo-600 text-[8px] font-black uppercase px-2 py-0.5">Child</Badge>
                                 <p className="text-sm font-bold text-slate-900">"{child.content}"</p>
                               </div>
-                              <Button 
-                                variant="ghost" 
-                                size="icon" 
+                              <button 
                                 onClick={() => {
                                     const newRels = proposedRelationships.filter(r => r.child_id !== rel.child_id);
                                     setProposedRelationships(newRels);
                                     updateCache(newRels, proposedMerges, proposedPrimary);
                                 }}
-                                className="h-8 w-8 rounded-lg text-slate-300 hover:text-rose-600"
+                                className="h-8 w-8 rounded-lg text-slate-300 hover:text-rose-600 flex items-center justify-center transition-colors"
                               >
                                 <X size={16} />
-                              </Button>
+                              </button>
                             </div>
                             <p className="text-xs text-slate-500 font-medium italic leading-relaxed pl-1 border-l-2 border-indigo-200">
                               {rel.reasoning}
@@ -504,14 +505,21 @@ const FractalTool = () => {
           </h2>
           <p className="text-sm text-slate-500 font-medium">Organize specific patterns under overarching motivators.</p>
         </div>
-        <Button 
-          onClick={handleScan} 
-          disabled={isScanning || backlog.length < 2}
-          className="bg-indigo-600 hover:bg-indigo-700 text-white rounded-2xl h-14 px-8 font-black text-xs uppercase tracking-widest shadow-xl shadow-indigo-100"
-        >
-          {isScanning ? <Loader2 className="mr-2 animate-spin" /> : <Wand2 size={18} className="mr-2" />}
-          Scan for Fractals
-        </Button>
+        <div className="flex flex-col items-end gap-2">
+          <Button 
+            onClick={handleScan} 
+            disabled={isScanning || backlog.length < 2}
+            className="bg-indigo-600 hover:bg-indigo-700 text-white rounded-2xl h-14 px-8 font-black text-xs uppercase tracking-widest shadow-xl shadow-indigo-100"
+          >
+            {isScanning ? <Loader2 className="mr-2 animate-spin" /> : <Wand2 size={18} className="mr-2" />}
+            Scan for Fractals
+          </Button>
+          {lastScanned && (
+            <div className="flex items-center gap-1.5 text-[8px] font-black text-slate-400 uppercase tracking-widest">
+              <Clock size={10} /> Last Analyzed {formatDistanceToNow(new Date(lastScanned), { addSuffix: true })}
+            </div>
+          )}
+        </div>
       </div>
 
       <div className="space-y-4">

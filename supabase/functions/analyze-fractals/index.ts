@@ -43,7 +43,7 @@ async function callAI(prompt: string, config: { openRouterKey?: string, geminiKe
 
     while (retries > 0) {
       try {
-        console.log(`[AI] Attempting ${provider.name}...`);
+        console.log(`[analyze-fractals] Attempting ${provider.name}...`);
         const response = await fetch(provider.url, {
           method: 'POST',
           headers: provider.headers,
@@ -61,6 +61,7 @@ async function callAI(prompt: string, config: { openRouterKey?: string, geminiKe
         }
 
         if (response.status === 429 || response.status === 503) {
+          console.warn(`[analyze-fractals] ${provider.name} busy. Retrying...`);
           await wait(delay);
           retries--;
           delay *= 2;
@@ -73,7 +74,7 @@ async function callAI(prompt: string, config: { openRouterKey?: string, geminiKe
     }
   }
 
-  throw new Error("AI service busy. Try again in a moment.");
+  throw new Error("The AI service is currently overloaded. Please try again in a few minutes.");
 }
 
 serve(async (req) => {
@@ -99,7 +100,7 @@ serve(async (req) => {
       .eq('status', 'pending');
 
     if (!backlog || backlog.length < 2) {
-      return new Response(JSON.stringify({ success: true, suggestions: [], merges: [] }), { headers: corsHeaders });
+      return new Response(JSON.stringify({ success: true, suggestions: [], merges: [], last_scanned: new Date().toISOString() }), { headers: corsHeaders });
     }
 
     const backlogList = backlog.map(b => `ID: ${b.id} | Content: ${b.content}`).join('\n');
@@ -110,7 +111,7 @@ serve(async (req) => {
     
     CRITICAL OBJECTIVES:
     1. AGGRESSIVE GROUPING: You MUST attempt to find a parent for EVERY item in the list. Do not leave items orphaned. If an item doesn't have a perfect parent, find the closest thematic match.
-    2. SEMANTIC MERGING: Identify items that are essentially the same (e.g., "I am unsure" and "I don't know"). List their IDs for merging.
+    2. SEMANTIC MERGING: Identify items that are essentially the same. List their IDs for merging.
     3. ROOT DISCOVERY: Identify the 3-5 most foundational "Root" patterns.
     4. PRIMARY PRIMARY: Identify the single most dominant root that drives the entire system.
     
@@ -128,7 +129,8 @@ serve(async (req) => {
       "primary_primary": {
         "id": "uuid",
         "reasoning": "string"
-      }
+      },
+      "last_scanned": "${new Date().toISOString()}"
     }`;
 
     const resultText = await callAI(prompt, { openRouterKey, geminiKey });
@@ -141,6 +143,10 @@ serve(async (req) => {
     return new Response(cleanJson, { headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
 
   } catch (error) {
-    return new Response(JSON.stringify({ error: error.message }), { status: 400, headers: corsHeaders });
+    console.error(`[analyze-fractals] Error:`, error.message);
+    return new Response(JSON.stringify({ error: error.message }), { 
+      status: 400, 
+      headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
+    });
   }
 })

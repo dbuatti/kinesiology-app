@@ -76,7 +76,18 @@ serve(async (req) => {
           response_format: { type: "json_object" }
         })
       });
+      
       const data = await response.json();
+      if (!response.ok) {
+        console.error(`[${functionName}] OpenRouter Error:`, data);
+        throw new Error(data.error?.message || 'OpenRouter API Error');
+      }
+      
+      if (!data.choices || !data.choices[0]) {
+        console.error(`[${functionName}] Unexpected OpenRouter Response:`, data);
+        throw new Error('AI returned an empty or invalid response.');
+      }
+      
       resultText = data.choices[0].message.content;
     } else if (geminiKey) {
       console.log(`[${functionName}] Using Gemini (2.5-flash)...`);
@@ -88,8 +99,18 @@ serve(async (req) => {
           generationConfig: { temperature: 0.1, response_mime_type: "application/json" }
         }),
       });
+      
       const data = await response.json();
-      if (!response.ok) throw new Error(data.error?.message || 'Gemini Error');
+      if (!response.ok) {
+        console.error(`[${functionName}] Gemini API Error:`, data);
+        throw new Error(data.error?.message || 'Gemini API Error');
+      }
+
+      if (!data.candidates || !data.candidates[0]) {
+        console.error(`[${functionName}] Unexpected Gemini Response:`, data);
+        throw new Error('AI returned an empty or invalid response.');
+      }
+
       resultText = data.candidates[0].content.parts[0].text;
     } else {
       throw new Error("No AI API keys configured.");
@@ -123,7 +144,7 @@ serve(async (req) => {
     })
 
   } catch (error) {
-    console.error(`[${functionName}] Error:`, error.message);
+    console.error(`[${functionName}] Critical Error:`, error.message);
     return new Response(JSON.stringify({ error: error.message }), {
       status: 400,
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },

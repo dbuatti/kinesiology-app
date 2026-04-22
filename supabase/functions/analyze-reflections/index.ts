@@ -66,6 +66,11 @@ serve(async (req) => {
       throw new Error(data.error?.message || 'AI Service Error');
     }
 
+    if (!data.candidates || !data.candidates[0]) {
+      console.error(`[${functionName}] Unexpected Gemini Response:`, data);
+      throw new Error('AI returned an empty or invalid response.');
+    }
+
     let resultText = data.candidates[0].content.parts[0].text.trim();
     if (resultText.includes('```')) {
       resultText = resultText.replace(/```json\n?/, '').replace(/```\n?/, '').trim();

@@ -23,16 +23,6 @@ async function callAI(prompt: string, config: { openRouterKey?: string, geminiKe
         response_format: { type: "json_object" } 
       }
     });
-    providers.push({
-      name: 'OpenRouter (Gemini 2.0 Flash)',
-      url: "https://openrouter.ai/api/v1/chat/completions",
-      headers: { "Authorization": `Bearer ${config.openRouterKey}`, "Content-Type": "application/json" },
-      body: { 
-        model: "google/gemini-2.0-flash-001", 
-        messages: [{ role: "user", content: prompt }], 
-        response_format: { type: "json_object" } 
-      }
-    });
   }
 
   if (config.geminiKey) {

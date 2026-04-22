@@ -88,8 +88,10 @@ serve(async (req) => {
     const supabase = createClient(supabaseUrl, supabaseKey)
     const authHeader = req.headers.get('Authorization')
     const token = authHeader.replace('Bearer ', '')
-    const { data: { user } } = await supabase.auth.getUser(token)
+    const { data: { user }, error: userError } = await supabase.auth.getUser(token)
     
+    if (userError || !user) throw new Error("Unauthorized");
+
     const { data: backlog } = await supabase
       .from('identity_backlog')
       .select('id, content, type, parent_id')
@@ -106,11 +108,11 @@ serve(async (req) => {
     Analyze the following list of identities and beliefs. 
     Your goal is to create a clean, hierarchical map where NO item is left as a "Grandparent" unless it is a truly foundational root.
     
-    OBJECTIVES:
-    1. IDENTIFY ROOTS: Find the 3-5 most foundational "Root" patterns (e.g., "Core Inadequacy", "Safety through Perfection", "Relational Debt").
-    2. MAP EVERYTHING: Every other item MUST be assigned a parent. If an item doesn't fit under an existing item, suggest which Root it belongs to.
-    3. IDENTIFY DUPLICATES: List IDs of items that are semantically identical so they can be merged.
-    4. PRIMARY PRIMARY: Identify the single most dominant root.
+    CRITICAL OBJECTIVES:
+    1. AGGRESSIVE GROUPING: You MUST attempt to find a parent for EVERY item in the list. Do not leave items orphaned. If an item doesn't have a perfect parent, find the closest thematic match.
+    2. SEMANTIC MERGING: Identify items that are essentially the same (e.g., "I am unsure" and "I don't know"). List their IDs for merging.
+    3. ROOT DISCOVERY: Identify the 3-5 most foundational "Root" patterns.
+    4. PRIMARY PRIMARY: Identify the single most dominant root that drives the entire system.
     
     LIST OF ITEMS:
     ${backlogList}

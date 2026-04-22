@@ -114,7 +114,7 @@ const FractalTool = () => {
       setProposedPrimary(data.primary_primary || null);
       
       localStorage.setItem(SUGGESTIONS_CACHE_KEY, JSON.stringify(data));
-      showSuccess("AI analysis complete.");
+      showSuccess("AI analysis complete. Review the suggestions below.");
     } catch (err: any) {
       console.error("[FractalTool] Scan Error:", err);
       setScanError(err.message || "An unexpected error occurred during the scan.");

@@ -38,7 +38,7 @@ import {
   Sparkles,
   Instagram
 } from "lucide-react";
-import { format, addWeeks, subWeeks, startOfToday, endOfDay, eachDayOfInterval, addDays, isBefore, startOfDay, nextMonday, isMonday } from "date-fns";
+import { format, addWeeks, subWeeks, startOfToday, endOfDay, eachDayOfInterval, addDays, isBefore, startOfDay, nextMonday, isMonday, startOfWeek } from "date-fns";
 import { supabase } from "@/integrations/supabase/client";
 import { cn } from "@/lib/utils";
 import { showSuccess, showError } from "@/utils/toast";
@@ -96,7 +96,9 @@ const CalcomSlotsView = () => {
   );
 
   const dateRange = useMemo(() => {
-    const start = addWeeks(startOfToday(), weeksOffset);
+    // Align the start to the beginning of the week (Monday)
+    const baseDate = addWeeks(startOfToday(), weeksOffset);
+    const start = startOfWeek(baseDate, { weekStartsOn: 1 });
     const end = addDays(start, (weeks * 7) - 1);
     return eachDayOfInterval({ start, end }).map(d => format(d, 'yyyy-MM-dd'));
   }, [weeks, weeksOffset]);
@@ -125,8 +127,9 @@ const CalcomSlotsView = () => {
     setLoading(true);
     setError(null);
     try {
-      const start = addWeeks(startOfToday(), weeksOffset).toISOString();
-      const end = endOfDay(addWeeks(new Date(start), weeks)).toISOString();
+      const baseDate = addWeeks(startOfToday(), weeksOffset);
+      const start = startOfWeek(baseDate, { weekStartsOn: 1 }).toISOString();
+      const end = endOfDay(addDays(new Date(start), (weeks * 7) - 1)).toISOString();
       
       const { data, error: invokeError } = await supabase.functions.invoke('get-calcom-slots', {
         body: { 
@@ -652,6 +655,9 @@ const CalcomSlotsView = () => {
                   const isBlocked = blockedDates.includes(date);
                   const hasNoActivity = daySlots.length === 0 && dayBookings.length === 0;
                   const isExpanded = expandedDays[date] || false;
+                  
+                  const isPast = isBefore(startOfDay(new Date(date)), startOfToday());
+                  if (isPast) return null;
                   
                   if (showOnlyAvailable && (isBlocked || daySlots.length === 0)) return null;
                   if (!isBlocked && hasNoActivity) return null;

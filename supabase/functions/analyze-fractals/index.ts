@@ -79,66 +79,71 @@ serve(async (req) => {
     Return ONLY the JSON.`;
 
     let resultText = "";
+    let success = false;
 
+    // 1. Try OpenRouter First
     if (openRouterKey) {
-      console.log(`[${functionName}] Using OpenRouter (qwen3-coder)...`);
-      const response = await fetch("https://openrouter.ai/api/v1/chat/completions", {
-        method: "POST",
-        headers: {
-          "Authorization": `Bearer ${openRouterKey}`,
-          "Content-Type": "application/json"
-        },
-        body: JSON.stringify({
-          model: "qwen/qwen3-coder:free",
-          messages: [{ role: "user", content: prompt }],
-          response_format: { type: "json_object" }
-        })
-      });
-      
-      const data = await response.json();
-      if (!response.ok) {
-        console.error(`[${functionName}] OpenRouter Error:`, data);
-        throw new Error(data.error?.message || 'OpenRouter API Error');
+      try {
+        console.log(`[${functionName}] Attempting OpenRouter (qwen3-coder)...`);
+        const response = await fetch("https://openrouter.ai/api/v1/chat/completions", {
+          method: "POST",
+          headers: {
+            "Authorization": `Bearer ${openRouterKey}`,
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify({
+            model: "qwen/qwen3-coder:free",
+            messages: [{ role: "user", content: prompt }],
+            response_format: { type: "json_object" }
+          })
+        });
+        
+        const data = await response.json();
+        if (response.ok && data.choices?.[0]?.message?.content) {
+          resultText = data.choices[0].message.content;
+          success = true;
+          console.log(`[${functionName}] OpenRouter success.`);
+        } else {
+          console.warn(`[${functionName}] OpenRouter failed or rate-limited.`, data.error || data);
+        }
+      } catch (e) {
+        console.error(`[${functionName}] OpenRouter exception:`, e.message);
       }
-      
-      if (!data.choices || !data.choices[0]) {
-        console.error(`[${functionName}] Unexpected OpenRouter Response:`, data);
-        throw new Error('AI returned an empty or invalid response.');
-      }
-      
-      resultText = data.choices[0].message.content;
-    } else if (geminiKey) {
-      console.log(`[${functionName}] Using Gemini (2.5-flash)...`);
-      const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${geminiKey}`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          contents: [{ parts: [{ text: prompt }] }],
-          generationConfig: { temperature: 0.1, response_mime_type: "application/json" }
-        }),
-      });
-      
-      const data = await response.json();
-      if (!response.ok) {
-        console.error(`[${functionName}] Gemini API Error:`, data);
-        throw new Error(data.error?.message || 'Gemini API Error');
-      }
+    }
 
-      if (!data.candidates || !data.candidates[0]) {
-        console.error(`[${functionName}] Unexpected Gemini Response:`, data);
-        throw new Error('AI returned an empty or invalid response.');
+    // 2. Fallback to Gemini if OpenRouter failed
+    if (!success && geminiKey) {
+      try {
+        console.log(`[${functionName}] Falling back to Gemini (2.5-flash)...`);
+        const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${geminiKey}`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            contents: [{ parts: [{ text: prompt }] }],
+            generationConfig: { temperature: 0.1, response_mime_type: "application/json" }
+          }),
+        });
+        
+        const data = await response.json();
+        if (response.ok && data.candidates?.[0]?.content?.parts?.[0]?.text) {
+          resultText = data.candidates[0].content.parts[0].text;
+          success = true;
+          console.log(`[${functionName}] Gemini fallback success.`);
+        } else {
+          console.error(`[${functionName}] Gemini fallback failed.`, data.error || data);
+        }
+      } catch (e) {
+        console.error(`[${functionName}] Gemini exception:`, e.message);
       }
+    }
 
-      resultText = data.candidates[0].content.parts[0].text;
-    } else {
-      throw new Error("No AI API keys configured. Please set OPENROUTER_API_KEY or GEMINI_API_KEY.");
+    if (!success) {
+      throw new Error("All AI providers failed or are currently rate-limited. Please try again in a few minutes.");
     }
 
     if (resultText.includes('```')) {
       resultText = resultText.replace(/```json\n?/, '').replace(/```\n?/, '').trim();
     }
-
-    console.log(`[${functionName}] Analysis complete.`);
 
     return new Response(resultText, {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },

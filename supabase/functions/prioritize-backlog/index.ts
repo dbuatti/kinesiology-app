@@ -61,60 +61,57 @@ serve(async (req) => {
     ${journalText}`;
 
     let resultText = "";
+    let success = false;
 
     if (openRouterKey) {
-      console.log(`[${functionName}] Using OpenRouter...`);
-      const response = await fetch("https://openrouter.ai/api/v1/chat/completions", {
-        method: "POST",
-        headers: {
-          "Authorization": `Bearer ${openRouterKey}`,
-          "Content-Type": "application/json"
-        },
-        body: JSON.stringify({
-          model: "qwen/qwen3-coder:free",
-          messages: [{ role: "user", content: prompt }],
-          response_format: { type: "json_object" }
-        })
-      });
-      
-      const data = await response.json();
-      if (!response.ok) {
-        console.error(`[${functionName}] OpenRouter Error:`, data);
-        throw new Error(data.error?.message || 'OpenRouter API Error');
+      try {
+        console.log(`[${functionName}] Attempting OpenRouter...`);
+        const response = await fetch("https://openrouter.ai/api/v1/chat/completions", {
+          method: "POST",
+          headers: {
+            "Authorization": `Bearer ${openRouterKey}`,
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify({
+            model: "qwen/qwen3-coder:free",
+            messages: [{ role: "user", content: prompt }],
+            response_format: { type: "json_object" }
+          })
+        });
+        
+        const data = await response.json();
+        if (response.ok && data.choices?.[0]?.message?.content) {
+          resultText = data.choices[0].message.content;
+          success = true;
+        }
+      } catch (e) {
+        console.error(`[${functionName}] OpenRouter failed:`, e.message);
       }
-      
-      if (!data.choices || !data.choices[0]) {
-        console.error(`[${functionName}] Unexpected OpenRouter Response:`, data);
-        throw new Error('AI returned an empty or invalid response.');
-      }
-      
-      resultText = data.choices[0].message.content;
-    } else if (geminiKey) {
-      console.log(`[${functionName}] Using Gemini (2.5-flash)...`);
-      const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${geminiKey}`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          contents: [{ parts: [{ text: prompt }] }],
-          generationConfig: { temperature: 0.1, response_mime_type: "application/json" }
-        }),
-      });
-      
-      const data = await response.json();
-      if (!response.ok) {
-        console.error(`[${functionName}] Gemini API Error:`, data);
-        throw new Error(data.error?.message || 'Gemini API Error');
-      }
-
-      if (!data.candidates || !data.candidates[0]) {
-        console.error(`[${functionName}] Unexpected Gemini Response:`, data);
-        throw new Error('AI returned an empty or invalid response.');
-      }
-
-      resultText = data.candidates[0].content.parts[0].text;
-    } else {
-      throw new Error("No AI API keys configured.");
     }
+
+    if (!success && geminiKey) {
+      try {
+        console.log(`[${functionName}] Falling back to Gemini...`);
+        const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${geminiKey}`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            contents: [{ parts: [{ text: prompt }] }],
+            generationConfig: { temperature: 0.1, response_mime_type: "application/json" }
+          }),
+        });
+        
+        const data = await response.json();
+        if (response.ok && data.candidates?.[0]?.content?.parts?.[0]?.text) {
+          resultText = data.candidates[0].content.parts[0].text;
+          success = true;
+        }
+      } catch (e) {
+        console.error(`[${functionName}] Gemini failed:`, e.message);
+      }
+    }
+
+    if (!success) throw new Error("AI services unavailable.");
 
     if (resultText.includes('```')) {
       resultText = resultText.replace(/```json\n?/, '').replace(/```\n?/, '').trim();

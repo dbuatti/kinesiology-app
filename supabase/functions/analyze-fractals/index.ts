@@ -7,34 +7,30 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type, x-supabase-client-platform',
 }
 
-// Helper for exponential backoff
 const wait = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
 
 async function callAI(prompt: string, config: { openRouterKey?: string, geminiKey?: string }) {
   const providers = [];
   
-  // 1. OpenRouter Preferred
   if (config.openRouterKey) {
     providers.push({
-      name: 'OpenRouter (Qwen)',
+      name: 'OpenRouter (Qwen 2.5)',
       url: "https://openrouter.ai/api/v1/chat/completions",
       headers: { "Authorization": `Bearer ${config.openRouterKey}`, "Content-Type": "application/json" },
-      body: { model: "qwen/qwen3-coder:free", messages: [{ role: "user", content: prompt }], response_format: { type: "json_object" } }
+      body: { model: "qwen/qwen-2.5-72b-instruct", messages: [{ role: "user", content: prompt }], response_format: { type: "json_object" } }
     });
-    // 2. OpenRouter Backup (Gemini 2.0 Flash Lite - usually very high limits)
     providers.push({
-      name: 'OpenRouter (Gemini 2.0 Flash Lite)',
+      name: 'OpenRouter (Gemini 3 Flash)',
       url: "https://openrouter.ai/api/v1/chat/completions",
       headers: { "Authorization": `Bearer ${config.openRouterKey}`, "Content-Type": "application/json" },
-      body: { model: "google/gemini-2.0-flash-lite-preview-02-05:free", messages: [{ role: "user", content: prompt }], response_format: { type: "json_object" } }
+      body: { model: "google/gemini-3-flash-preview", messages: [{ role: "user", content: prompt }], response_format: { type: "json_object" } }
     });
   }
 
-  // 3. Direct Gemini Fallback
   if (config.geminiKey) {
     providers.push({
-      name: 'Direct Gemini (1.5-Flash)',
-      url: `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${config.geminiKey}`,
+      name: 'Direct Gemini (2.5-Flash)',
+      url: `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${config.geminiKey}`,
       headers: { 'Content-Type': 'application/json' },
       body: { contents: [{ parts: [{ text: prompt }] }], generationConfig: { temperature: 0.1, response_mime_type: "application/json" } }
     });
@@ -63,21 +59,20 @@ async function callAI(prompt: string, config: { openRouterKey?: string, geminiKe
           }
         }
 
-        // Handle Rate Limits or Service Unavailable
         if (response.status === 429 || response.status === 503) {
           console.warn(`[AI] ${provider.name} busy (${response.status}). Retrying in ${delay}ms...`);
           await wait(delay);
           retries--;
-          delay *= 2; // Exponential backoff
+          delay *= 2;
           continue;
         }
 
         console.error(`[AI] ${provider.name} failed with status ${response.status}:`, data);
-        break; // Move to next provider
+        break;
 
       } catch (e) {
         console.error(`[AI] ${provider.name} exception:`, e.message);
-        break; // Move to next provider
+        break;
       }
     }
   }

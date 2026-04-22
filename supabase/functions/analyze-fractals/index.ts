@@ -17,7 +17,21 @@ async function callAI(prompt: string, config: { openRouterKey?: string, geminiKe
       name: 'OpenRouter (Qwen 2.5)',
       url: "https://openrouter.ai/api/v1/chat/completions",
       headers: { "Authorization": `Bearer ${config.openRouterKey}`, "Content-Type": "application/json" },
-      body: { model: "qwen/qwen-2.5-72b-instruct", messages: [{ role: "user", content: prompt }], response_format: { type: "json_object" } }
+      body: { 
+        model: "qwen/qwen-2.5-72b-instruct", 
+        messages: [{ role: "user", content: prompt }], 
+        response_format: { type: "json_object" } 
+      }
+    });
+    providers.push({
+      name: 'OpenRouter (Gemini 2.0 Flash)',
+      url: "https://openrouter.ai/api/v1/chat/completions",
+      headers: { "Authorization": `Bearer ${config.openRouterKey}`, "Content-Type": "application/json" },
+      body: { 
+        model: "google/gemini-2.0-flash-001", 
+        messages: [{ role: "user", content: prompt }], 
+        response_format: { type: "json_object" } 
+      }
     });
   }
 
@@ -26,7 +40,10 @@ async function callAI(prompt: string, config: { openRouterKey?: string, geminiKe
       name: 'Direct Gemini (2.5-Flash)',
       url: `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${config.geminiKey}`,
       headers: { 'Content-Type': 'application/json' },
-      body: { contents: [{ parts: [{ text: prompt }] }], generationConfig: { temperature: 0.1, response_mime_type: "application/json" } }
+      body: { 
+        contents: [{ parts: [{ text: prompt }] }], 
+        generationConfig: { temperature: 0.1, response_mime_type: "application/json" } 
+      }
     });
   }
 
@@ -90,19 +107,20 @@ serve(async (req) => {
       .eq('status', 'pending');
 
     if (!backlog || backlog.length < 2) {
-      return new Response(JSON.stringify({ success: true, suggestions: [] }), { headers: corsHeaders });
+      return new Response(JSON.stringify({ success: true, suggestions: [], merges: [] }), { headers: corsHeaders });
     }
 
     const backlogList = backlog.map(b => `ID: ${b.id} | Content: ${b.content}`).join('\n');
     
-    const prompt = `Act as a master clinical supervisor specializing in fractal psychology and identity work. 
-    Your task is to organize the following list of identities and beliefs into a deep fractal hierarchy.
+    const prompt = `Act as a master clinical supervisor specializing in fractal psychology. 
+    Analyze the following list of identities and beliefs. 
+    Your goal is to create a clean, hierarchical map where NO item is left as a "Grandparent" unless it is a truly foundational root.
     
-    CRITICAL RULES:
-    1. COMPREHENSIVENESS: Attempt to find a parent for EVERY item. Do not leave items as "Grandparents" unless they are truly foundational roots.
-    2. THEMATIC CLUSTERING: Group items by their underlying motivator (e.g., "Fear of Failure", "Need for External Validation", "Relational Guilt").
-    3. PRIMARY ROOT: Identify the single most foundational "Primary Primary" root that drives the majority of other patterns.
-    4. REASONING: For every suggestion, provide a brief clinical explanation of the fractal link.
+    OBJECTIVES:
+    1. IDENTIFY ROOTS: Find the 3-5 most foundational "Root" patterns (e.g., "Core Inadequacy", "Safety through Perfection", "Relational Debt").
+    2. MAP EVERYTHING: Every other item MUST be assigned a parent. If an item doesn't fit under an existing item, suggest which Root it belongs to.
+    3. IDENTIFY DUPLICATES: List IDs of items that are semantically identical so they can be merged.
+    4. PRIMARY PRIMARY: Identify the single most dominant root.
     
     LIST OF ITEMS:
     ${backlogList}
@@ -111,6 +129,9 @@ serve(async (req) => {
     {
       "suggestions": [
         {"child_id": "uuid", "parent_id": "uuid", "reasoning": "string"}
+      ],
+      "merges": [
+        {"ids": ["uuid", "uuid"], "suggested_content": "string", "reasoning": "string"}
       ],
       "primary_primary": {
         "id": "uuid",

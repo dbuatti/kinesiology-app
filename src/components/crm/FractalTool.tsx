@@ -23,7 +23,8 @@ import {
   Crown,
   ShieldCheck,
   Zap,
-  AlertCircle
+  AlertCircle,
+  Merge
 } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -45,6 +46,7 @@ const FractalTool = () => {
   
   // Suggestions State
   const [proposedRelationships, setProposedRelationships] = useState<any[]>([]);
+  const [proposedMerges, setProposedMerges] = useState<any[]>([]);
   const [proposedPrimary, setProposedPrimary] = useState<any>(null);
 
   const fetchData = async () => {
@@ -84,6 +86,7 @@ const FractalTool = () => {
       if (cached) {
         const parsed = JSON.parse(cached);
         setProposedRelationships(parsed.suggestions || []);
+        setProposedMerges(parsed.merges || []);
         setProposedPrimary(parsed.primary_primary || null);
       }
 
@@ -104,14 +107,10 @@ const FractalTool = () => {
     try {
       const { data, error } = await supabase.functions.invoke('analyze-fractals');
       
-      if (error) {
-        if (error.message?.includes('Failed to fetch') || error.message?.includes('Disconnected')) {
-          throw new Error("Connection to AI service failed. Please check your internet or try again in a moment.");
-        }
-        throw error;
-      }
+      if (error) throw error;
       
       setProposedRelationships(data.suggestions || []);
+      setProposedMerges(data.merges || []);
       setProposedPrimary(data.primary_primary || null);
       
       localStorage.setItem(SUGGESTIONS_CACHE_KEY, JSON.stringify(data));
@@ -136,10 +135,42 @@ const FractalTool = () => {
       
       const newRels = proposedRelationships.filter(r => r.child_id !== rel.child_id);
       setProposedRelationships(newRels);
-      updateCache(newRels, proposedPrimary);
+      updateCache(newRels, proposedMerges, proposedPrimary);
       fetchData();
     } catch (err) {
       showError("Failed to update relationship.");
+    }
+  };
+
+  const handleAcceptMerge = async (merge: any) => {
+    try {
+      const [keepId, ...removeIds] = merge.ids;
+      
+      // 1. Update the content of the kept item
+      await supabase
+        .from('identity_backlog')
+        .update({ content: merge.suggested_content })
+        .eq('id', keepId);
+
+      // 2. Move any children from removed items to the kept item
+      await supabase
+        .from('identity_backlog')
+        .update({ parent_id: keepId })
+        .in('parent_id', removeIds);
+
+      // 3. Delete the duplicates
+      await supabase
+        .from('identity_backlog')
+        .delete()
+        .in('id', removeIds);
+
+      const newMerges = proposedMerges.filter(m => m.ids[0] !== keepId);
+      setProposedMerges(newMerges);
+      updateCache(proposedRelationships, newMerges, proposedPrimary);
+      fetchData();
+      showSuccess("Identities merged successfully.");
+    } catch (err) {
+      showError("Failed to merge identities.");
     }
   };
 
@@ -156,7 +187,7 @@ const FractalTool = () => {
 
       const newRels = proposedRelationships.filter(r => r.parent_id !== parentId);
       setProposedRelationships(newRels);
-      updateCache(newRels, proposedPrimary);
+      updateCache(newRels, proposedMerges, proposedPrimary);
       fetchData();
       showSuccess(`Accepted ${rels.length} relationships.`);
     } catch (err) {
@@ -177,7 +208,7 @@ const FractalTool = () => {
       if (error) throw error;
       
       setProposedPrimary(null);
-      updateCache(proposedRelationships, null);
+      updateCache(proposedRelationships, proposedMerges, null);
       fetchData();
       showSuccess("Primary Primary pattern established.");
     } catch (err) {
@@ -185,15 +216,17 @@ const FractalTool = () => {
     }
   };
 
-  const updateCache = (rels: any[], primary: any) => {
+  const updateCache = (rels: any[], merges: any[], primary: any) => {
     localStorage.setItem(SUGGESTIONS_CACHE_KEY, JSON.stringify({
       suggestions: rels,
+      merges: merges,
       primary_primary: primary
     }));
   };
 
   const clearSuggestions = () => {
     setProposedRelationships([]);
+    setProposedMerges([]);
     setProposedPrimary(null);
     localStorage.removeItem(SUGGESTIONS_CACHE_KEY);
   };
@@ -334,13 +367,45 @@ const FractalTool = () => {
                 <Button onClick={handleAcceptPrimary} className="bg-white text-slate-900 hover:bg-amber-50 h-12 px-8 rounded-xl font-black text-xs uppercase tracking-widest shadow-lg">
                   Establish as Root
                 </Button>
-                <Button variant="ghost" onClick={() => { setProposedPrimary(null); updateCache(proposedRelationships, null); }} className="text-slate-400 hover:text-white">
+                <Button variant="ghost" onClick={() => { setProposedPrimary(null); updateCache(proposedRelationships, proposedMerges, null); }} className="text-slate-400 hover:text-white">
                   Dismiss
                 </Button>
               </div>
             </div>
           </CardContent>
         </Card>
+      )}
+
+      {proposedMerges.length > 0 && (
+        <div className="space-y-6">
+          <div className="flex items-center gap-3 px-2">
+            <Merge size={20} className="text-rose-500" />
+            <h3 className="text-xl font-black text-slate-900">Merge Suggestions</h3>
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {proposedMerges.map((merge, idx) => (
+              <Card key={idx} className="border-none shadow-md bg-rose-50/50 border-2 border-rose-100 rounded-[2rem] overflow-hidden">
+                <CardContent className="p-6 space-y-4">
+                  <div className="flex items-start justify-between">
+                    <div className="space-y-1">
+                      <p className="text-[8px] font-black text-rose-400 uppercase tracking-widest">Duplicate Cluster</p>
+                      <h4 className="text-lg font-black text-rose-900">"{merge.suggested_content}"</h4>
+                    </div>
+                    <Button 
+                      onClick={() => handleAcceptMerge(merge)}
+                      className="bg-rose-600 hover:bg-rose-700 text-white rounded-xl h-9 px-4 font-black text-[10px] uppercase tracking-widest shadow-lg"
+                    >
+                      Merge Items
+                    </Button>
+                  </div>
+                  <div className="p-3 bg-white/60 rounded-xl border border-rose-100">
+                    <p className="text-[10px] text-rose-700 font-medium italic">"{merge.reasoning}"</p>
+                  </div>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        </div>
       )}
 
       {proposedRelationships.length > 0 && (
@@ -400,7 +465,7 @@ const FractalTool = () => {
                                 onClick={() => {
                                     const newRels = proposedRelationships.filter(r => r.child_id !== rel.child_id);
                                     setProposedRelationships(newRels);
-                                    updateCache(newRels, proposedPrimary);
+                                    updateCache(newRels, proposedMerges, proposedPrimary);
                                 }}
                                 className="h-8 w-8 rounded-lg text-slate-300 hover:text-rose-600"
                               >

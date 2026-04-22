@@ -61,6 +61,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import IdentityHistoryList from "@/components/crm/IdentityHistoryList";
+import { usePrivacyMode } from "@/hooks/use-privacy-mode";
 
 const TOOLS = [
   {
@@ -108,11 +109,13 @@ const TOOLS = [
 type SortOption = 'priority' | 'newest' | 'oldest' | 'type' | 'progress';
 
 const SandboxPage = () => {
+  const { isPrivate } = usePrivacyMode();
   const [backlog, setBacklog] = useState<any[]>([]);
   const [sessionCounts, setSessionCounts] = useState<Record<string, number>>({});
   const [drafts, setDrafts] = useState<Record<string, boolean>>({});
   const [loading, setLoading] = useState(true);
   const [isPrioritizing, setIsPrioritizing] = useState(false);
+  const [isAcceptingAll, setIsAcceptingAll] = useState(false);
   const [scanningId, setScanningId] = useState<string | null>(null);
   const [sortBy, setSortBy] = useState<SortOption>('priority');
   const [activeTab, setActiveTab] = useState("active");
@@ -195,6 +198,30 @@ const SandboxPage = () => {
       showError(err.message || "Failed to prioritize.");
     } finally {
       setIsPrioritizing(false);
+    }
+  };
+
+  const handleAcceptAllSuggestions = async () => {
+    const suggestedIds = backlog
+      .filter(item => item.status === 'suggested')
+      .map(item => item.id);
+
+    if (suggestedIds.length === 0) return;
+
+    setIsAcceptingAll(true);
+    try {
+      const { error } = await supabase
+        .from('identity_backlog')
+        .update({ status: 'pending' })
+        .in('id', suggestedIds);
+
+      if (error) throw error;
+      showSuccess(`Added ${suggestedIds.length} identities to your active map.`);
+      fetchData();
+    } catch (err) {
+      showError("Failed to accept all suggestions.");
+    } finally {
+      setIsAcceptingAll(false);
     }
   };
 
@@ -524,7 +551,18 @@ const SandboxPage = () => {
                 <TabsTrigger value="history" className="rounded-xl px-8 h-10 data-[state=active]:bg-white data-[state=active]:text-indigo-600 data-[state=active]:shadow-sm transition-all font-bold text-xs uppercase tracking-widest"><History className="mr-2" size={16} /> Session History</TabsTrigger>
               </TabsList>
 
-              {activeTab !== 'history' && (
+              {activeTab === 'suggested' && sortedBacklog.length > 0 && (
+                <Button 
+                  onClick={handleAcceptAllSuggestions}
+                  disabled={isAcceptingAll}
+                  className="h-10 px-6 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-black text-[10px] uppercase tracking-widest shadow-lg"
+                >
+                  {isAcceptingAll ? <Loader2 className="mr-2 animate-spin" /> : <CheckCircle2 size={16} className="mr-2" />}
+                  Accept All Suggestions
+                </Button>
+              )}
+
+              {activeTab !== 'history' && activeTab !== 'suggested' && (
                 <div className="flex items-center gap-3">
                   <Button 
                     variant="ghost" 

@@ -91,11 +91,9 @@ const LimitingBeliefsTool = () => {
   const [isSaving, setIsSaving] = useState(false);
   const [isGeneratingLimiting, setIsGeneratingLimiting] = useState(false);
   const [isGeneratingPositive, setIsGeneratingPositive] = useState(false);
-  const [isGeneratingSense, setIsGeneratingSense] = useState(false);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [limitingSuggestions, setLimitingSuggestions] = useState<string[]>([]);
   const [positiveSuggestions, setPositiveSuggestions] = useState<string[]>([]);
-  const [senseSuggestions, setSenseSuggestions] = useState<string[]>([]);
 
   const progress = (step / 5) * 100;
 
@@ -270,12 +268,11 @@ const LimitingBeliefsTool = () => {
     }
   };
 
-  const handleGenerateBelief = async (type: 'limiting_belief' | 'positive_belief' | 'felt_sense') => {
+  const handleGenerateBelief = async (type: 'limiting_belief' | 'positive_belief') => {
     if (!formData.problem) return;
     
     if (type === 'limiting_belief') setIsGeneratingLimiting(true);
-    else if (type === 'positive_belief') setIsGeneratingPositive(true);
-    else setIsGeneratingSense(true);
+    else setIsGeneratingPositive(true);
 
     try {
       const { data, error } = await supabase.functions.invoke('generate-identity', {
@@ -284,15 +281,13 @@ const LimitingBeliefsTool = () => {
 
       if (!error && data?.suggestions) {
         if (type === 'limiting_belief') setLimitingSuggestions(data.suggestions);
-        else if (type === 'positive_belief') setPositiveSuggestions(data.suggestions);
-        else setSenseSuggestions(data.suggestions);
+        else setPositiveSuggestions(data.suggestions);
       }
     } catch (error) {
       console.error(error);
     } finally {
       setIsGeneratingLimiting(false);
       setIsGeneratingPositive(false);
-      setIsGeneratingSense(false);
     }
   };
 
@@ -411,28 +406,13 @@ const LimitingBeliefsTool = () => {
           />
         </div>
         <div className="space-y-4">
-          <div className="flex items-center justify-between px-1">
-            <Label className="text-[10px] font-black uppercase tracking-[0.3em] text-slate-400">2. The Felt Sense</Label>
-            <Button variant="ghost" size="sm" onClick={() => handleGenerateBelief('felt_sense')} disabled={isGeneratingSense || !formData.problem} className="h-8 text-indigo-600 hover:bg-indigo-50 gap-1.5 font-black text-[10px] uppercase tracking-widest">
-              {isGeneratingSense ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Sparkles className="h-3.5 w-3.5" />}
-              Suggest
-            </Button>
-          </div>
+          <Label className="text-[10px] font-black uppercase tracking-[0.3em] text-slate-400 ml-1">2. The Felt Sense</Label>
           <Input 
             placeholder="Where do you feel it in your body?" 
             value={formData.feltSense}
             onChange={(e) => setFormData({ ...formData, feltSense: e.target.value })}
             className="h-14 rounded-2xl border-2 border-slate-100 px-6 text-lg font-bold bg-white"
           />
-          {senseSuggestions.length > 0 && (
-            <div className="flex flex-wrap gap-2 mt-4">
-              {senseSuggestions.map((s, i) => (
-                <button key={i} onClick={() => setFormData({ ...formData, feltSense: s })} className="text-[10px] font-bold px-4 py-2 bg-indigo-50 text-indigo-600 rounded-full border border-indigo-100 hover:bg-indigo-100 transition-all">
-                  {s}
-                </button>
-              ))}
-            </div>
-          )}
         </div>
       </div>
       <div className="pt-8 flex gap-4">

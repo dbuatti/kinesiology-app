@@ -69,7 +69,6 @@ serve(async (req) => {
         console.warn(`[${functionName}] Booking ${bookingUid} not found on Cal.com. Proceeding to CREATE new.`);
       } else {
         const errorMsg = result.error?.message || result.message || "Failed to update Cal.com booking";
-        // If it's an availability error during update, throw it clearly
         if (errorMsg.includes("already has booking") || errorMsg.includes("not available")) {
           throw new Error("The new time slot is not available in your calendar.");
         }
@@ -115,21 +114,28 @@ serve(async (req) => {
     if (createRes.status === 400 && (errorMsg.includes("already has booking") || errorMsg.includes("not available"))) {
       console.log(`[${functionName}] Conflict detected. Searching for existing booking at ${cleanStartTime}`);
       
-      // Search for bookings around this time
-      const listRes = await fetch(`https://api.cal.com/v2/bookings?startTime=${cleanStartTime}&status=upcoming`, {
+      // Search for bookings on this day to be more robust
+      const dayStart = new Date(cleanStartTime);
+      dayStart.setHours(0,0,0,0);
+      const dayEnd = new Date(cleanStartTime);
+      dayEnd.setHours(23,59,59,999);
+
+      const listRes = await fetch(`https://api.cal.com/v2/bookings?startTime=${dayStart.toISOString()}&endTime=${dayEnd.toISOString()}&status=upcoming`, {
         method: "GET",
         headers
       });
       
       const listData = await listRes.json();
-      // Find exact match
+      
+      // Find exact match by time AND attendee email
       const existing = (listData.data || []).find(b => {
         const bStart = new Date(b.start).toISOString();
-        return bStart === cleanStartTime;
+        const bEmail = b.attendees?.[0]?.email?.toLowerCase();
+        return bStart === cleanStartTime && bEmail === client.email.toLowerCase();
       });
 
       if (existing) {
-        console.log(`[${functionName}] Found existing booking: ${existing.uid}. Repairing CRM link.`);
+        console.log(`[${functionName}] Found existing booking for this client: ${existing.uid}. Repairing CRM link.`);
         return new Response(JSON.stringify({ 
           success: true, 
           uid: existing.uid,
@@ -138,8 +144,8 @@ serve(async (req) => {
         }), { status: 200, headers: corsHeaders });
       }
 
-      // If no booking found but still "not available", it's likely an OOO block
-      throw new Error("This slot is unavailable (it may be blocked by an Out-of-Office entry or another event).");
+      // If no booking found for THIS client, but slot is taken, it's a real conflict
+      throw new Error("This slot is unavailable. It may be blocked by an Out-of-Office entry or another client's booking.");
     }
 
     throw new Error(errorMsg || "Cal.com Create Error");

@@ -9,7 +9,7 @@ const corsHeaders = {
 }
 
 serve(async (req) => {
-  console.log("--- [sync-calcom-bookings] v7.0 — Robust Matching ---");
+  console.log("--- [sync-calcom-bookings] v8.0 — Robust Matching ---");
 
   if (req.method === 'OPTIONS') return new Response('ok', { headers: corsHeaders })
 
@@ -86,10 +86,10 @@ serve(async (req) => {
       }
 
       // 4. Upsert with the matched ID
-      await supabase
+      const { error: appError } = await supabase
         .from('appointments')
         .upsert({
-          id: targetId,
+          ...(targetId ? { id: targetId } : {}),
           user_id: PRACTITIONER_ID,
           client_id: dbClient.id,
           date: startTime,
@@ -98,8 +98,13 @@ serve(async (req) => {
           calcom_booking_id: calcomId,
           is_paid: booking.metadata?.is_paid === "true" || !!booking.payment?.[0]
         }, { 
-          onConflict: 'calcom_booking_id' 
+          onConflict: targetId ? 'id' : 'calcom_booking_id' 
         });
+
+      if (appError) {
+        console.error(`[sync-calcom-bookings] Error for booking ${calcomId}:`, appError);
+        continue;
+      }
 
       syncedCount++;
     }

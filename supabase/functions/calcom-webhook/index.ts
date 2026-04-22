@@ -107,7 +107,7 @@ serve(async (req) => {
     const { error: appError } = await supabase
       .from('appointments')
       .upsert({
-        id: targetId,
+        ...(targetId ? { id: targetId } : {}),
         user_id: PRACTITIONER_ID,
         client_id: dbClient.id,
         date: startTime,
@@ -117,7 +117,7 @@ serve(async (req) => {
         price_amount: priceAmount,
         price_currency: 'AUD'
       }, { 
-        onConflict: 'calcom_booking_id' 
+        onConflict: targetId ? 'id' : 'calcom_booking_id' 
       });
 
     if (appError) {

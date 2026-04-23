@@ -50,6 +50,7 @@ import FractalToolPage from "./pages/FractalToolPage";
 import JournalPage from "./pages/JournalPage";
 import PracticeNotes from "./pages/PracticeNotes";
 import QuizPage from "./pages/QuizPage";
+import MorningProgramPage from "./pages/MorningProgramPage";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -115,6 +116,7 @@ const AppRoutes = () => {
         <Route path="/resources/worksheets/inner-awareness" element={<InnerAwarenessWorksheetPage />} />
         <Route path="/resources/worksheets/anger-flow" element={<AngerFlowWorksheetPage />} />
         <Route path="/resources/worksheets/business-model" element={<BusinessModelWorksheetPage />} />
+        <Route path="/morning-program" element={<MorningProgramPage />} />
         
         {/* Business Tools */}
         <Route path="/business" element={<BusinessHubPage />} />

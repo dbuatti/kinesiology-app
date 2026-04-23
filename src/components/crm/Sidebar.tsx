@@ -34,7 +34,8 @@ import {
   Fingerprint,
   LayoutGrid,
   MessageSquare,
-  Brain
+  Brain,
+  Sun
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import SearchBar from "./SearchBar";
@@ -59,6 +60,7 @@ import { Progress } from "@/components/ui/progress";
 import {
   Tooltip,
   TooltipContent,
+  TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import { ModeToggle } from "./ModeToggle";
@@ -77,7 +79,7 @@ const Sidebar = ({ onHide }: SidebarProps) => {
   
   const isOpsPath = (path: string) => path === "/" || path.startsWith("/appointments") || path.startsWith("/clients") || path === "/availability";
   const isLabPath = (path: string) => path.startsWith("/practice/calibrate") || path.startsWith("/practice/procedures") || path.startsWith("/oversight") || path.startsWith("/practice/journal");
-  const isLibraryPath = (path: string) => path.startsWith("/resources") || path.startsWith("/practice/self") || path.startsWith("/peace-framework");
+  const isLibraryPath = (path: string) => path.startsWith("/resources") || path.startsWith("/practice/self") || path.startsWith("/peace-framework") || path === "/morning-program";
   const isBusinessPath = (path: string) => path.startsWith("/business");
   const isSandboxPath = (path: string) => path.startsWith("/sandbox");
 
@@ -137,6 +139,7 @@ const Sidebar = ({ onHide }: SidebarProps) => {
   ];
 
   const libraryItems = [
+    { label: "Morning Program", icon: Sun, path: "/morning-program" },
     { label: "PEACE Framework", icon: ShieldCheck, path: "/peace-framework" },
     { label: "Knowledge Base", icon: BookOpen, path: "/resources" },
     { label: "Worksheets", icon: FileText, path: "/resources/worksheets" },
@@ -389,7 +392,7 @@ const Sidebar = ({ onHide }: SidebarProps) => {
                 onClick={togglePrivacy}
                 className={cn(
                   "flex items-center justify-center h-9 w-9 rounded-xl transition-all duration-300 group",
-                  isPrivate ? "bg-rose-500 text-white shadow-lg shadow-rose-500/10" : "text-muted-foreground hover:text-primary hover:bg-secondary"
+                  isPrivate ? "bg-rose-50 text-white shadow-lg shadow-rose-500/10" : "text-muted-foreground hover:text-primary hover:bg-secondary"
                 )}
               >
                 {isPrivate ? <EyeOff size={18} /> : <Eye size={18} />}

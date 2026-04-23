@@ -5,12 +5,13 @@ import { Link } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { Card, CardContent } from "@/components/ui/card";
 import {
   Calendar, Activity, Loader2,
   UserPlus, Zap, Wind,
   ArrowRight, Clock,
   ClipboardCheck, Link as LinkIcon, Check,
-  Coffee, CalendarPlus, Target, GraduationCap
+  Coffee, CalendarPlus, Target, GraduationCap, Sun
 } from "lucide-react";
 
 import {
@@ -39,6 +40,7 @@ import { showSuccess } from "@/utils/toast";
 import Scratchpad from "@/components/crm/Scratchpad";
 import QuickActionsGrid from "@/components/crm/QuickActionsGrid";
 import IdentitySmartTool from "@/components/crm/IdentitySmartTool";
+import { Progress } from "@/components/ui/progress";
 
 const Index = () => {
   const { isPrivate } = usePrivacyMode();
@@ -60,10 +62,23 @@ const Index = () => {
   const [appDialogOpen, setAppDialogOpen] = useState(false);
   const [currentTime, setCurrentTime] = useState(new Date());
   const [copiedId, setCopiedId] = useState<string | null>(null);
+  const [morningProgress, setMorningProgress] = useState(0);
 
   useEffect(() => {
     const timer = setInterval(() => setCurrentTime(new Date()), 60000);
     return () => clearInterval(timer);
+  }, []);
+
+  useEffect(() => {
+    const saved = localStorage.getItem("antigravity_morning_program");
+    if (saved) {
+      try {
+        const { tasks, date } = JSON.parse(saved);
+        if (isToday(new Date(date))) {
+          setMorningProgress(Math.round((tasks.length / 4) * 100));
+        }
+      } catch (e) {}
+    }
   }, []);
 
   const handleCopyLink = (e: React.MouseEvent, clientId: string) => {
@@ -204,7 +219,40 @@ const Index = () => {
           </div>
         </div>
 
-        <PractitionerGrounding />
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
+          <div className="lg:col-span-8">
+            <PractitionerGrounding />
+          </div>
+          <div className="lg:col-span-4">
+            <Link to="/morning-program" className="block h-full">
+              <Card className="border-none shadow-lg rounded-[2.5rem] bg-amber-500 text-white h-full overflow-hidden relative group hover:shadow-xl transition-all duration-500">
+                <div className="absolute top-0 right-0 p-6 opacity-10 group-hover:scale-110 transition-transform duration-700">
+                  <Sun size={100} className="fill-current" />
+                </div>
+                <CardContent className="p-8 flex flex-col justify-between h-full relative z-10">
+                  <div className="space-y-2">
+                    <div className="flex items-center gap-2">
+                      <Sun size={18} className="fill-current" />
+                      <span className="text-[10px] font-black uppercase tracking-widest">Morning Program</span>
+                    </div>
+                    <h3 className="text-2xl font-black">Daily Readiness</h3>
+                  </div>
+                  
+                  <div className="space-y-3">
+                    <div className="flex justify-between text-[10px] font-black uppercase">
+                      <span>Progress</span>
+                      <span>{morningProgress}%</span>
+                    </div>
+                    <Progress value={morningProgress} className="h-1.5 bg-white/20 [&>div]:bg-white" />
+                    <p className="text-[10px] font-bold text-amber-100">
+                      {morningProgress === 100 ? "You are fully centered." : "Complete your morning ritual."}
+                    </p>
+                  </div>
+                </CardContent>
+              </Card>
+            </Link>
+          </div>
+        </div>
 
         <QuickActionsGrid 
           onNewClient={() => setClientDialogOpen(true)} 
@@ -222,7 +270,7 @@ const Index = () => {
             </div>
             <div className="relative z-10 space-y-6">
               <div className="flex items-center gap-4">
-                <div className="w-12 h-12 bg-white/10 backdrop-blur-md flex items-center justify-center border border-white/10 shadow-xl rounded-2xl">
+                <div className="w-12 h-12 bg-white/10 backdrop-blur-md flex items-center justify-center border border-white/20 shadow-xl rounded-2xl">
                   <Zap size={24} className="text-amber-400 fill-amber-400" />
                 </div>
                 <h3 className="text-2xl font-serif font-bold">Knowledge Quiz</h3>

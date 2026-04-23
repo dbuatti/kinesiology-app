@@ -307,7 +307,7 @@ const Index = () => {
                     <h2 className="text-2xl md:text-3xl font-serif font-bold text-primary flex items-center gap-3 md:gap-4">
                       <ClipboardCheck size={24} className="md:w-8 md:h-8 text-accent" /> Recent Onboarding
                     </h2>
-                    <p className="text-xs md:text-base text-muted-foreground font-medium">New client submissions ready for review.</p>
+                    <p className="text-xs md:base text-muted-foreground font-medium">New client submissions ready for review.</p>
                   </div>
                   <Badge className="bg-accent text-white border-none font-black text-[8px] md:text-[9px] uppercase tracking-widest px-3 md:px-4 py-1 md:py-1.5 rounded-full shadow-lg shadow-accent/10">
                     {pendingOnboarding.length} New
@@ -363,7 +363,7 @@ const Index = () => {
               <div className="absolute top-0 right-0 p-6 md:p-8 opacity-10 group-hover:scale-110 transition-transform duration-700"><Wind size={100} className="md:w-[150px] md:h-[150px]" /></div>
               <div className="relative z-10 space-y-6 md:space-y-8">
                 <div className="flex items-center gap-3 md:gap-4">
-                  <div className="w-10 h-10 md:w-12 md:h-12 bg-white/10 backdrop-blur-md flex items-center justify-center border border-white/10 shadow-xl">
+                  <div className="w-10 h-10 md:w-12 md:h-12 bg-white/10 backdrop-blur-md flex items-center justify-center border border-white/20 shadow-xl">
                     <Wind size={20} className="md:w-6 md:h-6 text-secondary" />
                   </div>
                   <h3 className="text-xl md:text-2xl font-serif font-bold">Clinical Focus</h3>

@@ -20,13 +20,14 @@ import {
   ImageIcon,
   BookOpen,
   Activity,
-  AlertCircle
+  AlertCircle,
+  Dumbbell
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { EMOTION_CODE_CHART, ROW_ASSOCIATIONS } from '@/data/emotion-code-data';
+import { EMOTION_CODE_CHART, ROW_DATA } from '@/data/emotion-code-data';
 import { Button } from '@/components/ui/button';
 
 const STEPS = [
@@ -360,7 +361,15 @@ const HeartWallProtocol = () => {
                   <div className="grid grid-cols-1 gap-4 relative z-10">
                     <div className="p-4 bg-white/10 rounded-2xl border border-white/10">
                       <p className="text-[9px] font-black text-indigo-300 uppercase tracking-widest mb-2">Associated Organs</p>
-                      <p className="text-sm font-bold">{ROW_ASSOCIATIONS[selectedCell.row]}</p>
+                      <p className="text-sm font-bold">{ROW_DATA[selectedCell.row].organ}</p>
+                    </div>
+                    <div className="p-4 bg-white/10 rounded-2xl border border-white/10">
+                      <p className="text-[9px] font-black text-indigo-300 uppercase tracking-widest mb-2 flex items-center gap-2">
+                        <Dumbbell size={12} /> Associated Muscles
+                      </p>
+                      <p className="text-xs font-medium text-indigo-100 leading-relaxed">
+                        {ROW_DATA[selectedCell.row].muscles}
+                      </p>
                     </div>
                     <div className="p-4 bg-white rounded-2xl text-indigo-900">
                       <p className="text-[9px] font-black text-indigo-400 uppercase tracking-widest mb-2">Emotions in this cell</p>

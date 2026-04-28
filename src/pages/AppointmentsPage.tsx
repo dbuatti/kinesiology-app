@@ -1,3 +1,5 @@
+"use client";
+
 import { useEffect, useState, useMemo } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { groupAppointmentsByMonth } from "@/utils/crm-utils";
@@ -16,7 +18,6 @@ import {
   ChevronDown, 
   Zap,
   CheckCircle2,
-  CheckCircle,
   CircleDashed,
   Search,
   CalendarDays,
@@ -29,7 +30,10 @@ import {
   EyeOff,
   RefreshCw,
   CalendarClock,
-  Calendar as CalendarIcon
+  Calendar as CalendarIcon,
+  User,
+  ArrowRight,
+  Wallet
 } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -65,7 +69,7 @@ interface AppointmentWithClient extends Appointment {
   clients: { name: string; id: string; latest_bolt?: number | null };
 }
 
-const PAGE_SIZE = 15;
+const PAGE_SIZE = 20;
 
 const AppointmentsPage = () => {
   const navigate = useNavigate();
@@ -290,14 +294,12 @@ const AppointmentsPage = () => {
 
   const otherSessions = filteredAppointments.filter(app => !isToday(app.date));
   
-  // Use ascending order for Scheduled/Today, descending for others
   const monthSortOrder = (statusFilter === 'Scheduled' || statusFilter === 'today') ? 'asc' : 'desc';
   const grouped = groupAppointmentsByMonth(otherSessions, monthSortOrder);
 
   const AppointmentCard = ({ app }: { app: AppointmentWithClient }) => {
     const hasBolt = app.bolt_score !== null && app.bolt_score !== undefined;
     const hasCoherence = app.coherence_score !== null && app.coherence_score !== undefined;
-    const hasCogs = app.sagittal_plane_notes || app.frontal_plane_notes || app.transverse_plane_notes;
     const isCompleted = app.status === 'Completed';
     const isTodaySession = isToday(app.date);
     const isHighRisk = app.clients?.latest_bolt !== null && app.clients?.latest_bolt! < 25;
@@ -305,192 +307,160 @@ const AppointmentsPage = () => {
     return (
       <Card 
         className={cn(
-          "border-border transition-all duration-300 group overflow-hidden relative rounded-[2rem]",
+          "border-none transition-all duration-300 group overflow-hidden relative rounded-2xl md:rounded-[2.5rem] shadow-sm",
           isTodaySession 
-            ? "border-indigo-300 dark:border-indigo-900/50 shadow-xl shadow-indigo-100 dark:shadow-indigo-900/20 ring-2 ring-indigo-50 dark:ring-indigo-900/10 bg-card" 
-            : "bg-card hover:shadow-xl hover:border-muted-foreground/20",
-          isHighRisk && !isCompleted && "border-rose-200 dark:border-rose-900/50 ring-rose-50 dark:ring-rose-900/10"
+            ? "bg-indigo-900 text-white shadow-xl shadow-indigo-200 dark:shadow-none ring-4 ring-indigo-500/10" 
+            : "bg-card hover:shadow-md border border-border",
+          isHighRisk && !isCompleted && !isTodaySession && "bg-rose-50/50 border-rose-100 dark:bg-rose-950/10 dark:border-rose-900/30"
         )}
       >
         <CardContent className="p-0">
-          <div className="flex flex-col sm:flex-row sm:items-stretch">
-            <div className="p-8 flex-1 space-y-6">
-              <div className="flex items-start justify-between">
-                <div className="space-y-2">
+          <div className="flex flex-col md:flex-row md:items-center">
+            {/* Time & Status Column */}
+            <div className={cn(
+              "p-6 md:p-8 md:w-48 flex flex-col justify-center items-center text-center border-b md:border-b-0 md:border-r border-border/10",
+              isTodaySession ? "bg-white/5" : "bg-muted/30"
+            )}>
+              <div className={cn(
+                "w-12 h-12 rounded-2xl flex items-center justify-center mb-3 shadow-sm transition-transform group-hover:scale-110",
+                isTodaySession ? "bg-white text-indigo-600" : "bg-indigo-600 text-white"
+              )}>
+                <Clock size={24} />
+              </div>
+              <p className={cn(
+                "text-lg font-black tabular-nums",
+                isTodaySession ? "text-white" : "text-foreground"
+              )}>
+                {format(app.date, "h:mm a")}
+              </p>
+              <p className={cn(
+                "text-[9px] font-black uppercase tracking-widest mt-1",
+                isTodaySession ? "text-indigo-300" : "text-muted-foreground"
+              )}>
+                {isTodaySession ? "Today" : format(app.date, "EEE, MMM d")}
+              </p>
+            </div>
+
+            {/* Main Info Column */}
+            <div className="flex-1 p-6 md:p-8 space-y-4">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                <div className="space-y-1">
                   <div className="flex items-center gap-3">
                     <Link to={`/appointments/${app.id}`} className={cn(
-                      "font-black text-2xl text-foreground hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors",
+                      "font-black text-xl md:text-2xl tracking-tight hover:underline decoration-2 underline-offset-4",
+                      isTodaySession ? "text-white decoration-indigo-400" : "text-foreground decoration-indigo-600",
                       isPrivate && "blur-sm select-none"
                     )}>
                       {app.clients?.name || "Unknown Client"}
                     </Link>
-                    {isTodaySession && (
-                      <Badge className="bg-rose-500 text-white border-none animate-pulse font-black text-[8px] uppercase tracking-widest px-2 py-0.5 rounded-full">
-                        Live Today
-                      </Badge>
-                    )}
-                    {app.is_paid && (
-                      <Badge className={cn(
-                        "border-none font-black text-[8px] uppercase tracking-widest px-2 py-0.5 rounded-full flex items-center gap-1 shadow-sm",
-                        app.payment_received ? "bg-emerald-50 text-emerald-700" : "bg-amber-50 text-white"
-                      )}>
-                        <DollarSign size={10} /> {app.payment_received ? "Paid" : "Payment Due"}
-                      </Badge>
-                    )}
                     {isHighRisk && !isCompleted && (
-                      <Badge className="bg-rose-100 dark:bg-rose-900/30 text-rose-600 dark:text-rose-400 border-none font-black text-[8px] uppercase tracking-widest px-2 py-0.5 flex items-center gap-1">
-                        <AlertCircle size={10} /> High Priority
+                      <Badge className="bg-rose-500 text-white border-none font-black text-[8px] uppercase tracking-widest px-2 py-0.5 rounded-full animate-pulse">
+                        High Priority
                       </Badge>
                     )}
                   </div>
-                  <div className="flex flex-wrap items-center gap-4 text-sm">
-                    <span className="flex items-center gap-2 font-bold text-muted-foreground">
-                      <Clock size={16} className={cn(isTodaySession ? "text-rose-500" : "text-indigo-500")} />
-                      {format(app.date, isTodaySession ? "h:mm a" : "EEEE, d MMM • h:mm a")}
-                    </span>
-                    <Badge variant="secondary" className="bg-muted text-muted-foreground font-black text-[10px] uppercase tracking-widest border-none px-3 py-1">
+                  <div className="flex items-center gap-3">
+                    <Badge variant="outline" className={cn(
+                      "font-black text-[8px] uppercase tracking-widest border-none px-2 py-0.5 rounded-md",
+                      isTodaySession ? "bg-white/10 text-indigo-200" : "bg-muted text-muted-foreground"
+                    )}>
                       {app.tag}
                     </Badge>
-                  </div>
-                </div>
-              </div>
-              
-              {app.goal && (
-                <div className="text-sm bg-muted/30 rounded-2xl p-4 border border-border group-hover:bg-card group-hover:border-indigo-100 dark:group-hover:border-indigo-900/50 transition-all">
-                  <div className="flex items-center justify-between mb-2">
-                    <span className="text-[10px] font-black text-muted-foreground uppercase tracking-[0.2em] block">Session Goal</span>
-                    {isPrivate && (
-                      <Badge variant="outline" className="h-4 px-1 text-[6px] font-black uppercase border-rose-200 text-rose-400">
-                        <EyeOff size={6} className="mr-0.5" /> Private
-                      </Badge>
+                    {app.is_paid && (
+                      <span className={cn(
+                        "text-[9px] font-black uppercase tracking-widest flex items-center gap-1",
+                        app.payment_received 
+                          ? (isTodaySession ? "text-emerald-400" : "text-emerald-600") 
+                          : (isTodaySession ? "text-amber-400" : "text-amber-600")
+                      )}>
+                        <DollarSign size={10} /> {app.payment_received ? "Paid" : "Due"}
+                      </span>
                     )}
                   </div>
-                  <p className={cn(
-                    "text-foreground font-medium leading-relaxed line-clamp-2 italic",
-                    isPrivate && "blur-md select-none opacity-40"
-                  )}>"{app.goal}"</p>
                 </div>
+
+                <div className="flex items-center gap-2">
+                  {isTodaySession && !isCompleted && (
+                    <Button 
+                      size="sm" 
+                      className="bg-white text-indigo-900 hover:bg-indigo-50 rounded-xl h-9 px-5 font-black text-[10px] uppercase tracking-widest shadow-lg"
+                      onClick={() => navigate(`/appointments/${app.id}`)}
+                    >
+                      <Play size={14} className="mr-2 fill-current" /> Start Session
+                    </Button>
+                  )}
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <Button variant="ghost" size="icon" className={cn(
+                        "h-9 w-9 rounded-xl transition-all",
+                        isTodaySession ? "text-white/40 hover:text-white hover:bg-white/10" : "text-muted-foreground hover:bg-muted"
+                      )}>
+                        <MoreVertical size={18} />
+                      </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end" className="rounded-2xl p-2 shadow-2xl border-none bg-card">
+                      <DropdownMenuItem asChild className="rounded-xl py-2.5 px-4 cursor-pointer">
+                        <Link to={`/appointments/${app.id}`} className="flex items-center gap-3">
+                          <ExternalLink size={16} className="text-indigo-500" /> View Details
+                        </Link>
+                      </DropdownMenuItem>
+                      <DropdownMenuItem 
+                        className="rounded-xl py-2.5 px-4 cursor-pointer flex items-center gap-3"
+                        onClick={() => setRescheduleModal({ open: true, appointment: app })}
+                      >
+                        <CalendarClock size={16} className="text-amber-500" /> Reschedule
+                      </DropdownMenuItem>
+                      <DropdownMenuItem 
+                        className="rounded-xl py-2.5 px-4 cursor-pointer flex items-center gap-3"
+                        onClick={() => handleCopyFullSummary(app)}
+                      >
+                        <Copy size={16} className="text-slate-500" /> Copy Summary
+                      </DropdownMenuItem>
+                      <DropdownMenuSeparator className="my-2" />
+                      <DropdownMenuItem 
+                        className="text-destructive focus:text-destructive rounded-xl py-2.5 px-4 cursor-pointer flex items-center gap-3"
+                        onClick={() => deleteAppointment(app)}
+                      >
+                        <Trash2 size={16} /> Delete Session
+                      </DropdownMenuItem>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
+                </div>
+              </div>
+
+              {app.goal && (
+                <p className={cn(
+                  "text-sm leading-relaxed line-clamp-1 italic font-medium",
+                  isTodaySession ? "text-indigo-100/70" : "text-muted-foreground",
+                  isPrivate && "blur-md select-none opacity-40"
+                )}>
+                  "{app.goal}"
+                </p>
               )}
 
-              <div className="flex flex-wrap items-center justify-between gap-4 pt-2">
-                <div className="flex flex-wrap gap-3">
-                  {hasBolt && (
-                    <Badge className="bg-indigo-50 dark:bg-indigo-900/20 text-indigo-700 dark:text-indigo-400 border border-indigo-100 dark:border-indigo-900/30 flex items-center gap-1.5 text-[10px] font-black uppercase tracking-wider px-3 py-1 rounded-full">
-                      <FlaskConical size={12} /> BOLT: {app.bolt_score}s
-                    </Badge>
-                  )}
-                  {hasCoherence && (
-                    <Badge className="bg-rose-50 dark:bg-indigo-900/20 text-rose-700 dark:text-rose-400 border border-rose-100 dark:border-rose-900/30 flex items-center gap-1.5 text-[10px] font-black uppercase tracking-wider px-3 py-1 rounded-full">
-                      <Activity size={12} /> COH: {app.coherence_score?.toFixed(2)}
-                    </Badge>
-                  )}
-                  {hasCogs && (
-                    <Badge className="bg-purple-50 dark:bg-purple-900/20 text-purple-700 dark:text-purple-400 border border-purple-100 dark:border-purple-900/30 flex items-center gap-1.5 text-[10px] font-black uppercase tracking-wider px-3 py-1 rounded-full">
-                      <Move size={12} /> COGS
-                    </Badge>
-                  )}
+              <div className="flex flex-wrap items-center gap-3 pt-1">
+                {hasBolt && (
+                  <Badge className={cn(
+                    "border-none font-black text-[9px] uppercase tracking-wider px-2 py-0.5 rounded-full flex items-center gap-1.5",
+                    isTodaySession ? "bg-white/10 text-white" : "bg-indigo-50 text-indigo-700"
+                  )}>
+                    <FlaskConical size={10} /> BOLT: {app.bolt_score}s
+                  </Badge>
+                )}
+                {hasCoherence && (
+                  <Badge className={cn(
+                    "border-none font-black text-[9px] uppercase tracking-wider px-2 py-0.5 rounded-full flex items-center gap-1.5",
+                    isTodaySession ? "bg-white/10 text-white" : "bg-rose-50 text-rose-700"
+                  )}>
+                    <Activity size={10} /> COH: {app.coherence_score?.toFixed(2)}
+                  </Badge>
+                )}
+                <div className={cn(
+                  "ml-auto text-[9px] font-black uppercase tracking-widest opacity-40",
+                  isTodaySession ? "text-white" : "text-muted-foreground"
+                )}>
+                  ID: {app.display_id || app.id.slice(0,8)}
                 </div>
-
-                <div className="flex gap-2">
-                  <Button 
-                    size="sm" 
-                    variant="ghost" 
-                    className="h-8 rounded-xl text-slate-400 hover:text-indigo-600 font-black text-[9px] uppercase tracking-widest"
-                    onClick={() => handleCopyFullSummary(app)}
-                  >
-                    <Copy size={12} className="mr-1" /> Copy Summary
-                  </Button>
-                  {isTodaySession && !isCompleted && (
-                    <div className="flex gap-2 animate-in fade-in slide-in-from-right-2 duration-500">
-                      <Button 
-                        size="sm" 
-                        variant="outline" 
-                        className="h-8 rounded-xl border-indigo-100 dark:border-indigo-900/30 text-indigo-600 dark:text-indigo-400 hover:bg-indigo-100 dark:hover:bg-indigo-900/20 font-black text-[9px] uppercase tracking-widest"
-                        onClick={() => setAssessmentModal({ open: true, type: 'bolt', clientId: app.clients.id, clientName: app.clients.name })}
-                      >
-                        <FlaskConical size={12} className="mr-1" /> Log BOLT
-                      </Button>
-                      <Button 
-                        size="sm" 
-                        className="h-8 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-black text-[9px] uppercase tracking-widest"
-                        onClick={() => navigate(`/appointments/${app.id}`)}
-                      >
-                        <Play size={12} className="mr-1 fill-current" /> Start
-                      </Button>
-                    </div>
-                  )}
-                </div>
-              </div>
-            </div>
-
-            <div className="p-8 flex flex-col justify-between items-end border-t sm:border-t-0 sm:border-l border-border bg-muted/30 group-hover:bg-indigo-50/20 dark:group-hover:bg-indigo-900/10 transition-colors">
-              <div className="flex items-center gap-3">
-                <DropdownMenu>
-                  <DropdownMenuTrigger asChild>
-                    <Button 
-                      variant={isCompleted ? 'default' : 'outline'} 
-                      className={cn(
-                        "font-black h-9 text-[10px] uppercase tracking-widest rounded-xl shadow-sm px-4",
-                        isCompleted ? 'bg-emerald-600 hover:bg-emerald-700 border-none text-white' : 'border-border text-muted-foreground bg-card hover:bg-muted'
-                      )}
-                    >
-                      {app.status}
-                      <ChevronDown size={14} className="ml-2 opacity-50" />
-                    </Button>
-                  </DropdownMenuTrigger>
-                  <DropdownMenuContent align="end" className="w-48 rounded-2xl p-2 shadow-2xl border-none bg-card">
-                    {APPOINTMENT_STATUSES.map(status => (
-                      <DropdownMenuItem 
-                        key={status} 
-                        onClick={() => updateStatus(app.id, status)}
-                        className={cn(
-                          "flex items-center justify-between rounded-xl py-2.5 px-4 cursor-pointer",
-                          app.status === status && "bg-indigo-50 dark:bg-indigo-900/20 text-indigo-600 dark:text-indigo-400 font-black"
-                        )}
-                      >
-                        {status}
-                        {app.status === status && <CheckCircle2 size={16} className="text-indigo-600 dark:text-indigo-400" />}
-                      </DropdownMenuItem>
-                    ))}
-                  </DropdownMenuContent>
-                </DropdownMenu>
-
-                <DropdownMenu>
-                  <DropdownMenuTrigger asChild>
-                    <Button variant="ghost" size="icon" className="h-9 w-9 text-muted-foreground hover:text-foreground hover:bg-card rounded-xl transition-all">
-                      <MoreVertical size={18} />
-                    </Button>
-                  </DropdownMenuTrigger>
-                  <DropdownMenuContent align="end" className="rounded-2xl p-2 shadow-2xl border-none bg-card">
-                    <DropdownMenuItem asChild className="rounded-xl py-2.5 px-4 cursor-pointer">
-                      <Link to={`/appointments/${app.id}`} className="flex items-center gap-3">
-                        <ExternalLink size={16} className="text-indigo-500" /> View Details
-                      </Link>
-                    </DropdownMenuItem>
-                    <DropdownMenuItem 
-                      className="rounded-xl py-2.5 px-4 cursor-pointer flex items-center gap-3"
-                      onClick={() => setRescheduleModal({ open: true, appointment: app })}
-                    >
-                      <CalendarClock size={16} className="text-amber-500" /> Reschedule
-                    </DropdownMenuItem>
-                    <DropdownMenuSeparator className="my-2" />
-                    <DropdownMenuItem 
-                      className="text-destructive focus:text-destructive rounded-xl py-2.5 px-4 cursor-pointer flex items-center gap-3"
-                      onClick={() => deleteAppointment(app)}
-                    >
-                      <Trash2 size={16} /> Delete Session
-                    </DropdownMenuItem>
-                  </DropdownMenuContent>
-                </DropdownMenu>
-              </div>
-              
-              <div className="flex flex-col items-end gap-1">
-                <span className="text-[9px] font-black text-muted-foreground uppercase tracking-[0.2em]">
-                  Session ID
-                </span>
-                <span className="text-xs font-bold text-muted-foreground font-mono">
-                  {app.display_id || app.id.slice(0,8)}
-                </span>
               </div>
             </div>
           </div>
@@ -501,8 +471,52 @@ const AppointmentsPage = () => {
 
   return (
     <div className="space-y-10">
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-6">
-        <div className="flex items-center gap-3">
+      {/* Stats Bar */}
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+        {[
+          { label: "Today", value: stats.today, icon: Zap, color: "text-rose-600", bg: "bg-rose-50 dark:bg-rose-950/20" },
+          { label: "This Month", value: stats.month, icon: CalendarIcon, color: "text-indigo-600", bg: "bg-indigo-50 dark:bg-indigo-900/20" },
+          { label: "Scheduled", value: stats.pending, icon: CircleDashed, color: "text-amber-600", bg: "bg-amber-50 dark:bg-amber-950/20" },
+          { label: "Completed", value: stats.completed, icon: CheckCircle2, color: "text-emerald-600", bg: "bg-emerald-50 dark:bg-emerald-950/20" },
+        ].map((stat, i) => (
+          <Card key={i} className="border-none shadow-sm bg-card rounded-2xl overflow-hidden">
+            <CardContent className="p-5 flex items-center gap-4">
+              <div className={cn("w-10 h-10 rounded-xl flex items-center justify-center shrink-0", stat.bg, stat.color)}>
+                <stat.icon size={20} />
+              </div>
+              <div>
+                <p className="text-[10px] font-black text-muted-foreground uppercase tracking-widest">{stat.label}</p>
+                <p className="text-2xl font-black text-foreground">{stat.value}</p>
+              </div>
+            </CardContent>
+          </Card>
+        ))}
+      </div>
+
+      {/* Controls Bar */}
+      <div className="flex flex-col lg:flex-row gap-4 items-center justify-between bg-card p-4 rounded-[2rem] border border-border shadow-sm">
+        <div className="flex flex-col sm:flex-row items-center gap-4 w-full lg:w-auto">
+          <div className="relative w-full sm:w-64">
+            <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground" size={18} />
+            <Input 
+              placeholder="Search sessions..." 
+              className="pl-12 bg-muted/50 border-none h-12 rounded-xl font-medium focus:ring-2 focus:ring-indigo-500"
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+            />
+          </div>
+          
+          <Tabs value={statusFilter} onValueChange={setStatusFilter} className="w-full sm:w-auto">
+            <TabsList className="grid grid-cols-4 h-12 bg-muted p-1 rounded-xl">
+              <TabsTrigger value="all" className="rounded-lg text-[10px] font-black uppercase tracking-widest">All</TabsTrigger>
+              <TabsTrigger value="today" className="rounded-lg text-[10px] font-black uppercase tracking-widest text-rose-600">Today</TabsTrigger>
+              <TabsTrigger value="Scheduled" className="rounded-lg text-[10px] font-black uppercase tracking-widest">Pending</TabsTrigger>
+              <TabsTrigger value="Completed" className="rounded-lg text-[10px] font-black uppercase tracking-widest">Done</TabsTrigger>
+            </TabsList>
+          </Tabs>
+        </div>
+
+        <div className="flex items-center gap-3 w-full lg:w-auto justify-end">
           <Button 
             variant="outline" 
             onClick={handleSyncFromCalcom}
@@ -510,106 +524,31 @@ const AppointmentsPage = () => {
             className="rounded-xl h-12 px-6 font-black text-[10px] uppercase tracking-widest border-indigo-100 text-indigo-600 hover:bg-indigo-50"
           >
             {syncing ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <RefreshCw size={18} className="mr-2" />}
-            Sync from Cal.com
+            Sync Cal.com
           </Button>
-          <div className="flex items-center gap-1 bg-muted p-1 rounded-xl">
-            <Button 
-              variant={viewMode === 'list' ? 'default' : 'ghost'} 
-              size="sm" 
-              onClick={() => setViewMode('list')}
-              className={cn("rounded-lg h-9 px-4 font-bold text-xs uppercase tracking-widest", viewMode === 'list' ? "bg-card text-indigo-600 shadow-sm hover:bg-card" : "text-muted-foreground")}
-            >
-              <List size={16} className="mr-2" /> List
-            </Button>
-            <Button 
-              variant={viewMode === 'calendar' ? 'default' : 'ghost'} 
-              size="sm" 
-              onClick={() => setViewMode('calendar')}
-              className={cn("rounded-lg h-9 px-4 font-bold text-xs uppercase tracking-widest", viewMode === 'calendar' ? "bg-card text-indigo-600 shadow-sm hover:bg-card" : "text-muted-foreground")}
-            >
-              <LayoutGrid size={16} className="mr-2" /> Calendar
-            </Button>
-          </div>
+          
           <Dialog open={open} onOpenChange={setOpen}>
             <DialogTrigger asChild>
-              <Button className="bg-indigo-600 hover:bg-indigo-700 shadow-xl shadow-indigo-100 dark:shadow-indigo-900/20 rounded-2xl h-12 px-8 font-black text-xs uppercase tracking-widest">
-                <Plus size={20} className="mr-2" /> New Appointment
+              <Button className="bg-indigo-600 hover:bg-indigo-700 shadow-xl shadow-indigo-100 dark:shadow-indigo-900/20 rounded-xl h-12 px-8 font-black text-xs uppercase tracking-widest">
+                <Plus size={20} className="mr-2" /> New Session
               </Button>
             </DialogTrigger>
-            <DialogContent className="sm:max-w-[500px] max-h-[90vh] overflow-y-auto rounded-[2rem]">
-              <DialogHeader>
-                <DialogTitle className="text-2xl font-black">Schedule New Appointment</DialogTitle>
-                <DialogDescription>Create a new session for an existing client.</DialogDescription>
-              </DialogHeader>
-              <AppointmentForm 
-                onSuccess={() => {
-                  setOpen(false);
-                  fetchAppointments(displayLimit);
-                }} 
-              />
+            <DialogContent className="sm:max-w-[500px] max-h-[90vh] overflow-y-auto rounded-[2.5rem] p-0">
+              <div className="p-8">
+                <DialogHeader className="mb-6">
+                  <DialogTitle className="text-2xl font-black">Schedule New Session</DialogTitle>
+                  <DialogDescription className="font-medium">Create a new appointment for an existing client.</DialogDescription>
+                </DialogHeader>
+                <AppointmentForm 
+                  onSuccess={() => {
+                    setOpen(false);
+                    fetchAppointments(displayLimit);
+                  }} 
+                />
+              </div>
             </DialogContent>
           </Dialog>
         </div>
-      </div>
-
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-        <Card className="border-none shadow-sm bg-card rounded-2xl p-4 flex items-center gap-4">
-          <div className="w-10 h-10 rounded-xl bg-rose-50 dark:bg-rose-900/20 text-rose-600 dark:text-rose-400 flex items-center justify-center">
-            <Zap size={20} className="fill-current" />
-          </div>
-          <div>
-            <p className="text-[10px] font-black text-muted-foreground uppercase tracking-widest">Today</p>
-            <p className="text-xl font-black text-foreground">{stats.today}</p>
-          </div>
-        </Card>
-        <Card className="border-none shadow-sm bg-card rounded-2xl p-4 flex items-center gap-4">
-          <div className="w-10 h-10 rounded-xl bg-indigo-50 dark:bg-indigo-900/20 text-indigo-600 dark:text-indigo-400 flex items-center justify-center">
-            <CalendarDays size={20} />
-          </div>
-          <div>
-            <p className="text-[10px] font-black text-muted-foreground uppercase tracking-widest">This Month</p>
-            <p className="text-xl font-black text-foreground">{stats.month}</p>
-          </div>
-        </Card>
-        <Card className="border-none shadow-sm bg-card rounded-2xl p-4 flex items-center gap-4">
-          <div className="w-10 h-10 rounded-xl bg-amber-50 dark:bg-amber-900/20 text-amber-600 dark:text-amber-400 flex items-center justify-center">
-            <CircleDashed size={20} />
-          </div>
-          <div>
-            <p className="text-[10px] font-black text-muted-foreground uppercase tracking-widest">Scheduled</p>
-            <p className="text-xl font-black text-foreground">{stats.pending}</p>
-          </div>
-        </Card>
-        <Card className="border-none shadow-sm bg-card rounded-2xl p-4 flex items-center gap-4">
-          <div className="w-10 h-10 rounded-xl bg-emerald-50 dark:bg-emerald-900/20 text-emerald-600 dark:text-emerald-400 flex items-center justify-center">
-            <CheckCircle size={20} />
-          </div>
-          <div>
-            <p className="text-[10px] font-black text-muted-foreground uppercase tracking-widest">Completed</p>
-            <p className="text-xl font-black text-foreground">{stats.completed}</p>
-          </div>
-        </Card>
-      </div>
-
-      <div className="flex flex-col md:flex-row gap-4 items-center justify-between">
-        <div className="relative w-full max-w-md">
-          <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground" size={18} />
-          <Input 
-            placeholder="Search by client name or tag..." 
-            className="pl-12 bg-card border-border h-12 rounded-2xl shadow-sm font-medium focus:ring-2 focus:ring-indigo-500"
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-          />
-        </div>
-        
-        <Tabs value={statusFilter} onValueChange={setStatusFilter} className="w-full md:w-auto">
-          <TabsList className="grid grid-cols-4 h-12 bg-muted p-1 rounded-xl">
-            <TabsTrigger value="all" className="rounded-lg text-[10px] font-black uppercase tracking-widest">All</TabsTrigger>
-            <TabsTrigger value="today" className="rounded-lg text-[10px] font-black uppercase tracking-widest text-rose-600">Today</TabsTrigger>
-            <TabsTrigger value="Scheduled" className="rounded-lg text-[10px] font-black uppercase tracking-widest">Scheduled</TabsTrigger>
-            <TabsTrigger value="Completed" className="rounded-lg text-[10px] font-black uppercase tracking-widest">Completed</TabsTrigger>
-          </TabsList>
-        </Tabs>
       </div>
 
       {loading ? (
@@ -617,8 +556,6 @@ const AppointmentsPage = () => {
           <Loader2 className="animate-spin text-indigo-500" size={48} />
           <p className="text-muted-foreground font-bold uppercase tracking-widest text-xs">Loading your schedule...</p>
         </div>
-      ) : viewMode === 'calendar' ? (
-        <CalendarView appointments={filteredAppointments} />
       ) : (
         <div className="space-y-16">
           {todaySessions.length > 0 && (
@@ -630,7 +567,7 @@ const AppointmentsPage = () => {
                 <h2 className="text-2xl font-black text-foreground tracking-tight">Today's Sessions</h2>
                 <div className="flex-1 h-[2px] bg-rose-100 dark:bg-rose-900/30 rounded-full opacity-50" />
               </div>
-              <div className="grid gap-6">
+              <div className="grid gap-4">
                 {todaySessions.map(app => <AppointmentCard key={app.id} app={app} />)}
               </div>
             </div>
@@ -645,7 +582,7 @@ const AppointmentsPage = () => {
                 <h2 className="text-2xl font-black text-foreground tracking-tight">{month}</h2>
                 <div className="flex-1 h-[2px] bg-border rounded-full opacity-50" />
               </div>
-              <div className="grid gap-6">
+              <div className="grid gap-4">
                 {apps.map(app => <AppointmentCard key={app.id} app={app} />)}
               </div>
             </div>

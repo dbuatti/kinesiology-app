@@ -5,7 +5,6 @@ import {
   Users, 
   Calendar, 
   LayoutDashboard, 
-  Target, 
   LogOut, 
   HelpCircle, 
   Zap, 
@@ -13,9 +12,6 @@ import {
   Heart, 
   TrendingUp,
   ArrowRight,
-  Settings,
-  ShieldCheck,
-  ShieldAlert,
   PanelLeftClose,
   Compass,
   ChevronDown,
@@ -24,17 +20,11 @@ import {
   Clock,
   Eye,
   EyeOff,
-  Lock,
-  FileText,
+  ShieldCheck,
   Briefcase,
-  CalendarDays,
   Mic,
-  ExternalLink,
   GraduationCap,
-  Fingerprint,
-  LayoutGrid,
   MessageSquare,
-  Brain,
   Sun,
   Trophy,
   Layers,
@@ -44,7 +34,7 @@ import { cn } from "@/lib/utils";
 import SearchBar from "./SearchBar";
 import { supabase } from "@/integrations/supabase/client";
 import { showSuccess } from "@/utils/toast";
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import HelpModal from "./HelpModal";
 import { useRecentClients } from "@/hooks/use-recent-clients";
 import { useActiveSession } from "@/hooks/useActiveSession";
@@ -64,7 +54,6 @@ import { Progress } from "@/components/ui/progress";
 import {
   Tooltip,
   TooltipContent,
-  TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import { ModeToggle } from "./ModeToggle";
@@ -85,36 +74,33 @@ const Sidebar = ({ onHide }: SidebarProps) => {
   const [clinicalOpen, setClinicalOpen] = useState(true);
   const [labOpen, setLabOpen] = useState(true);
   const [libraryOpen, setLibraryOpen] = useState(true);
-  const [growthOpen, setGrowthOpen] = useState(true);
 
   const activeSession = useActiveSession();
   const { practiceHealth } = usePracticeStats();
   const { recentClients } = useRecentClients();
 
   const clinicalItems = [
-    { label: "Dashboard", icon: LayoutDashboard, path: "/", shortcut: "⌘D" },
-    { label: "Schedule", icon: Calendar, path: "/schedule", shortcut: "⌘2" },
-    { label: "Clients", icon: Users, path: "/clients", shortcut: "⌘1" },
-    { label: "Oversight", icon: TrendingUp, path: "/oversight", shortcut: "⌘O" },
+    { label: "Dashboard", icon: LayoutDashboard, path: "/" },
+    { label: "Schedule", icon: Calendar, path: "/schedule" },
+    { label: "Clients", icon: Users, path: "/clients" },
+    { label: "Oversight", icon: TrendingUp, path: "/oversight" },
     { label: "Business Hub", icon: Briefcase, path: "/business" },
     { label: "Marketing Engine", icon: Mic, path: "/business/marketing-engine" },
   ];
 
   const labItems = [
-    { label: "Dashboard", icon: LayoutDashboard, path: "/" },
     { label: "Morning Program", icon: Sun, path: "/morning-program" },
-    { label: "Journal", icon: MessageSquare, path: "/practice/journal", shortcut: "⌘R" },
-    { label: "The Lab", icon: Compass, path: "/lab", shortcut: "⌘S" },
+    { label: "Journal", icon: MessageSquare, path: "/practice/journal" },
+    { label: "The Lab", icon: Compass, path: "/lab" },
     { label: "Self Practice", icon: Heart, path: "/practice/self" },
   ];
 
   const libraryItems = [
-    { label: "Dashboard", icon: LayoutDashboard, path: "/" },
     { label: "Clinical Bible", icon: BookOpen, path: "/resources" },
     { label: "PEACE Framework", icon: ShieldCheck, path: "/peace-framework" },
-    { label: "Mastery Tracker", icon: Trophy, path: "/practice/procedures", shortcut: "⌘P" },
-    { label: "Knowledge Quiz", icon: GraduationCap, path: "/practice/quiz", shortcut: "⌘K" },
-    { label: "Quick Calibrate", icon: Zap, path: "/practice/calibrate", shortcut: "⌘Q" },
+    { label: "Mastery Tracker", icon: Trophy, path: "/practice/procedures" },
+    { label: "Knowledge Quiz", icon: GraduationCap, path: "/practice/quiz" },
+    { label: "Quick Calibrate", icon: Zap, path: "/practice/calibrate" },
   ];
 
   const handleSignOut = async () => {
@@ -127,72 +113,41 @@ const Sidebar = ({ onHide }: SidebarProps) => {
     }
   };
 
-  const NavItem = ({ item, tooltip = true }: { item: any, tooltip?: boolean }) => {
-    const isActive = !item.isExternal && (location.pathname === item.path || (item.path !== "/" && location.pathname.startsWith(item.path)));
+  const NavItem = ({ item }: { item: any }) => {
+    const isActive = location.pathname === item.path || (item.path !== "/" && location.pathname.startsWith(item.path));
     
-    const className = cn(
-      "flex items-center justify-between gap-2 px-3 py-2 rounded-xl transition-all duration-300 group",
-      isActive
-        ? "bg-primary/5 text-primary"
-        : "text-muted-foreground hover:text-primary hover:bg-secondary/50"
-    );
-
-    const content = (
-      <>
-        <div className="flex items-center gap-3">
-          <item.icon size={16} className={cn("transition-all duration-300", isActive ? "text-primary" : "text-muted-foreground group-hover:text-primary")} />
-          <span className={cn("font-bold text-[10px] uppercase tracking-widest", isActive ? "text-primary" : "")}>{item.label}</span>
-        </div>
-        {item.shortcut && (
-          <kbd className={cn(
-            "hidden xl:inline-flex h-4 select-none items-center gap-1 rounded border px-1 font-mono text-[8px] font-black opacity-0 group-hover:opacity-100 transition-all duration-300",
-            isActive ? "border-primary/20 bg-primary/5 text-primary" : "border-border bg-muted text-muted-foreground"
-          )}>
-            {item.shortcut}
-          </kbd>
-        )}
-      </>
-    );
-
-    const linkContent = item.isExternal ? (
-      <a href={item.path} target="_blank" rel="noopener noreferrer" className={className}>
-        {content}
-      </a>
-    ) : (
-      <Link to={item.path} className={className}>
-        {content}
-      </Link>
-    );
-
-    if (!tooltip) return linkContent;
-
     return (
-      <Tooltip>
-        <TooltipTrigger asChild>
-          {linkContent}
-        </TooltipTrigger>
-        <TooltipContent side="right" className="rounded-xl font-bold text-xs">
-          <p>{item.label}</p>
-          {item.shortcut && <p className="text-[10px] text-slate-400 mt-1">{item.shortcut}</p>}
-        </TooltipContent>
-      </Tooltip>
+      <Link
+        to={item.path}
+        className={cn(
+          "flex items-center justify-between gap-3 px-3 py-2 rounded-lg transition-all duration-200 group",
+          isActive
+            ? "bg-slate-900 text-white shadow-sm"
+            : "text-slate-500 hover:text-slate-900 hover:bg-slate-100 dark:text-slate-400 dark:hover:text-white dark:hover:bg-slate-900"
+        )}
+      >
+        <div className="flex items-center gap-3">
+          <item.icon size={16} className={cn("transition-all", isActive ? "text-indigo-400" : "group-hover:text-indigo-600")} />
+          <span className="font-bold text-[10px] uppercase tracking-widest">{item.label}</span>
+        </div>
+      </Link>
     );
   };
 
   const NavGroup = ({ title, icon: Icon, isOpen, onToggle, items }: any) => (
-    <div className="space-y-0.5">
+    <div className="space-y-1">
       <button
         onClick={onToggle}
-        className="flex items-center justify-between w-full px-3 py-2 rounded-xl text-muted-foreground hover:text-primary hover:bg-secondary/30 transition-all group"
+        className="flex items-center justify-between w-full px-3 py-2 rounded-lg text-slate-400 hover:text-slate-900 dark:hover:text-white transition-all group"
       >
         <div className="flex items-center gap-3">
-          <Icon size={16} className="text-muted-foreground group-hover:text-primary" />
-          <span className={cn("text-[9px] font-black uppercase tracking-[0.2em]", isOpen ? "text-primary" : "")}>{title}</span>
+          <Icon size={16} />
+          <span className="text-[9px] font-black uppercase tracking-[0.2em]">{title}</span>
         </div>
-        {isOpen ? <ChevronUp size={12} className="opacity-50" /> : <ChevronDown size={12} className="opacity-50" />}
+        {isOpen ? <ChevronUp size={12} /> : <ChevronDown size={12} />}
       </button>
       {isOpen && (
-        <div className="space-y-0.5 pl-1 animate-in fade-in slide-in-from-top-1 duration-300">
+        <div className="space-y-0.5 pl-1 animate-in fade-in slide-in-from-top-1 duration-200">
           {items.map((item: any) => (
             <NavItem key={item.path} item={item} />
           ))}
@@ -201,74 +156,57 @@ const Sidebar = ({ onHide }: SidebarProps) => {
     </div>
   );
 
-  const ModeSwitcher = () => (
-    <div className="bg-muted/50 p-1 rounded-2xl flex gap-1 border border-border">
-      {(['clinical', 'lab', 'library'] as AppMode[]).map((m) => (
-        <button
-          key={m}
-          onClick={() => setMode(m)}
-          className={cn(
-            "flex-1 flex flex-col items-center justify-center py-2 rounded-xl transition-all duration-300",
-            mode === m 
-              ? "bg-white dark:bg-slate-900 shadow-sm text-indigo-600" 
-              : "text-slate-400 hover:text-slate-600"
-          )}
-        >
-          {m === 'clinical' && <Activity size={14} />}
-          {m === 'lab' && <Zap size={14} />}
-          {m === 'library' && <BookOpen size={14} />}
-          <span className="text-[7px] font-black uppercase tracking-widest mt-1">{m}</span>
-        </button>
-      ))}
-    </div>
-  );
-
   return (
-    <div className="hidden lg:flex w-64 bg-white dark:bg-slate-950 text-foreground min-h-screen p-4 flex-col gap-6 sticky top-0 h-screen overflow-y-auto border-r border-secondary/30 shadow-sm z-[60]">
+    <div className="hidden lg:flex w-64 bg-white dark:bg-slate-950 text-foreground min-h-screen p-4 flex-col gap-6 sticky top-0 h-screen overflow-y-auto border-r border-slate-200 dark:border-slate-900 z-[60]">
       <div className="flex items-center justify-between px-2 py-2">
         <div className="flex items-center gap-3">
-          <div className="w-9 h-9 bg-primary rounded-xl flex items-center justify-center font-black text-lg text-white shadow-lg shadow-primary/10 transition-transform hover:scale-105">✦</div>
+          <div className="w-8 h-8 bg-slate-900 rounded-lg flex items-center justify-center font-black text-sm text-white">A</div>
           <div>
-            <h1 className="text-base font-serif font-bold tracking-tight leading-none">Resonance</h1>
-            <p className="text-[7px] text-muted-foreground uppercase font-black tracking-[0.2em] mt-1">Clinical CRM</p>
+            <h1 className="text-sm font-serif font-bold tracking-tight leading-none">Resonance</h1>
+            <p className="text-[7px] text-slate-400 uppercase font-black tracking-[0.2em] mt-1">Clinical CRM</p>
           </div>
         </div>
-        <Tooltip>
-          <TooltipTrigger asChild>
-            <button 
-              onClick={onHide}
-              className="text-muted-foreground hover:text-primary hover:bg-secondary rounded-xl h-8 w-8 flex items-center justify-center transition-colors"
-            >
-              <PanelLeftClose size={16} />
-            </button>
-          </TooltipTrigger>
-          <TooltipContent side="right" className="rounded-xl font-bold text-xs">
-            <p>Hide Sidebar</p>
-            <p className="text-[10px] text-slate-400 mt-1">⌘[</p>
-          </TooltipContent>
-        </Tooltip>
+        <button 
+          onClick={onHide}
+          className="text-slate-400 hover:text-slate-900 dark:hover:text-white rounded-lg h-8 w-8 flex items-center justify-center transition-colors"
+        >
+          <PanelLeftClose size={16} />
+        </button>
       </div>
 
       <div className="px-1 space-y-4">
-        <ModeSwitcher />
+        <div className="bg-slate-50 dark:bg-slate-900 p-1 rounded-xl flex gap-1 border border-slate-100 dark:border-slate-800">
+          {(['clinical', 'lab', 'library'] as AppMode[]).map((m) => (
+            <button
+              key={m}
+              onClick={() => setMode(m)}
+              className={cn(
+                "flex-1 flex flex-col items-center justify-center py-2 rounded-lg transition-all duration-200",
+                mode === m 
+                  ? "bg-white dark:bg-slate-800 shadow-sm text-indigo-600" 
+                  : "text-slate-400 hover:text-slate-600"
+              )}
+            >
+              <span className="text-[7px] font-black uppercase tracking-widest">{m}</span>
+            </button>
+          ))}
+        </div>
         <SearchBar />
       </div>
 
-      {mode === 'clinical' && (
-        <div className="px-1">
-          <Button 
-            onClick={() => setAppDialogOpen(true)}
-            className="w-full justify-center bg-accent hover:bg-accent/90 text-white rounded-xl h-11 font-black text-[10px] uppercase tracking-[0.2em] shadow-lg shadow-accent/10 group"
-          >
-            <PlusCircle size={16} className="mr-2 group-hover:rotate-90 transition-transform duration-500" /> 
-            Book Session
-          </Button>
-        </div>
-      )}
+      <div className="px-1">
+        <Button 
+          onClick={() => setAppDialogOpen(true)}
+          className="w-full justify-center bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl h-10 font-black text-[10px] uppercase tracking-[0.2em] shadow-md shadow-indigo-500/10"
+        >
+          <PlusCircle size={14} className="mr-2" /> 
+          Book Session
+        </Button>
+      </div>
       
       <div className="space-y-4 flex-1">
         {mode === 'clinical' && (
-          <NavGroup title="Clinical Operations" icon={LayoutDashboard} isOpen={clinicalOpen} onToggle={() => setClinicalOpen(!clinicalOpen)} items={clinicalItems} />
+          <NavGroup title="Operations" icon={LayoutDashboard} isOpen={clinicalOpen} onToggle={() => setClinicalOpen(!clinicalOpen)} items={clinicalItems} />
         )}
         
         {mode === 'lab' && (
@@ -276,109 +214,62 @@ const Sidebar = ({ onHide }: SidebarProps) => {
         )}
 
         {mode === 'library' && (
-          <NavGroup title="Clinical Library" icon={BookOpen} isOpen={libraryOpen} onToggle={() => setLibraryOpen(!libraryOpen)} items={libraryItems} />
+          <NavGroup title="Library" icon={BookOpen} isOpen={libraryOpen} onToggle={() => setLibraryOpen(!libraryOpen)} items={libraryItems} />
         )}
 
-        {activeSession && mode === 'clinical' && (
+        {activeSession && (
           <div className="px-1 pt-2">
             <Link 
               to={`/appointments/${activeSession.id}`}
-              className="flex items-center gap-3 px-4 py-3 bg-primary rounded-2xl text-white shadow-lg shadow-primary/10 hover:bg-primary/90 transition-all duration-500 group relative overflow-hidden"
+              className="flex items-center gap-3 px-4 py-3 bg-slate-900 rounded-xl text-white shadow-lg hover:bg-slate-800 transition-all group"
             >
-              <div className="absolute inset-0 bg-white/5 animate-pulse" />
-              <div className="relative z-10 flex items-center gap-3">
-                <div className="relative">
-                  <div className="w-8 h-8 bg-white/10 rounded-lg flex items-center justify-center">
-                    <Zap size={16} className="fill-white" />
-                  </div>
-                  <span className="absolute -top-0.5 -right-0.5 w-2 h-2 bg-white rounded-full animate-ping" />
-                </div>
-                <div className="flex flex-col min-w-0">
-                  <span className="text-[8px] font-black uppercase tracking-0.2em opacity-80 truncate">{activeSession.clientName}</span>
-                  <span className="text-[10px] font-black">{activeSession.stage}</span>
-                </div>
+              <div className="relative">
+                <Zap size={14} className="text-indigo-400 fill-indigo-400" />
+                <span className="absolute -top-1 -right-1 w-2 h-2 bg-rose-500 rounded-full animate-pulse" />
               </div>
-              <ArrowRight size={14} className="ml-auto group-hover:translate-x-1 transition-transform shrink-0" />
+              <div className="flex flex-col min-w-0">
+                <span className="text-[8px] font-black uppercase tracking-widest opacity-60 truncate">{activeSession.clientName}</span>
+                <span className="text-[10px] font-bold">{activeSession.stage}</span>
+              </div>
+              <ArrowRight size={12} className="ml-auto group-hover:translate-x-1 transition-transform" />
             </Link>
           </div>
         )}
 
-        {mode === 'clinical' && (
-          <div className="px-4 py-3 bg-secondary/30 rounded-2xl border border-secondary/30 mx-1 space-y-2">
-            <div className="flex items-center justify-between">
-              <p className="text-[8px] font-black text-muted-foreground uppercase tracking-[0.2em] flex items-center gap-2">
-                <ShieldCheck size={10} className="text-emerald-500" /> Health
-              </p>
-              <span className="text-[9px] font-black text-emerald-500">{practiceHealth}%</span>
-            </div>
-            <Progress value={practiceHealth} className="h-1 bg-white/50 [&>div]:bg-emerald-500" />
+        <div className="px-4 py-3 bg-slate-50 dark:bg-slate-900 rounded-xl border border-slate-100 dark:border-slate-800 mx-1 space-y-2">
+          <div className="flex items-center justify-between">
+            <p className="text-[8px] font-black text-slate-400 uppercase tracking-widest">Practice Health</p>
+            <span className="text-[9px] font-black text-emerald-600">{practiceHealth}%</span>
           </div>
-        )}
-
-        {recentClients.length > 0 && mode === 'clinical' && (
-          <div className="px-1 space-y-1">
-            <div className="px-3">
-              <p className="text-[8px] font-black text-muted-foreground uppercase tracking-[0.3em] flex items-center gap-2">
-                <Clock size={10} /> Recent
-              </p>
-            </div>
-            <div className="flex flex-col gap-0.5">
-              {recentClients.map(client => (
-                <Link 
-                  key={client.id} 
-                  to={`/clients/${client.id}`}
-                  className="flex items-center gap-3 text-xs text-muted-foreground hover:text-primary transition-all duration-300 py-1.5 px-3 rounded-xl hover:bg-secondary/50 truncate group"
-                >
-                  <div className="w-6 h-6 rounded-lg bg-secondary/50 border border-border flex items-center justify-center text-[8px] font-black group-hover:border-primary/40 transition-all">
-                    {client.name.charAt(0)}
-                  </div>
-                  <span className="truncate font-bold text-[10px]">{client.name}</span>
-                </Link>
-              ))}
-            </div>
-          </div>
-        )}
+          <Progress value={practiceHealth} className="h-1 bg-slate-200 dark:bg-slate-800 [&>div]:bg-emerald-500" />
+        </div>
       </div>
       
-      <div className="mt-auto pt-4 border-t border-border space-y-1">
+      <div className="mt-auto pt-4 border-t border-slate-100 dark:border-slate-900 space-y-1">
         <div className="flex items-center justify-between px-3 mb-2">
           <ModeToggle />
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <button 
-                onClick={togglePrivacy}
-                className={cn(
-                  "flex items-center justify-center h-9 w-9 rounded-xl transition-all duration-300 group",
-                  isPrivate ? "bg-rose-50 text-white shadow-lg shadow-rose-500/10" : "text-muted-foreground hover:text-primary hover:bg-secondary"
-                )}
-              >
-                {isPrivate ? <EyeOff size={18} /> : <Eye size={18} />}
-              </button>
-            </TooltipTrigger>
-            <TooltipContent side="right" className="rounded-xl font-bold text-xs">
-              <p>{isPrivate ? "Disable Privacy Mode" : "Enable Privacy Mode"}</p>
-            </TooltipContent>
-          </Tooltip>
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <button 
-                onClick={() => setHelpOpen(true)}
-                className="flex items-center justify-center h-9 w-9 rounded-xl text-muted-foreground hover:text-primary hover:bg-secondary transition-all duration-300 group"
-              >
-                <HelpCircle size={18} className="group-hover:text-amber-400 transition-colors" />
-              </button>
-            </TooltipTrigger>
-            <TooltipContent side="right" className="rounded-xl font-bold text-xs">
-              <p>Help & Shortcuts</p>
-            </TooltipContent>
-          </Tooltip>
+          <button 
+            onClick={togglePrivacy}
+            className={cn(
+              "flex items-center justify-center h-8 w-8 rounded-lg transition-all",
+              isPrivate ? "bg-rose-50 text-rose-600" : "text-slate-400 hover:text-slate-900 dark:hover:text-white"
+            )}
+          >
+            {isPrivate ? <EyeOff size={16} /> : <Eye size={16} />}
+          </button>
+          <button 
+            onClick={() => setHelpOpen(true)}
+            className="flex items-center justify-center h-8 w-8 rounded-lg text-slate-400 hover:text-slate-900 dark:hover:text-white transition-all"
+          >
+            <HelpCircle size={16} />
+          </button>
         </div>
 
         <div 
           onClick={handleSignOut}
-          className="flex items-center gap-3 px-3 py-2 rounded-xl text-muted-foreground hover:text-rose-500 hover:bg-secondary transition-all duration-300 cursor-pointer group"
+          className="flex items-center gap-3 px-3 py-2 rounded-lg text-slate-400 hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-900/20 transition-all cursor-pointer group"
         >
-          <LogOut size={16} className="group-hover:text-rose-500 transition-colors" />
+          <LogOut size={14} />
           <span className="font-bold text-[9px] uppercase tracking-widest">Sign Out</span>
         </div>
       </div>
@@ -386,7 +277,7 @@ const Sidebar = ({ onHide }: SidebarProps) => {
       <HelpModal open={helpOpen} onOpenChange={setHelpOpen} />
       
       <Dialog open={clientDialogOpen} onOpenChange={setClientDialogOpen}>
-        <DialogContent className="sm:max-w-[550px] rounded-[2rem] p-8">
+        <DialogContent className="sm:max-w-[550px] rounded-2xl p-8">
           <DialogHeader className="mb-4">
             <DialogTitle className="text-xl font-black tracking-tight">Add New Client</DialogTitle>
           </DialogHeader>
@@ -395,7 +286,7 @@ const Sidebar = ({ onHide }: SidebarProps) => {
       </Dialog>
 
       <Dialog open={appDialogOpen} onOpenChange={setAppDialogOpen}>
-        <DialogContent className="sm:max-w-[500px] rounded-[2rem] p-8">
+        <DialogContent className="sm:max-w-[500px] rounded-2xl p-8">
           <DialogHeader className="mb-4">
             <DialogTitle className="text-xl font-black tracking-tight">Schedule New Session</DialogTitle>
           </DialogHeader>

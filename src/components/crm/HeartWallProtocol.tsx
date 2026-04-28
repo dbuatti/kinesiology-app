@@ -15,7 +15,9 @@ import {
   RefreshCw,
   ChevronDown,
   ChevronUp,
-  MousePointer2
+  MousePointer2,
+  Hand,
+  ImageIcon
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Badge } from '@/components/ui/badge';
@@ -86,39 +88,84 @@ const HeartWallProtocol = () => {
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
-        {/* Left: Steps List */}
-        <div className="lg:col-span-5 space-y-4">
-          {STEPS.map((step) => (
-            <div 
-              key={step.id} 
-              className={cn(
-                "p-5 rounded-2xl border transition-all group",
-                step.id === 4 ? "border-rose-200 bg-rose-50/30 shadow-sm" : "border-slate-100 bg-white"
-              )}
-            >
-              <div className="flex items-start gap-6">
-                <div className={cn(
-                  "w-10 h-10 rounded-xl flex items-center justify-center shrink-0 font-black text-sm shadow-sm transition-transform group-hover:scale-105",
-                  step.bg, step.color
-                )}>
-                  {step.id}
-                </div>
-                <div className="space-y-2 flex-1">
-                  <div className="flex items-center gap-3">
-                    <h4 className="font-serif font-bold text-xl text-slate-900">
-                      {step.title}
-                    </h4>
-                    <Badge variant="outline" className="border-slate-100 text-slate-400 font-black text-[7px] uppercase tracking-widest px-1.5 py-0 rounded-none">
-                      Step {step.id}
-                    </Badge>
+        {/* Left: Steps & Visual References */}
+        <div className="lg:col-span-5 space-y-6">
+          <div className="space-y-4">
+            {STEPS.map((step) => (
+              <div 
+                key={step.id} 
+                className={cn(
+                  "p-5 rounded-2xl border transition-all group",
+                  step.id === 4 ? "border-rose-200 bg-rose-50/30 shadow-sm" : "border-slate-100 bg-white"
+                )}
+              >
+                <div className="flex items-start gap-6">
+                  <div className={cn(
+                    "w-10 h-10 rounded-xl flex items-center justify-center shrink-0 font-black text-sm shadow-sm transition-transform group-hover:scale-105",
+                    step.bg, step.color
+                  )}>
+                    {step.id}
                   </div>
-                  <p className="text-sm text-slate-600 leading-relaxed font-medium">
-                    {step.desc}
-                  </p>
+                  <div className="space-y-2 flex-1">
+                    <div className="flex items-center gap-3">
+                      <h4 className="font-serif font-bold text-xl text-slate-900">
+                        {step.title}
+                      </h4>
+                      <Badge variant="outline" className="border-slate-100 text-slate-400 font-black text-[7px] uppercase tracking-widest px-1.5 py-0 rounded-none">
+                        Step {step.id}
+                      </Badge>
+                    </div>
+                    <p className="text-sm text-slate-600 leading-relaxed font-medium">
+                      {step.desc}
+                    </p>
+                  </div>
                 </div>
               </div>
-            </div>
-          ))}
+            ))}
+          </div>
+
+          {/* Pulse Points Reference Card */}
+          <Card className="border-none shadow-xl rounded-[2.5rem] bg-white overflow-hidden border-2 border-indigo-100">
+            <CardHeader className="bg-indigo-600 p-6 text-white">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-xl bg-white/20 flex items-center justify-center shadow-inner">
+                  <Hand size={20} />
+                </div>
+                <div>
+                  <CardTitle className="text-lg font-black">Organ Pulse Points</CardTitle>
+                  <p className="text-indigo-200 text-[10px] font-bold uppercase tracking-widest">TCM Diagnostic Reference</p>
+                </div>
+              </div>
+            </CardHeader>
+            <CardContent className="p-6">
+              <div className="aspect-square rounded-2xl overflow-hidden bg-slate-50 border border-slate-100 shadow-inner flex items-center justify-center p-4">
+                <img 
+                  src="/images/pulse-points.png" 
+                  alt="Organ Pulse Points Reference" 
+                  className="max-w-full h-auto rounded-lg"
+                  onError={(e) => {
+                    e.currentTarget.style.display = 'none';
+                    const parent = e.currentTarget.parentElement;
+                    if (parent) {
+                      const placeholder = document.createElement('div');
+                      placeholder.className = "flex flex-col items-center text-slate-300 gap-2";
+                      placeholder.innerHTML = '<ImageIcon size={48} /><p class="text-[10px] font-black uppercase tracking-widest">Pulse Points Diagram</p>';
+                      parent.appendChild(placeholder);
+                    }
+                  }}
+                />
+              </div>
+              <div className="mt-6 p-4 bg-indigo-50 rounded-2xl border border-indigo-100">
+                <div className="flex items-center gap-2 mb-2">
+                  <Info size={14} className="text-indigo-600" />
+                  <span className="text-[10px] font-black text-indigo-600 uppercase tracking-widest">Clinical Tip</span>
+                </div>
+                <p className="text-xs text-indigo-900 font-medium leading-relaxed">
+                  Use these points to verify the organ association for each row. Hold the point while testing the indicator muscle to confirm the priority "emotional brick".
+                </p>
+              </div>
+            </CardContent>
+          </Card>
 
           <Card className="border-none shadow-xl rounded-[2.5rem] bg-slate-900 text-white overflow-hidden">
             <CardHeader className="p-6 pb-2">

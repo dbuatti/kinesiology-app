@@ -14,7 +14,7 @@ export default {
       center: true,
       padding: "2rem",
       screens: {
-        "2xl": "1280px",
+        "2xl": "1024px",
       },
     },
     extend: {
@@ -54,13 +54,13 @@ export default {
         },
       },
       borderRadius: {
-        lg: "0.5rem", // 8px - Strict reduction
-        md: "0.375rem", // 6px
-        sm: "0.25rem", // 4px
+        lg: "0.5rem", // 8px - Containers
+        md: "0.375rem", // 6px - Components
+        sm: "0.25rem", // 4px - Small elements
       },
       boxShadow: {
         'sm': '0 1px 2px 0 rgba(0, 0, 0, 0.05)',
-        'md': '0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px -1px rgba(0, 0, 0, 0.1)',
+        'md': '0 1px 3px 0 rgba(0, 0, 0, 0.1)',
       },
     },
   },

@@ -115,14 +115,14 @@ const Sidebar = ({ onHide }: SidebarProps) => {
       <Link
         to={item.path}
         className={cn(
-          "flex items-center justify-between gap-3 px-3 py-2 rounded-lg transition-all duration-200 group",
+          "flex items-center justify-between gap-3 px-3 py-2 rounded-md transition-all duration-200 group",
           isActive
             ? "bg-slate-900 text-white shadow-sm"
             : "text-slate-500 hover:text-slate-900 hover:bg-slate-100 dark:text-slate-400 dark:hover:text-white dark:hover:bg-slate-900"
         )}
       >
         <div className="flex items-center gap-3">
-          <item.icon size={16} className={cn("transition-all", isActive ? "text-indigo-400" : "group-hover:text-indigo-600")} />
+          <item.icon size={14} className={cn("transition-all", isActive ? "text-indigo-400" : "group-hover:text-indigo-600")} />
           <span className="font-bold text-[10px] uppercase tracking-widest">{item.label}</span>
         </div>
       </Link>
@@ -133,13 +133,13 @@ const Sidebar = ({ onHide }: SidebarProps) => {
     <div className="space-y-1">
       <button
         onClick={onToggle}
-        className="flex items-center justify-between w-full px-3 py-2 rounded-lg text-slate-400 hover:text-slate-900 dark:hover:text-white transition-all group"
+        className="flex items-center justify-between w-full px-3 py-2 rounded-md text-slate-400 hover:text-slate-900 dark:hover:text-white transition-all group"
       >
         <div className="flex items-center gap-3">
-          <Icon size={16} />
+          <Icon size={14} />
           <span className="text-[9px] font-black uppercase tracking-[0.2em]">{title}</span>
         </div>
-        {isOpen ? <ChevronUp size={12} /> : <ChevronDown size={12} />}
+        {isOpen ? <ChevronUp size={10} /> : <ChevronDown size={10} />}
       </button>
       {isOpen && (
         <div className="space-y-0.5 pl-1 animate-in fade-in slide-in-from-top-1 duration-200">
@@ -155,17 +155,17 @@ const Sidebar = ({ onHide }: SidebarProps) => {
     <div className="hidden lg:flex w-64 bg-white dark:bg-slate-950 text-foreground min-h-screen p-4 flex-col gap-6 sticky top-0 h-screen overflow-y-auto border-r border-slate-200 dark:border-slate-900 z-[60]">
       <div className="flex items-center justify-between px-2 py-2">
         <div className="flex items-center gap-3">
-          <div className="w-8 h-8 bg-slate-900 rounded flex items-center justify-center font-black text-sm text-white">A</div>
+          <div className="w-7 h-7 bg-slate-900 rounded flex items-center justify-center font-black text-xs text-white">A</div>
           <div>
-            <h1 className="text-sm font-serif font-bold tracking-tight leading-none">Resonance</h1>
+            <h1 className="text-xs font-serif font-bold tracking-tight leading-none">Resonance</h1>
             <p className="text-[7px] text-slate-400 uppercase font-black tracking-[0.2em] mt-1">Clinical CRM</p>
           </div>
         </div>
         <button 
           onClick={onHide}
-          className="text-slate-400 hover:text-slate-900 dark:hover:text-white rounded h-8 w-8 flex items-center justify-center transition-colors"
+          className="text-slate-400 hover:text-slate-900 dark:hover:text-white rounded h-7 w-7 flex items-center justify-center transition-colors"
         >
-          <PanelLeftClose size={16} />
+          <PanelLeftClose size={14} />
         </button>
       </div>
 
@@ -176,7 +176,7 @@ const Sidebar = ({ onHide }: SidebarProps) => {
               key={m}
               onClick={() => setMode(m)}
               className={cn(
-                "flex-1 flex flex-col items-center justify-center py-2 rounded transition-all duration-200",
+                "flex-1 flex flex-col items-center justify-center py-1.5 rounded transition-all duration-200",
                 mode === m 
                   ? "bg-white dark:bg-slate-800 shadow-sm text-indigo-600" 
                   : "text-slate-400 hover:text-slate-600"
@@ -192,7 +192,7 @@ const Sidebar = ({ onHide }: SidebarProps) => {
       <div className="px-1">
         <Button 
           onClick={() => setAppDialogOpen(true)}
-          className="w-full justify-center bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg h-10 font-black text-[10px] uppercase tracking-[0.2em] shadow-md shadow-indigo-500/10"
+          className="w-full justify-center bg-indigo-600 hover:bg-indigo-700 text-white rounded-md h-9 font-black text-[10px] uppercase tracking-[0.2em] shadow-sm"
         >
           <PlusCircle size={14} className="mr-2" /> 
           Book Session
@@ -216,22 +216,22 @@ const Sidebar = ({ onHide }: SidebarProps) => {
           <div className="px-1 pt-2">
             <Link 
               to={`/appointments/${activeSession.id}`}
-              className="flex items-center gap-3 px-4 py-3 bg-slate-900 rounded-lg text-white shadow-lg hover:bg-slate-800 transition-all group"
+              className="flex items-center gap-3 px-3 py-2.5 bg-slate-900 rounded-md text-white shadow-md hover:bg-slate-800 transition-all group"
             >
               <div className="relative">
-                <Zap size={14} className="text-indigo-400 fill-indigo-400" />
-                <span className="absolute -top-1 -right-1 w-2 h-2 bg-rose-500 rounded-full animate-pulse" />
+                <Zap size={12} className="text-indigo-400 fill-indigo-400" />
+                <span className="absolute -top-1 -right-1 w-1.5 h-1.5 bg-rose-500 rounded-full animate-pulse" />
               </div>
               <div className="flex flex-col min-w-0">
-                <span className="text-[8px] font-black uppercase tracking-widest opacity-60 truncate">{activeSession.clientName}</span>
-                <span className="text-[10px] font-bold">{activeSession.stage}</span>
+                <span className="text-[7px] font-black uppercase tracking-widest opacity-60 truncate">{activeSession.clientName}</span>
+                <span className="text-[9px] font-bold">{activeSession.stage}</span>
               </div>
-              <ArrowRight size={12} className="ml-auto group-hover:translate-x-1 transition-transform" />
+              <ArrowRight size={10} className="ml-auto group-hover:translate-x-1 transition-transform" />
             </Link>
           </div>
         )}
 
-        <div className="px-4 py-3 bg-slate-50 dark:bg-slate-900 rounded-lg border border-slate-100 dark:border-slate-800 mx-1 space-y-2">
+        <div className="px-3 py-2.5 bg-slate-50 dark:bg-slate-900 rounded-md border border-slate-100 dark:border-slate-800 mx-1 space-y-2">
           <div className="flex items-center justify-between">
             <p className="text-[8px] font-black text-slate-400 uppercase tracking-widest">Practice Health</p>
             <span className="text-[9px] font-black text-emerald-600">{practiceHealth}%</span>
@@ -246,23 +246,23 @@ const Sidebar = ({ onHide }: SidebarProps) => {
           <button 
             onClick={togglePrivacy}
             className={cn(
-              "flex items-center justify-center h-8 w-8 rounded transition-all",
+              "flex items-center justify-center h-7 w-7 rounded transition-all",
               isPrivate ? "bg-rose-50 text-rose-600" : "text-slate-400 hover:text-slate-900 dark:hover:text-white"
             )}
           >
-            {isPrivate ? <EyeOff size={16} /> : <Eye size={16} />}
+            {isPrivate ? <EyeOff size={14} /> : <Eye size={14} />}
           </button>
           <button 
             onClick={() => setHelpOpen(true)}
-            className="flex items-center justify-center h-8 w-8 rounded text-slate-400 hover:text-slate-900 dark:hover:text-white transition-all"
+            className="flex items-center justify-center h-7 w-7 rounded text-slate-400 hover:text-slate-900 dark:hover:text-white transition-all"
           >
-            <HelpCircle size={16} />
+            <HelpCircle size={14} />
           </button>
         </div>
 
         <div 
           onClick={handleSignOut}
-          className="flex items-center gap-3 px-3 py-2 rounded-lg text-slate-400 hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-900/20 transition-all cursor-pointer group"
+          className="flex items-center gap-3 px-3 py-2 rounded-md text-slate-400 hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-900/20 transition-all cursor-pointer group"
         >
           <LogOut size={14} />
           <span className="font-bold text-[9px] uppercase tracking-widest">Sign Out</span>
@@ -274,7 +274,7 @@ const Sidebar = ({ onHide }: SidebarProps) => {
       <Dialog open={clientDialogOpen} onOpenChange={setClientDialogOpen}>
         <DialogContent className="sm:max-w-[550px] rounded-lg p-8">
           <DialogHeader className="mb-4">
-            <DialogTitle className="text-xl font-black tracking-tight">Add New Client</DialogTitle>
+            <DialogTitle className="text-lg font-bold tracking-tight">Add New Client</DialogTitle>
           </DialogHeader>
           <ClientForm onSuccess={() => { setClientDialogOpen(false); }} />
         </DialogContent>
@@ -283,7 +283,7 @@ const Sidebar = ({ onHide }: SidebarProps) => {
       <Dialog open={appDialogOpen} onOpenChange={setAppDialogOpen}>
         <DialogContent className="sm:max-w-[500px] rounded-lg p-8">
           <DialogHeader className="mb-4">
-            <DialogTitle className="text-xl font-black tracking-tight">Schedule New Session</DialogTitle>
+            <DialogTitle className="text-lg font-bold tracking-tight">Schedule New Session</DialogTitle>
           </DialogHeader>
           <AppointmentForm onSuccess={() => { setAppDialogOpen(false); }} />
         </DialogContent>

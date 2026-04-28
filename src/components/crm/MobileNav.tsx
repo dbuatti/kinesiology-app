@@ -26,12 +26,14 @@ import {
   ShieldAlert,
   ChevronDown,
   ChevronUp,
-  MessageSquare,
-  Compass,
-  Fingerprint,
-  LayoutGrid,
+  PlusCircle,
   Eye,
-  EyeOff
+  EyeOff,
+  MessageSquare,
+  Sun,
+  Compass,
+  LayoutGrid,
+  Fingerprint
 } from "lucide-react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { cn } from "@/lib/utils";
@@ -192,7 +194,7 @@ const MobileNav = () => {
                       onToggle={() => setLabOpen(!labOpen)} 
                       items={[
                         { label: "Quick Calibrate", icon: Zap, path: "/practice/calibrate" },
-                        { label: "Procedures", icon: Target, path: "/practice/procedures" },
+                        { label: "Protocols", icon: Target, path: "/practice/procedures" },
                         { label: "Journal", icon: MessageSquare, path: "/practice/journal" },
                         { label: "Oversight", icon: TrendingUp, path: "/oversight" },
                       ]} 
@@ -204,6 +206,7 @@ const MobileNav = () => {
                       isOpen={libraryOpen} 
                       onToggle={() => setLibraryOpen(!libraryOpen)} 
                       items={[
+                        { label: "Morning Program", icon: Sun, path: "/morning-program" },
                         { label: "PEACE Framework", icon: ShieldCheck, path: "/peace-framework" },
                         { label: "Knowledge Base", icon: BookOpen, path: "/resources" },
                         { label: "Worksheets", icon: FileText, path: "/resources/worksheets" },

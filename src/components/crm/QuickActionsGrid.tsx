@@ -48,7 +48,7 @@ const QuickActionsGrid = ({ onNewClient, onBookSession }: QuickActionsGridProps)
           <div className="w-10 h-10 md:w-16 md:h-16 rounded-2xl md:rounded-[1.5rem] bg-emerald-50 dark:bg-emerald-900/40 flex items-center justify-center group-hover:scale-110 transition-transform shadow-inner">
             <Target size={24} className="md:w-8 md:h-8" />
           </div>
-          <span className="font-black text-[10px] md:text-[12px] uppercase tracking-[0.2em]">Procedures</span>
+          <span className="font-black text-[10px] md:text-[12px] uppercase tracking-[0.2em]">Protocols</span>
         </Button>
       </Link>
     </div>

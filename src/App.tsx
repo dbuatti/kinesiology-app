@@ -19,7 +19,7 @@ import OnboardingPage from "./pages/public/OnboardingPage";
 import OnboardingLookupPage from "./pages/public/OnboardingLookupPage";
 import ClientsPage from "./pages/ClientsPage";
 import ClientDetailPage from "./pages/ClientDetailPage";
-import AppointmentsPage from "./pages/AppointmentsPage";
+import SchedulePage from "./pages/SchedulePage";
 import AppointmentDetailPage from "./pages/AppointmentDetailPage";
 import ClinicalProtocolsPage from "./pages/ClinicalProtocolsPage";
 import ImportPage from "./pages/ImportPage";
@@ -30,7 +30,7 @@ import ClinicalOversightPage from "./pages/ClinicalOversightPage";
 import DebugAppointmentPage from "./pages/DebugAppointmentPage";
 import DemoSessionPage from "./pages/DemoSessionPage";
 import SettingsPage from "./pages/SettingsPage";
-import WorksheetsHubPage from "./pages/WorksheetsHubPage";
+import LabPage from "./pages/LabPage";
 import NorthStarPage from "./pages/NorthStarPage";
 import Week3WorksheetPage from "./pages/Week3WorksheetPage";
 import FearCreativityWorksheetPage from "./pages/FearCreativityWorksheetPage";
@@ -41,8 +41,6 @@ import QuickCalibratePage from "./pages/QuickCalibratePage";
 import PEACEFrameworkPage from "./pages/PEACEFrameworkPage";
 import MarketingEnginePage from "./pages/MarketingEnginePage";
 import BusinessHubPage from "./pages/BusinessHubPage";
-import AvailabilityPage from "./pages/AvailabilityPage";
-import SandboxPage from "./pages/SandboxPage";
 import IdentityShiftingPage from "./pages/IdentityShiftingPage";
 import IdentityAlignmentPage from "./pages/IdentityAlignmentPage";
 import LimitingBeliefsPage from "./pages/LimitingBeliefsPage";
@@ -92,13 +90,13 @@ const AppRoutes = () => {
         {/* Clinical Hub */}
         <Route path="/clients" element={<ClientsPage />} />
         <Route path="/clients/:id" element={<ClientDetailPage />} />
-        <Route path="/appointments" element={<AppointmentsPage />} />
+        <Route path="/schedule" element={<SchedulePage />} />
         <Route path="/appointments/:id" element={<AppointmentDetailPage />} />
         <Route path="/appointments/:id/protocols" element={<ClinicalProtocolsPage />} />
         <Route path="/oversight" element={<ClinicalOversightPage />} />
-        <Route path="/availability" element={<AvailabilityPage />} />
         
         {/* Practice Lab */}
+        <Route path="/lab" element={<LabPage />} />
         <Route path="/practice/calibrate" element={<QuickCalibratePage />} />
         <Route path="/practice/self" element={<SelfPracticePage />} />
         <Route path="/practice/procedures" element={<ProceduresPage />} />
@@ -106,10 +104,8 @@ const AppRoutes = () => {
         <Route path="/practice/quiz" element={<QuizPage />} />
 
         {/* Knowledge Base */}
-
         <Route path="/resources" element={<ResourcesPage />} />
         <Route path="/peace-framework" element={<PEACEFrameworkPage />} />
-        <Route path="/resources/worksheets" element={<WorksheetsHubPage />} />
         <Route path="/resources/worksheets/north-star" element={<NorthStarPage />} />
         <Route path="/resources/worksheets/week-3" element={<Week3WorksheetPage />} />
         <Route path="/resources/worksheets/fear-creativity" element={<FearCreativityWorksheetPage />} />
@@ -122,8 +118,7 @@ const AppRoutes = () => {
         <Route path="/business" element={<BusinessHubPage />} />
         <Route path="/business/marketing-engine" element={<MarketingEnginePage />} />
 
-        {/* Sandbox */}
-        <Route path="/sandbox" element={<SandboxPage />} />
+        {/* Sandbox Specifics (Still accessible via direct links from Lab) */}
         <Route path="/sandbox/identity-shifting" element={<IdentityShiftingPage />} />
         <Route path="/sandbox/identity-alignment" element={<IdentityAlignmentPage />} />
         <Route path="/sandbox/limiting-beliefs" element={<LimitingBeliefsPage />} />
@@ -134,6 +129,12 @@ const AppRoutes = () => {
         <Route path="/settings/import" element={<ImportPage />} />
         <Route path="/settings/debug" element={<DebugAppointmentPage />} />
         <Route path="/settings/demo" element={<DemoSessionPage />} />
+
+        {/* Legacy Redirects */}
+        <Route path="/appointments" element={<Navigate to="/schedule?view=list" replace />} />
+        <Route path="/availability" element={<Navigate to="/schedule?view=availability" replace />} />
+        <Route path="/sandbox" element={<Navigate to="/lab?tab=map" replace />} />
+        <Route path="/resources/worksheets" element={<Navigate to="/lab?tab=worksheets" replace />} />
       </Route>
 
       <Route path="*" element={<NotFound />} />

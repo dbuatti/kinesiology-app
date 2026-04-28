@@ -79,10 +79,9 @@ const Sidebar = ({ onHide }: SidebarProps) => {
   const [appDialogOpen, setAppDialogOpen] = useState(false);
   const { isPrivate, togglePrivacy } = usePrivacyMode();
   
-  // New Consolidated Pillar Logic
-  const isClinicalPath = (path: string) => path === "/" || path.startsWith("/appointments") || path.startsWith("/clients") || path === "/availability" || path === "/oversight";
-  const isLabPath = (path: string) => path.startsWith("/sandbox") || path.startsWith("/resources/worksheets") || path.startsWith("/practice/journal") || path === "/morning-program" || path === "/practice/self";
-  const isLibraryPath = (path: string) => path.startsWith("/resources") && !path.includes("worksheets") || path === "/peace-framework" || path === "/practice/procedures" || path === "/practice/quiz";
+  const isClinicalPath = (path: string) => path === "/" || path.startsWith("/schedule") || path.startsWith("/clients") || path === "/oversight";
+  const isLabPath = (path: string) => path.startsWith("/lab") || path.startsWith("/practice/journal") || path === "/morning-program" || path === "/practice/self";
+  const isLibraryPath = (path: string) => path.startsWith("/resources") || path === "/peace-framework" || path === "/practice/procedures" || path === "/practice/quiz";
   const isGrowthPath = (path: string) => path.startsWith("/business");
 
   const [clinicalOpen, setClinicalOpen] = useState(true);
@@ -104,17 +103,15 @@ const Sidebar = ({ onHide }: SidebarProps) => {
 
   const clinicalItems = [
     { label: "Dashboard", icon: LayoutDashboard, path: "/", shortcut: "⌘D" },
-    { label: "Schedule", icon: Calendar, path: "/appointments", shortcut: "⌘2" },
+    { label: "Schedule", icon: Calendar, path: "/schedule", shortcut: "⌘2" },
     { label: "Clients", icon: Users, path: "/clients", shortcut: "⌘1" },
-    { label: "Availability", icon: CalendarDays, path: "/availability" },
     { label: "Oversight", icon: TrendingUp, path: "/oversight", shortcut: "⌘O" },
   ];
 
   const labItems = [
     { label: "Morning Program", icon: Sun, path: "/morning-program" },
     { label: "Journal", icon: MessageSquare, path: "/practice/journal", shortcut: "⌘R" },
-    { label: "Identity Map", icon: Compass, path: "/sandbox", shortcut: "⌘S" },
-    { label: "Worksheets", icon: FileText, path: "/resources/worksheets" },
+    { label: "The Lab", icon: Compass, path: "/lab", shortcut: "⌘S" },
     { label: "Self Practice", icon: Heart, path: "/practice/self" },
   ];
 

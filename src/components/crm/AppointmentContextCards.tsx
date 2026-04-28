@@ -4,7 +4,7 @@ import React, { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Zap, ExternalLink, Clock, Target, ShieldAlert, Activity, Brain, Heart, Home, Sparkles, CreditCard, CheckCircle2, Wallet, Smartphone, Loader2, QrCode, ChevronDown } from "lucide-react";
+import { Zap, ExternalLink, Clock, Target, ShieldAlert, Activity, Brain, Heart, Home, Sparkles, CreditCard, CheckCircle2, Wallet, Smartphone, Loader2, QrCode, ChevronDown, DollarSign } from "lucide-react";
 import { cn } from "@/lib/utils";
 import EditableField from "@/components/shared/EditableField";
 import QuickAcupointSelector from "./QuickAcupointSelector";
@@ -12,6 +12,8 @@ import { AppointmentWithClient } from "@/types/crm";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import { supabase } from "@/integrations/supabase/client";
 import { showError, showSuccess } from "@/utils/toast";
+import { Switch } from "@/components/ui/switch";
+import { Label } from "@/components/ui/label";
 import {
   Collapsible,
   CollapsibleContent,
@@ -34,7 +36,7 @@ const SESSION_STAGES = [
 
 const AppointmentContextCards = ({ appointment, currentPeakMeridian, onSaveField }: AppointmentContextCardsProps) => {
   const [generatingLink, setGeneratingLink] = useState(false);
-  const [billingOpen, setBillingOpen] = useState(false);
+  const [billingOpen, setBillingOpen] = useState(true);
   const [contextOpen, setContextOpen] = useState(false);
 
   const handleGeneratePaymentLink = async () => {
@@ -111,60 +113,105 @@ const AppointmentContextCards = ({ appointment, currentPeakMeridian, onSaveField
         </Card>
       )}
 
-      {/* Payment Management - Collapsible */}
-      {appointment.is_paid && (
-        <Collapsible open={billingOpen} onOpenChange={setBillingOpen}>
-          <Card className="border-none shadow-md rounded-[2rem] bg-white border-2 border-emerald-100 overflow-hidden">
-            <CollapsibleTrigger asChild>
-              <CardHeader className="p-5 cursor-pointer hover:bg-emerald-50/50 transition-colors">
-                <div className="flex items-center justify-between">
-                  <CardTitle className="text-[10px] font-black uppercase tracking-[0.3em] text-emerald-600 flex items-center gap-2">
-                    <Wallet size={14} /> Clinical Billing
-                  </CardTitle>
-                  <ChevronDown className={cn("h-4 w-4 text-emerald-400 transition-transform", billingOpen && "rotate-180")} />
+      {/* Payment Management - Always Visible */}
+      <Collapsible open={billingOpen} onOpenChange={setBillingOpen}>
+        <Card className={cn(
+          "border-none shadow-md rounded-[2rem] overflow-hidden transition-all",
+          appointment.is_paid ? "bg-white border-2 border-emerald-100" : "bg-slate-50 border border-slate-200"
+        )}>
+          <CollapsibleTrigger asChild>
+            <CardHeader className="p-5 cursor-pointer hover:bg-black/5 transition-colors">
+              <div className="flex items-center justify-between">
+                <CardTitle className={cn(
+                  "text-[10px] font-black uppercase tracking-[0.3em] flex items-center gap-2",
+                  appointment.is_paid ? "text-emerald-600" : "text-slate-500"
+                )}>
+                  <Wallet size={14} /> Clinical Billing
+                </CardTitle>
+                <ChevronDown className={cn("h-4 w-4 transition-transform", billingOpen && "rotate-180", appointment.is_paid ? "text-emerald-400" : "text-slate-400")} />
+              </div>
+            </CardHeader>
+          </CollapsibleTrigger>
+          <CollapsibleContent>
+            <CardContent className="p-5 pt-0 space-y-6 animate-in fade-in slide-in-from-top-1">
+              <div className="flex items-center justify-between p-3 bg-white dark:bg-slate-900 rounded-xl border border-border shadow-sm">
+                <div className="space-y-0.5">
+                  <Label htmlFor="is-paid-toggle" className="text-xs font-bold text-slate-700 dark:text-slate-300">Paid Session</Label>
+                  <p className="text-[8px] text-slate-400 font-medium uppercase">Enable billing for this session</p>
                 </div>
-              </CardHeader>
-            </CollapsibleTrigger>
-            <CollapsibleContent>
-              <CardContent className="p-5 pt-0 space-y-4 animate-in fade-in slide-in-from-top-1">
-                {!appointment.payment_received ? (
-                  <div className="space-y-3">
-                    <Button 
-                      onClick={handleGeneratePaymentLink}
-                      disabled={generatingLink}
-                      className="w-full h-10 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl font-black text-[9px] uppercase tracking-widest shadow-lg"
-                    >
-                      {generatingLink ? <Loader2 className="animate-spin mr-2" /> : <QrCode size={14} className="mr-2" />}
-                      Generate Link
-                    </Button>
-                  </div>
-                ) : (
-                  <div className="p-3 bg-emerald-50 rounded-xl border border-emerald-200 flex items-center justify-center gap-2 text-emerald-700">
-                    <CheckCircle2 size={16} />
-                    <span className="font-black text-[10px] uppercase tracking-widest">Payment Received</span>
-                  </div>
-                )}
+                <Switch 
+                  id="is-paid-toggle"
+                  checked={appointment.is_paid || false}
+                  onCheckedChange={(checked) => onSaveField('is_paid', checked)}
+                  className="data-[state=checked]:bg-emerald-500"
+                />
+              </div>
 
-                <div className="space-y-2">
-                  <p className="text-[8px] font-black text-slate-400 uppercase tracking-widest">Manual Override</p>
-                  <ToggleGroup 
-                    type="single" 
-                    value={appointment.payment_method || ""} 
-                    onValueChange={(v) => onSaveField('payment_method', v || null)}
-                    className="flex flex-wrap justify-start gap-1.5"
-                  >
-                    <ToggleGroupItem value="Stripe App" className="rounded-lg px-2 h-7 text-[8px] font-black uppercase border-slate-200 data-[state=on]:bg-indigo-600 data-[state=on]:text-white">
-                      Stripe
-                    </ToggleGroupItem>
-                    <ToggleGroupItem value="PayID" className="rounded-lg px-2 h-7 text-[8px] font-black uppercase border-slate-200 data-[state=on]:bg-emerald-600 data-[state=on]:text-white">PayID</ToggleGroupItem>
-                    <ToggleGroupItem value="Cash" className="rounded-lg px-2 h-7 text-[8px] font-black uppercase border-slate-200 data-[state=on]:bg-emerald-600 data-[state=on]:text-white">Cash</ToggleGroupItem>
-                  </ToggleGroup>
+              {appointment.is_paid && (
+                <div className="space-y-4 animate-in zoom-in-95 duration-300">
+                  {!appointment.payment_received ? (
+                    <div className="space-y-3">
+                      <div className="p-4 bg-amber-50 rounded-2xl border border-amber-100 text-center">
+                        <p className="text-[8px] font-black text-amber-600 uppercase tracking-widest mb-1">Amount Due</p>
+                        <p className="text-2xl font-black text-amber-900">${appointment.price_amount || 50}</p>
+                      </div>
+                      <Button 
+                        onClick={handleGeneratePaymentLink}
+                        disabled={generatingLink}
+                        className="w-full h-10 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl font-black text-[9px] uppercase tracking-widest shadow-lg"
+                      >
+                        {generatingLink ? <Loader2 className="animate-spin mr-2" /> : <QrCode size={14} className="mr-2" />}
+                        Generate Stripe Link
+                      </Button>
+                      <Button 
+                        variant="outline"
+                        onClick={() => onSaveField('payment_received', true)}
+                        className="w-full h-10 border-emerald-200 text-emerald-600 hover:bg-emerald-50 rounded-xl font-black text-[9px] uppercase tracking-widest"
+                      >
+                        <CheckCircle2 size={14} className="mr-2" /> Mark as Paid Manually
+                      </Button>
+                    </div>
+                  ) : (
+                    <div className="p-4 bg-emerald-50 rounded-2xl border border-emerald-200 flex flex-col items-center justify-center gap-2 text-emerald-700">
+                      <div className="w-10 h-10 rounded-full bg-emerald-500 text-white flex items-center justify-center shadow-lg">
+                        <CheckCircle2 size={20} />
+                      </div>
+                      <div className="text-center">
+                        <p className="font-black text-[10px] uppercase tracking-widest">Payment Received</p>
+                        <p className="text-[8px] font-bold opacity-60 mt-0.5">Method: {appointment.payment_method || 'Not specified'}</p>
+                      </div>
+                      <Button 
+                        variant="ghost" 
+                        size="sm" 
+                        onClick={() => onSaveField('payment_received', false)}
+                        className="text-[8px] font-black uppercase tracking-widest text-slate-400 hover:text-rose-600 mt-2"
+                      >
+                        Undo Payment
+                      </Button>
+                    </div>
+                  )}
+
+                  <div className="space-y-2">
+                    <p className="text-[8px] font-black text-slate-400 uppercase tracking-widest ml-1">Payment Method</p>
+                    <ToggleGroup 
+                      type="single" 
+                      value={appointment.payment_method || ""} 
+                      onValueChange={(v) => onSaveField('payment_method', v || null)}
+                      className="flex flex-wrap justify-start gap-1.5"
+                    >
+                      <ToggleGroupItem value="Stripe" className="rounded-lg px-2 h-7 text-[8px] font-black uppercase border-slate-200 data-[state=on]:bg-indigo-600 data-[state=on]:text-white">
+                        Stripe
+                      </ToggleGroupItem>
+                      <ToggleGroupItem value="PayID" className="rounded-lg px-2 h-7 text-[8px] font-black uppercase border-slate-200 data-[state=on]:bg-emerald-600 data-[state=on]:text-white">PayID</ToggleGroupItem>
+                      <ToggleGroupItem value="Cash" className="rounded-lg px-2 h-7 text-[8px] font-black uppercase border-slate-200 data-[state=on]:bg-emerald-600 data-[state=on]:text-white">Cash</ToggleGroupItem>
+                    </ToggleGroup>
+                  </div>
                 </div>
-              </CardContent>
-            </CollapsibleContent>
-          </Card>
-        </Collapsible>
-      )}
+              )}
+            </CardContent>
+          </CollapsibleContent>
+        </Card>
+      </Collapsible>
 
       {/* Session Context - Collapsible */}
       <Collapsible open={contextOpen} onOpenChange={setContextOpen}>

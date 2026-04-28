@@ -15,7 +15,9 @@ import {
   UserCircle,
   ChevronDown,
   CalendarClock,
-  Cake
+  Cake,
+  Wallet,
+  CheckCircle2
 } from "lucide-react";
 import { format, isToday } from "date-fns";
 import { cn } from "@/lib/utils";
@@ -147,22 +149,21 @@ const AppointmentHeader = ({ appointment, onSaveField, onUpdate }: AppointmentHe
             <span className="text-[8px] md:text-[10px] font-black uppercase tracking-widest">Load: {neuralLoad}%</span>
           </div>
 
-          <div className={cn(
-            "flex items-center gap-2 px-2 py-1 md:px-3 md:py-1.5 rounded-lg md:rounded-xl border transition-all",
-            appointment.is_paid
-              ? (appointment.payment_received ? "bg-emerald-50 border-emerald-200 text-emerald-700" : "bg-amber-50 border-amber-200 text-amber-700")
-              : "bg-slate-50 border-slate-200 text-slate-400"
-          )}>
+          <button 
+            onClick={() => onSaveField('payment_received', !appointment.payment_received)}
+            disabled={!appointment.is_paid}
+            className={cn(
+              "flex items-center gap-2 px-2 py-1 md:px-3 md:py-1.5 rounded-lg md:rounded-xl border transition-all group",
+              appointment.is_paid
+                ? (appointment.payment_received ? "bg-emerald-600 border-emerald-600 text-white shadow-lg shadow-emerald-100" : "bg-amber-50 border-amber-200 text-amber-700 hover:border-amber-400")
+                : "bg-slate-50 border-slate-200 text-slate-400 cursor-not-allowed"
+            )}
+          >
+            {appointment.payment_received ? <CheckCircle2 size={12} className="md:w-3.5 md:h-3.5" /> : <Wallet size={12} className="md:w-3.5 md:h-3.5" />}
             <span className="text-[8px] md:text-[10px] font-black uppercase tracking-widest">
-              {!appointment.is_paid ? "FREE" : (appointment.payment_received ? "PAID" : `DUE ${appointment.price_amount ? `$${appointment.price_amount}` : ''}`)}
+              {!appointment.is_paid ? "FREE" : (appointment.payment_received ? "PAID" : `MARK PAID`)}
             </span>
-            <Switch
-              checked={appointment.payment_received || false}
-              onCheckedChange={(checked) => onSaveField('payment_received', checked)}
-              disabled={!appointment.is_paid}
-              className="data-[state=checked]:bg-emerald-500 scale-[0.6] md:scale-75"
-            />
-          </div>
+          </button>
 
           <div className={cn(
             "flex items-center gap-2 px-2 py-1 md:px-3 md:py-1.5 rounded-lg md:rounded-xl border transition-all",

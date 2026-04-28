@@ -267,7 +267,7 @@ const AppointmentsPage = () => {
 
   useEffect(() => {
     setDisplayLimit(PAGE_SIZE);
-    fetchAppointments(displayLimit);
+    fetchAppointments(PAGE_SIZE);
   }, [statusFilter]);
 
   const filteredAppointments = useMemo(() => {
@@ -289,7 +289,10 @@ const AppointmentsPage = () => {
   );
 
   const otherSessions = filteredAppointments.filter(app => !isToday(app.date));
-  const grouped = groupAppointmentsByMonth(otherSessions);
+  
+  // Use ascending order for Scheduled/Today, descending for others
+  const monthSortOrder = (statusFilter === 'Scheduled' || statusFilter === 'today') ? 'asc' : 'desc';
+  const grouped = groupAppointmentsByMonth(otherSessions, monthSortOrder);
 
   const AppointmentCard = ({ app }: { app: AppointmentWithClient }) => {
     const hasBolt = app.bolt_score !== null && app.bolt_score !== undefined;

@@ -9,7 +9,8 @@ import {
   Heart, Activity, FlaskConical, Brain, Plus, 
   Calendar, Clock, Loader2, TrendingUp, ArrowRight, 
   Zap, Info, History, Sparkles, CheckCircle2, Target, Move, Footprints,
-  LayoutDashboard
+  LayoutDashboard,
+  LayoutGrid
 } from "lucide-react";
 import { format, isToday, startOfToday, differenceInDays } from "date-fns";
 import { Link, useSearchParams } from "react-router-dom";
@@ -20,6 +21,7 @@ import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip as ChartTooltip, 
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import ClientProgressTab from "@/components/crm/ClientProgressTab";
 import AppLayout from "@/components/crm/AppLayout";
+import PageHeader from "@/components/shared/PageHeader";
 
 const SelfPracticePage = () => {
   const [searchParams, setSearchParams] = useSearchParams();
@@ -172,49 +174,47 @@ const SelfPracticePage = () => {
   ];
 
   return (
-    <AppLayout>
-      <div className="p-4 md:p-8 max-w-full mx-auto space-y-8">
-        <Breadcrumbs items={[{ label: "Self Practice" }]} />
-
-        <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
-          <div className="flex items-center gap-4">
-            <div className="w-16 h-16 bg-rose-600 rounded-2xl flex items-center justify-center text-white shadow-xl shadow-rose-200 dark:shadow-rose-900/20">
-              <Heart size={32} className="fill-current" />
+    <AppLayout variant="workspace">
+      <div className="space-y-10 animate-in fade-in duration-700">
+        <PageHeader 
+          title="Self-Monitoring Zone"
+          subtitle="Your private space for personal health tracking and protocol practice."
+          icon={Heart}
+          iconClassName="bg-rose-600"
+          breadcrumbs={[{ label: "Practice" }, { label: "Self Practice" }]}
+          actions={
+            <div className="flex items-center gap-6">
+              <div className="hidden sm:flex flex-col items-end">
+                <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">Practice Streak</p>
+                <p className="text-xl font-black text-orange-500 flex items-center gap-1">
+                  <Zap size={18} className="fill-current" /> {streak} Days
+                </p>
+              </div>
+              <Button 
+                onClick={() => handleNewSelfSession()} 
+                disabled={creating}
+                className="bg-rose-600 hover:bg-rose-700 shadow-lg shadow-rose-100 dark:shadow-rose-900/20 h-12 px-8 rounded-xl font-bold"
+              >
+                {creating ? <Loader2 className="mr-2 animate-spin" /> : <Plus size={20} className="mr-2" />}
+                Start Self-Session
+              </Button>
             </div>
-            <div>
-              <h1 className="text-3xl font-black tracking-tight text-foreground">Self-Monitoring Zone</h1>
-              <p className="text-muted-foreground font-medium">Your private space for personal health tracking and protocol practice.</p>
-            </div>
-          </div>
-          <div className="flex items-center gap-3">
-            <div className="hidden sm:flex flex-col items-end mr-4">
-              <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">Practice Streak</p>
-              <p className="text-xl font-black text-orange-500 flex items-center gap-1">
-                <Zap size={18} className="fill-current" /> {streak} Days
-              </p>
-            </div>
-            <Button 
-              onClick={() => handleNewSelfSession()} 
-              disabled={creating}
-              className="bg-rose-600 hover:bg-rose-700 shadow-lg shadow-rose-100 dark:shadow-rose-900/20 h-12 px-8 rounded-xl font-bold"
-            >
-              {creating ? <Loader2 className="mr-2 animate-spin" /> : <Plus size={20} className="mr-2" />}
-              Start Self-Session
-            </Button>
-          </div>
-        </div>
+          }
+        />
 
         <Tabs value={activeTab} onValueChange={(v) => setSearchParams({ tab: v })} className="w-full">
-          <TabsList className="grid w-full grid-cols-2 h-14 bg-muted p-1.5 rounded-2xl mb-8">
-            <TabsTrigger value="overview" className="flex items-center gap-2 data-[state=active]:bg-card data-[state=active]:text-rose-600 data-[state=active]:shadow-sm rounded-xl h-11 font-black uppercase tracking-wider text-[10px]">
-              <LayoutDashboard size={14} /> Practice Dashboard
-            </TabsTrigger>
-            <TabsTrigger value="progress" className="flex items-center gap-2 data-[state=active]:bg-card data-[state=active]:text-rose-600 data-[state=active]:shadow-sm rounded-xl h-11 font-black uppercase tracking-wider text-[10px]">
-              <TrendingUp size={14} /> Progress & Protocols
-            </TabsTrigger>
-          </TabsList>
+          <div className="flex justify-center mb-8">
+            <TabsList className="grid w-full grid-cols-2 h-14 bg-slate-200/50 p-1.5 rounded-2xl mb-8">
+              <TabsTrigger value="overview" className="flex items-center gap-2 data-[state=active]:bg-white data-[state=active]:text-rose-600 data-[state=active]:shadow-sm rounded-xl h-11 font-black uppercase tracking-wider text-[10px]">
+                <LayoutGrid size={14} /> Practice Dashboard
+              </TabsTrigger>
+              <TabsTrigger value="progress" className="flex items-center gap-2 data-[state=active]:bg-white data-[state=active]:text-rose-600 data-[state=active]:shadow-sm rounded-xl h-11 font-black uppercase tracking-wider text-[10px]">
+                <TrendingUp size={14} /> Progress & Protocols
+              </TabsTrigger>
+            </TabsList>
+          </div>
 
-          <TabsContent value="overview" className="space-y-8">
+          <TabsContent value="overview" className="space-y-8 mt-0">
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
               <Card className="lg:col-span-2 border-none shadow-lg bg-card rounded-3xl overflow-hidden">
                 <CardHeader className="bg-muted/30 border-b border-border">
@@ -271,7 +271,7 @@ const SelfPracticePage = () => {
               </Card>
 
               <div className="space-y-6">
-                <Card className="border-none shadow-lg bg-slate-900 dark:bg-slate-950 text-white rounded-3xl overflow-hidden relative">
+                <Card className="border-none shadow-lg bg-slate-900 dark:bg-slate-950 text-white rounded-3xl overflow-hidden relative group">
                   <div className="absolute top-0 right-0 p-8 opacity-10">
                     <Sparkles size={120} />
                   </div>

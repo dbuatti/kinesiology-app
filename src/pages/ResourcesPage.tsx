@@ -76,6 +76,7 @@ import PulsePointReference from "@/components/crm/PulsePointReference";
 import HandPolarityReference from "@/components/crm/HandPolarityReference";
 import MuscleReference from "@/components/crm/MuscleReference";
 import BaGuaReference from "@/components/crm/BaGuaReference";
+import PageHeader from "@/components/shared/PageHeader";
 
 const CATEGORIES = [
   {
@@ -171,32 +172,30 @@ const ResourcesPage = () => {
   };
 
   return (
-    <AppLayout>
-      <div className="p-4 md:p-8 max-w-full mx-auto space-y-8">
-        <Breadcrumbs items={[{ label: "Resources" }]} />
-
-        <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
-          <div>
-            <Badge className="bg-indigo-100 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-400 border-indigo-200 dark:border-indigo-900/50 font-black text-[10px] uppercase tracking-[0.3em] px-4 py-1 mb-2">
-              Integrated Healer
-            </Badge>
-            <h1 className="text-4xl font-black tracking-tight text-foreground">Knowledge Base</h1>
-            <p className="text-muted-foreground font-medium mt-1 text-lg">Tools for your transformation journey and clinical practice.</p>
-          </div>
-          {activeTab !== "hub" && (
-            <Button 
-              variant="outline" 
-              onClick={() => handleTabChange("hub")}
-              className="rounded-xl border-border bg-card hover:bg-muted font-bold text-xs uppercase tracking-widest h-12 px-6"
-            >
-              <LayoutGrid size={18} className="mr-2" /> Back to Hub
-            </Button>
-          )}
-        </div>
+    <AppLayout variant="workspace">
+      <div className="space-y-8">
+        <PageHeader 
+          title="Knowledge Base"
+          subtitle="Tools for your transformation journey and clinical practice."
+          icon={BookOpen}
+          breadcrumbs={[{ label: "Resources" }]}
+          badge="Integrated Healer"
+          actions={
+            activeTab !== "hub" && (
+              <Button 
+                variant="outline" 
+                onClick={() => handleTabChange("hub")}
+                className="rounded-xl border-border bg-card hover:bg-muted font-bold text-xs uppercase tracking-widest h-12 px-6"
+              >
+                <LayoutGrid size={18} className="mr-2" /> Back to Hub
+              </Button>
+            )
+          }
+        />
 
         {activeTab === "hub" ? (
           <div className="space-y-12 animate-in fade-in slide-in-from-bottom-4 duration-700">
-            {/* Header Cards (Side by Side - 4 columns now) */}
+            {/* Header Cards */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
               <a href="https://kin-videos.vercel.app/" target="_blank" rel="noopener noreferrer" className="block group h-full">
                 <Card className="h-full border-none shadow-2xl rounded-[3rem] bg-indigo-600 text-white overflow-hidden relative cursor-pointer hover:shadow-3xl hover:-translate-y-1 transition-all duration-500">

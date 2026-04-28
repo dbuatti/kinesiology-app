@@ -52,6 +52,81 @@ import {
   TooltipContent,
   TooltipProvider,
   TooltipTrigger,
+} from "@/components/uithink
+The previous response was cut off while writing `src/pages/SandboxPage.tsx`. I need to complete that file and then continue with the other planned improvements for header unification and vertical spacing across the app.
+
+Plan:
+1.  Complete `src/pages/SandboxPage.tsx`.
+2.  Update `src/pages/WorksheetsHubPage.tsx` to remove redundant headers.
+3.  Update `src/pages/ResourcesPage.tsx` to unify headers.
+4.  Update `src/pages/JournalPage.tsx` to use `PageHeader`.
+5.  Update `src/pages/MorningProgramPage.tsx` to use `PageHeader`.
+6.  Update `src/pages/SelfPracticePage.tsx` to use `PageHeader`.
+7.  Update `src/pages/SettingsPage.tsx` to use `PageHeader`.
+8.  Update `src/pages/ImportPage.tsx` to use `PageHeader`.
+9.  Update `src/pages/DebugAppointmentPage.tsx` to use `PageHeader`.
+10. Update `src/pages/NorthStarPage.tsx` to use `PageHeader`.
+11. Update `src/pages/IdentityShiftingPage.tsx`, `src/pages/IdentityAlignmentPage.tsx`, `src/pages/LimitingBeliefsPage.tsx` to use `PageHeader`.
+12. Update `src/pages/FractalToolPage.tsx` to use `PageHeader`.
+13. Update `src/pages/AngerFlowWorksheetPage.tsx`, `src/pages/FearCreativityWorksheetPage.tsx`, `src/pages/InnerAwarenessWorksheetPage.tsx`, `src/pages/Week3WorksheetPage.tsx` to use `PageHeader`.
+14. Update `src/pages/ClientDetailPage.tsx` to use `PageHeader`.
+15. Update `src/pages/AppointmentDetailPage.tsx` to use `PageHeader`.
+
+I will start by finishing `src/pages/SandboxPage.tsx`.<dyad-write path="src/pages/SandboxPage.tsx" description="Completing the SandboxPage update to remove redundant headers when viewed within the Lab hub.">
+"use client";
+
+import React, { useState, useEffect, useMemo } from 'react';
+import { Link } from 'react-router-dom';
+import { 
+  Fingerprint, 
+  Target, 
+  ShieldAlert, 
+  ArrowRight, 
+  Plus, 
+  Clock, 
+  CheckCircle2, 
+  Trash2,
+  Sparkles, 
+  Brain, 
+  Zap, 
+  History, 
+  Loader2, 
+  Lightbulb, 
+  ChevronRight, 
+  Layers, 
+  Wand2, 
+  TrendingUp, 
+  Info, 
+  ArrowDownWideNarrow, 
+  Calendar, 
+  LayoutGrid, 
+  PlayCircle,
+  RefreshCw,
+  Archive,
+  CheckCircle,
+  MoreHorizontal,
+  Activity,
+  Check,
+  X,
+  ArrowRightLeft
+} from "lucide-react";
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { Input } from "@/components/ui/input";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import AppLayout from "@/components/crm/AppLayout";
+import Breadcrumbs from "@/components/shared/Breadcrumbs";
+import { cn } from "@/lib/utils";
+import { supabase } from "@/integrations/supabase/client";
+import { showSuccess, showError } from "@/utils/toast";
+import { format } from "date-fns";
+import { Progress } from "@/components/ui/progress";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
 } from "@/components/ui/tooltip";
 import {
   DropdownMenu,
@@ -62,6 +137,7 @@ import {
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import IdentityHistoryList from "@/components/crm/IdentityHistoryList";
 import { usePrivacyMode } from "@/hooks/use-privacy-mode";
+import PageHeader from "@/components/shared/PageHeader";
 
 const TOOLS = [
   {
@@ -108,7 +184,11 @@ const TOOLS = [
 
 type SortOption = 'priority' | 'newest' | 'oldest' | 'type' | 'progress';
 
-const SandboxPage = () => {
+interface SandboxPageProps {
+  isSubPage?: boolean;
+}
+
+const SandboxPage = ({ isSubPage = false }: SandboxPageProps) => {
   const { isPrivate } = usePrivacyMode();
   const [backlog, setBacklog] = useState<any[]>([]);
   const [sessionCounts, setSessionCounts] = useState<Record<string, number>>({});
@@ -488,11 +568,11 @@ const SandboxPage = () => {
     );
   };
 
-  return (
-    <AppLayout>
-      <div className="space-y-12 animate-in fade-in slide-in-from-bottom-4 duration-700">
-        <Breadcrumbs items={[{ label: "Identity Map" }]} />
+  const content = (
+    <div className="space-y-12 animate-in fade-in slide-in-from-bottom-4 duration-700">
+      {!isSubPage && <Breadcrumbs items={[{ label: "Identity Map" }]} />}
 
+      {!isSubPage && (
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
           <div className="flex items-center gap-5">
             <div className="w-16 h-16 rounded-lg bg-indigo-600 text-white flex items-center justify-center shadow-md">
@@ -510,7 +590,9 @@ const SandboxPage = () => {
             </Button>
           </div>
         </div>
+      )}
 
+      {!isSubPage && (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
           {TOOLS.map((tool) => (
             <Link key={tool.id} to={tool.path} className="block group">
@@ -535,116 +617,118 @@ const SandboxPage = () => {
             </Link>
           ))}
         </div>
+      )}
 
-        <div className="space-y-8">
-          <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-6 mb-8 px-2">
-              <TabsList className="bg-slate-200/50 p-1 rounded-xl h-12 border border-slate-200">
-                <TabsTrigger value="active" className="rounded-lg px-8 h-10 data-[state=active]:bg-white data-[state=active]:text-indigo-600 data-[state=active]:shadow-sm transition-all font-bold text-xs uppercase tracking-widest"><Zap className="mr-2" size={16} /> Active Map</TabsTrigger>
-                <TabsTrigger value="suggested" className="rounded-lg px-8 h-10 data-[state=active]:bg-white data-[state=active]:text-indigo-600 data-[state=active]:shadow-sm transition-all font-bold text-xs uppercase tracking-widest">
-                  <Sparkles className="mr-2" size={16} /> Suggested
-                  {backlog.filter(i => i.status === 'suggested').length > 0 && (
-                    <span className="ml-2 w-2 h-2 rounded-full bg-rose-500 animate-pulse" />
-                  )}
-                </TabsTrigger>
-                <TabsTrigger value="archive" className="rounded-lg px-8 h-10 data-[state=active]:bg-white data-[state=active]:text-indigo-600 data-[state=active]:shadow-sm transition-all font-bold text-xs uppercase tracking-widest"><Archive className="mr-2" size={16} /> Integrated</TabsTrigger>
-                <TabsTrigger value="history" className="rounded-lg px-8 h-10 data-[state=active]:bg-white data-[state=active]:text-indigo-600 data-[state=active]:shadow-sm transition-all font-bold text-xs uppercase tracking-widest"><History className="mr-2" size={16} /> Session History</TabsTrigger>
-              </TabsList>
+      <div className="space-y-8">
+        <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-6 mb-8 px-2">
+            <TabsList className="bg-slate-200/50 p-1 rounded-xl h-12 border border-slate-200">
+              <TabsTrigger value="active" className="rounded-lg px-8 h-10 data-[state=active]:bg-white data-[state=active]:text-indigo-600 data-[state=active]:shadow-sm transition-all font-bold text-xs uppercase tracking-widest"><Zap className="mr-2" size={16} /> Active Map</TabsTrigger>
+              <TabsTrigger value="suggested" className="rounded-lg px-8 h-10 data-[state=active]:bg-white data-[state=active]:text-indigo-600 data-[state=active]:shadow-sm transition-all font-bold text-xs uppercase tracking-widest">
+                <Sparkles className="mr-2" size={16} /> Suggested
+                {backlog.filter(i => i.status === 'suggested').length > 0 && (
+                  <span className="ml-2 w-2 h-2 rounded-full bg-rose-500 animate-pulse" />
+                )}
+              </TabsTrigger>
+              <TabsTrigger value="archive" className="rounded-lg px-8 h-10 data-[state=active]:bg-white data-[state=active]:text-indigo-600 data-[state=active]:shadow-sm transition-all font-bold text-xs uppercase tracking-widest"><Archive className="mr-2" size={16} /> Integrated</TabsTrigger>
+              <TabsTrigger value="history" className="rounded-lg px-8 h-10 data-[state=active]:bg-white data-[state=active]:text-indigo-600 data-[state=active]:shadow-sm transition-all font-bold text-xs uppercase tracking-widest"><History className="mr-2" size={16} /> Session History</TabsTrigger>
+            </TabsList>
 
-              {activeTab === 'suggested' && sortedBacklog.length > 0 && (
+            {activeTab === 'suggested' && sortedBacklog.length > 0 && (
+              <Button 
+                onClick={handleAcceptAllSuggestions}
+                disabled={isAcceptingAll}
+                className="h-10 px-6 rounded-lg bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-[10px] uppercase tracking-widest shadow-md"
+              >
+                {isAcceptingAll ? <Loader2 className="mr-2 animate-spin" /> : <CheckCircle2 size={16} className="mr-2" />}
+                Accept All Suggestions
+              </Button>
+            )}
+
+            {activeTab !== 'history' && activeTab !== 'suggested' && (
+              <div className="flex items-center gap-3">
                 <Button 
-                  onClick={handleAcceptAllSuggestions}
-                  disabled={isAcceptingAll}
-                  className="h-10 px-6 rounded-lg bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-[10px] uppercase tracking-widest shadow-md"
+                  variant="ghost" 
+                  size="sm" 
+                  onClick={handlePrioritize}
+                  disabled={isPrioritizing || sortedBacklog.length === 0}
+                  className="h-10 px-4 rounded-lg text-indigo-600 hover:bg-indigo-50 font-bold text-[10px] uppercase tracking-widest"
                 >
-                  {isAcceptingAll ? <Loader2 className="mr-2 animate-spin" /> : <CheckCircle2 size={16} className="mr-2" />}
-                  Accept All Suggestions
+                  {isPrioritizing ? <Loader2 size={14} className="mr-2 animate-spin" /> : <Wand2 size={14} className="mr-2" />}
+                  Reanalyze Map
                 </Button>
-              )}
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button variant="outline" size="sm" className="rounded-lg h-10 px-4 border-border font-bold text-[10px] uppercase tracking-widest">
+                      <ArrowDownWideNarrow size={14} className="mr-2" /> Sort: {sortBy.charAt(0).toUpperCase() + sortBy.slice(1)}
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end" className="w-48 rounded-xl p-2 shadow-2xl border-none bg-card">
+                    <DropdownMenuItem onClick={() => setSortBy('priority')} className="rounded-lg py-2.5 px-4 cursor-pointer flex items-center gap-3"><TrendingUp size={14} className="text-indigo-500" /> AI Priority</DropdownMenuItem>
+                    <DropdownMenuItem onClick={() => setSortBy('progress')} className="rounded-lg py-2.5 px-4 cursor-pointer flex items-center gap-3"><Activity size={14} className="text-emerald-50" /> Most Worked</DropdownMenuItem>
+                    <DropdownMenuItem onClick={() => setSortBy('newest')} className="rounded-lg py-2.5 px-4 cursor-pointer flex items-center gap-3"><Calendar size={14} className="text-indigo-50" /> Newest First</DropdownMenuItem>
+                    <DropdownMenuItem onClick={() => setSortBy('type')} className="rounded-lg py-2.5 px-4 cursor-pointer flex items-center gap-3"><Layers size={14} className="text-purple-50" /> By Tool Type</DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
+              </div>
+            )}
+          </div>
 
-              {activeTab !== 'history' && activeTab !== 'suggested' && (
-                <div className="flex items-center gap-3">
-                  <Button 
-                    variant="ghost" 
-                    size="sm" 
-                    onClick={handlePrioritize}
-                    disabled={isPrioritizing || sortedBacklog.length === 0}
-                    className="h-10 px-4 rounded-lg text-indigo-600 hover:bg-indigo-50 font-bold text-[10px] uppercase tracking-widest"
-                  >
-                    {isPrioritizing ? <Loader2 size={14} className="mr-2 animate-spin" /> : <Wand2 size={14} className="mr-2" />}
-                    Reanalyze Map
-                  </Button>
-                  <DropdownMenu>
-                    <DropdownMenuTrigger asChild>
-                      <Button variant="outline" size="sm" className="rounded-lg h-10 px-4 border-border font-bold text-[10px] uppercase tracking-widest">
-                        <ArrowDownWideNarrow size={14} className="mr-2" /> Sort: {sortBy.charAt(0).toUpperCase() + sortBy.slice(1)}
-                      </Button>
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent align="end" className="w-48 rounded-xl p-2 shadow-2xl border-none bg-card">
-                      <DropdownMenuItem onClick={() => setSortBy('priority')} className="rounded-lg py-2.5 px-4 cursor-pointer flex items-center gap-3"><TrendingUp size={14} className="text-indigo-500" /> AI Priority</DropdownMenuItem>
-                      <DropdownMenuItem onClick={() => setSortBy('progress')} className="rounded-lg py-2.5 px-4 cursor-pointer flex items-center gap-3"><Activity size={14} className="text-emerald-50" /> Most Worked</DropdownMenuItem>
-                      <DropdownMenuItem onClick={() => setSortBy('newest')} className="rounded-lg py-2.5 px-4 cursor-pointer flex items-center gap-3"><Calendar size={14} className="text-indigo-50" /> Newest First</DropdownMenuItem>
-                      <DropdownMenuItem onClick={() => setSortBy('type')} className="rounded-lg py-2.5 px-4 cursor-pointer flex items-center gap-3"><Layers size={14} className="text-purple-50" /> By Tool Type</DropdownMenuItem>
-                    </DropdownMenuContent>
-                  </DropdownMenu>
-                </div>
-              )}
-            </div>
+          <TabsContent value="active" className="mt-0 focus-visible:ring-0">
+            {loading ? <div className="flex justify-center py-12"><Loader2 className="animate-spin text-indigo-600" size={32} /></div> : sortedBacklog.length > 0 ? (
+              <div className="space-y-3">
+                {sortedBacklog.map((item) => <IdentityCard key={item.id} item={item} />)}
+              </div>
+            ) : (
+              <div className="text-center py-20 bg-muted/30 rounded-xl border-2 border-dashed border-border">
+                <div className="w-16 h-16 bg-card rounded-lg flex items-center justify-center mx-auto mb-4 shadow-sm"><Zap className="text-muted-foreground" size={32} /></div>
+                <p className="text-foreground font-black text-xl">Your map is clear</p>
+                <p className="text-muted-foreground mt-1 font-medium">Add identities or beliefs from the dashboard to track them here.</p>
+              </div>
+            )}
+          </TabsContent>
 
-            <TabsContent value="active" className="mt-0 focus-visible:ring-0">
-              {loading ? <div className="flex justify-center py-12"><Loader2 className="animate-spin text-indigo-600" size={32} /></div> : sortedBacklog.length > 0 ? (
-                <div className="space-y-3">
-                  {sortedBacklog.map((item) => <IdentityCard key={item.id} item={item} />)}
-                </div>
-              ) : (
-                <div className="text-center py-20 bg-muted/30 rounded-xl border-2 border-dashed border-border">
-                  <div className="w-16 h-16 bg-card rounded-lg flex items-center justify-center mx-auto mb-4 shadow-sm"><Zap className="text-muted-foreground" size={32} /></div>
-                  <p className="text-foreground font-black text-xl">Your map is clear</p>
-                  <p className="text-muted-foreground mt-1 font-medium">Add identities or beliefs from the dashboard to track them here.</p>
-                </div>
-              )}
-            </TabsContent>
+          <TabsContent value="suggested" className="mt-0 focus-visible:ring-0">
+            {sortedBacklog.length > 0 ? (
+              <div className="space-y-3">
+                <Alert className="bg-indigo-50 border-indigo-100 rounded-xl mb-6">
+                  <Info className="h-4 w-4 text-indigo-600" />
+                  <AlertDescription className="text-sm text-indigo-900 font-medium">
+                    These insights were extracted by AI from your recent sessions. Review them and add the ones that resonate to your active map.
+                  </AlertDescription>
+                </Alert>
+                {sortedBacklog.map((item) => <IdentityCard key={item.id} item={item} />)}
+              </div>
+            ) : (
+              <div className="text-center py-20 bg-muted/30 rounded-xl border-2 border-dashed border-border">
+                <div className="w-16 h-16 bg-card rounded-lg flex items-center justify-center mx-auto mb-4 shadow-sm"><Sparkles className="text-muted-foreground" size={32} /></div>
+                <p className="text-foreground font-black text-xl">No suggestions yet</p>
+                <p className="text-muted-foreground mt-1 font-medium">Complete a session and run a "Deep Scan" to see AI insights here.</p>
+              </div>
+            )}
+          </TabsContent>
 
-            <TabsContent value="suggested" className="mt-0 focus-visible:ring-0">
-              {sortedBacklog.length > 0 ? (
-                <div className="space-y-3">
-                  <Alert className="bg-indigo-50 border-indigo-100 rounded-xl mb-6">
-                    <Info className="h-4 w-4 text-indigo-600" />
-                    <AlertDescription className="text-sm text-indigo-900 font-medium">
-                      These insights were extracted by AI from your recent sessions. Review them and add the ones that resonate to your active map.
-                    </AlertDescription>
-                  </Alert>
-                  {sortedBacklog.map((item) => <IdentityCard key={item.id} item={item} />)}
-                </div>
-              ) : (
-                <div className="text-center py-20 bg-muted/30 rounded-xl border-2 border-dashed border-border">
-                  <div className="w-16 h-16 bg-card rounded-lg flex items-center justify-center mx-auto mb-4 shadow-sm"><Sparkles className="text-muted-foreground" size={32} /></div>
-                  <p className="text-foreground font-black text-xl">No suggestions yet</p>
-                  <p className="text-muted-foreground mt-1 font-medium">Complete a session and run a "Deep Scan" to see AI insights here.</p>
-                </div>
-              )}
-            </TabsContent>
+          <TabsContent value="archive" className="mt-0 focus-visible:ring-0">
+            {sortedBacklog.length > 0 ? (
+              <div className="space-y-3">
+                {sortedBacklog.map((item) => <IdentityCard key={item.id} item={item} />)}
+              </div>
+            ) : (
+              <div className="text-center py-20 bg-muted/30 rounded-xl border-2 border-dashed border-border">
+                <div className="w-16 h-16 bg-card rounded-lg flex items-center justify-center mx-auto mb-4 shadow-sm"><Archive className="text-muted-foreground" size={32} /></div>
+                <p className="text-foreground font-black text-xl">No integrated identities yet</p>
+                <p className="text-muted-foreground mt-1 font-medium">Mark an active identity as "Integrated" to move it here.</p>
+              </div>
+            )}
+          </TabsContent>
 
-            <TabsContent value="archive" className="mt-0 focus-visible:ring-0">
-              {sortedBacklog.length > 0 ? (
-                <div className="space-y-3">
-                  {sortedBacklog.map((item) => <IdentityCard key={item.id} item={item} />)}
-                </div>
-              ) : (
-                <div className="text-center py-20 bg-muted/30 rounded-xl border-2 border-dashed border-border">
-                  <div className="w-16 h-16 bg-card rounded-lg flex items-center justify-center mx-auto mb-4 shadow-sm"><Archive className="text-muted-foreground" size={32} /></div>
-                  <p className="text-foreground font-black text-xl">No integrated identities yet</p>
-                  <p className="text-muted-foreground mt-1 font-medium">Mark an active identity as "Integrated" to move it here.</p>
-                </div>
-              )}
-            </TabsContent>
+          <TabsContent value="history" className="mt-0 focus-visible:ring-0">
+            <IdentityHistoryList />
+          </TabsContent>
+        </Tabs>
+      </div>
 
-            <TabsContent value="history" className="mt-0 focus-visible:ring-0">
-              <IdentityHistoryList />
-            </TabsContent>
-          </Tabs>
-        </div>
-
+      {!isSubPage && (
         <Card className="border-none shadow-md rounded-xl bg-slate-900 text-white overflow-hidden relative">
           <div className="absolute top-0 right-0 p-12 opacity-10"><Brain size={150} /></div>
           <CardContent className="p-10 md:p-14 flex flex-col md:flex-row items-center gap-10 relative z-10">
@@ -655,7 +739,15 @@ const SandboxPage = () => {
             </div>
           </CardContent>
         </Card>
-      </div>
+      )}
+    </div>
+  );
+
+  if (isSubPage) return content;
+
+  return (
+    <AppLayout variant="workspace">
+      {content}
     </AppLayout>
   );
 };

@@ -21,7 +21,11 @@ import {
   BookOpen,
   Activity,
   AlertCircle,
-  Dumbbell
+  Dumbbell,
+  History,
+  ShieldCheck,
+  Brain,
+  Plus
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Badge } from '@/components/ui/badge';
@@ -30,54 +34,81 @@ import { Alert, AlertDescription } from "@/components/ui/alert";
 import { EMOTION_CODE_CHART, ROW_DATA } from '@/data/emotion-code-data';
 import { Button } from '@/components/ui/button';
 
-const STEPS = [
+const ASSESSMENT_STEPS = [
   { 
     id: 1, 
-    title: "Discovery & Permission", 
-    desc: "Ask the body: 'Do you have a Heart Wall?' If yes, ask: 'Can we release an emotion from the Heart Wall now?'",
+    title: "Permission to Assess", 
+    desc: "Ask the body: 'Do we have permission to assess the Heart Wall?'",
+    icon: ShieldCheck,
+    color: "text-indigo-600",
+    bg: "bg-indigo-50"
+  },
+  { 
+    id: 2, 
+    title: "Find Emotion", 
+    desc: "Use the Emotion Chart and Pulse Points (PP) to identify the specific trapped emotion.",
     icon: Search,
     color: "text-rose-600",
     bg: "bg-rose-50"
   },
   { 
-    id: 2, 
-    title: "Material Identification", 
-    desc: "Identify the symbolic material of the wall (e.g., Wood, Stone, Metal, Glass). This represents the subconscious 'protection' strategy.",
-    icon: Layers,
-    color: "text-indigo-600",
-    bg: "bg-indigo-50"
-  },
-  { 
     id: 3, 
-    title: "Thickness & Size", 
-    desc: "Quantify the barrier. Ask for the thickness (e.g., miles, inches) or size. This helps the conscious mind grasp the scale of the protection.",
-    icon: Target,
+    title: "Assess Related Muscles", 
+    desc: "Verify the finding by testing the muscles associated with the identified organ/row.",
+    icon: Dumbbell,
     color: "text-amber-600",
     bg: "bg-amber-50"
   },
   { 
     id: 4, 
-    title: "Emotion Identification", 
-    desc: "Use the Emotion Chart below to identify the specific trapped emotion currently acting as a 'brick' in the wall.",
-    icon: Heart,
-    color: "text-rose-500",
-    bg: "bg-rose-50"
+    title: "Find Efferent Coordinates", 
+    desc: "Identify the specific brain zones (Cortical or Subcortical) associated with this pattern.",
+    icon: Brain,
+    color: "text-purple-600",
+    bg: "bg-purple-50"
   },
   { 
     id: 5, 
-    title: "The Release", 
-    desc: "Swipe 3 times (or 10 for inherited) along the Governing Meridian (from forehead to base of neck) while intending to release the emotion.",
-    icon: Zap,
+    title: "Gather Context (CH)", 
+    desc: "Identify the Age it happened, the associated Event, and if it is Inherited.",
+    icon: History,
+    color: "text-blue-600",
+    bg: "bg-blue-50"
+  }
+];
+
+const CORRECTION_STEPS = [
+  { 
+    id: 1, 
+    title: "Permission to Correct", 
+    desc: "Confirm the system is ready to release this specific layer.",
+    icon: CheckCircle2,
     color: "text-emerald-600",
     bg: "bg-emerald-50"
   },
   { 
-    id: 6, 
-    title: "Verification", 
-    desc: "Re-test the indicator muscle. Ask: 'Did we release that emotion?' and 'Is there another emotion we can release now?'",
-    icon: CheckCircle2,
-    color: "text-blue-600",
-    bg: "bg-blue-50"
+    id: 2, 
+    title: "Stim Heart Referral Zone", 
+    desc: "Stimulate the Heart Visceral Referral Zone (Chest, Shoulder, or Medial Arm).",
+    icon: Activity,
+    color: "text-rose-500",
+    bg: "bg-rose-50"
+  },
+  { 
+    id: 3, 
+    title: "Hold Organ Point/Muscle", 
+    desc: "Simultaneously hold the Organ Pulse Point or the associated muscle.",
+    icon: Hand,
+    color: "text-indigo-500",
+    bg: "bg-indigo-50"
+  },
+  { 
+    id: 4, 
+    title: "Tap Efferent Zones", 
+    desc: "Tap the identified brain zones while intending the release. (3 swipes, or 10 if inherited).",
+    icon: Zap,
+    color: "text-amber-500",
+    bg: "bg-amber-50"
   }
 ];
 
@@ -86,51 +117,72 @@ const HeartWallProtocol = () => {
   const [showChart, setShowChart] = useState(true);
 
   return (
-    <div className="space-y-8 animate-in fade-in duration-500 max-w-5xl mx-auto pb-20">
+    <div className="space-y-12 animate-in fade-in duration-500 max-w-5xl mx-auto pb-20">
       <div className="border-b border-slate-100 pb-6 mb-8">
         <h1 className="text-3xl font-serif font-bold text-slate-900">Heart Wall Protocol</h1>
         <p className="text-sm text-slate-500 font-medium mt-1">Subconscious Barrier Release Process</p>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
-        {/* Left: Steps & Visual References */}
-        <div className="lg:col-span-5 space-y-6">
-          {/* Client Education Card */}
-          <Card className="border-none shadow-lg rounded-[2.5rem] bg-indigo-50 border-2 border-indigo-100 overflow-hidden">
-            <CardHeader className="bg-indigo-600 p-6 text-white">
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-xl bg-white/20 flex items-center justify-center shadow-inner">
-                  <BookOpen size={20} />
-                </div>
-                <div>
-                  <CardTitle className="text-lg font-black">Client Education</CardTitle>
-                  <p className="text-indigo-200 text-[10px] font-bold uppercase tracking-widest">Read to client if necessary</p>
-                </div>
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-12">
+        {/* Left: Clinical Flow */}
+        <div className="lg:col-span-5 space-y-12">
+          {/* Assessment Summary Section */}
+          <section className="space-y-6">
+            <div className="flex items-center gap-3 px-2">
+              <div className="w-10 h-10 rounded-xl bg-indigo-600 text-white flex items-center justify-center shadow-lg">
+                <Search size={20} />
               </div>
-            </CardHeader>
-            <CardContent className="p-6 space-y-4">
-              <p className="text-sm font-bold text-indigo-900 leading-relaxed">
-                A Heart-Wall is made of one or more trapped emotions that the subconscious mind uses to surround the heart as a protective barrier against emotional pain.
-              </p>
-              <ul className="space-y-3">
-                {[
-                  "Each trapped emotion in the Heart-Wall is known as a Heart-Wall emotion.",
-                  "A Heart-Wall emotion is one layer in the collective Heart-Wall. When all Heart-Wall emotions have been removed, the Heart-Wall is gone.",
-                  "The Heart-Wall is usually created in response to emotional distress. The subconscious mind then uses pre-existing trapped emotions to form the wall.",
-                  "Heart-Wall emotions may be from any time in your own life and they can also be inherited.",
-                  "Most individuals have a Heart-Wall consisting of between five and 25 Heart-Wall emotions.",
-                  "A Heart-Wall may cause you to feel disconnected from others, lonely, sad, anxious, and unmotivated.",
-                  "Physical symptoms such as neck and shoulder discomfort may be present.",
-                  "It’s generally best to let the subconscious indicate what imbalances need to be released and in what order."
-                ].map((point, i) => (
-                  <li key={i} className="flex items-start gap-3 text-xs text-indigo-800 font-medium leading-relaxed">
-                    <div className="w-1.5 h-1.5 rounded-full bg-indigo-400 mt-1.5 shrink-0" />
-                    {point}
-                  </li>
-                ))}
-              </ul>
-            </CardContent>
-          </Card>
+              <h2 className="text-xl font-black text-slate-900 uppercase tracking-tight">Assessment Summary</h2>
+            </div>
+            
+            <div className="space-y-3">
+              {ASSESSMENT_STEPS.map((step) => (
+                <div key={step.id} className="p-4 rounded-2xl border border-slate-100 bg-white hover:shadow-md transition-all group">
+                  <div className="flex items-start gap-4">
+                    <div className={cn(
+                      "w-8 h-8 rounded-lg flex items-center justify-center shrink-0 font-black text-xs shadow-sm",
+                      step.bg, step.color
+                    )}>
+                      {step.id}
+                    </div>
+                    <div className="space-y-1 flex-1">
+                      <h4 className="font-bold text-sm text-slate-900">{step.title}</h4>
+                      <p className="text-xs text-slate-500 leading-relaxed">{step.desc}</p>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </section>
+
+          {/* Correction Summary Section */}
+          <section className="space-y-6">
+            <div className="flex items-center gap-3 px-2">
+              <div className="w-10 h-10 rounded-xl bg-emerald-600 text-white flex items-center justify-center shadow-lg">
+                <Zap size={20} />
+              </div>
+              <h2 className="text-xl font-black text-slate-900 uppercase tracking-tight">Correction Summary</h2>
+            </div>
+            
+            <div className="space-y-3">
+              {CORRECTION_STEPS.map((step) => (
+                <div key={step.id} className="p-4 rounded-2xl border border-emerald-100 bg-emerald-50/30 hover:shadow-md transition-all group">
+                  <div className="flex items-start gap-4">
+                    <div className={cn(
+                      "w-8 h-8 rounded-lg flex items-center justify-center shrink-0 font-black text-xs shadow-sm",
+                      step.bg, step.color
+                    )}>
+                      {step.id}
+                    </div>
+                    <div className="space-y-1 flex-1">
+                      <h4 className="font-bold text-sm text-emerald-900">{step.title}</h4>
+                      <p className="text-xs text-emerald-700 leading-relaxed">{step.desc}</p>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </section>
 
           {/* Visceral Referral Zone Card */}
           <Card className="border-none shadow-lg rounded-[2.5rem] bg-rose-50 border-2 border-rose-100 overflow-hidden">
@@ -173,102 +225,19 @@ const HeartWallProtocol = () => {
                     <li className="flex items-center gap-2"><div className="w-1.5 h-1.5 rounded-full bg-rose-500" /> Jaw / Neck (occasionally)</li>
                   </ul>
                 </div>
-                <Alert className="bg-amber-50 border-amber-200 rounded-xl">
-                  <AlertCircle className="h-4 w-4 text-amber-600" />
-                  <AlertDescription className="text-[10px] text-amber-900 font-medium leading-relaxed">
-                    <strong>Clinical Note:</strong> Chronic tension in these zones often resolves once the Heart Wall emotions are cleared.
-                  </AlertDescription>
-                </Alert>
-              </div>
-            </CardContent>
-          </Card>
-
-          <div className="space-y-4">
-            {STEPS.map((step) => (
-              <div 
-                key={step.id} 
-                className={cn(
-                  "p-5 rounded-2xl border transition-all group",
-                  step.id === 4 ? "border-rose-200 bg-rose-50/30 shadow-sm" : "border-slate-100 bg-white"
-                )}
-              >
-                <div className="flex items-start gap-6">
-                  <div className={cn(
-                    "w-10 h-10 rounded-xl flex items-center justify-center shrink-0 font-black text-sm shadow-sm transition-transform group-hover:scale-105",
-                    step.bg, step.color
-                  )}>
-                    {step.id}
-                  </div>
-                  <div className="space-y-2 flex-1">
-                    <div className="flex items-center gap-3">
-                      <h4 className="font-serif font-bold text-xl text-slate-900">
-                        {step.title}
-                      </h4>
-                      <Badge variant="outline" className="border-slate-100 text-slate-400 font-black text-[7px] uppercase tracking-widest px-1.5 py-0 rounded-none">
-                        Step {step.id}
-                      </Badge>
-                    </div>
-                    <p className="text-sm text-slate-600 leading-relaxed font-medium">
-                      {step.desc}
-                    </p>
-                  </div>
-                </div>
-              </div>
-            ))}
-          </div>
-
-          {/* Pulse Points Reference Card */}
-          <Card className="border-none shadow-xl rounded-[2.5rem] bg-white overflow-hidden border-2 border-indigo-100">
-            <CardHeader className="bg-indigo-600 p-6 text-white">
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-xl bg-white/20 flex items-center justify-center shadow-inner">
-                  <Hand size={20} />
-                </div>
-                <div>
-                  <CardTitle className="text-lg font-black">Organ Pulse Points</CardTitle>
-                  <p className="text-indigo-200 text-[10px] font-bold uppercase tracking-widest">TCM Diagnostic Reference</p>
-                </div>
-              </div>
-            </CardHeader>
-            <CardContent className="p-6">
-              <div className="aspect-square rounded-2xl overflow-hidden bg-slate-50 border border-slate-100 shadow-inner flex items-center justify-center p-4">
-                <img 
-                  src="/images/pulse-points.png" 
-                  alt="Organ Pulse Points Reference" 
-                  className="max-w-full h-auto rounded-lg"
-                  onError={(e) => {
-                    e.currentTarget.style.display = 'none';
-                    const parent = e.currentTarget.parentElement;
-                    if (parent) {
-                      const placeholder = document.createElement('div');
-                      placeholder.className = "flex flex-col items-center text-slate-300 gap-2";
-                      placeholder.innerHTML = '<ImageIcon size={48} /><p class="text-[10px] font-black uppercase tracking-widest">Pulse Points Diagram</p>';
-                      parent.appendChild(placeholder);
-                    }
-                  }}
-                />
-              </div>
-              <div className="mt-6 p-4 bg-indigo-50 rounded-2xl border border-indigo-100">
-                <div className="flex items-center gap-2 mb-2">
-                  <Info size={14} className="text-indigo-600" />
-                  <span className="text-[10px] font-black text-indigo-600 uppercase tracking-widest">Clinical Tip</span>
-                </div>
-                <p className="text-xs text-indigo-900 font-medium leading-relaxed">
-                  Use these points to verify the organ association for each row. Hold the point while testing the indicator muscle to confirm the priority "emotional brick".
-                </p>
               </div>
             </CardContent>
           </Card>
         </div>
 
-        {/* Right: Interactive Emotion Chart */}
-        <div className="lg:col-span-7 space-y-6">
+        {/* Right: Interactive Emotion Chart & Details */}
+        <div className="lg:col-span-7 space-y-8">
           <div className="flex items-center justify-between px-2">
             <div className="flex items-center gap-3">
               <div className="w-10 h-10 rounded-xl bg-rose-600 text-white flex items-center justify-center shadow-lg">
                 <Heart size={20} />
               </div>
-              <h3 className="text-xl font-black text-slate-900">Step 4: Emotion Chart</h3>
+              <h3 className="text-xl font-black text-slate-900">Emotion Chart (Step 2)</h3>
             </div>
             <Button 
               variant="ghost" 
@@ -365,7 +334,7 @@ const HeartWallProtocol = () => {
                     </div>
                     <div className="p-4 bg-white/10 rounded-2xl border border-white/10">
                       <p className="text-[9px] font-black text-indigo-300 uppercase tracking-widest mb-2 flex items-center gap-2">
-                        <Dumbbell size={12} /> Associated Muscles
+                        <Dumbbell size={12} /> Associated Muscles (Step 3)
                       </p>
                       <p className="text-xs font-medium text-indigo-100 leading-relaxed">
                         {ROW_DATA[selectedCell.row].muscles}
@@ -401,6 +370,43 @@ const HeartWallProtocol = () => {
               </div>
             </div>
           )}
+
+          {/* Client Education Card */}
+          <Card className="border-none shadow-lg rounded-[2.5rem] bg-indigo-50 border-2 border-indigo-100 overflow-hidden">
+            <CardHeader className="bg-indigo-600 p-6 text-white">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-xl bg-white/20 flex items-center justify-center shadow-inner">
+                  <BookOpen size={20} />
+                </div>
+                <div>
+                  <CardTitle className="text-lg font-black">Client Education</CardTitle>
+                  <p className="text-indigo-200 text-[10px] font-bold uppercase tracking-widest">Read to client if necessary</p>
+                </div>
+              </div>
+            </CardHeader>
+            <CardContent className="p-6 space-y-4">
+              <p className="text-sm font-bold text-indigo-900 leading-relaxed">
+                A Heart-Wall is made of one or more trapped emotions that the subconscious mind uses to surround the heart as a protective barrier against emotional pain.
+              </p>
+              <ul className="space-y-3">
+                {[
+                  "Each trapped emotion in the Heart-Wall is known as a Heart-Wall emotion.",
+                  "A Heart-Wall emotion is one layer in the collective Heart-Wall. When all Heart-Wall emotions have been removed, the Heart-Wall is gone.",
+                  "The Heart-Wall is usually created in response to emotional distress. The subconscious mind then uses pre-existing trapped emotions to form the wall.",
+                  "Heart-Wall emotions may be from any time in your own life and they can also be inherited.",
+                  "Most individuals have a Heart-Wall consisting of between five and 25 Heart-Wall emotions.",
+                  "A Heart-Wall may cause you to feel disconnected from others, lonely, sad, anxious, and unmotivated.",
+                  "Physical symptoms such as neck and shoulder discomfort may be present.",
+                  "It’s generally best to let the subconscious indicate what imbalances need to be released and in what order."
+                ].map((point, i) => (
+                  <li key={i} className="flex items-start gap-3 text-xs text-indigo-800 font-medium leading-relaxed">
+                    <div className="w-1.5 h-1.5 rounded-full bg-indigo-400 mt-1.5 shrink-0" />
+                    {point}
+                  </li>
+                ))}
+              </ul>
+            </CardContent>
+          </Card>
         </div>
       </div>
     </div>

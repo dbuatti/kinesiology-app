@@ -9,10 +9,6 @@ interface AppLayoutProps {
   children: React.ReactNode;
   hasFixedHeader?: boolean;
   className?: string;
-  /** 
-   * We maintain the variant prop for backward compatibility 
-   * but map all variants to the new strict width system.
-   */
   variant?: "standard" | "workspace" | "wide" | "full";
 }
 
@@ -24,10 +20,8 @@ const AppLayout = ({
 }: AppLayoutProps) => {
   const location = useLocation();
 
-  // Strict Width Rule: 1024px for standard, 1280px for workspace/data-heavy
-  const maxWidthClass = (variant === "workspace" || variant === "wide") 
-    ? "max-w-7xl" 
-    : "max-w-5xl";
+  // Standardize all pages to the wider 1280px (max-w-7xl) layout
+  const maxWidthClass = "max-w-7xl";
 
   return (
     <div

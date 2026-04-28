@@ -12,7 +12,7 @@ import {
   ArrowRight, Clock,
   ClipboardCheck, Link as LinkIcon, Check,
   Coffee, CalendarPlus, Target, GraduationCap, Sun, Heart, MessageSquare, Brain, Layers, Sparkles,
-  ChevronRight, Fingerprint, ShieldAlert, BookOpen, ShieldCheck, Trophy
+  ChevronRight, Fingerprint, ShieldAlert, BookOpen, ShieldCheck, Trophy, LayoutDashboard
 } from "lucide-react";
 
 import {
@@ -181,7 +181,7 @@ const Index = () => {
   }, []);
 
   if (loading) return (
-    <AppLayout variant="standard">
+    <AppLayout>
       <div className="space-y-8">
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
           <div className="space-y-2"><Skeleton className="h-8 w-48 rounded-lg" /><Skeleton className="h-3 w-64 rounded-lg" /></div>
@@ -194,7 +194,7 @@ const Index = () => {
   );
 
   return (
-    <AppLayout variant="standard">
+    <AppLayout>
       <div className="space-y-12">
         <PageHeader 
           title={`${mode.charAt(0).toUpperCase() + mode.slice(1)} Dashboard`}
@@ -203,6 +203,8 @@ const Index = () => {
             mode === 'lab' ? "Focus on your personal integration and practitioner state." :
             "Deepen your clinical knowledge and master the FNH protocols."
           }
+          icon={LayoutDashboard}
+          breadcrumbs={[{ label: "Dashboard" }]}
           badge={mode === 'clinical' ? "Clinical Command" : mode === 'lab' ? "Practice Lab" : "Knowledge Hub"}
           actions={
             <div className="flex items-center gap-3 bg-white dark:bg-slate-900 p-3 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm">

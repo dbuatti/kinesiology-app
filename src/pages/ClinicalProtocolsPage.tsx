@@ -7,8 +7,9 @@ import { CranialNerveAssessment } from "@/components/crm/CranialNerveAssessment"
 import { PrimitiveReflexAssessment } from "@/components/crm/PrimitiveReflexAssessment";
 import EmotionsProtocolReference from "@/components/crm/EmotionsProtocolReference";
 import MechanoreceptiveAssessment from "@/components/crm/MechanoreceptiveAssessment";
+import HeartWallProtocol from "@/components/crm/HeartWallProtocol";
 import { Button } from "@/components/ui/button";
-import { ChevronLeft, Brain, Loader2, Zap, FileText, Heart, Activity } from "lucide-react";
+import { ChevronLeft, Brain, Loader2, Zap, FileText, Heart, Activity, Shield } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 export default function ClinicalProtocolsPage() {
@@ -72,6 +73,13 @@ export default function ClinicalProtocolsPage() {
                 <Heart className="h-3.5 w-3.5 mr-2" />
                 Emotions
               </TabsTrigger>
+              <TabsTrigger 
+                value="heart-wall" 
+                className="inline-flex items-center justify-center whitespace-nowrap rounded-lg px-6 py-2 text-xs font-black uppercase tracking-widest ring-offset-background transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 data-[state=active]:bg-white data-[state=active]:text-slate-900 data-[state=active]:shadow-sm"
+              >
+                <Shield className="h-3.5 w-3.5 mr-2" />
+                Heart Wall
+              </TabsTrigger>
             </TabsList>
           </div>
           
@@ -100,6 +108,10 @@ export default function ClinicalProtocolsPage() {
 
           <TabsContent value="emotions" className="mt-0 focus-visible:ring-0 animate-in fade-in duration-300">
             <EmotionsProtocolReference />
+          </TabsContent>
+
+          <TabsContent value="heart-wall" className="mt-0 focus-visible:ring-0 animate-in fade-in duration-300">
+            <HeartWallProtocol />
           </TabsContent>
         </Tabs>
 

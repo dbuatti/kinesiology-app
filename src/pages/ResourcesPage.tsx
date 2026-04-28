@@ -43,7 +43,8 @@ import {
   Briefcase,
   Mic,
   MessageSquare,
-  Brain
+  Brain,
+  Shield
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -76,6 +77,7 @@ import PulsePointReference from "@/components/crm/PulsePointReference";
 import HandPolarityReference from "@/components/crm/HandPolarityReference";
 import MuscleReference from "@/components/crm/MuscleReference";
 import BaGuaReference from "@/components/crm/BaGuaReference";
+import HeartWallBible from "@/components/crm/HeartWallBible";
 
 const CATEGORIES = [
   {
@@ -88,6 +90,7 @@ const CATEGORIES = [
     items: [
       { id: "mechano-academy", label: "Mechano Academy", icon: Trophy, desc: "Daily clinical drills and mastery tools." },
       { id: "bible", label: "Mechano Bible", icon: BookOpen, desc: "Definitive guide to joints and movement geometry." },
+      { id: "heart-wall-bible", label: "Heart Wall Bible", icon: Shield, desc: "Understanding the subconscious shield." },
       { id: "theory", label: "FN Theory", icon: Workflow, desc: "Functional Neurology approach and principles." },
     ]
   },
@@ -236,7 +239,7 @@ const ResourcesPage = () => {
                   </div>
                   <CardContent className="p-8 relative z-10 flex flex-col justify-between h-full">
                     <div className="space-y-4">
-                      <Badge className="bg-indigo-500/20 text-indigo-300 border-indigo-500/30 font-black text-[10px] uppercase tracking-[0.3em] px-3 py-1 backdrop-blur-sm">
+                      <Badge className="bg-indigo-500/20 text-indigo-300 border-indigo-500/30 font-black text-[10px] uppercase tracking-[0.3em] px-4 py-1 backdrop-blur-sm">
                         Methodology
                       </Badge>
                       <h2 className="text-3xl font-black tracking-tighter leading-none">
@@ -400,6 +403,7 @@ const ResourcesPage = () => {
               {/* Foundations */}
               <TabsContent value="mechano-academy"><MechanoMasteryModule /></TabsContent>
               <TabsContent value="bible"><MechanoBible /></TabsContent>
+              <TabsContent value="heart-wall-bible"><HeartWallBible /></TabsContent>
               <TabsContent value="theory"><FnTheory /></TabsContent>
 
               {/* Clinical Reference */}

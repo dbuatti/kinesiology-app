@@ -18,7 +18,8 @@ import {
   CheckCircle2,
   Brain,
   Heart,
-  Info
+  Info,
+  Shield
 } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
@@ -39,6 +40,7 @@ import { CranialNerveAssessment } from "@/components/crm/CranialNerveAssessment"
 import { PrimitiveReflexAssessment } from "@/components/crm/PrimitiveReflexAssessment";
 import EmotionsProtocolReference from "@/components/crm/EmotionsProtocolReference";
 import MechanoreceptiveAssessment from "@/components/crm/MechanoreceptiveAssessment";
+import HeartWallProtocol from "@/components/crm/HeartWallProtocol";
 
 const SANDBOX_ID = "00000000-0000-0000-0000-000000000000";
 
@@ -348,6 +350,13 @@ const ProceduresPage = () => {
                       <Heart className="h-4 w-4 mr-2" />
                       Emotions
                     </TabsTrigger>
+                    <TabsTrigger 
+                      value="heart-wall" 
+                      className="inline-flex items-center justify-center whitespace-nowrap rounded-lg px-8 py-3 text-xs font-bold uppercase tracking-widest transition-all data-[state=active]:bg-white data-[state=active]:text-indigo-600 data-[state=active]:shadow-md"
+                    >
+                      <Shield className="h-4 w-4 mr-2" />
+                      Heart Wall
+                    </TabsTrigger>
                   </TabsList>
                 </div>
                 
@@ -377,6 +386,10 @@ const ProceduresPage = () => {
 
                   <TabsContent value="emotions" className="mt-0 focus-visible:ring-0">
                     <EmotionsProtocolReference />
+                  </TabsContent>
+
+                  <TabsContent value="heart-wall" className="mt-0 focus-visible:ring-0">
+                    <HeartWallProtocol />
                   </TabsContent>
                 </div>
               </Tabs>

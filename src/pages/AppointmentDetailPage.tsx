@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect, useMemo, useCallback } from "react";
-import { useParams, useNavigate } from "react-router-dom";
+import { useParams, useNavigate, Link } from "react-router-dom";
 import { 
   Loader2, Settings2, ChevronDown, PanelRightClose, MessageSquare, Brain 
 } from "lucide-react";
@@ -10,6 +10,8 @@ import { isToday } from "date-fns";
 import { cn } from "@/lib/utils";
 import { showSuccess, showError } from "@/utils/toast";
 import { useAppointment } from "@/hooks/useAppointment";
+import { supabase } from "@/integrations/supabase/client";
+import { Nuclei } from "@/utils/brainstem-logic";
 
 import AppLayout from "@/components/crm/AppLayout";
 import SessionTimer from "@/components/crm/SessionTimer";
@@ -53,8 +55,9 @@ const AppointmentDetailPage = () => {
   const [isFixedHeaderActive, setIsFixedHeaderActive] = useState(false);
   const [showSetup, setShowSetup] = useState(false);
   const [showSidebar, setShowSidebar] = useState(false);
-  const [nucleiFilter, setNucleiFilter] = useState<string | null>(null);
+  const [nucleiFilter, setNucleiFilter] = useState<Nuclei | null>(null);
   const [reflections, setReflections] = useState<any[]>([]);
+  const [isCopied, setIsCopied] = useState(false);
 
   // Loading states for actions
   const [actionStates, setActionStates] = useState({
@@ -269,6 +272,23 @@ const AppointmentDetailPage = () => {
     showSuccess("Session marked as Completed");
   }, [appointment, saveField]);
 
+  const handlePrint = useCallback(() => {
+    window.print();
+  }, []);
+
+  const handleCopySummary = useCallback(async () => {
+    if (!appointment) return;
+    try {
+      const summary = generateSessionSummary(appointment);
+      await navigator.clipboard.writeText(summary);
+      showSuccess("Session summary copied to clipboard");
+      setIsCopied(true);
+      setTimeout(() => setIsCopied(false), 2000);
+    } catch {
+      showError("Failed to copy summary");
+    }
+  }, [appointment]);
+
   // Early returns
   if (loading) {
     return (
@@ -410,9 +430,12 @@ const AppointmentDetailPage = () => {
                 showSidebar={showSidebar}
                 onToggleSidebar={() => setShowSidebar(!showSidebar)}
                 onClonePrevious={handleClonePrevious}
+                onPrint={handlePrint}
+                onCopySummary={handleCopySummary}
                 onDelete={handleDeleteAppointment}
                 onStartSession={handleStartSession}
                 isCloning={actionStates.cloning}
+                isCopied={isCopied}
               />
             </div>
 
@@ -429,9 +452,9 @@ const AppointmentDetailPage = () => {
                           <h3 className="font-semibold">Practitioner Reflections</h3>
                         </div>
                         <Button variant="ghost" size="sm" asChild>
-                          <Link to="/practice/reflections" state={{ appointmentId: id }}>
+                          <Link to="/practice/journal" state={{ appointmentId: id }}>
                             + Add
-                          </Button>
+                          </Link>
                         </Button>
                       </div>
 

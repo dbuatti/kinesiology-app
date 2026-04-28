@@ -23,7 +23,6 @@ import AppLayout from "@/components/crm/AppLayout";
 import Breadcrumbs from "@/components/shared/Breadcrumbs";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
-import PageHeader from "@/components/shared/PageHeader";
 
 const WORKSHEETS = [
   {
@@ -89,103 +88,103 @@ const WORKSHEETS = [
   }
 ];
 
-interface WorksheetsHubPageProps {
-  isSubPage?: boolean;
-}
-
-const WorksheetsHubPage = ({ isSubPage = false }: WorksheetsHubPageProps) => {
-  const content = (
-    <div className="space-y-10">
-      {!isSubPage && (
-        <PageHeader 
-          title="Worksheets & Reflections"
-          subtitle="Tools for personal integration and practitioner development."
-          icon={FileText}
-          breadcrumbs={[{ label: "Resources", path: "/resources" }, { label: "Worksheets" }]}
+const WorksheetsHubPage = () => {
+  return (
+    <AppLayout>
+      <div className="space-y-10">
+        <Breadcrumbs 
+          items={[
+            { label: "Resources", path: "/resources" },
+            { label: "Worksheets" }
+          ]} 
         />
-      )}
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {WORKSHEETS.map((ws) => (
-          <div key={ws.id} className="flex flex-col h-full">
-            <Link to={ws.path} className="block group flex-1">
-              <Card className="border-none shadow-md rounded-[2.5rem] bg-card hover:shadow-xl hover:-translate-y-1 transition-all duration-300 h-full overflow-hidden">
-                <CardContent className="p-8 space-y-6">
-                  <div className="flex items-start justify-between">
-                    <div className={cn(
-                      "w-14 h-14 rounded-2xl flex items-center justify-center transition-all duration-500 group-hover:scale-110 shadow-sm",
-                      ws.bgColor, ws.color
-                    )}>
-                      <ws.icon size={28} />
-                    </div>
-                    <Badge variant="secondary" className="bg-muted text-muted-foreground border-none font-black text-[8px] uppercase tracking-widest px-2 py-0.5 rounded-full">
-                      {ws.category}
-                    </Badge>
-                  </div>
-                  
-                  <div className="space-y-2">
-                    <h3 className="text-xl font-black text-foreground group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors">{ws.label}</h3>
-                    <p className="text-sm text-muted-foreground font-medium leading-relaxed">
-                      {ws.desc}
-                    </p>
-                  </div>
-
-                  <div className="pt-4 flex items-center justify-between border-t border-border">
-                    <span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground group-hover:text-indigo-600 transition-colors">
-                      Open Worksheet
-                    </span>
-                    <div className="w-8 h-8 rounded-xl bg-muted flex items-center justify-center text-muted-foreground group-hover:bg-indigo-600 group-hover:text-white transition-all">
-                      <ChevronRight size={18} />
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-            </Link>
-            {ws.videoUrl && (
-              <div className="mt-3 px-4">
-                <Button variant="ghost" size="sm" asChild className="w-full rounded-xl h-9 text-[10px] font-black uppercase tracking-widest text-indigo-600 hover:bg-indigo-50">
-                  <a href={ws.videoUrl} target="_blank" rel="noopener noreferrer">
-                    <PlayCircle size={14} className="mr-2" /> Watch Lesson Recording
-                  </a>
-                </Button>
-              </div>
-            )}
-          </div>
-        ))}
-      </div>
-
-      <Card className="border-none shadow-lg rounded-[3rem] bg-slate-900 text-white overflow-hidden relative">
-        <div className="absolute top-0 right-0 p-12 opacity-10"><Sparkles size={150} /></div>
-        <CardContent className="p-10 md:p-14 flex flex-col md:flex-row items-center gap-10 relative z-10">
-          <div className="w-24 h-24 rounded-[2rem] bg-indigo-600 flex items-center justify-center shrink-0 shadow-2xl shadow-indigo-500/40">
-            <Brain size={48} className="text-white" />
-          </div>
-          <div className="space-y-4">
-            <h4 className="text-2xl font-black">The Power of Reflection</h4>
-            <p className="text-slate-400 font-medium text-lg leading-relaxed">
-              "Awareness is the first step of integration. These worksheets are designed to help you name the patterns, reduce their power, and step into your full sovereignty as a healer."
-            </p>
-            <div className="flex gap-4 pt-2">
-              <div className="flex items-center gap-2">
-                <CheckCircle2 size={16} className="text-emerald-400" />
-                <span className="text-xs font-bold text-slate-300">Auto-saving progress</span>
-              </div>
-              <div className="flex items-center gap-2">
-                <CheckCircle2 size={16} className="text-emerald-400" />
-                <span className="text-xs font-bold text-slate-300">Print-ready layouts</span>
-              </div>
+        <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
+          <div className="flex items-center gap-5">
+            <div className="w-16 h-16 rounded-[1.5rem] bg-indigo-600 text-white flex items-center justify-center shadow-2xl shadow-indigo-200 dark:shadow-indigo-900/20">
+              <FileText size={32} />
+            </div>
+            <div>
+              <h1 className="text-4xl font-black tracking-tight text-foreground">Worksheets & Reflections</h1>
+              <p className="text-muted-foreground font-medium mt-1 text-lg">Tools for personal integration and practitioner development.</p>
             </div>
           </div>
-        </CardContent>
-      </Card>
-    </div>
-  );
+        </div>
 
-  if (isSubPage) return content;
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {WORKSHEETS.map((ws) => (
+            <div key={ws.id} className="flex flex-col h-full">
+              <Link to={ws.path} className="block group flex-1">
+                <Card className="border-none shadow-md rounded-[2.5rem] bg-card hover:shadow-xl hover:-translate-y-1 transition-all duration-300 h-full overflow-hidden">
+                  <CardContent className="p-8 space-y-6">
+                    <div className="flex items-start justify-between">
+                      <div className={cn(
+                        "w-14 h-14 rounded-2xl flex items-center justify-center transition-all duration-500 group-hover:scale-110 shadow-sm",
+                        ws.bgColor, ws.color
+                      )}>
+                        <ws.icon size={28} />
+                      </div>
+                      <Badge variant="secondary" className="bg-muted text-muted-foreground border-none font-black text-[8px] uppercase tracking-widest px-2 py-0.5 rounded-full">
+                        {ws.category}
+                      </Badge>
+                    </div>
+                    
+                    <div className="space-y-2">
+                      <h3 className="text-xl font-black text-foreground group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors">{ws.label}</h3>
+                      <p className="text-sm text-muted-foreground font-medium leading-relaxed">
+                        {ws.desc}
+                      </p>
+                    </div>
 
-  return (
-    <AppLayout variant="workspace">
-      {content}
+                    <div className="pt-4 flex items-center justify-between border-t border-border">
+                      <span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground group-hover:text-indigo-600 transition-colors">
+                        Open Worksheet
+                      </span>
+                      <div className="w-8 h-8 rounded-xl bg-muted flex items-center justify-center text-muted-foreground group-hover:bg-indigo-600 group-hover:text-white transition-all">
+                        <ChevronRight size={18} />
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              </Link>
+              {ws.videoUrl && (
+                <div className="mt-3 px-4">
+                  <Button variant="ghost" size="sm" asChild className="w-full rounded-xl h-9 text-[10px] font-black uppercase tracking-widest text-indigo-600 hover:bg-indigo-50">
+                    <a href={ws.videoUrl} target="_blank" rel="noopener noreferrer">
+                      <PlayCircle size={14} className="mr-2" /> Watch Lesson Recording
+                    </a>
+                  </Button>
+                </div>
+              )}
+            </div>
+          ))}
+        </div>
+
+        <Card className="border-none shadow-lg rounded-[3rem] bg-slate-900 text-white overflow-hidden relative">
+          <div className="absolute top-0 right-0 p-12 opacity-10"><Sparkles size={150} /></div>
+          <CardContent className="p-10 md:p-14 flex flex-col md:flex-row items-center gap-10 relative z-10">
+            <div className="w-24 h-24 rounded-[2rem] bg-indigo-600 flex items-center justify-center shrink-0 shadow-2xl shadow-indigo-500/40">
+              <Brain size={48} className="text-white" />
+            </div>
+            <div className="space-y-4">
+              <h4 className="text-2xl font-black">The Power of Reflection</h4>
+              <p className="text-slate-400 font-medium text-lg leading-relaxed">
+                "Awareness is the first step of integration. These worksheets are designed to help you name the patterns, reduce their power, and step into your full sovereignty as a healer."
+              </p>
+              <div className="flex gap-4 pt-2">
+                <div className="flex items-center gap-2">
+                  <CheckCircle2 size={16} className="text-emerald-400" />
+                  <span className="text-xs font-bold text-slate-300">Auto-saving progress</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <CheckCircle2 size={16} className="text-emerald-400" />
+                  <span className="text-xs font-bold text-slate-300">Print-ready layouts</span>
+                </div>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
     </AppLayout>
   );
 };

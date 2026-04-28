@@ -56,7 +56,6 @@ import {
 } from "@/components/ui/select";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Link, useLocation } from "react-router-dom";
-import PageHeader from "@/components/shared/PageHeader";
 
 const CATEGORIES = [
   { id: 'General', icon: Lock, color: 'text-slate-500', bg: 'bg-slate-50' },
@@ -386,48 +385,46 @@ const JournalPage = () => {
   };
 
   return (
-    <AppLayout variant="workspace">
-      <div className="space-y-10 animate-in fade-in duration-700">
-        <PageHeader 
-          title="Practitioner Journal"
-          subtitle="Private reflections and session-linked insights."
-          icon={MessageSquare}
-          breadcrumbs={[{ label: "Practice" }, { label: "Journal" }]}
-          actions={
-            <div className="flex items-center gap-3">
-              <Button 
-                variant="outline" 
-                onClick={handleScanAll}
-                disabled={isScanning || reflections.length === 0}
-                className="rounded-xl h-12 px-6 font-bold text-xs uppercase tracking-widest border-indigo-100 text-indigo-600 hover:bg-indigo-50"
-              >
-                {isScanning ? <Loader2 className="animate-spin mr-2" /> : <Wand2 size={18} className="mr-2" />}
-                Scan All Entries
-              </Button>
-              <Button 
-                variant="outline" 
-                onClick={() => handleAddAllToBacklog()}
-                disabled={isAddingAll || reflections.length === 0}
-                className="rounded-xl h-12 px-6 font-bold text-xs uppercase tracking-widest border-emerald-100 text-emerald-600 hover:bg-emerald-50"
-              >
-                {isAddingAll ? <Loader2 className="animate-spin mr-2" /> : <Layers size={18} className="mr-2" />}
-                Add All to Backlog
-              </Button>
-            </div>
-          }
-        />
+    <AppLayout>
+      <div className="max-w-5xl mx-auto space-y-10 animate-in fade-in duration-700">
+        <Breadcrumbs items={[{ label: "Practitioner Journal" }]} />
+
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
+          <div className="space-y-1">
+            <h1 className="text-4xl font-black tracking-tight text-slate-900">Practitioner Journal</h1>
+            <p className="text-slate-500 font-medium text-lg">Private reflections and session-linked insights.</p>
+          </div>
+          <div className="flex items-center gap-3">
+            <Button 
+              variant="outline" 
+              onClick={handleScanAll}
+              disabled={isScanning || reflections.length === 0}
+              className="rounded-xl h-12 px-6 font-bold text-xs uppercase tracking-widest border-indigo-100 text-indigo-600 hover:bg-indigo-50"
+            >
+              {isScanning ? <Loader2 className="animate-spin mr-2" /> : <Wand2 size={18} className="mr-2" />}
+              Scan All Entries
+            </Button>
+            <Button 
+              variant="outline" 
+              onClick={() => handleAddAllToBacklog()}
+              disabled={isAddingAll || reflections.length === 0}
+              className="rounded-xl h-12 px-6 font-bold text-xs uppercase tracking-widest border-emerald-100 text-emerald-600 hover:bg-emerald-50"
+            >
+              {isAddingAll ? <Loader2 className="animate-spin mr-2" /> : <Layers size={18} className="mr-2" />}
+              Add All to Backlog
+            </Button>
+          </div>
+        </div>
 
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-          <div className="flex justify-center mb-8">
-            <TabsList className="grid w-full grid-cols-2 h-14 bg-slate-200/50 p-1.5 rounded-2xl mb-8">
-              <TabsTrigger value="log" className="flex items-center gap-2 data-[state=active]:bg-white data-[state=active]:text-indigo-600 data-[state=active]:shadow-sm rounded-xl h-11 font-black uppercase tracking-wider text-[10px]">
-                <BookOpen size={14} /> Journal Log
-              </TabsTrigger>
-              <TabsTrigger value="meetup" className="flex items-center gap-2 data-[state=active]:bg-white data-[state=active]:text-indigo-600 data-[state=active]:shadow-sm rounded-xl h-11 font-black uppercase tracking-wider text-[10px]">
-                <GraduationCap size={14} /> Meetup Questions
-              </TabsTrigger>
-            </TabsList>
-          </div>
+          <TabsList className="grid w-full grid-cols-2 h-14 bg-slate-200/50 p-1.5 rounded-2xl mb-8">
+            <TabsTrigger value="log" className="flex items-center gap-2 data-[state=active]:bg-white data-[state=active]:text-indigo-600 data-[state=active]:shadow-sm rounded-xl h-11 font-black uppercase tracking-wider text-[10px]">
+              <BookOpen size={14} /> Journal Log
+            </TabsTrigger>
+            <TabsTrigger value="meetup" className="flex items-center gap-2 data-[state=active]:bg-white data-[state=active]:text-indigo-600 data-[state=active]:shadow-sm rounded-xl h-11 font-black uppercase tracking-wider text-[10px]">
+              <GraduationCap size={14} /> Meetup Questions
+            </TabsTrigger>
+          </TabsList>
 
           <TabsContent value="log" className="space-y-10 mt-0">
             <Card className="border-none shadow-xl rounded-[2.5rem] bg-white overflow-hidden">

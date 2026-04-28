@@ -24,7 +24,6 @@ import {
 import { cn } from '@/lib/utils';
 import { format, isToday } from 'date-fns';
 import { showSuccess } from '@/utils/toast';
-import PageHeader from '@/components/shared/PageHeader';
 
 const STORAGE_KEY = "antigravity_morning_program";
 
@@ -81,20 +80,24 @@ const MorningProgramPage = () => {
   const progress = (completedTasks.length / TASKS.length) * 100;
 
   return (
-    <AppLayout variant="workspace">
-      <div className="space-y-10 animate-in fade-in duration-700">
-        <PageHeader 
-          title="Morning Program"
-          subtitle="Establish your clinical state before the first session."
-          icon={Sun}
-          iconClassName="bg-amber-500"
-          breadcrumbs={[{ label: "Practice" }, { label: "Morning Program" }]}
-          actions={
-            <Button variant="ghost" onClick={resetProgram} className="text-[10px] font-black uppercase tracking-widest text-slate-400 hover:text-rose-600">
-              <RotateCcw size={14} className="mr-2" /> Reset Daily
-            </Button>
-          }
-        />
+    <AppLayout>
+      <div className="max-w-4xl mx-auto py-12 px-4 sm:px-6 lg:px-8 animate-in fade-in duration-700">
+        <Breadcrumbs items={[{ label: "Library", path: "/resources" }, { label: "Morning Program" }]} />
+
+        <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
+          <div className="flex items-center gap-5">
+            <div className="w-16 h-16 rounded-[1.5rem] bg-amber-500 text-white flex items-center justify-center shadow-2xl shadow-amber-200 dark:shadow-amber-900/20">
+              <Sun size={32} className="fill-current" />
+            </div>
+            <div>
+              <h1 className="text-4xl font-black tracking-tight text-foreground">Morning Program</h1>
+              <p className="text-muted-foreground font-medium mt-1 text-lg">Establish your clinical state before the first session.</p>
+            </div>
+          </div>
+          <Button variant="ghost" onClick={resetProgram} className="text-[10px] font-black uppercase tracking-widest text-slate-400 hover:text-rose-600">
+            <RotateCcw size={14} className="mr-2" /> Reset Daily
+          </Button>
+        </div>
 
         {/* Progress Bar */}
         <div className="space-y-3 px-2">

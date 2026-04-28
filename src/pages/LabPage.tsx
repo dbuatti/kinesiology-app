@@ -3,25 +3,20 @@
 import React from "react";
 import { useSearchParams } from "react-router-dom";
 import AppLayout from "@/components/crm/AppLayout";
+import Breadcrumbs from "@/components/shared/Breadcrumbs";
 import SandboxPage from "./SandboxPage";
 import WorksheetsHubPage from "./WorksheetsHubPage";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Compass, FileText, Sparkles } from "lucide-react";
-import PageHeader from "@/components/shared/PageHeader";
+import { Compass, FileText, Sparkles, LayoutGrid } from "lucide-react";
 
 const LabPage = () => {
   const [searchParams, setSearchParams] = useSearchParams();
   const activeTab = searchParams.get("tab") || "map";
 
   return (
-    <AppLayout variant="workspace">
+    <AppLayout>
       <div className="space-y-8">
-        <PageHeader 
-          title="Practice Lab"
-          subtitle="Your personal space for identity work, integration practices, and program worksheets."
-          icon={Sparkles}
-          breadcrumbs={[{ label: "Practice" }, { label: "The Lab" }]}
-        />
+        <Breadcrumbs items={[{ label: "Practice Lab" }, { label: "The Lab" }]} />
         
         <Tabs value={activeTab} onValueChange={(v) => setSearchParams({ tab: v })} className="w-full">
           <div className="flex justify-center mb-8">
@@ -44,11 +39,11 @@ const LabPage = () => {
           </div>
 
           <TabsContent value="map" className="mt-0 focus-visible:ring-0 animate-in fade-in duration-500">
-            <SandboxPage isSubPage />
+            <SandboxPage />
           </TabsContent>
 
           <TabsContent value="worksheets" className="mt-0 focus-visible:ring-0 animate-in fade-in duration-500">
-            <WorksheetsHubPage isSubPage />
+            <WorksheetsHubPage />
           </TabsContent>
         </Tabs>
       </div>

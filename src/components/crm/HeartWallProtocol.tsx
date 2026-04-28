@@ -25,7 +25,11 @@ import {
   History,
   ShieldCheck,
   Brain,
-  Plus
+  Plus,
+  LayoutGrid,
+  ClipboardList,
+  Workflow,
+  ArrowRightLeft
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Badge } from '@/components/ui/badge';
@@ -33,158 +37,99 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/com
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { EMOTION_CODE_CHART, ROW_DATA } from '@/data/emotion-code-data';
 import { Button } from '@/components/ui/button';
+import { motion, AnimatePresence } from 'framer-motion';
 
 const ASSESSMENT_STEPS = [
-  { 
-    id: 1, 
-    title: "Permission to Assess", 
-    desc: "Ask the body: 'Do we have permission to assess the Heart Wall?'",
-    icon: ShieldCheck,
-    color: "text-indigo-600",
-    bg: "bg-indigo-50"
-  },
-  { 
-    id: 2, 
-    title: "Find Emotion", 
-    desc: "Use the Emotion Chart and Pulse Points (PP) to identify the specific trapped emotion.",
-    icon: Search,
-    color: "text-rose-600",
-    bg: "bg-rose-50"
-  },
-  { 
-    id: 3, 
-    title: "Assess Related Muscles", 
-    desc: "Verify the finding by testing the muscles associated with the identified organ/row.",
-    icon: Dumbbell,
-    color: "text-amber-600",
-    bg: "bg-amber-50"
-  },
-  { 
-    id: 4, 
-    title: "Find Efferent Coordinates", 
-    desc: "Identify the specific brain zones (Cortical or Subcortical) associated with this pattern.",
-    icon: Brain,
-    color: "text-purple-600",
-    bg: "bg-purple-50"
-  },
-  { 
-    id: 5, 
-    title: "Gather Context (CH)", 
-    desc: "Identify the Age it happened, the associated Event, and if it is Inherited.",
-    icon: History,
-    color: "text-blue-600",
-    bg: "bg-blue-50"
-  }
+  { id: 1, title: "Permission", desc: "Assess Heart Wall presence & permission.", icon: ShieldCheck, color: "text-indigo-600", bg: "bg-indigo-50" },
+  { id: 2, title: "Find Emotion", desc: "Identify the specific trapped emotion.", icon: Search, color: "text-rose-600", bg: "bg-rose-50" },
+  { id: 3, title: "Verify Muscles", desc: "Test associated organ/row muscles.", icon: Dumbbell, color: "text-amber-600", bg: "bg-amber-50" },
+  { id: 4, title: "Brain Zones", desc: "Identify Efferent brain coordinates.", icon: Brain, color: "text-purple-600", bg: "bg-purple-50" },
+  { id: 5, title: "Context (CH)", desc: "Age, Event, or Inherited status.", icon: History, color: "text-blue-600", bg: "bg-blue-50" }
 ];
 
 const CORRECTION_STEPS = [
-  { 
-    id: 1, 
-    title: "Permission to Correct", 
-    desc: "Confirm the system is ready to release this specific layer.",
-    icon: CheckCircle2,
-    color: "text-emerald-600",
-    bg: "bg-emerald-50"
-  },
-  { 
-    id: 2, 
-    title: "Stim Heart Referral Zone", 
-    desc: "Stimulate the Heart Visceral Referral Zone (Chest, Shoulder, or Medial Arm).",
-    icon: Activity,
-    color: "text-rose-500",
-    bg: "bg-rose-50"
-  },
-  { 
-    id: 3, 
-    title: "Hold Organ Point/Muscle", 
-    desc: "Simultaneously hold the Organ Pulse Point or the associated muscle.",
-    icon: Hand,
-    color: "text-indigo-500",
-    bg: "bg-indigo-50"
-  },
-  { 
-    id: 4, 
-    title: "Tap Efferent Zones", 
-    desc: "Tap the identified brain zones while intending the release. (3 swipes, or 10 if inherited).",
-    icon: Zap,
-    color: "text-amber-500",
-    bg: "bg-amber-50"
-  }
+  { id: 6, title: "Permission", desc: "Confirm readiness to release layer.", icon: CheckCircle2, color: "text-emerald-600", bg: "bg-emerald-50" },
+  { id: 7, title: "Stim Zone", desc: "Stimulate Heart Referral Zone.", icon: Activity, color: "text-rose-500", bg: "bg-rose-50" },
+  { id: 8, title: "Hold Point", desc: "Hold Organ Pulse Point or Muscle.", icon: Hand, color: "text-indigo-500", bg: "bg-indigo-50" },
+  { id: 9, title: "Tap & Release", desc: "Tap Efferent zones with intention.", icon: Zap, color: "text-amber-500", bg: "bg-amber-50" }
+];
+
+const MATERIALS = [
+  { name: "Wood", desc: "Flexible but sturdy protection.", icon: "🌳" },
+  { name: "Stone", desc: "Heavy, ancient, rigid barrier.", icon: "🪨" },
+  { name: "Metal", desc: "Cold, impenetrable shield.", icon: "🛡️" },
+  { name: "Glass", desc: "Fragile, transparent, sharp.", icon: "💎" },
+  { name: "Plastic", desc: "Artificial, synthetic, isolating.", icon: "📦" }
 ];
 
 const HeartWallProtocol = () => {
   const [selectedCell, setSelectedCell] = useState<{ row: number, col: 'A' | 'B' } | null>(null);
   const [showChart, setShowChart] = useState(true);
+  const [activeFlow, setActiveFlow] = useState<'assessment' | 'correction'>('assessment');
 
   return (
-    <div className="space-y-12 animate-in fade-in duration-500 max-w-5xl mx-auto pb-20">
-      <div className="border-b border-slate-100 pb-6 mb-8">
-        <h1 className="text-3xl font-serif font-bold text-slate-900">Heart Wall Protocol</h1>
-        <p className="text-sm text-slate-500 font-medium mt-1">Subconscious Barrier Release Process</p>
+    <div className="space-y-10 animate-in fade-in duration-700 max-w-full mx-auto pb-20">
+      {/* Header Section */}
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 border-b border-slate-100 pb-8">
+        <div className="space-y-1">
+          <h1 className="text-4xl font-serif font-bold text-slate-900">Heart Wall Protocol</h1>
+          <p className="text-lg text-slate-500 font-medium">Subconscious Barrier Release & Neural Integration</p>
+        </div>
+        <div className="flex gap-3">
+          <Badge className="bg-rose-600 text-white border-none font-black text-[10px] uppercase tracking-[0.3em] px-4 py-2 rounded-full shadow-lg shadow-rose-200">
+            Clinical Standard
+          </Badge>
+        </div>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-12">
-        {/* Left: Clinical Flow */}
-        <div className="lg:col-span-5 space-y-12">
-          {/* Assessment Summary Section */}
-          <section className="space-y-6">
-            <div className="flex items-center gap-3 px-2">
-              <div className="w-10 h-10 rounded-xl bg-indigo-600 text-white flex items-center justify-center shadow-lg">
-                <Search size={20} />
+      <div className="grid grid-cols-1 xl:grid-cols-12 gap-10">
+        {/* Left Column: Clinical Pathway & Reference */}
+        <div className="xl:col-span-4 space-y-10">
+          {/* Pathway Card */}
+          <Card className="border-none shadow-xl rounded-[2.5rem] bg-white overflow-hidden">
+            <CardHeader className="p-8 pb-4">
+              <div className="flex items-center justify-between">
+                <CardTitle className="text-xl font-black flex items-center gap-3 text-slate-900">
+                  <Workflow size={24} className="text-indigo-600" /> Clinical Pathway
+                </CardTitle>
+                <div className="flex bg-slate-100 p-1 rounded-xl">
+                  <button 
+                    onClick={() => setActiveFlow('assessment')}
+                    className={cn("px-3 py-1.5 rounded-lg text-[9px] font-black uppercase tracking-widest transition-all", activeFlow === 'assessment' ? "bg-white text-indigo-600 shadow-sm" : "text-slate-400")}
+                  >
+                    Assess
+                  </button>
+                  <button 
+                    onClick={() => setActiveFlow('correction')}
+                    className={cn("px-3 py-1.5 rounded-lg text-[9px] font-black uppercase tracking-widest transition-all", activeFlow === 'correction' ? "bg-white text-emerald-600 shadow-sm" : "text-slate-400")}
+                  >
+                    Correct
+                  </button>
+                </div>
               </div>
-              <h2 className="text-xl font-black text-slate-900 uppercase tracking-tight">Assessment Summary</h2>
-            </div>
-            
-            <div className="space-y-3">
-              {ASSESSMENT_STEPS.map((step) => (
-                <div key={step.id} className="p-4 rounded-2xl border border-slate-100 bg-white hover:shadow-md transition-all group">
-                  <div className="flex items-start gap-4">
+            </CardHeader>
+            <CardContent className="p-8 pt-0">
+              <div className="relative space-y-4">
+                <div className="absolute left-4 top-2 bottom-2 w-0.5 bg-slate-100" />
+                {(activeFlow === 'assessment' ? ASSESSMENT_STEPS : CORRECTION_STEPS).map((step) => (
+                  <div key={step.id} className="relative flex items-start gap-6 group">
                     <div className={cn(
-                      "w-8 h-8 rounded-lg flex items-center justify-center shrink-0 font-black text-xs shadow-sm",
+                      "w-8 h-8 rounded-xl flex items-center justify-center shrink-0 font-black text-[10px] shadow-sm z-10 transition-transform group-hover:scale-110",
                       step.bg, step.color
                     )}>
                       {step.id}
                     </div>
-                    <div className="space-y-1 flex-1">
-                      <h4 className="font-bold text-sm text-slate-900">{step.title}</h4>
-                      <p className="text-xs text-slate-500 leading-relaxed">{step.desc}</p>
+                    <div className="space-y-1 pt-1">
+                      <h4 className="font-bold text-sm text-slate-900 leading-none">{step.title}</h4>
+                      <p className="text-[11px] text-slate-500 font-medium leading-relaxed">{step.desc}</p>
                     </div>
                   </div>
-                </div>
-              ))}
-            </div>
-          </section>
-
-          {/* Correction Summary Section */}
-          <section className="space-y-6">
-            <div className="flex items-center gap-3 px-2">
-              <div className="w-10 h-10 rounded-xl bg-emerald-600 text-white flex items-center justify-center shadow-lg">
-                <Zap size={20} />
+                ))}
               </div>
-              <h2 className="text-xl font-black text-slate-900 uppercase tracking-tight">Correction Summary</h2>
-            </div>
-            
-            <div className="space-y-3">
-              {CORRECTION_STEPS.map((step) => (
-                <div key={step.id} className="p-4 rounded-2xl border border-emerald-100 bg-emerald-50/30 hover:shadow-md transition-all group">
-                  <div className="flex items-start gap-4">
-                    <div className={cn(
-                      "w-8 h-8 rounded-lg flex items-center justify-center shrink-0 font-black text-xs shadow-sm",
-                      step.bg, step.color
-                    )}>
-                      {step.id}
-                    </div>
-                    <div className="space-y-1 flex-1">
-                      <h4 className="font-bold text-sm text-emerald-900">{step.title}</h4>
-                      <p className="text-xs text-emerald-700 leading-relaxed">{step.desc}</p>
-                    </div>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </section>
+            </CardContent>
+          </Card>
 
-          {/* Visceral Referral Zone Card */}
+          {/* Visceral Referral Zone */}
           <Card className="border-none shadow-lg rounded-[2.5rem] bg-rose-50 border-2 border-rose-100 overflow-hidden">
             <CardHeader className="bg-rose-600 p-6 text-white">
               <div className="flex items-center gap-3">
@@ -192,13 +137,13 @@ const HeartWallProtocol = () => {
                   <Activity size={20} />
                 </div>
                 <div>
-                  <CardTitle className="text-lg font-black">Visceral Referral Zone</CardTitle>
+                  <CardTitle className="text-lg font-black">Referral Zone (Step 7)</CardTitle>
                   <p className="text-rose-200 text-[10px] font-bold uppercase tracking-widest">Heart Somatic Mapping</p>
                 </div>
               </div>
             </CardHeader>
             <CardContent className="p-6 space-y-6">
-              <div className="aspect-[3/4] rounded-2xl overflow-hidden bg-white border border-rose-100 shadow-inner flex items-center justify-center p-4">
+              <div className="aspect-[4/5] rounded-[2rem] overflow-hidden bg-white border border-rose-100 shadow-inner flex items-center justify-center p-4">
                 <img 
                   src="/images/heart-referral.png" 
                   alt="Heart Visceral Referral Zones" 
@@ -209,202 +154,326 @@ const HeartWallProtocol = () => {
                     if (parent) {
                       const placeholder = document.createElement('div');
                       placeholder.className = "flex flex-col items-center text-rose-200 gap-2";
-                      placeholder.innerHTML = '<svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"></path></svg><p class="text-[10px] font-black uppercase tracking-widest">Referral Zone Diagram</p>';
+                      placeholder.innerHTML = '<Heart size={48} className="fill-current" /><p class="text-[10px] font-black uppercase tracking-widest">Referral Diagram</p>';
                       parent.appendChild(placeholder);
                     }
                   }}
                 />
               </div>
-              <div className="space-y-4">
-                <div className="p-4 bg-white rounded-2xl border border-rose-100">
-                  <h4 className="text-[10px] font-black text-rose-600 uppercase tracking-widest mb-2">Primary Referral Areas</h4>
-                  <ul className="space-y-2 text-xs text-slate-700 font-medium">
-                    <li className="flex items-center gap-2"><div className="w-1.5 h-1.5 rounded-full bg-rose-500" /> Left Chest / Precordium</li>
-                    <li className="flex items-center gap-2"><div className="w-1.5 h-1.5 rounded-full bg-rose-500" /> Left Shoulder & Upper Back</li>
-                    <li className="flex items-center gap-2"><div className="w-1.5 h-1.5 rounded-full bg-rose-500" /> Medial aspect of Left Arm</li>
-                    <li className="flex items-center gap-2"><div className="w-1.5 h-1.5 rounded-full bg-rose-500" /> Jaw / Neck (occasionally)</li>
-                  </ul>
-                </div>
+              <div className="p-4 bg-white rounded-2xl border border-rose-100">
+                <ul className="space-y-2 text-[11px] text-slate-700 font-bold">
+                  <li className="flex items-center gap-2"><div className="w-1.5 h-1.5 rounded-full bg-rose-500" /> Left Chest / Precordium</li>
+                  <li className="flex items-center gap-2"><div className="w-1.5 h-1.5 rounded-full bg-rose-500" /> Left Shoulder & Upper Back</li>
+                  <li className="flex items-center gap-2"><div className="w-1.5 h-1.5 rounded-full bg-rose-500" /> Medial aspect of Left Arm</li>
+                </ul>
               </div>
             </CardContent>
           </Card>
+
+          {/* Symbolic Materials */}
+          <div className="space-y-4">
+            <div className="flex items-center gap-2 px-2">
+              <Layers size={16} className="text-indigo-600" />
+              <h3 className="text-[10px] font-black uppercase tracking-[0.3em] text-slate-400">Symbolic Materials (Step 2)</h3>
+            </div>
+            <div className="grid grid-cols-1 gap-2">
+              {MATERIALS.map((m) => (
+                <div key={m.name} className="flex items-center gap-4 p-3 bg-white rounded-2xl border border-slate-100 shadow-sm hover:border-indigo-200 transition-all group">
+                  <div className="w-10 h-10 rounded-xl bg-slate-50 flex items-center justify-center text-xl group-hover:scale-110 transition-transform shadow-inner">
+                    {m.icon}
+                  </div>
+                  <div>
+                    <p className="text-xs font-black text-slate-900">{m.name}</p>
+                    <p className="text-[10px] text-slate-500 font-medium">{m.desc}</p>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
         </div>
 
-        {/* Right: Interactive Emotion Chart & Details */}
-        <div className="lg:col-span-7 space-y-8">
-          <div className="flex items-center justify-between px-2">
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-xl bg-rose-600 text-white flex items-center justify-center shadow-lg">
-                <Heart size={20} />
+        {/* Right Column: Interactive Emotion Chart & Findings */}
+        <div className="xl:col-span-8 space-y-8">
+          {/* Emotion Chart Section */}
+          <div className="space-y-6">
+            <div className="flex items-center justify-between px-2">
+              <div className="flex items-center gap-3">
+                <div className="w-12 h-12 rounded-2xl bg-rose-600 text-white flex items-center justify-center shadow-xl">
+                  <Heart size={24} />
+                </div>
+                <div>
+                  <h3 className="text-2xl font-black text-slate-900">Emotion Chart (Step 2)</h3>
+                  <p className="text-xs font-bold text-slate-400 uppercase tracking-widest">Identify the priority "brick"</p>
+                </div>
               </div>
-              <h3 className="text-xl font-black text-slate-900">Emotion Chart (Step 2)</h3>
+              <div className="flex items-center gap-3">
+                <Button 
+                  variant="ghost" 
+                  size="sm" 
+                  onClick={() => setShowChart(!showChart)}
+                  className="text-[10px] font-black uppercase tracking-widest text-slate-400"
+                >
+                  {showChart ? <ChevronUp size={16} className="mr-1" /> : <ChevronDown size={16} className="mr-1" />}
+                  {showChart ? "Hide Chart" : "Show Chart"}
+                </Button>
+              </div>
             </div>
-            <Button 
-              variant="ghost" 
-              size="sm" 
-              onClick={() => setShowChart(!showChart)}
-              className="text-[10px] font-black uppercase tracking-widest text-slate-400"
-            >
-              {showChart ? <ChevronUp size={16} className="mr-1" /> : <ChevronDown size={16} className="mr-1" />}
-              {showChart ? "Hide Chart" : "Show Chart"}
-            </Button>
+
+            {showChart && (
+              <div className="space-y-6 animate-in fade-in slide-in-from-top-2 duration-500">
+                {/* Diagnostic Flow Guide */}
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  {[
+                    { label: "1. Column", desc: "Ask: 'Is it in Column A?' (Yes/No)", icon: ArrowRightLeft, color: "text-indigo-600" },
+                    { label: "2. Row", desc: "Ask: 'Is it in an Odd Row?' (1, 3, 5)", icon: LayoutGrid, color: "text-amber-600" },
+                    { label: "3. Emotion", desc: "Identify specific emotion (1-6) in cell.", icon: Target, color: "text-rose-600" }
+                  ].map((step, i) => (
+                    <div key={i} className="p-5 bg-white rounded-[1.5rem] border-2 border-slate-100 shadow-sm flex items-start gap-4">
+                      <div className={cn("w-10 h-10 rounded-xl bg-slate-50 flex items-center justify-center shrink-0", step.color)}>
+                        <step.icon size={20} />
+                      </div>
+                      <div>
+                        <p className="text-[9px] font-black uppercase tracking-widest text-slate-400 mb-1">{step.label}</p>
+                        <p className="text-xs font-bold text-slate-700 leading-tight">{step.desc}</p>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+
+                {/* The Chart Grid */}
+                <div className="overflow-hidden rounded-[2.5rem] border-2 border-slate-100 shadow-2xl bg-white">
+                  <table className="w-full border-collapse text-[11px]">
+                    <thead>
+                      <tr className="bg-slate-900 text-white">
+                        <th className="p-4 border-r border-white/10 w-16 font-black uppercase tracking-widest text-[10px]">Row</th>
+                        <th className="p-4 border-r border-white/10 font-black uppercase tracking-widest text-[10px]">Column A</th>
+                        <th className="p-4 font-black uppercase tracking-widest text-[10px]">Column B</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-slate-100">
+                      {[1, 2, 3, 4, 5, 6].map((rowNum) => (
+                        <tr key={rowNum} className="group">
+                          <td className="p-4 bg-slate-50 border-r border-slate-100 text-center font-black text-slate-400 text-lg">
+                            {rowNum}
+                          </td>
+                          <td 
+                            className={cn(
+                              "p-4 border-r border-slate-100 transition-all cursor-pointer hover:bg-rose-50/50",
+                              selectedCell?.row === rowNum && selectedCell?.col === 'A' ? "bg-rose-100 ring-2 ring-inset ring-rose-500" : ""
+                            )}
+                            onClick={() => setSelectedCell({ row: rowNum, col: 'A' })}
+                          >
+                            <div className="grid grid-cols-2 gap-x-4 gap-y-1">
+                              {EMOTION_CODE_CHART[rowNum].columnA.map(e => (
+                                <div key={e} className="font-bold text-slate-700 hover:text-rose-600 transition-colors">{e}</div>
+                              ))}
+                            </div>
+                          </td>
+                          <td 
+                            className={cn(
+                              "p-4 transition-all cursor-pointer hover:bg-indigo-50/50",
+                              selectedCell?.row === rowNum && selectedCell?.col === 'B' ? "bg-indigo-100 ring-2 ring-inset ring-indigo-500" : ""
+                            )}
+                            onClick={() => setSelectedCell({ row: rowNum, col: 'B' })}
+                          >
+                            <div className="grid grid-cols-2 gap-x-4 gap-y-1">
+                              {EMOTION_CODE_CHART[rowNum].columnB.map(e => (
+                                <div key={e} className="font-bold text-slate-700 hover:text-indigo-600 transition-colors">{e}</div>
+                              ))}
+                            </div>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            )}
           </div>
 
-          {showChart && (
-            <div className="space-y-6 animate-in fade-in slide-in-from-top-2 duration-500">
-              {/* Diagnostic Flow Guide */}
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-                {[
-                  { label: "1. Column", desc: "Ask: 'Is it in Column A?' (Yes/No)" },
-                  { label: "2. Row", desc: "Ask: 'Is it in an Odd Row?' (1, 3, 5)" },
-                  { label: "3. Emotion", desc: "Identify specific emotion (1-5) in cell." }
-                ].map((step, i) => (
-                  <div key={i} className="p-3 bg-slate-50 rounded-xl border border-slate-100">
-                    <p className="text-[8px] font-black text-indigo-600 uppercase tracking-widest mb-1">{step.label}</p>
-                    <p className="text-[10px] font-bold text-slate-700 leading-tight">{step.desc}</p>
-                  </div>
-                ))}
-              </div>
+          {/* Selection Detail / Clinical Finding */}
+          <AnimatePresence mode="wait">
+            {selectedCell ? (
+              <motion.div 
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, scale: 0.95 }}
+                className="space-y-6"
+              >
+                <div className="flex items-center gap-2 px-2">
+                  <Sparkles size={16} className="text-amber-500" />
+                  <h3 className="text-[10px] font-black uppercase tracking-[0.3em] text-slate-400">Clinical Finding</h3>
+                </div>
 
-              {/* The Chart Grid */}
-              <div className="overflow-hidden rounded-[2rem] border-2 border-slate-100 shadow-2xl bg-white">
-                <table className="w-full border-collapse text-[10px]">
-                  <thead>
-                    <tr className="bg-slate-900 text-white">
-                      <th className="p-3 border-r border-white/10 w-12">Row</th>
-                      <th className="p-3 border-r border-white/10">Column A</th>
-                      <th className="p-3">Column B</th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-slate-100">
-                    {[1, 2, 3, 4, 5, 6].map((rowNum) => (
-                      <tr key={rowNum} className="group">
-                        <td className="p-3 bg-slate-50 border-r border-slate-100 text-center font-black text-slate-400">
-                          {rowNum}
-                        </td>
-                        <td 
-                          className={cn(
-                            "p-3 border-r border-slate-100 transition-all cursor-pointer hover:bg-rose-50",
-                            selectedCell?.row === rowNum && selectedCell?.col === 'A' ? "bg-rose-100 ring-2 ring-inset ring-rose-500" : ""
-                          )}
-                          onClick={() => setSelectedCell({ row: rowNum, col: 'A' })}
-                        >
-                          <div className="space-y-1">
-                            {EMOTION_CODE_CHART[rowNum].columnA.map(e => (
-                              <div key={e} className="font-bold text-slate-700">{e}</div>
-                            ))}
+                <Card className="border-none shadow-2xl bg-slate-900 text-white rounded-[3rem] overflow-hidden relative group">
+                  <div className="absolute inset-0 bg-gradient-to-br from-indigo-600/20 to-transparent" />
+                  <div className="absolute top-0 right-0 p-10 opacity-10 group-hover:scale-110 transition-transform duration-700"><Sparkles size={150} /></div>
+                  
+                  <CardContent className="p-10 relative z-10">
+                    <div className="flex flex-col md:flex-row justify-between items-start gap-10">
+                      <div className="space-y-8 flex-1">
+                        <div className="space-y-2">
+                          <div className="flex items-center gap-3">
+                            <Badge className="bg-indigo-500 text-white border-none font-black text-[10px] uppercase tracking-widest px-3 py-1 rounded-full">
+                              Row {selectedCell.row} • Column {selectedCell.col}
+                            </Badge>
+                            <Button variant="ghost" size="sm" onClick={() => setSelectedCell(null)} className="h-7 text-[8px] font-black uppercase tracking-widest text-slate-400 hover:text-white hover:bg-white/10 rounded-lg">
+                              <RefreshCw size={12} className="mr-1.5" /> Reset Selection
+                            </Button>
                           </div>
-                        </td>
-                        <td 
-                          className={cn(
-                            "p-3 transition-all cursor-pointer hover:bg-indigo-50",
-                            selectedCell?.row === rowNum && selectedCell?.col === 'B' ? "bg-indigo-100 ring-2 ring-inset ring-indigo-500" : ""
-                          )}
-                          onClick={() => setSelectedCell({ row: rowNum, col: 'B' })}
-                        >
-                          <div className="space-y-1">
-                            {EMOTION_CODE_CHART[rowNum].columnB.map(e => (
-                              <div key={e} className="font-bold text-slate-700">{e}</div>
-                            ))}
-                          </div>
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
+                          <h4 className="text-4xl font-black tracking-tight">
+                            {selectedCell.col === 'A' ? 'Column A' : 'Column B'} Emotions
+                          </h4>
+                        </div>
 
-              {/* Selection Detail */}
-              {selectedCell ? (
-                <div className="p-6 bg-indigo-900 text-white rounded-[2rem] shadow-xl animate-in zoom-in-95 duration-300 relative overflow-hidden">
-                  <div className="absolute top-0 right-0 p-6 opacity-10"><Sparkles size={80} /></div>
-                  <div className="flex items-center justify-between mb-4 relative z-10">
-                    <div className="space-y-1">
-                      <p className="text-[10px] font-black text-indigo-300 uppercase tracking-widest">Active Selection</p>
-                      <h4 className="text-2xl font-black">Row {selectedCell.row}, Column {selectedCell.col}</h4>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                          <div className="p-6 bg-white/5 rounded-[2rem] border border-white/10 space-y-4">
+                            <div className="flex items-center gap-3">
+                              <div className="w-10 h-10 rounded-xl bg-indigo-500/20 flex items-center justify-center text-indigo-400 border border-indigo-500/30">
+                                <Activity size={20} />
+                              </div>
+                              <div>
+                                <p className="text-[9px] font-black text-indigo-400 uppercase tracking-widest">Associated Organs</p>
+                                <p className="text-lg font-bold text-white leading-tight">{ROW_DATA[selectedCell.row].organ}</p>
+                              </div>
+                            </div>
+                            <div className="pt-4 border-t border-white/5">
+                              <p className="text-[9px] font-black text-slate-500 uppercase tracking-widest mb-2 flex items-center gap-2">
+                                <Dumbbell size={12} /> Associated Muscles (Step 3)
+                              </p>
+                              <p className="text-xs font-medium text-indigo-100 leading-relaxed">
+                                {ROW_DATA[selectedCell.row].muscles}
+                              </p>
+                            </div>
+                          </div>
+
+                          <div className="p-6 bg-white rounded-[2rem] text-slate-900 shadow-xl space-y-4">
+                            <p className="text-[9px] font-black text-indigo-600 uppercase tracking-widest flex items-center gap-2">
+                              <Heart size={12} className="fill-current" /> Potential Bricks
+                            </p>
+                            <div className="flex flex-wrap gap-2">
+                              {(selectedCell.col === 'A' ? EMOTION_CODE_CHART[selectedCell.row].columnA : EMOTION_CODE_CHART[selectedCell.row].columnB).map(e => (
+                                <Badge key={e} className="bg-indigo-50 text-indigo-700 border-none font-bold text-xs px-3 py-1 rounded-lg">
+                                  {e}
+                                </Badge>
+                              ))}
+                            </div>
+                            <p className="text-[10px] text-slate-400 font-medium italic pt-2">
+                              "Challenge each emotion while testing the indicator muscle to find the priority."
+                            </p>
+                          </div>
+                        </div>
+                      </div>
                     </div>
-                    <Button variant="ghost" size="sm" onClick={() => setSelectedCell(null)} className="text-indigo-300 hover:text-white">
-                      <RefreshCw size={14} className="mr-2" /> Reset
-                    </Button>
+                  </CardContent>
+                </Card>
+              </motion.div>
+            ) : (
+              <div className="p-16 border-2 border-dashed border-slate-200 rounded-[3rem] flex flex-col items-center justify-center text-center text-slate-400 bg-slate-50/30">
+                <div className="w-20 h-20 rounded-3xl bg-white shadow-sm flex items-center justify-center mb-6 opacity-50">
+                  <MousePointer2 size={40} />
+                </div>
+                <h4 className="text-xl font-black text-slate-900 opacity-40">Select a cell to begin</h4>
+                <p className="text-sm font-medium max-w-xs mx-auto mt-2">
+                  Click a cell in the Emotion Chart to see associated organs, muscles, and diagnostic details.
+                </p>
+              </div>
+            )}
+          </AnimatePresence>
+
+          {/* Pulse Points Reference */}
+          <Card className="border-none shadow-xl rounded-[2.5rem] bg-white overflow-hidden border-2 border-indigo-100">
+            <CardHeader className="bg-indigo-600 p-8 text-white">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-4">
+                  <div className="w-12 h-12 rounded-2xl bg-white/20 flex items-center justify-center shadow-inner">
+                    <Hand size={24} />
                   </div>
-                  <div className="grid grid-cols-1 gap-4 relative z-10">
-                    <div className="p-4 bg-white/10 rounded-2xl border border-white/10">
-                      <p className="text-[9px] font-black text-indigo-300 uppercase tracking-widest mb-2">Associated Organs</p>
-                      <p className="text-sm font-bold">{ROW_DATA[selectedCell.row].organ}</p>
+                  <div>
+                    <CardTitle className="text-2xl font-black">Organ Pulse Points</CardTitle>
+                    <p className="text-indigo-200 text-[10px] font-bold uppercase tracking-widest">TCM Diagnostic Reference</p>
+                  </div>
+                </div>
+                <Badge variant="outline" className="border-white/30 text-white font-black text-[8px] uppercase tracking-widest px-3 py-1">Step 2 Verification</Badge>
+              </div>
+            </CardHeader>
+            <CardContent className="p-8">
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-10 items-center">
+                <div className="aspect-square rounded-[2rem] overflow-hidden bg-slate-50 border border-slate-100 shadow-inner flex items-center justify-center p-8">
+                  <img 
+                    src="/images/pulse-points.png" 
+                    alt="Organ Pulse Points Reference" 
+                    className="max-w-full h-auto rounded-lg"
+                    onError={(e) => {
+                      e.currentTarget.style.display = 'none';
+                      const parent = e.currentTarget.parentElement;
+                      if (parent) {
+                        const placeholder = document.createElement('div');
+                        placeholder.className = "flex flex-col items-center text-slate-300 gap-4";
+                        placeholder.innerHTML = '<Hand size={64} /><p class="text-[10px] font-black uppercase tracking-widest">Pulse Points Diagram</p>';
+                        parent.appendChild(placeholder);
+                      }
+                    }}
+                  />
+                </div>
+                <div className="space-y-6">
+                  <div className="p-6 bg-indigo-50 rounded-[2rem] border border-indigo-100">
+                    <div className="flex items-center gap-2 mb-3">
+                      <Info size={18} className="text-indigo-600" />
+                      <span className="text-[10px] font-black text-indigo-600 uppercase tracking-widest">Clinical Tip</span>
                     </div>
-                    <div className="p-4 bg-white/10 rounded-2xl border border-white/10">
-                      <p className="text-[9px] font-black text-indigo-300 uppercase tracking-widest mb-2 flex items-center gap-2">
-                        <Dumbbell size={12} /> Associated Muscles (Step 3)
-                      </p>
-                      <p className="text-xs font-medium text-indigo-100 leading-relaxed">
-                        {ROW_DATA[selectedCell.row].muscles}
-                      </p>
-                    </div>
-                    <div className="p-4 bg-white rounded-2xl text-indigo-900">
-                      <p className="text-[9px] font-black text-indigo-400 uppercase tracking-widest mb-2">Emotions in this cell</p>
-                      <div className="flex flex-wrap gap-2">
-                        {(selectedCell.col === 'A' ? EMOTION_CODE_CHART[selectedCell.row].columnA : EMOTION_CODE_CHART[selectedCell.row].columnB).map(e => (
-                          <Badge key={e} className="bg-indigo-600 text-white border-none font-bold">{e}</Badge>
-                        ))}
+                    <p className="text-sm text-indigo-900 font-medium leading-relaxed">
+                      Use these points to verify the organ association for each row. Hold the point while testing the indicator muscle to confirm the priority "emotional brick".
+                    </p>
+                  </div>
+                  <div className="space-y-4">
+                    <h5 className="text-[10px] font-black text-slate-400 uppercase tracking-widest px-1">Pressure Logic</h5>
+                    <div className="grid grid-cols-2 gap-3">
+                      <div className="p-4 bg-slate-50 rounded-2xl border border-slate-100">
+                        <p className="text-[9px] font-black text-indigo-600 uppercase mb-1">Yin Organs</p>
+                        <p className="text-xs font-bold text-slate-700">Deep Pressure</p>
+                      </div>
+                      <div className="p-4 bg-slate-50 rounded-2xl border border-slate-100">
+                        <p className="text-[9px] font-black text-rose-600 uppercase mb-1">Yang Organs</p>
+                        <p className="text-xs font-bold text-slate-700">Light Pressure</p>
                       </div>
                     </div>
                   </div>
                 </div>
-              ) : (
-                <div className="p-8 border-2 border-dashed border-slate-200 rounded-[2rem] flex flex-col items-center justify-center text-center text-slate-400">
-                  <MousePointer2 size={32} className="mb-2 opacity-20" />
-                  <p className="text-sm font-medium">Click a cell in the chart to <br/>see associated organs and details.</p>
-                </div>
-              )}
-
-              <div className="p-6 bg-amber-50 rounded-[2rem] border-2 border-amber-100 flex items-start gap-6">
-                <div className="w-12 h-12 rounded-2xl bg-white flex items-center justify-center text-amber-500 shadow-sm shrink-0">
-                  <Info size={24} />
-                </div>
-                <div className="space-y-1">
-                  <p className="text-[10px] font-black text-amber-600 uppercase tracking-[0.3em]">Diagnostic Tip</p>
-                  <p className="text-sm text-slate-600 font-medium leading-relaxed italic">
-                    "If the body indicates an emotion that doesn't seem to fit the current context, check if it is an **Inherited Trapped Emotion**. These are passed down from ancestors and require 10 swipes to release."
-                  </p>
-                </div>
               </div>
-            </div>
-          )}
+            </CardContent>
+          </Card>
 
           {/* Client Education Card */}
-          <Card className="border-none shadow-lg rounded-[2.5rem] bg-indigo-50 border-2 border-indigo-100 overflow-hidden">
-            <CardHeader className="bg-indigo-600 p-6 text-white">
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-xl bg-white/20 flex items-center justify-center shadow-inner">
-                  <BookOpen size={20} />
+          <Card className="border-none shadow-lg rounded-[2.5rem] bg-slate-900 text-white overflow-hidden">
+            <CardHeader className="p-8 pb-4">
+              <div className="flex items-center gap-4">
+                <div className="w-12 h-12 rounded-2xl bg-white/10 flex items-center justify-center shadow-inner">
+                  <BookOpen size={24} className="text-indigo-300" />
                 </div>
                 <div>
-                  <CardTitle className="text-lg font-black">Client Education</CardTitle>
-                  <p className="text-indigo-200 text-[10px] font-bold uppercase tracking-widest">Read to client if necessary</p>
+                  <CardTitle className="text-xl font-black">Client Education</CardTitle>
+                  <p className="text-slate-500 text-[10px] font-bold uppercase tracking-widest">Read to client if necessary</p>
                 </div>
               </div>
             </CardHeader>
-            <CardContent className="p-6 space-y-4">
-              <p className="text-sm font-bold text-indigo-900 leading-relaxed">
-                A Heart-Wall is made of one or more trapped emotions that the subconscious mind uses to surround the heart as a protective barrier against emotional pain.
+            <CardContent className="p-8 pt-0 space-y-6">
+              <p className="text-base font-medium text-slate-300 leading-relaxed italic">
+                "A Heart-Wall is a protective barrier created by the subconscious mind using the energy of trapped emotions. While it provides safety during trauma, it can also block connection and joy."
               </p>
-              <ul className="space-y-3">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 {[
-                  "Each trapped emotion in the Heart-Wall is known as a Heart-Wall emotion.",
-                  "A Heart-Wall emotion is one layer in the collective Heart-Wall. When all Heart-Wall emotions have been removed, the Heart-Wall is gone.",
-                  "The Heart-Wall is usually created in response to emotional distress. The subconscious mind then uses pre-existing trapped emotions to form the wall.",
-                  "Heart-Wall emotions may be from any time in your own life and they can also be inherited.",
-                  "Most individuals have a Heart-Wall consisting of between five and 25 Heart-Wall emotions.",
-                  "A Heart-Wall may cause you to feel disconnected from others, lonely, sad, anxious, and unmotivated.",
-                  "Physical symptoms such as neck and shoulder discomfort may be present.",
-                  "It’s generally best to let the subconscious indicate what imbalances need to be released and in what order."
+                  "Usually consists of 5-25 emotions.",
+                  "Can be from any time in life or inherited.",
+                  "May cause feelings of isolation or numbness.",
+                  "Often correlates with neck/shoulder tension."
                 ].map((point, i) => (
-                  <li key={i} className="flex items-start gap-3 text-xs text-indigo-800 font-medium leading-relaxed">
-                    <div className="w-1.5 h-1.5 rounded-full bg-indigo-400 mt-1.5 shrink-0" />
-                    {point}
-                  </li>
+                  <div key={i} className="flex items-center gap-3 p-3 bg-white/5 rounded-xl border border-white/10">
+                    <CheckCircle2 size={14} className="text-emerald-400 shrink-0" />
+                    <span className="text-xs font-bold text-slate-200">{point}</span>
+                  </div>
                 ))}
-              </ul>
+              </div>
             </CardContent>
           </Card>
         </div>

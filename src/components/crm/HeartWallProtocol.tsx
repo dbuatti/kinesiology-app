@@ -55,11 +55,11 @@ const HeartWallProtocol = () => {
     >
       {/* Header */}
       <div className="text-center space-y-2 mb-8">
-        <Badge className="bg-rose-100 text-rose-700 border-none font-black text-[9px] uppercase tracking-[0.4em] px-4 py-1 rounded-full font-sans">
+        <Badge className="bg-rose-100 text-rose-700 border-none font-black text-[9px] uppercase tracking-[0.4em] px-4 py-1 rounded-full">
           Clinical Reference
         </Badge>
         <h1 className="text-4xl font-bold text-slate-900 tracking-tight">Heart Wall Protocol</h1>
-        <p className="text-lg text-slate-500 italic">Subconscious Barrier Release Process</p>
+        <p className="text-lg text-slate-500">Subconscious Barrier Release Process</p>
       </div>
 
       {/* 1. Assessment Flow */}
@@ -69,7 +69,7 @@ const HeartWallProtocol = () => {
           <div className="lg:col-span-7 space-y-4">
             {ASSESSMENT_STEPS.map((step) => (
               <div key={step.id} className="flex gap-4 group">
-                <span className="text-xl font-black text-indigo-200 group-hover:text-indigo-600 transition-colors tabular-nums font-sans">
+                <span className="text-xl font-black text-indigo-200 group-hover:text-indigo-600 transition-colors tabular-nums">
                   0{step.id}
                 </span>
                 <div className="space-y-0.5">
@@ -83,7 +83,7 @@ const HeartWallProtocol = () => {
             <div className="p-4 bg-white rounded-[2rem] border border-slate-100 shadow-sm overflow-hidden">
               <div className="flex items-center gap-2 mb-4 px-2">
                 <Hand size={14} className="text-indigo-500" />
-                <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest font-sans">Pulse Point Reference</span>
+                <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Pulse Point Reference</span>
               </div>
               <img 
                 src="/images/pulse-points.png" 
@@ -103,7 +103,7 @@ const HeartWallProtocol = () => {
         <div className="overflow-hidden rounded-2xl border border-slate-200 shadow-lg bg-white">
           <table className="w-full border-collapse text-sm">
             <thead>
-              <tr className="bg-slate-900 text-white font-sans">
+              <tr className="bg-slate-900 text-white">
                 <th className="p-4 text-left uppercase tracking-widest text-[9px] border-r border-white/10 w-1/4">Organ</th>
                 <th className="p-4 text-left uppercase tracking-widest text-[9px] border-r border-white/10 w-1/2">Emotions</th>
                 <th className="p-4 text-left uppercase tracking-widest text-[9px] w-1/4">Muscles</th>
@@ -132,7 +132,7 @@ const HeartWallProtocol = () => {
                     </div>
                   </td>
                   <td className="p-4 align-top">
-                    <p className="text-xs font-bold text-slate-500 leading-relaxed italic">
+                    <p className="text-xs font-bold text-slate-500 leading-relaxed">
                       {ROW_DATA[rowNum].muscles}
                     </p>
                   </td>
@@ -147,12 +147,12 @@ const HeartWallProtocol = () => {
             <div className="absolute top-0 right-0 p-4 opacity-10"><Sparkles size={80} /></div>
             <div className="flex items-center justify-between mb-4 relative z-10">
               <div className="space-y-0.5">
-                <p className="text-[9px] font-black text-indigo-400 uppercase tracking-[0.3em] font-sans">Active Focus</p>
+                <p className="text-[9px] font-black text-indigo-400 uppercase tracking-[0.3em]">Active Focus</p>
                 <h4 className="text-2xl font-bold">{ROW_DATA[selectedRow].organ}</h4>
               </div>
-              <Button variant="ghost" size="sm" onClick={() => setSelectedRow(null)} className="text-indigo-300 hover:text-white font-sans h-8">
-                <RefreshCw size={14} className="mr-2" /> Clear
-              </Button>
+              <button onClick={() => setSelectedRow(null)} className="text-indigo-300 hover:text-white h-8 flex items-center gap-2">
+                <RefreshCw size={14} /> Clear
+              </button>
             </div>
             <div className="space-y-4 relative z-10">
               <div className="flex items-start gap-3">
@@ -172,7 +172,7 @@ const HeartWallProtocol = () => {
         <div className="space-y-6">
           {CORRECTION_STEPS.map((step) => (
             <div key={step.id} className="flex gap-4 group">
-              <span className="text-xl font-black text-emerald-200 group-hover:text-emerald-600 transition-colors tabular-nums font-sans">
+              <span className="text-xl font-black text-emerald-200 group-hover:text-emerald-600 transition-colors tabular-nums">
                 0{step.id}
               </span>
               <div className="space-y-0.5">
@@ -197,7 +197,7 @@ const HeartWallProtocol = () => {
             />
           </div>
           <div className="p-6 bg-rose-50 rounded-2xl border border-rose-100 space-y-4">
-            <h4 className="text-[10px] font-black text-rose-600 uppercase tracking-[0.3em] font-sans">Primary Referral Areas</h4>
+            <h4 className="text-[10px] font-black text-rose-600 uppercase tracking-[0.3em]">Primary Referral Areas</h4>
             <ul className="space-y-2 text-base font-medium text-slate-800">
               <li className="flex items-center gap-3"><div className="w-1.5 h-1.5 rounded-full bg-rose-500" /> Left Chest / Precordium</li>
               <li className="flex items-center gap-3"><div className="w-1.5 h-1.5 rounded-full bg-rose-500" /> Left Shoulder & Upper Back</li>
@@ -212,7 +212,7 @@ const HeartWallProtocol = () => {
       <section className="mt-12">
         <SectionTitle icon={BookOpen} color="bg-indigo-900">Client Education</SectionTitle>
         <div className="p-8 bg-indigo-50 rounded-2xl border border-indigo-100 space-y-6">
-          <p className="text-lg font-bold text-indigo-900 leading-relaxed italic">
+          <p className="text-lg font-bold text-indigo-900 leading-relaxed">
             "A Heart-Wall is made of one or more trapped emotions that the subconscious mind uses to surround the heart as a protective barrier against emotional pain."
           </p>
           <div className="space-y-3">
@@ -241,8 +241,8 @@ const HeartWallProtocol = () => {
           <Lightbulb size={24} />
         </div>
         <div className="space-y-1 relative z-10">
-          <p className="text-[9px] font-black text-indigo-400 uppercase tracking-[0.4em] font-sans">Clinical Mastery Note</p>
-          <p className="text-base text-slate-300 font-medium leading-relaxed italic">
+          <p className="text-[9px] font-black text-indigo-400 uppercase tracking-[0.4em]">Clinical Mastery Note</p>
+          <p className="text-base text-slate-300 font-medium leading-relaxed">
             "The shift occurs when the client can distinguish between the 'me' (the observer) and the 'not-me' (the identity/emotion). Dismantle the wall with respect—it was built for a reason."
           </p>
         </div>

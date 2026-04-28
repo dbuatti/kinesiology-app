@@ -101,6 +101,11 @@ const AppointmentsPage = () => {
       
       setTotalCount(count || 0);
 
+      // Determine sort order based on filter
+      // Scheduled/Today -> Ascending (soonest first)
+      // Completed/All -> Descending (most recent first)
+      const isAscending = statusFilter === "Scheduled" || statusFilter === "today";
+
       const { data, error } = await supabase
         .from('appointments')
         .select(`
@@ -110,7 +115,7 @@ const AppointmentsPage = () => {
             name
           )
         `)
-        .order('date', { ascending: false })
+        .order('date', { ascending: isAscending })
         .limit(limit);
 
       if (error) throw error;
@@ -219,7 +224,7 @@ const AppointmentsPage = () => {
 
   useEffect(() => {
     fetchAppointments(PAGE_SIZE);
-  }, []);
+  }, [statusFilter]); // Re-fetch when filter changes to update sort order
 
   const filteredAppointments = useMemo(() => {
     return appointments.filter(app => {
@@ -406,7 +411,7 @@ const AppointmentsPage = () => {
                   <DropdownMenuContent align="end" className="w-48 rounded-2xl p-2 shadow-2xl border-none bg-card">
                     {APPOINTMENT_STATUSES.map(status => (
                       <DropdownMenuItem 
-                        key={status}
+                        key={status} 
                         onClick={() => updateStatus(app.id, status)}
                         className={cn(
                           "flex items-center justify-between rounded-xl py-2.5 px-4 cursor-pointer",

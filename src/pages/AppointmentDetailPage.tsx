@@ -1,161 +1,194 @@
 "use client";
 
-import { useState, useEffect, useMemo } from "react";
-import { useParams, useNavigate, Link } from "react-router-dom";
-import { supabase } from "@/integrations/supabase/client";
+import React, { useState, useEffect, useMemo, useCallback } from "react";
+import { useParams, useNavigate } from "react-router-dom";
 import { 
-  Loader2, Trash2, MoreHorizontal, History, Printer, Copy, Check, Play,
-  FileText, Zap, Activity, Target, ClipboardList, PanelRightOpen, PanelRightClose,
-  Brain, ShieldCheck, Sparkles, Share, Link as LinkIcon, ChevronRight, ExternalLink, DollarSign, AlertCircle, Settings2, ChevronDown, MessageSquare
+  Loader2, Settings2, ChevronDown, PanelRightClose, MessageSquare, Brain 
 } from "lucide-react";
-import { format, isToday } from "date-fns";
-import { AppointmentWithClient } from "@/types/crm";
-import { showSuccess, showError } from "@/utils/toast";
+import { isToday } from "date-fns";
+
 import { cn } from "@/lib/utils";
-import EditableField from "@/components/shared/EditableField";
-import SessionTimer from "@/components/crm/SessionTimer";
+import { showSuccess, showError } from "@/utils/toast";
+import { useAppointment } from "@/hooks/useAppointment";
+
 import AppLayout from "@/components/crm/AppLayout";
-import SessionContentSwitcher from "@/components/crm/SessionContentSwitcher";
-import PreviousSessionInsightsBar from "@/components/crm/PreviousSessionInsightsBar";
+import SessionTimer from "@/components/crm/SessionTimer";
+import Breadcrumbs from "@/components/shared/Breadcrumbs";
 import AppointmentHeader from "@/components/crm/AppointmentHeader";
+import WeeklyFocusBanner from "@/components/crm/WeeklyFocusBanner";
+import PreviousSessionInsightsBar from "@/components/crm/PreviousSessionInsightsBar";
+import SessionContentSwitcher from "@/components/crm/SessionContentSwitcher";
 import AppointmentContextCards from "@/components/crm/AppointmentContextCards";
 import BrainstemToneMap from "@/components/crm/BrainstemToneMap";
 import SessionWorksheetTemplate from "@/components/crm/SessionWorksheetTemplate";
-import PathwayFindingsList from "@/components/crm/PathwayFindingsList";
-import WeeklyFocusBanner from "@/components/crm/WeeklyFocusBanner";
+
 import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-  DropdownMenuSeparator,
-} from "@/components/ui/dropdown-menu";
+  Button,
+} from "@/components/ui/button";
 import {
   Collapsible,
   CollapsibleContent,
   CollapsibleTrigger,
 } from "@/components/ui/collapsible";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import Breadcrumbs from "@/components/shared/Breadcrumbs";
-import { Button } from "@/components/ui/button";
-import { TCM_CHANNELS } from "@/data/tcm-channel-data";
-import { generateSessionSummary, generateAICasePrompt, formatAppointmentQuickInfo } from "@/utils/summary-generator";
+import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Nuclei } from "@/utils/brainstem-logic";
-import { useAppointment } from "@/hooks/useAppointment";
+
+import { TCM_CHANNELS } from "@/data/tcm-channel-data";
+import { generateSessionSummary, generateAICasePrompt } from "@/utils/summary-generator";
 
 const AppointmentDetailPage = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
-  const { appointment, history, loading, saveField, updatePriorityPattern, refresh } = useAppointment(id);
-  
+
+  const { 
+    appointment, 
+    history, 
+    loading, 
+    saveField, 
+    updatePriorityPattern, 
+    refresh 
+  } = useAppointment(id);
+
+  // UI States
   const [isFixedHeaderActive, setIsFixedHeaderActive] = useState(false);
-  const [copied, setCopied] = useState(false);
-  const [linkCopying, setLinkCopying] = useState(false);
-  const [aiCopying, setAiCopying] = useState(false);
-  const [cloning, setCloning] = useState(false);
-  const [syncingNotion, setSyncingNotion] = useState(false);
-  const [deleting, setDeleting] = useState(false);
-  const [currentTime, setCurrentTime] = useState(new Date());
-  const [showSidebar, setShowSidebar] = useState(false); 
   const [showSetup, setShowSetup] = useState(false);
-  const [nucleiFilter, setNucleiFilter] = useState<Nuclei | null>(null);
+  const [showSidebar, setShowSidebar] = useState(false);
+  const [nucleiFilter, setNucleiFilter] = useState<string | null>(null);
   const [reflections, setReflections] = useState<any[]>([]);
 
+  // Loading states for actions
+  const [actionStates, setActionStates] = useState({
+    syncingNotion: false,
+    copyingLink: false,
+    copyingAI: false,
+    cloning: false,
+    deleting: false,
+  });
+
+  // Current time for meridian calculation
+  const [currentTime, setCurrentTime] = useState(new Date());
+
+  // Update time every minute
   useEffect(() => {
     const timer = setInterval(() => setCurrentTime(new Date()), 60000);
     return () => clearInterval(timer);
   }, []);
 
+  // Fetch practitioner reflections
   useEffect(() => {
+    if (!id) return;
+
     const fetchReflections = async () => {
-      if (!id) return;
-      const { data } = await supabase
+      const { data, error } = await supabase
         .from('practitioner_reflections')
         .select('*')
         .eq('appointment_id', id)
         .order('created_at', { ascending: false });
-      
-      if (data) setReflections(data);
+
+      if (error) {
+        console.error("Failed to fetch reflections:", error);
+        return;
+      }
+      setReflections(data || []);
     };
+
     fetchReflections();
   }, [id]);
 
+  // Calculate current peak meridian
   const currentPeakMeridian = useMemo(() => {
     const hour = currentTime.getHours();
-    return TCM_CHANNELS.find(c => {
-      if (c.peakTime === 'None') return false;
-      const parts = c.peakTime.toLowerCase().split('-').map(p => p.trim());
-      const parseHour = (s: string) => {
-        const h = parseInt(s);
-        if (s.includes('pm') && h !== 12) return h + 12;
-        if (s.includes('am') && h === 12) return 0;
+    return TCM_CHANNELS.find((channel) => {
+      if (channel.peakTime === 'None') return false;
+      
+      const parts = channel.peakTime.toLowerCase().split('-').map(p => p.trim());
+      if (parts.length !== 2) return false;
+
+      const parseHour = (timeStr: string): number => {
+        let h = parseInt(timeStr);
+        if (timeStr.includes('pm') && h !== 12) h += 12;
+        if (timeStr.includes('am') && h === 12) h = 0;
         return h;
       };
+
       const start = parseHour(parts[0]);
       const end = parseHour(parts[1]);
-      if (start > end) return hour >= start || hour < end;
-      return hour >= start && hour < end;
+
+      return start > end 
+        ? hour >= start || hour < end 
+        : hour >= start && hour < end;
     });
   }, [currentTime]);
 
-  const handleSyncToNotion = async () => {
+  // Memoized handlers to prevent unnecessary re-renders
+  const updateActionState = useCallback((key: keyof typeof actionStates, value: boolean) => {
+    setActionStates(prev => ({ ...prev, [key]: value }));
+  }, []);
+
+  const handleCopyOnboardingLink = useCallback(async () => {
+    if (!appointment?.clients?.id) return;
+    
+    updateActionState('copyingLink', true);
+    try {
+      const url = `${window.location.origin}/onboarding/${appointment.clients.id}`;
+      await navigator.clipboard.writeText(url);
+      showSuccess("Onboarding link copied to clipboard");
+    } catch {
+      showError("Failed to copy link");
+    } finally {
+      updateActionState('copyingLink', false);
+    }
+  }, [appointment, updateActionState]);
+
+  const handleSyncToNotion = useCallback(async () => {
     if (!appointment) return;
-    setSyncingNotion(true);
+    
+    updateActionState('syncingNotion', true);
     try {
       const { data, error } = await supabase.functions.invoke('sync-to-notion', {
         body: { appointment }
       });
 
       if (error) throw error;
-      
-      const updates: any = {};
-      if (data.id && !appointment.notion_page_id) updates.notion_page_id = data.id;
-      if (data.plannerId && !appointment.notion_planner_id) updates.notion_planner_id = data.plannerId;
+
+      const updates: Record<string, any> = {};
+      if (data?.id && !appointment.notion_page_id) updates.notion_page_id = data.id;
+      if (data?.plannerId && !appointment.notion_planner_id) updates.notion_planner_id = data.plannerId;
 
       if (Object.keys(updates).length > 0) {
-        await saveField('notion_page_id', updates.notion_page_id);
-        if (updates.notion_planner_id) await saveField('notion_planner_id', updates.notion_planner_id);
+        for (const [field, value] of Object.entries(updates)) {
+          await saveField(field, value);
+        }
       }
-      
-      showSuccess("Session synced to Notion!");
+
+      showSuccess("Successfully synced to Notion");
+      refresh();
     } catch (err: any) {
-      showError(err.message || "Failed to sync to Notion.");
+      showError(err.message || "Failed to sync to Notion");
     } finally {
-      setSyncingNotion(false);
+      updateActionState('syncingNotion', false);
     }
-  };
+  }, [appointment, saveField, refresh, updateActionState]);
 
-  const handleCopyOnboardingLink = () => {
+  const handleCopyForAI = useCallback(() => {
     if (!appointment) return;
-    setLinkCopying(true);
-    const url = `${window.location.origin}/onboarding/${appointment.clients.id}`;
-    navigator.clipboard.writeText(url);
-    showSuccess("Onboarding link copied!");
-    setTimeout(() => setLinkCopying(false), 2000);
-  };
+    
+    updateActionState('copyingAI', true);
+    try {
+      const prompt = generateAICasePrompt(appointment.clients, [appointment]);
+      navigator.clipboard.writeText(prompt);
+      showSuccess("AI Case Prompt copied");
+    } catch {
+      showError("Failed to copy AI prompt");
+    } finally {
+      updateActionState('copyingAI', false);
+    }
+  }, [appointment, updateActionState]);
 
-  const handleJumpToCalibrate = (itemName: string) => {
-    const event = new CustomEvent('jump-to-calibrate', { detail: { itemName } });
-    window.dispatchEvent(event);
-  };
-
-  const handleStartSession = async () => {
-    if (!appointment) return;
-    const now = new Date();
-    await saveField('date', now.toISOString());
-    showSuccess("Session started!");
-  };
-
-  const handleCompleteSession = async () => {
-    if (!appointment) return;
-    await saveField('status', 'Completed');
-    showSuccess("Session marked as Completed!");
-  };
-
-  const handleClonePrevious = async () => {
+  const handleClonePrevious = useCallback(async () => {
     if (!appointment || !id) return;
-    setCloning(true);
+    
+    updateActionState('cloning', true);
     try {
       const { data: previous, error } = await supabase
         .from('appointments')
@@ -168,7 +201,7 @@ const AppointmentDetailPage = () => {
 
       if (error) {
         if (error.code === 'PGRST116') {
-          showError("No previous sessions found.");
+          showError("No previous sessions found");
         } else {
           throw error;
         }
@@ -180,48 +213,33 @@ const AppointmentDetailPage = () => {
           saveField('goal', previous.goal),
           saveField('issue', previous.issue),
           saveField('acupoints', previous.acupoints),
-          saveField('priority_pattern', previous.priority_pattern)
+          saveField('priority_pattern', previous.priority_pattern),
         ]);
         
-        showSuccess("Cloned data from previous session.");
+        showSuccess("Previous session data cloned successfully");
         refresh();
       }
     } catch (err: any) {
-      showError(err.message || "Failed to clone previous session data.");
+      showError(err.message || "Failed to clone previous session");
     } finally {
-      setCloning(false);
+      updateActionState('cloning', false);
     }
-  };
+  }, [appointment, id, saveField, refresh, updateActionState]);
 
-  const handleCopySummary = () => {
-    if (!appointment) return;
-    const summary = generateSessionSummary(appointment);
-    navigator.clipboard.writeText(summary);
-    setCopied(true);
-    showSuccess("Summary copied!");
-    setTimeout(() => setCopied(false), 3000);
-  };
+  const handleDeleteAppointment = useCallback(async () => {
+    if (!id || !appointment || !confirm("Are you sure you want to delete this appointment? This action cannot be undone.")) {
+      return;
+    }
 
-  const handleCopyForAI = () => {
-    if (!appointment) return;
-    const prompt = generateAICasePrompt(appointment.clients, [appointment]);
-    navigator.clipboard.writeText(prompt);
-    setAiCopying(true);
-    showSuccess("AI Case Prompt copied!");
-    setTimeout(() => setAiCopying(false), 3000);
-  };
-
-  const handleDeleteAppointment = async () => {
-    if (!id || !appointment || !confirm("Are you sure you want to delete this appointment?")) return;
-    
-    setDeleting(true);
+    updateActionState('deleting', true);
     try {
+      // Delete external references first
       if (appointment.notion_page_id || appointment.notion_planner_id || appointment.calcom_booking_id) {
         await supabase.functions.invoke('delete-external-appointment', {
-          body: { 
-            notionPageId: appointment.notion_page_id, 
+          body: {
+            notionPageId: appointment.notion_page_id,
             notionPlannerId: appointment.notion_planner_id,
-            calcomBookingId: appointment.calcom_booking_id 
+            calcomBookingId: appointment.calcom_booking_id,
           }
         });
       }
@@ -229,196 +247,253 @@ const AppointmentDetailPage = () => {
       const { error } = await supabase.from('appointments').delete().eq('id', id);
       if (error) throw error;
 
-      showSuccess("Appointment deleted.");
+      showSuccess("Appointment deleted successfully");
       navigate('/appointments');
     } catch (err: any) {
       showError(err.message || "Failed to delete appointment");
     } finally {
-      setDeleting(false);
+      updateActionState('deleting', false);
     }
-  };
+  }, [id, appointment, navigate, updateActionState]);
 
-  if (loading) return <div className="flex min-h-screen items-center justify-center"><Loader2 className="animate-spin text-indigo-500" size={48} /></div>;
-  if (!appointment) return <div className="p-12 text-center">Appointment not found</div>;
+  const handleStartSession = useCallback(async () => {
+    if (!appointment) return;
+    const now = new Date();
+    await saveField('date', now.toISOString());
+    showSuccess("Session started");
+  }, [appointment, saveField]);
 
-  const isSessionToday = isToday(appointment.date);
+  const handleCompleteSession = useCallback(async () => {
+    if (!appointment) return;
+    await saveField('status', 'Completed');
+    showSuccess("Session marked as Completed");
+  }, [appointment, saveField]);
+
+  // Early returns
+  if (loading) {
+    return (
+      <div className="flex min-h-screen items-center justify-center bg-background">
+        <Loader2 className="h-12 w-12 animate-spin text-primary" />
+      </div>
+    );
+  }
+
+  if (!appointment) {
+    return (
+      <div className="flex min-h-screen items-center justify-center p-8 text-center">
+        <div>
+          <h2 className="text-2xl font-semibold mb-2">Appointment not found</h2>
+          <p className="text-muted-foreground">The requested session could not be found.</p>
+        </div>
+      </div>
+    );
+  }
+
+  const isSessionToday = isToday(new Date(appointment.date));
 
   return (
     <>
-      <SessionTimer 
-        appointmentDate={appointment.date} 
-        status={appointment.status} 
-        onFixedHeaderChange={setIsFixedHeaderActive} 
+      <SessionTimer
+        appointmentDate={appointment.date}
+        status={appointment.status}
+        onFixedHeaderChange={setIsFixedHeaderActive}
         onCompleteSession={handleCompleteSession}
       />
+
       <AppLayout variant="workspace" hasFixedHeader={isFixedHeaderActive}>
-        <div className="flex flex-col gap-6 print:p-0">
-          {/* Simplified Top Bar */}
+        <div className="flex flex-col gap-8 print:p-0">
+          {/* Top Navigation Bar */}
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 print:hidden">
-            <Breadcrumbs 
+            <Breadcrumbs
               items={[
                 { label: "Appointments", path: "/appointments" },
-                { label: appointment.name || "Session Details" }
-              ]} 
-              className="mb-0"
+                { label: appointment.name || "Session Details" },
+              ]}
             />
-            
-            <div className="flex items-center gap-2">
+
+            <div className="flex items-center gap-3">
               <Collapsible open={showSetup} onOpenChange={setShowSetup}>
                 <CollapsibleTrigger asChild>
-                  <Button variant="ghost" size="sm" className="h-10 px-4 font-bold text-[10px] uppercase tracking-widest rounded-lg text-slate-500 hover:text-indigo-600 hover:bg-indigo-50">
-                    <Settings2 size={16} className="mr-2" />
-                    Session Setup
-                    <ChevronDown size={14} className={cn("ml-2 transition-transform", showSetup && "rotate-180")} />
+                  <Button variant="ghost" size="sm" className="h-10 gap-2">
+                    <Settings2 size={16} />
+                    <span className="font-medium text-xs uppercase tracking-widest">Setup</span>
+                    <ChevronDown 
+                      size={14} 
+                      className={cn("transition-transform", showSetup && "rotate-180")} 
+                    />
                   </Button>
                 </CollapsibleTrigger>
               </Collapsible>
 
-              {isSessionToday && !isFixedHeaderActive && appointment.status === 'Scheduled' && (
+              {isSessionToday && appointment.status === 'Scheduled' && (
                 <Button 
-                  variant="default" 
-                  size="sm" 
-                  className="bg-rose-600 hover:bg-rose-700 text-white rounded-lg shadow-md h-10 px-6 font-bold text-[10px] uppercase tracking-widest"
                   onClick={handleStartSession}
+                  className="h-10 px-6 font-semibold shadow-sm"
                 >
-                  <Play size={16} className="mr-2 fill-current" />
                   Start Session
                 </Button>
               )}
             </div>
           </div>
 
-          {/* Collapsible Setup Tools */}
+          {/* Setup Tools */}
           <Collapsible open={showSetup}>
-            <CollapsibleContent className="animate-in slide-in-from-top-2 duration-300">
-              <div className="flex flex-wrap gap-3 p-4 bg-slate-50 rounded-xl border border-slate-100 mb-4">
-                <Button 
-                  variant="outline" 
-                  size="sm" 
-                  className="bg-emerald-50 border-emerald-100 text-emerald-600 hover:bg-emerald-100 rounded-lg font-bold h-10 px-4"
+            <CollapsibleContent className="animate-in slide-in-from-top-2">
+              <div className="flex flex-wrap gap-3 p-5 bg-muted/50 rounded-2xl border">
+                <Button
+                  variant="outline"
                   onClick={handleCopyOnboardingLink}
+                  disabled={actionStates.copyingLink}
+                  className="h-10"
                 >
-                  {linkCopying ? <Check size={16} className="mr-2" /> : <LinkIcon size={16} className="mr-2" />}
+                  {actionStates.copyingLink ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
                   Copy Onboarding Link
                 </Button>
-                <Button 
-                  variant="outline" 
-                  size="sm" 
-                  className="bg-white border-slate-200 text-slate-600 hover:bg-slate-50 rounded-lg font-bold h-10 px-4"
+
+                <Button
+                  variant="outline"
                   onClick={handleSyncToNotion}
-                  disabled={syncingNotion}
+                  disabled={actionStates.syncingNotion}
+                  className="h-10"
                 >
-                  {syncingNotion ? <Loader2 size={16} className="mr-2 animate-spin" /> : <Share size={16} className="mr-2" />}
+                  {actionStates.syncingNotion && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                   Sync to Notion
                 </Button>
-                <Button 
-                  variant="outline" 
-                  size="sm" 
-                  className="bg-indigo-50 border-indigo-100 text-indigo-600 hover:bg-indigo-100 rounded-lg font-bold h-10 px-4"
+
+                <Button
+                  variant="outline"
                   onClick={handleCopyForAI}
+                  disabled={actionStates.copyingAI}
+                  className="h-10"
                 >
-                  {aiCopying ? <Check size={16} className="mr-2 text-emerald-500" /> : <Sparkles size={16} className="mr-2" />}
+                  {actionStates.copyingAI && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                   AI Case Prompt
                 </Button>
               </div>
             </CollapsibleContent>
           </Collapsible>
 
-          <div className="space-y-4 print:hidden">
-            <WeeklyFocusBanner 
+          {/* Banners */}
+          <div className="space-y-6">
+            <WeeklyFocusBanner
               appointmentId={appointment.id}
               priorityPattern={appointment.priority_pattern}
               onSaveField={saveField}
-              onJumpToCalibrate={handleJumpToCalibrate}
             />
 
-            <PreviousSessionInsightsBar 
-              clientId={appointment.clients.id} 
-              currentAppointmentId={appointment.id} 
+            <PreviousSessionInsightsBar
+              clientId={appointment.clients.id}
+              currentAppointmentId={appointment.id}
             />
           </div>
 
-          <div className="grid grid-cols-1 xl:grid-cols-12 gap-12">
-            <div className={cn(showSidebar ? "xl:col-span-8" : "xl:col-span-12", "space-y-8 transition-all duration-500")}>
-              <div className="space-y-6">
-                <AppointmentHeader appointment={appointment} onSaveField={saveField} onUpdate={refresh} />
-              </div>
+          {/* Main Content Area */}
+          <div className="grid grid-cols-1 xl:grid-cols-12 gap-10">
+            {/* Main Content */}
+            <div className={cn(
+              showSidebar ? "xl:col-span-8" : "xl:col-span-12",
+              "space-y-10 transition-all duration-300"
+            )}>
+              <AppointmentHeader 
+                appointment={appointment} 
+                onSaveField={saveField} 
+                onUpdate={refresh} 
+              />
 
-              <div className="print:hidden">
-                <SessionContentSwitcher 
-                  appointment={appointment} 
-                  onUpdate={refresh} 
-                  saveField={saveField} 
-                  updatePriorityPattern={updatePriorityPattern}
-                  history={history}
-                  nucleiFilter={nucleiFilter}
-                  showSidebar={showSidebar}
-                  onToggleSidebar={() => setShowSidebar(!showSidebar)}
-                  onClonePrevious={handleClonePrevious}
-                  onPrint={() => window.print()}
-                  onCopySummary={handleCopySummary}
-                  onDelete={handleDeleteAppointment}
-                  onStartSession={handleStartSession}
-                  isCloning={cloning}
-                  isCopied={copied}
-                />
-              </div>
+              <SessionContentSwitcher
+                appointment={appointment}
+                onUpdate={refresh}
+                saveField={saveField}
+                updatePriorityPattern={updatePriorityPattern}
+                history={history}
+                nucleiFilter={nucleiFilter}
+                showSidebar={showSidebar}
+                onToggleSidebar={() => setShowSidebar(!showSidebar)}
+                onClonePrevious={handleClonePrevious}
+                onDelete={handleDeleteAppointment}
+                onStartSession={handleStartSession}
+                isCloning={actionStates.cloning}
+              />
             </div>
 
+            {/* Sidebar */}
             {showSidebar && (
-              <div className="xl:col-span-4 space-y-12 print:hidden animate-in fade-in slide-in-from-right-4 duration-500">
+              <div className="xl:col-span-4 space-y-10 print:hidden">
+                {/* Reflections */}
                 {reflections.length > 0 && (
-                  <div className="space-y-4">
-                    <div className="flex items-center justify-between px-2">
-                      <div className="flex items-center gap-2">
-                        <MessageSquare size={18} className="text-indigo-600" />
-                        <h3 className="text-sm font-black text-slate-400 uppercase tracking-[0.3em]">Practitioner Reflections</h3>
+                  <Card>
+                    <CardContent className="p-6">
+                      <div className="flex items-center justify-between mb-4">
+                        <div className="flex items-center gap-2">
+                          <MessageSquare className="text-primary" size={18} />
+                          <h3 className="font-semibold">Practitioner Reflections</h3>
+                        </div>
+                        <Button variant="ghost" size="sm" asChild>
+                          <Link to="/practice/reflections" state={{ appointmentId: id }}>
+                            + Add
+                          </Button>
+                        </Button>
                       </div>
-                      <Button variant="ghost" size="sm" className="h-7 text-[8px] font-black uppercase tracking-widest text-indigo-600" asChild>
-                        <Link to="/practice/reflections" state={{ appointmentId: id }}>+ Add</Link>
-                      </Button>
-                    </div>
-                    <div className="space-y-3">
-                      {reflections.map(ref => (
-                        <Card key={ref.id} className="border-none shadow-sm bg-indigo-50/50 rounded-xl overflow-hidden">
-                          <CardContent className="p-4 space-y-2">
-                            <div className="flex items-center justify-between">
-                              <Badge variant="outline" className="bg-white border-indigo-100 text-indigo-600 text-[7px] font-black uppercase px-1.5 py-0">
-                                {ref.category}
-                              </Badge>
-                              <span className="text-[8px] font-bold text-slate-400 uppercase">{format(new Date(ref.created_at), "MMM d")}</span>
-                            </div>
-                            <p className="text-xs font-medium text-slate-700 leading-relaxed line-clamp-3 italic">"{ref.content}"</p>
-                          </CardContent>
-                        </Card>
-                      ))}
-                    </div>
-                  </div>
+
+                      <div className="space-y-4">
+                        {reflections.map((ref) => (
+                          <Card key={ref.id} className="bg-muted/30 border-none">
+                            <CardContent className="p-4">
+                              <div className="flex justify-between items-start mb-2">
+                                <Badge variant="secondary" className="text-[10px]">
+                                  {ref.category}
+                                </Badge>
+                                <span className="text-xs text-muted-foreground">
+                                  {new Date(ref.created_at).toLocaleDateString()}
+                                </span>
+                              </div>
+                              <p className="text-sm italic text-muted-foreground line-clamp-3">
+                                "{ref.content}"
+                              </p>
+                            </CardContent>
+                          </Card>
+                        ))}
+                      </div>
+                    </CardContent>
+                  </Card>
                 )}
 
-                <div className="space-y-6">
-                  <div className="flex items-center justify-between px-2">
+                {/* Brainstem Tone Map */}
+                <div className="space-y-4">
+                  <div className="flex items-center justify-between">
                     <div className="flex items-center gap-2">
-                      <Brain size={18} className="text-indigo-600" />
-                      <h3 className="text-sm font-black text-slate-400 uppercase tracking-[0.3em]">Brainstem Tone Map</h3>
+                      <Brain className="text-primary" size={18} />
+                      <h3 className="font-semibold">Brainstem Tone Map</h3>
                     </div>
-                    <Button variant="ghost" size="icon" onClick={() => setShowSidebar(false)} className="h-8 w-8 rounded-lg text-slate-400 hover:text-slate-900">
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      onClick={() => setShowSidebar(false)}
+                    >
                       <PanelRightClose size={18} />
                     </Button>
                   </div>
-                  <BrainstemToneMap 
-                    priorityPattern={appointment.priority_pattern} 
+                  <BrainstemToneMap
+                    priorityPattern={appointment.priority_pattern}
                     activeFilter={nucleiFilter}
                     onSelectNuclei={setNucleiFilter}
                   />
                 </div>
 
-                <AppointmentContextCards appointment={appointment} currentPeakMeridian={currentPeakMeridian} onSaveField={saveField} />
+                <AppointmentContextCards
+                  appointment={appointment}
+                  currentPeakMeridian={currentPeakMeridian}
+                  onSaveField={saveField}
+                />
               </div>
             )}
           </div>
-          
-          <SessionWorksheetTemplate clientName={appointment.clients.name} date={appointment.date} />
+
+          {/* Worksheet */}
+          <SessionWorksheetTemplate 
+            clientName={appointment.clients.name} 
+            date={appointment.date} 
+          />
         </div>
       </AppLayout>
     </>

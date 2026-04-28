@@ -96,7 +96,6 @@ const CalcomSlotsView = () => {
   );
 
   const dateRange = useMemo(() => {
-    // Align the start to the beginning of the week (Monday)
     const baseDate = addWeeks(startOfToday(), weeksOffset);
     const start = startOfWeek(baseDate, { weekStartsOn: 1 });
     const end = addDays(start, (weeks * 7) - 1);
@@ -336,13 +335,11 @@ const CalcomSlotsView = () => {
     const suffix = " ✦ Link in bio";
     let note = `${prefix}${availableEntries.join(', ')}${suffix}`;
     
-    // If over 60 chars, try removing entries one by one until it fits
     while (note.length > 60 && availableEntries.length > 1) {
       availableEntries.pop();
       note = `${prefix}${availableEntries.join(', ')}...${suffix}`;
     }
 
-    // Final safety truncate
     const finalNote = note.length > 60 ? note.substring(0, 57) + "..." : note;
 
     navigator.clipboard.writeText(finalNote);
@@ -402,219 +399,218 @@ const CalcomSlotsView = () => {
   }, [dateRange]);
 
   return (
-    <div className="space-y-12 animate-in fade-in duration-700">
+    <div className="space-y-8 animate-in fade-in duration-700">
+      {/* Availability Logic Alert */}
+      <div className="p-6 bg-slate-900 text-white rounded-[2.5rem] shadow-xl relative overflow-hidden group border border-slate-800">
+        <div className="absolute inset-0 bg-gradient-to-br from-indigo-900/40 via-slate-950 to-purple-900/40" />
+        <div className="absolute top-0 right-0 p-8 opacity-10 group-hover:scale-110 transition-transform duration-700">
+          <ShieldAlert size={120} />
+        </div>
+        <div className="relative z-10 flex flex-col md:flex-row items-center gap-8">
+          <div className="w-14 h-14 rounded-2xl bg-white/10 flex items-center justify-center text-amber-400 border border-white/10 shrink-0">
+            <Info size={28} />
+          </div>
+          <div className="space-y-1">
+            <h4 className="text-xl font-black">Availability Logic</h4>
+            <p className="text-sm text-slate-300 leading-relaxed font-medium max-w-3xl">
+              Blocking a day creates an "Out of Office" entry in Cal.com. This overrides your standard schedule and prevents any new bookings for that date.
+            </p>
+          </div>
+        </div>
+      </div>
+
       {/* Summary & Controls Bar */}
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
-        <div className="lg:col-span-8 space-y-6">
-          <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-card p-6 rounded-[2.5rem] border border-border shadow-sm">
-            <div className="flex items-center gap-6">
-              <div className="flex flex-col">
-                <p className="text-[10px] font-black text-muted-foreground uppercase tracking-widest mb-1">Available Slots</p>
-                <div className="flex items-center gap-2">
-                  <span className="text-3xl font-black text-emerald-600">{stats.totalSlots}</span>
-                  <Badge variant="outline" className="bg-emerald-50 text-emerald-700 border-emerald-100 font-bold">Open</Badge>
-                </div>
-              </div>
-              <div className="w-px h-10 bg-border hidden md:block" />
-              <div className="flex flex-col">
-                <p className="text-[10px] font-black text-muted-foreground uppercase tracking-widest mb-1">Upcoming Bookings</p>
-                <div className="flex items-center gap-2">
-                  <span className="text-3xl font-black text-indigo-600">{stats.totalBookings}</span>
-                  <Badge variant="outline" className="bg-indigo-50 text-indigo-700 border-indigo-100 font-bold">Confirmed</Badge>
-                </div>
-              </div>
-            </div>
-
-            <div className="flex items-center gap-3">
-              <div className="flex bg-muted p-1 rounded-xl">
-                {[2, 4, 8].map(w => (
-                  <Button 
-                    key={w}
-                    variant="ghost" 
-                    size="sm" 
-                    onClick={() => setWeeks(w)}
-                    className={cn(
-                      "h-8 px-4 rounded-lg text-[10px] font-black uppercase tracking-widest",
-                      weeks === w ? "bg-card text-indigo-600 shadow-sm" : "text-muted-foreground"
-                    )}
-                  >
-                    {w}W
-                  </Button>
-                ))}
-              </div>
-
-              <div className="flex bg-muted p-1 rounded-xl">
-                <Button 
-                  variant="ghost" 
-                  size="icon" 
-                  onClick={() => setWeeksOffset(prev => prev - 1)}
-                  disabled={weeksOffset <= 0}
-                  className="h-8 w-8 rounded-lg"
-                >
-                  <ArrowLeft size={16} />
-                </Button>
-                <Button 
-                  variant="ghost" 
-                  size="icon" 
-                  onClick={() => setWeeksOffset(prev => prev + 1)}
-                  className="h-8 w-8 rounded-lg"
-                >
-                  <ArrowRight size={16} />
-                </Button>
-              </div>
-              
-              <Button 
-                variant="outline"
-                onClick={handleCopyAll}
-                disabled={loading}
-                className="rounded-xl h-10 px-4 border-indigo-100 text-indigo-600 hover:bg-indigo-100 rounded-xl font-black text-[10px] uppercase tracking-widest"
-              >
-                {copied === 'all' ? <Check size={14} className="mr-2" /> : <Copy size={14} className="mr-2" />}
-                Copy All
-              </Button>
-              <Button 
-                onClick={fetchSlots} 
-                disabled={loading}
-                className="rounded-xl h-10 px-6 bg-indigo-600 hover:bg-indigo-700 text-white font-black text-[10px] uppercase tracking-widest shadow-lg shadow-indigo-100"
-              >
-                {loading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <RefreshCw size={14} className="mr-2" />}
-                Refresh
-              </Button>
-            </div>
-          </div>
-
-          <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 px-4">
-            <div className="flex items-center gap-6">
-              <button
-                onClick={() => setShowOnlyAvailable(!showOnlyAvailable)}
-                className="flex items-center gap-2 group"
-              >
-                <div className={cn(
-                  "w-4 h-4 rounded border-2 flex items-center justify-center transition-all",
-                  showOnlyAvailable ? "bg-indigo-600 border-indigo-600" : "border-slate-300 group-hover:border-indigo-400"
-                )}>
-                  {showOnlyAvailable && <Check size={10} className="text-white" />}
-                </div>
-                <span className="text-[10px] font-black uppercase tracking-widest text-slate-500 group-hover:text-slate-900 transition-colors">
-                  Show only available days
-                </span>
-              </button>
-
+      <div className="space-y-6">
+        <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 bg-card p-6 rounded-[2.5rem] border border-border shadow-sm">
+          <div className="flex items-center gap-6">
+            <div className="flex flex-col">
+              <p className="text-[10px] font-black text-muted-foreground uppercase tracking-widest mb-1">Available Slots</p>
               <div className="flex items-center gap-2">
-                <span className="text-[10px] font-black uppercase tracking-widest text-slate-500">Session Type:</span>
-                <Select value={eventTypeId} onValueChange={(val) => {
-                  setEventTypeId(val);
-                  setTimeout(fetchSlots, 100);
-                }}>
-                  <SelectTrigger className="h-8 w-[180px] rounded-xl bg-card border-border font-bold text-[10px] uppercase tracking-widest">
-                    <SelectValue placeholder="Select Type" />
-                  </SelectTrigger>
-                  <SelectContent className="rounded-xl border-none shadow-2xl">
-                    {CALCOM_CONFIG.EVENT_TYPES.map(type => (
-                      <SelectItem key={type.id} value={type.id} className="rounded-lg text-[10px] font-bold uppercase tracking-widest">
-                        {type.name} (${type.price})
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+                <span className="text-3xl font-black text-emerald-600">{stats.totalSlots}</span>
+                <Badge variant="outline" className="bg-emerald-50 text-emerald-700 border-emerald-100 font-bold">Open</Badge>
               </div>
             </div>
-            
-            <Collapsible open={configOpen} onOpenChange={setConfigOpen}>
-              <CollapsibleTrigger asChild>
-                <Button variant="ghost" size="sm" className="text-[10px] font-black uppercase tracking-widest text-slate-400 hover:text-indigo-600">
-                  <Settings2 size={14} className="mr-2" />
-                  Advanced Settings
-                  {configOpen ? <ChevronUp size={14} className="ml-1" /> : <ChevronDown size={14} className="ml-1" />}
-                </Button>
-              </CollapsibleTrigger>
-            </Collapsible>
+            <div className="w-px h-10 bg-border hidden md:block" />
+            <div className="flex flex-col">
+              <p className="text-[10px] font-black text-muted-foreground uppercase tracking-widest mb-1">Upcoming Bookings</p>
+              <div className="flex items-center gap-2">
+                <span className="text-3xl font-black text-indigo-600">{stats.totalBookings}</span>
+                <Badge variant="outline" className="bg-indigo-50 text-indigo-700 border-indigo-100 font-bold">Confirmed</Badge>
+              </div>
+            </div>
           </div>
 
-          {/* Copy by Day Bar */}
-          <div className="px-4 py-3 bg-indigo-50/50 dark:bg-indigo-900/10 rounded-2xl border border-indigo-100 dark:border-indigo-900/30 flex flex-wrap items-center gap-3 animate-in slide-in-from-top-2 duration-500">
-            <div className="flex items-center gap-2 mr-2">
-              <Sparkles size={14} className="text-indigo-500" />
-              <span className="text-[10px] font-black uppercase tracking-widest text-indigo-600 dark:text-indigo-400">Quick Copy:</span>
+          <div className="flex items-center gap-3">
+            <div className="flex bg-muted p-1 rounded-xl">
+              {[2, 4, 8].map(w => (
+                <Button 
+                  key={w}
+                  variant="ghost" 
+                  size="sm" 
+                  onClick={() => setWeeks(w)}
+                  className={cn(
+                    "h-8 px-4 rounded-lg text-[10px] font-black uppercase tracking-widest",
+                    weeks === w ? "bg-card text-indigo-600 shadow-sm" : "text-muted-foreground"
+                  )}
+                >
+                  {w}W
+                </Button>
+              ))}
+            </div>
+
+            <div className="flex bg-muted p-1 rounded-xl">
+              <Button 
+                variant="ghost" 
+                size="icon" 
+                onClick={() => setWeeksOffset(prev => prev - 1)}
+                disabled={weeksOffset <= 0}
+                className="h-8 w-8 rounded-lg"
+              >
+                <ArrowLeft size={16} />
+              </Button>
+              <Button 
+                variant="ghost" 
+                size="icon" 
+                onClick={() => setWeeksOffset(prev => prev + 1)}
+                className="h-8 w-8 rounded-lg"
+              >
+                <ArrowRight size={16} />
+              </Button>
             </div>
             
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={handleCopyInstaNote}
-              className={cn(
-                "h-8 px-3 rounded-lg text-[10px] font-black uppercase tracking-widest transition-all",
-                copied === 'insta' ? "bg-rose-50 text-white hover:bg-rose-600" : "text-rose-600 hover:bg-rose-100 dark:hover:bg-rose-900/30"
-              )}
+            <Button 
+              variant="outline"
+              onClick={handleCopyAll}
+              disabled={loading}
+              className="rounded-xl h-10 px-4 border-indigo-100 text-indigo-600 hover:bg-indigo-100 rounded-xl font-black text-[10px] uppercase tracking-widest"
             >
-              {copied === 'insta' ? <Check size={12} className="mr-1.5" /> : <Instagram size={12} className="mr-1.5" />}
-              Insta Note (Next Week)
+              {copied === 'all' ? <Check size={14} className="mr-2" /> : <Copy size={14} className="mr-2" />}
+              Copy All
             </Button>
-
-            <div className="w-px h-4 bg-indigo-200 dark:bg-indigo-800 mx-1" />
-
-            {availableDaysOfWeek.map(day => (
-              <Button
-                key={day}
-                variant="ghost"
-                size="sm"
-                onClick={() => handleCopyDay(day)}
-                className={cn(
-                  "h-8 px-3 rounded-lg text-[10px] font-black uppercase tracking-widest transition-all",
-                  copied === day ? "bg-emerald-500 text-white hover:bg-emerald-600" : "text-slate-500 hover:bg-indigo-100 dark:hover:bg-indigo-900/30 hover:text-indigo-600"
-                )}
-              >
-                {copied === day ? <Check size={12} className="mr-1.5" /> : <Copy size={12} className="mr-1.5" />}
-                {day}s
-              </Button>
-            ))}
+            <Button 
+              onClick={fetchSlots} 
+              disabled={loading}
+              className="rounded-xl h-10 px-6 bg-indigo-600 hover:bg-indigo-700 text-white font-black text-[10px] uppercase tracking-widest shadow-lg shadow-indigo-100"
+            >
+              {loading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <RefreshCw size={14} className="mr-2" />}
+              Refresh
+            </Button>
           </div>
+        </div>
 
-          <Collapsible open={configOpen}>
-            <CollapsibleContent className="animate-in slide-in-from-top-2 duration-300">
-              <Card className="border-none shadow-sm bg-muted/30 rounded-[2rem] p-6">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  <div className="space-y-2">
-                    <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-1">Event Type ID</label>
-                    <Input 
-                      placeholder="e.g. 4279898" 
-                      value={eventTypeId}
-                      onChange={(e) => setEventTypeId(e.target.value)}
-                      className="h-10 rounded-xl bg-card border-border font-bold text-xs"
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-1">Schedule ID</label>
-                    <Input 
-                      placeholder="Optional override" 
-                      value={scheduleId}
-                      onChange={(e) => setScheduleId(e.target.value)}
-                      className="h-10 rounded-xl bg-card border-border font-bold text-xs"
-                    />
-                  </div>
-                </div>
-              </Card>
-            </CollapsibleContent>
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 px-4">
+          <div className="flex items-center gap-6">
+            <button
+              onClick={() => setShowOnlyAvailable(!showOnlyAvailable)}
+              className="flex items-center gap-2 group"
+            >
+              <div className={cn(
+                "w-4 h-4 rounded border-2 flex items-center justify-center transition-all",
+                showOnlyAvailable ? "bg-indigo-600 border-indigo-600" : "border-slate-300 group-hover:border-indigo-400"
+              )}>
+                {showOnlyAvailable && <Check size={10} className="text-white" />}
+              </div>
+              <span className="text-[10px] font-black uppercase tracking-widest text-slate-500 group-hover:text-slate-900 transition-colors">
+                Show only available days
+              </span>
+            </button>
+
+            <div className="flex items-center gap-2">
+              <span className="text-[10px] font-black uppercase tracking-widest text-slate-500">Session Type:</span>
+              <Select value={eventTypeId} onValueChange={(val) => {
+                setEventTypeId(val);
+                setTimeout(fetchSlots, 100);
+              }}>
+                <SelectTrigger className="h-8 w-[180px] rounded-xl bg-card border-border font-bold text-[10px] uppercase tracking-widest">
+                  <SelectValue placeholder="Select Type" />
+                </SelectTrigger>
+                <SelectContent className="rounded-xl border-none shadow-2xl">
+                  {CALCOM_CONFIG.EVENT_TYPES.map(type => (
+                    <SelectItem key={type.id} value={type.id} className="rounded-lg text-[10px] font-bold uppercase tracking-widest">
+                      {type.name} (${type.price})
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+          
+          <Collapsible open={configOpen} onOpenChange={setConfigOpen}>
+            <CollapsibleTrigger asChild>
+              <Button variant="ghost" size="sm" className="text-[10px] font-black uppercase tracking-widest text-slate-400 hover:text-indigo-600">
+                <Settings2 size={14} className="mr-2" />
+                Advanced Settings
+                {configOpen ? <ChevronUp size={14} className="ml-1" /> : <ChevronDown size={14} className="ml-1" />}
+              </Button>
+            </CollapsibleTrigger>
           </Collapsible>
         </div>
 
-        <div className="lg:col-span-4">
-          <Card className="border-none shadow-lg rounded-[2.5rem] bg-slate-900 text-white h-full overflow-hidden relative group">
-            <div className="absolute inset-0 bg-gradient-to-br from-indigo-900/40 via-slate-950 to-purple-900/40" />
-            <div className="absolute top-0 right-0 p-6 opacity-10 group-hover:scale-110 transition-transform duration-700">
-              <ShieldAlert size={100} />
-            </div>
-            <CardContent className="p-8 flex flex-col justify-center h-full space-y-4 relative z-10">
-              <div className="w-12 h-12 rounded-2xl bg-white/10 flex items-center justify-center text-amber-400 border border-white/10">
-                <Info size={24} />
-              </div>
-              <h4 className="text-xl font-black">Availability Logic</h4>
-              <p className="text-sm text-slate-400 leading-relaxed font-medium">
-                Blocking a day avoids "Out of Office" entry in Cal.com. This overrides your standard schedule and prevents any new bookings for that date.
-              </p>
-            </CardContent>
-          </Card>
+        {/* Copy by Day Bar */}
+        <div className="px-4 py-3 bg-indigo-50/50 dark:bg-indigo-900/10 rounded-2xl border border-indigo-100 dark:border-indigo-900/30 flex flex-wrap items-center gap-3 animate-in slide-in-from-top-2 duration-500">
+          <div className="flex items-center gap-2 mr-2">
+            <Sparkles size={14} className="text-indigo-500" />
+            <span className="text-[10px] font-black uppercase tracking-widest text-indigo-600 dark:text-indigo-400">Quick Copy:</span>
+          </div>
+          
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={handleCopyInstaNote}
+            className={cn(
+              "h-8 px-3 rounded-lg text-[10px] font-black uppercase tracking-widest transition-all",
+              copied === 'insta' ? "bg-rose-50 text-white hover:bg-rose-600" : "text-rose-600 hover:bg-rose-100 dark:hover:bg-rose-900/30"
+            )}
+          >
+            {copied === 'insta' ? <Check size={12} className="mr-1.5" /> : <Instagram size={12} className="mr-1.5" />}
+            Insta Note (Next Week)
+          </Button>
+
+          <div className="w-px h-4 bg-indigo-200 dark:bg-indigo-800 mx-1" />
+
+          {availableDaysOfWeek.map(day => (
+            <Button
+              key={day}
+              variant="ghost"
+              size="sm"
+              onClick={() => handleCopyDay(day)}
+              className={cn(
+                "h-8 px-3 rounded-lg text-[10px] font-black uppercase tracking-widest transition-all",
+                copied === day ? "bg-emerald-500 text-white hover:bg-emerald-600" : "text-slate-500 hover:bg-indigo-100 dark:hover:bg-indigo-900/30 hover:text-indigo-600"
+              )}
+            >
+              {copied === day ? <Check size={12} className="mr-1.5" /> : <Copy size={12} className="mr-1.5" />}
+              {day}s
+            </Button>
+          ))}
         </div>
+
+        <Collapsible open={configOpen}>
+          <CollapsibleContent className="animate-in slide-in-from-top-2 duration-300">
+            <Card className="border-none shadow-sm bg-muted/30 rounded-[2rem] p-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className="space-y-2">
+                  <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-1">Event Type ID</label>
+                  <Input 
+                    placeholder="e.g. 4279898" 
+                    value={eventTypeId}
+                    onChange={(e) => setEventTypeId(e.target.value)}
+                    className="h-10 rounded-xl bg-card border-border font-bold text-xs"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-1">Schedule ID</label>
+                  <Input 
+                    placeholder="Optional override" 
+                    value={scheduleId}
+                    onChange={(e) => setScheduleId(e.target.value)}
+                    className="h-10 rounded-xl bg-card border-border font-bold text-xs"
+                  />
+                </div>
+              </div>
+            </Card>
+          </CollapsibleContent>
+        </Collapsible>
       </div>
 
       {error && (
@@ -832,7 +828,6 @@ const CalcomSlotsView = () => {
         </div>
       )}
 
-      {/* Empty State */}
       {!loading && dateRange.every(date => !blockedDates.includes(date) && (slots[date] || []).length === 0 && (bookings[date] || []).length === 0) && (
         <div className="text-center py-32 bg-muted/30 rounded-[3rem] border-2 border-dashed border-border">
           <div className="mx-auto w-24 h-24 bg-card rounded-[2rem] flex items-center justify-center mb-8 shadow-2xl">

@@ -10,9 +10,12 @@ import BackToTop from '@/components/shared/BackToTop';
 import UpcomingMarquee from '@/components/crm/UpcomingMarquee';
 import { Button } from '@/components/ui/button';
 import { PanelLeftOpen } from 'lucide-react';
+import { useAppMode } from '@/components/ModeProvider';
+import { cn } from '@/lib/utils';
 
 const MainLayout = () => {
   const location = useLocation();
+  const { mode } = useAppMode();
   const isAppointmentDetail = location.pathname.startsWith('/appointments/') && location.pathname.split('/').length === 3;
 
   const [isSidebarVisible, setIsSidebarVisible] = useState(() => {
@@ -31,7 +34,12 @@ const MainLayout = () => {
   }, [isSidebarVisible]);
 
   return (
-    <div className="flex flex-col min-h-screen bg-background">
+    <div className={cn(
+      "flex flex-col min-h-screen transition-colors duration-700",
+      mode === 'clinical' ? "bg-background" : 
+      mode === 'lab' ? "bg-slate-50 dark:bg-slate-950" : 
+      "bg-slate-50 dark:bg-slate-950"
+    )}>
       <UpcomingMarquee />
       <div className="flex flex-col lg:flex-row flex-1">
         <MobileNav />

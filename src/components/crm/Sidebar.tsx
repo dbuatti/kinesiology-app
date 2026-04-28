@@ -37,7 +37,8 @@ import {
   Brain,
   Sun,
   Trophy,
-  Layers
+  Layers,
+  Activity
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import SearchBar from "./SearchBar";
@@ -49,6 +50,7 @@ import { useRecentClients } from "@/hooks/use-recent-clients";
 import { useActiveSession } from "@/hooks/useActiveSession";
 import { usePracticeStats } from "@/hooks/usePracticeStats";
 import { usePrivacyMode } from "@/hooks/use-privacy-mode";
+import { useAppMode, AppMode } from "@/components/ModeProvider";
 import {
   Dialog,
   DialogContent,
@@ -74,41 +76,32 @@ interface SidebarProps {
 const Sidebar = ({ onHide }: SidebarProps) => {
   const location = useLocation();
   const navigate = useNavigate();
+  const { mode, setMode } = useAppMode();
   const [helpOpen, setHelpOpen] = useState(false);
   const [clientDialogOpen, setClientDialogOpen] = useState(false);
   const [appDialogOpen, setAppDialogOpen] = useState(false);
   const { isPrivate, togglePrivacy } = usePrivacyMode();
   
-  const isClinicalPath = (path: string) => path === "/" || path.startsWith("/schedule") || path.startsWith("/clients") || path === "/oversight";
-  const isLabPath = (path: string) => path.startsWith("/lab") || path.startsWith("/practice/journal") || path === "/morning-program" || path === "/practice/self";
-  const isLibraryPath = (path: string) => path.startsWith("/resources") || path === "/peace-framework" || path === "/practice/procedures" || path === "/practice/quiz";
-  const isGrowthPath = (path: string) => path.startsWith("/business");
-
   const [clinicalOpen, setClinicalOpen] = useState(true);
-  const [labOpen, setLabOpen] = useState(false);
-  const [libraryOpen, setLibraryOpen] = useState(false);
-  const [growthOpen, setGrowthOpen] = useState(false);
+  const [labOpen, setLabOpen] = useState(true);
+  const [libraryOpen, setLibraryOpen] = useState(true);
+  const [growthOpen, setGrowthOpen] = useState(true);
 
   const activeSession = useActiveSession();
   const { practiceHealth } = usePracticeStats();
   const { recentClients } = useRecentClients();
-  
-  useEffect(() => {
-    const path = location.pathname;
-    if (isClinicalPath(path)) setClinicalOpen(true);
-    if (isLabPath(path)) setLabOpen(true);
-    if (isLibraryPath(path)) setLibraryOpen(true);
-    if (isGrowthPath(path)) setGrowthOpen(true);
-  }, [location.pathname]);
 
   const clinicalItems = [
     { label: "Dashboard", icon: LayoutDashboard, path: "/", shortcut: "⌘D" },
     { label: "Schedule", icon: Calendar, path: "/schedule", shortcut: "⌘2" },
     { label: "Clients", icon: Users, path: "/clients", shortcut: "⌘1" },
     { label: "Oversight", icon: TrendingUp, path: "/oversight", shortcut: "⌘O" },
+    { label: "Business Hub", icon: Briefcase, path: "/business" },
+    { label: "Marketing Engine", icon: Mic, path: "/business/marketing-engine" },
   ];
 
   const labItems = [
+    { label: "Dashboard", icon: LayoutDashboard, path: "/" },
     { label: "Morning Program", icon: Sun, path: "/morning-program" },
     { label: "Journal", icon: MessageSquare, path: "/practice/journal", shortcut: "⌘R" },
     { label: "The Lab", icon: Compass, path: "/lab", shortcut: "⌘S" },
@@ -116,16 +109,12 @@ const Sidebar = ({ onHide }: SidebarProps) => {
   ];
 
   const libraryItems = [
+    { label: "Dashboard", icon: LayoutDashboard, path: "/" },
     { label: "Clinical Bible", icon: BookOpen, path: "/resources" },
     { label: "PEACE Framework", icon: ShieldCheck, path: "/peace-framework" },
     { label: "Mastery Tracker", icon: Trophy, path: "/practice/procedures", shortcut: "⌘P" },
     { label: "Knowledge Quiz", icon: GraduationCap, path: "/practice/quiz", shortcut: "⌘K" },
     { label: "Quick Calibrate", icon: Zap, path: "/practice/calibrate", shortcut: "⌘Q" },
-  ];
-
-  const growthItems = [
-    { label: "Business Hub", icon: Briefcase, path: "/business" },
-    { label: "Marketing Engine", icon: Mic, path: "/business/marketing-engine" },
   ];
 
   const handleSignOut = async () => {
@@ -212,6 +201,28 @@ const Sidebar = ({ onHide }: SidebarProps) => {
     </div>
   );
 
+  const ModeSwitcher = () => (
+    <div className="bg-muted/50 p-1 rounded-2xl flex gap-1 border border-border">
+      {(['clinical', 'lab', 'library'] as AppMode[]).map((m) => (
+        <button
+          key={m}
+          onClick={() => setMode(m)}
+          className={cn(
+            "flex-1 flex flex-col items-center justify-center py-2 rounded-xl transition-all duration-300",
+            mode === m 
+              ? "bg-white dark:bg-slate-900 shadow-sm text-indigo-600" 
+              : "text-slate-400 hover:text-slate-600"
+          )}
+        >
+          {m === 'clinical' && <Activity size={14} />}
+          {m === 'lab' && <Zap size={14} />}
+          {m === 'library' && <BookOpen size={14} />}
+          <span className="text-[7px] font-black uppercase tracking-widest mt-1">{m}</span>
+        </button>
+      ))}
+    </div>
+  );
+
   return (
     <div className="hidden lg:flex w-64 bg-white dark:bg-slate-950 text-foreground min-h-screen p-4 flex-col gap-6 sticky top-0 h-screen overflow-y-auto border-r border-secondary/30 shadow-sm z-[60]">
       <div className="flex items-center justify-between px-2 py-2">
@@ -238,27 +249,37 @@ const Sidebar = ({ onHide }: SidebarProps) => {
         </Tooltip>
       </div>
 
-      <div className="px-1">
+      <div className="px-1 space-y-4">
+        <ModeSwitcher />
         <SearchBar />
       </div>
 
-      <div className="px-1">
-        <Button 
-          onClick={() => setAppDialogOpen(true)}
-          className="w-full justify-center bg-accent hover:bg-accent/90 text-white rounded-xl h-11 font-black text-[10px] uppercase tracking-[0.2em] shadow-lg shadow-accent/10 group"
-        >
-          <PlusCircle size={16} className="mr-2 group-hover:rotate-90 transition-transform duration-500" /> 
-          Book Session
-        </Button>
-      </div>
+      {mode === 'clinical' && (
+        <div className="px-1">
+          <Button 
+            onClick={() => setAppDialogOpen(true)}
+            className="w-full justify-center bg-accent hover:bg-accent/90 text-white rounded-xl h-11 font-black text-[10px] uppercase tracking-[0.2em] shadow-lg shadow-accent/10 group"
+          >
+            <PlusCircle size={16} className="mr-2 group-hover:rotate-90 transition-transform duration-500" /> 
+            Book Session
+          </Button>
+        </div>
+      )}
       
       <div className="space-y-4 flex-1">
-        <NavGroup title="Clinical" icon={LayoutDashboard} isOpen={clinicalOpen} onToggle={() => setClinicalOpen(!clinicalOpen)} items={clinicalItems} />
-        <NavGroup title="Practice Lab" icon={Zap} isOpen={labOpen} onToggle={() => setLabOpen(!labOpen)} items={labItems} />
-        <NavGroup title="Library" icon={BookOpen} isOpen={libraryOpen} onToggle={() => setLibraryOpen(!libraryOpen)} items={libraryItems} />
-        <NavGroup title="Growth" icon={Briefcase} isOpen={growthOpen} onToggle={() => setGrowthOpen(!growthOpen)} items={growthItems} />
+        {mode === 'clinical' && (
+          <NavGroup title="Clinical Operations" icon={LayoutDashboard} isOpen={clinicalOpen} onToggle={() => setClinicalOpen(!clinicalOpen)} items={clinicalItems} />
+        )}
+        
+        {mode === 'lab' && (
+          <NavGroup title="Practice Lab" icon={Zap} isOpen={labOpen} onToggle={() => setLabOpen(!labOpen)} items={labItems} />
+        )}
 
-        {activeSession && (
+        {mode === 'library' && (
+          <NavGroup title="Clinical Library" icon={BookOpen} isOpen={libraryOpen} onToggle={() => setLibraryOpen(!libraryOpen)} items={libraryItems} />
+        )}
+
+        {activeSession && mode === 'clinical' && (
           <div className="px-1 pt-2">
             <Link 
               to={`/appointments/${activeSession.id}`}
@@ -282,17 +303,19 @@ const Sidebar = ({ onHide }: SidebarProps) => {
           </div>
         )}
 
-        <div className="px-4 py-3 bg-secondary/30 rounded-2xl border border-secondary/30 mx-1 space-y-2">
-          <div className="flex items-center justify-between">
-            <p className="text-[8px] font-black text-muted-foreground uppercase tracking-[0.2em] flex items-center gap-2">
-              <ShieldCheck size={10} className="text-emerald-500" /> Health
-            </p>
-            <span className="text-[9px] font-black text-emerald-500">{practiceHealth}%</span>
+        {mode === 'clinical' && (
+          <div className="px-4 py-3 bg-secondary/30 rounded-2xl border border-secondary/30 mx-1 space-y-2">
+            <div className="flex items-center justify-between">
+              <p className="text-[8px] font-black text-muted-foreground uppercase tracking-[0.2em] flex items-center gap-2">
+                <ShieldCheck size={10} className="text-emerald-500" /> Health
+              </p>
+              <span className="text-[9px] font-black text-emerald-500">{practiceHealth}%</span>
+            </div>
+            <Progress value={practiceHealth} className="h-1 bg-white/50 [&>div]:bg-emerald-500" />
           </div>
-          <Progress value={practiceHealth} className="h-1 bg-white/50 [&>div]:bg-emerald-500" />
-        </div>
+        )}
 
-        {recentClients.length > 0 && (
+        {recentClients.length > 0 && mode === 'clinical' && (
           <div className="px-1 space-y-1">
             <div className="px-3">
               <p className="text-[8px] font-black text-muted-foreground uppercase tracking-[0.3em] flex items-center gap-2">

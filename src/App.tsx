@@ -4,6 +4,7 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { AuthProvider, useAuth } from "./components/AuthProvider";
+import { ModeProvider } from "./components/ModeProvider";
 import { ThemeProvider } from "./components/theme-provider";
 import { Loader2 } from "lucide-react";
 import ScrollToTop from "./components/shared/ScrollToTop";
@@ -147,12 +148,14 @@ const App = () => (
     <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
       <TooltipProvider>
         <AuthProvider>
-          <Toaster />
-          <Sonner />
-          <BrowserRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
-            <ScrollToTop />
-            <AppRoutes />
-          </BrowserRouter>
+          <ModeProvider>
+            <Toaster />
+            <Sonner />
+            <BrowserRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
+              <ScrollToTop />
+              <AppRoutes />
+            </BrowserRouter>
+          </ModeProvider>
         </AuthProvider>
       </TooltipProvider>
     </ThemeProvider>

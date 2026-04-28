@@ -5,13 +5,14 @@ import { Link } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Card, CardContent } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   Calendar, Activity, Loader2,
   UserPlus, Zap, Wind,
   ArrowRight, Clock,
   ClipboardCheck, Link as LinkIcon, Check,
-  Coffee, CalendarPlus, Target, GraduationCap, Sun
+  Coffee, CalendarPlus, Target, GraduationCap, Sun, Heart, MessageSquare, Brain, Layers, Sparkles,
+  ChevronRight, Fingerprint, ShieldAlert, BookOpen, ShieldCheck, Trophy
 } from "lucide-react";
 
 import {
@@ -36,6 +37,7 @@ import PractitionerGrounding from "@/components/crm/PractitionerGrounding";
 import ClientWins from "@/components/crm/ClientWins";
 import { cn } from "@/lib/utils";
 import { usePrivacyMode } from "@/hooks/use-privacy-mode";
+import { useAppMode } from "@/components/ModeProvider";
 import { showSuccess } from "@/utils/toast";
 import Scratchpad from "@/components/crm/Scratchpad";
 import QuickActionsGrid from "@/components/crm/QuickActionsGrid";
@@ -44,6 +46,7 @@ import { Progress } from "@/components/ui/progress";
 
 const Index = () => {
   const { isPrivate } = usePrivacyMode();
+  const { mode } = useAppMode();
   const [stats, setStats] = useState({ 
     clients: 0, 
     appointments: 0,
@@ -195,11 +198,20 @@ const Index = () => {
         {/* Header Section */}
         <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 md:gap-8">
           <div className="space-y-1 md:space-y-2">
-            <Badge className="bg-indigo-50 dark:bg-indigo-900/20 text-indigo-600 dark:text-indigo-400 border-none font-black text-[8px] md:text-[9px] uppercase tracking-[0.3em] px-4 md:px-5 py-1.5 rounded-full mb-1 md:mb-2">
-              Practitioner Command Center
+            <Badge className={cn(
+              "border-none font-black text-[8px] md:text-[9px] uppercase tracking-[0.3em] px-4 md:px-5 py-1.5 rounded-full mb-1 md:mb-2",
+              mode === 'clinical' ? "bg-indigo-50 dark:bg-indigo-900/20 text-indigo-600 dark:text-indigo-400" :
+              mode === 'lab' ? "bg-amber-50 dark:bg-amber-900/20 text-amber-600 dark:text-amber-400" :
+              "bg-emerald-50 dark:bg-emerald-900/20 text-emerald-600 dark:text-emerald-400"
+            )}>
+              {mode === 'clinical' ? "Clinical Command Center" : mode === 'lab' ? "Practice Lab Dashboard" : "Knowledge Library Hub"}
             </Badge>
-            <h1 className="text-3xl md:text-5xl font-serif font-bold tracking-tighter text-primary">Practice Hub</h1>
-            <p className="text-sm md:text-lg text-muted-foreground font-medium max-w-2xl">Welcome back, Daniele. Here is your clinical landscape for today.</p>
+            <h1 className="text-3xl md:text-5xl font-serif font-bold tracking-tighter text-primary capitalize">{mode} Hub</h1>
+            <p className="text-sm md:text-lg text-muted-foreground font-medium max-w-2xl">
+              {mode === 'clinical' ? "Welcome back, Daniele. Here is your clinical landscape for today." :
+               mode === 'lab' ? "Focus on your personal integration and practitioner state." :
+               "Deepen your clinical knowledge and master the FNH protocols."}
+            </p>
           </div>
           <div className="flex items-center gap-3 md:gap-4">
             <div className="hidden lg:flex flex-col items-end">
@@ -219,175 +231,310 @@ const Index = () => {
           </div>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
-          <div className="lg:col-span-8">
-            <PractitionerGrounding />
-          </div>
-          <div className="lg:col-span-4">
-            <Link to="/morning-program" className="block h-full">
-              <Card className="border-none shadow-lg rounded-[2.5rem] bg-amber-500 text-white h-full overflow-hidden relative group hover:shadow-xl transition-all duration-500">
-                <div className="absolute top-0 right-0 p-6 opacity-10 group-hover:scale-110 transition-transform duration-700">
-                  <Sun size={100} className="fill-current" />
-                </div>
-                <CardContent className="p-8 flex flex-col justify-between h-full relative z-10">
-                  <div className="space-y-2">
-                    <div className="flex items-center gap-2">
-                      <Sun size={18} className="fill-current" />
-                      <span className="text-[10px] font-black uppercase tracking-widest">Morning Program</span>
-                    </div>
-                    <h3 className="text-2xl font-black">Daily Readiness</h3>
-                  </div>
-                  
-                  <div className="space-y-3">
-                    <div className="flex justify-between text-[10px] font-black uppercase">
-                      <span>Progress</span>
-                      <span>{morningProgress}%</span>
-                    </div>
-                    <Progress value={morningProgress} className="h-1.5 bg-white/20 [&>div]:bg-white" />
-                    <p className="text-[10px] font-bold text-amber-100">
-                      {morningProgress === 100 ? "You are fully centered." : "Complete your morning ritual."}
-                    </p>
-                  </div>
-                </CardContent>
-              </Card>
-            </Link>
-          </div>
-        </div>
-
-        <QuickActionsGrid 
-          onNewClient={() => setClientDialogOpen(true)} 
-          onBookSession={() => setAppDialogOpen(true)} 
-        />
-
-        <DashboardStats stats={stats} />
-
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <IdentitySmartTool />
-          <div className="p-8 md:p-10 bg-indigo-600 text-white rounded-[2.5rem] shadow-2xl relative overflow-hidden group">
-            <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(255,255,255,0.1),transparent_50%)]" />
-            <div className="absolute top-0 right-0 p-8 opacity-10 group-hover:scale-110 transition-transform duration-700">
-              <GraduationCap size={120} />
-            </div>
-            <div className="relative z-10 space-y-6">
-              <div className="flex items-center gap-4">
-                <div className="w-12 h-12 bg-white/10 backdrop-blur-md flex items-center justify-center border border-white/20 shadow-xl rounded-2xl">
-                  <Zap size={24} className="text-amber-400 fill-amber-400" />
-                </div>
-                <h3 className="text-2xl font-serif font-bold">Knowledge Quiz</h3>
+        {/* MODE: CLINICAL */}
+        {mode === 'clinical' && (
+          <div className="space-y-12 md:space-y-16 animate-in fade-in duration-500">
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
+              <div className="lg:col-span-8">
+                <PractitionerGrounding />
               </div>
-              <p className="text-indigo-100 font-medium leading-relaxed">
-                Test your clinical reasoning with infinite questions across Anatomy, TCM, and FNH protocols.
-              </p>
-              <div className="flex items-center gap-4">
-                <div className="flex -space-x-2">
-                  {[1, 2, 3].map(i => (
-                    <div key={i} className="w-8 h-8 rounded-full border-2 border-indigo-600 bg-indigo-400 flex items-center justify-center text-[10px] font-black">
-                      {i === 1 ? 'A' : i === 2 ? 'T' : 'C'}
+              <div className="lg:col-span-4">
+                <Link to="/morning-program" className="block h-full">
+                  <Card className="border-none shadow-lg rounded-[2.5rem] bg-amber-500 text-white h-full overflow-hidden relative group hover:shadow-xl transition-all duration-500">
+                    <div className="absolute top-0 right-0 p-6 opacity-10 group-hover:scale-110 transition-transform duration-700">
+                      <Sun size={100} className="fill-current" />
                     </div>
-                  ))}
-                </div>
-                <span className="text-[10px] font-black uppercase tracking-widest text-indigo-200">300+ Questions</span>
+                    <CardContent className="p-8 flex flex-col justify-between h-full relative z-10">
+                      <div className="space-y-2">
+                        <div className="flex items-center gap-2">
+                          <Sun size={18} className="fill-current" />
+                          <span className="text-[10px] font-black uppercase tracking-widest">Morning Program</span>
+                        </div>
+                        <h3 className="text-2xl font-black">Daily Readiness</h3>
+                      </div>
+                      
+                      <div className="space-y-3">
+                        <div className="flex justify-between text-[10px] font-black uppercase">
+                          <span>Progress</span>
+                          <span>{morningProgress}%</span>
+                        </div>
+                        <Progress value={morningProgress} className="h-1.5 bg-white/20 [&>div]:bg-white" />
+                      </div>
+                    </CardContent>
+                  </Card>
+                </Link>
               </div>
-              <Button className="w-full bg-white text-indigo-600 hover:bg-indigo-50 rounded-2xl font-black text-[10px] uppercase tracking-[0.2em] h-14 shadow-lg" asChild>
-                <Link to="/practice/quiz">Start Infinite Quiz</Link>
-              </Button>
             </div>
-          </div>
-        </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 md:gap-12">
+            <QuickActionsGrid 
+              onNewClient={() => setClientDialogOpen(true)} 
+              onBookSession={() => setAppDialogOpen(true)} 
+            />
 
-          <div className="lg:col-span-8 space-y-12 md:space-y-16">
-            <DailyBriefing todaySessions={todaySessions} activeSession={activeSession} />
-            
-            {pendingOnboarding.length > 0 && (
-              <div className="space-y-6 md:space-y-8">
-                <div className="flex items-center justify-between px-2">
-                  <div className="space-y-0.5 md:space-y-1">
-                    <h2 className="text-2xl md:text-3xl font-serif font-bold text-primary flex items-center gap-3 md:gap-4">
-                      <ClipboardCheck size={24} className="md:w-8 md:h-8 text-accent" /> Recent Onboarding
-                    </h2>
-                    <p className="text-xs md:base text-muted-foreground font-medium">New client submissions ready for review.</p>
-                  </div>
-                  <Badge className="bg-accent text-white border-none font-black text-[8px] md:text-[9px] uppercase tracking-widest px-3 md:px-4 py-1 md:py-1.5 rounded-full shadow-lg shadow-accent/10">
-                    {pendingOnboarding.length} New
-                  </Badge>
-                </div>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-3 md:gap-4">
-                  {pendingOnboarding.map(client => (
-                    <div key={client.id} className="p-4 md:p-6 bg-white dark:bg-slate-900 rounded-2xl md:rounded-[2rem] border border-secondary/30 flex items-center justify-between group hover:shadow-xl transition-all duration-500">
-                      <Link to={`/clients/${client.id}`} className="flex items-center gap-3 md:gap-5 flex-1 min-w-0">
-                        <div className="w-10 h-10 md:w-12 md:h-12 rounded-xl md:rounded-2xl bg-muted text-primary flex items-center justify-center font-black text-base md:text-lg shadow-inner shrink-0">
-                          {client.name.charAt(0)}
-                        </div>
-                        <div className="min-w-0">
-                          <p className={cn("font-black text-base md:text-lg text-foreground group-hover:text-accent transition-colors truncate", isPrivate && "blur-sm")}>{client.name}</p>
-                          <p className="text-[8px] md:text-[9px] font-black text-muted-foreground uppercase tracking-widest flex items-center gap-1.5 mt-0.5 md:mt-1">
-                            <Clock size={12} className="md:w-3 md:h-3 text-accent" /> {formatDistanceToNow(new Date(client.created_at), { addSuffix: true })}
-                          </p>
-                        </div>
-                      </Link>
-                      <div className="flex items-center gap-2 md:gap-3 shrink-0">
-                        <Button 
-                          variant="ghost" 
-                          size="sm" 
-                          className="h-8 md:h-9 px-2 md:px-4 rounded-lg md:rounded-xl text-indigo-600 hover:bg-indigo-50 font-black text-[8px] md:text-[9px] uppercase tracking-widest"
-                          onClick={(e) => handleCopyLink(e, client.id)}
-                        >
-                          {copiedId === client.id ? <Check size={14} className="md:mr-2 text-emerald-500" /> : <LinkIcon size={14} className="md:mr-2" />}
-                          <span className="hidden sm:inline">{copiedId === client.id ? "Copied" : "Link"}</span>
-                        </Button>
-                        <Link to={`/clients/${client.id}`}>
-                          <div className="w-8 h-8 md:w-9 md:h-9 rounded-lg md:rounded-xl bg-muted text-primary flex items-center justify-center group-hover:bg-primary group-hover:text-white transition-all shadow-sm">
-                            <ArrowRight className="w-4 h-4 md:w-5 md:h-5" />
+            <DashboardStats stats={stats} />
+
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 md:gap-12">
+              <div className="lg:col-span-8 space-y-12 md:space-y-16">
+                <DailyBriefing todaySessions={todaySessions} activeSession={activeSession} />
+                
+                {pendingOnboarding.length > 0 && (
+                  <div className="space-y-6 md:space-y-8">
+                    <div className="flex items-center justify-between px-2">
+                      <div className="space-y-0.5 md:space-y-1">
+                        <h2 className="text-2xl md:text-3xl font-serif font-bold text-primary flex items-center gap-3 md:gap-4">
+                          <ClipboardCheck size={24} className="md:w-8 md:h-8 text-accent" /> Recent Onboarding
+                        </h2>
+                        <p className="text-xs md:base text-muted-foreground font-medium">New client submissions ready for review.</p>
+                      </div>
+                      <Badge className="bg-accent text-white border-none font-black text-[8px] md:text-[9px] uppercase tracking-widest px-3 md:px-4 py-1 md:py-1.5 rounded-full shadow-lg shadow-accent/10">
+                        {pendingOnboarding.length} New
+                      </Badge>
+                    </div>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-3 md:gap-4">
+                      {pendingOnboarding.map(client => (
+                        <div key={client.id} className="p-4 md:p-6 bg-white dark:bg-slate-900 rounded-2xl md:rounded-[2rem] border border-secondary/30 flex items-center justify-between group hover:shadow-xl transition-all duration-500">
+                          <Link to={`/clients/${client.id}`} className="flex items-center gap-3 md:gap-5 flex-1 min-w-0">
+                            <div className="w-10 h-10 md:w-12 md:h-12 rounded-xl md:rounded-2xl bg-muted text-primary flex items-center justify-center font-black text-base md:text-lg shadow-inner shrink-0">
+                              {client.name.charAt(0)}
+                            </div>
+                            <div className="min-w-0">
+                              <p className={cn("font-black text-base md:text-lg text-foreground group-hover:text-accent transition-colors truncate", isPrivate && "blur-sm")}>{client.name}</p>
+                              <p className="text-[8px] md:text-[9px] font-black text-muted-foreground uppercase tracking-widest flex items-center gap-1.5 mt-0.5 md:mt-1">
+                                <Clock size={12} className="md:w-3 md:h-3 text-accent" /> {formatDistanceToNow(new Date(client.created_at), { addSuffix: true })}
+                              </p>
+                            </div>
+                          </Link>
+                          <div className="flex items-center gap-2 md:gap-3 shrink-0">
+                            <Button 
+                              variant="ghost" 
+                              size="sm" 
+                              className="h-8 md:h-9 px-2 md:px-4 rounded-lg md:rounded-xl text-indigo-600 hover:bg-indigo-50 font-black text-[8px] md:text-[9px] uppercase tracking-widest"
+                              onClick={(e) => handleCopyLink(e, client.id)}
+                            >
+                              {copiedId === client.id ? <Check size={14} className="md:mr-2 text-emerald-500" /> : <LinkIcon size={14} className="md:mr-2" />}
+                              <span className="hidden sm:inline">{copiedId === client.id ? "Copied" : "Link"}</span>
+                            </Button>
+                            <Link to={`/clients/${client.id}`}>
+                              <div className="w-8 h-8 md:w-9 md:h-9 rounded-lg md:rounded-xl bg-muted text-primary flex items-center justify-center group-hover:bg-primary group-hover:text-white transition-all shadow-sm">
+                                <ArrowRight className="w-4 h-4 md:w-5 md:h-5" />
+                              </div>
+                            </Link>
                           </div>
-                        </Link>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                <Scratchpad />
+              </div>
+
+              <div className="lg:col-span-4 space-y-12 md:space-y-16">
+                <ClientWins />
+                <UpcomingAppointments />
+                <RecentActivity />
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* MODE: LAB */}
+        {mode === 'lab' && (
+          <div className="space-y-12 md:space-y-16 animate-in fade-in duration-500">
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
+              <div className="lg:col-span-8 space-y-8">
+                <Card className="border-none shadow-2xl rounded-[3rem] bg-amber-500 text-white overflow-hidden relative group">
+                  <div className="absolute top-0 right-0 p-12 opacity-10 group-hover:scale-110 transition-transform duration-700">
+                    <Sun size={200} className="fill-current" />
+                  </div>
+                  <CardContent className="p-10 md:p-14 relative z-10">
+                    <div className="max-w-2xl space-y-6">
+                      <Badge className="bg-white/20 text-white border-white/30 font-black text-[10px] uppercase tracking-[0.3em] px-4 py-1">
+                        Daily Ritual
+                      </Badge>
+                      <h2 className="text-4xl md:text-5xl font-serif font-bold tracking-tighter leading-tight">
+                        Establish Your State.
+                      </h2>
+                      <p className="text-lg text-amber-50 font-medium leading-relaxed">
+                        Complete your morning program to ensure you are grounded, coherent, and ready for clinical work.
+                      </p>
+                      <div className="flex items-center gap-6 pt-4">
+                        <div className="flex-1 space-y-2">
+                          <div className="flex justify-between text-[10px] font-black uppercase">
+                            <span>Readiness Progress</span>
+                            <span>{morningProgress}%</span>
+                          </div>
+                          <Progress value={morningProgress} className="h-2 bg-white/20 [&>div]:bg-white" />
+                        </div>
+                        <Button asChild className="bg-white text-amber-600 hover:bg-amber-50 h-14 px-8 rounded-2xl font-black text-xs uppercase tracking-widest shadow-xl">
+                          <Link to="/morning-program">Open Program <ArrowRight size={18} className="ml-2" /></Link>
+                        </Button>
                       </div>
                     </div>
-                  ))}
-                </div>
+                  </CardContent>
+                </Card>
+
+                <IdentitySmartTool />
+                <Scratchpad />
               </div>
-            )}
 
-            <Scratchpad />
-          </div>
+              <div className="lg:col-span-4 space-y-12">
+                <Card className="border-none shadow-xl rounded-[2.5rem] bg-indigo-600 text-white overflow-hidden group">
+                  <CardHeader className="p-8 pb-4">
+                    <CardTitle className="text-xl font-black flex items-center gap-3">
+                      <MessageSquare size={24} /> Practitioner Journal
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent className="p-8 pt-0 space-y-6">
+                    <p className="text-sm text-indigo-100 font-medium leading-relaxed">
+                      Capture your clinical doubts, breakthroughs, and reflections. AI will extract patterns for your Identity Map.
+                    </p>
+                    <Button asChild className="w-full bg-white text-indigo-600 hover:bg-indigo-50 h-12 rounded-xl font-black text-[10px] uppercase tracking-widest shadow-lg">
+                      <Link to="/practice/journal">Open Journal <ChevronRight size={16} className="ml-1" /></Link>
+                    </Button>
+                  </CardContent>
+                </Card>
 
-          <div className="lg:col-span-4 space-y-12 md:space-y-16">
-            <ClientWins />
-            <MeridianClock />
-            <UpcomingAppointments />
-            <RecentActivity />
-
-            <div className="p-8 md:p-10 bg-primary text-white rounded-2xl md:rounded-[2.5rem] shadow-2xl relative overflow-hidden group">
-              <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(255,255,255,0.1),transparent_50%)]" />
-              <div className="absolute top-0 right-0 p-6 md:p-8 opacity-10 group-hover:scale-110 transition-transform duration-700"><Wind size={100} className="md:w-[150px] md:h-[150px]" /></div>
-              <div className="relative z-10 space-y-6 md:space-y-8">
-                <div className="flex items-center gap-3 md:gap-4">
-                  <div className="w-10 h-10 md:w-12 md:h-12 bg-white/10 backdrop-blur-md flex items-center justify-center border border-white/20 shadow-xl">
-                    <Wind size={20} className="md:w-6 md:h-6 text-secondary" />
-                  </div>
-                  <h3 className="text-xl md:text-2xl font-serif font-bold">Clinical Focus</h3>
-                </div>
-                <div className="p-4 md:p-6 bg-white/5 rounded-xl md:rounded-[1.5rem] border border-white/10 shadow-inner">
-                  <p className="text-[8px] md:text-[9px] font-black text-secondary uppercase tracking-widest mb-2 md:mb-3">Practice Goal</p>
-                  <p className="text-base md:text-xl font-bold leading-snug">Improve practice-wide BOLT scores by 15% this quarter.</p>
-                </div>
-                <div className="space-y-3 md:space-y-4">
-                  <div className="flex items-center justify-between text-[8px] md:text-[9px] font-black uppercase tracking-widest">
-                    <span className="text-secondary">Quarterly Progress</span>
-                    <span className="text-white">68%</span>
-                  </div>
-                  <div className="h-1.5 md:h-2 bg-white/10 rounded-full overflow-hidden shadow-inner">
-                    <div className="h-full bg-white rounded-full shadow-lg" style={{ width: '68%' }} />
-                  </div>
-                </div>
-                <Button variant="outline" className="w-full bg-transparent border-white/20 text-white hover:bg-white/10 rounded-xl md:rounded-2xl font-black text-[9px] md:text-[10px] uppercase tracking-[0.2em] h-12 md:h-14 shadow-lg" asChild>
-                  <Link to="/oversight">View Clinical Oversight</Link>
-                </Button>
+                <Card className="border-none shadow-xl rounded-[2.5rem] bg-slate-900 text-white overflow-hidden">
+                  <CardHeader className="p-8 pb-4">
+                    <CardTitle className="text-xl font-black flex items-center gap-3">
+                      <Layers size={24} className="text-indigo-400" /> The Lab (Sandbox)
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent className="p-8 pt-0 space-y-6">
+                    <p className="text-sm text-slate-400 font-medium leading-relaxed">
+                      Access the full suite of identity shifting and neural reconsolidation tools.
+                    </p>
+                    <div className="grid grid-cols-1 gap-2">
+                      {[
+                        { label: "Identity Shifting", path: "/sandbox/identity-shifting", icon: Fingerprint },
+                        { label: "Identity Alignment", path: "/sandbox/identity-alignment", icon: Target },
+                        { label: "Limiting Beliefs", path: "/sandbox/limiting-beliefs", icon: ShieldAlert }
+                      ].map(tool => (
+                        <Link key={tool.path} to={tool.path} className="flex items-center justify-between p-3 bg-white/5 hover:bg-white/10 rounded-xl border border-white/10 transition-all group">
+                          <div className="flex items-center gap-3">
+                            <tool.icon size={14} className="text-indigo-400" />
+                            <span className="text-xs font-bold">{tool.label}</span>
+                          </div>
+                          <ArrowRight size={14} className="text-slate-600 group-hover:text-white transition-all" />
+                        </Link>
+                      ))}
+                    </div>
+                  </CardContent>
+                </Card>
               </div>
             </div>
           </div>
-        </div>
+        )}
+
+        {/* MODE: LIBRARY */}
+        {mode === 'library' && (
+          <div className="space-y-12 md:space-y-16 animate-in fade-in duration-500">
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
+              <div className="lg:col-span-8 space-y-12">
+                <div className="p-10 md:p-14 bg-indigo-600 text-white rounded-[3rem] shadow-2xl relative overflow-hidden group">
+                  <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(255,255,255,0.1),transparent_50%)]" />
+                  <div className="absolute top-0 right-0 p-8 opacity-10 group-hover:scale-110 transition-transform duration-700">
+                    <GraduationCap size={200} />
+                  </div>
+                  <div className="relative z-10 space-y-8">
+                    <div className="space-y-4">
+                      <Badge className="bg-white/20 text-white border-white/30 font-black text-[10px] uppercase tracking-[0.3em] px-4 py-1">
+                        Knowledge Mastery
+                      </Badge>
+                      <h2 className="text-4xl md:text-6xl font-serif font-bold tracking-tighter leading-tight">
+                        The Knowledge Oracle.
+                      </h2>
+                      <p className="text-xl text-indigo-100 font-medium max-w-xl leading-relaxed">
+                        Sharpen your clinical intuition with infinite practice questions across Anatomy, TCM, and FNH protocols.
+                      </p>
+                    </div>
+                    <Button asChild className="bg-white text-indigo-600 hover:bg-indigo-50 h-16 px-12 rounded-2xl font-black text-sm uppercase tracking-widest shadow-2xl">
+                      <Link to="/practice/quiz">Start Infinite Quiz <Zap size={18} className="ml-2 fill-current" /></Link>
+                    </Button>
+                  </div>
+                </div>
+
+                <div className="space-y-6">
+                  <div className="flex items-center gap-3 px-2">
+                    <div className="w-10 h-10 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center shadow-sm">
+                      <BookOpen size={20} />
+                    </div>
+                    <h2 className="text-2xl font-black text-foreground tracking-tight">Clinical Reference</h2>
+                  </div>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <Link to="/resources" className="block group">
+                      <Card className="border-none shadow-md rounded-[2.5rem] bg-card hover:shadow-xl hover:-translate-y-1 transition-all duration-300 h-full overflow-hidden">
+                        <CardContent className="p-8 space-y-4">
+                          <div className="w-12 h-12 rounded-2xl bg-indigo-50 text-indigo-600 flex items-center justify-center shadow-sm group-hover:scale-110 transition-transform">
+                            <BookOpen size={24} />
+                          </div>
+                          <h3 className="text-xl font-black">Clinical Bible</h3>
+                          <p className="text-sm text-muted-foreground font-medium leading-relaxed">
+                            The definitive guide to joints, muscles, and the geometry of movement.
+                          </p>
+                        </CardContent>
+                      </Card>
+                    </Link>
+                    <Link to="/peace-framework" className="block group">
+                      <Card className="border-none shadow-md rounded-[2.5rem] bg-card hover:shadow-xl hover:-translate-y-1 transition-all duration-300 h-full overflow-hidden">
+                        <CardContent className="p-8 space-y-4">
+                          <div className="w-12 h-12 rounded-2xl bg-rose-50 text-rose-600 flex items-center justify-center shadow-sm group-hover:scale-110 transition-transform">
+                            <ShieldCheck size={24} />
+                          </div>
+                          <h3 className="text-xl font-black">PEACE Framework</h3>
+                          <p className="text-sm text-muted-foreground font-medium leading-relaxed">
+                            Master the central clinical hierarchy of Functional Neuro Health.
+                          </p>
+                        </CardContent>
+                      </Card>
+                    </Link>
+                  </div>
+                </div>
+              </div>
+
+              <div className="lg:col-span-4 space-y-12">
+                <MeridianClock />
+                
+                <Card className="border-none shadow-xl rounded-[2.5rem] bg-slate-900 text-white overflow-hidden group">
+                  <CardHeader className="p-8 pb-4">
+                    <CardTitle className="text-xl font-black flex items-center gap-3">
+                      <Trophy size={24} className="text-amber-400" /> Mastery Tracker
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent className="p-8 pt-0 space-y-6">
+                    <p className="text-sm text-slate-400 font-medium leading-relaxed">
+                      Track your proficiency across all loggable clinical components.
+                    </p>
+                    <Button asChild className="w-full bg-white text-slate-900 hover:bg-indigo-50 h-12 rounded-xl font-black text-[10px] uppercase tracking-widest shadow-lg">
+                      <Link to="/practice/procedures">View My Mastery <ChevronRight size={16} className="ml-1" /></Link>
+                    </Button>
+                  </CardContent>
+                </Card>
+
+                <div className="p-8 bg-indigo-900 text-white rounded-[2.5rem] shadow-2xl relative overflow-hidden group">
+                  <div className="absolute top-0 right-0 p-6 opacity-10 group-hover:scale-110 transition-transform duration-700"><Wind size={100} /></div>
+                  <div className="relative z-10 space-y-6">
+                    <div className="flex items-center gap-3">
+                      <div className="w-10 h-10 rounded-xl bg-white/10 backdrop-blur-md flex items-center justify-center border border-white/20 shadow-xl">
+                        <Wind size={20} className="text-secondary" />
+                      </div>
+                      <h3 className="text-xl font-serif font-bold">Clinical Focus</h3>
+                    </div>
+                    <div className="p-4 bg-white/5 rounded-xl border border-white/10 shadow-inner">
+                      <p className="text-[8px] font-black text-secondary uppercase tracking-widest mb-2">Practice Goal</p>
+                      <p className="text-base font-bold leading-snug">Improve practice-wide BOLT scores by 15% this quarter.</p>
+                    </div>
+                    <Link to="/oversight" className="text-[10px] font-black uppercase tracking-widest text-indigo-300 hover:text-white transition-colors flex items-center gap-2">
+                      View Oversight <ArrowRight size={12} />
+                    </Link>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
       </div>
 
       <Dialog open={clientDialogOpen} onOpenChange={setClientDialogOpen}>

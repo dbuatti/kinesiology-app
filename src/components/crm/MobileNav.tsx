@@ -11,7 +11,7 @@ import {
   Target, 
   LogOut, 
   BookOpen, 
-  Heart,
+  Heart, 
   TrendingUp,
   Clock,
   UserPlus,
@@ -33,7 +33,10 @@ import {
   Sun,
   Compass,
   LayoutGrid,
-  Fingerprint
+  Fingerprint,
+  Activity,
+  GraduationCap,
+  Trophy
 } from "lucide-react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { cn } from "@/lib/utils";
@@ -42,6 +45,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { showSuccess } from "@/utils/toast";
 import { useRecentClients } from "@/hooks/use-recent-clients";
 import { usePrivacyMode } from "@/hooks/use-privacy-mode";
+import { useAppMode, AppMode } from "@/components/ModeProvider";
 import {
   Dialog,
   DialogContent,
@@ -60,11 +64,8 @@ const MobileNav = () => {
   const [appDialogOpen, setAppDialogOpen] = useState(false);
   const [helpOpen, setHelpOpen] = useState(false);
   
+  const { mode, setMode } = useAppMode();
   const [opsOpen, setOpsOpen] = useState(true);
-  const [labOpen, setLabOpen] = useState(false);
-  const [libraryOpen, setLibraryOpen] = useState(false);
-  const [businessOpen, setBusinessOpen] = useState(false);
-  const [sandboxOpen, setSandboxOpen] = useState(false);
 
   const location = useLocation();
   const navigate = useNavigate();
@@ -81,6 +82,32 @@ const MobileNav = () => {
       console.error("Error signing out:", error);
     }
   };
+
+  const clinicalItems = [
+    { label: "Dashboard", icon: LayoutDashboard, path: "/" },
+    { label: "Schedule", icon: Calendar, path: "/schedule" },
+    { label: "Clients", icon: Users, path: "/clients" },
+    { label: "Oversight", icon: TrendingUp, path: "/oversight" },
+    { label: "Business Hub", icon: Briefcase, path: "/business" },
+    { label: "Marketing Engine", icon: Mic, path: "/business/marketing-engine" },
+  ];
+
+  const labItems = [
+    { label: "Dashboard", icon: LayoutDashboard, path: "/" },
+    { label: "Morning Program", icon: Sun, path: "/morning-program" },
+    { label: "Journal", icon: MessageSquare, path: "/practice/journal" },
+    { label: "The Lab", icon: Compass, path: "/lab" },
+    { label: "Self Practice", icon: Heart, path: "/practice/self" },
+  ];
+
+  const libraryItems = [
+    { label: "Dashboard", icon: LayoutDashboard, path: "/" },
+    { label: "Clinical Bible", icon: BookOpen, path: "/resources" },
+    { label: "PEACE Framework", icon: ShieldCheck, path: "/peace-framework" },
+    { label: "Mastery Tracker", icon: Trophy, path: "/practice/procedures" },
+    { label: "Knowledge Quiz", icon: GraduationCap, path: "/practice/quiz" },
+    { label: "Quick Calibrate", icon: Zap, path: "/practice/calibrate" },
+  ];
 
   const NavItem = ({ item, onClick }: { item: any, onClick: () => void }) => {
     const isActive = location.pathname === item.path || (item.path !== "/" && location.pathname.startsWith(item.path));
@@ -123,6 +150,28 @@ const MobileNav = () => {
     </div>
   );
 
+  const ModeSwitcher = () => (
+    <div className="bg-slate-900 p-1 rounded-2xl flex gap-1 border border-slate-800 mb-4">
+      {(['clinical', 'lab', 'library'] as AppMode[]).map((m) => (
+        <button
+          key={m}
+          onClick={() => setMode(m)}
+          className={cn(
+            "flex-1 flex flex-col items-center justify-center py-2 rounded-xl transition-all duration-300",
+            mode === m 
+              ? "bg-indigo-600 text-white shadow-lg" 
+              : "text-slate-500 hover:text-slate-300"
+          )}
+        >
+          {m === 'clinical' && <Activity size={14} />}
+          {m === 'lab' && <Zap size={14} />}
+          {m === 'library' && <BookOpen size={14} />}
+          <span className="text-[7px] font-black uppercase tracking-widest mt-1">{m}</span>
+        </button>
+      ))}
+    </div>
+  );
+
   return (
     <>
       <div className="lg:hidden flex items-center justify-between p-3 bg-white dark:bg-slate-900 border-b dark:border-slate-800 sticky top-0 z-50 shadow-sm">
@@ -152,94 +201,64 @@ const MobileNav = () => {
 
               <ScrollArea className="flex-1">
                 <div className="p-4 space-y-6">
-                  <div className="space-y-2">
-                    <p className="text-[8px] font-black text-slate-600 uppercase tracking-[0.3em] px-2">Quick Actions</p>
-                    <div className="grid grid-cols-2 gap-2">
-                      <Button 
-                        onClick={() => { setClientDialogOpen(true); setOpen(false); }}
-                        variant="outline"
-                        className="flex-col h-16 bg-white/5 border-white/10 text-white hover:bg-white/10 rounded-xl gap-1"
-                      >
-                        <UserPlus size={16} className="text-indigo-400" />
-                        <span className="text-[9px] font-black uppercase">New Client</span>
-                      </Button>
-                      <Button 
-                        onClick={() => { setAppDialogOpen(true); setOpen(false); }}
-                        className="flex-col h-16 bg-rose-600 hover:bg-rose-700 text-white rounded-xl gap-1 border-none"
-                      >
-                        <CalendarPlus size={16} />
-                        <span className="text-[9px] font-black uppercase">Book Session</span>
-                      </Button>
+                  <ModeSwitcher />
+
+                  {mode === 'clinical' && (
+                    <div className="space-y-2">
+                      <p className="text-[8px] font-black text-slate-600 uppercase tracking-[0.3em] px-2">Quick Actions</p>
+                      <div className="grid grid-cols-2 gap-2">
+                        <Button 
+                          onClick={() => { setClientDialogOpen(true); setOpen(false); }}
+                          variant="outline"
+                          className="flex-col h-16 bg-white/5 border-white/10 text-white hover:bg-white/10 rounded-xl gap-1"
+                        >
+                          <UserPlus size={16} className="text-indigo-400" />
+                          <span className="text-[9px] font-black uppercase">New Client</span>
+                        </Button>
+                        <Button 
+                          onClick={() => { setAppDialogOpen(true); setOpen(false); }}
+                          className="flex-col h-16 bg-rose-600 hover:bg-rose-700 text-white rounded-xl gap-1 border-none"
+                        >
+                          <CalendarPlus size={16} />
+                          <span className="text-[9px] font-black uppercase">Book Session</span>
+                        </Button>
+                      </div>
                     </div>
-                  </div>
+                  )}
 
                   <div className="space-y-3">
-                    <NavGroup 
-                      title="Operations" 
-                      icon={LayoutDashboard} 
-                      isOpen={opsOpen} 
-                      onToggle={() => setOpsOpen(!opsOpen)} 
-                      items={[
-                        { label: "Dashboard", icon: LayoutDashboard, path: "/" },
-                        { label: "Appointments", icon: Calendar, path: "/appointments" },
-                        { label: "Clients", icon: Users, path: "/clients" },
-                        { label: "Availability", icon: CalendarDays, path: "/availability" },
-                      ]} 
-                    />
+                    {mode === 'clinical' && (
+                      <NavGroup 
+                        title="Clinical Operations" 
+                        icon={LayoutDashboard} 
+                        isOpen={opsOpen} 
+                        onToggle={() => setOpsOpen(!opsOpen)} 
+                        items={clinicalItems} 
+                      />
+                    )}
 
-                    <NavGroup 
-                      title="Clinical Lab" 
-                      icon={Zap} 
-                      isOpen={labOpen} 
-                      onToggle={() => setLabOpen(!labOpen)} 
-                      items={[
-                        { label: "Quick Calibrate", icon: Zap, path: "/practice/calibrate" },
-                        { label: "Protocols", icon: Target, path: "/practice/procedures" },
-                        { label: "Journal", icon: MessageSquare, path: "/practice/journal" },
-                        { label: "Oversight", icon: TrendingUp, path: "/oversight" },
-                      ]} 
-                    />
+                    {mode === 'lab' && (
+                      <NavGroup 
+                        title="Practice Lab" 
+                        icon={Zap} 
+                        isOpen={opsOpen} 
+                        onToggle={() => setOpsOpen(!opsOpen)} 
+                        items={labItems} 
+                      />
+                    )}
 
-                    <NavGroup 
-                      title="Library" 
-                      icon={BookOpen} 
-                      isOpen={libraryOpen} 
-                      onToggle={() => setLibraryOpen(!libraryOpen)} 
-                      items={[
-                        { label: "Morning Program", icon: Sun, path: "/morning-program" },
-                        { label: "PEACE Framework", icon: ShieldCheck, path: "/peace-framework" },
-                        { label: "Knowledge Base", icon: BookOpen, path: "/resources" },
-                        { label: "Worksheets", icon: FileText, path: "/resources/worksheets" },
-                        { label: "Self Practice", icon: Heart, path: "/practice/self" },
-                      ]} 
-                    />
-
-                    <NavGroup 
-                      title="Business" 
-                      icon={Briefcase} 
-                      isOpen={businessOpen} 
-                      onToggle={() => setBusinessOpen(!businessOpen)} 
-                      items={[
-                        { label: "Business Hub", icon: Briefcase, path: "/business" },
-                        { label: "Marketing Engine", icon: Mic, path: "/business/marketing-engine" },
-                      ]} 
-                    />
-
-                    <NavGroup 
-                      title="Sandbox" 
-                      icon={Compass} 
-                      isOpen={sandboxOpen} 
-                      onToggle={() => setSandboxOpen(!sandboxOpen)} 
-                      items={[
-                        { label: "Sandbox Hub", icon: LayoutGrid, path: "/sandbox" },
-                        { label: "Identity Shifting", icon: Fingerprint, path: "/sandbox/identity-shifting" },
-                        { label: "Identity Alignment", icon: Target, path: "/sandbox/identity-alignment" },
-                        { label: "Limiting Beliefs", icon: ShieldAlert, path: "/sandbox/limiting-beliefs" },
-                      ]} 
-                    />
+                    {mode === 'library' && (
+                      <NavGroup 
+                        title="Clinical Library" 
+                        icon={BookOpen} 
+                        isOpen={opsOpen} 
+                        onToggle={() => setOpsOpen(!opsOpen)} 
+                        items={libraryItems} 
+                      />
+                    )}
                   </div>
 
-                  {recentClients.length > 0 && (
+                  {recentClients.length > 0 && mode === 'clinical' && (
                     <div className="space-y-2">
                       <p className="text-[8px] font-black text-slate-600 uppercase tracking-[0.3em] px-2 flex items-center gap-2">
                         <Clock size={10} /> Recent Clients

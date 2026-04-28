@@ -13,13 +13,13 @@ import {
   Info,
   BookOpen,
   FileText,
-  Lightbulb
+  Lightbulb,
+  Hand
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { EMOTION_CODE_CHART, ROW_DATA } from '@/data/emotion-code-data';
-import PulsePointReference from './PulsePointReference';
 
 const ASSESSMENT_STEPS = [
   { id: 1, title: "Permission to Assess", desc: "Ask the body: 'Do we have permission to assess the Heart Wall?'" },
@@ -80,8 +80,17 @@ const HeartWallProtocol = () => {
             ))}
           </div>
           <div className="lg:col-span-5">
-            <div className="p-6 bg-slate-50 rounded-[2rem] border border-slate-100 shadow-inner">
-              <PulsePointReference />
+            <div className="p-4 bg-white rounded-[2rem] border border-slate-100 shadow-sm overflow-hidden">
+              <div className="flex items-center gap-2 mb-4 px-2">
+                <Hand size={14} className="text-indigo-500" />
+                <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest font-sans">Pulse Point Reference</span>
+              </div>
+              <img 
+                src="/images/pulse-points.png" 
+                alt="Pulse Points Reference" 
+                className="w-full h-auto rounded-xl"
+                onError={(e) => { e.currentTarget.style.display = 'none'; }}
+              />
             </div>
           </div>
         </div>

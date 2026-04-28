@@ -19,6 +19,7 @@ import { cn } from '@/lib/utils';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { EMOTION_CODE_CHART, ROW_DATA } from '@/data/emotion-code-data';
+import PulsePointReference from './PulsePointReference';
 
 const ASSESSMENT_STEPS = [
   { id: 1, title: "Permission to Assess", desc: "Ask the body: 'Do we have permission to assess the Heart Wall?'" },
@@ -64,18 +65,25 @@ const HeartWallProtocol = () => {
       {/* 1. Assessment Flow */}
       <section>
         <SectionTitle icon={Search} color="bg-indigo-600">Assessment Summary</SectionTitle>
-        <div className="space-y-4">
-          {ASSESSMENT_STEPS.map((step) => (
-            <div key={step.id} className="flex gap-4 group">
-              <span className="text-xl font-black text-indigo-200 group-hover:text-indigo-600 transition-colors tabular-nums font-sans">
-                0{step.id}
-              </span>
-              <div className="space-y-0.5">
-                <h4 className="text-lg font-bold text-slate-900">{step.title}</h4>
-                <p className="text-base text-slate-600 leading-relaxed">{step.desc}</p>
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+          <div className="lg:col-span-7 space-y-4">
+            {ASSESSMENT_STEPS.map((step) => (
+              <div key={step.id} className="flex gap-4 group">
+                <span className="text-xl font-black text-indigo-200 group-hover:text-indigo-600 transition-colors tabular-nums font-sans">
+                  0{step.id}
+                </span>
+                <div className="space-y-0.5">
+                  <h4 className="text-lg font-bold text-slate-900">{step.title}</h4>
+                  <p className="text-base text-slate-600 leading-relaxed">{step.desc}</p>
+                </div>
               </div>
+            ))}
+          </div>
+          <div className="lg:col-span-5">
+            <div className="p-6 bg-slate-50 rounded-[2rem] border border-slate-100 shadow-inner">
+              <PulsePointReference />
             </div>
-          ))}
+          </div>
         </div>
       </section>
 

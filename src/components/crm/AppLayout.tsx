@@ -5,34 +5,24 @@ import { cn } from '@/lib/utils';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useLocation } from 'react-router-dom';
 
-type LayoutVariant = 'default' | 'wide' | 'full';
-
 interface AppLayoutProps {
   children: React.ReactNode;
-  variant?: LayoutVariant;
   hasFixedHeader?: boolean;
   className?: string;
 }
 
 const AppLayout = ({ 
   children, 
-  variant = 'default', 
   hasFixedHeader = false,
   className 
 }: AppLayoutProps) => {
   const location = useLocation();
   
-  const variants = {
-    default: "max-w-7xl mx-auto px-6 md:px-8",
-    wide: "max-w-[1536px] mx-auto px-6 md:px-10",
-    full: "w-full px-6 md:px-10"
-  };
-
   return (
     <div className={cn(
       "w-full min-h-screen bg-background transition-all duration-500",
+      "max-w-7xl mx-auto px-6 md:px-8", // Strict 1280px constraint
       hasFixedHeader ? "pt-24 pb-20" : "pt-10 pb-20",
-      variants[variant],
       className
     )}>
       <AnimatePresence mode="wait">

@@ -51,11 +51,6 @@ import { Button } from "@/components/ui/button";
 import ClientForm from "./ClientForm";
 import AppointmentForm from "./AppointmentForm";
 import { Progress } from "@/components/ui/progress";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
 import { ModeToggle } from "./ModeToggle";
 
 interface SidebarProps {
@@ -160,7 +155,7 @@ const Sidebar = ({ onHide }: SidebarProps) => {
     <div className="hidden lg:flex w-64 bg-white dark:bg-slate-950 text-foreground min-h-screen p-4 flex-col gap-6 sticky top-0 h-screen overflow-y-auto border-r border-slate-200 dark:border-slate-900 z-[60]">
       <div className="flex items-center justify-between px-2 py-2">
         <div className="flex items-center gap-3">
-          <div className="w-8 h-8 bg-slate-900 rounded-lg flex items-center justify-center font-black text-sm text-white">A</div>
+          <div className="w-8 h-8 bg-slate-900 rounded flex items-center justify-center font-black text-sm text-white">A</div>
           <div>
             <h1 className="text-sm font-serif font-bold tracking-tight leading-none">Resonance</h1>
             <p className="text-[7px] text-slate-400 uppercase font-black tracking-[0.2em] mt-1">Clinical CRM</p>
@@ -168,20 +163,20 @@ const Sidebar = ({ onHide }: SidebarProps) => {
         </div>
         <button 
           onClick={onHide}
-          className="text-slate-400 hover:text-slate-900 dark:hover:text-white rounded-lg h-8 w-8 flex items-center justify-center transition-colors"
+          className="text-slate-400 hover:text-slate-900 dark:hover:text-white rounded h-8 w-8 flex items-center justify-center transition-colors"
         >
           <PanelLeftClose size={16} />
         </button>
       </div>
 
       <div className="px-1 space-y-4">
-        <div className="bg-slate-50 dark:bg-slate-900 p-1 rounded-xl flex gap-1 border border-slate-100 dark:border-slate-800">
+        <div className="bg-slate-50 dark:bg-slate-900 p-1 rounded-lg flex gap-1 border border-slate-100 dark:border-slate-800">
           {(['clinical', 'lab', 'library'] as AppMode[]).map((m) => (
             <button
               key={m}
               onClick={() => setMode(m)}
               className={cn(
-                "flex-1 flex flex-col items-center justify-center py-2 rounded-lg transition-all duration-200",
+                "flex-1 flex flex-col items-center justify-center py-2 rounded transition-all duration-200",
                 mode === m 
                   ? "bg-white dark:bg-slate-800 shadow-sm text-indigo-600" 
                   : "text-slate-400 hover:text-slate-600"
@@ -197,7 +192,7 @@ const Sidebar = ({ onHide }: SidebarProps) => {
       <div className="px-1">
         <Button 
           onClick={() => setAppDialogOpen(true)}
-          className="w-full justify-center bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl h-10 font-black text-[10px] uppercase tracking-[0.2em] shadow-md shadow-indigo-500/10"
+          className="w-full justify-center bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg h-10 font-black text-[10px] uppercase tracking-[0.2em] shadow-md shadow-indigo-500/10"
         >
           <PlusCircle size={14} className="mr-2" /> 
           Book Session
@@ -221,7 +216,7 @@ const Sidebar = ({ onHide }: SidebarProps) => {
           <div className="px-1 pt-2">
             <Link 
               to={`/appointments/${activeSession.id}`}
-              className="flex items-center gap-3 px-4 py-3 bg-slate-900 rounded-xl text-white shadow-lg hover:bg-slate-800 transition-all group"
+              className="flex items-center gap-3 px-4 py-3 bg-slate-900 rounded-lg text-white shadow-lg hover:bg-slate-800 transition-all group"
             >
               <div className="relative">
                 <Zap size={14} className="text-indigo-400 fill-indigo-400" />
@@ -236,7 +231,7 @@ const Sidebar = ({ onHide }: SidebarProps) => {
           </div>
         )}
 
-        <div className="px-4 py-3 bg-slate-50 dark:bg-slate-900 rounded-xl border border-slate-100 dark:border-slate-800 mx-1 space-y-2">
+        <div className="px-4 py-3 bg-slate-50 dark:bg-slate-900 rounded-lg border border-slate-100 dark:border-slate-800 mx-1 space-y-2">
           <div className="flex items-center justify-between">
             <p className="text-[8px] font-black text-slate-400 uppercase tracking-widest">Practice Health</p>
             <span className="text-[9px] font-black text-emerald-600">{practiceHealth}%</span>
@@ -251,7 +246,7 @@ const Sidebar = ({ onHide }: SidebarProps) => {
           <button 
             onClick={togglePrivacy}
             className={cn(
-              "flex items-center justify-center h-8 w-8 rounded-lg transition-all",
+              "flex items-center justify-center h-8 w-8 rounded transition-all",
               isPrivate ? "bg-rose-50 text-rose-600" : "text-slate-400 hover:text-slate-900 dark:hover:text-white"
             )}
           >
@@ -259,7 +254,7 @@ const Sidebar = ({ onHide }: SidebarProps) => {
           </button>
           <button 
             onClick={() => setHelpOpen(true)}
-            className="flex items-center justify-center h-8 w-8 rounded-lg text-slate-400 hover:text-slate-900 dark:hover:text-white transition-all"
+            className="flex items-center justify-center h-8 w-8 rounded text-slate-400 hover:text-slate-900 dark:hover:text-white transition-all"
           >
             <HelpCircle size={16} />
           </button>
@@ -277,7 +272,7 @@ const Sidebar = ({ onHide }: SidebarProps) => {
       <HelpModal open={helpOpen} onOpenChange={setHelpOpen} />
       
       <Dialog open={clientDialogOpen} onOpenChange={setClientDialogOpen}>
-        <DialogContent className="sm:max-w-[550px] rounded-2xl p-8">
+        <DialogContent className="sm:max-w-[550px] rounded-lg p-8">
           <DialogHeader className="mb-4">
             <DialogTitle className="text-xl font-black tracking-tight">Add New Client</DialogTitle>
           </DialogHeader>
@@ -286,7 +281,7 @@ const Sidebar = ({ onHide }: SidebarProps) => {
       </Dialog>
 
       <Dialog open={appDialogOpen} onOpenChange={setAppDialogOpen}>
-        <DialogContent className="sm:max-w-[500px] rounded-2xl p-8">
+        <DialogContent className="sm:max-w-[500px] rounded-lg p-8">
           <DialogHeader className="mb-4">
             <DialogTitle className="text-xl font-black tracking-tight">Schedule New Session</DialogTitle>
           </DialogHeader>

@@ -251,7 +251,7 @@ const AppointmentDetailPage = () => {
         onFixedHeaderChange={setIsFixedHeaderActive} 
         onCompleteSession={handleCompleteSession}
       />
-      <AppLayout variant="wide" hasFixedHeader={isFixedHeaderActive}>
+      <AppLayout hasFixedHeader={isFixedHeaderActive}>
         <div className="flex flex-col gap-6 print:p-0">
           {/* Simplified Top Bar */}
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 print:hidden">
@@ -266,7 +266,7 @@ const AppointmentDetailPage = () => {
             <div className="flex items-center gap-2">
               <Collapsible open={showSetup} onOpenChange={setShowSetup}>
                 <CollapsibleTrigger asChild>
-                  <Button variant="ghost" size="sm" className="h-10 px-4 font-bold text-[10px] uppercase tracking-widest rounded-xl text-slate-500 hover:text-indigo-600 hover:bg-indigo-50">
+                  <Button variant="ghost" size="sm" className="h-10 px-4 font-bold text-[10px] uppercase tracking-widest rounded-lg text-slate-500 hover:text-indigo-600 hover:bg-indigo-50">
                     <Settings2 size={16} className="mr-2" />
                     Session Setup
                     <ChevronDown size={14} className={cn("ml-2 transition-transform", showSetup && "rotate-180")} />
@@ -278,7 +278,7 @@ const AppointmentDetailPage = () => {
                 <Button 
                   variant="default" 
                   size="sm" 
-                  className="bg-rose-600 hover:bg-rose-700 text-white rounded-xl shadow-lg shadow-rose-100 h-10 px-6 font-black text-[10px] uppercase tracking-widest"
+                  className="bg-rose-600 hover:bg-rose-700 text-white rounded-lg shadow-md h-10 px-6 font-bold text-[10px] uppercase tracking-widest"
                   onClick={handleStartSession}
                 >
                   <Play size={16} className="mr-2 fill-current" />
@@ -291,11 +291,11 @@ const AppointmentDetailPage = () => {
           {/* Collapsible Setup Tools */}
           <Collapsible open={showSetup}>
             <CollapsibleContent className="animate-in slide-in-from-top-2 duration-300">
-              <div className="flex flex-wrap gap-3 p-4 bg-slate-50 rounded-2xl border border-slate-100 mb-4">
+              <div className="flex flex-wrap gap-3 p-4 bg-slate-50 rounded-xl border border-slate-100 mb-4">
                 <Button 
                   variant="outline" 
                   size="sm" 
-                  className="bg-emerald-50 border-emerald-100 text-emerald-600 hover:bg-emerald-100 rounded-xl font-bold h-10 px-4"
+                  className="bg-emerald-50 border-emerald-100 text-emerald-600 hover:bg-emerald-100 rounded-lg font-bold h-10 px-4"
                   onClick={handleCopyOnboardingLink}
                 >
                   {linkCopying ? <Check size={16} className="mr-2" /> : <LinkIcon size={16} className="mr-2" />}
@@ -304,7 +304,7 @@ const AppointmentDetailPage = () => {
                 <Button 
                   variant="outline" 
                   size="sm" 
-                  className="bg-white border-slate-200 text-slate-600 hover:bg-slate-50 rounded-xl font-bold h-10 px-4"
+                  className="bg-white border-slate-200 text-slate-600 hover:bg-slate-50 rounded-lg font-bold h-10 px-4"
                   onClick={handleSyncToNotion}
                   disabled={syncingNotion}
                 >
@@ -314,7 +314,7 @@ const AppointmentDetailPage = () => {
                 <Button 
                   variant="outline" 
                   size="sm" 
-                  className="bg-indigo-50 border-indigo-100 text-indigo-600 hover:bg-indigo-100 rounded-xl font-bold h-10 px-4"
+                  className="bg-indigo-50 border-indigo-100 text-indigo-600 hover:bg-indigo-100 rounded-lg font-bold h-10 px-4"
                   onClick={handleCopyForAI}
                 >
                   {aiCopying ? <Check size={16} className="mr-2 text-emerald-500" /> : <Sparkles size={16} className="mr-2" />}
@@ -380,7 +380,7 @@ const AppointmentDetailPage = () => {
                     </div>
                     <div className="space-y-3">
                       {reflections.map(ref => (
-                        <Card key={ref.id} className="border-none shadow-sm bg-indigo-50/50 rounded-2xl overflow-hidden">
+                        <Card key={ref.id} className="border-none shadow-sm bg-indigo-50/50 rounded-xl overflow-hidden">
                           <CardContent className="p-4 space-y-2">
                             <div className="flex items-center justify-between">
                               <Badge variant="outline" className="bg-white border-indigo-100 text-indigo-600 text-[7px] font-black uppercase px-1.5 py-0">
@@ -402,7 +402,7 @@ const AppointmentDetailPage = () => {
                       <Brain size={18} className="text-indigo-600" />
                       <h3 className="text-sm font-black text-slate-400 uppercase tracking-[0.3em]">Brainstem Tone Map</h3>
                     </div>
-                    <Button variant="ghost" size="icon" onClick={() => setShowSidebar(false)} className="h-8 w-8 rounded-xl text-slate-400 hover:text-slate-900">
+                    <Button variant="ghost" size="icon" onClick={() => setShowSidebar(false)} className="h-8 w-8 rounded-lg text-slate-400 hover:text-slate-900">
                       <PanelRightClose size={18} />
                     </Button>
                   </div>

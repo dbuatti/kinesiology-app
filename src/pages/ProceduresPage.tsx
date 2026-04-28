@@ -119,13 +119,13 @@ const ProceduresPage = () => {
   );
 
   return (
-    <AppLayout variant="wide">
+    <AppLayout>
       <div className="space-y-10">
         <Breadcrumbs items={[{ label: "Protocols & Mastery" }]} />
         
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
           <div className="flex items-center gap-5">
-            <div className="w-16 h-16 rounded-[1.5rem] bg-indigo-600 text-white flex items-center justify-center shadow-2xl shadow-indigo-200 dark:shadow-indigo-900/20">
+            <div className="w-16 h-16 rounded-lg bg-indigo-600 text-white flex items-center justify-center shadow-md">
               <Trophy size={32} />
             </div>
             <div>
@@ -133,25 +133,27 @@ const ProceduresPage = () => {
               <p className="text-muted-foreground font-medium mt-1 text-lg">Clinical mastery tracking and interactive protocol reference.</p>
             </div>
           </div>
-          <Button onClick={loadStats} variant="outline" className="rounded-xl h-12 px-6 font-bold border-indigo-100 text-indigo-600 hover:bg-indigo-50">
+          <Button onClick={loadStats} variant="outline" className="rounded-lg h-12 px-6 font-bold border-indigo-100 text-indigo-600 hover:bg-indigo-50">
             <RefreshCw size={18} className="mr-2" /> Refresh Data
           </Button>
         </div>
 
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-          <TabsList className="grid w-full grid-cols-2 h-14 bg-slate-200/50 p-1.5 rounded-2xl mb-8">
-            <TabsTrigger value="mastery" className="flex items-center gap-2 data-[state=active]:bg-white data-[state=active]:text-indigo-600 data-[state=active]:shadow-sm rounded-xl h-11 font-black uppercase tracking-wider text-[10px]">
-              <TrendingUp size={14} /> Clinical Mastery
-            </TabsTrigger>
-            <TabsTrigger value="reference" className="flex items-center gap-2 data-[state=active]:bg-white data-[state=active]:text-indigo-600 data-[state=active]:shadow-sm rounded-xl h-11 font-black uppercase tracking-wider text-[10px]">
-              <Zap size={14} /> Protocol Reference
-            </TabsTrigger>
-          </TabsList>
+          <div className="flex justify-center mb-8">
+            <TabsList className="grid w-full grid-cols-2 h-14 bg-slate-200/50 p-1.5 rounded-xl mb-8">
+              <TabsTrigger value="mastery" className="flex items-center gap-2 data-[state=active]:bg-white data-[state=active]:text-indigo-600 data-[state=active]:shadow-sm rounded-lg h-11 font-black uppercase tracking-wider text-[10px]">
+                <TrendingUp size={14} /> Clinical Mastery
+              </TabsTrigger>
+              <TabsTrigger value="reference" className="flex items-center gap-2 data-[state=active]:bg-white data-[state=active]:text-indigo-600 data-[state=active]:shadow-sm rounded-lg h-11 font-black uppercase tracking-wider text-[10px]">
+                <Zap size={14} /> Protocol Reference
+              </TabsTrigger>
+            </TabsList>
+          </div>
 
           <TabsContent value="mastery" className="space-y-10 mt-0 animate-in fade-in duration-500">
             {/* Practice Priority Suggestion */}
             {summary.priorities.length > 0 && (
-              <Card className="border-none shadow-xl rounded-[2.5rem] bg-indigo-50 dark:bg-indigo-950/20 border-2 border-indigo-100 dark:border-indigo-900/30 overflow-hidden">
+              <Card className="border-none shadow-md rounded-xl bg-indigo-50 dark:bg-indigo-950/20 border-2 border-indigo-100 dark:border-indigo-900/30 overflow-hidden">
                 <CardHeader className="p-8 pb-4">
                   <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                     <div className="space-y-1">
@@ -170,7 +172,7 @@ const ProceduresPage = () => {
                     <Button 
                       onClick={handleCommitFocus}
                       disabled={committing}
-                      className="bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl h-12 px-8 font-black text-xs uppercase tracking-widest shadow-lg shadow-indigo-100"
+                      className="bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg h-12 px-8 font-bold text-xs uppercase tracking-widest shadow-md"
                     >
                       {committing ? <Loader2 className="mr-2 animate-spin" /> : <CheckCircle2 size={18} className="mr-2" />}
                       Commit to this Focus
@@ -180,7 +182,7 @@ const ProceduresPage = () => {
                 <CardContent className="p-8 pt-0">
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                     {summary.priorities.map((item) => (
-                      <div key={item.id} className="p-5 bg-white dark:bg-slate-900 rounded-2xl border border-indigo-100 dark:border-indigo-900/30 flex items-center justify-between group hover:shadow-md transition-all">
+                      <div key={item.id} className="p-5 bg-white dark:bg-slate-900 rounded-xl border border-indigo-100 dark:border-indigo-900/30 flex items-center justify-between group hover:shadow-md transition-all">
                         <div className="min-w-0">
                           <p className="font-black text-sm text-slate-900 dark:text-slate-100 truncate">{item.name}</p>
                           <div className="flex items-center gap-2 mt-1">
@@ -205,7 +207,7 @@ const ProceduresPage = () => {
 
             {/* Mastery Overview Cards */}
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-              <Card className="border-none shadow-lg rounded-3xl bg-indigo-900 text-white overflow-hidden relative group">
+              <Card className="border-none shadow-sm rounded-xl bg-indigo-900 text-white overflow-hidden relative group">
                 <div className="absolute top-0 right-0 p-6 opacity-10 group-hover:scale-110 transition-transform duration-700"><Sparkles size={80} /></div>
                 <CardContent className="p-6 space-y-1 relative z-10">
                   <p className="text-[10px] font-black text-indigo-300 uppercase tracking-widest">Total Components</p>
@@ -213,7 +215,7 @@ const ProceduresPage = () => {
                   <p className="text-xs text-indigo-200 font-medium">Registry of all loggable items</p>
                 </CardContent>
               </Card>
-              <Card className="border-none shadow-lg rounded-3xl bg-emerald-600 text-white overflow-hidden relative group">
+              <Card className="border-none shadow-sm rounded-xl bg-emerald-600 text-white overflow-hidden relative group">
                 <div className="absolute top-0 right-0 p-6 opacity-10 group-hover:scale-110 transition-transform duration-700"><ShieldCheck size={80} /></div>
                 <CardContent className="p-6 space-y-1 relative z-10">
                   <p className="text-[10px] font-black text-emerald-200 uppercase tracking-widest">Mastered Items</p>
@@ -221,7 +223,7 @@ const ProceduresPage = () => {
                   <p className="text-xs text-emerald-100 font-medium">11+ logs recorded</p>
                 </CardContent>
               </Card>
-              <Card className="border-none shadow-lg rounded-3xl bg-rose-600 text-white overflow-hidden relative group">
+              <Card className="border-none shadow-sm rounded-xl bg-rose-600 text-white overflow-hidden relative group">
                 <div className="absolute top-0 right-0 p-6 opacity-10 group-hover:scale-110 transition-transform duration-700"><AlertCircle size={80} /></div>
                 <CardContent className="p-6 space-y-1 relative z-10">
                   <p className="text-[10px] font-black text-rose-200 uppercase tracking-widest">Unpracticed Items</p>
@@ -229,7 +231,7 @@ const ProceduresPage = () => {
                   <p className="text-xs text-rose-100 font-medium">Items with 0-2 logs</p>
                 </CardContent>
               </Card>
-              <Card className="border-none shadow-lg rounded-3xl bg-card overflow-hidden relative group">
+              <Card className="border-none shadow-sm rounded-xl bg-card overflow-hidden relative group">
                 <div className="absolute top-0 right-0 p-6 opacity-5 group-hover:scale-110 transition-transform duration-700"><Activity size={80} /></div>
                 <CardContent className="p-6 space-y-1 relative z-10">
                   <p className="text-[10px] font-black text-muted-foreground uppercase tracking-widest">Total Clinical Logs</p>
@@ -241,19 +243,19 @@ const ProceduresPage = () => {
 
             {/* Filters and Search */}
             <div className="space-y-6">
-              <div className="flex flex-col lg:flex-row gap-4 items-center justify-between bg-card p-4 rounded-[2rem] border border-border shadow-sm">
+              <div className="flex flex-col lg:flex-row gap-4 items-center justify-between bg-card p-4 rounded-xl border border-border shadow-sm">
                 <div className="relative flex-1 w-full max-w-md">
                   <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground" size={18} />
                   <Input 
                     placeholder="Search components..." 
-                    className="pl-12 bg-muted/50 border-none h-12 rounded-xl font-medium"
+                    className="pl-12 bg-muted/50 border-none h-12 rounded-lg font-medium"
                     value={search}
                     onChange={(e) => setSearch(e.target.value)}
                   />
                 </div>
                 
                 <div className="flex flex-wrap items-center gap-3">
-                  <div className="flex items-center gap-1 bg-muted p-1 rounded-xl">
+                  <div className="flex items-center gap-1 bg-muted p-1 rounded-lg">
                     {['All', 'Muscles', 'Reflexes', 'Brain Zones', 'Techniques'].map((cat) => (
                       <Button 
                         key={cat}
@@ -261,7 +263,7 @@ const ProceduresPage = () => {
                         size="sm" 
                         onClick={() => setActiveCategory(cat as any)}
                         className={cn(
-                          "rounded-lg h-9 px-4 font-bold text-[10px] uppercase tracking-widest", 
+                          "rounded-md h-9 px-4 font-bold text-[10px] uppercase tracking-widest", 
                           activeCategory === cat ? "bg-card text-indigo-600 shadow-sm hover:bg-card" : "text-muted-foreground"
                         )}
                       >
@@ -270,12 +272,12 @@ const ProceduresPage = () => {
                     ))}
                   </div>
 
-                  <div className="flex items-center gap-1 bg-muted p-1 rounded-xl">
+                  <div className="flex items-center gap-1 bg-muted p-1 rounded-lg">
                     <Button 
                       variant={sortBy === 'most' ? 'default' : 'ghost'} 
                       size="sm" 
                       onClick={() => setSortBy('most')}
-                      className={cn("rounded-lg h-9 px-3 font-bold text-[10px] uppercase tracking-widest", sortBy === 'most' ? "bg-card text-indigo-600 shadow-sm" : "text-muted-foreground")}
+                      className={cn("rounded-md h-9 px-3 font-bold text-[10px] uppercase tracking-widest", sortBy === 'most' ? "bg-card text-indigo-600 shadow-sm" : "text-muted-foreground")}
                     >
                       Most Logged
                     </Button>
@@ -283,7 +285,7 @@ const ProceduresPage = () => {
                       variant={sortBy === 'least' ? 'default' : 'ghost'} 
                       size="sm" 
                       onClick={() => setSortBy('least')}
-                      className={cn("rounded-lg h-9 px-3 font-bold text-[10px] uppercase tracking-widest", sortBy === 'least' ? "bg-card text-rose-600 shadow-sm" : "text-muted-foreground")}
+                      className={cn("rounded-md h-9 px-3 font-bold text-[10px] uppercase tracking-widest", sortBy === 'least' ? "bg-card text-rose-600 shadow-sm" : "text-muted-foreground")}
                     >
                       Least Logged
                     </Button>
@@ -291,7 +293,7 @@ const ProceduresPage = () => {
                       variant={sortBy === 'dysfunction' ? 'default' : 'ghost'} 
                       size="sm" 
                       onClick={() => setSortBy('dysfunction')}
-                      className={cn("rounded-lg h-9 px-3 font-bold text-[10px] uppercase tracking-widest", sortBy === 'dysfunction' ? "bg-card text-amber-600 shadow-sm" : "text-muted-foreground")}
+                      className={cn("rounded-md h-9 px-3 font-bold text-[10px] uppercase tracking-widest", sortBy === 'dysfunction' ? "bg-card text-amber-600 shadow-sm" : "text-muted-foreground")}
                     >
                       High Dysfunction
                     </Button>
@@ -308,44 +310,44 @@ const ProceduresPage = () => {
           </TabsContent>
 
           <TabsContent value="reference" className="mt-0 animate-in fade-in duration-500">
-            <div className="bg-card rounded-[3rem] border border-border shadow-xl p-8 md:p-12">
+            <div className="bg-card rounded-xl border border-border shadow-md p-8 md:p-12">
               <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-12">
                 <div className="space-y-1">
                   <h2 className="text-3xl font-black text-foreground tracking-tight">Protocol Sandbox</h2>
                   <p className="text-muted-foreground font-medium">Interactive reference for clinical assessments. (Sandbox Mode: No data is saved to a client).</p>
                 </div>
-                <Badge className="bg-amber-500 text-white border-none font-black text-[10px] uppercase tracking-widest px-4 py-1.5 rounded-full shadow-lg shadow-amber-100">
+                <Badge className="bg-amber-500 text-white border-none font-black text-[10px] uppercase tracking-widest px-4 py-1.5 rounded-full shadow-md">
                   Reference Only
                 </Badge>
               </div>
 
               <Tabs value={protocolTab} onValueChange={setProtocolTab} className="w-full">
                 <div className="flex justify-center mb-10">
-                  <TabsList className="inline-flex h-14 items-center justify-center rounded-2xl bg-slate-100/50 p-1.5 text-muted-foreground border border-slate-200">
+                  <TabsList className="inline-flex h-14 items-center justify-center rounded-xl bg-slate-100/50 p-1.5 text-muted-foreground border border-slate-200">
                     <TabsTrigger 
                       value="cranial-nerves" 
-                      className="inline-flex items-center justify-center whitespace-nowrap rounded-xl px-8 py-3 text-xs font-black uppercase tracking-widest transition-all data-[state=active]:bg-white data-[state=active]:text-indigo-600 data-[state=active]:shadow-lg"
+                      className="inline-flex items-center justify-center whitespace-nowrap rounded-lg px-8 py-3 text-xs font-bold uppercase tracking-widest transition-all data-[state=active]:bg-white data-[state=active]:text-indigo-600 data-[state=active]:shadow-md"
                     >
                       <Brain className="h-4 w-4 mr-2" />
                       Cranial Nerves
                     </TabsTrigger>
                     <TabsTrigger 
                       value="primitive-reflexes" 
-                      className="inline-flex items-center justify-center whitespace-nowrap rounded-xl px-8 py-3 text-xs font-black uppercase tracking-widest transition-all data-[state=active]:bg-white data-[state=active]:text-indigo-600 data-[state=active]:shadow-lg"
+                      className="inline-flex items-center justify-center whitespace-nowrap rounded-lg px-8 py-3 text-xs font-bold uppercase tracking-widest transition-all data-[state=active]:bg-white data-[state=active]:text-indigo-600 data-[state=active]:shadow-md"
                     >
                       <Zap className="h-4 w-4 mr-2" />
                       Primitive Reflexes
                     </TabsTrigger>
                     <TabsTrigger 
                       value="mechanoreceptive" 
-                      className="inline-flex items-center justify-center whitespace-nowrap rounded-xl px-8 py-3 text-xs font-black uppercase tracking-widest transition-all data-[state=active]:bg-white data-[state=active]:text-indigo-600 data-[state=active]:shadow-lg"
+                      className="inline-flex items-center justify-center whitespace-nowrap rounded-lg px-8 py-3 text-xs font-bold uppercase tracking-widest transition-all data-[state=active]:bg-white data-[state=active]:text-indigo-600 data-[state=active]:shadow-md"
                     >
                       <Activity className="h-4 w-4 mr-2" />
                       Mechanoreceptive
                     </TabsTrigger>
                     <TabsTrigger 
                       value="emotions" 
-                      className="inline-flex items-center justify-center whitespace-nowrap rounded-xl px-8 py-3 text-xs font-black uppercase tracking-widest transition-all data-[state=active]:bg-white data-[state=active]:text-indigo-600 data-[state=active]:shadow-lg"
+                      className="inline-flex items-center justify-center whitespace-nowrap rounded-lg px-8 py-3 text-xs font-bold uppercase tracking-widest transition-all data-[state=active]:bg-white data-[state=active]:text-indigo-600 data-[state=active]:shadow-md"
                     >
                       <Heart className="h-4 w-4 mr-2" />
                       Emotions
@@ -383,9 +385,9 @@ const ProceduresPage = () => {
                 </div>
               </Tabs>
 
-              <div className="mt-16 p-8 bg-slate-900 text-white rounded-[2.5rem] flex items-start gap-6 shadow-2xl relative overflow-hidden">
+              <div className="mt-16 p-8 bg-slate-900 text-white rounded-xl flex items-start gap-6 shadow-lg relative overflow-hidden">
                 <div className="absolute top-0 right-0 p-6 opacity-10"><Info size={100} /></div>
-                <div className="w-14 h-14 rounded-2xl bg-indigo-600 text-white flex items-center justify-center shadow-xl shrink-0">
+                <div className="w-14 h-14 rounded-lg bg-indigo-600 text-white flex items-center justify-center shadow-md shrink-0">
                   <GraduationCap size={32} />
                 </div>
                 <div className="space-y-2 relative z-10">

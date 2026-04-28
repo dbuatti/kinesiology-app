@@ -7,7 +7,7 @@ import Breadcrumbs from '@/components/shared/Breadcrumbs';
 
 const BusinessModelWorksheetPage = () => {
   return (
-    <AppLayout variant="wide">
+    <AppLayout>
       <div className="max-w-full mx-auto pt-6 print:hidden">
         <Breadcrumbs 
           items={[

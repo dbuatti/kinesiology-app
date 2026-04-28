@@ -8,7 +8,7 @@ import { Layers } from 'lucide-react';
 
 const FractalToolPage = () => {
   return (
-    <AppLayout variant="wide">
+    <AppLayout>
       <div className="space-y-8">
         <Breadcrumbs 
           items={[
@@ -18,7 +18,7 @@ const FractalToolPage = () => {
         />
         
         <div className="flex items-center gap-5">
-          <div className="w-16 h-16 rounded-[1.5rem] bg-indigo-600 text-white flex items-center justify-center shadow-2xl shadow-indigo-200 dark:shadow-indigo-900/20">
+          <div className="w-16 h-16 rounded-lg bg-indigo-600 text-white flex items-center justify-center shadow-md">
             <Layers size={32} />
           </div>
           <div>

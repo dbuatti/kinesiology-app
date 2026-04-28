@@ -14,23 +14,23 @@ const SchedulePage = () => {
   const activeTab = searchParams.get("view") || "list";
 
   return (
-    <AppLayout variant="full">
+    <AppLayout>
       <div className="space-y-8">
         <Breadcrumbs items={[{ label: "Clinical" }, { label: "Schedule" }]} />
         
         <Tabs value={activeTab} onValueChange={(v) => setSearchParams({ view: v })} className="w-full">
           <div className="flex justify-center mb-8">
-            <TabsList className="bg-slate-200/50 p-1 rounded-2xl h-14 border border-slate-200">
+            <TabsList className="bg-slate-200/50 p-1 rounded-xl h-14 border border-slate-200">
               <TabsTrigger 
                 value="list" 
-                className="rounded-xl px-8 h-12 data-[state=active]:bg-white data-[state=active]:text-indigo-600 data-[state=active]:shadow-lg transition-all font-bold text-xs uppercase tracking-widest"
+                className="rounded-lg px-8 h-12 data-[state=active]:bg-white data-[state=active]:text-indigo-600 data-[state=active]:shadow-sm transition-all font-bold text-xs uppercase tracking-widest"
               >
                 <List className="mr-2" size={16} />
                 Session List
               </TabsTrigger>
               <TabsTrigger 
                 value="availability" 
-                className="rounded-xl px-8 h-12 data-[state=active]:bg-white data-[state=active]:text-indigo-600 data-[state=active]:shadow-lg transition-all font-bold text-xs uppercase tracking-widest"
+                className="rounded-lg px-8 h-12 data-[state=active]:bg-white data-[state=active]:text-indigo-600 data-[state=active]:shadow-sm transition-all font-bold text-xs uppercase tracking-widest"
               >
                 <CalendarDays className="mr-2" size={16} />
                 Live Availability

@@ -39,33 +39,27 @@ export const EMOTION_CODE_CHART: Record<number, EmotionCell> = {
 
 export const ROW_DATA: Record<number, RowData> = {
   1: { 
-    organ: "HEART OR SMALL INTESTINE", 
-    muscles: "Heart: Vastus Lateralis, Subscapularis; Small Intestine: Quads, Abdominals" 
+    organ: "Heart / Small Intestine", 
+    muscles: "Vastus Lateralis, Subscapularis, Quads, Abdominals" 
   },
   2: { 
-    organ: "SPLEEN OR STOMACH", 
-    muscles: "Spleen: Triceps, Mid and Lower Traps; Stomach: PMC, Diaphragm, Neck Flexors" 
+    organ: "Spleen / Stomach", 
+    muscles: "Triceps, Traps, PMC, Diaphragm, Neck Flexors" 
   },
   3: { 
-    organ: "LUNG OR COLON", 
-    muscles: "Lungs: Posterior Deltoid; Colon: TFL, Glute Max, QL" 
+    organ: "Lung / Colon", 
+    muscles: "Posterior Deltoid, TFL, Glute Max, QL" 
   },
   4: { 
-    organ: "LIVER OR GALLBLADDER", 
-    muscles: "Liver: PMS, Rhomboids; Gallbladder: Anterior Deltoid, Popliteus" 
+    organ: "Liver / Gallbladder", 
+    muscles: "PMS, Rhomboids, Anterior Deltoid, Popliteus" 
   },
   5: { 
-    organ: "KIDNEYS OR BLADDER", 
-    muscles: "Kidney: Psoas, Upper Traps; Bladder: Erector Spinae" 
+    organ: "Kidneys / Bladder", 
+    muscles: "Psoas, Upper Traps, Erector Spinae" 
   },
   6: { 
-    organ: "GLANDS OR SEXUAL ORGANS", 
-    muscles: "Adrenals: Piriformis, Flexor Hallucis Longus; Thyroid: Supraspinatus; Reproductive: Glute Medius" 
+    organ: "Glands / Sexual Organs", 
+    muscles: "Piriformis, Flexor Hallucis, Supraspinatus, Glute Medius" 
   }
 };
-
-// Legacy export for backward compatibility if needed
-export const ROW_ASSOCIATIONS: Record<number, string> = Object.keys(ROW_DATA).reduce((acc, key) => {
-  acc[Number(key)] = ROW_DATA[Number(key)].organ;
-  return acc;
-}, {} as Record<number, string>);

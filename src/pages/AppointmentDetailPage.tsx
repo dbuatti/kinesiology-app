@@ -251,7 +251,7 @@ const AppointmentDetailPage = () => {
         onFixedHeaderChange={setIsFixedHeaderActive} 
         onCompleteSession={handleCompleteSession}
       />
-      <AppLayout hasFixedHeader={isFixedHeaderActive}>
+      <AppLayout variant="workspace" hasFixedHeader={isFixedHeaderActive}>
         <div className="flex flex-col gap-6 print:p-0">
           {/* Simplified Top Bar */}
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 print:hidden">

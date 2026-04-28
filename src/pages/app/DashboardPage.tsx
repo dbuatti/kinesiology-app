@@ -180,30 +180,25 @@ const Index = () => {
   }, []);
 
   if (loading) return (
-    <AppLayout>
-      <div className="space-y-6">
+    <AppLayout variant="standard">
+      <div className="space-y-8">
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-          <div className="space-y-2"><Skeleton className="h-8 w-48 rounded-md" /><Skeleton className="h-3 w-64 rounded-md" /></div>
+          <div className="space-y-2"><Skeleton className="h-8 w-48 rounded-lg" /><Skeleton className="h-3 w-64 rounded-lg" /></div>
         </div>
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-          {[1, 2, 3, 4].map((i) => <Skeleton key={i} className="h-24 w-full rounded-md" />)}
+          {[1, 2, 3, 4].map((i) => <Skeleton key={i} className="h-24 w-full rounded-lg" />)}
         </div>
       </div>
     </AppLayout>
   );
 
   return (
-    <AppLayout>
-      <div className="space-y-10">
+    <AppLayout variant="standard">
+      <div className="space-y-12">
         {/* Header Section */}
         <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
           <div className="space-y-1">
-            <Badge className={cn(
-              "border-none font-bold text-[8px] uppercase tracking-[0.3em] px-3 py-1 rounded-full mb-2",
-              mode === 'clinical' ? "bg-indigo-50 text-indigo-600" :
-              mode === 'lab' ? "bg-slate-100 text-slate-600" :
-              "bg-emerald-50 text-emerald-600"
-            )}>
+            <Badge className="bg-indigo-50 dark:bg-indigo-900/20 text-indigo-600 dark:text-indigo-400 border-none font-bold text-[8px] uppercase tracking-[0.3em] px-3 py-1 rounded-full mb-2">
               {mode === 'clinical' ? "Clinical Command" : mode === 'lab' ? "Practice Lab" : "Knowledge Hub"}
             </Badge>
             <h1 className="text-3xl font-serif font-bold tracking-tight text-slate-900 capitalize">{mode} Dashboard</h1>
@@ -476,7 +471,7 @@ const Index = () => {
                     </CardTitle>
                   </CardHeader>
                   <CardContent className="p-6 pt-0 space-y-4">
-                    <p className="text-sm text-slate-500 font-medium leading-relaxed">
+                    <p className="text-sm text-slate-600 dark:text-slate-400 font-medium leading-relaxed">
                       Track your proficiency across all loggable clinical components.
                     </p>
                     <Button asChild className="w-full bg-slate-900 text-white h-10 rounded-md font-bold text-[10px] uppercase tracking-widest">

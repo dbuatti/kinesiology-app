@@ -54,13 +54,13 @@ export default {
         },
       },
       borderRadius: {
-        lg: "0.5rem", // 8px - Containers
-        md: "0.375rem", // 6px - Components
-        sm: "0.25rem", // 4px - Small elements
+        lg: "0.5rem", // 8px - Standard Container
+        md: "0.375rem", // 6px - Standard Component
+        sm: "0.25rem", // 4px
       },
       boxShadow: {
         'sm': '0 1px 2px 0 rgba(0, 0, 0, 0.05)',
-        'md': '0 1px 3px 0 rgba(0, 0, 0, 0.1)',
+        'md': '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)',
       },
     },
   },

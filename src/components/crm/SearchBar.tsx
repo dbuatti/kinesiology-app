@@ -13,7 +13,7 @@ import {
   CommandList,
   CommandSeparator,
 } from "@/components/ui/command";
-import { Search, User, Calendar, Target, Zap, Clock, Trash2, UserPlus, CalendarPlus, Upload, Settings, Layers, ShieldCheck, Mic, Activity } from "lucide-react";
+import { Search, User, Calendar, Target, Zap, Clock, Trash2, UserPlus, CalendarPlus, Upload, Settings, Layers, ShieldCheck, Mic } from "lucide-react";
 import { format } from "date-fns";
 
 interface SearchResult {
@@ -55,7 +55,7 @@ const SearchBar = () => {
   }, []);
 
   const saveRecentSearch = (result: SearchResult) => {
-    if (result.type === 'action') return;
+    if (result.type === 'action') return; // Don't save generic actions to recent
     const updated = [
       result,
       ...recentSearches.filter((r) => r.id !== result.id || r.type !== result.type),
@@ -107,6 +107,7 @@ const SearchBar = () => {
 
       const searchResults: SearchResult[] = [];
 
+      // Check for exact pages
       if ("peace framework".includes(query.toLowerCase())) {
         searchResults.push({
           type: "page",
@@ -127,6 +128,7 @@ const SearchBar = () => {
         });
       }
 
+      // Search TCM Channels (Local Data)
       const matchingChannels = TCM_CHANNELS.filter(c => 
         c.name.toLowerCase().includes(query.toLowerCase()) || 
         c.code.toLowerCase().includes(query.toLowerCase())

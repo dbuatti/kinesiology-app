@@ -22,6 +22,7 @@ import { cn } from "@/lib/utils";
 import { showSuccess, showError } from "@/utils/toast";
 import { format } from "date-fns";
 import { usePrivacyMode } from "@/hooks/use-privacy-mode";
+import PageHeader from "@/components/shared/PageHeader";
 
 const CLAUDE_MARKETING_CHAT = "https://claude.ai/chat/e4805343-71a0-48fc-a1e0-4d2dde541a88";
 const GEMINI_BUSINESS_CHAT = "https://gemini.google.com/app/5d5d4bcde141a99a";
@@ -133,40 +134,27 @@ Please provide the final output ready to be reviewed.`;
   return (
     <AppLayout>
       <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-700 pb-20">
-        <Breadcrumbs items={[{ label: "Business Tools" }, { label: "AI Marketing Engine" }]} />
-
-        <div className="relative rounded-[3.5rem] overflow-hidden bg-slate-950 text-white p-12 shadow-2xl group border border-slate-800">
-          <div className="absolute inset-0 bg-gradient-to-br from-emerald-900/40 via-slate-950 to-teal-900/40" />
-          <div className="absolute top-0 right-0 p-12 opacity-10 group-hover:scale-110 transition-transform duration-700">
-            <Mic size={200} />
-          </div>
-          
-          <div className="relative z-10 flex flex-col items-start space-y-6">
-            <Badge className="bg-emerald-500/20 text-emerald-300 border-emerald-500/30 font-black text-[10px] uppercase tracking-[0.3em] px-4 py-1">
-              Business Operating System
-            </Badge>
-            <div className="flex flex-col md:flex-row md:items-center justify-between w-full gap-6">
-              <div className="space-y-2">
-                <h1 className="text-4xl md:text-5xl font-black tracking-tighter leading-tight">The AI Marketing Engine</h1>
-                <p className="text-lg text-slate-300 font-medium max-w-2xl leading-relaxed">
-                  Transform clinical wins and raw thoughts into distribution-ready assets for your Kit newsletter.
-                </p>
-              </div>
-              <div className="flex flex-wrap gap-3 shrink-0">
-                <Button asChild className="bg-white text-slate-950 hover:bg-emerald-50 h-14 px-6 rounded-2xl font-black text-[10px] uppercase tracking-widest shadow-xl">
-                  <a href={CLAUDE_MARKETING_CHAT} target="_blank" rel="noopener noreferrer">
-                    <MessageSquare size={18} className="mr-2 text-emerald-600" /> Claude
-                  </a>
-                </Button>
-                <Button asChild className="bg-white text-slate-950 hover:bg-emerald-50 h-14 px-6 rounded-2xl font-black text-[10px] uppercase tracking-widest shadow-xl">
-                  <a href={GEMINI_BUSINESS_CHAT} target="_blank" rel="noopener noreferrer">
-                    <Sparkles size={18} className="mr-2 text-blue-600" /> Gemini
-                  </a>
-                </Button>
-              </div>
+        <PageHeader 
+          title="Marketing Engine"
+          subtitle="Transform clinical wins and raw thoughts into distribution-ready assets for your Kit newsletter."
+          icon={Mic}
+          iconClassName="bg-emerald-600"
+          breadcrumbs={[{ label: "Business", path: "/business" }, { label: "Marketing Engine" }]}
+          actions={
+            <div className="flex flex-wrap gap-3 shrink-0">
+              <Button asChild className="bg-white text-slate-950 hover:bg-emerald-50 h-12 px-6 rounded-xl font-black text-[10px] uppercase tracking-widest shadow-md border border-slate-100">
+                <a href={CLAUDE_MARKETING_CHAT} target="_blank" rel="noopener noreferrer">
+                  <MessageSquare size={18} className="mr-2 text-emerald-600" /> Claude
+                </a>
+              </Button>
+              <Button asChild className="bg-white text-slate-950 hover:bg-emerald-50 h-12 px-6 rounded-xl font-black text-[10px] uppercase tracking-widest shadow-md border border-slate-100">
+                <a href={GEMINI_BUSINESS_CHAT} target="_blank" rel="noopener noreferrer">
+                  <Sparkles size={18} className="mr-2 text-blue-600" /> Gemini
+                </a>
+              </Button>
             </div>
-          </div>
-        </div>
+          }
+        />
 
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
           <TabsList className="grid w-full grid-cols-3 h-14 bg-muted p-1.5 rounded-2xl mb-8">
@@ -362,7 +350,7 @@ Please provide the final output ready to be reviewed.`;
                         <CardDescription className="text-slate-400 text-xs">Copy and paste this into Claude/ChatGPT.</CardDescription>
                       </div>
                     </div>
-                    <Button onClick={handleCopy} className={cn("h-10 px-4 rounded-xl font-black text-[10px] uppercase tracking-widest transition-all", copied ? "bg-emerald-500 text-white" : "bg-white text-slate-900")}>
+                    <Button onClick={handleCopy} className={cn("h-10 px-4 rounded-xl font-black text-[10px] uppercase tracking-widest transition-all", copied ? "bg-emerald-50 text-white" : "bg-white text-slate-900")}>
                       {copied ? <Check size={16} className="mr-2" /> : <Copy size={16} className="mr-2" />} {copied ? "Copied!" : "Copy Prompt"}
                     </Button>
                   </CardHeader>

@@ -18,6 +18,7 @@ import { cn } from "@/lib/utils";
 import DataIntegrityCheck from "@/components/crm/DataIntegrityCheck";
 import FollowUpTracker from "@/components/crm/FollowUpTracker";
 import AppLayout from "@/components/crm/AppLayout";
+import PageHeader from "@/components/shared/PageHeader";
 
 const ClinicalOversightPage = () => {
   const [clients, setClients] = useState<any[]>([]);
@@ -87,25 +88,25 @@ const ClinicalOversightPage = () => {
   );
 
   return (
-    <AppLayout>
-      <div className="p-4 md:p-8 max-w-full mx-auto space-y-10">
-        <Breadcrumbs items={[{ label: "Clinical Oversight" }]} />
-
-        <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
-          <div>
-            <h1 className="text-4xl font-black tracking-tight text-foreground">Clinical Oversight</h1>
-            <p className="text-muted-foreground font-medium mt-1 text-lg">Practice-wide health monitoring and case management.</p>
-          </div>
-          <div className="relative w-full md:w-72">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" size={18} />
-            <Input 
-              placeholder="Search clients..." 
-              className="pl-10 bg-card border-border rounded-2xl shadow-sm h-12"
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-            />
-          </div>
-        </div>
+    <AppLayout variant="workspace">
+      <div className="space-y-10">
+        <PageHeader 
+          title="Clinical Oversight"
+          subtitle="Practice-wide health monitoring, data integrity, and case management."
+          icon={TrendingUp}
+          breadcrumbs={[{ label: "Clinical" }, { label: "Oversight" }]}
+          actions={
+            <div className="relative w-full md:w-72">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" size={18} />
+              <Input 
+                placeholder="Search clients..." 
+                className="pl-10 bg-card border-border rounded-2xl shadow-sm h-12"
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+              />
+            </div>
+          }
+        />
 
         {/* Practice Management Tools */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
@@ -114,7 +115,7 @@ const ClinicalOversightPage = () => {
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          <Card className="border-none shadow-lg rounded-3xl bg-rose-600 text-white overflow-hidden relative">
+          <Card className="border-none shadow-lg rounded-[2.5rem] bg-rose-600 text-white overflow-hidden relative">
             <div className="absolute top-0 right-0 p-6 opacity-20">
               <AlertCircle size={80} />
             </div>
@@ -127,7 +128,7 @@ const ClinicalOversightPage = () => {
             </CardContent>
           </Card>
 
-          <Card className="border-none shadow-lg rounded-3xl bg-emerald-600 text-white overflow-hidden relative">
+          <Card className="border-none shadow-lg rounded-[2.5rem] bg-emerald-600 text-white overflow-hidden relative">
             <div className="absolute top-0 right-0 p-6 opacity-20">
               <CheckCircle2 size={80} />
             </div>
@@ -140,7 +141,7 @@ const ClinicalOversightPage = () => {
             </CardContent>
           </Card>
 
-          <Card className="border-none shadow-lg rounded-3xl bg-indigo-600 text-white overflow-hidden relative">
+          <Card className="border-none shadow-lg rounded-[2.5rem] bg-indigo-600 text-white overflow-hidden relative">
             <div className="absolute top-0 right-0 p-6 opacity-20">
               <Users size={80} />
             </div>

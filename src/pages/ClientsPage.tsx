@@ -6,7 +6,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { Plus, Search, Loader2, UserPlus, Activity, CalendarPlus, Clock, LayoutGrid, List, Mail, Phone, MapPin, ArrowRight, ExternalLink, FlaskConical, CreditCard } from "lucide-react";
+import { Plus, Search, Loader2, UserPlus, Activity, CalendarPlus, Clock, LayoutGrid, List, Mail, Phone, MapPin, ArrowRight, ExternalLink, FlaskConical, CreditCard, Users } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import {
   Dialog,
@@ -27,6 +27,7 @@ import {
 import { format } from "date-fns";
 import AppLayout from "@/components/crm/AppLayout";
 import { cn } from "@/lib/utils";
+import PageHeader from "@/components/shared/PageHeader";
 
 interface ClientWithStats extends Client {
   session_count: number;
@@ -96,28 +97,32 @@ const ClientsPage = () => {
   );
 
   return (
-    <AppLayout>
+    <AppLayout variant="workspace">
       <div className="flex flex-col gap-8">
-        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-6">
-          <div>
-            <h1 className="text-4xl font-black tracking-tight text-foreground">Clients</h1>
-            <p className="text-muted-foreground font-medium mt-1 text-lg">Manage your kinesiology client database and history.</p>
-          </div>
-          <Dialog open={open} onOpenChange={setOpen}>
-            <DialogTrigger asChild>
-              <Button className="bg-indigo-600 hover:bg-indigo-700 shadow-xl shadow-indigo-100 dark:shadow-indigo-900/20 rounded-2xl h-12 px-8 font-black text-xs uppercase tracking-widest">
-                <Plus size={20} className="mr-2" /> New Client
-              </Button>
-            </DialogTrigger>
-            <DialogContent className="sm:max-w-[550px] rounded-[2rem]">
-              <DialogHeader>
-                <DialogTitle className="text-2xl font-black">Add New Client</DialogTitle>
-                <DialogDescription>Create a new client profile in your clinical database.</DialogDescription>
-              </DialogHeader>
-              <ClientForm onSuccess={() => { setOpen(false); fetchClients(); }} />
-            </DialogContent>
-          </Dialog>
-        </div>
+        <PageHeader 
+          title="Client Database"
+          subtitle="Manage your kinesiology client profiles, history, and clinical data."
+          icon={Users}
+          breadcrumbs={[{ label: "Clinical" }, { label: "Clients" }]}
+          actions={
+            <Dialog open={open} onOpenChange={setOpen}>
+              <DialogTrigger asChild>
+                <Button className="bg-indigo-600 hover:bg-indigo-700 shadow-xl shadow-indigo-100 dark:shadow-indigo-900/20 rounded-2xl h-12 px-8 font-black text-xs uppercase tracking-widest">
+                  <Plus size={20} className="mr-2" /> New Client
+                </Button>
+              </DialogTrigger>
+              <DialogContent className="sm:max-w-[550px] rounded-[2rem] p-0 overflow-hidden">
+                <div className="p-8">
+                  <DialogHeader className="mb-6">
+                    <DialogTitle className="text-2xl font-black">Add New Client</DialogTitle>
+                    <DialogDescription className="font-medium">Create a new client profile in your clinical database.</DialogDescription>
+                  </DialogHeader>
+                  <ClientForm onSuccess={() => { setOpen(false); fetchClients(); }} />
+                </div>
+              </DialogContent>
+            </Dialog>
+          }
+        />
 
         <div className="flex flex-col md:flex-row items-center justify-between gap-4 bg-card p-4 rounded-[2rem] border border-border shadow-sm">
           <div className="relative flex-1 w-full max-w-md">
@@ -341,7 +346,7 @@ const ClientsPage = () => {
                       >
                         <CalendarPlus size={14} className="mr-2" /> Quick Book
                       </Button>
-                      <div className="w-8 h-8 rounded-full bg-muted flex items-center justify-center text-muted-foreground group-hover:bg-indigo-600 group-hover:text-white transition-all">
+                      <div className="w-8 h-8 rounded-xl bg-slate-50 flex items-center justify-center text-slate-400 group-hover:bg-indigo-600 group-hover:text-white transition-all">
                         <ArrowRight size={16} />
                       </div>
                     </div>
@@ -363,12 +368,14 @@ const ClientsPage = () => {
       </div>
 
       <Dialog open={bookOpen} onOpenChange={setBookOpen}>
-        <DialogContent className="sm:max-w-[500px] rounded-[2rem]">
-          <DialogHeader>
-            <DialogTitle className="text-2xl font-black">Quick Book Session</DialogTitle>
-            <DialogDescription>Schedule a new appointment for this client.</DialogDescription>
-          </DialogHeader>
-          {selectedClientId && <AppointmentForm initialClientId={selectedClientId} onSuccess={() => { setBookOpen(false); fetchClients(); }} />}
+        <DialogContent className="sm:max-w-[500px] rounded-[2rem] p-0 overflow-hidden">
+          <div className="p-8">
+            <DialogHeader className="mb-6">
+              <DialogTitle className="text-2xl font-black">Quick Book Session</DialogTitle>
+              <DialogDescription className="font-medium">Schedule a new appointment for this client.</DialogDescription>
+            </DialogHeader>
+            {selectedClientId && <AppointmentForm initialClientId={selectedClientId} onSuccess={() => { setBookOpen(false); fetchClients(); }} />}
+          </div>
         </DialogContent>
       </Dialog>
     </AppLayout>

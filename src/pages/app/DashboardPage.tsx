@@ -43,6 +43,7 @@ import Scratchpad from "@/components/crm/Scratchpad";
 import QuickActionsGrid from "@/components/crm/QuickActionsGrid";
 import IdentitySmartTool from "@/components/crm/IdentitySmartTool";
 import { Progress } from "@/components/ui/progress";
+import PageHeader from "@/components/shared/PageHeader";
 
 const Index = () => {
   const { isPrivate } = usePrivacyMode();
@@ -195,30 +196,27 @@ const Index = () => {
   return (
     <AppLayout variant="standard">
       <div className="space-y-12">
-        {/* Header Section */}
-        <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
-          <div className="space-y-1">
-            <Badge className="bg-indigo-50 dark:bg-indigo-900/20 text-indigo-600 dark:text-indigo-400 border-none font-bold text-[8px] uppercase tracking-[0.3em] px-3 py-1 rounded-full mb-2">
-              {mode === 'clinical' ? "Clinical Command" : mode === 'lab' ? "Practice Lab" : "Knowledge Hub"}
-            </Badge>
-            <h1 className="text-3xl font-serif font-bold tracking-tight text-slate-900 capitalize">{mode} Dashboard</h1>
-            <p className="text-sm text-slate-500 font-medium max-w-2xl">
-              {mode === 'clinical' ? "Welcome back, Daniele. Here is your clinical landscape for today." :
-               mode === 'lab' ? "Focus on your personal integration and practitioner state." :
-               "Deepen your clinical knowledge and master the FNH protocols."}
-            </p>
-          </div>
-          <div className="flex items-center gap-3 bg-white dark:bg-slate-900 p-3 rounded-lg border border-slate-200 dark:border-slate-800 shadow-sm">
-            <div className="pr-4 border-r border-slate-100">
-              <p className="text-[8px] font-bold text-slate-400 uppercase tracking-widest">Today</p>
-              <p className="text-sm font-bold text-slate-900">{format(currentTime, "EEEE, MMM d")}</p>
+        <PageHeader 
+          title={`${mode.charAt(0).toUpperCase() + mode.slice(1)} Dashboard`}
+          subtitle={
+            mode === 'clinical' ? "Welcome back, Daniele. Here is your clinical landscape for today." :
+            mode === 'lab' ? "Focus on your personal integration and practitioner state." :
+            "Deepen your clinical knowledge and master the FNH protocols."
+          }
+          badge={mode === 'clinical' ? "Clinical Command" : mode === 'lab' ? "Practice Lab" : "Knowledge Hub"}
+          actions={
+            <div className="flex items-center gap-3 bg-white dark:bg-slate-900 p-3 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm">
+              <div className="pr-4 border-r border-slate-100">
+                <p className="text-[8px] font-bold text-slate-400 uppercase tracking-widest">Today</p>
+                <p className="text-sm font-bold text-slate-900">{format(currentTime, "EEEE, MMM d")}</p>
+              </div>
+              <div className="pl-1">
+                <p className="text-[8px] font-bold text-slate-400 uppercase tracking-widest">Time</p>
+                <p className="text-sm font-bold text-indigo-600">{format(currentTime, "h:mm a")}</p>
+              </div>
             </div>
-            <div className="pl-1">
-              <p className="text-[8px] font-bold text-slate-400 uppercase tracking-widest">Time</p>
-              <p className="text-sm font-bold text-indigo-600">{format(currentTime, "h:mm a")}</p>
-            </div>
-          </div>
-        </div>
+          }
+        />
 
         {/* MODE: CLINICAL */}
         {mode === 'clinical' && (
@@ -229,7 +227,7 @@ const Index = () => {
               </div>
               <div className="lg:col-span-4">
                 <Link to="/morning-program" className="block h-full">
-                  <Card className="border border-slate-200 dark:border-slate-800 shadow-sm rounded-lg bg-white dark:bg-slate-900 h-full overflow-hidden group hover:border-indigo-300 transition-all">
+                  <Card className="border border-slate-200 dark:border-slate-800 shadow-sm rounded-[2rem] bg-white dark:bg-slate-900 h-full overflow-hidden group hover:border-indigo-300 transition-all">
                     <CardContent className="p-6 flex flex-col justify-between h-full">
                       <div className="space-y-1">
                         <div className="flex items-center gap-2 text-indigo-600">
@@ -275,9 +273,9 @@ const Index = () => {
                     </div>
                     <div className="grid grid-cols-1 gap-2">
                       {pendingOnboarding.map(client => (
-                        <div key={client.id} className="p-4 bg-white dark:bg-slate-900 rounded-lg border border-slate-200 dark:border-slate-800 flex items-center justify-between group hover:border-indigo-200 transition-all">
+                        <div key={client.id} className="p-4 bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 flex items-center justify-between group hover:border-indigo-200 transition-all">
                           <Link to={`/clients/${client.id}`} className="flex items-center gap-4 flex-1 min-w-0">
-                            <div className="w-9 h-9 rounded bg-slate-50 text-indigo-600 flex items-center justify-center font-bold text-sm shrink-0">
+                            <div className="w-9 h-9 rounded-xl bg-slate-50 text-indigo-600 flex items-center justify-center font-bold text-sm shrink-0">
                               {client.name.charAt(0)}
                             </div>
                             <div className="min-w-0">
@@ -291,14 +289,14 @@ const Index = () => {
                             <Button 
                               variant="ghost" 
                               size="sm" 
-                              className="h-8 px-3 rounded text-indigo-600 hover:bg-indigo-50 font-bold text-[9px] uppercase tracking-widest"
+                              className="h-8 px-3 rounded-lg text-indigo-600 hover:bg-indigo-50 font-bold text-[9px] uppercase tracking-widest"
                               onClick={(e) => handleCopyLink(e, client.id)}
                             >
                               {copiedId === client.id ? <Check size={12} className="mr-1.5 text-emerald-500" /> : <LinkIcon size={12} className="mr-1.5" />}
                               Link
                             </Button>
                             <Link to={`/clients/${client.id}`}>
-                              <div className="w-8 h-8 rounded bg-slate-50 text-slate-400 flex items-center justify-center group-hover:bg-indigo-600 group-hover:text-white transition-all">
+                              <div className="w-8 h-8 rounded-xl bg-slate-50 text-slate-400 flex items-center justify-center group-hover:bg-indigo-600 group-hover:text-white transition-all">
                                 <ArrowRight size={16} />
                               </div>
                             </Link>
@@ -326,7 +324,7 @@ const Index = () => {
           <div className="space-y-10 animate-in fade-in duration-300">
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
               <div className="lg:col-span-8 space-y-8">
-                <Card className="border border-slate-200 dark:border-slate-800 shadow-sm rounded-lg bg-white dark:bg-slate-900 overflow-hidden">
+                <Card className="border border-slate-200 dark:border-slate-800 shadow-sm rounded-[2rem] bg-white dark:bg-slate-900 overflow-hidden">
                   <CardContent className="p-8">
                     <div className="max-w-2xl space-y-4">
                       <Badge className="bg-indigo-50 text-indigo-600 border-none font-bold text-[9px] uppercase tracking-widest px-3 py-1">
@@ -346,7 +344,7 @@ const Index = () => {
                           </div>
                           <Progress value={morningProgress} className="h-1 bg-slate-100 dark:bg-slate-800 [&>div]:bg-indigo-600" />
                         </div>
-                        <Button asChild className="bg-indigo-600 hover:bg-indigo-700 text-white h-11 px-6 rounded-md font-bold text-xs uppercase tracking-widest">
+                        <Button asChild className="bg-indigo-600 hover:bg-indigo-700 text-white h-11 px-6 rounded-xl font-bold text-xs uppercase tracking-widest">
                           <Link to="/morning-program">Open Program</Link>
                         </Button>
                       </div>
@@ -359,7 +357,7 @@ const Index = () => {
               </div>
 
               <div className="lg:col-span-4 space-y-8">
-                <Card className="border border-slate-200 dark:border-slate-800 shadow-sm rounded-lg bg-white dark:bg-slate-900 overflow-hidden">
+                <Card className="border border-slate-200 dark:border-slate-800 shadow-sm rounded-[2rem] bg-white dark:bg-slate-900 overflow-hidden">
                   <CardHeader className="p-6 pb-2">
                     <CardTitle className="text-lg font-bold flex items-center gap-2 text-slate-900 dark:text-white">
                       <MessageSquare size={20} className="text-indigo-600" /> Practitioner Journal
@@ -369,13 +367,13 @@ const Index = () => {
                     <p className="text-sm text-slate-500 font-medium leading-relaxed">
                       Capture your clinical doubts, breakthroughs, and reflections.
                     </p>
-                    <Button asChild className="w-full bg-slate-900 text-white h-10 rounded-md font-bold text-[10px] uppercase tracking-widest">
+                    <Button asChild className="w-full bg-slate-900 text-white h-10 rounded-xl font-bold text-[10px] uppercase tracking-widest">
                       <Link to="/practice/journal">Open Journal</Link>
                     </Button>
                   </CardContent>
                 </Card>
 
-                <Card className="border border-slate-200 dark:border-slate-800 shadow-sm rounded-lg bg-white dark:bg-slate-900 overflow-hidden">
+                <Card className="border border-slate-200 dark:border-slate-800 shadow-sm rounded-[2rem] bg-white dark:bg-slate-900 overflow-hidden">
                   <CardHeader className="p-6 pb-2">
                     <CardTitle className="text-lg font-bold flex items-center gap-2 text-slate-900 dark:text-white">
                       <Layers size={20} className="text-indigo-600" /> The Lab (Sandbox)
@@ -388,7 +386,7 @@ const Index = () => {
                         { label: "Identity Alignment", path: "/sandbox/identity-alignment", icon: Target },
                         { label: "Limiting Beliefs", path: "/sandbox/limiting-beliefs", icon: ShieldAlert }
                       ].map(tool => (
-                        <Link key={tool.path} to={tool.path} className="flex items-center justify-between p-3 hover:bg-slate-50 dark:hover:bg-slate-800 rounded-md transition-all group">
+                        <Link key={tool.path} to={tool.path} className="flex items-center justify-between p-3 hover:bg-slate-50 dark:hover:bg-slate-800 rounded-xl transition-all group">
                           <div className="flex items-center gap-3">
                             <tool.icon size={14} className="text-slate-400 group-hover:text-indigo-600" />
                             <span className="text-xs font-bold text-slate-600 dark:text-slate-300">{tool.label}</span>
@@ -409,7 +407,7 @@ const Index = () => {
           <div className="space-y-10 animate-in fade-in duration-300">
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
               <div className="lg:col-span-8 space-y-10">
-                <div className="p-10 bg-indigo-600 text-white rounded-lg shadow-md relative overflow-hidden">
+                <div className="p-10 bg-indigo-600 text-white rounded-[2.5rem] shadow-md relative overflow-hidden">
                   <div className="relative z-10 space-y-6">
                     <div className="space-y-2">
                       <Badge className="bg-white/20 text-white border-none font-bold text-[9px] uppercase tracking-[0.3em] px-3 py-1">
@@ -422,7 +420,7 @@ const Index = () => {
                         Sharpen your clinical intuition with infinite practice questions across Anatomy, TCM, and FNH protocols.
                       </p>
                     </div>
-                    <Button asChild className="bg-white text-indigo-600 hover:bg-indigo-50 h-12 px-8 rounded-md font-bold text-xs uppercase tracking-widest shadow-lg">
+                    <Button asChild className="bg-white text-indigo-600 hover:bg-indigo-50 h-12 px-8 rounded-xl font-bold text-xs uppercase tracking-widest shadow-lg">
                       <Link to="/practice/quiz">Start Infinite Quiz <Zap size={16} className="ml-2 fill-current" /></Link>
                     </Button>
                   </div>
@@ -432,9 +430,9 @@ const Index = () => {
                   <h2 className="text-xl font-bold text-slate-900 px-1">Clinical Reference</h2>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <Link to="/resources" className="block group">
-                      <Card className="border border-slate-200 dark:border-slate-800 shadow-sm rounded-lg bg-white dark:bg-slate-900 hover:border-indigo-300 transition-all h-full">
+                      <Card className="border border-slate-200 dark:border-slate-800 shadow-sm rounded-[2rem] bg-white dark:bg-slate-900 hover:border-indigo-300 transition-all h-full">
                         <CardContent className="p-6 space-y-3">
-                          <div className="w-9 h-9 rounded bg-slate-50 dark:bg-slate-800 text-indigo-600 flex items-center justify-center border border-slate-100 dark:border-slate-700 group-hover:scale-110 transition-transform">
+                          <div className="w-9 h-9 rounded-xl bg-slate-50 dark:bg-slate-800 text-indigo-600 flex items-center justify-center border border-slate-100 dark:border-slate-700 group-hover:scale-110 transition-transform">
                             <BookOpen size={18} />
                           </div>
                           <h3 className="text-lg font-bold text-slate-900 dark:text-white">Clinical Bible</h3>
@@ -445,9 +443,9 @@ const Index = () => {
                       </Card>
                     </Link>
                     <Link to="/peace-framework" className="block group">
-                      <Card className="border border-slate-200 dark:border-slate-800 shadow-sm rounded-lg bg-white dark:bg-slate-900 hover:border-indigo-300 transition-all h-full">
+                      <Card className="border border-slate-200 dark:border-slate-800 shadow-sm rounded-[2rem] bg-white dark:bg-slate-900 hover:border-indigo-300 transition-all h-full">
                         <CardContent className="p-6 space-y-3">
-                          <div className="w-9 h-9 rounded bg-slate-50 dark:bg-slate-800 text-rose-600 flex items-center justify-center border border-slate-100 dark:border-slate-700 group-hover:scale-110 transition-transform">
+                          <div className="w-9 h-9 rounded-xl bg-slate-50 dark:bg-slate-800 text-rose-600 flex items-center justify-center border border-slate-100 dark:border-slate-700 group-hover:scale-110 transition-transform">
                             <ShieldCheck size={18} />
                           </div>
                           <h3 className="text-lg font-bold text-slate-900 dark:text-white">PEACE Framework</h3>
@@ -464,7 +462,7 @@ const Index = () => {
               <div className="lg:col-span-4 space-y-8">
                 <MeridianClock />
                 
-                <Card className="border border-slate-200 dark:border-slate-800 shadow-sm rounded-lg bg-white dark:bg-slate-900 overflow-hidden group">
+                <Card className="border border-slate-200 dark:border-slate-800 shadow-sm rounded-[2rem] bg-white dark:bg-slate-900 overflow-hidden group">
                   <CardHeader className="p-6 pb-2">
                     <CardTitle className="text-lg font-bold flex items-center gap-2 text-slate-900 dark:text-white">
                       <Trophy size={20} className="text-indigo-600" /> Mastery Tracker
@@ -474,7 +472,7 @@ const Index = () => {
                     <p className="text-sm text-slate-600 dark:text-slate-400 font-medium leading-relaxed">
                       Track your proficiency across all loggable clinical components.
                     </p>
-                    <Button asChild className="w-full bg-slate-900 text-white h-10 rounded-md font-bold text-[10px] uppercase tracking-widest">
+                    <Button asChild className="w-full bg-slate-900 text-white h-10 rounded-xl font-bold text-[10px] uppercase tracking-widest">
                       <Link to="/practice/procedures">View My Mastery</Link>
                     </Button>
                   </CardContent>
@@ -487,7 +485,7 @@ const Index = () => {
       </div>
 
       <Dialog open={clientDialogOpen} onOpenChange={setClientDialogOpen}>
-        <DialogContent className="sm:max-w-[600px] max-h-[90vh] overflow-y-auto rounded-lg p-0">
+        <DialogContent className="sm:max-w-[600px] max-h-[90vh] overflow-y-auto rounded-[2rem] p-0">
           <div className="p-8">
             <DialogHeader className="mb-6">
               <DialogTitle className="text-2xl font-serif font-bold tracking-tight">Add New Client</DialogTitle>
@@ -498,7 +496,7 @@ const Index = () => {
       </Dialog>
 
       <Dialog open={appDialogOpen} onOpenChange={setAppDialogOpen}>
-        <DialogContent className="sm:max-w-[550px] max-h-[90vh] overflow-y-auto rounded-lg p-0">
+        <DialogContent className="sm:max-w-[550px] max-h-[90vh] overflow-y-auto rounded-[2rem] p-0">
           <div className="p-8">
             <DialogHeader className="mb-6">
               <DialogTitle className="text-2xl font-serif font-bold tracking-tight">Schedule New Session</DialogTitle>

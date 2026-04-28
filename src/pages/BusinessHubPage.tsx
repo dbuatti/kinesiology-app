@@ -28,6 +28,7 @@ import AppLayout from "@/components/crm/AppLayout";
 import Breadcrumbs from "@/components/shared/Breadcrumbs";
 import { Link } from "react-router-dom";
 import { cn } from "@/lib/utils";
+import PageHeader from "@/components/shared/PageHeader";
 
 const MARKETING_TOOLS = [
   {
@@ -154,20 +155,14 @@ const BusinessHubPage = () => {
 
   return (
     <AppLayout>
-      <div className="space-y-12 animate-in fade-in slide-in-from-bottom-4 duration-700 pb-20">
-        <Breadcrumbs items={[{ label: "Business Hub" }]} />
-
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
-          <div className="flex items-center gap-5">
-            <div className="w-16 h-16 rounded-[1.5rem] bg-emerald-600 text-white flex items-center justify-center shadow-2xl shadow-emerald-100 dark:shadow-emerald-900/20">
-              <Briefcase size={32} />
-            </div>
-            <div>
-              <h1 className="text-4xl font-black tracking-tight text-foreground">Business Hub</h1>
-              <p className="text-muted-foreground font-medium mt-1 text-lg">Strategic tools for practice growth and global connection.</p>
-            </div>
-          </div>
-        </div>
+      <div className="space-y-12 animate-in fade-in duration-700 pb-20">
+        <PageHeader 
+          title="Business Hub"
+          subtitle="Strategic tools for practice growth, audience ownership, and global connection."
+          icon={Briefcase}
+          iconClassName="bg-emerald-600"
+          breadcrumbs={[{ label: "Business" }, { label: "Hub" }]}
+        />
 
         {/* Strategy Card */}
         <Card className="border-none shadow-2xl rounded-[3rem] bg-slate-900 text-white overflow-hidden relative group">
@@ -180,7 +175,7 @@ const BusinessHubPage = () => {
               <Badge className="bg-emerald-500/20 text-emerald-300 border-emerald-500/30 font-black text-[10px] uppercase tracking-[0.3em] px-4 py-1">
                 Practice Growth Strategy
               </Badge>
-              <h2 className="text-4xl md:text-5xl font-black tracking-tighter leading-tight">
+              <h2 className="text-4xl md:text-5xl font-serif font-bold tracking-tighter leading-tight">
                 Own Your Audience. <br/>Connect with the World.
               </h2>
               <p className="text-lg text-slate-300 font-medium leading-relaxed">

@@ -15,18 +15,15 @@ import {
   RefreshCw,
   Lightbulb,
   ArrowRight,
-  FilterX,
   CheckCircle2,
   Brain,
   Heart,
-  FileText,
   Info
 } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
-import { Alert, AlertDescription } from "@/components/ui/alert";
 import { fetchMasteryStats, MasteryStat, MasteryCategory } from "@/utils/mastery-stats";
 import { setWeeklyFocus } from "@/utils/weekly-focus";
 import MasteryItemCard from "@/components/crm/MasteryItemCard";
@@ -35,6 +32,7 @@ import AppLayout from "@/components/crm/AppLayout";
 import { cn } from "@/lib/utils";
 import { showSuccess, showError } from "@/utils/toast";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import PageHeader from "@/components/shared/PageHeader";
 
 // Assessment Components for the second tab
 import { CranialNerveAssessment } from "@/components/crm/CranialNerveAssessment";
@@ -61,12 +59,15 @@ const ProceduresPage = () => {
       setStats(data);
     } catch (err) {
       console.error("Failed to load mastery stats", err);
+      showError("Failed to load mastery statistics.");
     } finally {
       setLoading(false);
     }
   };
 
-  useEffect(() => { loadStats(); }, []);
+  useEffect(() => {
+    loadStats();
+  }, []);
 
   const filteredStats = useMemo(() => {
     return stats
@@ -119,32 +120,27 @@ const ProceduresPage = () => {
   );
 
   return (
-    <AppLayout>
+    <AppLayout variant="workspace">
       <div className="space-y-10">
-        <Breadcrumbs items={[{ label: "Protocols & Mastery" }]} />
-        
-        <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
-          <div className="flex items-center gap-5">
-            <div className="w-16 h-16 rounded-lg bg-indigo-600 text-white flex items-center justify-center shadow-md">
-              <Trophy size={32} />
-            </div>
-            <div>
-              <h1 className="text-4xl font-black tracking-tight text-foreground">Protocols Hub</h1>
-              <p className="text-muted-foreground font-medium mt-1 text-lg">Clinical mastery tracking and interactive protocol reference.</p>
-            </div>
-          </div>
-          <Button onClick={loadStats} variant="outline" className="rounded-lg h-12 px-6 font-bold border-indigo-100 text-indigo-600 hover:bg-indigo-50">
-            <RefreshCw size={18} className="mr-2" /> Refresh Data
-          </Button>
-        </div>
+        <PageHeader 
+          title="Practice Health"
+          subtitle="Clinical mastery tracking, protocol proficiency, and interactive reference."
+          icon={Trophy}
+          breadcrumbs={[{ label: "Clinical" }, { label: "Practice Health" }]}
+          actions={
+            <Button onClick={loadStats} variant="outline" className="rounded-xl h-12 px-6 font-bold border-indigo-100 text-indigo-600 hover:bg-indigo-50">
+              <RefreshCw size={18} className="mr-2" /> Refresh Data
+            </Button>
+          }
+        />
 
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
           <div className="flex justify-center mb-8">
-            <TabsList className="grid w-full grid-cols-2 h-14 bg-slate-200/50 p-1.5 rounded-xl mb-8">
-              <TabsTrigger value="mastery" className="flex items-center gap-2 data-[state=active]:bg-white data-[state=active]:text-indigo-600 data-[state=active]:shadow-sm rounded-lg h-11 font-black uppercase tracking-wider text-[10px]">
+            <TabsList className="grid w-full grid-cols-2 h-14 bg-slate-200/50 p-1.5 rounded-2xl mb-8">
+              <TabsTrigger value="mastery" className="flex items-center gap-2 data-[state=active]:bg-white data-[state=active]:text-indigo-600 data-[state=active]:shadow-sm rounded-xl h-11 font-black uppercase tracking-wider text-[10px]">
                 <TrendingUp size={14} /> Clinical Mastery
               </TabsTrigger>
-              <TabsTrigger value="reference" className="flex items-center gap-2 data-[state=active]:bg-white data-[state=active]:text-indigo-600 data-[state=active]:shadow-sm rounded-lg h-11 font-black uppercase tracking-wider text-[10px]">
+              <TabsTrigger value="reference" className="flex items-center gap-2 data-[state=active]:bg-white data-[state=active]:text-indigo-600 data-[state=active]:shadow-sm rounded-xl h-11 font-black uppercase tracking-wider text-[10px]">
                 <Zap size={14} /> Protocol Reference
               </TabsTrigger>
             </TabsList>
@@ -153,7 +149,7 @@ const ProceduresPage = () => {
           <TabsContent value="mastery" className="space-y-10 mt-0 animate-in fade-in duration-500">
             {/* Practice Priority Suggestion */}
             {summary.priorities.length > 0 && (
-              <Card className="border-none shadow-md rounded-xl bg-indigo-50 dark:bg-indigo-950/20 border-2 border-indigo-100 dark:border-indigo-900/30 overflow-hidden">
+              <Card className="border-none shadow-md rounded-[2.5rem] bg-indigo-50 dark:bg-indigo-950/20 border-2 border-indigo-100 dark:border-indigo-900/30 overflow-hidden">
                 <CardHeader className="p-8 pb-4">
                   <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                     <div className="space-y-1">
@@ -172,7 +168,7 @@ const ProceduresPage = () => {
                     <Button 
                       onClick={handleCommitFocus}
                       disabled={committing}
-                      className="bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg h-12 px-8 font-bold text-xs uppercase tracking-widest shadow-md"
+                      className="bg-indigo-600 hover:bg-indigo-700 text-white rounded-2xl h-12 px-8 font-bold text-xs uppercase tracking-widest shadow-md"
                     >
                       {committing ? <Loader2 className="mr-2 animate-spin" /> : <CheckCircle2 size={18} className="mr-2" />}
                       Commit to this Focus
@@ -182,7 +178,7 @@ const ProceduresPage = () => {
                 <CardContent className="p-8 pt-0">
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                     {summary.priorities.map((item) => (
-                      <div key={item.id} className="p-5 bg-white dark:bg-slate-900 rounded-xl border border-indigo-100 dark:border-indigo-900/30 flex items-center justify-between group hover:shadow-md transition-all">
+                      <div key={item.id} className="p-5 bg-white dark:bg-slate-900 rounded-[2rem] border border-indigo-100 dark:border-indigo-900/30 flex items-center justify-between group hover:shadow-md transition-all">
                         <div className="min-w-0">
                           <p className="font-black text-sm text-slate-900 dark:text-slate-100 truncate">{item.name}</p>
                           <div className="flex items-center gap-2 mt-1">
@@ -195,7 +191,7 @@ const ProceduresPage = () => {
                             <span className="text-[8px] font-bold text-slate-400 uppercase">{item.count} Logs</span>
                           </div>
                         </div>
-                        <div className="w-8 h-8 rounded-lg bg-slate-50 dark:bg-slate-800 flex items-center justify-center text-slate-400 group-hover:text-indigo-600 transition-all">
+                        <div className="w-8 h-8 rounded-xl bg-slate-50 dark:bg-slate-800 flex items-center justify-center text-slate-400 group-hover:text-indigo-600 transition-all">
                           <ArrowRight size={16} />
                         </div>
                       </div>
@@ -207,7 +203,7 @@ const ProceduresPage = () => {
 
             {/* Mastery Overview Cards */}
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-              <Card className="border-none shadow-sm rounded-xl bg-indigo-900 text-white overflow-hidden relative group">
+              <Card className="border-none shadow-sm rounded-[2.5rem] bg-indigo-900 text-white overflow-hidden relative group">
                 <div className="absolute top-0 right-0 p-6 opacity-10 group-hover:scale-110 transition-transform duration-700"><Sparkles size={80} /></div>
                 <CardContent className="p-6 space-y-1 relative z-10">
                   <p className="text-[10px] font-black text-indigo-300 uppercase tracking-widest">Total Components</p>
@@ -215,7 +211,7 @@ const ProceduresPage = () => {
                   <p className="text-xs text-indigo-200 font-medium">Registry of all loggable items</p>
                 </CardContent>
               </Card>
-              <Card className="border-none shadow-sm rounded-xl bg-emerald-600 text-white overflow-hidden relative group">
+              <Card className="border-none shadow-sm rounded-[2.5rem] bg-emerald-600 text-white overflow-hidden relative group">
                 <div className="absolute top-0 right-0 p-6 opacity-10 group-hover:scale-110 transition-transform duration-700"><ShieldCheck size={80} /></div>
                 <CardContent className="p-6 space-y-1 relative z-10">
                   <p className="text-[10px] font-black text-emerald-200 uppercase tracking-widest">Mastered Items</p>
@@ -223,7 +219,7 @@ const ProceduresPage = () => {
                   <p className="text-xs text-emerald-100 font-medium">11+ logs recorded</p>
                 </CardContent>
               </Card>
-              <Card className="border-none shadow-sm rounded-xl bg-rose-600 text-white overflow-hidden relative group">
+              <Card className="border-none shadow-sm rounded-[2.5rem] bg-rose-600 text-white overflow-hidden relative group">
                 <div className="absolute top-0 right-0 p-6 opacity-10 group-hover:scale-110 transition-transform duration-700"><AlertCircle size={80} /></div>
                 <CardContent className="p-6 space-y-1 relative z-10">
                   <p className="text-[10px] font-black text-rose-200 uppercase tracking-widest">Unpracticed Items</p>
@@ -231,7 +227,7 @@ const ProceduresPage = () => {
                   <p className="text-xs text-rose-100 font-medium">Items with 0-2 logs</p>
                 </CardContent>
               </Card>
-              <Card className="border-none shadow-sm rounded-xl bg-card overflow-hidden relative group">
+              <Card className="border-none shadow-sm rounded-[2.5rem] bg-card overflow-hidden relative group">
                 <div className="absolute top-0 right-0 p-6 opacity-5 group-hover:scale-110 transition-transform duration-700"><Activity size={80} /></div>
                 <CardContent className="p-6 space-y-1 relative z-10">
                   <p className="text-[10px] font-black text-muted-foreground uppercase tracking-widest">Total Clinical Logs</p>
@@ -243,7 +239,7 @@ const ProceduresPage = () => {
 
             {/* Filters and Search */}
             <div className="space-y-6">
-              <div className="flex flex-col lg:flex-row gap-4 items-center justify-between bg-card p-4 rounded-xl border border-border shadow-sm">
+              <div className="flex flex-col lg:flex-row gap-4 items-center justify-between bg-card p-4 rounded-[2rem] border border-border shadow-sm">
                 <div className="relative flex-1 w-full max-w-md">
                   <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground" size={18} />
                   <Input 
@@ -310,7 +306,7 @@ const ProceduresPage = () => {
           </TabsContent>
 
           <TabsContent value="reference" className="mt-0 animate-in fade-in duration-500">
-            <div className="bg-card rounded-xl border border-border shadow-md p-8 md:p-12">
+            <div className="bg-card rounded-[2.5rem] border border-border shadow-md p-8 md:p-12">
               <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-12">
                 <div className="space-y-1">
                   <h2 className="text-3xl font-black text-foreground tracking-tight">Protocol Sandbox</h2>
@@ -385,9 +381,9 @@ const ProceduresPage = () => {
                 </div>
               </Tabs>
 
-              <div className="mt-16 p-8 bg-slate-900 text-white rounded-xl flex items-start gap-6 shadow-lg relative overflow-hidden">
+              <div className="mt-16 p-8 bg-slate-900 text-white rounded-[2.5rem] flex items-start gap-6 shadow-lg relative overflow-hidden">
                 <div className="absolute top-0 right-0 p-6 opacity-10"><Info size={100} /></div>
-                <div className="w-14 h-14 rounded-lg bg-indigo-600 text-white flex items-center justify-center shadow-md shrink-0">
+                <div className="w-14 h-14 rounded-2xl bg-indigo-600 text-white flex items-center justify-center shadow-md shrink-0">
                   <GraduationCap size={32} />
                 </div>
                 <div className="space-y-2 relative z-10">

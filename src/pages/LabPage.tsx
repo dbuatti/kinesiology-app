@@ -8,6 +8,7 @@ import SandboxPage from "./SandboxPage";
 import WorksheetsHubPage from "./WorksheetsHubPage";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Compass, FileText, Sparkles, LayoutGrid } from "lucide-react";
+import PageHeader from "@/components/shared/PageHeader";
 
 const LabPage = () => {
   const [searchParams, setSearchParams] = useSearchParams();
@@ -16,7 +17,12 @@ const LabPage = () => {
   return (
     <AppLayout>
       <div className="space-y-8">
-        <Breadcrumbs items={[{ label: "Practice Lab" }, { label: "The Lab" }]} />
+        <PageHeader 
+          title="Practice Lab"
+          subtitle="Focus on your personal integration and practitioner state."
+          icon={Compass}
+          breadcrumbs={[{ label: "Practice Lab" }, { label: "The Lab" }]}
+        />
         
         <Tabs value={activeTab} onValueChange={(v) => setSearchParams({ tab: v })} className="w-full">
           <div className="flex justify-center mb-8">
@@ -39,11 +45,11 @@ const LabPage = () => {
           </div>
 
           <TabsContent value="map" className="mt-0 focus-visible:ring-0 animate-in fade-in duration-500">
-            <SandboxPage />
+            <SandboxPage isNested={true} />
           </TabsContent>
 
           <TabsContent value="worksheets" className="mt-0 focus-visible:ring-0 animate-in fade-in duration-500">
-            <WorksheetsHubPage />
+            <WorksheetsHubPage isNested={true} />
           </TabsContent>
         </Tabs>
       </div>

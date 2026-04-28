@@ -3,9 +3,11 @@
 import React, { useState, useEffect, useMemo, useCallback } from "react";
 import { useParams, useNavigate, Link } from "react-router-dom";
 import { 
-  Loader2, Settings2, ChevronDown, PanelRightClose, MessageSquare, Brain 
+  Loader2, Settings2, ChevronDown, PanelRightClose, MessageSquare, Brain,
+  Calendar, Clock, User, History, Copy, Check, Trash2, Printer, RefreshCw,
+  Activity, Zap, Target, ClipboardCheck
 } from "lucide-react";
-import { isToday } from "date-fns";
+import { isToday, format } from "date-fns";
 
 import { cn } from "@/lib/utils";
 import { showSuccess, showError } from "@/utils/toast";
@@ -23,6 +25,7 @@ import SessionContentSwitcher from "@/components/crm/SessionContentSwitcher";
 import AppointmentContextCards from "@/components/crm/AppointmentContextCards";
 import BrainstemToneMap from "@/components/crm/BrainstemToneMap";
 import SessionWorksheetTemplate from "@/components/crm/SessionWorksheetTemplate";
+import PageHeader from "@/components/shared/PageHeader";
 
 import {
   Button,
@@ -322,39 +325,40 @@ const AppointmentDetailPage = () => {
 
       <AppLayout variant="workspace" hasFixedHeader={isFixedHeaderActive}>
         <div className="flex flex-col gap-8 print:p-0">
-          {/* Top Navigation Bar */}
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 print:hidden">
-            <Breadcrumbs
-              items={[
-                { label: "Appointments", path: "/appointments" },
-                { label: appointment.name || "Session Details" },
-              ]}
-            />
+          <PageHeader 
+            title={appointment.clients.name}
+            subtitle={`${appointment.tag} Session • ${format(appointment.date, "EEEE, MMMM d")}`}
+            icon={Activity}
+            breadcrumbs={[
+              { label: "Appointments", path: "/appointments" },
+              { label: appointment.name || "Session Details" },
+            ]}
+            actions={
+              <div className="flex items-center gap-3">
+                <Collapsible open={showSetup} onOpenChange={setShowSetup}>
+                  <CollapsibleTrigger asChild>
+                    <Button variant="ghost" size="sm" className="h-10 gap-2">
+                      <Settings2 size={16} />
+                      <span className="font-medium text-xs uppercase tracking-widest">Setup</span>
+                      <ChevronDown 
+                        size={14} 
+                        className={cn("transition-transform", showSetup && "rotate-180")} 
+                      />
+                    </Button>
+                  </CollapsibleTrigger>
+                </Collapsible>
 
-            <div className="flex items-center gap-3">
-              <Collapsible open={showSetup} onOpenChange={setShowSetup}>
-                <CollapsibleTrigger asChild>
-                  <Button variant="ghost" size="sm" className="h-10 gap-2">
-                    <Settings2 size={16} />
-                    <span className="font-medium text-xs uppercase tracking-widest">Setup</span>
-                    <ChevronDown 
-                      size={14} 
-                      className={cn("transition-transform", showSetup && "rotate-180")} 
-                    />
+                {isSessionToday && appointment.status === 'Scheduled' && (
+                  <Button 
+                    onClick={handleStartSession}
+                    className="h-10 px-6 font-semibold shadow-sm"
+                  >
+                    Start Session
                   </Button>
-                </CollapsibleTrigger>
-              </Collapsible>
-
-              {isSessionToday && appointment.status === 'Scheduled' && (
-                <Button 
-                  onClick={handleStartSession}
-                  className="h-10 px-6 font-semibold shadow-sm"
-                >
-                  Start Session
-                </Button>
-              )}
-            </div>
-          </div>
+                )}
+              </div>
+            }
+          />
 
           {/* Setup Tools */}
           <Collapsible open={showSetup}>

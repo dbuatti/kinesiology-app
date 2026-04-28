@@ -27,6 +27,7 @@ import {
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
+  DropdownMenuSeparator,
 } from "@/components/ui/dropdown-menu";
 import AppointmentForm from "@/components/crm/AppointmentForm";
 import ClientForm from "@/components/crm/ClientForm";
@@ -40,6 +41,7 @@ import ClientProfileCard from "@/components/crm/ClientProfileCard";
 import AppLayout from "@/components/crm/AppLayout";
 import { generateAICasePrompt, generateSessionSummary } from "@/utils/summary-generator";
 import QuickAssessmentModal from "@/components/crm/QuickAssessmentModal";
+import PageHeader from "@/components/shared/PageHeader";
 
 const ClientDetailPage = () => {
   const { id } = useParams();
@@ -238,7 +240,7 @@ const ClientDetailPage = () => {
   const handleDeleteClient = async () => {
     if (!confirm("Are you sure you want to delete this client? This will remove all their appointments too.")) return;
     try {
-      const { error } = await supabase.from('clients').delete().eq('id', id);
+      const { error = null } = await supabase.from('clients').delete().eq('id', id);
       if (error) throw error;
       showSuccess("Client deleted successfully");
       navigate('/clients');
@@ -262,23 +264,18 @@ const ClientDetailPage = () => {
   const rollups = getClientRollups(appointments);
 
   return (
-    <AppLayout>
+    <AppLayout variant="workspace">
       <div className="space-y-6">
-        <Breadcrumbs 
-          items={[
+        <PageHeader 
+          title={client.name}
+          subtitle="Comprehensive client profile, clinical history, and progress tracking."
+          icon={User}
+          breadcrumbs={[
             { label: "Clients", path: "/clients" },
             { label: client.name }
-          ]} 
-        />
-
-        <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6">
-          <div className="flex items-center gap-4">
-            <Link to="/clients">
-              <Button variant="ghost" size="icon" className="rounded-xl">
-                <ArrowLeft size={20} />
-              </Button>
-            </Link>
-            <div className="flex gap-2">
+          ]}
+          actions={
+            <div className="flex flex-wrap gap-2">
               <Button 
                 variant="outline" 
                 size="sm" 
@@ -295,10 +292,6 @@ const ClientDetailPage = () => {
               >
                 <Activity size={14} className="mr-2" /> Log COH
               </Button>
-            </div>
-          </div>
-          
-          <div className="flex flex-wrap gap-2">
               <Button 
                 variant="outline" 
                 size="sm" 
@@ -308,24 +301,6 @@ const ClientDetailPage = () => {
               >
                 {sendingEmail ? <Loader2 size={16} className="mr-2 animate-spin" /> : <Send size={16} className="mr-2" />}
                 Send Onboarding
-              </Button>
-              <Button 
-                variant="outline" 
-                size="sm" 
-                className="bg-emerald-50 border-emerald-100 text-emerald-600 hover:bg-emerald-100 rounded-xl font-bold h-10"
-                onClick={handleCopyOnboardingLink}
-              >
-                {linkCopying ? <Check size={16} className="mr-2" /> : <LinkIcon size={16} className="mr-2" />}
-                Copy Link
-              </Button>
-              <Button 
-                variant="outline" 
-                size="sm" 
-                className="bg-indigo-50 border-indigo-100 text-indigo-600 hover:bg-indigo-100 rounded-xl font-bold h-10"
-                onClick={handleCopyForAI}
-              >
-                {aiCopying ? <Check size={16} className="mr-2 text-emerald-500" /> : <Sparkles size={16} className="mr-2" />}
-                AI Case
               </Button>
               <Dialog open={editOpen} onOpenChange={setEditOpen}>
                 <DialogTrigger asChild>
@@ -357,6 +332,13 @@ const ClientDetailPage = () => {
                       </Button>
                   </DropdownMenuTrigger>
                   <DropdownMenuContent align="end" className="rounded-2xl p-2 shadow-2xl border-none bg-card">
+                      <DropdownMenuItem onClick={handleCopyOnboardingLink} className="rounded-xl py-2.5 px-4 cursor-pointer flex items-center gap-3">
+                        <LinkIcon size={16} className="text-indigo-500" /> Copy Onboarding Link
+                      </DropdownMenuItem>
+                      <DropdownMenuItem onClick={handleCopyForAI} className="rounded-xl py-2.5 px-4 cursor-pointer flex items-center gap-3">
+                        <Sparkles size={16} className="text-indigo-500" /> Copy AI Case Prompt
+                      </DropdownMenuItem>
+                      <DropdownMenuSeparator className="my-2" />
                       <DropdownMenuItem 
                           className="text-destructive focus:text-destructive rounded-xl py-2.5 px-4 cursor-pointer flex items-center gap-3"
                           onClick={handleDeleteClient}
@@ -365,8 +347,9 @@ const ClientDetailPage = () => {
                       </DropdownMenuItem>
                   </DropdownMenuContent>
               </DropdownMenu>
-          </div>
-        </div>
+            </div>
+          }
+        />
 
         <Tabs value={activeTab} onValueChange={(v) => setSearchParams({ tab: v })} className="w-full">
           <TabsList className="grid w-full grid-cols-3 h-14 bg-slate-200/50 p-1.5 rounded-2xl mb-8">
@@ -618,8 +601,7 @@ const ClientDetailPage = () => {
                         <CardTitle className="text-xs font-black uppercase tracking-widest text-emerald-600 flex items-center gap-2">
                           <TrendingUp size={14} /> Baseline Health Vitals
                         </CardTitle>
-                      </CardHeader>
-                      <CardContent className="p-6">
+                      </CardHeader>                      <CardContent className="p-6">
                         <div className="grid grid-cols-2 gap-4">
                           <div>
                             <p className="text-[10px] font-black text-slate-400 uppercase">Stress Level</p>

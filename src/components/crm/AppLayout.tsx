@@ -27,7 +27,7 @@ const AppLayout = ({
     <div
       className={cn(
         "w-full min-h-screen bg-background mx-auto px-6 transition-all duration-300",
-        hasFixedHeader ? "pt-24 pb-20" : "pt-12 pb-20",
+        hasFixedHeader ? "pt-20 pb-20" : "pt-8 pb-20",
         maxWidthClass,
         className
       )}

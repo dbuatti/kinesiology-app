@@ -8,6 +8,7 @@ import {
   Zap, 
   CheckCircle2, 
   Info, 
+  ArrowRight, 
   Search,
   Target,
   Sparkles,
@@ -54,7 +55,7 @@ const HeartWallProtocol = () => {
   const [showChart, setShowChart] = useState(true);
   const [activeFlow, setActiveFlow] = useState<'assessment' | 'correction'>('assessment');
 
-  const StepList = ({ steps, activeColor }: { steps: any[], activeColor: string }) => (
+  const StepList = ({ steps }: { steps: any[] }) => (
     <div className="relative space-y-1">
       {steps.map((step) => (
         <div key={step.id} className="flex items-start gap-4 p-3 rounded-xl hover:bg-slate-50 transition-colors group">
@@ -75,7 +76,7 @@ const HeartWallProtocol = () => {
 
   return (
     <div className="max-w-6xl mx-auto space-y-12 animate-in fade-in duration-1000 pb-32">
-      {/* Minimal Header */}
+      {/* Header */}
       <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 px-2">
         <div className="space-y-1">
           <div className="flex items-center gap-2 text-slate-400">
@@ -101,7 +102,7 @@ const HeartWallProtocol = () => {
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-12">
-        {/* Left: Clinical Pathway (Muted) */}
+        {/* Left: Clinical Pathway */}
         <div className="lg:col-span-4 space-y-10">
           <section className="space-y-4">
             <div className="flex items-center gap-2 px-3">
@@ -110,15 +111,11 @@ const HeartWallProtocol = () => {
             </div>
             <Card className="border-slate-200 shadow-none rounded-[2rem] bg-white overflow-hidden">
               <CardContent className="p-4">
-                <StepList 
-                  steps={activeFlow === 'assessment' ? ASSESSMENT_STEPS : CORRECTION_STEPS} 
-                  activeColor={activeFlow === 'assessment' ? 'indigo' : 'emerald'} 
-                />
+                <StepList steps={activeFlow === 'assessment' ? ASSESSMENT_STEPS : CORRECTION_STEPS} />
               </CardContent>
             </Card>
           </section>
 
-          {/* Compact Reference Section */}
           <section className="space-y-6">
             <div className="flex items-center gap-2 px-3">
               <FileText size={14} className="text-slate-400" />
@@ -188,28 +185,28 @@ const HeartWallProtocol = () => {
             {showChart && (
               <div className="space-y-6 animate-in fade-in duration-500">
                 <div className="overflow-hidden rounded-[2rem] border border-slate-200 bg-white shadow-sm">
-                  <table className="w-full border-collapse text-[10px]">
+                  <table className="w-full border-collapse text-[11px]">
                     <thead>
-                      <tr className="bg-slate-50 border-b border-slate-200">
-                        <th className="p-3 border-r border-slate-200 w-12 font-black text-slate-400">ROW</th>
-                        <th className="p-3 border-r border-slate-200 font-black uppercase tracking-widest text-slate-500">Column A</th>
-                        <th className="p-3 font-black uppercase tracking-widest text-slate-500">Column B</th>
+                      <tr className="bg-[#1e293b] text-white">
+                        <th className="p-4 border-r border-white/10 w-16 font-black uppercase tracking-widest text-[10px]">Row</th>
+                        <th className="p-4 border-r border-white/10 font-black uppercase tracking-widest text-[10px]">Column A</th>
+                        <th className="p-4 font-black uppercase tracking-widest text-[10px]">Column B</th>
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-slate-100">
                       {[1, 2, 3, 4, 5, 6].map((rowNum) => (
                         <tr key={rowNum}>
-                          <td className="p-3 bg-slate-50/50 border-r border-slate-200 text-center font-black text-slate-300 text-sm">
+                          <td className="p-4 bg-slate-50/50 border-r border-slate-200 text-center font-black text-slate-400 text-lg">
                             {rowNum}
                           </td>
                           <td 
                             className={cn(
-                              "p-4 border-r border-slate-100 transition-all cursor-pointer hover:bg-slate-50",
+                              "p-6 border-r border-slate-100 transition-all cursor-pointer hover:bg-slate-50",
                               selectedCell?.row === rowNum && selectedCell?.col === 'A' ? "bg-indigo-50/50" : ""
                             )}
                             onClick={() => setSelectedCell({ row: rowNum, col: 'A' })}
                           >
-                            <div className="grid grid-cols-2 gap-x-4 gap-y-1.5">
+                            <div className="flex flex-col gap-1.5">
                               {EMOTION_CODE_CHART[rowNum].columnA.map(e => (
                                 <div key={e} className={cn(
                                   "font-medium transition-colors",
@@ -220,12 +217,12 @@ const HeartWallProtocol = () => {
                           </td>
                           <td 
                             className={cn(
-                              "p-4 transition-all cursor-pointer hover:bg-slate-50",
+                              "p-6 transition-all cursor-pointer hover:bg-slate-50",
                               selectedCell?.row === rowNum && selectedCell?.col === 'B' ? "bg-indigo-50/50" : ""
                             )}
                             onClick={() => setSelectedCell({ row: rowNum, col: 'B' })}
                           >
-                            <div className="grid grid-cols-2 gap-x-4 gap-y-1.5">
+                            <div className="flex flex-col gap-1.5">
                               {EMOTION_CODE_CHART[rowNum].columnB.map(e => (
                                 <div key={e} className={cn(
                                   "font-medium transition-colors",

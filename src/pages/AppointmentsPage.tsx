@@ -1,7 +1,7 @@
 import { useEffect, useState, useMemo } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { groupAppointmentsByMonth } from "@/utils/crm-utils";
-import { format, isToday, startOfMonth, endOfMonth, isWithinInterval } from "date-fns";
+import { format, isToday, startOfMonth, endOfMonth, isWithinInterval, startOfToday, endOfToday } from "date-fns";
 import { Badge } from "@/components/ui/badge";
 import { 
   Calendar as CalendarIcon, 
@@ -87,51 +87,102 @@ const AppointmentsPage = () => {
   const [statusFilter, setStatusFilter] = useState<string>("Scheduled");
   const [viewMode, setViewMode] = useState<'list' | 'calendar'>('list');
   
+  const [stats, setStats] = useState({
+    today: 0,
+    month: 0,
+    pending: 0,
+    completed: 0
+  });
+
   const [assessmentModal, setAssessmentModal] = useState<{ open: boolean; type: 'bolt' | 'coherence'; clientId: string; clientName: string } | null>(null);
   const [rescheduleModal, setRescheduleModal] = useState<{ open: boolean; appointment: any } | null>(null);
+
+  const fetchStats = async () => {
+    try {
+      const now = new Date();
+      const monthStart = startOfMonth(now).toISOString();
+      const monthEnd = endOfMonth(now).toISOString();
+      const todayStart = startOfToday().toISOString();
+      const todayEnd = endOfToday().toISOString();
+
+      const [
+        { count: todayCount },
+        { count: monthCount },
+        { count: pendingCount },
+        { count: completedCount }
+      ] = await Promise.all([
+        supabase.from('appointments').select('*', { count: 'exact', head: true }).gte('date', todayStart).lte('date', todayEnd),
+        supabase.from('appointments').select('*', { count: 'exact', head: true }).gte('date', monthStart).lte('date', monthEnd),
+        supabase.from('appointments').select('*', { count: 'exact', head: true }).eq('status', 'Scheduled'),
+        supabase.from('appointments').select('*', { count: 'exact', head: true }).eq('status', 'Completed')
+      ]);
+
+      setStats({
+        today: todayCount || 0,
+        month: monthCount || 0,
+        pending: pendingCount || 0,
+        completed: completedCount || 0
+      });
+    } catch (err) {
+      console.error("Error fetching stats:", err);
+    }
+  };
 
   const fetchAppointments = async (limit: number = PAGE_SIZE) => {
     if (limit === PAGE_SIZE) setLoading(true);
     else setLoadingMore(true);
 
     try {
-      const { count } = await supabase
-        .from('appointments')
-        .select('*', { count: 'exact', head: true });
-      
-      setTotalCount(count || 0);
-
-      // Determine sort order based on filter
-      // Scheduled/Today -> Ascending (soonest first)
-      // Completed/All -> Descending (most recent first)
-      const isAscending = statusFilter === "Scheduled" || statusFilter === "today";
-
-      const { data, error } = await supabase
+      // 1. Build the base query for counting and fetching
+      let query = supabase
         .from('appointments')
         .select(`
           *,
-          clients (
+          clients!inner (
             id,
-            name
+            name,
+            is_practitioner
           )
-        `)
+        `, { count: 'exact' })
+        .or('is_practitioner.eq.false,is_practitioner.is.null', { foreignTable: 'clients' });
+
+      // 2. Apply status filters directly to the query
+      if (statusFilter === "today") {
+        query = query
+          .gte('date', startOfToday().toISOString())
+          .lte('date', endOfToday().toISOString());
+      } else if (statusFilter !== "all") {
+        query = query.eq('status', statusFilter);
+      }
+
+      // 3. Determine sort order
+      const isAscending = statusFilter === "Scheduled" || statusFilter === "today";
+      
+      const { data, error, count } = await query
         .order('date', { ascending: isAscending })
         .limit(limit);
 
       if (error) throw error;
+      setTotalCount(count || 0);
 
-      const { data: clientScores } = await supabase
-        .from('appointments')
-        .select('client_id, bolt_score, date')
-        .not('bolt_score', 'is', null)
-        .order('date', { ascending: false });
-
+      // 4. Fetch latest BOLT scores for these clients
+      const clientIds = Array.from(new Set((data || []).map(a => a.client_id)));
       const latestScores: Record<string, number> = {};
-      clientScores?.forEach(score => {
-        if (!latestScores[score.client_id]) {
-          latestScores[score.client_id] = score.bolt_score;
-        }
-      });
+      
+      if (clientIds.length > 0) {
+        const { data: clientScores } = await supabase
+          .from('appointments')
+          .select('client_id, bolt_score, date')
+          .in('client_id', clientIds)
+          .not('bolt_score', 'is', null)
+          .order('date', { ascending: false });
+
+        clientScores?.forEach(score => {
+          if (!latestScores[score.client_id]) {
+            latestScores[score.client_id] = score.bolt_score;
+          }
+        });
+      }
 
       const mapped = (data || []).map(a => ({
         ...a,
@@ -143,8 +194,10 @@ const AppointmentsPage = () => {
       })) as unknown as AppointmentWithClient[];
 
       setAppointments(mapped);
+      fetchStats();
     } catch (err) {
       console.error("Error fetching appointments:", err);
+      showError("Failed to load appointments.");
     } finally {
       setLoading(false);
       setLoadingMore(false);
@@ -223,8 +276,9 @@ const AppointmentsPage = () => {
   };
 
   useEffect(() => {
+    setDisplayLimit(PAGE_SIZE);
     fetchAppointments(PAGE_SIZE);
-  }, [statusFilter]); // Re-fetch when filter changes to update sort order
+  }, [statusFilter]);
 
   const filteredAppointments = useMemo(() => {
     return appointments.filter(app => {
@@ -233,26 +287,9 @@ const AppointmentsPage = () => {
         app.tag.toLowerCase().includes(search.toLowerCase()) ||
         (app.name || "").toLowerCase().includes(search.toLowerCase());
       
-      const matchesStatus = statusFilter === "all" || 
-                           (statusFilter === "today" && isToday(app.date)) ||
-                           app.status === statusFilter;
-      
-      return matchesSearch && matchesStatus;
+      return matchesSearch;
     });
-  }, [appointments, search, statusFilter]);
-
-  const stats = useMemo(() => {
-    const now = new Date();
-    const monthStart = startOfMonth(now);
-    const monthEnd = endOfMonth(now);
-
-    return {
-      today: appointments.filter(a => isToday(a.date)).length,
-      month: appointments.filter(a => isWithinInterval(a.date, { start: monthStart, end: monthEnd })).length,
-      pending: appointments.filter(a => a.status === 'Scheduled').length,
-      completed: appointments.filter(a => a.status === 'Completed').length
-    };
-  }, [appointments]);
+  }, [appointments, search]);
 
   const todaySessions = useMemo(() => 
     filteredAppointments
@@ -470,236 +507,234 @@ const AppointmentsPage = () => {
   };
 
   return (
-    <AppLayout>
-      <div className="space-y-10">
-        <Breadcrumbs items={[{ label: "Appointments" }]} />
-        
-        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-6">
-          <div>
-            <h1 className="text-4xl font-black tracking-tight text-foreground">Appointments</h1>
-            <p className="text-muted-foreground font-medium mt-1">View and manage upcoming and past clinical sessions</p>
-          </div>
-          <div className="flex items-center gap-3">
+    <div className="space-y-10">
+      <Breadcrumbs items={[{ label: "Appointments" }]} />
+      
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-6">
+        <div>
+          <h1 className="text-4xl font-black tracking-tight text-foreground">Appointments</h1>
+          <p className="text-muted-foreground font-medium mt-1">View and manage upcoming and past clinical sessions</p>
+        </div>
+        <div className="flex items-center gap-3">
+          <Button 
+            variant="outline" 
+            onClick={handleSyncFromCalcom}
+            disabled={syncing}
+            className="rounded-xl h-12 px-6 font-black text-[10px] uppercase tracking-widest border-indigo-100 text-indigo-600 hover:bg-indigo-50"
+          >
+            {syncing ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <RefreshCw size={18} className="mr-2" />}
+            Sync from Cal.com
+          </Button>
+          <div className="flex items-center gap-1 bg-muted p-1 rounded-xl">
             <Button 
-              variant="outline" 
-              onClick={handleSyncFromCalcom}
-              disabled={syncing}
-              className="rounded-xl h-12 px-6 font-black text-[10px] uppercase tracking-widest border-indigo-100 text-indigo-600 hover:bg-indigo-50"
+              variant={viewMode === 'list' ? 'default' : 'ghost'} 
+              size="sm" 
+              onClick={() => setViewMode('list')}
+              className={cn("rounded-lg h-9 px-4 font-bold text-xs uppercase tracking-widest", viewMode === 'list' ? "bg-card text-indigo-600 shadow-sm hover:bg-card" : "text-muted-foreground")}
             >
-              {syncing ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <RefreshCw size={18} className="mr-2" />}
-              Sync from Cal.com
+              <List size={16} className="mr-2" /> List
             </Button>
-            <div className="flex items-center gap-1 bg-muted p-1 rounded-xl">
-              <Button 
-                variant={viewMode === 'list' ? 'default' : 'ghost'} 
-                size="sm" 
-                onClick={() => setViewMode('list')}
-                className={cn("rounded-lg h-9 px-4 font-bold text-xs uppercase tracking-widest", viewMode === 'list' ? "bg-card text-indigo-600 shadow-sm hover:bg-card" : "text-muted-foreground")}
-              >
-                <List size={16} className="mr-2" /> List
+            <Button 
+              variant={viewMode === 'calendar' ? 'default' : 'ghost'} 
+              size="sm" 
+              onClick={() => setViewMode('calendar')}
+              className={cn("rounded-lg h-9 px-4 font-bold text-xs uppercase tracking-widest", viewMode === 'calendar' ? "bg-card text-indigo-600 shadow-sm hover:bg-card" : "text-muted-foreground")}
+            >
+              <LayoutGrid size={16} className="mr-2" /> Calendar
+            </Button>
+          </div>
+          <Dialog open={open} onOpenChange={setOpen}>
+            <DialogTrigger asChild>
+              <Button className="bg-indigo-600 hover:bg-indigo-700 shadow-xl shadow-indigo-100 dark:shadow-indigo-900/20 rounded-2xl h-12 px-8 font-black text-xs uppercase tracking-widest">
+                <Plus size={20} className="mr-2" /> New Appointment
               </Button>
-              <Button 
-                variant={viewMode === 'calendar' ? 'default' : 'ghost'} 
-                size="sm" 
-                onClick={() => setViewMode('calendar')}
-                className={cn("rounded-lg h-9 px-4 font-bold text-xs uppercase tracking-widest", viewMode === 'calendar' ? "bg-card text-indigo-600 shadow-sm hover:bg-card" : "text-muted-foreground")}
-              >
-                <LayoutGrid size={16} className="mr-2" /> Calendar
-              </Button>
-            </div>
-            <Dialog open={open} onOpenChange={setOpen}>
-              <DialogTrigger asChild>
-                <Button className="bg-indigo-600 hover:bg-indigo-700 shadow-xl shadow-indigo-100 dark:shadow-indigo-900/20 rounded-2xl h-12 px-8 font-black text-xs uppercase tracking-widest">
-                  <Plus size={20} className="mr-2" /> New Appointment
-                </Button>
-              </DialogTrigger>
-              <DialogContent className="sm:max-w-[500px] max-h-[90vh] overflow-y-auto rounded-[2rem]">
-                <DialogHeader>
-                  <DialogTitle className="text-2xl font-black">Schedule New Appointment</DialogTitle>
-                  <DialogDescription>Create a new session for an existing client.</DialogDescription>
-                </DialogHeader>
-                <AppointmentForm 
-                  onSuccess={() => {
-                    setOpen(false);
-                    fetchAppointments(displayLimit);
-                  }} 
-                />
-              </DialogContent>
-            </Dialog>
-          </div>
-        </div>
-
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-          <Card className="border-none shadow-sm bg-card rounded-2xl p-4 flex items-center gap-4">
-            <div className="w-10 h-10 rounded-xl bg-rose-50 dark:bg-rose-900/20 text-rose-600 dark:text-rose-400 flex items-center justify-center">
-              <Zap size={20} className="fill-current" />
-            </div>
-            <div>
-              <p className="text-[10px] font-black text-muted-foreground uppercase tracking-widest">Today</p>
-              <p className="text-xl font-black text-foreground">{stats.today}</p>
-            </div>
-          </Card>
-          <Card className="border-none shadow-sm bg-card rounded-2xl p-4 flex items-center gap-4">
-            <div className="w-10 h-10 rounded-xl bg-indigo-50 dark:bg-indigo-900/20 text-indigo-600 dark:text-indigo-400 flex items-center justify-center">
-              <CalendarDays size={20} />
-            </div>
-            <div>
-              <p className="text-[10px] font-black text-muted-foreground uppercase tracking-widest">This Month</p>
-              <p className="text-xl font-black text-foreground">{stats.month}</p>
-            </div>
-          </Card>
-          <Card className="border-none shadow-sm bg-card rounded-2xl p-4 flex items-center gap-4">
-            <div className="w-10 h-10 rounded-xl bg-amber-50 dark:bg-amber-900/20 text-amber-600 dark:text-amber-400 flex items-center justify-center">
-              <CircleDashed size={20} />
-            </div>
-            <div>
-              <p className="text-[10px] font-black text-muted-foreground uppercase tracking-widest">Scheduled</p>
-              <p className="text-xl font-black text-foreground">{stats.pending}</p>
-            </div>
-          </Card>
-          <Card className="border-none shadow-sm bg-card rounded-2xl p-4 flex items-center gap-4">
-            <div className="w-10 h-10 rounded-xl bg-emerald-50 dark:bg-emerald-900/20 text-emerald-600 dark:text-emerald-400 flex items-center justify-center">
-              <CheckCircle size={20} />
-            </div>
-            <div>
-              <p className="text-[10px] font-black text-muted-foreground uppercase tracking-widest">Completed</p>
-              <p className="text-xl font-black text-foreground">{stats.completed}</p>
-            </div>
-          </Card>
-        </div>
-
-        <div className="flex flex-col md:flex-row gap-4 items-center justify-between">
-          <div className="relative w-full max-w-md">
-            <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground" size={18} />
-            <Input 
-              placeholder="Search by client name or tag..." 
-              className="pl-12 bg-card border-border h-12 rounded-2xl shadow-sm font-medium focus:ring-2 focus:ring-indigo-500"
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-            />
-          </div>
-          
-          <Tabs value={statusFilter} onValueChange={setStatusFilter} className="w-full md:w-auto">
-            <TabsList className="grid grid-cols-4 h-12 bg-muted p-1 rounded-xl">
-              <TabsTrigger value="all" className="rounded-lg text-[10px] font-black uppercase tracking-widest">All</TabsTrigger>
-              <TabsTrigger value="today" className="rounded-lg text-[10px] font-black uppercase tracking-widest text-rose-600">Today</TabsTrigger>
-              <TabsTrigger value="Scheduled" className="rounded-lg text-[10px] font-black uppercase tracking-widest">Scheduled</TabsTrigger>
-              <TabsTrigger value="Completed" className="rounded-lg text-[10px] font-black uppercase tracking-widest">Completed</TabsTrigger>
-            </TabsList>
-          </Tabs>
-        </div>
-
-        {loading ? (
-          <div className="p-24 flex flex-col items-center justify-center gap-6">
-            <Loader2 className="animate-spin text-indigo-500" size={48} />
-            <p className="text-muted-foreground font-bold uppercase tracking-widest text-xs">Loading your schedule...</p>
-          </div>
-        ) : viewMode === 'calendar' ? (
-          <CalendarView appointments={filteredAppointments} />
-        ) : (
-          <div className="space-y-16">
-            {todaySessions.length > 0 && (
-              <div className="space-y-6">
-                <div className="flex items-center gap-4 px-2">
-                  <div className="w-12 h-12 rounded-2xl bg-rose-100 dark:bg-rose-900/30 flex items-center justify-center text-rose-600 dark:text-rose-400 flex-shrink-0 shadow-sm">
-                    <Zap size={24} className="fill-current" />
-                  </div>
-                  <h2 className="text-2xl font-black text-foreground tracking-tight">Today's Sessions</h2>
-                  <div className="flex-1 h-[2px] bg-rose-100 dark:bg-rose-900/30 rounded-full opacity-50" />
-                </div>
-                <div className="grid gap-6">
-                  {todaySessions.map(app => <AppointmentCard key={app.id} app={app} />)}
-                </div>
-              </div>
-            )}
-
-            {grouped.map(([month, apps]) => (
-              <div key={month} className="space-y-6">
-                <div className="flex items-center gap-4 px-2">
-                  <div className="w-12 h-12 rounded-2xl bg-indigo-100 dark:bg-indigo-900/30 flex items-center justify-center text-indigo-600 dark:text-indigo-400 flex-shrink-0 shadow-sm">
-                    <CalendarIcon size={24} />
-                  </div>
-                  <h2 className="text-2xl font-black text-foreground tracking-tight">{month}</h2>
-                  <div className="flex-1 h-[2px] bg-border rounded-full opacity-50" />
-                </div>
-                <div className="grid gap-6">
-                  {apps.map(app => <AppointmentCard key={app.id} app={app} />)}
-                </div>
-              </div>
-            ))}
-
-            {filteredAppointments.length === 0 && (
-              <div className="text-center py-32 bg-muted/30 rounded-[3rem] border-2 border-dashed border-border">
-                <div className="w-20 h-20 bg-card rounded-3xl flex items-center justify-center mb-6 shadow-xl">
-                  <CalendarIcon className="text-muted-foreground" size={40} />
-                </div>
-                <p className="text-foreground font-black text-xl">No appointments found</p>
-                <p className="text-muted-foreground mt-2 mb-8 font-medium">Try adjusting your search or schedule a new session.</p>
-                <Button variant="outline" className="h-12 px-8 border-border hover:bg-card rounded-2xl font-bold" onClick={() => { setSearch(""); setStatusFilter("all"); setOpen(true); }}>
-                  Schedule First Session
-                </Button>
-              </div>
-            )}
-
-            {appointments.length < totalCount && (
-              <div className="flex justify-center pt-8">
-                <Button 
-                  onClick={handleLoadMore} 
-                  disabled={loadingMore}
-                  variant="outline"
-                  className="h-14 px-10 rounded-2xl font-black text-xs uppercase tracking-widest border-indigo-100 text-indigo-600 hover:bg-indigo-50 shadow-lg"
-                >
-                  {loadingMore ? (
-                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  ) : (
-                    <ChevronDown size={18} className="mr-2" />
-                  )}
-                  {loadingMore ? "Loading..." : `Load More Sessions (${totalCount - appointments.length} remaining)`}
-                </Button>
-              </div>
-            )}
-          </div>
-        )}
-
-        {assessmentModal && (
-          <QuickAssessmentModal 
-            open={assessmentModal.open}
-            onOpenChange={(open) => !open && setAssessmentModal(null)}
-            clientId={assessmentModal.clientId}
-            clientName={assessmentModal.clientName}
-            type={assessmentModal.type}
-            onComplete={() => fetchAppointments(displayLimit)}
-          />
-        )}
-
-        <Dialog open={!!rescheduleModal} onOpenChange={(open) => !open && setRescheduleModal(null)}>
-          <DialogContent className="sm:max-w-[550px] max-h-[90vh] overflow-y-auto rounded-[2rem] p-0">
-            <div className="p-8">
-              <DialogHeader className="mb-6">
-                <div className="flex items-center gap-4 mb-2">
-                  <div className="w-12 h-12 rounded-2xl bg-indigo-600 text-white flex items-center justify-center shadow-lg">
-                    <CalendarClock size={24} />
-                  </div>
-                  <div>
-                    <DialogTitle className="text-2xl font-black">Reschedule Session</DialogTitle>
-                    <DialogDescription className="font-medium">Update the date, time, or details for this session.</DialogDescription>
-                  </div>
-                </div>
+            </DialogTrigger>
+            <DialogContent className="sm:max-w-[500px] max-h-[90vh] overflow-y-auto rounded-[2rem]">
+              <DialogHeader>
+                <DialogTitle className="text-2xl font-black">Schedule New Appointment</DialogTitle>
+                <DialogDescription>Create a new session for an existing client.</DialogDescription>
               </DialogHeader>
-              {rescheduleModal && (
-                <AppointmentForm 
-                  existingAppointment={rescheduleModal.appointment}
-                  onSuccess={() => {
-                    setRescheduleModal(null);
-                    fetchAppointments(displayLimit);
-                  }} 
-                />
-              )}
-            </div>
-          </DialogContent>
-        </Dialog>
+              <AppointmentForm 
+                onSuccess={() => {
+                  setOpen(false);
+                  fetchAppointments(displayLimit);
+                }} 
+              />
+            </DialogContent>
+          </Dialog>
+        </div>
       </div>
-    </AppLayout>
+
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+        <Card className="border-none shadow-sm bg-card rounded-2xl p-4 flex items-center gap-4">
+          <div className="w-10 h-10 rounded-xl bg-rose-50 dark:bg-rose-900/20 text-rose-600 dark:text-rose-400 flex items-center justify-center">
+            <Zap size={20} className="fill-current" />
+          </div>
+          <div>
+            <p className="text-[10px] font-black text-muted-foreground uppercase tracking-widest">Today</p>
+            <p className="text-xl font-black text-foreground">{stats.today}</p>
+          </div>
+        </Card>
+        <Card className="border-none shadow-sm bg-card rounded-2xl p-4 flex items-center gap-4">
+          <div className="w-10 h-10 rounded-xl bg-indigo-50 dark:bg-indigo-900/20 text-indigo-600 dark:text-indigo-400 flex items-center justify-center">
+            <CalendarDays size={20} />
+          </div>
+          <div>
+            <p className="text-[10px] font-black text-muted-foreground uppercase tracking-widest">This Month</p>
+            <p className="text-xl font-black text-foreground">{stats.month}</p>
+          </div>
+        </Card>
+        <Card className="border-none shadow-sm bg-card rounded-2xl p-4 flex items-center gap-4">
+          <div className="w-10 h-10 rounded-xl bg-amber-50 dark:bg-amber-900/20 text-amber-600 dark:text-amber-400 flex items-center justify-center">
+            <CircleDashed size={20} />
+          </div>
+          <div>
+            <p className="text-[10px] font-black text-muted-foreground uppercase tracking-widest">Scheduled</p>
+            <p className="text-xl font-black text-foreground">{stats.pending}</p>
+          </div>
+        </Card>
+        <Card className="border-none shadow-sm bg-card rounded-2xl p-4 flex items-center gap-4">
+          <div className="w-10 h-10 rounded-xl bg-emerald-50 dark:bg-emerald-900/20 text-emerald-600 dark:text-emerald-400 flex items-center justify-center">
+            <CheckCircle size={20} />
+          </div>
+          <div>
+            <p className="text-[10px] font-black text-muted-foreground uppercase tracking-widest">Completed</p>
+            <p className="text-xl font-black text-foreground">{stats.completed}</p>
+          </div>
+        </Card>
+      </div>
+
+      <div className="flex flex-col md:flex-row gap-4 items-center justify-between">
+        <div className="relative w-full max-w-md">
+          <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground" size={18} />
+          <Input 
+            placeholder="Search by client name or tag..." 
+            className="pl-12 bg-card border-border h-12 rounded-2xl shadow-sm font-medium focus:ring-2 focus:ring-indigo-500"
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+          />
+        </div>
+        
+        <Tabs value={statusFilter} onValueChange={setStatusFilter} className="w-full md:w-auto">
+          <TabsList className="grid grid-cols-4 h-12 bg-muted p-1 rounded-xl">
+            <TabsTrigger value="all" className="rounded-lg text-[10px] font-black uppercase tracking-widest">All</TabsTrigger>
+            <TabsTrigger value="today" className="rounded-lg text-[10px] font-black uppercase tracking-widest text-rose-600">Today</TabsTrigger>
+            <TabsTrigger value="Scheduled" className="rounded-lg text-[10px] font-black uppercase tracking-widest">Scheduled</TabsTrigger>
+            <TabsTrigger value="Completed" className="rounded-lg text-[10px] font-black uppercase tracking-widest">Completed</TabsTrigger>
+          </TabsList>
+        </Tabs>
+      </div>
+
+      {loading ? (
+        <div className="p-24 flex flex-col items-center justify-center gap-6">
+          <Loader2 className="animate-spin text-indigo-500" size={48} />
+          <p className="text-muted-foreground font-bold uppercase tracking-widest text-xs">Loading your schedule...</p>
+        </div>
+      ) : viewMode === 'calendar' ? (
+        <CalendarView appointments={filteredAppointments} />
+      ) : (
+        <div className="space-y-16">
+          {todaySessions.length > 0 && (
+            <div className="space-y-6">
+              <div className="flex items-center gap-4 px-2">
+                <div className="w-12 h-12 rounded-2xl bg-rose-100 dark:bg-rose-900/30 flex items-center justify-center text-rose-600 dark:text-rose-400 flex-shrink-0 shadow-sm">
+                  <Zap size={24} className="fill-current" />
+                </div>
+                <h2 className="text-2xl font-black text-foreground tracking-tight">Today's Sessions</h2>
+                <div className="flex-1 h-[2px] bg-rose-100 dark:bg-rose-900/30 rounded-full opacity-50" />
+              </div>
+              <div className="grid gap-6">
+                {todaySessions.map(app => <AppointmentCard key={app.id} app={app} />)}
+              </div>
+            </div>
+          )}
+
+          {grouped.map(([month, apps]) => (
+            <div key={month} className="space-y-6">
+              <div className="flex items-center gap-4 px-2">
+                <div className="w-12 h-12 rounded-2xl bg-indigo-100 dark:bg-indigo-900/30 flex items-center justify-center text-indigo-600 dark:text-indigo-400 flex-shrink-0 shadow-sm">
+                  <CalendarIcon size={24} />
+                </div>
+                <h2 className="text-2xl font-black text-foreground tracking-tight">{month}</h2>
+                <div className="flex-1 h-[2px] bg-border rounded-full opacity-50" />
+              </div>
+              <div className="grid gap-6">
+                {apps.map(app => <AppointmentCard key={app.id} app={app} />)}
+              </div>
+            </div>
+          ))}
+
+          {filteredAppointments.length === 0 && (
+            <div className="text-center py-32 bg-muted/30 rounded-[3rem] border-2 border-dashed border-border">
+              <div className="w-20 h-20 bg-card rounded-3xl flex items-center justify-center mb-6 shadow-xl">
+                <CalendarIcon className="text-muted-foreground" size={40} />
+              </div>
+              <p className="text-foreground font-black text-xl">No appointments found</p>
+              <p className="text-muted-foreground mt-2 mb-8 font-medium">Try adjusting your search or schedule a new session.</p>
+              <Button variant="outline" className="h-12 px-8 border-border hover:bg-card rounded-2xl font-bold" onClick={() => { setSearch(""); setStatusFilter("all"); setOpen(true); }}>
+                Schedule First Session
+              </Button>
+            </div>
+          )}
+
+          {appointments.length < totalCount && (
+            <div className="flex justify-center pt-8">
+              <Button 
+                onClick={handleLoadMore} 
+                disabled={loadingMore}
+                variant="outline"
+                className="h-14 px-10 rounded-2xl font-black text-xs uppercase tracking-widest border-indigo-100 text-indigo-600 hover:bg-indigo-50 shadow-lg"
+              >
+                {loadingMore ? (
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                ) : (
+                  <ChevronDown size={18} className="mr-2" />
+                )}
+                {loadingMore ? "Loading..." : `Load More Sessions (${totalCount - appointments.length} remaining)`}
+              </Button>
+            </div>
+          )}
+        </div>
+      )}
+
+      {assessmentModal && (
+        <QuickAssessmentModal 
+          open={assessmentModal.open}
+          onOpenChange={(open) => !open && setAssessmentModal(null)}
+          clientId={assessmentModal.clientId}
+          clientName={assessmentModal.clientName}
+          type={assessmentModal.type}
+          onComplete={() => fetchAppointments(displayLimit)}
+        />
+      )}
+
+      <Dialog open={!!rescheduleModal} onOpenChange={(open) => !open && setRescheduleModal(null)}>
+        <DialogContent className="sm:max-w-[550px] max-h-[90vh] overflow-y-auto rounded-[2rem] p-0">
+          <div className="p-8">
+            <DialogHeader className="mb-6">
+              <div className="flex items-center gap-4 mb-2">
+                <div className="w-12 h-12 rounded-2xl bg-indigo-600 text-white flex items-center justify-center shadow-lg">
+                  <CalendarClock size={24} />
+                </div>
+                <div>
+                  <DialogTitle className="text-2xl font-black">Reschedule Session</DialogTitle>
+                  <DialogDescription className="font-medium">Update the date, time, or details for this session.</DialogDescription>
+                </div>
+              </div>
+            </DialogHeader>
+            {rescheduleModal && (
+              <AppointmentForm 
+                existingAppointment={rescheduleModal.appointment}
+                onSuccess={() => {
+                  setRescheduleModal(null);
+                  fetchAppointments(displayLimit);
+                }} 
+              />
+            )}
+          </div>
+        </DialogContent>
+      </Dialog>
+    </div>
   );
 };
 

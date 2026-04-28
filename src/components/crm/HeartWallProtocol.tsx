@@ -18,11 +18,14 @@ import {
   MousePointer2,
   Hand,
   ImageIcon,
-  BookOpen
+  BookOpen,
+  Activity,
+  AlertCircle
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 import { EMOTION_CODE_CHART, ROW_ASSOCIATIONS } from '@/data/emotion-code-data';
 import { Button } from '@/components/ui/button';
 
@@ -125,6 +128,57 @@ const HeartWallProtocol = () => {
                   </li>
                 ))}
               </ul>
+            </CardContent>
+          </Card>
+
+          {/* Visceral Referral Zone Card */}
+          <Card className="border-none shadow-lg rounded-[2.5rem] bg-rose-50 border-2 border-rose-100 overflow-hidden">
+            <CardHeader className="bg-rose-600 p-6 text-white">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-xl bg-white/20 flex items-center justify-center shadow-inner">
+                  <Activity size={20} />
+                </div>
+                <div>
+                  <CardTitle className="text-lg font-black">Visceral Referral Zone</CardTitle>
+                  <p className="text-rose-200 text-[10px] font-bold uppercase tracking-widest">Heart Somatic Mapping</p>
+                </div>
+              </div>
+            </CardHeader>
+            <CardContent className="p-6 space-y-6">
+              <div className="aspect-[3/4] rounded-2xl overflow-hidden bg-white border border-rose-100 shadow-inner flex items-center justify-center p-4">
+                <img 
+                  src="/images/heart-referral.png" 
+                  alt="Heart Visceral Referral Zones" 
+                  className="max-w-full h-auto rounded-lg"
+                  onError={(e) => {
+                    e.currentTarget.style.display = 'none';
+                    const parent = e.currentTarget.parentElement;
+                    if (parent) {
+                      const placeholder = document.createElement('div');
+                      placeholder.className = "flex flex-col items-center text-rose-200 gap-2";
+                      placeholder.innerHTML = '<svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"></path></svg><p class="text-[10px] font-black uppercase tracking-widest">Referral Zone Diagram</p>';
+                      parent.appendChild(placeholder);
+                    }
+                  }}
+                />
+              </div>
+              <div className="space-y-4">
+                <div className="p-4 bg-white rounded-2xl border border-rose-100">
+                  <h4 className="text-[10px] font-black text-rose-600 uppercase tracking-widest mb-2">Primary Referral Areas</h4>
+                  <ul className="space-y-2 text-xs text-slate-700 font-medium">
+                    <li className="flex items-center gap-2"><div className="w-1.5 h-1.5 rounded-full bg-rose-500" /> Left Chest / Precordium</li>
+                    <li className="flex items-center gap-2"><div className="w-1.5 h-1.5 rounded-full bg-rose-500" /> Left Shoulder & Upper Back</li>
+                    <li className="flex items-center gap-2"><div className="w-1.5 h-1.5 rounded-full bg-rose-500" /> Medial aspect of Left Arm</li>
+                    <li className="flex items-center gap-2"><div className="w-1.5 h-1.5 rounded-full bg-rose-500" /> Jaw / Neck (occasionally)</li>
+                  </ul>
+                </div>
+                <Alert className="bg-amber-50 border-amber-200 rounded-xl">
+                  <AlertCircle className="h-4 w-4 text-amber-600" />
+                  <AlertDescription className="text-[10px] text-amber-900 font-medium leading-relaxed">
+                    <strong>Clinical Note:</strong> Chronic tension in these zones often resolves once the Heart Wall emotions are cleared.
+                  </AlertDescription>
+                </Alert>
+              </div>
             </CardContent>
           </Card>
 

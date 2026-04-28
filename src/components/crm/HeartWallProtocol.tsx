@@ -1,6 +1,6 @@
 "use client";
 
-import React from 'react';
+import React, { useState } from 'react';
 import { 
   Heart, 
   Shield, 
@@ -12,11 +12,16 @@ import {
   Search,
   Target,
   Sparkles,
-  RefreshCw
+  RefreshCw,
+  ChevronDown,
+  ChevronUp,
+  MousePointer2
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import { EMOTION_CODE_CHART, ROW_ASSOCIATIONS } from '@/data/emotion-code-data';
+import { Button } from '@/components/ui/button';
 
 const STEPS = [
   { 
@@ -46,7 +51,7 @@ const STEPS = [
   { 
     id: 4, 
     title: "Emotion Identification", 
-    desc: "Use the Emotion Chart to identify the specific trapped emotion currently acting as a 'brick' in the wall.",
+    desc: "Use the Emotion Chart below to identify the specific trapped emotion currently acting as a 'brick' in the wall.",
     icon: Heart,
     color: "text-rose-500",
     bg: "bg-rose-50"
@@ -70,19 +75,26 @@ const STEPS = [
 ];
 
 const HeartWallProtocol = () => {
+  const [selectedCell, setSelectedCell] = useState<{ row: number, col: 'A' | 'B' } | null>(null);
+  const [showChart, setShowChart] = useState(true);
+
   return (
-    <div className="space-y-8 animate-in fade-in duration-500 max-w-5xl mx-auto">
+    <div className="space-y-8 animate-in fade-in duration-500 max-w-5xl mx-auto pb-20">
       <div className="border-b border-slate-100 pb-6 mb-8">
         <h1 className="text-3xl font-serif font-bold text-slate-900">Heart Wall Protocol</h1>
         <p className="text-sm text-slate-500 font-medium mt-1">Subconscious Barrier Release Process</p>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
-        <div className="lg:col-span-7 space-y-4">
+        {/* Left: Steps List */}
+        <div className="lg:col-span-5 space-y-4">
           {STEPS.map((step) => (
             <div 
               key={step.id} 
-              className="p-5 rounded-2xl border border-slate-100 bg-white shadow-sm hover:shadow-md transition-all group"
+              className={cn(
+                "p-5 rounded-2xl border transition-all group",
+                step.id === 4 ? "border-rose-200 bg-rose-50/30 shadow-sm" : "border-slate-100 bg-white"
+              )}
             >
               <div className="flex items-start gap-6">
                 <div className={cn(
@@ -107,45 +119,163 @@ const HeartWallProtocol = () => {
               </div>
             </div>
           ))}
-        </div>
 
-        <div className="lg:col-span-5 space-y-8">
-          <div className="sticky top-8 space-y-8">
-            <Card className="border-none shadow-xl rounded-[2.5rem] bg-slate-900 text-white overflow-hidden">
-              <CardHeader className="p-6 pb-2">
-                <CardTitle className="text-[10px] font-black uppercase tracking-[0.3em] text-slate-500 flex items-center gap-2">
-                  <Shield size={14} /> The Protective Mechanism
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="p-6 pt-0 space-y-4">
-                <div className="p-4 bg-white/5 rounded-2xl border border-white/10">
-                  <p className="text-sm font-medium leading-relaxed text-slate-300 italic">
-                    "A Heart Wall is a subconscious barrier made of trapped emotional energy, designed to protect the heart from further injury. While it serves a purpose in crisis, it eventually leads to isolation and numbness."
-                  </p>
-                </div>
-                <div className="space-y-3">
-                  <p className="text-[10px] font-black text-indigo-400 uppercase tracking-widest">Common Materials</p>
-                  <div className="flex flex-wrap gap-2">
-                    {["Granite", "Steel", "Wood", "Glass", "Energy Field", "Plastic"].map(m => (
-                      <Badge key={m} className="bg-white/10 text-white border-none text-[8px] font-black uppercase">{m}</Badge>
-                    ))}
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-
-            <div className="p-6 bg-rose-50 rounded-[2rem] border-2 border-rose-100 flex items-start gap-6">
-              <div className="w-12 h-12 rounded-2xl bg-white flex items-center justify-center text-rose-600 shadow-sm shrink-0">
-                <Sparkles size={24} />
-              </div>
-              <div className="space-y-2">
-                <p className="text-[10px] font-black text-rose-600 uppercase tracking-[0.3em]">Clinical Note</p>
-                <p className="text-sm text-slate-600 font-medium leading-relaxed italic">
-                  "The material and size are symbolic representations. Don't get stuck on the logic—trust the first thing the client's subconscious provides. The release is in the acknowledgement."
+          <Card className="border-none shadow-xl rounded-[2.5rem] bg-slate-900 text-white overflow-hidden">
+            <CardHeader className="p-6 pb-2">
+              <CardTitle className="text-[10px] font-black uppercase tracking-[0.3em] text-slate-500 flex items-center gap-2">
+                <Shield size={14} /> The Protective Mechanism
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="p-6 pt-0 space-y-4">
+              <div className="p-4 bg-white/5 rounded-2xl border border-white/10">
+                <p className="text-sm font-medium leading-relaxed text-slate-300 italic">
+                  "A Heart Wall is a subconscious barrier made of trapped emotional energy, designed to protect the heart from further injury."
                 </p>
               </div>
+              <div className="space-y-3">
+                <p className="text-[10px] font-black text-indigo-400 uppercase tracking-widest">Common Materials</p>
+                <div className="flex flex-wrap gap-2">
+                  {["Granite", "Steel", "Wood", "Glass", "Energy Field", "Plastic"].map(m => (
+                    <Badge key={m} className="bg-white/10 text-white border-none text-[8px] font-black uppercase">{m}</Badge>
+                  ))}
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+
+        {/* Right: Interactive Emotion Chart */}
+        <div className="lg:col-span-7 space-y-6">
+          <div className="flex items-center justify-between px-2">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-xl bg-rose-600 text-white flex items-center justify-center shadow-lg">
+                <Heart size={20} />
+              </div>
+              <h3 className="text-xl font-black text-slate-900">Step 4: Emotion Chart</h3>
             </div>
+            <Button 
+              variant="ghost" 
+              size="sm" 
+              onClick={() => setShowChart(!showChart)}
+              className="text-[10px] font-black uppercase tracking-widest text-slate-400"
+            >
+              {showChart ? <ChevronUp size={16} className="mr-1" /> : <ChevronDown size={16} className="mr-1" />}
+              {showChart ? "Hide Chart" : "Show Chart"}
+            </Button>
           </div>
+
+          {showChart && (
+            <div className="space-y-6 animate-in fade-in slide-in-from-top-2 duration-500">
+              {/* Diagnostic Flow Guide */}
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+                {[
+                  { label: "1. Column", desc: "Ask: 'Is it in Column A?' (Yes/No)" },
+                  { label: "2. Row", desc: "Ask: 'Is it in an Odd Row?' (1, 3, 5)" },
+                  { label: "3. Emotion", desc: "Identify specific emotion (1-5) in cell." }
+                ].map((step, i) => (
+                  <div key={i} className="p-3 bg-slate-50 rounded-xl border border-slate-100">
+                    <p className="text-[8px] font-black text-indigo-600 uppercase tracking-widest mb-1">{step.label}</p>
+                    <p className="text-[10px] font-bold text-slate-700 leading-tight">{step.desc}</p>
+                  </div>
+                ))}
+              </div>
+
+              {/* The Chart Grid */}
+              <div className="overflow-hidden rounded-[2rem] border-2 border-slate-100 shadow-2xl bg-white">
+                <table className="w-full border-collapse text-[10px]">
+                  <thead>
+                    <tr className="bg-slate-900 text-white">
+                      <th className="p-3 border-r border-white/10 w-12">Row</th>
+                      <th className="p-3 border-r border-white/10">Column A</th>
+                      <th className="p-3">Column B</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-slate-100">
+                    {[1, 2, 3, 4, 5, 6].map((rowNum) => (
+                      <tr key={rowNum} className="group">
+                        <td className="p-3 bg-slate-50 border-r border-slate-100 text-center font-black text-slate-400">
+                          {rowNum}
+                        </td>
+                        <td 
+                          className={cn(
+                            "p-3 border-r border-slate-100 transition-all cursor-pointer hover:bg-rose-50",
+                            selectedCell?.row === rowNum && selectedCell?.col === 'A' ? "bg-rose-100 ring-2 ring-inset ring-rose-500" : ""
+                          )}
+                          onClick={() => setSelectedCell({ row: rowNum, col: 'A' })}
+                        >
+                          <div className="space-y-1">
+                            {EMOTION_CODE_CHART[rowNum].columnA.map(e => (
+                              <div key={e} className="font-bold text-slate-700">{e}</div>
+                            ))}
+                          </div>
+                        </td>
+                        <td 
+                          className={cn(
+                            "p-3 transition-all cursor-pointer hover:bg-indigo-50",
+                            selectedCell?.row === rowNum && selectedCell?.col === 'B' ? "bg-indigo-100 ring-2 ring-inset ring-indigo-500" : ""
+                          )}
+                          onClick={() => setSelectedCell({ row: rowNum, col: 'B' })}
+                        >
+                          <div className="space-y-1">
+                            {EMOTION_CODE_CHART[rowNum].columnB.map(e => (
+                              <div key={e} className="font-bold text-slate-700">{e}</div>
+                            ))}
+                          </div>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+
+              {/* Selection Detail */}
+              {selectedCell ? (
+                <div className="p-6 bg-indigo-900 text-white rounded-[2rem] shadow-xl animate-in zoom-in-95 duration-300 relative overflow-hidden">
+                  <div className="absolute top-0 right-0 p-6 opacity-10"><Sparkles size={80} /></div>
+                  <div className="flex items-center justify-between mb-4 relative z-10">
+                    <div className="space-y-1">
+                      <p className="text-[10px] font-black text-indigo-300 uppercase tracking-widest">Active Selection</p>
+                      <h4 className="text-2xl font-black">Row {selectedCell.row}, Column {selectedCell.col}</h4>
+                    </div>
+                    <Button variant="ghost" size="sm" onClick={() => setSelectedCell(null)} className="text-indigo-300 hover:text-white">
+                      <RefreshCw size={14} className="mr-2" /> Reset
+                    </Button>
+                  </div>
+                  <div className="grid grid-cols-1 gap-4 relative z-10">
+                    <div className="p-4 bg-white/10 rounded-2xl border border-white/10">
+                      <p className="text-[9px] font-black text-indigo-300 uppercase tracking-widest mb-2">Associated Organs</p>
+                      <p className="text-sm font-bold">{ROW_ASSOCIATIONS[selectedCell.row]}</p>
+                    </div>
+                    <div className="p-4 bg-white rounded-2xl text-indigo-900">
+                      <p className="text-[9px] font-black text-indigo-400 uppercase tracking-widest mb-2">Emotions in this cell</p>
+                      <div className="flex flex-wrap gap-2">
+                        {(selectedCell.col === 'A' ? EMOTION_CODE_CHART[selectedCell.row].columnA : EMOTION_CODE_CHART[selectedCell.row].columnB).map(e => (
+                          <Badge key={e} className="bg-indigo-600 text-white border-none font-bold">{e}</Badge>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              ) : (
+                <div className="p-8 border-2 border-dashed border-slate-200 rounded-[2rem] flex flex-col items-center justify-center text-center text-slate-400">
+                  <MousePointer2 size={32} className="mb-2 opacity-20" />
+                  <p className="text-sm font-medium">Click a cell in the chart to <br/>see associated organs and details.</p>
+                </div>
+              )}
+
+              <div className="p-6 bg-amber-50 rounded-[2rem] border-2 border-amber-100 flex items-start gap-6">
+                <div className="w-12 h-12 rounded-2xl bg-white flex items-center justify-center text-amber-500 shadow-sm shrink-0">
+                  <Info size={24} />
+                </div>
+                <div className="space-y-1">
+                  <p className="text-[10px] font-black text-amber-600 uppercase tracking-[0.3em]">Diagnostic Tip</p>
+                  <p className="text-sm text-slate-600 font-medium leading-relaxed italic">
+                    "If the body indicates an emotion that doesn't seem to fit the current context, check if it is an **Inherited Trapped Emotion**. These are passed down from ancestors and require 10 swipes to release."
+                  </p>
+                </div>
+              </div>
+            </div>
+          )}
         </div>
       </div>
     </div>

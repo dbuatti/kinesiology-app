@@ -17,7 +17,8 @@ import {
   ChevronUp,
   MousePointer2,
   Hand,
-  ImageIcon
+  ImageIcon,
+  BookOpen
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Badge } from '@/components/ui/badge';
@@ -90,6 +91,43 @@ const HeartWallProtocol = () => {
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
         {/* Left: Steps & Visual References */}
         <div className="lg:col-span-5 space-y-6">
+          {/* Client Education Card */}
+          <Card className="border-none shadow-lg rounded-[2.5rem] bg-indigo-50 border-2 border-indigo-100 overflow-hidden">
+            <CardHeader className="bg-indigo-600 p-6 text-white">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-xl bg-white/20 flex items-center justify-center shadow-inner">
+                  <BookOpen size={20} />
+                </div>
+                <div>
+                  <CardTitle className="text-lg font-black">Client Education</CardTitle>
+                  <p className="text-indigo-200 text-[10px] font-bold uppercase tracking-widest">Read to client if necessary</p>
+                </div>
+              </div>
+            </CardHeader>
+            <CardContent className="p-6 space-y-4">
+              <p className="text-sm font-bold text-indigo-900 leading-relaxed">
+                A Heart-Wall is made of one or more trapped emotions that the subconscious mind uses to surround the heart as a protective barrier against emotional pain.
+              </p>
+              <ul className="space-y-3">
+                {[
+                  "Each trapped emotion in the Heart-Wall is known as a Heart-Wall emotion.",
+                  "A Heart-Wall emotion is one layer in the collective Heart-Wall. When all Heart-Wall emotions have been removed, the Heart-Wall is gone.",
+                  "The Heart-Wall is usually created in response to emotional distress. The subconscious mind then uses pre-existing trapped emotions to form the wall.",
+                  "Heart-Wall emotions may be from any time in your own life and they can also be inherited.",
+                  "Most individuals have a Heart-Wall consisting of between five and 25 Heart-Wall emotions.",
+                  "A Heart-Wall may cause you to feel disconnected from others, lonely, sad, anxious, and unmotivated.",
+                  "Physical symptoms such as neck and shoulder discomfort may be present.",
+                  "It’s generally best to let the subconscious indicate what imbalances need to be released and in what order."
+                ].map((point, i) => (
+                  <li key={i} className="flex items-start gap-3 text-xs text-indigo-800 font-medium leading-relaxed">
+                    <div className="w-1.5 h-1.5 rounded-full bg-indigo-400 mt-1.5 shrink-0" />
+                    {point}
+                  </li>
+                ))}
+              </ul>
+            </CardContent>
+          </Card>
+
           <div className="space-y-4">
             {STEPS.map((step) => (
               <div 
@@ -163,29 +201,6 @@ const HeartWallProtocol = () => {
                 <p className="text-xs text-indigo-900 font-medium leading-relaxed">
                   Use these points to verify the organ association for each row. Hold the point while testing the indicator muscle to confirm the priority "emotional brick".
                 </p>
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card className="border-none shadow-xl rounded-[2.5rem] bg-slate-900 text-white overflow-hidden">
-            <CardHeader className="p-6 pb-2">
-              <CardTitle className="text-[10px] font-black uppercase tracking-[0.3em] text-slate-500 flex items-center gap-2">
-                <Shield size={14} /> The Protective Mechanism
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="p-6 pt-0 space-y-4">
-              <div className="p-4 bg-white/5 rounded-2xl border border-white/10">
-                <p className="text-sm font-medium leading-relaxed text-slate-300 italic">
-                  "A Heart Wall is a subconscious barrier made of trapped emotional energy, designed to protect the heart from further injury."
-                </p>
-              </div>
-              <div className="space-y-3">
-                <p className="text-[10px] font-black text-indigo-400 uppercase tracking-widest">Common Materials</p>
-                <div className="flex flex-wrap gap-2">
-                  {["Granite", "Steel", "Wood", "Glass", "Energy Field", "Plastic"].map(m => (
-                    <Badge key={m} className="bg-white/10 text-white border-none text-[8px] font-black uppercase">{m}</Badge>
-                  ))}
-                </div>
               </div>
             </CardContent>
           </Card>

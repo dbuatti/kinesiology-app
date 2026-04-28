@@ -1,13 +1,12 @@
 "use client";
 
-import React, { useState } from "react";
+import React from "react";
 import { useSearchParams } from "react-router-dom";
 import AppLayout from "@/components/crm/AppLayout";
-import Breadcrumbs from "@/components/shared/Breadcrumbs";
 import AppointmentsPage from "./AppointmentsPage";
 import AvailabilityPage from "./AvailabilityPage";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Calendar, Clock, CalendarDays, List, CalendarClock } from "lucide-react";
+import { CalendarClock, List, CalendarDays } from "lucide-react";
 import PageHeader from "@/components/shared/PageHeader";
 
 const SchedulePage = () => {

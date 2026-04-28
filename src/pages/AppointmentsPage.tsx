@@ -1,10 +1,9 @@
 import { useEffect, useState, useMemo } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { groupAppointmentsByMonth } from "@/utils/crm-utils";
-import { format, isToday, startOfMonth, endOfMonth, isWithinInterval, startOfToday, endOfToday } from "date-fns";
+import { format, isToday, startOfMonth, endOfMonth, startOfToday, endOfToday } from "date-fns";
 import { Badge } from "@/components/ui/badge";
 import { 
-  Calendar as CalendarIcon, 
   Clock, 
   Loader2, 
   Plus, 
@@ -17,23 +16,20 @@ import {
   ChevronDown, 
   Zap,
   CheckCircle2,
-  Search,
-  Filter,
-  CalendarDays,
   CheckCircle,
   CircleDashed,
+  Search,
+  CalendarDays,
   LayoutGrid,
   List,
   AlertCircle,
   Play,
-  Printer,
   Copy,
-  FileText,
-  ChevronRight,
   DollarSign,
   EyeOff,
   RefreshCw,
-  CalendarClock
+  CalendarClock,
+  Calendar as CalendarIcon
 } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -57,14 +53,12 @@ import { Appointment } from "@/types/crm";
 import { showSuccess, showError } from "@/utils/toast";
 import { Link, useNavigate } from "react-router-dom";
 import { cn } from "@/lib/utils";
-import { APPOINTMENT_TAGS, APPOINTMENT_STATUSES } from "@/data/appointment-data";
-import Breadcrumbs from "@/components/shared/Breadcrumbs";
+import { APPOINTMENT_STATUSES } from "@/data/appointment-data";
 import { Input } from "@/components/ui/input";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import CalendarView from "@/components/crm/CalendarView";
 import QuickAssessmentModal from "@/components/crm/QuickAssessmentModal";
-import AppLayout from "@/components/crm/AppLayout";
-import { formatAppointmentQuickInfo, generateSessionSummary } from "@/utils/summary-generator";
+import { generateSessionSummary } from "@/utils/summary-generator";
 import { usePrivacyMode } from "@/hooks/use-privacy-mode";
 
 interface AppointmentWithClient extends Appointment {
@@ -133,7 +127,6 @@ const AppointmentsPage = () => {
     else setLoadingMore(true);
 
     try {
-      // 1. Build the base query for counting and fetching
       let query = supabase
         .from('appointments')
         .select(`
@@ -146,7 +139,6 @@ const AppointmentsPage = () => {
         `, { count: 'exact' })
         .or('is_practitioner.eq.false,is_practitioner.is.null', { foreignTable: 'clients' });
 
-      // 2. Apply status filters directly to the query
       if (statusFilter === "today") {
         query = query
           .gte('date', startOfToday().toISOString())
@@ -155,7 +147,6 @@ const AppointmentsPage = () => {
         query = query.eq('status', statusFilter);
       }
 
-      // 3. Determine sort order
       const isAscending = statusFilter === "Scheduled" || statusFilter === "today";
       
       const { data, error, count } = await query
@@ -165,7 +156,6 @@ const AppointmentsPage = () => {
       if (error) throw error;
       setTotalCount(count || 0);
 
-      // 4. Fetch latest BOLT scores for these clients
       const clientIds = Array.from(new Set((data || []).map(a => a.client_id)));
       const latestScores: Record<string, number> = {};
       
@@ -277,7 +267,7 @@ const AppointmentsPage = () => {
 
   useEffect(() => {
     setDisplayLimit(PAGE_SIZE);
-    fetchAppointments(PAGE_SIZE);
+    fetchAppointments(displayLimit);
   }, [statusFilter]);
 
   const filteredAppointments = useMemo(() => {
@@ -508,13 +498,7 @@ const AppointmentsPage = () => {
 
   return (
     <div className="space-y-10">
-      <Breadcrumbs items={[{ label: "Appointments" }]} />
-      
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-6">
-        <div>
-          <h1 className="text-4xl font-black tracking-tight text-foreground">Appointments</h1>
-          <p className="text-muted-foreground font-medium mt-1">View and manage upcoming and past clinical sessions</p>
-        </div>
         <div className="flex items-center gap-3">
           <Button 
             variant="outline" 

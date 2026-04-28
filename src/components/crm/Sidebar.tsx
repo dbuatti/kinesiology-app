@@ -35,7 +35,9 @@ import {
   LayoutGrid,
   MessageSquare,
   Brain,
-  Sun
+  Sun,
+  Trophy,
+  Layers
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import SearchBar from "./SearchBar";
@@ -77,112 +79,57 @@ const Sidebar = ({ onHide }: SidebarProps) => {
   const [appDialogOpen, setAppDialogOpen] = useState(false);
   const { isPrivate, togglePrivacy } = usePrivacyMode();
   
-  const isOpsPath = (path: string) => path === "/" || path.startsWith("/appointments") || path.startsWith("/clients") || path === "/availability";
-  const isLabPath = (path: string) => path.startsWith("/practice/calibrate") || path.startsWith("/practice/procedures") || path.startsWith("/oversight") || path.startsWith("/practice/journal");
-  const isLibraryPath = (path: string) => path.startsWith("/resources") || path.startsWith("/practice/self") || path.startsWith("/peace-framework") || path === "/morning-program";
-  const isBusinessPath = (path: string) => path.startsWith("/business");
-  const isSandboxPath = (path: string) => path.startsWith("/sandbox");
+  // New Consolidated Pillar Logic
+  const isClinicalPath = (path: string) => path === "/" || path.startsWith("/appointments") || path.startsWith("/clients") || path === "/availability" || path === "/oversight";
+  const isLabPath = (path: string) => path.startsWith("/sandbox") || path.startsWith("/resources/worksheets") || path.startsWith("/practice/journal") || path === "/morning-program" || path === "/practice/self";
+  const isLibraryPath = (path: string) => path.startsWith("/resources") && !path.includes("worksheets") || path === "/peace-framework" || path === "/practice/procedures" || path === "/practice/quiz";
+  const isGrowthPath = (path: string) => path.startsWith("/business");
 
-  const [opsOpen, setOpsOpen] = useState(() => {
-    const saved = localStorage.getItem("sidebar_ops_open");
-    return saved !== null ? JSON.parse(saved) : isOpsPath(location.pathname);
-  });
-  const [labOpen, setLabOpen] = useState(() => {
-    const saved = localStorage.getItem("sidebar_lab_open");
-    return saved !== null ? JSON.parse(saved) : isLabPath(location.pathname);
-  });
-  const [libraryOpen, setLibraryOpen] = useState(() => {
-    const saved = localStorage.getItem("sidebar_library_open");
-    return saved !== null ? JSON.parse(saved) : isLibraryPath(location.pathname);
-  });
-  const [businessOpen, setBusinessOpen] = useState(() => {
-    const saved = localStorage.getItem("sidebar_business_open");
-    return saved !== null ? JSON.parse(saved) : isBusinessPath(location.pathname);
-  });
-  const [sandboxOpen, setSandboxOpen] = useState(() => {
-    const saved = localStorage.getItem("sidebar_sandbox_open");
-    return saved !== null ? JSON.parse(saved) : isSandboxPath(location.pathname);
-  });
+  const [clinicalOpen, setClinicalOpen] = useState(true);
+  const [labOpen, setLabOpen] = useState(false);
+  const [libraryOpen, setLibraryOpen] = useState(false);
+  const [growthOpen, setGrowthOpen] = useState(false);
 
-  useEffect(() => { localStorage.setItem("sidebar_ops_open", JSON.stringify(opsOpen)); }, [opsOpen]);
-  useEffect(() => { localStorage.setItem("sidebar_lab_open", JSON.stringify(labOpen)); }, [labOpen]);
-  useEffect(() => { localStorage.setItem("sidebar_library_open", JSON.stringify(libraryOpen)); }, [libraryOpen]);
-  useEffect(() => { localStorage.setItem("sidebar_business_open", JSON.stringify(businessOpen)); }, [businessOpen]);
-  useEffect(() => { localStorage.setItem("sidebar_sandbox_open", JSON.stringify(sandboxOpen)); }, [sandboxOpen]);
-  
   const activeSession = useActiveSession();
   const { practiceHealth } = usePracticeStats();
   const { recentClients } = useRecentClients();
   
   useEffect(() => {
     const path = location.pathname;
-    if (isOpsPath(path)) setOpsOpen(true);
+    if (isClinicalPath(path)) setClinicalOpen(true);
     if (isLabPath(path)) setLabOpen(true);
     if (isLibraryPath(path)) setLibraryOpen(true);
-    if (isBusinessPath(path)) setBusinessOpen(true);
-    if (isSandboxPath(path)) setSandboxOpen(true);
+    if (isGrowthPath(path)) setGrowthOpen(true);
   }, [location.pathname]);
 
-  const opsItems = [
+  const clinicalItems = [
     { label: "Dashboard", icon: LayoutDashboard, path: "/", shortcut: "⌘D" },
-    { label: "Appointments", icon: Calendar, path: "/appointments", shortcut: "⌘2" },
+    { label: "Schedule", icon: Calendar, path: "/appointments", shortcut: "⌘2" },
     { label: "Clients", icon: Users, path: "/clients", shortcut: "⌘1" },
     { label: "Availability", icon: CalendarDays, path: "/availability" },
-  ];
-
-  const labItems = [
-    { label: "Quick Calibrate", icon: Zap, path: "/practice/calibrate", shortcut: "⌘Q" },
-    { label: "Protocols", icon: Target, path: "/practice/procedures", shortcut: "⌘P" },
-    { label: "Knowledge Quiz", icon: GraduationCap, path: "/practice/quiz", shortcut: "⌘K" },
-    { label: "Journal", icon: MessageSquare, path: "/practice/journal", shortcut: "⌘R" },
     { label: "Oversight", icon: TrendingUp, path: "/oversight", shortcut: "⌘O" },
   ];
 
-  const libraryItems = [
+  const labItems = [
     { label: "Morning Program", icon: Sun, path: "/morning-program" },
-    { label: "PEACE Framework", icon: ShieldCheck, path: "/peace-framework" },
-    { label: "Knowledge Base", icon: BookOpen, path: "/resources" },
+    { label: "Journal", icon: MessageSquare, path: "/practice/journal", shortcut: "⌘R" },
+    { label: "Identity Map", icon: Compass, path: "/sandbox", shortcut: "⌘S" },
     { label: "Worksheets", icon: FileText, path: "/resources/worksheets" },
-    { label: "Self Practice", icon: Heart, path: "/practice/self", shortcut: "⌘S" },
+    { label: "Self Practice", icon: Heart, path: "/practice/self" },
   ];
 
-  const businessItems = [
+  const libraryItems = [
+    { label: "Clinical Bible", icon: BookOpen, path: "/resources" },
+    { label: "PEACE Framework", icon: ShieldCheck, path: "/peace-framework" },
+    { label: "Mastery Tracker", icon: Trophy, path: "/practice/procedures", shortcut: "⌘P" },
+    { label: "Knowledge Quiz", icon: GraduationCap, path: "/practice/quiz", shortcut: "⌘K" },
+    { label: "Quick Calibrate", icon: Zap, path: "/practice/calibrate", shortcut: "⌘Q" },
+  ];
+
+  const growthItems = [
     { label: "Business Hub", icon: Briefcase, path: "/business" },
     { label: "Marketing Engine", icon: Mic, path: "/business/marketing-engine" },
   ];
-
-  const sandboxItems = [
-    { label: "Sandbox Hub", icon: LayoutGrid, path: "/sandbox" },
-    { label: "Identity Shifting", icon: Fingerprint, path: "/sandbox/identity-shifting" },
-    { label: "Identity Alignment", icon: Target, path: "/sandbox/identity-alignment" },
-    { label: "Limiting Beliefs", icon: ShieldAlert, path: "/sandbox/limiting-beliefs" },
-  ];
-
-  useEffect(() => {
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.metaKey || e.ctrlKey) {
-        switch (e.key) {
-          case 'd': e.preventDefault(); navigate('/'); break;
-          case '1': e.preventDefault(); navigate('/clients'); break;
-          case '2': e.preventDefault(); navigate('/appointments'); break;
-          case 'b': e.preventDefault(); setAppDialogOpen(true); break;
-          case 'n': e.preventDefault(); setClientDialogOpen(true); break;
-          case 'o': e.preventDefault(); navigate('/oversight'); break;
-          case 's': e.preventDefault(); navigate('/practice/self'); break;
-          case 'p': e.preventDefault(); navigate('/practice/procedures'); break;
-          case 'k': e.preventDefault(); navigate('/practice/quiz'); break;
-          case 'r': e.preventDefault(); navigate('/practice/journal'); break;
-
-          case 'q': e.preventDefault(); navigate('/practice/calibrate'); break;
-          case 'h': e.preventDefault(); togglePrivacy(); break;
-          case 'y': e.preventDefault(); setHelpOpen(true); break;
-          case '[': e.preventDefault(); onHide?.(); break;
-        }
-      }
-    };
-    document.addEventListener('keydown', handleKeyDown);
-    return () => document.removeEventListener('keydown', handleKeyDown);
-  }, [navigate, onHide, togglePrivacy]);
 
   const handleSignOut = async () => {
     try {
@@ -254,7 +201,7 @@ const Sidebar = ({ onHide }: SidebarProps) => {
       >
         <div className="flex items-center gap-3">
           <Icon size={16} className="text-muted-foreground group-hover:text-primary" />
-          <span className="text-[9px] font-black uppercase tracking-[0.2em]">{title}</span>
+          <span className={cn("text-[9px] font-black uppercase tracking-[0.2em]", isOpen ? "text-primary" : "")}>{title}</span>
         </div>
         {isOpen ? <ChevronUp size={12} className="opacity-50" /> : <ChevronDown size={12} className="opacity-50" />}
       </button>
@@ -294,15 +241,6 @@ const Sidebar = ({ onHide }: SidebarProps) => {
         </Tooltip>
       </div>
 
-      {isPrivate && (
-        <div className="px-1 animate-in slide-in-from-top-2 duration-500">
-          <div className="flex items-center gap-2 px-3 py-2 bg-rose-500/5 border border-rose-500/10 rounded-xl text-rose-600 dark:text-rose-400">
-            <Lock size={12} className="shrink-0" />
-            <span className="text-[8px] font-black uppercase tracking-widest">Privacy Mode Active</span>
-          </div>
-        </div>
-      )}
-
       <div className="px-1">
         <SearchBar />
       </div>
@@ -318,11 +256,10 @@ const Sidebar = ({ onHide }: SidebarProps) => {
       </div>
       
       <div className="space-y-4 flex-1">
-        <NavGroup title="Operations" icon={LayoutDashboard} isOpen={opsOpen} onToggle={() => setOpsOpen(!opsOpen)} items={opsItems} />
-        <NavGroup title="Clinical Lab" icon={Zap} isOpen={labOpen} onToggle={() => setLabOpen(!labOpen)} items={labItems} />
+        <NavGroup title="Clinical" icon={LayoutDashboard} isOpen={clinicalOpen} onToggle={() => setClinicalOpen(!clinicalOpen)} items={clinicalItems} />
+        <NavGroup title="Practice Lab" icon={Zap} isOpen={labOpen} onToggle={() => setLabOpen(!labOpen)} items={labItems} />
         <NavGroup title="Library" icon={BookOpen} isOpen={libraryOpen} onToggle={() => setLibraryOpen(!libraryOpen)} items={libraryItems} />
-        <NavGroup title="Business" icon={Briefcase} isOpen={businessOpen} onToggle={() => setBusinessOpen(!businessOpen)} items={businessItems} />
-        <NavGroup title="Sandbox" icon={Compass} isOpen={sandboxOpen} onToggle={() => setSandboxOpen(!sandboxOpen)} items={sandboxItems} />
+        <NavGroup title="Growth" icon={Briefcase} isOpen={growthOpen} onToggle={() => setGrowthOpen(!growthOpen)} items={growthItems} />
 
         {activeSession && (
           <div className="px-1 pt-2">

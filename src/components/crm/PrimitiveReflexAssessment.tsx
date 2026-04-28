@@ -80,7 +80,7 @@ const ReflexTestItem = ({ reflex, test, statusL, statusR, statusMidline, isLater
     )}>
       <div className="flex items-center justify-between gap-4">
         {/* Left: Name and Info */}
-        <div className="flex-1 min-w-0 space-y-0.5">
+        <div className="flex-1 min-w-0 space-y-1">
           <div className="flex items-center gap-2">
             <h2 className="text-sm font-bold text-slate-900 truncate">
               {reflex.name}
@@ -90,14 +90,14 @@ const ReflexTestItem = ({ reflex, test, statusL, statusR, statusMidline, isLater
             </span>
           </div>
           
-          <div className="flex items-center gap-3 text-[9px] leading-tight">
+          <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-[9px] leading-tight">
             <div className="flex items-center gap-1 text-slate-500">
               <Zap size={10} className="text-indigo-400 shrink-0" />
-              <span className="truncate max-w-[200px]">{reflex.stimulus}</span>
+              <span className="font-medium">{reflex.stimulus}</span>
             </div>
             <div className="flex items-center gap-1 text-rose-600/70 font-bold">
               <Activity size={10} className="shrink-0" />
-              <span className="truncate max-w-[200px]">{reflex.inhibitionPattern}</span>
+              <span className="">{reflex.inhibitionPattern}</span>
             </div>
           </div>
         </div>
@@ -247,8 +247,6 @@ export function PrimitiveReflexAssessment({
   };
 
   const sortedReflexes = useMemo(() => {
-    console.log("[PrimitiveReflexAssessment] Sorting reflexes...");
-    
     return [...PRIMITIVE_REFLEXES]
       .filter(reflex => {
         const test = tests.find(t => t.reflex_id === reflex.id) || { is_inhibited: false };
@@ -271,8 +269,6 @@ export function PrimitiveReflexAssessment({
         const scoreA = (testA?.is_primary_priority ? 1000 : 0) + (testA?.is_priority ? 500 : 0) + (isAnyInhibA ? 100 : 0) + (isAnyClearA ? -100 : 0);
         const scoreB = (testB?.is_primary_priority ? 1000 : 0) + (testB?.is_priority ? 500 : 0) + (isAnyInhibB ? 100 : 0) + (isAnyClearB ? -100 : 0);
         
-        console.log(`[Sort] ${a.name}: ${scoreA} vs ${b.name}: ${scoreB}`);
-
         if (scoreA !== scoreB) return scoreB - scoreA;
         return a.name.localeCompare(b.name);
       });

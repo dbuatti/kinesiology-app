@@ -110,13 +110,13 @@ const AssessmentItem = ({
           {stimulus && (
             <div className="flex items-start gap-1">
               <PlayCircle size={10} className="text-indigo-400 shrink-0 mt-0.5" />
-              <p className="text-[8px] md:text-[10px] text-slate-500 leading-tight font-medium line-clamp-2">{stimulus}</p>
+              <p className="text-[8px] md:text-[10px] text-slate-500 leading-tight font-medium">{stimulus}</p>
             </div>
           )}
           {inhibitionPattern && (
             <div className="flex items-start gap-1">
               <ShieldAlert size={10} className="text-rose-400 shrink-0 mt-0.5" />
-              <p className="text-[8px] md:text-[10px] text-rose-600/70 leading-tight font-bold line-clamp-2">{inhibitionPattern}</p>
+              <p className="text-[8px] md:text-[10px] text-rose-600/70 leading-tight font-bold">{inhibitionPattern}</p>
             </div>
           )}
         </div>

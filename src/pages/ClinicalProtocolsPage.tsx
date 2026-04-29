@@ -5,17 +5,20 @@ import { useParams, useNavigate } from "react-router-dom";
 import { useAppointment } from "@/hooks/useAppointment";
 import { CranialNerveAssessment } from "@/components/crm/CranialNerveAssessment";
 import { PrimitiveReflexAssessment } from "@/components/crm/PrimitiveReflexAssessment";
-import EmotionsProtocolReference from "@/components/crm/EmotionsProtocolReference";
+import EmotionAssessment from "@/components/crm/EmotionAssessment";
 import MechanoreceptiveAssessment from "@/components/crm/MechanoreceptiveAssessment";
 import HeartWallProtocol from "@/components/crm/HeartWallProtocol";
+import PathwayAssessment from "@/components/crm/PathwayAssessment";
+import MuscleTestingTab from "@/components/crm/MuscleTestingTab";
 import { Button } from "@/components/ui/button";
-import { ChevronLeft, Brain, Loader2, Zap, FileText, Heart, Activity, Shield } from "lucide-react";
+import { ChevronLeft, Brain, Loader2, Zap, FileText, Heart, Activity, Shield, Layers, Dumbbell, RefreshCw } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { showSuccess, showError } from "@/utils/toast";
 
 export default function ClinicalProtocolsPage() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
-  const { appointment, loading, updatePriorityPattern, saveField } = useAppointment(id);
+  const { appointment, history, loading, updatePriorityPattern, saveField, refresh } = useAppointment(id);
   const [activeTab, setActiveTab] = React.useState("cranial-nerves");
 
   if (loading) {
@@ -41,43 +44,57 @@ export default function ClinicalProtocolsPage() {
   return (
     <div className="min-h-screen bg-white p-4 md:p-6">
       <div className="max-w-full mx-auto space-y-6">
-        {/* Top Navigation - Centered and Compact */}
+        {/* Top Navigation - Comprehensive and Centered */}
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-          <div className="flex justify-center mb-8">
-            <TabsList className="inline-flex h-12 items-center justify-center rounded-xl bg-slate-100/50 p-1 text-muted-foreground">
+          <div className="flex justify-center mb-8 overflow-x-auto no-scrollbar">
+            <TabsList className="inline-flex h-12 items-center justify-center rounded-xl bg-slate-100/50 p-1 text-muted-foreground border border-slate-200">
               <TabsTrigger 
                 value="cranial-nerves" 
-                className="inline-flex items-center justify-center whitespace-nowrap rounded-lg px-6 py-2 text-xs font-black uppercase tracking-widest ring-offset-background transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 data-[state=active]:bg-white data-[state=active]:text-slate-900 data-[state=active]:shadow-sm"
+                className="inline-flex items-center justify-center whitespace-nowrap rounded-lg px-4 py-2 text-[10px] font-black uppercase tracking-widest transition-all data-[state=active]:bg-white data-[state=active]:text-slate-900 data-[state=active]:shadow-sm"
               >
-                <Brain className="h-3.5 w-3.5 mr-2" />
-                Cranial Nerves
+                <Zap className="h-3.5 w-3.5 mr-2 text-rose-500" />
+                Nerves
               </TabsTrigger>
               <TabsTrigger 
                 value="primitive-reflexes" 
-                className="inline-flex items-center justify-center whitespace-nowrap rounded-lg px-6 py-2 text-xs font-black uppercase tracking-widest ring-offset-background transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 data-[state=active]:bg-white data-[state=active]:text-slate-900 data-[state=active]:shadow-sm"
+                className="inline-flex items-center justify-center whitespace-nowrap rounded-lg px-4 py-2 text-[10px] font-black uppercase tracking-widest transition-all data-[state=active]:bg-white data-[state=active]:text-slate-900 data-[state=active]:shadow-sm"
               >
-                <Zap className="h-3.5 w-3.5 mr-2" />
-                Primitive Reflexes
+                <RefreshCw className="h-3.5 w-3.5 mr-2 text-indigo-500" />
+                Reflexes
+              </TabsTrigger>
+              <TabsTrigger 
+                value="brain-zones" 
+                className="inline-flex items-center justify-center whitespace-nowrap rounded-lg px-4 py-2 text-[10px] font-black uppercase tracking-widest transition-all data-[state=active]:bg-white data-[state=active]:text-slate-900 data-[state=active]:shadow-sm"
+              >
+                <Brain className="h-3.5 w-3.5 mr-2 text-purple-500" />
+                Zones
+              </TabsTrigger>
+              <TabsTrigger 
+                value="muscles" 
+                className="inline-flex items-center justify-center whitespace-nowrap rounded-lg px-4 py-2 text-[10px] font-black uppercase tracking-widest transition-all data-[state=active]:bg-white data-[state=active]:text-slate-900 data-[state=active]:shadow-sm"
+              >
+                <Dumbbell className="h-3.5 w-3.5 mr-2 text-emerald-500" />
+                Muscles
               </TabsTrigger>
               <TabsTrigger 
                 value="mechanoreceptive" 
-                className="inline-flex items-center justify-center whitespace-nowrap rounded-lg px-6 py-2 text-xs font-black uppercase tracking-widest ring-offset-background transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 data-[state=active]:bg-white data-[state=active]:text-slate-900 data-[state=active]:shadow-sm"
+                className="inline-flex items-center justify-center whitespace-nowrap rounded-lg px-4 py-2 text-[10px] font-black uppercase tracking-widest transition-all data-[state=active]:bg-white data-[state=active]:text-slate-900 data-[state=active]:shadow-sm"
               >
-                <Activity className="h-3.5 w-3.5 mr-2" />
-                Mechanoreceptive
+                <Activity className="h-3.5 w-3.5 mr-2 text-blue-500" />
+                Mechano
               </TabsTrigger>
               <TabsTrigger 
                 value="emotions" 
-                className="inline-flex items-center justify-center whitespace-nowrap rounded-lg px-6 py-2 text-xs font-black uppercase tracking-widest ring-offset-background transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 data-[state=active]:bg-white data-[state=active]:text-slate-900 data-[state=active]:shadow-sm"
+                className="inline-flex items-center justify-center whitespace-nowrap rounded-lg px-4 py-2 text-[10px] font-black uppercase tracking-widest transition-all data-[state=active]:bg-white data-[state=active]:text-slate-900 data-[state=active]:shadow-sm"
               >
-                <Heart className="h-3.5 w-3.5 mr-2" />
+                <Heart className="h-3.5 w-3.5 mr-2 text-rose-600" />
                 Emotions
               </TabsTrigger>
               <TabsTrigger 
                 value="heart-wall" 
-                className="inline-flex items-center justify-center whitespace-nowrap rounded-lg px-6 py-2 text-xs font-black uppercase tracking-widest ring-offset-background transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 data-[state=active]:bg-white data-[state=active]:text-slate-900 data-[state=active]:shadow-sm"
+                className="inline-flex items-center justify-center whitespace-nowrap rounded-lg px-4 py-2 text-[10px] font-black uppercase tracking-widest transition-all data-[state=active]:bg-white data-[state=active]:text-slate-900 data-[state=active]:shadow-sm"
               >
-                <Shield className="h-3.5 w-3.5 mr-2" />
+                <Shield className="h-3.5 w-3.5 mr-2 text-slate-600" />
                 Heart Wall
               </TabsTrigger>
             </TabsList>
@@ -99,6 +116,22 @@ export default function ClinicalProtocolsPage() {
             />
           </TabsContent>
 
+          <TabsContent value="brain-zones" className="mt-0 focus-visible:ring-0 animate-in fade-in duration-300">
+            <PathwayAssessment 
+              initialValue={appointment.priority_pattern || undefined} 
+              previousValue={history.length > 1 ? history[1]?.priority_pattern : undefined}
+              history={history}
+              onSave={(s) => saveField('priority_pattern', s)} 
+              onUpdateItem={(cat, item, status, side) => updatePriorityPattern(cat, side ? `${item} (${side})` : item, status)}
+            />
+          </TabsContent>
+
+          <TabsContent value="muscles" className="mt-0 focus-visible:ring-0 animate-in fade-in duration-300">
+            <div className="bg-slate-50 p-6 rounded-[2rem] border border-slate-100">
+              <MuscleTestingTab appointmentId={id!} />
+            </div>
+          </TabsContent>
+
           <TabsContent value="mechanoreceptive" className="mt-0 focus-visible:ring-0 animate-in fade-in duration-300">
             <MechanoreceptiveAssessment 
               appointmentId={id!}
@@ -107,7 +140,15 @@ export default function ClinicalProtocolsPage() {
           </TabsContent>
 
           <TabsContent value="emotions" className="mt-0 focus-visible:ring-0 animate-in fade-in duration-300">
-            <EmotionsProtocolReference />
+            <EmotionAssessment 
+              appointmentId={id!} 
+              initialMode={appointment.emotion_mode} 
+              initialPrimary={appointment.emotion_primary_selection} 
+              initialSecondary={appointment.emotion_secondary_selection} 
+              initialNotes={appointment.emotion_notes} 
+              onSaveField={saveField} 
+              onUpdate={refresh} 
+            />
           </TabsContent>
 
           <TabsContent value="heart-wall" className="mt-0 focus-visible:ring-0 animate-in fade-in duration-300">

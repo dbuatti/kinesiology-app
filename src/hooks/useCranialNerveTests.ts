@@ -5,6 +5,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { CranialNerveTest } from "@/types/crm";
 import { showError } from "@/utils/toast";
 import { safeParse } from "@/utils/safe-json";
+import { CRANIAL_NERVES } from "@/data/cranial-nerve-data";
 
 export function useCranialNerveTests(
   appointmentId: string | undefined,
@@ -42,7 +43,10 @@ export function useCranialNerveTests(
 
       // Handle inhibition sync to priority_pattern
       if (updates.is_inhibited !== undefined && updatePriorityPattern) {
-        const nerveName = `CN ${nerveId}`;
+        // Find the full name to match PathwayAssessment (e.g. "CN I: Olfactory")
+        const nerveData = CRANIAL_NERVES.find(n => n.id.toString() === nerveId);
+        const nerveName = nerveData ? `${nerveData.name}: ${nerveData.latinName}` : `CN ${nerveId}`;
+        
         await updatePriorityPattern('cranialNerves', nerveName, updates.is_inhibited ? 'Inhibited' : 'Clear', side);
         
         // Determine if the nerve is still inhibited globally (either L or R)
@@ -52,15 +56,12 @@ export function useCranialNerveTests(
           const nervePattern = pattern.cranialNerves || {};
           const isOtherSideInhibited = nervePattern[`${nerveName} (${otherSide})`] === 'Inhibited';
           
-          // If we are unchecking one side, but the other side is still inhibited, 
-          // keep the global is_inhibited as true in the cranial_nerve_tests table.
           if (!updates.is_inhibited && isOtherSideInhibited) {
             updates.is_inhibited = true;
           }
         }
       }
 
-      // If setting primary priority, unset others in the local state and DB
       if (updates.is_primary_priority) {
         await supabase
           .from('cranial_nerve_tests')
@@ -70,7 +71,6 @@ export function useCranialNerveTests(
         setTests(prev => prev.map(t => ({ ...t, is_primary_priority: false })));
       }
 
-      // Use upsert to avoid 409 Conflict errors
       const { data, error } = await supabase
         .from('cranial_nerve_tests')
         .upsert({

@@ -14,7 +14,6 @@ import {
   PlayCircle,
   FileText,
   CheckCircle2,
-  Info,
   ArrowRightLeft
 } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -263,8 +262,8 @@ export function CranialNerveAssessment({
       const testA = tests.find(t => t.nerve_id === a.id.toString());
       const testB = tests.find(t => t.nerve_id === b.id.toString());
       
-      const nerveNameA = `CN ${a.id}`;
-      const nerveNameB = `CN ${b.id}`;
+      const nerveNameA = `${a.name}: ${a.latinName}`;
+      const nerveNameB = `${b.name}: ${b.latinName}`;
       
       const isAnyInhibA = nervePattern[`${nerveNameA} (L)`] === 'Inhibited' || nervePattern[`${nerveNameA} (R)`] === 'Inhibited' || testA?.is_inhibited;
       const isAnyInhibB = nervePattern[`${nerveNameB} (L)`] === 'Inhibited' || nervePattern[`${nerveNameB} (R)`] === 'Inhibited' || testB?.is_inhibited;
@@ -292,7 +291,7 @@ export function CranialNerveAssessment({
   return (
     <div className="space-y-4">
       {sortedNerves.map((nerve) => {
-        const nerveName = `CN ${nerve.id}`;
+        const nerveName = `${nerve.name}: ${nerve.latinName}`;
         return (
           <NerveTestItem 
             key={nerve.id}

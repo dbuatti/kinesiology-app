@@ -60,6 +60,15 @@ const AppointmentHeader = ({ appointment, onSaveField, onUpdate }: AppointmentHe
     return Math.round(nuclei.reduce((sum, n) => sum + n.threatLevel, 0) / 4);
   }, [appointment.priority_pattern]);
 
+  const handlePaymentClick = () => {
+    if (!appointment.is_paid) {
+      onSaveField('is_paid', true);
+      showSuccess("Billing enabled for this session");
+    } else {
+      onSaveField('payment_received', !appointment.payment_received);
+    }
+  };
+
   return (
     <div className="space-y-4 md:space-y-6">
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 md:gap-6">
@@ -150,13 +159,12 @@ const AppointmentHeader = ({ appointment, onSaveField, onUpdate }: AppointmentHe
           </div>
 
           <button 
-            onClick={() => onSaveField('payment_received', !appointment.payment_received)}
-            disabled={!appointment.is_paid}
+            onClick={handlePaymentClick}
             className={cn(
               "flex items-center gap-2 px-2 py-1 md:px-3 md:py-1.5 rounded-lg md:rounded-xl border transition-all group",
               appointment.is_paid
                 ? (appointment.payment_received ? "bg-emerald-600 border-emerald-600 text-white shadow-lg shadow-emerald-100" : "bg-amber-50 border-amber-200 text-amber-700 hover:border-amber-400")
-                : "bg-slate-50 border-slate-200 text-slate-400 cursor-not-allowed"
+                : "bg-slate-50 border-slate-200 text-slate-400 hover:border-indigo-300 hover:text-indigo-600"
             )}
           >
             {appointment.payment_received ? <CheckCircle2 size={12} className="md:w-3.5 md:h-3.5" /> : <Wallet size={12} className="md:w-3.5 md:h-3.5" />}

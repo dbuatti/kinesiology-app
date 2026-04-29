@@ -37,6 +37,7 @@ import { useNavigate } from 'react-router-dom';
 import { AppointmentWithClient } from '@/types/crm';
 import BaselineTab from './session-tabs/BaselineTab';
 import SympatheticTab from './session-tabs/SympatheticTab';
+import EmbedTab from './session-tabs/EmbedTab';
 import ClientContextTab from './session-tabs/ClientContextTab';
 import JournalTab from './session-tabs/JournalTab';
 import EditableField from '@/components/shared/EditableField';
@@ -304,14 +305,11 @@ const SessionContentSwitcher = ({
           </TabsContent>
 
           <TabsContent value="reassessment" className="focus-visible:ring-0">
-            <EditableField 
-              field="session_north_star" 
-              label="Re-Assessment & Home Reinforcement" 
-              value={appointment.session_north_star} 
-              multiline 
-              placeholder="Document re-test results and prescribed homework..." 
-              onSave={saveField} 
-              className="bg-card p-5 md:p-10 rounded-2xl md:rounded-[3rem] border border-border shadow-sm min-h-[300px] md:min-h-[500px]" 
+            <EmbedTab 
+              appointment={appointment} 
+              onUpdate={onUpdate} 
+              saveField={saveField} 
+              updatePriorityPattern={updatePriorityPattern} 
             />
             <TabFooter />
           </TabsContent>

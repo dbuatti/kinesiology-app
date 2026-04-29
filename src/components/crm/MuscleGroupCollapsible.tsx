@@ -10,12 +10,13 @@ import {
 } from "@/components/ui/collapsible";
 import MuscleTestCard from "./MuscleTestCard";
 import { MuscleTestResult } from "@/types/crm";
-import { MuscleStatus, MIDLINE_MUSCLES } from "@/data/muscle-data";
+import { MuscleStatus } from "@/data/muscle-data";
 
 interface MuscleGroupCollapsibleProps {
   groupName: string;
   muscles: string[];
   results: Record<string, MuscleTestResult>;
+  proficiencyCounts: Record<string, number>;
   isOpen: boolean;
   onToggle: () => void;
   onStatusChange: (muscle: string, status: MuscleStatus['value'], side?: 'L' | 'R') => void;
@@ -29,6 +30,7 @@ const MuscleGroupCollapsible = ({
   groupName,
   muscles,
   results,
+  proficiencyCounts,
   isOpen,
   onToggle,
   onStatusChange,
@@ -74,6 +76,7 @@ const MuscleGroupCollapsible = ({
                 currentResultL={results[`${muscle} (L)`]}
                 currentResultR={results[`${muscle} (R)`]}
                 currentResultMidline={results[muscle]}
+                proficiencyCount={proficiencyCounts[muscle] || 0}
                 onStatusChange={onStatusChange}
                 onClear={onClear}
                 onShowInfo={onShowInfo}

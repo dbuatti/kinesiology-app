@@ -16,7 +16,7 @@ import MuscleGroupCollapsible from "./MuscleGroupCollapsible";
 import MuscleStatusLegend from "./MuscleStatusLegend";
 import MuscleTestAssistanceCard from "./MuscleTestAssistanceCard";
 import MuscleProgressCard from "./MuscleProgressCard";
-import { Badge } from "@/components/ui/badge";
+import { useMuscleProficiency } from "@/hooks/useMuscleProficiency";
 
 interface MuscleTestingTabProps {
   appointmentId: string;
@@ -40,6 +40,8 @@ const MuscleTestingTab = ({ appointmentId }: MuscleTestingTabProps) => {
   const [selectedStatusForLogic, setSelectedStatusForLogic] = useState<MuscleStatus['value'] | null>(null);
   const [logicModalOpen, setLogicModalOpen] = useState(false);
   
+  const { counts: proficiencyCounts } = useMuscleProficiency();
+
   const [openGroups, setOpenGroups] = useState<Record<string, boolean>>(() => {
     const initial: Record<string, boolean> = {};
     Object.keys(MUSCLE_GROUPS).forEach(group => {
@@ -379,6 +381,7 @@ const MuscleTestingTab = ({ appointmentId }: MuscleTestingTabProps) => {
         {Object.entries(filteredGroups).map(([groupName, muscles]) => (
           <MuscleGroupCollapsible
             key={groupName} groupName={groupName} muscles={muscles} results={results}
+            proficiencyCounts={proficiencyCounts}
             isOpen={openGroups[groupName]} onToggle={() => setOpenGroups(prev => ({ ...prev, [groupName]: !prev[groupName] }))}
             onStatusChange={handleStatusChange} onClear={handleClearMuscle}
             onShowInfo={(m) => { setSelectedMuscleForInfo(m); setInfoModalOpen(true); }}

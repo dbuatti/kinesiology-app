@@ -1,20 +1,20 @@
 "use client";
 
 import React from "react";
-import { Info, RotateCcw, CheckCircle2, GraduationCap, Lightbulb, Zap, Dumbbell } from "lucide-react";
+import { Info, RotateCcw, CheckCircle2, Lightbulb, Dumbbell } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 import { MUSCLE_STATUSES, MuscleStatus, MIDLINE_MUSCLES } from "@/data/muscle-data";
 import { MuscleTestResult } from "@/types/crm";
 import { getChannelByMuscle } from "@/data/tcm-channel-data";
-import { useMuscleProficiency } from "@/hooks/useMuscleProficiency";
 
 interface MuscleTestCardProps {
   muscle: string;
   currentResultL?: MuscleTestResult;
   currentResultR?: MuscleTestResult;
   currentResultMidline?: MuscleTestResult;
+  proficiencyCount?: number;
   onStatusChange: (muscle: string, status: MuscleStatus['value'], side?: 'L' | 'R') => void;
   onClear: (muscle: string, side?: 'L' | 'R') => void;
   onShowInfo: (muscle: string) => void;
@@ -27,6 +27,7 @@ const MuscleTestCard = ({
   currentResultL,
   currentResultR,
   currentResultMidline,
+  proficiencyCount = 0,
   onStatusChange,
   onClear,
   onShowInfo,
@@ -35,8 +36,6 @@ const MuscleTestCard = ({
 }: MuscleTestCardProps) => {
   const isMidline = MIDLINE_MUSCLES.includes(muscle);
   const channel = getChannelByMuscle(muscle);
-  const { counts } = useMuscleProficiency();
-  const proficiencyCount = counts[muscle] || 0;
 
   const StatusRow = ({ side, result }: { side?: 'L' | 'R', result?: MuscleTestResult }) => {
     const isTested = !!result;

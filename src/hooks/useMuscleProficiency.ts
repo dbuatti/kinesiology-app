@@ -11,8 +11,6 @@ export const useMuscleProficiency = (muscleName?: string) => {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) return;
 
-      // Use a more efficient query to get counts grouped by muscle name
-      // Note: We strip the (L)/(R) in the processing logic
       const { data, error } = await supabase
         .from('muscle_tests')
         .select('muscle_name')
@@ -28,8 +26,11 @@ export const useMuscleProficiency = (muscleName?: string) => {
         });
         setCounts(newCounts);
       }
-    } catch (err) {
-      console.error("Failed to fetch muscle proficiency:", err);
+    } catch (err: any) {
+      // Ignore abort errors as they are expected during rapid navigation or strict mode double-mounts
+      if (err.name !== 'AbortError') {
+        console.error("Failed to fetch muscle proficiency:", err);
+      }
     } finally {
       setLoading(false);
     }

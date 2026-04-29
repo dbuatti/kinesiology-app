@@ -6,19 +6,18 @@ import { useAppointment } from "@/hooks/useAppointment";
 import { CranialNerveAssessment } from "@/components/crm/CranialNerveAssessment";
 import { PrimitiveReflexAssessment } from "@/components/crm/PrimitiveReflexAssessment";
 import { BrainZoneAssessment } from "@/components/crm/BrainZoneAssessment";
-import EmotionalIntegrationProcess from "@/components/crm/EmotionalIntegrationProcess";
+import EmotionsProtocolReference from "@/components/crm/EmotionsProtocolReference";
 import MechanoreceptiveAssessment from "@/components/crm/MechanoreceptiveAssessment";
 import HeartWallProtocol from "@/components/crm/HeartWallProtocol";
 import MuscleTestingTab from "@/components/crm/MuscleTestingTab";
 import { Button } from "@/components/ui/button";
 import { ChevronLeft, Brain, Loader2, Zap, FileText, Heart, Activity, Shield, Layers, Dumbbell, RefreshCw } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { showSuccess, showError } from "@/utils/toast";
 
 export default function ClinicalProtocolsPage() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
-  const { appointment, history, loading, updatePriorityPattern, saveField, refresh } = useAppointment(id);
+  const { appointment, loading, updatePriorityPattern, saveField } = useAppointment(id);
   const [activeTab, setActiveTab] = React.useState("cranial-nerves");
 
   if (loading) {
@@ -137,12 +136,7 @@ export default function ClinicalProtocolsPage() {
           </TabsContent>
 
           <TabsContent value="emotions" className="mt-0 focus-visible:ring-0 animate-in fade-in duration-300">
-            <div className="max-w-3xl mx-auto">
-              <EmotionalIntegrationProcess 
-                onSave={(summary) => saveField('modes_balances', summary)}
-                onCancel={() => setActiveTab('cranial-nerves')}
-              />
-            </div>
+            <EmotionsProtocolReference />
           </TabsContent>
 
           <TabsContent value="heart-wall" className="mt-0 focus-visible:ring-0 animate-in fade-in duration-300">

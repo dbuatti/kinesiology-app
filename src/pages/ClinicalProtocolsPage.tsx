@@ -5,10 +5,10 @@ import { useParams, useNavigate } from "react-router-dom";
 import { useAppointment } from "@/hooks/useAppointment";
 import { CranialNerveAssessment } from "@/components/crm/CranialNerveAssessment";
 import { PrimitiveReflexAssessment } from "@/components/crm/PrimitiveReflexAssessment";
-import EmotionAssessment from "@/components/crm/EmotionAssessment";
+import { BrainZoneAssessment } from "@/components/crm/BrainZoneAssessment";
+import EmotionalIntegrationProcess from "@/components/crm/EmotionalIntegrationProcess";
 import MechanoreceptiveAssessment from "@/components/crm/MechanoreceptiveAssessment";
 import HeartWallProtocol from "@/components/crm/HeartWallProtocol";
-import PathwayAssessment from "@/components/crm/PathwayAssessment";
 import MuscleTestingTab from "@/components/crm/MuscleTestingTab";
 import { Button } from "@/components/ui/button";
 import { ChevronLeft, Brain, Loader2, Zap, FileText, Heart, Activity, Shield, Layers, Dumbbell, RefreshCw } from "lucide-react";
@@ -44,7 +44,7 @@ export default function ClinicalProtocolsPage() {
   return (
     <div className="min-h-screen bg-white p-4 md:p-6">
       <div className="max-w-full mx-auto space-y-6">
-        {/* Top Navigation - Comprehensive and Centered */}
+        {/* Top Navigation */}
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
           <div className="flex justify-center mb-8 overflow-x-auto no-scrollbar">
             <TabsList className="inline-flex h-12 items-center justify-center rounded-xl bg-slate-100/50 p-1 text-muted-foreground border border-slate-200">
@@ -117,12 +117,9 @@ export default function ClinicalProtocolsPage() {
           </TabsContent>
 
           <TabsContent value="brain-zones" className="mt-0 focus-visible:ring-0 animate-in fade-in duration-300">
-            <PathwayAssessment 
-              initialValue={appointment.priority_pattern || undefined} 
-              previousValue={history.length > 1 ? history[1]?.priority_pattern : undefined}
-              history={history}
-              onSave={(s) => saveField('priority_pattern', s)} 
-              onUpdateItem={(cat, item, status, side) => updatePriorityPattern(cat, side ? `${item} (${side})` : item, status)}
+            <BrainZoneAssessment 
+              priorityPattern={appointment.priority_pattern}
+              updatePriorityPattern={updatePriorityPattern}
             />
           </TabsContent>
 
@@ -140,15 +137,12 @@ export default function ClinicalProtocolsPage() {
           </TabsContent>
 
           <TabsContent value="emotions" className="mt-0 focus-visible:ring-0 animate-in fade-in duration-300">
-            <EmotionAssessment 
-              appointmentId={id!} 
-              initialMode={appointment.emotion_mode} 
-              initialPrimary={appointment.emotion_primary_selection} 
-              initialSecondary={appointment.emotion_secondary_selection} 
-              initialNotes={appointment.emotion_notes} 
-              onSaveField={saveField} 
-              onUpdate={refresh} 
-            />
+            <div className="max-w-3xl mx-auto">
+              <EmotionalIntegrationProcess 
+                onSave={(summary) => saveField('modes_balances', summary)}
+                onCancel={() => setActiveTab('cranial-nerves')}
+              />
+            </div>
           </TabsContent>
 
           <TabsContent value="heart-wall" className="mt-0 focus-visible:ring-0 animate-in fade-in duration-300">
@@ -156,7 +150,7 @@ export default function ClinicalProtocolsPage() {
           </TabsContent>
         </Tabs>
 
-        {/* Summary Section - Compact */}
+        {/* Summary Section */}
         <div className="mt-12 pt-8 border-t border-slate-100 print:mt-6">
           <div className="flex items-center gap-2 mb-4">
             <FileText size={16} className="text-slate-400" />

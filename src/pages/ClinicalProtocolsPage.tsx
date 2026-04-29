@@ -1,24 +1,54 @@
 "use client";
 
-import React from "react";
+import React, { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { useAppointment } from "@/hooks/useAppointment";
 import { CranialNerveAssessment } from "@/components/crm/CranialNerveAssessment";
 import { PrimitiveReflexAssessment } from "@/components/crm/PrimitiveReflexAssessment";
 import { BrainZoneAssessment } from "@/components/crm/BrainZoneAssessment";
+import { MuscleAssessment } from "@/components/crm/MuscleAssessment";
 import EmotionsProtocolReference from "@/components/crm/EmotionsProtocolReference";
 import MechanoreceptiveAssessment from "@/components/crm/MechanoreceptiveAssessment";
 import HeartWallProtocol from "@/components/crm/HeartWallProtocol";
-import MuscleTestingTab from "@/components/crm/MuscleTestingTab";
 import { Button } from "@/components/ui/button";
-import { ChevronLeft, Brain, Loader2, Zap, FileText, Heart, Activity, Shield, Layers, Dumbbell, RefreshCw } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
+import { 
+  ChevronLeft, Brain, Loader2, Zap, FileText, Heart, 
+  Activity, Shield, Layers, Dumbbell, RefreshCw,
+  Eye, EyeOff, Save, ShieldCheck
+} from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Switch } from "@/components/ui/switch";
+import { Label } from "@/components/ui/label";
+
+const SHOW_IMAGES_KEY = "fnh_protocols_show_images";
+const REMEMBER_KEY = "fnh_protocols_remember_settings";
 
 export default function ClinicalProtocolsPage() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const { appointment, loading, updatePriorityPattern, saveField } = useAppointment(id);
   const [activeTab, setActiveTab] = React.useState("cranial-nerves");
+
+  // Global UI Settings
+  const [showImages, setShowImages] = useState(() => {
+    const saved = localStorage.getItem(SHOW_IMAGES_KEY);
+    return saved !== null ? JSON.parse(saved) : true;
+  });
+  const [rememberSettings, setRememberSettings] = useState(() => {
+    const saved = localStorage.getItem(REMEMBER_KEY);
+    return saved !== null ? JSON.parse(saved) : true;
+  });
+
+  useEffect(() => {
+    if (rememberSettings) {
+      localStorage.setItem(SHOW_IMAGES_KEY, JSON.stringify(showImages));
+      localStorage.setItem(REMEMBER_KEY, JSON.stringify(rememberSettings));
+    } else {
+      localStorage.removeItem(SHOW_IMAGES_KEY);
+      localStorage.removeItem(REMEMBER_KEY);
+    }
+  }, [showImages, rememberSettings]);
 
   if (loading) {
     return (
@@ -43,6 +73,43 @@ export default function ClinicalProtocolsPage() {
   return (
     <div className="min-h-screen bg-white p-4 md:p-6">
       <div className="max-w-full mx-auto space-y-6">
+        {/* Global Controls Bar */}
+        <div className="flex flex-wrap items-center justify-between gap-4 p-4 bg-slate-50 rounded-2xl border border-slate-100 shadow-inner print:hidden">
+          <div className="flex items-center gap-6">
+            <div className="flex items-center space-x-3">
+              <Switch 
+                id="show-images-global" 
+                checked={showImages} 
+                onCheckedChange={setShowImages}
+                className="data-[state=checked]:bg-indigo-600"
+              />
+              <Label htmlFor="show-images-global" className="text-[10px] font-black uppercase tracking-widest text-slate-600 cursor-pointer flex items-center gap-2">
+                {showImages ? <Eye size={14} className="text-indigo-600" /> : <EyeOff size={14} className="text-slate-400" />}
+                Show Reference Images
+              </Label>
+            </div>
+
+            <div className="flex items-center space-x-3 border-l border-slate-200 pl-6">
+              <Switch 
+                id="remember-settings" 
+                checked={rememberSettings} 
+                onCheckedChange={setRememberSettings}
+                className="data-[state=checked]:bg-emerald-600"
+              />
+              <Label htmlFor="remember-settings" className="text-[10px] font-black uppercase tracking-widest text-slate-600 cursor-pointer flex items-center gap-2">
+                <ShieldCheck size={14} className={rememberSettings ? "text-emerald-600" : "text-slate-400"} />
+                Remember Settings
+              </Label>
+            </div>
+          </div>
+
+          <div className="flex items-center gap-2">
+            <Badge variant="outline" className="bg-white border-slate-200 text-slate-400 font-black text-[8px] uppercase tracking-widest px-2 py-0.5 rounded-full">
+              Clinical Mode
+            </Badge>
+          </div>
+        </div>
+
         {/* Top Navigation */}
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
           <div className="flex justify-center mb-8 overflow-x-auto no-scrollbar">
@@ -104,6 +171,7 @@ export default function ClinicalProtocolsPage() {
               appointmentId={id!} 
               priorityPattern={appointment.priority_pattern}
               updatePriorityPattern={updatePriorityPattern}
+              showImages={showImages}
             />
           </TabsContent>
           
@@ -119,13 +187,16 @@ export default function ClinicalProtocolsPage() {
             <BrainZoneAssessment 
               priorityPattern={appointment.priority_pattern}
               updatePriorityPattern={updatePriorityPattern}
+              showImages={showImages}
             />
           </TabsContent>
 
           <TabsContent value="muscles" className="mt-0 focus-visible:ring-0 animate-in fade-in duration-300">
-            <div className="bg-slate-50 p-6 rounded-[2rem] border border-slate-100">
-              <MuscleTestingTab appointmentId={id!} />
-            </div>
+            <MuscleAssessment 
+              priorityPattern={appointment.priority_pattern}
+              updatePriorityPattern={updatePriorityPattern}
+              showImages={showImages}
+            />
           </TabsContent>
 
           <TabsContent value="mechanoreceptive" className="mt-0 focus-visible:ring-0 animate-in fade-in duration-300">

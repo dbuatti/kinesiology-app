@@ -19,7 +19,8 @@ import {
   Brain,
   Heart,
   Info,
-  Shield
+  Shield,
+  Dumbbell
 } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
@@ -38,6 +39,8 @@ import PageHeader from "@/components/shared/PageHeader";
 // Assessment Components for the second tab
 import { CranialNerveAssessment } from "@/components/crm/CranialNerveAssessment";
 import { PrimitiveReflexAssessment } from "@/components/crm/PrimitiveReflexAssessment";
+import { BrainZoneAssessment } from "@/components/crm/BrainZoneAssessment";
+import { MuscleAssessment } from "@/components/crm/MuscleAssessment";
 import EmotionsProtocolReference from "@/components/crm/EmotionsProtocolReference";
 import MechanoreceptiveAssessment from "@/components/crm/MechanoreceptiveAssessment";
 import HeartWallProtocol from "@/components/crm/HeartWallProtocol";
@@ -321,7 +324,7 @@ const ProceduresPage = () => {
 
               <Tabs value={protocolTab} onValueChange={setProtocolTab} className="w-full">
                 <div className="flex justify-center mb-10">
-                  <TabsList className="inline-flex h-14 items-center justify-center rounded-xl bg-slate-100/50 p-1.5 text-muted-foreground border border-slate-200">
+                  <TabsList className="inline-flex h-14 items-center justify-center rounded-xl bg-slate-100/50 p-1 text-muted-foreground border border-slate-200">
                     <TabsTrigger 
                       value="cranial-nerves" 
                       className="inline-flex items-center justify-center whitespace-nowrap rounded-lg px-8 py-3 text-xs font-bold uppercase tracking-widest transition-all data-[state=active]:bg-white data-[state=active]:text-indigo-600 data-[state=active]:shadow-md"
@@ -335,6 +338,20 @@ const ProceduresPage = () => {
                     >
                       <Zap className="h-4 w-4 mr-2" />
                       Primitive Reflexes
+                    </TabsTrigger>
+                    <TabsTrigger 
+                      value="brain-zones" 
+                      className="inline-flex items-center justify-center whitespace-nowrap rounded-lg px-8 py-3 text-xs font-bold uppercase tracking-widest transition-all data-[state=active]:bg-white data-[state=active]:text-indigo-600 data-[state=active]:shadow-md"
+                    >
+                      <Activity className="h-4 w-4 mr-2" />
+                      Brain Zones
+                    </TabsTrigger>
+                    <TabsTrigger 
+                      value="muscles" 
+                      className="inline-flex items-center justify-center whitespace-nowrap rounded-lg px-8 py-3 text-xs font-bold uppercase tracking-widest transition-all data-[state=active]:bg-white data-[state=active]:text-indigo-600 data-[state=active]:shadow-md"
+                    >
+                      <Dumbbell className="h-4 w-4 mr-2" />
+                      Muscles
                     </TabsTrigger>
                     <TabsTrigger 
                       value="mechanoreceptive" 
@@ -366,6 +383,7 @@ const ProceduresPage = () => {
                       appointmentId={SANDBOX_ID} 
                       priorityPattern={null}
                       updatePriorityPattern={async () => {}}
+                      showImages={true}
                     />
                   </TabsContent>
                   
@@ -374,6 +392,22 @@ const ProceduresPage = () => {
                       appointmentId={SANDBOX_ID} 
                       priorityPattern={null}
                       updatePriorityPattern={async () => {}}
+                    />
+                  </TabsContent>
+
+                  <TabsContent value="brain-zones" className="mt-0 focus-visible:ring-0">
+                    <BrainZoneAssessment 
+                      priorityPattern={null}
+                      updatePriorityPattern={async () => {}}
+                      showImages={true}
+                    />
+                  </TabsContent>
+
+                  <TabsContent value="muscles" className="mt-0 focus-visible:ring-0">
+                    <MuscleAssessment 
+                      priorityPattern={null}
+                      updatePriorityPattern={async () => {}}
+                      showImages={true}
                     />
                   </TabsContent>
 

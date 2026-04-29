@@ -29,11 +29,12 @@ interface ZoneTestItemProps {
   statusR?: 'Clear' | 'Inhibited';
   statusMidline?: 'Clear' | 'Inhibited';
   isLateralized: boolean;
-  images: { primary: string | null, secondary: string | null } | undefined;
+  imageUrl?: string | null;
+  showImage: boolean;
   onUpdate: (category: string, itemName: string, status: 'Clear' | 'Inhibited' | null, side?: 'L' | 'R') => Promise<void>;
 }
 
-const ZoneTestItem = ({ point, statusL, statusR, statusMidline, isLateralized, images, onUpdate }: ZoneTestItemProps) => {
+const ZoneTestItem = ({ point, statusL, statusR, statusMidline, isLateralized, imageUrl, showImage, onUpdate }: ZoneTestItemProps) => {
   const hasInhibition = statusL === 'Inhibited' || statusR === 'Inhibited' || statusMidline === 'Inhibited';
   const isFullyClear = (isLateralized ? (statusL === 'Clear' && statusR === 'Clear') : statusMidline === 'Clear');
 
@@ -126,11 +127,11 @@ const ZoneTestItem = ({ point, statusL, statusR, statusMidline, isLateralized, i
         </div>
 
         <div className="lg:col-span-4">
-          {images?.primary ? (
+          {showImage && imageUrl ? (
             <div className="aspect-video border border-slate-100 p-0.5 rounded-lg bg-slate-50 overflow-hidden">
-              <img src={images.primary} alt="Reference" className="w-full h-full object-cover rounded-md opacity-80" />
+              <img src={imageUrl} alt="Reference" className="w-full h-full object-cover rounded-md opacity-80" />
             </div>
-          ) : (
+          ) : showImage && (
             <div className="h-full min-h-[60px] border border-dashed border-slate-100 rounded-xl flex items-center justify-center text-slate-200 bg-slate-50/20">
               <Brain size={16} className="opacity-10" />
             </div>
@@ -143,13 +144,15 @@ const ZoneTestItem = ({ point, statusL, statusR, statusMidline, isLateralized, i
 
 export function BrainZoneAssessment({ 
   priorityPattern, 
-  updatePriorityPattern 
+  updatePriorityPattern,
+  showImages
 }: { 
   priorityPattern?: string | null;
   updatePriorityPattern: (category: string, itemName: string, status: 'Clear' | 'Inhibited' | null, side?: 'L' | 'R') => Promise<void>;
+  showImages: boolean;
 }) {
   const [searchQuery, setSearchQuery] = useState("");
-  const [customImages, setCustomImages] = useState<Record<string, { primary: string | null, secondary: string | null }>>({});
+  const [customImages, setCustomImages] = useState<Record<string, string | null>>({});
 
   const pattern = useMemo(() => safeParse(priorityPattern, {} as any), [priorityPattern]);
   const zonePattern = pattern.brainZones || {};
@@ -159,10 +162,11 @@ export function BrainZoneAssessment({
       try {
         const { data: { user } } = await supabase.auth.getUser();
         if (!user) return;
-        const { data } = await supabase.from('brain_reflex_customizations').select('reflex_id, image_url, secondary_image_url').eq('user_id', user.id);
-        const mapping: Record<string, { primary: string | null, secondary: string | null }> = {};
+        // Fetch secondary_image_url as requested
+        const { data } = await supabase.from('brain_reflex_customizations').select('reflex_id, secondary_image_url').eq('user_id', user.id);
+        const mapping: Record<string, string | null> = {};
         data?.forEach(item => {
-          mapping[item.reflex_id] = { primary: item.image_url, secondary: item.secondary_image_url };
+          mapping[item.reflex_id] = item.secondary_image_url;
         });
         setCustomImages(mapping);
       } catch (err) {
@@ -206,7 +210,8 @@ export function BrainZoneAssessment({
             statusR={zonePattern[`${point.name} (R)`]}
             statusMidline={zonePattern[point.name]}
             isLateralized={point.lateralization !== 'Bilateral' && point.lateralization !== 'Mixed'}
-            images={customImages[point.id]}
+            imageUrl={customImages[point.id]}
+            showImage={showImages}
             onUpdate={updatePriorityPattern}
           />
         ))}

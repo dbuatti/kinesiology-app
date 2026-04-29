@@ -26,10 +26,11 @@ interface NerveTestItemProps {
   statusL?: 'Clear' | 'Inhibited';
   statusR?: 'Clear' | 'Inhibited';
   images: { primary: string | null, secondary: string | null } | undefined;
+  showImage: boolean;
   onUpdate: (nerveId: string, updates: any, side?: 'L' | 'R') => Promise<void>;
 }
 
-const NerveTestItem = ({ nerve, test, statusL, statusR, images, onUpdate }: NerveTestItemProps) => {
+const NerveTestItem = ({ nerve, test, statusL, statusR, images, showImage, onUpdate }: NerveTestItemProps) => {
   const [localNotes, setLocalNotes] = useState(test.notes || "");
   const saveTimeoutRef = React.useRef<NodeJS.Timeout | null>(null);
 
@@ -200,7 +201,7 @@ const NerveTestItem = ({ nerve, test, statusL, statusR, images, onUpdate }: Nerv
         </div>
 
         <div className="lg:col-span-4">
-          {hasImages ? (
+          {showImage && hasImages ? (
             <div className="grid grid-cols-2 gap-2">
               {images.primary && (
                 <div className="aspect-video border border-slate-100 p-0.5 rounded-lg bg-slate-50 overflow-hidden">
@@ -213,7 +214,7 @@ const NerveTestItem = ({ nerve, test, statusL, statusR, images, onUpdate }: Nerv
                 </div>
               )}
             </div>
-          ) : (
+          ) : showImage && (
             <div className="h-full min-h-[60px] border border-dashed border-slate-100 rounded-xl flex items-center justify-center text-slate-200 bg-slate-50/20">
               <ImageIcon size={16} className="opacity-10" />
             </div>
@@ -227,11 +228,13 @@ const NerveTestItem = ({ nerve, test, statusL, statusR, images, onUpdate }: Nerv
 export function CranialNerveAssessment({ 
   appointmentId, 
   priorityPattern, 
-  updatePriorityPattern 
+  updatePriorityPattern,
+  showImages
 }: { 
   appointmentId: string;
   priorityPattern?: string | null;
   updatePriorityPattern?: (category: string, itemName: string, status: 'Clear' | 'Inhibited' | null, side?: 'L' | 'R') => Promise<void>;
+  showImages: boolean;
 }) {
   const { tests, loading, updateTest } = useCranialNerveTests(appointmentId, priorityPattern, updatePriorityPattern);
   const [customImages, setCustomImages] = useState<Record<string, { primary: string | null, secondary: string | null }>>({});
@@ -300,6 +303,7 @@ export function CranialNerveAssessment({
             statusL={nervePattern[`${nerveName} (L)`]}
             statusR={nervePattern[`${nerveName} (R)`]}
             images={customImages[`cn${nerve.id}`]}
+            showImage={showImages}
             onUpdate={updateTest}
           />
         );

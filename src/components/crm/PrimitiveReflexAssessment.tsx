@@ -31,7 +31,7 @@ interface ReflexTestItemProps {
   statusMidline?: 'Clear' | 'Inhibited';
   isLateralized: boolean;
   images: { primary: string | null, secondary: string | null } | undefined;
-  onUpdate: (reflexId: string, updates: any, side?: 'L' | 'R') => Promise<void>;
+  onUpdate: (reflexId: string, updates: any, side?: 'L' | 'R', reflexName?: string) => Promise<void>;
 }
 
 const ReflexTestItem = ({ reflex, test, statusL, statusR, statusMidline, isLateralized, images, onUpdate }: ReflexTestItemProps) => {
@@ -54,12 +54,11 @@ const ReflexTestItem = ({ reflex, test, statusL, statusR, statusMidline, isLater
 
   const handleClear = async () => {
     if (isLateralized) {
-      await onUpdate(reflex.id, { is_inhibited: false }, 'L');
-      await onUpdate(reflex.id, { is_inhibited: false }, 'R');
+      await onUpdate(reflex.id, { is_inhibited: false }, 'L', reflex.name);
+      await onUpdate(reflex.id, { is_inhibited: false }, 'R', reflex.name);
     } else {
-      await onUpdate(reflex.id, { is_inhibited: false });
+      await onUpdate(reflex.id, { is_inhibited: false }, undefined, reflex.name);
     }
-    // Clear priorities
     await onUpdate(reflex.id, { 
       is_inhibited: false, 
       is_priority: false, 
@@ -79,7 +78,6 @@ const ReflexTestItem = ({ reflex, test, statusL, statusR, statusMidline, isLater
       "border-slate-100 bg-white"
     )}>
       <div className="flex items-center justify-between gap-4">
-        {/* Left: Name and Info */}
         <div className="flex-1 min-w-0 space-y-1">
           <div className="flex items-center gap-2">
             <h2 className="text-sm font-bold text-slate-900 truncate">
@@ -102,7 +100,6 @@ const ReflexTestItem = ({ reflex, test, statusL, statusR, statusMidline, isLater
           </div>
         </div>
 
-        {/* Middle: Images (Compact) */}
         <div className="hidden md:flex items-center gap-1.5 shrink-0">
           {images?.primary && (
             <div className="h-8 w-12 rounded border border-slate-100 overflow-hidden bg-slate-50">
@@ -116,7 +113,6 @@ const ReflexTestItem = ({ reflex, test, statusL, statusR, statusMidline, isLater
           )}
         </div>
 
-        {/* Right: Controls */}
         <div className="flex items-center gap-3 shrink-0 print:hidden">
           <div className="flex items-center gap-3 border-r border-slate-100 pr-3">
             {isLateralized ? (
@@ -125,7 +121,7 @@ const ReflexTestItem = ({ reflex, test, statusL, statusR, statusMidline, isLater
                   <Checkbox 
                     id={`inhib-l-${reflex.id}`}
                     checked={statusL === 'Inhibited'}
-                    onCheckedChange={(checked) => onUpdate(reflex.id, { is_inhibited: !!checked }, 'L')}
+                    onCheckedChange={(checked) => onUpdate(reflex.id, { is_inhibited: !!checked }, 'L', reflex.name)}
                     className="h-3 w-3 border-slate-400 rounded-none"
                   />
                   <label htmlFor={`inhib-l-${reflex.id}`} className="text-[8px] font-black uppercase tracking-widest cursor-pointer text-slate-500">
@@ -136,7 +132,7 @@ const ReflexTestItem = ({ reflex, test, statusL, statusR, statusMidline, isLater
                   <Checkbox 
                     id={`inhib-r-${reflex.id}`}
                     checked={statusR === 'Inhibited'}
-                    onCheckedChange={(checked) => onUpdate(reflex.id, { is_inhibited: !!checked }, 'R')}
+                    onCheckedChange={(checked) => onUpdate(reflex.id, { is_inhibited: !!checked }, 'R', reflex.name)}
                     className="h-3 w-3 border-slate-400 rounded-none"
                   />
                   <label htmlFor={`inhib-r-${reflex.id}`} className="text-[8px] font-black uppercase tracking-widest cursor-pointer text-slate-500">
@@ -149,7 +145,7 @@ const ReflexTestItem = ({ reflex, test, statusL, statusR, statusMidline, isLater
                 <Checkbox 
                   id={`inhib-mid-${reflex.id}`}
                   checked={statusMidline === 'Inhibited'}
-                  onCheckedChange={(checked) => onUpdate(reflex.id, { is_inhibited: !!checked })}
+                  onCheckedChange={(checked) => onUpdate(reflex.id, { is_inhibited: !!checked }, undefined, reflex.name)}
                   className="h-3 w-3 border-slate-400 rounded-none"
                 />
                 <label htmlFor={`inhib-mid-${reflex.id}`} className="text-[8px] font-black uppercase tracking-widest cursor-pointer text-slate-500">
@@ -192,7 +188,6 @@ const ReflexTestItem = ({ reflex, test, statusL, statusR, statusMidline, isLater
         </div>
       </div>
 
-      {/* Bottom: Notes (Compact) */}
       <div className="mt-1.5 pt-1.5 border-t border-slate-100/50 flex items-center gap-2">
         <FileText size={10} className="text-slate-300 shrink-0" />
         <input 
@@ -252,7 +247,7 @@ export function PrimitiveReflexAssessment({
         const test = tests.find(t => t.reflex_id === reflex.id) || { is_inhibited: false };
         const matchesSearch = reflex.name.toLowerCase().includes(searchQuery.toLowerCase()) || 
                              reflex.category.toLowerCase().includes(searchQuery.toLowerCase());
-        const matchesInhibited = showOnlyInhibited ? test.is_inhibited : true;
+        const matchesInhibited = showOnlyInhibited ? (test.is_inhibited || reflexPattern[`${reflex.name} (L)`] === 'Inhibited' || reflexPattern[`${reflex.name} (R)`] === 'Inhibited' || reflexPattern[reflex.name] === 'Inhibited') : true;
         return matchesSearch && matchesInhibited;
       })
       .sort((a, b) => {
@@ -265,7 +260,6 @@ export function PrimitiveReflexAssessment({
         const isAnyClearA = reflexPattern[`${a.name} (L)`] === 'Clear' || reflexPattern[`${a.name} (R)`] === 'Clear' || reflexPattern[a.name] === 'Clear';
         const isAnyClearB = reflexPattern[`${b.name} (L)`] === 'Clear' || reflexPattern[`${b.name} (R)`] === 'Clear' || reflexPattern[b.name] === 'Clear';
 
-        // Priority score: Primary (1000) > Priority (500) > Inhibited (100) > Not Tested (0) > Clear (-100)
         const scoreA = (testA?.is_primary_priority ? 1000 : 0) + (testA?.is_priority ? 500 : 0) + (isAnyInhibA ? 100 : 0) + (isAnyClearA ? -100 : 0);
         const scoreB = (testB?.is_primary_priority ? 1000 : 0) + (testB?.is_priority ? 500 : 0) + (isAnyInhibB ? 100 : 0) + (isAnyClearB ? -100 : 0);
         

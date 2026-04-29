@@ -33,7 +33,7 @@ export function usePrimitiveReflexTests(
     }
   }, [appointmentId]);
 
-  const updateTest = async (reflexId: string, updates: Partial<PrimitiveReflexTest>, side?: 'L' | 'R') => {
+  const updateTest = async (reflexId: string, updates: Partial<PrimitiveReflexTest>, side?: 'L' | 'R', reflexName?: string) => {
     if (!appointmentId) return;
 
     try {
@@ -42,24 +42,23 @@ export function usePrimitiveReflexTests(
 
       // Handle inhibition sync to priority_pattern
       if (updates.is_inhibited !== undefined && updatePriorityPattern) {
-        await updatePriorityPattern('primitiveReflexes', reflexId, updates.is_inhibited ? 'Inhibited' : 'Clear', side);
+        // Use the display name for the pattern key, fallback to ID
+        const patternKey = reflexName || reflexId;
+        await updatePriorityPattern('primitiveReflexes', patternKey, updates.is_inhibited ? 'Inhibited' : 'Clear', side);
         
         // Determine if the reflex is still inhibited globally (either L or R)
         if (side) {
           const otherSide = side === 'L' ? 'R' : 'L';
           const pattern = safeParse(priorityPattern, {} as any);
           const reflexPattern = pattern.primitiveReflexes || {};
-          const isOtherSideInhibited = reflexPattern[`${reflexId} (${otherSide})`] === 'Inhibited';
+          const isOtherSideInhibited = reflexPattern[`${patternKey} (${otherSide})`] === 'Inhibited';
           
-          // If we are unchecking one side, but the other side is still inhibited, 
-          // keep the global is_inhibited as true in the primitive_reflex_tests table.
           if (!updates.is_inhibited && isOtherSideInhibited) {
             updates.is_inhibited = true;
           }
         }
       }
 
-      // If setting primary priority, unset others in the local state and DB
       if (updates.is_primary_priority) {
         await supabase
           .from('primitive_reflex_tests')
@@ -69,7 +68,6 @@ export function usePrimitiveReflexTests(
         setTests(prev => prev.map(t => ({ ...t, is_primary_priority: false })));
       }
 
-      // Use upsert to avoid 409 Conflict errors
       const { data, error } = await supabase
         .from('primitive_reflex_tests')
         .upsert({

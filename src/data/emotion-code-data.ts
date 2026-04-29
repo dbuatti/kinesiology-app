@@ -40,26 +40,26 @@ export const EMOTION_CODE_CHART: Record<number, EmotionCell> = {
 export const ROW_DATA: Record<number, RowData> = {
   1: { 
     organ: "Heart / Small Intestine", 
-    muscles: "Vastus Lateralis, Subscapularis, Quads, Abdominals" 
+    muscles: "Heart: Vastus Lateralis, Subscapularis; Small Intestine: Quads, Abdominals" 
   },
   2: { 
     organ: "Spleen / Stomach", 
-    muscles: "Triceps, Traps, PMC, Diaphragm, Neck Flexors" 
+    muscles: "Spleen: Triceps, Mid and Lower Traps; Stomach: PMC, Diaphragm, Neck Flexors" 
   },
   3: { 
     organ: "Lung / Colon", 
-    muscles: "Posterior Deltoid, TFL, Glute Max, QL" 
+    muscles: "Lungs: Posterior Deltoid, Serratus Anterior; Colon: TFL, Glute Max, QL" 
   },
   4: { 
     organ: "Liver / Gallbladder", 
-    muscles: "PMS, Rhomboids, Anterior Deltoid, Popliteus" 
+    muscles: "Liver: PMS, Rhomboids; Gallbladder: Anterior Deltoid, Popliteus" 
   },
   5: { 
     organ: "Kidneys / Bladder", 
-    muscles: "Psoas, Upper Traps, Erector Spinae" 
+    muscles: "Kidney: Psoas, Upper Traps; Bladder: Erector Spinae" 
   },
   6: { 
     organ: "Glands / Sexual Organs", 
-    muscles: "Piriformis, Flexor Hallucis, Supraspinatus, Glute Medius" 
+    muscles: "Adrenals: Piriformis, Flexor Hallucis Longus; Thyroid: Supraspinatus; Reproductive: Glute Medius" 
   }
 };

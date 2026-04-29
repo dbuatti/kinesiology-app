@@ -132,9 +132,16 @@ const HeartWallProtocol = () => {
                     </div>
                   </td>
                   <td className="p-4 align-top">
-                    <p className="text-xs font-bold text-slate-500 leading-relaxed">
-                      {ROW_DATA[rowNum].muscles}
-                    </p>
+                    <div className="space-y-2">
+                      {ROW_DATA[rowNum].muscles.split('; ').map((group, i) => {
+                        const [organ, list] = group.split(': ');
+                        return (
+                          <p key={i} className="text-xs text-slate-500 leading-relaxed">
+                            <span className="font-black text-slate-900">{organ}:</span> {list}
+                          </p>
+                        );
+                      })}
+                    </div>
                   </td>
                 </tr>
               ))}
@@ -157,9 +164,19 @@ const HeartWallProtocol = () => {
             <div className="space-y-4 relative z-10">
               <div className="flex items-start gap-3">
                 <Dumbbell size={16} className="text-indigo-400 shrink-0 mt-1" />
-                <p className="text-base font-medium text-indigo-100 leading-relaxed">
-                  Test these muscles to verify the finding: <span className="font-bold text-white">{ROW_DATA[selectedRow].muscles}</span>
-                </p>
+                <div className="text-base font-medium text-indigo-100 leading-relaxed">
+                  <p className="mb-2">Test these muscles to verify the finding:</p>
+                  <div className="space-y-1">
+                    {ROW_DATA[selectedRow].muscles.split('; ').map((group, i) => {
+                      const [organ, list] = group.split(': ');
+                      return (
+                        <div key={i}>
+                          <span className="font-black text-white">{organ}:</span> {list}
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
               </div>
             </div>
           </div>

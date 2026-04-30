@@ -17,7 +17,9 @@ import {
   CalendarClock,
   Cake,
   Wallet,
-  CheckCircle2
+  CheckCircle2,
+  User,
+  ExternalLink
 } from "lucide-react";
 import { format, isToday } from "date-fns";
 import { cn } from "@/lib/utils";
@@ -42,6 +44,7 @@ import QuickAssessmentModal from "./QuickAssessmentModal";
 import AppointmentForm from "./AppointmentForm";
 import { calculateBrainstemTone } from "@/utils/brainstem-logic";
 import { showSuccess } from "@/utils/toast";
+import { Link } from "react-router-dom";
 
 interface AppointmentHeaderProps {
   appointment: AppointmentWithClient;
@@ -70,120 +73,139 @@ const AppointmentHeader = ({ appointment, onSaveField, onUpdate }: AppointmentHe
   };
 
   return (
-    <div className="space-y-4 md:space-y-6">
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 md:gap-6">
-        <div className="flex items-center gap-3 md:gap-5">
-          <div className="relative group shrink-0">
-            <div className="w-12 h-12 md:w-16 md:h-16 rounded-xl md:rounded-2xl bg-indigo-600 text-white flex items-center justify-center text-xl md:text-2xl font-black shadow-xl">
+    <div className="space-y-6">
+      <div className="flex flex-col lg:flex-row lg:items-end justify-between gap-6">
+        <div className="flex items-start gap-5">
+          <div className="relative shrink-0">
+            <div className="w-16 h-16 md:w-20 md:h-20 rounded-[2rem] bg-indigo-600 text-white flex items-center justify-center text-2xl md:text-3xl font-black shadow-2xl shadow-indigo-200 dark:shadow-none">
               {appointment.clients.name.charAt(0)}
             </div>
             {isSessionToday && (
-              <span className="absolute -top-1 -right-1 w-3 h-3 md:w-4 md:h-4 bg-rose-500 border-2 border-background rounded-full animate-pulse" />
+              <span className="absolute -top-1 -right-1 w-4 h-4 bg-rose-500 border-4 border-background rounded-full animate-pulse" />
             )}
           </div>
           
-          <div className="space-y-0.5 md:space-y-1 min-w-0">
-            <div className="flex items-center gap-2">
-              <h1 className="text-xl md:text-3xl font-black text-foreground tracking-tighter truncate">
+          <div className="space-y-2 min-w-0">
+            <div className="flex flex-wrap items-center gap-3">
+              <h1 className="text-3xl md:text-4xl font-black text-foreground tracking-tighter truncate">
                 {appointment.clients.name}
               </h1>
-              {clientBorn && (
-                <Badge variant="outline" className="h-6 px-2 text-[10px] font-black border-indigo-100 text-indigo-600 bg-indigo-50/50 rounded-lg shrink-0">
-                  {calculateAge(clientBorn)} yrs
-                </Badge>
-              )}
-              <Button variant="ghost" size="icon" className="h-7 w-7 md:h-8 md:w-8 rounded-lg md:rounded-xl text-slate-300 hover:text-indigo-600" asChild>
-                <a href={`/clients/${appointment.clients.id}`}><UserCircle size={18} /></a>
-              </Button>
+              <div className="flex items-center gap-2">
+                {clientBorn && (
+                  <Badge variant="outline" className="h-6 px-2 text-[10px] font-black border-indigo-100 text-indigo-600 bg-indigo-50/50 rounded-lg">
+                    {calculateAge(clientBorn)} yrs
+                  </Badge>
+                )}
+                <Link to={`/clients/${appointment.clients.id}`}>
+                  <Button variant="ghost" size="icon" className="h-8 w-8 rounded-xl text-slate-300 hover:text-indigo-600 hover:bg-indigo-50 transition-all">
+                    <ExternalLink size={18} />
+                  </Button>
+                </Link>
+              </div>
             </div>
             
-            <div className="flex flex-wrap items-center gap-2 md:gap-4 text-[10px] md:text-xs font-bold text-muted-foreground">
-              <button 
-                onClick={() => setRescheduleOpen(true)}
-                className="flex items-center gap-1 hover:text-indigo-600 transition-colors group"
-              >
-                <Calendar size={12} className="text-indigo-400 group-hover:scale-110 transition-transform" /> 
-                {format(appointment.date, "MMM d")}
-              </button>
-              <button 
-                onClick={() => setRescheduleOpen(true)}
-                className="flex items-center gap-1 hover:text-indigo-600 transition-colors group"
-              >
-                <Clock size={12} className="text-indigo-400 group-hover:scale-110 transition-transform" /> 
-                {format(appointment.date, "h:mm a")}
-              </button>
-              {clientBorn && (
-                <span className="flex items-center gap-1 text-slate-400">
-                  <Cake size={12} className="text-slate-300" />
-                  {format(clientBorn, "MMM d, yyyy")}
-                </span>
-              )}
-              <Select value={appointment.status} onValueChange={(newStatus) => onSaveField('status', newStatus)}>
-                <SelectTrigger className={cn(
-                  "h-5 md:h-6 w-[80px] md:w-[100px] text-[7px] md:text-[8px] font-black uppercase tracking-widest border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 rounded-md",
-                  appointment.status === 'Completed' ? "text-emerald-600" : "text-indigo-600"
-                )}>
-                  <SelectValue placeholder="Status" />
-                </SelectTrigger>
-                <SelectContent className="rounded-xl border-none shadow-2xl p-1">
-                  {APPOINTMENT_STATUSES.map(status => (
-                    <SelectItem 
-                      key={status} 
-                      value={status}
-                      className="rounded-lg text-[9px] font-bold uppercase tracking-wider py-2 px-3 cursor-pointer"
-                    >
-                      {status}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-              <Button 
-                variant="ghost" 
-                size="sm" 
-                onClick={() => setRescheduleOpen(true)}
-                className="h-5 md:h-6 px-2 text-[7px] md:text-[8px] font-black uppercase tracking-widest text-indigo-600 hover:bg-indigo-50 rounded-md"
-              >
-                <CalendarClock size={10} className="mr-1" /> Reschedule
-              </Button>
+            <div className="flex flex-wrap items-center gap-x-6 gap-y-2">
+              <div className="flex items-center gap-4">
+                <button 
+                  onClick={() => setRescheduleOpen(true)}
+                  className="flex items-center gap-2 hover:text-indigo-600 transition-all group"
+                >
+                  <div className="w-8 h-8 rounded-lg bg-slate-50 flex items-center justify-center text-indigo-400 group-hover:bg-indigo-50 group-hover:scale-110 transition-all">
+                    <Calendar size={14} />
+                  </div>
+                  <span className="text-xs font-bold text-slate-600">{format(appointment.date, "EEEE, MMM d")}</span>
+                </button>
+                <button 
+                  onClick={() => setRescheduleOpen(true)}
+                  className="flex items-center gap-2 hover:text-indigo-600 transition-all group"
+                >
+                  <div className="w-8 h-8 rounded-lg bg-slate-50 flex items-center justify-center text-indigo-400 group-hover:bg-indigo-50 group-hover:scale-110 transition-all">
+                    <Clock size={14} />
+                  </div>
+                  <span className="text-xs font-bold text-slate-600">{format(appointment.date, "h:mm a")}</span>
+                </button>
+              </div>
+
+              <div className="h-4 w-px bg-slate-100 hidden md:block" />
+
+              <div className="flex items-center gap-3">
+                <Select value={appointment.status} onValueChange={(newStatus) => onSaveField('status', newStatus)}>
+                  <SelectTrigger className={cn(
+                    "h-9 w-[130px] text-[10px] font-black uppercase tracking-widest border-slate-200 bg-white rounded-xl shadow-sm",
+                    appointment.status === 'Completed' ? "text-emerald-600 border-emerald-100" : "text-indigo-600"
+                  )}>
+                    <SelectValue placeholder="Status" />
+                  </SelectTrigger>
+                  <SelectContent className="rounded-2xl border-none shadow-2xl p-1">
+                    {APPOINTMENT_STATUSES.map(status => (
+                      <SelectItem 
+                        key={status} 
+                        value={status}
+                        className="rounded-xl text-[10px] font-bold uppercase tracking-wider py-2.5 px-4 cursor-pointer"
+                      >
+                        {status}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
             </div>
           </div>
         </div>
 
-        <div className="flex flex-wrap items-center gap-2">
+        <div className="flex flex-wrap items-center gap-3 bg-slate-50/50 p-2 rounded-[2rem] border border-slate-100">
           <div className={cn(
-            "flex items-center gap-1.5 px-2 py-1 md:px-3 md:py-1.5 rounded-lg md:rounded-xl border transition-all",
-            neuralLoad > 50 ? "bg-rose-50 border-rose-200 text-rose-700" : "bg-emerald-50 border-emerald-200 text-emerald-700"
+            "flex items-center gap-2 px-4 py-2 rounded-2xl border transition-all shadow-sm",
+            neuralLoad > 50 ? "bg-rose-50 border-rose-200 text-rose-700" : "bg-white border-slate-100 text-slate-600"
           )}>
-            <ShieldAlert size={12} className="md:w-3.5 md:h-3.5" />
-            <span className="text-[8px] md:text-[10px] font-black uppercase tracking-widest">Load: {neuralLoad}%</span>
+            <ShieldAlert size={16} className={cn(neuralLoad > 50 ? "text-rose-500" : "text-indigo-400")} />
+            <div className="flex flex-col">
+              <span className="text-[8px] font-black uppercase tracking-widest opacity-60">Neural Load</span>
+              <span className="text-sm font-black tabular-nums">{neuralLoad}%</span>
+            </div>
           </div>
 
           <button 
             onClick={handlePaymentClick}
             className={cn(
-              "flex items-center gap-2 px-2 py-1 md:px-3 md:py-1.5 rounded-lg md:rounded-xl border transition-all group",
+              "flex items-center gap-3 px-4 py-2 rounded-2xl border transition-all group shadow-sm",
               appointment.is_paid
-                ? (appointment.payment_received ? "bg-emerald-600 border-emerald-600 text-white shadow-lg shadow-emerald-100" : "bg-amber-50 border-amber-200 text-amber-700 hover:border-amber-400")
-                : "bg-slate-50 border-slate-200 text-slate-400 hover:border-indigo-300 hover:text-indigo-600"
+                ? (appointment.payment_received ? "bg-emerald-600 border-emerald-600 text-white" : "bg-white border-amber-200 text-amber-700 hover:border-amber-400")
+                : "bg-white border-slate-100 text-slate-400 hover:border-indigo-200 hover:text-indigo-600"
             )}
           >
-            {appointment.payment_received ? <CheckCircle2 size={12} className="md:w-3.5 md:h-3.5" /> : <Wallet size={12} className="md:w-3.5 md:h-3.5" />}
-            <span className="text-[8px] md:text-[10px] font-black uppercase tracking-widest">
-              {!appointment.is_paid ? "FREE" : (appointment.payment_received ? "PAID" : `MARK PAID`)}
-            </span>
+            <div className={cn(
+              "w-8 h-8 rounded-lg flex items-center justify-center transition-all",
+              appointment.payment_received ? "bg-white/20" : "bg-slate-50 group-hover:bg-indigo-50"
+            )}>
+              {appointment.payment_received ? <CheckCircle2 size={16} /> : <Wallet size={16} className={cn(!appointment.is_paid ? "text-slate-300" : "text-amber-500")} />}
+            </div>
+            <div className="flex flex-col text-left">
+              <span className="text-[8px] font-black uppercase tracking-widest opacity-60">Billing</span>
+              <span className="text-xs font-black">
+                {!appointment.is_paid ? "FREE" : (appointment.payment_received ? "PAID" : `DUE: $${appointment.price_amount || 50}`)}
+              </span>
+            </div>
           </button>
 
           <div className={cn(
-            "flex items-center gap-2 px-2 py-1 md:px-3 md:py-1.5 rounded-lg md:rounded-xl border transition-all",
-            appointment.hydrated ? "bg-blue-50 border-blue-200 text-blue-700" : "bg-rose-50 border-rose-200 text-rose-700"
+            "flex items-center gap-3 px-4 py-2 rounded-2xl border transition-all shadow-sm",
+            appointment.hydrated ? "bg-blue-600 border-blue-600 text-white" : "bg-white border-rose-200 text-rose-600"
           )}>
-            <span className="text-[8px] md:text-[10px] font-black uppercase tracking-widest">
-              {appointment.hydrated ? "HYDRATED" : "DEHYDRATED"}
-            </span>
+            <div className={cn(
+              "w-8 h-8 rounded-lg flex items-center justify-center transition-all",
+              appointment.hydrated ? "bg-white/20" : "bg-rose-50"
+            )}>
+              <Droplets size={16} className={cn(appointment.hydrated ? "text-white" : "text-rose-500")} />
+            </div>
+            <div className="flex flex-col">
+              <span className="text-[8px] font-black uppercase tracking-widest opacity-60">Hydration</span>
+              <span className="text-xs font-black">{appointment.hydrated ? "OPTIMAL" : "THREAT"}</span>
+            </div>
             <Switch 
               checked={appointment.hydrated || false} 
               onCheckedChange={(checked) => onSaveField('hydrated', checked)} 
-              className="data-[state=checked]:bg-blue-500 scale-[0.6] md:scale-75" 
+              className="data-[state=checked]:bg-blue-400 data-[state=unchecked]:bg-rose-200 scale-75" 
             />
           </div>
         </div>
@@ -201,7 +223,7 @@ const AppointmentHeader = ({ appointment, onSaveField, onUpdate }: AppointmentHe
       )}
 
       <Dialog open={rescheduleOpen} onOpenChange={setRescheduleOpen}>
-        <DialogContent className="sm:max-w-[550px] max-h-[90vh] overflow-y-auto rounded-[2rem] p-0">
+        <DialogContent className="sm:max-w-[550px] max-h-[90vh] overflow-y-auto rounded-[2.5rem] p-0">
           <div className="p-8">
             <DialogHeader className="mb-6">
               <div className="flex items-center gap-4 mb-2">

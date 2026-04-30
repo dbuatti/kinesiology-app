@@ -58,7 +58,6 @@ const WeeklyFocusBanner = ({ appointmentId, priorityPattern, onSaveField, onJump
         let foundStatus: any = 'Not Tested';
         Object.values(parsed).forEach((category: any) => {
           if (category[item]) foundStatus = category[item];
-          // Check for lateralized versions
           if (category[`${item} (L)`] === 'Inhibited' || category[`${item} (R)`] === 'Inhibited') foundStatus = 'Inhibited';
           if (category[`${item} (L)`] === 'Clear' && category[`${item} (R)`] === 'Clear') foundStatus = 'Clear';
         });
@@ -70,42 +69,30 @@ const WeeklyFocusBanner = ({ appointmentId, priorityPattern, onSaveField, onJump
     }
   }, [items, priorityPattern]);
 
-  // Helper to find video URL for a focus item
   const getVideoUrl = (name: string) => {
-    // 1. Check Muscles
     const muscle = getMuscleInfo(name);
     if (muscle.videoUrl) return muscle.videoUrl;
-
-    // 2. Check Reflexes
     const reflex = PRIMITIVE_REFLEXES.find(r => r.name === name);
     if (reflex?.videoUrl) return reflex.videoUrl;
-
-    // 3. Check Brain Zones / Nerves
     const brainPoint = BRAIN_REFLEX_POINTS.find(p => p.name.startsWith(name));
     if (brainPoint?.videoUrl) return brainPoint.videoUrl;
-
     return null;
   };
 
   const handleSetStatus = async (item: string, status: 'Clear' | 'Inhibited') => {
     if (!onSaveField) return;
-
     try {
       let parsed = {};
       if (priorityPattern && priorityPattern.trim() !== "") {
         parsed = JSON.parse(priorityPattern);
       }
-      
       let category = 'muscles';
       if (PRIMITIVE_REFLEXES.some(r => r.name === item)) category = 'primitiveReflexes';
       else if (BRAIN_REFLEX_POINTS.some(p => p.name.startsWith(item))) category = 'cranialNerves';
-
       if (!(parsed as any)[category]) (parsed as any)[category] = {};
       (parsed as any)[category][item] = status;
-
       setCelebratingItem(item);
       setTimeout(() => setCelebratingItem(null), 2000);
-
       await onSaveField('priority_pattern', JSON.stringify(parsed));
       setOpenPopover(null);
     } catch (e) {
@@ -129,35 +116,35 @@ const WeeklyFocusBanner = ({ appointmentId, priorityPattern, onSaveField, onJump
   return (
     <div className="w-full mb-6 animate-in slide-in-from-top-4 duration-700 print:hidden">
       <div className={cn(
-        "bg-indigo-600 text-white rounded-[2rem] p-4 shadow-xl shadow-indigo-200 dark:shadow-indigo-900/20 border-2 border-indigo-400/30 relative overflow-hidden group transition-all duration-500",
+        "bg-indigo-600 text-white rounded-[2.5rem] p-5 shadow-xl border-2 border-indigo-400/30 relative overflow-hidden group transition-all duration-700",
         isAllPracticed && "bg-emerald-600 border-emerald-400/30 shadow-emerald-200"
       )}>
-        <div className="absolute top-0 right-0 p-4 opacity-10 group-hover:scale-110 transition-transform duration-700">
-          <Trophy size={60} />
+        <div className="absolute top-0 right-0 p-6 opacity-10 group-hover:scale-110 transition-transform duration-700">
+          <Trophy size={80} />
         </div>
         
-        <div className="flex flex-col md:flex-row items-center justify-between gap-4 relative z-10">
-          <div className="flex items-center gap-4">
+        <div className="flex flex-col md:flex-row items-center justify-between gap-6 relative z-10">
+          <div className="flex items-center gap-5">
             <div className={cn(
-              "w-10 h-10 rounded-xl bg-white/20 backdrop-blur-md flex items-center justify-center border border-white/20 shadow-inner transition-colors",
-              celebratingItem ? "bg-emerald-400 border-emerald-200 animate-bounce" : ""
+              "w-12 h-12 rounded-2xl bg-white/20 backdrop-blur-md flex items-center justify-center border border-white/20 shadow-inner transition-all duration-500",
+              celebratingItem ? "bg-emerald-400 border-emerald-200 scale-110 rotate-12" : ""
             )}>
-              {celebratingItem ? <Sparkles size={20} className="text-white" /> : <Target size={20} className="text-indigo-100" />}
+              {celebratingItem ? <Sparkles size={24} className="text-white" /> : <Target size={24} className="text-indigo-100" />}
             </div>
             <div>
-              <p className="text-[9px] font-black uppercase tracking-[0.3em] text-indigo-200">Weekly Mastery Focus</p>
-              <div className="flex flex-wrap items-center gap-3 mt-1">
+              <p className="text-[10px] font-black uppercase tracking-[0.4em] text-indigo-200 mb-1.5">Weekly Mastery Focus</p>
+              <div className="flex flex-wrap items-center gap-3">
                 {items.map((item, i) => {
                   const status = itemStatuses[item] || 'Not Tested';
                   const videoUrl = getVideoUrl(item);
                   
                   if (!isInteractive) return (
                     <React.Fragment key={item}>
-                      <div className="flex items-center gap-1.5">
-                        {videoUrl && <PlayCircle size={12} className="text-indigo-300" />}
-                        <span className="text-sm font-black tracking-tight">{item}</span>
+                      <div className="flex items-center gap-2">
+                        {videoUrl && <PlayCircle size={14} className="text-indigo-300" />}
+                        <span className="text-base font-black tracking-tight">{item}</span>
                       </div>
-                      {i < items.length - 1 && <span className="text-indigo-400 opacity-50">•</span>}
+                      {i < items.length - 1 && <span className="text-indigo-400/40 font-black">•</span>}
                     </React.Fragment>
                   );
 
@@ -169,54 +156,54 @@ const WeeklyFocusBanner = ({ appointmentId, priorityPattern, onSaveField, onJump
                     >
                       <PopoverTrigger asChild>
                         <button className={cn(
-                          "flex items-center gap-2 px-3 py-1 rounded-xl transition-all hover:scale-105 border-2",
+                          "flex items-center gap-2.5 px-4 py-2 rounded-2xl transition-all hover:scale-105 border-2 shadow-sm",
                           status === 'Clear' ? "bg-emerald-500/20 border-emerald-400/50 text-white" :
                           status === 'Inhibited' ? "bg-rose-500/20 border-rose-400/50 text-white" :
                           "bg-white/10 border-white/10 text-indigo-100 hover:bg-white/20"
                         )}>
-                          {status === 'Clear' ? <CheckCircle2 size={14} className="text-emerald-300" /> :
-                           status === 'Inhibited' ? <AlertCircle size={14} className="text-rose-300" /> :
-                           videoUrl ? <PlayCircle size={14} className="text-indigo-300" /> :
-                           <div className="w-3.5 h-3.5 rounded-full border-2 border-current opacity-30" />}
+                          {status === 'Clear' ? <CheckCircle2 size={16} className="text-emerald-300" /> :
+                           status === 'Inhibited' ? <AlertCircle size={16} className="text-rose-300" /> :
+                           videoUrl ? <PlayCircle size={16} className="text-indigo-300" /> :
+                           <div className="w-4 h-4 rounded-full border-2 border-current opacity-30" />}
                           <span className="text-sm font-black tracking-tight">{item}</span>
-                          <ChevronDown size={12} className="opacity-50" />
+                          <ChevronDown size={14} className="opacity-50" />
                         </button>
                       </PopoverTrigger>
-                      <PopoverContent className="w-56 p-2 rounded-2xl border-none shadow-2xl bg-slate-900 text-white z-[100]">
+                      <PopoverContent className="w-64 p-2 rounded-[2rem] border-none shadow-3xl bg-slate-900 text-white z-[100]">
                         <div className="space-y-1">
-                          <p className="text-[8px] font-black uppercase tracking-widest text-slate-500 px-3 py-1">Quick Register</p>
+                          <p className="text-[9px] font-black uppercase tracking-widest text-slate-500 px-4 py-2">Quick Register</p>
                           <Button 
                             variant="ghost" 
-                            className="w-full justify-start h-10 rounded-xl hover:bg-emerald-500/20 hover:text-emerald-400 font-bold text-xs"
+                            className="w-full justify-start h-11 rounded-xl hover:bg-emerald-500/20 hover:text-emerald-400 font-bold text-xs px-4"
                             onClick={(e) => { e.stopPropagation(); handleSetStatus(item, 'Clear'); }}
                           >
-                            <CheckCircle2 size={16} className="mr-3" /> Mark as Clear
+                            <CheckCircle2 size={18} className="mr-3" /> Mark as Clear
                           </Button>
                           <Button 
                             variant="ghost" 
-                            className="w-full justify-start h-10 rounded-xl hover:bg-rose-500/20 hover:text-rose-400 font-bold text-xs"
+                            className="w-full justify-start h-11 rounded-xl hover:bg-rose-500/20 hover:text-rose-400 font-bold text-xs px-4"
                             onClick={(e) => { e.stopPropagation(); handleSetStatus(item, 'Inhibited'); }}
                           >
-                            <AlertCircle size={16} className="mr-3" /> Mark as Inhibited
+                            <AlertCircle size={18} className="mr-3" /> Mark as Inhibited
                           </Button>
-                          <div className="h-px bg-white/10 my-1" />
+                          <div className="h-px bg-white/10 my-2 mx-2" />
                           {videoUrl && (
                             <Button 
                               variant="ghost" 
                               asChild
-                              className="w-full justify-start h-10 rounded-xl hover:bg-indigo-500/20 hover:text-indigo-400 font-bold text-xs"
+                              className="w-full justify-start h-11 rounded-xl hover:bg-indigo-500/20 hover:text-indigo-400 font-bold text-xs px-4"
                             >
                               <a href={videoUrl} target="_blank" rel="noopener noreferrer">
-                                <PlayCircle size={16} className="mr-3" /> Watch Lesson
+                                <PlayCircle size={18} className="mr-3" /> Watch Lesson
                               </a>
                             </Button>
                           )}
                           <Button 
                             variant="ghost" 
-                            className="w-full justify-start h-10 rounded-xl hover:bg-indigo-500/20 hover:text-indigo-400 font-bold text-xs"
+                            className="w-full justify-start h-11 rounded-xl hover:bg-indigo-500/20 hover:text-indigo-400 font-bold text-xs px-4"
                             onClick={(e) => { e.stopPropagation(); handleCalibrate(item); }}
                           >
-                            <Zap size={16} className="mr-3" /> Calibrate Finding
+                            <Zap size={18} className="mr-3" /> Calibrate Finding
                           </Button>
                         </div>
                       </PopoverContent>
@@ -227,12 +214,15 @@ const WeeklyFocusBanner = ({ appointmentId, priorityPattern, onSaveField, onJump
             </div>
           </div>
           
-          <div className="flex items-center gap-3">
-            <div className="hidden lg:flex items-center gap-2 px-3 py-1 bg-white/10 rounded-full border border-white/10">
-              <Sparkles size={12} className="text-amber-300" />
-              <span className="text-[8px] font-black uppercase tracking-widest text-indigo-100">
-                {practicedCount} / {items.length} Practiced
-              </span>
+          <div className="flex items-center gap-4">
+            <div className="hidden lg:flex flex-col items-end">
+              <p className="text-[9px] font-black uppercase tracking-widest text-indigo-300 mb-1">Mastery Progress</p>
+              <div className="flex items-center gap-3">
+                <div className="w-32 h-1.5 bg-white/10 rounded-full overflow-hidden">
+                  <div className="h-full bg-emerald-400 transition-all duration-1000" style={{ width: `${(practicedCount / items.length) * 100}%` }} />
+                </div>
+                <span className="text-xs font-black tabular-nums">{practicedCount}/{items.length}</span>
+              </div>
             </div>
           </div>
         </div>

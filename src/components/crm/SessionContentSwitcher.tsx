@@ -30,7 +30,8 @@ import {
   ChevronDown,
   X,
   BookOpen,
-  Brain
+  Brain,
+  RefreshCw
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useNavigate } from 'react-router-dom';
@@ -38,6 +39,7 @@ import { AppointmentWithClient } from '@/types/crm';
 import BaselineTab from './session-tabs/BaselineTab';
 import SympatheticTab from './session-tabs/SympatheticTab';
 import EmbedTab from './session-tabs/EmbedTab';
+import RecheckTab from './session-tabs/RecheckTab';
 import ClientContextTab from './session-tabs/ClientContextTab';
 import JournalTab from './session-tabs/JournalTab';
 import EditableField from '@/components/shared/EditableField';
@@ -66,7 +68,7 @@ import {
   DialogDescription,
 } from "@/components/ui/dialog";
 
-type ActiveView = 'home' | 'kinesiology' | 'muscles' | 'gait' | 'previous' | 'context' | 'journal';
+type ActiveView = 'home' | 'kinesiology' | 'muscles' | 'gait' | 'previous' | 'context' | 'journal' | 'recheck';
 
 interface SessionContentSwitcherProps {
   appointment: AppointmentWithClient;
@@ -318,13 +320,14 @@ const SessionContentSwitcher = ({
     </div>
   );
 
-  const isToolActive = ['kinesiology', 'muscles', 'gait', 'context', 'journal'].includes(activeView);
+  const isToolActive = ['kinesiology', 'muscles', 'gait', 'context', 'journal', 'recheck'].includes(activeView);
 
   return (
     <div className="space-y-6 md:space-y-8">
       <div className="flex flex-col md:flex-row items-center justify-between bg-slate-100/60 backdrop-blur-md p-1.5 rounded-2xl md:rounded-[2rem] border border-slate-200/50 gap-2">
         <div className="flex items-center gap-1 overflow-x-auto no-scrollbar w-full md:w-auto px-1">
           <NavItem view="home" label="PEACE" Icon={LayoutGrid} />
+          <NavItem view="recheck" label="Recheck" Icon={RefreshCw} />
           <NavItem view="previous" label="History" Icon={History} />
           
           <DropdownMenu>
@@ -415,6 +418,15 @@ const SessionContentSwitcher = ({
       
       <div className="animate-in fade-in slide-in-from-bottom-2 duration-500">
         {activeView === 'home' && renderHomeView()}
+        {activeView === 'recheck' && (
+          <RecheckTab 
+            appointment={appointment} 
+            history={history} 
+            onUpdate={onUpdate} 
+            saveField={saveField} 
+            updatePriorityPattern={updatePriorityPattern} 
+          />
+        )}
         {activeView === 'context' && <ClientContextTab appointment={appointment} />}
         {activeView === 'journal' && <JournalTab appointmentId={appointment.id} clientName={appointment.clients.name} />}
         {activeView === 'kinesiology' && (

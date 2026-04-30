@@ -26,7 +26,8 @@ import { format } from "date-fns";
 import { cn } from "@/lib/utils";
 import { showSuccess, showError } from "@/utils/toast";
 import { safeParse } from "@/utils/safe-json";
-import { MuscleStatus } from '@/data/muscle-data';
+import { PRIMITIVE_REFLEXES } from "@/data/primitive-reflex-data";
+import { BRAIN_REFLEX_POINTS } from "@/data/brain-reflex-data";
 
 interface RecheckTabProps {
   appointment: any;
@@ -52,10 +53,8 @@ const RecheckTab = ({ appointment, history, onUpdate, saveField, updatePriorityP
   const [currentMuscleTests, setCurrentMuscleTests] = useState<any[]>([]);
   const [processingId, setProcessingId] = useState<string | null>(null);
 
-  // 1. Identify the previous session
   const previousSession = useMemo(() => {
     if (!history || history.length < 2) return null;
-    // history[0] is current, history[1] is previous
     return history[1];
   }, [history]);
 
@@ -85,27 +84,42 @@ const RecheckTab = ({ appointment, history, onUpdate, saveField, updatePriorityP
     fetchSessionData();
   }, [previousSession?.id, appointment.id]);
 
-  // 2. Consolidate all items to recheck
   const recheckItems = useMemo(() => {
     if (!previousSession) return [];
 
     const items: RecheckItem[] = [];
     const currentPattern = safeParse(appointment.priority_pattern, {} as any);
-
-    // Process Previous Priority Pattern
     const prevPattern = safeParse(previousSession.priority_pattern, {} as any);
+
+    // Helper to find canonical name for an ID
+    const getCanonicalName = (key: string) => {
+      const reflex = PRIMITIVE_REFLEXES.find(r => r.id === key || r.name === key);
+      if (reflex) return reflex.name;
+      const brainPoint = BRAIN_REFLEX_POINTS.find(p => p.id === key || p.name === key);
+      if (brainPoint) return brainPoint.name;
+      return key;
+    };
+
+    const processedKeys = new Set<string>();
+
     Object.entries(prevPattern).forEach(([catKey, categoryItems]: [string, any]) => {
-      Object.entries(categoryItems).forEach(([name, status]) => {
-        const sideMatch = name.match(/\(([LR])\)$/);
+      Object.entries(categoryItems).forEach(([rawName, status]) => {
+        const sideMatch = rawName.match(/\(([LR])\)$/);
         const side = sideMatch ? sideMatch[1] as 'L' | 'R' : undefined;
-        const baseName = name.replace(/ \([LR]\)$/, '');
+        const baseName = rawName.replace(/ \([LR]\)$/, '');
         
-        // Check current status in current pattern
-        const currentStatus = currentPattern[catKey]?.[name] || null;
+        const canonicalBase = getCanonicalName(baseName);
+        const canonicalFullName = side ? `${canonicalBase} (${side})` : canonicalBase;
+
+        // Skip if we've already processed this canonical item
+        if (processedKeys.has(canonicalFullName)) return;
+        processedKeys.add(canonicalFullName);
+
+        const currentStatus = currentPattern[catKey]?.[canonicalFullName] || currentPattern[catKey]?.[rawName] || null;
 
         items.push({
-          id: `pattern-${catKey}-${name}`,
-          name: baseName,
+          id: `pattern-${catKey}-${canonicalFullName}`,
+          name: canonicalBase,
           category: catKey,
           type: 'pattern',
           previousStatus: status as string,
@@ -115,13 +129,14 @@ const RecheckTab = ({ appointment, history, onUpdate, saveField, updatePriorityP
       });
     });
 
-    // Process Previous Muscle Tests
     prevMuscleTests.forEach(test => {
+      if (processedKeys.has(test.muscle_name)) return;
+      processedKeys.add(test.muscle_name);
+
       const sideMatch = test.muscle_name.match(/\(([LR])\)$/);
       const side = sideMatch ? sideMatch[1] as 'L' | 'R' : undefined;
       const baseName = test.muscle_name.replace(/ \([LR]\)$/, '');
 
-      // Check current status in current muscle tests
       const currentTest = currentMuscleTests.find(t => t.muscle_name === test.muscle_name);
       const currentStatus = currentTest?.status || null;
 
@@ -137,7 +152,6 @@ const RecheckTab = ({ appointment, history, onUpdate, saveField, updatePriorityP
     });
 
     return items.sort((a, b) => {
-      // Sort by type then name
       if (a.type !== b.type) return a.type.localeCompare(b.type);
       return a.name.localeCompare(b.name);
     });
@@ -232,12 +246,11 @@ const RecheckTab = ({ appointment, history, onUpdate, saveField, updatePriorityP
 
   return (
     <div className="space-y-8 animate-in fade-in duration-500">
-      {/* Context Header */}
       <div className="p-8 bg-indigo-900 text-white rounded-[2.5rem] shadow-xl relative overflow-hidden">
         <div className="absolute top-0 right-0 p-8 opacity-10"><History size={150} /></div>
         <div className="relative z-10 space-y-4">
           <div className="flex items-center gap-3">
-            <Badge className="bg-indigo-500 text-white border-none font-black text-[10px] uppercase tracking-widest px-3 py-1">Previous Session Context</Badge>
+            <Badge className="bg-indigo-50 text-indigo-700 border-none font-black text-[10px] uppercase tracking-widest px-3 py-1">Previous Session Context</Badge>
             <span className="text-xs font-bold text-indigo-300 flex items-center gap-1.5">
               <Calendar size={14} /> {format(new Date(previousSession.date), "EEEE, MMMM d, yyyy")}
             </span>
@@ -366,7 +379,6 @@ const RecheckTab = ({ appointment, history, onUpdate, saveField, updatePriorityP
         </div>
       )}
 
-      {/* Clinical Note */}
       <div className="p-8 bg-slate-50 rounded-[2.5rem] border border-slate-100 flex items-start gap-6">
         <div className="w-12 h-12 rounded-2xl bg-white flex items-center justify-center text-indigo-600 shadow-sm shrink-0">
           <Info size={24} />

@@ -11,6 +11,7 @@ import {
 import { format } from "date-fns";
 import { cn } from "@/lib/utils";
 import { Link } from "react-router-dom";
+import { Badge } from "@/components/ui/badge";
 
 interface PreviousSessionInsightsBarProps {
   clientId: string;
@@ -51,22 +52,26 @@ const PreviousSessionInsightsBar = ({ clientId, currentAppointmentId, manualData
         if (!error && recentApps && recentApps.length > 0) {
           const latest = recentApps[0];
           
-          // Find the most recent BOLT assessment
-          const boltApp = recentApps.find(a => a.bolt_score !== null);
-          const lastBolt = boltApp?.bolt_score;
-          const lastBoltDate = boltApp?.date;
+          // Find the most recent BOLT assessment and its index
+          const boltIndex = recentApps.findIndex(a => a.bolt_score !== null);
+          const lastBolt = boltIndex !== -1 ? recentApps[boltIndex].bolt_score : null;
+          const lastBoltDate = boltIndex !== -1 ? recentApps[boltIndex].date : null;
+          const boltSessionsAgo = boltIndex !== -1 ? boltIndex + 1 : null;
           
-          // Find the most recent Coherence assessment
-          const cohApp = recentApps.find(a => a.coherence_score !== null);
-          const lastCoh = cohApp?.coherence_score;
-          const lastCohDate = cohApp?.date;
+          // Find the most recent Coherence assessment and its index
+          const cohIndex = recentApps.findIndex(a => a.coherence_score !== null);
+          const lastCoh = cohIndex !== -1 ? recentApps[cohIndex].coherence_score : null;
+          const lastCohDate = cohIndex !== -1 ? recentApps[cohIndex].date : null;
+          const cohSessionsAgo = cohIndex !== -1 ? cohIndex + 1 : null;
 
           setPreviousSession({
             ...latest,
-            bolt_score: lastBolt ?? null,
-            bolt_date: lastBoltDate ?? null,
-            coherence_score: lastCoh ?? null,
-            coherence_date: lastCohDate ?? null
+            bolt_score: lastBolt,
+            bolt_date: lastBoltDate,
+            bolt_sessions_ago: boltSessionsAgo,
+            coherence_score: lastCoh,
+            coherence_date: lastCohDate,
+            coherence_sessions_ago: cohSessionsAgo
           });
         }
       } catch (err) {
@@ -152,23 +157,42 @@ const PreviousSessionInsightsBar = ({ clientId, currentAppointmentId, manualData
             <div className="space-y-4">
               <div>
                 <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-2">Last Recorded Vitals</p>
-                <div className="grid grid-cols-2 gap-3">
-                  <div className="p-3 bg-white/5 rounded-xl border border-white/10">
-                    <p className="text-[10px] font-bold text-slate-400 uppercase mb-1">BOLT Score</p>
-                    <p className="text-xl font-black text-indigo-400">{previousSession.bolt_score !== null ? `${previousSession.bolt_score}s` : 'N/A'}</p>
+                <div className="grid grid-cols-1 gap-3">
+                  <div className="p-4 bg-white/5 rounded-2xl border border-white/10">
+                    <div className="flex items-center justify-between mb-1">
+                      <p className="text-[10px] font-bold text-slate-400 uppercase">BOLT Score</p>
+                      <p className="text-2xl font-black text-indigo-400">{previousSession.bolt_score !== null ? `${previousSession.bolt_score}s` : 'N/A'}</p>
+                    </div>
                     {previousSession.bolt_date && (
-                      <p className="text-[8px] font-bold text-slate-500 uppercase mt-1 flex items-center gap-1">
-                        <Clock size={8} /> {format(new Date(previousSession.bolt_date), "MMM d")}
-                      </p>
+                      <div className="flex items-center justify-between mt-1">
+                        <p className="text-[9px] font-bold text-slate-500 uppercase flex items-center gap-1">
+                          <Clock size={10} /> {format(new Date(previousSession.bolt_date), "MMM d")}
+                        </p>
+                        {previousSession.bolt_sessions_ago && (
+                          <Badge variant="outline" className="text-[8px] font-black border-none bg-indigo-500/10 text-indigo-400 px-1.5 py-0 rounded-md">
+                            {previousSession.bolt_sessions_ago} {previousSession.bolt_sessions_ago === 1 ? 'Session' : 'Sessions'} Ago
+                          </Badge>
+                        )}
+                      </div>
                     )}
                   </div>
-                  <div className="p-3 bg-white/5 rounded-xl border border-white/10">
-                    <p className="text-[10px] font-bold text-slate-400 uppercase mb-1">Coherence</p>
-                    <p className="text-xl font-black text-rose-400">{previousSession.coherence_score !== null ? previousSession.coherence_score.toFixed(2) : 'N/A'}</p>
+
+                  <div className="p-4 bg-white/5 rounded-2xl border border-white/10">
+                    <div className="flex items-center justify-between mb-1">
+                      <p className="text-[10px] font-bold text-slate-400 uppercase">Coherence</p>
+                      <p className="text-2xl font-black text-rose-400">{previousSession.coherence_score !== null ? previousSession.coherence_score.toFixed(2) : 'N/A'}</p>
+                    </div>
                     {previousSession.coherence_date && (
-                      <p className="text-[8px] font-bold text-slate-500 uppercase mt-1 flex items-center gap-1">
-                        <Clock size={8} /> {format(new Date(previousSession.coherence_date), "MMM d")}
-                      </p>
+                      <div className="flex items-center justify-between mt-1">
+                        <p className="text-[9px] font-bold text-slate-500 uppercase flex items-center gap-1">
+                          <Clock size={10} /> {format(new Date(previousSession.coherence_date), "MMM d")}
+                        </p>
+                        {previousSession.coherence_sessions_ago && (
+                          <Badge variant="outline" className="text-[8px] font-black border-none bg-rose-500/10 text-rose-400 px-1.5 py-0 rounded-md">
+                            {previousSession.coherence_sessions_ago} {previousSession.coherence_sessions_ago === 1 ? 'Session' : 'Sessions'} Ago
+                          </Badge>
+                        )}
+                      </div>
                     )}
                   </div>
                 </div>

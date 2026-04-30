@@ -54,13 +54,7 @@ export const PRIMARY_14_MUSCLES = [
 
 // Muscles that are tested on the midline and don't need L/R separation
 export const MIDLINE_MUSCLES = [
-  'Diaphragm',
-  'Transverse Abdominals',
-  'Pelvic Floor (Anterior)',
-  'Pelvic Floor (Posterior)',
-  'Multifidi',
-  'Sacrospinalis',
-  'Erector Spinae'
+  'Diaphragm'
 ];
 
 export const MUSCLE_GROUPS: Record<string, string[]> = {

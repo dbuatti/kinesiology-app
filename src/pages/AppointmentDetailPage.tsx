@@ -326,12 +326,13 @@ const AppointmentDetailPage = () => {
       <AppLayout variant="workspace" hasFixedHeader={isFixedHeaderActive}>
         <div className="flex flex-col gap-8 print:p-0">
           <PageHeader 
-            title={appointment.clients.name}
-            subtitle={`${appointment.tag} Session • ${format(appointment.date, "EEEE, MMMM d")}`}
+            title="Session Workspace"
+            subtitle="Manage clinical findings and integration protocols."
             icon={Activity}
             breadcrumbs={[
               { label: "Appointments", path: "/appointments" },
-              { label: appointment.name || "Session Details" },
+              { label: appointment.clients.name, path: `/clients/${appointment.clients.id}` },
+              { label: appointment.display_id || "Details" },
             ]}
             actions={
               <div className="flex items-center gap-3">

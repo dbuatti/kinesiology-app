@@ -116,23 +116,23 @@ const WeeklyFocusBanner = ({ appointmentId, priorityPattern, onSaveField, onJump
   return (
     <div className="w-full mb-6 animate-in slide-in-from-top-4 duration-700 print:hidden">
       <div className={cn(
-        "bg-indigo-600 text-white rounded-[2.5rem] p-5 shadow-xl border-2 border-indigo-400/30 relative overflow-hidden group transition-all duration-700",
+        "bg-indigo-600 text-white rounded-[2.5rem] p-6 shadow-xl border-2 border-indigo-400/30 relative overflow-hidden group transition-all duration-700",
         isAllPracticed && "bg-emerald-600 border-emerald-400/30 shadow-emerald-200"
       )}>
         <div className="absolute top-0 right-0 p-6 opacity-10 group-hover:scale-110 transition-transform duration-700">
-          <Trophy size={80} />
+          <Trophy size={100} />
         </div>
         
-        <div className="flex flex-col md:flex-row items-center justify-between gap-6 relative z-10">
-          <div className="flex items-center gap-5">
+        <div className="flex flex-col md:flex-row items-center justify-between gap-8 relative z-10">
+          <div className="flex items-center gap-6">
             <div className={cn(
-              "w-12 h-12 rounded-2xl bg-white/20 backdrop-blur-md flex items-center justify-center border border-white/20 shadow-inner transition-all duration-500",
+              "w-14 h-14 rounded-2xl bg-white/10 backdrop-blur-md flex items-center justify-center border border-white/20 shadow-inner transition-all duration-500",
               celebratingItem ? "bg-emerald-400 border-emerald-200 scale-110 rotate-12" : ""
             )}>
-              {celebratingItem ? <Sparkles size={24} className="text-white" /> : <Target size={24} className="text-indigo-100" />}
+              {celebratingItem ? <Sparkles size={28} className="text-white" /> : <Target size={28} className="text-indigo-100" />}
             </div>
-            <div>
-              <p className="text-[10px] font-black uppercase tracking-[0.4em] text-indigo-200 mb-1.5">Weekly Mastery Focus</p>
+            <div className="space-y-2">
+              <p className="text-[10px] font-black uppercase tracking-[0.4em] text-indigo-200/80">Weekly Mastery Focus</p>
               <div className="flex flex-wrap items-center gap-3">
                 {items.map((item, i) => {
                   const status = itemStatuses[item] || 'Not Tested';
@@ -142,7 +142,7 @@ const WeeklyFocusBanner = ({ appointmentId, priorityPattern, onSaveField, onJump
                     <React.Fragment key={item}>
                       <div className="flex items-center gap-2">
                         {videoUrl && <PlayCircle size={14} className="text-indigo-300" />}
-                        <span className="text-base font-black tracking-tight">{item}</span>
+                        <span className="text-lg font-black tracking-tight">{item}</span>
                       </div>
                       {i < items.length - 1 && <span className="text-indigo-400/40 font-black">•</span>}
                     </React.Fragment>
@@ -156,14 +156,14 @@ const WeeklyFocusBanner = ({ appointmentId, priorityPattern, onSaveField, onJump
                     >
                       <PopoverTrigger asChild>
                         <button className={cn(
-                          "flex items-center gap-2.5 px-4 py-2 rounded-2xl transition-all hover:scale-105 border-2 shadow-sm",
+                          "flex items-center gap-3 px-5 py-2.5 rounded-2xl transition-all hover:scale-105 border-2 shadow-sm",
                           status === 'Clear' ? "bg-emerald-500/20 border-emerald-400/50 text-white" :
                           status === 'Inhibited' ? "bg-rose-500/20 border-rose-400/50 text-white" :
                           "bg-white/10 border-white/10 text-indigo-100 hover:bg-white/20"
                         )}>
-                          {status === 'Clear' ? <CheckCircle2 size={16} className="text-emerald-300" /> :
-                           status === 'Inhibited' ? <AlertCircle size={16} className="text-rose-300" /> :
-                           videoUrl ? <PlayCircle size={16} className="text-indigo-300" /> :
+                          {status === 'Clear' ? <CheckCircle2 size={18} className="text-emerald-300" /> :
+                           status === 'Inhibited' ? <AlertCircle size={18} className="text-rose-300" /> :
+                           videoUrl ? <PlayCircle size={18} className="text-indigo-300" /> :
                            <div className="w-4 h-4 rounded-full border-2 border-current opacity-30" />}
                           <span className="text-sm font-black tracking-tight">{item}</span>
                           <ChevronDown size={14} className="opacity-50" />
@@ -214,14 +214,14 @@ const WeeklyFocusBanner = ({ appointmentId, priorityPattern, onSaveField, onJump
             </div>
           </div>
           
-          <div className="flex items-center gap-4">
-            <div className="hidden lg:flex flex-col items-end">
-              <p className="text-[9px] font-black uppercase tracking-widest text-indigo-300 mb-1">Mastery Progress</p>
-              <div className="flex items-center gap-3">
-                <div className="w-32 h-1.5 bg-white/10 rounded-full overflow-hidden">
-                  <div className="h-full bg-emerald-400 transition-all duration-1000" style={{ width: `${(practicedCount / items.length) * 100}%` }} />
+          <div className="flex items-center gap-6">
+            <div className="flex flex-col items-end">
+              <p className="text-[9px] font-black uppercase tracking-widest text-indigo-200/60 mb-2">Mastery Progress</p>
+              <div className="flex items-center gap-4">
+                <div className="w-40 h-2 bg-white/10 rounded-full overflow-hidden shadow-inner">
+                  <div className="h-full bg-emerald-400 transition-all duration-1000 shadow-[0_0_10px_rgba(52,211,153,0.5)]" style={{ width: `${(practicedCount / items.length) * 100}%` }} />
                 </div>
-                <span className="text-xs font-black tabular-nums">{practicedCount}/{items.length}</span>
+                <span className="text-sm font-black tabular-nums">{practicedCount}/{items.length}</span>
               </div>
             </div>
           </div>

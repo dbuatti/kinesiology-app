@@ -88,39 +88,39 @@ const PreviousSessionInsightsBar = ({ clientId, currentAppointmentId, manualData
   if (loading || !previousSession) return null;
 
   return (
-    <div className="mb-6">
+    <div className="mb-4">
       <Card className={cn(
         "border-none shadow-md overflow-hidden transition-all duration-300",
         isOpen ? "bg-slate-900 text-white" : "bg-indigo-50 border border-indigo-100"
       )}>
         <div 
-          className="px-4 py-2 flex items-center justify-between cursor-pointer hover:bg-black/5 transition-colors"
+          className="px-4 py-1.5 flex items-center justify-between cursor-pointer hover:bg-black/5 transition-colors"
           onClick={() => setIsOpen(!isOpen)}
         >
           <div className="flex items-center gap-4 overflow-hidden">
             <div className={cn(
-              "flex items-center gap-2 px-2 py-1 rounded-lg text-xs font-bold uppercase tracking-wider",
+              "flex items-center gap-2 px-2 py-1 rounded-lg text-[10px] font-bold uppercase tracking-wider",
               isOpen ? "bg-indigo-600 text-white" : "bg-indigo-100 text-indigo-700"
             )}>
-              <History size={14} />
+              <History size={12} />
               Last Session
             </div>
             
             {!isOpen && (
-              <div className="flex items-center gap-6 text-sm font-medium text-slate-600 truncate">
+              <div className="flex items-center gap-6 text-xs font-medium text-slate-600 truncate">
                 <span className="flex items-center gap-1.5">
-                  <Calendar size={14} className="text-indigo-400" />
+                  <Calendar size={12} className="text-indigo-400" />
                   {format(new Date(previousSession.date), "MMM d")}
                 </span>
                 {previousSession.bolt_score !== null && (
                   <span className="flex items-center gap-1.5">
-                    <FlaskConical size={14} className="text-indigo-400" />
+                    <FlaskConical size={12} className="text-indigo-400" />
                     Last BOLT: {previousSession.bolt_score}s
                   </span>
                 )}
                 {previousSession.goal && (
                   <span className="flex items-center gap-1.5 truncate max-w-[300px]">
-                    <Target size={14} className="text-indigo-400" />
+                    <Target size={12} className="text-indigo-400" />
                     Goal: {previousSession.goal}
                   </span>
                 )}
@@ -129,10 +129,10 @@ const PreviousSessionInsightsBar = ({ clientId, currentAppointmentId, manualData
           </div>
 
           <Button variant="ghost" size="sm" className={cn(
-            "h-8 w-8 rounded-full",
+            "h-7 w-7 rounded-full",
             isOpen ? "text-slate-400 hover:text-white hover:bg-white/10" : "text-indigo-400 hover:bg-indigo-100"
           )}>
-            {isOpen ? <ChevronUp size={18} /> : <ChevronDown size={18} />}
+            {isOpen ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
           </Button>
         </div>
 

@@ -27,17 +27,17 @@ const PageHeader = ({
   className,
 }: PageHeaderProps) => {
   return (
-    <div className={cn("space-y-4 mb-8", className)}>
+    <div className={cn("space-y-2 mb-4", className)}>
       {breadcrumbs && <Breadcrumbs items={breadcrumbs} className="mb-0" />}
       
       <div className="flex flex-col md:flex-row md:items-end justify-between gap-4">
         <div className="flex items-center gap-4">
           {Icon && (
             <div className={cn(
-              "w-14 h-14 rounded-[1.25rem] bg-indigo-600 text-white flex items-center justify-center shadow-xl shadow-indigo-100 dark:shadow-indigo-900/20 shrink-0",
+              "w-12 h-12 rounded-xl bg-indigo-600 text-white flex items-center justify-center shadow-lg shadow-indigo-100 dark:shadow-indigo-900/20 shrink-0",
               iconClassName
             )}>
-              <Icon size={28} />
+              <Icon size={24} />
             </div>
           )}
           <div className="space-y-0.5">
@@ -46,11 +46,11 @@ const PageHeader = ({
                 {badge}
               </Badge>
             )}
-            <h1 className="text-3xl md:text-4xl font-serif font-bold tracking-tight text-slate-900 dark:text-white">
+            <h1 className="text-2xl md:text-3xl font-serif font-bold tracking-tight text-slate-900 dark:text-white">
               {title}
             </h1>
             {subtitle && (
-              <p className="text-xs md:text-sm text-slate-500 font-medium max-w-2xl">
+              <p className="text-[10px] md:text-xs text-slate-500 font-medium max-w-2xl">
                 {subtitle}
               </p>
             )}

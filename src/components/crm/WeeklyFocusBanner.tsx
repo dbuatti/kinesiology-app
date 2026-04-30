@@ -114,35 +114,35 @@ const WeeklyFocusBanner = ({ appointmentId, priorityPattern, onSaveField, onJump
   const isAllPracticed = practicedCount === items.length && items.length > 0;
 
   return (
-    <div className="w-full mb-6 animate-in slide-in-from-top-4 duration-700 print:hidden">
+    <div className="w-full mb-4 animate-in slide-in-from-top-4 duration-700 print:hidden">
       <div className={cn(
-        "bg-indigo-600 text-white rounded-[2.5rem] p-6 shadow-xl border-2 border-indigo-400/30 relative overflow-hidden group transition-all duration-700",
+        "bg-indigo-600 text-white rounded-[2rem] p-4 shadow-lg border-2 border-indigo-400/30 relative overflow-hidden group transition-all duration-700",
         isAllPracticed && "bg-emerald-600 border-emerald-400/30 shadow-emerald-200"
       )}>
-        <div className="absolute top-0 right-0 p-6 opacity-10 group-hover:scale-110 transition-transform duration-700">
-          <Trophy size={100} />
+        <div className="absolute top-0 right-0 p-4 opacity-10 group-hover:scale-110 transition-transform duration-700">
+          <Trophy size={80} />
         </div>
         
-        <div className="flex flex-col md:flex-row items-center justify-between gap-8 relative z-10">
-          <div className="flex items-center gap-6">
+        <div className="flex flex-col md:flex-row items-center justify-between gap-6 relative z-10">
+          <div className="flex items-center gap-4">
             <div className={cn(
-              "w-14 h-14 rounded-2xl bg-white/10 backdrop-blur-md flex items-center justify-center border border-white/20 shadow-inner transition-all duration-500",
+              "w-10 h-10 rounded-xl bg-white/10 backdrop-blur-md flex items-center justify-center border border-white/20 shadow-inner transition-all duration-500",
               celebratingItem ? "bg-emerald-400 border-emerald-200 scale-110 rotate-12" : ""
             )}>
-              {celebratingItem ? <Sparkles size={28} className="text-white" /> : <Target size={28} className="text-indigo-100" />}
+              {celebratingItem ? <Sparkles size={20} className="text-white" /> : <Target size={20} className="text-indigo-100" />}
             </div>
-            <div className="space-y-2">
-              <p className="text-[10px] font-black uppercase tracking-[0.4em] text-indigo-200/80">Weekly Mastery Focus</p>
-              <div className="flex flex-wrap items-center gap-3">
+            <div className="space-y-1">
+              <p className="text-[8px] font-black uppercase tracking-[0.4em] text-indigo-200/80">Weekly Mastery Focus</p>
+              <div className="flex flex-wrap items-center gap-2">
                 {items.map((item, i) => {
                   const status = itemStatuses[item] || 'Not Tested';
                   const videoUrl = getVideoUrl(item);
                   
                   if (!isInteractive) return (
                     <React.Fragment key={item}>
-                      <div className="flex items-center gap-2">
-                        {videoUrl && <PlayCircle size={14} className="text-indigo-300" />}
-                        <span className="text-lg font-black tracking-tight">{item}</span>
+                      <div className="flex items-center gap-1.5">
+                        {videoUrl && <PlayCircle size={12} className="text-indigo-300" />}
+                        <span className="text-sm font-black tracking-tight">{item}</span>
                       </div>
                       {i < items.length - 1 && <span className="text-indigo-400/40 font-black">•</span>}
                     </React.Fragment>
@@ -156,17 +156,17 @@ const WeeklyFocusBanner = ({ appointmentId, priorityPattern, onSaveField, onJump
                     >
                       <PopoverTrigger asChild>
                         <button className={cn(
-                          "flex items-center gap-3 px-5 py-2.5 rounded-2xl transition-all hover:scale-105 border-2 shadow-sm",
+                          "flex items-center gap-2 px-3 py-1.5 rounded-xl transition-all hover:scale-105 border-2 shadow-sm",
                           status === 'Clear' ? "bg-emerald-500/20 border-emerald-400/50 text-white" :
                           status === 'Inhibited' ? "bg-rose-500/20 border-rose-400/50 text-white" :
                           "bg-white/10 border-white/10 text-indigo-100 hover:bg-white/20"
                         )}>
-                          {status === 'Clear' ? <CheckCircle2 size={18} className="text-emerald-300" /> :
-                           status === 'Inhibited' ? <AlertCircle size={18} className="text-rose-300" /> :
-                           videoUrl ? <PlayCircle size={18} className="text-indigo-300" /> :
-                           <div className="w-4 h-4 rounded-full border-2 border-current opacity-30" />}
-                          <span className="text-sm font-black tracking-tight">{item}</span>
-                          <ChevronDown size={14} className="opacity-50" />
+                          {status === 'Clear' ? <CheckCircle2 size={14} className="text-emerald-300" /> :
+                           status === 'Inhibited' ? <AlertCircle size={14} className="text-rose-300" /> :
+                           videoUrl ? <PlayCircle size={14} className="text-indigo-300" /> :
+                           <div className="w-3 h-3 rounded-full border-2 border-current opacity-30" />}
+                          <span className="text-xs font-black tracking-tight">{item}</span>
+                          <ChevronDown size={12} className="opacity-50" />
                         </button>
                       </PopoverTrigger>
                       <PopoverContent className="w-64 p-2 rounded-[2rem] border-none shadow-3xl bg-slate-900 text-white z-[100]">
@@ -214,14 +214,14 @@ const WeeklyFocusBanner = ({ appointmentId, priorityPattern, onSaveField, onJump
             </div>
           </div>
           
-          <div className="flex items-center gap-6">
+          <div className="flex items-center gap-4">
             <div className="flex flex-col items-end">
-              <p className="text-[9px] font-black uppercase tracking-widest text-indigo-200/60 mb-2">Mastery Progress</p>
-              <div className="flex items-center gap-4">
-                <div className="w-40 h-2 bg-white/10 rounded-full overflow-hidden shadow-inner">
+              <p className="text-[8px] font-black uppercase tracking-widest text-indigo-200/60 mb-1.5">Mastery Progress</p>
+              <div className="flex items-center gap-3">
+                <div className="w-32 h-1.5 bg-white/10 rounded-full overflow-hidden shadow-inner">
                   <div className="h-full bg-emerald-400 transition-all duration-1000 shadow-[0_0_10px_rgba(52,211,153,0.5)]" style={{ width: `${(practicedCount / items.length) * 100}%` }} />
                 </div>
-                <span className="text-sm font-black tabular-nums">{practicedCount}/{items.length}</span>
+                <span className="text-xs font-black tabular-nums">{practicedCount}/{items.length}</span>
               </div>
             </div>
           </div>

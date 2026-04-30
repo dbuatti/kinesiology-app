@@ -20,7 +20,8 @@ import {
   Calendar,
   AlertCircle,
   RefreshCw,
-  Info
+  Info,
+  ChevronRight
 } from "lucide-react";
 import { format } from "date-fns";
 import { cn } from "@/lib/utils";
@@ -45,6 +46,15 @@ interface RecheckItem {
   previousStatus: string;
   currentStatus?: string | null;
   side?: 'L' | 'R';
+}
+
+interface RecheckGroup {
+  name: string;
+  category: string;
+  type: 'muscle' | 'pattern';
+  left?: RecheckItem;
+  right?: RecheckItem;
+  midline?: RecheckItem;
 }
 
 const RecheckTab = ({ appointment, history, onUpdate, saveField, updatePriorityPattern }: RecheckTabProps) => {
@@ -84,14 +94,13 @@ const RecheckTab = ({ appointment, history, onUpdate, saveField, updatePriorityP
     fetchSessionData();
   }, [previousSession?.id, appointment.id]);
 
-  const recheckItems = useMemo(() => {
+  const recheckGroups = useMemo(() => {
     if (!previousSession) return [];
 
-    const items: RecheckItem[] = [];
+    const groups: Record<string, RecheckGroup> = {};
     const currentPattern = safeParse(appointment.priority_pattern, {} as any);
     const prevPattern = safeParse(previousSession.priority_pattern, {} as any);
 
-    // Helper to find canonical name for an ID
     const getCanonicalName = (key: string) => {
       const reflex = PRIMITIVE_REFLEXES.find(r => r.id === key || r.name === key);
       if (reflex) return reflex.name;
@@ -100,57 +109,53 @@ const RecheckTab = ({ appointment, history, onUpdate, saveField, updatePriorityP
       return key;
     };
 
-    const isLateralizedReflex = (name: string) => {
-      const lateralized = ['ATNR', 'Spinal Galant', 'Babinski', 'Rooting', 'Palmar'];
-      return lateralized.some(l => name.includes(l));
-    };
-
-    const rawPatternItems: RecheckItem[] = [];
-
+    // Process Patterns
     Object.entries(prevPattern).forEach(([catKey, categoryItems]: [string, any]) => {
       Object.entries(categoryItems).forEach(([rawName, status]) => {
         const sideMatch = rawName.match(/\(([LR])\)$/);
         const side = sideMatch ? sideMatch[1] as 'L' | 'R' : undefined;
         const baseName = rawName.replace(/ \([LR]\)$/, '').trim();
         const canonicalBase = getCanonicalName(baseName);
+        
+        const groupKey = `${catKey}-${canonicalBase}`;
+        if (!groups[groupKey]) {
+          groups[groupKey] = { name: canonicalBase, category: catKey, type: 'pattern' };
+        }
 
-        rawPatternItems.push({
+        const fullName = side ? `${canonicalBase} (${side})` : canonicalBase;
+        const currentStatus = currentPattern[catKey]?.[fullName] || null;
+
+        const item: RecheckItem = {
           id: `pattern-${catKey}-${rawName}`,
           name: canonicalBase,
           category: catKey,
           type: 'pattern',
           previousStatus: status as string,
+          currentStatus,
           side
-        });
+        };
+
+        if (side === 'L') groups[groupKey].left = item;
+        else if (side === 'R') groups[groupKey].right = item;
+        else groups[groupKey].midline = item;
       });
     });
 
-    // Deduplicate patterns: If lateralized and we have L/R, remove the base entry
-    const filteredPatterns = rawPatternItems.filter((item, _, all) => {
-      if (!item.side && isLateralizedReflex(item.name)) {
-        const hasSides = all.some(other => other.name === item.name && other.side);
-        if (hasSides) return false;
-      }
-      return true;
-    });
-
-    // Add current status to filtered patterns
-    filteredPatterns.forEach(item => {
-      const fullName = item.side ? `${item.name} (${item.side})` : item.name;
-      const currentStatus = currentPattern[item.category]?.[fullName] || null;
-      items.push({ ...item, currentStatus });
-    });
-
-    // Process Muscle Tests
+    // Process Muscles
     prevMuscleTests.forEach(test => {
       const sideMatch = test.muscle_name.match(/\(([LR])\)$/);
       const side = sideMatch ? sideMatch[1] as 'L' | 'R' : undefined;
       const baseName = test.muscle_name.replace(/ \([LR]\)$/, '').trim();
+      
+      const groupKey = `muscle-${baseName}`;
+      if (!groups[groupKey]) {
+        groups[groupKey] = { name: baseName, category: 'Muscles', type: 'muscle' };
+      }
 
       const currentTest = currentMuscleTests.find(t => t.muscle_name === test.muscle_name);
       const currentStatus = currentTest?.status || null;
 
-      items.push({
+      const item: RecheckItem = {
         id: `muscle-${test.id}`,
         name: baseName,
         category: 'Muscles',
@@ -158,10 +163,14 @@ const RecheckTab = ({ appointment, history, onUpdate, saveField, updatePriorityP
         previousStatus: test.status,
         currentStatus,
         side
-      });
+      };
+
+      if (side === 'L') groups[groupKey].left = item;
+      else if (side === 'R') groups[groupKey].right = item;
+      else groups[groupKey].midline = item;
     });
 
-    return items.sort((a, b) => {
+    return Object.values(groups).sort((a, b) => {
       if (a.type !== b.type) return a.type.localeCompare(b.type);
       return a.name.localeCompare(b.name);
     });
@@ -188,7 +197,7 @@ const RecheckTab = ({ appointment, history, onUpdate, saveField, updatePriorityP
           });
         }
       }
-      showSuccess(`${item.name} marked as Clear.`);
+      showSuccess(`${item.name}${item.side ? ` (${item.side})` : ''} marked as Clear.`);
       await fetchSessionData();
       onUpdate();
     } catch (err) {
@@ -219,7 +228,7 @@ const RecheckTab = ({ appointment, history, onUpdate, saveField, updatePriorityP
           });
         }
       }
-      showSuccess(`${item.name} marked as Inhibited.`);
+      showSuccess(`${item.name}${item.side ? ` (${item.side})` : ''} marked as Inhibited.`);
       await fetchSessionData();
       onUpdate();
     } catch (err) {
@@ -242,6 +251,89 @@ const RecheckTab = ({ appointment, history, onUpdate, saveField, updatePriorityP
     if (cat.includes('nerve')) return Zap;
     if (cat.includes('muscle')) return Dumbbell;
     return Brain;
+  };
+
+  const StatusControl = ({ item, sideLabel }: { item: RecheckItem, sideLabel: string }) => {
+    const isProcessing = processingId === item.id;
+    const isTestedNow = !!item.currentStatus;
+    const isDysfunctionalNow = isTestedNow && item.currentStatus !== 'Normotonic' && item.currentStatus !== 'Clear';
+
+    return (
+      <div className={cn(
+        "flex-1 p-4 rounded-2xl border transition-all",
+        isTestedNow ? "bg-slate-50/50 border-slate-100" : "bg-white border-slate-200 shadow-sm",
+        isDysfunctionalNow && "border-rose-200 bg-rose-50/30"
+      )}>
+        <div className="flex items-center justify-between mb-3">
+          <div className="flex items-center gap-2">
+            <span className={cn(
+              "text-[9px] font-black px-2 py-0.5 rounded-md border tracking-widest",
+              sideLabel === 'LEFT' ? "bg-blue-50 text-blue-600 border-blue-100" : 
+              sideLabel === 'RIGHT' ? "bg-rose-50 text-rose-600 border-rose-100" :
+              "bg-slate-100 text-slate-600 border-slate-200"
+            )}>
+              {sideLabel}
+            </span>
+            <p className={cn(
+              "text-[8px] font-bold uppercase tracking-widest",
+              item.previousStatus === 'Inhibited' ? "text-rose-500" : "text-indigo-500"
+            )}>
+              Last: {item.previousStatus}
+            </p>
+          </div>
+          {isTestedNow && (
+            <Badge className={cn(
+              "border-none font-black text-[8px] uppercase tracking-widest px-2 py-0.5 rounded-full",
+              isDysfunctionalNow ? "bg-rose-600 text-white" : "bg-emerald-600 text-white"
+            )}>
+              {item.currentStatus}
+            </Badge>
+          )}
+        </div>
+
+        <div className="flex gap-2">
+          {isTestedNow ? (
+            <>
+              {isDysfunctionalNow && (
+                <Button 
+                  onClick={() => handleCalibrate(item)}
+                  className="flex-1 bg-amber-500 hover:bg-amber-600 text-white rounded-xl h-9 font-black text-[9px] uppercase tracking-widest shadow-lg shadow-amber-100"
+                >
+                  <Target size={14} className="mr-1.5" /> Calibrate
+                </Button>
+              )}
+              <Button 
+                variant="ghost" 
+                size="icon" 
+                onClick={() => handleMarkClear(item)}
+                className="h-9 w-9 rounded-xl text-slate-300 hover:text-indigo-600"
+              >
+                <RefreshCw size={16} />
+              </Button>
+            </>
+          ) : (
+            <>
+              <Button 
+                onClick={() => handleMarkClear(item)}
+                disabled={isProcessing}
+                className="flex-1 bg-emerald-50 text-emerald-700 hover:bg-emerald-600 hover:text-white rounded-xl h-9 font-black text-[9px] uppercase tracking-widest transition-all border border-emerald-100"
+              >
+                {isProcessing ? <Loader2 size={14} className="animate-spin" /> : <CheckCircle2 size={14} className="mr-1.5" />}
+                Clear
+              </Button>
+              <Button 
+                onClick={() => handleMarkInhibited(item)}
+                disabled={isProcessing}
+                variant="outline"
+                className="flex-1 border-rose-100 text-rose-600 hover:bg-rose-50 rounded-xl h-9 font-black text-[9px] uppercase tracking-widest transition-all"
+              >
+                Inhib
+              </Button>
+            </>
+          )}
+        </div>
+      </div>
+    );
   };
 
   if (!previousSession) {
@@ -269,107 +361,41 @@ const RecheckTab = ({ appointment, history, onUpdate, saveField, updatePriorityP
           <p className="text-indigo-200 font-medium text-lg leading-relaxed max-w-2xl">
             Verify the findings from the last session to track progress and identify recurring patterns.
           </p>
-          {previousSession.goal && (
-            <div className="p-4 bg-white/5 rounded-2xl border border-white/10 inline-block">
-              <p className="text-[10px] font-black text-indigo-400 uppercase tracking-widest mb-1">Last Goal</p>
-              <p className="text-sm font-bold italic">"{previousSession.goal}"</p>
-            </div>
-          )}
         </div>
       </div>
 
       {loading ? (
-        <div className="flex justify-center py-20"><Loader2 className="animate-spin text-indigo-500" size={48} /></div>
-      ) : recheckItems.length > 0 ? (
-        <div className="grid grid-cols-1 gap-4">
-          {recheckItems.map((item) => {
-            const Icon = getIcon(item.category);
-            const isProcessing = processingId === item.id;
-            const isTestedNow = !!item.currentStatus;
-            const isDysfunctionalNow = isTestedNow && item.currentStatus !== 'Normotonic' && item.currentStatus !== 'Clear';
+        <div className="flex justify-center py-20"><Loader2 className="animate-spin text-indigo-600" size={48} /></div>
+      ) : recheckGroups.length > 0 ? (
+        <div className="grid grid-cols-1 gap-6">
+          {recheckGroups.map((group, idx) => {
+            const Icon = getIcon(group.category);
+            const isLateralized = !!(group.left || group.right);
 
             return (
-              <Card key={item.id} className={cn(
-                "border-none shadow-sm transition-all duration-300 rounded-2xl overflow-hidden group",
-                isTestedNow ? "bg-slate-50/50 opacity-60" : "bg-white hover:shadow-md",
-                isDysfunctionalNow && "border-l-4 border-rose-500 opacity-100"
-              )}>
-                <CardContent className="p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-6">
-                  <div className="flex items-center gap-5 min-w-0">
+              <Card key={idx} className="border-none shadow-md rounded-[2.5rem] bg-white overflow-hidden group hover:shadow-lg transition-all">
+                <CardContent className="p-6 space-y-6">
+                  <div className="flex items-center gap-4">
                     <div className={cn(
                       "w-12 h-12 rounded-xl flex items-center justify-center shrink-0 shadow-inner transition-transform group-hover:scale-110",
-                      item.previousStatus === 'Inhibited' || item.previousStatus === 'Hypertonic' ? "bg-rose-50 text-rose-600" : "bg-indigo-50 text-indigo-600"
+                      group.category.includes('Reflex') ? "bg-indigo-50 text-indigo-600" : "bg-slate-50 text-slate-600"
                     )}>
                       <Icon size={24} />
                     </div>
-                    <div className="min-w-0">
-                      <div className="flex items-center gap-2">
-                        <h4 className="font-black text-lg text-slate-900 truncate">{item.name}</h4>
-                        {item.side && (
-                          <Badge variant="outline" className="text-[8px] font-black uppercase px-1.5 py-0 border-slate-200 text-slate-400">
-                            {item.side}
-                          </Badge>
-                        )}
-                      </div>
-                      <div className="flex items-center gap-2 mt-1">
-                        <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest">{item.category}</p>
-                        <span className="text-slate-200">•</span>
-                        <p className={cn(
-                          "text-[9px] font-bold uppercase tracking-widest",
-                          item.previousStatus === 'Inhibited' ? "text-rose-500" : "text-indigo-500"
-                        )}>
-                          Last: {item.previousStatus}
-                        </p>
-                      </div>
+                    <div>
+                      <h4 className="font-black text-xl text-slate-900">{group.name}</h4>
+                      <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">{group.category}</p>
                     </div>
                   </div>
 
-                  <div className="flex items-center gap-3 shrink-0">
-                    {isTestedNow ? (
-                      <div className="flex items-center gap-3">
-                        <Badge className={cn(
-                          "border-none font-black text-[10px] uppercase tracking-widest px-4 py-1.5 rounded-full shadow-sm",
-                          isDysfunctionalNow ? "bg-rose-600 text-white" : "bg-emerald-600 text-white"
-                        )}>
-                          {isDysfunctionalNow ? <Zap size={12} className="mr-1.5 fill-current" /> : <CheckCircle2 size={12} className="mr-1.5" />}
-                          {item.currentStatus}
-                        </Badge>
-                        {isDysfunctionalNow && (
-                          <Button 
-                            onClick={() => handleCalibrate(item)}
-                            className="bg-amber-500 hover:bg-amber-600 text-white rounded-xl h-10 px-6 font-black text-[10px] uppercase tracking-widest shadow-lg shadow-amber-100"
-                          >
-                            <Target size={16} className="mr-2" /> Calibrate
-                          </Button>
-                        )}
-                        <Button 
-                          variant="ghost" 
-                          size="icon" 
-                          onClick={() => handleMarkClear(item)}
-                          className="h-10 w-10 rounded-xl text-slate-300 hover:text-indigo-600"
-                        >
-                          <RefreshCw size={18} />
-                        </Button>
-                      </div>
+                  <div className="flex flex-col sm:flex-row gap-4">
+                    {isLateralized ? (
+                      <>
+                        {group.left && <StatusControl item={group.left} sideLabel="LEFT" />}
+                        {group.right && <StatusControl item={group.right} sideLabel="RIGHT" />}
+                      </>
                     ) : (
-                      <div className="flex items-center gap-2">
-                        <Button 
-                          onClick={() => handleMarkClear(item)}
-                          disabled={isProcessing}
-                          className="bg-emerald-50 text-emerald-700 hover:bg-emerald-600 hover:text-white rounded-xl h-11 px-6 font-black text-[10px] uppercase tracking-widest transition-all border border-emerald-100"
-                        >
-                          {isProcessing ? <Loader2 size={16} className="animate-spin" /> : <CheckCircle2 size={16} className="mr-2" />}
-                          Mark Clear
-                        </Button>
-                        <Button 
-                          onClick={() => handleMarkInhibited(item)}
-                          disabled={isProcessing}
-                          variant="outline"
-                          className="border-rose-100 text-rose-600 hover:bg-rose-50 rounded-xl h-11 px-6 font-black text-[10px] uppercase tracking-widest transition-all"
-                        >
-                          Still Inhibited
-                        </Button>
-                      </div>
+                      group.midline && <StatusControl item={group.midline} sideLabel="MIDLINE" />
                     )}
                   </div>
                 </CardContent>

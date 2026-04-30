@@ -1,6 +1,8 @@
 "use client";
 
 import { format } from "date-fns";
+import { PRIMITIVE_REFLEXES } from "@/data/primitive-reflex-data";
+import { BRAIN_REFLEX_POINTS } from "@/data/brain-reflex-data";
 
 export interface FindingHistory {
   name: string;
@@ -15,6 +17,31 @@ export interface FindingHistory {
   isResolved: boolean;
 }
 
+/**
+ * Normalizes messy IDs or short names into proper clinical display names.
+ */
+const getCanonicalName = (name: string): string => {
+  const cleanName = name.replace(/ \([LR]\)$/, '').trim().toLowerCase();
+  
+  // Check Primitive Reflexes
+  const reflex = PRIMITIVE_REFLEXES.find(r => 
+    r.id.toLowerCase() === cleanName || 
+    r.name.toLowerCase() === cleanName ||
+    r.name.toLowerCase().includes(cleanName)
+  );
+  if (reflex) return reflex.name;
+
+  // Check Brain Points
+  const point = BRAIN_REFLEX_POINTS.find(p => 
+    p.id.toLowerCase() === cleanName || 
+    p.name.toLowerCase() === cleanName ||
+    p.name.toLowerCase().split(':')[0].trim() === cleanName
+  );
+  if (point) return point.name.split(':')[0].trim();
+
+  return name;
+};
+
 export function processNeurologicalHistory(appointments: any[]): FindingHistory[] {
   const findingsMap: Record<string, FindingHistory> = {};
   
@@ -27,17 +54,32 @@ export function processNeurologicalHistory(appointments: any[]): FindingHistory[
     if (!app.priority_pattern) return;
 
     try {
-      const pattern = JSON.parse(app.priority_pattern);
+      const pattern = typeof app.priority_pattern === 'string' 
+        ? JSON.parse(app.priority_pattern) 
+        : app.priority_pattern;
+        
       const dateStr = format(new Date(app.date), "MMM d, yyyy");
 
       Object.entries(pattern).forEach(([category, items]: [string, any]) => {
-        Object.entries(items).forEach(([name, status]: [string, any]) => {
-          const key = `${category}-${name}`;
+        if (!items || typeof items !== 'object') return;
+
+        Object.entries(items).forEach(([rawName, status]: [string, any]) => {
+          const sideMatch = rawName.match(/\(([LR])\)$/);
+          const side = sideMatch ? ` (${sideMatch[1]})` : "";
+          const baseName = getCanonicalName(rawName);
+          const displayName = `${baseName}${side}`;
+          
+          const catDisplay = category
+            .replace(/([A-Z])/g, ' $1')
+            .replace(/^./, str => str.toUpperCase())
+            .trim();
+
+          const key = `${category}-${displayName}`;
           
           if (!findingsMap[key]) {
             findingsMap[key] = {
-              name,
-              category: category.replace(/([A-Z])/g, ' $1').trim(), // camelCase to Title Case
+              name: displayName,
+              category: catDisplay,
               history: [],
               isResolved: false
             };

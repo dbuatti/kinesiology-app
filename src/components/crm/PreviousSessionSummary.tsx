@@ -12,6 +12,7 @@ import { Badge } from "@/components/ui/badge";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
+import PathwayFindingsList from "./PathwayFindingsList";
 
 interface PreviousSessionSummaryProps {
   clientId: string;
@@ -171,9 +172,12 @@ const PreviousSessionSummary = ({ clientId, currentAppointmentId, manualData }: 
                 <h4 className="text-xs font-bold text-slate-900 uppercase tracking-wider mb-2 flex items-center gap-2">
                   <Move size={14} className="text-purple-500" /> Pathway & Patterns
                 </h4>
-                <p className="text-sm text-slate-600 bg-slate-50 p-3 rounded-xl border border-slate-100 min-h-[80px]">
-                  {previousSession.priority_pattern || "No specific pathway notes recorded."}
-                </p>
+                <div className="bg-slate-50 p-4 rounded-xl border border-slate-100 min-h-[100px]">
+                  <PathwayFindingsList 
+                    priorityPattern={previousSession.priority_pattern} 
+                    showOnlyInhibited={false}
+                  />
+                </div>
               </div>
               <div>
                 <h4 className="text-xs font-bold text-slate-900 uppercase tracking-wider mb-2 flex items-center gap-2">

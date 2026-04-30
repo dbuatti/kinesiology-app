@@ -6,7 +6,7 @@ import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { 
   ChevronDown, ChevronUp, History, FlaskConical, 
-  Activity, Target, Calendar 
+  Activity, Target, Calendar, Clock
 } from "lucide-react";
 import { format } from "date-fns";
 import { cn } from "@/lib/utils";
@@ -51,16 +51,22 @@ const PreviousSessionInsightsBar = ({ clientId, currentAppointmentId, manualData
         if (!error && recentApps && recentApps.length > 0) {
           const latest = recentApps[0];
           
-          // Find the most recent BOLT score in the history
-          const lastBolt = recentApps.find(a => a.bolt_score !== null)?.bolt_score;
+          // Find the most recent BOLT assessment
+          const boltApp = recentApps.find(a => a.bolt_score !== null);
+          const lastBolt = boltApp?.bolt_score;
+          const lastBoltDate = boltApp?.date;
           
-          // Find the most recent Coherence score in the history
-          const lastCoh = recentApps.find(a => a.coherence_score !== null)?.coherence_score;
+          // Find the most recent Coherence assessment
+          const cohApp = recentApps.find(a => a.coherence_score !== null);
+          const lastCoh = cohApp?.coherence_score;
+          const lastCohDate = cohApp?.date;
 
           setPreviousSession({
             ...latest,
             bolt_score: lastBolt ?? null,
-            coherence_score: lastCoh ?? null
+            bolt_date: lastBoltDate ?? null,
+            coherence_score: lastCoh ?? null,
+            coherence_date: lastCohDate ?? null
           });
         }
       } catch (err) {
@@ -150,10 +156,20 @@ const PreviousSessionInsightsBar = ({ clientId, currentAppointmentId, manualData
                   <div className="p-3 bg-white/5 rounded-xl border border-white/10">
                     <p className="text-[10px] font-bold text-slate-400 uppercase mb-1">BOLT Score</p>
                     <p className="text-xl font-black text-indigo-400">{previousSession.bolt_score !== null ? `${previousSession.bolt_score}s` : 'N/A'}</p>
+                    {previousSession.bolt_date && (
+                      <p className="text-[8px] font-bold text-slate-500 uppercase mt-1 flex items-center gap-1">
+                        <Clock size={8} /> {format(new Date(previousSession.bolt_date), "MMM d")}
+                      </p>
+                    )}
                   </div>
                   <div className="p-3 bg-white/5 rounded-xl border border-white/10">
                     <p className="text-[10px] font-bold text-slate-400 uppercase mb-1">Coherence</p>
                     <p className="text-xl font-black text-rose-400">{previousSession.coherence_score !== null ? previousSession.coherence_score.toFixed(2) : 'N/A'}</p>
+                    {previousSession.coherence_date && (
+                      <p className="text-[8px] font-bold text-slate-500 uppercase mt-1 flex items-center gap-1">
+                        <Clock size={8} /> {format(new Date(previousSession.coherence_date), "MMM d")}
+                      </p>
+                    )}
                   </div>
                 </div>
               </div>

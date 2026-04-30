@@ -83,17 +83,23 @@ serve(async (req) => {
 
     let targetId = existingApp?.id;
     if (!targetId && isCreationEvent) {
-      const { data: manualMatch } = await supabase
+      // Use a 1-minute window for matching manual entries
+      const startDate = new Date(startTime);
+      const windowStart = new Date(startDate.getTime() - 60000).toISOString();
+      const windowEnd = new Date(startDate.getTime() + 60000).toISOString();
+
+      const { data: manualMatches } = await supabase
         .from('appointments')
         .select('id')
         .eq('client_id', dbClient.id)
-        .eq('date', startTime)
         .is('calcom_booking_id', null)
-        .maybeSingle();
+        .gte('date', windowStart)
+        .lte('date', windowEnd)
+        .order('created_at', { ascending: true });
       
-      if (manualMatch) {
-        console.log(`[${functionName}] Linking manual entry ${manualMatch.id} to Cal.com booking ${calcomId}`);
-        targetId = manualMatch.id;
+      if (manualMatches && manualMatches.length > 0) {
+        console.log(`[${functionName}] Linking manual entry ${manualMatches[0].id} to Cal.com booking ${calcomId}`);
+        targetId = manualMatches[0].id;
       }
     }
 

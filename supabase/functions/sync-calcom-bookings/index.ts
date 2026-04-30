@@ -5,11 +5,10 @@ import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type, x-supabase-client-platform',
-  'Access-Control-Allow-Methods': 'POST, OPTIONS',
 }
 
 serve(async (req) => {
-  console.log("--- [sync-calcom-bookings] v8.0 — Robust Matching ---");
+  console.log("--- [sync-calcom-bookings] v9.0 — Robust Time-Window Matching ---");
 
   if (req.method === 'OPTIONS') return new Response('ok', { headers: corsHeaders })
 
@@ -72,17 +71,25 @@ serve(async (req) => {
 
       let targetId = existingApp?.id;
 
-      // 3. If not found by ID, try to match manual entry by date
+      // 3. If not found by ID, try to match manual entry by date window (+/- 1 minute)
       if (!targetId) {
-        const { data: manualMatch } = await supabase
+        const startDate = new Date(startTime);
+        const windowStart = new Date(startDate.getTime() - 60000).toISOString();
+        const windowEnd = new Date(startDate.getTime() + 60000).toISOString();
+
+        const { data: manualMatches } = await supabase
           .from('appointments')
           .select('id')
           .eq('client_id', dbClient.id)
-          .eq('date', startTime)
           .is('calcom_booking_id', null)
-          .maybeSingle();
+          .gte('date', windowStart)
+          .lte('date', windowEnd)
+          .order('created_at', { ascending: true });
         
-        if (manualMatch) targetId = manualMatch.id;
+        if (manualMatches && manualMatches.length > 0) {
+          console.log(`[sync-calcom-bookings] Found manual match ${manualMatches[0].id} for ${name} at ${startTime}`);
+          targetId = manualMatches[0].id;
+        }
       }
 
       // 4. Upsert with the matched ID

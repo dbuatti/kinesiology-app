@@ -63,24 +63,27 @@ export function processNeurologicalHistory(appointments: any[]): FindingHistory[
       Object.entries(pattern).forEach(([category, items]: [string, any]) => {
         if (!items || typeof items !== 'object') return;
 
-        // Track what we've seen in THIS session to prevent internal duplicates
-        const seenInSession = new Set<string>();
+        // 1. Normalize all items in this category for this session first
+        const sessionItems: { base: string, side: string, status: any }[] = [];
+        Object.entries(items).forEach(([key, status]) => {
+          const sideMatch = key.match(/\(([LR])\)$/);
+          const side = sideMatch ? sideMatch[1] : "";
+          const base = getCanonicalName(key);
+          sessionItems.push({ base, side, status });
+        });
 
-        Object.entries(items).forEach(([rawName, status]: [string, any]) => {
-          const sideMatch = rawName.match(/\(([LR])\)$/);
-          const side = sideMatch ? ` (${sideMatch[1]})` : "";
-          const baseName = getCanonicalName(rawName);
-          const displayName = `${baseName}${side}`;
-          
-          // If we have a lateralized version (L or R), ignore the "base" version in the same session
-          if (!side) {
-            const hasLateralized = Object.keys(items).some(k => k.startsWith(rawName) && k.includes('('));
-            if (hasLateralized) return;
+        // 2. Filter out base items if lateralized ones exist for the same base name
+        const filteredSessionItems = sessionItems.filter(item => {
+          if (item.side === "") {
+            const hasLateral = sessionItems.some(other => other.base === item.base && other.side !== "");
+            if (hasLateral) return false;
           }
+          return true;
+        });
 
-          if (seenInSession.has(displayName)) return;
-          seenInSession.add(displayName);
-
+        // 3. Add to global map
+        filteredSessionItems.forEach(item => {
+          const displayName = item.side ? `${item.base} (${item.side})` : item.base;
           const catDisplay = category
             .replace(/([A-Z])/g, ' $1')
             .replace(/^./, str => str.toUpperCase())
@@ -100,7 +103,7 @@ export function processNeurologicalHistory(appointments: any[]): FindingHistory[
           findingsMap[key].history.push({
             date: dateStr,
             appointmentId: app.id,
-            status: status as 'Clear' | 'Inhibited'
+            status: item.status as 'Clear' | 'Inhibited'
           });
         });
       });

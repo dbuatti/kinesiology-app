@@ -28,23 +28,34 @@ const PathwayFindingsList = ({ priorityPattern, className, showOnlyInhibited = t
     try {
       const parsed = JSON.parse(priorityPattern);
       const items: { name: string; status: string; category: string }[] = [];
-      const seen = new Set<string>();
       
       Object.entries(parsed).forEach(([category, values]: [string, any]) => {
-        Object.entries(values).forEach(([rawName, status]) => {
+        // 1. Normalize all items in this category first
+        const sessionItems: { base: string, side: string, status: string }[] = [];
+        Object.entries(values).forEach(([key, status]) => {
           if (showOnlyInhibited && status !== 'Inhibited') return;
+          
+          const sideMatch = key.match(/\(([LR])\)$/);
+          const side = sideMatch ? sideMatch[1] : "";
+          const base = getCanonicalName(key);
+          sessionItems.push({ base, side, status: status as string });
+        });
 
-          const sideMatch = rawName.match(/\(([LR])\)$/);
-          const side = sideMatch ? ` (${sideMatch[1]})` : "";
-          const baseName = getCanonicalName(rawName);
-          const displayName = `${baseName}${side}`;
+        // 2. Filter out base items if lateralized ones exist
+        const filteredSessionItems = sessionItems.filter(item => {
+          if (item.side === "") {
+            const hasLateral = sessionItems.some(other => other.base === item.base && other.side !== "");
+            if (hasLateral) return false;
+          }
+          return true;
+        });
 
-          if (seen.has(displayName)) return;
-          seen.add(displayName);
-
+        // 3. Add to final list
+        filteredSessionItems.forEach(item => {
+          const displayName = item.side ? `${item.base} (${item.side})` : item.base;
           items.push({ 
             name: displayName, 
-            status: status as string, 
+            status: item.status, 
             category: category.replace(/([A-Z])/g, ' $1').trim() 
           });
         });

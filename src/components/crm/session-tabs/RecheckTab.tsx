@@ -100,42 +100,52 @@ const RecheckTab = ({ appointment, history, onUpdate, saveField, updatePriorityP
       return key;
     };
 
-    const processedKeys = new Set<string>();
+    const isLateralizedReflex = (name: string) => {
+      const lateralized = ['ATNR', 'Spinal Galant', 'Babinski', 'Rooting', 'Palmar'];
+      return lateralized.some(l => name.includes(l));
+    };
+
+    const rawPatternItems: RecheckItem[] = [];
 
     Object.entries(prevPattern).forEach(([catKey, categoryItems]: [string, any]) => {
       Object.entries(categoryItems).forEach(([rawName, status]) => {
         const sideMatch = rawName.match(/\(([LR])\)$/);
         const side = sideMatch ? sideMatch[1] as 'L' | 'R' : undefined;
-        const baseName = rawName.replace(/ \([LR]\)$/, '');
-        
+        const baseName = rawName.replace(/ \([LR]\)$/, '').trim();
         const canonicalBase = getCanonicalName(baseName);
-        const canonicalFullName = side ? `${canonicalBase} (${side})` : canonicalBase;
 
-        // Skip if we've already processed this canonical item
-        if (processedKeys.has(canonicalFullName)) return;
-        processedKeys.add(canonicalFullName);
-
-        const currentStatus = currentPattern[catKey]?.[canonicalFullName] || currentPattern[catKey]?.[rawName] || null;
-
-        items.push({
-          id: `pattern-${catKey}-${canonicalFullName}`,
+        rawPatternItems.push({
+          id: `pattern-${catKey}-${rawName}`,
           name: canonicalBase,
           category: catKey,
           type: 'pattern',
           previousStatus: status as string,
-          currentStatus,
           side
         });
       });
     });
 
-    prevMuscleTests.forEach(test => {
-      if (processedKeys.has(test.muscle_name)) return;
-      processedKeys.add(test.muscle_name);
+    // Deduplicate patterns: If lateralized and we have L/R, remove the base entry
+    const filteredPatterns = rawPatternItems.filter((item, _, all) => {
+      if (!item.side && isLateralizedReflex(item.name)) {
+        const hasSides = all.some(other => other.name === item.name && other.side);
+        if (hasSides) return false;
+      }
+      return true;
+    });
 
+    // Add current status to filtered patterns
+    filteredPatterns.forEach(item => {
+      const fullName = item.side ? `${item.name} (${item.side})` : item.name;
+      const currentStatus = currentPattern[item.category]?.[fullName] || null;
+      items.push({ ...item, currentStatus });
+    });
+
+    // Process Muscle Tests
+    prevMuscleTests.forEach(test => {
       const sideMatch = test.muscle_name.match(/\(([LR])\)$/);
       const side = sideMatch ? sideMatch[1] as 'L' | 'R' : undefined;
-      const baseName = test.muscle_name.replace(/ \([LR]\)$/, '');
+      const baseName = test.muscle_name.replace(/ \([LR]\)$/, '').trim();
 
       const currentTest = currentMuscleTests.find(t => t.muscle_name === test.muscle_name);
       const currentStatus = currentTest?.status || null;

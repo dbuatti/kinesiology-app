@@ -63,12 +63,24 @@ export function processNeurologicalHistory(appointments: any[]): FindingHistory[
       Object.entries(pattern).forEach(([category, items]: [string, any]) => {
         if (!items || typeof items !== 'object') return;
 
+        // Track what we've seen in THIS session to prevent internal duplicates
+        const seenInSession = new Set<string>();
+
         Object.entries(items).forEach(([rawName, status]: [string, any]) => {
           const sideMatch = rawName.match(/\(([LR])\)$/);
           const side = sideMatch ? ` (${sideMatch[1]})` : "";
           const baseName = getCanonicalName(rawName);
           const displayName = `${baseName}${side}`;
           
+          // If we have a lateralized version (L or R), ignore the "base" version in the same session
+          if (!side) {
+            const hasLateralized = Object.keys(items).some(k => k.startsWith(rawName) && k.includes('('));
+            if (hasLateralized) return;
+          }
+
+          if (seenInSession.has(displayName)) return;
+          seenInSession.add(displayName);
+
           const catDisplay = category
             .replace(/([A-Z])/g, ' $1')
             .replace(/^./, str => str.toUpperCase())

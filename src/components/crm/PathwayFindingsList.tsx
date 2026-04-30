@@ -4,6 +4,8 @@ import React, { useMemo } from 'react';
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 import { AlertCircle, CheckCircle2, Zap, Baby, Brain } from "lucide-react";
+import { PRIMITIVE_REFLEXES } from '@/data/primitive-reflex-data';
+import { BRAIN_REFLEX_POINTS } from '@/data/brain-reflex-data';
 
 interface PathwayFindingsListProps {
   priorityPattern: string | null | undefined;
@@ -11,22 +13,40 @@ interface PathwayFindingsListProps {
   showOnlyInhibited?: boolean;
 }
 
+const getCanonicalName = (name: string): string => {
+  const cleanName = name.replace(/ \([LR]\)$/, '').trim().toLowerCase();
+  const reflex = PRIMITIVE_REFLEXES.find(r => r.id.toLowerCase() === cleanName || r.name.toLowerCase() === cleanName);
+  if (reflex) return reflex.name;
+  const point = BRAIN_REFLEX_POINTS.find(p => p.id.toLowerCase() === cleanName || p.name.toLowerCase() === cleanName);
+  if (point) return point.name.split(':')[0].trim();
+  return name;
+};
+
 const PathwayFindingsList = ({ priorityPattern, className, showOnlyInhibited = true }: PathwayFindingsListProps) => {
   const findings = useMemo(() => {
     if (!priorityPattern) return [];
     try {
       const parsed = JSON.parse(priorityPattern);
       const items: { name: string; status: string; category: string }[] = [];
+      const seen = new Set<string>();
       
       Object.entries(parsed).forEach(([category, values]: [string, any]) => {
-        Object.entries(values).forEach(([name, status]) => {
-          if (!showOnlyInhibited || status === 'Inhibited') {
-            items.push({ 
-              name, 
-              status: status as string, 
-              category: category.replace(/([A-Z])/g, ' $1').trim() 
-            });
-          }
+        Object.entries(values).forEach(([rawName, status]) => {
+          if (showOnlyInhibited && status !== 'Inhibited') return;
+
+          const sideMatch = rawName.match(/\(([LR])\)$/);
+          const side = sideMatch ? ` (${sideMatch[1]})` : "";
+          const baseName = getCanonicalName(rawName);
+          const displayName = `${baseName}${side}`;
+
+          if (seen.has(displayName)) return;
+          seen.add(displayName);
+
+          items.push({ 
+            name: displayName, 
+            status: status as string, 
+            category: category.replace(/([A-Z])/g, ' $1').trim() 
+          });
         });
       });
       
@@ -53,8 +73,8 @@ const PathwayFindingsList = ({ priorityPattern, className, showOnlyInhibited = t
           )}
         >
           <div className="flex items-center gap-2 truncate mr-2">
-            {finding.category.includes('Primitive') ? <Baby size={12} /> :
-             finding.category.includes('Cranial') ? <Zap size={12} /> :
+            {finding.category.toLowerCase().includes('primitive') ? <Baby size={12} /> :
+             finding.category.toLowerCase().includes('cranial') ? <Zap size={12} /> :
              <Brain size={12} />}
             <span className="truncate">{finding.name}</span>
           </div>

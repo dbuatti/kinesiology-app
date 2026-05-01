@@ -34,7 +34,7 @@ import {
   RefreshCw
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { useNavigate } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { AppointmentWithClient } from '@/types/crm';
 import BaselineTab from './session-tabs/BaselineTab';
 import SympatheticTab from './session-tabs/SympatheticTab';
@@ -330,11 +330,13 @@ const SessionContentSwitcher = ({
           
           <Button
             variant="ghost"
-            onClick={() => navigate(`/appointments/${appointment.id}/protocols`)}
+            asChild
             className="h-10 px-5 rounded-xl transition-all font-black text-[10px] uppercase tracking-widest shrink-0 text-slate-500 hover:bg-white/50"
           >
-            <Brain size={16} className="mr-2 text-purple-500" />
-            Protocols
+            <Link to={`/appointments/${appointment.id}/protocols`}>
+              <Brain size={16} className="mr-2 text-purple-500" />
+              Protocols
+            </Link>
           </Button>
 
           <NavItem view="recheck" label="Recheck" Icon={RefreshCw} />

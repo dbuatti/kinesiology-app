@@ -331,7 +331,7 @@ const SessionContentSwitcher = ({
           <Button
             variant="ghost"
             asChild
-            className="h-10 px-5 rounded-xl transition-all font-black text-[10px] uppercase tracking-widest shrink-0 text-slate-500 hover:bg-white/50"
+            className="h-10 px-5 rounded-xl transition-all font-black text-[10px] uppercase tracking-widest shrink-0 text-slate-500 hover:bg-white hover:text-purple-600 hover:shadow-sm border border-transparent hover:border-slate-100"
           >
             <Link to={`/appointments/${appointment.id}/protocols`}>
               <Brain size={16} className="mr-2 text-purple-500" />

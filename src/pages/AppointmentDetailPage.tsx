@@ -323,7 +323,7 @@ const AppointmentDetailPage = () => {
         onCompleteSession={handleCompleteSession}
       />
 
-      <AppLayout variant="workspace" hasFixedHeader={isFixedHeaderActive}>
+      <AppLayout variant="full" hasFixedHeader={isFixedHeaderActive}>
         <div className="flex flex-col gap-8 print:p-0">
           <PageHeader 
             title="Session Workspace"

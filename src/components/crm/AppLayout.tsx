@@ -20,8 +20,8 @@ const AppLayout = ({
 }: AppLayoutProps) => {
   const location = useLocation();
 
-  // Standardize all pages to the wider 1280px (max-w-7xl) layout
-  const maxWidthClass = "max-w-7xl";
+  // Determine max width based on variant
+  const maxWidthClass = variant === "full" ? "max-w-none" : "max-w-7xl";
 
   return (
     <div

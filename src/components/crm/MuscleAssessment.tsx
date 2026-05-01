@@ -13,7 +13,9 @@ import {
   FileText,
   CheckCircle2,
   Dumbbell,
-  Search
+  Search,
+  ArrowUpCircle,
+  ArrowDownCircle
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { supabase } from "@/integrations/supabase/client";
@@ -25,23 +27,28 @@ import { getMuscleInfo } from "@/data/muscle-info-data";
 
 interface MuscleTestItemProps {
   name: string;
-  statusL?: 'Clear' | 'Inhibited';
-  statusR?: 'Clear' | 'Inhibited';
-  statusMidline?: 'Clear' | 'Inhibited';
+  statusL?: 'Clear' | 'Inhibited' | 'Hypertonic';
+  statusR?: 'Clear' | 'Inhibited' | 'Hypertonic';
+  statusMidline?: 'Clear' | 'Inhibited' | 'Hypertonic';
   isLateralized: boolean;
   imageUrl?: string | null;
   showImage: boolean;
-  onUpdate: (category: string, itemName: string, status: 'Clear' | 'Inhibited' | null, side?: 'L' | 'R') => Promise<void>;
+  onUpdate: (category: string, itemName: string, status: 'Clear' | 'Inhibited' | 'Hypertonic' | null, side?: 'L' | 'R') => Promise<void>;
 }
 
 const MuscleTestItem = ({ name, statusL, statusR, statusMidline, isLateralized, imageUrl, showImage, onUpdate }: MuscleTestItemProps) => {
   const info = useMemo(() => getMuscleInfo(name), [name]);
-  const isAnyInhibited = statusL === 'Inhibited' || statusR === 'Inhibited' || statusMidline === 'Inhibited';
+  
+  const isInhibited = statusL === 'Inhibited' || statusR === 'Inhibited' || statusMidline === 'Inhibited';
+  const isHypertonic = statusL === 'Hypertonic' || statusR === 'Hypertonic' || statusMidline === 'Hypertonic';
+  const isAnyDysfunctional = isInhibited || isHypertonic;
 
   return (
     <section className={cn(
       "p-2 px-3 rounded-xl border transition-all",
-      isAnyInhibited ? "bg-rose-50 border-rose-200" : "border-slate-100 bg-white"
+      isInhibited ? "bg-rose-50 border-rose-200" : 
+      isHypertonic ? "bg-amber-50 border-amber-200" :
+      "border-slate-100 bg-white"
     )}>
       <div className="flex items-center justify-between gap-4">
         <div className="flex-1 min-w-0 space-y-1">
@@ -69,44 +76,59 @@ const MuscleTestItem = ({ name, statusL, statusR, statusMidline, isLateralized, 
         )}
 
         <div className="flex items-center gap-3 shrink-0 print:hidden">
-          <div className="flex items-center gap-3 border-r border-slate-100 pr-3">
+          {/* Inhibition Controls */}
+          <div className="flex items-center gap-2 border-r border-slate-100 pr-2">
+            <span className="text-[7px] font-black text-slate-300 uppercase tracking-widest">Inhib</span>
             {isLateralized ? (
-              <>
-                <div className="flex items-center gap-1">
-                  <Checkbox 
-                    id={`inhib-l-${name}`}
-                    checked={statusL === 'Inhibited'}
-                    onCheckedChange={(checked) => onUpdate('muscles', name, checked ? 'Inhibited' : 'Clear', 'L')}
-                    className="h-3 w-3 border-slate-400 rounded-none"
-                  />
-                  <label htmlFor={`inhib-l-${name}`} className="text-[8px] font-black uppercase tracking-widest cursor-pointer text-slate-500">
-                    L
-                  </label>
-                </div>
-                <div className="flex items-center gap-1">
-                  <Checkbox 
-                    id={`inhib-r-${name}`}
-                    checked={statusR === 'Inhibited'}
-                    onCheckedChange={(checked) => onUpdate('muscles', name, checked ? 'Inhibited' : 'Clear', 'R')}
-                    className="h-3 w-3 border-slate-400 rounded-none"
-                  />
-                  <label htmlFor={`inhib-r-${name}`} className="text-[8px] font-black uppercase tracking-widest cursor-pointer text-slate-500">
-                    R
-                  </label>
-                </div>
-              </>
-            ) : (
-              <div className="flex items-center gap-1">
+              <div className="flex items-center gap-1.5">
                 <Checkbox 
-                  id={`inhib-mid-${name}`}
-                  checked={statusMidline === 'Inhibited'}
-                  onCheckedChange={(checked) => onUpdate('muscles', name, checked ? 'Inhibited' : 'Clear')}
-                  className="h-3 w-3 border-slate-400 rounded-none"
+                  id={`inhib-l-${name}`}
+                  checked={statusL === 'Inhibited'}
+                  onCheckedChange={(checked) => onUpdate('muscles', name, checked ? 'Inhibited' : 'Clear', 'L')}
+                  className="h-3.5 w-3.5 border-slate-400 rounded-none"
                 />
-                <label htmlFor={`inhib-mid-${name}`} className="text-[8px] font-black uppercase tracking-widest cursor-pointer text-slate-500">
-                  Inhib
-                </label>
+                <Checkbox 
+                  id={`inhib-r-${name}`}
+                  checked={statusR === 'Inhibited'}
+                  onCheckedChange={(checked) => onUpdate('muscles', name, checked ? 'Inhibited' : 'Clear', 'R')}
+                  className="h-3.5 w-3.5 border-slate-400 rounded-none"
+                />
               </div>
+            ) : (
+              <Checkbox 
+                id={`inhib-mid-${name}`}
+                checked={statusMidline === 'Inhibited'}
+                onCheckedChange={(checked) => onUpdate('muscles', name, checked ? 'Inhibited' : 'Clear')}
+                className="h-3.5 w-3.5 border-slate-400 rounded-none"
+              />
+            )}
+          </div>
+
+          {/* Hypertonic Controls */}
+          <div className="flex items-center gap-2 border-r border-slate-100 pr-2">
+            <span className="text-[7px] font-black text-slate-300 uppercase tracking-widest">Hyper</span>
+            {isLateralized ? (
+              <div className="flex items-center gap-1.5">
+                <Checkbox 
+                  id={`hyper-l-${name}`}
+                  checked={statusL === 'Hypertonic'}
+                  onCheckedChange={(checked) => onUpdate('muscles', name, checked ? 'Hypertonic' : 'Clear', 'L')}
+                  className="h-3.5 w-3.5 border-amber-400 rounded-none data-[state=checked]:bg-amber-500"
+                />
+                <Checkbox 
+                  id={`hyper-r-${name}`}
+                  checked={statusR === 'Hypertonic'}
+                  onCheckedChange={(checked) => onUpdate('muscles', name, checked ? 'Hypertonic' : 'Clear', 'R')}
+                  className="h-3.5 w-3.5 border-amber-400 rounded-none data-[state=checked]:bg-amber-500"
+                />
+              </div>
+            ) : (
+              <Checkbox 
+                id={`hyper-mid-${name}`}
+                checked={statusMidline === 'Hypertonic'}
+                onCheckedChange={(checked) => onUpdate('muscles', name, checked ? 'Hypertonic' : 'Clear')}
+                className="h-3.5 w-3.5 border-amber-400 rounded-none data-[state=checked]:bg-amber-500"
+              />
             )}
           </div>
 
@@ -130,7 +152,7 @@ export function MuscleAssessment({
   showImages
 }: { 
   priorityPattern?: string | null;
-  updatePriorityPattern: (category: string, itemName: string, status: 'Clear' | 'Inhibited' | null, side?: 'L' | 'R') => Promise<void>;
+  updatePriorityPattern: (category: string, itemName: string, status: 'Clear' | 'Inhibited' | 'Hypertonic' | null, side?: 'L' | 'R') => Promise<void>;
   showImages: boolean;
 }) {
   const [searchQuery, setSearchQuery] = useState("");

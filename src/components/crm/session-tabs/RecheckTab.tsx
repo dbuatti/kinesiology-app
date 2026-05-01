@@ -2,26 +2,23 @@
 
 import React, { useState, useEffect, useMemo } from 'react';
 import { supabase } from "@/integrations/supabase/client";
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { 
   History, 
   CheckCircle2, 
-  Zap, 
   RotateCcw, 
   Loader2, 
   Dumbbell, 
   Brain, 
   Activity, 
   Baby,
-  ArrowRight,
   Target,
   Calendar,
-  AlertCircle,
   RefreshCw,
   Info,
-  ChevronRight
+  Zap
 } from "lucide-react";
 import { format } from "date-fns";
 import { cn } from "@/lib/utils";
@@ -29,6 +26,7 @@ import { showSuccess, showError } from "@/utils/toast";
 import { safeParse } from "@/utils/safe-json";
 import { PRIMITIVE_REFLEXES } from "@/data/primitive-reflex-data";
 import { BRAIN_REFLEX_POINTS } from "@/data/brain-reflex-data";
+import { processNeurologicalHistory } from "@/utils/neurological-history";
 
 interface RecheckTabProps {
   appointment: any;
@@ -67,6 +65,8 @@ const RecheckTab = ({ appointment, history, onUpdate, saveField, updatePriorityP
     if (!history || history.length < 2) return null;
     return history[1];
   }, [history]);
+
+  const historyStats = useMemo(() => processNeurologicalHistory(history), [history]);
 
   const fetchSessionData = async () => {
     if (!previousSession) {
@@ -170,11 +170,29 @@ const RecheckTab = ({ appointment, history, onUpdate, saveField, updatePriorityP
       else groups[groupKey].midline = item;
     });
 
-    return Object.values(groups).sort((a, b) => {
-      if (a.type !== b.type) return a.type.localeCompare(b.type);
-      return a.name.localeCompare(b.name);
-    });
-  }, [previousSession, prevMuscleTests, currentMuscleTests, appointment.priority_pattern]);
+    return Object.values(groups)
+      .filter(group => {
+        // Filter logic: Only show if it was inhibited last time OR has been inhibited at some point in history
+        const items = [group.left, group.right, group.midline].filter(Boolean);
+        
+        return items.some(item => {
+          // 1. If it was inhibited in the previous session, we definitely want to recheck it
+          if (item.previousStatus === 'Inhibited' || item.previousStatus !== 'Normotonic') return true;
+          
+          // 2. If it was clear in the previous session, check if it has EVER been inhibited in history
+          const fullName = item.side ? `${item.name} (${item.side})` : item.name;
+          const findingHistory = historyStats.find(h => h.name === fullName);
+          
+          // If we have history and it was ever inhibited, show it to verify it's still clear
+          const wasEverInhibited = findingHistory?.history.some(h => h.status === 'Inhibited' || (h.status as any) !== 'Normotonic');
+          return wasEverInhibited;
+        });
+      })
+      .sort((a, b) => {
+        if (a.type !== b.type) return a.type.localeCompare(b.type);
+        return a.name.localeCompare(b.name);
+      });
+  }, [previousSession, prevMuscleTests, currentMuscleTests, appointment.priority_pattern, historyStats]);
 
   const handleMarkClear = async (item: RecheckItem) => {
     setProcessingId(item.id);
@@ -276,7 +294,7 @@ const RecheckTab = ({ appointment, history, onUpdate, saveField, updatePriorityP
             </span>
             <p className={cn(
               "text-[8px] font-bold uppercase tracking-widest",
-              item.previousStatus === 'Inhibited' ? "text-rose-500" : "text-indigo-500"
+              item.previousStatus === 'Inhibited' || item.previousStatus !== 'Normotonic' ? "text-rose-500" : "text-indigo-500"
             )}>
               Last: {item.previousStatus}
             </p>
@@ -359,7 +377,7 @@ const RecheckTab = ({ appointment, history, onUpdate, saveField, updatePriorityP
           </div>
           <h2 className="text-3xl font-black tracking-tight">Recheck List</h2>
           <p className="text-indigo-200 font-medium text-lg leading-relaxed max-w-2xl">
-            Verify the findings from the last session to track progress and identify recurring patterns.
+            Verify findings that were inhibited last session or have a history of dysfunction. Items that have always been clear are hidden to keep your focus sharp.
           </p>
         </div>
       </div>
@@ -410,7 +428,7 @@ const RecheckTab = ({ appointment, history, onUpdate, saveField, updatePriorityP
           </div>
           <h3 className="text-lg font-black text-slate-900">No Items to Recheck</h3>
           <p className="text-slate-500 mt-1 font-medium">
-            No muscle tests or patterns were recorded in the previous session.
+            All previous findings are either integrated or have a history of being clear.
           </p>
         </div>
       )}

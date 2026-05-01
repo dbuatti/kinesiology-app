@@ -192,7 +192,7 @@ const SessionContentSwitcher = ({
       className={cn(
         "h-10 px-5 rounded-xl transition-all font-black text-[10px] uppercase tracking-widest shrink-0",
         activeView === view 
-          ? "bg-white text-indigo-600 shadow-md border border-slate-100" 
+          ? "bg-white !text-indigo-600 shadow-md border border-slate-100" 
           : "text-slate-500 hover:bg-white/50"
       )}
     >
@@ -348,7 +348,7 @@ const SessionContentSwitcher = ({
               <button
                 className={cn(
                   "h-10 px-5 rounded-xl transition-all font-black text-[10px] uppercase tracking-widest shrink-0 flex items-center gap-2",
-                  isToolActive ? "bg-white text-indigo-600 shadow-md border border-slate-100" : "text-slate-500 hover:bg-white/50"
+                  isToolActive ? "bg-white !text-indigo-600 shadow-md border border-slate-100" : "text-slate-500 hover:bg-white/50"
                 )}
               >
                 <Wrench size={16} />

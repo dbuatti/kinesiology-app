@@ -279,6 +279,7 @@ const SessionContentSwitcher = ({
 
           <TabsContent value="pathway" className="focus-visible:ring-0">
             <PathwayAssessment 
+              appointmentId={appointment.id}
               initialValue={appointment.priority_pattern || undefined} 
               previousValue={history.length > 1 ? history[1]?.priority_pattern : undefined}
               history={history}

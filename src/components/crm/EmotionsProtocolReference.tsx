@@ -64,16 +64,16 @@ const STEPS = [
   { 
     id: 6, 
     title: "Priority Organ", 
-    desc: "Find the organ acting as a surrogate for the charge. Challenge the following pairs:",
+    desc: "Find the organ acting as a surrogate for the charge. This MUST be an organ related to the emotion's element from Step 5:",
     icon: Activity,
     color: "text-emerald-600",
     bg: "bg-emerald-50",
     details: [
-      { label: "Wood", items: "Liver / Gallbladder" },
-      { label: "Fire", items: "Heart / Small Intestine" },
-      { label: "Earth", items: "Spleen / Stomach" },
-      { label: "Metal", items: "Lung / Large Intestine" },
-      { label: "Water", items: "Kidney / Bladder" }
+      { label: "Wood (Anger)", items: "Liver / Gallbladder" },
+      { label: "Fire (Hurt)", items: "Heart / Small Intestine" },
+      { label: "Earth (Worry)", items: "Spleen / Stomach" },
+      { label: "Metal (Sadness)", items: "Lung / Large Intestine" },
+      { label: "Water (Fear)", items: "Kidney / Bladder" }
     ]
   },
   { 
@@ -94,7 +94,7 @@ const STEPS = [
     details: [
       { label: "Up & Left", items: "Visual Memory", sub: "Seeing a scene from the past." },
       { label: "Horizontal Left", items: "Auditory Memory", sub: "Hearing sounds or words from the past." },
-      { label: "Down & Left", items: "Internal Monologue", sub: "What you say to yourself (e.g. 'I am not good enough')." },
+      { label: "Down & Left", items: "Internal Monologue", sub: "What you say to yourself (e.g. 'I am not lovable')." },
       { label: "Up & Right", items: "Visual Constructed", sub: "Predicting what you think you will see." },
       { label: "Horizontal Right", items: "Auditory Constructed", sub: "Predicting what you think you will hear." },
       { label: "Down & Right", items: "Kinesthetic / Felt Sense", sub: "Physical sensation or body association." }

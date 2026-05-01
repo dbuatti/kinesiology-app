@@ -327,6 +327,16 @@ const SessionContentSwitcher = ({
       <div className="flex flex-col md:flex-row items-center justify-between bg-slate-100/60 backdrop-blur-md p-2 rounded-[2.5rem] border border-slate-200/50 gap-4">
         <div className="flex items-center gap-2 overflow-x-auto no-scrollbar w-full md:w-auto px-2">
           <NavItem view="home" label="PEACE" Icon={LayoutGrid} />
+          
+          <Button
+            variant="ghost"
+            onClick={() => navigate(`/appointments/${appointment.id}/protocols`)}
+            className="h-10 px-5 rounded-xl transition-all font-black text-[10px] uppercase tracking-widest shrink-0 text-slate-500 hover:bg-white/50"
+          >
+            <Brain size={16} className="mr-2 text-purple-500" />
+            Protocols
+          </Button>
+
           <NavItem view="recheck" label="Recheck" Icon={RefreshCw} />
           <NavItem view="previous" label="History" Icon={History} />
           
@@ -349,9 +359,6 @@ const SessionContentSwitcher = ({
               </DropdownMenuItem>
               <DropdownMenuItem onClick={() => setActiveView('journal')} className="rounded-xl py-4 px-5 cursor-pointer">
                 <BookOpen size={18} className="mr-4 text-amber-500" /> Session Journal
-              </DropdownMenuItem>
-              <DropdownMenuItem onClick={() => navigate(`/appointments/${appointment.id}/protocols`)} className="rounded-xl py-4 px-5 cursor-pointer">
-                <Brain size={18} className="mr-4 text-purple-500" /> Clinical Protocols
               </DropdownMenuItem>
 
               <DropdownMenuItem onClick={() => setActiveView('kinesiology')} className="rounded-xl py-4 px-5 cursor-pointer">
@@ -399,13 +406,13 @@ const SessionContentSwitcher = ({
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end" className="rounded-2xl p-2 shadow-3xl border-none bg-card">
               <DropdownMenuItem className="rounded-xl py-3 px-5 cursor-pointer flex items-center gap-4" onClick={onClonePrevious} disabled={isCloning}>
-                {isCloning ? <Loader2 size={18} className="animate-spin" /> : <History size={18} className="text-indigo-500" />} Clone Previous
+                {isCloning ? <Loader2 size={18} className="animate-spin" /> : <History size={18} className="text-indigo-50" />} Clone Previous
               </DropdownMenuItem>
               <DropdownMenuItem className="rounded-xl py-3 px-5 cursor-pointer flex items-center gap-4" onClick={onPrint}>
                 <Printer size={18} className="text-slate-500" /> Print Report
               </DropdownMenuItem>
               <DropdownMenuItem className="rounded-xl py-3 px-5 cursor-pointer flex items-center gap-4" onClick={onCopySummary}>
-                {isCopied ? <Check size={18} className="text-emerald-500" /> : <Copy size={18} className="text-indigo-500" />} Copy Summary
+                {isCopied ? <Check size={18} className="text-emerald-500" /> : <Copy size={18} className="text-indigo-50" />} Copy Summary
               </DropdownMenuItem>
               <DropdownMenuSeparator className="my-2" />
               <DropdownMenuItem className="text-destructive focus:text-destructive rounded-xl py-3 px-5 cursor-pointer flex items-center gap-4" onClick={onDelete}>

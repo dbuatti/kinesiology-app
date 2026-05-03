@@ -186,7 +186,7 @@ const ProceduresPage = () => {
   );
 
   return (
-    <AppLayout variant="full">
+    <AppLayout variant="workspace">
       <div className="space-y-10">
         <PageHeader 
           title="Practice Health"
@@ -497,19 +497,6 @@ const ProceduresPage = () => {
                   </TabsContent>
                 </div>
               </Tabs>
-
-              <div className="mt-16 p-8 bg-slate-900 text-white rounded-[2.5rem] flex items-start gap-6 shadow-lg relative overflow-hidden">
-                <div className="absolute top-0 right-0 p-6 opacity-10"><Info size={100} /></div>
-                <div className="w-14 h-14 rounded-2xl bg-indigo-600 text-white flex items-center justify-center shadow-md shrink-0">
-                  <GraduationCap size={32} />
-                </div>
-                <div className="space-y-2 relative z-10">
-                  <h4 className="text-xl font-black text-indigo-400">Clinical Sandbox</h4>
-                  <p className="text-slate-300 font-medium leading-relaxed italic text-lg">
-                    "Use this space to review protocols, study stimuli, and practice your clinical reasoning without affecting client records. Mastery is built in the quiet moments between sessions."
-                  </p>
-                </div>
-              </div>
             </div>
           </TabsContent>
         </Tabs>

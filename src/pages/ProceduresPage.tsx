@@ -380,7 +380,7 @@ const ProceduresPage = () => {
           </TabsContent>
 
           <TabsContent value="reference" className="mt-0 animate-in fade-in duration-500">
-            <div className="bg-card rounded-[2.5rem] border border-border shadow-md p-8 md:p-12">
+            <div className="bg-card rounded-[3rem] border border-border shadow-xl p-8 md:p-12">
               <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-12">
                 <div className="space-y-1">
                   <h2 className="text-3xl font-black text-foreground tracking-tight">Protocol Sandbox</h2>
@@ -393,52 +393,52 @@ const ProceduresPage = () => {
 
               <Tabs value={protocolTab} onValueChange={setProtocolTab} className="w-full">
                 <div className="flex justify-center mb-10">
-                  <TabsList className="inline-flex h-14 items-center justify-center rounded-xl bg-slate-100/50 p-1 text-muted-foreground border border-slate-200">
+                  <TabsList className="inline-flex h-14 items-center justify-center rounded-2xl bg-slate-100/50 p-1.5 text-muted-foreground border border-slate-200">
                     <TabsTrigger 
                       value="cranial-nerves" 
-                      className="inline-flex items-center justify-center whitespace-nowrap rounded-lg px-8 py-3 text-xs font-bold uppercase tracking-widest transition-all data-[state=active]:bg-white data-[state=active]:text-indigo-600 data-[state=active]:shadow-md"
+                      className="inline-flex items-center justify-center whitespace-nowrap rounded-xl px-8 py-3 text-xs font-bold uppercase tracking-widest transition-all data-[state=active]:bg-white data-[state=active]:text-indigo-600 data-[state=active]:shadow-md"
                     >
-                      <Brain className="h-4 w-4 mr-2" />
+                      <Zap className="h-4 w-4 mr-2" />
                       Cranial Nerves
                     </TabsTrigger>
                     <TabsTrigger 
                       value="primitive-reflexes" 
-                      className="inline-flex items-center justify-center whitespace-nowrap rounded-lg px-8 py-3 text-xs font-bold uppercase tracking-widest transition-all data-[state=active]:bg-white data-[state=active]:text-indigo-600 data-[state=active]:shadow-md"
+                      className="inline-flex items-center justify-center whitespace-nowrap rounded-xl px-8 py-3 text-xs font-bold uppercase tracking-widest transition-all data-[state=active]:bg-white data-[state=active]:text-indigo-600 data-[state=active]:shadow-md"
                     >
-                      <Zap className="h-4 w-4 mr-2" />
+                      <RefreshCw className="h-4 w-4 mr-2" />
                       Primitive Reflexes
                     </TabsTrigger>
                     <TabsTrigger 
                       value="brain-zones" 
-                      className="inline-flex items-center justify-center whitespace-nowrap rounded-lg px-8 py-3 text-xs font-bold uppercase tracking-widest transition-all data-[state=active]:bg-white data-[state=active]:text-indigo-600 data-[state=active]:shadow-md"
+                      className="inline-flex items-center justify-center whitespace-nowrap rounded-xl px-8 py-3 text-xs font-bold uppercase tracking-widest transition-all data-[state=active]:bg-white data-[state=active]:text-indigo-600 data-[state=active]:shadow-md"
                     >
-                      <Activity className="h-4 w-4 mr-2" />
+                      <Brain className="h-4 w-4 mr-2" />
                       Brain Zones
                     </TabsTrigger>
                     <TabsTrigger 
                       value="muscles" 
-                      className="inline-flex items-center justify-center whitespace-nowrap rounded-lg px-8 py-3 text-xs font-bold uppercase tracking-widest transition-all data-[state=active]:bg-white data-[state=active]:text-indigo-600 data-[state=active]:shadow-md"
+                      className="inline-flex items-center justify-center whitespace-nowrap rounded-xl px-8 py-3 text-xs font-bold uppercase tracking-widest transition-all data-[state=active]:bg-white data-[state=active]:text-indigo-600 data-[state=active]:shadow-md"
                     >
                       <Dumbbell className="h-4 w-4 mr-2" />
                       Muscles
                     </TabsTrigger>
                     <TabsTrigger 
                       value="mechanoreceptive" 
-                      className="inline-flex items-center justify-center whitespace-nowrap rounded-lg px-8 py-3 text-xs font-bold uppercase tracking-widest transition-all data-[state=active]:bg-white data-[state=active]:text-indigo-600 data-[state=active]:shadow-md"
+                      className="inline-flex items-center justify-center whitespace-nowrap rounded-xl px-8 py-3 text-xs font-bold uppercase tracking-widest transition-all data-[state=active]:bg-white data-[state=active]:text-indigo-600 data-[state=active]:shadow-md"
                     >
                       <Activity className="h-4 w-4 mr-2" />
                       Mechanoreceptive
                     </TabsTrigger>
                     <TabsTrigger 
                       value="emotions" 
-                      className="inline-flex items-center justify-center whitespace-nowrap rounded-lg px-8 py-3 text-xs font-bold uppercase tracking-widest transition-all data-[state=active]:bg-white data-[state=active]:text-indigo-600 data-[state=active]:shadow-md"
+                      className="inline-flex items-center justify-center whitespace-nowrap rounded-xl px-8 py-3 text-xs font-bold uppercase tracking-widest transition-all data-[state=active]:bg-white data-[state=active]:text-indigo-600 data-[state=active]:shadow-md"
                     >
                       <Heart className="h-4 w-4 mr-2" />
                       Emotions
                     </TabsTrigger>
                     <TabsTrigger 
                       value="heart-wall" 
-                      className="inline-flex items-center justify-center whitespace-nowrap rounded-lg px-8 py-3 text-xs font-bold uppercase tracking-widest transition-all data-[state=active]:bg-white data-[state=active]:text-indigo-600 data-[state=active]:shadow-md"
+                      className="inline-flex items-center justify-center whitespace-nowrap rounded-xl px-8 py-3 text-xs font-bold uppercase tracking-widest transition-all data-[state=active]:bg-white data-[state=active]:text-indigo-600 data-[state=active]:shadow-md"
                     >
                       <Shield className="h-4 w-4 mr-2" />
                       Heart Wall

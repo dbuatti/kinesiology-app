@@ -55,7 +55,7 @@ export const CRANIAL_NERVES: CranialNerve[] = [
     color: "bg-purple-50",
     isLateralized: true,
     videoUrl: "https://embed-ssl.wistia.com/deliveries/d2a02ad26550033565f709c63fa2d85a18ff2c5d.mp4",
-    pageUrl: "https://functional-neuro-health.mykajabi.com/products/functional-neuro-approach-foundations/categories/2152127509/posts/2167205372"
+    pageUrl: "https://functional-neuro-health.mykajabi.com/products/functional-neuro-approach-foundations/categories/2152127437/posts/2167205372"
   },
   {
     id: 2,
@@ -71,7 +71,7 @@ export const CRANIAL_NERVES: CranialNerve[] = [
     color: "bg-purple-600",
     isLateralized: true,
     videoUrl: "https://embed-ssl.wistia.com/deliveries/b874823f0dc614160512b66bcb5b516f50f9eb2d.mp4",
-    pageUrl: "https://functional-neuro-health.mykajabi.com/products/functional-neuro-approach-foundations/categories/2152127509/posts/2167779783"
+    pageUrl: "https://functional-neuro-health.mykajabi.com/products/functional-neuro-approach-foundations/categories/2152127437/posts/2167779783"
   },
   {
     id: 3,
@@ -86,7 +86,7 @@ export const CRANIAL_NERVES: CranialNerve[] = [
     color: "bg-amber-500",
     isLateralized: true,
     videoUrl: "https://embed-ssl.wistia.com/deliveries/e469a668620604adbb0a0c69a192e7af50579078.mp4",
-    pageUrl: "https://functional-neuro-health.mykajabi.com/products/functional-neuro-approach-foundations/categories/2152127509/posts/2167779787"
+    pageUrl: "https://functional-neuro-health.mykajabi.com/products/functional-neuro-approach-foundations/categories/2152127437/posts/2167779787"
   },
   {
     id: 4,
@@ -101,7 +101,7 @@ export const CRANIAL_NERVES: CranialNerve[] = [
     color: "bg-amber-600",
     isLateralized: true,
     videoUrl: "https://embed-ssl.wistia.com/deliveries/e469a668620604adbb0a0c69a192e7af50579078.mp4",
-    pageUrl: "https://functional-neuro-health.mykajabi.com/products/functional-neuro-approach-foundations/categories/2152127509/posts/2167779806"
+    pageUrl: "https://functional-neuro-health.mykajabi.com/products/functional-neuro-approach-foundations/categories/2152127437/posts/2167779806"
   },
   {
     id: 5,
@@ -116,7 +116,7 @@ export const CRANIAL_NERVES: CranialNerve[] = [
     color: "bg-indigo-500",
     isLateralized: true,
     videoUrl: "https://embed-ssl.wistia.com/deliveries/10de3ccab10de3ccab1d8595c4c3e451aea5b91c84cf6213f.mp4",
-    pageUrl: "https://functional-neuro-health.mykajabi.com/products/functional-neuro-approach-foundations/categories/2152127509/posts/2167780073"
+    pageUrl: "https://functional-neuro-health.mykajabi.com/products/functional-neuro-approach-foundations/categories/2152127437/posts/2167780073"
   },
   {
     id: 6,
@@ -131,7 +131,7 @@ export const CRANIAL_NERVES: CranialNerve[] = [
     color: "bg-indigo-600",
     isLateralized: true,
     videoUrl: "https://embed-ssl.wistia.com/deliveries/e469a668620604adbb0a0c69a192e7af50579078.mp4",
-    pageUrl: "https://functional-neuro-health.mykajabi.com/products/functional-neuro-approach-foundations/categories/2152127509/posts/2167780077"
+    pageUrl: "https://functional-neuro-health.mykajabi.com/products/functional-neuro-approach-foundations/categories/2152127437/posts/2167780077"
   },
   {
     id: 7,
@@ -146,7 +146,7 @@ export const CRANIAL_NERVES: CranialNerve[] = [
     color: "bg-indigo-700",
     isLateralized: true,
     videoUrl: "https://embed-ssl.wistia.com/deliveries/e80792dddb73e4f494dd7f56a6cb1958e571e5ae.mp4",
-    pageUrl: "https://functional-neuro-health.mykajabi.com/products/functional-neuro-approach-foundations/categories/2152127509/posts/2167780903"
+    pageUrl: "https://functional-neuro-health.mykajabi.com/products/functional-neuro-approach-foundations/categories/2152127437/posts/2167780903"
   },
   {
     id: 8,
@@ -162,7 +162,7 @@ export const CRANIAL_NERVES: CranialNerve[] = [
     color: "bg-indigo-800",
     isLateralized: true,
     videoUrl: "https://embed-ssl.wistia.com/deliveries/465c56ed15ec74012154656cd87ff84d9307a40c.mp4",
-    pageUrl: "https://functional-neuro-health.mykajabi.com/products/functional-neuro-approach-foundations/categories/2152127509/posts/2167780911"
+    pageUrl: "https://functional-neuro-health.mykajabi.com/products/functional-neuro-approach-foundations/categories/2152127437/posts/2167780911"
   },
   {
     id: 9,
@@ -183,7 +183,7 @@ export const CRANIAL_NERVES: CranialNerve[] = [
     color: "bg-rose-50",
     isLateralized: true,
     videoUrl: "https://embed-ssl.wistia.com/deliveries/c951c07cedadced7e1d2291c60a8dc22d90ac90a.mp4",
-    pageUrl: "https://functional-neuro-health.mykajabi.com/products/functional-neuro-approach-foundations/categories/2152127509/posts/2167780916"
+    pageUrl: "https://functional-neuro-health.mykajabi.com/products/functional-neuro-approach-foundations/categories/2152127437/posts/2167780916"
   },
   {
     id: 10,
@@ -223,12 +223,12 @@ export const CRANIAL_NERVES: CranialNerve[] = [
     nuclei: "Medulla",
     toneEffect: "Flexors",
     reflexPoint: "Sulcus under chin — anterior mandible",
-    functions: ["Tongue movement", "Speech articulation"],
-    stimulus: "Hold sulcus under chin. Stimulus: tongue movement in all directions.",
-    clinicalPearl: "Vital for midline stability. Deviation indicates weakness in contralateral medulla.",
+    functions: ["Primary control of tongue movement", "Midline stability", "Part of the Medial Longitudinal Fasciculus (MLF) balance system"],
+    stimulus: "Hold sulcus under chin. Stimulus: push tongue straight out, then move it to the right, left, up, and down to identify the specific dysfunctional direction.",
+    clinicalPearl: "The tongue is a vital component of the Medial Longitudinal Fasciculus (MLF) alongside the eyes, jaw, and inner ear. It is essential for balance and midline stability. Dysfunction here strongly points to Medullary involvement.",
     color: "bg-rose-800",
     isLateralized: true,
     videoUrl: "https://embed-ssl.wistia.com/deliveries/c951c07cedadced7e1d2291c60a8dc22d90ac90a.mp4",
-    pageUrl: "https://functional-neuro-health.mykajabi.com/products/functional-neuro-approach-foundations/categories/2152127509/posts/2167780916"
+    pageUrl: "https://functional-neuro-health.mykajabi.com/products/functional-neuro-approach-foundations/categories/2152127437/posts/2167780916"
   }
 ];

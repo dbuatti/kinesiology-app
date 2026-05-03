@@ -159,6 +159,13 @@ const ProceduresPage = () => {
     }
   };
 
+  const handleShowNerveInfo = (nerveId: number) => {
+    const point = BRAIN_REFLEX_POINTS.find(p => p.id === `cn${nerveId}`);
+    if (point) {
+      setSelectedBrainPoint(point);
+    }
+  };
+
   const handleCommitFocus = async () => {
     setCommitting(true);
     try {
@@ -446,6 +453,7 @@ const ProceduresPage = () => {
                       priorityPattern={null}
                       updatePriorityPattern={async () => {}}
                       showImages={true}
+                      onShowInfo={handleShowNerveInfo}
                     />
                   </TabsContent>
                   

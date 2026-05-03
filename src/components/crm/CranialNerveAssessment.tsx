@@ -14,7 +14,8 @@ import {
   PlayCircle,
   FileText,
   CheckCircle2,
-  ArrowRightLeft
+  ArrowRightLeft,
+  Info
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { supabase } from "@/integrations/supabase/client";
@@ -28,9 +29,10 @@ interface NerveTestItemProps {
   images: { primary: string | null, secondary: string | null } | undefined;
   showImage: boolean;
   onUpdate: (nerveId: string, updates: any, side?: 'L' | 'R') => Promise<void>;
+  onShowInfo?: (nerveId: number) => void;
 }
 
-const NerveTestItem = ({ nerve, test, statusL, statusR, images, showImage, onUpdate }: NerveTestItemProps) => {
+const NerveTestItem = ({ nerve, test, statusL, statusR, images, showImage, onUpdate, onShowInfo }: NerveTestItemProps) => {
   const [localNotes, setLocalNotes] = useState(test.notes || "");
   const saveTimeoutRef = React.useRef<NodeJS.Timeout | null>(null);
 
@@ -77,9 +79,15 @@ const NerveTestItem = ({ nerve, test, statusL, statusR, images, showImage, onUpd
     )}>
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-2 border-b border-slate-100/50 pb-2">
         <div className="flex items-center gap-3">
-          <h2 className="text-lg font-serif font-bold text-slate-900">
-            {nerve.name}: {nerve.latinName}
-          </h2>
+          <div 
+            className="flex items-center gap-2 cursor-pointer group/title"
+            onClick={() => onShowInfo?.(nerve.id)}
+          >
+            <h2 className="text-lg font-serif font-bold text-slate-900 group-hover/title:text-indigo-600 transition-colors">
+              {nerve.name}: {nerve.latinName}
+            </h2>
+            <Info size={14} className="text-slate-300 group-hover/title:text-indigo-400 transition-colors" />
+          </div>
           <Badge variant="outline" className="border-slate-200 text-slate-400 font-black text-[7px] uppercase tracking-widest px-1.5 py-0 rounded-none">
             {nerve.nuclei} • {nerve.toneEffect}
           </Badge>
@@ -229,12 +237,14 @@ export function CranialNerveAssessment({
   appointmentId, 
   priorityPattern, 
   updatePriorityPattern,
-  showImages
+  showImages,
+  onShowInfo
 }: { 
   appointmentId: string;
   priorityPattern?: string | null;
   updatePriorityPattern?: (category: string, itemName: string, status: 'Clear' | 'Inhibited' | null, side?: 'L' | 'R') => Promise<void>;
   showImages: boolean;
+  onShowInfo?: (nerveId: number) => void;
 }) {
   const { tests, loading, updateTest } = useCranialNerveTests(appointmentId, priorityPattern, updatePriorityPattern);
   const [customImages, setCustomImages] = useState<Record<string, { primary: string | null, secondary: string | null }>>({});
@@ -305,6 +315,7 @@ export function CranialNerveAssessment({
             images={customImages[`cn${nerve.id}`]}
             showImage={showImages}
             onUpdate={updateTest}
+            onShowInfo={onShowInfo}
           />
         );
       })}

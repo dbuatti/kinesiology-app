@@ -20,7 +20,8 @@ import {
   Heart,
   Info,
   Shield,
-  Dumbbell
+  Dumbbell,
+  Baby
 } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
@@ -36,7 +37,7 @@ import { showSuccess, showError } from "@/utils/toast";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import PageHeader from "@/components/shared/PageHeader";
 
-// Assessment Components for the second tab
+// Assessment Components
 import { CranialNerveAssessment } from "@/components/crm/CranialNerveAssessment";
 import { PrimitiveReflexAssessment } from "@/components/crm/PrimitiveReflexAssessment";
 import { BrainZoneAssessment } from "@/components/crm/BrainZoneAssessment";
@@ -44,6 +45,15 @@ import { MuscleAssessment } from "@/components/crm/MuscleAssessment";
 import EmotionsProtocolReference from "@/components/crm/EmotionsProtocolReference";
 import MechanoreceptiveAssessment from "@/components/crm/MechanoreceptiveAssessment";
 import HeartWallProtocol from "@/components/crm/HeartWallProtocol";
+
+// Modal Components
+import MuscleInfoModal from "@/components/crm/MuscleInfoModal";
+import PrimitiveReflexModal from "@/components/crm/PrimitiveReflexModal";
+import BrainReflexModal from "@/components/crm/BrainReflexModal";
+
+// Data for Modals
+import { BRAIN_REFLEX_POINTS } from "@/data/brain-reflex-data";
+import { PRIMITIVE_REFLEXES } from "@/data/primitive-reflex-data";
 
 const SANDBOX_ID = "00000000-0000-0000-0000-000000000000";
 
@@ -56,6 +66,12 @@ const ProceduresPage = () => {
   const [sortBy, setSortBy] = useState<'most' | 'least' | 'dysfunction'>('most');
   const [activeTab, setActiveTab] = useState("mastery");
   const [protocolTab, setProtocolTab] = useState("cranial-nerves");
+
+  // Modal States
+  const [selectedMuscle, setSelectedMuscle] = useState<string | null>(null);
+  const [selectedReflex, setSelectedReflex] = useState<any | null>(null);
+  const [selectedBrainPoint, setSelectedBrainPoint] = useState<any | null>(null);
+  const [customImages, setCustomImages] = useState<Record<string, any>>({});
 
   const loadStats = async () => {
     setLoading(true);
@@ -72,7 +88,32 @@ const ProceduresPage = () => {
 
   useEffect(() => {
     loadStats();
+    fetchCustomizations();
   }, []);
+
+  const fetchCustomizations = async () => {
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
+      const { data } = await supabase
+        .from('brain_reflex_customizations')
+        .select('reflex_id, image_url, secondary_image_url, tertiary_image_url')
+        .eq('user_id', user.id);
+      
+      const mapping: Record<string, any> = {};
+      data?.forEach(item => { 
+        const timestamp = Date.now();
+        mapping[item.reflex_id] = {
+          primaryUrl: item.image_url ? `${item.image_url}?t=${timestamp}` : null,
+          secondaryUrl: item.secondary_image_url ? `${item.secondary_image_url}?t=${timestamp}` : null,
+          tertiaryUrl: item.tertiary_image_url ? `${item.tertiary_image_url}?t=${timestamp}` : null
+        };
+      });
+      setCustomImages(mapping);
+    } catch (err) {
+      console.error("Failed to fetch customizations:", err);
+    }
+  };
 
   const filteredStats = useMemo(() => {
     return stats
@@ -104,6 +145,19 @@ const ProceduresPage = () => {
 
     return { total, masters, novices, totalLogs, priorities };
   }, [stats]);
+
+  const handleItemClick = (stat: MasteryStat) => {
+    if (stat.category === 'Muscles') {
+      setSelectedMuscle(stat.name);
+    } else if (stat.category === 'Reflexes') {
+      const reflex = PRIMITIVE_REFLEXES.find(r => r.name === stat.name);
+      if (reflex) setSelectedReflex(reflex);
+    } else if (stat.category === 'Brain Zones') {
+      // This includes Cranial Nerves as they are mapped in BRAIN_REFLEX_POINTS
+      const point = BRAIN_REFLEX_POINTS.find(p => p.id === stat.id || p.name.startsWith(stat.name));
+      if (point) setSelectedBrainPoint(point);
+    }
+  };
 
   const handleCommitFocus = async () => {
     setCommitting(true);
@@ -183,7 +237,11 @@ const ProceduresPage = () => {
                 <CardContent className="p-8 pt-0">
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                     {summary.priorities.map((item) => (
-                      <div key={item.id} className="p-5 bg-white dark:bg-slate-900 rounded-[2rem] border border-indigo-100 dark:border-indigo-900/30 flex items-center justify-between group hover:shadow-md transition-all">
+                      <div 
+                        key={item.id} 
+                        onClick={() => handleItemClick(item)}
+                        className="p-5 bg-white dark:bg-slate-900 rounded-[2rem] border border-indigo-100 dark:border-indigo-900/30 flex items-center justify-between group hover:shadow-md transition-all cursor-pointer"
+                      >
                         <div className="min-w-0">
                           <p className="font-black text-sm text-slate-900 dark:text-slate-100 truncate">{item.name}</p>
                           <div className="flex items-center gap-2 mt-1">
@@ -196,7 +254,7 @@ const ProceduresPage = () => {
                             <span className="text-[8px] font-bold text-slate-400 uppercase">{item.count} Logs</span>
                           </div>
                         </div>
-                        <div className="w-8 h-8 rounded-xl bg-slate-50 dark:bg-slate-800 flex items-center justify-center text-slate-400 group-hover:text-indigo-600 transition-all">
+                        <div className="w-8 h-8 rounded-xl bg-slate-50 dark:bg-slate-800 flex items-center justify-center text-muted-foreground group-hover:text-indigo-600 transition-all">
                           <ArrowRight size={16} />
                         </div>
                       </div>
@@ -304,7 +362,11 @@ const ProceduresPage = () => {
 
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
                 {filteredStats.map((stat) => (
-                  <MasteryItemCard key={stat.id} stat={stat} />
+                  <MasteryItemCard 
+                    key={stat.id} 
+                    stat={stat} 
+                    onClick={() => handleItemClick(stat)}
+                  />
                 ))}
               </div>
             </div>
@@ -444,6 +506,28 @@ const ProceduresPage = () => {
           </TabsContent>
         </Tabs>
       </div>
+
+      {/* Modals */}
+      <MuscleInfoModal 
+        muscleName={selectedMuscle}
+        open={!!selectedMuscle}
+        onOpenChange={(open) => !open && setSelectedMuscle(null)}
+      />
+
+      <PrimitiveReflexModal 
+        reflex={selectedReflex}
+        open={!!selectedReflex}
+        onOpenChange={(open) => !open && setSelectedReflex(null)}
+      />
+
+      <BrainReflexModal 
+        point={selectedBrainPoint}
+        primaryUrl={selectedBrainPoint ? customImages[selectedBrainPoint.id]?.primaryUrl : null}
+        secondaryUrl={selectedBrainPoint ? customImages[selectedBrainPoint.id]?.secondaryUrl : null}
+        tertiaryUrl={selectedBrainPoint ? customImages[selectedBrainPoint.id]?.tertiaryUrl : null}
+        open={!!selectedBrainPoint}
+        onOpenChange={(open) => !open && setSelectedBrainPoint(null)}
+      />
     </AppLayout>
   );
 };

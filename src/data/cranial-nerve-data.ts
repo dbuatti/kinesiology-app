@@ -154,11 +154,11 @@ export const CRANIAL_NERVES: CranialNerve[] = [
     latinName: "Vestibulocochlear",
     nuclei: "Pons",
     toneEffect: "Extensors",
-    reflexPoint: "Finger in the ear canal",
-    functions: ["Hearing", "Balance and spatial orientation"],
-    stimulus: "Place finger in ear canal. Delineate: Cochlear (sound) vs. Vestibular (head motion).",
-    delineationGuide: "To delineate: 1. Hold reflex point (finger in ear). 2. Test with sound only (snap fingers or use tuning fork) -> if IM inhibits, it's a Cochlear priority. 3. Test with head motion only (slow rotation or tilt) -> if IM inhibits, it's a Vestibular priority.",
-    clinicalPearl: "A highly powerful nerve frequently involved in head injuries and anxiety.",
+    reflexPoint: "Fingertip at the edge of the ear canal (do not insert fully)",
+    functions: ["Hearing (Cochlear)", "Balance and spatial orientation (Vestibular)"],
+    stimulus: "Delineate: 1. Cochlear (Auditory click/snap). 2. Vestibular (Head movements: Up, Down, Rotate L/R, Tilt L/R).",
+    delineationGuide: "1. Hold reflex point (fingertip at ear edge). 2. Test Cochlear: Perform an auditory click/snap near the ear. 3. Test Vestibular: Move head into 6 positions (Up, Down, Rotate L/R, Tilt L/R). Multiple positions may be active.",
+    clinicalPearl: "Arises from the pontomedullary area (Pons/Medulla). Highly powerful nerve. Frequently involved in head injuries, anxiety, and gut dysfunction. Always delineate between auditory and balance portions.",
     color: "bg-indigo-800",
     isLateralized: true,
     videoUrl: "https://embed-ssl.wistia.com/deliveries/465c56ed15ec74012154656cd87ff84d9307a40c.mp4",
@@ -193,7 +193,7 @@ export const CRANIAL_NERVES: CranialNerve[] = [
     color: "bg-rose-600",
     isLateralized: true,
     videoUrl: "https://embed-ssl.wistia.com/deliveries/347fefe7d351b6760c82e9cc68a47d37b0d53906.mp4",
-    pageUrl: "https://functional-neuro-health.mykajabi.com/products/functional-neuro-health-the-peace-method-28beacafb4a88026b9a9ccdefa4e1de9"
+    pageUrl: "https://functional-neuro-health.notion.site/Functional-Neuro-Health-The-PEACE-Method-28beacafb4a88026b9a9ccdefa4e1de9"
   },
   {
     id: 11,

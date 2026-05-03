@@ -392,8 +392,8 @@ const ProceduresPage = () => {
               </div>
 
               <Tabs value={protocolTab} onValueChange={setProtocolTab} className="w-full">
-                <div className="flex justify-center mb-10">
-                  <TabsList className="inline-flex h-14 items-center justify-center rounded-xl bg-slate-100/50 p-1 text-muted-foreground border border-slate-200">
+                <div className="flex justify-center mb-10 overflow-x-auto no-scrollbar">
+                  <TabsList className="inline-flex h-14 items-center justify-center rounded-xl bg-slate-100/50 p-1 text-muted-foreground border border-slate-200 w-max">
                     <TabsTrigger 
                       value="cranial-nerves" 
                       className="inline-flex items-center justify-center whitespace-nowrap rounded-lg px-8 py-3 text-xs font-bold uppercase tracking-widest transition-all data-[state=active]:bg-white data-[state=active]:text-indigo-600 data-[state=active]:shadow-md"

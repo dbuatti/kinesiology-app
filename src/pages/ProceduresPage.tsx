@@ -186,7 +186,7 @@ const ProceduresPage = () => {
   );
 
   return (
-    <AppLayout variant="workspace">
+    <AppLayout variant="full">
       <div className="space-y-10">
         <PageHeader 
           title="Practice Health"

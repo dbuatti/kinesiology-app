@@ -374,6 +374,33 @@ const JournalPage = () => {
     }
   };
 
+  const handleDeleteQuestion = async (question: any) => {
+    if (!confirm("Delete this question?")) return;
+
+    try {
+      if (question.id.startsWith('manual-')) {
+        // Delete the whole reflection
+        await supabase.from('practitioner_reflections').delete().eq('id', question.reflectionId);
+      } else {
+        // Remove from AI extractions array
+        const reflection = reflections.find(r => r.id === question.reflectionId);
+        if (reflection) {
+          const newExtractions = [...reflection.ai_extractions];
+          newExtractions.splice(question.extractionIndex, 1);
+          const { error } = await supabase
+            .from('practitioner_reflections')
+            .update({ ai_extractions: newExtractions })
+            .eq('id', reflection.id);
+          if (error) throw error;
+        }
+      }
+      showSuccess("Question removed.");
+      fetchData();
+    } catch (err) {
+      showError("Failed to delete question.");
+    }
+  };
+
   const getToolRecommendation = (type: string) => {
     switch (type) {
       case 'belief': return { label: 'Limiting Beliefs', icon: ShieldAlert, color: 'text-rose-600', bg: 'bg-rose-50' };
@@ -665,15 +692,25 @@ const JournalPage = () => {
                         </div>
                       </div>
                       
-                      <Button 
-                        onClick={() => {
-                          setRespondingToId(q.id);
-                          setTempResponse("");
-                        }}
-                        className="rounded-xl h-11 px-6 bg-indigo-600 hover:bg-indigo-700 text-white shadow-lg shadow-indigo-100 font-black text-[10px] uppercase tracking-widest"
-                      >
-                        <MessageCircle size={14} className="mr-2" /> Add Response
-                      </Button>
+                      <div className="flex items-center gap-2">
+                        <Button 
+                          variant="ghost"
+                          size="icon"
+                          onClick={() => handleDeleteQuestion(q)}
+                          className="h-11 w-11 rounded-xl text-slate-300 hover:text-rose-600 hover:bg-rose-50 transition-all"
+                        >
+                          <Trash2 size={20} />
+                        </Button>
+                        <Button 
+                          onClick={() => {
+                            setRespondingToId(q.id);
+                            setTempResponse("");
+                          }}
+                          className="rounded-xl h-11 px-6 bg-indigo-600 hover:bg-indigo-700 text-white shadow-lg shadow-indigo-100 font-black text-[10px] uppercase tracking-widest"
+                        >
+                          <MessageCircle size={14} className="mr-2" /> Add Response
+                        </Button>
+                      </div>
                     </div>
 
                     {respondingToId === q.id && (

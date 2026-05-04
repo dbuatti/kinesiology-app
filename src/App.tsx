@@ -50,6 +50,7 @@ import JournalPage from "./pages/JournalPage";
 import PracticeNotes from "./pages/PracticeNotes";
 import QuizPage from "./pages/QuizPage";
 import MorningProgramPage from "./pages/MorningProgramPage";
+import SiteAuditPage from "./pages/SiteAuditPage";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -130,6 +131,7 @@ const AppRoutes = () => {
         <Route path="/settings/import" element={<ImportPage />} />
         <Route path="/settings/debug" element={<DebugAppointmentPage />} />
         <Route path="/settings/demo" element={<DemoSessionPage />} />
+        <Route path="/settings/audit" element={<SiteAuditPage />} />
 
         {/* Legacy Redirects */}
         <Route path="/appointments" element={<Navigate to="/schedule?view=list" replace />} />

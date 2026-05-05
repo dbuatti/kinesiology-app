@@ -144,8 +144,6 @@ const ReflexImageZone = ({
     if (file) handleUpload(file);
   }, [reflexId, type]);
 
-  const isPrimary = type === 'primary';
-
   return (
     <div 
       onDragOver={(e) => { e.preventDefault(); e.stopPropagation(); setIsDragging(true); }}
@@ -153,10 +151,9 @@ const ReflexImageZone = ({
       onDrop={onDrop}
       onClick={(e) => { e.stopPropagation(); fileInputRef.current?.click(); }}
       className={cn(
-        "relative group/image transition-all duration-300 flex flex-col items-center justify-center overflow-hidden outline-none cursor-pointer",
-        isPrimary ? "aspect-video rounded-2xl border-2 border-dashed" : "w-24 h-24 rounded-2xl border-2 border-dashed bg-white/90 backdrop-blur-md shadow-xl",
-        currentUrl ? "border-transparent" : "border-slate-200 bg-slate-50/50 hover:border-indigo-400 hover:bg-indigo-50/30",
-        isDragging && "border-indigo-600 bg-indigo-100/80 scale-[1.02] ring-4 ring-indigo-500/20",
+        "relative group/image transition-all duration-300 flex flex-col items-center justify-center overflow-hidden outline-none cursor-pointer flex-1 aspect-video",
+        currentUrl ? "bg-white" : "bg-slate-50 hover:bg-slate-100",
+        isDragging && "bg-indigo-50 ring-2 ring-indigo-500 ring-inset",
         isUploading && "opacity-50 pointer-events-none"
       )}
     >
@@ -196,17 +193,14 @@ const ReflexImageZone = ({
       ) : (
         <div className="text-center p-3 space-y-2">
           {isUploading ? (
-            <Loader2 className="mx-auto text-indigo-500 animate-spin" size={isPrimary ? 24 : 16} />
+            <Loader2 className="mx-auto text-indigo-500 animate-spin" size={24} />
           ) : (
             <>
-              <div className={cn(
-                "rounded-xl bg-white shadow-sm border border-slate-100 flex items-center justify-center mx-auto text-slate-400 group-hover/image:text-indigo-600 group-hover/image:scale-110 transition-all",
-                isPrimary ? "w-12 h-12" : "w-8 h-8"
-              )}>
-                {isPrimary ? <Plus size={24} /> : <Target size={18} />}
+              <div className="w-10 h-10 rounded-xl bg-white shadow-sm border border-slate-100 flex items-center justify-center mx-auto text-slate-400 group-hover/image:text-indigo-600 group-hover/image:scale-110 transition-all">
+                <Plus size={20} />
               </div>
-              <p className={cn("font-black text-slate-500 uppercase tracking-widest", isPrimary ? "text-[10px]" : "text-[8px]")}>
-                {isPrimary ? "Click or Drop Main Image" : "Click or Drop Reflex"}
+              <p className="font-black text-slate-500 uppercase tracking-widest text-[8px]">
+                {type === 'primary' ? "Add Main Image" : "Add Secondary"}
               </p>
             </>
           )}
@@ -451,28 +445,20 @@ const PrimitiveReflexReference = () => {
                   </div>
                 </CardHeader>
                 <CardContent className="p-8 space-y-6">
-                  {/* Images Section */}
-                  <div className="relative group/container" onClick={(e) => e.stopPropagation()}>
+                  {/* Images Section - Side by Side No Gap */}
+                  <div className="flex rounded-2xl overflow-hidden border-2 border-slate-100" onClick={(e) => e.stopPropagation()}>
                     <ReflexImageZone 
                       reflexId={reflex.id} 
                       type="primary"
                       currentUrl={data.primaryUrl} 
                       onUploadComplete={(url) => updateLocalCustomization(reflex.id, 'primary', url)}
                     />
-                    
-                    <div className={cn(
-                      "absolute bottom-3 right-3 transition-all duration-500 z-20",
-                      data.secondaryUrl 
-                        ? "opacity-60 group-hover/container:opacity-100 group-hover/container:scale-105" 
-                        : "opacity-0 group-hover/container:opacity-100"
-                    )}>
-                      <ReflexImageZone 
-                        reflexId={reflex.id} 
-                        type="secondary"
-                        currentUrl={data.secondaryUrl} 
-                        onUploadComplete={(url) => updateLocalCustomization(reflex.id, 'secondary', url)}
-                      />
-                    </div>
+                    <ReflexImageZone 
+                      reflexId={reflex.id} 
+                      type="secondary"
+                      currentUrl={data.secondaryUrl} 
+                      onUploadComplete={(url) => updateLocalCustomization(reflex.id, 'secondary', url)}
+                    />
                   </div>
 
                   <div className="grid grid-cols-1 gap-4">

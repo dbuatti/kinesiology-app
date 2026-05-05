@@ -210,15 +210,15 @@ const NerveTestItem = ({ nerve, test, statusL, statusR, images, showImage, onUpd
 
         <div className="lg:col-span-4">
           {showImage && hasImages ? (
-            <div className="grid grid-cols-2 gap-2">
+            <div className="grid grid-cols-2 gap-0 rounded-lg overflow-hidden border border-slate-100">
               {images.primary && (
-                <div className="aspect-video border border-slate-100 p-0.5 rounded-lg bg-slate-50 overflow-hidden">
-                  <img src={images.primary} alt="Primary" className="w-full h-full object-cover rounded-md opacity-80 hover:opacity-100 transition-opacity" />
+                <div className="aspect-video bg-slate-50 overflow-hidden">
+                  <img src={images.primary} alt="Primary" className="w-full h-full object-cover opacity-80 hover:opacity-100 transition-opacity" />
                 </div>
               )}
               {images.secondary && (
-                <div className="aspect-video border border-slate-100 p-0.5 rounded-lg bg-slate-50 overflow-hidden">
-                  <img src={images.secondary} alt="Secondary" className="w-full h-full object-cover rounded-md opacity-80 hover:opacity-100 transition-opacity" />
+                <div className="aspect-video bg-slate-50 overflow-hidden">
+                  <img src={images.secondary} alt="Secondary" className="w-full h-full object-cover opacity-80 hover:opacity-100 transition-opacity" />
                 </div>
               )}
             </div>

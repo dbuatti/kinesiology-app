@@ -1,19 +1,136 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect, useCallback, useRef } from "react";
 import { Button } from "@/components/ui/button";
-import { Footprints, Info, Save, Loader2, RotateCcw, ImageOff } from "lucide-react";
+import { Footprints, Info, Save, Loader2, RotateCcw, ImageOff, Plus, Target, Upload, X, ImageIcon } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { showSuccess, showError } from "@/utils/toast";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Alert, AlertDescription } from "@/components/ui/alert";
+import { cn } from "@/lib/utils";
+
+const BUCKET_NAME = 'reflex-images';
 
 interface FakudaStepTestProps {
   appointmentId: string;
   initialFakudaNotes: string | null | undefined;
   onUpdate: () => void;
 }
+
+const ImageZone = ({ 
+  id, 
+  type,
+  currentUrl, 
+  onUploadComplete 
+}: { 
+  id: string; 
+  type: 'primary' | 'secondary';
+  currentUrl?: string | null; 
+  onUploadComplete: (url: string | null) => void 
+}) => {
+  const [isDragging, setIsDragging] = useState(false);
+  const [isUploading, setIsUploading] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const handleUpload = async (file: File) => {
+    if (!file.type.startsWith('image/')) {
+      showError("Please upload an image file.");
+      return;
+    }
+
+    setIsUploading(true);
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) throw new Error("User not authenticated");
+
+      const fileExt = file.name.split('.').pop() || 'png';
+      const filePath = `${user.id}/fakuda_${type}.${fileExt}`;
+
+      const { error: uploadError } = await supabase.storage
+        .from(BUCKET_NAME)
+        .upload(filePath, file, { upsert: true, contentType: file.type });
+
+      if (uploadError) throw uploadError;
+
+      const { data: { publicUrl } } = supabase.storage
+        .from(BUCKET_NAME)
+        .getPublicUrl(filePath);
+
+      const cacheBustedUrl = `${publicUrl}?t=${Date.now()}`;
+      const dbField = type === 'primary' ? 'image_url' : 'secondary_image_url';
+
+      const { error: dbError } = await supabase
+        .from('brain_reflex_customizations')
+        .upsert({
+          user_id: user.id,
+          reflex_id: 'fakuda-test',
+          [dbField]: publicUrl 
+        }, { onConflict: 'user_id,reflex_id' });
+
+      if (dbError) throw dbError;
+
+      onUploadComplete(cacheBustedUrl);
+      showSuccess("Image updated!");
+    } catch (error: any) {
+      showError(error.message || "Failed to upload image.");
+    } finally {
+      setIsUploading(false);
+    }
+  };
+
+  const handleRemove = async (e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (!confirm(`Remove this image?`)) return;
+
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
+      const dbField = type === 'primary' ? 'image_url' : 'secondary_image_url';
+      const { error } = await supabase
+        .from('brain_reflex_customizations')
+        .update({ [dbField]: null })
+        .eq('user_id', user.id)
+        .eq('reflex_id', 'fakuda-test');
+
+      if (error) throw error;
+      onUploadComplete(null);
+      showSuccess("Image removed.");
+    } catch (error) {
+      showError("Failed to remove image.");
+    }
+  };
+
+  return (
+    <div 
+      onDragOver={(e) => { e.preventDefault(); e.stopPropagation(); setIsDragging(true); }}
+      onDragLeave={(e) => { e.preventDefault(); e.stopPropagation(); setIsDragging(false); }}
+      onDrop={(e) => { e.preventDefault(); e.stopPropagation(); setIsDragging(false); const file = e.dataTransfer.files?.[0]; if (file) handleUpload(file); }}
+      onClick={() => fileInputRef.current?.click()}
+      className={cn(
+        "relative group transition-all duration-300 flex flex-col items-center justify-center overflow-hidden outline-none cursor-pointer aspect-video flex-1",
+        currentUrl ? "bg-white" : "bg-slate-50 hover:bg-slate-100",
+        isDragging && "bg-indigo-50 ring-2 ring-indigo-500 ring-inset",
+        isUploading && "opacity-50 pointer-events-none"
+      )}
+    >
+      <input type="file" ref={fileInputRef} className="hidden" accept="image/*" onChange={(e) => { const file = e.target.files?.[0]; if (file) handleUpload(file); }} />
+      {currentUrl ? (
+        <>
+          <img src={currentUrl} alt="Fakuda Reference" className="w-full h-full object-cover" />
+          <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2">
+            <Button variant="secondary" size="icon" className="h-8 w-8"><Upload size={14} /></Button>
+            <Button variant="destructive" size="icon" className="h-8 w-8" onClick={handleRemove}><X size={14} /></Button>
+          </div>
+        </>
+      ) : (
+        <div className="text-center p-2">
+          {isUploading ? <Loader2 className="animate-spin text-indigo-500" size={20} /> : <ImageIcon className="text-slate-300 mx-auto" size={24} />}
+        </div>
+      )}
+    </div>
+  );
+};
 
 const FakudaStepTest = ({ 
   appointmentId, 
@@ -22,87 +139,54 @@ const FakudaStepTest = ({
 }: FakudaStepTestProps) => {
   const [loading, setLoading] = useState(false);
   const [fakudaNotes, setFakudaNotes] = useState(initialFakudaNotes || '');
-  const [imageError, setImageError] = useState(false);
+  const [customImages, setCustomImages] = useState<{ primary: string | null, secondary: string | null }>({
+    primary: "/images/fakuda-step-test.png",
+    secondary: null
+  });
 
-  const imagePath = "/images/fakuda-step-test.png";
+  useEffect(() => {
+    const fetchImages = async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
+      const { data } = await supabase.from('brain_reflex_customizations').select('image_url, secondary_image_url').eq('user_id', user.id).eq('reflex_id', 'fakuda-test').maybeSingle();
+      if (data) {
+        setCustomImages({
+          primary: data.image_url || "/images/fakuda-step-test.png",
+          secondary: data.secondary_image_url
+        });
+      }
+    };
+    fetchImages();
+  }, []);
 
   const handleSave = async () => {
     setLoading(true);
-
     try {
-      console.log("[FakudaStepTest] Starting to save Fakuda notes");
-      
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) {
-        throw new Error("User not authenticated");
-      }
-
-      const { data: existingAppointment, error: fetchError } = await supabase
-        .from("appointments")
-        .select("fakuda_notes, user_id")
-        .eq("id", appointmentId)
-        .single();
-
-      if (fetchError) {
-        console.error("[FakudaStepTest] Error fetching appointment:", fetchError);
-        throw fetchError;
-      }
-
-      const isNewAssessment = !existingAppointment?.fakuda_notes;
-
-      const { error } = await supabase
-        .from("appointments")
-        .update({ 
-          fakuda_notes: fakudaNotes || null,
-        })
-        .eq("id", appointmentId);
-
-      if (error) {
-        console.error("[FakudaStepTest] Error updating appointment:", error);
-        throw error;
-      }
-
-      showSuccess(
-        isNewAssessment 
-          ? "Fakuda Step Test assessment saved! Check Procedures page to see your progress." 
-          : "Fakuda Step Test assessment updated successfully!"
-      );
-      
+      const { error } = await supabase.from("appointments").update({ fakuda_notes: fakudaNotes || null }).eq("id", appointmentId);
+      if (error) throw error;
+      showSuccess("Fakuda Step Test assessment saved!");
       onUpdate();
     } catch (error: any) {
-      console.error("[FakudaStepTest] Error in handleSave:", error);
-      showError(error.message || "Failed to save Fakuda Step Test assessment.");
+      showError(error.message || "Failed to save assessment.");
     } finally {
       setLoading(false);
     }
   };
 
   const handleReset = async () => {
-    if (!confirm("Are you sure you want to reset the Fakuda Step Test notes for this session?")) return;
+    if (!confirm("Reset Fakuda Step Test notes?")) return;
     setLoading(true);
     try {
-      const { error } = await supabase
-        .from("appointments")
-        .update({ 
-          fakuda_notes: null,
-        })
-        .eq("id", appointmentId);
-
-      if (error) throw error;
-      showSuccess("Fakuda Step Test notes reset successfully.");
-      
-      // Reset local state immediately
+      await supabase.from("appointments").update({ fakuda_notes: null }).eq("id", appointmentId);
       setFakudaNotes('');
-      
+      showSuccess("Notes reset.");
       onUpdate();
     } catch (error: any) {
-      showError(error.message || "Failed to reset Fakuda Step Test assessment.");
+      showError("Failed to reset.");
     } finally {
       setLoading(false);
     }
   };
-
-  const hasSavedNotes = initialFakudaNotes;
 
   return (
     <div className="space-y-6">
@@ -114,83 +198,64 @@ const FakudaStepTest = ({
       </Alert>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {/* Instructions/Diagram */}
         <div className="space-y-4">
-          <div className="bg-green-50 border-2 border-green-200 rounded-xl p-4">
-            <h3 className="text-lg font-bold text-green-900 mb-3 flex items-center gap-2">
+          <div className="bg-green-50 border-2 border-green-200 rounded-xl overflow-hidden">
+            <h3 className="text-lg font-bold text-green-900 p-4 flex items-center gap-2 border-b border-green-100">
               <Footprints size={20} className="text-green-600" />
               Test Protocol
             </h3>
-            <div className="bg-white rounded-lg p-4 mb-4">
-              {!imageError ? (
-                <img 
-                  src={imagePath} 
-                  alt="Fakuda Step Test Reference"
-                  className="w-full h-auto rounded-lg object-cover"
-                  onError={() => setImageError(true)}
-                />
-              ) : (
-                <div className="flex flex-col items-center justify-center py-12 text-slate-400">
-                  <ImageOff size={40} className="mb-2" />
-                  <p className="text-xs">Diagram not available</p>
-                </div>
-              )}
+            
+            <div className="flex bg-white border-b border-green-100">
+              <ImageZone 
+                id="fakuda-test" 
+                type="primary" 
+                currentUrl={customImages.primary} 
+                onUploadComplete={(url) => setCustomImages(prev => ({ ...prev, primary: url || "/images/fakuda-step-test.png" }))} 
+              />
+              <ImageZone 
+                id="fakuda-test" 
+                type="secondary" 
+                currentUrl={customImages.secondary} 
+                onUploadComplete={(url) => setCustomImages(prev => ({ ...prev, secondary: url }))} 
+              />
             </div>
-            <ol className="space-y-2 text-sm text-green-900 list-decimal list-inside">
-              <li>Client stands with eyes closed and shoulders flexed to 90 degrees (arms straight out).</li>
-              <li>Instruct the client to march on the spot for 30-60 seconds.</li>
-              <li>Observe the client's final position relative to their start position.</li>
-            </ol>
+
+            <div className="p-4">
+              <ol className="space-y-2 text-sm text-green-900 list-decimal list-inside">
+                <li>Client stands with eyes closed and shoulders flexed to 90 degrees.</li>
+                <li>Instruct the client to march on the spot for 30-60 seconds.</li>
+                <li>Observe final position relative to start position.</li>
+              </ol>
+            </div>
           </div>
           
           <div className="bg-amber-50 border-2 border-amber-200 p-4 rounded-xl">
             <h4 className="font-bold text-amber-900 mb-2">Interpretation</h4>
             <ul className="space-y-1.5 text-sm text-amber-800 list-disc list-inside">
               <li><strong>Central:</strong> No imbalances.</li>
-              <li><strong>Rotation Right:</strong> Indicates weakness/dysfunction on the right side.</li>
-              <li><strong>Rotation Left:</strong> Indicates weakness/dysfunction on the left side.</li>
-              <li><strong>Move Forward:</strong> May indicate flexor dominance and extensor weakness.</li>
+              <li><strong>Rotation:</strong> Indicates weakness on the side of rotation.</li>
+              <li><strong>Move Forward:</strong> May indicate flexor dominance.</li>
             </ul>
           </div>
         </div>
 
-        {/* Notes */}
         <div>
           <Label htmlFor="fakudaNotes" className="text-base font-bold text-slate-900 mb-2 block">
             Fakuda Step Test Notes:
           </Label>
           <Textarea
             id="fakudaNotes"
-            placeholder="Document observations: e.g., Rotated 45 degrees to the left, indicating left cerebellar weakness. Also moved slightly forward."
+            placeholder="Document observations..."
             value={fakudaNotes}
             onChange={(e) => setFakudaNotes(e.target.value)}
-            className="min-h-[400px] resize-none"
+            className="min-h-[350px] resize-none"
           />
           <div className="flex gap-3 mt-4">
-            <Button 
-              onClick={handleSave}
-              disabled={loading}
-              className="flex-1 bg-green-600 hover:bg-green-700 h-12 text-base font-semibold rounded-xl shadow-lg shadow-green-200"
-            >
-              {loading ? (
-                <>
-                  <Loader2 className="mr-2 h-5 w-5 animate-spin" />
-                  Saving Notes...
-                </>
-              ) : (
-                <>
-                  <Save size={20} className="mr-2" />
-                  Save Fakuda Step Test Notes
-                </>
-              )}
+            <Button onClick={handleSave} disabled={loading} className="flex-1 bg-green-600 hover:bg-green-700 h-12 font-semibold rounded-xl shadow-lg">
+              {loading ? <Loader2 className="mr-2 h-5 w-5 animate-spin" /> : "Save Notes"}
             </Button>
-            {hasSavedNotes && (
-              <Button 
-                variant="outline" 
-                onClick={handleReset}
-                disabled={loading}
-                className="h-12 px-6 rounded-xl border-red-200 text-red-600 hover:bg-red-50"
-              >
+            {initialFakudaNotes && (
+              <Button variant="outline" onClick={handleReset} disabled={loading} className="h-12 px-6 rounded-xl border-red-200 text-red-600 hover:bg-red-50">
                 <RotateCcw size={16} />
               </Button>
             )}

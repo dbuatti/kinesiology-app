@@ -1,6 +1,6 @@
 // @ts-nocheck
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
-import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
+import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.45.0'
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -8,21 +8,26 @@ const corsHeaders = {
 }
 
 serve(async (req) => {
-  console.log("--- [sync-calcom-bookings] v9.0 — Robust Time-Window Matching ---");
+  const functionName = "sync-calcom-bookings";
+  console.log(`[${functionName}] Request received`);
 
   if (req.method === 'OPTIONS') return new Response('ok', { headers: corsHeaders })
 
   try {
-    const supabaseUrl = Deno.env.get('SUPABASE_URL')
-    const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')
-    const CALCOM_KEY = Deno.env.get('CALCOM_API_KEY')
-    const supabase = createClient(supabaseUrl, supabaseKey)
+    const SUPABASE_URL = Deno.env.get('SUPABASE_URL');
+    const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY');
+    const CALCOM_KEY = Deno.env.get('CALCOM_API_KEY');
 
-    if (!CALCOM_KEY) throw new Error("Missing CALCOM_API_KEY")
+    if (!CALCOM_KEY) throw new Error("Missing CALCOM_API_KEY");
+    if (!SUPABASE_URL || !SUPABASE_SERVICE_ROLE_KEY) throw new Error("Missing Supabase environment variables.");
 
-    const { data: profileData } = await supabase.from('profiles').select('id').limit(1).maybeSingle();
+    const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
+
+    const { data: profileData, error: profileError } = await supabase.from('profiles').select('id').limit(1).maybeSingle();
+    if (profileError) throw new Error(`Profile fetch error: ${profileError.message}`);
+    
     const PRACTITIONER_ID = profileData?.id;
-    if (!PRACTITIONER_ID) throw new Error("No practitioner profile found.");
+    if (!PRACTITIONER_ID) throw new Error("No practitioner profile found. Please create a profile first.");
 
     const now = new Date().toISOString();
     const bookingsUrl = new URL('https://api.cal.com/v2/bookings');
@@ -54,13 +59,16 @@ serve(async (req) => {
       const startTime = booking.start;
 
       // 1. Upsert Client
-      const { data: dbClient } = await supabase
+      const { data: dbClient, error: clientError } = await supabase
         .from('clients')
         .upsert({ user_id: PRACTITIONER_ID, name, email }, { onConflict: 'email' })
         .select('id')
         .single();
 
-      if (!dbClient) continue;
+      if (clientError || !dbClient) {
+        console.error(`[${functionName}] Error upserting client ${email}:`, clientError);
+        continue;
+      }
 
       // 2. Check for existing record by Calcom ID
       const { data: existingApp } = await supabase
@@ -87,7 +95,6 @@ serve(async (req) => {
           .order('created_at', { ascending: true });
         
         if (manualMatches && manualMatches.length > 0) {
-          console.log(`[sync-calcom-bookings] Found manual match ${manualMatches[0].id} for ${name} at ${startTime}`);
           targetId = manualMatches[0].id;
         }
       }
@@ -109,7 +116,7 @@ serve(async (req) => {
         });
 
       if (appError) {
-        console.error(`[sync-calcom-bookings] Error for booking ${calcomId}:`, appError);
+        console.error(`[${functionName}] Error for booking ${calcomId}:`, appError);
         continue;
       }
 
@@ -122,7 +129,10 @@ serve(async (req) => {
     });
 
   } catch (error) {
-    console.error("[sync-calcom-bookings] Error:", error.message);
-    return new Response(JSON.stringify({ error: error.message }), { status: 400, headers: corsHeaders });
+    console.error(`[${functionName}] CRITICAL FAILURE:`, error.message);
+    return new Response(JSON.stringify({ error: error.message }), { 
+      status: 400, 
+      headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
+    });
   }
 })

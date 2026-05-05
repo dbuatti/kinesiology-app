@@ -1,11 +1,10 @@
 // @ts-nocheck
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
-import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
+import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.45.0'
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type, x-supabase-client-platform',
-  'Access-Control-Allow-Methods': 'POST, OPTIONS, GET',
 }
 
 serve(async (req) => {
@@ -15,9 +14,12 @@ serve(async (req) => {
   if (req.method === 'OPTIONS') return new Response('ok', { headers: corsHeaders })
 
   try {
-    const supabaseUrl = Deno.env.get('SUPABASE_URL')
-    const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')
-    const supabase = createClient(supabaseUrl, supabaseKey)
+    const SUPABASE_URL = Deno.env.get('SUPABASE_URL');
+    const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY');
+    
+    if (!SUPABASE_URL || !SUPABASE_SERVICE_ROLE_KEY) throw new Error("Missing Supabase environment variables.");
+
+    const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
     
     const { data: profileData } = await supabase.from('profiles').select('id').limit(1).maybeSingle();
     const PRACTITIONER_ID = profileData?.id;
@@ -28,13 +30,11 @@ serve(async (req) => {
     console.log(`[${functionName}] Event Type: ${triggerEvent}`);
 
     if (triggerEvent === 'PING') {
-      console.log(`[${functionName}] Ping received.`);
       return new Response(JSON.stringify({ success: true }), { status: 200, headers: corsHeaders });
     }
 
     const payload = body.payload || body.data || body;
     const calcomId = String(payload.bookingId || payload.id || payload.uid);
-    console.log(`[${functionName}] Processing booking: ${calcomId}`);
 
     if (triggerEvent === 'BOOKING_CANCELLED') {
       console.log(`[${functionName}] Deleting cancelled booking: ${calcomId}`);
@@ -47,7 +47,7 @@ serve(async (req) => {
     
     if (!attendee || !attendee.email) {
       console.warn(`[${functionName}] Skipping: No attendee email found in payload.`);
-      return new Response(JSON.stringify({ success: true }), { status: 200, headers: corsHeaders });
+      return new Response(JSON.stringify({ success: true, message: "Ignored" }), { status: 200, headers: corsHeaders });
     }
 
     const name = String(attendee.name || "Unknown Client").trim();
@@ -55,17 +55,14 @@ serve(async (req) => {
     const startTime = payload.startTime || payload.start;
     const eventTypeId = String(payload.eventTypeId || "");
 
-    console.log(`[${functionName}] Attendee: ${name} (${email}) at ${startTime}`);
-
-    const { data: dbClient } = await supabase
+    const { data: dbClient, error: clientError } = await supabase
       .from('clients')
       .upsert({ user_id: PRACTITIONER_ID, name, email }, { onConflict: 'email' })
       .select('*')
       .single();
 
-    if (!dbClient) {
-      console.error(`[${functionName}] Error: Failed to upsert client.`);
-      throw new Error("Failed to upsert client.");
+    if (clientError || !dbClient) {
+      throw new Error(`Failed to upsert client: ${clientError?.message}`);
     }
 
     const isCreationEvent = ['BOOKING_CREATED', 'BOOKING_RESCHEDULED'].includes(triggerEvent);
@@ -77,13 +74,11 @@ serve(async (req) => {
       .maybeSingle();
 
     if (!existingApp && !isCreationEvent) {
-      console.log(`[${functionName}] Ignoring non-creation event for unknown booking ${calcomId}`);
       return new Response(JSON.stringify({ success: true, message: "Ignored" }), { status: 200, headers: corsHeaders });
     }
 
     let targetId = existingApp?.id;
     if (!targetId && isCreationEvent) {
-      // Use a 1-minute window for matching manual entries
       const startDate = new Date(startTime);
       const windowStart = new Date(startDate.getTime() - 60000).toISOString();
       const windowEnd = new Date(startDate.getTime() + 60000).toISOString();
@@ -98,7 +93,6 @@ serve(async (req) => {
         .order('created_at', { ascending: true });
       
       if (manualMatches && manualMatches.length > 0) {
-        console.log(`[${functionName}] Linking manual entry ${manualMatches[0].id} to Cal.com booking ${calcomId}`);
         targetId = manualMatches[0].id;
       }
     }
@@ -107,8 +101,6 @@ serve(async (req) => {
     if (eventTypeId === "4279898") priceAmount = 50;
     else if (eventTypeId === "5302336") priceAmount = 100;
     if (payload.payment && payload.payment[0]) priceAmount = payload.payment[0].amount / 100;
-
-    console.log(`[${functionName}] Upserting appointment record...`);
 
     const { error: appError } = await supabase
       .from('appointments')
@@ -126,15 +118,11 @@ serve(async (req) => {
         onConflict: targetId ? 'id' : 'calcom_booking_id' 
       });
 
-    if (appError) {
-      console.error(`[${functionName}] Database Error:`, appError);
-      throw appError;
-    }
+    if (appError) throw appError;
 
-    console.log(`[${functionName}] Webhook processed successfully.`);
     return new Response(JSON.stringify({ success: true }), { status: 200, headers: corsHeaders });
   } catch (error) {
-    console.error(`[${functionName}] Critical Error:`, error.message);
+    console.error(`[${functionName}] CRITICAL FAILURE:`, error.message);
     return new Response(JSON.stringify({ error: error.message }), { status: 400, headers: corsHeaders });
   }
 })

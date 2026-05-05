@@ -1,6 +1,6 @@
 // @ts-nocheck
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
-import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
+import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.45.0'
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -17,17 +17,35 @@ serve(async (req) => {
 
   try {
     const CALCOM_KEY = Deno.env.get('CALCOM_API_KEY');
+    const SUPABASE_URL = Deno.env.get('SUPABASE_URL');
+    const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY');
+
     if (!CALCOM_KEY) throw new Error("Missing CALCOM_API_KEY secret.");
+    if (!SUPABASE_URL || !SUPABASE_SERVICE_ROLE_KEY) throw new Error("Missing Supabase environment variables.");
 
     const body = await req.json();
     const { clientId, startTime, eventTypeId, title, notes, is_paid, bookingUid } = body;
     
-    const supabaseUrl = Deno.env.get('SUPABASE_URL');
-    const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY');
-    const supabase = createClient(supabaseUrl, supabaseKey);
+    if (!clientId) throw new Error("Missing clientId in request body.");
+    if (!startTime) throw new Error("Missing startTime in request body.");
 
-    const { data: client } = await supabase.from('clients').select('name, email').eq('id', clientId).single();
-    if (!client?.email) throw new Error("Client not found or missing email.");
+    console.log(`[${functionName}] Processing for Client: ${clientId}, Start: ${startTime}`);
+
+    const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
+
+    // 1. Fetch Client Details
+    const { data: client, error: clientError } = await supabase
+      .from('clients')
+      .select('name, email')
+      .eq('id', clientId)
+      .single();
+
+    if (clientError) {
+      console.error(`[${functionName}] Database error fetching client:`, clientError);
+      throw new Error(`Failed to fetch client: ${clientError.message}`);
+    }
+
+    if (!client?.email) throw new Error("Client found but has no email address.");
 
     const cleanStartTime = new Date(startTime).toISOString();
     const isPaidBool = is_paid === true || is_paid === 'true';
@@ -38,7 +56,7 @@ serve(async (req) => {
       'Content-Type': 'application/json',
     };
 
-    // 1. STRICT UPDATE: If we have a UID, we MUST update it. 
+    // 2. Update existing booking if UID provided
     if (bookingUid && bookingUid !== "undefined" && bookingUid !== "null" && bookingUid !== "") {
       console.log(`[${functionName}] Action: UPDATE booking ${bookingUid}`);
       
@@ -61,29 +79,26 @@ serve(async (req) => {
         console.log(`[${functionName}] Update successful for ${bookingUid}`);
         return new Response(JSON.stringify({ success: true, uid: bookingUid, data: result.data }), { 
           status: 200, 
-          headers: corsHeaders 
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
         });
       }
 
-      if (res.status === 404) {
-        console.warn(`[${functionName}] Booking ${bookingUid} not found on Cal.com. Proceeding to CREATE new.`);
-      } else {
+      if (res.status !== 404) {
         const errorMsg = result.error?.message || result.message || "Failed to update Cal.com booking";
-        if (errorMsg.includes("already has booking") || errorMsg.includes("not available")) {
-          throw new Error("The new time slot is not available in your calendar.");
-        }
-        throw new Error(errorMsg);
+        throw new Error(`Cal.com Update Error: ${errorMsg}`);
       }
+      
+      console.warn(`[${functionName}] Booking ${bookingUid} not found on Cal.com. Proceeding to CREATE new.`);
     } 
     
-    // 2. CREATE new booking
+    // 3. Create new booking
     console.log(`[${functionName}] Action: CREATE new booking`);
     const createRes = await fetch("https://api.cal.com/v2/bookings", {
       method: "POST",
       headers,
       body: JSON.stringify({
         start: cleanStartTime,
-        eventTypeId: parseInt(eventTypeId, 10),
+        eventTypeId: parseInt(eventTypeId, 10) || 4279898,
         attendee: { 
           name: client.name, 
           email: client.email, 
@@ -105,16 +120,15 @@ serve(async (req) => {
       console.log(`[${functionName}] Create successful: ${createResult.data.uid}`);
       return new Response(JSON.stringify({ success: true, uid: createResult.data.uid }), { 
         status: 200, 
-        headers: corsHeaders 
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
       });
     }
 
-    // 3. CONFLICT RESOLUTION: If slot is taken, check if it's an existing booking we can adopt
+    // 4. Handle Conflicts
     const errorMsg = createResult.error?.message || createResult.message || "";
     if (createRes.status === 400 && (errorMsg.includes("already has booking") || errorMsg.includes("not available"))) {
       console.log(`[${functionName}] Conflict detected. Searching for existing booking at ${cleanStartTime}`);
       
-      // Search for bookings on this day to be more robust
       const dayStart = new Date(cleanStartTime);
       dayStart.setHours(0,0,0,0);
       const dayEnd = new Date(cleanStartTime);
@@ -126,8 +140,6 @@ serve(async (req) => {
       });
       
       const listData = await listRes.json();
-      
-      // Find exact match by time AND attendee email
       const existing = (listData.data || []).find(b => {
         const bStart = new Date(b.start).toISOString();
         const bEmail = b.attendees?.[0]?.email?.toLowerCase();
@@ -135,16 +147,18 @@ serve(async (req) => {
       });
 
       if (existing) {
-        console.log(`[${functionName}] Found existing booking for this client: ${existing.uid}. Repairing CRM link.`);
+        console.log(`[${functionName}] Found existing booking: ${existing.uid}. Linking.`);
         return new Response(JSON.stringify({ 
           success: true, 
           uid: existing.uid,
           repaired: true,
           message: "Existing booking found and linked."
-        }), { status: 200, headers: corsHeaders });
+        }), { 
+          status: 200, 
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
+        });
       }
 
-      // If no booking found for THIS client, but slot is taken, it's a real conflict
       throw new Error("This slot is unavailable. It may be blocked by an Out-of-Office entry or another client's booking.");
     }
 

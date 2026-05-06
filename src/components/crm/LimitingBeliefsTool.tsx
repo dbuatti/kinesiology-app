@@ -37,6 +37,7 @@ import { toast } from "sonner";
 import { motion, AnimatePresence } from "framer-motion";
 import LimitingBeliefsReport from './LimitingBeliefsReport';
 import JournalRefresher from './JournalRefresher';
+import BacklogSelector from './BacklogSelector';
 
 type Step = 1 | 2 | 3 | 4 | 5;
 
@@ -66,6 +67,7 @@ const LimitingBeliefsTool = () => {
   const reflectionId = location.state?.reflectionId;
 
   const [step, setStep] = useState<Step>(1);
+  const [currentBacklogId, setCurrentBacklogId] = useState<string | null>(backlogId || null);
   const [backlogItem, setBacklogItem] = useState<any>(null);
   const [formData, setFormData] = useState<FormData>({
     problem: '',
@@ -99,26 +101,26 @@ const LimitingBeliefsTool = () => {
 
   useEffect(() => {
     fetchPastSessions();
-    if (backlogId) {
-      fetchBacklogItem();
-      checkForDraft();
+    if (currentBacklogId) {
+      fetchBacklogItem(currentBacklogId);
+      checkForDraft(currentBacklogId);
     }
-  }, [backlogId]);
+  }, [currentBacklogId]);
 
-  const fetchBacklogItem = async () => {
+  const fetchBacklogItem = async (id: string) => {
     const { data } = await supabase
       .from('identity_backlog')
       .select('*, practitioner_reflections(content)')
-      .eq('id', backlogId)
+      .eq('id', id)
       .single();
     if (data) setBacklogItem(data);
   };
 
-  const checkForDraft = async () => {
+  const checkForDraft = async (id: string) => {
     const { data, error } = await supabase
       .from('limiting_belief_sessions')
       .select('*')
-      .eq('backlog_id', backlogId)
+      .eq('backlog_id', id)
       .eq('is_complete', false)
       .maybeSingle();
 
@@ -140,6 +142,12 @@ const LimitingBeliefsTool = () => {
     if (!error) setPastSessions(data || []);
   };
 
+  const handleBacklogSelect = (item: any) => {
+    setCurrentBacklogId(item.id);
+    setFormData(prev => ({ ...prev, limitingBelief: item.content }));
+    reset();
+  };
+
   const saveProgress = async (isComplete: boolean = false, overrideData?: Partial<FormData>, overrideStep?: number) => {
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) return;
@@ -151,7 +159,7 @@ const LimitingBeliefsTool = () => {
     try {
       const payload = {
         user_id: user.id,
-        backlog_id: backlogId || null,
+        backlog_id: currentBacklogId || null,
         problem: dataToSave.problem,
         felt_sense: dataToSave.feltSense,
         limiting_belief: dataToSave.limitingBelief,
@@ -177,11 +185,11 @@ const LimitingBeliefsTool = () => {
 
       if (error) throw error;
 
-      if (isComplete && backlogId) {
+      if (isComplete && currentBacklogId) {
         await supabase
           .from('identity_backlog')
           .update({ status: 'completed' })
-          .eq('id', backlogId);
+          .eq('id', currentBacklogId);
       }
 
       if (isComplete) toast.success("Session completed!");
@@ -432,10 +440,13 @@ const LimitingBeliefsTool = () => {
         <div className="space-y-4">
           <div className="flex items-center justify-between px-1">
             <Label className="text-[10px] font-black uppercase tracking-[0.3em] text-slate-400">Limiting Belief</Label>
-            <Button variant="ghost" size="sm" onClick={() => handleGenerateBelief('limiting_belief')} disabled={isGeneratingLimiting || !formData.problem} className="h-8 text-rose-600 hover:bg-rose-50 gap-1.5 font-black text-[10px] uppercase tracking-widest">
-              {isGeneratingLimiting ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Sparkles className="h-3.5 w-3.5" />}
-              Suggest
-            </Button>
+            <div className="flex items-center gap-2">
+              <BacklogSelector type="belief" onSelect={handleBacklogSelect} currentValue={formData.limitingBelief} />
+              <Button variant="ghost" size="sm" onClick={() => handleGenerateBelief('limiting_belief')} disabled={isGeneratingLimiting || !formData.problem} className="h-10 text-rose-600 hover:bg-rose-50 gap-1.5 font-black text-[10px] uppercase tracking-widest rounded-xl border border-rose-100">
+                {isGeneratingLimiting ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Sparkles className="h-3.5 w-3.5" />}
+                Suggest
+              </Button>
+            </div>
           </div>
           <Input
             placeholder="I am..."
@@ -456,7 +467,7 @@ const LimitingBeliefsTool = () => {
         <div className="space-y-4">
           <div className="flex items-center justify-between px-1">
             <Label className="text-[10px] font-black uppercase tracking-[0.3em] text-slate-400">Positive Belief</Label>
-            <Button variant="ghost" size="sm" onClick={() => handleGenerateBelief('positive_belief')} disabled={isGeneratingPositive || !formData.problem} className="h-8 text-emerald-600 hover:bg-emerald-50 gap-1.5 font-black text-[10px] uppercase tracking-widest">
+            <Button variant="ghost" size="sm" onClick={() => handleGenerateBelief('positive_belief')} disabled={isGeneratingPositive || !formData.problem} className="h-10 text-emerald-600 hover:bg-emerald-50 gap-1.5 font-black text-[10px] uppercase tracking-widest rounded-xl border border-emerald-100">
               {isGeneratingPositive ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Sparkles className="h-3.5 w-3.5" />}
               Suggest
             </Button>

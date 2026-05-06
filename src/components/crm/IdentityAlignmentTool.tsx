@@ -41,6 +41,7 @@ import { toast } from "sonner";
 import { motion, AnimatePresence } from "framer-motion";
 import IdentityAlignmentReport from './IdentityAlignmentReport';
 import JournalRefresher from './JournalRefresher';
+import BacklogSelector from './BacklogSelector';
 
 type Phase = 1 | 2 | 3 | 4 | 5;
 
@@ -74,6 +75,7 @@ const IdentityAlignmentTool = () => {
   const reflectionId = location.state?.reflectionId;
 
   const [phase, setPhase] = useState<Phase>(1);
+  const [currentBacklogId, setCurrentBacklogId] = useState<string | null>(backlogId || null);
   const [backlogItem, setBacklogItem] = useState<any>(null);
   const [formData, setFormData] = useState<FormData>({
     goal: '',
@@ -103,26 +105,26 @@ const IdentityAlignmentTool = () => {
 
   useEffect(() => {
     fetchPastSessions();
-    if (backlogId) {
-      fetchBacklogItem();
-      checkForDraft();
+    if (currentBacklogId) {
+      fetchBacklogItem(currentBacklogId);
+      checkForDraft(currentBacklogId);
     }
-  }, [backlogId]);
+  }, [currentBacklogId]);
 
-  const fetchBacklogItem = async () => {
+  const fetchBacklogItem = async (id: string) => {
     const { data } = await supabase
       .from('identity_backlog')
       .select('*, practitioner_reflections(content)')
-      .eq('id', backlogId)
+      .eq('id', id)
       .single();
     if (data) setBacklogItem(data);
   };
 
-  const checkForDraft = async () => {
+  const checkForDraft = async (id: string) => {
     const { data, error } = await supabase
       .from('identity_alignment_sessions')
       .select('*')
-      .eq('backlog_id', backlogId)
+      .eq('backlog_id', id)
       .eq('is_complete', false)
       .maybeSingle();
 
@@ -144,6 +146,12 @@ const IdentityAlignmentTool = () => {
     if (!error) setPastSessions(data || []);
   };
 
+  const handleBacklogSelect = (item: any) => {
+    setCurrentBacklogId(item.id);
+    setFormData(prev => ({ ...prev, targetIdentity: item.content }));
+    reset();
+  };
+
   const saveProgress = async (isComplete: boolean = false, overrideData?: Partial<FormData>, overridePhase?: number) => {
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) return;
@@ -155,7 +163,7 @@ const IdentityAlignmentTool = () => {
     try {
       const payload = {
         user_id: user.id,
-        backlog_id: backlogId || null,
+        backlog_id: currentBacklogId || null,
         goal: dataToSave.goal,
         target_identity: dataToSave.targetIdentity,
         somatic_sensations: dataToSave.physicalSensation,
@@ -183,11 +191,11 @@ const IdentityAlignmentTool = () => {
 
       if (error) throw error;
 
-      if (isComplete && backlogId) {
+      if (isComplete && currentBacklogId) {
         await supabase
           .from('identity_backlog')
           .update({ status: 'completed' })
-          .eq('id', backlogId);
+          .eq('id', currentBacklogId);
       }
 
       if (isComplete) toast.success("Alignment session completed!");
@@ -397,10 +405,13 @@ const IdentityAlignmentTool = () => {
         <div className="space-y-4">
           <div className="flex items-center justify-between px-1">
             <Label className="text-[10px] font-black uppercase tracking-[0.3em] text-slate-400">2. Target Identity</Label>
-            <Button variant="ghost" size="sm" onClick={handleGenerateTargetIdentity} disabled={isGenerating || !formData.goal} className="h-8 text-indigo-600 hover:bg-indigo-50 gap-1.5 font-black text-[10px] uppercase tracking-widest">
-              {isGenerating ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Sparkles className="h-3.5 w-3.5" />}
-              Suggest
-            </Button>
+            <div className="flex items-center gap-2">
+              <BacklogSelector type="alignment" onSelect={handleBacklogSelect} currentValue={formData.targetIdentity} />
+              <Button variant="ghost" size="sm" onClick={handleGenerateTargetIdentity} disabled={isGenerating || !formData.goal} className="h-10 text-indigo-600 hover:bg-indigo-50 gap-1.5 font-black text-[10px] uppercase tracking-widest rounded-xl border border-indigo-100">
+                {isGenerating ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Sparkles className="h-3.5 w-3.5" />}
+                Suggest
+              </Button>
+            </div>
           </div>
           <Input
             placeholder="Who do you need to be to achieve this?"

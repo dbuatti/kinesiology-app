@@ -38,6 +38,7 @@ import { toast } from "sonner";
 import { motion, AnimatePresence } from "framer-motion";
 import IdentityShiftingReport from './IdentityShiftingReport';
 import JournalRefresher from './JournalRefresher';
+import BacklogSelector from './BacklogSelector';
 
 type Phase = 1 | 2 | 3 | 4 | 5;
 
@@ -63,6 +64,7 @@ const IdentityShiftingTool = () => {
   const reflectionId = location.state?.reflectionId;
 
   const [phase, setPhase] = useState<Phase>(1);
+  const [currentBacklogId, setCurrentBacklogId] = useState<string | null>(backlogId || null);
   const [backlogItem, setBacklogItem] = useState<any>(null);
   const [formData, setFormData] = useState<FormData>({
     problem: '',
@@ -93,26 +95,26 @@ const IdentityShiftingTool = () => {
 
   useEffect(() => {
     fetchPastSessions();
-    if (backlogId) {
-      fetchBacklogItem();
-      checkForDraft();
+    if (currentBacklogId) {
+      fetchBacklogItem(currentBacklogId);
+      checkForDraft(currentBacklogId);
     }
-  }, [backlogId]);
+  }, [currentBacklogId]);
 
-  const fetchBacklogItem = async () => {
+  const fetchBacklogItem = async (id: string) => {
     const { data } = await supabase
       .from('identity_backlog')
       .select('*, practitioner_reflections(content)')
-      .eq('id', backlogId)
+      .eq('id', id)
       .single();
     if (data) setBacklogItem(data);
   };
 
-  const checkForDraft = async () => {
+  const checkForDraft = async (id: string) => {
     const { data, error } = await supabase
       .from('identity_shifting_sessions')
       .select('*')
-      .eq('backlog_id', backlogId)
+      .eq('backlog_id', id)
       .eq('is_complete', false)
       .maybeSingle();
 
@@ -139,7 +141,7 @@ const IdentityShiftingTool = () => {
       id: session.id,
       problem: session.problem || '',
       emotion: session.emotion || '',
-      felt_sense: session.felt_sense || '',
+      feltSense: session.felt_sense || '',
       identity: session.identity || '',
       loopResponses: session.loop_responses || [],
       feelingsNow: '',
@@ -147,11 +149,17 @@ const IdentityShiftingTool = () => {
       newIntention: '',
       actionPlan: '',
       no1Thing: '',
-    } as any);
+    });
     setPhase((session.current_phase || 1) as Phase);
     setLoopStep(session.loop_step || 0);
     setShowHistory(false);
     setViewingReportId(null);
+  };
+
+  const handleBacklogSelect = (item: any) => {
+    setCurrentBacklogId(item.id);
+    setFormData(prev => ({ ...prev, identity: item.content }));
+    reset();
   };
 
   const deleteSession = async (e: React.MouseEvent, id: string) => {
@@ -185,7 +193,7 @@ const IdentityShiftingTool = () => {
     try {
       const payload = {
         user_id: user.id,
-        backlog_id: backlogId || null,
+        backlog_id: currentBacklogId || null,
         problem: dataToSave.problem,
         emotion: dataToSave.emotion,
         felt_sense: dataToSave.feltSense,
@@ -210,11 +218,11 @@ const IdentityShiftingTool = () => {
 
       if (error) throw error;
 
-      if (isComplete && backlogId) {
+      if (isComplete && currentBacklogId) {
         await supabase
           .from('identity_backlog')
           .update({ status: 'completed' })
-          .eq('id', backlogId);
+          .eq('id', currentBacklogId);
       }
 
       if (isComplete) toast.success("Session completed!");
@@ -454,10 +462,13 @@ const IdentityShiftingTool = () => {
         <div className="space-y-4">
           <div className="flex items-center justify-between px-1">
             <Label className="text-[10px] font-black uppercase tracking-[0.3em] text-slate-400">4. Stuck Identity</Label>
-            <Button variant="ghost" size="sm" onClick={handleGenerateIdentity} disabled={isGenerating || !formData.problem} className="h-8 text-indigo-600 hover:bg-indigo-50 gap-1.5 font-black text-[10px] uppercase tracking-widest">
-              {isGenerating ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Sparkles className="h-3.5 w-3.5" />}
-              Suggest
-            </Button>
+            <div className="flex items-center gap-2">
+              <BacklogSelector type="shifting" onSelect={handleBacklogSelect} currentValue={formData.identity} />
+              <Button variant="ghost" size="sm" onClick={handleGenerateIdentity} disabled={isGenerating || !formData.problem} className="h-10 text-indigo-600 hover:bg-indigo-50 gap-1.5 font-black text-[10px] uppercase tracking-widest rounded-xl border border-indigo-100">
+                {isGenerating ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Sparkles className="h-3.5 w-3.5" />}
+                Suggest
+              </Button>
+            </div>
           </div>
           <Input
             placeholder="Who are you being when you have this problem?"

@@ -149,8 +149,8 @@ const FakudaStepTest = ({
   const [loading, setLoading] = useState(false);
   const [fakudaNotes, setFakudaNotes] = useState(initialFakudaNotes || '');
   const [customImages, setCustomImages] = useState<{ primary: string | null, secondary: string | null }>({
-    primary: "/images/fakuda-step-test.png",
-    secondary: null
+    primary: "/images/fakuda-1.png",
+    secondary: "/images/fakuda-2.png"
   });
 
   useEffect(() => {
@@ -160,8 +160,8 @@ const FakudaStepTest = ({
       const { data } = await supabase.from('brain_reflex_customizations').select('image_url, secondary_image_url').eq('user_id', user.id).eq('reflex_id', 'fakuda-test').maybeSingle();
       if (data) {
         setCustomImages({
-          primary: data.image_url || "/images/fakuda-step-test.png",
-          secondary: data.secondary_image_url
+          primary: data.image_url || "/images/fakuda-1.png",
+          secondary: data.secondary_image_url || "/images/fakuda-2.png"
         });
       }
     };
@@ -214,18 +214,18 @@ const FakudaStepTest = ({
               Test Protocol
             </h3>
             
-            <div className="flex h-48 bg-white border-b border-green-100">
+            <div className="flex h-[400px] bg-white border-b border-green-100">
               <ImageZone 
                 reflexId="fakuda-test" 
                 type="primary" 
                 currentUrl={customImages.primary} 
-                onUploadComplete={(url) => setCustomImages(prev => ({ ...prev, primary: url || "/images/fakuda-step-test.png" }))} 
+                onUploadComplete={(url) => setCustomImages(prev => ({ ...prev, primary: url || "/images/fakuda-1.png" }))} 
               />
               <ImageZone 
                 reflexId="fakuda-test" 
                 type="secondary" 
                 currentUrl={customImages.secondary} 
-                onUploadComplete={(url) => setCustomImages(prev => ({ ...prev, secondary: url }))} 
+                onUploadComplete={(url) => setCustomImages(prev => ({ ...prev, secondary: url || "/images/fakuda-2.png" }))} 
               />
             </div>
 

@@ -108,7 +108,7 @@ const ImageZone = ({
       onDrop={(e) => { e.preventDefault(); e.stopPropagation(); setIsDragging(false); const file = e.dataTransfer.files?.[0]; if (file) handleUpload(file); }}
       onClick={() => fileInputRef.current?.click()}
       className={cn(
-        "relative group transition-all duration-300 flex flex-col items-center justify-center overflow-hidden outline-none cursor-pointer flex-1 h-full",
+        "relative group transition-all duration-300 flex flex-col items-center justify-center overflow-hidden outline-none cursor-pointer h-full w-full",
         currentUrl ? "bg-white" : "bg-slate-50 hover:bg-slate-100",
         isDragging && "bg-indigo-50 ring-2 ring-indigo-500 ring-inset",
         isUploading && "opacity-50 pointer-events-none"
@@ -191,7 +191,7 @@ const FakudaStepTest = ({
       showSuccess("Notes reset.");
       onUpdate();
     } catch (error: any) {
-      showError("Failed to reset.");
+      showError(error.message || "Failed to reset.");
     } finally {
       setLoading(false);
     }
@@ -214,7 +214,7 @@ const FakudaStepTest = ({
               Test Protocol
             </h3>
             
-            <div className="flex h-[400px] bg-white border-b border-green-100">
+            <div className="grid grid-cols-2 h-[300px] bg-white border-b border-green-100">
               <ImageZone 
                 reflexId="fakuda-test" 
                 type="primary" 

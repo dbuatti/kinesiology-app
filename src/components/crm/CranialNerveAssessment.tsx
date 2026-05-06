@@ -186,7 +186,7 @@ const NerveTestItem = ({ nerve, test, statusL, statusR, images, showImage, onUpd
           {nerve.delineationGuide && (
             <div className="p-3 bg-indigo-50/50 rounded-xl border border-indigo-100 animate-in fade-in slide-in-from-top-1 duration-300">
               <div className="flex items-center gap-2 mb-1.5">
-                <ArrowRightLeft size={12} className="text-indigo-500" />
+                <ArrowRightLeft size={12} className="text-indigo-50" />
                 <span className="text-[8px] font-black uppercase tracking-widest text-indigo-600">Delineation Guide</span>
               </div>
               <p className="text-[10px] font-medium text-indigo-900 leading-relaxed">
@@ -210,14 +210,14 @@ const NerveTestItem = ({ nerve, test, statusL, statusR, images, showImage, onUpd
 
         <div className="lg:col-span-4">
           {showImage && hasImages ? (
-            <div className="grid grid-cols-2 gap-0 rounded-lg overflow-hidden border border-slate-100">
+            <div className="flex h-32 rounded-lg overflow-hidden border border-slate-100">
               {images.primary && (
-                <div className="aspect-video bg-slate-50 overflow-hidden">
+                <div className="flex-1 bg-slate-50 overflow-hidden">
                   <img src={images.primary} alt="Primary" className="w-full h-full object-cover opacity-80 hover:opacity-100 transition-opacity" />
                 </div>
               )}
               {images.secondary && (
-                <div className="aspect-video bg-slate-50 overflow-hidden">
+                <div className="flex-1 bg-slate-50 overflow-hidden">
                   <img src={images.secondary} alt="Secondary" className="w-full h-full object-cover opacity-80 hover:opacity-100 transition-opacity" />
                 </div>
               )}

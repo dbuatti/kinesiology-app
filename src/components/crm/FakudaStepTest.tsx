@@ -1,8 +1,8 @@
 "use client";
 
-import React, { useState, useEffect, useCallback, useRef } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { Button } from "@/components/ui/button";
-import { Footprints, Info, Save, Loader2, RotateCcw, ImageOff, Plus, Target, Upload, X, ImageIcon } from "lucide-react";
+import { Footprints, Info, Save, Loader2, RotateCcw, Plus, Target, Upload, X, ImageIcon } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { showSuccess, showError } from "@/utils/toast";
 import { Textarea } from "@/components/ui/textarea";
@@ -19,12 +19,12 @@ interface FakudaStepTestProps {
 }
 
 const ImageZone = ({ 
-  id, 
+  reflexId, 
   type,
   currentUrl, 
   onUploadComplete 
 }: { 
-  id: string; 
+  reflexId: string; 
   type: 'primary' | 'secondary';
   currentUrl?: string | null; 
   onUploadComplete: (url: string | null) => void 
@@ -108,7 +108,7 @@ const ImageZone = ({
       onDrop={(e) => { e.preventDefault(); e.stopPropagation(); setIsDragging(false); const file = e.dataTransfer.files?.[0]; if (file) handleUpload(file); }}
       onClick={() => fileInputRef.current?.click()}
       className={cn(
-        "relative group transition-all duration-300 flex flex-col items-center justify-center overflow-hidden outline-none cursor-pointer aspect-video flex-1",
+        "relative group transition-all duration-300 flex flex-col items-center justify-center overflow-hidden outline-none cursor-pointer flex-1 h-full",
         currentUrl ? "bg-white" : "bg-slate-50 hover:bg-slate-100",
         isDragging && "bg-indigo-50 ring-2 ring-indigo-500 ring-inset",
         isUploading && "opacity-50 pointer-events-none"
@@ -119,13 +119,22 @@ const ImageZone = ({
         <>
           <img src={currentUrl} alt="Fakuda Reference" className="w-full h-full object-cover" />
           <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2">
-            <Button variant="secondary" size="icon" className="h-8 w-8"><Upload size={14} /></Button>
-            <Button variant="destructive" size="icon" className="h-8 w-8" onClick={handleRemove}><X size={14} /></Button>
+            <Button variant="secondary" size="icon" className="h-8 w-8 rounded-xl shadow-lg"><Upload size={14} /></Button>
+            <Button variant="destructive" size="icon" className="h-8 w-8 rounded-xl shadow-lg" onClick={handleRemove}><X size={14} /></Button>
           </div>
         </>
       ) : (
-        <div className="text-center p-2">
-          {isUploading ? <Loader2 className="animate-spin text-indigo-500" size={20} /> : <ImageIcon className="text-slate-300 mx-auto" size={24} />}
+        <div className="text-center p-2 space-y-1">
+          {isUploading ? (
+            <Loader2 className="animate-spin text-indigo-500 mx-auto" size={20} />
+          ) : (
+            <>
+              <div className="w-8 h-8 rounded-lg bg-white shadow-sm border border-slate-100 flex items-center justify-center mx-auto text-slate-300 group-hover:text-indigo-500 transition-colors">
+                <Plus size={18} />
+              </div>
+              <p className="text-[8px] font-black text-slate-400 uppercase tracking-widest">Add {type}</p>
+            </>
+          )}
         </div>
       )}
     </div>
@@ -205,15 +214,15 @@ const FakudaStepTest = ({
               Test Protocol
             </h3>
             
-            <div className="flex bg-white border-b border-green-100">
+            <div className="flex h-48 bg-white border-b border-green-100">
               <ImageZone 
-                id="fakuda-test" 
+                reflexId="fakuda-test" 
                 type="primary" 
                 currentUrl={customImages.primary} 
                 onUploadComplete={(url) => setCustomImages(prev => ({ ...prev, primary: url || "/images/fakuda-step-test.png" }))} 
               />
               <ImageZone 
-                id="fakuda-test" 
+                reflexId="fakuda-test" 
                 type="secondary" 
                 currentUrl={customImages.secondary} 
                 onUploadComplete={(url) => setCustomImages(prev => ({ ...prev, secondary: url }))} 

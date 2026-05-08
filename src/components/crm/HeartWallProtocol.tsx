@@ -14,12 +14,14 @@ import {
   BookOpen,
   FileText,
   Lightbulb,
-  Hand
+  Hand,
+  Printer
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { EMOTION_CODE_CHART, ROW_DATA } from '@/data/emotion-code-data';
+import { Link } from 'react-router-dom';
 
 const ASSESSMENT_STEPS = [
   { id: 1, title: "Permission to Assess", desc: "Ask the body: 'Do we have permission to assess the Heart Wall?'" },
@@ -54,12 +56,19 @@ const HeartWallProtocol = () => {
       style={{ fontFamily: 'Georgia, serif' }}
     >
       {/* Header */}
-      <div className="text-center space-y-2 mb-8">
-        <Badge className="bg-rose-100 text-rose-700 border-none font-black text-[9px] uppercase tracking-[0.4em] px-4 py-1 rounded-full">
-          Clinical Reference
-        </Badge>
-        <h1 className="text-4xl font-bold text-slate-900 tracking-tight">Heart Wall Protocol</h1>
-        <p className="text-lg text-slate-500">Subconscious Barrier Release Process</p>
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-8">
+        <div className="space-y-2">
+          <Badge className="bg-rose-100 text-rose-700 border-none font-black text-[9px] uppercase tracking-[0.4em] px-4 py-1 rounded-full">
+            Clinical Reference
+          </Badge>
+          <h1 className="text-4xl font-bold text-slate-900 tracking-tight">Heart Wall Protocol</h1>
+          <p className="text-lg text-slate-500">Subconscious Barrier Release Process</p>
+        </div>
+        <Button asChild variant="outline" className="rounded-xl h-12 px-6 font-bold border-rose-100 text-rose-600 hover:bg-rose-50">
+          <Link to="/resources/heart-wall/print">
+            <Printer size={18} className="mr-2" /> Print Reference Sheet
+          </Link>
+        </Button>
       </div>
 
       {/* 1. Assessment Flow */}

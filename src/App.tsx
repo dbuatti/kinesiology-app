@@ -53,6 +53,7 @@ import MorningProgramPage from "./pages/MorningProgramPage";
 import SiteAuditPage from "./pages/SiteAuditPage";
 import CranialNervePrintPage from "./pages/CranialNervePrintPage";
 import CranialNerveWorksheetPage from "./pages/CranialNerveWorksheetPage";
+import HeartWallPrintPage from "./pages/HeartWallPrintPage";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -86,6 +87,7 @@ const AppRoutes = () => {
       <Route path="/notes-doc" element={session ? <PracticeNotes /> : <Navigate to="/login" replace />} />
       <Route path="/resources/cranial-nerves/print" element={session ? <CranialNervePrintPage /> : <Navigate to="/login" replace />} />
       <Route path="/resources/cranial-nerves/worksheet" element={session ? <CranialNerveWorksheetPage /> : <Navigate to="/login" replace />} />
+      <Route path="/resources/heart-wall/print" element={session ? <HeartWallPrintPage /> : <Navigate to="/login" replace />} />
       
       <Route
         element={session ? <MainLayout /> : <Navigate to="/login" replace />}

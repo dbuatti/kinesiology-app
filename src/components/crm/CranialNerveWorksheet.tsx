@@ -6,13 +6,13 @@ import { cn } from '@/lib/utils';
 
 const NERVE_CHECKS: Record<number, string[]> = {
   1: ["L Nostril", "R Nostril"],
-  2: ["Sup", "Inf", "Nasal", "Temp"],
+  2: ["Front On", "Sup (Superior)", "Inf (Inferior)", "Nasal", "Temp (Temporal)"],
   3: ["Up", "Down", "Medial"],
   4: ["Down & In"],
-  5: ["V1", "V2", "V3", "Soft Sound"],
+  5: ["V1 (Ophthalmic)", "V2 (Maxillary)", "V3 (Mandibular)", "Soft Sound"],
   6: ["Lat L", "Lat R"],
   7: ["Motor", "Taste"],
-  8: ["Aud", "V: U/D", "V: Rot", "V: Tilt"],
+  8: ["Aud (Cochlear)", "V: U/D", "V: Rot", "V: Tilt"],
   9: ["Taste", "Swallow", "Hum"],
   10: ["Hum", "Swallow", "Aaah"],
   11: ["Shrug", "Rotate"],

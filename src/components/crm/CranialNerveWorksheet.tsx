@@ -6,7 +6,13 @@ import { cn } from '@/lib/utils';
 
 const NERVE_CHECKS: Record<number, string[]> = {
   1: ["L Nostril", "R Nostril"],
-  2: ["Front On", "Sup (Superior)", "Inf (Inferior)", "Nasal", "Temp (Temporal)"],
+  2: [
+    "Front L", "Front R", 
+    "Sup L", "Sup R", 
+    "Inf L", "Inf R", 
+    "Nasal L", "Nasal R", 
+    "Temp L", "Temp R"
+  ],
   3: ["Up", "Down", "Medial"],
   4: ["Down & In"],
   5: ["V1 (Ophthalmic)", "V2 (Maxillary)", "V3 (Mandibular)", "Soft Sound"],

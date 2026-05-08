@@ -16,7 +16,7 @@ const NERVE_CHECKS: Record<number, string[]> = {
   9: ["Taste", "Swallow", "Hum"],
   10: ["Hum", "Swallow", "Aaah"],
   11: ["Shrug", "Rotate"],
-  12: ["Out", "L / R", "U / D"]
+  12: ["Out", "Left", "Right", "Up", "Down"]
 };
 
 const CranialNerveWorksheet = () => {

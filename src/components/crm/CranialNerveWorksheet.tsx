@@ -46,27 +46,27 @@ const NERVE_CHECKS: Record<number, NerveCheckGroup> = {
 
 const CranialNerveWorksheet = () => {
   return (
-    <div className="bg-white text-black p-2 max-w-[297mm] mx-auto font-sans print:p-0">
+    <div className="bg-white text-black w-full max-w-[297mm] mx-auto font-sans print:p-0 overflow-hidden">
       {/* Header Section */}
-      <div className="border-b-2 border-slate-900 pb-1 mb-2 flex justify-between items-end">
+      <div className="border-b-2 border-slate-900 pb-1 mb-1 flex justify-between items-end px-2">
         <div>
-          <h1 className="text-2xl font-black tracking-tighter uppercase leading-none">Cranial Nerve Worksheet</h1>
-          <p className="text-[9px] font-bold text-slate-500 uppercase tracking-[0.3em]">Clinical Assessment Log • Landscape Edition</p>
+          <h1 className="text-xl font-black tracking-tighter uppercase leading-none">Cranial Nerve Worksheet</h1>
+          <p className="text-[8px] font-bold text-slate-500 uppercase tracking-[0.3em]">Clinical Assessment Log • Landscape Edition</p>
         </div>
-        <div className="text-right flex gap-8">
-          <p className="text-[11px] font-black uppercase tracking-widest text-slate-400">Client: ________________________</p>
-          <p className="text-[11px] font-black uppercase tracking-widest text-slate-400">Date: ___/___/___</p>
+        <div className="text-right flex gap-6">
+          <p className="text-[10px] font-black uppercase tracking-widest text-slate-400">Client: ________________________</p>
+          <p className="text-[10px] font-black uppercase tracking-widest text-slate-400">Date: ___/___/___</p>
         </div>
       </div>
 
-      <div className="overflow-hidden border border-black rounded-none">
-        <table className="w-full border-collapse text-[10px] leading-tight">
+      <div className="overflow-hidden border border-black rounded-none mx-2">
+        <table className="w-full border-collapse text-[9px] leading-tight">
           <thead>
             <tr className="bg-slate-100 border-b border-black">
-              <th className="p-1.5 text-left font-black uppercase border-r border-black w-[10%]">Nerve</th>
-              <th className="p-1.5 text-center font-black uppercase border-r border-black w-[6%]">Inhib</th>
-              <th className="p-1.5 text-left font-black uppercase border-r border-black w-[44%]">Stimulus Checks (L / R)</th>
-              <th className="p-1.5 text-left font-black uppercase w-[40%]">Clinical Notes</th>
+              <th className="p-1 text-left font-black uppercase border-r border-black w-[10%]">Nerve</th>
+              <th className="p-1 text-center font-black uppercase border-r border-black w-[6%]">Inhib</th>
+              <th className="p-1 text-left font-black uppercase border-r border-black w-[44%]">Stimulus Checks (L / R)</th>
+              <th className="p-1 text-left font-black uppercase w-[40%]">Clinical Notes</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-black">
@@ -76,46 +76,44 @@ const CranialNerveWorksheet = () => {
 
               return (
                 <tr key={nerve.id} className="break-inside-avoid">
-                  <td className="p-1.5 border-r border-black bg-slate-50/30">
-                    <p className="font-black text-[11px] leading-none">{nerve.name}</p>
-                    <p className="font-bold text-[8px] text-slate-500 uppercase mt-0.5">{nerve.latinName}</p>
+                  <td className="p-1 border-r border-black bg-slate-50/30">
+                    <p className="font-black text-[10px] leading-none">{nerve.name}</p>
+                    <p className="font-bold text-[7px] text-slate-500 uppercase mt-0.5">{nerve.latinName}</p>
                   </td>
                   
-                  <td className="p-1 border-r border-black">
+                  <td className="p-0.5 border-r border-black">
                     <div className="flex justify-center gap-2">
                       <div className="flex flex-col items-center gap-0.5">
-                        <div className="w-3.5 h-3.5 border border-black rounded-none" />
-                        <span className="font-black text-[7px]">L</span>
+                        <div className="w-3 h-3 border border-black rounded-none" />
+                        <span className="font-black text-[6px]">L</span>
                       </div>
                       <div className="flex flex-col items-center gap-0.5">
-                        <div className="w-3.5 h-3.5 border border-black rounded-none" />
-                        <span className="font-black text-[7px]">R</span>
+                        <div className="w-3 h-3 border border-black rounded-none" />
+                        <span className="font-black text-[6px]">R</span>
                       </div>
                     </div>
                   </td>
 
-                  <td className="p-1.5 border-r border-black align-top">
-                    <div className="flex gap-4 h-full">
+                  <td className="p-1 border-r border-black align-top">
+                    <div className="flex gap-3 h-full">
                       {isLateralized ? (
                         <>
-                          {/* Left Column */}
-                          <div className="flex-1 space-y-1.5 border-r border-slate-100 pr-2">
-                            <div className="grid grid-cols-2 gap-x-2 gap-y-1">
+                          <div className="flex-1 space-y-1 border-r border-slate-100 pr-1">
+                            <div className="grid grid-cols-2 gap-x-1 gap-y-0.5">
                               {checks.left?.map((check) => (
-                                <div key={check} className="flex items-center gap-1.5">
-                                  <div className="w-3 h-3 border border-black rounded-none shrink-0" />
-                                  <span className="text-[9px] font-bold text-slate-700 truncate">L: {check}</span>
+                                <div key={check} className="flex items-center gap-1">
+                                  <div className="w-2.5 h-2.5 border border-black rounded-none shrink-0" />
+                                  <span className="text-[8px] font-bold text-slate-700 truncate">L: {check}</span>
                                 </div>
                               ))}
                             </div>
                           </div>
-                          {/* Right Column */}
-                          <div className="flex-1 space-y-1.5 pl-2">
-                            <div className="grid grid-cols-2 gap-x-2 gap-y-1">
+                          <div className="flex-1 space-y-1 pl-1">
+                            <div className="grid grid-cols-2 gap-x-1 gap-y-0.5">
                               {checks.right?.map((check) => (
-                                <div key={check} className="flex items-center gap-1.5">
-                                  <div className="w-3 h-3 border border-black rounded-none shrink-0" />
-                                  <span className="text-[9px] font-bold text-slate-700 truncate">R: {check}</span>
+                                <div key={check} className="flex items-center gap-1">
+                                  <div className="w-2.5 h-2.5 border border-black rounded-none shrink-0" />
+                                  <span className="text-[8px] font-bold text-slate-700 truncate">R: {check}</span>
                                 </div>
                               ))}
                             </div>
@@ -123,11 +121,11 @@ const CranialNerveWorksheet = () => {
                         </>
                       ) : (
                         <div className="w-full">
-                          <div className="grid grid-cols-4 gap-x-2 gap-y-1">
+                          <div className="grid grid-cols-4 gap-x-1 gap-y-0.5">
                             {checks?.midline?.map((check) => (
-                              <div key={check} className="flex items-center gap-1.5">
-                                <div className="w-3 h-3 border border-black rounded-none shrink-0" />
-                                <span className="text-[9px] font-bold text-slate-700 truncate">{check}</span>
+                              <div key={check} className="flex items-center gap-1">
+                                <div className="w-2.5 h-2.5 border border-black rounded-none shrink-0" />
+                                <span className="text-[8px] font-bold text-slate-700 truncate">{check}</span>
                               </div>
                             ))}
                           </div>
@@ -136,8 +134,8 @@ const CranialNerveWorksheet = () => {
                     </div>
                   </td>
 
-                  <td className="p-1.5 align-top relative">
-                    <div className="space-y-2.5">
+                  <td className="p-1 align-top relative">
+                    <div className="space-y-2">
                       <div className="h-px w-full bg-slate-100 mt-1" />
                       <div className="h-px w-full bg-slate-100" />
                     </div>
@@ -150,36 +148,35 @@ const CranialNerveWorksheet = () => {
       </div>
 
       {/* Footer Section */}
-      <div className="mt-2 p-3 border border-black bg-slate-50 flex justify-between items-start gap-8">
-        <div className="space-y-2 flex-1">
-          <h4 className="font-black text-[10px] uppercase tracking-widest border-b border-black/10 pb-0.5">Priority Logic</h4>
-          <div className="flex items-center gap-8">
-            <div className="flex items-center gap-2">
-              <div className="w-4 h-4 border border-black" />
-              <p className="text-[9px] font-bold uppercase">Afferent (Bottom-Up)</p>
+      <div className="mt-1 p-2 border border-black bg-slate-50 flex justify-between items-start gap-6 mx-2">
+        <div className="space-y-1 flex-1">
+          <h4 className="font-black text-[8px] uppercase tracking-widest border-b border-black/10 pb-0.5">Priority Logic</h4>
+          <div className="flex items-center gap-6">
+            <div className="flex items-center gap-1.5">
+              <div className="w-3 h-3 border border-black" />
+              <p className="text-[8px] font-bold uppercase">Afferent</p>
             </div>
-            <div className="flex items-center gap-2">
-              <div className="w-4 h-4 border border-black" />
-              <p className="text-[9px] font-bold uppercase">Efferent (Top-Down)</p>
+            <div className="flex items-center gap-1.5">
+              <div className="w-3 h-3 border border-black" />
+              <p className="text-[8px] font-bold uppercase">Efferent</p>
             </div>
           </div>
         </div>
-        <div className="space-y-1 flex-[2]">
-          <p className="text-[9px] font-black text-slate-400 uppercase">Primary Correction Applied:</p>
-          <div className="h-px w-full bg-slate-300 mt-2.5" />
-          <div className="h-px w-full bg-slate-300 mt-2.5" />
+        <div className="space-y-0.5 flex-[2]">
+          <p className="text-[8px] font-black text-slate-400 uppercase">Primary Correction Applied:</p>
+          <div className="h-px w-full bg-slate-300 mt-2" />
         </div>
       </div>
 
-      <div className="mt-2 pt-1 border-t border-slate-200 text-center">
-        <p className="text-[8px] font-black text-slate-300 uppercase tracking-[0.5em]">Resonance Clinical Infrastructure • Worksheet v1.8</p>
+      <div className="mt-1 pt-0.5 border-t border-slate-200 text-center">
+        <p className="text-[7px] font-black text-slate-300 uppercase tracking-[0.5em]">Resonance Clinical Infrastructure • Worksheet v1.9</p>
       </div>
 
       <style>{`
         @media print {
           @page {
             size: A4 landscape;
-            margin: 5mm;
+            margin: 3mm;
           }
           body {
             background: white;

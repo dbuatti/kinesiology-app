@@ -11,7 +11,7 @@ const NERVE_CHECKS: Record<number, string[]> = {
   4: ["Down & In"],
   5: ["V1 (Ophthalmic)", "V2 (Maxillary)", "V3 (Mandibular)", "Soft Sound"],
   6: ["Lat L", "Lat R"],
-  7: ["Motor", "Taste"],
+  7: ["Motor (Squeeze)", "Loud Sound", "Taste"],
   8: ["Aud (Cochlear)", "V: U/D", "V: Rot", "V: Tilt"],
   9: ["Taste", "Swallow", "Hum"],
   10: ["Hum", "Swallow", "Aaah"],

@@ -21,11 +21,13 @@ import {
   ImageIcon,
   Target,
   ChevronRight,
-  ArrowRightLeft
+  ArrowRightLeft,
+  Printer
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 import { supabase } from "@/integrations/supabase/client";
+import { Link } from "react-router-dom";
 
 interface ReflexImageData {
   primaryUrl: string | null;
@@ -128,6 +130,15 @@ const CranialNerveReference = () => {
               {opt}
             </Button>
           ))}
+          <Button 
+            variant="outline" 
+            asChild
+            className="rounded-xl h-14 px-6 font-black text-[10px] uppercase tracking-widest border-indigo-100 text-indigo-600 hover:bg-indigo-50"
+          >
+            <Link to="/resources/cranial-nerves/print">
+              <Printer size={18} className="mr-2" /> Print Version
+            </Link>
+          </Button>
         </div>
       </div>
 
@@ -188,7 +199,7 @@ const CranialNerveReference = () => {
                     <p className="text-[9px] font-black text-indigo-400 uppercase tracking-widest mb-1 flex items-center gap-1">
                       <PlayCircle size={12} /> Stim Protocol
                     </p>
-                    <p className="text-sm font-bold text-indigo-900 leading-relaxed">{nerve.stimulus}</p>
+                    <p className="text-sm font-bold text-slate-900 leading-relaxed">{nerve.stimulus}</p>
                   </div>
                 </div>
 

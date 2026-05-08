@@ -46,9 +46,9 @@ const NERVE_CHECKS: Record<number, NerveCheckGroup> = {
 
 const CranialNerveWorksheet = () => {
   return (
-    <div className="bg-white text-black p-1 max-w-[297mm] mx-auto font-sans print:p-0 print:m-0 h-full overflow-hidden">
+    <div className="bg-white text-black p-4 max-w-[297mm] mx-auto font-sans print:p-0 print:m-0 h-full overflow-hidden">
       {/* Header Section */}
-      <div className="border-b-2 border-slate-900 pb-1 mb-1 flex justify-between items-end">
+      <div className="border-b-2 border-slate-900 pb-1 mb-2 flex justify-between items-end">
         <div>
           <h1 className="text-2xl font-black tracking-tighter uppercase leading-none">Cranial Nerve Worksheet</h1>
           <p className="text-[9px] font-bold text-slate-500 uppercase tracking-[0.3em]">Clinical Assessment Log • Landscape Edition</p>
@@ -150,7 +150,7 @@ const CranialNerveWorksheet = () => {
       </div>
 
       {/* Footer Section */}
-      <div className="mt-1 p-2 border border-black bg-slate-50 flex justify-between items-start gap-8">
+      <div className="mt-2 p-2 border border-black bg-slate-50 flex justify-between items-start gap-8">
         <div className="space-y-1 flex-1">
           <h4 className="font-black text-[10px] uppercase tracking-widest border-b border-black/10 pb-0.5">Priority Logic</h4>
           <div className="flex items-center gap-8">
@@ -171,7 +171,7 @@ const CranialNerveWorksheet = () => {
         </div>
       </div>
 
-      <div className="mt-1 pt-0.5 border-t border-slate-200 text-center">
+      <div className="mt-2 pt-0.5 border-t border-slate-200 text-center">
         <p className="text-[8px] font-black text-slate-300 uppercase tracking-[0.5em]">Resonance Clinical Infrastructure • Worksheet v1.9</p>
       </div>
 
@@ -179,7 +179,7 @@ const CranialNerveWorksheet = () => {
         @media print {
           @page {
             size: A4 landscape;
-            margin: 3mm;
+            margin: 10mm;
           }
           body {
             background: white;

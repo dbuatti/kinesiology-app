@@ -13,15 +13,25 @@ const NERVE_CHECKS: Record<number, string[]> = {
     "Nasal L", "Nasal R", 
     "Temp L", "Temp R"
   ],
-  3: ["Up", "Down", "Medial"],
-  4: ["Down & In"],
-  5: ["V1 (Ophthalmic)", "V2 (Maxillary)", "V3 (Mandibular)", "Soft Sound"],
+  3: ["Up L", "Up R", "Down L", "Down R", "Medial L", "Medial R"],
+  4: ["Down & In L", "Down & In R"],
+  5: [
+    "V1 L", "V1 R", 
+    "V2 L", "V2 R", 
+    "V3 L", "V3 R", 
+    "Soft Sound L", "Soft Sound R"
+  ],
   6: ["Lat L", "Lat R"],
-  7: ["Motor (Squeeze)", "Loud Sound"],
-  8: ["Aud (Cochlear)", "V: Up", "V: Down", "V: Rot L", "V: Rot R", "V: Tilt L", "V: Tilt R"],
+  7: ["Squeeze L", "Squeeze R", "Loud Sound L", "Loud Sound R"],
+  8: [
+    "Aud L", "Aud R", 
+    "V: Up", "V: Down", 
+    "V: Rot L", "V: Rot R", 
+    "V: Tilt L", "V: Tilt R"
+  ],
   9: ["Humming", "Swallow", "Taste"],
   10: ["Hum", "Swallow", "Aaah"],
-  11: ["Shrug", "Rotate"],
+  11: ["Shrug L", "Shrug R", "Rotate L", "Rotate R"],
   12: ["Out", "Left", "Right", "Up", "Down"]
 };
 
@@ -51,7 +61,7 @@ const CranialNerveWorksheet = () => {
           </thead>
           <tbody className="divide-y divide-black">
             {CRANIAL_NERVES.map((nerve) => (
-              <tr key={nerve.id} className="break-inside-avoid h-[58px]">
+              <tr key={nerve.id} className="break-inside-avoid">
                 <td className="p-1.5 border-r border-black bg-slate-50/50">
                   <p className="font-black text-xs leading-none">{nerve.name}</p>
                   <p className="font-bold text-[7px] text-slate-500 uppercase mt-0.5">{nerve.latinName}</p>

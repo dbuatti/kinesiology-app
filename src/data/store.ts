@@ -4,19 +4,21 @@ import { Client, Appointment } from "@/types/crm";
 export const INITIAL_CLIENTS: Client[] = [
   {
     id: "1",
+    user_id: "mock-user-id",
     name: "Georg Gleeson",
     pronouns: "They/Them",
     born: new Date("1992-05-15"),
-    suburbs: ["Brunswick"], // Fixed: changed suburb to suburbs
+    suburbs: ["Brunswick"],
     email: "georg@example.com",
     phone: "0400 123 456"
   },
   {
     id: "2",
+    user_id: "mock-user-id",
     name: "Alex Smith",
     pronouns: "She/Her",
     born: new Date("1985-11-20"),
-    suburbs: ["Fitzroy", "Northcote"], // Fixed: changed suburb to suburbs
+    suburbs: ["Fitzroy", "Northcote"],
     email: "alex@example.com",
     phone: "0411 987 654"
   }
@@ -25,7 +27,8 @@ export const INITIAL_CLIENTS: Client[] = [
 export const INITIAL_APPOINTMENTS: Appointment[] = [
   {
     id: "APP-0001",
-    clientId: "1",
+    user_id: "mock-user-id",
+    client_id: "1",
     date: new Date("2024-03-10T10:00:00"),
     tag: "Kinesiology",
     status: "Completed",
@@ -36,7 +39,8 @@ export const INITIAL_APPOINTMENTS: Appointment[] = [
   },
   {
     id: "APP-0002",
-    clientId: "1",
+    user_id: "mock-user-id",
+    client_id: "1",
     date: new Date("2024-04-12T14:30:00"),
     tag: "Community Kinesiology",
     status: "Completed",

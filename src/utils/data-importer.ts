@@ -1,6 +1,6 @@
 import { supabase } from "@/integrations/supabase/client";
 import { showError, showSuccess } from "@/utils/toast";
-import { parseCSV, CsvRow } from "./csv-parser";
+import { parseCSV, CsvRow } from "@/utils/csv-parser";
 
 interface ClientLookup {
   [name: string]: string; // Client Name -> Client ID

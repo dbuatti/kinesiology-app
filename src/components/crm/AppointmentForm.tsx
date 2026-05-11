@@ -14,7 +14,6 @@ import {
   FormItem,
   FormLabel,
   FormMessage,
-  FormDescription,
 } from "@/components/ui/form";
 import {
   Select,
@@ -28,12 +27,12 @@ import { Textarea } from "@/components/ui/textarea";
 import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { format } from "date-fns";
-import { CalendarIcon, Loader2, Globe, DollarSign, Mail, Clock, CheckCircle2, AlertCircle, Unlock, Save } from "lucide-react";
+import { CalendarIcon, Loader2, Mail, Clock, CheckCircle2, AlertCircle, Unlock, Save } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { showSuccess, showError } from "@/utils/toast";
 import { APPOINTMENT_TAGS, APPOINTMENT_STATUSES } from "@/data/appointment-data";
 import SearchableClientSelect from "./SearchableClientSelect";
-import { CALCOM_CONFIG } from "../../config/integrations";
+import { CALCOM_CONFIG } from "@/config/integrations";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 
 const formSchema = z.object({
@@ -56,9 +55,9 @@ interface AppointmentFormProps {
   initialClientId?: string;
   initialDate?: Date;
   initialTime?: string;
-  slotTime?: string; // Exact UTC time from Cal.com
-  eventTypeId?: string; // Selected event type ID
-  existingAppointment?: any; // For editing
+  slotTime?: string; 
+  eventTypeId?: string; 
+  existingAppointment?: any; 
 }
 
 const AppointmentForm = ({ 
@@ -77,7 +76,7 @@ const AppointmentForm = ({
   const [syncStatus, setSyncStatus] = useState<'idle' | 'calcom' | 'email'>('idle');
   const [conflictError, setConflictError] = useState<string | null>(null);
   const [isTimeLocked, setIsTimeLocked] = useState(!!initialSlotTime);
-  const [currentSlotTime, setCurrentSlotTime] = useState(initialSlotTime);
+  const [currentSlotTime] = useState(initialSlotTime);
 
   const isEditMode = !!existingAppointment;
 
@@ -91,7 +90,7 @@ const AppointmentForm = ({
       tag: existingAppointment?.tag || "Kinesiology",
       status: existingAppointment?.status || "Scheduled",
       is_paid: existingAppointment?.is_paid || false,
-      send_onboarding: false, // Default to false for edits
+      send_onboarding: false, 
       goal: existingAppointment?.goal || "",
       issue: existingAppointment?.issue || "",
     },
@@ -114,6 +113,18 @@ const AppointmentForm = ({
     fetchClients();
   }, []);
 
+  const currentEventTypeId = propEventTypeId || localStorage.getItem('calcom_preferred_event_id') || CALCOM_CONFIG.DEFAULT_EVENT_TYPE_ID;
+  const [selectedPrice, setSelectedPrice] = useState<number>(() => {
+    if (existingAppointment) return existingAppointment.price_amount || 0;
+    if (initialTime || currentSlotTime) {
+      const type = CALCOM_CONFIG.EVENT_TYPES.find(t => t.id === currentEventTypeId);
+      return type?.price || 50;
+    }
+    return 0; 
+  });
+
+  const currentEventType = CALCOM_CONFIG.EVENT_TYPES.find(t => t.price === selectedPrice) || CALCOM_CONFIG.EVENT_TYPES[0];
+
   const onSubmit = async (values: z.infer<typeof formSchema>) => {
     if (!session?.user?.id) {
       showError("You must be logged in to schedule appointments.");
@@ -124,7 +135,6 @@ const AppointmentForm = ({
     setConflictError(null);
 
     try {
-      // Determine the final ISO date string
       let isoDate = "";
       if (currentSlotTime && isTimeLocked) {
         isoDate = currentSlotTime;
@@ -137,17 +147,14 @@ const AppointmentForm = ({
 
       let calcomId = existingAppointment?.calcom_booking_id || null;
 
-      // 1. Sync with Cal.com if applicable
       if ((!isEditMode && (initialTime || currentSlotTime)) || (isEditMode && calcomId)) {
         setSyncStatus('calcom');
-        const eventTypeId = currentEventType.id;
-
         try {
           const { data: calcomData, error: invokeError } = await supabase.functions.invoke('create-calcom-booking', {
             body: {
               clientId: values.clientId,
               startTime: isoDate,
-              eventTypeId: eventTypeId,
+              eventTypeId: currentEventType.id,
               title: values.name || values.tag || "Kinesiology Session",
               notes: values.goal || values.issue || "",
               is_paid: values.is_paid,
@@ -156,12 +163,8 @@ const AppointmentForm = ({
           });
 
           if (invokeError) throw invokeError;
-          
-          if (!isEditMode) {
-            calcomId = calcomData?.uid || calcomData?.bookingId;
-          }
+          if (!isEditMode) calcomId = calcomData?.uid || calcomData?.bookingId;
         } catch (err: any) {
-          console.error("Cal.com Sync Failed:", err);
           const msg = err.message || "";
           if (msg.includes("Conflict") || msg.includes("available") || msg.includes("booking")) {
             setConflictError(msg);
@@ -172,7 +175,6 @@ const AppointmentForm = ({
         }
       }
 
-      // 2. Create or Update CRM Record
       let appointmentName = values.name?.trim() || '';
       if (!appointmentName) {
           const client = clients.find(c => c.id === values.clientId);
@@ -197,43 +199,28 @@ const AppointmentForm = ({
       };
 
       if (isEditMode) {
-        const { error: dbError } = await supabase
-          .from("appointments")
-          .update(payload)
-          .eq('id', existingAppointment.id);
-        
+        const { error: dbError } = await supabase.from("appointments").update(payload).eq('id', existingAppointment.id);
         if (dbError) throw dbError;
-        showSuccess("Session updated and synced with Cal.com.");
+        showSuccess("Session updated.");
       } else {
-        const { data: newApp, error: dbError } = await supabase
-          .from("appointments")
-          .upsert({
-            ...payload,
-            send_onboarding: values.send_onboarding
-          }, { 
-            onConflict: calcomId ? 'calcom_booking_id' : 'id' 
-          })
-          .select('id')
-          .single();
+        const { data: newApp, error: dbError } = await supabase.from("appointments").upsert({
+          ...payload,
+          send_onboarding: values.send_onboarding
+        }, { onConflict: calcomId ? 'calcom_booking_id' : 'id' }).select('id').single();
 
         if (dbError) throw dbError;
 
         if (values.send_onboarding) {
           setSyncStatus('email');
           try {
-            const { error: emailError } = await supabase.functions.invoke('send-manual-onboarding', {
-              body: { 
-                clientId: values.clientId,
-                appointmentId: newApp?.id 
-              }
+            await supabase.functions.invoke('send-manual-onboarding', {
+              body: { clientId: values.clientId, appointmentId: newApp?.id }
             });
-            if (emailError) throw emailError;
           } catch (err) {
             console.error("Onboarding Email Failed:", err);
-            showError("Appointment created, but onboarding email failed to send.");
           }
         }
-        showSuccess(values.send_onboarding ? "Session booked and onboarding email sent!" : "Appointment scheduled successfully.");
+        showSuccess(values.send_onboarding ? "Session booked and onboarding email sent!" : "Appointment scheduled.");
       }
 
       onSuccess();
@@ -245,27 +232,13 @@ const AppointmentForm = ({
     }
   };
 
-  const currentEventTypeId = propEventTypeId || localStorage.getItem('calcom_preferred_event_id') || CALCOM_CONFIG.DEFAULT_EVENT_TYPE_ID;
-  const [selectedPrice, setSelectedPrice] = useState<number>(() => {
-    if (existingAppointment) return existingAppointment.price_amount || 0;
-    if (initialTime || currentSlotTime) {
-      const type = CALCOM_CONFIG.EVENT_TYPES.find(t => t.id === currentEventTypeId);
-      return type?.price || 50;
-    }
-    return 0; 
-  });
-
-  const currentEventType = CALCOM_CONFIG.EVENT_TYPES.find(t => t.price === selectedPrice) || CALCOM_CONFIG.EVENT_TYPES[0];
-
   return (
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
         {conflictError && (
-          <Alert variant="destructive" className="bg-rose-50 border-rose-200 rounded-2xl animate-in slide-in-from-top-2">
+          <Alert variant="destructive" className="bg-rose-50 border-rose-200 rounded-2xl">
             <AlertCircle className="h-5 w-5 text-rose-600" />
-            <AlertDescription className="text-sm text-rose-900 font-bold">
-              {conflictError}
-            </AlertDescription>
+            <AlertDescription className="text-sm text-rose-900 font-bold">{conflictError}</AlertDescription>
           </Alert>
         )}
 
@@ -321,22 +294,13 @@ const AppointmentForm = ({
                         )}
                         disabled={isTimeLocked}
                       >
-                        {field.value ? (
-                          format(field.value, "MMMM do, yyyy")
-                        ) : (
-                          <span>Pick a date</span>
-                        )}
+                        {field.value ? format(field.value, "MMMM do, yyyy") : <span>Pick a date</span>}
                         <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
                       </Button>
                     </FormControl>
                   </PopoverTrigger>
                   <PopoverContent className="w-auto p-0" align="start">
-                    <Calendar
-                      mode="single"
-                      selected={field.value}
-                      onSelect={field.onChange}
-                      initialFocus
-                    />
+                    <Calendar mode="single" selected={field.value} onSelect={field.onChange} initialFocus />
                   </PopoverContent>
                 </Popover>
                 <FormMessage />
@@ -352,11 +316,7 @@ const AppointmentForm = ({
                 <div className="flex items-center justify-between">
                   <FormLabel className="text-xs font-black text-slate-900 uppercase tracking-widest">Time</FormLabel>
                   {isTimeLocked && (
-                    <button 
-                      type="button" 
-                      onClick={() => setIsTimeLocked(false)}
-                      className="text-[8px] font-black text-indigo-600 uppercase tracking-widest flex items-center gap-1 hover:underline"
-                    >
+                    <button type="button" onClick={() => setIsTimeLocked(false)} className="text-[8px] font-black text-indigo-600 uppercase tracking-widest flex items-center gap-1 hover:underline">
                       <Unlock size={10} /> Override Slot
                     </button>
                   )}
@@ -441,9 +401,7 @@ const AppointmentForm = ({
                   )}
                 >
                   <span className="text-lg font-black">{price === 0 ? "Free" : `$${price}`}</span>
-                  <span className="text-[8px] font-bold uppercase tracking-widest opacity-70">
-                    {price === 0 ? "No Charge" : "Paid Session"}
-                  </span>
+                  <span className="text-[8px] font-bold uppercase tracking-widest opacity-70">{price === 0 ? "No Charge" : "Paid Session"}</span>
                 </button>
               ))}
             </div>
@@ -462,23 +420,15 @@ const AppointmentForm = ({
                   onClick={() => field.onChange(!field.value)}
                 >
                   <div className="flex items-center gap-4">
-                    <div className={cn(
-                      "w-10 h-10 rounded-xl flex items-center justify-center transition-colors",
-                      field.value ? "bg-emerald-600 text-white" : "bg-slate-100 text-emerald-600"
-                    )}>
+                    <div className={cn("w-10 h-10 rounded-xl flex items-center justify-center transition-colors", field.value ? "bg-emerald-600 text-white" : "bg-slate-100 text-emerald-600")}>
                       <Mail size={20} />
                     </div>
                     <div className="space-y-0.5">
                       <FormLabel className="text-base font-black text-slate-900 cursor-pointer">Send Onboarding Email</FormLabel>
-                      <p className="text-[9px] text-slate-500 font-bold uppercase tracking-widest">
-                        Automatically email the intake form to the client
-                      </p>
+                      <p className="text-[9px] text-slate-500 font-bold uppercase tracking-widest">Automatically email the intake form</p>
                     </div>
                   </div>
-                  <div className={cn(
-                    "w-6 h-6 rounded-full border-2 flex items-center justify-center transition-all",
-                    field.value ? "bg-emerald-600 border-emerald-600" : "border-slate-200"
-                  )}>
+                  <div className={cn("w-6 h-6 rounded-full border-2 flex items-center justify-center transition-all", field.value ? "bg-emerald-600 border-emerald-600" : "border-slate-200")}>
                     {field.value && <CheckCircle2 size={16} className="text-white" />}
                   </div>
                 </FormItem>
@@ -487,50 +437,14 @@ const AppointmentForm = ({
           )}
         </div>
 
-        <FormField
-          control={form.control}
-          name="goal"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel className="text-xs font-black text-slate-900 uppercase tracking-widest">Goal</FormLabel>
-              <FormControl>
-                <Input placeholder="What is the goal for this session?" {...field} className="h-12 rounded-xl border-2 border-slate-100" />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-
-        <FormField
-          control={form.control}
-          name="issue"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel className="text-xs font-black text-slate-900 uppercase tracking-widest">Main Issue</FormLabel>
-              <FormControl>
-                <Textarea 
-                  placeholder="Describe the main concern..." 
-                  className="resize-none rounded-xl border-2 border-slate-100 min-h-[100px]"
-                  {...field} 
-                />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-
         <Button type="submit" className="w-full bg-indigo-600 hover:bg-indigo-700 h-14 rounded-2xl font-black text-sm uppercase tracking-widest shadow-xl shadow-indigo-100" disabled={submitting}>
           {submitting ? (
             <>
               <Loader2 className="mr-2 h-5 w-5 animate-spin" />
-              {syncStatus === 'calcom' ? 'Syncing with Cal.com...' : 
-               syncStatus === 'email' ? 'Sending Onboarding...' : 'Saving...'}
+              {syncStatus === 'calcom' ? 'Syncing Cal.com...' : syncStatus === 'email' ? 'Sending Onboarding...' : 'Saving...'}
             </>
           ) : (
-            <>
-              {isEditMode ? <Save size={18} className="mr-2" /> : null}
-              {isEditMode ? 'Update Session' : 'Schedule Appointment'}
-            </>
+            <>{isEditMode ? <Save size={18} className="mr-2" /> : null}{isEditMode ? 'Update Session' : 'Schedule Appointment'}</>
           )}
         </Button>
       </form>

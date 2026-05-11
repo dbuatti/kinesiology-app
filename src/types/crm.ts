@@ -41,7 +41,8 @@ export interface PrimitiveReflexTest {
 export interface Appointment {
   id: string; 
   display_id?: string;
-  clientId: string;
+  user_id: string;
+  client_id: string;
   date: Date;
   tag: AppointmentTag;
   status: AppointmentStatus;
@@ -96,45 +97,36 @@ export interface Appointment {
   sleep_quality?: string | null;
   digestive_health?: string | null;
   medications_supplements?: string | null;
+  send_onboarding?: boolean;
 }
 
 export interface Client {
   id: string;
+  user_id: string;
   name: string;
   pronouns: string;
-  born: Date;
+  born: Date | null;
   suburbs: string[];
-  email: string;
-  phone: string;
-  occupation?: string;
-  marital_status?: string;
-  children?: string;
-  chatgpt_url?: string;
-  journal?: string;
+  email: string | null;
+  phone: string | null;
+  occupation?: string | null;
+  marital_status?: string | null;
+  children?: string | null;
+  chatgpt_url?: string | null;
+  journal?: string | null;
   created_at?: string;
   is_practitioner?: boolean;
-  stripe_customer_id?: string;
-  emergency_contact_name?: string;
-  emergency_contact_phone?: string;
-  medical_history?: string;
-  referral_source?: string;
-  medications_supplements?: string;
-  current_stress_level?: number;
-  sleep_quality?: string;
-  digestive_health?: string;
+  stripe_customer_id?: string | null;
+  emergency_contact_name?: string | null;
+  emergency_contact_phone?: string | null;
+  medical_history?: string | null;
+  referral_source?: string | null;
+  medications_supplements?: string | null;
+  current_stress_level?: number | null;
+  sleep_quality?: string | null;
+  digestive_health?: string | null;
 }
 
 export interface AppointmentWithClient extends Appointment {
-  clients: { 
-    id: string; 
-    name: string; 
-    born?: string | Date;
-    is_practitioner?: boolean;
-    medical_history?: string;
-    emergency_contact_name?: string;
-    emergency_contact_phone?: string;
-    occupation?: string;
-    referral_source?: string;
-    stripe_customer_id?: string;
-  };
+  clients: Client;
 }

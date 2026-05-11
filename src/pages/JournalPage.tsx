@@ -46,7 +46,6 @@ import { showSuccess, showError } from "@/utils/toast";
 import AppLayout from "@/components/crm/AppLayout";
 import Breadcrumbs from "@/components/shared/Breadcrumbs";
 import { Badge } from "@/components/ui/badge";
-import { cn } from "@/lib/utils";
 import {
   Select,
   SelectContent,
@@ -56,6 +55,8 @@ import {
 } from "@/components/ui/select";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Link, useLocation } from "react-router-dom";
+import PageHeader from "@/components/shared/PageHeader";
+import { cn } from "@/lib/utils";
 
 const CATEGORIES = [
   { id: 'General', icon: Lock, color: 'text-slate-500', bg: 'bg-slate-50' },
@@ -245,7 +246,6 @@ const JournalPage = () => {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error("Not authenticated");
 
-      // Map types to match the new database constraints
       const dbType = item.type === 'belief' ? 'belief' : (item.type === 'alignment' || item.type === 'goal' ? 'alignment' : 'shifting');
 
       const { error } = await supabase
@@ -379,10 +379,8 @@ const JournalPage = () => {
 
     try {
       if (question.id.startsWith('manual-')) {
-        // Delete the whole reflection
         await supabase.from('practitioner_reflections').delete().eq('id', question.reflectionId);
       } else {
-        // Remove from AI extractions array
         const reflection = reflections.find(r => r.id === question.reflectionId);
         if (reflection) {
           const newExtractions = [...reflection.ai_extractions];
@@ -414,34 +412,34 @@ const JournalPage = () => {
   return (
     <AppLayout>
       <div className="max-w-5xl mx-auto space-y-10 animate-in fade-in duration-700">
-        <Breadcrumbs items={[{ label: "Practitioner Journal" }]} />
-
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
-          <div className="space-y-1">
-            <h1 className="text-4xl font-black tracking-tight text-slate-900">Practitioner Journal</h1>
-            <p className="text-slate-500 font-medium text-lg">Private reflections and session-linked insights.</p>
-          </div>
-          <div className="flex items-center gap-3">
-            <Button 
-              variant="outline" 
-              onClick={handleScanAll}
-              disabled={isScanning || reflections.length === 0}
-              className="rounded-xl h-12 px-6 font-bold text-xs uppercase tracking-widest border-indigo-100 text-indigo-600 hover:bg-indigo-50"
-            >
-              {isScanning ? <Loader2 className="animate-spin mr-2" /> : <Wand2 size={18} className="mr-2" />}
-              Scan All Entries
-            </Button>
-            <Button 
-              variant="outline" 
-              onClick={() => handleAddAllToBacklog()}
-              disabled={isAddingAll || reflections.length === 0}
-              className="rounded-xl h-12 px-6 font-bold text-xs uppercase tracking-widest border-emerald-100 text-emerald-600 hover:bg-emerald-50"
-            >
-              {isAddingAll ? <Loader2 className="animate-spin mr-2" /> : <Layers size={18} className="mr-2" />}
-              Add All to Backlog
-            </Button>
-          </div>
-        </div>
+        <PageHeader 
+          title="Practitioner Journal"
+          subtitle="Private reflections and session-linked insights for clinical growth."
+          icon={MessageSquare}
+          breadcrumbs={[{ label: "Practice Lab", path: "/lab" }, { label: "Journal" }]}
+          actions={
+            <div className="flex items-center gap-3">
+              <Button 
+                variant="outline" 
+                onClick={handleScanAll}
+                disabled={isScanning || reflections.length === 0}
+                className="rounded-xl h-12 px-6 font-bold text-xs uppercase tracking-widest border-indigo-100 text-indigo-600 hover:bg-indigo-50"
+              >
+                {isScanning ? <Loader2 className="animate-spin mr-2" /> : <Wand2 size={18} className="mr-2" />}
+                Scan All
+              </Button>
+              <Button 
+                variant="outline" 
+                onClick={() => handleAddAllToBacklog()}
+                disabled={isAddingAll || reflections.length === 0}
+                className="rounded-xl h-12 px-6 font-bold text-xs uppercase tracking-widest border-emerald-100 text-emerald-600 hover:bg-emerald-50"
+              >
+                {isAddingAll ? <Loader2 className="animate-spin mr-2" /> : <Layers size={18} className="mr-2" />}
+                Add All to Backlog
+              </Button>
+            </div>
+          }
+        />
 
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
           <TabsList className="grid w-full grid-cols-2 h-14 bg-slate-200/50 p-1.5 rounded-2xl mb-8">
@@ -500,7 +498,7 @@ const JournalPage = () => {
 
                 <Textarea 
                   placeholder="Write your thoughts here. AI will automatically extract beliefs, identities, and goals for your Sandbox..."
-                  className="min-h-[200px] rounded-[2rem] border-2 border-slate-100 focus:border-indigo-500 p-8 text-xl font-medium leading-relaxed shadow-inner resize-none"
+                  className="min-h-[200px] rounded-[2rem] border-2 border-slate-100 focus:border-indigo-500 bg-white p-8 text-xl font-medium leading-relaxed shadow-inner resize-none transition-all"
                   value={content}
                   onChange={(e) => setContent(e.target.value)}
                 />

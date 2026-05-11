@@ -84,6 +84,7 @@ const Sidebar = ({ onHide }: SidebarProps) => {
   ];
 
   const labItems = [
+    { label: "Dashboard", icon: LayoutDashboard, path: "/" },
     { label: "Morning Program", icon: Sun, path: "/morning-program" },
     { label: "Journal", icon: MessageSquare, path: "/practice/journal" },
     { label: "The Lab", icon: Compass, path: "/lab" },
@@ -91,6 +92,7 @@ const Sidebar = ({ onHide }: SidebarProps) => {
   ];
 
   const libraryItems = [
+    { label: "Dashboard", icon: LayoutDashboard, path: "/" },
     { label: "Clinical Bible", icon: BookOpen, path: "/resources" },
     { label: "PEACE Framework", icon: ShieldCheck, path: "/peace-framework" },
     { label: "Mastery Tracker", icon: Trophy, path: "/practice/procedures" },

@@ -27,7 +27,8 @@ import {
   Clock,
   Brain,
   Maximize2,
-  LayoutGrid
+  LayoutGrid,
+  FileText
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
@@ -35,6 +36,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { showSuccess, showError } from "@/utils/toast";
 import PrimitiveReflexModal from "./PrimitiveReflexModal";
 import PrimitiveDevelopmentLadder from "./PrimitiveDevelopmentLadder";
+import { Link } from "react-router-dom";
 
 const BUCKET_NAME = 'reflex-images';
 
@@ -394,6 +396,17 @@ const PrimitiveReflexReference = () => {
                 {cat}
               </Button>
             ))}
+            <div className="flex gap-2 border-l border-slate-200 pl-2">
+              <Button 
+                variant="outline" 
+                asChild
+                className="rounded-xl h-14 px-6 font-black text-[10px] uppercase tracking-widest border-rose-100 text-rose-600 hover:bg-rose-50"
+              >
+                <Link to="/resources/primitive-reflexes/worksheet">
+                  <FileText size={18} className="mr-2" /> Worksheet
+                </Link>
+              </Button>
+            </div>
           </div>
         </div>
 

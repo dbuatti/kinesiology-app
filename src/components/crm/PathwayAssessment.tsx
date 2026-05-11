@@ -1,17 +1,13 @@
 "use client";
 
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useMemo } from 'react';
 import { Button } from "@/components/ui/button";
 import { 
-  Brain, Zap, Activity, Dumbbell, Layers, ImageIcon, Baby, History, 
-  Trash2, Eye, EyeOff, RefreshCw, FilterX, Search, Check, ShieldAlert 
+  Brain, Zap, Activity, Dumbbell, Layers, ImageIcon, Baby, 
+  Trash2, RefreshCw, Search 
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { BRAIN_REFLEX_POINTS } from '@/data/brain-reflex-data';
-import { PRIMITIVE_REFLEXES } from '@/data/primitive-reflex-data';
-import { MUSCLE_GROUPS } from '@/data/muscle-data';
 import { Badge } from '@/components/ui/badge';
-import { supabase } from "@/integrations/supabase/client";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
@@ -21,7 +17,7 @@ import { Nuclei } from '@/utils/brainstem-logic';
 import { showSuccess, showError } from "@/utils/toast";
 import { safeParse } from '@/utils/safe-json';
 
-// Lofi Assessment Components
+// Assessment Components
 import { CranialNerveAssessment } from "./CranialNerveAssessment";
 import { PrimitiveReflexAssessment } from "./PrimitiveReflexAssessment";
 import { BrainZoneAssessment } from "./BrainZoneAssessment";
@@ -52,11 +48,11 @@ const PathwayAssessment = ({
 }: PathwayAssessmentProps) => {
   const results = useMemo(() => safeParse(initialValue, {} as Record<string, Record<string, Status>>), [initialValue]);
   const [showImages, setShowImages] = useState(true);
-  const [showOnlyInhibited, setShowOnlyInhibited] = useState(false);
 
   const handleClearAll = async () => {
     if (!confirm("Clear all findings for this session?")) return;
     onSave("");
+    showSuccess("All findings cleared.");
   };
 
   const handleSyncPrevious = async () => {
@@ -127,9 +123,9 @@ const PathwayAssessment = ({
   return (
     <div className="space-y-8">
       <div className="sticky top-0 z-40 space-y-4 bg-background/80 backdrop-blur-md pb-4 pt-2">
-        <div className="flex flex-wrap items-center justify-between gap-4 p-4 bg-slate-100 rounded-[2rem] border border-slate-200 shadow-inner">
+        <div className="flex flex-wrap items-center justify-between gap-4 p-4 bg-slate-100 dark:bg-slate-900 rounded-[2rem] border border-slate-200 dark:border-slate-800 shadow-inner">
           <div className="flex items-center gap-4">
-            <div className="flex items-center gap-2 px-4 border-r border-slate-200">
+            <div className="flex items-center gap-2 px-4 border-r border-slate-200 dark:border-slate-800">
               <Layers size={18} className="text-indigo-600" />
               <span className="text-[10px] font-black uppercase tracking-widest text-slate-500">Session View</span>
             </div>
@@ -137,7 +133,7 @@ const PathwayAssessment = ({
             <div className="flex items-center gap-6">
               <div className="flex items-center gap-3">
                 <Switch id="show-images" checked={showImages} onCheckedChange={setShowImages} />
-                <Label htmlFor="show-images" className="text-xs font-black text-slate-600 uppercase tracking-wider cursor-pointer flex items-center gap-2">
+                <Label htmlFor="show-images" className="text-xs font-black text-slate-600 dark:text-slate-400 uppercase tracking-wider cursor-pointer flex items-center gap-2">
                   <ImageIcon size={14} className="text-indigo-500" />
                   Reference Images
                 </Label>
@@ -151,7 +147,7 @@ const PathwayAssessment = ({
                 variant="outline" 
                 size="sm" 
                 onClick={handleSyncPrevious}
-                className="h-9 text-[10px] font-black uppercase tracking-widest border-indigo-200 text-indigo-600 hover:bg-indigo-50 rounded-xl"
+                className="h-9 text-[10px] font-black uppercase tracking-widest border-indigo-100 text-indigo-600 hover:bg-indigo-50 rounded-xl"
               >
                 <RefreshCw size={14} className="mr-2" /> Sync Unresolved
               </Button>
@@ -168,7 +164,7 @@ const PathwayAssessment = ({
                 onClick={handleClearAll}
                 className="h-9 font-black text-[10px] uppercase tracking-widest text-rose-600 hover:bg-rose-50 rounded-xl border border-rose-100"
               >
-                <Trash2 size={14} className="mr-2" /> Clear All Findings
+                <Trash2 size={14} className="mr-2" /> Clear All
               </Button>
             )}
           </div>
@@ -215,7 +211,7 @@ const PathwayAssessment = ({
           <CardHeader className="p-8 pb-4">
             <div className="flex items-center justify-between">
               <CardTitle className="text-xl font-black flex items-center gap-3 text-rose-900 dark:text-rose-100">
-                <ShieldAlert size={24} className="text-rose-600" /> Priority Findings
+                <Zap size={24} className="text-rose-600" /> Priority Findings
               </CardTitle>
               <Badge className="bg-rose-600 text-white border-none font-black text-[10px] uppercase tracking-widest px-3 py-1 rounded-full">
                 {inhibitedSummary.length} Active
@@ -246,7 +242,7 @@ const PathwayAssessment = ({
                       className="h-8 w-8 rounded-xl text-emerald-500 hover:bg-emerald-50"
                       onClick={() => onUpdateItem(item.catKey, item.name, 'Clear')}
                     >
-                      <Check size={16} />
+                      <RefreshCw size={16} />
                     </Button>
                   </div>
                 </div>

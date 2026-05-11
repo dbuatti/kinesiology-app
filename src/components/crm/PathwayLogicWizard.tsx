@@ -61,6 +61,9 @@ const PathwayLogicWizard = ({ onSave, onClearItem, priorityPattern, initialFindi
   const [ligamentModalOpen, setLigamentModalOpen] = useState(false);
   const [actionTableOpen, setActionTableOpen] = useState(false);
 
+  const onOpenActionTable = () => setActionTableOpen(true);
+  const onOpenLigamentCharts = () => setLigamentModalOpen(true);
+
   // Handle initial finding from parent
   useEffect(() => {
     if (initialFinding) {
@@ -444,8 +447,8 @@ const PathwayLogicWizard = ({ onSave, onClearItem, priorityPattern, initialFindi
             onInhibited={handleInhibited}
             onCancel={goBack} 
             ligamentImages={ligamentImages}
-            onOpenActionTable={() => setActionTableOpen(true)}
-            onOpenLigamentCharts={() => setLigamentModalOpen(true)}
+            onOpenActionTable={onOpenActionTable}
+            onOpenLigamentCharts={onOpenLigamentCharts}
           />
         );
 

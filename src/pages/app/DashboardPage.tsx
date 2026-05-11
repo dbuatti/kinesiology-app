@@ -210,7 +210,7 @@ const Index = () => {
             <div className="flex items-center gap-3 bg-white dark:bg-slate-900 p-3 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm">
               <div className="pr-4 border-r border-slate-100">
                 <p className="text-[8px] font-bold text-slate-400 uppercase tracking-widest">Today</p>
-                <p className="text-sm font-bold text-slate-900">{format(currentTime, "EEEE, MMM d")}</p>
+                <p className="text-sm font-bold text-slate-900 dark:text-white">{format(currentTime, "EEEE, MMM d")}</p>
               </div>
               <div className="pl-1">
                 <p className="text-[8px] font-bold text-slate-400 uppercase tracking-widest">Time</p>
@@ -266,7 +266,7 @@ const Index = () => {
                 {pendingOnboarding.length > 0 && (
                   <div className="space-y-4">
                     <div className="flex items-center justify-between px-1">
-                      <h2 className="text-xl font-bold text-slate-900 flex items-center gap-2">
+                      <h2 className="text-xl font-bold text-slate-900 dark:text-white flex items-center gap-2">
                         <ClipboardCheck size={20} className="text-indigo-600" /> Recent Onboarding
                       </h2>
                       <Badge variant="outline" className="text-[9px] font-bold uppercase border-slate-200">
@@ -277,7 +277,7 @@ const Index = () => {
                       {pendingOnboarding.map(client => (
                         <div key={client.id} className="p-4 bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 flex items-center justify-between group hover:border-indigo-200 transition-all">
                           <Link to={`/clients/${client.id}`} className="flex items-center gap-4 flex-1 min-w-0">
-                            <div className="w-9 h-9 rounded-xl bg-slate-50 text-indigo-600 flex items-center justify-center font-bold text-sm shrink-0">
+                            <div className="w-9 h-9 rounded-xl bg-slate-50 dark:bg-slate-800 text-indigo-600 flex items-center justify-center font-bold text-sm shrink-0">
                               {client.name.charAt(0)}
                             </div>
                             <div className="min-w-0">
@@ -298,7 +298,7 @@ const Index = () => {
                               Link
                             </Button>
                             <Link to={`/clients/${client.id}`}>
-                              <div className="w-8 h-8 rounded-xl bg-slate-50 text-slate-400 flex items-center justify-center group-hover:bg-indigo-600 group-hover:text-white transition-all">
+                              <div className="w-8 h-8 rounded-xl bg-slate-50 dark:bg-slate-800 text-slate-400 flex items-center justify-center group-hover:bg-indigo-600 group-hover:text-white transition-all">
                                 <ArrowRight size={16} />
                               </div>
                             </Link>
@@ -366,7 +366,7 @@ const Index = () => {
                     </CardTitle>
                   </CardHeader>
                   <CardContent className="p-6 pt-0 space-y-4">
-                    <p className="text-sm text-slate-500 font-medium leading-relaxed">
+                    <p className="text-sm text-slate-600 dark:text-slate-400 font-medium leading-relaxed">
                       Capture your clinical doubts, breakthroughs, and reflections.
                     </p>
                     <Button asChild className="w-full bg-slate-900 text-white h-10 rounded-xl font-bold text-[10px] uppercase tracking-widest">
@@ -429,7 +429,7 @@ const Index = () => {
                 </div>
 
                 <div className="space-y-4">
-                  <h2 className="text-xl font-bold text-slate-900 px-1">Clinical Reference</h2>
+                  <h2 className="text-xl font-bold text-slate-900 dark:text-white px-1">Clinical Reference</h2>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <Link to="/resources" className="block group">
                       <Card className="border border-slate-200 dark:border-slate-800 shadow-sm rounded-[2rem] bg-white dark:bg-slate-900 hover:border-indigo-300 transition-all h-full">

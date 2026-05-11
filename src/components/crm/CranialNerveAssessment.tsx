@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect, useMemo } from "react";
-import { CRANIAL_NERVES } from "@/data/cranial-nerve-data";
+import { CRANIAL_NERVES, CranialNerve } from "@/data/cranial-nerve-data";
 import { useCranialNerveTests } from "@/hooks/useCranialNerveTests";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -20,15 +20,16 @@ import {
 import { cn } from "@/lib/utils";
 import { supabase } from "@/integrations/supabase/client";
 import { safeParse } from "@/utils/safe-json";
+import { CranialNerveTest } from "@/types/crm";
 
 interface NerveTestItemProps {
-  nerve: any;
-  test: any;
+  nerve: CranialNerve;
+  test: Partial<CranialNerveTest>;
   statusL?: 'Clear' | 'Inhibited';
   statusR?: 'Clear' | 'Inhibited';
   images: { primary: string | null, secondary: string | null } | undefined;
   showImage: boolean;
-  onUpdate: (nerveId: string, updates: any, side?: 'L' | 'R') => Promise<void>;
+  onUpdate: (nerveId: string, updates: Partial<CranialNerveTest>, side?: 'L' | 'R') => Promise<void>;
   onShowInfo?: (nerveId: number) => void;
 }
 

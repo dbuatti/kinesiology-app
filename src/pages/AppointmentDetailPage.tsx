@@ -5,7 +5,7 @@ import { useParams, useNavigate, Link } from "react-router-dom";
 import { 
   Loader2, Settings2, ChevronDown, PanelRightClose, MessageSquare, Brain,
   Calendar, Clock, User, History, Copy, Check, Trash2, Printer, RefreshCw,
-  Activity, Zap, Target, ClipboardCheck
+  Activity, Zap, Target, ClipboardCheck, Link as LinkIcon, Sparkles
 } from "lucide-react";
 import { isToday, format } from "date-fns";
 
@@ -35,7 +35,7 @@ import {
   CollapsibleContent,
   CollapsibleTrigger,
 } from "@/components/ui/collapsible";
-import { Card, CardContent } from "@/components/ui/card";
+import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 
 import { TCM_CHANNELS } from "@/data/tcm-channel-data";
@@ -363,39 +363,41 @@ const AppointmentDetailPage = () => {
 
           {/* Setup Tools */}
           <Collapsible open={showSetup}>
-            <CollapsibleContent className="animate-in slide-in-from-top-2">
-              <div className="flex flex-wrap gap-3 p-5 bg-muted/50 rounded-2xl border">
-                <Button
-                  variant="outline"
-                  onClick={handleCopyOnboardingLink}
-                  disabled={actionStates.copyingLink}
-                  className="h-10"
-                >
-                  {actionStates.copyingLink ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
-                  Copy Onboarding Link
-                </Button>
+            <Card className="border-none shadow-sm bg-muted/30 rounded-2xl overflow-hidden mb-6">
+              <CollapsibleContent className="animate-in slide-in-from-top-2">
+                <div className="flex flex-wrap gap-3 p-5">
+                  <Button
+                    variant="outline"
+                    onClick={handleCopyOnboardingLink}
+                    disabled={actionStates.copyingLink}
+                    className="h-10 rounded-xl border-border bg-card font-bold text-[10px] uppercase tracking-widest"
+                  >
+                    {actionStates.copyingLink ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <LinkIcon size={14} className="mr-2" />}
+                    Copy Onboarding Link
+                  </Button>
 
-                <Button
-                  variant="outline"
-                  onClick={handleSyncToNotion}
-                  disabled={actionStates.syncingNotion}
-                  className="h-10"
-                >
-                  {actionStates.syncingNotion && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                  Sync to Notion
-                </Button>
+                  <Button
+                    variant="outline"
+                    onClick={handleSyncToNotion}
+                    disabled={actionStates.syncingNotion}
+                    className="h-10 rounded-xl border-border bg-card font-bold text-[10px] uppercase tracking-widest"
+                  >
+                    {actionStates.syncingNotion ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <RefreshCw size={14} className="mr-2" />}
+                    Sync to Notion
+                  </Button>
 
-                <Button
-                  variant="outline"
-                  onClick={handleCopyForAI}
-                  disabled={actionStates.copyingAI}
-                  className="h-10"
-                >
-                  {actionStates.copyingAI && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                  AI Case Prompt
-                </Button>
-              </div>
-            </CollapsibleContent>
+                  <Button
+                    variant="outline"
+                    onClick={handleCopyForAI}
+                    disabled={actionStates.copyingAI}
+                    className="h-10 rounded-xl border-border bg-card font-bold text-[10px] uppercase tracking-widest"
+                  >
+                    {actionStates.copyingAI ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Sparkles size={14} className="mr-2" />}
+                    AI Case Prompt
+                  </Button>
+                </div>
+              </CollapsibleContent>
+            </Card>
           </Collapsible>
 
           {/* Banners */}
@@ -449,54 +451,52 @@ const AppointmentDetailPage = () => {
               <div className="xl:col-span-4 space-y-10 print:hidden">
                 {/* Reflections */}
                 {reflections.length > 0 && (
-                  <Card>
-                    <CardContent className="p-6">
-                      <div className="flex items-center justify-between mb-4">
+                  <Card className="border-none shadow-sm bg-card rounded-[2rem] overflow-hidden">
+                    <CardHeader className="p-6 pb-2">
+                      <div className="flex items-center justify-between">
                         <div className="flex items-center gap-2">
-                          <MessageSquare className="text-primary" size={18} />
-                          <h3 className="font-semibold">Practitioner Reflections</h3>
+                          <MessageSquare className="text-indigo-600" size={18} />
+                          <h3 className="font-black text-xs uppercase tracking-widest text-slate-500">Practitioner Reflections</h3>
                         </div>
-                        <Button variant="ghost" size="sm" asChild>
+                        <Button variant="ghost" size="sm" asChild className="h-8 text-[10px] font-black uppercase tracking-widest text-indigo-600">
                           <Link to="/practice/journal" state={{ appointmentId: id }}>
                             + Add
                           </Link>
                         </Button>
                       </div>
-
-                      <div className="space-y-4">
-                        {reflections.map((ref) => (
-                          <Card key={ref.id} className="bg-muted/30 border-none">
-                            <CardContent className="p-4">
-                              <div className="flex justify-between items-start mb-2">
-                                <Badge variant="secondary" className="text-[10px]">
-                                  {ref.category}
-                                </Badge>
-                                <span className="text-xs text-muted-foreground">
-                                  {new Date(ref.created_at).toLocaleDateString()}
-                                </span>
-                              </div>
-                              <p className="text-sm italic text-muted-foreground line-clamp-3">
-                                "{ref.content}"
-                              </p>
-                            </CardContent>
-                          </Card>
-                        ))}
-                      </div>
+                    </CardHeader>
+                    <CardContent className="p-6 pt-0 space-y-4">
+                      {reflections.map((ref) => (
+                        <div key={ref.id} className="p-4 bg-muted/30 rounded-2xl border border-border space-y-2">
+                          <div className="flex justify-between items-start">
+                            <Badge variant="outline" className="text-[8px] font-black uppercase border-none bg-indigo-50 text-indigo-600">
+                              {ref.category}
+                            </Badge>
+                            <span className="text-[8px] font-bold text-slate-400 uppercase">
+                              {format(new Date(ref.created_at), "MMM d")}
+                            </span>
+                          </div>
+                          <p className="text-xs italic text-slate-600 line-clamp-3 leading-relaxed">
+                            "{ref.content}"
+                          </p>
+                        </div>
+                      ))}
                     </CardContent>
                   </Card>
                 )}
 
                 {/* Brainstem Tone Map */}
                 <div className="space-y-4">
-                  <div className="flex items-center justify-between">
+                  <div className="flex items-center justify-between px-2">
                     <div className="flex items-center gap-2">
-                      <Brain className="text-primary" size={18} />
-                      <h3 className="font-semibold">Brainstem Tone Map</h3>
+                      <Brain className="text-indigo-600" size={18} />
+                      <h3 className="text-sm font-black text-slate-400 uppercase tracking-[0.3em]">Brainstem Tone Map</h3>
                     </div>
                     <Button
                       variant="ghost"
                       size="icon"
                       onClick={() => setShowSidebar(false)}
+                      className="h-8 w-8 rounded-xl text-slate-400"
                     >
                       <PanelRightClose size={18} />
                     </Button>

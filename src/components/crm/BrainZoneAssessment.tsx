@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect, useMemo } from "react";
-import { BRAIN_REFLEX_POINTS } from "@/data/brain-reflex-data";
+import { BRAIN_REFLEX_POINTS, BrainReflexPoint } from "@/data/brain-reflex-data";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -24,7 +24,7 @@ import { Label } from "@/components/ui/label";
 import { safeParse } from "@/utils/safe-json";
 
 interface ZoneTestItemProps {
-  point: any;
+  point: BrainReflexPoint;
   statusL?: 'Clear' | 'Inhibited';
   statusR?: 'Clear' | 'Inhibited';
   statusMidline?: 'Clear' | 'Inhibited';
@@ -56,7 +56,7 @@ const ZoneTestItem = ({ point, statusL, statusR, statusMidline, isLateralized, i
         </div>
 
         <div className="flex items-center gap-4 print:hidden">
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-3 border-r border-slate-100 pr-4">
             {isLateralized ? (
               <>
                 <div className="flex items-center gap-1.5">

@@ -22,16 +22,17 @@ import { Input } from "@/components/ui/input";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import { safeParse } from "@/utils/safe-json";
+import { PrimitiveReflexTest } from "@/types/crm";
 
 interface ReflexTestItemProps {
   reflex: PrimitiveReflex;
-  test: any;
+  test: Partial<PrimitiveReflexTest>;
   statusL?: 'Clear' | 'Inhibited';
   statusR?: 'Clear' | 'Inhibited';
   statusMidline?: 'Clear' | 'Inhibited';
   isLateralized: boolean;
   images: { primary: string | null, secondary: string | null } | undefined;
-  onUpdate: (reflexId: string, updates: any, side?: 'L' | 'R', reflexName?: string) => Promise<void>;
+  onUpdate: (reflexId: string, updates: Partial<PrimitiveReflexTest>, side?: 'L' | 'R', reflexName?: string) => Promise<void>;
 }
 
 const ReflexTestItem = ({ reflex, test, statusL, statusR, statusMidline, isLateralized, images, onUpdate }: ReflexTestItemProps) => {

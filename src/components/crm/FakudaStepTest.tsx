@@ -155,14 +155,18 @@ const FakudaStepTest = ({
 
   useEffect(() => {
     const fetchImages = async () => {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) return;
-      const { data } = await supabase.from('brain_reflex_customizations').select('image_url, secondary_image_url').eq('user_id', user.id).eq('reflex_id', 'fakuda-test').maybeSingle();
-      if (data) {
-        setCustomImages({
-          primary: data.image_url || "/images/fakuda-1.png",
-          secondary: data.secondary_image_url || "/images/fakuda-2.png"
-        });
+      try {
+        const { data: { user } } = await supabase.auth.getUser();
+        if (!user) return;
+        const { data } = await supabase.from('brain_reflex_customizations').select('image_url, secondary_image_url').eq('user_id', user.id).eq('reflex_id', 'fakuda-test').maybeSingle();
+        if (data) {
+          setCustomImages({
+            primary: data.image_url || "/images/fakuda-1.png",
+            secondary: data.secondary_image_url || "/images/fakuda-2.png"
+          });
+        }
+      } catch (err) {
+        console.error("Error fetching images:", err);
       }
     };
     fetchImages();

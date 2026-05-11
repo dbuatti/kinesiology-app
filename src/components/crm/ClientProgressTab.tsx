@@ -5,14 +5,14 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/com
 import { 
   TrendingUp, Activity, FlaskConical, Brain, 
   AlertCircle, CheckCircle2, History, Zap, Info,
-  ArrowUpRight, ArrowDownRight, LineChart, Plus,
-  LayoutGrid, Workflow, ShieldAlert
+  ArrowUpRight, ArrowDownRight, LineChart,
+  Workflow
 } from "lucide-react";
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip as ChartTooltip, ResponsiveContainer } from 'recharts';
 import { format } from "date-fns";
 import { cn } from "@/lib/utils";
 import BreathingRecoveryProtocol from "./BreathingRecoveryProtocol";
-import { Appointment } from "@/types/crm";
+import { Appointment, Client } from "@/types/crm";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import QuickAssessmentModal from "./QuickAssessmentModal";
@@ -22,14 +22,13 @@ import { processNeurologicalHistory } from "@/utils/neurological-history";
 import { calculateBrainstemTone } from "@/utils/brainstem-logic";
 
 interface ClientProgressTabProps {
-  client: any;
+  client: Client;
   appointments: Appointment[];
   onRefresh?: () => void;
 }
 
 const ClientProgressTab = ({ client, appointments, onRefresh }: ClientProgressTabProps) => {
-  const [assessmentType, setAssessmentType] = useState<'bolt' | 'coherence' | null>(null);
-  const [modalOpen, setModalOpen] = useState(false);
+  const [assessmentModal, setAssessmentModal] = useState<{ open: boolean; type: 'bolt' | 'coherence' } | null>(null);
 
   const boltData = useMemo(() => {
     return [...appointments]
@@ -81,7 +80,6 @@ const ClientProgressTab = ({ client, appointments, onRefresh }: ClientProgressTa
 
   const latestBolt = boltData[boltData.length - 1]?.score || null;
   const previousBolt = boltData[boltData.length - 2]?.score || null;
-  const latestCoh = coherenceData[coherenceData.length - 1]?.score || null;
 
   const getTrend = (current: number | null, previous: number | null) => {
     if (current === null || previous === null || current === previous) return null;
@@ -91,8 +89,7 @@ const ClientProgressTab = ({ client, appointments, onRefresh }: ClientProgressTa
   const boltTrend = getTrend(latestBolt, previousBolt);
 
   const openAssessment = (type: 'bolt' | 'coherence') => {
-    setAssessmentType(type);
-    setModalOpen(true);
+    setAssessmentModal({ open: true, type });
   };
 
   return (
@@ -369,13 +366,13 @@ const ClientProgressTab = ({ client, appointments, onRefresh }: ClientProgressTa
         </div>
       </div>
 
-      {assessmentType && (
+      {assessmentModal && (
         <QuickAssessmentModal 
-          open={modalOpen}
-          onOpenChange={setModalOpen}
+          open={assessmentModal.open}
+          onOpenChange={(open) => !open && setAssessmentModal(null)}
           clientId={client.id}
           clientName={client.name}
-          type={assessmentType}
+          type={assessmentModal.type}
           onComplete={() => onRefresh?.()}
         />
       )}

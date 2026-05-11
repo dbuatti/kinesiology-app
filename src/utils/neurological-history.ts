@@ -3,6 +3,7 @@
 import { format } from "date-fns";
 import { PRIMITIVE_REFLEXES } from "@/data/primitive-reflex-data";
 import { BRAIN_REFLEX_POINTS } from "@/data/brain-reflex-data";
+import { safeParse } from "./safe-json";
 
 export interface FindingHistory {
   name: string;
@@ -53,63 +54,56 @@ export function processNeurologicalHistory(appointments: any[]): FindingHistory[
   sortedApps.forEach(app => {
     if (!app.priority_pattern) return;
 
-    try {
-      const pattern = typeof app.priority_pattern === 'string' 
-        ? JSON.parse(app.priority_pattern) 
-        : app.priority_pattern;
+    const pattern = safeParse(app.priority_pattern, {} as Record<string, Record<string, string>>);
+    const dateStr = format(new Date(app.date), "MMM d, yyyy");
+
+    Object.entries(pattern).forEach(([category, items]) => {
+      if (!items || typeof items !== 'object') return;
+
+      // 1. Normalize all items in this category for this session first
+      const sessionItems: { base: string, side: string, status: string }[] = [];
+      Object.entries(items).forEach(([key, status]) => {
+        const sideMatch = key.match(/\(([LR])\)$/);
+        const side = sideMatch ? sideMatch[1] : "";
+        const base = getCanonicalName(key);
+        sessionItems.push({ base, side, status });
+      });
+
+      // 2. Filter out base items if lateralized ones exist for the same base name
+      const filteredSessionItems = sessionItems.filter(item => {
+        if (item.side === "") {
+          const hasLateral = sessionItems.some(other => other.base === item.base && other.side !== "");
+          if (hasLateral) return false;
+        }
+        return true;
+      });
+
+      // 3. Add to global map
+      filteredSessionItems.forEach(item => {
+        const displayName = item.side ? `${item.base} (${item.side})` : item.base;
+        const catDisplay = category
+          .replace(/([A-Z])/g, ' $1')
+          .replace(/^./, str => str.toUpperCase())
+          .trim();
+
+        const key = `${category}-${displayName}`;
         
-      const dateStr = format(new Date(app.date), "MMM d, yyyy");
+        if (!findingsMap[key]) {
+          findingsMap[key] = {
+            name: displayName,
+            category: catDisplay,
+            history: [],
+            isResolved: false
+          };
+        }
 
-      Object.entries(pattern).forEach(([category, items]: [string, any]) => {
-        if (!items || typeof items !== 'object') return;
-
-        // 1. Normalize all items in this category for this session first
-        const sessionItems: { base: string, side: string, status: any }[] = [];
-        Object.entries(items).forEach(([key, status]) => {
-          const sideMatch = key.match(/\(([LR])\)$/);
-          const side = sideMatch ? sideMatch[1] : "";
-          const base = getCanonicalName(key);
-          sessionItems.push({ base, side, status });
-        });
-
-        // 2. Filter out base items if lateralized ones exist for the same base name
-        const filteredSessionItems = sessionItems.filter(item => {
-          if (item.side === "") {
-            const hasLateral = sessionItems.some(other => other.base === item.base && other.side !== "");
-            if (hasLateral) return false;
-          }
-          return true;
-        });
-
-        // 3. Add to global map
-        filteredSessionItems.forEach(item => {
-          const displayName = item.side ? `${item.base} (${item.side})` : item.base;
-          const catDisplay = category
-            .replace(/([A-Z])/g, ' $1')
-            .replace(/^./, str => str.toUpperCase())
-            .trim();
-
-          const key = `${category}-${displayName}`;
-          
-          if (!findingsMap[key]) {
-            findingsMap[key] = {
-              name: displayName,
-              category: catDisplay,
-              history: [],
-              isResolved: false
-            };
-          }
-
-          findingsMap[key].history.push({
-            date: dateStr,
-            appointmentId: app.id,
-            status: item.status as 'Clear' | 'Inhibited'
-          });
+        findingsMap[key].history.push({
+          date: dateStr,
+          appointmentId: app.id,
+          status: item.status as 'Clear' | 'Inhibited'
         });
       });
-    } catch (e) {
-      console.error("Error parsing priority pattern for history", e);
-    }
+    });
   });
 
   // Calculate resolutions

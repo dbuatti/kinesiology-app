@@ -1,5 +1,7 @@
 "use client";
 
+import { safeParse } from "./safe-json";
+
 export type Nuclei = 'Midbrain' | 'Pons' | 'Medulla' | 'Cortex';
 
 export interface NucleiStatus {
@@ -42,28 +44,24 @@ export function calculateBrainstemTone(priorityPattern: string | null): NucleiSt
 
   if (!priorityPattern) return Object.values(nucleiMap);
 
-  try {
-    const pattern = JSON.parse(priorityPattern);
-    
-    Object.values(pattern).forEach((category: any) => {
-      Object.entries(category).forEach(([name, status]) => {
-        if (status === 'Inhibited') {
-          const mappingKey = Object.keys(FINDING_TO_NUCLEI).find(key => name.startsWith(key));
-          const mapping = mappingKey ? FINDING_TO_NUCLEI[mappingKey] : null;
-          
-          if (mapping) {
-            nucleiMap[mapping.nuclei].findings.push(name);
-          }
+  const pattern = safeParse(priorityPattern, {} as Record<string, Record<string, string>>);
+  
+  Object.values(pattern).forEach((category) => {
+    Object.entries(category).forEach(([name, status]) => {
+      if (status === 'Inhibited') {
+        const mappingKey = Object.keys(FINDING_TO_NUCLEI).find(key => name.startsWith(key));
+        const mapping = mappingKey ? FINDING_TO_NUCLEI[mappingKey] : null;
+        
+        if (mapping) {
+          nucleiMap[mapping.nuclei].findings.push(name);
         }
-      });
+      }
     });
+  });
 
-    Object.values(nucleiMap).forEach(n => {
-      n.threatLevel = Math.min(n.findings.length * 25, 100);
-    });
+  Object.values(nucleiMap).forEach(n => {
+    n.threatLevel = Math.min(n.findings.length * 25, 100);
+  });
 
-    return Object.values(nucleiMap);
-  } catch (e) {
-    return Object.values(nucleiMap);
-  }
+  return Object.values(nucleiMap);
 }

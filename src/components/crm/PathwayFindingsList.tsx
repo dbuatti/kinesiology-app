@@ -3,9 +3,10 @@
 import React, { useMemo } from 'react';
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
-import { AlertCircle, CheckCircle2, Zap, Baby, Brain } from "lucide-react";
+import { Baby, Zap, Brain } from "lucide-react";
 import { PRIMITIVE_REFLEXES } from '@/data/primitive-reflex-data';
 import { BRAIN_REFLEX_POINTS } from '@/data/brain-reflex-data';
+import { safeParse } from '@/utils/safe-json';
 
 interface PathwayFindingsListProps {
   priorityPattern: string | null | undefined;
@@ -25,46 +26,43 @@ const getCanonicalName = (name: string): string => {
 const PathwayFindingsList = ({ priorityPattern, className, showOnlyInhibited = true }: PathwayFindingsListProps) => {
   const findings = useMemo(() => {
     if (!priorityPattern) return [];
-    try {
-      const parsed = JSON.parse(priorityPattern);
-      const items: { name: string; status: string; category: string }[] = [];
-      
-      Object.entries(parsed).forEach(([category, values]: [string, any]) => {
-        // 1. Normalize all items in this category first
-        const sessionItems: { base: string, side: string, status: string }[] = [];
-        Object.entries(values).forEach(([key, status]) => {
-          if (showOnlyInhibited && status !== 'Inhibited') return;
-          
-          const sideMatch = key.match(/\(([LR])\)$/);
-          const side = sideMatch ? sideMatch[1] : "";
-          const base = getCanonicalName(key);
-          sessionItems.push({ base, side, status: status as string });
-        });
+    
+    const parsed = safeParse(priorityPattern, {} as Record<string, Record<string, string>>);
+    const items: { name: string; status: string; category: string }[] = [];
+    
+    Object.entries(parsed).forEach(([category, values]) => {
+      // 1. Normalize all items in this category first
+      const sessionItems: { base: string, side: string, status: string }[] = [];
+      Object.entries(values).forEach(([key, status]) => {
+        if (showOnlyInhibited && status !== 'Inhibited') return;
+        
+        const sideMatch = key.match(/\(([LR])\)$/);
+        const side = sideMatch ? sideMatch[1] : "";
+        const base = getCanonicalName(key);
+        sessionItems.push({ base, side, status: status as string });
+      });
 
-        // 2. Filter out base items if lateralized ones exist
-        const filteredSessionItems = sessionItems.filter(item => {
-          if (item.side === "") {
-            const hasLateral = sessionItems.some(other => other.base === item.base && other.side !== "");
-            if (hasLateral) return false;
-          }
-          return true;
-        });
+      // 2. Filter out base items if lateralized ones exist
+      const filteredSessionItems = sessionItems.filter(item => {
+        if (item.side === "") {
+          const hasLateral = sessionItems.some(other => other.base === item.base && other.side !== "");
+          if (hasLateral) return false;
+        }
+        return true;
+      });
 
-        // 3. Add to final list
-        filteredSessionItems.forEach(item => {
-          const displayName = item.side ? `${item.base} (${item.side})` : item.base;
-          items.push({ 
-            name: displayName, 
-            status: item.status, 
-            category: category.replace(/([A-Z])/g, ' $1').trim() 
-          });
+      // 3. Add to final list
+      filteredSessionItems.forEach(item => {
+        const displayName = item.side ? `${item.base} (${item.side})` : item.base;
+        items.push({ 
+          name: displayName, 
+          status: item.status, 
+          category: category.replace(/([A-Z])/g, ' $1').trim() 
         });
       });
-      
-      return items;
-    } catch (e) {
-      return [];
-    }
+    });
+    
+    return items;
   }, [priorityPattern, showOnlyInhibited]);
 
   if (findings.length === 0) {

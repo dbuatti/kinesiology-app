@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect, useMemo } from 'react';
-import { Target, Sparkles, Zap, CheckCircle2, ChevronDown, MousePointer2, RefreshCw, Trophy, AlertCircle, PlayCircle, ExternalLink } from 'lucide-react';
+import { Target, Sparkles, Zap, CheckCircle2, ChevronDown, Trophy, AlertCircle, PlayCircle } from 'lucide-react';
 import { getWeeklyFocus } from '@/utils/weekly-focus';
 import { cn } from '@/lib/utils';
 import { Badge } from '@/components/ui/badge';
@@ -15,6 +15,7 @@ import { Button } from '@/components/ui/button';
 import { PRIMITIVE_REFLEXES } from '@/data/primitive-reflex-data';
 import { BRAIN_REFLEX_POINTS } from '@/data/brain-reflex-data';
 import { getMuscleInfo } from '@/data/muscle-info-data';
+import { safeParse } from '@/utils/safe-json';
 
 interface WeeklyFocusBannerProps {
   appointmentId?: string;
@@ -50,23 +51,20 @@ const WeeklyFocusBanner = ({ appointmentId, priorityPattern, onSaveField, onJump
 
   const itemStatuses = useMemo(() => {
     if (!priorityPattern) return {};
-    try {
-      const parsed = JSON.parse(priorityPattern);
-      const statuses: Record<string, 'Clear' | 'Inhibited' | 'Not Tested'> = {};
-      
-      items.forEach(item => {
-        let foundStatus: any = 'Not Tested';
-        Object.values(parsed).forEach((category: any) => {
-          if (category[item]) foundStatus = category[item];
-          if (category[`${item} (L)`] === 'Inhibited' || category[`${item} (R)`] === 'Inhibited') foundStatus = 'Inhibited';
-          if (category[`${item} (L)`] === 'Clear' && category[`${item} (R)`] === 'Clear') foundStatus = 'Clear';
-        });
-        statuses[item] = foundStatus;
+    
+    const parsed = safeParse(priorityPattern, {} as Record<string, Record<string, string>>);
+    const statuses: Record<string, 'Clear' | 'Inhibited' | 'Not Tested'> = {};
+    
+    items.forEach(item => {
+      let foundStatus: any = 'Not Tested';
+      Object.values(parsed).forEach((category) => {
+        if (category[item]) foundStatus = category[item];
+        if (category[`${item} (L)`] === 'Inhibited' || category[`${item} (R)`] === 'Inhibited') foundStatus = 'Inhibited';
+        if (category[`${item} (L)`] === 'Clear' && category[`${item} (R)`] === 'Clear') foundStatus = 'Clear';
       });
-      return statuses;
-    } catch (e) {
-      return {};
-    }
+      statuses[item] = foundStatus;
+    });
+    return statuses;
   }, [items, priorityPattern]);
 
   const getVideoUrl = (name: string) => {
@@ -82,10 +80,7 @@ const WeeklyFocusBanner = ({ appointmentId, priorityPattern, onSaveField, onJump
   const handleSetStatus = async (item: string, status: 'Clear' | 'Inhibited') => {
     if (!onSaveField) return;
     try {
-      let parsed = {};
-      if (priorityPattern && priorityPattern.trim() !== "") {
-        parsed = JSON.parse(priorityPattern);
-      }
+      const parsed = safeParse(priorityPattern, {} as any);
       let category = 'muscles';
       if (PRIMITIVE_REFLEXES.some(r => r.name === item)) category = 'primitiveReflexes';
       else if (BRAIN_REFLEX_POINTS.some(p => p.name.startsWith(item))) category = 'cranialNerves';

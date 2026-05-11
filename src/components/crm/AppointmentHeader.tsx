@@ -11,17 +11,13 @@ import {
   FlaskConical, 
   Activity,
   ShieldAlert,
-  DollarSign,
-  UserCircle,
   ChevronDown,
   CalendarClock,
-  Cake,
   Wallet,
   CheckCircle2,
-  User,
   ExternalLink,
-  CreditCard,
-  Zap
+  Zap,
+  LucideIcon
 } from "lucide-react";
 import { format, isToday } from "date-fns";
 import { cn } from "@/lib/utils";
@@ -54,6 +50,55 @@ interface AppointmentHeaderProps {
   onUpdate: () => void;
 }
 
+interface VitalCardProps {
+  icon: LucideIcon;
+  label: string;
+  value: string | number;
+  subValue?: string;
+  color?: 'rose' | 'emerald' | 'blue' | 'indigo' | 'slate';
+  onClick?: () => void;
+  children?: React.ReactNode;
+}
+
+const VitalCard = ({ icon: Icon, label, value, subValue, color, onClick, children }: VitalCardProps) => (
+  <div 
+    onClick={onClick}
+    className={cn(
+      "flex-1 min-w-[120px] p-3 rounded-2xl border transition-all duration-300 group cursor-pointer",
+      color === 'rose' ? "bg-rose-50/30 border-rose-100 hover:border-rose-300" :
+      color === 'emerald' ? "bg-emerald-50/30 border-emerald-100 hover:border-emerald-300" :
+      color === 'blue' ? "bg-blue-50/30 border-blue-100 hover:border-blue-300" :
+      "bg-white border-slate-100 hover:border-indigo-200"
+    )}
+  >
+    <div className="flex items-center justify-between mb-1.5">
+      <div className={cn(
+        "w-7 h-7 rounded-lg flex items-center justify-center transition-all duration-500 group-hover:scale-110",
+        color === 'rose' ? "bg-rose-100 text-rose-600" :
+        color === 'emerald' ? "bg-emerald-100 text-emerald-600" :
+        color === 'blue' ? "bg-blue-100 text-blue-600" :
+        "bg-slate-50 text-slate-400"
+      )}>
+        <Icon size={14} />
+      </div>
+      {children}
+    </div>
+    <div className="space-y-0.5">
+      <p className="text-[7px] font-black uppercase tracking-widest text-slate-400">{label}</p>
+      <div className="flex items-baseline gap-1">
+        <span className={cn(
+          "text-base font-black tracking-tight",
+          color === 'rose' ? "text-rose-700" :
+          color === 'emerald' ? "text-emerald-700" :
+          color === 'blue' ? "text-blue-700" :
+          "text-slate-900"
+        )}>{value}</span>
+        {subValue && <span className="text-[9px] font-bold text-slate-400">{subValue}</span>}
+      </div>
+    </div>
+  </div>
+);
+
 const AppointmentHeader = ({ appointment, onSaveField, onUpdate }: AppointmentHeaderProps) => {
   const [assessmentModal, setAssessmentModal] = useState<{ open: boolean; type: 'bolt' | 'coherence' } | null>(null);
   const [rescheduleOpen, setRescheduleOpen] = useState(false);
@@ -73,45 +118,6 @@ const AppointmentHeader = ({ appointment, onSaveField, onUpdate }: AppointmentHe
       onSaveField('payment_received', !appointment.payment_received);
     }
   };
-
-  const VitalCard = ({ icon: Icon, label, value, subValue, color, onClick, children }: any) => (
-    <div 
-      onClick={onClick}
-      className={cn(
-        "flex-1 min-w-[120px] p-3 rounded-2xl border transition-all duration-300 group cursor-pointer",
-        color === 'rose' ? "bg-rose-50/30 border-rose-100 hover:border-rose-300" :
-        color === 'emerald' ? "bg-emerald-50/30 border-emerald-100 hover:border-emerald-300" :
-        color === 'blue' ? "bg-blue-50/30 border-blue-100 hover:border-blue-300" :
-        "bg-white border-slate-100 hover:border-indigo-200"
-      )}
-    >
-      <div className="flex items-center justify-between mb-1.5">
-        <div className={cn(
-          "w-7 h-7 rounded-lg flex items-center justify-center transition-all duration-500 group-hover:scale-110",
-          color === 'rose' ? "bg-rose-100 text-rose-600" :
-          color === 'emerald' ? "bg-emerald-100 text-emerald-600" :
-          color === 'blue' ? "bg-blue-100 text-blue-600" :
-          "bg-slate-50 text-slate-400"
-        )}>
-          <Icon size={14} />
-        </div>
-        {children}
-      </div>
-      <div className="space-y-0.5">
-        <p className="text-[7px] font-black uppercase tracking-widest text-slate-400">{label}</p>
-        <div className="flex items-baseline gap-1">
-          <span className={cn(
-            "text-base font-black tracking-tight",
-            color === 'rose' ? "text-rose-700" :
-            color === 'emerald' ? "text-emerald-700" :
-            color === 'blue' ? "text-blue-700" :
-            "text-slate-900"
-          )}>{value}</span>
-          {subValue && <span className="text-[9px] font-bold text-slate-400">{subValue}</span>}
-        </div>
-      </div>
-    </div>
-  );
 
   return (
     <div className="space-y-4">

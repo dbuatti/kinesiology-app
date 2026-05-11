@@ -31,7 +31,8 @@ import {
   X,
   BookOpen,
   Brain,
-  RefreshCw
+  RefreshCw,
+  FileText
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Link, useNavigate } from 'react-router-dom';
@@ -87,6 +88,7 @@ interface SessionContentSwitcherProps {
   onStartSession?: () => void;
   isCloning?: boolean;
   isCopied?: boolean;
+  onOpenDocument?: () => void;
 }
 
 const TABS = [
@@ -112,7 +114,8 @@ const SessionContentSwitcher = ({
   onDelete,
   onStartSession,
   isCloning,
-  isCopied
+  isCopied,
+  onOpenDocument
 }: SessionContentSwitcherProps) => {
   const navigate = useNavigate();
   const [activeView, setActiveView] = useState<ActiveView>('home');
@@ -373,6 +376,10 @@ const SessionContentSwitcher = ({
               </DropdownMenuItem>
               <DropdownMenuItem onClick={() => setActiveView('gait')} className="rounded-xl py-4 px-5 cursor-pointer">
                 <Footprints size={18} className="mr-4 text-emerald-500" /> Gait Integration
+              </DropdownMenuItem>
+              <DropdownMenuSeparator className="my-2" />
+              <DropdownMenuItem onClick={onOpenDocument} className="rounded-xl py-4 px-5 cursor-pointer font-bold text-indigo-600">
+                <FileText size={18} className="mr-4" /> Document View
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>

@@ -5,7 +5,7 @@ import { useParams, useNavigate, Link } from "react-router-dom";
 import { 
   Loader2, Settings2, ChevronDown, PanelRightClose, MessageSquare, Brain,
   Calendar, Clock, User, History, Copy, Check, Trash2, Printer, RefreshCw,
-  Activity, Zap, Target, ClipboardCheck, Link as LinkIcon, Sparkles
+  Activity, Zap, Target, ClipboardCheck, Link as LinkIcon, Sparkles, FileText
 } from "lucide-react";
 import { isToday, format } from "date-fns";
 
@@ -26,6 +26,7 @@ import AppointmentContextCards from "@/components/crm/AppointmentContextCards";
 import BrainstemToneMap from "@/components/crm/BrainstemToneMap";
 import SessionWorksheetTemplate from "@/components/crm/SessionWorksheetTemplate";
 import PageHeader from "@/components/shared/PageHeader";
+import SessionDocumentView from "@/components/crm/SessionDocumentView";
 
 import {
   Button,
@@ -58,6 +59,7 @@ const AppointmentDetailPage = () => {
   const [isFixedHeaderActive, setIsFixedHeaderActive] = useState(false);
   const [showSetup, setShowSetup] = useState(false);
   const [showSidebar, setShowSidebar] = useState(false);
+  const [isDocumentView, setIsDocumentView] = useState(false);
   const [nucleiFilter, setNucleiFilter] = useState<Nuclei | null>(null);
   const [reflections, setReflections] = useState<any[]>([]);
   const [isCopied, setIsCopied] = useState(false);
@@ -312,6 +314,18 @@ const AppointmentDetailPage = () => {
     );
   }
 
+  if (isDocumentView) {
+    return (
+      <SessionDocumentView 
+        appointment={appointment}
+        onUpdate={refresh}
+        saveField={saveField}
+        updatePriorityPattern={updatePriorityPattern}
+        onClose={() => setIsDocumentView(false)}
+      />
+    );
+  }
+
   const isSessionToday = isToday(new Date(appointment.date));
 
   return (
@@ -336,6 +350,16 @@ const AppointmentDetailPage = () => {
             ]}
             actions={
               <div className="flex items-center gap-3">
+                <Button 
+                  variant="outline" 
+                  size="sm" 
+                  onClick={() => setIsDocumentView(true)}
+                  className="h-10 gap-2 border-slate-200 font-bold text-xs uppercase tracking-widest"
+                >
+                  <FileText size={16} className="text-indigo-600" />
+                  Document View
+                </Button>
+
                 <Collapsible open={showSetup} onOpenChange={setShowSetup}>
                   <CollapsibleTrigger asChild>
                     <Button variant="ghost" size="sm" className="h-10 gap-2">

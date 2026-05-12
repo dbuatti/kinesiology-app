@@ -304,8 +304,14 @@ const SessionDocumentView = ({
                   const name = `${nerve.name}: ${nerve.latinName}`;
                   return (
                     <div key={nerve.id} className="space-y-0.5">
-                      <CheckItem category="cranialNerves" name={name} side="L" />
-                      <CheckItem category="cranialNerves" name={name} side="R" />
+                      {nerve.isLateralized ? (
+                        <>
+                          <CheckItem category="cranialNerves" name={name} side="L" />
+                          <CheckItem category="cranialNerves" name={name} side="R" />
+                        </>
+                      ) : (
+                        <CheckItem category="cranialNerves" name={name} />
+                      )}
                     </div>
                   );
                 })}

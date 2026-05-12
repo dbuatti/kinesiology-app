@@ -27,13 +27,15 @@ interface NerveTestItemProps {
   test: Partial<CranialNerveTest>;
   statusL?: 'Clear' | 'Inhibited';
   statusR?: 'Clear' | 'Inhibited';
+  statusMidline?: 'Clear' | 'Inhibited';
+  isLateralized: boolean;
   images: { primary: string | null, secondary: string | null } | undefined;
   showImage: boolean;
   onUpdate: (nerveId: string, updates: Partial<CranialNerveTest>, side?: 'L' | 'R') => Promise<void>;
   onShowInfo?: (nerveId: number) => void;
 }
 
-const NerveTestItem = ({ nerve, test, statusL, statusR, images, showImage, onUpdate, onShowInfo }: NerveTestItemProps) => {
+const NerveTestItem = ({ nerve, test, statusL, statusR, statusMidline, isLateralized, images, showImage, onUpdate, onShowInfo }: NerveTestItemProps) => {
   const [localNotes, setLocalNotes] = useState(test.notes || "");
   const saveTimeoutRef = React.useRef<NodeJS.Timeout | null>(null);
 
@@ -52,8 +54,12 @@ const NerveTestItem = ({ nerve, test, statusL, statusR, images, showImage, onUpd
   };
 
   const handleClear = async () => {
-    await onUpdate(nerve.id.toString(), { is_inhibited: false }, 'L');
-    await onUpdate(nerve.id.toString(), { is_inhibited: false }, 'R');
+    if (isLateralized) {
+      await onUpdate(nerve.id.toString(), { is_inhibited: false }, 'L');
+      await onUpdate(nerve.id.toString(), { is_inhibited: false }, 'R');
+    } else {
+      await onUpdate(nerve.id.toString(), { is_inhibited: false });
+    }
     await onUpdate(nerve.id.toString(), { 
       is_inhibited: false, 
       is_priority: false, 
@@ -67,7 +73,7 @@ const NerveTestItem = ({ nerve, test, statusL, statusR, images, showImage, onUpd
   };
 
   const hasImages = images?.primary || images?.secondary;
-  const isAnyInhibited = statusL === 'Inhibited' || statusR === 'Inhibited' || test.is_inhibited;
+  const isAnyInhibited = statusL === 'Inhibited' || statusR === 'Inhibited' || statusMidline === 'Inhibited' || test.is_inhibited;
   const isBilateral = statusL === 'Inhibited' && statusR === 'Inhibited';
 
   return (
@@ -75,7 +81,7 @@ const NerveTestItem = ({ nerve, test, statusL, statusR, images, showImage, onUpd
       "space-y-2 p-4 rounded-2xl border transition-all",
       test.is_primary_priority ? "bg-indigo-50/30 border-indigo-200 ring-1 ring-indigo-100" : 
       test.is_priority ? "bg-amber-50/30 border-amber-200" : 
-      !isAnyInhibited && (statusL === 'Clear' || statusR === 'Clear') ? "bg-emerald-50/10 border-emerald-100 opacity-80" :
+      !isAnyInhibited && (statusL === 'Clear' || statusR === 'Clear' || statusMidline === 'Clear') ? "bg-emerald-50/10 border-emerald-100 opacity-80" :
       "border-slate-100 bg-white"
     )}>
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-2 border-b border-slate-100/50 pb-2">
@@ -96,39 +102,55 @@ const NerveTestItem = ({ nerve, test, statusL, statusR, images, showImage, onUpd
 
         <div className="flex items-center gap-4 print:hidden">
           <div className="flex items-center gap-3 border-r border-slate-100 pr-4">
-            <div className="flex items-center gap-1.5">
-              <Checkbox 
-                id={`inhib-l-${nerve.id}`}
-                checked={statusL === 'Inhibited'}
-                onCheckedChange={(checked) => onUpdate(nerve.id.toString(), { is_inhibited: !!checked }, 'L')}
-                className="h-3.5 w-3.5 border-slate-400 rounded-none"
-              />
-              <label htmlFor={`inhib-l-${nerve.id}`} className="text-[8px] font-black uppercase tracking-widest cursor-pointer text-slate-500">
-                L Inhib
-              </label>
-            </div>
-            <div className="flex items-center gap-1.5">
-              <Checkbox 
-                id={`inhib-r-${nerve.id}`}
-                checked={statusR === 'Inhibited'}
-                onCheckedChange={(checked) => onUpdate(nerve.id.toString(), { is_inhibited: !!checked }, 'R')}
-                className="h-3.5 w-3.5 border-slate-400 rounded-none"
-              />
-              <label htmlFor={`inhib-r-${nerve.id}`} className="text-[8px] font-black uppercase tracking-widest cursor-pointer text-slate-500">
-                R Inhib
-              </label>
-            </div>
-            <div className="flex items-center gap-1.5 ml-1">
-              <Checkbox 
-                id={`inhib-both-${nerve.id}`}
-                checked={isBilateral}
-                onCheckedChange={(checked) => handleBilateralToggle(!!checked)}
-                className="h-3.5 w-3.5 border-indigo-400 rounded-none data-[state=checked]:bg-indigo-600"
-              />
-              <label htmlFor={`inhib-both-${nerve.id}`} className="text-[8px] font-black uppercase tracking-widest cursor-pointer text-indigo-600">
-                Both
-              </label>
-            </div>
+            {isLateralized ? (
+              <>
+                <div className="flex items-center gap-1.5">
+                  <Checkbox 
+                    id={`inhib-l-${nerve.id}`}
+                    checked={statusL === 'Inhibited'}
+                    onCheckedChange={(checked) => onUpdate(nerve.id.toString(), { is_inhibited: !!checked }, 'L')}
+                    className="h-3.5 w-3.5 border-slate-400 rounded-none"
+                  />
+                  <label htmlFor={`inhib-l-${nerve.id}`} className="text-[8px] font-black uppercase tracking-widest cursor-pointer text-slate-500">
+                    L Inhib
+                  </label>
+                </div>
+                <div className="flex items-center gap-1.5">
+                  <Checkbox 
+                    id={`inhib-r-${nerve.id}`}
+                    checked={statusR === 'Inhibited'}
+                    onCheckedChange={(checked) => onUpdate(nerve.id.toString(), { is_inhibited: !!checked }, 'R')}
+                    className="h-3.5 w-3.5 border-slate-400 rounded-none"
+                  />
+                  <label htmlFor={`inhib-r-${nerve.id}`} className="text-[8px] font-black uppercase tracking-widest cursor-pointer text-slate-500">
+                    R Inhib
+                  </label>
+                </div>
+                <div className="flex items-center gap-1.5 ml-1">
+                  <Checkbox 
+                    id={`inhib-both-${nerve.id}`}
+                    checked={isBilateral}
+                    onCheckedChange={(checked) => handleBilateralToggle(!!checked)}
+                    className="h-3.5 w-3.5 border-indigo-400 rounded-none data-[state=checked]:bg-indigo-600"
+                  />
+                  <label htmlFor={`inhib-both-${nerve.id}`} className="text-[8px] font-black uppercase tracking-widest cursor-pointer text-indigo-600">
+                    Both
+                  </label>
+                </div>
+              </>
+            ) : (
+              <div className="flex items-center gap-1.5">
+                <Checkbox 
+                  id={`inhib-mid-${nerve.id}`}
+                  checked={statusMidline === 'Inhibited'}
+                  onCheckedChange={(checked) => onUpdate(nerve.id.toString(), { is_inhibited: !!checked })}
+                  className="h-3.5 w-3.5 border-slate-400 rounded-none"
+                />
+                <label htmlFor={`inhib-mid-${nerve.id}`} className="text-[8px] font-black uppercase tracking-widest cursor-pointer text-slate-500">
+                  Inhibited
+                </label>
+              </div>
+            )}
           </div>
 
           <div className="flex items-center gap-3">
@@ -279,11 +301,11 @@ export function CranialNerveAssessment({
       const nerveNameA = `${a.name}: ${a.latinName}`;
       const nerveNameB = `${b.name}: ${b.latinName}`;
       
-      const isAnyInhibA = nervePattern[`${nerveNameA} (L)`] === 'Inhibited' || nervePattern[`${nerveNameA} (R)`] === 'Inhibited' || testA?.is_inhibited;
-      const isAnyInhibB = nervePattern[`${nerveNameB} (L)`] === 'Inhibited' || nervePattern[`${nerveNameB} (R)`] === 'Inhibited' || testB?.is_inhibited;
+      const isAnyInhibA = nervePattern[`${nerveNameA} (L)`] === 'Inhibited' || nervePattern[`${nerveNameA} (R)`] === 'Inhibited' || nervePattern[nerveNameA] === 'Inhibited' || testA?.is_inhibited;
+      const isAnyInhibB = nervePattern[`${nerveNameB} (L)`] === 'Inhibited' || nervePattern[`${nerveNameB} (R)`] === 'Inhibited' || nervePattern[nerveNameB] === 'Inhibited' || testB?.is_inhibited;
 
-      const isAnyClearA = nervePattern[`${nerveNameA} (L)`] === 'Clear' || nervePattern[`${nerveNameA} (R)`] === 'Clear';
-      const isAnyClearB = nervePattern[`${nerveNameB} (L)`] === 'Clear' || nervePattern[`${nerveNameB} (R)`] === 'Clear';
+      const isAnyClearA = nervePattern[`${nerveNameA} (L)`] === 'Clear' || nervePattern[`${nerveNameA} (R)`] === 'Clear' || nervePattern[nerveNameA] === 'Clear';
+      const isAnyClearB = nervePattern[`${nerveNameB} (L)`] === 'Clear' || nervePattern[`${nerveNameB} (R)`] === 'Clear' || nervePattern[nerveNameB] === 'Clear';
 
       const scoreA = (testA?.is_primary_priority ? 1000 : 0) + (testA?.is_priority ? 500 : 0) + (isAnyInhibA ? 100 : 0) + (isAnyClearA ? -100 : 0);
       const scoreB = (testB?.is_primary_priority ? 1000 : 0) + (testB?.is_priority ? 500 : 0) + (isAnyInhibB ? 100 : 0) + (isAnyClearB ? -100 : 0);
@@ -313,6 +335,8 @@ export function CranialNerveAssessment({
             test={tests.find(t => t.nerve_id === nerve.id.toString()) || {}}
             statusL={nervePattern[`${nerveName} (L)`]}
             statusR={nervePattern[`${nerveName} (R)`]}
+            statusMidline={nervePattern[nerveName]}
+            isLateralized={nerve.isLateralized || false}
             images={customImages[`cn${nerve.id}`]}
             showImage={showImages}
             onUpdate={updateTest}

@@ -181,7 +181,7 @@ export const CRANIAL_NERVES: CranialNerve[] = [
     stimulus: "Hold GB21 (top of shoulder, midpoint between neck and shoulder tip) as the reflex point. Stimulus: humming. Test indicator muscle before and after humming to assess CN IX function.",
     clinicalPearl: "CN IX and CN X share medullary nuclei (nucleus ambiguus and nucleus solitarius). GB12 is the primary medulla stim point for the CN IX–XII group. Carotid sinus hypersensitivity (CN IX) can present as unexplained syncope or dizziness with neck pressure. Always assess CN IX and X together.",
     color: "bg-rose-50",
-    isLateralized: true,
+    isLateralized: false,
     videoUrl: "https://embed-ssl.wistia.com/deliveries/c951c07cedadced7e1d2291c60a8dc22d90ac90a.mp4",
     pageUrl: "https://functional-neuro-health.mykajabi.com/products/functional-neuro-approach-foundations/categories/2152127437/posts/2167780916"
   },
@@ -196,7 +196,7 @@ export const CRANIAL_NERVES: CranialNerve[] = [
     stimulus: "Place hand along Occiput-Atlas. Stimulus: humming, swallowing, 'Aaah'.",
     clinicalPearl: "The 'King' of the parasympathetic nervous system. Arises from the medulla.",
     color: "bg-rose-600",
-    isLateralized: true,
+    isLateralized: false,
     videoUrl: "https://embed-ssl.wistia.com/deliveries/347fefe7d351b6760c82e9cc68a47d37b0d53906.mp4",
     pageUrl: "https://functional-neuro-health.notion.site/Functional-Neuro-Health-The-PEACE-Method-28beacafb4a88026b9a9ccdefa4e1de9"
   },
@@ -227,7 +227,7 @@ export const CRANIAL_NERVES: CranialNerve[] = [
     stimulus: "Hold sulcus under chin. Stimulus: push tongue straight out, then move it to the right, left, up, and down to identify the specific dysfunctional direction.",
     clinicalPearl: "The tongue is a vital component of the Medial Longitudinal Fasciculus (MLF) alongside the eyes, jaw, and inner ear. It is essential for balance and midline stability. Dysfunction here strongly points to Medullary involvement.",
     color: "bg-rose-800",
-    isLateralized: true,
+    isLateralized: false,
     videoUrl: "https://embed-ssl.wistia.com/deliveries/c951c07cedadced7e1d2291c60a8dc22d90ac90a.mp4",
     pageUrl: "https://functional-neuro-health.mykajabi.com/products/functional-neuro-approach-foundations/categories/2152127437/posts/2167780916"
   }

@@ -72,7 +72,7 @@ const CranialNerveWorksheet = () => {
           <tbody className="divide-y divide-black">
             {CRANIAL_NERVES.map((nerve) => {
               const checks = NERVE_CHECKS[nerve.id];
-              const isLateralized = !!(checks?.left || checks?.right);
+              const isLateralized = nerve.isLateralized;
 
               return (
                 <tr key={nerve.id} className="break-inside-avoid">
@@ -83,14 +83,23 @@ const CranialNerveWorksheet = () => {
                   
                   <td className="p-0.5 border-r border-black">
                     <div className="flex justify-center gap-2">
-                      <div className="flex flex-col items-center gap-0.5">
-                        <div className="w-3.5 h-3.5 border border-black rounded-none" />
-                        <span className="font-black text-[7px]">L</span>
-                      </div>
-                      <div className="flex flex-col items-center gap-0.5">
-                        <div className="w-3.5 h-3.5 border border-black rounded-none" />
-                        <span className="font-black text-[7px]">R</span>
-                      </div>
+                      {isLateralized ? (
+                        <>
+                          <div className="flex flex-col items-center gap-0.5">
+                            <div className="w-3.5 h-3.5 border border-black rounded-none" />
+                            <span className="font-black text-[7px]">L</span>
+                          </div>
+                          <div className="flex flex-col items-center gap-0.5">
+                            <div className="w-3.5 h-3.5 border border-black rounded-none" />
+                            <span className="font-black text-[7px]">R</span>
+                          </div>
+                        </>
+                      ) : (
+                        <div className="flex flex-col items-center gap-0.5">
+                          <div className="w-3.5 h-3.5 border border-black rounded-none" />
+                          <span className="font-black text-[7px]">Inhib</span>
+                        </div>
+                      )}
                     </div>
                   </td>
 

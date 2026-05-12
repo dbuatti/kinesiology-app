@@ -7,6 +7,7 @@ export interface PrimitiveReflex {
   stimulus: string;
   inhibitionPattern: string;
   howTo: string;
+  isLateralized: boolean;
   description?: string;
   pearl?: string;
   hierarchyLevel?: number;
@@ -23,6 +24,7 @@ export const PRIMITIVE_REFLEXES: PrimitiveReflex[] = [
     name: 'Fear Paralysis',
     category: 'Foundational',
     hierarchyLevel: 1,
+    isLateralized: false,
     developmentalWindow: "Pre-birth to 2 months",
     stimulus: 'Unexpected loud sound or sudden motion.',
     inhibitionPattern: 'Global inhibition (all muscles weak) or withdrawal response.',
@@ -39,6 +41,7 @@ export const PRIMITIVE_REFLEXES: PrimitiveReflex[] = [
     name: 'Moro Reflex',
     category: 'Foundational',
     hierarchyLevel: 2,
+    isLateralized: false,
     developmentalWindow: "Birth to 4 months",
     stimulus: 'Quick drop of the head back into extension.',
     inhibitionPattern: 'Upper body flexors (Pec Major Clavicular) and lower body extensors (Glutes) inhibit.',
@@ -55,6 +58,7 @@ export const PRIMITIVE_REFLEXES: PrimitiveReflex[] = [
     name: 'Startle Reflex',
     category: 'Foundational',
     hierarchyLevel: 3,
+    isLateralized: false,
     developmentalWindow: "Emerges after Moro integration",
     stimulus: 'Quick drop of the head back into extension.',
     inhibitionPattern: 'Upper body extensors and lower body flexors (Hamstrings) inhibit.',
@@ -70,6 +74,7 @@ export const PRIMITIVE_REFLEXES: PrimitiveReflex[] = [
     id: 'tlr',
     name: 'TLR (Tonic Labyrinthine)',
     category: 'Foundational',
+    isLateralized: false,
     developmentalWindow: "Birth to 4 months",
     stimulus: 'Head into extension or flexion (Supine).',
     inhibitionPattern: 'Extension: Upper/Lower flexors inhibit. Flexion: Upper/Lower extensors inhibit.',
@@ -85,6 +90,7 @@ export const PRIMITIVE_REFLEXES: PrimitiveReflex[] = [
     id: 'atnr',
     name: 'ATNR (Asymmetric Tonic Neck)',
     category: 'Postural',
+    isLateralized: true,
     developmentalWindow: "Birth to 6 months",
     stimulus: 'Tilt head back slightly and turn to one side.',
     inhibitionPattern: 'Ipsilateral flexors inhibit; Contralateral extensors (Glutes) inhibit.',
@@ -100,6 +106,7 @@ export const PRIMITIVE_REFLEXES: PrimitiveReflex[] = [
     id: 'stnr',
     name: 'STNR (Symmetrical Tonic Neck)',
     category: 'Postural',
+    isLateralized: false,
     developmentalWindow: "6 to 9 months",
     stimulus: 'Head forward or back (Seated).',
     inhibitionPattern: 'Flexion: Extensors inhibit. Extension: Flexors inhibit.',
@@ -115,6 +122,7 @@ export const PRIMITIVE_REFLEXES: PrimitiveReflex[] = [
     id: 'spinal-galant',
     name: 'Spinal Galant',
     category: 'Postural',
+    isLateralized: true,
     developmentalWindow: "Birth to 9 months",
     stimulus: 'Stroke along one side of lumbar spine.',
     inhibitionPattern: 'Same side Glute inhibits; Opposite side QL inhibits.',
@@ -130,6 +138,7 @@ export const PRIMITIVE_REFLEXES: PrimitiveReflex[] = [
     id: 'babinski',
     name: 'Babinski',
     category: 'Tactile',
+    isLateralized: true,
     developmentalWindow: "Birth to 2 years",
     stimulus: 'Stroke sole of foot from lateral heel upwards and across.',
     inhibitionPattern: 'Toe flexors inhibit (toes may fan into extension).',
@@ -145,6 +154,7 @@ export const PRIMITIVE_REFLEXES: PrimitiveReflex[] = [
     id: 'rooting',
     name: 'Rooting Reflex',
     category: 'Tactile',
+    isLateralized: true,
     developmentalWindow: "Birth to 4 months",
     stimulus: 'Stroke the side of the cheek.',
     inhibitionPattern: 'Same side SCM (Sternocleidomastoid) inhibits.',
@@ -160,6 +170,7 @@ export const PRIMITIVE_REFLEXES: PrimitiveReflex[] = [
     id: 'palmar',
     name: 'Palmar Reflex',
     category: 'Tactile',
+    isLateralized: true,
     developmentalWindow: "Birth to 6 months",
     stimulus: 'Pressure/stroke straight down the center of the palm.',
     inhibitionPattern: 'Finger extensors inhibit.',
@@ -175,6 +186,7 @@ export const PRIMITIVE_REFLEXES: PrimitiveReflex[] = [
     id: 'sucking',
     name: 'Sucking Reflex',
     category: 'Tactile',
+    isLateralized: false,
     developmentalWindow: "Birth to 4 months",
     stimulus: 'Touch the roof of the mouth (hard palate).',
     inhibitionPattern: 'Jaw and deep neck flexors inhibit.',

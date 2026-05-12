@@ -31,8 +31,6 @@ const PrimitiveReflexWorksheet = () => {
           </thead>
           <tbody className="divide-y divide-black">
             {PRIMITIVE_REFLEXES.map((reflex) => {
-              const isLateralized = ['ATNR', 'Spinal Galant', 'Babinski', 'Rooting', 'Palmar'].some(l => reflex.name.includes(l));
-
               return (
                 <tr key={reflex.id} className="break-inside-avoid">
                   <td className="p-1 border-r border-black bg-slate-50/30">
@@ -42,7 +40,7 @@ const PrimitiveReflexWorksheet = () => {
                   
                   <td className="p-0.5 border-r border-black">
                     <div className="flex justify-center gap-2">
-                      {isLateralized ? (
+                      {reflex.isLateralized ? (
                         <>
                           <div className="flex flex-col items-center gap-0.5">
                             <div className="w-3.5 h-3.5 border border-black rounded-none" />

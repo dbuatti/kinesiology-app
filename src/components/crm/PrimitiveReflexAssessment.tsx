@@ -67,8 +67,14 @@ const ReflexTestItem = ({ reflex, test, statusL, statusR, statusMidline, isLater
     });
   };
 
+  const handleBilateralToggle = async (checked: boolean) => {
+    await onUpdate(reflex.id, { is_inhibited: checked }, 'L', reflex.name);
+    await onUpdate(reflex.id, { is_inhibited: checked }, 'R', reflex.name);
+  };
+
   const hasImages = images?.primary || images?.secondary;
   const isAnyInhibited = statusL === 'Inhibited' || statusR === 'Inhibited' || statusMidline === 'Inhibited' || test.is_inhibited;
+  const isBilateral = statusL === 'Inhibited' && statusR === 'Inhibited';
 
   return (
     <section className={cn(
@@ -138,6 +144,17 @@ const ReflexTestItem = ({ reflex, test, statusL, statusR, statusMidline, isLater
                   />
                   <label htmlFor={`inhib-r-${reflex.id}`} className="text-[8px] font-black uppercase tracking-widest cursor-pointer text-slate-500">
                     R
+                  </label>
+                </div>
+                <div className="flex items-center gap-1 ml-1">
+                  <Checkbox 
+                    id={`inhib-both-${reflex.id}`}
+                    checked={isBilateral}
+                    onCheckedChange={(checked) => handleBilateralToggle(!!checked)}
+                    className="h-3 w-3 border-indigo-400 rounded-none data-[state=checked]:bg-indigo-600"
+                  />
+                  <label htmlFor={`inhib-both-${reflex.id}`} className="text-[8px] font-black uppercase tracking-widest cursor-pointer text-indigo-600">
+                    Both
                   </label>
                 </div>
               </>
@@ -237,11 +254,6 @@ export function PrimitiveReflexAssessment({
     fetchImages();
   }, []);
 
-  const isLateralizedReflex = (name: string) => {
-    const lateralized = ['ATNR', 'Spinal Galant', 'Babinski', 'Rooting', 'Palmar'];
-    return lateralized.some(l => name.includes(l));
-  };
-
   const sortedReflexes = useMemo(() => {
     return [...PRIMITIVE_REFLEXES]
       .filter(reflex => {
@@ -311,7 +323,6 @@ export function PrimitiveReflexAssessment({
       </div>
 
       {sortedReflexes.map((reflex) => {
-        const isLateralized = isLateralizedReflex(reflex.name);
         return (
           <ReflexTestItem 
             key={reflex.id}
@@ -320,7 +331,7 @@ export function PrimitiveReflexAssessment({
             statusL={reflexPattern[`${reflex.name} (L)`]}
             statusR={reflexPattern[`${reflex.name} (R)`]}
             statusMidline={reflexPattern[reflex.name]}
-            isLateralized={isLateralized}
+            isLateralized={reflex.isLateralized}
             images={customImages[reflex.id]}
             onUpdate={updateTest}
           />

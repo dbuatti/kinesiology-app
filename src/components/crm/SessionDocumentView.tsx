@@ -284,8 +284,14 @@ const SessionDocumentView = ({
               <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-x-4 gap-y-1">
                 {PRIMITIVE_REFLEXES.map(reflex => (
                   <div key={reflex.id} className="space-y-0.5">
-                    <CheckItem category="primitiveReflexes" name={reflex.name} side="L" />
-                    <CheckItem category="primitiveReflexes" name={reflex.name} side="R" />
+                    {reflex.isLateralized ? (
+                      <>
+                        <CheckItem category="primitiveReflexes" name={reflex.name} side="L" />
+                        <CheckItem category="primitiveReflexes" name={reflex.name} side="R" />
+                      </>
+                    ) : (
+                      <CheckItem category="primitiveReflexes" name={reflex.name} />
+                    )}
                   </div>
                 ))}
               </div>

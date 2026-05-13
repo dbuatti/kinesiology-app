@@ -1,0 +1,1 @@
+ALTER TABLE appointments ADD COLUMN IF NOT EXISTS next_session_note TEXT;

@@ -79,13 +79,20 @@ serve(async (req) => {
 
       let targetId = existingApp?.id;
 
-      // 3. If not found by ID, check for exact time match for this client
+      // 3. If not found by ID, check for ANY appointment for this client within a 1-minute window
       if (!targetId) {
+        const startDate = new Date(startTime);
+        const windowStart = new Date(startDate.getTime() - 60000).toISOString();
+        const windowEnd = new Date(startDate.getTime() + 60000).toISOString();
+
         const { data: timeMatch } = await supabase
           .from('appointments')
           .select('id')
           .eq('client_id', dbClient.id)
-          .eq('date', new Date(startTime).toISOString())
+          .gte('date', windowStart)
+          .lte('date', windowEnd)
+          .order('created_at', { ascending: true })
+          .limit(1)
           .maybeSingle();
         
         if (timeMatch) {
@@ -93,27 +100,7 @@ serve(async (req) => {
         }
       }
 
-      // 4. If still not found, try window matching (manual entries)
-      if (!targetId) {
-        const startDate = new Date(startTime);
-        const windowStart = new Date(startDate.getTime() - 60000).toISOString();
-        const windowEnd = new Date(startDate.getTime() + 60000).toISOString();
-
-        const { data: manualMatches } = await supabase
-          .from('appointments')
-          .select('id')
-          .eq('client_id', dbClient.id)
-          .is('calcom_booking_id', null)
-          .gte('date', windowStart)
-          .lte('date', windowEnd)
-          .order('created_at', { ascending: true });
-        
-        if (manualMatches && manualMatches.length > 0) {
-          targetId = manualMatches[0].id;
-        }
-      }
-
-      // 5. Upsert with the matched ID
+      // 4. Upsert with the matched ID
       const { error: appError } = await supabase
         .from('appointments')
         .upsert({
@@ -121,8 +108,6 @@ serve(async (req) => {
           user_id: PRACTITIONER_ID,
           client_id: dbClient.id,
           date: startTime,
-          tag: "Kinesiology",
-          status: "Scheduled",
           calcom_booking_id: calcomId,
           is_paid: booking.metadata?.is_paid === "true" || !!booking.payment?.[0]
         }, { 

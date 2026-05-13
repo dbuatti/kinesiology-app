@@ -1,14 +1,23 @@
--- 1. Clean up any existing duplicates based on calcom_booking_id
--- We keep the one with the lowest ID (the first one created)
-DELETE FROM public.appointments a
-WHERE a.calcom_booking_id IS NOT NULL
-AND a.id > (
-  SELECT MIN(b.id)
-  FROM public.appointments b
-  WHERE b.calcom_booking_id = a.calcom_booking_id
-);
+-- 1. Identify duplicates (same client, same date/time within 1 minute)
+-- 2. Keep the one with the most content (notes, goal, etc.)
+-- 3. Delete the others
 
--- 2. Add a unique constraint to the calcom_booking_id column
--- This prevents the database from ever allowing two records with the same Cal.com ID
-ALTER TABLE public.appointments 
-ADD CONSTRAINT appointments_calcom_booking_id_unique UNIQUE (calcom_booking_id);
+WITH DuplicateGroups AS (
+  SELECT 
+    id,
+    client_id,
+    date,
+    ROW_NUMBER() OVER (
+      PARTITION BY client_id, date_trunc('minute', date) 
+      ORDER BY 
+        (CASE WHEN notes IS NOT NULL THEN 1 ELSE 0 END + 
+         CASE WHEN goal IS NOT NULL THEN 1 ELSE 0 END +
+         CASE WHEN priority_pattern IS NOT NULL THEN 1 ELSE 0 END) DESC,
+        created_at DESC
+    ) as rank
+  FROM appointments
+)
+DELETE FROM appointments
+WHERE id IN (
+  SELECT id FROM DuplicateGroups WHERE rank > 1
+);

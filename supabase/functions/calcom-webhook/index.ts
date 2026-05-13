@@ -67,6 +67,7 @@ serve(async (req) => {
 
     const isCreationEvent = ['BOOKING_CREATED', 'BOOKING_RESCHEDULED'].includes(triggerEvent);
     
+    // 1. Check for existing record by Calcom ID
     const { data: existingApp } = await supabase
       .from('appointments')
       .select('id')
@@ -78,6 +79,24 @@ serve(async (req) => {
     }
 
     let targetId = existingApp?.id;
+
+    // 2. If not found by ID, check for ANY appointment for this client at this exact time
+    // This prevents duplicates if Cal.com sends a new ID for the same slot
+    if (!targetId && isCreationEvent) {
+      const { data: timeMatch } = await supabase
+        .from('appointments')
+        .select('id')
+        .eq('client_id', dbClient.id)
+        .eq('date', new Date(startTime).toISOString())
+        .maybeSingle();
+      
+      if (timeMatch) {
+        console.log(`[${functionName}] Found existing appointment by time match. Linking to new Cal.com ID: ${calcomId}`);
+        targetId = timeMatch.id;
+      }
+    }
+
+    // 3. Fallback to window matching (manual entries)
     if (!targetId && isCreationEvent) {
       const startDate = new Date(startTime);
       const windowStart = new Date(startDate.getTime() - 60000).toISOString();

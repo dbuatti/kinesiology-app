@@ -79,7 +79,21 @@ serve(async (req) => {
 
       let targetId = existingApp?.id;
 
-      // 3. If not found by ID, try to match manual entry by date window (+/- 1 minute)
+      // 3. If not found by ID, check for exact time match for this client
+      if (!targetId) {
+        const { data: timeMatch } = await supabase
+          .from('appointments')
+          .select('id')
+          .eq('client_id', dbClient.id)
+          .eq('date', new Date(startTime).toISOString())
+          .maybeSingle();
+        
+        if (timeMatch) {
+          targetId = timeMatch.id;
+        }
+      }
+
+      // 4. If still not found, try window matching (manual entries)
       if (!targetId) {
         const startDate = new Date(startTime);
         const windowStart = new Date(startDate.getTime() - 60000).toISOString();
@@ -99,7 +113,7 @@ serve(async (req) => {
         }
       }
 
-      // 4. Upsert with the matched ID
+      // 5. Upsert with the matched ID
       const { error: appError } = await supabase
         .from('appointments')
         .upsert({

@@ -245,7 +245,7 @@ const PathwayLogicWizard = ({ onSave, onClearItem, priorityPattern, initialFindi
                   <SelectTrigger className="h-14 rounded-2xl border-2 border-slate-100 bg-white font-bold text-lg">
                     <SelectValue placeholder={inhibitedItems.length > 0 ? "Select inhibited finding..." : "No inhibited items found"} />
                   </SelectTrigger>
-                  <SelectContent className="rounded-2xl border-none shadow-2xl p-2">
+                  <SelectContent className="rounded-2xl border-none shadow-2xl p-2 bg-white dark:bg-slate-900">
                     {inhibitedItems.map(item => (
                       <SelectItem key={item} value={item} className={cn(
                         "rounded-xl py-3 font-bold",

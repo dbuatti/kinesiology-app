@@ -398,7 +398,7 @@ const AppointmentsPage = () => {
                         <MoreVertical size={18} />
                       </Button>
                     </DropdownMenuTrigger>
-                    <DropdownMenuContent align="end" className="rounded-2xl p-2 shadow-2xl border-none bg-card">
+                    <DropdownMenuContent align="end" className="rounded-2xl p-2 shadow-2xl border-none bg-white dark:bg-slate-900">
                       <DropdownMenuItem asChild className="rounded-xl py-2.5 px-4 cursor-pointer">
                         <Link to={`/appointments/${app.id}`} className="flex items-center gap-3">
                           <ExternalLink size={16} className="text-indigo-500" /> View Details

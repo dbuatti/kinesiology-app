@@ -183,7 +183,7 @@ const AppointmentHeader = ({ appointment, onSaveField, onUpdate }: AppointmentHe
                   )}>
                     <SelectValue placeholder="Status" />
                   </SelectTrigger>
-                  <SelectContent className="rounded-xl border-none shadow-3xl p-1">
+                  <SelectContent className="rounded-xl border-none shadow-3xl p-1 bg-white dark:bg-slate-900">
                     {APPOINTMENT_STATUSES.map(status => (
                       <SelectItem 
                         key={status} 

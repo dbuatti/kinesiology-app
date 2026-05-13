@@ -346,7 +346,7 @@ const AppointmentForm = ({
                       <SelectValue placeholder="Select type" />
                     </SelectTrigger>
                   </FormControl>
-                  <SelectContent className="rounded-xl border-none shadow-2xl">
+                  <SelectContent className="rounded-xl border-none shadow-2xl bg-white dark:bg-slate-900">
                     {APPOINTMENT_TAGS.map(tag => (
                       <SelectItem key={tag} value={tag} className="rounded-lg">{tag}</SelectItem>
                     ))}
@@ -369,7 +369,7 @@ const AppointmentForm = ({
                       <SelectValue placeholder="Select status" />
                     </SelectTrigger>
                   </FormControl>
-                  <SelectContent className="rounded-xl border-none shadow-2xl">
+                  <SelectContent className="rounded-xl border-none shadow-2xl bg-white dark:bg-slate-900">
                     {APPOINTMENT_STATUSES.map(status => (
                       <SelectItem key={status} value={status} className="rounded-lg">{status}</SelectItem>
                     ))}

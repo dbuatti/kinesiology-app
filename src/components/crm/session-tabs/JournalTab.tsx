@@ -18,12 +18,14 @@ import {
   Wind,
   CheckCircle2,
   Wand2,
-  Trash2
+  Trash2,
+  ExternalLink
 } from "lucide-react";
 import { format } from "date-fns";
 import { showSuccess, showError } from "@/utils/toast";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
+import { Link } from "react-router-dom";
 
 interface JournalTabProps {
   appointmentId: string;
@@ -127,14 +129,21 @@ const JournalTab = ({ appointmentId, clientName }: JournalTabProps) => {
   return (
     <div className="space-y-10 animate-in fade-in duration-500">
       <div className="space-y-6">
-        <div className="flex items-center gap-3 px-2">
-          <div className="w-10 h-10 rounded-xl bg-amber-100 text-amber-600 flex items-center justify-center shadow-sm">
-            <Sparkles size={20} />
+        <div className="flex items-center justify-between px-2">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-xl bg-amber-100 text-amber-600 flex items-center justify-center shadow-sm">
+              <Sparkles size={20} />
+            </div>
+            <div>
+              <h2 className="text-xl font-black text-slate-900">Practitioner Reflection</h2>
+              <p className="text-xs text-slate-500 font-medium">Private insights for this session with {clientName}.</p>
+            </div>
           </div>
-          <div>
-            <h2 className="text-xl font-black text-slate-900">Practitioner Reflection</h2>
-            <p className="text-xs text-slate-500 font-medium">Private insights for this session with {clientName}.</p>
-          </div>
+          <Button variant="outline" size="sm" asChild className="rounded-xl h-10 px-4 font-bold text-[10px] uppercase tracking-widest border-indigo-100 text-indigo-600 hover:bg-indigo-50">
+            <Link to="/practice/journal">
+              <ExternalLink size={14} className="mr-2" /> View Full Journal
+            </Link>
+          </Button>
         </div>
 
         <Card className="border-none shadow-lg rounded-[2rem] bg-white overflow-hidden">

@@ -4,7 +4,10 @@ import React, { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Zap, ExternalLink, Clock, Target, ShieldAlert, Activity, Brain, Heart, Home, Sparkles, CreditCard, CheckCircle2, Wallet, Smartphone, Loader2, QrCode, ChevronDown, DollarSign } from "lucide-react";
+import { 
+  Zap, ExternalLink, Clock, Target, ShieldAlert, Activity, Brain, Heart, Home, Sparkles, CreditCard, CheckCircle2, Wallet, Smartphone, Loader2, QrCode, ChevronDown, DollarSign,
+  MessageSquare
+} from "lucide-react";
 import { cn } from "@/lib/utils";
 import EditableField from "@/components/shared/EditableField";
 import QuickAcupointSelector from "./QuickAcupointSelector";
@@ -14,6 +17,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { showError, showSuccess } from "@/utils/toast";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
+import { Link } from "react-router-dom";
 import {
   Collapsible,
   CollapsibleContent,
@@ -172,7 +176,7 @@ const AppointmentContextCards = ({ appointment, currentPeakMeridian, onSaveField
                       </Button>
                     </div>
                   ) : (
-                    <div className="p-4 bg-emerald-50 rounded-2xl border border-emerald-200 flex flex-col items-center justify-center gap-2 text-emerald-700">
+                    <div className="p-4 bg-emerald-50 rounded-2xl border border-emerald-100 flex flex-col items-center justify-center gap-2 text-emerald-700">
                       <div className="w-10 h-10 rounded-full bg-emerald-500 text-white flex items-center justify-center shadow-lg">
                         <CheckCircle2 size={20} />
                       </div>
@@ -260,10 +264,21 @@ const AppointmentContextCards = ({ appointment, currentPeakMeridian, onSaveField
                 </div>
 
                 <div className="space-y-2">
+                  <div className="flex items-center justify-between px-1">
+                    <div className="flex items-center gap-2">
+                      <MessageSquare size={12} className="text-amber-400" />
+                      <span className="text-[8px] font-black text-slate-500 uppercase tracking-widest">Practitioner Reflection</span>
+                    </div>
+                    <Button variant="ghost" size="sm" asChild className="h-6 text-[8px] font-black uppercase tracking-widest text-indigo-400 hover:text-white hover:bg-white/10">
+                      <Link to="/practice/journal" state={{ appointmentId: appointment.id }}>
+                        Open Journal <ExternalLink size={8} className="ml-1" />
+                      </Link>
+                    </Button>
+                  </div>
                   <EditableField 
                     key={`journal-${appointment.id}`} 
                     field="journal" 
-                    label="Practitioner Reflection" 
+                    label="" 
                     value={appointment.journal} 
                     multiline 
                     className="bg-amber-500/10 border-amber-500/20 p-3 rounded-xl" 

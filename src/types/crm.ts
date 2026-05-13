@@ -63,6 +63,7 @@ export interface Appointment {
   additional_notes?: string;
   priority_pattern?: string;
   session_north_star?: string;
+  next_session_note?: string | null;
   modes_balances?: string;
   journal?: string;
   notion_link?: string;

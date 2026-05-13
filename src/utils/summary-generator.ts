@@ -116,6 +116,11 @@ export const generateSessionSummary = (appointment: AppointmentWithClient): stri
   summary += `------------------------------------------\n`;
   summary += `ACUPOINTS: ${appointment.acupoints || 'None recorded'}\n\n`;
   summary += `RE-ASSESSMENT & HOMEWORK:\n${appointment.session_north_star || 'No specific homework recorded.'}\n\n`;
+  
+  if (appointment.next_session_note) {
+    summary += `NEXT SESSION FOCUS:\n${appointment.next_session_note}\n\n`;
+  }
+
   summary += `GENERAL SESSION NOTES:\n${appointment.notes || 'No additional notes.'}\n`;
   
   if (appointment.journal) {

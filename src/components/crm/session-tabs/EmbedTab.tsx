@@ -17,7 +17,8 @@ import {
   ArrowRight,
   ShieldCheck,
   Info,
-  Lightbulb
+  Lightbulb,
+  Target
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { supabase } from "@/integrations/supabase/client";
@@ -209,22 +210,42 @@ const EmbedTab = ({ appointment, onUpdate, saveField, updatePriorityPattern }: E
       </div>
 
       {/* Notes Section */}
-      <div className="space-y-4">
-        <div className="flex items-center gap-3 px-2">
-          <div className="w-8 h-8 rounded-lg bg-indigo-50 text-indigo-600 flex items-center justify-center">
-            <ClipboardCheck size={16} />
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+        <div className="space-y-4">
+          <div className="flex items-center gap-3 px-2">
+            <div className="w-8 h-8 rounded-lg bg-indigo-50 text-indigo-600 flex items-center justify-center">
+              <ClipboardCheck size={16} />
+            </div>
+            <h3 className="text-sm font-black text-slate-400 uppercase tracking-[0.3em]">Re-Assessment & Homework</h3>
           </div>
-          <h3 className="text-sm font-black text-slate-400 uppercase tracking-[0.3em]">Re-Assessment & Homework</h3>
+          <EditableField 
+            field="session_north_star" 
+            label="Integration Notes" 
+            value={appointment.session_north_star} 
+            multiline 
+            placeholder="Document final re-test results and prescribed homework for the next session..." 
+            onSave={saveField} 
+            className="bg-white p-6 rounded-2xl border border-slate-100 shadow-sm min-h-[250px]" 
+          />
         </div>
-        <EditableField 
-          field="session_north_star" 
-          label="Integration Notes" 
-          value={appointment.session_north_star} 
-          multiline 
-          placeholder="Document final re-test results and prescribed homework for the next session..." 
-          onSave={saveField} 
-          className="bg-white p-8 rounded-[2.5rem] border border-slate-100 shadow-sm min-h-[400px]" 
-        />
+
+        <div className="space-y-4">
+          <div className="flex items-center gap-3 px-2">
+            <div className="w-8 h-8 rounded-lg bg-amber-50 text-amber-600 flex items-center justify-center">
+              <Target size={16} />
+            </div>
+            <h3 className="text-sm font-black text-slate-400 uppercase tracking-[0.3em]">Next Session Focus</h3>
+          </div>
+          <EditableField 
+            field="next_session_note" 
+            label="Follow-up Note" 
+            value={appointment.next_session_note} 
+            multiline 
+            placeholder="What do you need to see clearly at the start of the next session? (e.g. Re-check Moro, follow up on sleep quality...)" 
+            onSave={saveField} 
+            className="bg-amber-50/30 border-amber-100 p-6 rounded-2xl border shadow-sm min-h-[250px]" 
+          />
+        </div>
       </div>
 
       {/* Clinical Pearl */}

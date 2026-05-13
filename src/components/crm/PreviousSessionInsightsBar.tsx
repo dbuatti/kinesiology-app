@@ -2,11 +2,11 @@
 
 import React, { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
-import { Card } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { 
   ChevronDown, ChevronUp, History, FlaskConical, 
-  Activity, Target, Calendar, Clock
+  Activity, Target, Calendar, Clock, AlertCircle, Sparkles
 } from "lucide-react";
 import { format } from "date-fns";
 import { cn } from "@/lib/utils";
@@ -87,8 +87,32 @@ const PreviousSessionInsightsBar = ({ clientId, currentAppointmentId, manualData
 
   if (loading || !previousSession) return null;
 
+  const hasNextSessionNote = !!previousSession.next_session_note;
+
   return (
-    <div className="mb-4">
+    <div className="mb-4 space-y-3">
+      {/* Prominent Next Session Focus Alert */}
+      {hasNextSessionNote && (
+        <div className="animate-in slide-in-from-top-2 duration-500">
+          <Card className="border-none shadow-lg bg-amber-600 text-white rounded-2xl overflow-hidden relative group">
+            <div className="absolute top-0 right-0 p-4 opacity-10 group-hover:scale-110 transition-transform duration-700">
+              <Target size={80} />
+            </div>
+            <CardContent className="p-5 flex items-start gap-4 relative z-10">
+              <div className="w-10 h-10 rounded-xl bg-white/20 backdrop-blur-md flex items-center justify-center shrink-0 border border-white/20 shadow-inner">
+                <Sparkles size={20} className="text-amber-200" />
+              </div>
+              <div className="space-y-1">
+                <p className="text-[9px] font-black uppercase tracking-[0.3em] text-amber-200">Next Session Focus (From Last Session)</p>
+                <p className="text-base font-bold leading-relaxed">
+                  "{previousSession.next_session_note}"
+                </p>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+      )}
+
       <Card className={cn(
         "border-none shadow-md overflow-hidden transition-all duration-300",
         isOpen ? "bg-slate-900 text-white" : "bg-indigo-50 border border-indigo-100"

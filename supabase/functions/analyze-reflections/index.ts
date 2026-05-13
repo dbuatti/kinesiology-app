@@ -39,13 +39,21 @@ serve(async (req) => {
       throw new Error("GEMINI_API_KEY is missing.");
     }
 
-    const prompt = `Act as a clinical supervisor for a Kinesiology practitioner. 
-    Analyze the following journal entry and extract specific items for the practitioner's "Identity Sandbox".
+    const prompt = `Act as a master clinical supervisor for a Functional Neurology and Kinesiology practitioner. 
+    Analyze the following raw journal entry and extract specific items for the practitioner's growth.
     
-    Return the result as a JSON object with a key "extractions" containing an array of objects with:
-    - "content": The text of the insight.
-    - "type": Exactly one of: "belief", "shifting", "alignment", "felt_sense", or "question".
-    - "status": "pending"
+    CRITICAL EXTRACTION RULES:
+    1. MEETUP QUESTIONS: Extract any technical, procedural, or theoretical questions that should be asked to a teacher (e.g., "How to check X?", "Why did Y happen?"). Type: "question".
+    2. STUCK IDENTITIES: Identify the "version of self" the practitioner was being during the session (e.g., "The People Pleaser", "The Overwhelmed Student", "The Doubter"). Type: "shifting".
+    3. LIMITING BELIEFS: Extract core assumptions or "must/should" statements (e.g., "I must make the client feel good", "I'm not ready for complex cases"). Type: "belief".
+    4. CLINICAL DOUBTS: Identify specific technical gaps (e.g., "Unclear on TLR vs STNR"). Type: "question".
+    
+    Return the result as a JSON object with a key "extractions" containing an array of objects:
+    {
+      "content": "The specific insight or question text",
+      "type": "shifting", "belief", "alignment", "felt_sense", or "question",
+      "status": "pending"
+    }
     
     TEXT TO ANALYZE:
     "${content}"`;

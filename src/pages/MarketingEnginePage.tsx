@@ -133,7 +133,7 @@ Please provide the final output ready to be reviewed.`;
 
   return (
     <AppLayout>
-      <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-700 pb-20">
+      <div className="space-y-8 animate-in fade-in duration-700 pb-20">
         <PageHeader 
           title="Marketing Engine"
           subtitle="Transform clinical wins and raw thoughts into distribution-ready assets for your Kit newsletter."

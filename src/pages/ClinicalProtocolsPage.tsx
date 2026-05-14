@@ -16,7 +16,7 @@ import {
   ChevronLeft, Brain, Loader2, Zap, FileText, Heart, 
   Activity, Shield, Layers, Dumbbell, RefreshCw,
   Eye, EyeOff, Save, ShieldCheck, LayoutGrid,
-  ChevronRight, Settings2, Sparkles
+  ChevronRight, Settings2, Sparkles, Globe, ExternalLink
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Switch } from "@/components/ui/switch";
@@ -137,6 +137,17 @@ export default function ClinicalProtocolsPage() {
                 Protocol v2.4
               </Badge>
             </div>
+            <div className="h-6 w-px bg-slate-100 mx-2" />
+            <Button 
+              asChild
+              variant="ghost" 
+              size="sm" 
+              className="h-9 px-3 rounded-xl text-indigo-600 hover:bg-indigo-50 font-black text-[9px] uppercase tracking-widest"
+            >
+              <a href="https://fnhrefapp-ggs6ojfk.manus.space/brain-zones" target="_blank" rel="noopener noreferrer">
+                <Globe size={14} className="mr-2" /> Official App <ExternalLink size={10} className="ml-1 opacity-50" />
+              </a>
+            </Button>
           </div>
 
           <div className="flex items-center gap-8">
@@ -183,7 +194,7 @@ export default function ClinicalProtocolsPage() {
         {/* Scrollable Assessment Area */}
         <main className="flex-1 overflow-y-auto p-8 md:p-12 custom-scrollbar">
           <div className="max-w-5xl mx-auto">
-            <div className="animate-in fade-in slide-in-from-bottom-2 duration-500">
+            <div className="animate-in fade-in duration-500">
               {activeTab === "cranial-nerves" && (
                 <CranialNerveAssessment 
                   appointmentId={id!} 

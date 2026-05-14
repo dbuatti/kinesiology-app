@@ -45,7 +45,8 @@ import {
   MessageSquare,
   Brain,
   Shield,
-  Printer
+  Printer,
+  Globe
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -210,7 +211,7 @@ const ResourcesPage = () => {
         {activeTab === "hub" ? (
           <div className="space-y-12 animate-in fade-in slide-in-from-bottom-4 duration-700">
             {/* Header Cards */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-6">
               <Link to="/resources/print" className="block group h-full">
                 <Card className="h-full border-none shadow-2xl rounded-[3rem] bg-slate-900 text-white overflow-hidden relative cursor-pointer hover:shadow-3xl hover:-translate-y-1 transition-all duration-500">
                   <div className="absolute inset-0 bg-gradient-to-br from-indigo-900/40 via-slate-950 to-purple-900/40" />
@@ -240,6 +241,36 @@ const ResourcesPage = () => {
                   </CardContent>
                 </Card>
               </Link>
+
+              <a href="https://fnhrefapp-ggs6ojfk.manus.space/brain-zones" target="_blank" rel="noopener noreferrer" className="block group h-full">
+                <Card className="h-full border-none shadow-xl rounded-[3rem] bg-indigo-900 text-white overflow-hidden relative cursor-pointer hover:shadow-2xl hover:-translate-y-1 transition-all duration-500">
+                  <div className="absolute inset-0 bg-gradient-to-br from-indigo-600/40 to-transparent" />
+                  <div className="absolute top-0 right-0 p-8 opacity-10 group-hover:opacity-20 transition-opacity">
+                    <Globe size={120} />
+                  </div>
+                  <CardContent className="p-8 relative z-10 flex flex-col justify-between h-full">
+                    <div className="space-y-4">
+                      <Badge className="bg-white/20 text-white border-white/30 font-black text-[10px] uppercase tracking-[0.3em] px-3 py-1 backdrop-blur-sm">
+                        Official App
+                      </Badge>
+                      <h2 className="text-3xl font-black tracking-tighter leading-none">
+                        FNH Ref App
+                      </h2>
+                      <p className="text-sm font-medium text-white/80 leading-relaxed">
+                        The official reference application by Nick Moss for brain zones and protocols.
+                      </p>
+                    </div>
+                    <div className="flex items-center justify-between mt-8">
+                      <span className="px-3 py-1.5 rounded-lg bg-white/5 border border-white/10 text-[10px] font-black uppercase tracking-widest text-slate-300">
+                        External
+                      </span>
+                      <div className="w-10 h-10 rounded-2xl bg-white/20 backdrop-blur-md flex items-center justify-center border border-white/30 shadow-lg group-hover:scale-110 group-hover:rotate-3 transition-all duration-500">
+                        <ExternalLink size={20} className="text-white" />
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              </a>
 
               <a href="https://kin-videos.vercel.app/" target="_blank" rel="noopener noreferrer" className="block group h-full">
                 <Card className="h-full border-none shadow-xl rounded-[3rem] bg-indigo-600 text-white overflow-hidden relative cursor-pointer hover:shadow-2xl hover:-translate-y-1 transition-all duration-500">
@@ -476,7 +507,7 @@ const ResourcesPage = () => {
                               <span className="w-8 h-8 rounded-full bg-rose-600 text-white flex items-center justify-center font-black text-xs shrink-0">{step.s}</span>
                               <div>
                                 <h4 className="font-black text-slate-900 dark:text-slate-100 text-xs uppercase tracking-tight">{step.t}</h4>
-                                <p className="text-[10px] text-slate-500 font-medium leading-tight mt-1">{step.d}</p>
+                                <p className="text-[10px] text-slate-50 font-medium leading-tight mt-1">{step.d}</p>
                               </div>
                             </div>
                           ))}

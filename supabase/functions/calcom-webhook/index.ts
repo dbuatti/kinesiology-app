@@ -7,6 +7,9 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type, x-supabase-client-platform',
 }
 
+// Only process these specific clinical event types
+const ALLOWED_EVENT_IDS = [4279898, 5302336];
+
 serve(async (req) => {
   const functionName = "calcom-webhook";
   console.log(`[${functionName}] Webhook received`);
@@ -36,6 +39,13 @@ serve(async (req) => {
     const payload = body.payload || body.data || body;
     const calcomId = String(payload.bookingId || payload.id || payload.uid);
 
+    // SECURITY FILTER: Check if this is a clinical event
+    const eventTypeId = parseInt(payload.eventTypeId);
+    if (eventTypeId && !ALLOWED_EVENT_IDS.includes(eventTypeId)) {
+      console.log(`[${functionName}] Skipping non-clinical event type: ${eventTypeId}`);
+      return new Response(JSON.stringify({ success: true, message: "Skipped: Non-clinical event type" }), { status: 200, headers: corsHeaders });
+    }
+
     if (triggerEvent === 'BOOKING_CANCELLED') {
       console.log(`[${functionName}] Deleting cancelled booking: ${calcomId}`);
       await supabase.from('appointments').delete().eq('calcom_booking_id', calcomId);
@@ -53,7 +63,6 @@ serve(async (req) => {
     const name = String(attendee.name || "Unknown Client").trim();
     const email = String(attendee.email || "").toLowerCase().trim();
     const startTime = payload.startTime || payload.start;
-    const eventTypeId = String(payload.eventTypeId || "");
 
     const { data: dbClient, error: clientError } = await supabase
       .from('clients')
@@ -103,8 +112,8 @@ serve(async (req) => {
     }
 
     let priceAmount = 0;
-    if (eventTypeId === "4279898") priceAmount = 50;
-    else if (eventTypeId === "5302336") priceAmount = 100;
+    if (String(eventTypeId) === "4279898") priceAmount = 50;
+    else if (String(eventTypeId) === "5302336") priceAmount = 100;
     if (payload.payment && payload.payment[0]) priceAmount = payload.payment[0].amount / 100;
 
     const { error: appError } = await supabase

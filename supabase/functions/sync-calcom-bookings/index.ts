@@ -7,6 +7,9 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type, x-supabase-client-platform',
 }
 
+// Only process these specific clinical event types
+const ALLOWED_EVENT_IDS = [4279898, 5302336];
+
 serve(async (req) => {
   const functionName = "sync-calcom-bookings";
   console.log(`[${functionName}] Request received`);
@@ -50,6 +53,12 @@ serve(async (req) => {
     let syncedCount = 0;
 
     for (const booking of bookings) {
+      // SECURITY FILTER: Check if this is a clinical event
+      if (booking.eventTypeId && !ALLOWED_EVENT_IDS.includes(booking.eventTypeId)) {
+        console.log(`[${functionName}] Skipping non-clinical booking: ${booking.uid} (Type: ${booking.eventTypeId})`);
+        continue;
+      }
+
       const attendee = booking.attendees?.[0];
       if (!attendee || !attendee.email) continue;
 

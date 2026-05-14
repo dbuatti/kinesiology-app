@@ -11,6 +11,9 @@ export const CALCOM_CONFIG = {
   // The public booking URL
   BOOKING_URL: "https://cal.com/danielebuatti/fnh-neuro-75",
   
+  // Only these IDs will be processed by the CRM webhooks and sync functions
+  CLINICAL_EVENT_IDS: [4279898, 5302336],
+
   EVENT_TYPES: [
     {
       id: "4279898",

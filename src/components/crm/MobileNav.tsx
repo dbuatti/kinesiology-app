@@ -57,6 +57,7 @@ import AppointmentForm from "./AppointmentForm";
 import HelpModal from "./HelpModal";
 import { ModeToggle } from "./ModeToggle";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { CLINICAL_NAV_ITEMS, LAB_NAV_ITEMS, LIBRARY_NAV_ITEMS } from "@/config/navigation";
 
 const MobileNav = () => {
   const [open, setOpen] = useState(false);
@@ -82,32 +83,6 @@ const MobileNav = () => {
       console.error("Error signing out:", error);
     }
   };
-
-  const clinicalItems = [
-    { label: "Dashboard", icon: LayoutDashboard, path: "/" },
-    { label: "Schedule", icon: Calendar, path: "/schedule" },
-    { label: "Clients", icon: Users, path: "/clients" },
-    { label: "Oversight", icon: TrendingUp, path: "/oversight" },
-    { label: "Business Hub", icon: Briefcase, path: "/business" },
-    { label: "Marketing Engine", icon: Mic, path: "/business/marketing-engine" },
-  ];
-
-  const labItems = [
-    { label: "Dashboard", icon: LayoutDashboard, path: "/" },
-    { label: "Morning Program", icon: Sun, path: "/morning-program" },
-    { label: "Journal", icon: MessageSquare, path: "/practice/journal" },
-    { label: "The Lab", icon: Compass, path: "/lab" },
-    { label: "Self Practice", icon: Heart, path: "/practice/self" },
-  ];
-
-  const libraryItems = [
-    { label: "Dashboard", icon: LayoutDashboard, path: "/" },
-    { label: "Clinical Bible", icon: BookOpen, path: "/resources" },
-    { label: "PEACE Framework", icon: ShieldCheck, path: "/peace-framework" },
-    { label: "Mastery Tracker", icon: Trophy, path: "/practice/procedures" },
-    { label: "Knowledge Quiz", icon: GraduationCap, path: "/practice/quiz" },
-    { label: "Quick Calibrate", icon: Zap, path: "/practice/calibrate" },
-  ];
 
   const NavItem = ({ item, onClick }: { item: any, onClick: () => void }) => {
     const isActive = location.pathname === item.path || (item.path !== "/" && location.pathname.startsWith(item.path));
@@ -233,7 +208,7 @@ const MobileNav = () => {
                         icon={LayoutDashboard} 
                         isOpen={opsOpen} 
                         onToggle={() => setOpsOpen(!opsOpen)} 
-                        items={clinicalItems} 
+                        items={CLINICAL_NAV_ITEMS} 
                       />
                     )}
 
@@ -243,7 +218,7 @@ const MobileNav = () => {
                         icon={Zap} 
                         isOpen={opsOpen} 
                         onToggle={() => setOpsOpen(!opsOpen)} 
-                        items={labItems} 
+                        items={LAB_NAV_ITEMS} 
                       />
                     )}
 
@@ -253,7 +228,7 @@ const MobileNav = () => {
                         icon={BookOpen} 
                         isOpen={opsOpen} 
                         onToggle={() => setOpsOpen(!opsOpen)} 
-                        items={libraryItems} 
+                        items={LIBRARY_NAV_ITEMS} 
                       />
                     )}
                   </div>
@@ -323,7 +298,7 @@ const MobileNav = () => {
       </div>
 
       <Dialog open={clientDialogOpen} onOpenChange={setClientDialogOpen}>
-        <DialogContent className="w-[95vw] max-w-[550px] rounded-2xl p-0 overflow-hidden">
+        <DialogContent className="w-[95vw] max-w-[550px] rounded-[2rem] p-0 overflow-hidden">
           <div className="p-6 max-h-[90vh] overflow-y-auto">
             <DialogHeader className="mb-4">
               <DialogTitle className="text-xl font-black">Add New Client</DialogTitle>
@@ -334,7 +309,7 @@ const MobileNav = () => {
       </Dialog>
 
       <Dialog open={appDialogOpen} onOpenChange={setAppDialogOpen}>
-        <DialogContent className="w-[95vw] max-w-[500px] rounded-2xl p-0 overflow-hidden">
+        <DialogContent className="w-[95vw] max-w-[500px] rounded-[2rem] p-0 overflow-hidden">
           <div className="p-6 max-h-[90vh] overflow-y-auto">
             <DialogHeader className="mb-4">
               <DialogTitle className="text-xl font-black">Schedule New Session</DialogTitle>

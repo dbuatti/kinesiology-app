@@ -13,52 +13,64 @@ import ScrollToTop from "./components/shared/ScrollToTop";
 import MainLayout from "./layouts/MainLayout";
 import AuthLayout from "./layouts/AuthLayout";
 
-// Pages
-import DashboardPage from "./pages/app/DashboardPage";
+// --- Public & Auth Pages ---
 import LoginPage from "./pages/auth/LoginPage";
 import OnboardingPage from "./pages/public/OnboardingPage";
 import OnboardingLookupPage from "./pages/public/OnboardingLookupPage";
+import NotFound from "./pages/NotFound";
+
+// --- Clinical Hub Pages ---
+import DashboardPage from "./pages/app/DashboardPage";
 import ClientsPage from "./pages/ClientsPage";
 import ClientDetailPage from "./pages/ClientDetailPage";
 import SchedulePage from "./pages/SchedulePage";
 import AppointmentDetailPage from "./pages/AppointmentDetailPage";
 import ClinicalProtocolsPage from "./pages/ClinicalProtocolsPage";
-import ImportPage from "./pages/ImportPage";
-import ProceduresPage from "./pages/ProceduresPage";
-import ResourcesPage from "./pages/ResourcesPage";
-import SelfPracticePage from "./pages/SelfPracticePage";
 import ClinicalOversightPage from "./pages/ClinicalOversightPage";
-import DebugAppointmentPage from "./pages/DebugAppointmentPage";
-import DemoSessionPage from "./pages/DemoSessionPage";
-import SettingsPage from "./pages/SettingsPage";
+
+// --- Practice Lab Pages ---
 import LabPage from "./pages/LabPage";
+import JournalPage from "./pages/JournalPage";
+import SelfPracticePage from "./pages/SelfPracticePage";
+import IdentityShiftingPage from "./pages/IdentityShiftingPage";
+import IdentityAlignmentPage from "./pages/IdentityAlignmentPage";
+import LimitingBeliefsPage from "./pages/LimitingBeliefsPage";
+import FractalToolPage from "./pages/FractalToolPage";
+import MorningProgramPage from "./pages/MorningProgramPage";
+
+// --- Worksheets ---
 import NorthStarPage from "./pages/NorthStarPage";
 import Week3WorksheetPage from "./pages/Week3WorksheetPage";
 import FearCreativityWorksheetPage from "./pages/FearCreativityWorksheetPage";
 import InnerAwarenessWorksheetPage from "./pages/InnerAwarenessWorksheetPage";
 import AngerFlowWorksheetPage from "./pages/AngerFlowWorksheetPage";
 import BusinessModelWorksheetPage from "./pages/BusinessModelWorksheetPage";
-import QuickCalibratePage from "./pages/QuickCalibratePage";
+
+// --- Knowledge & Reference ---
+import ResourcesPage from "./pages/ResourcesPage";
 import PEACEFrameworkPage from "./pages/PEACEFrameworkPage";
-import MarketingEnginePage from "./pages/MarketingEnginePage";
-import BusinessHubPage from "./pages/BusinessHubPage";
-import IdentityShiftingPage from "./pages/IdentityShiftingPage";
-import IdentityAlignmentPage from "./pages/IdentityAlignmentPage";
-import LimitingBeliefsPage from "./pages/LimitingBeliefsPage";
-import FractalToolPage from "./pages/FractalToolPage";
-import JournalPage from "./pages/JournalPage";
-import PracticeNotes from "./pages/PracticeNotes";
+import ProceduresPage from "./pages/ProceduresPage";
 import QuizPage from "./pages/QuizPage";
-import MorningProgramPage from "./pages/MorningProgramPage";
-import SiteAuditPage from "./pages/SiteAuditPage";
+import QuickCalibratePage from "./pages/QuickCalibratePage";
+import PracticeNotes from "./pages/PracticeNotes";
+
+// --- Print & Reference Sheets ---
+import PrintHubPage from "./pages/PrintHubPage";
 import CranialNervePrintPage from "./pages/CranialNervePrintPage";
 import CranialNerveWorksheetPage from "./pages/CranialNerveWorksheetPage";
 import PrimitiveReflexWorksheetPage from "./pages/PrimitiveReflexWorksheetPage";
 import HeartWallPrintPage from "./pages/HeartWallPrintPage";
 import BrainZonePrintPage from "./pages/BrainZonePrintPage";
 import JointActionPrintPage from "./pages/JointActionPrintPage";
-import PrintHubPage from "./pages/PrintHubPage";
-import NotFound from "./pages/NotFound";
+
+// --- Business & System ---
+import BusinessHubPage from "./pages/BusinessHubPage";
+import MarketingEnginePage from "./pages/MarketingEnginePage";
+import SettingsPage from "./pages/SettingsPage";
+import ImportPage from "./pages/ImportPage";
+import DebugAppointmentPage from "./pages/DebugAppointmentPage";
+import DemoSessionPage from "./pages/DemoSessionPage";
+import SiteAuditPage from "./pages/SiteAuditPage";
 
 const queryClient = new QueryClient();
 
@@ -100,7 +112,6 @@ const AppRoutes = () => {
       <Route
         element={session ? <MainLayout /> : <Navigate to="/login" replace />}
       >
-
         <Route path="/" element={<DashboardPage />} />
         
         {/* Clinical Hub */}
@@ -113,32 +124,32 @@ const AppRoutes = () => {
         
         {/* Practice Lab */}
         <Route path="/lab" element={<LabPage />} />
-        <Route path="/practice/calibrate" element={<QuickCalibratePage />} />
-        <Route path="/practice/self" element={<SelfPracticePage />} />
-        <Route path="/practice/procedures" element={<ProceduresPage />} />
         <Route path="/practice/journal" element={<JournalPage />} />
-        <Route path="/practice/quiz" element={<QuizPage />} />
+        <Route path="/practice/self" element={<SelfPracticePage />} />
+        <Route path="/morning-program" element={<MorningProgramPage />} />
+        <Route path="/sandbox/identity-shifting" element={<IdentityShiftingPage />} />
+        <Route path="/sandbox/identity-alignment" element={<IdentityAlignmentPage />} />
+        <Route path="/sandbox/limiting-beliefs" element={<LimitingBeliefsPage />} />
+        <Route path="/sandbox/fractals" element={<FractalToolPage />} />
 
         {/* Knowledge Base */}
         <Route path="/resources" element={<ResourcesPage />} />
         <Route path="/peace-framework" element={<PEACEFrameworkPage />} />
+        <Route path="/practice/procedures" element={<ProceduresPage />} />
+        <Route path="/practice/quiz" element={<QuizPage />} />
+        <Route path="/practice/calibrate" element={<QuickCalibratePage />} />
+        
+        {/* Worksheets */}
         <Route path="/resources/worksheets/north-star" element={<NorthStarPage />} />
         <Route path="/resources/worksheets/week-3" element={<Week3WorksheetPage />} />
         <Route path="/resources/worksheets/fear-creativity" element={<FearCreativityWorksheetPage />} />
         <Route path="/resources/worksheets/inner-awareness" element={<InnerAwarenessWorksheetPage />} />
         <Route path="/resources/worksheets/anger-flow" element={<AngerFlowWorksheetPage />} />
         <Route path="/resources/worksheets/business-model" element={<BusinessModelWorksheetPage />} />
-        <Route path="/morning-program" element={<MorningProgramPage />} />
         
         {/* Business Tools */}
         <Route path="/business" element={<BusinessHubPage />} />
         <Route path="/business/marketing-engine" element={<MarketingEnginePage />} />
-
-        {/* Sandbox Specifics (Still accessible via direct links from Lab) */}
-        <Route path="/sandbox/identity-shifting" element={<IdentityShiftingPage />} />
-        <Route path="/sandbox/identity-alignment" element={<IdentityAlignmentPage />} />
-        <Route path="/sandbox/limiting-beliefs" element={<LimitingBeliefsPage />} />
-        <Route path="/sandbox/fractals" element={<FractalToolPage />} />
 
         {/* System */}
         <Route path="/settings" element={<SettingsPage />} />

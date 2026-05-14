@@ -57,6 +57,7 @@ import PrimitiveReflexWorksheetPage from "./pages/PrimitiveReflexWorksheetPage";
 import HeartWallPrintPage from "./pages/HeartWallPrintPage";
 import BrainZonePrintPage from "./pages/BrainZonePrintPage";
 import JointActionPrintPage from "./pages/JointActionPrintPage";
+import PrintHubPage from "./pages/PrintHubPage";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -94,6 +95,7 @@ const AppRoutes = () => {
       <Route path="/resources/heart-wall/print" element={session ? <HeartWallPrintPage /> : <Navigate to="/login" replace />} />
       <Route path="/resources/brain-zones/print" element={session ? <BrainZonePrintPage /> : <Navigate to="/login" replace />} />
       <Route path="/resources/joint-actions/print" element={session ? <JointActionPrintPage /> : <Navigate to="/login" replace />} />
+      <Route path="/resources/print" element={session ? <PrintHubPage /> : <Navigate to="/login" replace />} />
       
       <Route
         element={session ? <MainLayout /> : <Navigate to="/login" replace />}

@@ -44,7 +44,8 @@ import {
   Mic,
   MessageSquare,
   Brain,
-  Shield
+  Shield,
+  Printer
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -183,15 +184,26 @@ const ResourcesPage = () => {
           icon={BookOpen}
           breadcrumbs={[{ label: "Library" }, { label: "Clinical Bible" }]}
           actions={
-            activeTab !== "hub" && (
+            <div className="flex items-center gap-3">
               <Button 
+                asChild
                 variant="outline" 
-                onClick={() => handleTabChange("hub")}
-                className="rounded-xl border-border bg-card hover:bg-muted font-bold text-xs uppercase tracking-widest h-12 px-6"
+                className="rounded-xl border-indigo-100 bg-indigo-50 text-indigo-600 hover:bg-indigo-100 font-bold text-xs uppercase tracking-widest h-12 px-6"
               >
-                <LayoutGrid size={18} className="mr-2" /> Back to Hub
+                <Link to="/resources/print">
+                  <Printer size={18} className="mr-2" /> Print Hub
+                </Link>
               </Button>
-            )
+              {activeTab !== "hub" && (
+                <Button 
+                  variant="outline" 
+                  onClick={() => handleTabChange("hub")}
+                  className="rounded-xl border-border bg-card hover:bg-muted font-bold text-xs uppercase tracking-widest h-12 px-6"
+                >
+                  <LayoutGrid size={18} className="mr-2" /> Back to Hub
+                </Button>
+              )}
+            </div>
           }
         />
 
@@ -199,8 +211,38 @@ const ResourcesPage = () => {
           <div className="space-y-12 animate-in fade-in slide-in-from-bottom-4 duration-700">
             {/* Header Cards */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+              <Link to="/resources/print" className="block group h-full">
+                <Card className="h-full border-none shadow-2xl rounded-[3rem] bg-slate-900 text-white overflow-hidden relative cursor-pointer hover:shadow-3xl hover:-translate-y-1 transition-all duration-500">
+                  <div className="absolute inset-0 bg-gradient-to-br from-indigo-900/40 via-slate-950 to-purple-900/40" />
+                  <div className="absolute top-0 right-0 p-8 opacity-10 group-hover:opacity-20 transition-opacity">
+                    <Printer size={120} />
+                  </div>
+                  <CardContent className="p-8 relative z-10 flex flex-col justify-between h-full">
+                    <div className="space-y-4">
+                      <Badge className="bg-indigo-500/20 text-indigo-300 border-indigo-500/30 font-black text-[10px] uppercase tracking-[0.3em] px-3 py-1 backdrop-blur-sm">
+                        Clinical Assets
+                      </Badge>
+                      <h2 className="text-3xl font-black tracking-tighter leading-none">
+                        The Print Hub
+                      </h2>
+                      <p className="text-sm font-medium text-white/80 leading-relaxed">
+                        Access all landscape-optimized reference sheets and worksheets in one place.
+                      </p>
+                    </div>
+                    <div className="flex items-center justify-between mt-8">
+                      <span className="px-3 py-1.5 rounded-lg bg-white/5 border border-white/10 text-[10px] font-black uppercase tracking-widest text-slate-300">
+                        Central Hub
+                      </span>
+                      <div className="w-10 h-10 rounded-2xl bg-white/20 backdrop-blur-md flex items-center justify-center border border-white/30 shadow-lg group-hover:scale-110 group-hover:rotate-3 transition-all duration-500">
+                        <ArrowRight size={20} className="text-white" />
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              </Link>
+
               <a href="https://kin-videos.vercel.app/" target="_blank" rel="noopener noreferrer" className="block group h-full">
-                <Card className="h-full border-none shadow-2xl rounded-[3rem] bg-indigo-600 text-white overflow-hidden relative cursor-pointer hover:shadow-3xl hover:-translate-y-1 transition-all duration-500">
+                <Card className="h-full border-none shadow-xl rounded-[3rem] bg-indigo-600 text-white overflow-hidden relative cursor-pointer hover:shadow-2xl hover:-translate-y-1 transition-all duration-500">
                   <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(255,255,255,0.15),transparent_50%)]" />
                   <div className="absolute top-0 right-0 p-8 opacity-10 group-hover:opacity-20 transition-opacity">
                     <GraduationCap size={120} />
@@ -285,37 +327,7 @@ const ResourcesPage = () => {
                       <span className="px-3 py-1.5 rounded-lg bg-white/5 border border-white/10 text-[10px] font-black uppercase tracking-widest text-slate-300">
                         Notion
                       </span>
-                      <div className="w-10 h-10 rounded-2xl bg-white/10 backdrop-blur-md flex items-center justify-center border border-white/20 shadow-lg group-hover:scale-110 transition-all duration-500">
-                        <ExternalLink size={20} className="text-white" />
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
-              </a>
-
-              <a href="https://fnhrefapp-ggs6ojfk.manus.space/brain-zones" target="_blank" rel="noopener noreferrer" className="block group h-full">
-                <Card className="h-full border-none shadow-xl rounded-[3rem] bg-cyan-950 text-white overflow-hidden relative cursor-pointer hover:shadow-2xl hover:-translate-y-1 transition-all duration-500">
-                  <div className="absolute inset-0 bg-gradient-to-br from-cyan-900/50 to-transparent" />
-                  <div className="absolute top-0 right-0 p-8 opacity-10 group-hover:opacity-20 transition-opacity">
-                    <Brain size={120} />
-                  </div>
-                  <CardContent className="p-8 relative z-10 flex flex-col justify-between h-full">
-                    <div className="space-y-4">
-                      <Badge className="bg-cyan-500/20 text-cyan-200 border-cyan-500/30 font-black text-[10px] uppercase tracking-[0.3em] px-3 py-1 backdrop-blur-sm">
-                        External Tool
-                      </Badge>
-                      <h2 className="text-3xl font-black tracking-tighter leading-none text-slate-100">
-                        FNH Reference App
-                      </h2>
-                      <p className="text-sm font-medium text-cyan-100/70 leading-relaxed">
-                        The original, simplified Brain Zone Reference and clinical pathways tool.
-                      </p>
-                    </div>
-                    <div className="flex items-center justify-between mt-8">
-                      <span className="px-3 py-1.5 rounded-lg bg-white/5 border border-white/10 text-[10px] font-black uppercase tracking-widest text-cyan-200">
-                        Brain Zones
-                      </span>
-                      <div className="w-10 h-10 rounded-2xl bg-white/10 backdrop-blur-md flex items-center justify-center border border-white/20 shadow-lg group-hover:scale-110 transition-all duration-500">
+                      <div className="w-10 h-10 rounded-2xl bg-white/10 backdrop-blur-md flex items-center justify-center border border-white/20 shadow-lg group-hover:scale-110 group-hover:rotate-3 transition-all duration-500">
                         <ExternalLink size={20} className="text-white" />
                       </div>
                     </div>

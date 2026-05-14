@@ -15,20 +15,31 @@ import { Badge } from "@/components/ui/badge";
 import { 
   ChevronLeft, Brain, Loader2, Zap, FileText, Heart, 
   Activity, Shield, Layers, Dumbbell, RefreshCw,
-  Eye, EyeOff, Save, ShieldCheck
+  Eye, EyeOff, Save, ShieldCheck, LayoutGrid,
+  ChevronRight, Settings2, Sparkles
 } from "lucide-react";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { cn } from "@/lib/utils";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 
 const SHOW_IMAGES_KEY = "fnh_protocols_show_images";
 const REMEMBER_KEY = "fnh_protocols_remember_settings";
 
+const PROTOCOLS = [
+  { id: "cranial-nerves", label: "Nerves", icon: Zap, color: "text-rose-500", bg: "bg-rose-50" },
+  { id: "primitive-reflexes", label: "Reflexes", icon: RefreshCw, color: "text-indigo-500", bg: "bg-indigo-50" },
+  { id: "brain-zones", label: "Zones", icon: Brain, color: "text-purple-500", bg: "bg-purple-50" },
+  { id: "muscles", label: "Muscles", icon: Dumbbell, color: "text-emerald-500", bg: "bg-emerald-50" },
+  { id: "mechanoreceptive", label: "Mechano", icon: Activity, color: "text-blue-500", bg: "bg-blue-50" },
+  { id: "emotions", label: "Emotions", icon: Heart, color: "text-rose-600", bg: "bg-rose-50" },
+  { id: "heart-wall", label: "Heart Wall", icon: Shield, color: "text-slate-600", bg: "bg-slate-50" },
+];
+
 export default function ClinicalProtocolsPage() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const { appointment, loading, updatePriorityPattern, saveField } = useAppointment(id);
-  const [activeTab, setActiveTab] = React.useState("cranial-nerves");
+  const [activeTab, setActiveTab] = useState("cranial-nerves");
 
   // Global UI Settings
   const [showImages, setShowImages] = useState(() => {
@@ -71,11 +82,64 @@ export default function ClinicalProtocolsPage() {
   }
 
   return (
-    <div className="min-h-screen bg-white p-4 md:p-6">
-      <div className="max-w-full mx-auto space-y-6">
-        {/* Global Controls Bar */}
-        <div className="flex flex-wrap items-center justify-between gap-4 p-4 bg-slate-50 rounded-2xl border border-slate-100 shadow-inner print:hidden">
-          <div className="flex items-center gap-6">
+    <div className="flex h-screen bg-white overflow-hidden">
+      {/* 1. Slim Vertical Navigation Rail */}
+      <aside className="w-20 md:w-24 bg-slate-900 flex flex-col items-center py-6 gap-4 z-50 shrink-0">
+        <Button 
+          variant="ghost" 
+          size="icon" 
+          onClick={() => navigate(`/appointments/${id}`)}
+          className="h-12 w-12 rounded-2xl bg-white/10 text-white hover:bg-white/20 mb-4"
+        >
+          <ChevronLeft size={24} />
+        </Button>
+
+        <div className="flex-1 flex flex-col gap-2 w-full px-2">
+          {PROTOCOLS.map((p) => {
+            const isActive = activeTab === p.id;
+            return (
+              <button
+                key={p.id}
+                onClick={() => setActiveTab(p.id)}
+                className={cn(
+                  "flex flex-col items-center justify-center py-3 rounded-2xl transition-all duration-300 group",
+                  isActive 
+                    ? "bg-indigo-600 text-white shadow-lg scale-105" 
+                    : "text-slate-500 hover:text-white hover:bg-white/5"
+                )}
+              >
+                <p.icon size={20} className={cn("transition-transform duration-500", isActive ? "scale-110" : "group-hover:scale-110", !isActive && p.color)} />
+                <span className="text-[8px] font-black uppercase tracking-widest mt-1.5 text-center px-1">
+                  {p.label}
+                </span>
+              </button>
+            );
+          })}
+        </div>
+
+        <div className="mt-auto flex flex-col gap-4 items-center">
+          <Badge variant="outline" className="border-white/20 text-white font-black text-[7px] uppercase tracking-widest px-1.5 py-0 rounded-none rotate-90 mb-4">
+            Clinical
+          </Badge>
+        </div>
+      </aside>
+
+      {/* 2. Main Content Area */}
+      <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
+        {/* Top Settings Header */}
+        <header className="h-16 border-b border-slate-100 flex items-center justify-between px-8 bg-white shrink-0">
+          <div className="flex items-center gap-4">
+            <div className="flex items-center gap-2">
+              <h2 className="text-xl font-black text-slate-900 tracking-tight">
+                {PROTOCOLS.find(p => p.id === activeTab)?.label}
+              </h2>
+              <Badge className="bg-slate-100 text-slate-500 border-none font-black text-[8px] uppercase tracking-widest">
+                Protocol v2.4
+              </Badge>
+            </div>
+          </div>
+
+          <div className="flex items-center gap-8">
             <div className="flex items-center space-x-3">
               <Switch 
                 id="show-images-global" 
@@ -83,166 +147,115 @@ export default function ClinicalProtocolsPage() {
                 onCheckedChange={setShowImages}
                 className="data-[state=checked]:bg-indigo-600"
               />
-              <Label htmlFor="show-images-global" className="text-[10px] font-black uppercase tracking-widest text-slate-600 cursor-pointer flex items-center gap-2">
-                {showImages ? <Eye size={14} className="text-indigo-600" /> : <EyeOff size={14} className="text-slate-400" />}
-                Show Reference Images
+              <Label htmlFor="show-images-global" className="text-[9px] font-black uppercase tracking-widest text-slate-400 cursor-pointer flex items-center gap-2">
+                {showImages ? <Eye size={14} className="text-indigo-600" /> : <EyeOff size={14} />}
+                Images
               </Label>
             </div>
 
-            <div className="flex items-center space-x-3 border-l border-slate-200 pl-6">
+            <div className="flex items-center space-x-3">
               <Switch 
                 id="remember-settings" 
                 checked={rememberSettings} 
                 onCheckedChange={setRememberSettings}
                 className="data-[state=checked]:bg-emerald-600"
               />
-              <Label htmlFor="remember-settings" className="text-[10px] font-black uppercase tracking-widest text-slate-600 cursor-pointer flex items-center gap-2">
-                <ShieldCheck size={14} className={rememberSettings ? "text-emerald-600" : "text-slate-400"} />
-                Remember Settings
+              <Label htmlFor="remember-settings" className="text-[9px] font-black uppercase tracking-widest text-slate-400 cursor-pointer flex items-center gap-2">
+                <ShieldCheck size={14} className={rememberSettings ? "text-emerald-600" : ""} />
+                Remember
               </Label>
             </div>
+
+            <div className="h-8 w-px bg-slate-100" />
+
+            <div className="flex items-center gap-3">
+              <div className="text-right hidden sm:block">
+                <p className="text-[8px] font-black text-slate-400 uppercase tracking-widest">Client</p>
+                <p className="text-xs font-bold text-slate-900">{appointment.clients.name}</p>
+              </div>
+              <div className="w-9 h-9 rounded-xl bg-indigo-50 text-indigo-600 flex items-center justify-center font-black text-sm">
+                {appointment.clients.name.charAt(0)}
+              </div>
+            </div>
           </div>
+        </header>
 
-          <div className="flex items-center gap-2">
-            <Badge variant="outline" className="bg-white border-slate-200 text-slate-400 font-black text-[8px] uppercase tracking-widest px-2 py-0.5 rounded-full">
-              Clinical Mode
-            </Badge>
+        {/* Scrollable Assessment Area */}
+        <main className="flex-1 overflow-y-auto p-8 md:p-12 custom-scrollbar">
+          <div className="max-w-5xl mx-auto">
+            <div className="animate-in fade-in slide-in-from-bottom-2 duration-500">
+              {activeTab === "cranial-nerves" && (
+                <CranialNerveAssessment 
+                  appointmentId={id!} 
+                  priorityPattern={appointment.priority_pattern}
+                  updatePriorityPattern={updatePriorityPattern}
+                  showImages={showImages}
+                />
+              )}
+              
+              {activeTab === "primitive-reflexes" && (
+                <PrimitiveReflexAssessment 
+                  appointmentId={id!} 
+                  priorityPattern={appointment.priority_pattern}
+                  updatePriorityPattern={updatePriorityPattern}
+                />
+              )}
+
+              {activeTab === "brain-zones" && (
+                <BrainZoneAssessment 
+                  priorityPattern={appointment.priority_pattern}
+                  updatePriorityPattern={updatePriorityPattern}
+                  showImages={showImages}
+                />
+              )}
+
+              {activeTab === "muscles" && (
+                <MuscleAssessment 
+                  priorityPattern={appointment.priority_pattern}
+                  updatePriorityPattern={updatePriorityPattern}
+                  showImages={showImages}
+                />
+              )}
+
+              {activeTab === "mechanoreceptive" && (
+                <MechanoreceptiveAssessment 
+                  appointmentId={id!}
+                  onSave={(summary) => saveField('modes_balances', summary)}
+                />
+              )}
+
+              {activeTab === "emotions" && (
+                <EmotionsProtocolReference />
+              )}
+
+              {activeTab === "heart-wall" && (
+                <HeartWallProtocol />
+              )}
+            </div>
+
+            {/* Persistent Summary Area */}
+            <div className="mt-20 pt-12 border-t border-slate-100">
+              <div className="flex items-center justify-between mb-6">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-xl bg-slate-50 flex items-center justify-center text-slate-400">
+                    <FileText size={20} />
+                  </div>
+                  <div>
+                    <h3 className="text-lg font-black text-slate-900">Integration Summary</h3>
+                    <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Session Notes & Homework</p>
+                  </div>
+                </div>
+                <Button variant="ghost" size="sm" className="text-[10px] font-black uppercase tracking-widest text-indigo-600 hover:bg-indigo-50">
+                  <Sparkles size={14} className="mr-2" /> AI Assist
+                </Button>
+              </div>
+              <textarea 
+                className="w-full min-h-[200px] bg-slate-50/50 border-none rounded-[2rem] p-8 text-base font-medium leading-relaxed focus:ring-2 focus:ring-indigo-500 transition-all placeholder:text-slate-300"
+                placeholder="Document the primary correction and prescribed homework here..."
+              />
+            </div>
           </div>
-        </div>
-
-        {/* Top Navigation */}
-        <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-          <div className="flex justify-center mb-8 overflow-x-auto no-scrollbar">
-            <TabsList className="inline-flex h-12 items-center justify-center rounded-xl bg-slate-100/50 p-1 text-muted-foreground border border-slate-200">
-              <TabsTrigger 
-                value="cranial-nerves" 
-                className="inline-flex items-center justify-center whitespace-nowrap rounded-lg px-4 py-2 text-[10px] font-black uppercase tracking-widest transition-all data-[state=active]:bg-white data-[state=active]:text-slate-900 data-[state=active]:shadow-sm"
-              >
-                <Zap className="h-3.5 w-3.5 mr-2 text-rose-500" />
-                Nerves
-              </TabsTrigger>
-              <TabsTrigger 
-                value="primitive-reflexes" 
-                className="inline-flex items-center justify-center whitespace-nowrap rounded-lg px-4 py-2 text-[10px] font-black uppercase tracking-widest transition-all data-[state=active]:bg-white data-[state=active]:text-slate-900 data-[state=active]:shadow-sm"
-              >
-                <RefreshCw className="h-3.5 w-3.5 mr-2 text-indigo-500" />
-                Reflexes
-              </TabsTrigger>
-              <TabsTrigger 
-                value="brain-zones" 
-                className="inline-flex items-center justify-center whitespace-nowrap rounded-lg px-4 py-2 text-[10px] font-black uppercase tracking-widest transition-all data-[state=active]:bg-white data-[state=active]:text-slate-900 data-[state=active]:shadow-sm"
-              >
-                <Brain className="h-3.5 w-3.5 mr-2 text-purple-500" />
-                Zones
-              </TabsTrigger>
-              <TabsTrigger 
-                value="muscles" 
-                className="inline-flex items-center justify-center whitespace-nowrap rounded-lg px-4 py-2 text-[10px] font-black uppercase tracking-widest transition-all data-[state=active]:bg-white data-[state=active]:text-slate-900 data-[state=active]:shadow-sm"
-              >
-                <Dumbbell className="h-3.5 w-3.5 mr-2 text-emerald-500" />
-                Muscles
-              </TabsTrigger>
-              <TabsTrigger 
-                value="mechanoreceptive" 
-                className="inline-flex items-center justify-center whitespace-nowrap rounded-lg px-4 py-2 text-[10px] font-black uppercase tracking-widest transition-all data-[state=active]:bg-white data-[state=active]:text-slate-900 data-[state=active]:shadow-sm"
-              >
-                <Activity className="h-3.5 w-3.5 mr-2 text-blue-500" />
-                Mechano
-              </TabsTrigger>
-              <TabsTrigger 
-                value="emotions" 
-                className="inline-flex items-center justify-center whitespace-nowrap rounded-lg px-4 py-2 text-[10px] font-black uppercase tracking-widest transition-all data-[state=active]:bg-white data-[state=active]:text-slate-900 data-[state=active]:shadow-sm"
-              >
-                <Heart className="h-3.5 w-3.5 mr-2 text-rose-600" />
-                Emotions
-              </TabsTrigger>
-              <TabsTrigger 
-                value="heart-wall" 
-                className="inline-flex items-center justify-center whitespace-nowrap rounded-lg px-4 py-2 text-[10px] font-black uppercase tracking-widest transition-all data-[state=active]:bg-white data-[state=active]:text-slate-900 data-[state=active]:shadow-sm"
-              >
-                <Shield className="h-3.5 w-3.5 mr-2 text-slate-600" />
-                Heart Wall
-              </TabsTrigger>
-            </TabsList>
-          </div>
-          
-          <TabsContent value="cranial-nerves" className="mt-0 focus-visible:ring-0 animate-in fade-in duration-300">
-            <CranialNerveAssessment 
-              appointmentId={id!} 
-              priorityPattern={appointment.priority_pattern}
-              updatePriorityPattern={updatePriorityPattern}
-              showImages={showImages}
-            />
-          </TabsContent>
-          
-          <TabsContent value="primitive-reflexes" className="mt-0 focus-visible:ring-0 animate-in fade-in duration-300">
-            <PrimitiveReflexAssessment 
-              appointmentId={id!} 
-              priorityPattern={appointment.priority_pattern}
-              updatePriorityPattern={updatePriorityPattern}
-            />
-          </TabsContent>
-
-          <TabsContent value="brain-zones" className="mt-0 focus-visible:ring-0 animate-in fade-in duration-300">
-            <BrainZoneAssessment 
-              priorityPattern={appointment.priority_pattern}
-              updatePriorityPattern={updatePriorityPattern}
-              showImages={showImages}
-            />
-          </TabsContent>
-
-          <TabsContent value="muscles" className="mt-0 focus-visible:ring-0 animate-in fade-in duration-300">
-            <MuscleAssessment 
-              priorityPattern={appointment.priority_pattern}
-              updatePriorityPattern={updatePriorityPattern}
-              showImages={showImages}
-            />
-          </TabsContent>
-
-          <TabsContent value="mechanoreceptive" className="mt-0 focus-visible:ring-0 animate-in fade-in duration-300">
-            <MechanoreceptiveAssessment 
-              appointmentId={id!}
-              onSave={(summary) => saveField('modes_balances', summary)}
-            />
-          </TabsContent>
-
-          <TabsContent value="emotions" className="mt-0 focus-visible:ring-0 animate-in fade-in duration-300">
-            <EmotionsProtocolReference />
-          </TabsContent>
-
-          <TabsContent value="heart-wall" className="mt-0 focus-visible:ring-0 animate-in fade-in duration-300">
-            <HeartWallProtocol />
-          </TabsContent>
-        </Tabs>
-
-        {/* Summary Section */}
-        <div className="mt-12 pt-8 border-t border-slate-100 print:mt-6">
-          <div className="flex items-center gap-2 mb-4">
-            <FileText size={16} className="text-slate-400" />
-            <h3 className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-500">Clinical Summary & Integration</h3>
-          </div>
-          <textarea 
-            className="w-full min-h-[150px] bg-transparent border-none outline-none resize-none text-sm leading-[28px] font-medium placeholder:text-slate-300"
-            style={{
-              backgroundImage: 'linear-gradient(to bottom, transparent 27px, #f1f5f9 27px)',
-              backgroundSize: '100% 28px',
-              backgroundAttachment: 'local'
-            }}
-            placeholder="Type your clinical summary here..."
-          />
-        </div>
-      </div>
-
-      {/* Floating Back Button */}
-      <div className="fixed bottom-6 left-6 print:hidden">
-        <Button 
-          variant="outline" 
-          size="icon" 
-          onClick={() => navigate(`/appointments/${id}`)}
-          className="h-10 w-10 rounded-full shadow-lg bg-white border-slate-200 text-slate-400 hover:text-indigo-600"
-        >
-          <ChevronLeft size={18} />
-        </Button>
+        </main>
       </div>
     </div>
   );

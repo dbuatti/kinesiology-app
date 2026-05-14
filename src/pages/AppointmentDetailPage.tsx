@@ -27,6 +27,7 @@ import BrainstemToneMap from "@/components/crm/BrainstemToneMap";
 import SessionWorksheetTemplate from "@/components/crm/SessionWorksheetTemplate";
 import PageHeader from "@/components/shared/PageHeader";
 import SessionDocumentView from "@/components/crm/SessionDocumentView";
+import ErrorBoundary from "@/components/shared/ErrorBoundary";
 
 import {
   Button,
@@ -329,7 +330,7 @@ const AppointmentDetailPage = () => {
   const isSessionToday = isToday(new Date(appointment.date));
 
   return (
-    <>
+    <ErrorBoundary>
       <SessionTimer
         appointmentDate={appointment.date}
         status={appointment.status}
@@ -467,6 +468,7 @@ const AppointmentDetailPage = () => {
                 onStartSession={handleStartSession}
                 isCloning={actionStates.cloning}
                 isCopied={isCopied}
+                onOpenDocument={() => setIsDocumentView(true)}
               />
             </div>
 
@@ -548,7 +550,7 @@ const AppointmentDetailPage = () => {
           />
         </div>
       </AppLayout>
-    </>
+    </ErrorBoundary>
   );
 };
 

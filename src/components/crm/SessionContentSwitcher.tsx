@@ -21,7 +21,6 @@ import {
   PanelRightOpen,
   PanelRightClose,
   Trash2,
-  Play,
   Loader2,
   Check,
   StickyNote,
@@ -35,7 +34,7 @@ import {
   FileText
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import { AppointmentWithClient } from '@/types/crm';
 import BaselineTab from './session-tabs/BaselineTab';
 import SympatheticTab from './session-tabs/SympatheticTab';
@@ -51,7 +50,6 @@ import EmotionAssessment from './EmotionAssessment';
 import PreviousSessionSummary from './PreviousSessionSummary';
 import GaitReflexAssessment from './GaitReflexAssessment';
 import PathwayAssessment from './PathwayAssessment';
-import PathwayLogicWizard from './PathwayLogicWizard';
 import NeurologicalHistoryTracker from './NeurologicalHistoryTracker';
 import { Nuclei } from '@/utils/brainstem-logic';
 import {
@@ -69,6 +67,9 @@ import {
   DialogDescription,
 } from "@/components/ui/dialog";
 import { showSuccess, showError } from '@/utils/toast';
+import { safeParse } from '@/utils/safe-json';
+import ErrorBoundary from '@/components/shared/ErrorBoundary';
+import PathwayLogicWizard from './PathwayLogicWizard';
 
 type ActiveView = 'home' | 'kinesiology' | 'muscles' | 'gait' | 'previous' | 'context' | 'journal' | 'recheck';
 
@@ -117,7 +118,6 @@ const SessionContentSwitcher = ({
   isCopied,
   onOpenDocument
 }: SessionContentSwitcherProps) => {
-  const navigate = useNavigate();
   const [activeView, setActiveView] = useState<ActiveView>('home');
   const [activeTab, setActiveTab] = useState('baseline');
   const [preselectedFinding, setPreselectedFinding] = useState<string | null>(null);
@@ -176,14 +176,12 @@ const SessionContentSwitcher = ({
   const handleClearItem = async (itemName: string) => {
     let category = 'muscles';
     if (appointment.priority_pattern) {
-      try {
-        const pattern = JSON.parse(appointment.priority_pattern);
-        Object.keys(pattern).forEach(cat => {
-          if (pattern[cat][itemName] || pattern[cat][`${itemName} (L)`] || pattern[cat][`${itemName} (R)`]) {
-            category = cat;
-          }
-        });
-      } catch (e) {}
+      const pattern = safeParse(appointment.priority_pattern, {});
+      Object.keys(pattern).forEach(cat => {
+        if (pattern[cat][itemName] || pattern[cat][`${itemName} (L)`] || pattern[cat][`${itemName} (R)`]) {
+          category = cat;
+        }
+      });
     }
     await updatePriorityPattern(category, itemName, 'Clear');
     onUpdate();
@@ -328,209 +326,211 @@ const SessionContentSwitcher = ({
   const isToolActive = ['kinesiology', 'muscles', 'gait', 'context', 'journal', 'recheck'].includes(activeView);
 
   return (
-    <div className="space-y-8">
-      <div className="flex flex-col md:flex-row items-center justify-between bg-slate-100/60 backdrop-blur-md p-2 rounded-[2.5rem] border border-slate-200/50 gap-4">
-        <div className="flex items-center gap-2 overflow-x-auto no-scrollbar w-full md:w-auto px-2">
-          <NavItem view="home" label="PEACE" Icon={LayoutGrid} />
-          
-          <Button
-            variant="ghost"
-            asChild
-            className="h-10 px-5 rounded-xl transition-all font-black text-[10px] uppercase tracking-widest shrink-0 text-slate-500 hover:bg-white hover:text-purple-600 hover:shadow-sm border border-transparent hover:border-slate-100"
-          >
-            <Link to={`/appointments/${appointment.id}/protocols`}>
-              <Brain size={16} className="mr-2 text-purple-500" />
-              Protocols
-            </Link>
-          </Button>
+    <ErrorBoundary>
+      <div className="space-y-8">
+        <div className="flex flex-col md:flex-row items-center justify-between bg-slate-100/60 backdrop-blur-md p-2 rounded-[2.5rem] border border-slate-200/50 gap-4">
+          <div className="flex items-center gap-2 overflow-x-auto no-scrollbar w-full md:w-auto px-2">
+            <NavItem view="home" label="PEACE" Icon={LayoutGrid} />
+            
+            <Button
+              variant="ghost"
+              asChild
+              className="h-10 px-5 rounded-xl transition-all font-black text-[10px] uppercase tracking-widest shrink-0 text-slate-500 hover:bg-white hover:text-purple-600 hover:shadow-sm border border-transparent hover:border-slate-100"
+            >
+              <Link to={`/appointments/${appointment.id}/protocols`}>
+                <Brain size={16} className="mr-2 text-purple-500" />
+                Protocols
+              </Link>
+            </Button>
 
-          <NavItem view="recheck" label="Recheck" Icon={RefreshCw} />
-          <NavItem view="previous" label="History" Icon={History} />
-          
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <button
-                className={cn(
-                  "h-10 px-5 rounded-xl transition-all font-black text-[10px] uppercase tracking-widest shrink-0 flex items-center gap-2",
-                  isToolActive ? "bg-white !text-indigo-600 shadow-md border border-slate-100" : "text-slate-500 hover:bg-white/50"
-                )}
-              >
-                <Wrench size={16} />
-                Tools
-                <ChevronDown size={14} className="opacity-50" />
-              </button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="start" className="w-72 p-2 rounded-[2rem] border-none shadow-3xl bg-card">
-              <DropdownMenuItem onClick={() => setActiveView('context')} className="rounded-xl py-4 px-5 cursor-pointer">
-                <UserCircle size={18} className="mr-4 text-indigo-500" /> Client Context
-              </DropdownMenuItem>
-              <DropdownMenuItem onClick={() => setActiveView('journal')} className="rounded-xl py-4 px-5 cursor-pointer">
-                <BookOpen size={18} className="mr-4 text-amber-500" /> Session Journal
-              </DropdownMenuItem>
+            <NavItem view="recheck" label="Recheck" Icon={RefreshCw} />
+            <NavItem view="previous" label="History" Icon={History} />
+            
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <button
+                  className={cn(
+                    "h-10 px-5 rounded-xl transition-all font-black text-[10px] uppercase tracking-widest shrink-0 flex items-center gap-2",
+                    isToolActive ? "bg-white !text-indigo-600 shadow-md border border-slate-100" : "text-slate-500 hover:bg-white/50"
+                  )}
+                >
+                  <Wrench size={16} />
+                  Tools
+                  <ChevronDown size={14} className="opacity-50" />
+                </button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="start" className="w-72 p-2 rounded-[2rem] border-none shadow-3xl bg-card">
+                <DropdownMenuItem onClick={() => setActiveView('context')} className="rounded-xl py-4 px-5 cursor-pointer">
+                  <UserCircle size={18} className="mr-4 text-indigo-500" /> Client Context
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => setActiveView('journal')} className="rounded-xl py-4 px-5 cursor-pointer">
+                  <BookOpen size={18} className="mr-4 text-amber-500" /> Session Journal
+                </DropdownMenuItem>
 
-              <DropdownMenuItem onClick={() => setActiveView('kinesiology')} className="rounded-xl py-4 px-5 cursor-pointer">
-                <Heart size={18} className="mr-4 text-rose-500" /> Kinesiology Tools
-              </DropdownMenuItem>
-              <DropdownMenuItem onClick={() => setActiveView('muscles')} className="rounded-xl py-4 px-5 cursor-pointer">
-                <Dumbbell size={18} className="mr-4 text-indigo-500" /> Muscle Log
-              </DropdownMenuItem>
-              <DropdownMenuItem onClick={() => setActiveView('gait')} className="rounded-xl py-4 px-5 cursor-pointer">
-                <Footprints size={18} className="mr-4 text-emerald-500" /> Gait Integration
-              </DropdownMenuItem>
-              <DropdownMenuSeparator className="my-2" />
-              <DropdownMenuItem onClick={onOpenDocument} className="rounded-xl py-4 px-5 cursor-pointer font-bold text-indigo-600">
-                <FileText size={18} className="mr-4" /> Document View
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
-        </div>
-
-        <div className="flex items-center gap-2 w-full md:w-auto justify-end px-2">
-          <Button 
-            variant="ghost" 
-            size="sm" 
-            className="h-10 px-4 font-bold text-[10px] uppercase tracking-widest rounded-xl text-slate-500 hover:text-indigo-600 hover:bg-white"
-            onClick={() => setNoteDialogOpen(true)}
-          >
-            <StickyNote size={16} className="mr-2" />
-            <span className="hidden sm:inline">Quick Note</span>
-          </Button>
-
-          <Button 
-            variant="outline" 
-            size="sm" 
-            className={cn(
-              "h-10 px-4 font-bold text-[10px] uppercase tracking-widest rounded-xl transition-all",
-              showSidebar ? "bg-indigo-600 text-white border-indigo-600 shadow-md" : "bg-white border-slate-200 text-slate-600"
-            )}
-            onClick={onToggleSidebar}
-          >
-            {showSidebar ? <PanelRightClose size={16} className="mr-2" /> : <PanelRightOpen size={16} className="mr-2" />}
-            <span className="hidden sm:inline">Sidebar</span>
-          </Button>
-
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button variant="ghost" size="icon" className="h-10 w-10 rounded-xl text-slate-400 hover:bg-slate-200">
-                <MoreHorizontal size={22} />
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" className="rounded-2xl p-2 shadow-3xl border-none bg-card">
-              <DropdownMenuItem className="rounded-xl py-3 px-5 cursor-pointer flex items-center gap-4" onClick={onClonePrevious} disabled={isCloning}>
-                {isCloning ? <Loader2 size={18} className="animate-spin" /> : <History size={18} className="text-indigo-50" />} Clone Previous
-              </DropdownMenuItem>
-              <DropdownMenuItem className="rounded-xl py-3 px-5 cursor-pointer flex items-center gap-4" onClick={onPrint}>
-                <Printer size={18} className="text-slate-500" /> Print Report
-              </DropdownMenuItem>
-              <DropdownMenuItem className="rounded-xl py-3 px-5 cursor-pointer flex items-center gap-4" onClick={onCopySummary}>
-                {isCopied ? <Check size={18} className="text-emerald-500" /> : <Copy size={18} className="text-indigo-50" />} Copy Summary
-              </DropdownMenuItem>
-              <DropdownMenuSeparator className="my-2" />
-              <DropdownMenuItem className="text-destructive focus:text-destructive rounded-xl py-3 px-5 cursor-pointer flex items-center gap-4" onClick={onDelete}>
-                <Trash2 size={18} /> Delete Session
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
-        </div>
-      </div>
-      
-      <div className="animate-in fade-in slide-in-from-bottom-2 duration-500">
-        {activeView === 'home' && renderHomeView()}
-        {activeView === 'recheck' && (
-          <RecheckTab 
-            appointment={appointment} 
-            history={history} 
-            onUpdate={onUpdate} 
-            saveField={saveField} 
-            updatePriorityPattern={updatePriorityPattern} 
-          />
-        )}
-        {activeView === 'context' && <ClientContextTab appointment={appointment} />}
-        {activeView === 'journal' && <JournalTab appointmentId={appointment.id} clientName={appointment.clients.name} />}
-        {activeView === 'kinesiology' && (
-          <div className="space-y-8">
-            <LuscherColourAssessment appointmentId={appointment.id} initialColor1={appointment.luscher_color_1} initialColor2={appointment.luscher_color_2} onSaveColors={(c1, c2) => { saveField('luscher_color_1', c1); return saveField('luscher_color_2', c2); }} />
-            <EmotionAssessment appointmentId={appointment.id} initialMode={appointment.emotion_mode} initialPrimary={appointment.emotion_primary_selection} initialSecondary={appointment.emotion_secondary_selection} initialNotes={appointment.emotion_notes} onSaveField={saveField} onUpdate={onUpdate} />
+                <DropdownMenuItem onClick={() => setActiveView('kinesiology')} className="rounded-xl py-4 px-5 cursor-pointer">
+                  <Heart size={18} className="mr-4 text-rose-500" /> Kinesiology Tools
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => setActiveView('muscles')} className="rounded-xl py-4 px-5 cursor-pointer">
+                  <Dumbbell size={18} className="mr-4 text-indigo-500" /> Muscle Log
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => setActiveView('gait')} className="rounded-xl py-4 px-5 cursor-pointer">
+                  <Footprints size={18} className="mr-4 text-emerald-500" /> Gait Integration
+                </DropdownMenuItem>
+                <DropdownMenuSeparator className="my-2" />
+                <DropdownMenuItem onClick={onOpenDocument} className="rounded-xl py-4 px-5 cursor-pointer font-bold text-indigo-600">
+                  <FileText size={18} className="mr-4" /> Document View
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
           </div>
-        )}
-        {activeView === 'muscles' && (
-          <div className="bg-card rounded-[3rem] border border-border shadow-xl p-10">
-            <MuscleTestingTab appointmentId={appointment.id} />
+
+          <div className="flex items-center gap-2 w-full md:w-auto justify-end px-2">
+            <Button 
+              variant="ghost" 
+              size="sm" 
+              className="h-10 px-4 font-bold text-[10px] uppercase tracking-widest rounded-xl text-slate-500 hover:text-indigo-600 hover:bg-white"
+              onClick={() => setNoteDialogOpen(true)}
+            >
+              <StickyNote size={16} className="mr-2" />
+              <span className="hidden sm:inline">Quick Note</span>
+            </Button>
+
+            <Button 
+              variant="outline" 
+              size="sm" 
+              className={cn(
+                "h-10 px-4 font-bold text-[10px] uppercase tracking-widest rounded-xl transition-all",
+                showSidebar ? "bg-indigo-600 text-white border-indigo-600 shadow-md" : "bg-white border-slate-200 text-slate-600"
+              )}
+              onClick={onToggleSidebar}
+            >
+              {showSidebar ? <PanelRightClose size={16} className="mr-2" /> : <PanelRightOpen size={16} className="mr-2" />}
+              <span className="hidden sm:inline">Sidebar</span>
+            </Button>
+
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="ghost" size="icon" className="h-10 w-10 rounded-xl text-slate-400 hover:bg-slate-200">
+                  <MoreHorizontal size={22} />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className="rounded-2xl p-2 shadow-3xl border-none bg-card">
+                <DropdownMenuItem className="rounded-xl py-3 px-5 cursor-pointer flex items-center gap-4" onClick={onClonePrevious} disabled={isCloning}>
+                  {isCloning ? <Loader2 size={18} className="animate-spin" /> : <History size={18} className="text-indigo-50" />} Clone Previous
+                </DropdownMenuItem>
+                <DropdownMenuItem className="rounded-xl py-3 px-5 cursor-pointer flex items-center gap-4" onClick={onPrint}>
+                  <Printer size={18} className="text-slate-500" /> Print Report
+                </DropdownMenuItem>
+                <DropdownMenuItem className="rounded-xl py-3 px-5 cursor-pointer flex items-center gap-4" onClick={onCopySummary}>
+                  {isCopied ? <Check size={18} className="text-emerald-500" /> : <Copy size={18} className="text-indigo-50" />} Copy Summary
+                </DropdownMenuItem>
+                <DropdownMenuSeparator className="my-2" />
+                <DropdownMenuItem className="text-destructive focus:text-destructive rounded-xl py-3 px-5 cursor-pointer flex items-center gap-4" onClick={onDelete}>
+                  <Trash2 size={18} /> Delete Session
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
           </div>
-        )}
-        {activeView === 'gait' && (
-          <GaitReflexAssessment appointmentId={appointment.id} initialNotes={appointment.gait_notes} onSaveField={saveField} />
-        )}
-        {activeView === 'previous' && (
-          <div className="space-y-16">
-            <div className="space-y-6">
-                <div className="flex items-center gap-3 px-2">
-                    <div className="w-10 h-10 rounded-xl bg-indigo-600 text-white flex items-center justify-center shadow-lg">
-                        <History size={20} />
-                    </div>
-                    <h2 className="text-3xl font-black text-foreground tracking-tight">Neurological Evolution</h2>
-                </div>
-                <NeurologicalHistoryTracker appointments={history.length > 0 ? history : [appointment]} />
-            </div>
-            <PreviousSessionSummary 
-              clientId={appointment.clients.id} 
-              currentAppointmentId={appointment.id} 
-              manualData={history.length > 1 ? history[1] : null}
+        </div>
+        
+        <div className="animate-in fade-in slide-in-from-bottom-2 duration-500">
+          {activeView === 'home' && renderHomeView()}
+          {activeView === 'recheck' && (
+            <RecheckTab 
+              appointment={appointment} 
+              history={history} 
+              onUpdate={onUpdate} 
+              saveField={saveField} 
+              updatePriorityPattern={updatePriorityPattern} 
             />
-          </div>
-        )}
-      </div>
-
-      <Dialog open={noteDialogOpen} onOpenChange={setNoteDialogOpen}>
-        <DialogContent className="w-[95vw] max-w-5xl rounded-[3rem] p-0 overflow-visible border-none shadow-3xl bg-white dark:bg-slate-950">
-          <DialogHeader className="sr-only">
-            <DialogTitle>Quick Session Note</DialogTitle>
-            <DialogDescription>Capture observations and insights in real-time.</DialogDescription>
-          </DialogHeader>
-          <div className="p-12 md:p-16 relative flex flex-col h-[85vh] overflow-visible">
-            <div className="absolute top-8 right-8 z-50">
-              <Button variant="ghost" size="icon" onClick={() => setNoteDialogOpen(false)} className="text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 rounded-full">
-                <X size={24} />
-              </Button>
+          )}
+          {activeView === 'context' && <ClientContextTab appointment={appointment} />}
+          {activeView === 'journal' && <JournalTab appointmentId={appointment.id} clientName={appointment.clients.name} />}
+          {activeView === 'kinesiology' && (
+            <div className="space-y-8">
+              <LuscherColourAssessment appointmentId={appointment.id} initialColor1={appointment.luscher_color_1} initialColor2={appointment.luscher_color_2} onSaveColors={(c1, c2) => { saveField('luscher_color_1', c1); return saveField('luscher_color_2', c2); }} />
+              <EmotionAssessment appointmentId={appointment.id} initialMode={appointment.emotion_mode} initialPrimary={appointment.emotion_primary_selection} initialSecondary={appointment.emotion_secondary_selection} initialNotes={appointment.emotion_notes} onSaveField={saveField} onUpdate={onUpdate} />
             </div>
-            
-            <div className="flex items-center gap-6 mb-10 shrink-0">
-              <div className="w-16 h-16 rounded-[1.5rem] bg-amber-500 text-white flex items-center justify-center shadow-2xl shadow-amber-500/20">
-                <StickyNote size={32} />
-              </div>
-              <div>
-                <h2 className="text-3xl md:text-4xl font-black tracking-tight text-slate-900 dark:text-white">Quick Session Note</h2>
-                <p className="text-slate-500 font-medium text-lg mt-1">Capture observations and insights in real-time.</p>
-              </div>
+          )}
+          {activeView === 'muscles' && (
+            <div className="bg-card rounded-[3rem] border border-border shadow-xl p-10">
+              <MuscleTestingTab appointmentId={appointment.id} />
             </div>
-            
-            <div className="flex-1 overflow-visible">
-              <EditableField 
-                field="notes" 
-                label="General Session Notes" 
-                value={appointment.notes} 
-                multiline 
-                placeholder="Start typing your observations here..." 
-                onSave={saveField} 
-                className="bg-transparent border-none shadow-none p-0 h-full w-full min-h-full"
+          )}
+          {activeView === 'gait' && (
+            <GaitReflexAssessment appointmentId={appointment.id} initialNotes={appointment.gait_notes} onSaveField={saveField} />
+          )}
+          {activeView === 'previous' && (
+            <div className="space-y-16">
+              <div className="space-y-6">
+                  <div className="flex items-center gap-3 px-2">
+                      <div className="w-10 h-10 rounded-xl bg-indigo-600 text-white flex items-center justify-center shadow-lg">
+                          <History size={20} />
+                      </div>
+                      <h2 className="text-3xl font-black text-foreground tracking-tight">Neurological Evolution</h2>
+                  </div>
+                  <NeurologicalHistoryTracker appointments={history.length > 0 ? history : [appointment]} />
+              </div>
+              <PreviousSessionSummary 
+                clientId={appointment.clients.id} 
+                currentAppointmentId={appointment.id} 
+                manualData={history.length > 1 ? history[1] : null}
               />
             </div>
+          )}
+        </div>
 
-            <div className="mt-12 flex justify-between items-center shrink-0">
-              <div className="flex items-center gap-2 text-[10px] font-black uppercase tracking-[0.3em] text-slate-400">
-                <CheckCircle2 size={14} className="text-emerald-500" /> Auto-saving to client record
+        <Dialog open={noteDialogOpen} onOpenChange={setNoteDialogOpen}>
+          <DialogContent className="w-[95vw] max-w-5xl rounded-[3rem] p-0 overflow-visible border-none shadow-3xl bg-white dark:bg-slate-950">
+            <DialogHeader className="sr-only">
+              <DialogTitle>Quick Session Note</DialogTitle>
+              <DialogDescription>Capture observations and insights in real-time.</DialogDescription>
+            </DialogHeader>
+            <div className="p-12 md:p-16 relative flex flex-col h-[85vh] overflow-visible">
+              <div className="absolute top-8 right-8 z-50">
+                <Button variant="ghost" size="icon" onClick={() => setNoteDialogOpen(false)} className="text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 rounded-full">
+                  <X size={24} />
+                </Button>
               </div>
-              <Button 
-                onClick={() => setNoteDialogOpen(false)} 
-                className="bg-indigo-600 hover:bg-indigo-700 text-white rounded-2xl h-14 px-10 font-black text-xs uppercase tracking-widest shadow-xl shadow-indigo-100"
-              >
-                Finish Note
-              </Button>
+              
+              <div className="flex items-center gap-6 mb-10 shrink-0">
+                <div className="w-16 h-16 rounded-[1.5rem] bg-amber-500 text-white flex items-center justify-center shadow-2xl shadow-amber-500/20">
+                  <StickyNote size={32} />
+                </div>
+                <div>
+                  <h2 className="text-3xl md:text-4xl font-black tracking-tight text-slate-900 dark:text-white">Quick Session Note</h2>
+                  <p className="text-slate-500 font-medium text-lg mt-1">Capture observations and insights in real-time.</p>
+                </div>
+              </div>
+              
+              <div className="flex-1 overflow-visible">
+                <EditableField 
+                  field="notes" 
+                  label="General Session Notes" 
+                  value={appointment.notes} 
+                  multiline 
+                  placeholder="Start typing your observations here..." 
+                  onSave={saveField} 
+                  className="bg-transparent border-none shadow-none p-0 h-full w-full min-h-full"
+                />
+              </div>
+
+              <div className="mt-12 flex justify-between items-center shrink-0">
+                <div className="flex items-center gap-2 text-[10px] font-black uppercase tracking-[0.3em] text-slate-400">
+                  <CheckCircle2 size={14} className="text-emerald-500" /> Auto-saving to client record
+                </div>
+                <Button 
+                  onClick={() => setNoteDialogOpen(false)} 
+                  className="bg-indigo-600 hover:bg-indigo-700 text-white rounded-2xl h-14 px-10 font-black text-xs uppercase tracking-widest shadow-xl shadow-indigo-100"
+                >
+                  Finish Note
+                </Button>
+              </div>
             </div>
-          </div>
-        </DialogContent>
-      </Dialog>
-    </div>
+          </DialogContent>
+        </Dialog>
+      </div>
+    </ErrorBoundary>
   );
 };
 

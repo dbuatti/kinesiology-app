@@ -4,7 +4,7 @@ import React, { useState } from 'react';
 import { JOINT_ACTION_LIBRARY } from '@/data/joint-action-data';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
-import { LayoutHorizontal, LayoutVertical, Type, Maximize2, Minimize2 } from 'lucide-react';
+import { Columns, Rows, Maximize2, Minimize2 } from 'lucide-react';
 
 const JointActionPrintable = () => {
   const [orientation, setOrientation] = useState<'landscape' | 'portrait'>('landscape');
@@ -25,7 +25,7 @@ const JointActionPrintable = () => {
               onClick={() => setOrientation('landscape')}
               className="rounded-lg h-9 px-4 font-bold text-[10px] uppercase tracking-widest"
             >
-              <LayoutHorizontal size={14} className="mr-2" /> Landscape
+              <Columns size={14} className="mr-2" /> Landscape
             </Button>
             <Button 
               variant={orientation === 'portrait' ? 'default' : 'ghost'} 
@@ -33,7 +33,7 @@ const JointActionPrintable = () => {
               onClick={() => setOrientation('portrait')}
               className="rounded-lg h-9 px-4 font-bold text-[10px] uppercase tracking-widest"
             >
-              <LayoutVertical size={14} className="mr-2" /> Portrait
+              <Rows size={14} className="mr-2" /> Portrait
             </Button>
           </div>
 

@@ -4,7 +4,7 @@ import React, { useState, useEffect } from 'react';
 import { BRAIN_REFLEX_POINTS } from '@/data/brain-reflex-data';
 import { supabase } from "@/integrations/supabase/client";
 import { cn } from '@/lib/utils';
-import { Brain, Layers } from 'lucide-react';
+import { Brain, Layers, Zap, Map as MapIcon } from 'lucide-react';
 
 const BrainZonePrintable = () => {
   const [customImages, setCustomImages] = useState<Record<string, { primary: string | null, secondary: string | null }>>({});
@@ -40,14 +40,15 @@ const BrainZonePrintable = () => {
 
   const corticalZones = BRAIN_REFLEX_POINTS.filter(p => p.category === 'Cortical');
   const subcorticalZones = BRAIN_REFLEX_POINTS.filter(p => p.category === 'Subcortical');
+  const nerveZones = BRAIN_REFLEX_POINTS.filter(p => p.category === 'Cranial Nerve');
 
   const ZoneCard = ({ point, color }: { point: any, color: string }) => {
     const images = customImages[point.id];
     
     return (
-      <div className="border border-black p-1.5 flex flex-col h-full break-inside-avoid bg-white">
-        <div className="flex items-center justify-between mb-1 border-b border-black/10 pb-0.5">
-          <h4 className="font-black text-[9px] uppercase leading-none truncate pr-1">{point.name}</h4>
+      <div className="border border-black p-1 flex flex-col h-full break-inside-avoid bg-white">
+        <div className="flex items-center justify-between mb-0.5 border-b border-black/10 pb-0.5">
+          <h4 className="font-black text-[8px] uppercase leading-none truncate pr-1">{point.name.split(':')[0]}</h4>
           <span className={cn("text-[6px] font-black px-1 py-0.5 rounded-sm text-white leading-none shrink-0", color)}>
             {point.acupoint || point.category[0]}
           </span>
@@ -57,7 +58,7 @@ const BrainZonePrintable = () => {
           {images?.primary ? (
             <img src={images.primary} alt={point.name} className="w-full h-full object-cover" />
           ) : (
-            <Brain size={14} className="text-slate-200" />
+            <Brain size={12} className="text-slate-200" />
           )}
           
           {images?.secondary && (
@@ -67,7 +68,7 @@ const BrainZonePrintable = () => {
           )}
         </div>
 
-        <div className="space-y-0.5 text-[7px] leading-[1.1] text-slate-800">
+        <div className="space-y-0.5 text-[6.5px] leading-[1.05] text-slate-800">
           <p className="truncate"><strong>L:</strong> {point.location}</p>
           <p className="truncate"><strong>S:</strong> {point.stimulus || point.technique || "Standard"}</p>
         </div>
@@ -81,10 +82,25 @@ const BrainZonePrintable = () => {
       <div className="border-b-2 border-black pb-1 mb-3 flex justify-between items-end">
         <div className="space-y-0.5">
           <h1 className="text-2xl font-serif font-bold tracking-tight uppercase leading-none">Brain Zone Reference Map</h1>
-          <p className="text-[8px] font-black text-slate-500 uppercase tracking-[0.3em]">Functional Neuro Health • Clinical Infrastructure</p>
+          <p className="text-[8px] font-black text-slate-500 uppercase tracking-[0.4em]">Functional Neuro Health • Clinical Infrastructure • v2.4</p>
         </div>
         <div className="text-right">
-          <p className="text-[8px] font-black uppercase tracking-widest text-slate-400">Single Page Edition</p>
+          <p className="text-[8px] font-black uppercase tracking-widest text-slate-400">A4 Portrait Edition</p>
+        </div>
+      </div>
+
+      {/* Reference Map Image */}
+      <div className="mb-6 border-2 border-black p-2 bg-slate-50 rounded-sm">
+        <div className="flex items-center gap-2 mb-2 border-b border-black/10 pb-1">
+          <MapIcon size={12} className="text-indigo-600" />
+          <span className="text-[9px] font-black uppercase tracking-widest">Topographical Zone Map</span>
+        </div>
+        <div className="aspect-[21/9] w-full overflow-hidden flex items-center justify-center bg-slate-950">
+          <img 
+            src="/images/mechanoreceptive/homunculus.png" 
+            alt="Brain Zone Map" 
+            className="max-w-full h-full object-contain opacity-90"
+          />
         </div>
       </div>
 
@@ -95,7 +111,7 @@ const BrainZonePrintable = () => {
             <Brain size={10} className="text-purple-600" />
             <h2 className="text-[9px] font-black uppercase text-purple-600">Cortical Zones (Contralateral)</h2>
           </div>
-          <div className="grid grid-cols-3 gap-2">
+          <div className="grid grid-cols-4 gap-1.5">
             {corticalZones.map(p => <ZoneCard key={p.id} point={p} color="bg-purple-600" />)}
           </div>
         </div>
@@ -106,8 +122,19 @@ const BrainZonePrintable = () => {
             <Layers size={10} className="text-indigo-600" />
             <h2 className="text-[9px] font-black uppercase text-indigo-600">Subcortical Zones (Ipsilateral)</h2>
           </div>
-          <div className="grid grid-cols-3 gap-2">
+          <div className="grid grid-cols-4 gap-1.5">
             {subcorticalZones.map(p => <ZoneCard key={p.id} point={p} color="bg-indigo-600" />)}
+          </div>
+        </div>
+
+        {/* Cranial Nerve Section */}
+        <div className="space-y-1.5">
+          <div className="flex items-center gap-2 border-b border-rose-600 pb-0.5">
+            <Zap size={10} className="text-rose-600" />
+            <h2 className="text-[9px] font-black uppercase text-rose-600">Cranial Nerve Pathways</h2>
+          </div>
+          <div className="grid grid-cols-4 gap-1.5">
+            {nerveZones.map(p => <ZoneCard key={p.id} point={p} color="bg-rose-600" />)}
           </div>
         </div>
       </div>

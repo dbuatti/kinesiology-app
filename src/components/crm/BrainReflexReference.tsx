@@ -11,13 +11,15 @@ import {
   Layers, Activity, ShieldAlert,
   Upload, Image as ImageIcon, X, Loader2,
   Plus, Sparkles, Target, Maximize2, Hand, PlayCircle,
-  ChevronDown, ChevronUp, ChevronRight, Map as MapIcon
+  ChevronDown, ChevronUp, ChevronRight, Map as MapIcon,
+  Printer
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 import { supabase } from "@/integrations/supabase/client";
 import { showSuccess, showError } from "@/utils/toast";
 import BrainReflexModal from "./BrainReflexModal";
+import { Link } from "react-router-dom";
 
 const BUCKET_NAME = 'reflex-images';
 
@@ -187,7 +189,7 @@ const ReflexImageZone = ({
                 "rounded-xl bg-white shadow-sm border border-slate-100 flex items-center justify-center mx-auto text-slate-400 group-hover/image:text-indigo-600 group-hover/image:scale-110 transition-all",
                 isPrimary ? "w-12 h-12" : "w-8 h-8"
               )}>
-                {isPrimary ? <Plus size={24} /> : <Target size={18} />}
+                <Plus size={24} />
               </div>
               <p className={cn("font-black text-slate-500 uppercase tracking-widest", isPrimary ? "text-[10px]" : "text-[8px]")}>
                 {isPrimary ? "Click or Drop Main Image" : `Add ${type}`}
@@ -300,14 +302,25 @@ const BrainReflexReference = () => {
                 Use this diagram to locate zones on the skull before applying each protocol
               </CardDescription>
             </div>
-            <Button 
-              variant="ghost" 
-              onClick={() => setMapExpanded(!mapExpanded)}
-              className="text-indigo-400 hover:text-white hover:bg-white/10 rounded-xl font-bold text-xs uppercase tracking-widest"
-            >
-              {mapExpanded ? <ChevronUp size={18} className="mr-2" /> : <Maximize2 size={18} className="mr-2" />}
-              {mapExpanded ? "Collapse map" : "Expand map"}
-            </Button>
+            <div className="flex gap-3">
+              <Button 
+                variant="ghost" 
+                asChild
+                className="text-indigo-400 hover:text-white hover:bg-white/10 rounded-xl font-bold text-xs uppercase tracking-widest"
+              >
+                <Link to="/resources/brain-zones/print">
+                  <Printer size={18} className="mr-2" /> Print Reference
+                </Link>
+              </Button>
+              <Button 
+                variant="ghost" 
+                onClick={() => setMapExpanded(!mapExpanded)}
+                className="text-indigo-400 hover:text-white hover:bg-white/10 rounded-xl font-bold text-xs uppercase tracking-widest"
+              >
+                {mapExpanded ? <ChevronUp size={18} className="mr-2" /> : <Maximize2 size={18} className="mr-2" />}
+                {mapExpanded ? "Collapse map" : "Expand map"}
+              </Button>
+            </div>
           </CardHeader>
           <CardContent className="p-8 pt-0">
             <div className={cn(
@@ -433,19 +446,6 @@ const BrainReflexReference = () => {
                           type="secondary"
                           currentUrl={data.secondaryUrl} 
                           onUploadComplete={(url) => updateLocalCustomization(point.id, 'secondary', url)}
-                        />
-                      </div>
-                      <div className={cn(
-                        "transition-all duration-500",
-                        data.tertiaryUrl 
-                          ? "opacity-60 group-hover/container:opacity-100 group-hover/container:scale-105" 
-                          : "opacity-0 group-hover/container:opacity-100"
-                      )}>
-                        <ReflexImageZone 
-                          reflexId={point.id} 
-                          type="tertiary"
-                          currentUrl={data.tertiaryUrl} 
-                          onUploadComplete={(url) => updateLocalCustomization(point.id, 'tertiary', url)}
                         />
                       </div>
                     </div>

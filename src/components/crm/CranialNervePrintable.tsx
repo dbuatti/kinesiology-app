@@ -1,101 +1,145 @@
 "use client";
 
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { CRANIAL_NERVES } from '@/data/cranial-nerve-data';
+import { supabase } from "@/integrations/supabase/client";
 import { cn } from '@/lib/utils';
+import { Zap, Activity } from 'lucide-react';
 
 const CranialNervePrintable = () => {
+  const [customImages, setCustomImages] = useState<Record<string, { primary: string | null, secondary: string | null }>>({});
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchImages = async () => {
+      try {
+        const { data: { user } } = await supabase.auth.getUser();
+        if (!user) return;
+
+        const { data } = await supabase
+          .from('brain_reflex_customizations')
+          .select('reflex_id, image_url, secondary_image_url')
+          .like('reflex_id', 'cn%');
+
+        const mapping: Record<string, { primary: string | null, secondary: string | null }> = {};
+        data?.forEach(item => {
+          mapping[item.reflex_id] = {
+            primary: item.image_url,
+            secondary: item.secondary_image_url
+          };
+        });
+        setCustomImages(mapping);
+      } catch (err) {
+        console.error("Failed to fetch images:", err);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchImages();
+  }, []);
+
+  const groupedNerves = {
+    'Cortex': CRANIAL_NERVES.filter(n => n.nuclei === 'Cortex'),
+    'Midbrain': CRANIAL_NERVES.filter(n => n.nuclei === 'Midbrain'),
+    'Pons': CRANIAL_NERVES.filter(n => n.nuclei === 'Pons'),
+    'Medulla': CRANIAL_NERVES.filter(n => n.nuclei === 'Medulla'),
+  };
+
+  const NerveCard = ({ nerve, color }: { nerve: any, color: string }) => {
+    const images = customImages[`cn${nerve.id}`];
+    
+    return (
+      <div className="border border-black p-1.5 flex flex-col h-full break-inside-avoid bg-white">
+        <div className="flex items-start justify-between mb-1 border-b border-black/10 pb-0.5 min-h-[18px]">
+          <div className="flex flex-col">
+            <h4 className="font-black text-[8px] uppercase leading-none">{nerve.name}</h4>
+            <p className="text-[6px] font-bold text-slate-500 uppercase mt-0.5">{nerve.latinName}</p>
+          </div>
+          <span className={cn("text-[6px] font-black px-1 rounded-sm text-white leading-none shrink-0", color)}>
+            {nerve.toneEffect[0]}
+          </span>
+        </div>
+        
+        <div className="relative aspect-video bg-slate-50 border border-slate-100 mb-1 overflow-hidden flex items-center justify-center shrink-0">
+          {images?.primary ? (
+            <img src={images.primary} alt={nerve.name} className="w-full h-full object-cover" />
+          ) : (
+            <Zap size={14} className="text-slate-200" />
+          )}
+          
+          {/* Secondary Image Overlay */}
+          {images?.secondary && (
+            <div className="absolute bottom-0.5 right-0.5 w-1/3 aspect-square border border-white shadow-md overflow-hidden bg-white">
+              <img src={images.secondary} alt="Inset" className="w-full h-full object-cover" />
+            </div>
+          )}
+        </div>
+
+        <div className="space-y-0.5 text-[6.5px] leading-[1.1] text-slate-800">
+          <p><strong>Reflex:</strong> {nerve.reflexPoint}</p>
+          <p><strong>Stim:</strong> {nerve.stimulus}</p>
+        </div>
+      </div>
+    );
+  };
+
   return (
-    <div className="bg-white text-black p-0 sm:p-4 max-w-[210mm] mx-auto font-sans print:p-0">
-      <div className="border-b-4 border-slate-900 pb-4 mb-6 flex justify-between items-end">
+    <div className="bg-white text-black p-2 max-w-[297mm] mx-auto font-sans print:p-0 print:m-0">
+      {/* Compact Header */}
+      <div className="border-b-2 border-black pb-1 mb-2 flex justify-between items-end">
         <div>
-          <h1 className="text-3xl font-black tracking-tighter uppercase">Cranial Nerve Reference</h1>
-          <p className="text-[10px] font-bold text-slate-500 uppercase tracking-[0.3em]">Functional Neuro Health • Clinical Protocol</p>
+          <h1 className="text-xl font-black tracking-tighter uppercase leading-none">Cranial Nerve Reference Map</h1>
+          <p className="text-[8px] font-bold text-slate-500 uppercase tracking-[0.2em]">Functional Neuro Health • Clinical Infrastructure</p>
         </div>
         <div className="text-right">
-          <p className="text-[10px] font-black uppercase tracking-widest text-slate-400">Fractal Resolution OS</p>
+          <p className="text-[8px] font-black uppercase tracking-widest text-slate-400">Single Page Landscape</p>
         </div>
       </div>
 
-      <div className="overflow-hidden border border-black rounded-sm">
-        <table className="w-full border-collapse text-[10px] leading-tight">
-          <thead>
-            <tr className="bg-slate-100 border-b border-black">
-              <th className="p-2 text-left font-black uppercase border-r border-black w-[8%]">ID</th>
-              <th className="p-2 text-left font-black uppercase border-r border-black w-[15%]">Name</th>
-              <th className="p-2 text-left font-black uppercase border-r border-black w-[10%]">Nuclei</th>
-              <th className="p-2 text-left font-black uppercase border-r border-black w-[10%]">Tone</th>
-              <th className="p-2 text-left font-black uppercase border-r border-black w-[25%]">Reflex Point (Touch)</th>
-              <th className="p-2 text-left font-black uppercase w-[32%]">Stimulus (Action)</th>
-            </tr>
-          </thead>
-          <tbody className="divide-y divide-black">
-            {CRANIAL_NERVES.map((nerve) => (
-              <tr key={nerve.id} className="hover:bg-slate-50 transition-colors break-inside-avoid">
-                <td className="p-2 font-black border-r border-black bg-slate-50/50">{nerve.name}</td>
-                <td className="p-2 border-r border-black">
-                  <p className="font-bold">{nerve.latinName}</p>
-                </td>
-                <td className="p-2 border-r border-black font-medium">{nerve.nuclei}</td>
-                <td className={cn(
-                  "p-2 border-r border-black font-bold",
-                  nerve.toneEffect === 'Flexors' ? "text-blue-700" : 
-                  nerve.toneEffect === 'Extensors' ? "text-rose-700" : "text-slate-400"
-                )}>
-                  {nerve.toneEffect}
-                </td>
-                <td className="p-2 border-r border-black leading-snug">
-                  {nerve.reflexPoint}
-                </td>
-                <td className="p-2 leading-snug italic">
-                  {nerve.stimulus}
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
+      <div className="space-y-3">
+        {Object.entries(groupedNerves).map(([nuclei, nerves]) => (
+          <div key={nuclei} className="space-y-1.5">
+            <div className="flex items-center gap-2 border-b border-slate-200 pb-0.5">
+              <Activity size={10} className="text-slate-400" />
+              <h2 className="text-[9px] font-black uppercase text-slate-600">{nuclei} Nuclei</h2>
+            </div>
+            <div className="grid grid-cols-4 sm:grid-cols-5 md:grid-cols-6 lg:grid-cols-7 gap-1.5">
+              {nerves.map(n => (
+                <NerveCard 
+                  key={n.id} 
+                  nerve={n} 
+                  color={
+                    nuclei === 'Cortex' ? "bg-purple-600" :
+                    nuclei === 'Midbrain' ? "bg-amber-500" :
+                    nuclei === 'Pons' ? "bg-indigo-600" :
+                    "bg-rose-600"
+                  } 
+                />
+              ))}
+            </div>
+          </div>
+        ))}
       </div>
 
-      <div className="mt-8 grid grid-cols-3 gap-6">
-        <div className="p-4 border border-black rounded-sm space-y-2">
-          <h4 className="font-black text-[9px] uppercase tracking-widest border-b border-black pb-1">Brainstem Logic</h4>
-          <ul className="text-[9px] space-y-1 font-medium">
-            <li>• <span className="font-bold">Midbrain:</span> Flexors (CN 3-4)</li>
-            <li>• <span className="font-bold">Pons:</span> Extensors (CN 5-8)</li>
-            <li>• <span className="font-bold">Medulla:</span> Flexors (CN 9-12)</li>
-          </ul>
+      {/* Ultra Compact Footer */}
+      <div className="mt-3 pt-1 border-t border-slate-200 flex justify-between items-center">
+        <div className="flex gap-4 text-[6px] font-black uppercase tracking-widest text-slate-400">
+          <p>• Midbrain: Flexors (CN 3-4)</p>
+          <p>• Pons: Extensors (CN 5-8)</p>
+          <p>• Medulla: Flexors (CN 9-12)</p>
         </div>
-        <div className="p-4 border border-black rounded-sm space-y-2">
-          <h4 className="font-black text-[9px] uppercase tracking-widest border-b border-black pb-1">Lateralization</h4>
-          <ul className="text-[9px] space-y-1 font-medium">
-            <li>• <span className="font-bold">Cortical:</span> Contralateral (Opposite)</li>
-            <li>• <span className="font-bold">Subcortical:</span> Ipsilateral (Same Side)</li>
-            <li>• <span className="font-bold">CN II:</span> Contralateral Logic</li>
-          </ul>
-        </div>
-        <div className="p-4 border border-black rounded-sm space-y-2">
-          <h4 className="font-black text-[9px] uppercase tracking-widest border-b border-black pb-1">Clinical Rule</h4>
-          <p className="text-[9px] leading-relaxed italic">
-            "If a CN reflex point test produces an Indicator Response, determine direction: Afferent (Bottom-Up) or Efferent (Top-Down). No response = pathway normal."
-          </p>
-        </div>
-      </div>
-
-      <div className="mt-12 pt-4 border-t border-slate-200 text-center">
-        <p className="text-[8px] font-black text-slate-300 uppercase tracking-[0.5em]">Resonance Clinical Infrastructure • Confidential</p>
+        <p className="text-[6px] font-black text-slate-300 uppercase tracking-[0.5em]">Confidential Practitioner Resource</p>
       </div>
 
       <style>{`
         @media print {
           @page {
-            size: A4;
-            margin: 10mm;
+            size: A4 landscape;
+            margin: 5mm;
           }
           body {
             background: white;
-          }
-          .no-print {
-            display: none;
+            -webkit-print-color-adjust: exact;
           }
         }
       `}</style>

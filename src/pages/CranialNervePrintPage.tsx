@@ -3,7 +3,7 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
-import { ChevronLeft, Printer, Download } from 'lucide-react';
+import { ChevronLeft, Printer } from 'lucide-react';
 import CranialNervePrintable from '@/components/crm/CranialNervePrintable';
 
 const CranialNervePrintPage = () => {
@@ -11,7 +11,7 @@ const CranialNervePrintPage = () => {
 
   return (
     <div className="min-h-screen bg-slate-100 py-8 px-4 print:p-0 print:bg-white">
-      <div className="max-w-[210mm] mx-auto mb-8 flex items-center justify-between print:hidden">
+      <div className="max-w-[297mm] mx-auto mb-8 flex items-center justify-between print:hidden">
         <Button 
           variant="ghost" 
           onClick={() => navigate(-1)}
@@ -20,17 +20,15 @@ const CranialNervePrintPage = () => {
           <ChevronLeft size={18} className="mr-2" /> Back to Resources
         </Button>
         
-        <div className="flex gap-3">
-          <Button 
-            onClick={() => window.print()}
-            className="bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl shadow-lg"
-          >
-            <Printer size={18} className="mr-2" /> Print Reference
-          </Button>
-        </div>
+        <Button 
+          onClick={() => window.print()}
+          className="bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl shadow-lg font-bold"
+        >
+          <Printer size={18} className="mr-2" /> Print Reference
+        </Button>
       </div>
 
-      <div className="bg-white shadow-2xl print:shadow-none min-h-[297mm] w-full">
+      <div className="bg-white shadow-2xl print:shadow-none min-h-[210mm] w-full">
         <CranialNervePrintable />
       </div>
     </div>

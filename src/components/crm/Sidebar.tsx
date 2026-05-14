@@ -234,7 +234,7 @@ const Sidebar = ({ onHide }: SidebarProps) => {
       
       <Dialog open={clientDialogOpen} onOpenChange={setClientDialogOpen}>
         <DialogContent className="sm:max-w-[550px] rounded-[2rem] p-8">
-          <DialogHeader className="mb-4">
+          <DialogHeader>
             <DialogTitle className="text-lg font-bold tracking-tight">Add New Client</DialogTitle>
           </DialogHeader>
           <ClientForm onSuccess={() => { setClientDialogOpen(false); }} />
@@ -243,7 +243,7 @@ const Sidebar = ({ onHide }: SidebarProps) => {
 
       <Dialog open={appDialogOpen} onOpenChange={setAppDialogOpen}>
         <DialogContent className="sm:max-w-[500px] rounded-[2rem] p-8">
-          <DialogHeader className="mb-4">
+          <DialogHeader>
             <DialogTitle className="text-lg font-bold tracking-tight">Schedule New Session</DialogTitle>
           </DialogHeader>
           <AppointmentForm onSuccess={() => { setAppDialogOpen(false); }} />

@@ -8,9 +8,11 @@ import {
   DialogTitle,
   DialogDescription,
 } from "@/components/ui/dialog";
-import { List, Move, Zap, RefreshCw, Info } from "lucide-react";
+import { List, Move, Zap, RefreshCw, Info, Printer } from "lucide-react";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { JOINT_ACTION_LIBRARY } from "@/data/joint-action-data";
+import { Button } from "@/components/ui/button";
+import { Link } from "react-router-dom";
 
 interface JointActionTableModalProps {
   open: boolean;
@@ -22,16 +24,23 @@ const JointActionTableModal = ({ open, onOpenChange }: JointActionTableModalProp
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-[900px] max-h-[90vh] rounded-[2.5rem] overflow-hidden p-0 border-none shadow-2xl">
         <DialogHeader className="p-8 bg-slate-900 text-white">
-          <div className="flex items-center gap-4">
-            <div className="w-12 h-12 rounded-2xl bg-indigo-600 flex items-center justify-center shadow-lg">
-              <List size={28} className="text-white" />
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-4">
+              <div className="w-12 h-12 rounded-2xl bg-indigo-600 flex items-center justify-center shadow-lg">
+                <List size={28} className="text-white" />
+              </div>
+              <div>
+                <DialogTitle className="text-2xl font-black">Joint Action Reference</DialogTitle>
+                <DialogDescription className="text-slate-400 font-bold uppercase tracking-widest text-[10px] mt-1">
+                  Geometry of Movement & Planes of Motion
+                </DialogDescription>
+              </div>
             </div>
-            <div>
-              <DialogTitle className="text-2xl font-black">Joint Action Reference</DialogTitle>
-              <DialogDescription className="text-slate-400 font-bold uppercase tracking-widest text-[10px] mt-1">
-                Geometry of Movement & Planes of Motion
-              </DialogDescription>
-            </div>
+            <Button asChild variant="outline" className="bg-white/10 border-white/20 text-white hover:bg-white/20 rounded-xl h-10 px-4 font-bold text-[10px] uppercase tracking-widest">
+              <Link to="/resources/joint-actions/print">
+                <Printer size={16} className="mr-2" /> Print Reference
+              </Link>
+            </Button>
           </div>
         </DialogHeader>
 

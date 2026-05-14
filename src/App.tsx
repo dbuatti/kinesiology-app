@@ -56,6 +56,7 @@ import CranialNerveWorksheetPage from "./pages/CranialNerveWorksheetPage";
 import PrimitiveReflexWorksheetPage from "./pages/PrimitiveReflexWorksheetPage";
 import HeartWallPrintPage from "./pages/HeartWallPrintPage";
 import BrainZonePrintPage from "./pages/BrainZonePrintPage";
+import JointActionPrintPage from "./pages/JointActionPrintPage";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -92,6 +93,7 @@ const AppRoutes = () => {
       <Route path="/resources/primitive-reflexes/worksheet" element={session ? <PrimitiveReflexWorksheetPage /> : <Navigate to="/login" replace />} />
       <Route path="/resources/heart-wall/print" element={session ? <HeartWallPrintPage /> : <Navigate to="/login" replace />} />
       <Route path="/resources/brain-zones/print" element={session ? <BrainZonePrintPage /> : <Navigate to="/login" replace />} />
+      <Route path="/resources/joint-actions/print" element={session ? <JointActionPrintPage /> : <Navigate to="/login" replace />} />
       
       <Route
         element={session ? <MainLayout /> : <Navigate to="/login" replace />}

@@ -6,11 +6,9 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/com
 import { 
   BookOpen, 
   Activity, 
-  Info, 
   ArrowRight, 
   Zap, 
   Move, 
-  Droplets, 
   Target, 
   Heart, 
   Layers, 
@@ -19,17 +17,13 @@ import {
   RefreshCw, 
   Youtube, 
   ShieldCheck, 
-  ShieldAlert,
   GraduationCap, 
-  Lightbulb, 
-  Compass, 
   Workflow, 
   ImageIcon, 
   Trophy,
   LayoutGrid,
   ChevronRight,
   Eye,
-  Timer,
   CheckCircle2,
   Baby,
   Palette,
@@ -37,24 +31,25 @@ import {
   Volume2,
   Calculator,
   Wind,
-  Hand,
   ExternalLink,
   Dumbbell,
   Briefcase,
-  Mic,
-  MessageSquare,
   Brain,
   Shield,
   Printer,
-  Globe
+  Globe,
+  Lightbulb,
+  Droplets,
+  Info,
+  ShieldAlert,
+  Timer
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import Breadcrumbs from "@/components/shared/Breadcrumbs";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import AppLayout from "@/components/crm/AppLayout";
 import { cn } from "@/lib/utils";
-import { Alert, AlertDescription } from "@/components/ui/alert";
-import { SIGNS_OF_SHIFT } from "@/data/emotion-data";
+import PageHeader from "@/components/shared/PageHeader";
 
 // Component Imports
 import AcupointReference from "@/components/crm/AcupointReference";
@@ -69,18 +64,16 @@ import FnTheory from "@/components/crm/FnTheory";
 import LigamentReference from "@/components/crm/LigamentReference";
 import MechanoMasteryModule from "@/components/crm/MechanoMasteryModule";
 import MechanoBible from "@/components/crm/MechanoBible";
-import RightingReflexesAssessment from "@/components/crm/RightingReflexesAssessment";
 import CranialNerveReference from "@/components/crm/CranialNerveReference";
 import PrimitiveReflexReference from "@/components/crm/PrimitiveReflexReference";
 import CranialNerveHomeworkTool from "@/components/crm/CranialNerveHomeworkTool";
 import BrainstemBreathingReference from "@/components/crm/BrainstemBreathingReference";
-import AppLayout from "@/components/crm/AppLayout";
 import PulsePointReference from "@/components/crm/PulsePointReference";
 import HandPolarityReference from "@/components/crm/HandPolarityReference";
 import MuscleReference from "@/components/crm/MuscleReference";
 import BaGuaReference from "@/components/crm/BaGuaReference";
 import HeartWallBible from "@/components/crm/HeartWallBible";
-import PageHeader from "@/components/shared/PageHeader";
+import EmotionsProtocolReference from "@/components/crm/EmotionsProtocolReference";
 
 const CATEGORIES = [
   {
@@ -95,21 +88,6 @@ const CATEGORIES = [
       { id: "bible", label: "Mechano Bible", icon: BookOpen, desc: "Definitive guide to joints and movement geometry." },
       { id: "heart-wall-bible", label: "Heart Wall Bible", icon: Shield, desc: "Understanding the subconscious shield." },
       { id: "theory", label: "FN Theory", icon: Workflow, desc: "Functional Neurology approach and principles." },
-    ]
-  },
-  {
-    id: "worksheets",
-    label: "Worksheets",
-    icon: FileText,
-    color: "text-purple-600",
-    bgColor: "bg-purple-50 dark:bg-purple-900/20",
-    borderColor: "border-purple-100 dark:border-purple-900/30",
-    items: [
-      { id: "north-star", label: "North Star", icon: Compass, desc: "Define your core intention and commitment.", path: "/resources/worksheets/north-star" },
-      { id: "inner-awareness", label: "Inner Awareness", icon: ShieldCheck, desc: "Daily practice for sovereignty and state.", path: "/resources/worksheets/inner-awareness" },
-      { id: "week-3", label: "Week 3: Curses", icon: ShieldCheck, desc: "Releasing generational trauma imprints.", path: "/resources/worksheets/week-3" },
-      { id: "fear-creativity", label: "Fear & Creativity", icon: Palette, desc: "Awareness of fear in the body and mind.", path: "/resources/worksheets/fear-creativity" },
-      { id: "anger-flow", label: "Anger & Flow", icon: RefreshCw, desc: "Week 8: Reclaiming expression and self-acceptance.", path: "/resources/worksheets/anger-flow" },
     ]
   },
   {
@@ -244,7 +222,7 @@ const ResourcesPage = () => {
 
               <a href="https://fnhrefapp-ggs6ojfk.manus.space/brain-zones" target="_blank" rel="noopener noreferrer" className="block group h-full">
                 <Card className="h-full border-none shadow-xl rounded-[3rem] bg-indigo-900 text-white overflow-hidden relative cursor-pointer hover:shadow-2xl hover:-translate-y-1 transition-all duration-500">
-                  <div className="absolute inset-0 bg-gradient-to-br from-indigo-600/40 to-transparent" />
+                  <div className="absolute inset-0 bg-gradient-to-br from-indigo-900/40 to-transparent" />
                   <div className="absolute top-0 right-0 p-8 opacity-10 group-hover:opacity-20 transition-opacity">
                     <Globe size={120} />
                   </div>
@@ -465,83 +443,7 @@ const ResourcesPage = () => {
 
               {/* Practice Tools */}
               <TabsContent value="emotional-theory">
-                <div className="space-y-12">
-                  <Card className="border-none shadow-2xl rounded-[3.5rem] bg-slate-900 text-white overflow-hidden relative">
-                    <div className="absolute top-0 right-0 p-12 opacity-5"><Heart size={200} /></div>
-                    <CardHeader className="p-12 relative z-10">
-                      <div className="flex items-center gap-5 mb-4">
-                        <div className="w-16 h-16 bg-rose-600 rounded-2xl flex items-center justify-center shadow-2xl shadow-rose-500/40">
-                          <Heart size={32} className="text-white" />
-                        </div>
-                        <div>
-                          <CardTitle className="text-4xl font-black tracking-tight">Neuro-Emotional Integration</CardTitle>
-                          <CardDescription className="text-slate-400 text-xl font-medium mt-2">
-                            Remapping the physiological association to emotional stress.
-                          </CardDescription>
-                        </div>
-                      </div>
-                    </CardHeader>
-                  </Card>
-
-                  <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-                    <Card className="lg:col-span-2 border-none shadow-lg rounded-[2.5rem] bg-card overflow-hidden">
-                      <CardHeader className="p-8 bg-rose-50 dark:bg-rose-900/20">
-                        <h3 className="text-2xl font-black flex items-center gap-3 text-rose-900 dark:text-rose-100">
-                          <Info size={28} /> {`The 9-Step Hierarchy`}
-                        </h3>
-                      </CardHeader>
-                      <CardContent className="p-8 space-y-6">
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                          {[
-                            { s: 1, t: "ESR Indicator Check", d: "Hold forehead points (GB14) to see if the system is ready for emotional work." },
-                            { s: 2, t: "Permission Check", d: "Always ask for permission before starting deep emotional work." },
-                            { s: 3, t: "Timeline Selection", d: "Determine if the stress is Current or Historic." },
-                            { s: 4, t: "Timeline Regression", d: "Narrow down the specific age and month of origin." },
-                            { s: 5, t: "Primary Emotion", d: "Identify the core feeling (Hurt, Worry, Sadness, Fear, Anger)." },
-                            { s: 6, t: "Priority Organ", d: "Find the organ acting as a surrogate for the charge." },
-                            { s: 7, t: "Energy Polarity", d: "Challenge for Energy IN (+) or Energy OUT (-)." },
-                            { s: 8, t: "Eye Position", d: "Identify the sensory access point (NLP logic)." },
-                            { s: 9, t: "Correction & Upload", d: "Hold ESR + Pulse Point + Eye Position + Replay Stress + Positive Upload." }
-                          ].map(step => (
-                            <div key={step.s} className="flex gap-4 p-4 bg-slate-50 dark:bg-slate-900 rounded-2xl border border-slate-100 dark:border-slate-800">
-                              <span className="w-8 h-8 rounded-full bg-rose-600 text-white flex items-center justify-center font-black text-xs shrink-0">{step.s}</span>
-                              <div>
-                                <h4 className="font-black text-slate-900 dark:text-slate-100 text-xs uppercase tracking-tight">{step.t}</h4>
-                                <p className="text-[10px] text-slate-50 font-medium leading-tight mt-1">{step.d}</p>
-                              </div>
-                            </div>
-                          ))}
-                        </div>
-                      </CardContent>
-                    </Card>
-
-                    <div className="space-y-8">
-                      <PulsePointReference />
-                      <HandPolarityReference />
-                      
-                      <Card className="border-none shadow-lg rounded-[2.5rem] bg-indigo-900 text-white overflow-hidden">
-                        <CardHeader className="p-8 pb-4">
-                          <CardTitle className="text-xl font-black flex items-center gap-3">
-                            <Brain size={24} className="text-indigo-400" /> Why it Works
-                          </CardTitle>
-                        </CardHeader>
-                        <CardContent className="p-8 pt-0 space-y-4">
-                          <p className="text-sm text-slate-300 leading-relaxed">
-                            {`"Talk therapy often fails because it doesn't go to the depths of the physiology to clear the circuit. We are bringing blood flow back to the Frontal Lobe while remapping the Limbic response."`}
-                          </p>
-                          <div className="pt-4 border-t border-white/10">
-                            <p className="text-[10px] font-black text-indigo-400 uppercase tracking-widest mb-2">Signs of Shift</p>
-                            <div className="flex flex-wrap gap-2">
-                              {SIGNS_OF_SHIFT.map(s => (
-                                <Badge key={s} className="bg-white/10 text-white border-none text-[8px] font-black uppercase">{s}</Badge>
-                              ))}
-                            </div>
-                          </div>
-                        </CardContent>
-                      </Card>
-                    </div>
-                  </div>
-                </div>
+                <EmotionsProtocolReference />
               </TabsContent>
               <TabsContent value="rehab-calc"><CranialNerveHomeworkTool /></TabsContent>
               <TabsContent value="brainstem-breath"><BrainstemBreathingReference /></TabsContent>
@@ -691,20 +593,6 @@ const ResourcesPage = () => {
                           </div>
                         </CardContent>
                       </Card>
-
-                      <div className="max-w-4xl mx-auto">
-                        <div className="flex items-center gap-3 mb-6 px-4">
-                          <div className="w-10 h-10 rounded-xl bg-indigo-600 text-white flex items-center justify-center shadow-lg">
-                            <Target size={20} />
-                          </div>
-                          <h3 className="text-2xl font-black text-foreground">Interactive Assessment Tool</h3>
-                        </div>
-                        <RightingReflexesAssessment 
-                          appointmentId="temp" 
-                          initialNotes={null} 
-                          onUpdate={() => {}} 
-                        />
-                      </div>
                     </div>
                   </Card>
                 </div>

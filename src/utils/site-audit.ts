@@ -45,6 +45,13 @@ export const SITE_MAP: PageAudit[] = [
     keyFeatures: ["Session Timer", "PEACE Workflow Switcher", "Brainstem Tone Map", "Auto-saving Notes"]
   },
   {
+    path: "/appointments/:id/protocols",
+    title: "Protocol Rail",
+    category: "Clinical",
+    description: "A focused, distraction-free interface for running specific neurological protocols during a session.",
+    keyFeatures: ["Vertical Protocol Navigation", "Image Toggle", "Persistent Summary Area"]
+  },
+  {
     path: "/lab",
     title: "The Lab",
     category: "Practice",
@@ -59,6 +66,20 @@ export const SITE_MAP: PageAudit[] = [
     keyFeatures: ["AI Insight Extraction", "Meetup Question Tracking", "Session Linking", "Deep Scan"]
   },
   {
+    path: "/practice/quiz",
+    title: "Knowledge Oracle",
+    category: "Practice",
+    description: "Infinite practice questions to sharpen clinical intuition across all FNH domains.",
+    keyFeatures: ["AI-Generated Scenarios", "Streak Tracking", "Category Selection"]
+  },
+  {
+    path: "/practice/procedures",
+    title: "Mastery Tracker",
+    category: "Practice",
+    description: "Tracking proficiency and experience across all loggable clinical components.",
+    keyFeatures: ["Mastery Levels", "Dysfunction Rate Analysis", "Weekly Focus Commitment"]
+  },
+  {
     path: "/resources",
     title: "Clinical Bible",
     category: "Practice",
@@ -66,11 +87,39 @@ export const SITE_MAP: PageAudit[] = [
     keyFeatures: ["Meridian Clock", "Muscle Reference", "Brain Zone Map", "Video Library"]
   },
   {
+    path: "/resources/print",
+    title: "Print Hub",
+    category: "Practice",
+    description: "Central repository for all landscape-optimized reference sheets and worksheets.",
+    keyFeatures: ["A4 Landscape Optimization", "Reference Sheets", "Assessment Logs"]
+  },
+  {
+    path: "/peace-framework",
+    title: "PEACE Framework",
+    category: "Practice",
+    description: "Mastery guide for the central clinical hierarchy of Functional Neuro Health.",
+    keyFeatures: ["5-Step Methodology", "Clinical Tiers", "Mastery Principles"]
+  },
+  {
+    path: "/morning-program",
+    title: "Morning Program",
+    category: "Practice",
+    description: "Daily ritual for establishing the practitioner's clinical state.",
+    keyFeatures: ["Grounding Tool", "Readiness Checklist", "HeartMath Breathing"]
+  },
+  {
     path: "/business",
     title: "Business Hub",
     category: "Business",
     description: "Strategic tools for practice growth and audience ownership.",
     keyFeatures: ["Marketing Engine", "Kit Integration", "AI Strategy Partners", "Leadership Portals"]
+  },
+  {
+    path: "/business/marketing-engine",
+    title: "Marketing Engine",
+    category: "Business",
+    description: "Transforming clinical wins into distribution-ready assets for Kit.",
+    keyFeatures: ["Wins Vault", "AI Prompt Studio", "HTML Template Studio"]
   },
   {
     path: "/onboarding/:id",

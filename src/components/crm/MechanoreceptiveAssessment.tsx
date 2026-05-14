@@ -19,7 +19,13 @@ import {
   Workflow,
   ImageIcon,
   List,
-  CheckCircle2
+  CheckCircle2,
+  FileText,
+  Layers,
+  Dumbbell,
+  ArrowRight,
+  ShieldAlert,
+  Printer
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import MechanoreceptiveProcess from "./MechanoreceptiveProcess";
@@ -54,164 +60,215 @@ const MechanoreceptiveAssessment = ({ appointmentId, onSave }: MechanoreceptiveA
     fetchLigamentImages();
   }, []);
 
-  return (
-    <div className="space-y-8 animate-in fade-in duration-500 max-w-5xl mx-auto">
-      {/* Header Section */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 border-b border-slate-100 pb-6">
-        <div>
-          <h1 className="text-3xl font-serif font-bold text-slate-900">Mechanoreceptive Calibration</h1>
-          <p className="text-sm text-slate-500 font-medium mt-1">Joint, Ligament, and Tendon Integration</p>
+  const SectionHeader = ({ title, subtitle }: { title: string, subtitle?: string }) => (
+    <div className="border-b border-black pb-1 mb-4 mt-8 first:mt-0">
+      <h3 className="text-sm font-black uppercase tracking-widest text-black">{title}</h3>
+      {subtitle && <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">{subtitle}</p>}
+    </div>
+  );
+
+  if (showWizard) {
+    return (
+      <div className="animate-in fade-in duration-500">
+        <div className="flex items-center justify-between mb-6">
+          <Badge className="bg-indigo-600 text-white border-none font-black text-[10px] uppercase tracking-widest px-3 py-1">
+            Interactive Calibration Active
+          </Badge>
+          <Button variant="ghost" size="sm" onClick={() => setShowWizard(false)} className="text-slate-400 hover:text-rose-600 font-bold text-xs">
+            Exit Wizard
+          </Button>
         </div>
-        <div className="flex gap-3">
+        <MechanoreceptiveProcess 
+          onSave={(summary) => {
+            onSave(summary);
+            setShowWizard(false);
+          }}
+          onCancel={() => setShowWizard(false)}
+          ligamentImages={ligamentImages}
+          onOpenActionTable={() => setActionTableOpen(true)}
+          onOpenLigamentCharts={() => setLigamentModalOpen(true)}
+        />
+      </div>
+    );
+  }
+
+  return (
+    <div className="w-full bg-white text-black font-sans animate-in fade-in duration-700 pb-20">
+      {/* Document Header */}
+      <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 border-b-4 border-black pb-8 mb-12">
+        <div className="space-y-1">
+          <h1 className="text-4xl font-black tracking-tighter uppercase leading-none">Mechanoreceptive Protocol</h1>
+          <p className="text-[10px] font-bold text-slate-400 uppercase tracking-[0.5em]">Resonance Clinical Infrastructure • Section IV.A</p>
+        </div>
+        <div className="flex gap-3 print:hidden">
           <Button 
             variant="outline" 
             onClick={() => setActionTableOpen(true)}
-            className="rounded-xl h-10 px-4 font-bold text-xs uppercase tracking-widest border-slate-200"
+            className="rounded-none border-black font-black text-[10px] uppercase tracking-widest h-10 px-4 hover:bg-slate-50"
           >
-            <List size={16} className="mr-2" /> Action Table
+            <List size={14} className="mr-2" /> Action Table
           </Button>
-          {!showWizard && (
-            <Button 
-              onClick={() => setShowWizard(true)}
-              className="bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl h-10 px-6 font-black text-xs uppercase tracking-widest shadow-lg"
-            >
-              <Zap size={16} className="mr-2 fill-current" /> Start Calibration
-            </Button>
-          )}
+          <Button 
+            onClick={() => setShowWizard(true)}
+            className="bg-black text-white hover:bg-slate-800 rounded-none h-10 px-6 font-black text-[10px] uppercase tracking-widest shadow-lg"
+          >
+            <Zap size={14} className="mr-2 fill-current" /> Start Calibration
+          </Button>
         </div>
       </div>
 
-      {showWizard ? (
-        <div className="animate-in slide-in-from-bottom-4 duration-500">
-          <div className="flex items-center justify-between mb-6">
-            <Badge className="bg-indigo-50 text-indigo-600 border-none font-black text-[10px] uppercase tracking-widest px-3 py-1">
-              Interactive Wizard Active
-            </Badge>
-            <Button variant="ghost" size="sm" onClick={() => setShowWizard(false)} className="text-slate-400 hover:text-rose-600 font-bold text-xs">
-              Cancel Wizard
-            </Button>
-          </div>
-          <MechanoreceptiveProcess 
-            onSave={(summary) => {
-              onSave(summary);
-              setShowWizard(false);
-            }}
-            onCancel={() => setShowWizard(false)}
-            ligamentImages={ligamentImages}
-            onOpenActionTable={() => setActionTableOpen(true)}
-            onOpenLigamentCharts={() => setLigamentModalOpen(true)}
-          />
-        </div>
-      ) : (
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
-          {/* Left: Core Logic */}
-          <div className="lg:col-span-7 space-y-6">
-            <Card className="border-none shadow-md rounded-2xl bg-white overflow-hidden">
-              <CardHeader className="bg-blue-50 p-6">
-                <CardTitle className="text-lg font-black flex items-center gap-2 text-blue-900">
-                  <Brain size={20} className="text-blue-600" /> Conscious (DCML)
-                </CardTitle>
-                <CardDescription className="text-blue-700 font-medium">15% of afferent input. Contralateral logic.</CardDescription>
-              </CardHeader>
-              <CardContent className="p-6 space-y-4">
-                <div className="p-4 bg-slate-50 rounded-xl border border-slate-100">
-                  <p className="text-xs font-bold text-slate-700 leading-relaxed">
-                    Targets the S1 Sensory Cortex. Used for "smudged" sensory maps and chronic pain patterns.
-                  </p>
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-16">
+        {/* Main Document Body */}
+        <div className="lg:col-span-8 space-y-12">
+          
+          {/* I. Theory */}
+          <section>
+            <SectionHeader title="I. Clinical Theory" subtitle="The 15/85 Afferent Split" />
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+              <div className="p-6 border border-black space-y-4">
+                <div className="flex items-center gap-2 text-blue-600">
+                  <Brain size={18} />
+                  <h4 className="font-black text-[11px] uppercase tracking-widest">Conscious (DCML)</h4>
                 </div>
-                <ul className="space-y-3">
-                  {[
-                    "Identify restricted joint action via Action Table",
-                    "Hold contralateral M1/S1 brain zones",
-                    "Perform 30-40% isometric contraction (60-90s)",
-                    "Maintain nasal breathing throughout"
-                  ].map((step, i) => (
-                    <li key={i} className="flex items-start gap-3 text-sm font-medium text-slate-600">
-                      <CheckCircle2 size={18} className="text-blue-500 shrink-0 mt-0.5" />
-                      {step}
-                    </li>
-                  ))}
-                </ul>
-              </CardContent>
-            </Card>
-
-            <Card className="border-none shadow-md rounded-2xl bg-white overflow-hidden">
-              <CardHeader className="bg-emerald-50 p-6">
-                <CardTitle className="text-lg font-black flex items-center gap-2 text-emerald-900">
-                  <Activity size={20} className="text-emerald-600" /> Unconscious (SC)
-                </CardTitle>
-                <CardDescription className="text-emerald-700 font-medium">85% of afferent input. Ipsilateral logic.</CardDescription>
-              </CardHeader>
-              <CardContent className="p-6 space-y-4">
-                <div className="p-4 bg-slate-50 rounded-xl border border-slate-100">
-                  <p className="text-xs font-bold text-slate-700 leading-relaxed">
-                    Targets the Cerebellum via Spinocerebellar tracts. Used for ligamentous threat and stability issues.
-                  </p>
-                </div>
-                <ul className="space-y-3">
-                  {[
-                    "Identify priority ligament or tendon",
-                    "Hold GV16 (Cerebellum) reflex point",
-                    "Apply gentle stretch to the target tissue",
-                    "Apply 128Hz tuning fork to cranium (5s)"
-                  ].map((step, i) => (
-                    <li key={i} className="flex items-start gap-3 text-sm font-medium text-slate-600">
-                      <CheckCircle2 size={18} className="text-emerald-500 shrink-0 mt-0.5" />
-                      {step}
-                    </li>
-                  ))}
-                </ul>
-              </CardContent>
-            </Card>
-          </div>
-
-          {/* Right: Quick Reference */}
-          <div className="lg:col-span-5 space-y-6">
-            <Card className="border-none shadow-xl rounded-[2.5rem] bg-slate-900 text-white overflow-hidden">
-              <CardHeader className="p-8 pb-4">
-                <CardTitle className="text-xl font-black flex items-center gap-3">
-                  <Search size={24} className="text-indigo-400" /> Localization Path
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="p-8 pt-0 space-y-6">
-                <div className="space-y-4">
-                  {[
-                    { l: "Region", v: "Upper vs. Lower" },
-                    { l: "Laterality", v: "Left vs. Right" },
-                    { l: "Skeleton", v: "Axial vs. Appendicular" },
-                    { l: "Joint", v: "Specific Segment (e.g. L4/L5)" }
-                  ].map((step, i) => (
-                    <div key={i} className="flex items-center gap-4 p-3 bg-white/5 rounded-2xl border border-white/10">
-                      <span className="w-6 h-6 rounded-full bg-indigo-600 flex items-center justify-center font-black text-[10px]">{i + 1}</span>
-                      <div>
-                        <p className="text-[8px] font-black text-slate-500 uppercase tracking-widest">{step.l}</p>
-                        <p className="text-xs font-bold">{step.v}</p>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-                <div className="p-4 bg-indigo-600/20 rounded-2xl border border-indigo-500/30">
-                  <p className="text-xs font-medium leading-relaxed italic text-indigo-100">
-                    "The joint may not be related to the symptom site—it's where the brain needs proprioceptive input to reduce threat."
-                  </p>
-                </div>
-              </CardContent>
-            </Card>
-
-            <div className="p-6 bg-amber-50 rounded-[2rem] border-2 border-amber-100 flex items-start gap-4">
-              <div className="w-12 h-12 rounded-2xl bg-white shadow-sm flex items-center justify-center text-amber-500 shrink-0">
-                <Info size={24} />
-              </div>
-              <div className="space-y-1">
-                <h4 className="font-black text-amber-900 text-xs uppercase tracking-widest">Clinical Tip</h4>
-                <p className="text-xs text-amber-800 font-medium leading-relaxed">
-                  Always re-test the original stimulus after each layer. If the IM remains inhibited, there is a deeper layer of compensation.
+                <p className="text-xs leading-relaxed font-medium text-slate-700">
+                  Targets the <strong>15%</strong> of afferent input processed by the contralateral Sensory Cortex (S1). Used for "smudged" sensory maps and chronic pain patterns.
                 </p>
+                <div className="pt-2 border-t border-slate-100">
+                  <p className="text-[9px] font-black uppercase text-slate-400 mb-1">Correction</p>
+                  <p className="text-[10px] font-bold">Isometric Contraction (30-40% effort) for 60-90s.</p>
+                </div>
+              </div>
+
+              <div className="p-6 border border-black space-y-4">
+                <div className="flex items-center gap-2 text-emerald-600">
+                  <Activity size={18} />
+                  <h4 className="font-black text-[11px] uppercase tracking-widest">Unconscious (SC)</h4>
+                </div>
+                <p className="text-xs leading-relaxed font-medium text-slate-700">
+                  Targets the <strong>85%</strong> of afferent input processed by the Cerebellum via Spinocerebellar tracts. Used for ligamentous threat and stability issues.
+                </p>
+                <div className="pt-2 border-t border-slate-100">
+                  <p className="text-[9px] font-black uppercase text-slate-400 mb-1">Correction</p>
+                  <p className="text-[10px] font-bold">Ligament Stretch + GV16 + 128Hz Tuning Fork.</p>
+                </div>
+              </div>
+            </div>
+          </section>
+
+          {/* II. Localization */}
+          <section>
+            <SectionHeader title="II. Localization Hierarchy" subtitle="Isolating the Priority Joint" />
+            <div className="space-y-4">
+              <div className="overflow-hidden border border-black">
+                <table className="w-full text-left border-collapse">
+                  <thead>
+                    <tr className="bg-slate-50 border-b border-black">
+                      <th className="p-4 font-black text-[10px] uppercase tracking-widest border-r border-black w-1/3">Step</th>
+                      <th className="p-4 font-black text-[10px] uppercase tracking-widest">Clinical Logic</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-black/10">
+                    {[
+                      { s: "1. Region", l: "Upper vs. Lower (Divided at T12)" },
+                      { s: "2. Laterality", l: "Left vs. Right vs. Midline" },
+                      { s: "3. Skeleton", l: "Axial (Spine/Skull) vs. Appendicular (Limbs)" },
+                      { s: "4. Specific Joint", l: "Isolate the segment (e.g. L4/L5, GH Joint)" }
+                    ].map((row, i) => (
+                      <tr key={i}>
+                        <td className="p-4 font-bold text-xs border-r border-black/10 bg-slate-50/30">{row.s}</td>
+                        <td className="p-4 text-xs font-medium text-slate-600">{row.l}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+              <div className="p-4 bg-slate-900 text-white italic text-xs leading-relaxed">
+                "The joint may not be related to the symptom site—it's where the brain needs proprioceptive input to reduce threat."
+              </div>
+            </div>
+          </section>
+
+          {/* III. Geometry */}
+          <section>
+            <SectionHeader title="III. The Geometry of Movement" subtitle="Planes of Motion" />
+            <div className="grid grid-cols-3 gap-4">
+              {[
+                { p: "Sagittal", m: "Flexion / Extension", c: "text-blue-600" },
+                { p: "Frontal", m: "Abduction / Adduction", c: "text-emerald-600" },
+                { p: "Transverse", m: "Internal / External Rot", c: "text-orange-600" }
+              ].map(plane => (
+                <div key={plane.p} className="p-4 border border-black text-center space-y-1">
+                  <p className={cn("font-black text-[10px] uppercase tracking-widest", plane.c)}>{plane.p}</p>
+                  <p className="text-[10px] font-bold text-slate-900">{plane.m}</p>
+                </div>
+              ))}
+            </div>
+          </section>
+        </div>
+
+        {/* Sidebar / Reference Column */}
+        <div className="lg:col-span-4 space-y-10">
+          <div className="p-8 border-2 border-black space-y-6 bg-slate-50/50">
+            <div className="flex items-center gap-3">
+              <ShieldAlert size={20} className="text-black" />
+              <h4 className="font-black text-xs uppercase tracking-widest">Practitioner Note</h4>
+            </div>
+            <p className="text-xs font-medium leading-relaxed italic text-slate-600">
+              "Always re-test the original stimulus after each layer. If the IM remains inhibited, there is a deeper layer of compensation. Expect 5-15 layers in complex cases."
+            </p>
+            <div className="pt-4 border-t border-black/10 space-y-4">
+              <div className="flex items-center gap-3">
+                <CheckCircle2 size={16} className="text-emerald-600" />
+                <span className="text-[10px] font-black uppercase tracking-widest">Nasal Breathing Required</span>
+              </div>
+              <div className="flex items-center gap-3">
+                <CheckCircle2 size={16} className="text-emerald-600" />
+                <span className="text-[10px] font-black uppercase tracking-widest">30-40% Effort Only</span>
               </div>
             </div>
           </div>
+
+          <Card className="border-none shadow-sm bg-slate-900 text-white rounded-none overflow-hidden">
+            <CardHeader className="p-6 pb-2">
+              <CardTitle className="text-[10px] font-black uppercase tracking-[0.3em] text-indigo-400 flex items-center gap-2">
+                <ImageIcon size={14} /> Visual Reference
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="p-6 pt-0">
+              <div className="aspect-square rounded-none overflow-hidden bg-white/5 border border-white/10 flex items-center justify-center p-4">
+                <img 
+                  src="/images/mechanoreceptive/homunculus.png" 
+                  alt="Homunculus" 
+                  className="max-w-full h-auto opacity-80"
+                />
+              </div>
+              <p className="text-[8px] font-bold text-slate-500 uppercase tracking-widest mt-4 text-center">Cortical Homunculus (S1/M1 Map)</p>
+            </CardContent>
+          </Card>
+
+          <div className="space-y-4">
+            <Button 
+              variant="outline" 
+              className="w-full h-14 rounded-none border-black font-black text-[10px] uppercase tracking-widest hover:bg-slate-50"
+              onClick={() => setLigamentModalOpen(true)}
+            >
+              <Layers size={18} className="mr-2" /> Open Ligament Charts
+            </Button>
+            <Button 
+              variant="outline" 
+              className="w-full h-14 rounded-none border-black font-black text-[10px] uppercase tracking-widest hover:bg-slate-50"
+              onClick={() => window.print()}
+            >
+              <Printer size={18} className="mr-2" /> Print Protocol Sheet
+            </Button>
+          </div>
         </div>
-      )}
+      </div>
+
+      {/* Footer */}
+      <div className="mt-20 pt-8 border-t-2 border-slate-100 text-center">
+        <p className="text-[10px] font-bold text-slate-300 uppercase tracking-[0.5em]">Fractal Resolution OS • Confidential Practitioner Resource</p>
+      </div>
 
       <JointActionTableModal open={actionTableOpen} onOpenChange={setActionTableOpen} />
     </div>

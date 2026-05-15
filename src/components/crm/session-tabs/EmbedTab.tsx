@@ -26,7 +26,6 @@ import {
   Heart,
   Wind,
   FileText,
-  Droplets,
   GitBranch,
   Sparkles
 } from "lucide-react";
@@ -154,12 +153,57 @@ const EmbedTab = ({ appointment, onUpdate, saveField, updatePriorityPattern }: E
     return Brain;
   };
 
-  // Summary Data Helpers
   const hasSnsResets = !!(appointment.harmonic_rocking_notes || appointment.t1_reset_notes || appointment.diaphragm_reset_notes || appointment.vagus_nerve_notes);
 
   return (
     <div className="space-y-12 animate-in fade-in duration-500">
-      {/* 1. Full Session Report Summary */}
+      {/* 1. Next Steps & Scheduling - Elevated to Top */}
+      <div className="p-8 bg-indigo-600 rounded-[2.5rem] text-white shadow-xl shadow-indigo-100 dark:shadow-none relative overflow-hidden">
+        <div className="absolute top-0 right-0 p-8 opacity-10 pointer-events-none"><CalendarPlus size={150} /></div>
+        <div className="flex flex-col md:flex-row items-center justify-between gap-8 relative z-10">
+          <div className="flex items-center gap-5">
+            <div className="w-16 h-16 rounded-2xl bg-white/20 backdrop-blur-md flex items-center justify-center shadow-inner">
+              <CalendarPlus size={32} />
+            </div>
+            <div>
+              <h3 className="text-2xl font-black">Schedule Follow-up</h3>
+              <p className="text-indigo-100 text-sm font-medium">Lock in the next session for {appointment.clients.name}.</p>
+            </div>
+          </div>
+          
+          <Dialog open={bookNextOpen} onOpenChange={setBookNextOpen}>
+            <DialogTrigger asChild>
+              <Button className="w-full md:w-auto bg-white text-indigo-600 hover:bg-indigo-50 rounded-2xl h-14 px-12 font-black text-xs uppercase tracking-widest shadow-lg">
+                <Plus size={20} className="mr-2" /> Book Next Session
+              </Button>
+            </DialogTrigger>
+            <DialogContent className="sm:max-w-[550px] max-h-[90vh] overflow-y-auto rounded-[3rem] p-0">
+              <div className="p-10">
+                <DialogHeader className="mb-8">
+                  <div className="flex items-center gap-4 mb-2">
+                    <div className="w-14 h-14 rounded-2xl bg-indigo-600 text-white flex items-center justify-center shadow-xl">
+                      <CalendarPlus size={28} />
+                    </div>
+                    <div>
+                      <DialogTitle className="text-3xl font-black">Book Next Session</DialogTitle>
+                      <DialogDescription className="text-base font-medium">Schedule the follow-up for {appointment.clients.name}.</DialogDescription>
+                    </div>
+                  </div>
+                </DialogHeader>
+                <AppointmentForm 
+                  initialClientId={appointment.clients.id}
+                  onSuccess={() => {
+                    setBookNextOpen(false);
+                    onUpdate();
+                  }} 
+                />
+              </div>
+            </DialogContent>
+          </Dialog>
+        </div>
+      </div>
+
+      {/* 2. Full Session Report Summary */}
       <div className="space-y-6">
         <div className="flex items-center gap-3 px-2">
           <div className="w-10 h-10 rounded-xl bg-slate-900 text-white flex items-center justify-center shadow-lg">
@@ -303,7 +347,7 @@ const EmbedTab = ({ appointment, onUpdate, saveField, updatePriorityPattern }: E
         </div>
       </div>
 
-      {/* 2. Clinical Verification (Re-challenge) */}
+      {/* 3. Clinical Verification (Re-challenge) */}
       <div className="space-y-6">
         <div className="flex items-center justify-between px-2">
           <div className="flex items-center gap-3">
@@ -374,7 +418,7 @@ const EmbedTab = ({ appointment, onUpdate, saveField, updatePriorityPattern }: E
         )}
       </div>
 
-      {/* 3. Notes Section */}
+      {/* 4. Notes Section */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
         <div className="space-y-4">
           <div className="flex items-center gap-3 px-2">
@@ -410,65 +454,6 @@ const EmbedTab = ({ appointment, onUpdate, saveField, updatePriorityPattern }: E
             onSave={saveField} 
             className="bg-amber-50/30 border-amber-100 p-6 rounded-2xl border shadow-sm min-h-[250px]" 
           />
-        </div>
-      </div>
-
-      {/* 4. Next Steps & Scheduling */}
-      <div className="pt-8 border-t border-slate-100">
-        <div className="flex flex-col md:flex-row items-center justify-between gap-6 p-8 bg-indigo-600 rounded-[2.5rem] text-white shadow-xl shadow-indigo-100">
-          <div className="flex items-center gap-5">
-            <div className="w-14 h-14 rounded-2xl bg-white/20 backdrop-blur-md flex items-center justify-center shadow-inner">
-              <CalendarPlus size={28} />
-            </div>
-            <div>
-              <h3 className="text-2xl font-black">Next Steps</h3>
-              <p className="text-indigo-100 text-sm font-medium">Schedule the follow-up session for {appointment.clients.name}.</p>
-            </div>
-          </div>
-          
-          <Dialog open={bookNextOpen} onOpenChange={setBookNextOpen}>
-            <DialogTrigger asChild>
-              <Button className="w-full md:w-auto bg-white text-indigo-600 hover:bg-indigo-50 rounded-2xl h-14 px-10 font-black text-xs uppercase tracking-widest shadow-lg">
-                <Plus size={20} className="mr-2" /> Schedule Next Session
-              </Button>
-            </DialogTrigger>
-            <DialogContent className="sm:max-w-[550px] max-h-[90vh] overflow-y-auto rounded-[3rem] p-0">
-              <div className="p-10">
-                <DialogHeader className="mb-8">
-                  <div className="flex items-center gap-4 mb-2">
-                    <div className="w-14 h-14 rounded-2xl bg-indigo-600 text-white flex items-center justify-center shadow-xl">
-                      <CalendarPlus size={28} />
-                    </div>
-                    <div>
-                      <DialogTitle className="text-3xl font-black">Book Next Session</DialogTitle>
-                      <DialogDescription className="text-base font-medium">Schedule the follow-up for {appointment.clients.name}.</DialogDescription>
-                    </div>
-                  </div>
-                </DialogHeader>
-                <AppointmentForm 
-                  initialClientId={appointment.clients.id}
-                  onSuccess={() => {
-                    setBookNextOpen(false);
-                    onUpdate();
-                  }} 
-                />
-              </div>
-            </DialogContent>
-          </Dialog>
-        </div>
-      </div>
-
-      {/* Clinical Pearl */}
-      <div className="p-8 bg-slate-900 text-white rounded-[2.5rem] flex items-start gap-6 shadow-xl relative overflow-hidden">
-        <div className="absolute top-0 right-0 p-6 opacity-10"><Info size={100} /></div>
-        <div className="w-12 h-12 rounded-2xl bg-indigo-600 flex items-center justify-center text-white shadow-lg shrink-0 relative z-10">
-          <Lightbulb size={24} />
-        </div>
-        <div className="space-y-1 relative z-10">
-          <p className="text-[10px] font-black text-indigo-400 uppercase tracking-[0.4em]">Clinical Mastery</p>
-          <p className="text-base text-slate-300 font-medium leading-relaxed italic">
-            "The Embed phase is where we verify the fractal resolution. If an item remains inhibited after re-challenge, it indicates a deeper layer or a missing SNS reset. Never leave a session with an active primary priority."
-          </p>
         </div>
       </div>
     </div>

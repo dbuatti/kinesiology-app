@@ -172,18 +172,11 @@ const RecheckTab = ({ appointment, history, onUpdate, saveField, updatePriorityP
 
     return Object.values(groups)
       .filter(group => {
-        // Filter logic: Only show if it was inhibited last time OR has been inhibited at some point in history
         const items = [group.left, group.right, group.midline].filter(Boolean);
-        
         return items.some(item => {
-          // 1. If it was inhibited in the previous session, we definitely want to recheck it
           if (item.previousStatus === 'Inhibited' || item.previousStatus !== 'Normotonic') return true;
-          
-          // 2. If it was clear in the previous session, check if it has EVER been inhibited in history
           const fullName = item.side ? `${item.name} (${item.side})` : item.name;
           const findingHistory = historyStats.find(h => h.name === fullName);
-          
-          // If we have history and it was ever inhibited, show it to verify it's still clear
           const wasEverInhibited = findingHistory?.history.some(h => h.status === 'Inhibited' || (h.status as any) !== 'Normotonic');
           return wasEverInhibited;
         });
@@ -426,10 +419,12 @@ const RecheckTab = ({ appointment, history, onUpdate, saveField, updatePriorityP
           <div className="w-16 h-16 bg-white rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-sm">
             <CheckCircle2 size={32} className="text-emerald-500" />
           </div>
-          <h3 className="text-lg font-black text-slate-900">No Items to Recheck</h3>
-          <p className="text-slate-500 mt-1 font-medium">
-            All previous findings are either integrated or have a history of being clear.
-          </p>
+          <div className="space-y-2">
+            <h3 className="text-xl font-black text-slate-900">No Items to Recheck</h3>
+            <p className="text-slate-500 font-medium max-w-md mx-auto">
+              Nothing flagged from last session ({format(new Date(previousSession.date), "MMM d")}). If you notice new inhibitions during today's session, they'll appear here next time.
+            </p>
+          </div>
         </div>
       )}
 

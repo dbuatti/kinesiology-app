@@ -156,8 +156,28 @@ const AppointmentHeader = ({ appointment, onSaveField, onUpdate }: AppointmentHe
 
   return (
     <div className="space-y-8">
-      <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-8">
-        {/* CLIENT INFO SECTION */}
+      {/* MOBILE COMPACT HEADER */}
+      <div className="md:hidden flex items-center justify-between bg-slate-900 text-white p-4 rounded-2xl shadow-lg">
+        <div className="flex items-center gap-3 min-w-0">
+          <div className="w-10 h-10 rounded-xl bg-indigo-600 flex items-center justify-center font-black text-lg shrink-0">
+            {appointment.clients.name.charAt(0)}
+          </div>
+          <div className="min-w-0">
+            <h1 className="font-black text-base truncate">{appointment.clients.name}</h1>
+            <p className="text-[8px] font-bold text-indigo-300 uppercase tracking-widest">
+              {format(appointment.date, "h:mm a")} • {appointment.status}
+            </p>
+          </div>
+        </div>
+        <Link to={`/clients/${appointment.clients.id}`}>
+          <Button variant="ghost" size="icon" className="h-8 w-8 text-slate-400">
+            <User size={18} />
+          </Button>
+        </Link>
+      </div>
+
+      {/* DESKTOP FULL HEADER */}
+      <div className="hidden md:flex flex-col lg:flex-row lg:items-center justify-between gap-8">
         <div className="flex items-center gap-6 min-w-0">
           <div className="relative shrink-0 group">
             <div className="absolute inset-0 bg-indigo-600 rounded-3xl blur-2xl opacity-10 group-hover:opacity-30 transition-all duration-700" />

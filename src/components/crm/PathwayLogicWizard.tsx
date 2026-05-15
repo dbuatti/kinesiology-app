@@ -8,7 +8,7 @@ import {
   Zap, Info, List, RefreshCw, Eye, Dumbbell, Link as LinkIcon,
   Workflow, Lightbulb, ChevronRight, ChevronLeft, Droplets, 
   AlertTriangle, ArrowRight, Heart, ImageIcon, Loader2, Search,
-  ShieldAlert, Hand, PlayCircle, Baby
+  ShieldAlert, Hand, PlayCircle, Baby, ClipboardCheck
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Badge } from '@/components/ui/badge';
@@ -33,6 +33,7 @@ import { BRAIN_REFLEX_POINTS } from '@/data/brain-reflex-data';
 import { getMuscleInfo } from '@/data/muscle-info-data';
 import { PRIMITIVE_REFLEXES } from '@/data/primitive-reflex-data';
 import { safeParse } from '@/utils/safe-json';
+import { format } from 'date-fns';
 
 type Step = 
   | 'SELECT_START'
@@ -47,11 +48,12 @@ type Step =
 interface PathwayLogicWizardProps {
   onSave: (summary: string) => void;
   onClearItem?: (itemName: string) => void;
+  onCancel?: () => void;
   priorityPattern?: string | null;
   initialFinding?: string | null;
 }
 
-const PathwayLogicWizard = ({ onSave, onClearItem, priorityPattern, initialFinding }: PathwayLogicWizardProps) => {
+const PathwayLogicWizard = ({ onSave, onClearItem, onCancel, priorityPattern, initialFinding }: PathwayLogicWizardProps) => {
   const [step, setStep] = useState<Step>('SELECT_START');
   const [history, setHistory] = useState<Step[]>([]);
   const [selectedFinding, setSelectedFinding] = useState<string>("");
@@ -64,7 +66,6 @@ const PathwayLogicWizard = ({ onSave, onClearItem, priorityPattern, initialFindi
   const onOpenActionTable = () => setActionTableOpen(true);
   const onOpenLigamentCharts = () => setLigamentModalOpen(true);
 
-  // Handle initial finding from parent
   useEffect(() => {
     if (initialFinding) {
       setSelectedFinding(initialFinding);
@@ -74,19 +75,19 @@ const PathwayLogicWizard = ({ onSave, onClearItem, priorityPattern, initialFindi
 
   const effectiveItem = selectedFinding === 'CUSTOM' ? customText : selectedFinding;
 
-  const inhibitedItems = useMemo(() => {
+  const { inhibitedItems, hasAnyTested } = useMemo(() => {
     const items = new Set<string>();
     const baseNames = new Map<string, Set<'L' | 'R'>>();
+    let hasAnyTested = false;
     
     if (priorityPattern) {
       try {
         const parsed = safeParse(priorityPattern, {});
         Object.values(parsed).forEach((category: any) => {
+          if (Object.keys(category).length > 0) hasAnyTested = true;
           Object.entries(category).forEach(([name, status]) => {
             if (status === 'Inhibited') {
               items.add(name);
-              
-              // Track L/R pairs for Bilateral grouping
               const match = name.match(/(.+) \(([LR])\)$/);
               if (match) {
                 const base = match[1];
@@ -100,7 +101,6 @@ const PathwayLogicWizard = ({ onSave, onClearItem, priorityPattern, initialFindi
       } catch (e) {}
     }
 
-    // Add Bilateral options if both L and R are inhibited
     baseNames.forEach((sides, base) => {
       if (sides.has('L') && sides.has('R')) {
         items.add(`${base} (Bilateral)`);
@@ -111,7 +111,7 @@ const PathwayLogicWizard = ({ onSave, onClearItem, priorityPattern, initialFindi
       items.add(initialFinding);
     }
 
-    return Array.from(items).sort();
+    return { inhibitedItems: Array.from(items).sort(), hasAnyTested };
   }, [priorityPattern, initialFinding]);
 
   useEffect(() => {
@@ -141,6 +141,8 @@ const PathwayLogicWizard = ({ onSave, onClearItem, priorityPattern, initialFindi
     if (lastStep) {
       setStep(lastStep);
       setHistory([...history]);
+    } else {
+      onCancel?.();
     }
   };
 
@@ -153,7 +155,6 @@ const PathwayLogicWizard = ({ onSave, onClearItem, priorityPattern, initialFindi
 
   const handleSave = (summary: string) => {
     if (effectiveItem && selectedFinding !== 'CUSTOM' && onClearItem) {
-      // If Bilateral was selected, clear both L and R
       if (effectiveItem.includes('(Bilateral)')) {
         const base = effectiveItem.replace(' (Bilateral)', '');
         onClearItem(`${base} (L)`);
@@ -232,6 +233,43 @@ const PathwayLogicWizard = ({ onSave, onClearItem, priorityPattern, initialFindi
   const renderStep = () => {
     switch (step) {
       case 'SELECT_START':
+        if (inhibitedItems.length === 0) {
+          return (
+            <div className="py-12 flex flex-col items-center justify-center text-center space-y-6 animate-in fade-in zoom-in-95 duration-500">
+              <div className={cn(
+                "w-20 h-20 rounded-[2rem] flex items-center justify-center shadow-xl",
+                hasAnyTested ? "bg-emerald-50 text-emerald-500" : "bg-slate-50 text-slate-300"
+              )}>
+                {hasAnyTested ? <CheckCircle2 size={40} /> : <ClipboardCheck size={40} />}
+              </div>
+              <div className="space-y-2">
+                <h3 className="text-2xl font-black text-slate-900">
+                  {hasAnyTested ? "All findings clear" : "Align phase pending"}
+                </h3>
+                <p className="text-slate-500 font-medium max-w-xs mx-auto">
+                  {hasAnyTested 
+                    ? `✓ All findings from this session tested clear — no corrections required. (${format(new Date(), "h:mm a")})`
+                    : "Complete the Align phase first to populate correction targets."}
+                </p>
+              </div>
+              {!hasAnyTested && (
+                <Button variant="outline" className="rounded-xl h-11 px-8 font-bold text-xs uppercase tracking-widest border-indigo-100 text-indigo-600">
+                  Go to Align Phase
+                </Button>
+              )}
+              <div className="pt-4 border-t border-slate-100 w-full max-w-xs">
+                <Button 
+                  variant="ghost" 
+                  onClick={() => setSelectedFinding('CUSTOM')}
+                  className="w-full h-10 text-[10px] font-black uppercase tracking-widest text-slate-400 hover:text-indigo-600"
+                >
+                  + Manual Correction Entry
+                </Button>
+              </div>
+            </div>
+          );
+        }
+
         return (
           <div className="space-y-8 animate-in fade-in zoom-in-95 duration-500">
             <div className="space-y-6">
@@ -243,7 +281,7 @@ const PathwayLogicWizard = ({ onSave, onClearItem, priorityPattern, initialFindi
               <div className="grid grid-cols-1 gap-4">
                 <Select value={selectedFinding} onValueChange={(v) => setSelectedFinding(v)}>
                   <SelectTrigger className="h-14 rounded-2xl border-2 border-slate-100 bg-white font-bold text-lg">
-                    <SelectValue placeholder={inhibitedItems.length > 0 ? "Select inhibited finding..." : "No inhibited items found"} />
+                    <SelectValue placeholder="Select inhibited finding..." />
                   </SelectTrigger>
                   <SelectContent className="rounded-2xl border-none shadow-2xl p-2 bg-white dark:bg-slate-900">
                     {inhibitedItems.map(item => (
@@ -394,7 +432,7 @@ const PathwayLogicWizard = ({ onSave, onClearItem, priorityPattern, initialFindi
                 </div>
               </button>
             ))}
-            <Button variant="ghost" onClick={goBack} className="w-full h-12 rounded-2xl font-bold text-muted-foreground"><ChevronLeft size={18} className="mr-2" /> Back</Button>
+            <Button variant="ghost" onClick={goBack} className="w-full h-12 rounded-xl font-bold text-muted-foreground"><ChevronLeft size={18} className="mr-2" /> Back</Button>
           </div>
         );
 
@@ -436,7 +474,7 @@ const PathwayLogicWizard = ({ onSave, onClearItem, priorityPattern, initialFindi
                 </div>
               </button>
             ))}
-            <Button variant="ghost" onClick={goBack} className="w-full h-12 rounded-2xl font-bold text-muted-foreground"><ChevronLeft size={18} className="mr-2" /> Back</Button>
+            <Button variant="ghost" onClick={goBack} className="w-full h-12 rounded-xl font-bold text-muted-foreground"><ChevronLeft size={18} className="mr-2" /> Back</Button>
           </div>
         );
 

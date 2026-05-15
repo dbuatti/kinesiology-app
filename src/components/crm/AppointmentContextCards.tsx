@@ -1,12 +1,12 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { 
   Zap, ExternalLink, Clock, Target, ShieldAlert, Activity, Brain, Heart, Home, Sparkles, CreditCard, CheckCircle2, Wallet, Smartphone, Loader2, QrCode, ChevronDown, DollarSign,
-  MessageSquare, Info, AlertCircle, Lightbulb, Layers
+  MessageSquare, Info, AlertCircle, Lightbulb, Layers, Play, Check
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import EditableField from "@/components/shared/EditableField";
@@ -23,6 +23,12 @@ import {
   CollapsibleContent,
   CollapsibleTrigger,
 } from "@/components/ui/collapsible";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 
 interface AppointmentContextCardsProps {
   appointment: AppointmentWithClient;
@@ -31,17 +37,54 @@ interface AppointmentContextCardsProps {
 }
 
 const SESSION_STAGES = [
-  { name: "Goal Setting", duration: 15, icon: Target, color: "text-indigo-400", bg: "bg-white/5" },
-  { name: "Activation", duration: 15, icon: Zap, color: "text-blue-400", bg: "bg-white/5" },
-  { name: "Correction", duration: 20, icon: Activity, color: "text-emerald-400", bg: "bg-white/5" },
-  { name: "Challenge", duration: 5, icon: ShieldAlert, color: "text-amber-400", bg: "bg-white/5" },
-  { name: "Home Reinforcement", duration: 5, icon: Home, color: "text-rose-400", bg: "bg-white/5" },
+  { id: 'goal', name: "Goal Setting", duration: 15, icon: Target, color: "text-indigo-400", activeColor: "bg-indigo-600" },
+  { id: 'activation', name: "Activation", duration: 15, icon: Zap, color: "text-blue-400", activeColor: "bg-blue-600" },
+  { id: 'correction', name: "Correction", duration: 20, icon: Activity, color: "text-emerald-400", activeColor: "bg-emerald-600" },
+  { id: 'challenge', name: "Challenge", duration: 5, icon: ShieldAlert, color: "text-amber-400", activeColor: "bg-amber-600" },
+  { id: 'home', name: "Home Reinforcement", duration: 5, icon: Home, color: "text-rose-400", activeColor: "bg-rose-600" },
 ];
 
 const AppointmentContextCards = ({ appointment, currentPeakMeridian, onSaveField }: AppointmentContextCardsProps) => {
   const [generatingLink, setGeneratingLink] = useState(false);
   const [billingOpen, setBillingOpen] = useState(true);
   const [contextOpen, setContextOpen] = useState(false);
+  
+  // Strategy State
+  const [activeStageId, setActiveStageId] = useState<string | null>(null);
+  const [completedStages, setCompletedStages] = useState<string[]>([]);
+  const [stageTimers, setStageTimers] = useState<Record<string, number>>({});
+
+  useEffect(() => {
+    let interval: any = null;
+    if (activeStageId) {
+      interval = setInterval(() => {
+        setStageTimers(prev => ({
+          ...prev,
+          [activeStageId]: (prev[activeStageId] || 0) + 1
+        }));
+      }, 1000);
+    }
+    return () => clearInterval(interval);
+  }, [activeStageId]);
+
+  const handleStageClick = (id: string) => {
+    if (completedStages.includes(id)) {
+      setCompletedStages(prev => prev.filter(s => s !== id));
+      return;
+    }
+    
+    if (activeStageId === id) {
+      setCompletedStages(prev => [...prev, id]);
+      setActiveStageId(null);
+    } else {
+      setActiveStageId(id);
+    }
+  };
+
+  const formatStageTime = (seconds: number) => {
+    const mins = Math.floor(seconds / 60);
+    return `${mins}m`;
+  };
 
   const handleGeneratePaymentLink = async () => {
     setGeneratingLink(true);
@@ -74,54 +117,102 @@ const AppointmentContextCards = ({ appointment, currentPeakMeridian, onSaveField
       {/* Session Strategy Card */}
       <Card className="border-none shadow-2xl shadow-slate-900/5 rounded-[2.5rem] bg-slate-900 text-white overflow-hidden">
         <CardHeader className="p-8 pb-4">
-          <CardTitle className="text-[10px] font-black uppercase tracking-[0.3em] text-slate-500 flex items-center gap-3">
-            <Clock size={16} /> Session Strategy (60m)
-          </CardTitle>
+          <div className="flex items-center justify-between">
+            <CardTitle className="text-[10px] font-black uppercase tracking-[0.3em] text-slate-500 flex items-center gap-3">
+              <Clock size={16} /> Session Strategy (60m)
+            </CardTitle>
+            <Badge variant="outline" className="border-white/10 text-slate-500 font-black text-[8px] uppercase tracking-widest">
+              {completedStages.length}/{SESSION_STAGES.length} Done
+            </Badge>
+          </div>
         </CardHeader>
         <CardContent className="p-8 pt-0 space-y-4">
           <div className="grid grid-cols-1 gap-2">
-            {SESSION_STAGES.map((stage) => (
-              <div key={stage.name} className="flex items-center justify-between p-4 bg-white/5 rounded-2xl border border-white/10 group hover:bg-white/10 transition-all duration-500">
-                <div className="flex items-center gap-4">
-                  <div className={cn("w-8 h-8 rounded-lg flex items-center justify-center transition-transform group-hover:scale-110", stage.bg, stage.color)}>
-                    <stage.icon size={16} />
+            {SESSION_STAGES.map((stage) => {
+              const isActive = activeStageId === stage.id;
+              const isDone = completedStages.includes(stage.id);
+              const elapsed = stageTimers[stage.id] || 0;
+
+              return (
+                <button 
+                  key={stage.id} 
+                  onClick={() => handleStageClick(stage.id)}
+                  className={cn(
+                    "flex items-center justify-between p-4 rounded-2xl border transition-all duration-500 group text-left",
+                    isActive ? cn("border-transparent shadow-lg scale-[1.02]", stage.activeColor) : 
+                    isDone ? "bg-emerald-500/10 border-emerald-500/20" :
+                    "bg-white/5 border-white/10 hover:bg-white/10"
+                  )}
+                >
+                  <div className="flex items-center gap-4">
+                    <div className={cn(
+                      "w-8 h-8 rounded-lg flex items-center justify-center transition-all duration-500",
+                      isActive ? "bg-white/20" : isDone ? "bg-emerald-500 text-white" : "bg-white/5",
+                      !isActive && !isDone && stage.color
+                    )}>
+                      {isDone ? <Check size={16} /> : <stage.icon size={16} />}
+                    </div>
+                    <div className="flex flex-col">
+                      <span className={cn(
+                        "text-xs font-bold",
+                        isActive ? "text-white" : isDone ? "text-emerald-400" : "text-slate-300"
+                      )}>{stage.name}</span>
+                      {isActive && (
+                        <span className="text-[8px] font-black uppercase tracking-widest text-white/60 animate-pulse">
+                          Live: {formatStageTime(elapsed)}
+                        </span>
+                      )}
+                    </div>
                   </div>
-                  <span className="text-xs font-bold text-slate-300">{stage.name}</span>
-                </div>
-                <Badge variant="outline" className="border-white/20 text-white font-black text-[8px] uppercase tracking-widest px-3 py-1">
-                  {stage.duration}M
-                </Badge>
-              </div>
-            ))}
+                  <Badge variant="outline" className={cn(
+                    "font-black text-[8px] uppercase tracking-widest px-3 py-1",
+                    isActive ? "border-white/40 text-white" : "border-white/10 text-slate-500"
+                  )}>
+                    {stage.duration}M
+                  </Badge>
+                </button>
+              );
+            })}
           </div>
         </CardContent>
       </Card>
 
       {/* Current Peak Meridian */}
       {currentPeakMeridian && (
-        <Card className={cn(
-          "border-none shadow-2xl shadow-indigo-500/10 rounded-[2.5rem] text-white overflow-hidden relative group",
-          "bg-gradient-to-br from-rose-600 to-rose-800"
-        )}>
-          <div className="absolute top-0 right-0 p-8 opacity-10 group-hover:scale-125 group-hover:rotate-12 transition-all duration-1000">
-            <Zap size={120} />
-          </div>
-          <CardContent className="p-8 space-y-4 relative z-10">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-xl bg-white/20 flex items-center justify-center">
-                  <Activity size={20} />
+        <TooltipProvider>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Card className={cn(
+                "border-none shadow-2xl shadow-indigo-500/10 rounded-[2.5rem] text-white overflow-hidden relative group cursor-help",
+                "bg-gradient-to-br from-rose-600 to-rose-800"
+              )}>
+                <div className="absolute top-0 right-0 p-8 opacity-10 group-hover:scale-125 group-hover:rotate-12 transition-all duration-1000">
+                  <Zap size={120} />
                 </div>
-                <p className="text-[10px] font-black uppercase tracking-[0.3em] opacity-80">Peak Meridian</p>
-              </div>
-              <Badge className="bg-white/20 text-white border-none font-black text-[8px] uppercase tracking-widest px-3 py-1">TCM</Badge>
-            </div>
-            <div>
-              <h3 className="text-3xl font-black tracking-tight">{currentPeakMeridian.name}</h3>
-              <p className="text-sm font-bold opacity-90 mt-1">{currentPeakMeridian.peakTime}</p>
-            </div>
-          </CardContent>
-        </Card>
+                <CardContent className="p-8 space-y-4 relative z-10">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-3">
+                      <div className="w-10 h-10 rounded-xl bg-white/20 flex items-center justify-center">
+                        <Activity size={20} />
+                      </div>
+                      <p className="text-[10px] font-black uppercase tracking-[0.3em] opacity-80">Peak Meridian</p>
+                    </div>
+                    <Badge className="bg-white/20 text-white border-none font-black text-[8px] uppercase tracking-widest px-3 py-1">TCM</Badge>
+                  </div>
+                  <div>
+                    <h3 className="text-3xl font-black tracking-tight">{currentPeakMeridian.name}</h3>
+                    <p className="text-sm font-bold opacity-90 mt-1">{currentPeakMeridian.peakTime}</p>
+                  </div>
+                </CardContent>
+              </Card>
+            </TooltipTrigger>
+            <TooltipContent side="top" className="rounded-xl p-3 bg-slate-900 text-white border-none shadow-xl max-w-[200px]">
+              <p className="text-[10px] font-bold leading-relaxed">
+                The active meridian influences session prioritisation. Organs are most accessible during their peak time.
+              </p>
+            </TooltipContent>
+          </Tooltip>
+        </TooltipProvider>
       )}
 
       {/* Payment Management */}

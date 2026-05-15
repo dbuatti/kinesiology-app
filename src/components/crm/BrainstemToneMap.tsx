@@ -5,7 +5,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { calculateBrainstemTone, Nuclei } from '@/utils/brainstem-logic';
 import { cn } from '@/lib/utils';
-import { ShieldAlert, Activity, Zap, Layers, Brain, Info, Workflow, FilterX, ArrowDownCircle, ArrowUpCircle } from 'lucide-react';
+import { ShieldAlert, Activity, Zap, Layers, Brain, Info, Workflow, FilterX, ArrowDownCircle, ArrowUpCircle, ChevronRight } from 'lucide-react';
 import { Progress } from '@/components/ui/progress';
 import { Button } from '@/components/ui/button';
 
@@ -22,16 +22,16 @@ const BrainstemToneMap = ({ priorityPattern, activeFilter, onSelectNuclei }: Bra
 
   if (!hasData) {
     return (
-      <div className="flex flex-col items-center justify-center py-16 px-8 text-center space-y-6 animate-in fade-in duration-700">
-        <div className="w-24 h-24 rounded-full bg-slate-50 flex items-center justify-center shadow-inner">
-          <Brain size={48} className="text-slate-200" />
-        </div>
-        <div className="space-y-2">
-          <h3 className="text-xl font-black text-slate-900">No Tone Data Available</h3>
-          <p className="text-sm text-slate-500 max-w-[240px] mx-auto leading-relaxed font-medium">
-            Log inhibited nerves or muscles in the Pathway tab to see the Brainstem Tone Map.
+      <div className="p-4 bg-slate-50 dark:bg-slate-900/50 rounded-2xl border border-slate-100 dark:border-slate-800 flex items-center justify-between group hover:border-indigo-300 transition-all cursor-default">
+        <div className="flex items-center gap-3">
+          <div className="w-8 h-8 rounded-lg bg-white dark:bg-slate-800 flex items-center justify-center text-slate-300">
+            <Brain size={16} />
+          </div>
+          <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">
+            Log pathway findings to activate →
           </p>
         </div>
+        <ChevronRight size={14} className="text-slate-200 group-hover:text-indigo-400 transition-colors" />
       </div>
     );
   }

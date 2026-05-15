@@ -60,10 +60,17 @@ const SearchableClientSelect = ({
           <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
         </Button>
       </PopoverTrigger>
-      <PopoverContent className="w-[--radix-popover-trigger-width] p-0 bg-white dark:bg-slate-900 border-none shadow-2xl" align="start">
+      <PopoverContent 
+        className="w-[--radix-popover-trigger-width] p-0 bg-white dark:bg-slate-900 border-none shadow-2xl z-[120]" 
+        align="start"
+        onOpenAutoFocus={(e) => e.preventDefault()}
+      >
         <Command className="rounded-xl bg-white dark:bg-slate-900">
           <CommandInput placeholder="Search clients..." className="h-11" />
-          <CommandList className="max-h-[300px]">
+          <CommandList 
+            className="max-h-[300px] overflow-y-auto custom-scrollbar"
+            onWheel={(e) => e.stopPropagation()}
+          >
             <CommandEmpty className="py-6 text-center text-sm text-slate-500">
               <div className="flex flex-col items-center gap-2">
                 <Search size={24} className="text-slate-300" />

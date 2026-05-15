@@ -63,15 +63,15 @@ const MechanoreceptiveProcess = ({
   const [action, setAction] = useState('');
   const [ligament, setLigament] = useState('');
 
-  const goToStep = (next: MechanoStep) => {
+  const goToStep = (nextStep: MechanoStep) => {
     setHistory([...history, step]);
-    setStep(next);
+    setStep(nextStep);
   };
 
   const goBack = () => {
-    const last = history.pop();
-    if (last) {
-      setStep(last);
+    const lastStep = history.pop();
+    if (lastStep) {
+      setStep(lastStep);
       setHistory([...history]);
     } else {
       onCancel();
@@ -101,7 +101,7 @@ const MechanoreceptiveProcess = ({
   const handleFinish = () => {
     const detail = type === 'Conscious' 
       ? `${plane} - ${action}` 
-      : ligament;
+      : (ligament || 'General Tissue');
     const summary = `Mechanoreceptive ${type}: ${side} ${selectedJoint} (${detail})`;
     onSave(summary);
   };
@@ -109,7 +109,7 @@ const MechanoreceptiveProcess = ({
   const handleInhibited = () => {
     const detail = type === 'Conscious' 
       ? `${plane} - ${action}` 
-      : ligament;
+      : (ligament || 'General Tissue');
     const summary = `Mechanoreceptive ${type} (STILL INHIBITED): ${side} ${selectedJoint} (${detail})`;
     onInhibited?.(summary);
   };
@@ -323,7 +323,7 @@ const MechanoreceptiveProcess = ({
           </div>
 
           <div className="space-y-2">
-            <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Ligament / Tendon Name</label>
+            <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Ligament / Tendon Name (Optional)</label>
             <Input placeholder="e.g. ATFL, MCL, Biceps Tendon..." className="h-12 rounded-xl font-bold" value={ligament} onChange={(e) => setLigament(e.target.value)} />
           </div>
 
@@ -343,7 +343,7 @@ const MechanoreceptiveProcess = ({
 
           <div className="flex gap-3">
             <Button variant="ghost" onClick={goBack} className="flex-1 h-12 rounded-xl"><ChevronLeft size={18} className="mr-2" /> Back</Button>
-            <Button disabled={!ligament} onClick={() => goToStep('CORRECTION')} className="flex-[2] h-12 rounded-xl bg-emerald-600 hover:bg-emerald-700 font-bold">Start Correction <ChevronRight size={18} className="ml-2" /></Button>
+            <Button onClick={() => goToStep('CORRECTION')} className="flex-[2] h-12 rounded-xl bg-emerald-600 hover:bg-emerald-700 font-bold">Start Correction <ChevronRight size={18} className="ml-2" /></Button>
           </div>
         </div>
       )}
@@ -359,7 +359,7 @@ const MechanoreceptiveProcess = ({
                 <p className="text-lg font-bold leading-tight">
                   {type === 'Conscious' 
                     ? `Perform ${action} in the ${plane} plane.` 
-                    : `Stretch the ${ligament} while holding GV16.`}
+                    : `Stretch the ${ligament || 'priority tissue'} while holding GV16.`}
                 </p>
                 
                 {movementClue && (

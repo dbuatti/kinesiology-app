@@ -4,15 +4,11 @@ import React, { useState, useMemo } from 'react';
 import { Button } from "@/components/ui/button";
 import { 
   Brain, Zap, Activity, Dumbbell, Layers, ImageIcon, Baby, 
-  Trash2, RefreshCw, Search 
+  Trash2, RefreshCw
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { Badge } from '@/components/ui/badge';
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
-import { Input } from "@/components/ui/input";
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
-import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Nuclei } from '@/utils/brainstem-logic';
 import { showSuccess, showError } from "@/utils/toast";
 import { safeParse } from '@/utils/safe-json';
@@ -122,47 +118,47 @@ const PathwayAssessment = ({
 
   return (
     <div className="space-y-8">
-      <div className="sticky top-0 z-40 space-y-4 bg-background/80 backdrop-blur-md pb-4 pt-2">
-        <div className="flex flex-wrap items-center justify-between gap-4 p-4 bg-slate-100 dark:bg-slate-900 rounded-[2rem] border border-slate-200 dark:border-slate-800 shadow-inner">
+      <div className="sticky top-0 z-40 space-y-4 bg-background border-b border-border pb-4 pt-2">
+        <div className="flex flex-wrap items-center justify-between gap-4 p-4 border border-border bg-muted/30">
           <div className="flex items-center gap-4">
-            <div className="flex items-center gap-2 px-4 border-r border-slate-200 dark:border-slate-800">
-              <Layers size={18} className="text-indigo-600" />
-              <span className="text-[10px] font-black uppercase tracking-widest text-slate-500">Session View</span>
+            <div className="flex items-center gap-3 px-4 border-r border-border">
+              <Layers size={18} className="text-primary" />
+              <span className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">Session View</span>
             </div>
             
             <div className="flex items-center gap-6">
               <div className="flex items-center gap-3">
-                <Switch id="show-images" checked={showImages} onCheckedChange={setShowImages} />
-                <Label htmlFor="show-images" className="text-xs font-black text-slate-600 dark:text-slate-400 uppercase tracking-wider cursor-pointer flex items-center gap-2">
-                  <ImageIcon size={14} className="text-indigo-500" />
+                <Switch id="show-images" checked={showImages} onCheckedChange={setShowImages} className="data-[state=checked]:bg-primary" />
+                <Label htmlFor="show-images" className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest cursor-pointer flex items-center gap-2">
+                  <ImageIcon size={14} />
                   Reference Images
                 </Label>
               </div>
             </div>
           </div>
 
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-4">
             {previousValue && (
               <Button 
                 variant="outline" 
                 size="sm" 
                 onClick={handleSyncPrevious}
-                className="h-9 text-[10px] font-black uppercase tracking-widest border-indigo-100 text-indigo-600 hover:bg-indigo-50 rounded-xl"
+                className="h-10 text-[10px] font-bold uppercase tracking-widest border-border hover:bg-muted"
               >
                 <RefreshCw size={14} className="mr-2" /> Sync Unresolved
               </Button>
             )}
             {nucleiFilter && (
-              <Badge className="bg-indigo-600 text-white border-none font-black text-[10px] uppercase tracking-widest px-3 py-1 rounded-full">
+              <span className="bg-primary text-primary-foreground px-3 py-1 text-[10px] font-bold uppercase tracking-widest">
                 Filter: {nucleiFilter}
-              </Badge>
+              </span>
             )}
             {totalFindings > 0 && (
               <Button 
                 variant="ghost" 
                 size="sm" 
                 onClick={handleClearAll}
-                className="h-9 font-black text-[10px] uppercase tracking-widest text-rose-600 hover:bg-rose-50 rounded-xl border border-rose-100"
+                className="h-10 font-bold text-[10px] uppercase tracking-widest text-destructive hover:bg-destructive/10"
               >
                 <Trash2 size={14} className="mr-2" /> Clear All
               </Button>
@@ -170,86 +166,81 @@ const PathwayAssessment = ({
           </div>
         </div>
 
-        <div className="flex items-center gap-2 overflow-x-auto pb-2 no-scrollbar">
+        <div className="flex items-center gap-0 border border-border overflow-x-auto no-scrollbar">
           {[
-            { id: 'primitive', label: 'Reflexes', icon: Baby, count: getCounts('primitiveReflexes').inhibitedCount, color: 'text-indigo-600' },
-            { id: 'cranial', label: 'Nerves', icon: Zap, count: getCounts('cranialNerves').inhibitedCount, color: 'text-rose-600' },
-            { id: 'brain', label: 'Zones', icon: Brain, count: getCounts('brainZones').inhibitedCount, color: 'text-purple-600' },
-            { id: 'muscles', label: 'Muscles', icon: Dumbbell, count: getCounts('muscles').inhibitedCount, color: 'text-emerald-600' },
+            { id: 'primitive', label: 'Reflexes', icon: Baby, count: getCounts('primitiveReflexes').inhibitedCount },
+            { id: 'cranial', label: 'Nerves', icon: Zap, count: getCounts('cranialNerves').inhibitedCount },
+            { id: 'brain', label: 'Zones', icon: Brain, count: getCounts('brainZones').inhibitedCount },
+            { id: 'muscles', label: 'Muscles', icon: Dumbbell, count: getCounts('muscles').inhibitedCount },
           ].map((cat) => (
-            <Button
+            <button
               key={cat.id}
-              variant="outline"
               onClick={() => scrollToSection(cat.id)}
-              className="rounded-2xl h-12 px-6 bg-card border-border hover:bg-accent transition-all group shrink-0"
+              className="flex-1 flex items-center justify-center gap-3 h-12 px-6 border-r border-border last:border-r-0 hover:bg-muted transition-colors group"
             >
-              <cat.icon size={18} className={cn("mr-3 transition-transform group-hover:scale-110", cat.color)} />
-              <span className="font-black text-[10px] uppercase tracking-widest mr-3">{cat.label}</span>
+              <cat.icon size={16} className="text-primary" />
+              <span className="font-bold text-[10px] uppercase tracking-widest text-muted-foreground group-hover:text-primary">{cat.label}</span>
               {cat.count > 0 && (
-                <Badge className="bg-rose-600 text-white border-none font-black text-[10px] h-5 min-w-[20px] flex items-center justify-center px-1 rounded-full">
+                <span className="bg-destructive text-destructive-foreground text-[10px] font-bold px-1.5 py-0.5">
                   {cat.count}
-                </Badge>
+                </span>
               )}
-            </Button>
+            </button>
           ))}
         </div>
       </div>
 
       {fractalAlert && (
-        <Alert className="bg-indigo-900 text-white border-none rounded-[2rem] shadow-xl relative overflow-hidden animate-in zoom-in-95 duration-500">
-          <div className="absolute top-0 right-0 p-4 opacity-10"><Zap size={80} /></div>
-          <Zap className="h-5 w-5 text-amber-400 fill-amber-400" />
-          <AlertDescription className="text-sm font-bold leading-relaxed relative z-10">
-            <span className="text-amber-400 uppercase tracking-widest text-[10px] block mb-1">Fractal Logic Detected</span>
-            <strong>{fractalAlert.title}:</strong> {fractalAlert.desc}
-          </AlertDescription>
-        </Alert>
+        <div className="bg-primary text-primary-foreground p-8 border border-border relative overflow-hidden">
+          <div className="flex items-start gap-4 relative z-10">
+            <Zap size={20} className="text-destructive shrink-0" />
+            <div className="space-y-1">
+              <span className="text-[10px] font-bold uppercase tracking-widest opacity-80 block">Fractal Logic Detected</span>
+              <p className="text-lg font-bold uppercase tracking-tight">{fractalAlert.title}</p>
+              <p className="text-sm opacity-80">{fractalAlert.desc}</p>
+            </div>
+          </div>
+        </div>
       )}
 
       {inhibitedSummary.length > 0 && (
-        <Card className="border-none shadow-xl rounded-[2.5rem] bg-rose-50 dark:bg-rose-950/10 border-2 border-rose-200 dark:border-rose-900/30 overflow-hidden animate-in slide-in-from-top-4 duration-500">
-          <CardHeader className="p-8 pb-4">
-            <div className="flex items-center justify-between">
-              <CardTitle className="text-xl font-black flex items-center gap-3 text-rose-900 dark:text-rose-100">
-                <Zap size={24} className="text-rose-600" /> Priority Findings
-              </CardTitle>
-              <Badge className="bg-rose-600 text-white border-none font-black text-[10px] uppercase tracking-widest px-3 py-1 rounded-full">
-                {inhibitedSummary.length} Active
-              </Badge>
+        <div className="border border-destructive bg-destructive/5">
+          <div className="p-6 border-b border-destructive flex items-center justify-between">
+            <div className="flex items-center gap-3 text-destructive">
+              <Zap size={20} />
+              <h3 className="text-xl font-bold uppercase tracking-tight">Priority Findings</h3>
             </div>
-            <CardDescription className="text-rose-700 dark:text-rose-300 font-medium">Findings requiring calibration in this session.</CardDescription>
-          </CardHeader>
-          <CardContent className="p-8 pt-0">
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+            <span className="bg-destructive text-destructive-foreground px-3 py-1 text-[10px] font-bold uppercase tracking-widest">
+              {inhibitedSummary.length} Active
+            </span>
+          </div>
+          <div className="p-8">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
               {inhibitedSummary.map((item, idx) => (
-                <div key={idx} className="p-4 bg-white dark:bg-slate-900 rounded-2xl border border-rose-200 dark:border-rose-900/30 flex items-center justify-between group hover:shadow-md transition-all">
+                <div key={idx} className="p-6 border border-destructive/20 bg-background flex items-center justify-between group hover:bg-muted transition-colors">
                   <div className="min-w-0">
-                    <p className="font-black text-sm text-slate-900 dark:text-slate-100 truncate">{item.name}</p>
-                    <p className="text-[8px] font-black text-rose-500 uppercase tracking-widest">{item.category}</p>
+                    <p className="font-bold text-sm uppercase tracking-tight truncate">{item.name}</p>
+                    <p className="text-[8px] font-bold text-destructive uppercase tracking-widest">{item.category}</p>
                   </div>
-                  <div className="flex gap-1">
-                    <Button 
-                      variant="ghost" 
-                      size="icon" 
-                      className="h-8 w-8 rounded-xl text-amber-500 hover:bg-amber-50"
+                  <div className="flex gap-2">
+                    <button 
+                      className="w-8 h-8 border border-border flex items-center justify-center text-destructive hover:bg-destructive/10 transition-colors"
                       onClick={() => onJumpToCalibrate?.(item.name)}
                     >
-                      <Zap size={16} className="fill-current" />
-                    </Button>
-                    <Button 
-                      variant="ghost" 
-                      size="icon" 
-                      className="h-8 w-8 rounded-xl text-emerald-500 hover:bg-emerald-50"
+                      <Zap size={16} />
+                    </button>
+                    <button 
+                      className="w-8 h-8 border border-border flex items-center justify-center text-success hover:bg-success/10 transition-colors"
                       onClick={() => onUpdateItem(item.catKey, item.name, 'Clear')}
                     >
                       <RefreshCw size={16} />
-                    </Button>
+                    </button>
                   </div>
                 </div>
               ))}
             </div>
-          </CardContent>
-        </Card>
+          </div>
+        </div>
       )}
 
       <AssessmentSection 

@@ -5,7 +5,6 @@ import { Link } from 'react-router-dom';
 import { 
   Brain, 
   Zap, 
-  Sparkles, 
   Plus, 
   History, 
   ArrowRight, 
@@ -15,13 +14,9 @@ import {
   Fingerprint,
   Target,
   ChevronRight,
-  MessageSquare,
-  RefreshCw,
   ChevronDown
 } from "lucide-react";
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
 import { supabase } from "@/integrations/supabase/client";
@@ -132,191 +127,174 @@ const IdentitySmartTool = () => {
   }, [recentSessions]);
 
   if (loading) return (
-    <Card className="border-none shadow-sm bg-card rounded-[2rem] h-48 flex items-center justify-center">
-      <Loader2 className="animate-spin text-indigo-600" size={32} />
-    </Card>
+    <div className="h-48 border border-border flex items-center justify-center">
+      <Loader2 className="animate-spin text-primary" size={32} />
+    </div>
   );
 
   return (
     <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
-      <div className="lg:col-span-7 space-y-6">
-        <div className="flex items-center gap-3 px-2">
-          <div className="w-10 h-10 rounded-xl bg-indigo-600 text-white flex items-center justify-center shadow-lg">
+      <div className="lg:col-span-7 space-y-8">
+        <div className="flex items-center gap-3">
+          <div className="w-10 h-10 border border-border flex items-center justify-center text-primary">
             <Brain size={20} />
           </div>
           <div>
-            <h2 className="text-2xl font-black text-foreground tracking-tight">Identity Intelligence</h2>
-            <p className="text-xs text-muted-foreground font-medium">Pattern recognition and follow-up suggestions.</p>
+            <h2 className="text-2xl font-medium uppercase tracking-tight">Identity Intelligence</h2>
+            <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">Pattern recognition and follow-up suggestions.</p>
           </div>
         </div>
 
-        <div className="grid grid-cols-1 gap-6">
-          <Card className="border-none shadow-xl rounded-[2.5rem] bg-slate-900 text-white overflow-hidden relative group">
-            <div className="absolute inset-0 bg-gradient-to-br from-indigo-600/20 to-transparent" />
-            <div className="absolute top-0 right-0 p-6 opacity-10 group-hover:scale-110 transition-transform duration-700">
-              <Sparkles size={80} />
-            </div>
-            <CardContent className="p-8 space-y-6 relative z-10">
-              {smartSuggestion ? (
-                <>
-                  <div className="space-y-1">
-                    <Badge className="bg-indigo-500 text-white border-none font-black text-[8px] uppercase tracking-widest px-2 py-0.5 rounded-full">
-                      Follow-up Suggestion
-                    </Badge>
-                    <h3 className="text-2xl font-black tracking-tight leading-tight">
-                      Have you really worked through <span className="text-indigo-400">"{smartSuggestion.label}"</span>?
-                    </h3>
-                    <p className="text-xs text-slate-400 font-medium">Last processed {smartSuggestion.daysAgo} days ago.</p>
-                  </div>
-                  <div className="flex gap-3">
-                    <Button 
-                      asChild
-                      className="bg-white text-slate-900 hover:bg-indigo-50 h-10 px-6 rounded-xl font-black text-[10px] uppercase tracking-widest shadow-lg"
-                    >
-                      <Link to={smartSuggestion.type === 'alignment' ? "/sandbox/identity-alignment" : "/sandbox/identity-shifting"} state={{ prefill: smartSuggestion.label }}>
-                        {smartSuggestion.type === 'alignment' ? 'Align Again' : 'Shift Again'}
-                      </Link>
-                    </Button>
-                    <Button 
-                      asChild
-                      variant="outline"
-                      className="bg-transparent border-white/20 text-white hover:bg-white/10 h-10 px-6 rounded-xl font-black text-[10px] uppercase tracking-widest"
-                    >
-                      <Link to="/sandbox">View Map</Link>
-                    </Button>
-                  </div>
-                </>
-              ) : (
-                <div className="flex flex-col items-center justify-center text-center py-4 space-y-4">
-                  <div className="w-12 h-12 rounded-2xl bg-white/10 flex items-center justify-center text-indigo-400">
-                    <CheckCircle2 size={24} />
-                  </div>
-                  <p className="text-sm font-bold text-slate-300">Your identity work is up to date. No immediate follow-ups detected.</p>
-                </div>
-              )}
-            </CardContent>
-          </Card>
-
-          <Card className="border-none shadow-lg rounded-[2.5rem] bg-card overflow-hidden">
-            <CardHeader className="pb-2">
-              <CardTitle className="text-sm font-black uppercase tracking-widest text-muted-foreground flex items-center gap-2">
-                <History size={14} className="text-indigo-500" /> Recent Themes
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="p-6 pt-0 space-y-3">
-              {recentSessions.length > 0 ? (
+        <div className="grid grid-cols-1 gap-8">
+          <div className="border border-border p-8 bg-background space-y-6">
+            {smartSuggestion ? (
+              <>
                 <div className="space-y-2">
+                  <p className="text-[10px] font-bold uppercase tracking-widest text-primary">Follow-up Suggestion</p>
+                  <h3 className="text-2xl font-medium uppercase tracking-tight leading-tight">
+                    Have you really worked through "{smartSuggestion.label}"?
+                  </h3>
+                  <p className="text-xs text-muted-foreground">Last processed {smartSuggestion.daysAgo} days ago.</p>
+                </div>
+                <div className="flex gap-4">
+                  <Button 
+                    asChild
+                    className="bg-primary text-primary-foreground h-12 px-8 font-bold text-[10px] uppercase tracking-widest"
+                  >
+                    <Link to={smartSuggestion.type === 'alignment' ? "/sandbox/identity-alignment" : "/sandbox/identity-shifting"} state={{ prefill: smartSuggestion.label }}>
+                      {smartSuggestion.type === 'alignment' ? 'Align Again' : 'Shift Again'}
+                    </Link>
+                  </Button>
+                  <Button 
+                    asChild
+                    variant="outline"
+                    className="h-12 px-8 font-bold text-[10px] uppercase tracking-widest border-border"
+                  >
+                    <Link to="/sandbox">View Map</Link>
+                  </Button>
+                </div>
+              </>
+            ) : (
+              <div className="flex flex-col items-center justify-center text-center py-4 space-y-4">
+                <div className="w-12 h-12 border border-border flex items-center justify-center text-success">
+                  <CheckCircle2 size={24} />
+                </div>
+                <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">Your identity work is up to date.</p>
+              </div>
+            )}
+          </div>
+
+          <div className="border border-border bg-background">
+            <div className="p-6 border-b border-border">
+              <h3 className="text-sm font-bold uppercase tracking-widest text-muted-foreground flex items-center gap-2">
+                <History size={14} className="text-primary" /> Recent Themes
+              </h3>
+            </div>
+            <div className="p-0">
+              {recentSessions.length > 0 ? (
+                <div className="space-y-0">
                   {recentSessions.slice(0, 3).map((session, i) => (
-                    <div key={i} className="flex items-center justify-between p-3 bg-muted/50 rounded-xl border border-border group hover:bg-card transition-all">
-                      <div className="flex items-center gap-3 min-w-0">
-                        <div className={cn(
-                          "w-8 h-8 rounded-lg flex items-center justify-center shrink-0",
-                          session.type === 'shifting' ? "bg-indigo-50 text-indigo-600" :
-                          session.type === 'alignment' ? "bg-emerald-50 text-emerald-600" :
-                          "bg-rose-50 text-rose-600"
-                        )}>
+                    <div key={i} className="flex items-center justify-between p-6 border-b border-border last:border-b-0 hover:bg-muted transition-colors">
+                      <div className="flex items-center gap-4 min-w-0">
+                        <div className="w-8 h-8 border border-border flex items-center justify-center text-primary">
                           {session.type === 'shifting' ? <Fingerprint size={16} /> :
                            session.type === 'alignment' ? <Target size={16} /> :
                            <ShieldAlert size={16} />}
                         </div>
-                        <p className="text-xs font-bold text-foreground truncate">"{session.label}"</p>
+                        <p className="text-xs font-bold uppercase tracking-tight truncate">"{session.label}"</p>
                       </div>
-                      <span className="text-[8px] font-black text-muted-foreground uppercase tracking-widest shrink-0">
-                        {format(new Date(session.created_at), "MMM d")}
+                      <span className="text-[8px] font-bold text-muted-foreground uppercase tracking-widest">
+                        {format(new Date(session.created_at), "MMM D")}
                       </span>
                     </div>
                   ))}
                 </div>
               ) : (
-                <p className="text-xs text-muted-foreground italic py-4 text-center">No recent identity work recorded.</p>
+                <p className="text-xs text-muted-foreground uppercase tracking-widest py-8 text-center">No recent identity work recorded.</p>
               )}
-            </CardContent>
-          </Card>
+            </div>
+          </div>
         </div>
       </div>
 
-      <div className="lg:col-span-5 space-y-6">
-        <div className="flex items-center justify-between px-2">
+      <div className="lg:col-span-5 space-y-8">
+        <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-amber-500 text-white flex items-center justify-center shadow-lg">
+            <div className="w-10 h-10 border border-border flex items-center justify-center text-primary">
               <Zap size={20} />
             </div>
-            <h2 className="text-2xl font-black text-foreground tracking-tight">Backlog</h2>
+            <h2 className="text-2xl font-medium uppercase tracking-tight">Backlog</h2>
           </div>
-          <Button variant="ghost" size="sm" className="text-[9px] font-black uppercase tracking-widest text-indigo-600" asChild>
+          <Button variant="ghost" size="sm" className="text-[9px] font-bold uppercase tracking-widest text-primary" asChild>
             <Link to="/sandbox">View All <ArrowRight size={12} className="ml-1" /></Link>
           </Button>
         </div>
 
-        <Card className="border-none shadow-lg rounded-[2.5rem] bg-card overflow-hidden flex flex-col h-full">
-          <CardContent className="p-6 space-y-6 flex-1 flex flex-col">
-            <form onSubmit={handleAddToBacklog} className="space-y-3">
-              <div className="flex items-center justify-between px-1">
-                <label className="text-[10px] font-black text-muted-foreground uppercase tracking-widest">Quick Add</label>
+        <div className="border border-border bg-background flex flex-col h-full">
+          <div className="p-8 space-y-8 flex-1 flex flex-col">
+            <form onSubmit={handleAddToBacklog} className="space-y-4">
+              <div className="flex items-center justify-between">
+                <label className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">Quick Add</label>
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
-                    <button type="button" className="flex items-center gap-1.5 text-[9px] font-black uppercase tracking-widest text-indigo-600 hover:text-indigo-700 transition-colors">
+                    <button type="button" className="flex items-center gap-1.5 text-[9px] font-bold uppercase tracking-widest text-primary hover:text-primary/80 transition-colors">
                       Type: {selectedType === 'auto' ? 'Auto-Detect' : selectedType === 'alignment' ? 'Alignment' : selectedType === 'belief' ? 'Belief' : 'Shifting'}
                       <ChevronDown size={10} />
                     </button>
                   </DropdownMenuTrigger>
-                  <DropdownMenuContent align="end" className="w-40 rounded-xl p-1 shadow-2xl border-none bg-card">
-                    <DropdownMenuItem onClick={() => setSelectedType('auto')} className="rounded-lg text-[9px] font-bold uppercase py-2">Auto-Detect</DropdownMenuItem>
-                    <DropdownMenuItem onClick={() => setSelectedType('shifting')} className="rounded-lg text-[9px] font-bold uppercase py-2 flex items-center gap-2">
-                      <Fingerprint size={12} className="text-indigo-500" /> Stuck Identity
+                  <DropdownMenuContent align="end" className="w-40 p-0 border border-border bg-background">
+                    <DropdownMenuItem onClick={() => setSelectedType('auto')} className="text-[9px] font-bold uppercase py-3 px-4 focus:bg-muted">Auto-Detect</DropdownMenuItem>
+                    <DropdownMenuItem onClick={() => setSelectedType('shifting')} className="text-[9px] font-bold uppercase py-3 px-4 focus:bg-muted flex items-center gap-2">
+                      <Fingerprint size={12} className="text-primary" /> Stuck Identity
                     </DropdownMenuItem>
-                    <DropdownMenuItem onClick={() => setSelectedType('alignment')} className="rounded-lg text-[9px] font-bold uppercase py-2 flex items-center gap-2">
-                      <Target size={12} className="text-emerald-500" /> Target Identity
+                    <DropdownMenuItem onClick={() => setSelectedType('alignment')} className="text-[9px] font-bold uppercase py-3 px-4 focus:bg-muted flex items-center gap-2">
+                      <Target size={12} className="text-primary" /> Target Identity
                     </DropdownMenuItem>
-                    <DropdownMenuItem onClick={() => setSelectedType('belief')} className="rounded-lg text-[9px] font-bold uppercase py-2 flex items-center gap-2">
-                      <ShieldAlert size={12} className="text-rose-500" /> Limiting Belief
+                    <DropdownMenuItem onClick={() => setSelectedType('belief')} className="text-[9px] font-bold uppercase py-3 px-4 focus:bg-muted flex items-center gap-2">
+                      <ShieldAlert size={12} className="text-primary" /> Limiting Belief
                     </DropdownMenuItem>
                   </DropdownMenuContent>
                 </DropdownMenu>
               </div>
-              <div className="flex gap-2">
+              <div className="flex gap-0 border border-border">
                 <Input
                   placeholder={selectedType === 'alignment' ? "e.g. The Sovereign Creator..." : "e.g. The Perfectionist..."}
                   value={newContent}
                   onChange={e => setNewContent(e.target.value)}
-                  className="h-11 rounded-xl bg-muted/50 border-none focus:ring-2 focus:ring-amber-500 font-medium"
+                  className="h-12 border-none focus:ring-0 font-medium rounded-none"
                 />
                 <Button 
                   type="submit" 
                   disabled={isAdding || !newContent.trim()}
-                  className="h-11 w-11 rounded-xl bg-amber-500 hover:bg-amber-600 text-white shadow-lg shrink-0"
+                  className="h-12 w-12 bg-primary text-primary-foreground shrink-0 rounded-none"
                 >
                   {isAdding ? <Loader2 className="animate-spin" size={18} /> : <Plus size={20} />}
                 </Button>
               </div>
             </form>
 
-            <div className="space-y-2 flex-1">
+            <div className="space-y-0 border border-border flex-1">
               {backlog.length > 0 ? (
                 backlog.map((item) => (
-                  <div key={item.id} className="flex items-center justify-between p-3 bg-muted/30 rounded-xl border border-border group hover:bg-card transition-all">
-                    <div className="flex items-center gap-3 min-w-0">
+                  <div key={item.id} className="flex items-center justify-between p-4 border-b border-border last:border-b-0 hover:bg-muted transition-colors group">
+                    <div className="flex items-center gap-4 min-w-0">
                       <div className="relative">
-                        <div className={cn(
-                          "w-7 h-7 rounded-lg flex items-center justify-center shrink-0",
-                          item.type === 'belief' ? "bg-rose-50 text-rose-600" : 
-                          item.type === 'alignment' ? "bg-emerald-50 text-emerald-600" : "bg-indigo-50 text-indigo-600"
-                        )}>
+                        <div className="w-8 h-8 border border-border flex items-center justify-center shrink-0 text-primary">
                           {item.type === 'belief' ? <ShieldAlert size={14} /> : 
                            item.type === 'alignment' ? <Target size={14} /> : <Fingerprint size={14} />}
                         </div>
                         {item.priority_score > 0 && (
-                          <div className="absolute -top-1.5 -right-1.5 w-4 h-4 rounded-full bg-indigo-600 text-white flex items-center justify-center text-[6px] font-black border border-background">
+                          <div className="absolute -top-1 -right-1 w-4 h-4 bg-primary text-primary-foreground flex items-center justify-center text-[6px] font-bold">
                             {item.priority_score}
                           </div>
                         )}
                       </div>
-                      <p className="text-xs font-bold text-foreground truncate">"{item.content}"</p>
+                      <p className="text-xs font-bold uppercase tracking-tight truncate">"{item.content}"</p>
                     </div>
                     <Button 
                       variant="ghost" 
                       size="icon" 
-                      className="h-7 w-7 rounded-lg text-muted-foreground hover:text-indigo-600 shrink-0"
+                      className="h-8 w-8 text-muted-foreground hover:text-primary shrink-0"
                       asChild
                     >
                       <Link to={item.type === 'shifting' ? "/sandbox/identity-shifting" : item.type === 'alignment' ? "/sandbox/identity-alignment" : "/sandbox/limiting-beliefs"} state={{ prefill: item.content, backlogId: item.id }}>
@@ -326,16 +304,16 @@ const IdentitySmartTool = () => {
                   </div>
                 ))
               ) : (
-                <div className="flex-1 flex flex-col items-center justify-center text-center py-8 space-y-3">
-                  <div className="w-12 h-12 rounded-2xl bg-muted flex items-center justify-center text-muted-foreground/30">
+                <div className="flex-1 flex flex-col items-center justify-center text-center py-12 space-y-4">
+                  <div className="w-12 h-12 border border-border flex items-center justify-center text-muted-foreground/30">
                     <CheckCircle2 size={24} />
                   </div>
-                  <p className="text-xs font-medium text-muted-foreground">No pending items.</p>
+                  <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">No pending items.</p>
                 </div>
               )}
             </div>
-          </CardContent>
-        </Card>
+          </div>
+        </div>
       </div>
     </div>
   );

@@ -1,10 +1,8 @@
 "use client";
 
 import React from 'react';
-import { ACUPOINTS } from '@/data/acupoint-data';
-import { Badge } from '@/components/ui/badge';
-import { Sparkles, Plus } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { Plus } from 'lucide-react';
 
 interface QuickAcupointSelectorProps {
   currentValue: string | null | undefined;
@@ -26,11 +24,11 @@ const QuickAcupointSelector = ({ currentValue, onSelect }: QuickAcupointSelector
   };
 
   return (
-    <div className="space-y-3 animate-in fade-in slide-in-from-top-1 duration-500">
-      <div className="flex items-center gap-2 text-[9px] font-black text-slate-400 uppercase tracking-widest">
-        <Sparkles size={10} className="text-amber-400" /> Quick Add Points
+    <div className="space-y-4">
+      <div className="flex items-center gap-2 text-[8px] font-bold text-muted-foreground uppercase tracking-widest">
+        Quick Add Points
       </div>
-      <div className="flex flex-wrap gap-1.5">
+      <div className="flex flex-wrap gap-0 border border-border">
         {COMMON_POINTS.map(code => {
           const isUsed = currentValue?.includes(code);
           return (
@@ -40,10 +38,10 @@ const QuickAcupointSelector = ({ currentValue, onSelect }: QuickAcupointSelector
               onClick={() => handleAddPoint(code)}
               disabled={isUsed}
               className={cn(
-                "px-2 py-1 rounded-lg text-[10px] font-black transition-all flex items-center gap-1",
+                "px-3 py-2 border-r border-b border-border last:border-r-0 text-[10px] font-bold uppercase tracking-widest transition-colors flex items-center gap-2",
                 isUsed 
-                  ? "bg-emerald-500/20 text-emerald-400 cursor-default" 
-                  : "bg-white/5 hover:bg-indigo-600 text-slate-400 hover:text-white border border-white/5"
+                  ? "bg-success/10 text-success cursor-default" 
+                  : "bg-background hover:bg-muted text-muted-foreground hover:text-primary"
               )}
             >
               {!isUsed && <Plus size={10} />}

@@ -7,14 +7,10 @@ import {
   Mail, 
   Phone, 
   CalendarPlus, 
-  Clock, 
-  CreditCard, 
   ArrowRight 
 } from 'lucide-react';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { calculateAge, getStarSign } from "@/utils/crm-utils";
 import { cn } from "@/lib/utils";
 
@@ -26,100 +22,82 @@ interface ClientTableViewProps {
 
 const ClientTableView = ({ clients, isPrivate, onQuickBook }: ClientTableViewProps) => {
   return (
-    <div className="bg-card rounded-[2.5rem] border border-border shadow-xl overflow-hidden">
+    <div className="border border-border bg-background">
       <Table>
-        <TableHeader className="bg-muted/50">
+        <TableHeader>
           <TableRow className="hover:bg-transparent border-border">
-            <TableHead className="font-black text-[10px] uppercase tracking-widest text-muted-foreground h-14 px-8">Client Name</TableHead>
-            <TableHead className="font-black text-[10px] uppercase tracking-widest text-muted-foreground h-14">Age / Sign</TableHead>
-            <TableHead className="font-black text-[10px] uppercase tracking-widest text-muted-foreground h-14">Last Session</TableHead>
-            <TableHead className="font-black text-[10px] uppercase tracking-widest text-muted-foreground h-14 text-center">Total</TableHead>
-            <TableHead className="font-black text-[10px] uppercase tracking-widest text-muted-foreground h-14 text-right px-8">Actions</TableHead>
+            <TableHead className="font-bold text-[10px] uppercase tracking-widest text-muted-foreground h-14 px-8">Client Name</TableHead>
+            <TableHead className="font-bold text-[10px] uppercase tracking-widest text-muted-foreground h-14">Age / Sign</TableHead>
+            <TableHead className="font-bold text-[10px] uppercase tracking-widest text-muted-foreground h-14">Last Session</TableHead>
+            <TableHead className="font-bold text-[10px] uppercase tracking-widest text-muted-foreground h-14 text-center">Total</TableHead>
+            <TableHead className="font-bold text-[10px] uppercase tracking-widest text-muted-foreground h-14 text-right px-8">Actions</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
           {clients.map((client) => (
-            <TableRow key={client.id} className="hover:bg-indigo-50/30 dark:hover:bg-indigo-900/10 transition-colors group border-border">
-              <TableCell className="px-8 py-5">
+            <TableRow key={client.id} className="hover:bg-muted transition-colors group border-border">
+              <TableCell className="px-8 py-6">
                 <Link to={`/clients/${client.id}`} className="flex items-center gap-4">
-                  <div className="w-12 h-12 rounded-2xl bg-indigo-50 dark:bg-indigo-900/20 text-indigo-600 dark:text-indigo-400 flex items-center justify-center text-lg font-black uppercase shadow-sm group-hover:bg-card transition-colors">
+                  <div className="w-10 h-10 border border-border flex items-center justify-center text-sm font-bold text-primary uppercase">
                     {client.name.charAt(0)}
                   </div>
                   <div className="flex flex-col">
                     <div className="flex items-center gap-2">
                       <span className={cn(
-                        "font-black text-foreground text-lg group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors",
+                        "font-bold text-foreground text-base uppercase tracking-tight group-hover:text-primary transition-colors",
                         isPrivate && "blur-sm select-none"
                       )}>{client.name}</span>
                       {client.stripe_customer_id && (
-                        <Badge variant="outline" className="h-4 px-1.5 text-[7px] font-black uppercase border-blue-200 text-blue-600 bg-blue-50">
-                          <CreditCard size={8} className="mr-1" /> Synced
-                        </Badge>
+                        <span className="px-1.5 py-0.5 text-[7px] font-bold uppercase tracking-widest border border-primary text-primary">
+                          Synced
+                        </span>
                       )}
                     </div>
-                    <span className={cn("text-xs text-muted-foreground font-medium", isPrivate && "blur-[2px] select-none")}>{client.email || 'No email recorded'}</span>
+                    <span className={cn("text-[10px] text-muted-foreground font-bold uppercase tracking-widest", isPrivate && "blur-[2px] select-none")}>{client.email || 'No email recorded'}</span>
                   </div>
                 </Link>
               </TableCell>
               <TableCell>
                 <div className="flex flex-col">
-                  <span className="text-sm font-bold text-foreground">{client.born ? `${calculateAge(client.born)} yrs` : "-"}</span>
+                  <span className="text-sm font-bold text-foreground">{client.born ? `${calculateAge(client.born)} YRS` : "-"}</span>
                   {client.born && (
-                    <span className="text-[10px] font-black text-amber-600 dark:text-amber-400 uppercase tracking-wider flex items-center gap-1">
-                      <Clock size={10} /> {getStarSign(client.born)}
+                    <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">
+                      {getStarSign(client.born).toUpperCase()}
                     </span>
                   )}
                 </div>
               </TableCell>
               <TableCell>
-                <div className="flex items-center gap-2 text-sm font-bold text-muted-foreground">
-                  <CalendarPlus size={14} className="text-indigo-400" />
-                  {client.last_session_at ? format(new Date(client.last_session_at), "MMM d, yyyy") : "Never"}
+                <div className="text-sm font-bold text-muted-foreground uppercase tracking-tight">
+                  {client.last_session_at ? format(new Date(client.last_session_at), "MMM D, YYYY").toUpperCase() : "NEVER"}
                 </div>
               </TableCell>
               <TableCell className="text-center">
-                <div className="inline-flex flex-col items-center px-3 py-1 bg-muted rounded-xl border border-border">
-                  <span className="font-black text-foreground">{client.session_count}</span>
-                  <span className="text-[8px] font-black text-muted-foreground uppercase tracking-widest">Sessions</span>
+                <div className="inline-flex flex-col items-center px-3 py-1 border border-border">
+                  <span className="font-bold text-foreground">{client.session_count}</span>
+                  <span className="text-[8px] font-bold text-muted-foreground uppercase tracking-widest">Sessions</span>
                 </div>
               </TableCell>
               <TableCell className="text-right px-8">
-                <div className="flex items-center justify-end gap-2">
+                <div className="flex items-center justify-end gap-4">
                   {client.email && (
-                    <Tooltip>
-                      <TooltipTrigger asChild>
-                        <Button variant="ghost" size="icon" className="h-9 w-9 rounded-xl text-muted-foreground hover:text-indigo-600 hover:bg-indigo-50 dark:hover:bg-indigo-900/20" asChild>
-                          <a href={`mailto:${client.email}`}><Mail size={18} /></a>
-                        </Button>
-                      </TooltipTrigger>
-                      <TooltipContent className="rounded-xl font-bold text-xs">Email Client</TooltipContent>
-                    </Tooltip>
+                    <a href={`mailto:${client.email}`} className="text-muted-foreground hover:text-primary transition-colors">
+                      <Mail size={16} />
+                    </a>
                   )}
                   {client.phone && (
-                    <Tooltip>
-                      <TooltipTrigger asChild>
-                        <Button variant="ghost" size="icon" className="h-9 w-9 rounded-xl text-muted-foreground hover:text-emerald-600 hover:bg-emerald-50 dark:hover:bg-indigo-900/20" asChild>
-                          <a href={`tel:${client.phone}`}><Phone size={18} /></a>
-                        </Button>
-                      </TooltipTrigger>
-                      <TooltipContent className="rounded-xl font-bold text-xs">Call Client</TooltipContent>
-                    </Tooltip>
+                    <a href={`tel:${client.phone}`} className="text-muted-foreground hover:text-primary transition-colors">
+                      <Phone size={16} />
+                    </a>
                   )}
-                  <Tooltip>
-                    <TooltipTrigger asChild>
-                      <Button 
-                        variant="ghost" 
-                        size="icon" 
-                        className="h-9 w-9 rounded-xl text-muted-foreground hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-900/20"
-                        onClick={(e) => { e.preventDefault(); e.stopPropagation(); onQuickBook(client.id); }}
-                      >
-                        <CalendarPlus size={18} />
-                      </Button>
-                    </TooltipTrigger>
-                    <TooltipContent className="rounded-xl font-bold text-xs">Quick Book Session</TooltipContent>
-                  </Tooltip>
+                  <button 
+                    className="text-muted-foreground hover:text-primary transition-colors"
+                    onClick={(e) => { e.preventDefault(); e.stopPropagation(); onQuickBook(client.id); }}
+                  >
+                    <CalendarPlus size={16} />
+                  </button>
                   <Link to={`/clients/${client.id}`}>
-                    <Button variant="outline" size="sm" className="rounded-xl font-black text-[10px] uppercase tracking-widest border-border hover:bg-card hover:shadow-md ml-2">View Profile</Button>
+                    <Button variant="outline" size="sm" className="font-bold text-[10px] uppercase tracking-widest border-border hover:bg-muted">View Profile</Button>
                   </Link>
                 </div>
               </TableCell>

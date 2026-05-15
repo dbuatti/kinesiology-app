@@ -16,9 +16,9 @@ import {
 } from "@/components/ui/command";
 import { 
   Search, User, Calendar, Target, Zap, Clock, Trash2, 
-  UserPlus, CalendarPlus, Upload, Settings, Layers, 
-  ShieldCheck, Mic, Sparkles, Activity, BookOpen,
-  Fingerprint, Heart, Brain, LayoutDashboard
+  UserPlus, CalendarPlus, Settings, Layers, 
+  ShieldCheck, Mic, Activity, BookOpen,
+  Fingerprint, LayoutDashboard
 } from "lucide-react";
 import { format } from "date-fns";
 import { cn } from "@/lib/utils";
@@ -119,21 +119,21 @@ const SearchBar = () => {
 
       // Mode Switching
       if ("clinical hub".includes(query.toLowerCase())) {
-        searchResults.push({ type: "mode", id: "clinical", title: "Switch to Clinical Hub", subtitle: "Practice management", path: "/", icon: Activity, color: "text-indigo-500" });
+        searchResults.push({ type: "mode", id: "clinical", title: "Switch to Clinical Hub", subtitle: "Practice management", path: "/", icon: Activity });
       }
       if ("practice lab".includes(query.toLowerCase())) {
-        searchResults.push({ type: "mode", id: "lab", title: "Switch to Practice Lab", subtitle: "Personal integration", path: "/", icon: Zap, color: "text-emerald-500" });
+        searchResults.push({ type: "mode", id: "lab", title: "Switch to Practice Lab", subtitle: "Personal integration", path: "/", icon: Zap });
       }
       if ("knowledge hub".includes(query.toLowerCase())) {
-        searchResults.push({ type: "mode", id: "library", title: "Switch to Knowledge Hub", subtitle: "Protocols & study", path: "/", icon: BookOpen, color: "text-amber-500" });
+        searchResults.push({ type: "mode", id: "library", title: "Switch to Knowledge Hub", subtitle: "Protocols & study", path: "/", icon: BookOpen });
       }
 
       // Pages
       if ("peace framework".includes(query.toLowerCase())) {
-        searchResults.push({ type: "page", id: "peace-framework", title: "The PEACE Framework", subtitle: "Clinical Methodology Guide", path: "/peace-framework", icon: ShieldCheck, color: "text-indigo-500" });
+        searchResults.push({ type: "page", id: "peace-framework", title: "The PEACE Framework", subtitle: "Clinical Methodology Guide", path: "/peace-framework", icon: ShieldCheck });
       }
       if ("marketing engine".includes(query.toLowerCase())) {
-        searchResults.push({ type: "page", id: "marketing-engine", title: "AI Marketing Engine", subtitle: "Voice to Notion Workflow", path: "/business/marketing-engine", icon: Mic, color: "text-emerald-500" });
+        searchResults.push({ type: "page", id: "marketing-engine", title: "AI Marketing Engine", subtitle: "Voice to Notion Workflow", path: "/business/marketing-engine", icon: Mic });
       }
 
       // TCM Channels
@@ -142,24 +142,24 @@ const SearchBar = () => {
         c.code.toLowerCase().includes(query.toLowerCase())
       );
       matchingChannels.forEach(c => {
-        searchResults.push({ type: "channel", id: c.id, title: `${c.name} Meridian`, subtitle: `${c.element} Element • ${c.peakTime}`, path: `/resources?tab=channels`, icon: Layers, color: "text-indigo-500" });
+        searchResults.push({ type: "channel", id: c.id, title: `${c.name} Meridian`, subtitle: `${c.element} Element • ${c.peakTime}`, path: `/resources?tab=channels`, icon: Layers });
       });
 
       if (clientsData.data) {
         clientsData.data.forEach((client) => {
-          searchResults.push({ type: "client", id: client.id, title: client.name, subtitle: client.email || undefined, path: `/clients/${client.id}`, icon: User, color: "text-indigo-500" });
+          searchResults.push({ type: "client", id: client.id, title: client.name, subtitle: client.email || undefined, path: `/clients/${client.id}`, icon: User });
         });
       }
 
       if (appointmentsData.data) {
         appointmentsData.data.forEach((appointment: any) => {
-          searchResults.push({ type: "appointment", id: appointment.id, title: appointment.name || appointment.display_id || "Appointment", subtitle: `${appointment.clients?.name} • ${format(new Date(appointment.date), "MMM d, yyyy")}`, path: `/appointments/${appointment.id}`, icon: Calendar, color: "text-rose-500" });
+          searchResults.push({ type: "appointment", id: appointment.id, title: appointment.name || appointment.display_id || "Appointment", subtitle: `${appointment.clients?.name} • ${format(new Date(appointment.date), "MMM d, yyyy")}`, path: `/appointments/${appointment.id}`, icon: Calendar });
         });
       }
 
       if (proceduresData.data) {
         proceduresData.data.forEach((proc) => {
-          searchResults.push({ type: "procedure", id: proc.id, title: proc.name, subtitle: "Protocol / Procedure", path: `/practice/procedures`, icon: Target, color: "text-emerald-500" });
+          searchResults.push({ type: "procedure", id: proc.id, title: proc.name, subtitle: "Protocol / Procedure", path: `/practice/procedures`, icon: Target });
         });
       }
 
@@ -185,29 +185,29 @@ const SearchBar = () => {
 
   const getQuickActions = (): SearchResult[] => {
     const baseActions: SearchResult[] = [
-      { type: "action", id: "dashboard", title: "Go to Dashboard", subtitle: "Main overview", path: "/", icon: LayoutDashboard, color: "text-slate-500" },
-      { type: "action", id: "settings", title: "System Settings", subtitle: "Account & preferences", path: "/settings", icon: Settings, color: "text-slate-500" },
+      { type: "action", id: "dashboard", title: "Go to Dashboard", subtitle: "Main overview", path: "/", icon: LayoutDashboard },
+      { type: "action", id: "settings", title: "System Settings", subtitle: "Account & preferences", path: "/settings", icon: Settings },
     ];
 
     if (mode === 'clinical') {
       return [
-        { type: "action", id: "new-client", title: "Add New Client", subtitle: "Create profile", path: "/clients", icon: UserPlus, color: "text-indigo-500" },
-        { type: "action", id: "book-session", title: "Book New Session", subtitle: "Schedule appointment", path: "/appointments", icon: CalendarPlus, color: "text-indigo-500" },
+        { type: "action", id: "new-client", title: "Add New Client", subtitle: "Create profile", path: "/clients", icon: UserPlus },
+        { type: "action", id: "book-session", title: "Book New Session", subtitle: "Schedule appointment", path: "/appointments", icon: CalendarPlus },
         ...baseActions
       ];
     }
 
     if (mode === 'lab') {
       return [
-        { type: "action", id: "morning-program", title: "Morning Program", subtitle: "Daily readiness", path: "/morning-program", icon: Sparkles, color: "text-emerald-500" },
-        { type: "action", id: "identity-shifting", title: "Identity Shifting", subtitle: "Sandbox tool", path: "/sandbox/identity-shifting", icon: Fingerprint, color: "text-emerald-500" },
+        { type: "action", id: "morning-program", title: "Morning Program", subtitle: "Daily readiness", path: "/morning-program", icon: Zap },
+        { type: "action", id: "identity-shifting", title: "Identity Shifting", subtitle: "Sandbox tool", path: "/sandbox/identity-shifting", icon: Fingerprint },
         ...baseActions
       ];
     }
 
     return [
-      { type: "action", id: "quiz", title: "Start Infinite Quiz", subtitle: "Mastery practice", path: "/practice/quiz", icon: Zap, color: "text-amber-500" },
-      { type: "action", id: "bible", title: "Clinical Bible", subtitle: "Reference guide", path: "/resources", icon: BookOpen, color: "text-amber-500" },
+      { type: "action", id: "quiz", title: "Start Infinite Quiz", subtitle: "Mastery practice", path: "/practice/quiz", icon: Zap },
+      { type: "action", id: "bible", title: "Clinical Bible", subtitle: "Reference guide", path: "/resources", icon: BookOpen },
       ...baseActions
     ];
   };
@@ -216,43 +216,41 @@ const SearchBar = () => {
     <>
       <button
         onClick={() => setOpen(true)}
-        className="hidden lg:flex items-center gap-3 px-4 py-2.5 text-sm text-slate-500 bg-slate-100/50 dark:bg-slate-900/50 border border-slate-200/50 dark:border-slate-800/50 rounded-2xl hover:bg-white dark:hover:bg-slate-800 hover:shadow-md transition-all w-full group"
+        className="hidden lg:flex items-center gap-4 px-4 py-2 border border-border hover:bg-muted transition-colors w-full group"
       >
-        <Search size={16} className="group-hover:text-indigo-600 transition-colors" />
-        <span className="font-medium">Command Center...</span>
-        <kbd className="ml-auto pointer-events-none inline-flex h-5 select-none items-center gap-1 rounded-lg border bg-white dark:bg-slate-950 px-2 font-mono text-[10px] font-black text-slate-400 shadow-sm">
+        <Search size={16} className="text-muted-foreground group-hover:text-primary transition-colors" />
+        <span className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">Command Center...</span>
+        <kbd className="ml-auto pointer-events-none inline-flex h-5 select-none items-center gap-1 bg-muted px-2 font-mono text-[10px] font-bold text-muted-foreground">
           <span className="text-xs">⌘</span>K
         </kbd>
       </button>
 
       <CommandDialog open={open} onOpenChange={setOpen}>
-        <div className="flex items-center border-b px-3">
-          <Search className="mr-2 h-4 w-4 shrink-0 opacity-50" />
+        <div className="flex items-center border-b border-border px-4">
+          <Search className="mr-3 h-4 w-4 shrink-0 text-muted-foreground" />
           <CommandInput
             placeholder="Search anything or type a command..."
-            className="flex h-14 w-full rounded-md bg-transparent py-3 text-sm outline-none placeholder:text-slate-500 disabled:cursor-not-allowed disabled:opacity-50"
+            className="flex h-14 w-full bg-transparent py-4 text-sm outline-none placeholder:text-muted-foreground disabled:cursor-not-allowed disabled:opacity-50"
             onValueChange={handleSearch}
           />
         </div>
-        <CommandList className="max-h-[450px]">
+        <CommandList className="max-h-[450px] p-0">
           <CommandEmpty>
             {loading ? (
-              <div className="flex flex-col items-center justify-center py-10 gap-3">
-                <Sparkles className="animate-pulse text-indigo-500" size={24} />
-                <p className="text-xs font-bold uppercase tracking-widest text-slate-400">Searching the Oracle...</p>
+              <div className="flex flex-col items-center justify-center py-12 gap-4">
+                <Activity className="animate-pulse text-primary" size={24} />
+                <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">Searching the Oracle...</p>
               </div>
             ) : (
-              <div className="flex flex-col items-center justify-center py-10 gap-2">
-                <p className="text-sm font-medium text-slate-500">No results found.</p>
-                <p className="text-[10px] font-bold uppercase tracking-widest text-slate-400">Try searching for "Clinical Hub" or "PEACE"</p>
+              <div className="flex flex-col items-center justify-center py-12 gap-2">
+                <p className="text-sm font-medium text-muted-foreground uppercase tracking-tight">No results found.</p>
               </div>
             )}
           </CommandEmpty>
           
           {results.length === 0 && (
             <CommandGroup heading={
-              <div className="flex items-center gap-2">
-                <Sparkles size={12} className="text-indigo-500" />
+              <div className="flex items-center gap-2 text-[10px] font-bold uppercase tracking-widest text-primary">
                 <span>Contextual Actions ({mode})</span>
               </div>
             }>
@@ -260,12 +258,12 @@ const SearchBar = () => {
                 <CommandItem
                   key={action.id}
                   onSelect={() => handleSelect(action)}
-                  className="rounded-xl py-3 px-4 cursor-pointer"
+                  className="py-4 px-4 cursor-pointer border-b border-border last:border-b-0 focus:bg-muted"
                 >
-                  <action.icon size={18} className={cn("mr-3", action.color)} />
+                  <action.icon size={18} className="mr-4 text-primary" />
                   <div className="flex flex-col">
-                    <span className="font-bold text-sm">{action.title}</span>
-                    <span className="text-[10px] text-slate-400 font-medium uppercase tracking-wider">{action.subtitle}</span>
+                    <span className="font-bold text-xs uppercase tracking-tight">{action.title}</span>
+                    <span className="text-[10px] text-muted-foreground font-bold uppercase tracking-widest">{action.subtitle}</span>
                   </div>
                 </CommandItem>
               ))}
@@ -274,17 +272,17 @@ const SearchBar = () => {
 
           {results.length === 0 && recentSearches.length > 0 && (
             <>
-              <CommandSeparator />
+              <CommandSeparator className="bg-border" />
               <CommandGroup 
                 heading={
-                  <div className="flex items-center justify-between w-full">
+                  <div className="flex items-center justify-between w-full text-[10px] font-bold uppercase tracking-widest text-muted-foreground">
                     <div className="flex items-center gap-2">
-                      <Clock size={12} className="text-slate-400" />
+                      <Clock size={12} />
                       <span>Recent Searches</span>
                     </div>
                     <button 
                       onClick={clearRecentSearches}
-                      className="text-[10px] font-bold text-slate-400 hover:text-rose-500 transition-colors flex items-center gap-1"
+                      className="hover:text-destructive transition-colors flex items-center gap-1"
                     >
                       <Trash2 size={10} /> Clear
                     </button>
@@ -295,13 +293,13 @@ const SearchBar = () => {
                   <CommandItem
                     key={`${result.type}-${result.id}`}
                     onSelect={() => handleSelect(result)}
-                    className="rounded-xl py-3 px-4 cursor-pointer"
+                    className="py-4 px-4 cursor-pointer border-b border-border last:border-b-0 focus:bg-muted"
                   >
-                    <Clock size={18} className="mr-3 text-slate-300" />
+                    <Clock size={18} className="mr-4 text-muted-foreground" />
                     <div className="flex flex-col">
-                      <span className="font-bold text-sm">{result.title}</span>
+                      <span className="font-bold text-xs uppercase tracking-tight">{result.title}</span>
                       {result.subtitle && (
-                        <span className="text-[10px] text-slate-400 font-medium uppercase tracking-wider">
+                        <span className="text-[10px] text-muted-foreground font-bold uppercase tracking-widest">
                           {result.subtitle}
                         </span>
                       )}
@@ -313,24 +311,27 @@ const SearchBar = () => {
           )}
 
           {results.length > 0 && (
-            <div className="p-2">
-              {/* Grouped Results */}
+            <div className="p-0">
               {["mode", "page", "client", "appointment", "procedure", "channel"].map(type => {
                 const filtered = results.filter(r => r.type === type);
                 if (filtered.length === 0) return null;
                 
                 return (
-                  <CommandGroup key={type} heading={type.charAt(0).toUpperCase() + type.slice(1) + "s"}>
+                  <CommandGroup key={type} heading={
+                    <span className="text-[10px] font-bold uppercase tracking-widest text-primary">
+                      {type}s
+                    </span>
+                  }>
                     {filtered.map((result) => (
                       <CommandItem
                         key={result.id}
                         onSelect={() => handleSelect(result)}
-                        className="rounded-xl py-3 px-4 cursor-pointer"
+                        className="py-4 px-4 cursor-pointer border-b border-border last:border-b-0 focus:bg-muted"
                       >
-                        {result.icon ? <result.icon size={18} className={cn("mr-3", result.color)} /> : <Search size={18} className="mr-3 text-slate-300" />}
+                        {result.icon ? <result.icon size={18} className="mr-4 text-primary" /> : <Search size={18} className="mr-4 text-muted-foreground" />}
                         <div className="flex flex-col">
-                          <span className="font-bold text-sm">{result.title}</span>
-                          <span className="text-[10px] text-slate-400 font-medium uppercase tracking-wider">
+                          <span className="font-bold text-xs uppercase tracking-tight">{result.title}</span>
+                          <span className="text-[10px] text-muted-foreground font-bold uppercase tracking-widest">
                             {result.subtitle}
                           </span>
                         </div>

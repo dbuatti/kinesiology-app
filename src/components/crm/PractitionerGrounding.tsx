@@ -1,16 +1,12 @@
 "use client";
 
 import React, { useState, useEffect, useRef } from 'react';
-import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { 
   Wind, 
-  ShieldCheck, 
-  Sparkles, 
   Timer, 
   RotateCcw, 
-  CheckCircle2,
-  Volume2
+  CheckCircle2
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Progress } from '@/components/ui/progress';
@@ -73,82 +69,80 @@ const PractitionerGrounding = () => {
                    ((6 - timeLeft) / 6) * 100;
 
   return (
-    <Card className="border-none shadow-lg rounded-[2.5rem] bg-indigo-900 text-white overflow-hidden relative group">
-      <div className="absolute inset-0 bg-gradient-to-br from-indigo-600/20 to-transparent" />
-      <CardContent className="p-8 relative z-10">
-        {!isActive && phase !== 'complete' ? (
-          <div className="flex flex-col md:flex-row items-center justify-between gap-6">
-            <div className="flex items-center gap-5">
-              <div className="w-14 h-14 rounded-2xl bg-white/10 backdrop-blur-md flex items-center justify-center border border-white/20 shadow-xl">
-                <Wind size={28} className="text-indigo-300" />
-              </div>
-              <div>
-                <h3 className="text-xl font-black">Practitioner Grounding</h3>
-                <p className="text-indigo-200 text-sm font-medium">60s to shift into a receptive clinical state.</p>
-              </div>
-            </div>
-            <Button 
-              onClick={startGrounding}
-              className="bg-white text-indigo-900 hover:bg-indigo-50 h-12 px-8 rounded-xl font-black text-xs uppercase tracking-widest shadow-xl"
-            >
-              Start Centering
-            </Button>
-          </div>
-        ) : phase === 'complete' ? (
-          <div className="flex flex-col items-center text-center space-y-4 animate-in zoom-in-95 duration-500">
-            <div className="w-16 h-16 rounded-full bg-emerald-500 flex items-center justify-center shadow-lg">
-              <CheckCircle2 size={32} />
+    <div className={cn(
+      "p-8 border-none transition-colors duration-500 h-full flex flex-col justify-center",
+      isActive ? "bg-success text-success-foreground" : "bg-background text-foreground"
+    )}>
+      {!isActive && phase !== 'complete' ? (
+        <div className="flex flex-col md:flex-row items-center justify-between gap-8">
+          <div className="flex items-center gap-6">
+            <div className="w-12 h-12 border border-border flex items-center justify-center">
+              <Wind size={24} className="text-primary" />
             </div>
             <div>
-              <h3 className="text-2xl font-black">State Shifted</h3>
-              <p className="text-indigo-200 font-medium">You are centered, present, and ready for your client.</p>
+              <h3 className="text-xl font-medium uppercase tracking-tight">Practitioner Grounding</h3>
+              <p className="text-muted-foreground text-sm">60s to shift into a receptive clinical state.</p>
             </div>
-            <Button variant="ghost" onClick={resetGrounding} className="text-indigo-300 hover:text-white hover:bg-white/10 font-bold text-xs uppercase tracking-widest">
-              <RotateCcw size={14} className="mr-2" /> Reset Tool
+          </div>
+          <Button 
+            onClick={startGrounding}
+            className="bg-primary text-primary-foreground h-12 px-8 font-medium text-[10px] uppercase tracking-widest"
+          >
+            Start Centering
+          </Button>
+        </div>
+      ) : phase === 'complete' ? (
+        <div className="flex flex-col items-center text-center space-y-4">
+          <div className="w-12 h-12 bg-success text-success-foreground flex items-center justify-center">
+            <CheckCircle2 size={24} />
+          </div>
+          <div>
+            <h3 className="text-xl font-medium uppercase tracking-tight">State Shifted</h3>
+            <p className="text-muted-foreground text-sm">You are centered, present, and ready for your client.</p>
+          </div>
+          <Button variant="ghost" onClick={resetGrounding} className="text-primary hover:bg-muted font-medium text-[10px] uppercase tracking-widest">
+            <RotateCcw size={14} className="mr-2" /> Reset Tool
+          </Button>
+        </div>
+      ) : (
+        <div className="space-y-8">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <Timer size={16} />
+              <span className="text-[10px] font-bold uppercase tracking-widest">Centering in Progress</span>
+            </div>
+            <span className="text-xs font-bold tabular-nums">{60 - totalElapsed}S REMAINING</span>
+          </div>
+
+          <div className="flex flex-col items-center justify-center py-4 space-y-8">
+            <div className="relative">
+              <div className={cn(
+                "w-32 h-32 border-2 border-success-foreground/20 flex items-center justify-center transition-all duration-1000",
+                phase === 'inhale' ? "scale-110 bg-success-foreground/10" : "scale-100 bg-transparent"
+              )}>
+                <p className="text-xl font-bold uppercase tracking-widest">
+                  {phase}
+                </p>
+              </div>
+            </div>
+            
+            <div className="w-full max-w-xs space-y-2">
+              <Progress value={progress} className="h-1 bg-success-foreground/20 [&>div]:bg-success-foreground" />
+              <div className="flex justify-between text-[8px] font-bold uppercase tracking-widest">
+                <span>{phase}</span>
+                <span>{timeLeft}S</span>
+              </div>
+            </div>
+          </div>
+
+          <div className="flex justify-center">
+            <Button variant="ghost" onClick={resetGrounding} className="text-success-foreground/60 hover:text-success-foreground hover:bg-success-foreground/10 h-8 px-4 text-[10px] font-bold uppercase tracking-widest">
+              Cancel
             </Button>
           </div>
-        ) : (
-          <div className="space-y-8 animate-in fade-in duration-500">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-3">
-                <div className="w-8 h-8 rounded-lg bg-white/10 flex items-center justify-center">
-                  <Timer size={16} className="text-indigo-300" />
-                </div>
-                <span className="text-[10px] font-black uppercase tracking-[0.3em] text-indigo-300">Centering in Progress</span>
-              </div>
-              <span className="text-xs font-black tabular-nums opacity-60">{60 - totalElapsed}s remaining</span>
-            </div>
-
-            <div className="flex flex-col items-center justify-center py-4 space-y-6">
-              <div className="relative">
-                <div className={cn(
-                  "w-32 h-32 rounded-full border-4 border-white/10 flex items-center justify-center transition-all duration-1000",
-                  phase === 'inhale' ? "scale-125 bg-white/10" : "scale-100 bg-transparent"
-                )}>
-                  <p className="text-2xl font-black uppercase tracking-widest animate-pulse">
-                    {phase === 'inhale' ? 'Inhale' : phase === 'hold' ? 'Hold' : 'Exhale'}
-                  </p>
-                </div>
-              </div>
-              
-              <div className="w-full max-w-xs space-y-2">
-                <Progress value={progress} className="h-1.5 bg-white/10 [&>div]:bg-indigo-400" />
-                <div className="flex justify-between text-[8px] font-black uppercase tracking-widest text-indigo-400">
-                  <span>{phase}</span>
-                  <span>{timeLeft}s</span>
-                </div>
-              </div>
-            </div>
-
-            <div className="flex justify-center">
-              <Button variant="ghost" onClick={resetGrounding} className="text-white/40 hover:text-white hover:bg-white/10 h-8 px-4 rounded-lg text-[10px] font-black uppercase tracking-widest">
-                Cancel
-              </Button>
-            </div>
-          </div>
-        )}
-      </CardContent>
-    </Card>
+        </div>
+      )}
+    </div>
   );
 };
 

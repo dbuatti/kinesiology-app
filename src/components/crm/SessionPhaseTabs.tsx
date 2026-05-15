@@ -8,10 +8,9 @@ import {
   GitBranch, 
   Target, 
   ClipboardCheck, 
-  CheckCircle2 
+  Check
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { Badge } from '@/components/ui/badge';
 import { AppointmentWithClient } from '@/types/crm';
 import { Nuclei } from '@/utils/brainstem-logic';
 
@@ -23,11 +22,11 @@ import PathwayAssessment from './PathwayAssessment';
 import PathwayLogicWizard from './PathwayLogicWizard';
 
 const TABS = [
-  { id: 'baseline', label: 'P', fullLabel: 'Preliminary', icon: Activity, activeBg: 'bg-indigo-600' },
-  { id: 'sympathetic', label: 'E', fullLabel: 'Ease', icon: Zap, activeBg: 'bg-rose-600' },
-  { id: 'pathway', label: 'A', fullLabel: 'Align', icon: GitBranch, activeBg: 'bg-amber-600' },
-  { id: 'calibration', label: 'C', fullLabel: 'Correct', icon: Target, activeBg: 'bg-emerald-600' },
-  { id: 'reassessment', label: 'E', fullLabel: 'Embed', icon: ClipboardCheck, activeBg: 'bg-blue-600' }
+  { id: 'baseline', label: 'P', fullLabel: 'Preliminary', icon: Activity },
+  { id: 'sympathetic', label: 'E', fullLabel: 'Ease', icon: Zap },
+  { id: 'pathway', label: 'A', fullLabel: 'Align', icon: GitBranch },
+  { id: 'calibration', label: 'C', fullLabel: 'Correct', icon: Target },
+  { id: 'reassessment', label: 'E', fullLabel: 'Embed', icon: ClipboardCheck }
 ];
 
 interface SessionPhaseTabsProps {
@@ -68,44 +67,34 @@ const SessionPhaseTabs = ({
 
   return (
     <Tabs value={activeTab} onValueChange={onTabChange} className="w-full">
-      <div className="overflow-x-auto pb-6 no-scrollbar -mx-4 px-4">
-        <TabsList className="grid grid-cols-5 w-full h-auto bg-transparent p-0 gap-2 md:gap-4 border-b border-slate-100 dark:border-slate-800 rounded-none">
+      <div className="overflow-x-auto border-b border-border">
+        <TabsList className="flex w-full h-auto bg-transparent p-0 gap-0 rounded-none">
           {TABS.map((tab, index) => {
             const isCompleted = (tabStatus as any)[tab.id];
             const isActive = activeTab === tab.id;
-            const currentIndex = TABS.findIndex(t => t.id === activeTab);
-            const isPast = index < currentIndex;
 
             return (
               <TabsTrigger 
                 key={tab.id} 
                 value={tab.id} 
                 className={cn(
-                  "flex flex-col items-center gap-3 pb-6 px-4 rounded-2xl border-b-4 transition-all duration-500 relative group min-w-0",
+                  "flex-1 flex flex-col items-center gap-4 py-6 border-r border-border last:border-r-0 transition-colors rounded-none",
                   isActive 
-                    ? "border-indigo-600 text-indigo-600 bg-indigo-50/30 shadow-sm" 
-                    : "border-transparent text-slate-400 hover:text-slate-600"
+                    ? "bg-primary text-primary-foreground" 
+                    : isCompleted ? "bg-success/10 text-success" : "text-muted-foreground hover:bg-muted"
                 )}
               >
                 <div className={cn(
-                  "w-12 h-12 rounded-2xl flex items-center justify-center transition-all duration-500 shadow-sm",
-                  isActive ? cn("text-white shadow-xl", tab.activeBg) : 
-                  isCompleted ? "bg-emerald-50 text-emerald-500" : "bg-slate-50 text-slate-300 group-hover:bg-slate-100",
-                  isPast && !isCompleted && "opacity-60"
+                  "w-10 h-10 border border-border flex items-center justify-center",
+                  isActive ? "border-primary-foreground" : isCompleted ? "border-success" : ""
                 )}>
-                  {isCompleted ? <CheckCircle2 size={24} /> : <tab.icon size={24} />}
+                  {isCompleted ? <Check size={20} /> : <tab.icon size={20} />}
                 </div>
                 
                 <div className="flex flex-col items-center">
                   <div className="flex items-center gap-2">
-                    <span className={cn(
-                      "text-xl font-black tracking-tighter",
-                      isPast && !isActive && "opacity-70"
-                    )}>{tab.label}</span>
-                    <span className={cn(
-                      "hidden md:inline text-[9px] font-black uppercase tracking-[0.2em] opacity-60",
-                      isPast && !isActive && "opacity-40"
-                    )}>
+                    <span className="text-xl font-bold tracking-tighter">{tab.label}</span>
+                    <span className="hidden md:inline text-[9px] font-bold uppercase tracking-widest opacity-80">
                       {tab.fullLabel}
                     </span>
                   </div>
@@ -116,7 +105,7 @@ const SessionPhaseTabs = ({
         </TabsList>
       </div>
 
-      <div className="mt-10 animate-in fade-in slide-in-from-bottom-4 duration-700">
+      <div className="mt-12">
         <TabsContent value="baseline" className="focus-visible:ring-0">
           <BaselineTab appointment={appointment} onUpdate={onUpdate} saveField={saveField} />
         </TabsContent>

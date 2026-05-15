@@ -1,8 +1,6 @@
 "use client";
 
 import React, { useMemo } from 'react';
-import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import { 
   Zap, Check, X, Maximize2, PlayCircle, ShieldAlert 
@@ -60,44 +58,39 @@ const AssessmentItem = ({
     <div 
       onClick={onClick}
       className={cn(
-        "group relative p-3 md:p-5 rounded-2xl md:rounded-[2.5rem] border-2 transition-all cursor-pointer overflow-hidden h-full flex flex-col",
-        isFullyClear ? "bg-emerald-50/30 border-emerald-100/50 hover:border-emerald-200" :
-        hasInhibition ? "bg-rose-50 border-rose-400 ring-2 ring-rose-100 shadow-lg shadow-rose-100/50 animate-in fade-in zoom-in-95" :
-        "bg-white dark:bg-slate-900 border-slate-100 dark:border-slate-800 hover:border-indigo-200 hover:shadow-md"
+        "group relative p-6 border border-border transition-colors cursor-pointer flex flex-col h-full",
+        isFullyClear ? "bg-success/5 border-success/20" :
+        hasInhibition ? "bg-destructive/5 border-destructive" :
+        "bg-background hover:bg-muted"
       )}
     >
       {hasInhibition && (
         <button
           onClick={(e) => { e.stopPropagation(); onQuickCalibrate(); }}
-          className="absolute top-3 right-3 w-8 h-8 md:w-10 md:h-10 rounded-xl md:rounded-2xl flex items-center justify-center shadow-xl transition-all z-30 bg-amber-500 text-white scale-110 hover:scale-125 hover:bg-amber-600 animate-in zoom-in duration-300"
+          className="absolute top-4 right-4 w-10 h-10 border border-destructive bg-destructive text-destructive-foreground flex items-center justify-center transition-colors z-30 hover:bg-destructive/90"
           title="Correct this inhibition"
         >
-          <Zap size={14} className="fill-current" />
+          <Zap size={18} />
         </button>
       )}
 
-      <div className="flex items-start justify-between mb-3 md:mb-4 pr-8 md:pr-10">
-        <div className="flex flex-col min-w-0">
+      <div className="flex items-start justify-between mb-6 pr-12">
+        <div className="space-y-2">
           <p className={cn(
-            "font-black text-sm md:text-base leading-tight truncate",
-            hasInhibition ? "text-rose-900" : "text-slate-800 dark:text-slate-200"
+            "font-bold text-base uppercase tracking-tight",
+            hasInhibition ? "text-destructive" : "text-foreground"
           )}>{name}</p>
           
-          <div className="flex items-center gap-2 mt-1.5 md:mt-2">
+          <div className="flex items-center gap-3">
             {nucleiInfo && (
-              <Badge variant="outline" className={cn(
-                "text-[7px] md:text-[8px] font-black uppercase tracking-widest px-2 py-0.5 border-none rounded-full",
-                nucleiInfo.nuclei === 'Midbrain' ? "bg-amber-100 text-amber-700" :
-                nucleiInfo.nuclei === 'Pons' ? "bg-indigo-100 text-indigo-700" :
-                nucleiInfo.nuclei === 'Medulla' ? "bg-rose-100 text-rose-700" : "bg-purple-100 text-purple-700"
-              )}>
+              <span className="text-[8px] font-bold uppercase tracking-widest px-2 py-1 border border-border bg-muted text-muted-foreground">
                 {nucleiInfo.nuclei}
-              </Badge>
+              </span>
             )}
             {trend.length > 0 && (
               <div className="flex items-center gap-1">
                 {trend.map((s, i) => (
-                  <div key={i} className={cn("w-1 h-1 md:w-1.5 md:h-1.5 rounded-full", s === 'Clear' ? "bg-emerald-400" : s === 'Inhibited' ? "bg-rose-400" : "bg-slate-200")} />
+                  <div key={i} className={cn("w-1.5 h-1.5", s === 'Clear' ? "bg-success" : s === 'Inhibited' ? "bg-destructive" : "bg-muted")} />
                 ))}
               </div>
             )}
@@ -106,29 +99,29 @@ const AssessmentItem = ({
       </div>
 
       {(stimulus || inhibitionPattern) && (
-        <div className="space-y-2 md:space-y-3 mb-4 md:mb-6 flex-1">
+        <div className="space-y-4 mb-8 flex-1">
           {stimulus && (
-            <div className="flex items-start gap-2">
-              <PlayCircle size={12} className="text-indigo-400 shrink-0 mt-0.5" />
-              <p className="text-[9px] md:text-[11px] text-slate-500 leading-relaxed font-medium">{stimulus}</p>
+            <div className="flex items-start gap-3">
+              <PlayCircle size={14} className="text-primary shrink-0 mt-0.5" />
+              <p className="text-[10px] text-muted-foreground uppercase tracking-tight leading-relaxed">{stimulus}</p>
             </div>
           )}
           {inhibitionPattern && (
-            <div className="flex items-start gap-2">
-              <ShieldAlert size={12} className="text-rose-400 shrink-0 mt-0.5" />
-              <p className="text-[9px] md:text-[11px] text-rose-600/80 leading-relaxed font-bold">{inhibitionPattern}</p>
+            <div className="flex items-start gap-3">
+              <ShieldAlert size={14} className="text-destructive shrink-0 mt-0.5" />
+              <p className="text-[10px] text-destructive font-bold uppercase tracking-tight leading-relaxed">{inhibitionPattern}</p>
             </div>
           )}
         </div>
       )}
 
       {showImage && imageUrl && (
-        <div className="mt-1 mb-4 md:mb-6 aspect-video rounded-2xl md:rounded-3xl overflow-hidden border border-slate-100 dark:border-slate-800 bg-slate-50 dark:bg-slate-950 shadow-inner">
-          <img src={imageUrl} alt={name} className="w-full h-full object-cover opacity-80 group-hover:opacity-100 transition-opacity duration-500" />
+        <div className="mb-8 aspect-video border border-border bg-muted overflow-hidden">
+          <img src={imageUrl} alt={name} className="w-full h-full object-cover opacity-80 group-hover:opacity-100 transition-opacity" />
         </div>
       )}
 
-      <div className="mt-auto flex flex-wrap gap-1.5 pt-3 md:pt-4 border-t border-slate-100 dark:border-slate-800 relative z-50">
+      <div className="mt-auto flex flex-wrap gap-2 pt-6 border-t border-border relative z-50">
         {isLateralized ? (
           <>
             {statusL && (
@@ -138,8 +131,8 @@ const AssessmentItem = ({
                   onSetStatus(statusL === 'Clear' ? 'Inhibited' : 'Clear', 'L');
                 }}
                 className={cn(
-                  "border-none text-white font-black text-[7px] md:text-[8px] uppercase tracking-widest px-2 py-1 rounded-md transition-all hover:scale-110 active:scale-95 shadow-sm",
-                  statusL === 'Clear' ? "bg-emerald-50 hover:bg-emerald-600" : "bg-rose-600 hover:bg-rose-700"
+                  "h-8 px-3 text-[8px] font-bold uppercase tracking-widest border transition-colors",
+                  statusL === 'Clear' ? "bg-success text-success-foreground border-success" : "bg-destructive text-destructive-foreground border-destructive"
                 )}
               >
                 L: {statusL}
@@ -152,8 +145,8 @@ const AssessmentItem = ({
                   onSetStatus(statusR === 'Clear' ? 'Inhibited' : 'Clear', 'R');
                 }}
                 className={cn(
-                  "border-none text-white font-black text-[7px] md:text-[8px] uppercase tracking-widest px-2 py-1 rounded-md transition-all hover:scale-110 active:scale-95 shadow-sm",
-                  statusR === 'Clear' ? "bg-emerald-50 hover:bg-emerald-600" : "bg-rose-600 hover:bg-rose-700"
+                  "h-8 px-3 text-[8px] font-bold uppercase tracking-widest border transition-colors",
+                  statusR === 'Clear' ? "bg-success text-success-foreground border-success" : "bg-destructive text-destructive-foreground border-destructive"
                 )}
               >
                 R: {statusR}
@@ -168,8 +161,8 @@ const AssessmentItem = ({
                 onSetStatus(statusMidline === 'Clear' ? 'Inhibited' : 'Clear');
               }}
               className={cn(
-                "border-none text-white font-black text-[7px] md:text-[8px] uppercase tracking-widest px-2 py-1 rounded-md transition-all hover:scale-110 active:scale-95 shadow-sm",
-                statusMidline === 'Clear' ? "bg-emerald-50 hover:bg-emerald-600" : "bg-rose-600 hover:bg-rose-700"
+                "h-8 px-3 text-[8px] font-bold uppercase tracking-widest border transition-colors",
+                statusMidline === 'Clear' ? "bg-success text-success-foreground border-success" : "bg-destructive text-destructive-foreground border-destructive"
               )}
             >
               {statusMidline}
@@ -179,46 +172,42 @@ const AssessmentItem = ({
       </div>
 
       {/* Improved Hover Overlay */}
-      <div className="absolute inset-0 bg-slate-900/90 backdrop-blur-sm opacity-0 group-hover:opacity-100 transition-all duration-500 flex flex-col items-center justify-center gap-3 md:gap-4 z-40">
-        <div className="flex flex-wrap items-center justify-center gap-2 md:gap-3 px-4">
-          <Button 
-            size="sm" 
-            className="bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl h-10 md:h-12 px-4 md:px-6 shadow-2xl font-black text-[10px] md:text-[11px] uppercase tracking-widest border-none transition-all hover:scale-105" 
+      <div className="absolute inset-0 bg-background/95 opacity-0 group-hover:opacity-100 transition-opacity flex flex-col items-center justify-center gap-6 z-40">
+        <div className="flex flex-col items-center gap-4 w-full px-8">
+          <button 
+            className="w-full h-12 bg-success text-success-foreground font-bold text-[10px] uppercase tracking-widest" 
             onClick={(e) => { e.stopPropagation(); onSetStatus('Clear'); }}
           >
-            <Check size={16} className="mr-2" /> Clear
-          </Button>
+            Mark Clear
+          </button>
           
           {isLateralized ? (
-            <div className="flex gap-2">
-              <Button 
-                size="sm" 
-                className="bg-rose-600 hover:bg-rose-700 text-white rounded-xl h-10 md:h-12 px-3 md:px-4 shadow-2xl font-black text-[9px] md:text-[10px] uppercase tracking-widest border-none transition-all hover:scale-105" 
+            <div className="grid grid-cols-2 gap-4 w-full">
+              <button 
+                className="h-12 bg-destructive text-destructive-foreground font-bold text-[10px] uppercase tracking-widest" 
                 onClick={(e) => { e.stopPropagation(); onSetStatus('Inhibited', 'L'); }}
               >
                 L Inhib
-              </Button>
-              <Button 
-                size="sm" 
-                className="bg-rose-600 hover:bg-rose-700 text-white rounded-xl h-10 md:h-12 px-3 md:px-4 shadow-2xl font-black text-[9px] md:text-[10px] uppercase tracking-widest border-none transition-all hover:scale-105" 
+              </button>
+              <button 
+                className="h-12 bg-destructive text-destructive-foreground font-bold text-[10px] uppercase tracking-widest" 
                 onClick={(e) => { e.stopPropagation(); onSetStatus('Inhibited', 'R'); }}
               >
                 R Inhib
-              </Button>
+              </button>
             </div>
           ) : (
-            <Button 
-              size="sm" 
-              className="bg-rose-600 hover:bg-rose-700 text-white rounded-xl h-10 md:h-12 px-4 md:px-6 shadow-2xl font-black text-[10px] md:text-[11px] uppercase tracking-widest border-none transition-all hover:scale-105" 
+            <button 
+              className="w-full h-12 bg-destructive text-destructive-foreground font-bold text-[10px] uppercase tracking-widest" 
               onClick={(e) => { e.stopPropagation(); onSetStatus('Inhibited'); }}
             >
-              <X size={16} className="mr-2" /> Inhibited
-            </Button>
+              Mark Inhibited
+            </button>
           )}
         </div>
-        <div className="flex items-center gap-2 text-[9px] md:text-[10px] font-black text-slate-900 bg-white/95 px-5 md:px-6 py-2 md:py-2.5 rounded-full shadow-2xl border border-slate-100 transition-all hover:bg-white">
-          <Maximize2 size={12} className="text-indigo-500" /> View Details
-        </div>
+        <button className="flex items-center gap-2 text-[10px] font-bold uppercase tracking-widest text-primary hover:underline">
+          <Maximize2 size={14} /> View Details
+        </button>
       </div>
     </div>
   );

@@ -3,10 +3,8 @@
 import React, { useState, useEffect, useMemo } from "react";
 import { TCM_CHANNELS } from "@/data/tcm-channel-data";
 import { cn } from "@/lib/utils";
-import { Clock, Zap, Info, Activity, ArrowRight } from "lucide-react";
-import { Badge } from "@/components/ui/badge";
+import { Activity, ArrowRight } from "lucide-react";
 import { format } from "date-fns";
-import { Card, CardContent } from "@/components/ui/card";
 
 const MeridianClock = () => {
   const [currentTime, setCurrentTime] = useState(new Date());
@@ -53,110 +51,100 @@ const MeridianClock = () => {
   const oppositeChannel = displayChannel ? TCM_CHANNELS.find(c => c.id === displayChannel.oppositeId) : null;
 
   return (
-    <Card className="border-none shadow-sm bg-card rounded-[2rem] overflow-hidden">
-      <CardContent className="p-6 space-y-6">
-        {/* The Visual Clock */}
-        <div className="relative aspect-square max-w-[240px] mx-auto w-full">
-          <div className="absolute inset-0 rounded-full border-4 border-muted shadow-inner" />
-          
-          {clockOrder.map((id, index) => {
-            const channel = TCM_CHANNELS.find(c => {
-              const ch = TCM_CHANNELS.find(item => item.id === id);
-              return ch;
-            })!;
-            const isActive = activeId === id;
-            const isHovered = hoveredId === id;
-            const rotation = index * 30;
+    <div className="border border-border bg-background p-8 space-y-8">
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-2 text-primary">
+          <Activity size={18} />
+          <p className="text-[10px] font-bold uppercase tracking-widest">Meridian Clock</p>
+        </div>
+        <p className="text-xl font-medium uppercase tabular-nums">
+          {format(currentTime, "h:mm a")}
+        </p>
+      </div>
 
-            return (
-              <div 
-                key={id}
-                className="absolute inset-0 transition-all duration-500"
-                style={{ transform: `rotate(${rotation}deg)` }}
+      {/* The Visual Clock */}
+      <div className="relative aspect-square max-w-[240px] mx-auto w-full">
+        <div className="absolute inset-0 border border-border" />
+        
+        {clockOrder.map((id, index) => {
+          const channel = TCM_CHANNELS.find(c => c.id === id)!;
+          const isActive = activeId === id;
+          const isHovered = hoveredId === id;
+          const rotation = index * 30;
+
+          return (
+            <div 
+              key={id}
+              className="absolute inset-0"
+              style={{ transform: `rotate(${rotation}deg)` }}
+            >
+              <button
+                onMouseEnter={() => setHoveredId(id)}
+                onMouseLeave={() => setHoveredId(null)}
+                className={cn(
+                  "absolute top-0 left-1/2 -translate-x-1/2 w-10 h-12 border transition-colors flex flex-col items-center justify-center",
+                  isActive ? "bg-success text-success-foreground border-success" : 
+                  isHovered ? "bg-primary text-primary-foreground border-primary" :
+                  "bg-background border-border text-muted-foreground"
+                )}
               >
-                <button
-                  onMouseEnter={() => setHoveredId(id)}
-                  onMouseLeave={() => setHoveredId(null)}
-                  className={cn(
-                    "absolute top-0 left-1/2 -translate-x-1/2 w-8 h-12 -mt-2 rounded-lg transition-all duration-300 flex flex-col items-center justify-center gap-0.5 border-2",
-                    isActive ? "bg-indigo-600 border-indigo-400 shadow-lg scale-110 z-20" : 
-                    isHovered ? "bg-slate-800 border-slate-600 scale-105 z-10" :
-                    "bg-card border-muted shadow-sm"
-                  )}
-                >
-                  <span className={cn(
-                    "text-[7px] font-black",
-                    isActive || isHovered ? "text-white" : "text-muted-foreground"
-                  )}>
-                    {channel.code}
-                  </span>
-                  <div className={cn(
-                    "w-1 h-1 rounded-full",
-                    channel.color.split(' ')[0]
-                  )} />
-                </button>
-              </div>
-            );
-          })}
+                <span className="text-[8px] font-bold uppercase">
+                  {channel.code}
+                </span>
+              </button>
+            </div>
+          );
+        })}
 
-          <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-            <div className="w-24 h-24 bg-card rounded-full shadow-xl border-2 border-muted flex flex-col items-center justify-center text-center p-2">
-              <p className="text-xs font-black text-foreground tabular-nums">
-                {format(currentTime, "h:mm a")}
-              </p>
-              <p className="text-[6px] font-black text-muted-foreground uppercase tracking-widest mt-0.5">
-                Peak
-              </p>
-              <p className="text-[8px] font-bold text-indigo-600 dark:text-indigo-400 truncate max-w-full px-1">
-                {TCM_CHANNELS.find(c => c.id === activeId)?.name}
-              </p>
+        <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+          <div className="w-24 h-24 border border-border bg-background flex flex-col items-center justify-center text-center p-2">
+            <p className="text-[8px] font-bold text-muted-foreground uppercase tracking-widest">
+              Peak
+            </p>
+            <p className="text-[10px] font-bold text-primary uppercase tracking-tight truncate max-w-full px-1">
+              {TCM_CHANNELS.find(c => c.id === activeId)?.name}
+            </p>
+          </div>
+        </div>
+      </div>
+
+      {/* Detail Panel */}
+      {displayChannel && (
+        <div className="space-y-6 pt-4 border-t border-border">
+          <div className="flex items-center justify-between">
+            <div className="space-y-1">
+              <h3 className="text-lg font-medium uppercase tracking-tight">{displayChannel.name}</h3>
+              <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">{displayChannel.peakTime}</p>
+            </div>
+            {nextChannel && !hoveredId && (
+              <div className="text-right">
+                <p className="text-[8px] font-bold text-muted-foreground uppercase tracking-widest flex items-center justify-end gap-1">
+                  Next <ArrowRight size={10} />
+                </p>
+                <p className="text-[10px] font-bold uppercase">{nextChannel.name}</p>
+              </div>
+            )}
+          </div>
+
+          <div className="grid grid-cols-1 gap-0 border border-border">
+            <div className="p-4 border-b border-border">
+              <p className="text-[8px] font-bold text-muted-foreground uppercase tracking-widest mb-1">Partner</p>
+              <p className="text-xs font-bold uppercase">{oppositeChannel?.name}</p>
+            </div>
+            <div className="p-4">
+              <p className="text-[8px] font-bold text-muted-foreground uppercase tracking-widest mb-2">Emotions</p>
+              <div className="flex flex-wrap gap-2">
+                {displayChannel.emotions.slice(0, 3).map(e => (
+                  <span key={e} className="text-[10px] font-bold uppercase tracking-tight border border-border px-2 py-1">
+                    {e}
+                  </span>
+                ))}
+              </div>
             </div>
           </div>
         </div>
-
-        {/* Detail Panel */}
-        {displayChannel && (
-          <div className="space-y-4 animate-in fade-in duration-500">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-3">
-                <div className={cn("w-8 h-8 rounded-lg flex items-center justify-center text-white shadow-sm", displayChannel.color.split(' ')[0])}>
-                  <Activity size={16} />
-                </div>
-                <div>
-                  <h3 className="text-sm font-black text-foreground">{displayChannel.name}</h3>
-                  <p className="text-[9px] font-bold text-muted-foreground uppercase tracking-wider">{displayChannel.peakTime}</p>
-                </div>
-              </div>
-              {nextChannel && !hoveredId && (
-                <div className="text-right">
-                  <p className="text-[7px] font-black text-slate-400 uppercase tracking-widest flex items-center justify-end gap-1">
-                    Next <ArrowRight size={8} />
-                  </p>
-                  <p className="text-[9px] font-bold text-slate-500">{nextChannel.name}</p>
-                </div>
-              )}
-            </div>
-
-            <div className="grid grid-cols-1 gap-2">
-              <div className="p-3 bg-indigo-50 dark:bg-indigo-900/20 rounded-xl border border-indigo-100 dark:border-indigo-900/30 relative overflow-hidden">
-                <p className="text-[8px] font-black text-indigo-400 uppercase tracking-widest mb-1">Partner</p>
-                <p className="text-xs font-black text-indigo-900 dark:text-indigo-100">{oppositeChannel?.name}</p>
-              </div>
-              <div className="p-3 bg-rose-50 dark:bg-rose-900/20 rounded-xl border border-rose-100 dark:border-rose-900/30">
-                <p className="text-[8px] font-black text-rose-400 uppercase tracking-widest mb-1">Emotions</p>
-                <div className="flex flex-wrap gap-1">
-                  {displayChannel.emotions.slice(0, 3).map(e => (
-                    <Badge key={e} variant="outline" className="bg-card border-rose-100 dark:border-rose-900/30 text-rose-600 dark:text-rose-400 text-[7px] font-bold px-1.5 py-0">
-                      {e}
-                    </Badge>
-                  ))}
-                </div>
-              </div>
-            </div>
-          </div>
-        )}
-      </CardContent>
-    </Card>
+      )}
+    </div>
   );
 };
 

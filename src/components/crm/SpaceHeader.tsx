@@ -6,15 +6,12 @@ import {
   Activity, 
   Zap, 
   BookOpen, 
-  Grid, 
-  Search, 
   Plus, 
   Settings, 
   LogOut, 
   Eye, 
   EyeOff,
   HelpCircle,
-  ChevronDown,
   UserPlus,
   CalendarPlus,
   Menu,
@@ -61,12 +58,6 @@ const SpaceHeader = () => {
     navigate('/login');
   };
 
-  const getModeColor = (m: AppMode) => {
-    if (m === 'clinical') return 'text-indigo-600 bg-indigo-50 dark:bg-indigo-900/30';
-    if (m === 'lab') return 'text-emerald-600 bg-emerald-50 dark:bg-emerald-900/30';
-    return 'text-amber-600 bg-amber-50 dark:bg-amber-900/30';
-  };
-
   const getModeIcon = (m: AppMode) => {
     if (m === 'clinical') return <Activity size={16} />;
     if (m === 'lab') return <Zap size={16} />;
@@ -74,22 +65,20 @@ const SpaceHeader = () => {
   };
 
   return (
-    <header className="sticky top-0 z-[100] w-full bg-white/80 dark:bg-slate-950/80 backdrop-blur-xl border-b border-slate-200 dark:border-slate-800 px-4 md:px-8 h-16 flex items-center justify-between">
+    <header className="sticky top-0 z-[100] w-full bg-background border-b border-border px-4 md:px-8 h-16 flex items-center justify-between">
       {/* LEFT: LOGO & HUB SWITCHER */}
-      <div className="flex items-center gap-4 md:gap-8">
-        <Link to="/?view=hub" className="flex items-center gap-3 group">
-          <div className="w-9 h-9 bg-slate-900 dark:bg-white rounded-xl flex items-center justify-center text-white dark:text-slate-900 font-black text-sm transition-all group-hover:scale-110 group-hover:rotate-3 shadow-lg">
-            A
-          </div>
+      <div className="flex items-center gap-4">
+        <Link to="/?view=hub" className="flex items-center">
+          <span className="font-black text-lg tracking-tighter text-primary">CLINICAL HUB</span>
         </Link>
 
-        <div className="h-8 w-px bg-slate-200 dark:bg-slate-800 hidden md:block" />
+        <div className="h-8 w-px bg-border hidden md:block" />
 
         <HubSwitcher />
       </div>
 
       {/* CENTER: CONTEXTUAL NAV */}
-      <nav className="hidden xl:flex items-center gap-1 bg-slate-100/50 dark:bg-slate-900/50 p-1 rounded-2xl border border-slate-200/50 dark:border-slate-800/50 backdrop-blur-md">
+      <nav className="hidden xl:flex items-center gap-0 border border-border">
         {navItems.map((item) => {
           const isActive = location.pathname === item.path || (item.path !== "/" && location.pathname.startsWith(item.path));
           return (
@@ -97,21 +86,21 @@ const SpaceHeader = () => {
               key={item.path}
               to={item.path}
               className={cn(
-                "flex items-center gap-2 px-4 py-2 rounded-xl transition-all duration-500",
+                "flex items-center gap-2 px-4 py-2 border-r border-border last:border-r-0 transition-colors",
                 isActive
-                  ? "bg-white dark:bg-slate-800 text-slate-900 dark:text-white shadow-md scale-[1.02]"
-                  : "text-slate-500 hover:text-slate-900 dark:hover:text-white hover:bg-white/50 dark:hover:bg-slate-800/50"
+                  ? "bg-primary text-primary-foreground"
+                  : "text-muted-foreground hover:text-foreground hover:bg-muted"
               )}
             >
-              <item.icon size={14} className={cn("transition-colors duration-500", isActive && (mode === 'clinical' ? 'text-indigo-600' : mode === 'lab' ? 'text-emerald-600' : 'text-amber-600'))} />
-              <span className="text-[10px] font-black uppercase tracking-[0.15em]">{item.label}</span>
+              <item.icon size={14} />
+              <span className="text-[10px] font-medium uppercase tracking-widest">{item.label}</span>
             </Link>
           );
         })}
       </nav>
 
       {/* RIGHT: ACTIONS & PROFILE */}
-      <div className="flex items-center gap-2 md:gap-4">
+      <div className="flex items-center gap-2">
         <div className="hidden lg:block w-48">
           <SearchBar />
         </div>
@@ -120,18 +109,18 @@ const SpaceHeader = () => {
           {mode === 'clinical' && (
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <Button size="icon" className="w-9 h-9 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white shadow-lg shadow-indigo-500/20">
+                <Button size="icon" className="w-10 h-10 bg-primary hover:bg-primary/90 text-primary-foreground">
                   <Plus size={18} />
                 </Button>
               </DropdownMenuTrigger>
-              <DropdownMenuContent align="end" className="w-56 rounded-2xl p-2 shadow-2xl border-none bg-white dark:bg-slate-900">
-                <DropdownMenuItem onClick={() => setClientDialogOpen(true)} className="rounded-xl py-2.5 px-4 cursor-pointer gap-3">
-                  <UserPlus size={16} className="text-indigo-600" />
-                  <span className="font-bold text-xs uppercase tracking-widest">New Client</span>
+              <DropdownMenuContent align="end" className="w-56 p-0 border border-border bg-background">
+                <DropdownMenuItem onClick={() => setClientDialogOpen(true)} className="py-3 px-4 cursor-pointer gap-3 focus:bg-muted">
+                  <UserPlus size={16} className="text-primary" />
+                  <span className="font-medium text-xs uppercase tracking-widest">New Client</span>
                 </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => setAppDialogOpen(true)} className="rounded-xl py-2.5 px-4 cursor-pointer gap-3">
-                  <CalendarPlus size={16} className="text-indigo-600" />
-                  <span className="font-bold text-xs uppercase tracking-widest">Book Session</span>
+                <DropdownMenuItem onClick={() => setAppDialogOpen(true)} className="py-3 px-4 cursor-pointer gap-3 focus:bg-muted">
+                  <CalendarPlus size={16} className="text-primary" />
+                  <span className="font-medium text-xs uppercase tracking-widest">Book Session</span>
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
@@ -139,41 +128,41 @@ const SpaceHeader = () => {
 
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button variant="ghost" size="icon" className="w-9 h-9 rounded-xl text-slate-500 hover:text-slate-900 dark:hover:text-white">
+              <Button variant="ghost" size="icon" className="w-10 h-10 text-muted-foreground hover:text-foreground">
                 <Settings size={18} />
               </Button>
             </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" className="w-64 rounded-2xl p-2 shadow-2xl border-none bg-white dark:bg-slate-900">
-              <div className="px-4 py-3 border-b border-slate-100 dark:border-slate-800 mb-2">
-                <p className="text-[8px] font-black text-slate-400 uppercase tracking-widest mb-2">Active Workspace</p>
-                <div className={cn("flex items-center gap-3 p-2 rounded-xl", getModeColor(mode))}>
+            <DropdownMenuContent align="end" className="w-64 p-0 border border-border bg-background">
+              <div className="px-4 py-3 border-b border-border">
+                <p className="text-[8px] font-medium text-muted-foreground uppercase tracking-widest mb-2">Active Workspace</p>
+                <div className="flex items-center gap-3 p-2 bg-muted">
                   {getModeIcon(mode)}
-                  <span className="font-black text-[10px] uppercase tracking-widest">{mode}</span>
+                  <span className="font-medium text-[10px] uppercase tracking-widest">{mode}</span>
                 </div>
               </div>
               
-              <DropdownMenuItem onClick={togglePrivacy} className="rounded-xl py-2.5 px-4 cursor-pointer gap-3">
-                {isPrivate ? <EyeOff size={16} className="text-rose-500" /> : <Eye size={16} />}
-                <span className="font-bold text-xs uppercase tracking-widest">{isPrivate ? "Disable Privacy" : "Enable Privacy"}</span>
+              <DropdownMenuItem onClick={togglePrivacy} className="py-3 px-4 cursor-pointer gap-3 focus:bg-muted">
+                {isPrivate ? <EyeOff size={16} className="text-destructive" /> : <Eye size={16} />}
+                <span className="font-medium text-xs uppercase tracking-widest">{isPrivate ? "Disable Privacy" : "Enable Privacy"}</span>
               </DropdownMenuItem>
               
-              <DropdownMenuItem onClick={() => setHelpOpen(true)} className="rounded-xl py-2.5 px-4 cursor-pointer gap-3">
+              <DropdownMenuItem onClick={() => setHelpOpen(true)} className="py-3 px-4 cursor-pointer gap-3 focus:bg-muted">
                 <HelpCircle size={16} />
-                <span className="font-bold text-xs uppercase tracking-widest">Help & Shortcuts</span>
+                <span className="font-medium text-xs uppercase tracking-widest">Help & Shortcuts</span>
               </DropdownMenuItem>
 
-              <DropdownMenuSeparator className="bg-slate-100 dark:bg-slate-800 my-2" />
+              <DropdownMenuSeparator className="bg-border" />
               
-              <DropdownMenuItem asChild className="rounded-xl py-2.5 px-4 cursor-pointer gap-3">
+              <DropdownMenuItem asChild className="py-3 px-4 cursor-pointer gap-3 focus:bg-muted">
                 <Link to="/settings">
                   <Settings size={16} />
-                  <span className="font-bold text-xs uppercase tracking-widest">System Settings</span>
+                  <span className="font-medium text-xs uppercase tracking-widest">System Settings</span>
                 </Link>
               </DropdownMenuItem>
 
-              <DropdownMenuItem onClick={handleSignOut} className="rounded-xl py-2.5 px-4 cursor-pointer gap-3 text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-900/20">
+              <DropdownMenuItem onClick={handleSignOut} className="py-3 px-4 cursor-pointer gap-3 text-destructive focus:bg-destructive/10">
                 <LogOut size={16} />
-                <span className="font-bold text-xs uppercase tracking-widest">Sign Out</span>
+                <span className="font-medium text-xs uppercase tracking-widest">Sign Out</span>
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
@@ -181,7 +170,7 @@ const SpaceHeader = () => {
           <Button 
             variant="ghost" 
             size="icon" 
-            className="md:hidden w-9 h-9 rounded-xl"
+            className="md:hidden w-10 h-10"
             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
           >
             {mobileMenuOpen ? <X size={20} /> : <Menu size={20} />}
@@ -191,41 +180,41 @@ const SpaceHeader = () => {
 
       {/* MOBILE MENU OVERLAY */}
       {mobileMenuOpen && (
-        <div className="fixed inset-0 top-16 z-[90] bg-white dark:bg-slate-950 md:hidden animate-in fade-in slide-in-from-top-4 duration-300">
-          <div className="p-6 space-y-8">
-            <div className="space-y-4">
-              <p className="text-[8px] font-black text-slate-400 uppercase tracking-widest px-2">Navigation</p>
-              <div className="grid grid-cols-1 gap-2">
+        <div className="fixed inset-0 top-16 z-[90] bg-background md:hidden">
+          <div className="p-4 space-y-4">
+            <div className="space-y-2">
+              <p className="text-[8px] font-medium text-muted-foreground uppercase tracking-widest px-2">Navigation</p>
+              <div className="grid grid-cols-1 gap-0 border border-border">
                 {navItems.map((item) => (
                   <Link
                     key={item.path}
                     to={item.path}
                     onClick={() => setMobileMenuOpen(false)}
-                    className="flex items-center gap-4 p-4 rounded-2xl bg-slate-50 dark:bg-slate-900 border border-slate-100 dark:border-slate-800"
+                    className="flex items-center gap-4 p-4 border-b border-border last:border-b-0 hover:bg-muted"
                   >
-                    <item.icon size={18} className="text-indigo-600" />
-                    <span className="font-bold text-sm uppercase tracking-widest">{item.label}</span>
+                    <item.icon size={18} className="text-primary" />
+                    <span className="font-medium text-sm uppercase tracking-widest">{item.label}</span>
                   </Link>
                 ))}
               </div>
             </div>
 
-            <div className="space-y-4">
-              <p className="text-[8px] font-black text-slate-400 uppercase tracking-widest px-2">Switch Workspace</p>
-              <div className="grid grid-cols-3 gap-2">
+            <div className="space-y-2">
+              <p className="text-[8px] font-medium text-muted-foreground uppercase tracking-widest px-2">Switch Workspace</p>
+              <div className="grid grid-cols-3 gap-0 border border-border">
                 {(['clinical', 'lab', 'library'] as AppMode[]).map((m) => (
                   <button
                     key={m}
                     onClick={() => { setMode(m); setMobileMenuOpen(false); }}
                     className={cn(
-                      "flex flex-col items-center justify-center py-4 rounded-2xl border transition-all",
+                      "flex flex-col items-center justify-center py-4 border-r border-border last:border-r-0 transition-colors",
                       mode === m 
-                        ? "bg-white dark:bg-slate-800 border-indigo-500 shadow-lg text-indigo-600" 
-                        : "bg-slate-50 dark:bg-slate-900 border-slate-100 dark:border-slate-800 text-slate-400"
+                        ? "bg-primary text-primary-foreground" 
+                        : "bg-background text-muted-foreground hover:bg-muted"
                     )}
                   >
                     {getModeIcon(m)}
-                    <span className="text-[8px] font-black uppercase tracking-widest mt-2">{m}</span>
+                    <span className="text-[8px] font-medium uppercase tracking-widest mt-2">{m}</span>
                   </button>
                 ))}
               </div>
@@ -235,18 +224,18 @@ const SpaceHeader = () => {
       )}
 
       <Dialog open={clientDialogOpen} onOpenChange={setClientDialogOpen}>
-        <DialogContent className="sm:max-w-[600px] rounded-[2.5rem] p-8">
+        <DialogContent className="sm:max-w-[600px] p-8 border border-border">
           <DialogHeader className="mb-6">
-            <DialogTitle className="text-2xl font-serif font-bold tracking-tight">Add New Client</DialogTitle>
+            <DialogTitle className="text-xl font-medium tracking-tight uppercase">Add New Client</DialogTitle>
           </DialogHeader>
           <ClientForm onSuccess={() => setClientDialogOpen(false)} />
         </DialogContent>
       </Dialog>
 
       <Dialog open={appDialogOpen} onOpenChange={setAppDialogOpen}>
-        <DialogContent className="sm:max-w-[550px] rounded-[2.5rem] p-8">
+        <DialogContent className="sm:max-w-[550px] p-8 border border-border">
           <DialogHeader className="mb-6">
-            <DialogTitle className="text-2xl font-serif font-bold tracking-tight">Schedule New Session</DialogTitle>
+            <DialogTitle className="text-xl font-medium tracking-tight uppercase">Schedule New Session</DialogTitle>
           </DialogHeader>
           <AppointmentForm onSuccess={() => setAppDialogOpen(false)} />
         </DialogContent>

@@ -2,8 +2,6 @@
 
 import React from "react";
 import { cn } from "@/lib/utils";
-import { motion, AnimatePresence } from "framer-motion";
-import { useLocation } from "react-router-dom";
 
 interface AppLayoutProps {
   children: React.ReactNode;
@@ -18,33 +16,21 @@ const AppLayout = ({
   className,
   variant = "standard",
 }: AppLayoutProps) => {
-  const location = useLocation();
-
   // Determine max width based on variant
   const maxWidthClass = variant === "full" ? "max-w-none" : "max-w-7xl";
 
   return (
     <div
       className={cn(
-        "w-full min-h-screen mx-auto px-6 transition-all duration-300",
-        hasFixedHeader ? "pt-16 pb-12" : "pt-4 pb-12",
+        "w-full min-h-screen mx-auto px-8 transition-all duration-300",
+        hasFixedHeader ? "pt-16 pb-16" : "pt-8 pb-16",
         maxWidthClass,
         className
       )}
     >
-
-      <AnimatePresence mode="wait">
-        <motion.div
-          key={location.pathname}
-          initial={{ opacity: 0, y: 4 }}
-          animate={{ opacity: 1, y: 0 }}
-          exit={{ opacity: 0, y: -4 }}
-          transition={{ duration: 0.2, ease: "easeOut" }}
-          className="w-full"
-        >
-          {children}
-        </motion.div>
-      </AnimatePresence>
+      <div className="w-full">
+        {children}
+      </div>
     </div>
   );
 };

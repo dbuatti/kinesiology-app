@@ -29,7 +29,7 @@ export default {
         background: "hsl(var(--background))",
         foreground: "hsl(var(--foreground))",
         primary: {
-          DEFAULT: "#4F46E5", // Indigo 600
+          DEFAULT: "#7C3AED", // Purple (Clinical Hub Identity)
           foreground: "#FFFFFF",
         },
         secondary: {
@@ -37,7 +37,11 @@ export default {
           foreground: "hsl(var(--secondary-foreground))",
         },
         destructive: {
-          DEFAULT: "#E11D48", // Rose 600
+          DEFAULT: "#F59E0B", // Amber (Warning)
+          foreground: "#FFFFFF",
+        },
+        success: {
+          DEFAULT: "#10B981", // Green (Live/Active)
           foreground: "#FFFFFF",
         },
         muted: {
@@ -45,7 +49,7 @@ export default {
           foreground: "hsl(var(--muted-foreground))",
         },
         accent: {
-          DEFAULT: "#4F46E5",
+          DEFAULT: "#7C3AED",
           foreground: "#FFFFFF",
         },
         card: {
@@ -54,9 +58,16 @@ export default {
         },
       },
       borderRadius: {
-        lg: "0.5rem", // 8px - Containers
-        md: "0.375rem", // 6px - Components
-        sm: "0.25rem", // 4px - Small elements
+        lg: "0px", // Clinical restraint - no decoration
+        md: "0px",
+        sm: "0px",
+      },
+      spacing: {
+        '1': '8px',
+        '2': '16px',
+        '3': '24px',
+        '4': '32px',
+        '6': '48px',
       },
       boxShadow: {
         'sm': '0 1px 2px 0 rgba(0, 0, 0, 0.05)',

@@ -100,6 +100,7 @@ interface SessionContentSwitcherProps {
   isCloning?: boolean;
   isCopied?: boolean;
   onOpenDocument?: () => void;
+  onTabChange?: (tabId: string) => void;
 }
 
 const TABS = [
@@ -126,7 +127,8 @@ const SessionContentSwitcher = ({
   onStartSession,
   isCloning,
   isCopied,
-  onOpenDocument
+  onOpenDocument,
+  onTabChange
 }: SessionContentSwitcherProps) => {
   const [activeView, setActiveView] = useState<ActiveView>('home');
   const [activeTab, setActiveTab] = useState('baseline');
@@ -176,6 +178,7 @@ const SessionContentSwitcher = ({
     if (currentIndex < TABS.length - 1) {
       const nextTabId = TABS[currentIndex + 1].id;
       setActiveTab(nextTabId);
+      onTabChange?.(nextTabId);
       if (nextTabId === 'calibration') scrollToWizard();
       else {
         const scrollContainer = document.getElementById('main-scroll-container');
@@ -215,7 +218,7 @@ const SessionContentSwitcher = ({
   );
 
   const TabFooter = ({ nextLabel }: { nextLabel?: string }) => (
-    <div className="mt-16 pt-10 border-t border-slate-100 dark:border-slate-800 flex flex-col sm:flex-row items-center justify-end gap-8">
+    <div className="mt-12 pt-10 border-t border-slate-100 dark:border-slate-800 flex flex-col sm:flex-row items-center justify-end gap-8">
       {nextLabel && (
         <Button 
           onClick={handleNextTab}
@@ -231,10 +234,11 @@ const SessionContentSwitcher = ({
     <div className="space-y-12">
       <Tabs value={activeTab} onValueChange={(v) => {
         setActiveTab(v);
+        onTabChange?.(v);
         if (v === 'calibration') scrollToWizard();
       }} className="w-full">
         <div className="overflow-x-auto pb-6 no-scrollbar -mx-4 px-4">
-          <TabsList className="flex w-full h-auto bg-transparent p-0 gap-4 md:gap-8 border-b border-slate-100 dark:border-slate-800 rounded-none">
+          <TabsList className="flex w-full h-auto bg-transparent p-0 gap-2 md:gap-4 border-b border-slate-100 dark:border-slate-800 rounded-none">
             {TABS.map((tab) => {
               const isCompleted = (tabStatus as any)[tab.id];
               const isActive = activeTab === tab.id;
@@ -243,9 +247,9 @@ const SessionContentSwitcher = ({
                   key={tab.id} 
                   value={tab.id} 
                   className={cn(
-                    "flex flex-col items-center gap-3 pb-6 px-4 rounded-none border-b-4 transition-all duration-500 relative group min-w-[100px]",
+                    "flex-1 flex flex-col items-center gap-3 pb-6 px-4 rounded-t-2xl border-b-4 transition-all duration-500 relative group min-w-[100px]",
                     isActive 
-                      ? "border-indigo-600 text-indigo-600" 
+                      ? "border-indigo-600 text-indigo-600 bg-indigo-50/30" 
                       : "border-transparent text-slate-400 hover:text-slate-600"
                   )}
                 >

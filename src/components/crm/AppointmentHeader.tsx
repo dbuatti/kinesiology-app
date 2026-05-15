@@ -155,9 +155,18 @@ const AppointmentHeader = ({ appointment, onSaveField, onUpdate }: AppointmentHe
               {appointment.clients.name.charAt(0)}
             </div>
             {isSessionToday && (
-              <div className="absolute -top-1 -right-1 w-5 h-5 bg-rose-500 border-2 border-white dark:border-slate-900 rounded-full flex items-center justify-center shadow-lg animate-pulse">
-                <Zap size={10} className="text-white fill-current" />
-              </div>
+              <TooltipProvider>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <div className="absolute -top-1 -right-1 w-6 h-6 bg-rose-500 border-2 border-white dark:border-slate-900 rounded-full flex items-center justify-center shadow-lg animate-pulse cursor-help">
+                      <Zap size={12} className="text-white fill-current" />
+                    </div>
+                  </TooltipTrigger>
+                  <TooltipContent className="rounded-xl p-3 bg-slate-900 text-white border-none shadow-xl">
+                    <p className="text-[10px] font-black uppercase tracking-widest">Session Live Today</p>
+                  </TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
             )}
           </div>
           
@@ -202,7 +211,7 @@ const AppointmentHeader = ({ appointment, onSaveField, onUpdate }: AppointmentHe
                 )}>
                   <div className="flex items-center gap-2">
                     <div className={cn("w-1.5 h-1.5 rounded-full", appointment.status === 'Completed' ? "bg-emerald-500" : "bg-indigo-500")} />
-                    <span className="truncate">{appointment.status}</span>
+                    <SelectValue placeholder={appointment.status} />
                   </div>
                 </SelectTrigger>
                 <SelectContent className="rounded-2xl border-none shadow-3xl p-2 bg-white dark:bg-slate-900">

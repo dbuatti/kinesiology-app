@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect, useMemo } from 'react';
 import { cn } from '@/lib/utils';
-import { Clock, CheckCircle2, Target, Zap, AlertTriangle, Home, Check, ChevronDown, LogOut } from 'lucide-react';
+import { Clock, CheckCircle2, Target, Zap, AlertTriangle, Home, Check, ChevronDown, LogOut, User } from 'lucide-react';
 import { format, differenceInSeconds, isToday, formatDistanceToNow } from 'date-fns';
 import { Button } from '@/components/ui/button';
 import {
@@ -16,20 +16,22 @@ import { Badge } from '@/components/ui/badge';
 interface SessionTimerProps {
   appointmentDate: Date;
   status: string;
+  clientName?: string;
+  currentPhaseName?: string;
   onFixedHeaderChange: (isFixed: boolean) => void;
   onCompleteSession?: () => void;
 }
 
 const SESSION_STAGES = [
-  { name: "Goal Setting", duration: 15, color: "bg-indigo-600", Icon: Target },
-  { name: "Activation", duration: 15, color: "bg-blue-600", Icon: Zap },
-  { name: "Correction", duration: 20, color: "bg-emerald-600", Icon: CheckCircle2 },
-  { name: "Challenge", duration: 5, color: "bg-amber-600", Icon: AlertTriangle },
-  { name: "Home Reinforcement", duration: 5, icon: Home, color: "bg-rose-600", Icon: Home },
+  { id: 'baseline', name: "Preliminary", duration: 15, color: "bg-indigo-600", Icon: Target },
+  { id: 'sympathetic', name: "Ease", duration: 15, color: "bg-rose-600", Icon: Zap },
+  { id: 'pathway', name: "Align", duration: 15, color: "bg-amber-600", Icon: CheckCircle2 },
+  { id: 'calibration', name: "Correct", duration: 10, color: "bg-emerald-600", Icon: AlertTriangle },
+  { id: 'reassessment', name: "Embed", duration: 5, icon: Home, color: "bg-blue-600", Icon: Home },
 ];
 const TOTAL_DURATION_MINUTES = SESSION_STAGES.reduce((sum, stage) => sum + stage.duration, 0);
 
-const SessionTimer = ({ appointmentDate, status, onFixedHeaderChange, onCompleteSession }: SessionTimerProps) => {
+const SessionTimer = ({ appointmentDate, status, clientName, currentPhaseName, onFixedHeaderChange, onCompleteSession }: SessionTimerProps) => {
   const [currentTime, setCurrentTime] = useState(new Date());
 
   useEffect(() => {
@@ -42,7 +44,7 @@ const SessionTimer = ({ appointmentDate, status, onFixedHeaderChange, onComplete
   const {
     elapsedSeconds,
     elapsedMinutes,
-    currentStage,
+    recommendedStage,
     stageProgressPercent,
     overallProgressPercent,
     isComplete,
@@ -52,7 +54,7 @@ const SessionTimer = ({ appointmentDate, status, onFixedHeaderChange, onComplete
     const elapsedMinutes = Math.floor(elapsedSeconds / 60);
     const totalDurationSeconds = TOTAL_DURATION_MINUTES * 60;
     
-    let currentStage = SESSION_STAGES[0];
+    let recommendedStage = SESSION_STAGES[0];
     let cumulativeDuration = 0;
     let stageStartTime = 0;
 
@@ -61,14 +63,14 @@ const SessionTimer = ({ appointmentDate, status, onFixedHeaderChange, onComplete
       cumulativeDuration += stage.duration;
 
       if (elapsedMinutes < cumulativeDuration) {
-        currentStage = stage;
+        recommendedStage = stage;
         break;
       }
     }
 
     const isComplete = elapsedMinutes >= TOTAL_DURATION_MINUTES;
     const timeInCurrentStage = elapsedMinutes - stageStartTime;
-    const stageProgressPercent = Math.min(100, (timeInCurrentStage / currentStage.duration) * 100);
+    const stageProgressPercent = Math.min(100, (timeInCurrentStage / recommendedStage.duration) * 100);
     const overallProgressPercent = Math.min(100, (elapsedMinutes / TOTAL_DURATION_MINUTES) * 100);
     const remainingSeconds = Math.max(0, totalDurationSeconds - elapsedSeconds);
     
@@ -80,7 +82,7 @@ const SessionTimer = ({ appointmentDate, status, onFixedHeaderChange, onComplete
     return {
       elapsedSeconds,
       elapsedMinutes,
-      currentStage,
+      recommendedStage,
       stageProgressPercent,
       overallProgressPercent,
       isComplete,
@@ -106,6 +108,8 @@ const SessionTimer = ({ appointmentDate, status, onFixedHeaderChange, onComplete
     }
   };
 
+  const activePhase = SESSION_STAGES.find(s => s.id === currentPhaseName) || recommendedStage;
+
   if (isUpcoming) {
     return (
       <div className="w-full bg-indigo-600 text-white h-8 flex items-center justify-center px-4 z-[110] relative">
@@ -127,22 +131,29 @@ const SessionTimer = ({ appointmentDate, status, onFixedHeaderChange, onComplete
             <div className="w-2 h-2 bg-emerald-500 rounded-full animate-pulse" />
             <span className="text-[10px] font-black text-white uppercase tracking-[0.3em]">Session Live</span>
             <span className="text-xs font-black text-emerald-400 tabular-nums font-mono">
-              {timeRemainingInSession} remaining
+              {timeRemainingInSession}
             </span>
           </div>
           
           <div className="h-4 w-px bg-white/10 hidden sm:block" />
           
+          <div className="hidden md:flex items-center gap-3">
+            <User size={14} className="text-indigo-400" />
+            <span className="text-xs font-bold text-white truncate max-w-[150px]">{clientName}</span>
+          </div>
+
+          <div className="h-4 w-px bg-white/10 hidden md:block" />
+
           <div className="hidden sm:flex items-center gap-3">
-            <Badge variant="outline" className={cn("border-none font-black text-[8px] uppercase tracking-widest px-2 py-0.5 rounded-md flex items-center gap-1.5", currentStage.color, "text-white")}>
-              <currentStage.Icon size={10} />
-              {currentStage.name}
+            <Badge className={cn("border-none font-black text-[8px] uppercase tracking-widest px-2 py-0.5 rounded-md flex items-center gap-1.5", activePhase.color, "text-white")}>
+              <activePhase.Icon size={10} />
+              {activePhase.name}
             </Badge>
           </div>
         </div>
 
         <div className="flex items-center gap-4">
-          <div className="w-32 h-1.5 bg-white/5 rounded-full overflow-hidden hidden md:block">
+          <div className="w-32 h-1.5 bg-white/5 rounded-full overflow-hidden hidden lg:block">
             <div 
               className="h-full bg-indigo-500 transition-all duration-500"
               style={{ width: `${overallProgressPercent}%` }}
@@ -179,7 +190,7 @@ const SessionTimer = ({ appointmentDate, status, onFixedHeaderChange, onComplete
       
       <div className="h-0.5 bg-white/5 relative">
         <div 
-          className={cn("h-full transition-all duration-500", currentStage.color)}
+          className={cn("h-full transition-all duration-500", activePhase.color)}
           style={{ width: `${stageProgressPercent}%` }}
         />
       </div>

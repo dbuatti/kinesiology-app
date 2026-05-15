@@ -64,6 +64,7 @@ const AppointmentDetailPage = () => {
   const [nucleiFilter, setNucleiFilter] = useState<Nuclei | null>(null);
   const [reflections, setReflections] = useState<any[]>([]);
   const [isCopied, setIsCopied] = useState(false);
+  const [activePhaseId, setActivePhaseId] = useState('baseline');
 
   // Loading states for actions
   const [actionStates, setActionStates] = useState({
@@ -348,6 +349,8 @@ const AppointmentDetailPage = () => {
       <SessionTimer
         appointmentDate={appointment.date}
         status={appointment.status}
+        clientName={appointment.clients.name}
+        currentPhaseName={activePhaseId}
         onFixedHeaderChange={setIsFixedHeaderActive}
         onCompleteSession={handleCompleteSession}
       />
@@ -432,7 +435,7 @@ const AppointmentDetailPage = () => {
               {isSessionToday && appointment.status === 'Scheduled' && (
                 <Button 
                   onClick={handleStartSession}
-                  className="h-12 px-8 bg-indigo-600 hover:bg-indigo-700 text-white rounded-2xl font-black text-[10px] uppercase tracking-widest shadow-xl shadow-indigo-500/20 transition-all hover:scale-105 active:scale-95"
+                  className="h-12 px-8 bg-indigo-600 hover:bg-indigo-700 text-white rounded-2xl font-black text-[10px] uppercase tracking-widest shadow-xl shadow-indigo-100/20 transition-all hover:scale-105 active:scale-95"
                 >
                   Start Session
                 </Button>
@@ -490,7 +493,8 @@ const AppointmentDetailPage = () => {
                     onStartSession={handleStartSession}
                     isCloning={actionStates.cloning}
                     isCopied={isCopied}
-                    onOpenDocument={() => setIsDocumentView(true)}
+                    onOpenDocument={() => setIsDocumentView(false)}
+                    onTabChange={setActivePhaseId}
                   />
                 </div>
               </div>

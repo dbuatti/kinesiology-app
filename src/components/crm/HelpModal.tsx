@@ -29,11 +29,11 @@ const HelpModal = ({ open, onOpenChange }: HelpModalProps) => {
   ];
 
   const stages = [
-    { name: "Goal Setting", time: "15m", icon: Target, color: "text-indigo-600" },
-    { name: "Activation", time: "15m", icon: Zap, color: "text-blue-600" },
-    { name: "Correction", time: "20m", icon: CheckCircle2, color: "text-emerald-600" },
-    { name: "Challenge", time: "5m", icon: AlertTriangle, color: "text-amber-600" },
-    { name: "Home Reinforcement", time: "5m", icon: Home, color: "text-rose-600" },
+    { name: "Preliminary", time: "15m", icon: Target, color: "text-indigo-600" },
+    { name: "Ease", time: "15m", icon: Zap, color: "text-rose-600" },
+    { name: "Align", time: "15m", icon: CheckCircle2, color: "text-amber-600" },
+    { name: "Correct", time: "10m", icon: AlertTriangle, color: "text-emerald-600" },
+    { name: "Embed", time: "5m", icon: Home, color: "text-blue-600" },
   ];
 
   return (

@@ -101,7 +101,7 @@ const VitalCard = ({ icon: Icon, label, value, subValue, color, onClick, childre
             {children}
           </div>
           <div className="space-y-0.5 relative z-10">
-            <p className="text-[7px] font-black uppercase tracking-[0.2em] text-slate-400">{label}</p>
+            <p className="text-[7px] font-black uppercase text-slate-400 tracking-widest">{label}</p>
             <div className="flex items-baseline gap-1.5">
               <span className={cn(
                 "text-base font-black tracking-tight",
@@ -191,7 +191,7 @@ const AppointmentHeader = ({ appointment, onSaveField, onUpdate }: AppointmentHe
                   onClick={() => setRescheduleOpen(true)}
                   className="flex items-center gap-1.5 px-2 py-0.5 rounded-md hover:bg-white dark:hover:bg-slate-800 transition-all group"
                 >
-                  <Calendar size={12} className="text-indigo-500" />
+                  <Calendar size={12} className="text-indigo-50" />
                   <span className="text-[9px] font-black uppercase tracking-widest text-slate-600">{format(appointment.date, "EEE, MMM d")}</span>
                 </button>
                 <div className="w-px h-3 bg-slate-200 dark:bg-slate-700" />
@@ -199,7 +199,7 @@ const AppointmentHeader = ({ appointment, onSaveField, onUpdate }: AppointmentHe
                   onClick={() => setRescheduleOpen(true)}
                   className="flex items-center gap-1.5 px-2 py-0.5 rounded-md hover:bg-white dark:hover:bg-slate-800 transition-all group"
                 >
-                  <Clock size={12} className="text-indigo-500" />
+                  <Clock size={12} className="text-indigo-50" />
                   <span className="text-[9px] font-black uppercase tracking-widest text-slate-600">{format(appointment.date, "h:mm a")}</span>
                 </button>
               </div>
@@ -211,7 +211,9 @@ const AppointmentHeader = ({ appointment, onSaveField, onUpdate }: AppointmentHe
                 )}>
                   <div className="flex items-center gap-2">
                     <div className={cn("w-1.5 h-1.5 rounded-full", appointment.status === 'Completed' ? "bg-emerald-500" : "bg-indigo-500")} />
-                    <SelectValue placeholder={appointment.status} />
+                    <SelectValue>
+                      {appointment.status}
+                    </SelectValue>
                   </div>
                 </SelectTrigger>
                 <SelectContent className="rounded-2xl border-none shadow-3xl p-2 bg-white dark:bg-slate-900">

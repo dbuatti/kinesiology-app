@@ -9,7 +9,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { Plus, UserPlus, Calendar, Target, Upload, HelpCircle, Zap } from "lucide-react";
+import { Plus, UserPlus, Calendar, Target, Upload, HelpCircle, Zap, StickyNote } from "lucide-react";
 import {
   Dialog,
   DialogContent,
@@ -44,8 +44,8 @@ const QuickActions = () => {
               <DropdownMenuTrigger asChild>
                 <div className="flex items-center gap-3 group cursor-pointer">
                   <span className={cn(
-                    "bg-slate-900 text-white px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest shadow-2xl transition-all duration-500",
-                    isOpen ? "opacity-0 translate-x-4" : "opacity-0 group-hover:opacity-100 translate-x-0"
+                    "bg-slate-900 text-white px-5 py-2.5 rounded-2xl text-[10px] font-black uppercase tracking-widest shadow-2xl transition-all duration-500",
+                    isOpen ? "opacity-0 translate-x-4" : "opacity-100 translate-x-0"
                   )}>
                     Quick Actions
                   </span>

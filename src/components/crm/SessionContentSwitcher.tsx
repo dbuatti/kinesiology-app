@@ -238,7 +238,7 @@ const SessionContentSwitcher = ({
         if (v === 'calibration') scrollToWizard();
       }} className="w-full">
         <div className="overflow-x-auto pb-6 no-scrollbar -mx-4 px-4">
-          <TabsList className="flex w-full h-auto bg-transparent p-0 gap-2 md:gap-4 border-b border-slate-100 dark:border-slate-800 rounded-none">
+          <TabsList className="grid grid-cols-5 w-full h-auto bg-transparent p-0 gap-2 md:gap-4 border-b border-slate-100 dark:border-slate-800 rounded-none">
             {TABS.map((tab) => {
               const isCompleted = (tabStatus as any)[tab.id];
               const isActive = activeTab === tab.id;
@@ -247,7 +247,7 @@ const SessionContentSwitcher = ({
                   key={tab.id} 
                   value={tab.id} 
                   className={cn(
-                    "flex-1 flex flex-col items-center gap-3 pb-6 px-4 rounded-t-2xl border-b-4 transition-all duration-500 relative group min-w-[100px]",
+                    "flex flex-col items-center gap-3 pb-6 px-4 rounded-2xl border-b-4 transition-all duration-500 relative group min-w-0",
                     isActive 
                       ? "border-indigo-600 text-indigo-600 bg-indigo-50/30" 
                       : "border-transparent text-slate-400 hover:text-slate-600"

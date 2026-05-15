@@ -5,11 +5,11 @@ import { supabase } from "@/integrations/supabase/client";
 import { isToday, differenceInMinutes } from "date-fns";
 
 const SESSION_STAGES = [
-  { name: "Goal Setting", duration: 15 },
-  { name: "Activation", duration: 15 },
-  { name: "Correction", duration: 20 },
-  { name: "Challenge", duration: 5 },
-  { name: "Home Reinforcement", duration: 5 },
+  { id: 'baseline', name: "Preliminary", duration: 15 },
+  { id: 'sympathetic', name: "Ease", duration: 15 },
+  { id: 'pathway', name: "Align", duration: 15 },
+  { id: 'calibration', name: "Correct", duration: 10 },
+  { id: 'reassessment', name: "Embed", duration: 5 },
 ];
 
 export function useActiveSession() {

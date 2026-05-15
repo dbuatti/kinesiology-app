@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect, useMemo } from 'react';
 import { cn } from '@/lib/utils';
-import { Clock, CheckCircle2, Target, Zap, AlertTriangle, Home, Check, ChevronDown, LogOut, User } from 'lucide-react';
+import { Clock, CheckCircle2, Target, Zap, AlertTriangle, Home, Check, ChevronDown, LogOut, User, Calendar } from 'lucide-react';
 import { format, differenceInSeconds, isToday, formatDistanceToNow } from 'date-fns';
 import { Button } from '@/components/ui/button';
 import {
@@ -137,9 +137,17 @@ const SessionTimer = ({ appointmentDate, status, clientName, currentPhaseName, o
           
           <div className="h-4 w-px bg-white/10 hidden sm:block" />
           
-          <div className="hidden md:flex items-center gap-3">
-            <User size={14} className="text-indigo-400" />
-            <span className="text-xs font-bold text-white truncate max-w-[150px]">{clientName}</span>
+          <div className="hidden md:flex items-center gap-4">
+            <div className="flex items-center gap-2">
+              <User size={14} className="text-indigo-400" />
+              <span className="text-xs font-bold text-white truncate max-w-[150px]">{clientName}</span>
+            </div>
+            <div className="flex items-center gap-2 opacity-60">
+              <Calendar size={12} className="text-slate-400" />
+              <span className="text-[10px] font-bold text-slate-300 uppercase tracking-widest">
+                {format(appointmentDate, "EEE d MMM")} · {format(appointmentDate, "h:mm a")}
+              </span>
+            </div>
           </div>
 
           <div className="h-4 w-px bg-white/10 hidden md:block" />

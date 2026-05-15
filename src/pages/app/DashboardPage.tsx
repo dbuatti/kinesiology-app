@@ -47,8 +47,10 @@ import PageHeader from "@/components/shared/PageHeader";
 
 const Index = () => {
   const { isPrivate } = usePrivacyMode();
-  const { mode } = useAppMode();
-  const [stats, setStats] = useState({ 
+  const { mode, setMode } = useAppMode();
+  const [view, setView] = useState<'hub' | 'dashboard'>('hub');
+  const [stats, setStats] = useState({
+
     clients: 0, 
     appointments: 0,
     newClients30d: 0,
@@ -193,10 +195,141 @@ const Index = () => {
     </AppLayout>
   );
 
+  const handleEnterMode = (newMode: 'clinical' | 'lab' | 'library') => {
+    setMode(newMode);
+    setView('dashboard');
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
+  if (view === 'hub') {
+    return (
+      <AppLayout>
+        <div className="min-h-[80vh] flex flex-col items-center justify-center py-12 px-4">
+          <div className="max-w-5xl w-full space-y-12">
+            <div className="text-center space-y-4">
+              <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-indigo-50 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-400 border border-indigo-100 dark:border-indigo-800/50 mb-4">
+                <Sparkles size={14} className="animate-pulse" />
+                <span className="text-[10px] font-black uppercase tracking-[0.2em]">Resonance Practice Suite</span>
+              </div>
+              <h1 className="text-4xl md:text-6xl font-serif font-bold text-slate-900 dark:text-white tracking-tight">
+                Choose Your Focus.
+              </h1>
+              <p className="text-lg text-slate-500 dark:text-slate-400 max-w-2xl mx-auto font-medium">
+                Select a workspace to begin your clinical day, personal integration, or knowledge mastery.
+              </p>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+              {/* CLINICAL HUB */}
+              <button
+                onClick={() => handleEnterMode('clinical')}
+                className="group relative flex flex-col text-left h-full"
+              >
+                <div className="absolute inset-0 bg-indigo-600 rounded-[2.5rem] translate-y-2 translate-x-2 opacity-0 group-hover:opacity-10 transition-all duration-500" />
+                <Card className="relative h-full border-2 border-slate-100 dark:border-slate-800 shadow-sm rounded-[2.5rem] bg-white dark:bg-slate-900 overflow-hidden transition-all duration-500 group-hover:-translate-y-2 group-hover:border-indigo-500/50 group-hover:shadow-2xl group-hover:shadow-indigo-500/10">
+                  <CardContent className="p-8 flex flex-col h-full">
+                    <div className="w-14 h-14 rounded-2xl bg-indigo-50 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-400 flex items-center justify-center mb-8 group-hover:scale-110 group-hover:bg-indigo-600 group-hover:text-white transition-all duration-500">
+                      <Activity size={28} />
+                    </div>
+                    <div className="space-y-3 mb-8">
+                      <h3 className="text-2xl font-bold text-slate-900 dark:text-white">Clinical Hub</h3>
+                      <p className="text-sm text-slate-500 dark:text-slate-400 leading-relaxed font-medium">
+                        Manage your practice, track client progress, and execute clinical sessions with precision.
+                      </p>
+                    </div>
+                    <div className="mt-auto pt-6 border-t border-slate-50 dark:border-slate-800 flex items-center justify-between">
+                      <span className="text-[10px] font-black uppercase tracking-widest text-slate-400 group-hover:text-indigo-600 transition-colors">Enter Workspace</span>
+                      <div className="w-8 h-8 rounded-full bg-slate-50 dark:bg-slate-800 flex items-center justify-center group-hover:bg-indigo-600 group-hover:text-white transition-all">
+                        <ArrowRight size={16} />
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              </button>
+
+              {/* PRACTICE LAB */}
+              <button
+                onClick={() => handleEnterMode('lab')}
+                className="group relative flex flex-col text-left h-full"
+              >
+                <div className="absolute inset-0 bg-emerald-600 rounded-[2.5rem] translate-y-2 translate-x-2 opacity-0 group-hover:opacity-10 transition-all duration-500" />
+                <Card className="relative h-full border-2 border-slate-100 dark:border-slate-800 shadow-sm rounded-[2.5rem] bg-white dark:bg-slate-900 overflow-hidden transition-all duration-500 group-hover:-translate-y-2 group-hover:border-emerald-500/50 group-hover:shadow-2xl group-hover:shadow-emerald-500/10">
+                  <CardContent className="p-8 flex flex-col h-full">
+                    <div className="w-14 h-14 rounded-2xl bg-emerald-50 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400 flex items-center justify-center mb-8 group-hover:scale-110 group-hover:bg-emerald-600 group-hover:text-white transition-all duration-500">
+                      <Zap size={28} />
+                    </div>
+                    <div className="space-y-3 mb-8">
+                      <h3 className="text-2xl font-bold text-slate-900 dark:text-white">Practice Lab</h3>
+                      <p className="text-sm text-slate-500 dark:text-slate-400 leading-relaxed font-medium">
+                        Establish your practitioner state, journal reflections, and explore identity shifting tools.
+                      </p>
+                    </div>
+                    <div className="mt-auto pt-6 border-t border-slate-50 dark:border-slate-800 flex items-center justify-between">
+                      <span className="text-[10px] font-black uppercase tracking-widest text-slate-400 group-hover:text-emerald-600 transition-colors">Enter Workspace</span>
+                      <div className="w-8 h-8 rounded-full bg-slate-50 dark:bg-slate-800 flex items-center justify-center group-hover:bg-emerald-600 group-hover:text-white transition-all">
+                        <ArrowRight size={16} />
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              </button>
+
+              {/* KNOWLEDGE HUB */}
+              <button
+                onClick={() => handleEnterMode('library')}
+                className="group relative flex flex-col text-left h-full"
+              >
+                <div className="absolute inset-0 bg-amber-600 rounded-[2.5rem] translate-y-2 translate-x-2 opacity-0 group-hover:opacity-10 transition-all duration-500" />
+                <Card className="relative h-full border-2 border-slate-100 dark:border-slate-800 shadow-sm rounded-[2.5rem] bg-white dark:bg-slate-900 overflow-hidden transition-all duration-500 group-hover:-translate-y-2 group-hover:border-amber-500/50 group-hover:shadow-2xl group-hover:shadow-amber-500/10">
+                  <CardContent className="p-8 flex flex-col h-full">
+                    <div className="w-14 h-14 rounded-2xl bg-amber-50 dark:bg-amber-900/30 text-amber-600 dark:text-amber-400 flex items-center justify-center mb-8 group-hover:scale-110 group-hover:bg-amber-600 group-hover:text-white transition-all duration-500">
+                      <BookOpen size={28} />
+                    </div>
+                    <div className="space-y-3 mb-8">
+                      <h3 className="text-2xl font-bold text-slate-900 dark:text-white">Knowledge Hub</h3>
+                      <p className="text-sm text-slate-500 dark:text-slate-400 leading-relaxed font-medium">
+                        Master the FNH protocols, study the clinical bible, and sharpen your skills with quizzes.
+                      </p>
+                    </div>
+                    <div className="mt-auto pt-6 border-t border-slate-50 dark:border-slate-800 flex items-center justify-between">
+                      <span className="text-[10px] font-black uppercase tracking-widest text-slate-400 group-hover:text-amber-600 transition-colors">Enter Workspace</span>
+                      <div className="w-8 h-8 rounded-full bg-slate-50 dark:bg-slate-800 flex items-center justify-center group-hover:bg-amber-600 group-hover:text-white transition-all">
+                        <ArrowRight size={16} />
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              </button>
+            </div>
+
+            <div className="pt-8 flex justify-center">
+              <div className="flex items-center gap-8 text-slate-400">
+                <div className="flex flex-col items-center gap-1">
+                  <span className="text-xl font-bold text-slate-900 dark:text-white">{stats.clients}</span>
+                  <span className="text-[8px] font-black uppercase tracking-widest">Total Clients</span>
+                </div>
+                <div className="w-px h-8 bg-slate-100 dark:bg-slate-800" />
+                <div className="flex flex-col items-center gap-1">
+                  <span className="text-xl font-bold text-slate-900 dark:text-white">{stats.appointments}</span>
+                  <span className="text-[8px] font-black uppercase tracking-widest">Total Sessions</span>
+                </div>
+                <div className="w-px h-8 bg-slate-100 dark:bg-slate-800" />
+                <div className="flex flex-col items-center gap-1">
+                  <span className="text-xl font-bold text-slate-900 dark:text-white">{morningProgress}%</span>
+                  <span className="text-[8px] font-black uppercase tracking-widest">Daily Readiness</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </AppLayout>
+    );
+  }
+
   return (
     <AppLayout>
       <div className="space-y-12">
-        <PageHeader 
+        <PageHeader
           title={`${mode.charAt(0).toUpperCase() + mode.slice(1)} Dashboard`}
           subtitle={
             mode === 'clinical' ? "Welcome back, Daniele. Here is your clinical landscape for today." :
@@ -207,14 +340,26 @@ const Index = () => {
           breadcrumbs={[{ label: "Dashboard" }]}
           badge={mode === 'clinical' ? "Clinical Command" : mode === 'lab' ? "Practice Lab" : "Knowledge Hub"}
           actions={
-            <div className="flex items-center gap-3 bg-white dark:bg-slate-900 p-3 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm">
-              <div className="pr-4 border-r border-slate-100">
-                <p className="text-[8px] font-bold text-slate-400 uppercase tracking-widest">Today</p>
-                <p className="text-sm font-bold text-slate-900 dark:text-white">{format(currentTime, "EEEE, MMM d")}</p>
-              </div>
-              <div className="pl-1">
-                <p className="text-[8px] font-bold text-slate-400 uppercase tracking-widest">Time</p>
-                <p className="text-sm font-bold text-indigo-600">{format(currentTime, "h:mm a")}</p>
+            <div className="flex items-center gap-2">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setView('hub')}
+                className="h-11 px-4 rounded-xl border-slate-200 dark:border-slate-800 font-bold text-[10px] uppercase tracking-widest hover:bg-slate-50 dark:hover:bg-slate-800 gap-2"
+              >
+                <Grid size={14} className="text-indigo-600" />
+                Switch Hub
+              </Button>
+
+              <div className="flex items-center gap-3 bg-white dark:bg-slate-900 p-3 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm">
+                <div className="pr-4 border-r border-slate-100">
+                  <p className="text-[8px] font-bold text-slate-400 uppercase tracking-widest">Today</p>
+                  <p className="text-sm font-bold text-slate-900 dark:text-white">{format(currentTime, "EEEE, MMM d")}</p>
+                </div>
+                <div className="pl-1">
+                  <p className="text-[8px] font-bold text-slate-400 uppercase tracking-widest">Time</p>
+                  <p className="text-sm font-bold text-indigo-600">{format(currentTime, "h:mm a")}</p>
+                </div>
               </div>
             </div>
           }

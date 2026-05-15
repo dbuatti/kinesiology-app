@@ -36,10 +36,11 @@ const MainLayout = () => {
   return (
     <div className={cn(
       "flex flex-col min-h-screen transition-colors duration-700",
-      mode === 'clinical' ? "bg-background" : 
-      mode === 'lab' ? "bg-slate-50 dark:bg-slate-950" : 
-      "bg-slate-50 dark:bg-slate-950"
+      mode === 'clinical' ? "bg-white dark:bg-slate-950" :
+      mode === 'lab' ? "bg-emerald-50/30 dark:bg-slate-950" :
+      "bg-amber-50/30 dark:bg-slate-950"
     )}>
+
       <UpcomingMarquee />
       <div className="flex flex-col lg:flex-row flex-1">
         <MobileNav />

@@ -1,11 +1,11 @@
 "use client";
 
 import { Link, useLocation, useNavigate } from "react-router-dom";
-import { 
-  LogOut, 
-  HelpCircle, 
-  Zap, 
-  BookOpen, 
+import {
+  LogOut,
+  HelpCircle,
+  Zap,
+  BookOpen,
   ArrowRight,
   PanelLeftClose,
   ChevronDown,
@@ -14,8 +14,10 @@ import {
   Eye,
   EyeOff,
   LayoutDashboard,
-  Activity
+  Activity,
+  Grid
 } from "lucide-react";
+
 import { cn } from "@/lib/utils";
 import SearchBar from "./SearchBar";
 import { supabase } from "@/integrations/supabase/client";
@@ -131,7 +133,16 @@ const Sidebar = ({ onHide }: SidebarProps) => {
       </div>
 
       <div className="px-1 space-y-4">
+        <Link
+          to="/"
+          className="flex items-center gap-3 px-3 py-2 rounded-xl text-slate-500 hover:text-slate-900 hover:bg-slate-100 dark:text-slate-400 dark:hover:text-white dark:hover:bg-slate-900 transition-all group"
+        >
+          <Grid size={14} className="group-hover:text-indigo-600" />
+          <span className="font-bold text-[10px] uppercase tracking-widest">Practice Hub</span>
+        </Link>
+
         <div className="bg-slate-50 dark:bg-slate-900 p-1 rounded-xl flex gap-1 border border-slate-100 dark:border-slate-800">
+
           {(['clinical', 'lab', 'library'] as AppMode[]).map((m) => (
             <button
               key={m}

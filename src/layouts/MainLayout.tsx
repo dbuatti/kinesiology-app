@@ -23,13 +23,14 @@ const MainLayout = () => {
       {/* DYNAMIC BACKGROUND ORBS */}
       <div className="fixed inset-0 pointer-events-none overflow-hidden z-0">
         <div className={cn(
-          "absolute top-[-10%] left-[-10%] w-[50%] h-[50%] blur-[150px] rounded-full transition-all duration-1000 opacity-20 dark:opacity-10",
-          mode === 'clinical' ? "bg-indigo-400" : mode === 'lab' ? "bg-emerald-400" : "bg-amber-400"
+          "absolute top-[-10%] left-[-10%] w-[60%] h-[60%] blur-[120px] rounded-full transition-all duration-1000 opacity-30 dark:opacity-10 animate-pulse",
+          mode === 'clinical' ? "bg-indigo-400/40" : mode === 'lab' ? "bg-emerald-400/40" : "bg-amber-400/40"
         )} />
         <div className={cn(
-          "absolute bottom-[-10%] right-[-10%] w-[40%] h-[40%] blur-[120px] rounded-full transition-all duration-1000 opacity-10 dark:opacity-5 delay-500",
-          mode === 'clinical' ? "bg-blue-400" : mode === 'lab' ? "bg-teal-400" : "bg-orange-400"
+          "absolute bottom-[-10%] right-[-10%] w-[50%] h-[50%] blur-[100px] rounded-full transition-all duration-1000 opacity-20 dark:opacity-5 delay-500 animate-pulse",
+          mode === 'clinical' ? "bg-blue-400/30" : mode === 'lab' ? "bg-teal-400/30" : "bg-orange-400/30"
         )} />
+        <div className="absolute inset-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-20 mix-blend-overlay" />
       </div>
 
       <div className="relative z-10 flex flex-col min-h-screen">

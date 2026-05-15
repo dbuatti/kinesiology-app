@@ -40,7 +40,7 @@
     --input: 214.3 31.8% 91.4%;
     --ring: 222 47% 20%;
 
-    --radius: 1.25rem;
+    --radius: 1.5rem;
   }
 
   .dark {
@@ -118,10 +118,14 @@
 
 @layer components {
   .premium-card {
-    @apply rounded-[2.5rem] border border-border bg-white shadow-premium dark:bg-slate-900/50 transition-all duration-300 hover:shadow-xl p-8;
+    @apply rounded-[2.5rem] border border-border bg-white shadow-premium dark:bg-slate-900/50 transition-all duration-500 hover:shadow-xl p-8;
   }
 
   .glass-panel {
     @apply bg-white/70 backdrop-blur-md border border-white/20 dark:bg-slate-900/70 dark:border-slate-800/50;
+  }
+
+  .text-gradient {
+    @apply bg-clip-text text-transparent bg-gradient-to-r from-indigo-600 via-emerald-600 to-amber-600;
   }
 }

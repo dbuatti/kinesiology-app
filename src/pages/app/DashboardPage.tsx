@@ -10,7 +10,8 @@ import {
   Activity, 
   ArrowRight, 
   Zap, 
-  BookOpen 
+  BookOpen,
+  Sparkles
 } from "lucide-react";
 import { format, isToday, differenceInMinutes } from "date-fns";
 import { Skeleton } from "@/components/ui/skeleton";

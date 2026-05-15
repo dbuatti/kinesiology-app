@@ -51,13 +51,18 @@ interface PathwayLogicWizardProps {
   onCancel?: () => void;
   priorityPattern?: string | null;
   initialFinding?: string | null;
+  appointmentId?: string;
 }
 
-const PathwayLogicWizard = ({ onSave, onClearItem, onCancel, priorityPattern, initialFinding }: PathwayLogicWizardProps) => {
+const DYSFUNCTIONAL_STATUSES = ['Inhibited', 'Hypertonic', 'Switching', 'Inhibition'];
+
+const PathwayLogicWizard = ({ onSave, onClearItem, onCancel, priorityPattern, initialFinding, appointmentId }: PathwayLogicWizardProps) => {
   const [step, setStep] = useState<Step>('SELECT_START');
   const [history, setHistory] = useState<Step[]>([]);
   const [selectedFinding, setSelectedFinding] = useState<string>("");
   const [customText, setCustomText] = useState<string>("");
+  const [muscleFindings, setMuscleFindings] = useState<string[]>([]);
+  const [loadingMuscles, setLoadingMuscles] = useState(false);
   
   const [ligamentImages, setLigamentImages] = useState<Record<string, (string | null)[]>>({});
   const [ligamentModalOpen, setLigamentModalOpen] = useState(false);
@@ -73,6 +78,34 @@ const PathwayLogicWizard = ({ onSave, onClearItem, onCancel, priorityPattern, in
     }
   }, [initialFinding]);
 
+  // Fetch muscles from the separate muscle_tests table
+  useEffect(() => {
+    const fetchMuscles = async () => {
+      if (!appointmentId || appointmentId.includes('00000000')) return;
+      
+      setLoadingMuscles(true);
+      try {
+        const { data, error } = await supabase
+          .from('muscle_tests')
+          .select('muscle_name, status')
+          .eq('appointment_id', appointmentId);
+
+        if (!error && data) {
+          const dysfunctional = data
+            .filter(m => DYSFUNCTIONAL_STATUSES.includes(m.status))
+            .map(m => m.muscle_name);
+          setMuscleFindings(dysfunctional);
+        }
+      } catch (err) {
+        console.error("Error fetching muscles for wizard:", err);
+      } finally {
+        setLoadingMuscles(false);
+      }
+    };
+
+    fetchMuscles();
+  }, [appointmentId]);
+
   const effectiveItem = selectedFinding === 'CUSTOM' ? customText : selectedFinding;
 
   const { inhibitedItems, hasAnyTested } = useMemo(() => {
@@ -80,13 +113,14 @@ const PathwayLogicWizard = ({ onSave, onClearItem, onCancel, priorityPattern, in
     const baseNames = new Map<string, Set<'L' | 'R'>>();
     let hasAnyTested = false;
     
+    // 1. Process Pattern (Reflexes, Nerves, Zones)
     if (priorityPattern) {
       try {
         const parsed = safeParse(priorityPattern, {});
         Object.values(parsed).forEach((category: any) => {
           if (Object.keys(category).length > 0) hasAnyTested = true;
           Object.entries(category).forEach(([name, status]) => {
-            if (status === 'Inhibited') {
+            if (DYSFUNCTIONAL_STATUSES.includes(status as string)) {
               items.add(name);
               const match = name.match(/(.+) \(([LR])\)$/);
               if (match) {
@@ -101,6 +135,20 @@ const PathwayLogicWizard = ({ onSave, onClearItem, onCancel, priorityPattern, in
       } catch (e) {}
     }
 
+    // 2. Process Muscle Findings from separate table
+    muscleFindings.forEach(name => {
+      hasAnyTested = true;
+      items.add(name);
+      const match = name.match(/(.+) \(([LR])\)$/);
+      if (match) {
+        const base = match[1];
+        const side = match[2] as 'L' | 'R';
+        if (!baseNames.has(base)) baseNames.set(base, new Set());
+        baseNames.get(base)!.add(side);
+      }
+    });
+
+    // 3. Handle Bilateral Logic
     baseNames.forEach((sides, base) => {
       if (sides.has('L') && sides.has('R')) {
         items.add(`${base} (Bilateral)`);
@@ -112,7 +160,7 @@ const PathwayLogicWizard = ({ onSave, onClearItem, onCancel, priorityPattern, in
     }
 
     return { inhibitedItems: Array.from(items).sort(), hasAnyTested };
-  }, [priorityPattern, initialFinding]);
+  }, [priorityPattern, initialFinding, muscleFindings]);
 
   useEffect(() => {
     const fetchLigamentImages = async () => {
@@ -281,7 +329,7 @@ const PathwayLogicWizard = ({ onSave, onClearItem, onCancel, priorityPattern, in
               <div className="grid grid-cols-1 gap-4">
                 <Select value={selectedFinding} onValueChange={(v) => setSelectedFinding(v)}>
                   <SelectTrigger className="h-14 rounded-2xl border-2 border-slate-100 bg-white font-bold text-lg">
-                    <SelectValue placeholder="Select inhibited finding..." />
+                    <SelectValue placeholder={loadingMuscles ? "Loading findings..." : "Select inhibited finding..."} />
                   </SelectTrigger>
                   <SelectContent className="rounded-2xl border-none shadow-2xl p-2 bg-white dark:bg-slate-900">
                     {inhibitedItems.map(item => (

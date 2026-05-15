@@ -2,13 +2,15 @@
 
 import React, { useState, useEffect, useRef } from "react";
 import { Button } from "@/components/ui/button";
-import { Footprints, Info, Save, Loader2, RotateCcw, Plus, Target, Upload, X, ImageIcon } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
+import { Footprints, Info, Save, Loader2, RotateCcw, Plus, Target, Upload, X, ImageIcon, CheckCircle2, Zap, RefreshCw } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { showSuccess, showError } from "@/utils/toast";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { cn } from "@/lib/utils";
+import { safeParse } from "@/utils/safe-json";
 
 const BUCKET_NAME = 'reflex-images';
 
@@ -58,7 +60,7 @@ const ImageZone = ({
         .getPublicUrl(filePath);
 
       const cacheBustedUrl = `${publicUrl}?t=${Date.now()}`;
-      const dbField = type === 'primary' ? 'image_url' : 'secondary_image_url';
+      const dbField = type === 'primary' ? 'image_url' : type === 'secondary' ? 'secondary_image_url' : 'tertiary_image_url';
 
       const { error: dbError } = await supabase
         .from('brain_reflex_customizations')
@@ -86,7 +88,7 @@ const ImageZone = ({
     try {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) return;
-      const dbField = type === 'primary' ? 'image_url' : 'secondary_image_url';
+      const dbField = type === 'primary' ? 'image_url' : type === 'secondary' ? 'secondary_image_url' : 'tertiary_image_url';
       const { error } = await supabase
         .from('brain_reflex_customizations')
         .update({ [dbField]: null })
@@ -148,51 +150,96 @@ const FakudaStepTest = ({
 }: FakudaStepTestProps) => {
   const [loading, setLoading] = useState(false);
   const [fakudaNotes, setFakudaNotes] = useState(initialFakudaNotes || '');
+  const [currentStatus, setCurrentStatus] = useState<'Clear' | 'Inhibited' | 'Recheck' | null>(null);
   const [customImages, setCustomImages] = useState<{ primary: string | null, secondary: string | null }>({
     primary: "/images/fakuda-1.png",
     secondary: "/images/fakuda-2.png"
   });
 
   useEffect(() => {
-    const fetchImages = async () => {
+    const fetchInitialState = async () => {
       try {
+        const { data: app } = await supabase.from('appointments').select('priority_pattern').eq('id', appointmentId).single();
+        if (app?.priority_pattern) {
+          const pattern = safeParse(app.priority_pattern, {} as any);
+          const status = pattern.brainZones?.['Fakuda Step Test'];
+          if (status) setCurrentStatus(status as any);
+        }
+
         const { data: { user } } = await supabase.auth.getUser();
         if (!user) return;
-        const { data } = await supabase.from('brain_reflex_customizations').select('image_url, secondary_image_url').eq('user_id', user.id).eq('reflex_id', 'fakuda-test').maybeSingle();
-        if (data) {
+        const { data: images } = await supabase.from('brain_reflex_customizations').select('image_url, secondary_image_url').eq('user_id', user.id).eq('reflex_id', 'fakuda-test').maybeSingle();
+        if (images) {
           setCustomImages({
-            primary: data.image_url || "/images/fakuda-1.png",
-            secondary: data.secondary_image_url || "/images/fakuda-2.png"
+            primary: images.image_url || "/images/fakuda-1.png",
+            secondary: images.secondary_image_url || "/images/fakuda-2.png"
           });
         }
       } catch (err) {
-        console.error("Error fetching images:", err);
+        console.error("Error fetching initial state:", err);
       }
     };
-    fetchImages();
-  }, []);
+    fetchInitialState();
+  }, [appointmentId]);
 
-  const handleSave = async () => {
+  const handleSetStatus = async (status: 'Clear' | 'Inhibited' | 'Recheck') => {
+    setLoading(true);
+    try {
+      const { data: app } = await supabase.from('appointments').select('priority_pattern').eq('id', appointmentId).single();
+      const pattern = safeParse(app?.priority_pattern, {} as any);
+      
+      if (!pattern.brainZones) pattern.brainZones = {};
+      pattern.brainZones['Fakuda Step Test'] = status;
+
+      const { error } = await supabase
+        .from("appointments")
+        .update({ 
+          priority_pattern: JSON.stringify(pattern),
+          fakuda_notes: fakudaNotes || null 
+        })
+        .eq("id", appointmentId);
+
+      if (error) throw error;
+      setCurrentStatus(status);
+      showSuccess(`Fakuda result logged as ${status}`);
+      onUpdate();
+    } catch (error: any) {
+      showError(error.message || "Failed to log result.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleSaveNotes = async () => {
     setLoading(true);
     try {
       const { error } = await supabase.from("appointments").update({ fakuda_notes: fakudaNotes || null }).eq("id", appointmentId);
       if (error) throw error;
-      showSuccess("Fakuda Step Test assessment saved!");
+      showSuccess("Notes saved.");
       onUpdate();
     } catch (error: any) {
-      showError(error.message || "Failed to save assessment.");
+      showError(error.message || "Failed to save notes.");
     } finally {
       setLoading(false);
     }
   };
 
   const handleReset = async () => {
-    if (!confirm("Reset Fakuda Step Test notes?")) return;
+    if (!confirm("Reset Fakuda Step Test data?")) return;
     setLoading(true);
     try {
-      await supabase.from("appointments").update({ fakuda_notes: null }).eq("id", appointmentId);
+      const { data: app } = await supabase.from('appointments').select('priority_pattern').eq('id', appointmentId).single();
+      const pattern = safeParse(app?.priority_pattern, {} as any);
+      if (pattern.brainZones) delete pattern.brainZones['Fakuda Step Test'];
+
+      await supabase.from("appointments").update({ 
+        fakuda_notes: null,
+        priority_pattern: JSON.stringify(pattern)
+      }).eq("id", appointmentId);
+      
       setFakudaNotes('');
-      showSuccess("Notes reset.");
+      setCurrentStatus(null);
+      showSuccess("Data reset.");
       onUpdate();
     } catch (error: any) {
       showError(error.message || "Failed to reset.");
@@ -203,12 +250,48 @@ const FakudaStepTest = ({
 
   return (
     <div className="space-y-6">
-      <Alert className="bg-blue-50 border-blue-200">
-        <Info className="h-4 w-4 text-blue-600" />
-        <AlertDescription className="text-sm text-blue-900">
-          <strong>Assessment Guide:</strong> This test assesses for imbalances in the midline or vestibule cerebellum. Observe rotation and movement patterns.
-        </AlertDescription>
-      </Alert>
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 p-4 bg-slate-50 rounded-2xl border border-slate-100">
+        <div className="space-y-1">
+          <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Assessment Result</p>
+          <div className="flex gap-2">
+            <Button 
+              size="sm" 
+              onClick={() => handleSetStatus('Clear')}
+              className={cn(
+                "h-10 px-6 rounded-xl font-black text-[10px] uppercase tracking-widest transition-all",
+                currentStatus === 'Clear' ? "bg-emerald-600 text-white shadow-lg" : "bg-white text-slate-600 border-slate-200 hover:bg-emerald-50"
+              )}
+            >
+              <CheckCircle2 size={14} className="mr-2" /> Clear
+            </Button>
+            <Button 
+              size="sm" 
+              onClick={() => handleSetStatus('Inhibited')}
+              className={cn(
+                "h-10 px-6 rounded-xl font-black text-[10px] uppercase tracking-widest transition-all",
+                currentStatus === 'Inhibited' ? "bg-rose-600 text-white shadow-lg" : "bg-white text-slate-600 border-slate-200 hover:bg-rose-50"
+              )}
+            >
+              <Zap size={14} className="mr-2" /> Inhibited
+            </Button>
+            <Button 
+              size="sm" 
+              onClick={() => handleSetStatus('Recheck')}
+              className={cn(
+                "h-10 px-6 rounded-xl font-black text-[10px] uppercase tracking-widest transition-all",
+                currentStatus === 'Recheck' ? "bg-amber-500 text-white shadow-lg" : "bg-white text-slate-600 border-slate-200 hover:bg-amber-50"
+              )}
+            >
+              <RefreshCw size={14} className="mr-2" /> Recheck
+            </Button>
+          </div>
+        </div>
+        {currentStatus && (
+          <Badge className="bg-indigo-600 text-white border-none font-black text-[8px] uppercase tracking-widest px-3 py-1 rounded-full">
+            Auto-synced to Align phase
+          </Badge>
+        )}
+      </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <div className="space-y-4">
@@ -241,18 +324,9 @@ const FakudaStepTest = ({
               </ol>
             </div>
           </div>
-          
-          <div className="bg-amber-50 border-2 border-amber-200 p-4 rounded-xl">
-            <h4 className="font-bold text-amber-900 mb-2">Interpretation</h4>
-            <ul className="space-y-1.5 text-sm text-amber-800 list-disc list-inside">
-              <li><strong>Central:</strong> No imbalances.</li>
-              <li><strong>Rotation:</strong> Indicates weakness on the side of rotation.</li>
-              <li><strong>Move Forward:</strong> May indicate flexor dominance.</li>
-            </ul>
-          </div>
         </div>
 
-        <div>
+        <div className="space-y-4">
           <Label htmlFor="fakudaNotes" className="text-base font-bold text-slate-900 mb-2 block">
             Fakuda Step Test Notes:
           </Label>
@@ -263,11 +337,11 @@ const FakudaStepTest = ({
             onChange={(e) => setFakudaNotes(e.target.value)}
             className="min-h-[350px] resize-none"
           />
-          <div className="flex gap-3 mt-4">
-            <Button onClick={handleSave} disabled={loading} className="flex-1 bg-green-600 hover:bg-green-700 h-12 font-semibold rounded-xl shadow-lg">
+          <div className="flex gap-3">
+            <Button onClick={handleSaveNotes} disabled={loading} className="flex-1 bg-slate-900 hover:bg-slate-800 text-white h-12 font-semibold rounded-xl shadow-lg">
               {loading ? <Loader2 className="mr-2 h-5 w-5 animate-spin" /> : "Save Notes"}
             </Button>
-            {initialFakudaNotes && (
+            {(initialFakudaNotes || currentStatus) && (
               <Button variant="outline" onClick={handleReset} disabled={loading} className="h-12 px-6 rounded-xl border-red-200 text-red-600 hover:bg-red-50">
                 <RotateCcw size={16} />
               </Button>

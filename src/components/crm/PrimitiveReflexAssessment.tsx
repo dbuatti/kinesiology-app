@@ -1,28 +1,20 @@
 "use client";
 
-import React, { useState, useEffect, useMemo } from "react";
+import React, { useState, useMemo } from "react";
 import { PRIMITIVE_REFLEXES, PrimitiveReflex } from "@/data/primitive-reflex-data";
 import { usePrimitiveReflexTests } from "@/hooks/usePrimitiveReflexTests";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
 import { Checkbox } from "@/components/ui/checkbox";
 import { 
   Zap, 
-  ImageIcon, 
   Loader2, 
-  Activity, 
-  Hand, 
-  FileText,
-  Search,
-  CheckCircle2
+  CheckCircle2,
+  Search
 } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { supabase } from "@/integrations/supabase/client";
-import { Input } from "@/components/ui/input";
-import { Switch } from "@/components/ui/switch";
-import { Label } from "@/components/ui/label";
 import { safeParse } from "@/utils/safe-json";
 import { PrimitiveReflexTest } from "@/types/crm";
+import { Input } from "@/components/ui/input";
 
 interface ReflexTestItemProps {
   reflex: PrimitiveReflex;
@@ -31,191 +23,61 @@ interface ReflexTestItemProps {
   statusR?: 'Clear' | 'Inhibited';
   statusMidline?: 'Clear' | 'Inhibited';
   isLateralized: boolean;
-  images: { primary: string | null, secondary: string | null } | undefined;
   onUpdate: (reflexId: string, updates: Partial<PrimitiveReflexTest>, side?: 'L' | 'R', reflexName?: string) => Promise<void>;
 }
 
-const ReflexTestItem = ({ reflex, test, statusL, statusR, statusMidline, isLateralized, images, onUpdate }: ReflexTestItemProps) => {
-  const [localNotes, setLocalNotes] = useState(test.notes || "");
-  const saveTimeoutRef = React.useRef<NodeJS.Timeout | null>(null);
-
-  useEffect(() => {
-    if (test.notes !== undefined && test.notes !== localNotes) {
-      setLocalNotes(test.notes || "");
-    }
-  }, [test.notes]);
-
-  const handleNotesChange = (val: string) => {
-    setLocalNotes(val);
-    if (saveTimeoutRef.current) clearTimeout(saveTimeoutRef.current);
-    saveTimeoutRef.current = setTimeout(() => {
-      onUpdate(reflex.id, { notes: val });
-    }, 1000);
-  };
-
-  const handleClear = async () => {
-    if (isLateralized) {
-      await onUpdate(reflex.id, { is_inhibited: false }, 'L', reflex.name);
-      await onUpdate(reflex.id, { is_inhibited: false }, 'R', reflex.name);
-    } else {
-      await onUpdate(reflex.id, { is_inhibited: false }, undefined, reflex.name);
-    }
-    await onUpdate(reflex.id, { 
-      is_inhibited: false, 
-      is_priority: false, 
-      is_primary_priority: false 
-    });
-  };
-
-  const handleBilateralToggle = async (checked: boolean) => {
-    await onUpdate(reflex.id, { is_inhibited: checked }, 'L', reflex.name);
-    await onUpdate(reflex.id, { is_inhibited: checked }, 'R', reflex.name);
-  };
-
-  const hasImages = images?.primary || images?.secondary;
+const ReflexTestItem = ({ reflex, test, statusL, statusR, statusMidline, isLateralized, onUpdate }: ReflexTestItemProps) => {
   const isAnyInhibited = statusL === 'Inhibited' || statusR === 'Inhibited' || statusMidline === 'Inhibited' || test.is_inhibited;
-  const isBilateral = statusL === 'Inhibited' && statusR === 'Inhibited';
 
   return (
-    <section className={cn(
-      "p-2 px-3 rounded-xl border transition-all",
-      test.is_primary_priority ? "bg-indigo-50/40 border-indigo-300 ring-1 ring-indigo-100" : 
-      test.is_priority ? "bg-amber-50/40 border-amber-200" : 
-      !isAnyInhibited && (statusL === 'Clear' || statusR === 'Clear' || statusMidline === 'Clear') ? "bg-emerald-50/10 border-emerald-100 opacity-80" :
-      "border-slate-100 bg-white"
+    <div className={cn(
+      "flex items-center justify-between p-2 border-b border-slate-50 last:border-b-0 transition-all",
+      isAnyInhibited ? "bg-rose-50/50" : "hover:bg-slate-50"
     )}>
-      <div className="flex items-center justify-between gap-4">
-        <div className="flex-1 min-w-0 space-y-1">
-          <div className="flex items-center gap-2">
-            <h2 className="text-sm font-bold text-slate-900 truncate">
-              {reflex.name}
-            </h2>
-            <span className="text-[8px] font-black text-slate-400 uppercase tracking-widest hidden sm:inline">
-              {reflex.category} • {reflex.developmentalWindow}
-            </span>
-          </div>
-          
-          <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-[9px] leading-tight">
-            <div className="flex items-center gap-1 text-slate-500">
-              <Zap size={10} className="text-indigo-400 shrink-0" />
-              <span className="font-medium">{reflex.stimulus}</span>
-            </div>
-            <div className="flex items-center gap-1 text-rose-600/70 font-bold">
-              <Activity size={10} className="shrink-0" />
-              <span className="">{reflex.inhibitionPattern}</span>
-            </div>
-          </div>
-        </div>
+      <div className="flex-1 min-w-0">
+        <span className="text-[10px] font-black text-slate-900 uppercase tracking-tight">{reflex.name}</span>
+      </div>
 
-        <div className="hidden md:flex items-center gap-1.5 shrink-0">
-          {images?.primary && (
-            <div className="h-8 w-12 rounded border border-slate-100 overflow-hidden bg-slate-50">
-              <img src={images.primary} alt="P" className="w-full h-full object-cover opacity-80" />
-            </div>
-          )}
-          {images?.secondary && (
-            <div className="h-8 w-12 rounded border border-slate-100 overflow-hidden bg-slate-50">
-              <img src={images.secondary} alt="S" className="w-full h-full object-cover opacity-80" />
-            </div>
-          )}
-        </div>
-
-        <div className="flex items-center gap-3 shrink-0 print:hidden">
-          <div className="flex items-center gap-3 border-r border-slate-100 pr-3">
-            {isLateralized ? (
-              <>
-                <div className="flex items-center gap-1">
-                  <Checkbox 
-                    id={`inhib-l-${reflex.id}`}
-                    checked={statusL === 'Inhibited'}
-                    onCheckedChange={(checked) => onUpdate(reflex.id, { is_inhibited: !!checked }, 'L', reflex.name)}
-                    className="h-3 w-3 border-slate-400 rounded-none"
-                  />
-                  <label htmlFor={`inhib-l-${reflex.id}`} className="text-[8px] font-black uppercase tracking-widest cursor-pointer text-slate-500">
-                    L
-                  </label>
-                </div>
-                <div className="flex items-center gap-1">
-                  <Checkbox 
-                    id={`inhib-r-${reflex.id}`}
-                    checked={statusR === 'Inhibited'}
-                    onCheckedChange={(checked) => onUpdate(reflex.id, { is_inhibited: !!checked }, 'R', reflex.name)}
-                    className="h-3 w-3 border-slate-400 rounded-none"
-                  />
-                  <label htmlFor={`inhib-r-${reflex.id}`} className="text-[8px] font-black uppercase tracking-widest cursor-pointer text-slate-500">
-                    R
-                  </label>
-                </div>
-                <div className="flex items-center gap-1 ml-1">
-                  <Checkbox 
-                    id={`inhib-both-${reflex.id}`}
-                    checked={isBilateral}
-                    onCheckedChange={(checked) => handleBilateralToggle(!!checked)}
-                    className="h-3 w-3 border-indigo-400 rounded-none data-[state=checked]:bg-indigo-600"
-                  />
-                  <label htmlFor={`inhib-both-${reflex.id}`} className="text-[8px] font-black uppercase tracking-widest cursor-pointer text-indigo-600">
-                    Both
-                  </label>
-                </div>
-              </>
-            ) : (
+      <div className="flex items-center gap-4">
+        <div className="flex items-center gap-3">
+          {isLateralized ? (
+            <div className="flex gap-2">
               <div className="flex items-center gap-1">
                 <Checkbox 
-                  id={`inhib-mid-${reflex.id}`}
-                  checked={statusMidline === 'Inhibited'}
-                  onCheckedChange={(checked) => onUpdate(reflex.id, { is_inhibited: !!checked }, undefined, reflex.name)}
-                  className="h-3 w-3 border-slate-400 rounded-none"
+                  checked={statusL === 'Inhibited'}
+                  onCheckedChange={(checked) => onUpdate(reflex.id, { is_inhibited: !!checked }, 'L', reflex.name)}
+                  className="h-3.5 w-3.5 border-slate-300 rounded-none"
                 />
-                <label htmlFor={`inhib-mid-${reflex.id}`} className="text-[8px] font-black uppercase tracking-widest cursor-pointer text-slate-500">
-                  Inhib
-                </label>
+                <span className="text-[8px] font-black text-slate-400">L</span>
               </div>
-            )}
-          </div>
-
-          <div className="flex items-center gap-1">
+              <div className="flex items-center gap-1">
+                <Checkbox 
+                  checked={statusR === 'Inhibited'}
+                  onCheckedChange={(checked) => onUpdate(reflex.id, { is_inhibited: !!checked }, 'R', reflex.name)}
+                  className="h-3.5 w-3.5 border-slate-300 rounded-none"
+                />
+                <span className="text-[8px] font-black text-slate-400">R</span>
+              </div>
+            </div>
+          ) : (
             <Checkbox 
-              id={`priority-reflex-${reflex.id}`}
-              checked={test.is_priority}
-              onCheckedChange={(checked) => onUpdate(reflex.id, { is_priority: !!checked })}
-              className="h-3 w-3 border-slate-400 rounded-none"
+              checked={statusMidline === 'Inhibited'}
+              onCheckedChange={(checked) => onUpdate(reflex.id, { is_inhibited: !!checked }, undefined, reflex.name)}
+              className="h-3.5 w-3.5 border-slate-300 rounded-none"
             />
-            <label htmlFor={`priority-reflex-${reflex.id}`} className="text-[8px] font-black uppercase tracking-widest cursor-pointer text-slate-500">
-              Prio
-            </label>
-          </div>
-          <Button 
-            variant="ghost" 
-            size="sm" 
-            onClick={() => onUpdate(reflex.id, { is_primary_priority: !test.is_primary_priority })}
-            className={cn(
-              "h-5 px-1.5 text-[7px] font-black uppercase tracking-widest transition-all rounded",
-              test.is_primary_priority ? "bg-slate-900 text-white" : "text-slate-400 hover:text-slate-900"
-            )}
-          >
-            {test.is_primary_priority ? "Primary" : "Set 1°"}
-          </Button>
-          <Button 
-            variant="ghost" 
-            size="sm" 
-            onClick={handleClear}
-            className="h-5 px-1.5 text-[7px] font-black uppercase tracking-widest text-emerald-600 hover:bg-emerald-50 rounded"
-          >
-            <CheckCircle2 size={10} className="mr-1" /> Clear
-          </Button>
+          )}
         </div>
-      </div>
 
-      <div className="mt-1.5 pt-1.5 border-t border-slate-100/50 flex items-center gap-2">
-        <FileText size={10} className="text-slate-300 shrink-0" />
-        <input 
-          value={localNotes}
-          onChange={(e) => handleNotesChange(e.target.value)}
-          className="flex-1 bg-transparent border-none p-0 text-[10px] font-medium focus:ring-0 placeholder:text-slate-300"
-          placeholder="Add assessment findings..."
-        />
+        <Button 
+          variant="ghost" 
+          size="sm" 
+          onClick={() => isLateralized ? (onUpdate(reflex.id, { is_inhibited: false }, 'L', reflex.name), onUpdate(reflex.id, { is_inhibited: false }, 'R', reflex.name)) : onUpdate(reflex.id, { is_inhibited: false }, undefined, reflex.name)}
+          className="h-6 px-2 text-[8px] font-black uppercase tracking-widest text-emerald-600 hover:bg-emerald-50"
+        >
+          <CheckCircle2 size={10} className="mr-1" /> Clear
+        </Button>
       </div>
-    </section>
+    </div>
   );
 };
 
@@ -229,101 +91,31 @@ export function PrimitiveReflexAssessment({
   updatePriorityPattern?: (category: string, itemName: string, status: 'Clear' | 'Inhibited' | null, side?: 'L' | 'R') => Promise<void>;
 }) {
   const { tests, loading, updateTest } = usePrimitiveReflexTests(appointmentId, priorityPattern, updatePriorityPattern);
-  const [showOnlyInhibited, setShowOnlyInhibited] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
-  const [customImages, setCustomImages] = useState<Record<string, { primary: string | null, secondary: string | null }>>({});
 
   const pattern = useMemo(() => safeParse(priorityPattern, {} as any), [priorityPattern]);
   const reflexPattern = pattern.primitiveReflexes || {};
 
-  useEffect(() => {
-    const fetchImages = async () => {
-      try {
-        const { data: { user } } = await supabase.auth.getUser();
-        if (!user) return;
-        const { data } = await supabase.from('brain_reflex_customizations').select('reflex_id, image_url, secondary_image_url').eq('user_id', user.id);
-        const mapping: Record<string, { primary: string | null, secondary: string | null }> = {};
-        data?.forEach(item => {
-          mapping[item.reflex_id] = { primary: item.image_url, secondary: item.secondary_image_url };
-        });
-        setCustomImages(mapping);
-      } catch (err) {
-        console.error("Error fetching reflex images:", err);
-      }
-    };
-    fetchImages();
-  }, []);
+  const filteredReflexes = useMemo(() => {
+    return PRIMITIVE_REFLEXES.filter(r => r.name.toLowerCase().includes(searchQuery.toLowerCase()));
+  }, [searchQuery]);
 
-  const sortedReflexes = useMemo(() => {
-    return [...PRIMITIVE_REFLEXES]
-      .filter(reflex => {
-        const test = tests.find(t => t.reflex_id === reflex.id) || { is_inhibited: false };
-        const matchesSearch = reflex.name.toLowerCase().includes(searchQuery.toLowerCase()) || 
-                             reflex.category.toLowerCase().includes(searchQuery.toLowerCase());
-        const matchesInhibited = showOnlyInhibited ? (test.is_inhibited || reflexPattern[`${reflex.name} (L)`] === 'Inhibited' || reflexPattern[`${reflex.name} (R)`] === 'Inhibited' || reflexPattern[reflex.name] === 'Inhibited') : true;
-        return matchesSearch && matchesInhibited;
-      })
-      .sort((a, b) => {
-        const testA = tests.find(t => t.reflex_id === a.id);
-        const testB = tests.find(t => t.reflex_id === b.id);
-        
-        const isAnyInhibA = reflexPattern[`${a.name} (L)`] === 'Inhibited' || reflexPattern[`${a.name} (R)`] === 'Inhibited' || reflexPattern[a.name] === 'Inhibited' || testA?.is_inhibited;
-        const isAnyInhibB = reflexPattern[`${b.name} (L)`] === 'Inhibited' || reflexPattern[`${b.name} (R)`] === 'Inhibited' || reflexPattern[b.name] === 'Inhibited' || testB?.is_inhibited;
-
-        const isAnyClearA = reflexPattern[`${a.name} (L)`] === 'Clear' || reflexPattern[`${a.name} (R)`] === 'Clear' || reflexPattern[a.name] === 'Clear';
-        const isAnyClearB = reflexPattern[`${b.name} (L)`] === 'Clear' || reflexPattern[`${b.name} (R)`] === 'Clear' || reflexPattern[b.name] === 'Clear';
-
-        const scoreA = (testA?.is_primary_priority ? 1000 : 0) + (testA?.is_priority ? 500 : 0) + (isAnyInhibA ? 100 : 0) + (isAnyClearA ? -100 : 0);
-        const scoreB = (testB?.is_primary_priority ? 1000 : 0) + (testB?.is_priority ? 500 : 0) + (isAnyInhibB ? 100 : 0) + (isAnyClearB ? -100 : 0);
-        
-        if (scoreA !== scoreB) return scoreB - scoreA;
-        return a.name.localeCompare(b.name);
-      });
-  }, [tests, searchQuery, showOnlyInhibited, reflexPattern]);
-
-  if (loading) {
-    return (
-      <div className="flex flex-col items-center justify-center p-12 gap-4">
-        <Loader2 className="animate-spin text-indigo-600" size={32} />
-        <p className="text-xs font-bold uppercase tracking-widest text-slate-400">Loading Assessment...</p>
-      </div>
-    );
-  }
+  if (loading) return <div className="py-8 flex justify-center"><Loader2 className="animate-spin text-primary" /></div>;
 
   return (
-    <div className="space-y-1.5">
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-2 bg-slate-50/50 p-2 rounded-xl border border-slate-100 shadow-inner print:hidden mb-2">
-        <div className="flex items-center gap-3">
-          <div className="relative w-full md:w-48">
-            <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3 w-3 text-slate-400" />
-            <Input
-              placeholder="Search..."
-              className="pl-8 h-7 rounded-lg border-slate-200 bg-white text-[10px]"
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-            />
-          </div>
-          <div className="flex items-center space-x-2 px-3 border-l border-slate-200">
-            <Switch
-              id="inhibited-filter-reflex"
-              checked={showOnlyInhibited}
-              onCheckedChange={setShowOnlyInhibited}
-              className="data-[state=checked]:bg-rose-600 scale-[0.6]"
-            />
-            <Label htmlFor="inhibited-filter-reflex" className="text-[8px] font-black uppercase tracking-widest cursor-pointer text-slate-500">
-              Only Inhibited
-            </Label>
-          </div>
-        </div>
-        <div className="flex items-center gap-2">
-          <Badge variant="outline" className="bg-white border-slate-200 font-black text-[7px] uppercase tracking-widest px-2 py-0.5 rounded-full">
-            {tests.filter(t => t.is_inhibited).length} Active
-          </Badge>
-        </div>
+    <div className="space-y-2">
+      <div className="relative mb-2">
+        <Search className="absolute left-2 top-1/2 -translate-y-1/2 h-3 w-3 text-slate-300" />
+        <Input
+          placeholder="Filter reflexes..."
+          className="pl-7 h-7 rounded-none border-slate-100 bg-slate-50 text-[10px] font-bold uppercase tracking-widest"
+          value={searchQuery}
+          onChange={(e) => setSearchQuery(e.target.value)}
+        />
       </div>
 
-      {sortedReflexes.map((reflex) => {
-        return (
+      <div className="border border-slate-100">
+        {filteredReflexes.map((reflex) => (
           <ReflexTestItem 
             key={reflex.id}
             reflex={reflex}
@@ -332,11 +124,10 @@ export function PrimitiveReflexAssessment({
             statusR={reflexPattern[`${reflex.name} (R)`]}
             statusMidline={reflexPattern[reflex.name]}
             isLateralized={reflex.isLateralized}
-            images={customImages[reflex.id]}
             onUpdate={updateTest}
           />
-        );
-      })}
+        ))}
+      </div>
     </div>
   );
 }

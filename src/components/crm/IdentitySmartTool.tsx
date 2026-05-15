@@ -14,7 +14,8 @@ import {
   Fingerprint,
   Target,
   ChevronRight,
-  ChevronDown
+  ChevronDown,
+  Sparkles
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -29,14 +30,11 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 
-type IdentityType = 'shifting' | 'alignment' | 'belief' | 'auto';
-
 const IdentitySmartTool = () => {
   const [backlog, setBacklog] = useState<any[]>([]);
   const [recentSessions, setRecentSessions] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [newContent, setNewContent] = useState("");
-  const [selectedType, setSelectedType] = useState<IdentityType>('auto');
   const [isAdding, setIsAdding] = useState(false);
 
   const fetchData = async () => {
@@ -45,10 +43,10 @@ const IdentitySmartTool = () => {
       if (!user) return;
 
       const [backlogRes, shiftingRes, alignmentRes, beliefsRes] = await Promise.all([
-        supabase.from('identity_backlog').select('*').eq('status', 'pending').order('priority_score', { ascending: false }).order('created_at', { ascending: false }).limit(5),
-        supabase.from('identity_shifting_sessions').select('id, identity, created_at, is_complete').order('created_at', { ascending: false }).limit(5),
-        supabase.from('identity_alignment_sessions').select('id, target_identity, created_at, is_complete').order('created_at', { ascending: false }).limit(5),
-        supabase.from('limiting_belief_sessions').select('id, limiting_belief, created_at, is_complete').order('created_at', { ascending: false }).limit(5)
+        supabase.from('identity_backlog').select('*').eq('status', 'pending').order('priority_score', { ascending: false }).limit(5),
+        supabase.from('identity_shifting_sessions').select('id, identity, created_at, is_complete').order('created_at', { ascending: false }).limit(3),
+        supabase.from('identity_alignment_sessions').select('id, target_identity, created_at, is_complete').order('created_at', { ascending: false }).limit(3),
+        supabase.from('limiting_belief_sessions').select('id, limiting_belief, created_at, is_complete').order('created_at', { ascending: false }).limit(3)
       ]);
 
       setBacklog(backlogRes.data || []);
@@ -61,7 +59,7 @@ const IdentitySmartTool = () => {
 
       setRecentSessions(combined);
     } catch (err) {
-      console.error("Error fetching identity data:", err);
+      console.error(err);
     } finally {
       setLoading(false);
     }
@@ -71,246 +69,104 @@ const IdentitySmartTool = () => {
     fetchData();
   }, []);
 
-  const handleAddToBacklog = async (e: React.FormEvent) => {
+  const handleQuickAdd = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!newContent.trim()) return;
-
     setIsAdding(true);
     try {
       const { data: { user } } = await supabase.auth.getUser();
-      if (!user) throw new Error("Not authenticated");
-
-      let finalType = selectedType;
-      if (finalType === 'auto') {
-        const content = newContent.toLowerCase();
-        if (content.includes('i am')) finalType = 'belief';
-        else if (content.includes('want to') || content.includes('become') || content.includes('goal')) finalType = 'alignment';
-        else finalType = 'shifting';
-      }
-
-      const { error } = await supabase
-        .from('identity_backlog')
-        .insert({
-          user_id: user.id,
-          content: newContent.trim(),
-          type: finalType,
-          status: 'pending'
-        });
-
+      const { error } = await supabase.from('identity_backlog').insert({
+        user_id: user?.id,
+        content: newContent.trim(),
+        type: newContent.toLowerCase().includes('i am') ? 'belief' : 'shifting',
+        status: 'pending'
+      });
       if (error) throw error;
-      
-      showSuccess(`Added to ${finalType === 'alignment' ? 'Alignment' : finalType === 'belief' ? 'Beliefs' : 'Shifting'} backlog.`);
+      showSuccess("Added to map.");
       setNewContent("");
-      setSelectedType('auto');
       fetchData();
-    } catch (err: any) {
-      showError(err.message);
+    } catch (err) {
+      showError("Failed.");
     } finally {
       setIsAdding(false);
     }
   };
 
-  const smartSuggestion = useMemo(() => {
-    if (recentSessions.length === 0) return null;
-    
-    const candidate = recentSessions.find(s => 
-      s.is_complete && differenceInDays(new Date(), new Date(s.created_at)) >= 7
-    );
-
-    if (!candidate) return null;
-
-    return {
-      label: candidate.label,
-      type: candidate.type,
-      daysAgo: differenceInDays(new Date(), new Date(candidate.created_at))
-    };
-  }, [recentSessions]);
-
-  if (loading) return (
-    <div className="h-48 border border-border flex items-center justify-center">
-      <Loader2 className="animate-spin text-primary" size={32} />
-    </div>
-  );
+  if (loading) return <div className="h-48 flex items-center justify-center"><Loader2 className="animate-spin text-primary" /></div>;
 
   return (
-    <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
-      <div className="lg:col-span-7 space-y-8">
-        <div className="flex items-center gap-3">
-          <div className="w-10 h-10 border border-border flex items-center justify-center text-primary">
-            <Brain size={20} />
-          </div>
-          <div>
-            <h2 className="text-2xl font-medium uppercase tracking-tight">Identity Intelligence</h2>
-            <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">Pattern recognition and follow-up suggestions.</p>
-          </div>
+    <div className="space-y-6">
+      <div className="flex items-center gap-3 px-2">
+        <div className="w-8 h-8 bg-indigo-50 text-primary flex items-center justify-center">
+          <Brain size={16} />
         </div>
-
-        <div className="grid grid-cols-1 gap-8">
-          <div className="border border-border p-8 bg-background space-y-6">
-            {smartSuggestion ? (
-              <>
-                <div className="space-y-2">
-                  <p className="text-[10px] font-bold uppercase tracking-widest text-primary">Follow-up Suggestion</p>
-                  <h3 className="text-2xl font-medium uppercase tracking-tight leading-tight">
-                    Have you really worked through "{smartSuggestion.label}"?
-                  </h3>
-                  <p className="text-xs text-muted-foreground">Last processed {smartSuggestion.daysAgo} days ago.</p>
-                </div>
-                <div className="flex gap-4">
-                  <Button 
-                    asChild
-                    className="bg-primary text-primary-foreground h-12 px-8 font-bold text-[10px] uppercase tracking-widest"
-                  >
-                    <Link to={smartSuggestion.type === 'alignment' ? "/sandbox/identity-alignment" : "/sandbox/identity-shifting"} state={{ prefill: smartSuggestion.label }}>
-                      {smartSuggestion.type === 'alignment' ? 'Align Again' : 'Shift Again'}
-                    </Link>
-                  </Button>
-                  <Button 
-                    asChild
-                    variant="outline"
-                    className="h-12 px-8 font-bold text-[10px] uppercase tracking-widest border-border"
-                  >
-                    <Link to="/sandbox">View Map</Link>
-                  </Button>
-                </div>
-              </>
-            ) : (
-              <div className="flex flex-col items-center justify-center text-center py-4 space-y-4">
-                <div className="w-12 h-12 border border-border flex items-center justify-center text-success">
-                  <CheckCircle2 size={24} />
-                </div>
-                <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">Your identity work is up to date.</p>
-              </div>
-            )}
-          </div>
-
-          <div className="border border-border bg-background">
-            <div className="p-6 border-b border-border">
-              <h3 className="text-sm font-bold uppercase tracking-widest text-muted-foreground flex items-center gap-2">
-                <History size={14} className="text-primary" /> Recent Themes
-              </h3>
-            </div>
-            <div className="p-0">
-              {recentSessions.length > 0 ? (
-                <div className="space-y-0">
-                  {recentSessions.slice(0, 3).map((session, i) => (
-                    <div key={i} className="flex items-center justify-between p-6 border-b border-border last:border-b-0 hover:bg-muted transition-colors group">
-                      <div className="flex items-center gap-4 min-w-0">
-                        <div className="w-8 h-8 border border-border flex items-center justify-center shrink-0 text-primary">
-                          {session.type === 'shifting' ? <Fingerprint size={16} /> :
-                           session.type === 'alignment' ? <Target size={16} /> :
-                           <ShieldAlert size={16} />}
-                        </div>
-                        <p className="text-xs font-bold uppercase tracking-tight truncate">"{session.label}"</p>
-                      </div>
-                      <span className="text-[8px] font-bold text-muted-foreground uppercase tracking-widest">
-                        {format(new Date(session.created_at), "MMM d")}
-                      </span>
-                    </div>
-                  ))}
-                </div>
-              ) : (
-                <p className="text-xs text-muted-foreground uppercase tracking-widest py-8 text-center">No recent identity work recorded.</p>
-              )}
-            </div>
-          </div>
-        </div>
+        <h2 className="text-xl font-serif font-bold text-slate-900">Identity Intelligence</h2>
       </div>
 
-      <div className="lg:col-span-5 space-y-8">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 border border-border flex items-center justify-center text-primary">
-              <Zap size={20} />
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+        <div className="lg:col-span-7 space-y-6">
+          <div className="p-8 bg-indigo-900 text-white rounded-none relative overflow-hidden group">
+            <div className="absolute top-0 right-0 p-6 opacity-10 group-hover:scale-110 transition-transform duration-700">
+              <Sparkles size={100} />
             </div>
-            <h2 className="text-2xl font-medium uppercase tracking-tight">Backlog</h2>
-          </div>
-          <Button variant="ghost" size="sm" className="text-[9px] font-bold uppercase tracking-widest text-primary" asChild>
-            <Link to="/sandbox">View All <ArrowRight size={12} className="ml-1" /></Link>
-          </Button>
-        </div>
-
-        <div className="border border-border bg-background flex flex-col h-full">
-          <div className="p-8 space-y-8 flex-1 flex flex-col">
-            <form onSubmit={handleAddToBacklog} className="space-y-4">
-              <div className="flex items-center justify-between">
-                <label className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">Quick Add</label>
-                <DropdownMenu>
-                  <DropdownMenuTrigger asChild>
-                    <button type="button" className="flex items-center gap-1.5 text-[9px] font-bold uppercase tracking-widest text-primary hover:text-primary/80 transition-colors">
-                      Type: {selectedType === 'auto' ? 'Auto-Detect' : selectedType === 'alignment' ? 'Alignment' : selectedType === 'belief' ? 'Belief' : 'Shifting'}
-                      <ChevronDown size={10} />
-                    </button>
-                  </DropdownMenuTrigger>
-                  <DropdownMenuContent align="end" className="w-40 p-0 border border-border bg-background">
-                    <DropdownMenuItem onClick={() => setSelectedType('auto')} className="text-[9px] font-bold uppercase py-3 px-4 focus:bg-muted">Auto-Detect</DropdownMenuItem>
-                    <DropdownMenuItem onClick={() => setSelectedType('shifting')} className="text-[9px] font-bold uppercase py-3 px-4 focus:bg-muted flex items-center gap-2">
-                      <Fingerprint size={12} className="text-primary" /> Stuck Identity
-                    </DropdownMenuItem>
-                    <DropdownMenuItem onClick={() => setSelectedType('alignment')} className="text-[9px] font-bold uppercase py-3 px-4 focus:bg-muted flex items-center gap-2">
-                      <Target size={12} className="text-primary" /> Target Identity
-                    </DropdownMenuItem>
-                    <DropdownMenuItem onClick={() => setSelectedType('belief')} className="text-[9px] font-bold uppercase py-3 px-4 focus:bg-muted flex items-center gap-2">
-                      <ShieldAlert size={12} className="text-primary" /> Limiting Belief
-                    </DropdownMenuItem>
-                  </DropdownMenuContent>
-                </DropdownMenu>
+            <div className="relative z-10 space-y-6">
+              <div className="space-y-1">
+                <p className="text-[10px] font-black uppercase tracking-[0.3em] text-indigo-300">Pattern Recognition</p>
+                <h3 className="text-2xl font-serif font-bold">The Sandbox Backlog</h3>
               </div>
-              <div className="flex gap-0 border border-border">
-                <Input
-                  placeholder={selectedType === 'alignment' ? "e.g. The Sovereign Creator..." : "e.g. The Perfectionist..."}
-                  value={newContent}
+              <form onSubmit={handleQuickAdd} className="flex gap-0 border border-white/20">
+                <Input 
+                  value={newContent} 
                   onChange={e => setNewContent(e.target.value)}
-                  className="h-12 border-none focus:ring-0 font-medium rounded-none"
+                  className="h-12 bg-white/5 border-none text-white placeholder:text-white/20 rounded-none focus:ring-0" 
+                  placeholder="Capture a new identity or belief..." 
                 />
-                <Button 
-                  type="submit" 
-                  disabled={isAdding || !newContent.trim()}
-                  className="h-12 w-12 bg-primary text-primary-foreground shrink-0 rounded-none"
-                >
+                <Button type="submit" disabled={isAdding} className="h-12 w-12 bg-white text-indigo-900 rounded-none shrink-0">
                   {isAdding ? <Loader2 className="animate-spin" size={18} /> : <Plus size={20} />}
                 </Button>
-              </div>
-            </form>
+              </form>
+            </div>
+          </div>
 
-            <div className="space-y-0 border border-border flex-1">
-              {backlog.length > 0 ? (
-                backlog.map((item) => (
-                  <div key={item.id} className="flex items-center justify-between p-4 border-b border-border last:border-b-0 hover:bg-muted transition-colors group">
-                    <div className="flex items-center gap-4 min-w-0">
-                      <div className="relative">
-                        <div className="w-8 h-8 border border-border flex items-center justify-center shrink-0 text-primary">
-                          {item.type === 'belief' ? <ShieldAlert size={14} /> : 
-                           item.type === 'alignment' ? <Target size={14} /> : <Fingerprint size={14} />}
-                        </div>
-                        {item.priority_score > 0 && (
-                          <div className="absolute -top-1 -right-1 w-4 h-4 bg-primary text-primary-foreground flex items-center justify-center text-[6px] font-bold">
-                            {item.priority_score}
-                          </div>
-                        )}
-                      </div>
-                      <p className="text-xs font-bold uppercase tracking-tight truncate">"{item.content}"</p>
+          <div className="border border-border bg-white">
+            <div className="p-4 border-b border-border bg-slate-50">
+              <h4 className="text-[10px] font-black uppercase tracking-widest text-slate-400">Active Map (Top 5)</h4>
+            </div>
+            <div className="divide-y divide-border">
+              {backlog.map(item => (
+                <div key={item.id} className="p-4 flex items-center justify-between hover:bg-slate-50 transition-colors group">
+                  <div className="flex items-center gap-4">
+                    <div className="w-8 h-8 border border-border flex items-center justify-center text-primary">
+                      {item.type === 'belief' ? <ShieldAlert size={14} /> : <Fingerprint size={14} />}
                     </div>
-                    <Button 
-                      variant="ghost" 
-                      size="icon" 
-                      className="h-8 w-8 text-muted-foreground hover:text-primary shrink-0"
-                      asChild
-                    >
-                      <Link to={item.type === 'shifting' ? "/sandbox/identity-shifting" : item.type === 'alignment' ? "/sandbox/identity-alignment" : "/sandbox/limiting-beliefs"} state={{ prefill: item.content, backlogId: item.id }}>
-                        <ChevronRight size={16} />
-                      </Link>
-                    </Button>
+                    <span className="text-xs font-bold uppercase tracking-tight text-slate-900">"{item.content}"</span>
                   </div>
-                ))
-              ) : (
-                <div className="flex-1 flex flex-col items-center justify-center text-center py-12 space-y-4">
-                  <div className="w-12 h-12 border border-border flex items-center justify-center text-muted-foreground/30">
-                    <CheckCircle2 size={24} />
-                  </div>
-                  <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">No pending items.</p>
+                  <Link to="/sandbox" className="text-slate-300 group-hover:text-primary transition-colors">
+                    <ChevronRight size={16} />
+                  </Link>
                 </div>
-              )}
+              ))}
+            </div>
+          </div>
+        </div>
+
+        <div className="lg:col-span-5">
+          <div className="border border-border bg-white h-full">
+            <div className="p-4 border-b border-border bg-slate-50">
+              <h4 className="text-[10px] font-black uppercase tracking-widest text-slate-400">Recent Shifts</h4>
+            </div>
+            <div className="p-0">
+              {recentSessions.map((s, i) => (
+                <div key={i} className="p-4 border-b border-border last:border-b-0 flex items-center justify-between">
+                  <div className="flex items-center gap-3">
+                    <div className="w-6 h-6 rounded-full bg-indigo-50 text-primary flex items-center justify-center">
+                      <Check size={12} />
+                    </div>
+                    <span className="text-[11px] font-medium text-slate-600 truncate max-w-[150px]">"{s.label}"</span>
+                  </div>
+                  <span className="text-[8px] font-black text-slate-300 uppercase">{format(new Date(s.created_at), "MMM d")}</span>
+                </div>
+              ))}
             </div>
           </div>
         </div>

@@ -2,7 +2,7 @@
 
 import React, { useState } from "react";
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/card";
-import { Footprints, Scale, Brain, ChevronDown, Hand, CheckCircle2, Info, AlertCircle, RefreshCw } from "lucide-react";
+import { Footprints, Scale, Brain, ChevronDown, Hand, CheckCircle2, Info, AlertCircle, RefreshCw, ChevronRight } from "lucide-react";
 import { cn } from "@/lib/utils";
 import FakudaStepTest from "./FakudaStepTest";
 import SharpenedRhombergsTest from "./SharpenedRhombergsTest";
@@ -32,144 +32,59 @@ const NeurologicalAssessments = ({
 }: NeurologicalAssessmentsProps) => {
   const [isOpen, setIsOpen] = useState(false);
 
-  const hasFakudaNotes = !!initialFakudaNotes;
-  const hasRhombergsNotes = !!initialRhombergsNotes;
-  const hasFrontalLobeNotes = !!initialFrontalLobeNotes;
-  const hasRightingNotes = !!initialRightingReflexNotes;
-  const hasAnyNotes = hasFakudaNotes || hasRhombergsNotes || hasFrontalLobeNotes || hasRightingNotes;
+  const hasAnyNotes = !!(initialFakudaNotes || initialRhombergsNotes || initialFrontalLobeNotes || initialRightingReflexNotes);
 
   return (
-    <Collapsible open={isOpen} onOpenChange={setIsOpen}>
-      <Card className="border-none shadow-lg rounded-[2.5rem] bg-card overflow-hidden transition-all hover:shadow-xl">
+    <div className="bg-white border border-slate-100 overflow-hidden transition-all">
+      <Collapsible open={isOpen} onOpenChange={setIsOpen}>
         <CollapsibleTrigger asChild>
           <div className={cn(
-            "p-6 flex items-center justify-between cursor-pointer transition-all duration-500",
-            isOpen ? "bg-muted/50" : "hover:bg-muted/30",
-            hasAnyNotes && !isOpen && "bg-emerald-500/10"
+            "h-10 flex items-center justify-between px-4 cursor-pointer transition-all",
+            isOpen ? "bg-slate-900 text-white" : "hover:bg-slate-50",
+            hasAnyNotes && !isOpen && "bg-emerald-50"
           )}>
-            <div className="flex items-center gap-5">
-              <div className={cn(
-                "w-14 h-14 rounded-[1.25rem] bg-emerald-600 flex items-center justify-center shadow-lg transition-transform duration-500",
-                isOpen ? "scale-110 -rotate-12" : ""
-              )}>
-                <Brain size={28} className="text-white" />
-              </div>
-              <div>
-                <h3 className="text-xl font-black text-foreground tracking-tight">Neurological Global</h3>
-                <p className="text-[10px] font-black text-muted-foreground uppercase tracking-[0.2em]">Cerebellum & Proprioception</p>
-              </div>
+            <div className="flex items-center gap-3">
+              <Brain size={14} className={cn(isOpen ? "text-emerald-400" : "text-primary")} />
+              <span className="text-[11px] font-black uppercase tracking-widest">Neurological Global</span>
             </div>
-            <div className="flex items-center gap-4">
+            <div className="flex items-center gap-3">
               {hasAnyNotes && (
-                <Badge className="bg-emerald-500 text-white border-none font-black text-[10px] uppercase tracking-widest px-4 py-1.5 rounded-full shadow-sm">
-                  Assessed
-                </Badge>
+                <span className="text-[9px] font-black uppercase tracking-widest text-emerald-600">Assessed</span>
               )}
-              <div className="w-10 h-10 rounded-full bg-card shadow-sm border border-border flex items-center justify-center text-muted-foreground">
-                <ChevronDown className={cn("h-5 w-5 transition-transform duration-500", isOpen && "rotate-180")} />
-              </div>
+              <ChevronDown size={14} className={cn("transition-transform duration-300", isOpen && "rotate-180")} />
             </div>
           </div>
         </CollapsibleTrigger>
 
         <CollapsibleContent>
-          <div className="p-8 border-t border-border space-y-8 animate-in fade-in slide-in-from-top-2 duration-500">
+          <div className="p-4 border-t border-slate-100 space-y-4 animate-in fade-in slide-in-from-top-1 duration-200">
             <Tabs defaultValue="fakuda" className="w-full">
-              <TabsList className="grid w-full grid-cols-4 h-16 bg-muted p-1.5 rounded-2xl">
-                <TabsTrigger value="fakuda" className="flex items-center gap-2 data-[state=active]:bg-card data-[state=active]:text-emerald-600 data-[state=active]:shadow-sm rounded-xl h-13 font-black uppercase tracking-wider text-[10px] relative">
-                  <Footprints size={16} /> Fakuda
-                  {hasFakudaNotes && <span className="absolute top-2 right-2 w-2 h-2 bg-emerald-500 rounded-full" />}
-                </TabsTrigger>
-                <TabsTrigger value="rhombergs" className="flex items-center gap-2 data-[state=active]:bg-card data-[state=active]:text-purple-600 data-[state=active]:shadow-sm rounded-xl h-13 font-black uppercase tracking-wider text-[10px] relative">
-                  <Scale size={16} /> Rhombergs
-                  {hasRhombergsNotes && <span className="absolute top-2 right-2 w-2 h-2 bg-purple-500 rounded-full" />}
-                </TabsTrigger>
-                <TabsTrigger value="frontal-lobe" className="flex items-center gap-2 data-[state=active]:bg-card data-[state=active]:text-indigo-600 data-[state=active]:shadow-sm rounded-xl h-13 font-black uppercase tracking-wider text-[10px] relative">
-                  <Hand size={16} /> Frontal
-                  {hasFrontalLobeNotes && <span className="absolute top-2 right-2 w-2 h-2 bg-indigo-500 rounded-full" />}
-                </TabsTrigger>
-                <TabsTrigger value="righting" className="flex items-center gap-2 data-[state=active]:bg-card data-[state=active]:text-blue-600 data-[state=active]:shadow-sm rounded-xl h-13 font-black uppercase tracking-wider text-[10px] relative">
-                  <RefreshCw size={16} /> Righting
-                  {hasRightingNotes && <span className="absolute top-2 right-2 w-2 h-2 bg-blue-500 rounded-full" />}
-                </TabsTrigger>
+              <TabsList className="grid w-full grid-cols-4 h-9 bg-slate-100 p-1 rounded-none">
+                <TabsTrigger value="fakuda" className="text-[9px] font-black uppercase tracking-widest rounded-none data-[state=active]:bg-white">Fakuda</TabsTrigger>
+                <TabsTrigger value="rhombergs" className="text-[9px] font-black uppercase tracking-widest rounded-none data-[state=active]:bg-white">Rhombergs</TabsTrigger>
+                <TabsTrigger value="frontal-lobe" className="text-[9px] font-black uppercase tracking-widest rounded-none data-[state=active]:bg-white">Frontal</TabsTrigger>
+                <TabsTrigger value="righting" className="text-[9px] font-black uppercase tracking-widest rounded-none data-[state=active]:bg-white">Righting</TabsTrigger>
               </TabsList>
               
-              <TabsContent value="fakuda" className="mt-8 space-y-6">
-                <div className="flex items-center justify-between px-2">
-                  <div className="space-y-1">
-                    <h4 className="text-lg font-black text-foreground">Fakuda Step Test</h4>
-                    <p className="text-xs text-muted-foreground font-medium">Assess midline/vestibule cerebellum imbalances</p>
-                  </div>
-                  {hasFakudaNotes && <Badge className="bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/20 font-bold">Completed</Badge>}
-                </div>
-                <FakudaStepTest
-                  appointmentId={appointmentId}
-                  initialFakudaNotes={initialFakudaNotes}
-                  onUpdate={onUpdate}
-                />
-              </TabsContent>
-              
-              <TabsContent value="rhombergs" className="mt-8 space-y-6">
-                <div className="flex items-center justify-between px-2">
-                  <div className="space-y-1">
-                    <h4 className="text-lg font-black text-foreground">Sharpened Rhombergs Test</h4>
-                    <p className="text-xs text-muted-foreground font-medium">Assess midline cerebellum and proprioception</p>
-                  </div>
-                  {hasRhombergsNotes && <Badge className="bg-purple-500/10 text-purple-600 dark:text-purple-400 border-purple-500/20 font-bold">Completed</Badge>}
-                </div>
-                <SharpenedRhombergsTest
-                  appointmentId={appointmentId}
-                  initialNotes={initialRhombergsNotes}
-                  onUpdate={onUpdate}
-                />
-              </TabsContent>
-
-              <TabsContent value="frontal-lobe" className="mt-8 space-y-6">
-                <div className="flex items-center justify-between px-2">
-                  <div className="space-y-1">
-                    <h4 className="text-lg font-black text-foreground">Frontal Lobe Assessment</h4>
-                    <p className="text-xs text-muted-foreground font-medium">Rapid hand drill for frontal cortex asymmetry</p>
-                  </div>
-                  {hasFrontalLobeNotes && <Badge className="bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 border-indigo-500/20 font-bold">Completed</Badge>}
-                </div>
-                <FrontalLobeAssessment
-                  appointmentId={appointmentId}
-                  initialNotes={initialFrontalLobeNotes}
-                  onUpdate={onUpdate}
-                />
-              </TabsContent>
-
-              <TabsContent value="righting" className="mt-8 space-y-6">
-                <div className="flex items-center justify-between px-2">
-                  <div className="space-y-1">
-                    <h4 className="text-lg font-black text-foreground">Righting Reflexes</h4>
-                    <p className="text-xs text-muted-foreground font-medium">Ocular & Labyrinthine postural organization</p>
-                  </div>
-                  {hasRightingNotes && <Badge className="bg-blue-500/10 text-blue-600 dark:text-blue-400 border-blue-500/20 font-bold">Completed</Badge>}
-                </div>
-                <RightingReflexesAssessment
-                  appointmentId={appointmentId}
-                  initialNotes={initialRightingReflexNotes}
-                  onUpdate={onUpdate}
-                />
-              </TabsContent>
+              <div className="mt-4">
+                <TabsContent value="fakuda" className="mt-0">
+                  <FakudaStepTest appointmentId={appointmentId} initialFakudaNotes={initialFakudaNotes} onUpdate={onUpdate} />
+                </TabsContent>
+                <TabsContent value="rhombergs" className="mt-0">
+                  <SharpenedRhombergsTest appointmentId={appointmentId} initialNotes={initialRhombergsNotes} onUpdate={onUpdate} />
+                </TabsContent>
+                <TabsContent value="frontal-lobe" className="mt-0">
+                  <FrontalLobeAssessment appointmentId={appointmentId} initialNotes={initialFrontalLobeNotes} onUpdate={onUpdate} />
+                </TabsContent>
+                <TabsContent value="righting" className="mt-0">
+                  <RightingReflexesAssessment appointmentId={appointmentId} initialNotes={initialRightingReflexNotes} onUpdate={onUpdate} />
+                </TabsContent>
+              </div>
             </Tabs>
-
-            <div className="p-6 bg-muted/50 rounded-[2rem] border border-border flex items-start gap-4">
-              <div className="w-10 h-10 bg-card rounded-xl flex items-center justify-center text-indigo-600 dark:text-indigo-400 shadow-sm shrink-0">
-                <Info size={20} />
-              </div>
-              <div className="space-y-1">
-                <p className="text-xs font-black text-foreground uppercase tracking-tight">Clinical Note</p>
-                <p className="text-xs text-muted-foreground font-medium leading-relaxed">
-                  Global assessments provide a baseline for the client's nervous system stability. If significant imbalances are found, prioritize <strong>SNS Down-regulation</strong> before proceeding with deep emotional or structural work.
-                </p>
-              </div>
-            </div>
           </div>
         </CollapsibleContent>
-      </Card>
-    </Collapsible>
+      </Collapsible>
+    </div>
   );
 };
 

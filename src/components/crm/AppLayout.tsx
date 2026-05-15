@@ -16,14 +16,13 @@ const AppLayout = ({
   className,
   variant = "standard",
 }: AppLayoutProps) => {
-  // Determine max width based on variant
-  const maxWidthClass = variant === "full" ? "max-w-none" : "max-w-7xl";
+  const maxWidthClass = variant === "full" ? "max-w-none" : "max-w-[1440px]";
 
   return (
     <div
       className={cn(
-        "w-full min-h-screen mx-auto px-8 transition-all duration-300",
-        hasFixedHeader ? "pt-16 pb-16" : "pt-8 pb-16",
+        "w-full min-h-screen mx-auto px-6 transition-all duration-300",
+        hasFixedHeader ? "pt-2 pb-8" : "pt-4 pb-8",
         maxWidthClass,
         className
       )}

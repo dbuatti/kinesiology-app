@@ -1,10 +1,8 @@
 "use client";
 
-import React from 'react';
-import { Button } from "@/components/ui/button";
-import { Brain, Activity, PanelRightClose } from "lucide-react";
-import { Link } from "react-router-dom";
-import { format } from "date-fns";
+import React, { useState } from 'react';
+import { Brain, Activity, History, Target, ChevronDown, ChevronRight } from "lucide-react";
+import { cn } from "@/lib/utils";
 import BrainstemToneMap from "./BrainstemToneMap";
 import AppointmentContextCards from "./AppointmentContextCards";
 import { Nuclei } from "@/utils/brainstem-logic";
@@ -24,80 +22,67 @@ const AppointmentSidebar = ({
   appointment,
   nucleiFilter,
   onSelectNuclei,
-  reflections,
-  onToggleSidebar,
   currentPeakMeridian,
   onSaveField
 }: AppointmentSidebarProps) => {
-  return (
-    <div className="xl:col-span-4 space-y-8 sticky top-24 print:hidden">
-      {/* BRAINSTEM TONE MAP */}
-      <div className="border border-border bg-background">
-        <div className="p-6 border-b border-border flex items-center justify-between">
-          <div className="flex items-center gap-3 text-primary">
-            <Brain size={18} />
-            <h3 className="text-sm font-bold uppercase tracking-widest">Neural Landscape</h3>
+  const [activeSection, setActiveSection] = useState<'tone' | 'context' | 'history'>('tone');
+
+  const SidebarSection = ({ id, title, icon: Icon, children }: any) => {
+    const isActive = activeSection === id;
+    return (
+      <div className="flex flex-col border-b border-border last:border-b-0">
+        <button
+          onClick={() => setActiveSection(isActive ? null : id)}
+          className={cn(
+            "h-8 px-4 flex items-center justify-between transition-colors",
+            isActive ? "bg-primary text-white" : "bg-muted/30 text-slate-500 hover:bg-muted"
+          )}
+        >
+          <div className="flex items-center gap-2">
+            <Icon size={14} />
+            <span className="text-[10px] font-black uppercase tracking-widest">{title}</span>
           </div>
-          <button
-            onClick={onToggleSidebar}
-            className="text-muted-foreground hover:text-destructive transition-colors"
-          >
-            <PanelRightClose size={18} />
-          </button>
-        </div>
-        <div className="p-8">
-          <BrainstemToneMap
-            priorityPattern={appointment.priority_pattern || null}
-            activeFilter={nucleiFilter}
-            onSelectNuclei={onSelectNuclei}
-          />
-        </div>
+          {isActive ? <ChevronDown size={12} /> : <ChevronRight size={12} />}
+        </button>
+        {isActive && (
+          <div className="p-3 animate-in fade-in slide-in-from-top-1 duration-200 overflow-y-auto max-h-[calc(100vh-300px)] custom-scrollbar">
+            {children}
+          </div>
+        )}
       </div>
+    );
+  };
 
-      {/* REFLECTIONS */}
-      {reflections.length > 0 && (
-        <div className="border border-border bg-background">
-          <div className="p-6 border-b border-border flex items-center justify-between">
-            <div className="flex items-center gap-3 text-primary">
-              <Activity size={18} />
-              <h3 className="text-sm font-bold uppercase tracking-widest">Reflections</h3>
-            </div>
-            <Link to="/practice/journal" state={{ appointmentId: appointment.id }} className="text-[10px] font-bold uppercase tracking-widest text-primary hover:underline">
-              + Add
-            </Link>
-          </div>
-          <div className="p-0">
-            {reflections.slice(0, 3).map((ref) => (
-              <div key={ref.id} className="p-6 border-b border-border last:border-b-0 hover:bg-muted transition-colors space-y-4">
-                <div className="flex justify-between items-start">
-                  <span className="text-[8px] font-bold uppercase tracking-widest bg-muted px-2 py-1">
-                    {ref.category}
-                  </span>
-                  <span className="text-[8px] font-bold text-muted-foreground uppercase">
-                    {format(new Date(ref.created_at), "MMM D")}
-                  </span>
-                </div>
-                <p className="text-xs italic text-muted-foreground line-clamp-3 leading-relaxed">
-                  "{ref.content}"
-                </p>
-              </div>
-            ))}
-            {reflections.length > 3 && (
-              <Link to="/practice/journal" state={{ appointmentId: appointment.id }} className="block p-4 text-center text-[10px] font-bold uppercase tracking-widest text-muted-foreground hover:bg-muted hover:text-primary transition-colors">
-                View All {reflections.length} Reflections
-              </Link>
-            )}
-          </div>
+  return (
+    <aside className="w-[240px] border-l border-border bg-white h-full flex flex-col shrink-0 print:hidden">
+      <SidebarSection id="tone" title="Neural Tone" icon={Brain}>
+        <BrainstemToneMap
+          priorityPattern={appointment.priority_pattern || null}
+          activeFilter={nucleiFilter}
+          onSelectNuclei={onSelectNuclei}
+        />
+      </SidebarSection>
+
+      <SidebarSection id="context" title="Session Context" icon={Target}>
+        <AppointmentContextCards
+          appointment={appointment}
+          currentPeakMeridian={currentPeakMeridian}
+          onSaveField={onSaveField}
+        />
+      </SidebarSection>
+
+      <SidebarSection id="history" title="Clinical History" icon={History}>
+        <div className="space-y-4 p-2">
+          <p className="text-[10px] text-slate-400 italic text-center py-8">History module compressed.</p>
         </div>
-      )}
-
-      {/* CONTEXT CARDS */}
-      <AppointmentContextCards
-        appointment={appointment}
-        currentPeakMeridian={currentPeakMeridian}
-        onSaveField={onSaveField}
-      />
-    </div>
+      </SidebarSection>
+      
+      <div className="mt-auto p-4 border-t border-border">
+        <Badge variant="outline" className="w-full justify-center rounded-none border-slate-100 text-slate-300 font-black text-[8px] uppercase tracking-[0.3em]">
+          Clinical Rail v2.4
+        </Badge>
+      </div>
+    </aside>
   );
 };
 

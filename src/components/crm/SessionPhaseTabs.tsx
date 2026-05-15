@@ -2,14 +2,6 @@
 
 import React from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { 
-  Activity, 
-  Zap, 
-  GitBranch, 
-  Target, 
-  ClipboardCheck, 
-  Check
-} from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { AppointmentWithClient } from '@/types/crm';
 import { Nuclei } from '@/utils/brainstem-logic';
@@ -22,11 +14,11 @@ import PathwayAssessment from './PathwayAssessment';
 import PathwayLogicWizard from './PathwayLogicWizard';
 
 const TABS = [
-  { id: 'baseline', label: 'P', fullLabel: 'Preliminary', icon: Activity },
-  { id: 'sympathetic', label: 'E', fullLabel: 'Ease', icon: Zap },
-  { id: 'pathway', label: 'A', fullLabel: 'Align', icon: GitBranch },
-  { id: 'calibration', label: 'C', fullLabel: 'Correct', icon: Target },
-  { id: 'reassessment', label: 'E', fullLabel: 'Embed', icon: ClipboardCheck }
+  { id: 'baseline', label: 'P', fullLabel: 'Preliminary' },
+  { id: 'sympathetic', label: 'E', fullLabel: 'Ease' },
+  { id: 'pathway', label: 'A', fullLabel: 'Align' },
+  { id: 'calibration', label: 'C', fullLabel: 'Correct' },
+  { id: 'reassessment', label: 'E', fullLabel: 'Embed' }
 ];
 
 interface SessionPhaseTabsProps {
@@ -57,20 +49,11 @@ const SessionPhaseTabs = ({
   wizardRef
 }: SessionPhaseTabsProps) => {
   
-  const tabStatus = {
-    baseline: !!(appointment.goal && appointment.issue && (appointment.bolt_score || appointment.coherence_score)),
-    sympathetic: !!(appointment.harmonic_rocking_notes || appointment.t1_reset_notes || appointment.diaphragm_reset_notes || appointment.vagus_nerve_notes),
-    pathway: !!appointment.priority_pattern && appointment.priority_pattern !== "{}",
-    calibration: !!appointment.modes_balances,
-    reassessment: !!appointment.session_north_star
-  };
-
   return (
     <Tabs value={activeTab} onValueChange={onTabChange} className="w-full">
-      <div className="overflow-x-auto border-b border-border">
-        <TabsList className="flex w-full h-auto bg-transparent p-0 gap-0 rounded-none">
-          {TABS.map((tab, index) => {
-            const isCompleted = (tabStatus as any)[tab.id];
+      <div className="h-11 border-b border-border bg-muted/30 px-4">
+        <TabsList className="flex w-full h-full bg-transparent p-0 gap-8 justify-start">
+          {TABS.map((tab) => {
             const isActive = activeTab === tab.id;
 
             return (
@@ -78,43 +61,36 @@ const SessionPhaseTabs = ({
                 key={tab.id} 
                 value={tab.id} 
                 className={cn(
-                  "flex-1 flex flex-col items-center gap-4 py-6 border-r border-border last:border-r-0 transition-colors rounded-none",
-                  isActive 
-                    ? "bg-primary text-primary-foreground" 
-                    : isCompleted ? "bg-success/10 text-success" : "text-muted-foreground hover:bg-muted"
+                  "h-full px-0 bg-transparent border-none shadow-none transition-all gap-2 group",
+                  isActive ? "text-primary" : "text-muted-foreground hover:text-foreground"
                 )}
               >
                 <div className={cn(
-                  "w-10 h-10 border border-border flex items-center justify-center",
-                  isActive ? "border-primary-foreground" : isCompleted ? "border-success" : ""
+                  "w-2 h-2 rounded-full transition-all",
+                  isActive ? "bg-primary scale-125" : "bg-slate-300 group-hover:bg-slate-400"
+                )} />
+                <span className={cn(
+                  "text-[11px] font-black uppercase tracking-widest",
+                  isActive && "font-black"
                 )}>
-                  {isCompleted ? <Check size={20} /> : <tab.icon size={20} />}
-                </div>
-                
-                <div className="flex flex-col items-center">
-                  <div className="flex items-center gap-2">
-                    <span className="text-xl font-bold tracking-tighter">{tab.label}</span>
-                    <span className="hidden md:inline text-[9px] font-bold uppercase tracking-widest opacity-80">
-                      {tab.fullLabel}
-                    </span>
-                  </div>
-                </div>
+                  {tab.fullLabel}
+                </span>
               </TabsTrigger>
             );
           })}
         </TabsList>
       </div>
 
-      <div className="mt-12">
-        <TabsContent value="baseline" className="focus-visible:ring-0">
+      <div className="p-4 overflow-y-auto max-h-[calc(100vh-200px)] custom-scrollbar">
+        <TabsContent value="baseline" className="mt-0 focus-visible:ring-0">
           <BaselineTab appointment={appointment} onUpdate={onUpdate} saveField={saveField} />
         </TabsContent>
 
-        <TabsContent value="sympathetic" className="focus-visible:ring-0">
+        <TabsContent value="sympathetic" className="mt-0 focus-visible:ring-0">
           <SympatheticTab appointment={appointment} onUpdate={onUpdate} saveField={saveField} />
         </TabsContent>
 
-        <TabsContent value="pathway" className="focus-visible:ring-0">
+        <TabsContent value="pathway" className="mt-0 focus-visible:ring-0">
           <PathwayAssessment 
             appointmentId={appointment.id}
             initialValue={appointment.priority_pattern || undefined} 
@@ -122,14 +98,12 @@ const SessionPhaseTabs = ({
             history={history}
             onSave={(s) => saveField('priority_pattern', s)} 
             onUpdateItem={(cat, item, status, side) => updatePriorityPattern(cat, side ? `${item} (${side})` : item, status)}
-            onJumpToCalibrate={(itemName) => {
-              onTabChange('calibration');
-            }}
+            onJumpToCalibrate={() => onTabChange('calibration')}
             nucleiFilter={nucleiFilter}
           />
         </TabsContent>
 
-        <TabsContent value="calibration" className="focus-visible:ring-0">
+        <TabsContent value="calibration" className="mt-0 focus-visible:ring-0">
           <div ref={wizardRef}>
             <PathwayLogicWizard
               onSave={(summary) => saveField('modes_balances', summary)}
@@ -141,7 +115,7 @@ const SessionPhaseTabs = ({
           </div>
         </TabsContent>
 
-        <TabsContent value="reassessment" className="focus-visible:ring-0">
+        <TabsContent value="reassessment" className="mt-0 focus-visible:ring-0">
           <EmbedTab 
             appointment={appointment} 
             onUpdate={onUpdate} 

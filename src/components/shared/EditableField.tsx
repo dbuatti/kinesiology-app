@@ -217,7 +217,7 @@ const EditableField = ({
               value={localValue}
               onChange={handleChange}
               onFocus={handleFocus}
-              onBlur={handleBlur}
+              onBlur={handleFocus}
               placeholder={placeholder}
               className={cn(
                 "transition-all duration-300 border-none focus-visible:ring-0 text-lg font-medium text-foreground placeholder:text-muted-foreground/10 bg-transparent w-full",

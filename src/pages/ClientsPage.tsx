@@ -182,7 +182,7 @@ const ClientsPage = () => {
       </div>
 
       <Dialog open={bookOpen} onOpenChange={setBookOpen}>
-        <DialogContent className="sm:max-w-[500px] rounded-[2rem] p-0 overflow-hidden">
+        <DialogContent className="sm:max-w-[550px] rounded-[2rem] p-0 overflow-hidden">
           <div className="p-8">
             <DialogHeader className="mb-6">
               <DialogTitle className="text-2xl font-black">Quick Book Session</DialogTitle>

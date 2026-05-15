@@ -15,6 +15,7 @@ import { Button } from '@/components/ui/button';
 import { PRIMITIVE_REFLEXES } from '@/data/primitive-reflex-data';
 import { BRAIN_REFLEX_POINTS } from '@/data/brain-reflex-data';
 import { getMuscleInfo } from '@/data/muscle-info-data';
+import { MIDLINE_MUSCLES, MUSCLE_GROUPS } from '@/data/muscle-data';
 import { safeParse } from '@/utils/safe-json';
 
 interface WeeklyFocusBannerProps {
@@ -75,6 +76,24 @@ const WeeklyFocusBanner = ({ appointmentId, priorityPattern, onSaveField, onJump
     return statuses;
   }, [items, priorityPattern]);
 
+  const isItemLateralized = (name: string) => {
+    // Check muscles
+    const isMidlineMuscle = MIDLINE_MUSCLES.includes(name);
+    const allMuscles = Object.values(MUSCLE_GROUPS).flat();
+    const isMuscle = allMuscles.includes(name);
+    if (isMuscle) return !isMidlineMuscle;
+
+    // Check reflexes
+    const reflex = PRIMITIVE_REFLEXES.find(r => r.name === name);
+    if (reflex) return reflex.isLateralized;
+
+    // Check brain zones
+    const point = BRAIN_REFLEX_POINTS.find(p => p.name.startsWith(name));
+    if (point) return point.lateralization !== 'Bilateral' && point.lateralization !== 'Mixed';
+
+    return false;
+  };
+
   const getVideoUrl = (name: string) => {
     const muscle = getMuscleInfo(name);
     if (muscle.videoUrl) return muscle.videoUrl;
@@ -85,7 +104,7 @@ const WeeklyFocusBanner = ({ appointmentId, priorityPattern, onSaveField, onJump
     return null;
   };
 
-  const handleSetStatus = async (item: string, status: Exclude<ItemStatus, 'Not Tested'>) => {
+  const handleSetStatus = async (item: string, status: Exclude<ItemStatus, 'Not Tested'>, side?: 'L' | 'R') => {
     if (!onSaveField) return;
     try {
       const parsed = safeParse(priorityPattern, {} as any);
@@ -94,7 +113,9 @@ const WeeklyFocusBanner = ({ appointmentId, priorityPattern, onSaveField, onJump
       else if (BRAIN_REFLEX_POINTS.some(p => p.name.startsWith(item))) category = 'cranialNerves';
       
       if (!(parsed as any)[category]) (parsed as any)[category] = {};
-      (parsed as any)[category][item] = status;
+      
+      const key = side ? `${item} (${side})` : item;
+      (parsed as any)[category][key] = status;
       
       if (status === 'Clear') {
         setCelebratingItem(item);
@@ -181,37 +202,44 @@ const WeeklyFocusBanner = ({ appointmentId, priorityPattern, onSaveField, onJump
                           <ChevronDown size={12} className="opacity-50" />
                         </button>
                       </PopoverTrigger>
-                      <PopoverContent className="w-64 p-2 rounded-[2rem] border-none shadow-3xl bg-slate-900 text-white z-[100]">
+                      <PopoverContent className="w-72 p-2 rounded-[2rem] border-none shadow-3xl bg-slate-900 text-white z-[100]">
                         <div className="space-y-1">
                           <p className="text-[9px] font-black uppercase tracking-widest text-slate-500 px-4 py-2">Quick Register</p>
-                          <Button 
-                            variant="ghost" 
-                            className="w-full justify-start h-11 rounded-xl hover:bg-emerald-500/20 hover:text-emerald-400 font-bold text-xs px-4"
-                            onClick={(e) => { e.stopPropagation(); handleSetStatus(item, 'Clear'); }}
-                          >
-                            <CheckCircle2 size={18} className="mr-3" /> Mark as Clear
-                          </Button>
-                          <Button 
-                            variant="ghost" 
-                            className="w-full justify-start h-11 rounded-xl hover:bg-rose-500/20 hover:text-rose-400 font-bold text-xs px-4"
-                            onClick={(e) => { e.stopPropagation(); handleSetStatus(item, 'Inhibited'); }}
-                          >
-                            <AlertCircle size={18} className="mr-3" /> Mark as Inhibited
-                          </Button>
-                          <Button 
-                            variant="ghost" 
-                            className="w-full justify-start h-11 rounded-xl hover:bg-amber-500/20 hover:text-amber-400 font-bold text-xs px-4"
-                            onClick={(e) => { e.stopPropagation(); handleSetStatus(item, 'Hypertonic'); }}
-                          >
-                            <ChevronsUp size={18} className="mr-3" /> Mark as Hypertonic
-                          </Button>
-                          <Button 
-                            variant="ghost" 
-                            className="w-full justify-start h-11 rounded-xl hover:bg-purple-500/20 hover:text-purple-400 font-bold text-xs px-4"
-                            onClick={(e) => { e.stopPropagation(); handleSetStatus(item, 'Switching'); }}
-                          >
-                            <HelpCircle size={18} className="mr-3" /> Mark as Switching
-                          </Button>
+                          
+                          {[
+                            { id: 'Clear', label: 'Clear', icon: CheckCircle2, color: 'text-emerald-400' },
+                            { id: 'Inhibited', label: 'Inhibited', icon: AlertCircle, color: 'text-rose-400' },
+                            { id: 'Hypertonic', label: 'Hypertonic', icon: ChevronsUp, color: 'text-amber-400' },
+                            { id: 'Switching', label: 'Switching', icon: HelpCircle, color: 'text-purple-400' }
+                          ].map(status => (
+                            <div key={status.id} className="flex items-center gap-1 px-2">
+                              <Button 
+                                variant="ghost" 
+                                className="flex-1 justify-start h-10 rounded-xl hover:bg-white/5 font-bold text-xs px-3"
+                                onClick={(e) => { e.stopPropagation(); handleSetStatus(item, status.id as any); }}
+                              >
+                                <status.icon size={16} className={cn("mr-2", status.color)} />
+                                {status.label}
+                              </Button>
+                              {isItemLateralized(item) && (
+                                <div className="flex gap-1">
+                                  <Button 
+                                    variant="ghost" 
+                                    size="sm" 
+                                    className="h-8 w-8 rounded-lg bg-white/5 hover:bg-indigo-500 text-[10px] font-black"
+                                    onClick={(e) => { e.stopPropagation(); handleSetStatus(item, status.id as any, 'L'); }}
+                                  >L</Button>
+                                  <Button 
+                                    variant="ghost" 
+                                    size="sm" 
+                                    className="h-8 w-8 rounded-lg bg-white/5 hover:bg-indigo-500 text-[10px] font-black"
+                                    onClick={(e) => { e.stopPropagation(); handleSetStatus(item, status.id as any, 'R'); }}
+                                  >R</Button>
+                                </div>
+                              )}
+                            </div>
+                          ))}
+
                           <div className="h-px bg-white/10 my-2 mx-2" />
                           {videoUrl && (
                             <Button 

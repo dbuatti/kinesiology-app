@@ -87,7 +87,7 @@ const ResourceHub = ({ categories }: ResourceHubProps) => {
               </div>
               <div className="flex items-center justify-between mt-12">
                 <span className="px-5 py-2.5 rounded-2xl bg-white/5 border border-white/10 text-[10px] font-black uppercase tracking-widest text-slate-400">External</span>
-                <div className="w-14 h-14 rounded-2xl bg-white/20 backdrop-blur-md flex items-center justify-center border border-white/30 shadow-2xl group-hover:scale-110 group-hover:rotate-6 transition-all duration-700">
+                <div className="w-14 h-14 rounded-2xl bg-white/10 backdrop-blur-md flex items-center justify-center border border-white/30 shadow-2xl group-hover:scale-110 group-hover:rotate-6 transition-all duration-700">
                   <ExternalLink size={28} className="text-white" />
                 </div>
               </div>

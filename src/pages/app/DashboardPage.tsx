@@ -11,8 +11,7 @@ import {
   ArrowRight, 
   Zap, 
   BookOpen,
-  Sparkles,
-  Loader2
+  Sparkles
 } from "lucide-react";
 import { format, isToday, differenceInMinutes } from "date-fns";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -141,9 +140,16 @@ const Index = () => {
   }, []);
 
   if (loading) return (
-    <div className="flex min-h-screen items-center justify-center">
-      <Loader2 className="animate-spin text-indigo-600" size={48} />
-    </div>
+    <AppLayout>
+      <div className="space-y-8">
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+          <div className="space-y-2"><Skeleton className="h-8 w-48 rounded-lg" /><Skeleton className="h-3 w-64 rounded-lg" /></div>
+        </div>
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+          {[1, 2, 3, 4].map((i) => <Skeleton key={i} className="h-24 w-full rounded-lg" />)}
+        </div>
+      </div>
+    </AppLayout>
   );
 
   const handleEnterMode = (newMode: 'clinical' | 'lab' | 'library') => {
@@ -200,7 +206,7 @@ const Index = () => {
                 </div>
                 <div className="mt-auto pt-10 border-t border-slate-50 dark:border-slate-800 flex items-center justify-between">
                   <span className="text-[10px] font-black uppercase tracking-widest text-slate-400 group-hover:text-emerald-600 transition-colors">Enter Workspace</span>
-                  <div className="w-10 h-10 rounded-xl bg-slate-50 dark:bg-slate-800 flex items-center justify-center text-slate-300 group-hover:bg-emerald-600 group-hover:text-white transition-all">
+                  <div className="w-10 h-10 rounded-xl bg-slate-50 dark:bg-slate-800 flex items-center justify-center text-slate-300 group-hover:bg-indigo-600 group-hover:text-white transition-all">
                     <ArrowRight size={20} className="group-hover:translate-x-1 transition-all" />
                   </div>
                 </div>
@@ -209,7 +215,7 @@ const Index = () => {
 
             {/* KNOWLEDGE HUB */}
             <button onClick={() => handleEnterMode('library')} className="group relative flex flex-col text-left h-full animate-in fade-in slide-in-from-bottom-8 duration-1000 delay-400">
-              <div className={cn("relative h-full border border-slate-100 dark:border-slate-800 rounded-[3rem] overflow-hidden transition-all duration-700 group-hover:border-amber-200 group-hover:shadow-3xl group-hover:shadow-amber-500/10 p-12 flex flex-col bg-white dark:bg-slate-900")}>
+              <div className={cn("relative h-full border border-slate-100 dark:border-slate-800 rounded-[3rem] overflow-hidden transition-all duration-700 group-hover:border-amber-200 group-hover:shadow-3xl group-hover:shadow-emerald-500/10 p-12 flex flex-col bg-white dark:bg-slate-900")}>
                 <div className="w-16 h-16 rounded-2xl bg-slate-50 dark:bg-slate-800 text-slate-900 dark:text-white flex items-center justify-center mb-12 transition-all duration-700 group-hover:bg-amber-600 group-hover:text-white group-hover:scale-110 group-hover:rotate-3">
                   <BookOpen size={32} />
                 </div>

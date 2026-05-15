@@ -44,6 +44,7 @@ const ResourceHub = ({ categories }: ResourceHubProps) => {
     <div className="space-y-16 animate-in fade-in slide-in-from-bottom-4 duration-700">
       {/* Featured Quick Access Cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-6">
+        {/* Card 1: Print Hub */}
         <Link to="/resources/print" className="block group h-full">
           <Card className="h-full border-none shadow-xl rounded-[2.5rem] bg-slate-900 text-white overflow-hidden relative cursor-pointer hover:shadow-2xl hover:-translate-y-1 transition-all duration-500">
             <div className="absolute inset-0 bg-gradient-to-br from-indigo-900/40 via-slate-950 to-purple-900/40" />
@@ -70,6 +71,7 @@ const ResourceHub = ({ categories }: ResourceHubProps) => {
           </Card>
         </Link>
 
+        {/* Card 2: FNH Ref App */}
         <a href="https://fnhrefapp-ggs6ojfk.manus.space/brain-zones" target="_blank" rel="noopener noreferrer" className="block group h-full">
           <Card className="h-full border-none shadow-xl rounded-[2.5rem] bg-indigo-900 text-white overflow-hidden relative cursor-pointer hover:shadow-2xl hover:-translate-y-1 transition-all duration-500">
             <div className="absolute inset-0 bg-gradient-to-br from-indigo-900/40 to-transparent" />
@@ -89,9 +91,10 @@ const ResourceHub = ({ categories }: ResourceHubProps) => {
                 </div>
               </div>
             </CardContent>
-          </a>
-        </Link>
+          </Card>
+        </a>
 
+        {/* Card 3: Study Videos */}
         <a href="https://kin-videos.vercel.app/" target="_blank" rel="noopener noreferrer" className="block group h-full">
           <Card className="h-full border-none shadow-xl rounded-[2.5rem] bg-indigo-600 text-white overflow-hidden relative cursor-pointer hover:shadow-2xl hover:-translate-y-1 transition-all duration-500">
             <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(255,255,255,0.15),transparent_50%)]" />
@@ -111,9 +114,10 @@ const ResourceHub = ({ categories }: ResourceHubProps) => {
                 </div>
               </div>
             </CardContent>
-          </a>
-        </Link>
+          </Card>
+        </a>
 
+        {/* Card 4: PEACE Method */}
         <Link to="/peace-framework" className="block group h-full">
           <Card className="h-full border-none shadow-xl rounded-[2.5rem] bg-slate-900 text-white overflow-hidden relative cursor-pointer hover:shadow-2xl hover:-translate-y-1 transition-all duration-500">
             <div className="absolute inset-0 bg-gradient-to-br from-slate-800/50 to-transparent" />
@@ -137,9 +141,10 @@ const ResourceHub = ({ categories }: ResourceHubProps) => {
                 </div>
               </div>
             </CardContent>
-          </Link>
+          </Card>
         </Link>
 
+        {/* Card 5: Notion Manual */}
         <a href="https://functional-neuro-health.notion.site/Functional-Neuro-Health-The-PEACE-Method-28beacafb4a88026b9a9ccdefa4e1de9" target="_blank" rel="noopener noreferrer" className="block group h-full">
           <Card className="h-full border-none shadow-xl rounded-[2.5rem] bg-slate-900 text-white overflow-hidden relative cursor-pointer hover:shadow-2xl hover:-translate-y-1 transition-all duration-500">
             <div className="absolute inset-0 bg-gradient-to-br from-slate-800/50 to-transparent" />
@@ -154,13 +159,14 @@ const ResourceHub = ({ categories }: ResourceHubProps) => {
               </div>
               <div className="flex items-center justify-between mt-10">
                 <span className="px-4 py-2 rounded-xl bg-white/5 border border-white/10 text-[10px] font-black uppercase tracking-widest text-slate-300">Notion</span>
-                <div className="w-12 h-12 rounded-2xl bg-white/10 backdrop-blur-md flex items-center justify-center border border-white/20 shadow-lg group-hover:scale-110 group-hover:rotate-3 transition-all duration-500">
+                <div className="w-12 h-12 rounded-2xl bg-white/10 backdrop-blur-md flex items-center justify-center border border-white/30 shadow-lg group-hover:scale-110 group-hover:rotate-3 transition-all duration-500">
                   <ExternalLink size={24} className="text-white" />
                 </div>
               </div>
             </CardContent>
-          </a>
-        </div>
+          </Card>
+        </a>
+      </div>
 
       {/* Category Sections */}
       {categories.map((category) => (

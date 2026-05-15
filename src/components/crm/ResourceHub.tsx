@@ -193,7 +193,7 @@ const ResourceHub = ({ categories }: ResourceHubProps) => {
                       )}>
                         <item.icon size={32} />
                       </div>
-                      <Badge variant="secondary" className="bg-muted text-muted-foreground border-none font-black text-[8px] uppercase tracking-widest px-3 py-1 rounded-full">
+                      <Badge variant="secondary" className="bg-muted text-muted-foreground border-none font-black text-[8px] uppercase tracking-widest px-2 py-0.5 rounded-full">
                         {category.label}
                       </Badge>
                     </div>

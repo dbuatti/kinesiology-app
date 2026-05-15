@@ -356,7 +356,7 @@ const AppointmentDetailPage = () => {
       />
 
       <AppLayout variant="full" hasFixedHeader={isFixedHeaderActive} className="pb-0">
-        <div className="max-w-[1600px] mx-auto space-y-8">
+        <div className="max-w-[1600px] mx-auto space-y-6">
           {/* TOP NAVIGATION & ACTIONS */}
           <div className="flex flex-col md:flex-row items-center justify-between gap-6">
             <div className="flex items-center gap-4">
@@ -394,7 +394,7 @@ const AppointmentDetailPage = () => {
                 variant="outline" 
                 size="sm" 
                 onClick={() => setIsDocumentView(true)}
-                className="h-12 px-6 gap-3 border-slate-200 bg-white rounded-2xl font-black text-[10px] uppercase tracking-widest text-slate-600 hover:bg-slate-50 hover:border-indigo-200 transition-all shadow-sm"
+                className="h-12 w-[160px] gap-3 border-slate-200 bg-white rounded-2xl font-black text-[10px] uppercase tracking-widest text-slate-600 hover:bg-slate-50 hover:border-indigo-200 transition-all shadow-sm"
               >
                 <FileText size={16} className="text-indigo-600" />
                 Document View
@@ -405,7 +405,7 @@ const AppointmentDetailPage = () => {
                   <Button 
                     variant="outline" 
                     size="sm" 
-                    className="h-12 px-6 gap-3 border-slate-200 bg-white rounded-2xl font-black text-[10px] uppercase tracking-widest text-slate-600 hover:bg-slate-50 transition-all shadow-sm"
+                    className="h-12 w-[160px] gap-3 border-slate-200 bg-white rounded-2xl font-black text-[10px] uppercase tracking-widest text-slate-600 hover:bg-slate-50 transition-all shadow-sm"
                   >
                     <MoreHorizontal size={16} className="text-slate-400" />
                     Session Actions
@@ -465,10 +465,10 @@ const AppointmentDetailPage = () => {
             {/* LEFT COLUMN: MAIN CONTENT */}
             <div className={cn(
               showSidebar ? "xl:col-span-8" : "xl:col-span-12",
-              "space-y-10 transition-all duration-500"
+              "space-y-6 transition-all duration-500"
             )}>
               <div className="bg-white dark:bg-slate-900 rounded-[3rem] border border-slate-200 dark:border-slate-800 shadow-2xl shadow-slate-200/50 dark:shadow-none overflow-hidden">
-                <div className="p-8 md:p-12 space-y-12">
+                <div className="p-8 md:p-12 space-y-8">
                   <AppointmentHeader 
                     appointment={appointment} 
                     onSaveField={saveField} 

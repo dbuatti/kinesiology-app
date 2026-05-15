@@ -239,9 +239,12 @@ const SessionContentSwitcher = ({
       }} className="w-full">
         <div className="overflow-x-auto pb-6 no-scrollbar -mx-4 px-4">
           <TabsList className="grid grid-cols-5 w-full h-auto bg-transparent p-0 gap-2 md:gap-4 border-b border-slate-100 dark:border-slate-800 rounded-none">
-            {TABS.map((tab) => {
+            {TABS.map((tab, index) => {
               const isCompleted = (tabStatus as any)[tab.id];
               const isActive = activeTab === tab.id;
+              const currentIndex = TABS.findIndex(t => t.id === activeTab);
+              const isPast = index < currentIndex;
+
               return (
                 <TabsTrigger 
                   key={tab.id} 
@@ -249,22 +252,29 @@ const SessionContentSwitcher = ({
                   className={cn(
                     "flex flex-col items-center gap-3 pb-6 px-4 rounded-2xl border-b-4 transition-all duration-500 relative group min-w-0",
                     isActive 
-                      ? "border-indigo-600 text-indigo-600 bg-indigo-50/30" 
+                      ? "border-indigo-600 text-indigo-600 bg-indigo-50/30 shadow-sm" 
                       : "border-transparent text-slate-400 hover:text-slate-600"
                   )}
                 >
                   <div className={cn(
                     "w-12 h-12 rounded-2xl flex items-center justify-center transition-all duration-500 shadow-sm",
                     isActive ? cn("text-white shadow-xl", tab.activeBg) : 
-                    isCompleted ? "bg-emerald-50 text-emerald-500" : "bg-slate-50 text-slate-300 group-hover:bg-slate-100"
+                    isCompleted ? "bg-emerald-50 text-emerald-500" : "bg-slate-50 text-slate-300 group-hover:bg-slate-100",
+                    isPast && !isCompleted && "opacity-60"
                   )}>
-                    {isCompleted && !isActive ? <CheckCircle2 size={24} /> : <tab.icon size={24} />}
+                    {isCompleted ? <CheckCircle2 size={24} /> : <tab.icon size={24} />}
                   </div>
                   
                   <div className="flex flex-col items-center">
                     <div className="flex items-center gap-2">
-                      <span className="text-xl font-black tracking-tighter">{tab.label}</span>
-                      <span className="hidden md:inline text-[9px] font-black uppercase tracking-[0.2em] opacity-60">
+                      <span className={cn(
+                        "text-xl font-black tracking-tighter",
+                        isPast && !isActive && "opacity-70"
+                      )}>{tab.label}</span>
+                      <span className={cn(
+                        "hidden md:inline text-[9px] font-black uppercase tracking-[0.2em] opacity-60",
+                        isPast && !isActive && "opacity-40"
+                      )}>
                         {tab.fullLabel}
                       </span>
                     </div>

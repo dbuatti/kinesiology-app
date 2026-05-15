@@ -211,7 +211,7 @@ const AppointmentHeader = ({ appointment, onSaveField, onUpdate }: AppointmentHe
                 )}>
                   <div className="flex items-center gap-2">
                     <div className={cn("w-1.5 h-1.5 rounded-full", appointment.status === 'Completed' ? "bg-emerald-500" : "bg-indigo-500")} />
-                    <SelectValue>
+                    <SelectValue placeholder={appointment.status}>
                       {appointment.status}
                     </SelectValue>
                   </div>

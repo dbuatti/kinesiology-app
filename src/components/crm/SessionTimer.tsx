@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect, useMemo } from 'react';
 import { cn } from '@/lib/utils';
-import { Clock, CheckCircle2, Target, Zap, AlertTriangle, Home, Check, ChevronDown, LogOut, User, Calendar } from 'lucide-react';
+import { Clock, CheckCircle2, Target, Zap, AlertTriangle, Home, Check, ChevronDown, LogOut, User, Calendar, AlertCircle } from 'lucide-react';
 import { format, differenceInSeconds, isToday, formatDistanceToNow } from 'date-fns';
 import { Button } from '@/components/ui/button';
 import {
@@ -49,6 +49,8 @@ const SessionTimer = ({ appointmentDate, status, clientName, currentPhaseName, o
     overallProgressPercent,
     isComplete,
     timeRemainingInSession,
+    isOvertime,
+    overtimeSeconds
   } = useMemo(() => {
     const elapsedSeconds = differenceInSeconds(currentTime, appointmentDate);
     const elapsedMinutes = Math.floor(elapsedSeconds / 60);
@@ -72,6 +74,9 @@ const SessionTimer = ({ appointmentDate, status, clientName, currentPhaseName, o
     const timeInCurrentStage = elapsedMinutes - stageStartTime;
     const stageProgressPercent = Math.min(100, (timeInCurrentStage / recommendedStage.duration) * 100);
     const overallProgressPercent = Math.min(100, (elapsedMinutes / TOTAL_DURATION_MINUTES) * 100);
+    
+    const isOvertime = elapsedSeconds >= totalDurationSeconds;
+    const overtimeSeconds = isOvertime ? elapsedSeconds - totalDurationSeconds : 0;
     const remainingSeconds = Math.max(0, totalDurationSeconds - elapsedSeconds);
     
     const remainingMinutes = Math.floor(remainingSeconds / 60);
@@ -87,11 +92,13 @@ const SessionTimer = ({ appointmentDate, status, clientName, currentPhaseName, o
       overallProgressPercent,
       isComplete,
       timeRemainingInSession,
+      isOvertime,
+      overtimeSeconds
     };
   }, [appointmentDate, currentTime]);
 
   const isRelevant = isToday(appointmentDate) && status !== 'Completed' && status !== 'Cancelled';
-  const isOngoing = isRelevant && elapsedSeconds >= 0 && !isComplete;
+  const isOngoing = isRelevant && elapsedSeconds >= 0;
   const isUpcoming = isRelevant && elapsedSeconds < 0;
 
   useEffect(() => {
@@ -106,6 +113,12 @@ const SessionTimer = ({ appointmentDate, status, clientName, currentPhaseName, o
         onCompleteSession();
       }
     }
+  };
+
+  const formatOvertime = (seconds: number) => {
+    const mins = Math.floor(seconds / 60);
+    const secs = seconds % 60;
+    return `${mins}m ${secs.toString().padStart(2, '0')}s`;
   };
 
   const activePhase = SESSION_STAGES.find(s => s.id === currentPhaseName) || recommendedStage;
@@ -125,13 +138,24 @@ const SessionTimer = ({ appointmentDate, status, clientName, currentPhaseName, o
 
   return (
     <div className="fixed top-0 left-0 right-0 z-[110] shadow-2xl">
-      <div className="bg-slate-950 border-b border-white/10 p-2 flex items-center justify-between px-6">
+      <div className={cn(
+        "transition-colors duration-1000 p-2 flex items-center justify-between px-6",
+        isOvertime ? "bg-rose-950 border-b border-rose-500/30" : "bg-slate-950 border-b border-white/10"
+      )}>
         <div className="flex items-center gap-6">
           <div className="flex items-center gap-3">
-            <div className="w-2 h-2 bg-emerald-500 rounded-full animate-pulse" />
-            <span className="text-[10px] font-black text-white uppercase tracking-[0.3em]">Session Live</span>
-            <span className="text-xs font-black text-emerald-400 tabular-nums font-mono">
-              {timeRemainingInSession}
+            <div className={cn(
+              "w-2 h-2 rounded-full animate-pulse",
+              isOvertime ? "bg-rose-500" : "bg-emerald-500"
+            )} />
+            <span className="text-[10px] font-black text-white uppercase tracking-[0.3em]">
+              {isOvertime ? "Time Elapsed" : "Session Live"}
+            </span>
+            <span className={cn(
+              "text-xs font-black tabular-nums font-mono",
+              isOvertime ? "text-rose-400 animate-pulse" : "text-emerald-400"
+            )}>
+              {isOvertime ? `+${formatOvertime(overtimeSeconds)}` : timeRemainingInSession}
             </span>
           </div>
           
@@ -163,7 +187,10 @@ const SessionTimer = ({ appointmentDate, status, clientName, currentPhaseName, o
         <div className="flex items-center gap-4">
           <div className="w-32 h-1.5 bg-white/5 rounded-full overflow-hidden hidden lg:block">
             <div 
-              className="h-full bg-indigo-500 transition-all duration-500"
+              className={cn(
+                "h-full transition-all duration-500",
+                isOvertime ? "bg-amber-500" : "bg-indigo-500"
+              )}
               style={{ width: `${overallProgressPercent}%` }}
             />
           </div>
@@ -172,8 +199,12 @@ const SessionTimer = ({ appointmentDate, status, clientName, currentPhaseName, o
             <DropdownMenuTrigger asChild>
               <Button 
                 size="sm" 
-                className="bg-white/10 hover:bg-white/20 text-white border-none h-8 px-4 rounded-xl font-black text-[9px] uppercase tracking-widest"
+                className={cn(
+                  "border-none h-8 px-4 rounded-xl font-black text-[9px] uppercase tracking-widest transition-colors",
+                  isOvertime ? "bg-rose-600 hover:bg-rose-700 text-white" : "bg-white/10 hover:bg-white/20 text-white"
+                )}
               >
+                {isOvertime && <AlertCircle size={12} className="mr-2" />}
                 Session Actions <ChevronDown size={12} className="ml-2 opacity-50" />
               </Button>
             </DropdownMenuTrigger>

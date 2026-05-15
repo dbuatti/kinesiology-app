@@ -47,7 +47,7 @@ const QuickActions = () => {
                     "bg-slate-900 text-white px-5 py-2.5 rounded-2xl text-[10px] font-black uppercase tracking-widest shadow-2xl transition-all duration-500",
                     isOpen ? "opacity-0 translate-x-4" : "opacity-100 translate-x-0"
                   )}>
-                    Quick Actions
+                    Quick Note
                   </span>
                   <Button
                     size="lg"
@@ -103,7 +103,7 @@ const QuickActions = () => {
                   onClick={() => { setAppointmentDialogOpen(true); setIsOpen(false); }} 
                   className="rounded-2xl py-4 px-5 cursor-pointer group"
                 >
-                  <div className="w-11 h-11 rounded-xl bg-rose-50 flex items-center justify-center mr-4 group-hover:bg-rose-100 transition-colors">
+                  <div className="w-11 h-11 rounded-xl bg-rose-50 flex items-center justify-center mr-4 group-hover:bg-indigo-100 transition-colors">
                     <Calendar size={22} className="text-rose-600" />
                   </div>
                   <div className="flex-1">

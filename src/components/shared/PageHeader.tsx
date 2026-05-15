@@ -3,6 +3,7 @@
 import React from "react";
 import { cn } from "@/lib/utils";
 import Breadcrumbs from "./Breadcrumbs";
+import { Badge } from "@/components/ui/badge";
 
 interface PageHeaderProps {
   title: string;
@@ -26,30 +27,30 @@ const PageHeader = ({
   className,
 }: PageHeaderProps) => {
   return (
-    <div className={cn("space-y-4 mb-8 border-b border-border pb-8", className)}>
+    <div className={cn("space-y-2 mb-4", className)}>
       {breadcrumbs && <Breadcrumbs items={breadcrumbs} className="mb-0" />}
       
-      <div className="flex flex-col md:flex-row md:items-end justify-between gap-8">
-        <div className="flex items-start gap-6">
+      <div className="flex flex-col md:flex-row md:items-end justify-between gap-4">
+        <div className="flex items-center gap-4">
           {Icon && (
             <div className={cn(
-              "w-12 h-12 border border-border flex items-center justify-center text-primary shrink-0",
+              "w-12 h-12 rounded-xl bg-indigo-600 text-white flex items-center justify-center shadow-lg shadow-indigo-100 dark:shadow-indigo-900/20 shrink-0",
               iconClassName
             )}>
               <Icon size={24} />
             </div>
           )}
-          <div className="space-y-2">
+          <div className="space-y-0.5">
             {badge && (
-              <p className="text-[10px] font-bold uppercase tracking-[0.3em] text-primary">
+              <Badge className="bg-indigo-50 dark:bg-indigo-900/20 text-indigo-600 dark:text-indigo-400 border-none font-bold text-[8px] uppercase tracking-[0.3em] px-3 py-0.5 rounded-full mb-1">
                 {badge}
-              </p>
+              </Badge>
             )}
-            <h1 className="text-3xl font-medium uppercase tracking-tight">
+            <h1 className="text-2xl md:text-3xl font-serif font-bold tracking-tight text-slate-900 dark:text-white">
               {title}
             </h1>
             {subtitle && (
-              <p className="text-sm text-muted-foreground max-w-2xl">
+              <p className="text-[10px] md:text-xs text-slate-500 font-medium max-w-2xl">
                 {subtitle}
               </p>
             )}
@@ -57,7 +58,7 @@ const PageHeader = ({
         </div>
         
         {actions && (
-          <div className="flex items-center gap-4 shrink-0">
+          <div className="flex items-center gap-3 shrink-0">
             {actions}
           </div>
         )}

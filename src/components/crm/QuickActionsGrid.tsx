@@ -2,7 +2,8 @@
 
 import React from "react";
 import { Link } from "react-router-dom";
-import { UserPlus, CalendarPlus, Zap, Target, ArrowRight } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { UserPlus, CalendarPlus, Zap, Target } from "lucide-react";
 
 interface QuickActionsGridProps {
   onNewClient: () => void;
@@ -10,32 +11,46 @@ interface QuickActionsGridProps {
 }
 
 const QuickActionsGrid = ({ onNewClient, onBookSession }: QuickActionsGridProps) => {
-  const ActionButton = ({ icon: Icon, label, sub, onClick, path }: any) => {
-    const content = (
-      <div className="h-28 p-6 bg-white hover:bg-slate-50 transition-all flex flex-col justify-between group border-r border-border last:border-r-0">
-        <div className="flex items-center justify-between">
-          <div className="w-10 h-10 bg-indigo-50 text-primary flex items-center justify-center group-hover:bg-primary group-hover:text-white transition-all">
-            <Icon size={20} />
-          </div>
-          <ArrowRight size={14} className="text-slate-200 group-hover:text-primary group-hover:translate-x-1 transition-all" />
-        </div>
-        <div>
-          <span className="font-black text-[10px] uppercase tracking-widest text-slate-900 block">{label}</span>
-          <span className="text-[8px] font-bold text-slate-400 uppercase tracking-widest mt-1">{sub}</span>
-        </div>
-      </div>
-    );
-
-    if (path) return <Link to={path} className="block">{content}</Link>;
-    return <button onClick={onClick} className="block text-left w-full">{content}</button>;
-  };
-
   return (
-    <div className="grid grid-cols-2 md:grid-cols-4 gap-0 border border-border">
-      <ActionButton icon={UserPlus} label="New Client" sub="Add to database" onClick={onNewClient} />
-      <ActionButton icon={CalendarPlus} label="Book Session" sub="Schedule appointment" onClick={onBookSession} />
-      <ActionButton icon={Zap} label="Quick Calibrate" sub="Instant Pathway Logic" path="/practice/calibrate" />
-      <ActionButton icon={Target} label="Protocols" sub="Clinical Reference" path="/practice/procedures" />
+    <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6">
+      <Button 
+        onClick={onNewClient}
+        className="h-28 md:h-40 rounded-[2rem] md:rounded-[3rem] bg-white dark:bg-slate-900 border border-secondary/30 hover:border-indigo-500 hover:bg-indigo-50/30 text-indigo-600 flex flex-col gap-3 md:gap-4 shadow-sm hover:shadow-xl transition-all duration-500 group"
+      >
+        <div className="w-10 h-10 md:w-16 md:h-16 rounded-2xl md:rounded-[1.5rem] bg-indigo-50 dark:bg-indigo-900/40 flex items-center justify-center group-hover:scale-110 transition-transform shadow-inner">
+          <UserPlus size={24} className="md:w-8 md:h-8" />
+        </div>
+        <span className="font-black text-[10px] md:text-[12px] uppercase tracking-[0.2em]">New Client</span>
+      </Button>
+      <Button 
+        onClick={onBookSession}
+        className="h-28 md:h-40 rounded-[2rem] md:rounded-[3rem] bg-white dark:bg-slate-900 border border-secondary/30 hover:border-rose-500 hover:bg-rose-50/30 text-rose-600 flex flex-col gap-3 md:gap-4 shadow-sm hover:shadow-xl transition-all duration-500 group"
+      >
+        <div className="w-10 h-10 md:w-16 md:h-16 rounded-2xl md:rounded-[1.5rem] bg-rose-50 dark:bg-rose-900/40 flex items-center justify-center group-hover:scale-110 transition-transform shadow-inner">
+          <CalendarPlus size={24} className="md:w-8 md:h-8" />
+        </div>
+        <span className="font-black text-[10px] md:text-[12px] uppercase tracking-[0.2em]">Book Session</span>
+      </Button>
+      <Link to="/practice/calibrate" className="block">
+        <Button 
+          className="w-full h-28 md:h-40 rounded-[2rem] md:rounded-[3rem] bg-white dark:bg-slate-900 border border-secondary/30 hover:border-amber-500 hover:bg-amber-50/30 text-amber-600 flex flex-col gap-3 md:gap-4 shadow-sm hover:shadow-xl transition-all duration-500 group"
+        >
+          <div className="w-10 h-10 md:w-16 md:h-16 rounded-2xl md:rounded-[1.5rem] bg-amber-50 dark:bg-amber-900/40 flex items-center justify-center group-hover:scale-110 transition-transform shadow-inner">
+            <Zap size={24} className="md:w-8 md:h-8" />
+          </div>
+          <span className="font-black text-[10px] md:text-[12px] uppercase tracking-[0.2em]">Quick Calibrate</span>
+        </Button>
+      </Link>
+      <Link to="/practice/procedures" className="block">
+        <Button 
+          className="w-full h-28 md:h-40 rounded-[2rem] md:rounded-[3rem] bg-white dark:bg-slate-900 border border-secondary/30 hover:border-emerald-500 hover:bg-emerald-50/30 text-emerald-600 flex flex-col gap-3 md:gap-4 shadow-sm hover:shadow-xl transition-all duration-500 group"
+        >
+          <div className="w-10 h-10 md:w-16 md:h-16 rounded-2xl md:rounded-[1.5rem] bg-emerald-50 dark:bg-emerald-900/40 flex items-center justify-center group-hover:scale-110 transition-transform shadow-inner">
+            <Target size={24} className="md:w-8 md:h-8" />
+          </div>
+          <span className="font-black text-[10px] md:text-[12px] uppercase tracking-[0.2em]">Protocols</span>
+        </Button>
+      </Link>
     </div>
   );
 };

@@ -1,7 +1,7 @@
 "use client";
 
 import React from "react";
-import { Activity, Zap, BookOpen, ChevronDown } from "lucide-react";
+import { Activity, Zap, BookOpen, ChevronDown, Sparkles } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useAppMode, AppMode } from "@/components/ModeProvider";
 import {
@@ -16,27 +16,27 @@ const HubSwitcher = () => {
   const { mode, setMode } = useAppMode();
   const navigate = useNavigate();
 
-  const modes: { id: AppMode; label: string; icon: any; description: string; color: string }[] = [
+  const modes: { id: AppMode; label: string; icon: any; color: string; description: string }[] = [
     { 
       id: 'clinical', 
       label: 'Clinical Hub', 
       icon: Activity, 
-      description: 'Practice management',
-      color: 'text-indigo-600'
+      color: 'text-indigo-600 bg-indigo-50 dark:bg-indigo-900/30 border-indigo-100 dark:border-indigo-800',
+      description: 'Practice management & client sessions'
     },
     { 
       id: 'lab', 
       label: 'Practice Lab', 
       icon: Zap, 
-      description: 'Personal integration',
-      color: 'text-amber-500'
+      color: 'text-emerald-600 bg-emerald-50 dark:bg-emerald-900/30 border-emerald-100 dark:border-emerald-800',
+      description: 'Personal integration & practitioner state'
     },
     { 
       id: 'library', 
       label: 'Knowledge Hub', 
       icon: BookOpen, 
-      description: 'Protocols & study',
-      color: 'text-purple-600'
+      color: 'text-amber-600 bg-amber-50 dark:bg-amber-900/30 border-amber-100 dark:border-amber-800',
+      description: 'Protocols, study & mastery'
     },
   ];
 
@@ -50,35 +50,56 @@ const HubSwitcher = () => {
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <button className="flex items-center gap-3 px-3 py-1.5 bg-slate-900 text-white hover:bg-slate-800 transition-all group">
-          <activeMode.icon size={14} className={activeMode.color} />
-          <span className="text-[10px] font-black uppercase tracking-widest">{activeMode.label}</span>
-          <ChevronDown size={10} className="text-white/40 group-hover:translate-y-0.5 transition-transform" />
+        <button className={cn(
+          "flex items-center gap-3 px-4 py-2 rounded-2xl border transition-all duration-500 hover:shadow-lg group",
+          activeMode.color
+        )}>
+          <div className="relative">
+            <activeMode.icon size={18} className="animate-in fade-in zoom-in duration-500" />
+            <div className="absolute -top-1 -right-1 w-2 h-2 bg-white dark:bg-slate-900 rounded-full flex items-center justify-center">
+              <div className="w-1 h-1 bg-current rounded-full animate-pulse" />
+            </div>
+          </div>
+          <div className="flex flex-col items-start">
+            <span className="text-[10px] font-black uppercase tracking-[0.2em] leading-none mb-0.5">Active Focus</span>
+            <div className="flex items-center gap-1.5">
+              <span className="text-xs font-bold tracking-tight">{activeMode.label}</span>
+              <ChevronDown size={12} className="opacity-50 group-hover:translate-y-0.5 transition-transform" />
+            </div>
+          </div>
         </button>
       </DropdownMenuTrigger>
-      <DropdownMenuContent align="start" className="w-64 p-0 border-2 border-slate-900 bg-background z-[110] rounded-none shadow-2xl">
-        <div className="px-4 py-3 border-b border-border bg-slate-50">
-          <p className="text-[9px] font-black uppercase tracking-widest text-primary">Switch Workspace</p>
+      <DropdownMenuContent align="start" className="w-72 p-2 rounded-[2rem] border-none shadow-3xl bg-white/90 dark:bg-slate-900/90 backdrop-blur-xl z-[110]">
+        <div className="px-4 py-3 mb-2">
+          <div className="flex items-center gap-2 text-indigo-600 mb-1">
+            <Sparkles size={14} className="animate-pulse" />
+            <span className="text-[9px] font-black uppercase tracking-[0.3em]">Switch Workspace</span>
+          </div>
+          <p className="text-xs text-slate-500 font-medium">Select your focus for this session.</p>
         </div>
         
-        <div className="space-y-0">
+        <div className="space-y-1">
           {modes.map((m) => (
             <DropdownMenuItem 
               key={m.id} 
               onClick={() => handleSwitch(m.id)}
               className={cn(
-                "p-4 cursor-pointer transition-colors flex items-start gap-4 border-b border-border last:border-b-0 focus:bg-muted rounded-none",
-                mode === m.id ? "bg-muted" : ""
+                "rounded-2xl p-3 cursor-pointer transition-all duration-300 flex items-start gap-4",
+                mode === m.id ? "bg-slate-100 dark:bg-slate-800 ring-1 ring-slate-200 dark:ring-slate-700" : "hover:bg-slate-50 dark:hover:bg-slate-800/50"
               )}
             >
-              <div className="w-8 h-8 border border-border flex items-center justify-center shrink-0">
-                <m.icon size={16} className={m.color} />
+              <div className={cn(
+                "w-10 h-10 rounded-xl flex items-center justify-center shrink-0 transition-transform group-hover:scale-110",
+                m.color,
+                "border-none"
+              )}>
+                <m.icon size={20} />
               </div>
               <div className="flex flex-col">
-                <span className="font-black text-[10px] uppercase tracking-tight">
+                <span className={cn("font-bold text-sm", mode === m.id ? "text-slate-900 dark:text-white" : "text-slate-600 dark:text-slate-400")}>
                   {m.label}
                 </span>
-                <span className="text-[9px] text-muted-foreground leading-tight mt-1 font-medium">
+                <span className="text-[10px] text-slate-400 font-medium leading-tight mt-0.5">
                   {m.description}
                 </span>
               </div>

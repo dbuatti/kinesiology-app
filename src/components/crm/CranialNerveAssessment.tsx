@@ -1,19 +1,30 @@
 "use client";
 
-import React, { useState, useMemo } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import { CRANIAL_NERVES, CranialNerve } from "@/data/cranial-nerve-data";
 import { useCranialNerveTests } from "@/hooks/useCranialNerveTests";
 import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
 import { Checkbox } from "@/components/ui/checkbox";
 import { 
   Zap, 
+  ImageIcon, 
   Loader2, 
+  Hand, 
+  PlayCircle,
+  FileText,
   CheckCircle2,
-  Search
+  ArrowRightLeft,
+  Info,
+  Search,
+  Activity
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { supabase } from "@/integrations/supabase/client";
 import { safeParse } from "@/utils/safe-json";
 import { CranialNerveTest } from "@/types/crm";
+import { Switch } from "@/components/ui/switch";
+import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 
 interface NerveTestItemProps {
@@ -23,66 +34,239 @@ interface NerveTestItemProps {
   statusR?: 'Clear' | 'Inhibited';
   statusMidline?: 'Clear' | 'Inhibited';
   isLateralized: boolean;
+  images: { primary: string | null, secondary: string | null } | undefined;
+  showImage: boolean;
   onUpdate: (nerveId: string, updates: Partial<CranialNerveTest>, side?: 'L' | 'R') => Promise<void>;
+  onShowInfo?: (nerveId: number) => void;
 }
 
-const NerveTestItem = ({ nerve, test, statusL, statusR, statusMidline, isLateralized, onUpdate }: NerveTestItemProps) => {
+const NerveTestItem = ({ nerve, test, statusL, statusR, statusMidline, isLateralized, images, showImage, onUpdate, onShowInfo }: NerveTestItemProps) => {
+  const [localNotes, setLocalNotes] = useState(test.notes || "");
+  const saveTimeoutRef = React.useRef<NodeJS.Timeout | null>(null);
+
+  useEffect(() => {
+    if (test.notes !== undefined && test.notes !== localNotes) {
+      setLocalNotes(test.notes || "");
+    }
+  }, [test.notes]);
+
+  const handleNotesChange = (val: string) => {
+    setLocalNotes(val);
+    if (saveTimeoutRef.current) clearTimeout(saveTimeoutRef.current);
+    saveTimeoutRef.current = setTimeout(() => {
+      onUpdate(nerve.id.toString(), { notes: val });
+    }, 1000);
+  };
+
+  const handleClear = async () => {
+    if (isLateralized) {
+      await onUpdate(nerve.id.toString(), { is_inhibited: false }, 'L');
+      await onUpdate(nerve.id.toString(), { is_inhibited: false }, 'R');
+    } else {
+      await onUpdate(nerve.id.toString(), { is_inhibited: false });
+    }
+    await onUpdate(nerve.id.toString(), { 
+      is_inhibited: false, 
+      is_priority: false, 
+      is_primary_priority: false 
+    });
+  };
+
+  const handleBilateralToggle = async (checked: boolean) => {
+    await onUpdate(nerve.id.toString(), { is_inhibited: checked }, 'L');
+    await onUpdate(nerve.id.toString(), { is_inhibited: checked }, 'R');
+  };
+
+  const hasImages = images?.primary || images?.secondary;
   const isAnyInhibited = statusL === 'Inhibited' || statusR === 'Inhibited' || statusMidline === 'Inhibited' || test.is_inhibited;
+  const isBilateral = statusL === 'Inhibited' && statusR === 'Inhibited';
 
   return (
-    <div className={cn(
-      "flex items-center justify-between p-2 border-b border-slate-50 last:border-b-0 transition-all",
-      isAnyInhibited ? "bg-rose-50/50" : "hover:bg-slate-50"
+    <section className={cn(
+      "space-y-2 p-4 rounded-2xl border transition-all",
+      test.is_primary_priority ? "bg-indigo-50/30 border-indigo-200 ring-1 ring-indigo-100" : 
+      test.is_priority ? "bg-amber-50/30 border-amber-200" : 
+      !isAnyInhibited && (statusL === 'Clear' || statusR === 'Clear' || statusMidline === 'Clear') ? "bg-emerald-50/10 border-emerald-100 opacity-80" :
+      "border-slate-100 bg-white"
     )}>
-      <div className="flex-1 min-w-0">
-        <div className="flex items-center gap-2">
-          <span className="text-[10px] font-black text-slate-900 uppercase tracking-tight">{nerve.name}</span>
-          <span className="text-[9px] font-bold text-slate-400 uppercase truncate">{nerve.latinName}</span>
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-2 border-b border-slate-100/50 pb-2">
+        <div className="flex items-center gap-3">
+          <div 
+            className="flex items-center gap-2 cursor-pointer group/title"
+            onClick={() => onShowInfo?.(nerve.id)}
+          >
+            <h2 className="text-lg font-serif font-bold text-slate-900 group-hover/title:text-indigo-600 transition-colors">
+              {nerve.name}: {nerve.latinName}
+            </h2>
+            <Info size={14} className="text-slate-300 group-hover/title:text-indigo-400 transition-colors" />
+          </div>
+          <Badge variant="outline" className="border-slate-200 text-slate-400 font-black text-[7px] uppercase tracking-widest px-1.5 py-0 rounded-none">
+            {nerve.nuclei} • {nerve.toneEffect}
+          </Badge>
+        </div>
+
+        <div className="flex items-center gap-4 print:hidden">
+          <div className="flex items-center gap-3 border-r border-slate-100 pr-4">
+            {isLateralized ? (
+              <>
+                <div className="flex items-center gap-1.5">
+                  <Checkbox 
+                    id={`inhib-l-${nerve.id}`}
+                    checked={statusL === 'Inhibited'}
+                    onCheckedChange={(checked) => onUpdate(nerve.id.toString(), { is_inhibited: !!checked }, 'L')}
+                    className="h-3.5 w-3.5 border-slate-400 rounded-none"
+                  />
+                  <label htmlFor={`inhib-l-${nerve.id}`} className="text-[8px] font-black uppercase tracking-widest cursor-pointer text-slate-500">
+                    L Inhib
+                  </label>
+                </div>
+                <div className="flex items-center gap-1.5">
+                  <Checkbox 
+                    id={`inhib-r-${nerve.id}`}
+                    checked={statusR === 'Inhibited'}
+                    onCheckedChange={(checked) => onUpdate(nerve.id.toString(), { is_inhibited: !!checked }, 'R')}
+                    className="h-3.5 w-3.5 border-slate-400 rounded-none"
+                  />
+                  <label htmlFor={`inhib-r-${nerve.id}`} className="text-[8px] font-black uppercase tracking-widest cursor-pointer text-slate-500">
+                    R Inhib
+                  </label>
+                </div>
+                <div className="flex items-center gap-1.5 ml-1">
+                  <Checkbox 
+                    id={`inhib-both-${nerve.id}`}
+                    checked={isBilateral}
+                    onCheckedChange={(checked) => handleBilateralToggle(!!checked)}
+                    className="h-3.5 w-3.5 border-indigo-400 rounded-none data-[state=checked]:bg-indigo-600"
+                  />
+                  <label htmlFor={`inhib-both-${nerve.id}`} className="text-[8px] font-black uppercase tracking-widest cursor-pointer text-indigo-600">
+                    Both
+                  </label>
+                </div>
+              </>
+            ) : (
+              <div className="flex items-center gap-1.5">
+                <Checkbox 
+                  id={`inhib-mid-${nerve.id}`}
+                  checked={statusMidline === 'Inhibited'}
+                  onCheckedChange={(checked) => onUpdate(nerve.id.toString(), { is_inhibited: !!checked })}
+                  className="h-3.5 w-3.5 border-slate-400 rounded-none"
+                />
+                <label htmlFor={`inhib-mid-${nerve.id}`} className="text-[8px] font-black uppercase tracking-widest cursor-pointer text-slate-500">
+                  Inhibited
+                </label>
+              </div>
+            )}
+          </div>
+
+          <div className="flex items-center gap-3">
+            <div className="flex items-center gap-1.5">
+              <Checkbox 
+                id={`priority-${nerve.id}`}
+                checked={test.is_priority}
+                onCheckedChange={(checked) => onUpdate(nerve.id.toString(), { is_priority: !!checked })}
+                className="h-3.5 w-3.5 border-slate-400 rounded-none"
+              />
+              <label htmlFor={`priority-${nerve.id}`} className="text-[8px] font-black uppercase tracking-widest cursor-pointer text-slate-500">
+                Priority
+              </label>
+            </div>
+            <Button 
+              variant="ghost" 
+              size="sm" 
+              onClick={() => onUpdate(nerve.id.toString(), { is_primary_priority: !test.is_primary_priority })}
+              className={cn(
+                "h-5 px-2 text-[7px] font-black uppercase tracking-widest transition-all rounded-md",
+                test.is_primary_priority ? "bg-slate-900 text-white" : "text-slate-400 hover:text-slate-900"
+              )}
+            >
+              {test.is_primary_priority ? "Primary" : "Set 1°"}
+            </Button>
+            <Button 
+              variant="ghost" 
+              size="sm" 
+              onClick={handleClear}
+              className="h-5 px-2 text-[7px] font-black uppercase tracking-widest text-emerald-600 hover:bg-emerald-50 rounded-md"
+            >
+              <CheckCircle2 size={10} className="mr-1" /> Clear
+            </Button>
+          </div>
         </div>
       </div>
 
-      <div className="flex items-center gap-4">
-        <div className="flex items-center gap-3">
-          {isLateralized ? (
-            <div className="flex gap-2">
-              <div className="flex items-center gap-1">
-                <Checkbox 
-                  checked={statusL === 'Inhibited'}
-                  onCheckedChange={(checked) => onUpdate(nerve.id.toString(), { is_inhibited: !!checked }, 'L')}
-                  className="h-3.5 w-3.5 border-slate-300 rounded-none"
-                />
-                <span className="text-[8px] font-black text-slate-400">L</span>
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-4">
+        <div className="lg:col-span-8 space-y-3">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <div className="space-y-0.5">
+              <div className="flex items-center gap-1 text-[8px] font-black uppercase tracking-widest text-slate-400">
+                <Hand size={10} /> Reflex Point
               </div>
-              <div className="flex items-center gap-1">
-                <Checkbox 
-                  checked={statusR === 'Inhibited'}
-                  onCheckedChange={(checked) => onUpdate(nerve.id.toString(), { is_inhibited: !!checked }, 'R')}
-                  className="h-3.5 w-3.5 border-slate-300 rounded-none"
-                />
-                <span className="text-[8px] font-black text-slate-400">R</span>
-              </div>
+              <p className="text-xs font-bold text-slate-700 leading-tight">{nerve.reflexPoint}</p>
             </div>
-          ) : (
-            <Checkbox 
-              checked={statusMidline === 'Inhibited'}
-              onCheckedChange={(checked) => onUpdate(nerve.id.toString(), { is_inhibited: !!checked })}
-              className="h-3.5 w-3.5 border-slate-300 rounded-none"
+            
+            <div className="space-y-0.5">
+              <div className="flex items-center gap-1 text-[8px] font-black uppercase tracking-widest text-slate-400">
+                <PlayCircle size={10} /> Stimulus
+              </div>
+              <p className="text-xs font-bold text-slate-700 leading-tight">{nerve.stimulus}</p>
+            </div>
+          </div>
+
+          {nerve.delineationGuide && (
+            <div className="p-3 bg-indigo-50/50 rounded-xl border border-indigo-100 animate-in fade-in slide-in-from-top-1 duration-300">
+              <div className="flex items-center gap-2 mb-1.5">
+                <ArrowRightLeft size={12} className="text-indigo-50" />
+                <span className="text-[8px] font-black uppercase tracking-widest text-indigo-600">Delineation Guide</span>
+              </div>
+              <p className="text-[10px] font-medium text-indigo-900 leading-relaxed">
+                {nerve.delineationGuide}
+              </p>
+            </div>
+          )}
+
+          <div className="space-y-1">
+            <div className="flex items-center gap-1 text-[8px] font-black uppercase tracking-widest text-slate-400">
+              <FileText size={10} /> Notes
+            </div>
+            <textarea 
+              value={localNotes}
+              onChange={(e) => handleNotesChange(e.target.value)}
+              className="w-full min-h-[40px] bg-slate-50/30 border-none rounded-lg p-2 text-xs font-medium focus:ring-1 focus:ring-indigo-500 transition-all resize-none"
+              placeholder="Findings..."
             />
+          </div>
+        </div>
+
+        <div className="lg:col-span-4">
+          {showImage && hasImages ? (
+            <div className="flex h-32 rounded-lg overflow-hidden border border-slate-100">
+              {images.primary && (
+                <div className="flex-1 bg-slate-50 overflow-hidden">
+                  <img src={images.primary} alt="Primary" className="w-full h-full object-cover opacity-80 hover:opacity-100 transition-opacity" />
+                </div>
+              )}
+              {images.secondary && (
+                <div className="flex-1 bg-slate-50 overflow-hidden">
+                  <img src={images.secondary} alt="Secondary" className="w-full h-full object-cover opacity-80 hover:opacity-100 transition-opacity" />
+                </div>
+              )}
+            </div>
+          ) : showImage && (
+            <div className="h-full min-h-[60px] border border-dashed border-slate-100 rounded-xl flex items-center justify-center text-slate-200 bg-slate-50/20">
+              <ImageIcon size={16} className="opacity-10" />
+            </div>
           )}
         </div>
-
-        <Button 
-          variant="ghost" 
-          size="sm" 
-          onClick={() => isLateralized ? (onUpdate(nerve.id.toString(), { is_inhibited: false }, 'L'), onUpdate(nerve.id.toString(), { is_inhibited: false }, 'R')) : onUpdate(nerve.id.toString(), { is_inhibited: false })}
-          className="h-6 px-2 text-[8px] font-black uppercase tracking-widest text-emerald-600 hover:bg-emerald-50"
-        >
-          <CheckCircle2 size={10} className="mr-1" /> Clear
-        </Button>
       </div>
-    </div>
+    </section>
   );
 };
+
+const NERVE_CLUSTERS = [
+  { id: 'sensory', label: 'Sensory Nerves (I, II, VIII)', ids: [1, 2, 8] },
+  { id: 'eye-motor', label: 'Eye Motor Nerves (III, IV, VI)', ids: [3, 4, 6] },
+  { id: 'face-jaw', label: 'Face & Jaw (V, VII)', ids: [5, 7] },
+  { id: 'vagal-throat', label: 'Vagal & Throat (IX, X, XI, XII)', ids: [9, 10, 11, 12] }
+];
 
 export function CranialNerveAssessment({ 
   appointmentId, 
@@ -94,50 +278,131 @@ export function CranialNerveAssessment({
   appointmentId: string;
   priorityPattern?: string | null;
   updatePriorityPattern?: (category: string, itemName: string, status: 'Clear' | 'Inhibited' | null, side?: 'L' | 'R') => Promise<void>;
-  showImages?: boolean;
+  showImages: boolean;
   onShowInfo?: (nerveId: number) => void;
 }) {
   const { tests, loading, updateTest } = useCranialNerveTests(appointmentId, priorityPattern, updatePriorityPattern);
+  const [showOnlyInhibited, setShowOnlyInhibited] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
+  const [customImages, setCustomImages] = useState<Record<string, { primary: string | null, secondary: string | null }>>({});
 
   const pattern = useMemo(() => safeParse(priorityPattern, {} as any), [priorityPattern]);
   const nervePattern = pattern.cranialNerves || {};
 
+  useEffect(() => {
+    const fetchImages = async () => {
+      try {
+        const { data: { user } } = await supabase.auth.getUser();
+        if (!user) return;
+        const { data } = await supabase.from('brain_reflex_customizations').select('reflex_id, image_url, secondary_image_url').eq('user_id', user.id);
+        const mapping: Record<string, { primary: string | null, secondary: string | null }> = {};
+        data?.forEach(item => {
+          mapping[item.reflex_id] = { primary: item.image_url, secondary: item.secondary_image_url };
+        });
+        setCustomImages(mapping);
+      } catch (err) {
+        console.error("Error fetching nerve images:", err);
+      }
+    };
+    fetchImages();
+  }, []);
+
   const filteredNerves = useMemo(() => {
     return CRANIAL_NERVES.filter(nerve => {
+      const test = tests.find(t => t.nerve_id === nerve.id.toString()) || { is_inhibited: false };
       const nerveName = `${nerve.name}: ${nerve.latinName}`;
-      return nerveName.toLowerCase().includes(searchQuery.toLowerCase());
-    });
-  }, [searchQuery]);
+      
+      const matchesSearch = nerveName.toLowerCase().includes(searchQuery.toLowerCase()) || 
+                           nerve.nuclei.toLowerCase().includes(searchQuery.toLowerCase());
+      
+      const isAnyInhib = nervePattern[`${nerveName} (L)`] === 'Inhibited' || 
+                        nervePattern[`${nerveName} (R)`] === 'Inhibited' || 
+                        nervePattern[nerveName] === 'Inhibited' || 
+                        test.is_inhibited;
 
-  if (loading) return <div className="py-8 flex justify-center"><Loader2 className="animate-spin text-primary" /></div>;
+      const matchesInhibited = showOnlyInhibited ? isAnyInhib : true;
+      
+      return matchesSearch && matchesInhibited;
+    });
+  }, [tests, searchQuery, showOnlyInhibited, nervePattern]);
+
+  if (loading) {
+    return (
+      <div className="flex flex-col items-center justify-center p-12 gap-4">
+        <Loader2 className="animate-spin text-blue-600" size={32} />
+        <p className="text-xs font-bold uppercase tracking-widest text-slate-400">Loading Assessment...</p>
+      </div>
+    );
+  }
 
   return (
-    <div className="space-y-2">
-      <div className="relative mb-2">
-        <Search className="absolute left-2 top-1/2 -translate-y-1/2 h-3 w-3 text-slate-300" />
-        <Input
-          placeholder="Filter nerves..."
-          className="pl-7 h-7 rounded-none border-slate-100 bg-slate-50 text-[10px] font-bold uppercase tracking-widest"
-          value={searchQuery}
-          onChange={(e) => setSearchQuery(e.target.value)}
-        />
+    <div className="space-y-6">
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 bg-slate-50/50 p-2 rounded-xl border border-slate-100 shadow-inner print:hidden mb-2">
+        <div className="flex items-center gap-3">
+          <div className="relative w-full md:w-48">
+            <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3 w-3 text-slate-400" />
+            <Input
+              placeholder="Search nerves..."
+              className="pl-8 h-7 rounded-lg border-slate-200 bg-white text-[10px]"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+            />
+          </div>
+          <div className="flex items-center space-x-2 px-3 border-l border-slate-200">
+            <Switch
+              id="inhibited-filter-nerve"
+              checked={showOnlyInhibited}
+              onCheckedChange={setShowOnlyInhibited}
+              className="data-[state=checked]:bg-rose-600 scale-[0.6]"
+            />
+            <Label htmlFor="inhibited-filter-nerve" className="text-[8px] font-black uppercase tracking-widest cursor-pointer text-slate-500">
+              Only Inhibited
+            </Label>
+          </div>
+        </div>
+        <div className="flex items-center gap-2">
+          <Badge variant="outline" className="bg-white border-slate-200 font-black text-[7px] uppercase tracking-widest px-2 py-0.5 rounded-full">
+            {tests.filter(t => t.is_inhibited).length} Active
+          </Badge>
+        </div>
       </div>
 
-      <div className="border border-slate-100">
-        {filteredNerves.map((nerve) => {
-          const nerveName = `${nerve.name}: ${nerve.latinName}`;
+      <div className="space-y-10">
+        {NERVE_CLUSTERS.map(cluster => {
+          const clusterNerves = filteredNerves.filter(n => cluster.ids.includes(n.id));
+          if (clusterNerves.length === 0) return null;
+
           return (
-            <NerveTestItem 
-              key={nerve.id}
-              nerve={nerve}
-              test={tests.find(t => t.nerve_id === nerve.id.toString()) || {}}
-              statusL={nervePattern[`${nerveName} (L)`]}
-              statusR={nervePattern[`${nerveName} (R)`]}
-              statusMidline={nervePattern[nerveName]}
-              isLateralized={nerve.isLateralized || false}
-              onUpdate={updateTest}
-            />
+            <div key={cluster.id} className="space-y-4">
+              <div className="flex items-center gap-3 px-2">
+                <div className="w-8 h-8 rounded-lg bg-slate-900 text-white flex items-center justify-center shadow-sm">
+                  <Activity size={16} />
+                </div>
+                <h3 className="text-sm font-black text-slate-900 uppercase tracking-widest">{cluster.label}</h3>
+                <div className="flex-1 h-px bg-slate-100" />
+              </div>
+              
+              <div className="grid grid-cols-1 gap-4">
+                {clusterNerves.map((nerve) => {
+                  const nerveName = `${nerve.name}: ${nerve.latinName}`;
+                  return (
+                    <NerveTestItem 
+                      key={nerve.id}
+                      nerve={nerve}
+                      test={tests.find(t => t.nerve_id === nerve.id.toString()) || {}}
+                      statusL={nervePattern[`${nerveName} (L)`]}
+                      statusR={nervePattern[`${nerveName} (R)`]}
+                      statusMidline={nervePattern[nerveName]}
+                      isLateralized={nerve.isLateralized || false}
+                      images={customImages[`cn${nerve.id}`]}
+                      showImage={showImages}
+                      onUpdate={updateTest}
+                      onShowInfo={onShowInfo}
+                    />
+                  );
+                })}
+              </div>
+            </div>
           );
         })}
       </div>

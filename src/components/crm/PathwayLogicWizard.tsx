@@ -1,104 +1,615 @@
 "use client";
 
-import React, { useState } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { 
-  GitBranch, Zap, ChevronLeft, ChevronRight, RefreshCw, CheckCircle2, Info
+  GitBranch, Sparkles, Brain, Activity, CheckCircle2, 
+  Zap, Info, List, RefreshCw, Eye, Dumbbell, Link as LinkIcon,
+  Workflow, Lightbulb, ChevronRight, ChevronLeft, Droplets, 
+  AlertTriangle, ArrowRight, Heart, ImageIcon, Loader2, Search,
+  ShieldAlert, Hand, PlayCircle, Baby, ClipboardCheck
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { Badge } from '@/components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Input } from "@/components/ui/input";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import NociceptiveThreatAssessment from './NociceptiveThreatAssessment';
 import EfferentBrainIntegration from './EfferentBrainIntegration';
 import MechanoreceptiveProcess from './MechanoreceptiveProcess';
 import EmotionalIntegrationProcess from './EmotionalIntegrationProcess';
 import VestibularProcess from './VestibularProcess';
-import { Input } from "@/components/ui/input";
+import { supabase } from "@/integrations/supabase/client";
+import JointActionTableModal from './JointActionTableModal';
+import { BRAIN_REFLEX_POINTS } from '@/data/brain-reflex-data';
+import { getMuscleInfo } from '@/data/muscle-info-data';
+import { PRIMITIVE_REFLEXES } from '@/data/primitive-reflex-data';
+import { safeParse } from '@/utils/safe-json';
+import { format } from 'date-fns';
 
-type Step = 'SELECT_START' | 'AFFERENT_SELECT' | 'EFFERENT_SELECT' | 'MECHANO_PROCESS' | 'VESTIBULAR_PROCESS' | 'NOCICEPTIVE_PROCESS' | 'EFFERENT_PROCESS' | 'EMOTIONS_PROCESS';
+type Step = 
+  | 'SELECT_START'
+  | 'AFFERENT_SELECT'
+  | 'EFFERENT_SELECT'
+  | 'MECHANO_PROCESS'
+  | 'VESTIBULAR_PROCESS'
+  | 'NOCICEPTIVE_PROCESS'
+  | 'EFFERENT_PROCESS'
+  | 'EMOTIONS_PROCESS';
 
-const PathwayLogicWizard = ({ onSave, onCancel, initialFinding }: any) => {
+interface PathwayLogicWizardProps {
+  onSave: (summary: string) => void;
+  onClearItem?: (itemName: string) => void;
+  onCancel?: () => void;
+  priorityPattern?: string | null;
+  initialFinding?: string | null;
+  appointmentId?: string;
+}
+
+const DYSFUNCTIONAL_STATUSES = ['Inhibited', 'Hypertonic', 'Switching', 'Inhibition'];
+
+const PathwayLogicWizard = ({ onSave, onClearItem, onCancel, priorityPattern, initialFinding, appointmentId }: PathwayLogicWizardProps) => {
   const [step, setStep] = useState<Step>('SELECT_START');
   const [history, setHistory] = useState<Step[]>([]);
-  const [selectedFinding, setSelectedFinding] = useState(initialFinding || "");
+  const [selectedFinding, setSelectedFinding] = useState<string>("");
+  const [customText, setCustomText] = useState<string>("");
+  const [muscleFindings, setMuscleFindings] = useState<string[]>([]);
+  const [loadingMuscles, setLoadingMuscles] = useState(false);
+  
+  const [ligamentImages, setLigamentImages] = useState<Record<string, (string | null)[]>>({});
+  const [ligamentModalOpen, setLigamentModalOpen] = useState(false);
+  const [actionTableOpen, setActionTableOpen] = useState(false);
 
-  const goToStep = (next: Step) => {
+  const onOpenActionTable = () => setActionTableOpen(true);
+  const onOpenLigamentCharts = () => setLigamentModalOpen(true);
+
+  useEffect(() => {
+    if (initialFinding) {
+      setSelectedFinding(initialFinding);
+      setStep('SELECT_START'); 
+    }
+  }, [initialFinding]);
+
+  // Fetch muscles from the separate muscle_tests table
+  useEffect(() => {
+    const fetchMuscles = async () => {
+      if (!appointmentId || appointmentId.includes('00000000')) return;
+      
+      setLoadingMuscles(true);
+      try {
+        const { data, error } = await supabase
+          .from('muscle_tests')
+          .select('muscle_name, status')
+          .eq('appointment_id', appointmentId);
+
+        if (!error && data) {
+          const dysfunctional = data
+            .filter(m => DYSFUNCTIONAL_STATUSES.includes(m.status))
+            .map(m => m.muscle_name);
+          setMuscleFindings(dysfunctional);
+        }
+      } catch (err) {
+        console.error("Error fetching muscles for wizard:", err);
+      } finally {
+        setLoadingMuscles(false);
+      }
+    };
+
+    fetchMuscles();
+  }, [appointmentId]);
+
+  const effectiveItem = selectedFinding === 'CUSTOM' ? customText : selectedFinding;
+
+  const { inhibitedItems, hasAnyTested } = useMemo(() => {
+    const items = new Set<string>();
+    const baseNames = new Map<string, Set<'L' | 'R'>>();
+    let hasAnyTested = false;
+    
+    // 1. Process Pattern (Reflexes, Nerves, Zones)
+    if (priorityPattern) {
+      try {
+        const parsed = safeParse(priorityPattern, {});
+        Object.values(parsed).forEach((category: any) => {
+          if (Object.keys(category).length > 0) hasAnyTested = true;
+          Object.entries(category).forEach(([name, status]) => {
+            if (DYSFUNCTIONAL_STATUSES.includes(status as string)) {
+              items.add(name);
+              const match = name.match(/(.+) \(([LR])\)$/);
+              if (match) {
+                const base = match[1];
+                const side = match[2] as 'L' | 'R';
+                if (!baseNames.has(base)) baseNames.set(base, new Set());
+                baseNames.get(base)!.add(side);
+              }
+            }
+          });
+        });
+      } catch (e) {}
+    }
+
+    // 2. Process Muscle Findings from separate table
+    muscleFindings.forEach(name => {
+      hasAnyTested = true;
+      items.add(name);
+      const match = name.match(/(.+) \(([LR])\)$/);
+      if (match) {
+        const base = match[1];
+        const side = match[2] as 'L' | 'R';
+        if (!baseNames.has(base)) baseNames.set(base, new Set());
+        baseNames.get(base)!.add(side);
+      }
+    });
+
+    // 3. Handle Bilateral Logic
+    baseNames.forEach((sides, base) => {
+      if (sides.has('L') && sides.has('R')) {
+        items.add(`${base} (Bilateral)`);
+      }
+    });
+
+    if (initialFinding && initialFinding !== 'CUSTOM') {
+      items.add(initialFinding);
+    }
+
+    return { inhibitedItems: Array.from(items).sort(), hasAnyTested };
+  }, [priorityPattern, initialFinding, muscleFindings]);
+
+  useEffect(() => {
+    const fetchLigamentImages = async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
+      const { data } = await supabase.from('ligament_images').select('category, image_index, image_url').eq('user_id', user.id);
+      if (data) {
+        const imageMap: Record<string, (string | null)[]> = {};
+        data.forEach(item => {
+          if (!imageMap[item.category]) imageMap[item.category] = [];
+          imageMap[item.category][item.image_index] = item.image_url ? `${item.image_url}?t=${Date.now()}` : null;
+        });
+        setLigamentImages(imageMap);
+      }
+    };
+    fetchLigamentImages();
+  }, []);
+
+  const goToStep = (nextStep: Step) => {
     setHistory([...history, step]);
-    setStep(next);
+    setStep(nextStep);
   };
 
   const goBack = () => {
-    const last = history.pop();
-    if (last) {
-      setStep(last);
+    const lastStep = history.pop();
+    if (lastStep) {
+      setStep(lastStep);
       setHistory([...history]);
     } else {
       onCancel?.();
     }
   };
 
+  const resetWizard = () => {
+    setStep('SELECT_START');
+    setHistory([]);
+    setSelectedFinding("");
+    setCustomText("");
+  };
+
+  const handleSave = (summary: string) => {
+    if (effectiveItem && selectedFinding !== 'CUSTOM' && onClearItem) {
+      if (effectiveItem.includes('(Bilateral)')) {
+        const base = effectiveItem.replace(' (Bilateral)', '');
+        onClearItem(`${base} (L)`);
+        onClearItem(`${base} (R)`);
+      } else {
+        onClearItem(effectiveItem);
+      }
+    }
+    onSave(summary);
+    resetWizard();
+  };
+
+  const handleInhibited = (summary: string) => {
+    onSave(summary);
+    setStep('SELECT_START');
+    setHistory([]);
+  };
+
+  const clinicalTip = useMemo(() => {
+    if (!effectiveItem) return null;
+    const cleanItem = effectiveItem.replace(' (Bilateral)', '').replace(/ \([LR]\)$/, '');
+
+    const primitive = PRIMITIVE_REFLEXES.find(r => 
+      cleanItem.toLowerCase().includes(r.name.toLowerCase()) || 
+      r.name.toLowerCase().includes(cleanItem.toLowerCase())
+    );
+
+    if (primitive) {
+      return {
+        type: 'Primitive Reflex',
+        icon: Baby,
+        title: primitive.name,
+        content: primitive.pearl || "Foundational neurological pattern.",
+        logic: `${primitive.category} Category`,
+        location: primitive.inhibitionPattern,
+        stimulus: primitive.stimulus,
+        extra: "Usually 1-3 corrections needed for integration."
+      };
+    }
+
+    const brainPoint = BRAIN_REFLEX_POINTS.find(p => 
+      cleanItem.toLowerCase().includes(p.name.toLowerCase()) || 
+      p.name.toLowerCase().includes(cleanItem.toLowerCase())
+    );
+
+    if (brainPoint) {
+      return {
+        type: brainPoint.category,
+        icon: Brain,
+        title: brainPoint.name,
+        content: brainPoint.pearl || "Neurological priority detected.",
+        logic: `${brainPoint.lateralization} Logic`,
+        location: brainPoint.location,
+        stimulus: brainPoint.stimulus || brainPoint.technique,
+        extra: brainPoint.nuclei ? `Nuclei: ${brainPoint.nuclei}` : null
+      };
+    }
+
+    const muscle = getMuscleInfo(cleanItem);
+    if (muscle && muscle.meridian !== 'General') {
+      return {
+        type: 'Muscle',
+        icon: Dumbbell,
+        title: muscle.name,
+        content: muscle.clinicalIndications || muscle.description || "Muscle inhibition detected.",
+        logic: `Meridian: ${muscle.meridian}`,
+        location: muscle.neurolymphatic || "Check NL points",
+        stimulus: muscle.testingPosition || "Standard test",
+        extra: muscle.brainstemControl ? `Control: ${muscle.brainstemControl}` : null
+      };
+    }
+
+    return null;
+  }, [effectiveItem]);
+
+  const renderStep = () => {
+    switch (step) {
+      case 'SELECT_START':
+        if (inhibitedItems.length === 0) {
+          return (
+            <div className="py-12 flex flex-col items-center justify-center text-center space-y-6 animate-in fade-in zoom-in-95 duration-500">
+              <div className={cn(
+                "w-20 h-20 rounded-[2rem] flex items-center justify-center shadow-xl",
+                hasAnyTested ? "bg-emerald-50 text-emerald-500" : "bg-slate-50 text-slate-300"
+              )}>
+                {hasAnyTested ? <CheckCircle2 size={40} /> : <ClipboardCheck size={40} />}
+              </div>
+              <div className="space-y-2">
+                <h3 className="text-2xl font-black text-slate-900">
+                  {hasAnyTested ? "All findings clear" : "Align phase pending"}
+                </h3>
+                <p className="text-slate-500 font-medium max-w-xs mx-auto">
+                  {hasAnyTested 
+                    ? `✓ All findings from this session tested clear — no corrections required. (${format(new Date(), "h:mm a")})`
+                    : "Complete the Align phase first to populate correction targets."}
+                </p>
+              </div>
+              {!hasAnyTested && (
+                <Button variant="outline" className="rounded-xl h-11 px-8 font-bold text-xs uppercase tracking-widest border-indigo-100 text-indigo-600">
+                  Go to Align Phase
+                </Button>
+              )}
+              <div className="pt-4 border-t border-slate-100 w-full max-w-xs">
+                <Button 
+                  variant="ghost" 
+                  onClick={() => setSelectedFinding('CUSTOM')}
+                  className="w-full h-10 text-[10px] font-black uppercase tracking-widest text-slate-400 hover:text-indigo-600"
+                >
+                  + Manual Correction Entry
+                </Button>
+              </div>
+            </div>
+          );
+        }
+
+        return (
+          <div className="space-y-8 animate-in fade-in zoom-in-95 duration-500">
+            <div className="space-y-6">
+              <div className="space-y-2">
+                <h3 className="text-xl font-black text-slate-900">1. Select Finding to Correct</h3>
+                <p className="text-sm text-slate-500 font-medium">Choose an inhibited item or enter a custom entry point.</p>
+              </div>
+              
+              <div className="grid grid-cols-1 gap-4">
+                <Select value={selectedFinding} onValueChange={(v) => setSelectedFinding(v)}>
+                  <SelectTrigger className="h-14 rounded-2xl border-2 border-slate-100 bg-white font-bold text-lg">
+                    <SelectValue placeholder={loadingMuscles ? "Loading findings..." : "Select inhibited finding..."} />
+                  </SelectTrigger>
+                  <SelectContent className="rounded-2xl border-none shadow-2xl p-2 bg-white dark:bg-slate-900">
+                    {inhibitedItems.map(item => (
+                      <SelectItem key={item} value={item} className={cn(
+                        "rounded-xl py-3 font-bold",
+                        item.includes('(Bilateral)') && "text-indigo-600 bg-indigo-50/50"
+                      )}>
+                        {item}
+                      </SelectItem>
+                    ))}
+                    <SelectItem value="CUSTOM" className="rounded-xl py-3 font-bold text-indigo-600">+ New Correction Entry</SelectItem>
+                  </SelectContent>
+                </Select>
+
+                {selectedFinding === 'CUSTOM' && (
+                  <Input 
+                    placeholder="Enter custom entry point..." 
+                    className="h-12 rounded-xl font-bold border-2 border-indigo-100 animate-in slide-in-from-top-2"
+                    value={customText}
+                    onChange={(e) => setCustomText(e.target.value)}
+                    autoFocus
+                  />
+                )}
+              </div>
+            </div>
+
+            <div className="space-y-6">
+              <div className="space-y-2">
+                <h3 className="text-xl font-black text-slate-900">2. Choose Correction Direction</h3>
+                <p className="text-sm text-slate-500 font-medium">Determine if the system needs bottom-up or top-down input.</p>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <button 
+                    onClick={() => goToStep('AFFERENT_SELECT')} 
+                    className="p-8 rounded-[2.5rem] border-2 transition-all duration-500 text-left group border-blue-100 bg-blue-50/30 hover:border-blue-400 hover:bg-blue-50"
+                >
+                  <div className="flex items-center justify-between mb-4">
+                    <div className="w-12 h-12 rounded-2xl bg-white shadow-md flex items-center justify-center group-hover:bg-blue-600 group-hover:text-white transition-all">
+                      <GitBranch size={24} className="text-blue-600 group-hover:text-white" />
+                    </div>
+                    <Badge className="bg-blue-100 text-blue-700 border-none font-black text-[8px] uppercase tracking-widest rounded-full">Bottom-Up</Badge>
+                  </div>
+                  <h3 className="text-2xl font-black text-blue-900 tracking-tight">Afferent</h3>
+                  <p className="text-xs font-bold text-blue-700 mt-2">Sensory input issue.</p>
+                </button>
+
+                <button 
+                    onClick={() => goToStep('EFFERENT_SELECT')} 
+                    className="p-8 rounded-[2.5rem] border-2 transition-all duration-500 text-left group border-purple-100 bg-purple-50/30 hover:border-purple-400 hover:bg-purple-50"
+                >
+                  <div className="flex items-center justify-between mb-4">
+                    <div className="w-12 h-12 rounded-2xl bg-white shadow-md flex items-center justify-center group-hover:bg-purple-600 group-hover:text-white transition-all">
+                      <Sparkles size={24} className="text-purple-600 group-hover:text-white" />
+                    </div>
+                    <Badge className="bg-purple-100 text-purple-700 border-none font-black text-[8px] uppercase tracking-widest rounded-full">Top-Down</Badge>
+                  </div>
+                  <h3 className="text-2xl font-black text-purple-900 tracking-tight">Efferent</h3>
+                  <p className="text-xs font-bold text-purple-700 mt-2">Processing issue.</p>
+                </button>
+              </div>
+            </div>
+
+            {clinicalTip && (
+              <div className="p-8 bg-amber-50 rounded-[2.5rem] border-2 border-amber-100 animate-in zoom-in-95 duration-500 space-y-6">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-3">
+                    <clinicalTip.icon size={24} className="text-amber-600" />
+                    <h4 className="font-black text-amber-900 text-sm uppercase tracking-widest">Clinical Insight: {clinicalTip.title}</h4>
+                  </div>
+                  <div className="flex gap-2">
+                    <Badge variant="outline" className="bg-white border-amber-200 text-amber-700 font-black text-[8px] uppercase tracking-widest rounded-full">
+                      {clinicalTip.type}
+                    </Badge>
+                    <Badge className="bg-amber-600 text-white border-none font-black text-[8px] uppercase tracking-widest rounded-full">
+                      {clinicalTip.logic}
+                    </Badge>
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="p-4 bg-white/60 rounded-2xl border border-amber-200 space-y-1">
+                    <p className="text-[8px] font-black text-amber-600 uppercase tracking-widest flex items-center gap-1">
+                      {clinicalTip.type === 'Primitive Reflex' ? <ShieldAlert size={10} /> : <Hand size={10} />}
+                      {clinicalTip.type === 'Primitive Reflex' ? 'Inhibition Pattern' : 'Reflex Point'}
+                    </p>
+                    <p className="text-xs font-bold text-amber-900 leading-tight">{clinicalTip.location}</p>
+                  </div>
+                  <div className="p-4 bg-white/60 rounded-2xl border border-amber-200 space-y-1">
+                    <p className="text-[8px] font-black text-amber-600 uppercase tracking-widest flex items-center gap-1">
+                      <PlayCircle size={10} /> Stimulus
+                    </p>
+                    <p className="text-xs font-bold text-amber-900 leading-tight">{clinicalTip.stimulus}</p>
+                  </div>
+                </div>
+
+                <div className="pt-4 border-t border-amber-200">
+                  <p className="text-sm text-amber-800 font-medium leading-relaxed italic">
+                    "{clinicalTip.content}"
+                  </p>
+                  {clinicalTip.extra && (
+                    <div className="mt-3 flex items-center gap-2 text-[10px] font-black text-amber-600 uppercase tracking-widest">
+                      <ShieldAlert size={12} /> {clinicalTip.extra}
+                    </div>
+                  )}
+                </div>
+              </div>
+            )}
+          </div>
+        );
+
+      case 'AFFERENT_SELECT':
+        return (
+          <div className="space-y-4 animate-in fade-in slide-in-from-right-4 duration-300">
+            <div className="p-4 bg-indigo-50 rounded-2xl border border-indigo-100 flex items-center justify-between mb-4">
+              <div>
+                <p className="text-[10px] font-black text-indigo-400 uppercase tracking-widest">Correcting</p>
+                <p className="text-lg font-black text-indigo-900">{effectiveItem || "General Correction"}</p>
+              </div>
+              <Badge className="bg-blue-600 text-white border-none font-black text-[8px] uppercase tracking-widest rounded-full">Afferent</Badge>
+            </div>
+            {[
+              { type: 'Mechanoreceptive', icon: Activity, color: 'blue', step: 'MECHANO_PROCESS', desc: 'Joint and muscle receptor calibration.' },
+              { type: 'Vestibular', icon: Eye, color: 'cyan', step: 'VESTIBULAR_PROCESS', desc: 'Balance and visual system integration.' },
+              { type: 'Nociceptive', icon: AlertTriangle, color: 'orange', step: 'NOCICEPTIVE_PROCESS', desc: 'Clearing threat from scars or old injuries.' }
+            ].map(item => (
+              <button key={item.type} onClick={() => goToStep(item.step as Step)} className={cn(
+                "p-6 rounded-2xl border-2 transition-all duration-300 text-left group w-full",
+                item.color === 'blue' ? "border-blue-100 bg-blue-50/30 hover:border-blue-300" :
+                item.color === 'cyan' ? "border-cyan-100 bg-cyan-50/30 hover:border-cyan-300" :
+                "border-orange-100 bg-orange-50/30 hover:border-orange-300"
+              )}>
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-4">
+                    <div className="w-12 h-12 rounded-2xl bg-card shadow-sm flex items-center justify-center group-hover:scale-110 transition-transform">
+                      <item.icon size={24} className={cn(
+                        item.color === 'blue' ? "text-blue-600" :
+                        item.color === 'cyan' ? "text-cyan-600" :
+                        "text-orange-600"
+                      )} />
+                    </div>
+                    <div>
+                        <p className="font-black text-lg text-foreground">{item.type}</p>
+                        <p className="text-xs font-medium text-muted-foreground">{item.desc}</p>
+                    </div>
+                  </div>
+                  <ArrowRight size={20} className="text-muted-foreground group-hover:text-indigo-600 group-hover:translate-x-1 transition-all" />
+                </div>
+              </button>
+            ))}
+            <Button variant="ghost" onClick={goBack} className="w-full h-12 rounded-xl font-bold text-muted-foreground"><ChevronLeft size={18} className="mr-2" /> Back</Button>
+          </div>
+        );
+
+      case 'EFFERENT_SELECT':
+        return (
+          <div className="space-y-4 animate-in fade-in slide-in-from-right-4 duration-300">
+            <div className="p-4 bg-indigo-50 rounded-2xl border border-indigo-100 flex items-center justify-between mb-4">
+              <div>
+                <p className="text-[10px] font-black text-indigo-400 uppercase tracking-widest">Correcting</p>
+                <p className="text-lg font-black text-indigo-900">{effectiveItem || "General Correction"}</p>
+              </div>
+              <Badge className="bg-purple-600 text-white border-none font-black text-[8px] uppercase tracking-widest rounded-full">Efferent</Badge>
+            </div>
+            {[
+              { type: 'Brain Integration', icon: Brain, color: 'purple', step: 'EFFERENT_PROCESS', desc: 'Cortical and subcortical zone pairing.' },
+              { type: 'Emotional Integration', icon: Heart, color: 'rose', step: 'EMOTIONS_PROCESS', desc: 'Limbic system and emotional context balancing.' }
+            ].map(item => (
+              <button key={item.type} onClick={() => goToStep(item.step as Step)} className={cn(
+                "p-6 rounded-2xl border-2 transition-all duration-300 text-left group w-full",
+                item.color === 'purple' ? "border-purple-100 bg-purple-50/30 hover:border-purple-300" :
+                item.color === 'rose' ? "border-rose-100 bg-rose-50/30 hover:border-rose-300" :
+                "border-slate-100 bg-slate-50/30 hover:border-slate-300"
+              )}>
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-4">
+                    <div className="w-12 h-12 rounded-2xl bg-card shadow-sm flex items-center justify-center group-hover:scale-110 transition-transform">
+                      <item.icon size={24} className={cn(
+                        item.color === 'purple' ? "text-purple-600" :
+                        item.color === 'rose' ? "text-rose-600" :
+                        "text-slate-600"
+                      )} />
+                    </div>
+                    <div>
+                        <p className="font-black text-lg text-foreground">{item.type}</p>
+                        <p className="text-xs font-medium text-muted-foreground">{item.desc}</p>
+                    </div>
+                  </div>
+                  <ArrowRight size={20} className="text-muted-foreground group-hover:text-indigo-600 group-hover:translate-x-1 transition-all" />
+                </div>
+              </button>
+            ))}
+            <Button variant="ghost" onClick={goBack} className="w-full h-12 rounded-xl font-bold text-muted-foreground"><ChevronLeft size={18} className="mr-2" /> Back</Button>
+          </div>
+        );
+
+      case 'MECHANO_PROCESS':
+        return (
+          <MechanoreceptiveProcess 
+            onSave={handleSave} 
+            onInhibited={handleInhibited}
+            onCancel={goBack} 
+            ligamentImages={ligamentImages}
+            onOpenActionTable={onOpenActionTable}
+            onOpenLigamentCharts={onOpenLigamentCharts}
+          />
+        );
+
+      case 'NOCICEPTIVE_PROCESS':
+        return <NociceptiveThreatAssessment onSave={handleSave} onInhibited={handleInhibited} onCancel={goBack} />;
+      
+      case 'EFFERENT_PROCESS':
+        return <EfferentBrainIntegration initialEntryPoint={effectiveItem} onSave={handleSave} onInhibited={handleInhibited} onCancel={goBack} />;
+
+      case 'EMOTIONS_PROCESS':
+        return <EmotionalIntegrationProcess onSave={handleSave} onInhibited={handleInhibited} onCancel={goBack} />;
+
+      case 'VESTIBULAR_PROCESS':
+        return <VestibularProcess onSave={handleSave} onInhibited={handleInhibited} onCancel={goBack} />;
+
+      default:
+        return null;
+    }
+  };
+
   return (
-    <div className="space-y-4">
-      <div className="flex items-center justify-between bg-slate-900 text-white h-10 px-4">
-        <div className="flex items-center gap-2">
-          <Zap size={14} className="text-amber-400" />
-          <span className="text-[10px] font-black uppercase tracking-widest">Correct Phase</span>
-        </div>
-        {step !== 'SELECT_START' && (
-          <button onClick={() => setStep('SELECT_START')} className="text-[9px] font-black uppercase tracking-widest text-white/40 hover:text-white">Reset</button>
-        )}
-      </div>
-
-      <div className="p-4 bg-white border border-slate-100">
-        {step === 'SELECT_START' && (
-          <div className="space-y-6">
+    <>
+      <Card className="border-none shadow-xl rounded-[3rem] bg-card overflow-hidden">
+        <CardHeader className="p-10 pb-6">
+          <div className="flex items-center justify-between">
             <div className="space-y-1">
-              <label className="text-[10px] font-black uppercase tracking-widest text-slate-400">1. Finding</label>
-              <Input value={selectedFinding} onChange={(e) => setSelectedFinding(e.target.value)} className="h-9 rounded-none font-bold" placeholder="e.g. Left Psoas..." />
+                <CardTitle className="text-3xl font-black text-foreground tracking-tight">Calibration Wizard</CardTitle>
+                <CardDescription className="text-muted-foreground font-medium text-lg">
+                    Correct inhibited findings via Afferent or Efferent pathways.
+                </CardDescription>
             </div>
-            <div className="grid grid-cols-2 gap-4">
-              <button onClick={() => goToStep('AFFERENT_SELECT')} className="p-6 border-2 border-slate-100 hover:border-primary transition-all text-center group">
-                <GitBranch size={20} className="mx-auto mb-2 text-slate-300 group-hover:text-primary" />
-                <span className="text-[11px] font-black uppercase tracking-widest">Afferent</span>
-              </button>
-              <button onClick={() => goToStep('EFFERENT_SELECT')} className="p-6 border-2 border-slate-100 hover:border-primary transition-all text-center group">
-                <Zap size={20} className="mx-auto mb-2 text-slate-300 group-hover:text-primary" />
-                <span className="text-[11px] font-black uppercase tracking-widest">Efferent</span>
-              </button>
+            {step !== 'SELECT_START' && (
+                <Button variant="ghost" size="sm" onClick={resetWizard} className="text-[10px] font-black uppercase tracking-widest text-muted-foreground hover:text-rose-600 rounded-xl">
+                    <RefreshCw size={14} className="mr-2" /> Reset Wizard
+                </Button>
+            )}
+          </div>
+        </CardHeader>
+        <CardContent className="p-10 pt-0">
+          {renderStep()}
+        </CardContent>
+      </Card>
+      <Dialog open={ligamentModalOpen} onOpenChange={setLigamentModalOpen}>
+        <DialogContent className="sm:max-w-[80vw] max-h-[90vh] rounded-[3rem] p-0 overflow-hidden border-none shadow-2xl bg-card">
+          <DialogHeader className="p-8 bg-slate-900 dark:bg-slate-950 text-white">
+            <DialogTitle className="text-2xl font-black">Ligament Reference Images</DialogTitle>
+            <DialogDescription>Visual guides for mechanoreceptive ligament corrections.</DialogDescription>
+          </DialogHeader>
+          <ScrollArea className="max-h-[70vh] p-8">
+            <div className="space-y-12">
+              {Object.entries(ligamentImages).map(([category, urls]) => (
+                <div key={category} className="space-y-6">
+                  <div className="flex items-center gap-3">
+                    <div className="w-8 h-8 rounded-lg bg-indigo-100 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-400 flex items-center justify-center">
+                        <ImageIcon size={18} />
+                    </div>
+                    <h3 className="text-xl font-black text-foreground capitalize">{category.replace('_', ' ')}</h3>
+                  </div>
+                  <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+                    {urls.map((url, index) => (
+                      url ? (
+                        <div key={index} className="aspect-video rounded-2xl overflow-hidden border-2 border-border shadow-sm hover:border-indigo-300 dark:hover:border-indigo-900 transition-all">
+                            <img src={url} alt={`${category} ${index}`} className="w-full h-full object-cover" />
+                        </div>
+                      ) : null
+                    ))}
+                  </div>
+                </div>
+              ))}
             </div>
-          </div>
-        )}
-
-        {step === 'AFFERENT_SELECT' && (
-          <div className="space-y-2">
-            {['Mechanoreceptive', 'Vestibular', 'Nociceptive'].map(t => (
-              <button key={t} onClick={() => goToStep(`${t.toUpperCase()}_PROCESS` as any)} className="w-full h-12 px-4 border border-slate-100 hover:bg-slate-50 text-left flex items-center justify-between group">
-                <span className="text-[11px] font-black uppercase tracking-widest">{t}</span>
-                <ChevronRight size={14} className="text-slate-300 group-hover:text-primary" />
-              </button>
-            ))}
-            <Button variant="ghost" onClick={goBack} className="w-full h-8 text-[9px] font-black uppercase tracking-widest">Back</Button>
-          </div>
-        )}
-
-        {step === 'EFFERENT_SELECT' && (
-          <div className="space-y-2">
-            {['Brain Integration', 'Emotional Integration'].map(t => (
-              <button key={t} onClick={() => goToStep(t.includes('Brain') ? 'EFFERENT_PROCESS' : 'EMOTIONS_PROCESS')} className="w-full h-12 px-4 border border-slate-100 hover:bg-slate-50 text-left flex items-center justify-between group">
-                <span className="text-[11px] font-black uppercase tracking-widest">{t}</span>
-                <ChevronRight size={14} className="text-slate-300 group-hover:text-primary" />
-              </button>
-            ))}
-            <Button variant="ghost" onClick={goBack} className="w-full h-8 text-[9px] font-black uppercase tracking-widest">Back</Button>
-          </div>
-        )}
-
-        {step === 'MECHANO_PROCESS' && <MechanoreceptiveProcess onSave={onSave} onCancel={goBack} ligamentImages={{}} onOpenActionTable={() => {}} onOpenLigamentCharts={() => {}} />}
-        {step === 'NOCICEPTIVE_PROCESS' && <NociceptiveThreatAssessment onSave={onSave} onCancel={goBack} />}
-        {step === 'EFFERENT_PROCESS' && <EfferentBrainIntegration initialEntryPoint={selectedFinding} onSave={onSave} onCancel={goBack} />}
-        {step === 'EMOTIONS_PROCESS' && <EmotionalIntegrationProcess onSave={onSave} onCancel={goBack} />}
-        {step === 'VESTIBULAR_PROCESS' && <VestibularProcess onSave={onSave} onCancel={goBack} />}
-      </div>
-    </div>
+          </ScrollArea>
+        </DialogContent>
+      </Dialog>
+      <JointActionTableModal open={actionTableOpen} onOpenChange={setActionTableOpen} />
+    </>
   );
 };
 

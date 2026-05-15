@@ -1,13 +1,16 @@
 "use client";
 
 import React, { useState, useEffect, useRef } from 'react';
+import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { 
   Wind, 
+  ShieldCheck, 
+  Sparkles, 
   Timer, 
   RotateCcw, 
   CheckCircle2,
-  Sparkles
+  Volume2
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Progress } from '@/components/ui/progress';
@@ -70,87 +73,82 @@ const PractitionerGrounding = () => {
                    ((6 - timeLeft) / 6) * 100;
 
   return (
-    <div className={cn(
-      "p-10 transition-all duration-1000 h-full flex flex-col justify-center relative overflow-hidden",
-      isActive ? "bg-primary text-white" : "bg-white text-slate-900"
-    )}>
-      {isActive && (
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(255,255,255,0.1),transparent_70%)] animate-pulse" />
-      )}
-
-      {!isActive && phase !== 'complete' ? (
-        <div className="flex flex-col md:flex-row items-center justify-between gap-12 relative z-10">
-          <div className="flex items-center gap-8">
-            <div className="w-16 h-16 border-2 border-primary flex items-center justify-center shrink-0">
-              <Wind size={32} className="text-primary" />
-            </div>
-            <div className="space-y-2">
-              <p className="label-caps">Clinical Ritual</p>
-              <h3 className="text-3xl font-serif font-bold tracking-tight">Practitioner Grounding</h3>
-              <p className="text-slate-500 text-base font-medium">60 seconds to establish a receptive clinical state.</p>
-            </div>
-          </div>
-          <Button 
-            onClick={startGrounding}
-            className="bg-primary text-white h-14 px-10 font-black text-xs uppercase tracking-widest shadow-xl shadow-primary/20 hover:scale-105 transition-all"
-          >
-            Start Centering
-          </Button>
-        </div>
-      ) : phase === 'complete' ? (
-        <div className="flex flex-col items-center text-center space-y-6 animate-in zoom-in-95 duration-700">
-          <div className="w-20 h-20 bg-emerald-500 text-white flex items-center justify-center shadow-2xl shadow-emerald-200">
-            <CheckCircle2 size={40} />
-          </div>
-          <div className="space-y-2">
-            <h3 className="text-3xl font-serif font-bold">State Established</h3>
-            <p className="text-slate-500 text-lg font-medium">You are centered, present, and ready for clinical work.</p>
-          </div>
-          <Button variant="ghost" onClick={resetGrounding} className="text-primary hover:bg-slate-50 font-black text-[10px] uppercase tracking-widest">
-            <RotateCcw size={14} className="mr-2" /> Reset Tool
-          </Button>
-        </div>
-      ) : (
-        <div className="space-y-12 relative z-10">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <Sparkles size={20} className="text-indigo-200" />
-              <span className="text-[11px] font-black uppercase tracking-[0.3em] text-indigo-100">Centering in Progress</span>
-            </div>
-            <span className="text-sm font-black tabular-nums font-mono">{60 - totalElapsed}S REMAINING</span>
-          </div>
-
-          <div className="flex flex-col items-center justify-center py-4 space-y-10">
-            <div className="relative">
-              <div className={cn(
-                "w-48 h-48 border-4 border-white/20 flex flex-col items-center justify-center transition-all duration-1000 ease-in-out",
-                phase === 'inhale' ? "scale-110 bg-white/10" : "scale-100 bg-transparent"
-              )}>
-                <p className="text-3xl font-black uppercase tracking-[0.2em]">
-                  {phase}
-                </p>
-                <p className="text-5xl font-black mt-2 tabular-nums">{timeLeft}</p>
+    <Card className="border-none shadow-lg rounded-[2.5rem] bg-indigo-900 text-white overflow-hidden relative group">
+      <div className="absolute inset-0 bg-gradient-to-br from-indigo-600/20 to-transparent" />
+      <CardContent className="p-8 relative z-10">
+        {!isActive && phase !== 'complete' ? (
+          <div className="flex flex-col md:flex-row items-center justify-between gap-6">
+            <div className="flex items-center gap-5">
+              <div className="w-14 h-14 rounded-2xl bg-white/10 backdrop-blur-md flex items-center justify-center border border-white/20 shadow-xl">
+                <Wind size={28} className="text-indigo-300" />
+              </div>
+              <div>
+                <h3 className="text-xl font-black">Practitioner Grounding</h3>
+                <p className="text-indigo-200 text-sm font-medium">60s to shift into a receptive clinical state.</p>
               </div>
             </div>
-            
-            <div className="w-full max-w-md space-y-3">
-              <Progress value={progress} className="h-1.5 bg-white/10 [&>div]:bg-white" />
-              <div className="flex justify-between text-[10px] font-black uppercase tracking-widest text-indigo-200">
-                <span>4s Inhale</span>
-                <span>4s Hold</span>
-                <span>6s Exhale</span>
-              </div>
-            </div>
-          </div>
-
-          <div className="flex justify-center">
-            <Button variant="ghost" onClick={resetGrounding} className="text-white/40 hover:text-white hover:bg-white/10 h-10 px-6 text-[10px] font-black uppercase tracking-widest">
-              Cancel Ritual
+            <Button 
+              onClick={startGrounding}
+              className="bg-white text-indigo-900 hover:bg-indigo-50 h-12 px-8 rounded-xl font-black text-xs uppercase tracking-widest shadow-xl"
+            >
+              Start Centering
             </Button>
           </div>
-        </div>
-      )}
-    </div>
+        ) : phase === 'complete' ? (
+          <div className="flex flex-col items-center text-center space-y-4 animate-in zoom-in-95 duration-500">
+            <div className="w-16 h-16 rounded-full bg-emerald-500 flex items-center justify-center shadow-lg">
+              <CheckCircle2 size={32} />
+            </div>
+            <div>
+              <h3 className="text-2xl font-black">State Shifted</h3>
+              <p className="text-indigo-200 font-medium">You are centered, present, and ready for your client.</p>
+            </div>
+            <Button variant="ghost" onClick={resetGrounding} className="text-indigo-300 hover:text-white hover:bg-white/10 font-bold text-xs uppercase tracking-widest">
+              <RotateCcw size={14} className="mr-2" /> Reset Tool
+            </Button>
+          </div>
+        ) : (
+          <div className="space-y-8 animate-in fade-in duration-500">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <div className="w-8 h-8 rounded-lg bg-white/10 flex items-center justify-center">
+                  <Timer size={16} className="text-indigo-300" />
+                </div>
+                <span className="text-[10px] font-black uppercase tracking-[0.3em] text-indigo-300">Centering in Progress</span>
+              </div>
+              <span className="text-xs font-black tabular-nums opacity-60">{60 - totalElapsed}s remaining</span>
+            </div>
+
+            <div className="flex flex-col items-center justify-center py-4 space-y-6">
+              <div className="relative">
+                <div className={cn(
+                  "w-32 h-32 rounded-full border-4 border-white/10 flex items-center justify-center transition-all duration-1000",
+                  phase === 'inhale' ? "scale-125 bg-white/10" : "scale-100 bg-transparent"
+                )}>
+                  <p className="text-2xl font-black uppercase tracking-widest animate-pulse">
+                    {phase === 'inhale' ? 'Inhale' : phase === 'hold' ? 'Hold' : 'Exhale'}
+                  </p>
+                </div>
+              </div>
+              
+              <div className="w-full max-w-xs space-y-2">
+                <Progress value={progress} className="h-1.5 bg-white/10 [&>div]:bg-indigo-400" />
+                <div className="flex justify-between text-[8px] font-black uppercase tracking-widest text-indigo-400">
+                  <span>{phase}</span>
+                  <span>{timeLeft}s</span>
+                </div>
+              </div>
+            </div>
+
+            <div className="flex justify-center">
+              <Button variant="ghost" onClick={resetGrounding} className="text-white/40 hover:text-white hover:bg-white/10 h-8 px-4 rounded-lg text-[10px] font-black uppercase tracking-widest">
+                Cancel
+              </Button>
+            </div>
+          </div>
+        )}
+      </CardContent>
+    </Card>
   );
 };
 

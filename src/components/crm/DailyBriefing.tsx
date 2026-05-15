@@ -2,11 +2,12 @@
 
 import React from "react";
 import { Link } from "react-router-dom";
-import { Zap, ArrowRight, Target, Clock, Activity } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Zap, ArrowRight, Target, Clock, Activity, Coffee } from "lucide-react";
 import { format } from "date-fns";
 import { cn } from "@/lib/utils";
 import { AppointmentWithClient } from "@/types/crm";
-import { Button } from "@/components/ui/button";
 
 interface DailyBriefingProps {
   todaySessions: AppointmentWithClient[];
@@ -15,61 +16,83 @@ interface DailyBriefingProps {
 
 const DailyBriefing = ({ todaySessions, activeSession }: DailyBriefingProps) => {
   return (
-    <div className="space-y-4">
-      <div className="flex items-center justify-between px-2">
-        <div className="flex items-center gap-3">
-          <div className="w-8 h-8 bg-indigo-50 text-primary flex items-center justify-center">
-            <Zap size={16} />
-          </div>
-          <h2 className="text-xl font-serif font-bold text-slate-900">Daily Briefing</h2>
+    <div className="space-y-6">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 px-1">
+        <div className="space-y-1">
+          <h2 className="text-2xl font-serif font-bold text-slate-900 dark:text-white flex items-center gap-3">
+            <Zap size={24} className="text-amber-500 fill-amber-400" /> Daily Briefing
+          </h2>
+          <p className="text-slate-500 font-medium text-sm">
+            {todaySessions.length > 0 
+              ? `You have ${todaySessions.length} session${todaySessions.length === 1 ? '' : 's'} scheduled for today.`
+              : "Your schedule is clear for today."}
+          </p>
         </div>
         {activeSession && (
           <Link to={`/appointments/${activeSession.id}`}>
-            <div className="bg-emerald-500 text-white px-3 py-1 flex items-center gap-2 shadow-lg shadow-emerald-100">
-              <Activity size={12} />
-              <span className="font-black text-[9px] uppercase tracking-widest">LIVE: {activeSession.clients?.name}</span>
-            </div>
+            <Badge className="bg-rose-600 hover:bg-rose-700 text-white border-none px-4 py-1.5 animate-pulse cursor-pointer font-bold text-[10px] uppercase tracking-widest rounded-full shadow-lg shadow-rose-500/20">
+              <Activity size={14} className="mr-2" /> LIVE: {activeSession.clients?.name}
+            </Badge>
           </Link>
         )}
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-0 border border-border">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         {todaySessions.length > 0 ? (
           todaySessions.map(session => (
-            <Link key={session.id} to={`/appointments/${session.id}`} className="group">
+            <Link key={session.id} to={`/appointments/${session.id}`}>
               <div className={cn(
-                "p-6 border-r border-b border-border last:border-b-0 md:last:border-b-0 transition-colors flex flex-col gap-4 h-full",
+                "p-6 rounded-2xl border transition-all duration-300 flex flex-col gap-4 group relative overflow-hidden",
                 activeSession?.id === session.id 
-                  ? "bg-emerald-50/30" 
-                  : "bg-white hover:bg-slate-50"
+                  ? "bg-slate-900 text-white border-slate-800 shadow-xl" 
+                  : "bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800 hover:border-indigo-300 shadow-sm"
               )}>
-                <div className="flex items-center justify-between w-full">
+                <div className="flex items-center justify-between w-full relative z-10">
                   <div className="min-w-0">
                     <div className="flex items-center gap-2 mb-1">
-                      <Clock size={12} className="text-slate-400" />
-                      <p className="text-[9px] font-black uppercase tracking-widest text-slate-400">
-                        {activeSession?.id === session.id ? "ACTIVE NOW" : format(session.date, "h:mm a")}
+                      <Clock size={14} className={cn(activeSession?.id === session.id ? "text-indigo-400" : "text-slate-400")} />
+                      <p className={cn(
+                        "text-[10px] font-bold uppercase tracking-widest",
+                        activeSession?.id === session.id ? "text-indigo-400" : "text-slate-500"
+                      )}>
+                        {activeSession?.id === session.id ? "ONGOING" : format(session.date, "h:mm a")}
                       </p>
                     </div>
-                    <p className="font-black text-lg uppercase tracking-tight truncate text-slate-900 privacy-mode-active:blur-sm">{session.clients?.name}</p>
+                    <p className="font-serif font-bold text-xl truncate">{session.clients?.name}</p>
                   </div>
-                  <ArrowRight size={16} className="text-slate-300 group-hover:text-primary transition-all" />
+                  <div className={cn(
+                    "w-10 h-10 rounded-xl flex items-center justify-center transition-all duration-300",
+                    activeSession?.id === session.id ? "bg-white/10 text-white" : "bg-slate-50 dark:bg-slate-800 text-slate-400 group-hover:bg-indigo-600 group-hover:text-white"
+                  )}>
+                    <ArrowRight size={20} className="group-hover:translate-x-1 transition-transform" />
+                  </div>
                 </div>
                 
                 {session.goal && (
-                  <div className="p-3 bg-slate-50 text-[11px] font-medium flex items-start gap-2 border-l-2 border-indigo-500">
-                    <Target size={12} className="shrink-0 mt-0.5 text-indigo-500" />
-                    <p className="text-slate-600 line-clamp-1 italic">"{session.goal}"</p>
+                  <div className={cn(
+                    "p-4 rounded-xl text-xs font-medium flex items-start gap-3 relative z-10",
+                    activeSession?.id === session.id ? "bg-white/5 text-slate-300" : "bg-slate-50 dark:bg-slate-800/50 text-slate-600 dark:text-slate-400"
+                  )}>
+                    <Target size={14} className="shrink-0 mt-0.5 opacity-50" />
+                    <p className="italic line-clamp-2">"{session.goal}"</p>
                   </div>
                 )}
               </div>
             </Link>
           ))
         ) : (
-          <div className="md:col-span-2 flex flex-col items-center justify-center gap-4 p-12 text-center bg-slate-50/50">
-            <p className="font-serif font-bold text-xl text-slate-400">No sessions today.</p>
+          <div className="md:col-span-2 flex flex-col items-center justify-center gap-4 p-12 bg-slate-50 dark:bg-slate-900/50 rounded-2xl border-2 border-dashed border-slate-200 dark:border-slate-800 text-center">
+            <div className="w-16 h-16 rounded-2xl bg-white dark:bg-slate-800 flex items-center justify-center text-slate-300 shadow-sm">
+              <Coffee size={32} />
+            </div>
+            <div className="space-y-1">
+              <p className="font-serif font-bold text-slate-900 dark:text-white text-xl">No sessions today.</p>
+              <p className="text-slate-500 font-medium text-sm max-w-xs mx-auto">
+                Use this time for clinical research or personal practice.
+              </p>
+            </div>
             <Link to="/practice/self">
-              <Button variant="outline" className="h-10 px-6 font-black text-[9px] uppercase tracking-widest border-2 border-slate-900 hover:bg-slate-900 hover:text-white transition-all">
+              <Button variant="outline" className="rounded-xl px-6 h-10 font-bold text-[10px] uppercase tracking-widest border-slate-200 hover:bg-white transition-all">
                 Start Self Practice
               </Button>
             </Link>

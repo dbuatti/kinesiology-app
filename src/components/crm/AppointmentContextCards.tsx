@@ -1,10 +1,12 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { 
-  Zap, Clock, Target, Activity, Home, CreditCard, CheckCircle2, Loader2, QrCode, ChevronDown, DollarSign,
-  MessageSquare, Lightbulb, Layers, Check, ShieldAlert
+  Zap, ExternalLink, Clock, Target, ShieldAlert, Activity, Brain, Heart, Home, Sparkles, CreditCard, CheckCircle2, Wallet, Smartphone, Loader2, QrCode, ChevronDown, DollarSign,
+  MessageSquare, Info, AlertCircle, Lightbulb, Layers, Play, Check
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import EditableField from "@/components/shared/EditableField";
@@ -15,6 +17,18 @@ import { supabase } from "@/integrations/supabase/client";
 import { showError, showSuccess } from "@/utils/toast";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
+import { Link } from "react-router-dom";
+import {
+  Collapsible,
+  CollapsibleContent,
+  CollapsibleTrigger,
+} from "@/components/ui/collapsible";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 
 interface AppointmentContextCardsProps {
   appointment: AppointmentWithClient;
@@ -23,100 +37,406 @@ interface AppointmentContextCardsProps {
 }
 
 const SESSION_STAGES = [
-  { id: 'goal', name: "Goal", duration: 15, icon: Target },
-  { id: 'activation', name: "Activation", duration: 15, icon: Zap },
-  { id: 'correction', name: "Correction", duration: 20, icon: Activity },
-  { id: 'challenge', name: "Challenge", duration: 5, icon: ShieldAlert },
-  { id: 'home', name: "Home", duration: 5, icon: Home },
+  { id: 'goal', name: "Goal Setting", duration: 15, icon: Target, color: "text-indigo-400", activeColor: "bg-indigo-600" },
+  { id: 'activation', name: "Activation", duration: 15, icon: Zap, color: "text-blue-400", activeColor: "bg-blue-600" },
+  { id: 'correction', name: "Correction", duration: 20, icon: Activity, color: "text-emerald-400", activeColor: "bg-emerald-600" },
+  { id: 'challenge', name: "Challenge", duration: 5, icon: ShieldAlert, color: "text-amber-400", activeColor: "bg-amber-600" },
+  { id: 'home', name: "Home Reinforcement", duration: 5, icon: Home, color: "text-rose-400", activeColor: "bg-rose-600" },
 ];
 
 const AppointmentContextCards = ({ appointment, currentPeakMeridian, onSaveField }: AppointmentContextCardsProps) => {
   const [generatingLink, setGeneratingLink] = useState(false);
+  const [billingOpen, setBillingOpen] = useState(true);
+  const [contextOpen, setContextOpen] = useState(false);
+  
+  // Strategy State
+  const [activeStageId, setActiveStageId] = useState<string | null>(null);
   const [completedStages, setCompletedStages] = useState<string[]>([]);
+  const [stageTimers, setStageTimers] = useState<Record<string, number>>({});
+
+  useEffect(() => {
+    let interval: any = null;
+    if (activeStageId) {
+      interval = setInterval(() => {
+        setStageTimers(prev => ({
+          ...prev,
+          [activeStageId]: (prev[activeStageId] || 0) + 1
+        }));
+      }, 1000);
+    }
+    return () => clearInterval(interval);
+  }, [activeStageId]);
+
+  const handleStageClick = (id: string) => {
+    if (completedStages.includes(id)) {
+      setCompletedStages(prev => prev.filter(s => s !== id));
+      return;
+    }
+    
+    if (activeStageId === id) {
+      setCompletedStages(prev => [...prev, id]);
+      setActiveStageId(null);
+    } else {
+      setActiveStageId(id);
+    }
+  };
+
+  const formatStageTime = (seconds: number) => {
+    const mins = Math.floor(seconds / 60);
+    return `${mins}m`;
+  };
 
   const handleGeneratePaymentLink = async () => {
     setGeneratingLink(true);
     try {
       const { data, error } = await supabase.functions.invoke('stripe-manager', {
-        body: { action: 'create-checkout', clientId: appointment.clients.id, appointmentId: appointment.id, clientData: appointment.clients }
+        body: { 
+          action: 'create-checkout', 
+          clientId: appointment.clients.id,
+          appointmentId: appointment.id,
+          clientData: appointment.clients
+        }
       });
+
       if (error) throw error;
+
       if (data.url) {
         await onSaveField('payment_link', data.url);
         window.open(data.url, '_blank');
-        showSuccess("Link generated.");
+        showSuccess("Payment link generated and opened!");
       }
     } catch (err: any) {
-      showError("Failed to generate link.");
+      showError(err.message || "Failed to generate link. Ensure client is synced to Stripe.");
     } finally {
       setGeneratingLink(false);
     }
   };
 
+  const billingDefault = (appointment.clients as any).billing_default || 'Paid';
+
   return (
-    <div className="space-y-4">
-      {/* Session Strategy: Compact */}
-      <div className="bg-slate-50 border border-slate-100">
-        <div className="p-3 border-b border-slate-100 flex items-center justify-between">
-          <span className="text-[10px] font-black uppercase tracking-widest text-slate-400">Strategy</span>
-          <span className="text-[9px] font-bold text-slate-400">{completedStages.length}/5</span>
-        </div>
-        <div className="grid grid-cols-5 gap-0">
-          {SESSION_STAGES.map((stage) => {
-            const isDone = completedStages.includes(stage.id);
-            return (
-              <button 
-                key={stage.id} 
-                onClick={() => setCompletedStages(prev => isDone ? prev.filter(s => s !== stage.id) : [...prev, stage.id])}
-                className={cn(
-                  "h-10 flex items-center justify-center border-r border-slate-100 last:border-r-0 transition-colors",
-                  isDone ? "bg-emerald-500 text-white" : "bg-white text-slate-300 hover:bg-slate-50"
-                )}
-                title={stage.name}
-              >
-                {isDone ? <Check size={14} /> : <stage.icon size={14} />}
-              </button>
-            );
-          })}
-        </div>
-      </div>
-
-      {/* Billing: Compact */}
-      <div className="p-4 bg-white border border-slate-100 space-y-4">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <CreditCard size={14} className="text-primary" />
-            <span className="text-[10px] font-black uppercase tracking-widest">Billing</span>
+    <div className="space-y-8">
+      {/* Session Strategy Card */}
+      <Card className="border-none shadow-2xl shadow-slate-900/5 rounded-[2.5rem] bg-slate-900 text-white overflow-hidden">
+        <CardHeader className="p-8 pb-4">
+          <div className="flex items-center justify-between">
+            <CardTitle className="text-[10px] font-black uppercase tracking-[0.3em] text-slate-500 flex items-center gap-3">
+              <Clock size={16} /> Session Strategy (60m)
+            </CardTitle>
+            <Badge variant="outline" className="border-white/10 text-slate-500 font-black text-[8px] uppercase tracking-widest">
+              {completedStages.length}/{SESSION_STAGES.length} Done
+            </Badge>
           </div>
-          <Switch 
-            checked={appointment.is_paid || false} 
-            onCheckedChange={(checked) => onSaveField('is_paid', checked)} 
-            className="scale-75"
-          />
-        </div>
-        {appointment.is_paid && !appointment.payment_received && (
-          <Button 
-            onClick={handleGeneratePaymentLink}
-            disabled={generatingLink}
-            className="w-full h-8 bg-primary text-white font-black text-[9px] uppercase tracking-widest"
-          >
-            {generatingLink ? <Loader2 className="animate-spin" size={12} /> : <QrCode size={12} className="mr-2" />}
-            Stripe Link
-          </Button>
-        )}
-      </div>
+        </CardHeader>
+        <CardContent className="p-8 pt-0 space-y-4">
+          <div className="grid grid-cols-1 gap-2">
+            {SESSION_STAGES.map((stage) => {
+              const isActive = activeStageId === stage.id;
+              const isDone = completedStages.includes(stage.id);
+              const elapsed = stageTimers[stage.id] || 0;
 
-      {/* Acupoints: Compact */}
-      <div className="p-4 bg-white border border-slate-100 space-y-3">
-        <div className="flex items-center gap-2">
-          <Target size={14} className="text-primary" />
-          <span className="text-[10px] font-black uppercase tracking-widest">Acupoints</span>
-        </div>
-        <QuickAcupointSelector 
-          currentValue={appointment.acupoints} 
-          onSelect={(val) => onSaveField('acupoints', val)} 
-        />
-      </div>
+              return (
+                <button 
+                  key={stage.id} 
+                  onClick={() => handleStageClick(stage.id)}
+                  className={cn(
+                    "flex items-center justify-between p-4 rounded-2xl border transition-all duration-500 group text-left",
+                    isActive ? cn("border-transparent shadow-lg scale-[1.02]", stage.activeColor) : 
+                    isDone ? "bg-emerald-500/10 border-emerald-500/20" :
+                    "bg-white/5 border-white/10 hover:bg-white/10"
+                  )}
+                >
+                  <div className="flex items-center gap-4">
+                    <div className={cn(
+                      "w-8 h-8 rounded-lg flex items-center justify-center transition-all duration-500",
+                      isActive ? "bg-white/20" : isDone ? "bg-emerald-500 text-white" : "bg-white/5",
+                      !isActive && !isDone && stage.color
+                    )}>
+                      {isDone ? <Check size={16} /> : <stage.icon size={16} />}
+                    </div>
+                    <div className="flex flex-col">
+                      <span className={cn(
+                        "text-xs font-bold",
+                        isActive ? "text-white" : isDone ? "text-emerald-400" : "text-slate-300"
+                      )}>{stage.name}</span>
+                      {isActive && (
+                        <span className="text-[8px] font-black uppercase tracking-widest text-white/60 animate-pulse">
+                          Live: {formatStageTime(elapsed)}
+                        </span>
+                      )}
+                    </div>
+                  </div>
+                  <Badge variant="outline" className={cn(
+                    "font-black text-[8px] uppercase tracking-widest px-3 py-1",
+                    isActive ? "border-white/40 text-white" : "border-white/10 text-slate-500"
+                  )}>
+                    {stage.duration}M
+                  </Badge>
+                </button>
+              );
+            })}
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Current Peak Meridian */}
+      {currentPeakMeridian && (
+        <TooltipProvider>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Card className={cn(
+                "border-none shadow-2xl shadow-indigo-500/10 rounded-[2.5rem] text-white overflow-hidden relative group cursor-help",
+                "bg-gradient-to-br from-rose-600 to-rose-800"
+              )}>
+                <div className="absolute top-0 right-0 p-8 opacity-10 group-hover:scale-125 group-hover:rotate-12 transition-all duration-1000">
+                  <Zap size={120} />
+                </div>
+                <CardContent className="p-8 space-y-4 relative z-10">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-3">
+                      <div className="w-10 h-10 rounded-xl bg-white/20 flex items-center justify-center">
+                        <Activity size={20} />
+                      </div>
+                      <p className="text-[10px] font-black uppercase tracking-[0.3em] opacity-80">Peak Meridian</p>
+                    </div>
+                    <Badge className="bg-white/20 text-white border-none font-black text-[8px] uppercase tracking-widest px-3 py-1">TCM</Badge>
+                  </div>
+                  <div>
+                    <h3 className="text-3xl font-black tracking-tight">{currentPeakMeridian.name}</h3>
+                    <p className="text-sm font-bold opacity-90 mt-1">{currentPeakMeridian.peakTime}</p>
+                  </div>
+                </CardContent>
+              </Card>
+            </TooltipTrigger>
+            <TooltipContent side="top" className="rounded-xl p-3 bg-slate-900 text-white border-none shadow-xl max-w-[200px]">
+              <p className="text-[10px] font-bold leading-relaxed">
+                The active meridian influences session prioritisation. Organs are most accessible during their peak time.
+              </p>
+            </TooltipContent>
+          </Tooltip>
+        </TooltipProvider>
+      )}
+
+      {/* Payment Management */}
+      <Collapsible open={billingOpen} onOpenChange={setBillingOpen}>
+        <Card className={cn(
+          "border-none shadow-2xl shadow-slate-200/50 dark:shadow-none rounded-[2.5rem] overflow-hidden transition-all duration-500",
+          appointment.is_paid ? "bg-white border-2 border-emerald-100" : "bg-slate-50 border border-slate-200"
+        )}>
+          <CollapsibleTrigger asChild>
+            <CardHeader className="p-8 cursor-pointer hover:bg-slate-100/50 transition-colors">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <div className={cn(
+                    "w-10 h-10 rounded-xl flex items-center justify-center",
+                    appointment.is_paid ? "bg-emerald-50 text-emerald-600" : "bg-slate-100 text-slate-400"
+                  )}>
+                    <Wallet size={20} />
+                  </div>
+                  <CardTitle className={cn(
+                    "text-[10px] font-black uppercase tracking-[0.3em]",
+                    appointment.is_paid ? "text-emerald-600" : "text-slate-500"
+                  )}>
+                    Clinical Billing
+                  </CardTitle>
+                </div>
+                <ChevronDown className={cn("h-5 w-5 transition-transform duration-500", billingOpen && "rotate-180", appointment.is_paid ? "text-emerald-400" : "text-slate-400")} />
+              </div>
+            </CardHeader>
+          </CollapsibleTrigger>
+          <CollapsibleContent>
+            <CardContent className="p-8 pt-0 space-y-8 animate-in fade-in slide-in-from-top-2 duration-500">
+              <div className="flex items-center justify-between p-5 bg-white dark:bg-slate-900 rounded-2xl border border-slate-100 dark:border-slate-800 shadow-sm">
+                <div className="space-y-1">
+                  <div className="flex items-center gap-2">
+                    <Label htmlFor="is-paid-toggle" className="text-sm font-black text-slate-700 dark:text-slate-300 uppercase tracking-widest">Paid Session</Label>
+                    <Badge variant="outline" className="h-4 px-1.5 text-[6px] font-black uppercase border-slate-200 text-slate-400">
+                      Default: {billingDefault}
+                    </Badge>
+                  </div>
+                  <p className="text-[9px] text-slate-400 font-medium uppercase tracking-wider">Enable billing for this session</p>
+                </div>
+                <Switch 
+                  id="is-paid-toggle"
+                  checked={appointment.is_paid || false}
+                  onCheckedChange={(checked) => onSaveField('is_paid', checked)}
+                  className="data-[state=checked]:bg-emerald-500"
+                />
+              </div>
+
+              {appointment.is_paid && (
+                <div className="space-y-6 animate-in zoom-in-95 duration-500">
+                  {!appointment.payment_received ? (
+                    <div className="space-y-4">
+                      <div className="p-6 bg-amber-50 dark:bg-amber-900/20 rounded-[2rem] border border-amber-100 dark:border-amber-800 text-center relative overflow-hidden">
+                        <div className="absolute -right-4 -bottom-4 opacity-10">
+                          <DollarSign size={80} className="text-amber-600" />
+                        </div>
+                        <p className="text-[10px] font-black text-amber-600 uppercase tracking-[0.3em] mb-2 relative z-10">Amount Due</p>
+                        <p className="text-4xl font-black text-amber-900 dark:text-amber-400 relative z-10">${appointment.price_amount || 50}</p>
+                      </div>
+                      <Button 
+                        onClick={handleGeneratePaymentLink}
+                        disabled={generatingLink}
+                        className="w-full h-14 bg-indigo-600 hover:bg-indigo-700 text-white rounded-2xl font-black text-xs uppercase tracking-widest shadow-xl shadow-indigo-500/20 transition-all hover:scale-105 active:scale-95"
+                      >
+                        {generatingLink ? <Loader2 className="animate-spin mr-3" /> : <QrCode size={18} className="mr-3" />}
+                        Generate Stripe Link
+                      </Button>
+                      <Button 
+                        variant="outline"
+                        onClick={() => onSaveField('payment_received', true)}
+                        className="w-full h-14 border-emerald-200 text-emerald-600 hover:bg-emerald-50 rounded-2xl font-black text-xs uppercase tracking-widest transition-all"
+                      >
+                        <CheckCircle2 size={18} className="mr-3" /> Mark as Paid Manually
+                      </Button>
+                    </div>
+                  ) : (
+                    <div className="p-8 bg-emerald-50 dark:bg-emerald-900/20 rounded-[2.5rem] border border-emerald-100 dark:border-emerald-800 flex flex-col items-center justify-center gap-4 text-emerald-700">
+                      <div className="w-16 h-16 rounded-full bg-emerald-500 text-white flex items-center justify-center shadow-2xl shadow-emerald-500/30">
+                        <CheckCircle2 size={32} />
+                      </div>
+                      <div className="text-center">
+                        <p className="font-black text-sm uppercase tracking-[0.2em]">Payment Received</p>
+                        <p className="text-[10px] font-bold opacity-60 mt-1 uppercase tracking-widest">Method: {appointment.payment_method || 'Not specified'}</p>
+                      </div>
+                      <Button 
+                        variant="ghost" 
+                        size="sm" 
+                        onClick={() => onSaveField('payment_received', false)}
+                        className="text-[10px] font-black uppercase tracking-widest text-slate-400 hover:text-rose-600 mt-2"
+                      >
+                        Undo Payment
+                      </Button>
+                    </div>
+                  )}
+
+                  <div className="space-y-3">
+                    <p className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] ml-2">Payment Method</p>
+                    <ToggleGroup 
+                      type="single" 
+                      value={appointment.payment_method || ""} 
+                      onValueChange={(v) => onSaveField('payment_method', v || null)}
+                      className="flex flex-wrap justify-start gap-2"
+                    >
+                      {['Stripe', 'PayID', 'Cash', 'Transfer'].map(method => (
+                        <ToggleGroupItem 
+                          key={method}
+                          value={method} 
+                          className="rounded-xl px-4 h-10 text-[10px] font-black uppercase tracking-widest border-slate-200 data-[state=on]:bg-indigo-600 data-[state=on]:text-white data-[state=on]:border-indigo-600 transition-all"
+                        >
+                          {method}
+                        </ToggleGroupItem>
+                      ))}
+                    </ToggleGroup>
+                  </div>
+                </div>
+              )}
+            </CardContent>
+          </CollapsibleContent>
+        </Card>
+      </Collapsible>
+
+      {/* Session Context */}
+      <Collapsible open={contextOpen} onOpenChange={setContextOpen}>
+        <Card className="border-none shadow-2xl shadow-slate-900/5 rounded-[2.5rem] bg-slate-900 text-white overflow-hidden">
+          <CollapsibleTrigger asChild>
+            <CardHeader className="p-8 cursor-pointer hover:bg-white/5 transition-colors">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-xl bg-white/10 flex items-center justify-center">
+                    <Layers size={20} />
+                  </div>
+                  <p className="text-[10px] font-black text-slate-500 uppercase tracking-[0.3em]">Session Context</p>
+                </div>
+                <ChevronDown className={cn("h-5 w-5 text-slate-500 transition-transform duration-500", contextOpen && "rotate-180")} />
+              </div>
+            </CardHeader>
+          </CollapsibleTrigger>
+          <CollapsibleContent>
+            <CardContent className="p-8 pt-0 space-y-8 animate-in fade-in slide-in-from-top-2 duration-500">
+              <div className="space-y-6">
+                <div className="space-y-3">
+                  <div className="flex items-center gap-3 px-2">
+                    <CreditCard size={16} className="text-emerald-400" />
+                    <span className="text-[10px] font-black text-slate-500 uppercase tracking-[0.2em]">Payment Link</span>
+                  </div>
+                  <EditableField 
+                    key={`payment-link-${appointment.id}`} 
+                    field="payment_link" 
+                    label="Stripe / Cal.com Link" 
+                    value={appointment.payment_link} 
+                    placeholder="Paste URL..." 
+                    onSave={onSaveField as any} 
+                    className="bg-white/5 border-white/10 p-5 rounded-2xl text-sm"
+                  />
+                </div>
+
+                <div className="space-y-3">
+                  <div className="flex items-center gap-3 px-2">
+                    <Target size={16} className="text-indigo-400" />
+                    <span className="text-[10px] font-black text-slate-500 uppercase tracking-[0.2em]">Acupoints</span>
+                  </div>
+                  <EditableField 
+                    key={`acupoints-${appointment.id}`} 
+                    field="acupoints" 
+                    label="Acupoints" 
+                    value={appointment.acupoints} 
+                    placeholder="Points used..." 
+                    onSave={onSaveField as any} 
+                    className="bg-white/5 border-white/10 p-5 rounded-2xl text-sm"
+                  />
+                  <QuickAcupointSelector 
+                    currentValue={appointment.acupoints} 
+                    onSelect={(val) => onSaveField('acupoints', val)} 
+                  />
+                </div>
+
+                <div className="space-y-3">
+                  <div className="flex items-center justify-between px-2">
+                    <div className="flex items-center gap-3">
+                      <MessageSquare size={16} className="text-amber-400" />
+                      <span className="text-[10px] font-black text-slate-500 uppercase tracking-[0.2em]">Practitioner Reflection</span>
+                    </div>
+                    <Button variant="ghost" size="sm" asChild className="h-8 px-3 text-[9px] font-black uppercase tracking-widest text-indigo-400 hover:text-white hover:bg-white/10 rounded-lg">
+                      <Link to="/practice/journal" state={{ appointmentId: appointment.id }}>
+                        Open Journal <ExternalLink size={10} className="ml-2" />
+                      </Link>
+                    </Button>
+                  </div>
+                  <EditableField 
+                    key={`journal-${appointment.id}`} 
+                    field="journal" 
+                    label="" 
+                    value={appointment.journal} 
+                    multiline 
+                    className="bg-amber-500/10 border-amber-500/20 p-5 rounded-2xl text-sm italic text-slate-300" 
+                    placeholder="Personal insights..." 
+                    onSave={onSaveField as any} 
+                  />
+                </div>
+              </div>
+            </CardContent>
+          </CollapsibleContent>
+        </Card>
+      </Collapsible>
+
+      {/* Quick Reference */}
+      <Card className="border-none shadow-2xl shadow-indigo-500/5 rounded-[2.5rem] bg-indigo-50 dark:bg-indigo-900/20 border-2 border-indigo-100 dark:border-indigo-800 overflow-hidden group">
+        <CardHeader className="p-8 pb-4">
+          <CardTitle className="text-[10px] font-black uppercase tracking-[0.3em] text-indigo-600 flex items-center gap-3">
+            <Lightbulb size={16} className="group-hover:scale-110 transition-transform" /> Quick Reference
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="p-8 pt-0">
+          <div className="p-5 bg-white dark:bg-slate-900 rounded-2xl border border-indigo-200 dark:border-indigo-800 shadow-sm">
+            <p className="text-[10px] font-black text-indigo-400 uppercase tracking-[0.2em] mb-2">Instant Cramp Hack</p>
+            <p className="text-xs font-bold text-slate-700 dark:text-slate-300 leading-relaxed">
+              Chop spindles <span className="text-indigo-600 font-black">INWARDS</span>, then <span className="text-indigo-600 font-black">OUTWARDS</span> (x2).
+            </p>
+          </div>
+        </CardContent>
+      </Card>
     </div>
   );
 };

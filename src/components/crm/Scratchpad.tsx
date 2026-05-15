@@ -33,36 +33,32 @@ const Scratchpad = () => {
 
   return (
     <div className="space-y-8">
-      <div className="space-y-2">
-        <div className="flex items-center gap-2 text-primary">
-          <StickyNote size={18} />
-          <p className="text-[10px] font-bold uppercase tracking-widest">Clinical Notes</p>
-        </div>
-        <h2 className="text-2xl font-medium uppercase tracking-tight">Practitioner Scratchpad</h2>
-        <p className="text-sm text-muted-foreground">Quick notes or research ideas. Saves automatically to your browser.</p>
+      <div className="px-2 space-y-1">
+        <h2 className="text-2xl md:text-3xl font-serif font-bold tracking-tight text-amber-600 flex items-center gap-3">
+          <StickyNote size={28} /> Practitioner Scratchpad
+        </h2>
+        <p className="text-sm md:text-base text-muted-foreground font-medium">Quick notes or research ideas. Saves automatically to your browser.</p>
       </div>
-      
       <div className="space-y-6">
-        <div className="flex flex-wrap gap-0 border border-border">
+        <div className="flex flex-wrap gap-2">
           {["Research", "Follow-up", "Protocol Idea", "Clinical Note"].map(tag => (
             <button 
               key={tag}
               onClick={() => addTag(tag)}
-              className="px-4 py-3 border-r border-border last:border-r-0 text-[10px] font-bold uppercase tracking-widest text-muted-foreground hover:bg-muted hover:text-primary transition-colors"
+              className="px-4 py-2 rounded-xl bg-white dark:bg-slate-800 border border-secondary/30 text-[10px] font-black uppercase tracking-widest text-slate-600 hover:bg-amber-50 hover:border-amber-200 hover:text-amber-600 transition-all shadow-sm"
             >
               + {tag}
             </button>
           ))}
         </div>
-        
-        <div className="relative">
+        <div className="relative group">
           <Textarea
             value={scratchpad}
             onChange={(e) => handleScratchpadChange(e.target.value)}
             placeholder="Type something here..."
-            className="min-h-[300px] bg-background border-border focus:ring-primary focus:border-primary resize-none text-foreground placeholder:text-muted-foreground rounded-none p-8 text-xl font-medium leading-relaxed transition-all"
+            className="min-h-[250px] md:min-h-[300px] bg-white dark:bg-slate-900/50 border-secondary/30 focus:ring-amber-500 focus:border-amber-500 resize-none text-foreground placeholder:text-slate-300 dark:placeholder:text-slate-800 rounded-3xl p-8 md:p-12 text-xl md:text-2xl font-medium leading-relaxed shadow-xl transition-all"
           />
-          <div className="absolute bottom-4 right-4 flex items-center gap-2 text-[10px] font-bold text-primary uppercase tracking-widest">
+          <div className="absolute bottom-6 right-8 md:bottom-10 md:right-12 flex items-center gap-2 text-[10px] font-black text-amber-600 uppercase tracking-[0.3em] opacity-0 group-hover:opacity-100 transition-opacity">
             <CheckCircle2 size={14} /> {lastSaved ? `Last saved at ${lastSaved}` : 'Auto-saved'}
           </div>
         </div>

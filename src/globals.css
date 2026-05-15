@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=Playfair+Display:ital,wght@0,700;0,900;1,700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@100..900&family=Playfair+Display:ital,wght@0,400..900;1,400..900&display=swap');
 
 @tailwind base;
 @tailwind components;
@@ -6,72 +6,122 @@
 
 @layer base {
   :root {
-    --background: 0 0% 100%;
-    --foreground: 222 47% 11%;
-    --border: 214 32% 91%;
-    --primary: 243 75% 59%;
-    --primary-foreground: 0 0% 100%;
-    --radius: 0px;
+    --background: 210 20% 98%; 
+    --foreground: 222 47% 11%; 
+
+    --card: 0 0% 100%;
+    --card-foreground: 222 47% 15%;
+
+    --popover: 0 0% 100%;
+    --popover-foreground: 222 47% 15%;
+
+    --primary: 222 47% 20%; 
+    --primary-foreground: 210 20% 98%;
+
+    --secondary: 210 40% 96.1%;
+    --secondary-foreground: 222 47% 20%;
+
+    --accent: 332 50% 60%; 
+    --accent-foreground: 210 20% 98%;
+
+    --muted: 210 40% 96.1%;
+    --muted-foreground: 215.4 16.3% 46.9%;
+
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 210 40% 98%;
+
+    --success: 160 60% 45%;
+    --success-foreground: 210 40% 98%;
+
+    --warning: 38 92% 50%;
+    --warning-foreground: 210 40% 98%;
+
+    --border: 214.3 31.8% 91.4%;
+    --input: 214.3 31.8% 91.4%;
+    --ring: 222 47% 20%;
+
+    --radius: 1.25rem;
   }
 
+  .dark {
+    --background: 222 47% 4%;
+    --foreground: 210 20% 98%;
+
+    --card: 222 47% 6%;
+    --card-foreground: 210 20% 98%;
+
+    --popover: 222 47% 6%;
+    --popover-foreground: 210 20% 98%;
+
+    --primary: 210 20% 98%;
+    --primary-foreground: 222 47% 20%;
+
+    --secondary: 222 47% 12%;
+    --secondary-foreground: 210 20% 98%;
+
+    --accent: 332 50% 70%;
+    --accent-foreground: 222 47% 5%;
+
+    --muted: 222 47% 12%;
+    --muted-foreground: 215 20.2% 65.1%;
+
+    --border: 222 47% 12%;
+    --input: 222 47% 12%;
+    --ring: 212.7 26.8% 83.9%;
+  }
+}
+
+@layer base {
   * {
     @apply border-border;
   }
-
   body {
-    @apply bg-background text-foreground antialiased overflow-hidden;
+    @apply bg-background text-foreground antialiased;
     font-family: 'Inter', sans-serif;
-    font-size: 13px;
-    line-height: 1.5;
+    font-weight: 400;
+    letter-spacing: -0.01em;
   }
 
-  h1, h2, h3 {
+  .font-serif {
     font-family: 'Playfair Display', serif;
-    @apply font-bold tracking-tight;
-  }
-
-  h1 { font-size: 18px; }
-  h2 { font-size: 16px; }
-  h3 { font-size: 15px; }
-
-  /* Clinical Labels */
-  label, .label-caps {
-    @apply text-[11px] font-black uppercase tracking-[0.15em] text-primary;
-  }
-
-  /* Hover State Fix */
-  .interactive-element {
-    @apply transition-colors duration-200;
+    letter-spacing: -0.02em;
   }
   
-  .interactive-element:hover {
-    @apply text-foreground !important;
+  h1, h2, h3, h4, h5, h6 {
+    @apply font-sans font-bold tracking-tight;
   }
 
-  /* Privacy Blur */
+  button, a, [role="button"] {
+    @apply min-h-[44px] min-w-[44px] md:min-h-0 md:min-w-0;
+  }
+
+  /* Global Privacy Mode Blur */
   .privacy-mode-active .blur-sensitive {
-    @apply blur-md select-none opacity-30 pointer-events-none transition-all duration-500;
+    @apply blur-md select-none opacity-40 pointer-events-none transition-all duration-500;
   }
 
-  /* Scrollbar */
-  ::-webkit-scrollbar {
-    width: 4px;
-    height: 4px;
+  /* Custom Scrollbar */
+  .custom-scrollbar::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
   }
-  ::-webkit-scrollbar-track {
+  .custom-scrollbar::-webkit-scrollbar-track {
     @apply bg-transparent;
   }
-  ::-webkit-scrollbar-thumb {
-    @apply bg-slate-200 rounded-full;
+  .custom-scrollbar::-webkit-scrollbar-thumb {
+    @apply bg-slate-200 dark:bg-slate-800 rounded-full;
+  }
+  .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+    @apply bg-slate-300 dark:bg-slate-700;
   }
 }
 
 @layer components {
-  .clinical-card {
-    @apply bg-secondary/40 p-3 rounded-none border-none transition-all hover:bg-secondary/60;
+  .premium-card {
+    @apply rounded-[2.5rem] border border-border bg-white shadow-premium dark:bg-slate-900/50 transition-all duration-300 hover:shadow-xl p-8;
   }
-  
-  .input-compact {
-    @apply h-9 rounded-none border-slate-200 bg-white text-sm focus:border-primary focus:ring-0;
+
+  .glass-panel {
+    @apply bg-white/70 backdrop-blur-md border border-white/20 dark:bg-slate-900/70 dark:border-slate-800/50;
   }
 }

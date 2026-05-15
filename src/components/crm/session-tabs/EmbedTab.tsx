@@ -18,13 +18,24 @@ import {
   ShieldCheck,
   Info,
   Lightbulb,
-  Target
+  Target,
+  CalendarPlus,
+  Plus
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { supabase } from "@/integrations/supabase/client";
 import { safeParse } from "@/utils/safe-json";
 import EditableField from '@/components/shared/EditableField';
 import { showSuccess, showError } from '@/utils/toast';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
+import AppointmentForm from "../AppointmentForm";
 
 interface EmbedTabProps {
   appointment: any;
@@ -37,6 +48,7 @@ const EmbedTab = ({ appointment, onUpdate, saveField, updatePriorityPattern }: E
   const [muscleTests, setMuscleTests] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [clearingId, setClearingId] = useState<string | null>(null);
+  const [bookNextOpen, setBookNextOpen] = useState(false);
 
   const fetchMuscleTests = async () => {
     try {
@@ -245,6 +257,51 @@ const EmbedTab = ({ appointment, onUpdate, saveField, updatePriorityPattern }: E
             onSave={saveField} 
             className="bg-amber-50/30 border-amber-100 p-6 rounded-2xl border shadow-sm min-h-[250px]" 
           />
+        </div>
+      </div>
+
+      {/* Next Steps & Scheduling */}
+      <div className="pt-8 border-t border-slate-100">
+        <div className="flex flex-col md:flex-row items-center justify-between gap-6 p-8 bg-indigo-600 rounded-[2.5rem] text-white shadow-xl shadow-indigo-100">
+          <div className="flex items-center gap-5">
+            <div className="w-14 h-14 rounded-2xl bg-white/20 backdrop-blur-md flex items-center justify-center shadow-inner">
+              <CalendarPlus size={28} />
+            </div>
+            <div>
+              <h3 className="text-2xl font-black">Next Steps</h3>
+              <p className="text-indigo-100 text-sm font-medium">Schedule the follow-up session for {appointment.clients.name}.</p>
+            </div>
+          </div>
+          
+          <Dialog open={bookNextOpen} onOpenChange={setBookNextOpen}>
+            <DialogTrigger asChild>
+              <Button className="w-full md:w-auto bg-white text-indigo-600 hover:bg-indigo-50 rounded-2xl h-14 px-10 font-black text-xs uppercase tracking-widest shadow-lg">
+                <Plus size={20} className="mr-2" /> Schedule Next Session
+              </Button>
+            </DialogTrigger>
+            <DialogContent className="sm:max-w-[550px] max-h-[90vh] overflow-y-auto rounded-[3rem] p-0">
+              <div className="p-10">
+                <DialogHeader className="mb-8">
+                  <div className="flex items-center gap-4 mb-2">
+                    <div className="w-14 h-14 rounded-2xl bg-indigo-600 text-white flex items-center justify-center shadow-xl">
+                      <CalendarPlus size={28} />
+                    </div>
+                    <div>
+                      <DialogTitle className="text-3xl font-black">Book Next Session</DialogTitle>
+                      <DialogDescription className="text-base font-medium">Schedule the follow-up for {appointment.clients.name}.</DialogDescription>
+                    </div>
+                  </div>
+                </DialogHeader>
+                <AppointmentForm 
+                  initialClientId={appointment.clients.id}
+                  onSuccess={() => {
+                    setBookNextOpen(false);
+                    onUpdate();
+                  }} 
+                />
+              </div>
+            </DialogContent>
+          </Dialog>
         </div>
       </div>
 

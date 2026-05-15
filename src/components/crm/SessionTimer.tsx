@@ -2,8 +2,8 @@
 
 import React, { useState, useEffect, useMemo } from 'react';
 import { cn } from '@/lib/utils';
-import { Clock, CheckCircle2, Target, Zap, AlertTriangle, Home, Check, ChevronDown, LogOut, User, Calendar, AlertCircle } from 'lucide-react';
-import { format, differenceInSeconds, isToday, formatDistanceToNow } from 'date-fns';
+import { Clock, CheckCircle2, Target, Zap, AlertTriangle, Home, ChevronDown, LogOut, AlertCircle } from 'lucide-react';
+import { format, differenceInSeconds, formatDistanceToNow } from 'date-fns';
 import { Button } from '@/components/ui/button';
 import {
   DropdownMenu,
@@ -12,14 +12,15 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Badge } from '@/components/ui/badge';
+import { supabase } from '@/integrations/supabase/client';
+import { showSuccess, showError } from '@/utils/toast';
 
 interface SessionTimerProps {
+  sessionId: string;
   appointmentDate: Date;
   status: string;
   clientName?: string;
   currentPhaseName?: string;
-  onFixedHeaderChange: (isFixed: boolean) => void;
-  onCompleteSession?: () => void;
 }
 
 const SESSION_STAGES = [
@@ -27,11 +28,11 @@ const SESSION_STAGES = [
   { id: 'sympathetic', name: "EASE", duration: 15, color: "bg-rose-600", Icon: Zap },
   { id: 'pathway', name: "ALIGN", duration: 15, color: "bg-amber-600", Icon: CheckCircle2 },
   { id: 'calibration', name: "CORRECT", duration: 10, color: "bg-emerald-600", Icon: AlertTriangle },
-  { id: 'reassessment', name: "EMBED", duration: 5, icon: Home, color: "bg-blue-600", Icon: Home },
+  { id: 'reassessment', name: "EMBED", duration: 5, color: "bg-blue-600", Icon: Home },
 ];
 const TOTAL_DURATION_MINUTES = SESSION_STAGES.reduce((sum, stage) => sum + stage.duration, 0);
 
-const SessionTimer = ({ appointmentDate, status, clientName, currentPhaseName, onFixedHeaderChange, onCompleteSession }: SessionTimerProps) => {
+const SessionTimer = ({ sessionId, appointmentDate, status, clientName, currentPhaseName }: SessionTimerProps) => {
   const [currentTime, setCurrentTime] = useState(new Date());
 
   useEffect(() => {
@@ -47,7 +48,6 @@ const SessionTimer = ({ appointmentDate, status, clientName, currentPhaseName, o
     recommendedStage,
     stageProgressPercent,
     overallProgressPercent,
-    isComplete,
     timeRemainingInSession,
     isOvertime,
     overtimeSeconds
@@ -70,7 +70,6 @@ const SessionTimer = ({ appointmentDate, status, clientName, currentPhaseName, o
       }
     }
 
-    const isComplete = elapsedMinutes >= TOTAL_DURATION_MINUTES;
     const timeInCurrentStage = elapsedMinutes - stageStartTime;
     const stageProgressPercent = Math.min(100, (timeInCurrentStage / recommendedStage.duration) * 100);
     const overallProgressPercent = Math.min(100, (elapsedMinutes / TOTAL_DURATION_MINUTES) * 100);
@@ -90,29 +89,27 @@ const SessionTimer = ({ appointmentDate, status, clientName, currentPhaseName, o
       recommendedStage,
       stageProgressPercent,
       overallProgressPercent,
-      isComplete,
       timeRemainingInSession,
       isOvertime,
       overtimeSeconds
     };
   }, [appointmentDate, currentTime]);
 
-  const isRelevant = isToday(appointmentDate) && status !== 'Cancelled';
-  const isOngoing = isRelevant && elapsedSeconds >= 0 && status !== 'Completed';
-  const isUpcoming = isRelevant && elapsedSeconds < 0;
+  const isOngoing = elapsedSeconds >= 0 && status !== 'Completed';
+  const isUpcoming = elapsedSeconds < 0;
   const isFinished = status === 'Completed';
 
-  useEffect(() => {
-    onFixedHeaderChange(isOngoing || isFinished);
-  }, [isOngoing, isFinished, onFixedHeaderChange]);
-
-  if (!isRelevant) return null;
-
-  const handleComplete = () => {
-    if (onCompleteSession) {
-      if (confirm("Are you sure you want to complete this session? Please ensure billing status is correct.")) {
-        onCompleteSession();
-      }
+  const handleComplete = async () => {
+    if (!confirm("Complete this session?")) return;
+    try {
+      const { error } = await supabase
+        .from('appointments')
+        .update({ status: 'Completed' })
+        .eq('id', sessionId);
+      if (error) throw error;
+      showSuccess("Session finalized.");
+    } catch (err) {
+      showError("Failed to complete session.");
     }
   };
 
@@ -125,13 +122,12 @@ const SessionTimer = ({ appointmentDate, status, clientName, currentPhaseName, o
   const activePhase = SESSION_STAGES.find(s => s.id === currentPhaseName) || recommendedStage;
 
   return (
-    <div className="fixed top-0 left-0 right-0 z-[110] shadow-2xl">
+    <div className="w-full">
       <div className={cn(
         "transition-colors duration-1000 p-2 flex items-center justify-between px-6",
         isOvertime && !isFinished ? "bg-rose-950 border-b border-rose-500/30" : "bg-slate-950 border-b border-white/10"
       )}>
         <div className="flex items-center gap-4 overflow-hidden">
-          {/* STATUS INDICATOR */}
           <div className="flex items-center gap-2 shrink-0">
             {isFinished ? (
               <div className="flex items-center gap-2 text-emerald-500">
@@ -146,7 +142,7 @@ const SessionTimer = ({ appointmentDate, status, clientName, currentPhaseName, o
             ) : isUpcoming ? (
               <div className="flex items-center gap-2 text-indigo-400">
                 <Clock size={14} />
-                <span className="text-[10px] font-black uppercase tracking-[0.2em]">Starting in {formatDistanceToNow(appointmentDate)}</span>
+                <span className="text-[10px] font-black uppercase tracking-[0.2em]">Starts in {formatDistanceToNow(appointmentDate)}</span>
               </div>
             ) : (
               <div className="flex items-center gap-2 text-emerald-500">
@@ -158,7 +154,6 @@ const SessionTimer = ({ appointmentDate, status, clientName, currentPhaseName, o
 
           <div className="h-4 w-px bg-white/10" />
 
-          {/* TIMER */}
           {!isFinished && (
             <div className={cn(
               "text-xs font-black tabular-nums font-mono shrink-0",
@@ -170,31 +165,23 @@ const SessionTimer = ({ appointmentDate, status, clientName, currentPhaseName, o
 
           <div className="h-4 w-px bg-white/10" />
 
-          {/* CANONICAL IDENTITY */}
           <div className="flex items-center gap-2 min-w-0">
             <span className="text-sm font-black text-white truncate privacy-mode-active:blur-sm">
               {clientName}
             </span>
             <span className="text-[10px] font-bold text-slate-500 uppercase tracking-widest hidden sm:inline">
-              {format(appointmentDate, "EEE d MMM")} · {format(appointmentDate, "h:mm a")}
+              {format(appointmentDate, "h:mm a")}
             </span>
           </div>
 
           <div className="h-4 w-px bg-white/10 hidden md:block" />
 
-          {/* PHASE INDICATOR */}
           {!isFinished && (
             <div className="hidden sm:flex items-center gap-2">
               <Badge className={cn("border-none font-black text-[8px] uppercase tracking-widest px-2 py-0.5 rounded-md", activePhase.color, "text-white")}>
                 {activePhase.name}
               </Badge>
             </div>
-          )}
-          
-          {isFinished && (
-            <Badge className="bg-emerald-600 text-white border-none font-black text-[8px] uppercase tracking-widest px-2 py-0.5 rounded-md">
-              REPORT READY
-            </Badge>
           )}
         </div>
 
@@ -218,8 +205,7 @@ const SessionTimer = ({ appointmentDate, status, clientName, currentPhaseName, o
                   isOvertime && !isFinished ? "bg-rose-600 hover:bg-rose-700 text-white" : "bg-white/10 hover:bg-white/20 text-white"
                 )}
               >
-                {isOvertime && !isFinished && <AlertCircle size={12} className="mr-2" />}
-                Session Actions <ChevronDown size={12} className="ml-2 opacity-50" />
+                Actions <ChevronDown size={12} className="ml-2 opacity-50" />
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end" className="w-56 rounded-2xl p-2 shadow-3xl border-none bg-slate-900 text-white">

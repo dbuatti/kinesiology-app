@@ -108,14 +108,13 @@ const DemoSessionPage = () => {
 
   const currentPeakMeridian = TCM_CHANNELS.find(c => c.id === "HT"); // Mock peak
 
-  const [isFixedHeaderActive, setIsFixedHeaderActive] = useState(false);
   const [copied, setCopied] = useState(false);
 
   const saveField = async (field: string, value: any) => {
     setAppointment((prev: any) => ({ ...prev, [field]: value }));
   };
 
-  const updatePriorityPattern = async (category: string, itemName: string, status: 'Clear' | 'Inhibited' | null) => {
+  const updatePriorityPattern = async (category: string, itemName: string, status: 'Clear' | 'Inhibited' | null, side?: 'L' | 'R') => {
     const currentPattern = JSON.parse(appointment.priority_pattern || "{}");
     if (!currentPattern[category]) currentPattern[category] = {};
     if (status === null) delete currentPattern[category][itemName];
@@ -141,15 +140,16 @@ const DemoSessionPage = () => {
   return (
     <>
       <SessionTimer 
+        sessionId={appointment.id}
         appointmentDate={appointment.date} 
         status={appointment.status} 
-        onFixedHeaderChange={setIsFixedHeaderActive} 
+        clientName={appointment.clients.name}
       />
-      <AppLayout hasFixedHeader={isFixedHeaderActive}>
+      <AppLayout>
         <div className="flex flex-col gap-6 max-w-[1600px] mx-auto">
           <Alert className="bg-amber-50 border-amber-200 rounded-2xl">
             <AlertTriangle className="h-5 w-5 text-amber-600" />
-            <AlertDescription className="text-sm text-amber-900 font-bold">
+            <AlertDescription className="text-sm text-rose-900 font-bold">
               DEMO MODE: Explore the Brainstem Tone Map (Sidebar) and Neurological Evolution (History Tab).
             </AlertDescription>
           </Alert>

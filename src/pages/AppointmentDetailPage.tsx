@@ -23,7 +23,6 @@ import { supabase } from "@/integrations/supabase/client";
 import { Nuclei } from "@/utils/brainstem-logic";
 
 import AppLayout from "@/components/crm/AppLayout";
-import SessionTimer from "@/components/crm/SessionTimer";
 import Breadcrumbs from "@/components/shared/Breadcrumbs";
 import AppointmentHeader from "@/components/crm/AppointmentHeader";
 import WeeklyFocusBanner from "@/components/crm/WeeklyFocusBanner";
@@ -61,7 +60,6 @@ const AppointmentDetailPage = () => {
   } = useAppointment(id);
 
   // UI States
-  const [isFixedHeaderActive, setIsFixedHeaderActive] = useState(false);
   const [showSidebar, setShowSidebar] = useState(true);
   const [isDocumentView, setIsDocumentView] = useState(false);
   const [nucleiFilter, setNucleiFilter] = useState<Nuclei | null>(null);
@@ -169,12 +167,12 @@ const AppointmentDetailPage = () => {
   const handleDeleteAppointment = useCallback(async () => {
     if (!id || !confirm("Delete this appointment?")) return;
     try {
-      const { error } = await supabase.from('appointments').delete().eq('id', id);
+      const { error = null } = await supabase.from('appointments').delete().eq('id', id);
       if (error) throw error;
       showSuccess("Appointment deleted");
       navigate('/appointments');
     } catch (err: any) {
-      showError("Failed to delete appointment");
+      showError(err.message || "Failed to delete appointment");
     }
   }, [id, navigate]);
 
@@ -228,16 +226,7 @@ const AppointmentDetailPage = () => {
 
   return (
     <ErrorBoundary>
-      <SessionTimer
-        appointmentDate={appointment.date}
-        status={appointment.status}
-        clientName={appointment.clients.name}
-        currentPhaseName={activePhaseId}
-        onFixedHeaderChange={setIsFixedHeaderActive}
-        onCompleteSession={handleCompleteSession}
-      />
-
-      <AppLayout variant="full" hasFixedHeader={isFixedHeaderActive} className="pb-0">
+      <AppLayout variant="full" className="pb-0">
         <div className="max-w-[1600px] mx-auto space-y-6">
           <div className="flex flex-col md:flex-row items-center justify-between gap-6">
             <div className="flex items-center gap-4">
@@ -269,7 +258,7 @@ const AppointmentDetailPage = () => {
                   </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end" className="w-64 p-2 rounded-[2rem] border-none shadow-3xl bg-white dark:bg-slate-900">
-                  <DropdownMenuItem onClick={handleCopyOnboardingLink} className="rounded-xl py-3 px-4 cursor-pointer"><LinkIcon size={16} className="mr-3 text-indigo-500" /> Copy Onboarding Link</DropdownMenuItem>
+                  <DropdownMenuItem onClick={handleCopyOnboardingLink} className="rounded-xl py-3 px-4 cursor-pointer"><LinkIcon size={16} className="mr-3 text-indigo-50" /> Copy Onboarding Link</DropdownMenuItem>
                   <DropdownMenuItem onClick={handleSyncToNotion} className="rounded-xl py-3 px-4 cursor-pointer"><RefreshCw size={16} className="mr-3 text-emerald-500" /> Sync to Notion</DropdownMenuItem>
                   <DropdownMenuItem onClick={handleCopyForAI} className="rounded-xl py-3 px-4 cursor-pointer"><Sparkles size={16} className="mr-3 text-amber-500" /> AI Case Prompt</DropdownMenuItem>
                   <DropdownMenuSeparator className="my-2" />

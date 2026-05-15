@@ -13,7 +13,7 @@ const SESSION_STAGES = [
 ];
 
 export function useActiveSession() {
-  const [activeSession, setActiveSession] = useState<{ id: string, stage: string, clientName: string } | null>(null);
+  const [activeSession, setActiveSession] = useState<{ id: string, stage: string, clientName: string, date: Date, status: string } | null>(null);
 
   const checkActiveSession = useCallback(async () => {
     const { data } = await supabase
@@ -27,10 +27,12 @@ export function useActiveSession() {
       const active = (data as any[]).find(app => {
         const appDate = new Date(app.date);
         const diff = differenceInMinutes(new Date(), appDate);
+        // Show timer if session is today and within a 2-hour window (60m before, 60m after)
+        // or if it's explicitly marked as 'Scheduled' or 'Completed' (for report view)
         return isToday(appDate) && 
-               diff >= 0 && 
-               diff < 60 && 
-               !['Completed', 'Cancelled', 'No Show', 'AP'].includes(app.status);
+               diff >= -60 && 
+               diff < 120 && 
+               !['Cancelled', 'No Show', 'AP'].includes(app.status);
       });
 
       if (active) {
@@ -47,7 +49,9 @@ export function useActiveSession() {
         setActiveSession({ 
           id: active.id, 
           stage: currentStageName,
-          clientName: active.clients?.name || "Client"
+          clientName: active.clients?.name || "Client",
+          date: new Date(active.date),
+          status: active.status
         });
       } else {
         setActiveSession(null);
@@ -62,7 +66,7 @@ export function useActiveSession() {
       .on('postgres_changes', { event: '*', schema: 'public', table: 'appointments' }, checkActiveSession)
       .subscribe();
     
-    const interval = setInterval(checkActiveSession, 60000);
+    const interval = setInterval(checkActiveSession, 30000);
     return () => {
       clearInterval(interval);
       supabase.removeChannel(channel);

@@ -6,8 +6,6 @@ import {
   Activity, 
   Zap, 
   BookOpen, 
-  Grid, 
-  Search, 
   Plus, 
   Settings, 
   LogOut, 
@@ -75,7 +73,7 @@ const SpaceHeader = () => {
   };
 
   return (
-    <header className="sticky top-0 z-[100] w-full bg-white/80 dark:bg-slate-950/80 backdrop-blur-xl border-b border-slate-200 dark:border-slate-800 px-4 md:px-8 h-16 flex items-center justify-between">
+    <header className="w-full bg-white/80 dark:bg-slate-950/80 backdrop-blur-xl border-b border-slate-200 dark:border-slate-800 px-4 md:px-8 h-16 flex items-center justify-between">
       {/* LEFT: LOGO & HUB SWITCHER */}
       <div className="flex items-center gap-4 md:gap-8">
         <Link to="/?view=hub" className="flex items-center gap-3 group">

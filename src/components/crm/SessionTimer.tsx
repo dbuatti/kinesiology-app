@@ -102,6 +102,15 @@ const SessionTimer = ({ appointmentDate, status, onFixedHeaderChange, onComplete
   const [hours, minutes, seconds] = timeInSessionFormatted.split(':');
   const displayTime = `${parseInt(hours) > 0 ? `${parseInt(hours)}h ` : ''}${parseInt(minutes)}m ${seconds}s`;
 
+  const handleComplete = () => {
+    if (onCompleteSession) {
+      // Simple confirmation for now, could be a more complex dialog
+      if (confirm("Are you sure you want to complete this session? Please ensure billing status is correct.")) {
+        onCompleteSession();
+      }
+    }
+  };
+
   if (isUpcoming) {
     return (
       <div className="w-full bg-indigo-600 text-white h-8 flex items-center justify-center px-4 z-[110] relative">
@@ -157,7 +166,7 @@ const SessionTimer = ({ appointmentDate, status, onFixedHeaderChange, onComplete
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end" className="w-56 rounded-2xl p-2 shadow-3xl border-none bg-slate-900 text-white">
               <DropdownMenuItem 
-                onClick={onCompleteSession}
+                onClick={handleComplete}
                 className="rounded-xl py-3 px-4 cursor-pointer flex items-center gap-3 text-emerald-400 focus:text-emerald-400 focus:bg-emerald-500/10"
               >
                 <CheckCircle2 size={16} />

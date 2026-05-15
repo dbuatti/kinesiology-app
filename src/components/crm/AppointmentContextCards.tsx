@@ -112,6 +112,8 @@ const AppointmentContextCards = ({ appointment, currentPeakMeridian, onSaveField
     }
   };
 
+  const billingDefault = (appointment.clients as any).billing_default || 'Paid';
+
   return (
     <div className="space-y-8">
       {/* Session Strategy Card */}
@@ -246,7 +248,12 @@ const AppointmentContextCards = ({ appointment, currentPeakMeridian, onSaveField
             <CardContent className="p-8 pt-0 space-y-8 animate-in fade-in slide-in-from-top-2 duration-500">
               <div className="flex items-center justify-between p-5 bg-white dark:bg-slate-900 rounded-2xl border border-slate-100 dark:border-slate-800 shadow-sm">
                 <div className="space-y-1">
-                  <Label htmlFor="is-paid-toggle" className="text-sm font-black text-slate-700 dark:text-slate-300 uppercase tracking-widest">Paid Session</Label>
+                  <div className="flex items-center gap-2">
+                    <Label htmlFor="is-paid-toggle" className="text-sm font-black text-slate-700 dark:text-slate-300 uppercase tracking-widest">Paid Session</Label>
+                    <Badge variant="outline" className="h-4 px-1.5 text-[6px] font-black uppercase border-slate-200 text-slate-400">
+                      Default: {billingDefault}
+                    </Badge>
+                  </div>
                   <p className="text-[9px] text-slate-400 font-medium uppercase tracking-wider">Enable billing for this session</p>
                 </div>
                 <Switch 

@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect, useMemo } from 'react';
-import { Target, Sparkles, Zap, CheckCircle2, ChevronDown, Trophy, AlertCircle, PlayCircle, HelpCircle, ChevronsUp } from 'lucide-react';
+import { Target, Sparkles, Zap, CheckCircle2, ChevronDown, Trophy, AlertCircle, PlayCircle, HelpCircle, ChevronsUp, MousePointer2 } from 'lucide-react';
 import { getWeeklyFocus } from '@/utils/weekly-focus';
 import { cn } from '@/lib/utils';
 import { Badge } from '@/components/ui/badge';
@@ -77,17 +77,14 @@ const WeeklyFocusBanner = ({ appointmentId, priorityPattern, onSaveField, onJump
   }, [items, priorityPattern]);
 
   const isItemLateralized = (name: string) => {
-    // Check muscles
     const isMidlineMuscle = MIDLINE_MUSCLES.includes(name);
     const allMuscles = Object.values(MUSCLE_GROUPS).flat();
     const isMuscle = allMuscles.includes(name);
     if (isMuscle) return !isMidlineMuscle;
 
-    // Check reflexes
     const reflex = PRIMITIVE_REFLEXES.find(r => r.name === name);
     if (reflex) return reflex.isLateralized;
 
-    // Check brain zones
     const point = BRAIN_REFLEX_POINTS.find(p => p.name.startsWith(name));
     if (point) return point.lateralization !== 'Bilateral' && point.lateralization !== 'Mixed';
 
@@ -161,7 +158,14 @@ const WeeklyFocusBanner = ({ appointmentId, priorityPattern, onSaveField, onJump
               {celebratingItem ? <Sparkles size={20} className="text-white" /> : <Target size={20} className="text-indigo-100" />}
             </div>
             <div className="space-y-1">
-              <p className="text-[8px] font-black uppercase tracking-[0.4em] text-indigo-200/80">Weekly Mastery Focus</p>
+              <div className="flex items-center gap-3">
+                <p className="text-[8px] font-black uppercase tracking-[0.4em] text-indigo-200/80">Weekly Mastery Focus</p>
+                {practicedCount === 0 && (
+                  <Badge variant="outline" className="bg-white/10 border-white/20 text-white text-[7px] font-black uppercase tracking-widest animate-pulse">
+                    <MousePointer2 size={8} className="mr-1" /> Tap to log today's focus
+                  </Badge>
+                )}
+              </div>
               <div className="flex flex-wrap items-center gap-2">
                 {items.map((item, i) => {
                   const status = itemStatuses[item] || 'Not Tested';

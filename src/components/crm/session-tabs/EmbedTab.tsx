@@ -42,6 +42,12 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 import AppointmentForm from "../AppointmentForm";
 import PathwayFindingsList from "../PathwayFindingsList";
 
@@ -104,7 +110,7 @@ const EmbedTab = ({ appointment, onUpdate, saveField, updatePriorityPattern }: E
       if (test.status !== 'Normotonic') {
         const sideMatch = test.muscle_name.match(/\(([LR])\)$/);
         const side = sideMatch ? sideMatch[1] as 'L' | 'R' : undefined;
-        const baseName = test.muscle_name.replace(/ \([LR]\)$/, '');
+        const baseName = test.muscle_name.replace(/ \([LR]\)$/, '').trim();
 
         if (!items.find(i => i.name === baseName && i.side === side)) {
           items.push({
@@ -241,9 +247,22 @@ const EmbedTab = ({ appointment, onUpdate, saveField, updatePriorityPattern }: E
                 </div>
                 <div className="flex items-center justify-between p-2 bg-blue-50/50 rounded-lg border border-blue-100">
                   <span className="text-[9px] font-black text-blue-600 uppercase">Hydration</span>
-                  <Badge className={cn("border-none font-black text-[8px] uppercase", appointment.hydrated ? "bg-emerald-500" : "bg-rose-500")}>
-                    {appointment.hydrated ? 'Passed' : 'Threat'}
-                  </Badge>
+                  <TooltipProvider>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <Badge className={cn("border-none font-black text-[8px] uppercase cursor-help", appointment.hydrated ? "bg-emerald-500" : "bg-rose-500")}>
+                          {appointment.hydrated ? 'Passed' : 'Flagged'}
+                        </Badge>
+                      </TooltipTrigger>
+                      <TooltipContent className="rounded-xl p-3 bg-slate-900 text-white border-none shadow-xl max-w-[200px]">
+                        <p className="text-[10px] font-bold leading-relaxed">
+                          {appointment.hydrated 
+                            ? "Systemic conductivity is optimal for neurological testing." 
+                            : "Low hydration detected. This can cause 'Switching' and inaccurate muscle test results. Recommend water with electrolytes."}
+                        </p>
+                      </TooltipContent>
+                    </Tooltip>
+                  </TooltipProvider>
                 </div>
               </CardContent>
             </Card>

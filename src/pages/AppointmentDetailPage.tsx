@@ -5,7 +5,9 @@ import { useParams, useNavigate, Link } from "react-router-dom";
 import { 
   Loader2, Settings2, ChevronDown, PanelRightClose, MessageSquare, Brain,
   Calendar, Clock, User, History, Copy, Check, Trash2, Printer, RefreshCw,
-  Activity, Zap, Target, ClipboardCheck, Link as LinkIcon, Sparkles, FileText
+  Activity, Zap, Target, ClipboardCheck, Link as LinkIcon, Sparkles, FileText,
+  LayoutDashboard, ChevronRight, PanelRightOpen, StickyNote, MoreHorizontal,
+  ArrowLeft, Share2, Download, ExternalLink
 } from "lucide-react";
 import { isToday, format } from "date-fns";
 
@@ -37,8 +39,15 @@ import {
   CollapsibleContent,
   CollapsibleTrigger,
 } from "@/components/ui/collapsible";
-import { Card, CardContent, CardHeader } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+  DropdownMenuSeparator,
+} from "@/components/ui/dropdown-menu";
 
 import { TCM_CHANNELS } from "@/data/tcm-channel-data";
 import { generateSessionSummary, generateAICasePrompt } from "@/utils/summary-generator";
@@ -59,7 +68,7 @@ const AppointmentDetailPage = () => {
   // UI States
   const [isFixedHeaderActive, setIsFixedHeaderActive] = useState(false);
   const [showSetup, setShowSetup] = useState(false);
-  const [showSidebar, setShowSidebar] = useState(false);
+  const [showSidebar, setShowSidebar] = useState(true);
   const [isDocumentView, setIsDocumentView] = useState(false);
   const [nucleiFilter, setNucleiFilter] = useState<Nuclei | null>(null);
   const [reflections, setReflections] = useState<any[]>([]);
@@ -299,7 +308,10 @@ const AppointmentDetailPage = () => {
   if (loading) {
     return (
       <div className="flex min-h-screen items-center justify-center bg-background">
-        <Loader2 className="h-12 w-12 animate-spin text-primary" />
+        <div className="flex flex-col items-center gap-4">
+          <Loader2 className="h-12 w-12 animate-spin text-indigo-600" />
+          <p className="text-sm font-black uppercase tracking-[0.3em] text-slate-400 animate-pulse">Initializing Workspace...</p>
+        </div>
       </div>
     );
   }
@@ -307,9 +319,17 @@ const AppointmentDetailPage = () => {
   if (!appointment) {
     return (
       <div className="flex min-h-screen items-center justify-center p-8 text-center">
-        <div>
-          <h2 className="text-2xl font-semibold mb-2">Appointment not found</h2>
-          <p className="text-muted-foreground">The requested session could not be found.</p>
+        <div className="space-y-6 max-w-md">
+          <div className="w-20 h-20 rounded-[2rem] bg-slate-100 text-slate-400 flex items-center justify-center mx-auto">
+            <Activity size={40} />
+          </div>
+          <div className="space-y-2">
+            <h2 className="text-3xl font-black tracking-tight">Session not found</h2>
+            <p className="text-slate-500 font-medium">The requested session could not be found or has been removed.</p>
+          </div>
+          <Button asChild className="bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl h-12 px-8 font-bold text-xs uppercase tracking-widest">
+            <Link to="/appointments">Back to Appointments</Link>
+          </Button>
         </div>
       </div>
     );
@@ -339,201 +359,230 @@ const AppointmentDetailPage = () => {
       />
 
       <AppLayout variant="full" hasFixedHeader={isFixedHeaderActive}>
-        <div className="flex flex-col gap-8 print:p-0">
-          <PageHeader 
-            title="Session Workspace"
-            subtitle="Manage clinical findings and integration protocols."
-            icon={Activity}
-            breadcrumbs={[
-              { label: "Appointments", path: "/appointments" },
-              { label: appointment.clients.name, path: `/clients/${appointment.clients.id}` },
-              { label: appointment.display_id || "Details" },
-            ]}
-            actions={
-              <div className="flex items-center gap-3">
-                <Button 
-                  variant="outline" 
-                  size="sm" 
-                  onClick={() => setIsDocumentView(true)}
-                  className="h-10 gap-2 border-slate-200 font-bold text-xs uppercase tracking-widest"
-                >
-                  <FileText size={16} className="text-indigo-600" />
-                  Document View
-                </Button>
-
-                <Collapsible open={showSetup} onOpenChange={setShowSetup}>
-                  <CollapsibleTrigger asChild>
-                    <Button variant="ghost" size="sm" className="h-10 gap-2">
-                      <Settings2 size={16} />
-                      <span className="font-medium text-xs uppercase tracking-widest">Setup</span>
-                      <ChevronDown 
-                        size={14} 
-                        className={cn("transition-transform", showSetup && "rotate-180")} 
-                      />
-                    </Button>
-                  </CollapsibleTrigger>
-                </Collapsible>
-
-                {isSessionToday && appointment.status === 'Scheduled' && (
-                  <Button 
-                    onClick={handleStartSession}
-                    className="h-10 px-6 font-semibold shadow-sm"
-                  >
-                    Start Session
-                  </Button>
-                )}
-              </div>
-            }
-          />
-
-          {/* Setup Tools */}
-          <Collapsible open={showSetup}>
-            <Card className="border-none shadow-sm bg-muted/30 rounded-2xl overflow-hidden mb-6">
-              <CollapsibleContent className="animate-in slide-in-from-top-2">
-                <div className="flex flex-wrap gap-3 p-5">
-                  <Button
-                    variant="outline"
-                    onClick={handleCopyOnboardingLink}
-                    disabled={actionStates.copyingLink}
-                    className="h-10 rounded-xl border-border bg-card font-bold text-[10px] uppercase tracking-widest"
-                  >
-                    {actionStates.copyingLink ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <LinkIcon size={14} className="mr-2" />}
-                    Copy Onboarding Link
-                  </Button>
-
-                  <Button
-                    variant="outline"
-                    onClick={handleSyncToNotion}
-                    disabled={actionStates.syncingNotion}
-                    className="h-10 rounded-xl border-border bg-card font-bold text-[10px] uppercase tracking-widest"
-                  >
-                    {actionStates.syncingNotion ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <RefreshCw size={14} className="mr-2" />}
-                    Sync to Notion
-                  </Button>
-
-                  <Button
-                    variant="outline"
-                    onClick={handleCopyForAI}
-                    disabled={actionStates.copyingAI}
-                    className="h-10 rounded-xl border-border bg-card font-bold text-[10px] uppercase tracking-widest"
-                  >
-                    {actionStates.copyingAI ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Sparkles size={14} className="mr-2" />}
-                    AI Case Prompt
-                  </Button>
+        <div className="max-w-[1600px] mx-auto space-y-10 pb-20">
+          {/* TOP NAVIGATION & ACTIONS */}
+          <div className="flex flex-col md:flex-row items-center justify-between gap-6">
+            <div className="flex items-center gap-4">
+              <Button 
+                variant="ghost" 
+                size="icon" 
+                onClick={() => navigate(-1)}
+                className="h-12 w-12 rounded-2xl bg-white border border-slate-200 shadow-sm text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 transition-all"
+              >
+                <ArrowLeft size={20} />
+              </Button>
+              <div className="space-y-1">
+                <div className="flex items-center gap-2">
+                  <Badge className="bg-indigo-600 text-white border-none font-black text-[9px] uppercase tracking-[0.3em] px-3 py-1">
+                    Session Workspace
+                  </Badge>
+                  {isSessionToday && (
+                    <Badge className="bg-rose-500 text-white border-none font-black text-[9px] uppercase tracking-[0.3em] px-3 py-1 animate-pulse">
+                      Live Today
+                    </Badge>
+                  )}
                 </div>
-              </CollapsibleContent>
-            </Card>
-          </Collapsible>
-
-          {/* Banners */}
-          <div className="space-y-6">
-            <WeeklyFocusBanner
-              appointmentId={appointment.id}
-              priorityPattern={appointment.priority_pattern}
-              onSaveField={saveField}
-            />
-
-            <PreviousSessionInsightsBar
-              clientId={appointment.clients.id}
-              currentAppointmentId={appointment.id}
-            />
-          </div>
-
-          {/* Main Content Area */}
-          <div className="grid grid-cols-1 xl:grid-cols-12 gap-10">
-            {/* Main Content */}
-            <div className={cn(
-              showSidebar ? "xl:col-span-8" : "xl:col-span-12",
-              "space-y-10 transition-all duration-300"
-            )}>
-              <AppointmentHeader 
-                appointment={appointment} 
-                onSaveField={saveField} 
-                onUpdate={refresh} 
-              />
-
-              <SessionContentSwitcher
-                appointment={appointment}
-                onUpdate={refresh}
-                saveField={saveField}
-                updatePriorityPattern={updatePriorityPattern}
-                history={history}
-                nucleiFilter={nucleiFilter}
-                showSidebar={showSidebar}
-                onToggleSidebar={() => setShowSidebar(!showSidebar)}
-                onClonePrevious={handleClonePrevious}
-                onPrint={handlePrint}
-                onCopySummary={handleCopySummary}
-                onDelete={handleDeleteAppointment}
-                onStartSession={handleStartSession}
-                isCloning={actionStates.cloning}
-                isCopied={isCopied}
-                onOpenDocument={() => setIsDocumentView(true)}
-              />
+                <h1 className="text-2xl font-black tracking-tight text-slate-900 dark:text-white">
+                  {appointment.clients.name} <span className="text-slate-300 font-medium ml-2">/ {appointment.display_id || "Session"}</span>
+                </h1>
+              </div>
             </div>
 
-            {/* Sidebar */}
+            <div className="flex items-center gap-3">
+              <Button 
+                variant="outline" 
+                size="sm" 
+                onClick={() => setIsDocumentView(true)}
+                className="h-12 px-6 gap-3 border-slate-200 bg-white rounded-2xl font-black text-[10px] uppercase tracking-widest text-slate-600 hover:bg-slate-50 hover:border-indigo-200 transition-all shadow-sm"
+              >
+                <FileText size={16} className="text-indigo-600" />
+                Document View
+              </Button>
+
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button 
+                    variant="outline" 
+                    size="sm" 
+                    className="h-12 px-6 gap-3 border-slate-200 bg-white rounded-2xl font-black text-[10px] uppercase tracking-widest text-slate-600 hover:bg-slate-50 transition-all shadow-sm"
+                  >
+                    <Settings2 size={16} className="text-slate-400" />
+                    Setup
+                    <ChevronDown size={14} className="text-slate-300" />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end" className="w-64 p-2 rounded-[2rem] border-none shadow-3xl bg-white dark:bg-slate-900">
+                  <DropdownMenuItem onClick={handleCopyOnboardingLink} className="rounded-xl py-3 px-4 cursor-pointer">
+                    <LinkIcon size={16} className="mr-3 text-indigo-500" /> Copy Onboarding Link
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={handleSyncToNotion} className="rounded-xl py-3 px-4 cursor-pointer">
+                    <RefreshCw size={16} className="mr-3 text-emerald-500" /> Sync to Notion
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={handleCopyForAI} className="rounded-xl py-3 px-4 cursor-pointer">
+                    <Sparkles size={16} className="mr-3 text-amber-500" /> AI Case Prompt
+                  </DropdownMenuItem>
+                  <DropdownMenuSeparator className="my-2" />
+                  <DropdownMenuItem onClick={handlePrint} className="rounded-xl py-3 px-4 cursor-pointer">
+                    <Printer size={16} className="mr-3 text-slate-400" /> Print Session Report
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+
+              {isSessionToday && appointment.status === 'Scheduled' && (
+                <Button 
+                  onClick={handleStartSession}
+                  className="h-12 px-8 bg-indigo-600 hover:bg-indigo-700 text-white rounded-2xl font-black text-[10px] uppercase tracking-widest shadow-xl shadow-indigo-500/20 transition-all hover:scale-105 active:scale-95"
+                >
+                  Start Session
+                </Button>
+              )}
+            </div>
+          </div>
+
+          {/* BANNERS & INSIGHTS */}
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+            <div className="lg:col-span-8">
+              <WeeklyFocusBanner
+                appointmentId={appointment.id}
+                priorityPattern={appointment.priority_pattern}
+                onSaveField={saveField}
+              />
+            </div>
+            <div className="lg:col-span-4">
+              <PreviousSessionInsightsBar
+                clientId={appointment.clients.id}
+                currentAppointmentId={appointment.id}
+              />
+            </div>
+          </div>
+
+          {/* MAIN WORKSPACE GRID */}
+          <div className="grid grid-cols-1 xl:grid-cols-12 gap-10 items-start">
+            {/* LEFT COLUMN: MAIN CONTENT */}
+            <div className={cn(
+              showSidebar ? "xl:col-span-8" : "xl:col-span-12",
+              "space-y-10 transition-all duration-500"
+            )}>
+              <div className="bg-white dark:bg-slate-900 rounded-[3rem] border border-slate-200 dark:border-slate-800 shadow-2xl shadow-slate-200/50 dark:shadow-none overflow-hidden">
+                <div className="p-8 md:p-12 space-y-12">
+                  <AppointmentHeader 
+                    appointment={appointment} 
+                    onSaveField={saveField} 
+                    onUpdate={refresh} 
+                  />
+
+                  <div className="h-px bg-gradient-to-r from-transparent via-slate-100 dark:via-slate-800 to-transparent" />
+
+                  <SessionContentSwitcher
+                    appointment={appointment}
+                    onUpdate={refresh}
+                    saveField={saveField}
+                    updatePriorityPattern={updatePriorityPattern}
+                    history={history}
+                    nucleiFilter={nucleiFilter}
+                    showSidebar={showSidebar}
+                    onToggleSidebar={() => setShowSidebar(!showSidebar)}
+                    onClonePrevious={handleClonePrevious}
+                    onPrint={handlePrint}
+                    onCopySummary={handleCopySummary}
+                    onDelete={handleDeleteAppointment}
+                    onStartSession={handleStartSession}
+                    isCloning={actionStates.cloning}
+                    isCopied={isCopied}
+                    onOpenDocument={() => setIsDocumentView(true)}
+                  />
+                </div>
+              </div>
+
+              {/* WORKSHEET SECTION */}
+              <div className="bg-slate-50 dark:bg-slate-950 rounded-[3rem] border border-dashed border-slate-200 dark:border-slate-800 p-12">
+                <div className="max-w-4xl mx-auto">
+                  <SessionWorksheetTemplate 
+                    clientName={appointment.clients.name} 
+                    date={appointment.date} 
+                  />
+                </div>
+              </div>
+            </div>
+
+            {/* RIGHT COLUMN: SIDEBAR */}
             {showSidebar && (
-              <div className="xl:col-span-4 space-y-10 print:hidden">
-                {/* Reflections */}
-                {reflections.length > 0 && (
-                  <Card className="border-none shadow-sm bg-card rounded-[2rem] overflow-hidden">
-                    <CardHeader className="p-6 pb-2">
-                      <div className="flex items-center justify-between">
-                        <div className="flex items-center gap-2">
-                          <MessageSquare className="text-indigo-600" size={18} />
-                          <h3 className="font-black text-xs uppercase tracking-widest text-slate-500">Practitioner Reflections</h3>
+              <div className="xl:col-span-4 space-y-8 sticky top-24 print:hidden animate-in fade-in slide-in-from-right-4 duration-500">
+                {/* BRAINSTEM TONE MAP */}
+                <Card className="border-none shadow-2xl shadow-indigo-500/5 rounded-[2.5rem] bg-white dark:bg-slate-900 overflow-hidden">
+                  <CardHeader className="p-8 pb-4">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-3">
+                        <div className="w-10 h-10 rounded-xl bg-indigo-50 text-indigo-600 flex items-center justify-center">
+                          <Brain size={20} />
                         </div>
-                        <Button variant="ghost" size="sm" asChild className="h-8 text-[10px] font-black uppercase tracking-widest text-indigo-600">
+                        <h3 className="text-sm font-black text-slate-900 dark:text-white uppercase tracking-[0.2em]">Neural Landscape</h3>
+                      </div>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        onClick={() => setShowSidebar(false)}
+                        className="h-10 w-10 rounded-xl text-slate-300 hover:text-rose-500 hover:bg-rose-50 transition-all"
+                      >
+                        <PanelRightClose size={20} />
+                      </Button>
+                    </div>
+                  </CardHeader>
+                  <CardContent className="p-8 pt-0">
+                    <BrainstemToneMap
+                      priorityPattern={appointment.priority_pattern}
+                      activeFilter={nucleiFilter}
+                      onSelectNuclei={setNucleiFilter}
+                    />
+                  </CardContent>
+                </Card>
+
+                {/* REFLECTIONS */}
+                {reflections.length > 0 && (
+                  <Card className="border-none shadow-2xl shadow-amber-500/5 rounded-[2.5rem] bg-white dark:bg-slate-900 overflow-hidden">
+                    <CardHeader className="p-8 pb-4">
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-3">
+                          <div className="w-10 h-10 rounded-xl bg-amber-50 text-amber-600 flex items-center justify-center">
+                            <MessageSquare size={20} />
+                          </div>
+                          <h3 className="text-sm font-black text-slate-900 dark:text-white uppercase tracking-[0.2em]">Reflections</h3>
+                        </div>
+                        <Button variant="ghost" size="sm" asChild className="h-10 px-4 rounded-xl text-[10px] font-black uppercase tracking-widest text-indigo-600 hover:bg-indigo-50">
                           <Link to="/practice/journal" state={{ appointmentId: id }}>
                             + Add
                           </Link>
                         </Button>
                       </div>
                     </CardHeader>
-                    <CardContent className="p-6 pt-0 space-y-4">
-                      {reflections.map((ref) => (
-                        <div key={ref.id} className="p-4 bg-muted/30 rounded-2xl border border-border space-y-2">
+                    <CardContent className="p-8 pt-0 space-y-4">
+                      {reflections.slice(0, 3).map((ref) => (
+                        <div key={ref.id} className="p-5 bg-slate-50 dark:bg-slate-800/50 rounded-2xl border border-slate-100 dark:border-slate-800 space-y-3 group hover:border-amber-200 transition-all">
                           <div className="flex justify-between items-start">
-                            <Badge variant="outline" className="text-[8px] font-black uppercase border-none bg-indigo-50 text-indigo-600">
+                            <Badge variant="outline" className="text-[8px] font-black uppercase border-none bg-amber-100 text-amber-700 px-2 py-0.5">
                               {ref.category}
                             </Badge>
                             <span className="text-[8px] font-bold text-slate-400 uppercase">
                               {format(new Date(ref.created_at), "MMM d")}
                             </span>
                           </div>
-                          <p className="text-xs italic text-slate-600 line-clamp-3 leading-relaxed">
+                          <p className="text-xs italic text-slate-600 dark:text-slate-400 line-clamp-3 leading-relaxed">
                             "{ref.content}"
                           </p>
                         </div>
                       ))}
+                      {reflections.length > 3 && (
+                        <Button variant="ghost" asChild className="w-full h-10 rounded-xl text-[10px] font-black uppercase tracking-widest text-slate-400 hover:text-indigo-600">
+                          <Link to="/practice/journal" state={{ appointmentId: id }}>
+                            View All {reflections.length} Reflections
+                          </Link>
+                        </Button>
+                      )}
                     </CardContent>
                   </Card>
                 )}
 
-                {/* Brainstem Tone Map */}
-                <div className="space-y-4">
-                  <div className="flex items-center justify-between px-2">
-                    <div className="flex items-center gap-2">
-                      <Brain className="text-indigo-600" size={18} />
-                      <h3 className="text-sm font-black text-slate-400 uppercase tracking-[0.3em]">Brainstem Tone Map</h3>
-                    </div>
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      onClick={() => setShowSidebar(false)}
-                      className="h-8 w-8 rounded-xl text-slate-400"
-                    >
-                      <PanelRightClose size={18} />
-                    </Button>
-                  </div>
-                  <BrainstemToneMap
-                    priorityPattern={appointment.priority_pattern}
-                    activeFilter={nucleiFilter}
-                    onSelectNuclei={setNucleiFilter}
-                  />
-                </div>
-
+                {/* CONTEXT CARDS */}
                 <AppointmentContextCards
                   appointment={appointment}
                   currentPeakMeridian={currentPeakMeridian}
@@ -542,12 +591,6 @@ const AppointmentDetailPage = () => {
               </div>
             )}
           </div>
-
-          {/* Worksheet */}
-          <SessionWorksheetTemplate 
-            clientName={appointment.clients.name} 
-            date={appointment.date} 
-          />
         </div>
       </AppLayout>
     </ErrorBoundary>

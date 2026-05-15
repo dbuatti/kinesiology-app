@@ -6,7 +6,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { 
   Zap, ExternalLink, Clock, Target, ShieldAlert, Activity, Brain, Heart, Home, Sparkles, CreditCard, CheckCircle2, Wallet, Smartphone, Loader2, QrCode, ChevronDown, DollarSign,
-  MessageSquare
+  MessageSquare, Info, AlertCircle, Lightbulb, Layers
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import EditableField from "@/components/shared/EditableField";
@@ -31,11 +31,11 @@ interface AppointmentContextCardsProps {
 }
 
 const SESSION_STAGES = [
-  { name: "Goal Setting", duration: 15, icon: Target, color: "text-indigo-500" },
-  { name: "Activation", duration: 15, icon: Zap, color: "text-blue-500" },
-  { name: "Correction", duration: 20, icon: Activity, color: "text-emerald-500" },
-  { name: "Challenge", duration: 5, icon: ShieldAlert, color: "text-amber-500" },
-  { name: "Home Reinforcement", duration: 5, icon: Home, color: "text-rose-500" },
+  { name: "Goal Setting", duration: 15, icon: Target, color: "text-indigo-500", bg: "bg-indigo-50" },
+  { name: "Activation", duration: 15, icon: Zap, color: "text-blue-500", bg: "bg-blue-50" },
+  { name: "Correction", duration: 20, icon: Activity, color: "text-emerald-500", bg: "bg-emerald-50" },
+  { name: "Challenge", duration: 5, icon: ShieldAlert, color: "text-amber-500", bg: "bg-amber-50" },
+  { name: "Home Reinforcement", duration: 5, icon: Home, color: "text-rose-500", bg: "bg-rose-50" },
 ];
 
 const AppointmentContextCards = ({ appointment, currentPeakMeridian, onSaveField }: AppointmentContextCardsProps) => {
@@ -70,24 +70,26 @@ const AppointmentContextCards = ({ appointment, currentPeakMeridian, onSaveField
   };
 
   return (
-    <div className="space-y-6">
-      {/* Session Strategy Card - Always Visible */}
-      <Card className="border-none shadow-lg rounded-[2rem] bg-slate-900 text-white overflow-hidden">
-        <CardHeader className="p-5 pb-2">
-          <CardTitle className="text-[10px] font-black uppercase tracking-[0.3em] text-slate-500 flex items-center gap-2">
-            <Clock size={14} /> Session Strategy (60m)
+    <div className="space-y-8">
+      {/* Session Strategy Card */}
+      <Card className="border-none shadow-2xl shadow-slate-900/5 rounded-[2.5rem] bg-slate-900 text-white overflow-hidden">
+        <CardHeader className="p-8 pb-4">
+          <CardTitle className="text-[10px] font-black uppercase tracking-[0.3em] text-slate-500 flex items-center gap-3">
+            <Clock size={16} /> Session Strategy (60m)
           </CardTitle>
         </CardHeader>
-        <CardContent className="p-5 pt-0 space-y-3">
-          <div className="grid grid-cols-1 gap-1.5">
+        <CardContent className="p-8 pt-0 space-y-4">
+          <div className="grid grid-cols-1 gap-2">
             {SESSION_STAGES.map((stage) => (
-              <div key={stage.name} className="flex items-center justify-between p-2 bg-white/5 rounded-xl border border-white/10 group hover:bg-white/10 transition-all">
-                <div className="flex items-center gap-2.5">
-                  <stage.icon size={12} className={stage.color} />
-                  <span className="text-[10px] font-bold text-slate-300">{stage.name}</span>
+              <div key={stage.name} className="flex items-center justify-between p-4 bg-white/5 rounded-2xl border border-white/10 group hover:bg-white/10 transition-all duration-500">
+                <div className="flex items-center gap-4">
+                  <div className={cn("w-8 h-8 rounded-lg flex items-center justify-center transition-transform group-hover:scale-110", stage.bg, stage.color)}>
+                    <stage.icon size={16} />
+                  </div>
+                  <span className="text-xs font-bold text-slate-300">{stage.name}</span>
                 </div>
-                <Badge variant="outline" className="border-white/20 text-white font-black text-[7px] uppercase tracking-widest">
-                  {stage.duration}m
+                <Badge variant="outline" className="border-white/20 text-white font-black text-[8px] uppercase tracking-widest px-3 py-1">
+                  {stage.duration}M
                 </Badge>
               </div>
             ))}
@@ -95,53 +97,66 @@ const AppointmentContextCards = ({ appointment, currentPeakMeridian, onSaveField
         </CardContent>
       </Card>
 
-      {/* Current Peak Meridian - Always Visible */}
+      {/* Current Peak Meridian */}
       {currentPeakMeridian && (
         <Card className={cn(
-          "border-none shadow-lg rounded-[2rem] text-white overflow-hidden relative group",
+          "border-none shadow-2xl shadow-indigo-500/10 rounded-[2.5rem] text-white overflow-hidden relative group",
           currentPeakMeridian.color.split(' ')[0]
         )}>
-          <div className="absolute top-0 right-0 p-6 opacity-10 group-hover:scale-110 transition-transform duration-700">
-            <Zap size={80} />
+          <div className="absolute top-0 right-0 p-8 opacity-10 group-hover:scale-125 group-hover:rotate-12 transition-all duration-1000">
+            <Zap size={120} />
           </div>
-          <CardContent className="p-6 space-y-3 relative z-10">
+          <CardContent className="p-8 space-y-4 relative z-10">
             <div className="flex items-center justify-between">
-              <p className="text-[9px] font-black uppercase tracking-[0.3em] opacity-80">Peak Meridian</p>
-              <Badge className="bg-white/20 text-white border-none font-black text-[7px] uppercase tracking-widest">TCM</Badge>
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-xl bg-white/20 flex items-center justify-center">
+                  <Activity size={20} />
+                </div>
+                <p className="text-[10px] font-black uppercase tracking-[0.3em] opacity-80">Peak Meridian</p>
+              </div>
+              <Badge className="bg-white/20 text-white border-none font-black text-[8px] uppercase tracking-widest px-3 py-1">TCM</Badge>
             </div>
             <div>
-              <h3 className="text-2xl font-black tracking-tight">{currentPeakMeridian.name}</h3>
-              <p className="text-[10px] font-bold opacity-90 mt-0.5">{currentPeakMeridian.peakTime}</p>
+              <h3 className="text-3xl font-black tracking-tight">{currentPeakMeridian.name}</h3>
+              <p className="text-sm font-bold opacity-90 mt-1">{currentPeakMeridian.peakTime}</p>
             </div>
           </CardContent>
         </Card>
       )}
 
-      {/* Payment Management - Always Visible */}
+      {/* Payment Management */}
       <Collapsible open={billingOpen} onOpenChange={setBillingOpen}>
         <Card className={cn(
-          "border-none shadow-md rounded-[2rem] overflow-hidden transition-all",
+          "border-none shadow-2xl shadow-slate-200/50 dark:shadow-none rounded-[2.5rem] overflow-hidden transition-all duration-500",
           appointment.is_paid ? "bg-white border-2 border-emerald-100" : "bg-slate-50 border border-slate-200"
         )}>
           <CollapsibleTrigger asChild>
-            <CardHeader className="p-5 cursor-pointer hover:bg-black/5 transition-colors">
+            <CardHeader className="p-8 cursor-pointer hover:bg-slate-100/50 transition-colors">
               <div className="flex items-center justify-between">
-                <CardTitle className={cn(
-                  "text-[10px] font-black uppercase tracking-[0.3em] flex items-center gap-2",
-                  appointment.is_paid ? "text-emerald-600" : "text-slate-500"
-                )}>
-                  <Wallet size={14} /> Clinical Billing
-                </CardTitle>
-                <ChevronDown className={cn("h-4 w-4 transition-transform", billingOpen && "rotate-180", appointment.is_paid ? "text-emerald-400" : "text-slate-400")} />
+                <div className="flex items-center gap-3">
+                  <div className={cn(
+                    "w-10 h-10 rounded-xl flex items-center justify-center",
+                    appointment.is_paid ? "bg-emerald-50 text-emerald-600" : "bg-slate-100 text-slate-400"
+                  )}>
+                    <Wallet size={20} />
+                  </div>
+                  <CardTitle className={cn(
+                    "text-[10px] font-black uppercase tracking-[0.3em]",
+                    appointment.is_paid ? "text-emerald-600" : "text-slate-500"
+                  )}>
+                    Clinical Billing
+                  </CardTitle>
+                </div>
+                <ChevronDown className={cn("h-5 w-5 transition-transform duration-500", billingOpen && "rotate-180", appointment.is_paid ? "text-emerald-400" : "text-slate-400")} />
               </div>
             </CardHeader>
           </CollapsibleTrigger>
           <CollapsibleContent>
-            <CardContent className="p-5 pt-0 space-y-6 animate-in fade-in slide-in-from-top-1">
-              <div className="flex items-center justify-between p-3 bg-white dark:bg-slate-900 rounded-xl border border-border shadow-sm">
-                <div className="space-y-0.5">
-                  <Label htmlFor="is-paid-toggle" className="text-xs font-bold text-slate-700 dark:text-slate-300">Paid Session</Label>
-                  <p className="text-[8px] text-slate-400 font-medium uppercase">Enable billing for this session</p>
+            <CardContent className="p-8 pt-0 space-y-8 animate-in fade-in slide-in-from-top-2 duration-500">
+              <div className="flex items-center justify-between p-5 bg-white dark:bg-slate-900 rounded-2xl border border-slate-100 dark:border-slate-800 shadow-sm">
+                <div className="space-y-1">
+                  <Label htmlFor="is-paid-toggle" className="text-sm font-black text-slate-700 dark:text-slate-300 uppercase tracking-widest">Paid Session</Label>
+                  <p className="text-[9px] text-slate-400 font-medium uppercase tracking-wider">Enable billing for this session</p>
                 </div>
                 <Switch 
                   id="is-paid-toggle"
@@ -152,62 +167,69 @@ const AppointmentContextCards = ({ appointment, currentPeakMeridian, onSaveField
               </div>
 
               {appointment.is_paid && (
-                <div className="space-y-4 animate-in zoom-in-95 duration-300">
+                <div className="space-y-6 animate-in zoom-in-95 duration-500">
                   {!appointment.payment_received ? (
-                    <div className="space-y-3">
-                      <div className="p-4 bg-amber-50 rounded-2xl border border-amber-100 text-center">
-                        <p className="text-[8px] font-black text-amber-600 uppercase tracking-widest mb-1">Amount Due</p>
-                        <p className="text-2xl font-black text-amber-900">${appointment.price_amount || 50}</p>
+                    <div className="space-y-4">
+                      <div className="p-6 bg-amber-50 dark:bg-amber-900/20 rounded-[2rem] border border-amber-100 dark:border-amber-800 text-center relative overflow-hidden">
+                        <div className="absolute -right-4 -bottom-4 opacity-10">
+                          <DollarSign size={80} className="text-amber-600" />
+                        </div>
+                        <p className="text-[10px] font-black text-amber-600 uppercase tracking-[0.3em] mb-2 relative z-10">Amount Due</p>
+                        <p className="text-4xl font-black text-amber-900 dark:text-amber-400 relative z-10">${appointment.price_amount || 50}</p>
                       </div>
                       <Button 
                         onClick={handleGeneratePaymentLink}
                         disabled={generatingLink}
-                        className="w-full h-10 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl font-black text-[9px] uppercase tracking-widest shadow-lg"
+                        className="w-full h-14 bg-indigo-600 hover:bg-indigo-700 text-white rounded-2xl font-black text-xs uppercase tracking-widest shadow-xl shadow-indigo-500/20 transition-all hover:scale-105 active:scale-95"
                       >
-                        {generatingLink ? <Loader2 className="animate-spin mr-2" /> : <QrCode size={14} className="mr-2" />}
+                        {generatingLink ? <Loader2 className="animate-spin mr-3" /> : <QrCode size={18} className="mr-3" />}
                         Generate Stripe Link
                       </Button>
                       <Button 
                         variant="outline"
                         onClick={() => onSaveField('payment_received', true)}
-                        className="w-full h-10 border-emerald-200 text-emerald-600 hover:bg-emerald-50 rounded-xl font-black text-[9px] uppercase tracking-widest"
+                        className="w-full h-14 border-emerald-200 text-emerald-600 hover:bg-emerald-50 rounded-2xl font-black text-xs uppercase tracking-widest transition-all"
                       >
-                        <CheckCircle2 size={14} className="mr-2" /> Mark as Paid Manually
+                        <CheckCircle2 size={18} className="mr-3" /> Mark as Paid Manually
                       </Button>
                     </div>
                   ) : (
-                    <div className="p-4 bg-emerald-50 rounded-2xl border border-emerald-100 flex flex-col items-center justify-center gap-2 text-emerald-700">
-                      <div className="w-10 h-10 rounded-full bg-emerald-500 text-white flex items-center justify-center shadow-lg">
-                        <CheckCircle2 size={20} />
+                    <div className="p-8 bg-emerald-50 dark:bg-emerald-900/20 rounded-[2.5rem] border border-emerald-100 dark:border-emerald-800 flex flex-col items-center justify-center gap-4 text-emerald-700">
+                      <div className="w-16 h-16 rounded-full bg-emerald-500 text-white flex items-center justify-center shadow-2xl shadow-emerald-500/30">
+                        <CheckCircle2 size={32} />
                       </div>
                       <div className="text-center">
-                        <p className="font-black text-[10px] uppercase tracking-widest">Payment Received</p>
-                        <p className="text-[8px] font-bold opacity-60 mt-0.5">Method: {appointment.payment_method || 'Not specified'}</p>
+                        <p className="font-black text-sm uppercase tracking-[0.2em]">Payment Received</p>
+                        <p className="text-[10px] font-bold opacity-60 mt-1 uppercase tracking-widest">Method: {appointment.payment_method || 'Not specified'}</p>
                       </div>
                       <Button 
                         variant="ghost" 
                         size="sm" 
                         onClick={() => onSaveField('payment_received', false)}
-                        className="text-[8px] font-black uppercase tracking-widest text-slate-400 hover:text-rose-600 mt-2"
+                        className="text-[10px] font-black uppercase tracking-widest text-slate-400 hover:text-rose-600 mt-2"
                       >
                         Undo Payment
                       </Button>
                     </div>
                   )}
 
-                  <div className="space-y-2">
-                    <p className="text-[8px] font-black text-slate-400 uppercase tracking-widest ml-1">Payment Method</p>
+                  <div className="space-y-3">
+                    <p className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] ml-2">Payment Method</p>
                     <ToggleGroup 
                       type="single" 
                       value={appointment.payment_method || ""} 
                       onValueChange={(v) => onSaveField('payment_method', v || null)}
-                      className="flex flex-wrap justify-start gap-1.5"
+                      className="flex flex-wrap justify-start gap-2"
                     >
-                      <ToggleGroupItem value="Stripe" className="rounded-lg px-2 h-7 text-[8px] font-black uppercase border-slate-200 data-[state=on]:bg-indigo-600 data-[state=on]:text-white">
-                        Stripe
-                      </ToggleGroupItem>
-                      <ToggleGroupItem value="PayID" className="rounded-lg px-2 h-7 text-[8px] font-black uppercase border-slate-200 data-[state=on]:bg-emerald-600 data-[state=on]:text-white">PayID</ToggleGroupItem>
-                      <ToggleGroupItem value="Cash" className="rounded-lg px-2 h-7 text-[8px] font-black uppercase border-slate-200 data-[state=on]:bg-emerald-600 data-[state=on]:text-white">Cash</ToggleGroupItem>
+                      {['Stripe', 'PayID', 'Cash', 'Transfer'].map(method => (
+                        <ToggleGroupItem 
+                          key={method}
+                          value={method} 
+                          className="rounded-xl px-4 h-10 text-[10px] font-black uppercase tracking-widest border-slate-200 data-[state=on]:bg-indigo-600 data-[state=on]:text-white data-[state=on]:border-indigo-600 transition-all"
+                        >
+                          {method}
+                        </ToggleGroupItem>
+                      ))}
                     </ToggleGroup>
                   </div>
                 </div>
@@ -217,24 +239,29 @@ const AppointmentContextCards = ({ appointment, currentPeakMeridian, onSaveField
         </Card>
       </Collapsible>
 
-      {/* Session Context - Collapsible */}
+      {/* Session Context */}
       <Collapsible open={contextOpen} onOpenChange={setContextOpen}>
-        <Card className="border-none shadow-md rounded-[2rem] bg-slate-900 text-white overflow-hidden">
+        <Card className="border-none shadow-2xl shadow-slate-900/5 rounded-[2.5rem] bg-slate-900 text-white overflow-hidden">
           <CollapsibleTrigger asChild>
-            <CardHeader className="p-5 cursor-pointer hover:bg-white/5 transition-colors">
+            <CardHeader className="p-8 cursor-pointer hover:bg-white/5 transition-colors">
               <div className="flex items-center justify-between">
-                <p className="text-[10px] font-black text-slate-500 uppercase tracking-[0.3em]">Session Context</p>
-                <ChevronDown className={cn("h-4 w-4 text-slate-500 transition-transform", contextOpen && "rotate-180")} />
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-xl bg-white/10 flex items-center justify-center">
+                    <Layers size={20} />
+                  </div>
+                  <p className="text-[10px] font-black text-slate-500 uppercase tracking-[0.3em]">Session Context</p>
+                </div>
+                <ChevronDown className={cn("h-5 w-5 text-slate-500 transition-transform duration-500", contextOpen && "rotate-180")} />
               </div>
             </CardHeader>
           </CollapsibleTrigger>
           <CollapsibleContent>
-            <CardContent className="p-5 pt-0 space-y-6 animate-in fade-in slide-in-from-top-1">
-              <div className="space-y-4">
-                <div className="space-y-2">
-                  <div className="flex items-center gap-2 px-1">
-                    <CreditCard size={12} className="text-emerald-400" />
-                    <span className="text-[8px] font-black text-slate-500 uppercase tracking-widest">Payment Link</span>
+            <CardContent className="p-8 pt-0 space-y-8 animate-in fade-in slide-in-from-top-2 duration-500">
+              <div className="space-y-6">
+                <div className="space-y-3">
+                  <div className="flex items-center gap-3 px-2">
+                    <CreditCard size={16} className="text-emerald-400" />
+                    <span className="text-[10px] font-black text-slate-500 uppercase tracking-[0.2em]">Payment Link</span>
                   </div>
                   <EditableField 
                     key={`payment-link-${appointment.id}`} 
@@ -243,11 +270,15 @@ const AppointmentContextCards = ({ appointment, currentPeakMeridian, onSaveField
                     value={appointment.payment_link} 
                     placeholder="Paste URL..." 
                     onSave={onSaveField as any} 
-                    className="bg-white/5 border-white/10 p-3 rounded-xl"
+                    className="bg-white/5 border-white/10 p-5 rounded-2xl text-sm"
                   />
                 </div>
 
-                <div className="space-y-2">
+                <div className="space-y-3">
+                  <div className="flex items-center gap-3 px-2">
+                    <Target size={16} className="text-indigo-400" />
+                    <span className="text-[10px] font-black text-slate-500 uppercase tracking-[0.2em]">Acupoints</span>
+                  </div>
                   <EditableField 
                     key={`acupoints-${appointment.id}`} 
                     field="acupoints" 
@@ -255,7 +286,7 @@ const AppointmentContextCards = ({ appointment, currentPeakMeridian, onSaveField
                     value={appointment.acupoints} 
                     placeholder="Points used..." 
                     onSave={onSaveField as any} 
-                    className="bg-white/5 border-white/10 p-3 rounded-xl"
+                    className="bg-white/5 border-white/10 p-5 rounded-2xl text-sm"
                   />
                   <QuickAcupointSelector 
                     currentValue={appointment.acupoints} 
@@ -263,15 +294,15 @@ const AppointmentContextCards = ({ appointment, currentPeakMeridian, onSaveField
                   />
                 </div>
 
-                <div className="space-y-2">
-                  <div className="flex items-center justify-between px-1">
-                    <div className="flex items-center gap-2">
-                      <MessageSquare size={12} className="text-amber-400" />
-                      <span className="text-[8px] font-black text-slate-500 uppercase tracking-widest">Practitioner Reflection</span>
+                <div className="space-y-3">
+                  <div className="flex items-center justify-between px-2">
+                    <div className="flex items-center gap-3">
+                      <MessageSquare size={16} className="text-amber-400" />
+                      <span className="text-[10px] font-black text-slate-500 uppercase tracking-[0.2em]">Practitioner Reflection</span>
                     </div>
-                    <Button variant="ghost" size="sm" asChild className="h-6 text-[8px] font-black uppercase tracking-widest text-indigo-400 hover:text-white hover:bg-white/10">
+                    <Button variant="ghost" size="sm" asChild className="h-8 px-3 text-[9px] font-black uppercase tracking-widest text-indigo-400 hover:text-white hover:bg-white/10 rounded-lg">
                       <Link to="/practice/journal" state={{ appointmentId: appointment.id }}>
-                        Open Journal <ExternalLink size={8} className="ml-1" />
+                        Open Journal <ExternalLink size={10} className="ml-2" />
                       </Link>
                     </Button>
                   </div>
@@ -281,7 +312,7 @@ const AppointmentContextCards = ({ appointment, currentPeakMeridian, onSaveField
                     label="" 
                     value={appointment.journal} 
                     multiline 
-                    className="bg-amber-500/10 border-amber-500/20 p-3 rounded-xl" 
+                    className="bg-amber-500/10 border-amber-500/20 p-5 rounded-2xl text-sm italic text-slate-300" 
                     placeholder="Personal insights..." 
                     onSave={onSaveField as any} 
                   />
@@ -292,18 +323,18 @@ const AppointmentContextCards = ({ appointment, currentPeakMeridian, onSaveField
         </Card>
       </Collapsible>
 
-      {/* Quick Reference - Always Visible */}
-      <Card className="border-none shadow-md rounded-[2rem] bg-indigo-50 border-2 border-indigo-100 overflow-hidden">
-        <CardHeader className="p-5 pb-2">
-          <CardTitle className="text-[10px] font-black uppercase tracking-[0.3em] text-indigo-600 flex items-center gap-2">
-            <Sparkles size={14} /> Quick Reference
+      {/* Quick Reference */}
+      <Card className="border-none shadow-2xl shadow-indigo-500/5 rounded-[2.5rem] bg-indigo-50 dark:bg-indigo-900/20 border-2 border-indigo-100 dark:border-indigo-800 overflow-hidden group">
+        <CardHeader className="p-8 pb-4">
+          <CardTitle className="text-[10px] font-black uppercase tracking-[0.3em] text-indigo-600 flex items-center gap-3">
+            <Lightbulb size={16} className="group-hover:scale-110 transition-transform" /> Quick Reference
           </CardTitle>
         </CardHeader>
-        <CardContent className="p-5 pt-0">
-          <div className="p-3 bg-white rounded-xl border border-indigo-200 shadow-sm">
-            <p className="text-[8px] font-black text-indigo-400 uppercase tracking-widest mb-1">Instant Cramp Hack</p>
-            <p className="text-[9px] font-bold text-slate-700 leading-relaxed">
-              Chop spindles <span className="text-indigo-600">Inwards</span>, then <span className="text-indigo-600">Outwards</span> (x2).
+        <CardContent className="p-8 pt-0">
+          <div className="p-5 bg-white dark:bg-slate-900 rounded-2xl border border-indigo-200 dark:border-indigo-800 shadow-sm">
+            <p className="text-[10px] font-black text-indigo-400 uppercase tracking-[0.2em] mb-2">Instant Cramp Hack</p>
+            <p className="text-xs font-bold text-slate-700 dark:text-slate-300 leading-relaxed">
+              Chop spindles <span className="text-indigo-600 font-black">INWARDS</span>, then <span className="text-indigo-600 font-black">OUTWARDS</span> (x2).
             </p>
           </div>
         </CardContent>

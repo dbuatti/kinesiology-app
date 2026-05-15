@@ -34,6 +34,8 @@ export const FINDING_TO_NUCLEI: Record<string, { nuclei: Nuclei, tone: 'Flexors'
   'Latissimus Dorsi': { nuclei: 'Pons', tone: 'Extensors' },
 };
 
+const DYSFUNCTIONAL_STATUSES = ['Inhibited', 'Hypertonic', 'Switching', 'Inhibition'];
+
 export function calculateBrainstemTone(priorityPattern: string | null): NucleiStatus[] {
   const nucleiMap: Record<Nuclei, NucleiStatus> = {
     'Midbrain': { name: 'Midbrain', threatLevel: 0, findings: [], toneEffect: 'Flexors' },
@@ -48,12 +50,12 @@ export function calculateBrainstemTone(priorityPattern: string | null): NucleiSt
   
   Object.values(pattern).forEach((category) => {
     Object.entries(category).forEach(([name, status]) => {
-      if (status === 'Inhibited') {
+      if (DYSFUNCTIONAL_STATUSES.includes(status)) {
         const mappingKey = Object.keys(FINDING_TO_NUCLEI).find(key => name.startsWith(key));
         const mapping = mappingKey ? FINDING_TO_NUCLEI[mappingKey] : null;
         
         if (mapping) {
-          nucleiMap[mapping.nuclei].findings.push(name);
+          nucleiMap[mapping.nuclei].findings.push(`${name} (${status})`);
         }
       }
     });

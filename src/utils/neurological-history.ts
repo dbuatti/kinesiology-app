@@ -11,12 +11,15 @@ export interface FindingHistory {
   history: {
     date: string;
     appointmentId: string;
-    status: 'Clear' | 'Inhibited' | 'Not Tested';
+    status: string;
   }[];
   firstInhibited?: string;
   lastCleared?: string;
   isResolved: boolean;
 }
+
+const DYSFUNCTIONAL_STATUSES = ['Inhibited', 'Hypertonic', 'Switching', 'Inhibition'];
+const CLEAR_STATUSES = ['Clear', 'Normotonic'];
 
 /**
  * Normalizes messy IDs or short names into proper clinical display names.
@@ -66,7 +69,7 @@ export function processNeurologicalHistory(appointments: any[]): FindingHistory[
         const sideMatch = key.match(/\(([LR])\)$/);
         const side = sideMatch ? sideMatch[1] : "";
         const base = getCanonicalName(key);
-        sessionItems.push({ base, side, status });
+        sessionItems.push({ base, side, status: status as string });
       });
 
       // 2. Filter out base items if lateralized ones exist for the same base name
@@ -100,7 +103,7 @@ export function processNeurologicalHistory(appointments: any[]): FindingHistory[
         findingsMap[key].history.push({
           date: dateStr,
           appointmentId: app.id,
-          status: item.status as 'Clear' | 'Inhibited'
+          status: item.status
         });
       });
     });
@@ -108,15 +111,15 @@ export function processNeurologicalHistory(appointments: any[]): FindingHistory[
 
   // Calculate resolutions
   return Object.values(findingsMap).map(finding => {
-    const inhibitedDates = finding.history.filter(h => h.status === 'Inhibited');
+    const inhibitedDates = finding.history.filter(h => DYSFUNCTIONAL_STATUSES.includes(h.status));
     
     if (inhibitedDates.length > 0) {
       finding.firstInhibited = inhibitedDates[0].date;
     }
     
-    // It's resolved if the LATEST test was 'Clear'
+    // It's resolved if the LATEST test was 'Clear' or 'Normotonic'
     const latestTest = finding.history[finding.history.length - 1];
-    if (latestTest && latestTest.status === 'Clear') {
+    if (latestTest && CLEAR_STATUSES.includes(latestTest.status)) {
       finding.isResolved = true;
       finding.lastCleared = latestTest.date;
     }

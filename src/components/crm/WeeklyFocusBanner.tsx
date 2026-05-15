@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect, useMemo } from 'react';
-import { Target, Sparkles, Zap, CheckCircle2, ChevronDown, Trophy, AlertCircle, PlayCircle } from 'lucide-react';
+import { Target, Sparkles, Zap, CheckCircle2, ChevronDown, Trophy, AlertCircle, PlayCircle, HelpCircle, ChevronsUp } from 'lucide-react';
 import { getWeeklyFocus } from '@/utils/weekly-focus';
 import { cn } from '@/lib/utils';
 import { Badge } from '@/components/ui/badge';
@@ -23,6 +23,8 @@ interface WeeklyFocusBannerProps {
   onSaveField?: (field: string, value: any) => Promise<void>;
   onJumpToCalibrate?: (itemName: string) => void;
 }
+
+type ItemStatus = 'Clear' | 'Inhibited' | 'Hypertonic' | 'Switching' | 'Not Tested';
 
 const WeeklyFocusBanner = ({ appointmentId, priorityPattern, onSaveField, onJumpToCalibrate }: WeeklyFocusBannerProps) => {
   const [items, setItems] = useState<string[]>([]);
@@ -53,14 +55,20 @@ const WeeklyFocusBanner = ({ appointmentId, priorityPattern, onSaveField, onJump
     if (!priorityPattern) return {};
     
     const parsed = safeParse(priorityPattern, {} as Record<string, Record<string, string>>);
-    const statuses: Record<string, 'Clear' | 'Inhibited' | 'Not Tested'> = {};
+    const statuses: Record<string, ItemStatus> = {};
     
     items.forEach(item => {
       let foundStatus: any = 'Not Tested';
       Object.values(parsed).forEach((category) => {
         if (category[item]) foundStatus = category[item];
-        if (category[`${item} (L)`] === 'Inhibited' || category[`${item} (R)`] === 'Inhibited') foundStatus = 'Inhibited';
-        if (category[`${item} (L)`] === 'Clear' && category[`${item} (R)`] === 'Clear') foundStatus = 'Clear';
+        // Check for lateralized versions
+        const sides = ['L', 'R'];
+        sides.forEach(side => {
+          const sideStatus = category[`${item} (${side})`];
+          if (sideStatus && sideStatus !== 'Clear' && foundStatus === 'Not Tested') {
+            foundStatus = sideStatus;
+          }
+        });
       });
       statuses[item] = foundStatus;
     });
@@ -77,17 +85,22 @@ const WeeklyFocusBanner = ({ appointmentId, priorityPattern, onSaveField, onJump
     return null;
   };
 
-  const handleSetStatus = async (item: string, status: 'Clear' | 'Inhibited') => {
+  const handleSetStatus = async (item: string, status: Exclude<ItemStatus, 'Not Tested'>) => {
     if (!onSaveField) return;
     try {
       const parsed = safeParse(priorityPattern, {} as any);
       let category = 'muscles';
       if (PRIMITIVE_REFLEXES.some(r => r.name === item)) category = 'primitiveReflexes';
       else if (BRAIN_REFLEX_POINTS.some(p => p.name.startsWith(item))) category = 'cranialNerves';
+      
       if (!(parsed as any)[category]) (parsed as any)[category] = {};
       (parsed as any)[category][item] = status;
-      setCelebratingItem(item);
-      setTimeout(() => setCelebratingItem(null), 2000);
+      
+      if (status === 'Clear') {
+        setCelebratingItem(item);
+        setTimeout(() => setCelebratingItem(null), 2000);
+      }
+      
       await onSaveField('priority_pattern', JSON.stringify(parsed));
       setOpenPopover(null);
     } catch (e) {
@@ -154,10 +167,14 @@ const WeeklyFocusBanner = ({ appointmentId, priorityPattern, onSaveField, onJump
                           "flex items-center gap-2 px-3 py-1.5 rounded-xl transition-all hover:scale-105 border-2 shadow-sm",
                           status === 'Clear' ? "bg-emerald-500/20 border-emerald-400/50 text-white" :
                           status === 'Inhibited' ? "bg-rose-500/20 border-rose-400/50 text-white" :
+                          status === 'Hypertonic' ? "bg-amber-500/20 border-amber-400/50 text-white" :
+                          status === 'Switching' ? "bg-purple-500/20 border-purple-400/50 text-white" :
                           "bg-white/10 border-white/10 text-indigo-100 hover:bg-white/20"
                         )}>
                           {status === 'Clear' ? <CheckCircle2 size={14} className="text-emerald-300" /> :
                            status === 'Inhibited' ? <AlertCircle size={14} className="text-rose-300" /> :
+                           status === 'Hypertonic' ? <ChevronsUp size={14} className="text-amber-300" /> :
+                           status === 'Switching' ? <HelpCircle size={14} className="text-purple-300" /> :
                            videoUrl ? <PlayCircle size={14} className="text-indigo-300" /> :
                            <div className="w-3 h-3 rounded-full border-2 border-current opacity-30" />}
                           <span className="text-xs font-black tracking-tight">{item}</span>
@@ -180,6 +197,20 @@ const WeeklyFocusBanner = ({ appointmentId, priorityPattern, onSaveField, onJump
                             onClick={(e) => { e.stopPropagation(); handleSetStatus(item, 'Inhibited'); }}
                           >
                             <AlertCircle size={18} className="mr-3" /> Mark as Inhibited
+                          </Button>
+                          <Button 
+                            variant="ghost" 
+                            className="w-full justify-start h-11 rounded-xl hover:bg-amber-500/20 hover:text-amber-400 font-bold text-xs px-4"
+                            onClick={(e) => { e.stopPropagation(); handleSetStatus(item, 'Hypertonic'); }}
+                          >
+                            <ChevronsUp size={18} className="mr-3" /> Mark as Hypertonic
+                          </Button>
+                          <Button 
+                            variant="ghost" 
+                            className="w-full justify-start h-11 rounded-xl hover:bg-purple-500/20 hover:text-purple-400 font-bold text-xs px-4"
+                            onClick={(e) => { e.stopPropagation(); handleSetStatus(item, 'Switching'); }}
+                          >
+                            <HelpCircle size={18} className="mr-3" /> Mark as Switching
                           </Button>
                           <div className="h-px bg-white/10 my-2 mx-2" />
                           {videoUrl && (

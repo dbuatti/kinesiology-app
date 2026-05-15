@@ -50,7 +50,7 @@ const HeartMathBreathing = () => {
       <div className="space-y-3">
         <div className="flex items-center justify-center gap-3 text-rose-600 dark:text-rose-400">
           <Heart size={24} className={cn(isActive && "animate-pulse")} />
-          <span className="text-[10px] font-black uppercase tracking-[0.4em]">HeartMath 4/6 Rhythm</span>
+          <span className="text-[10px] font-black uppercase tracking-widest">HeartMath 4/6 Rhythm</span>
         </div>
         <h3 className="text-3xl font-black text-slate-900 dark:text-white tracking-tight">Coherence Breathing</h3>
       </div>
@@ -69,7 +69,7 @@ const HeartMathBreathing = () => {
         </div>
       </div>
 
-      <div className="w-full max-w-sm space-y-3">
+      <div className="w-full max-sm space-y-3">
         <Progress value={isActive ? progress : 0} className="h-2 bg-rose-100 dark:bg-rose-900/30 [&>div]:bg-rose-500" />
         <div className="flex justify-between text-[10px] font-black uppercase tracking-[0.3em] text-rose-400">
           <span>4s Inhale</span>

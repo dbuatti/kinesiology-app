@@ -22,15 +22,17 @@ const BrainstemToneMap = ({ priorityPattern, activeFilter, onSelectNuclei }: Bra
 
   if (!hasData) {
     return (
-      <Card className="border-none shadow-sm bg-muted/30 rounded-[2rem] border-2 border-dashed border-border">
-        <CardContent className="p-12 text-center">
-          <Brain size={48} className="mx-auto text-muted-foreground mb-4 opacity-20" />
-          <h3 className="text-lg font-black text-foreground">No Tone Data Available</h3>
-          <p className="text-sm text-muted-foreground mt-1">
+      <div className="flex flex-col items-center justify-center py-16 px-8 text-center space-y-6 animate-in fade-in duration-700">
+        <div className="w-24 h-24 rounded-full bg-slate-50 flex items-center justify-center shadow-inner">
+          <Brain size={48} className="text-slate-200" />
+        </div>
+        <div className="space-y-2">
+          <h3 className="text-xl font-black text-slate-900">No Tone Data Available</h3>
+          <p className="text-sm text-slate-500 max-w-[240px] mx-auto leading-relaxed font-medium">
             Log inhibited nerves or muscles in the Pathway tab to see the Brainstem Tone Map.
           </p>
-        </CardContent>
-      </Card>
+        </div>
+      </div>
     );
   }
 

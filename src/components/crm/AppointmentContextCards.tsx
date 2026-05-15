@@ -31,11 +31,11 @@ interface AppointmentContextCardsProps {
 }
 
 const SESSION_STAGES = [
-  { name: "Goal Setting", duration: 15, icon: Target, color: "text-indigo-500", bg: "bg-indigo-50" },
-  { name: "Activation", duration: 15, icon: Zap, color: "text-blue-500", bg: "bg-blue-50" },
-  { name: "Correction", duration: 20, icon: Activity, color: "text-emerald-500", bg: "bg-emerald-50" },
-  { name: "Challenge", duration: 5, icon: ShieldAlert, color: "text-amber-500", bg: "bg-amber-50" },
-  { name: "Home Reinforcement", duration: 5, icon: Home, color: "text-rose-500", bg: "bg-rose-50" },
+  { name: "Goal Setting", duration: 15, icon: Target, color: "text-indigo-400", bg: "bg-white/5" },
+  { name: "Activation", duration: 15, icon: Zap, color: "text-blue-400", bg: "bg-white/5" },
+  { name: "Correction", duration: 20, icon: Activity, color: "text-emerald-400", bg: "bg-white/5" },
+  { name: "Challenge", duration: 5, icon: ShieldAlert, color: "text-amber-400", bg: "bg-white/5" },
+  { name: "Home Reinforcement", duration: 5, icon: Home, color: "text-rose-400", bg: "bg-white/5" },
 ];
 
 const AppointmentContextCards = ({ appointment, currentPeakMeridian, onSaveField }: AppointmentContextCardsProps) => {
@@ -101,7 +101,7 @@ const AppointmentContextCards = ({ appointment, currentPeakMeridian, onSaveField
       {currentPeakMeridian && (
         <Card className={cn(
           "border-none shadow-2xl shadow-indigo-500/10 rounded-[2.5rem] text-white overflow-hidden relative group",
-          currentPeakMeridian.color.split(' ')[0]
+          "bg-gradient-to-br from-rose-600 to-rose-800"
         )}>
           <div className="absolute top-0 right-0 p-8 opacity-10 group-hover:scale-125 group-hover:rotate-12 transition-all duration-1000">
             <Zap size={120} />

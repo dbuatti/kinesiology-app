@@ -26,9 +26,9 @@ interface ClinicalDashboardProps {
 
 const ClinicalDashboard = ({ stats, todaySessions, activeSession, morningProgress }: ClinicalDashboardProps) => {
   const missions = [
-    { label: "Grounding", status: morningProgress >= 25 ? 'done' : 'pending', icon: Sparkles },
-    { label: "Review Alerts", status: stats.imperativeAlerts === 0 ? 'done' : 'pending', icon: ShieldAlert },
-    { label: "Session Prep", status: 'pending', icon: ClipboardCheck },
+    { label: "Grounding", status: morningProgress >= 25 ? 'done' : 'pending', icon: Sparkles, path: "/morning-program" },
+    { label: "Review Alerts", status: stats.imperativeAlerts === 0 ? 'done' : 'pending', icon: ShieldAlert, path: "/oversight" },
+    { label: "Session Prep", status: 'pending', icon: ClipboardCheck, path: "/schedule" },
   ];
 
   return (
@@ -48,16 +48,20 @@ const ClinicalDashboard = ({ stats, todaySessions, activeSession, morningProgres
 
             <div className="flex flex-wrap justify-center gap-4">
               {missions.map((m, i) => (
-                <div key={i} className={cn(
-                  "flex items-center gap-4 px-6 py-4 rounded-2xl border-2 transition-all duration-500",
-                  m.status === 'done'
-                    ? "bg-emerald-50 border-emerald-100 text-emerald-700 dark:bg-emerald-900/20 dark:border-emerald-800 dark:text-emerald-400 shadow-sm"
-                    : "bg-slate-50 border-slate-100 text-slate-400 dark:bg-slate-800/50 dark:border-slate-800"
-                )}>
+                <Link 
+                  key={i} 
+                  to={m.path}
+                  className={cn(
+                    "flex items-center gap-4 px-6 py-4 rounded-2xl border-2 transition-all duration-500 hover:scale-105 active:scale-95",
+                    m.status === 'done'
+                      ? "bg-emerald-50 border-emerald-100 text-emerald-700 dark:bg-emerald-900/20 dark:border-emerald-800 dark:text-emerald-400 shadow-sm"
+                      : "bg-slate-50 border-slate-100 text-slate-400 dark:bg-slate-800/50 dark:border-slate-800 hover:border-indigo-200 hover:bg-indigo-50/30"
+                  )}
+                >
                   <m.icon size={20} className={cn(m.status === 'done' ? "text-emerald-500" : "text-slate-300")} />
                   <span className="text-xs font-black uppercase tracking-[0.2em]">{m.label}</span>
                   {m.status === 'done' && <Check size={16} className="ml-1 text-emerald-500" />}
-                </div>
+                </Link>
               ))}
             </div>
           </div>

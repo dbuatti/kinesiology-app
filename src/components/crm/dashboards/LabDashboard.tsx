@@ -19,9 +19,9 @@ interface LabDashboardProps {
 
 const LabDashboard = ({ morningProgress, lastJournalDate }: LabDashboardProps) => {
   const missions = [
-    { label: "Morning Program", status: morningProgress === 100 ? 'done' : 'pending', icon: Sun },
-    { label: "Journal Entry", status: 'pending', icon: MessageSquare },
-    { label: "Identity Work", status: 'pending', icon: Fingerprint },
+    { label: "Morning Program", status: morningProgress === 100 ? 'done' : 'pending', icon: Sun, path: "/morning-program" },
+    { label: "Journal Entry", status: 'pending', icon: MessageSquare, path: "/practice/journal" },
+    { label: "Identity Work", status: 'pending', icon: Fingerprint, path: "/lab" },
   ];
 
   return (
@@ -41,16 +41,20 @@ const LabDashboard = ({ morningProgress, lastJournalDate }: LabDashboardProps) =
 
             <div className="flex flex-wrap justify-center gap-4">
               {missions.map((m, i) => (
-                <div key={i} className={cn(
-                  "flex items-center gap-3 px-5 py-3 rounded-2xl border-2 transition-all duration-500",
-                  m.status === 'done'
-                    ? "bg-emerald-50 border-emerald-100 text-emerald-700 dark:bg-emerald-900/20 dark:border-emerald-800 dark:text-emerald-400"
-                    : "bg-slate-50 border-slate-100 text-slate-400 dark:bg-slate-800/50 dark:border-slate-800"
-                )}>
+                <Link 
+                  key={i} 
+                  to={m.path}
+                  className={cn(
+                    "flex items-center gap-3 px-5 py-3 rounded-2xl border-2 transition-all duration-500 hover:scale-105 active:scale-95",
+                    m.status === 'done'
+                      ? "bg-emerald-50 border-emerald-100 text-emerald-700 dark:bg-emerald-900/20 dark:border-emerald-800 dark:text-emerald-400 shadow-sm"
+                      : "bg-slate-50 border-slate-100 text-slate-400 dark:bg-slate-800/50 dark:border-slate-800 hover:border-emerald-200 hover:bg-emerald-50/30"
+                  )}
+                >
                   <m.icon size={18} className={cn(m.status === 'done' ? "text-emerald-500" : "text-slate-300")} />
                   <span className="text-xs font-black uppercase tracking-widest">{m.label}</span>
                   {m.status === 'done' && <Check size={14} className="ml-1 text-emerald-500" />}
-                </div>
+                </Link>
               ))}
             </div>
           </div>

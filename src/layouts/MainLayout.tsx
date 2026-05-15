@@ -16,21 +16,20 @@ const MainLayout = () => {
   return (
     <div className={cn(
       "flex flex-col min-h-screen transition-all duration-1000 relative overflow-hidden",
-      mode === 'clinical' ? "bg-slate-50 dark:bg-slate-950" :
-      mode === 'lab' ? "bg-emerald-50/20 dark:bg-slate-950" :
-      "bg-amber-50/20 dark:bg-slate-950"
+      mode === 'clinical' ? "bg-white dark:bg-slate-950" :
+      mode === 'lab' ? "bg-slate-50/50 dark:bg-slate-950" :
+      "bg-slate-50/50 dark:bg-slate-950"
     )}>
-      {/* DYNAMIC BACKGROUND ORBS */}
+      {/* SUBTLE BACKGROUND ORBS */}
       <div className="fixed inset-0 pointer-events-none overflow-hidden z-0">
         <div className={cn(
-          "absolute top-[-10%] left-[-10%] w-[60%] h-[60%] blur-[120px] rounded-full transition-all duration-1000 opacity-30 dark:opacity-10 animate-pulse",
-          mode === 'clinical' ? "bg-indigo-400/40" : mode === 'lab' ? "bg-emerald-400/40" : "bg-amber-400/40"
+          "absolute top-[-15%] left-[-5%] w-[50%] h-[50%] blur-[140px] rounded-full transition-all duration-1000 opacity-10 dark:opacity-5",
+          mode === 'clinical' ? "bg-indigo-200" : mode === 'lab' ? "bg-emerald-200" : "bg-amber-200"
         )} />
         <div className={cn(
-          "absolute bottom-[-10%] right-[-10%] w-[50%] h-[50%] blur-[100px] rounded-full transition-all duration-1000 opacity-20 dark:opacity-5 delay-500 animate-pulse",
-          mode === 'clinical' ? "bg-blue-400/30" : mode === 'lab' ? "bg-teal-400/30" : "bg-orange-400/30"
+          "absolute bottom-[-10%] right-[-5%] w-[40%] h-[40%] blur-[120px] rounded-full transition-all duration-1000 opacity-10 dark:opacity-5 delay-500",
+          mode === 'clinical' ? "bg-blue-100" : mode === 'lab' ? "bg-teal-100" : "bg-orange-100"
         )} />
-        <div className="absolute inset-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-20 mix-blend-overlay" />
       </div>
 
       <div className="relative z-10 flex flex-col min-h-screen">

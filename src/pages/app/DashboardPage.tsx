@@ -162,96 +162,68 @@ const Index = () => {
     const nextSession = todaySessions.find(s => s.status !== 'Completed' && s.date > new Date());
 
     return (
-      <div className="min-h-screen flex flex-col items-center justify-center py-12 px-4 relative overflow-hidden bg-slate-50 dark:bg-slate-950">
+      <div className="min-h-screen flex flex-col items-center justify-center py-12 px-4 relative overflow-hidden bg-white dark:bg-slate-950">
         <div className="absolute inset-0 pointer-events-none">
-          <div className="absolute top-[-20%] left-[-10%] w-[60%] h-[60%] bg-indigo-400/20 blur-[150px] rounded-full animate-pulse" />
-          <div className="absolute bottom-[-20%] right-[-10%] w-[60%] h-[60%] bg-emerald-400/20 blur-[150px] rounded-full animate-pulse delay-1000" />
-          <div className="absolute top-[30%] right-[10%] w-[40%] h-[40%] bg-amber-400/20 blur-[150px] rounded-full animate-pulse delay-2000" />
-          <div className="absolute inset-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-20 mix-blend-overlay" />
-          <div className="absolute inset-0 bg-[linear-gradient(to_right,#80808012_1px,transparent_1px),linear-gradient(to_bottom,#80808012_1px,transparent_1px)] bg-[size:40px_40px]" />
+          <div className="absolute top-[-10%] left-[-5%] w-[40%] h-[40%] bg-indigo-500/5 blur-[120px] rounded-full" />
+          <div className="absolute bottom-[-10%] right-[-5%] w-[40%] h-[40%] bg-emerald-500/5 blur-[120px] rounded-full" />
         </div>
 
-        <div className="max-w-7xl w-full space-y-20 relative z-10">
-          <div className="text-center space-y-8 max-w-4xl mx-auto">
-            <div className="inline-flex items-center gap-3 px-6 py-2.5 rounded-full bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl border border-slate-200 dark:border-slate-800 shadow-2xl mb-4 animate-in fade-in slide-in-from-bottom-4 duration-1000">
-              <div className="w-2 h-2 bg-indigo-600 rounded-full animate-ping" />
-              <span className="text-[10px] font-black uppercase tracking-[0.4em] text-slate-600 dark:text-slate-400">Resonance Practice Suite v2.0</span>
-            </div>
-            <h1 className="text-6xl md:text-8xl font-serif font-bold text-slate-900 dark:text-white tracking-tight leading-[0.95] animate-in fade-in slide-in-from-bottom-6 duration-1000 delay-200">
-              Set your focus <br />
-              <span className="text-transparent bg-clip-text bg-gradient-to-r from-indigo-600 via-emerald-600 to-amber-600">for today</span>.
+        <div className="max-w-6xl w-full space-y-24 relative z-10">
+          <div className="text-center space-y-6 max-w-3xl mx-auto">
+            <p className="text-[10px] font-black uppercase tracking-[0.5em] text-slate-400">Resonance Practice Suite</p>
+            <h1 className="text-5xl md:text-7xl font-serif font-bold text-slate-900 dark:text-white tracking-tight leading-tight animate-in fade-in slide-in-from-bottom-4 duration-1000">
+              Select your focus.
             </h1>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-10 px-4">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 px-4">
             {/* CLINICAL HUB */}
-            <button onClick={() => handleEnterMode('clinical')} className="group relative flex flex-col text-left h-full animate-in fade-in slide-in-from-bottom-10 duration-1000 delay-500">
-              <div className={cn("absolute inset-0 bg-indigo-600 rounded-[3.5rem] translate-y-6 translate-x-6 transition-all duration-700 blur-3xl", mode === 'clinical' ? "opacity-30" : "opacity-0 group-hover:opacity-20")} />
-              <div className={cn("relative h-full border-none shadow-2xl rounded-[3.5rem] overflow-hidden transition-all duration-700 group-hover:-translate-y-6 p-12 flex flex-col", mode === 'clinical' ? "bg-indigo-50/90 dark:bg-indigo-900/20 ring-2 ring-indigo-500" : "bg-white/90 dark:bg-slate-900/90 backdrop-blur-2xl")}>
-                <div className="flex justify-between items-start mb-12">
-                  <div className="w-20 h-20 rounded-[2rem] bg-indigo-600 text-white flex items-center justify-center mb-12 shadow-2xl shadow-indigo-500/40 group-hover:scale-110 group-hover:rotate-6 transition-all duration-700">
-                    <Activity size={40} />
-                  </div>
+            <button onClick={() => handleEnterMode('clinical')} className="group relative flex flex-col text-left h-full animate-in fade-in slide-in-from-bottom-8 duration-1000 delay-200">
+              <div className={cn("relative h-full border border-slate-100 dark:border-slate-800 rounded-3xl overflow-hidden transition-all duration-500 group-hover:border-indigo-200 group-hover:shadow-2xl group-hover:shadow-indigo-500/5 p-10 flex flex-col bg-white dark:bg-slate-900")}>
+                <div className="w-14 h-14 rounded-2xl bg-slate-50 dark:bg-slate-800 text-slate-900 dark:text-white flex items-center justify-center mb-10 transition-all duration-500 group-hover:bg-indigo-600 group-hover:text-white">
+                  <Activity size={28} />
                 </div>
-                <div className="space-y-6 mb-12">
-                  <h3 className="text-4xl font-bold text-slate-900 dark:text-white tracking-tight">Clinical Hub</h3>
-                  <p className="text-lg text-slate-500 dark:text-slate-400 leading-relaxed font-medium">Manage clients, track progress, and execute sessions.</p>
-                  {nextSession && (
-                    <div className="p-4 bg-indigo-600/10 rounded-2xl border border-indigo-600/20 flex items-center gap-3 animate-in fade-in duration-1000">
-                      <div className="w-2 h-2 bg-indigo-600 rounded-full animate-pulse" />
-                      <p className="text-xs font-bold text-indigo-900 dark:text-indigo-300">Next: {nextSession.clients.name} in {differenceInMinutes(nextSession.date, new Date())}m</p>
-                    </div>
-                  )}
+                <div className="space-y-4 mb-10">
+                  <h3 className="text-2xl font-bold text-slate-900 dark:text-white tracking-tight">Clinical Hub</h3>
+                  <p className="text-sm text-slate-500 dark:text-slate-400 leading-relaxed font-medium">Manage clients, track progress, and execute sessions.</p>
                 </div>
-                <div className="mt-auto pt-10 border-t border-slate-100 dark:border-slate-800 flex items-center justify-between">
-                  <span className="text-[10px] font-black uppercase tracking-[0.3em] text-slate-400 group-hover:text-indigo-600 transition-colors">{mode === 'clinical' ? 'CONTINUE' : 'SWITCH TO THIS'}</span>
-                  <div className={cn("w-12 h-12 rounded-full flex items-center justify-center transition-all duration-500 shadow-lg", mode === 'clinical' ? "bg-indigo-600 text-white" : "bg-slate-900 dark:bg-white text-white dark:text-slate-900 group-hover:bg-indigo-600 group-hover:text-white")}>
-                    <ArrowRight size={24} />
-                  </div>
+                <div className="mt-auto pt-8 border-t border-slate-50 dark:border-slate-800 flex items-center justify-between">
+                  <span className="text-[9px] font-black uppercase tracking-widest text-slate-400 group-hover:text-indigo-600 transition-colors">Enter Workspace</span>
+                  <ArrowRight size={18} className="text-slate-300 group-hover:text-indigo-600 group-hover:translate-x-1 transition-all" />
                 </div>
               </div>
             </button>
 
             {/* PRACTICE LAB */}
-            <button onClick={() => handleEnterMode('lab')} className="group relative flex flex-col text-left h-full animate-in fade-in slide-in-from-bottom-10 duration-1000 delay-600">
-              <div className={cn("absolute inset-0 bg-emerald-600 rounded-[3.5rem] translate-y-6 translate-x-6 transition-all duration-700 blur-3xl", mode === 'lab' ? "opacity-30" : "opacity-0 group-hover:opacity-20")} />
-              <div className={cn("relative h-full border-none shadow-2xl rounded-[3.5rem] overflow-hidden transition-all duration-700 group-hover:-translate-y-6 p-12 flex flex-col", mode === 'lab' ? "bg-emerald-50/90 dark:bg-emerald-900/20 ring-2 ring-emerald-500" : "bg-white/90 dark:bg-slate-900/90 backdrop-blur-2xl")}>
-                <div className="flex justify-between items-start mb-12">
-                  <div className="w-20 h-20 rounded-[2rem] bg-emerald-600 text-white flex items-center justify-center shadow-2xl shadow-emerald-500/40 group-hover:scale-110 group-hover:-rotate-6 transition-all duration-700">
-                    <Zap size={40} />
-                  </div>
+            <button onClick={() => handleEnterMode('lab')} className="group relative flex flex-col text-left h-full animate-in fade-in slide-in-from-bottom-8 duration-1000 delay-300">
+              <div className={cn("relative h-full border border-slate-100 dark:border-slate-800 rounded-3xl overflow-hidden transition-all duration-500 group-hover:border-emerald-200 group-hover:shadow-2xl group-hover:shadow-emerald-500/5 p-10 flex flex-col bg-white dark:bg-slate-900")}>
+                <div className="w-14 h-14 rounded-2xl bg-slate-50 dark:bg-slate-800 text-slate-900 dark:text-white flex items-center justify-center mb-10 transition-all duration-500 group-hover:bg-emerald-600 group-hover:text-white">
+                  <Zap size={28} />
                 </div>
-                <div className="space-y-6 mb-12">
-                  <h3 className="text-4xl font-bold text-slate-900 dark:text-white tracking-tight">Practice Lab</h3>
-                  <p className="text-lg text-slate-500 dark:text-slate-400 leading-relaxed font-medium">Ground yourself, journal reflections, and shift your identity.</p>
+                <div className="space-y-4 mb-10">
+                  <h3 className="text-2xl font-bold text-slate-900 dark:text-white tracking-tight">Practice Lab</h3>
+                  <p className="text-sm text-slate-500 dark:text-slate-400 leading-relaxed font-medium">Ground yourself, journal reflections, and shift your identity.</p>
                 </div>
-                <div className="mt-auto pt-10 border-t border-slate-100 dark:border-slate-800 flex items-center justify-between">
-                  <span className="text-[10px] font-black uppercase tracking-[0.3em] text-slate-400 group-hover:text-emerald-600 transition-colors">{mode === 'lab' ? 'CONTINUE' : 'SWITCH TO THIS'}</span>
-                  <div className={cn("w-12 h-12 rounded-full flex items-center justify-center transition-all duration-500 shadow-lg", mode === 'lab' ? "bg-emerald-600 text-white" : "bg-slate-900 dark:bg-white text-white dark:text-slate-900 group-hover:bg-emerald-600 group-hover:text-white")}>
-                    <ArrowRight size={24} />
-                  </div>
+                <div className="mt-auto pt-8 border-t border-slate-50 dark:border-slate-800 flex items-center justify-between">
+                  <span className="text-[9px] font-black uppercase tracking-widest text-slate-400 group-hover:text-emerald-600 transition-colors">Enter Workspace</span>
+                  <ArrowRight size={18} className="text-slate-300 group-hover:text-emerald-600 group-hover:translate-x-1 transition-all" />
                 </div>
               </div>
             </button>
 
             {/* KNOWLEDGE HUB */}
-            <button onClick={() => handleEnterMode('library')} className="group relative flex flex-col text-left h-full animate-in fade-in slide-in-from-bottom-10 duration-1000 delay-700">
-              <div className={cn("absolute inset-0 bg-amber-600 rounded-[3.5rem] translate-y-6 translate-x-6 transition-all duration-700 blur-3xl", mode === 'library' ? "opacity-30" : "opacity-0 group-hover:opacity-20")} />
-              <div className={cn("relative h-full border-none shadow-2xl rounded-[3.5rem] overflow-hidden transition-all duration-700 group-hover:-translate-y-6 p-12 flex flex-col", mode === 'library' ? "bg-amber-50/90 dark:bg-amber-900/20 ring-2 ring-amber-500" : "bg-white/90 dark:bg-slate-900/90 backdrop-blur-2xl")}>
-                <div className="flex justify-between items-start mb-12">
-                  <div className="w-20 h-20 rounded-[2rem] bg-amber-600 text-white flex items-center justify-center shadow-2xl shadow-amber-500/40 group-hover:scale-110 group-hover:rotate-6 transition-all duration-700">
-                    <BookOpen size={40} />
-                  </div>
+            <button onClick={() => handleEnterMode('library')} className="group relative flex flex-col text-left h-full animate-in fade-in slide-in-from-bottom-8 duration-1000 delay-400">
+              <div className={cn("relative h-full border border-slate-100 dark:border-slate-800 rounded-3xl overflow-hidden transition-all duration-500 group-hover:border-amber-200 group-hover:shadow-2xl group-hover:shadow-amber-500/5 p-10 flex flex-col bg-white dark:bg-slate-900")}>
+                <div className="w-14 h-14 rounded-2xl bg-slate-50 dark:bg-slate-800 text-slate-900 dark:text-white flex items-center justify-center mb-10 transition-all duration-500 group-hover:bg-amber-600 group-hover:text-white">
+                  <BookOpen size={28} />
                 </div>
-                <div className="space-y-6 mb-12">
-                  <h3 className="text-4xl font-bold text-slate-900 dark:text-white tracking-tight">Knowledge Hub</h3>
-                  <p className="text-lg text-slate-500 dark:text-slate-400 leading-relaxed font-medium">The clinical oracle. Master protocols and study the bible.</p>
+                <div className="space-y-4 mb-10">
+                  <h3 className="text-2xl font-bold text-slate-900 dark:text-white tracking-tight">Knowledge Hub</h3>
+                  <p className="text-sm text-slate-500 dark:text-slate-400 leading-relaxed font-medium">The clinical oracle. Master protocols and study the bible.</p>
                 </div>
-                <div className="mt-auto pt-10 border-t border-slate-100 dark:border-slate-800 flex items-center justify-between">
-                  <span className="text-[10px] font-black uppercase tracking-[0.3em] text-slate-400 group-hover:text-amber-600 transition-colors">{mode === 'library' ? 'CONTINUE' : 'SWITCH TO THIS'}</span>
-                  <div className={cn("w-12 h-12 rounded-full flex items-center justify-center transition-all duration-500 shadow-lg", mode === 'library' ? "bg-amber-600 text-white" : "bg-slate-900 dark:bg-white text-white dark:text-slate-900 group-hover:bg-amber-600 group-hover:text-white")}>
-                    <ArrowRight size={24} />
-                  </div>
+                <div className="mt-auto pt-8 border-t border-slate-50 dark:border-slate-800 flex items-center justify-between">
+                  <span className="text-[9px] font-black uppercase tracking-widest text-slate-400 group-hover:text-amber-600 transition-colors">Enter Workspace</span>
+                  <ArrowRight size={18} className="text-slate-300 group-hover:text-amber-600 group-hover:translate-x-1 transition-all" />
                 </div>
               </div>
             </button>
@@ -275,25 +247,25 @@ const Index = () => {
           breadcrumbs={[{ label: "Dashboard" }]}
           badge={mode === 'clinical' ? "Clinical Command" : mode === 'lab' ? "Practice Lab" : "Knowledge Hub"}
           actions={
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-3">
               <Button
                 variant="outline"
                 size="sm"
                 onClick={() => setView('hub')}
-                className="h-11 px-4 rounded-xl border-slate-200 dark:border-slate-800 font-bold text-[10px] uppercase tracking-widest hover:bg-slate-50 dark:hover:bg-slate-800 gap-2"
+                className="h-10 px-4 rounded-xl border-slate-200 dark:border-slate-800 font-bold text-[10px] uppercase tracking-widest hover:bg-slate-50 dark:hover:bg-slate-800 gap-2"
               >
-                <Grid size={14} className="text-indigo-600" />
+                <Grid size={14} className="text-slate-400" />
                 Switch Hub
               </Button>
 
-              <div className="flex items-center gap-3 bg-white dark:bg-slate-900 p-3 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm">
-                <div className="pr-4 border-r border-slate-100">
+              <div className="flex items-center gap-4 bg-white dark:bg-slate-900 px-4 py-2 rounded-xl border border-slate-100 dark:border-slate-800 shadow-sm">
+                <div className="pr-4 border-r border-slate-100 dark:border-slate-800">
                   <p className="text-[8px] font-bold text-slate-400 uppercase tracking-widest">Today</p>
-                  <p className="text-sm font-bold text-slate-900 dark:text-white">{format(currentTime, "EEEE, MMM d")}</p>
+                  <p className="text-xs font-bold text-slate-900 dark:text-white">{format(currentTime, "MMM d")}</p>
                 </div>
-                <div className="pl-1">
+                <div>
                   <p className="text-[8px] font-bold text-slate-400 uppercase tracking-widest">Time</p>
-                  <p className="text-sm font-bold text-indigo-600">{format(currentTime, "h:mm a")}</p>
+                  <p className="text-xs font-bold text-indigo-600 dark:text-indigo-400">{format(currentTime, "h:mm a")}</p>
                 </div>
               </div>
             </div>

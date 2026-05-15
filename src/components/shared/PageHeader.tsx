@@ -27,38 +27,38 @@ const PageHeader = ({
   className,
 }: PageHeaderProps) => {
   return (
-    <div className={cn("space-y-4 mb-8", className)}>
-      {breadcrumbs && <Breadcrumbs items={breadcrumbs} className="mb-0" />}
+    <div className={cn("space-y-6 mb-10", className)}>
+      {breadcrumbs && <Breadcrumbs items={breadcrumbs} className="mb-0 opacity-60" />}
       
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
-        <div className="flex items-center gap-5">
-          {Icon && (
-            <div className={cn(
-              "w-14 h-14 rounded-2xl bg-indigo-600 text-white flex items-center justify-center shadow-2xl shadow-indigo-500/20 shrink-0 transition-transform hover:scale-105 duration-500",
-              iconClassName
-            )}>
-              <Icon size={28} />
-            </div>
+      <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
+        <div className="space-y-2">
+          {badge && (
+            <Badge variant="secondary" className="bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 border-none font-bold text-[9px] uppercase tracking-widest px-3 py-0.5 rounded-full mb-2">
+              {badge}
+            </Badge>
           )}
-          <div className="space-y-1">
-            {badge && (
-              <Badge className="bg-indigo-50 dark:bg-indigo-900/20 text-indigo-600 dark:text-indigo-400 border-none font-black text-[8px] uppercase tracking-[0.4em] px-4 py-1 rounded-full mb-2 shadow-sm">
-                {badge}
-              </Badge>
+          <div className="flex items-center gap-4">
+            {Icon && (
+              <div className={cn(
+                "w-10 h-10 rounded-xl bg-slate-900 text-white flex items-center justify-center shrink-0 dark:bg-white dark:text-slate-900",
+                iconClassName
+              )}>
+                <Icon size={20} />
+              </div>
             )}
-            <h1 className="text-3xl md:text-4xl font-serif font-bold tracking-tight text-slate-900 dark:text-white leading-none">
+            <h1 className="text-3xl md:text-4xl font-serif font-bold tracking-tight text-slate-900 dark:text-white">
               {title}
             </h1>
-            {subtitle && (
-              <p className="text-sm md:text-base text-slate-500 font-medium max-w-2xl leading-relaxed">
-                {subtitle}
-              </p>
-            )}
           </div>
+          {subtitle && (
+            <p className="text-sm text-slate-500 font-medium max-w-2xl leading-relaxed">
+              {subtitle}
+            </p>
+          )}
         </div>
         
         {actions && (
-          <div className="flex items-center gap-3 shrink-0 animate-in fade-in slide-in-from-right-4 duration-700">
+          <div className="flex items-center gap-2 shrink-0 animate-in fade-in slide-in-from-right-2 duration-500">
             {actions}
           </div>
         )}

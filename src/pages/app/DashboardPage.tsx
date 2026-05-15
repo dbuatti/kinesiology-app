@@ -1,34 +1,20 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Link } from "react-router-dom";
+import { Link, useSearchParams } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
-  Calendar, Activity, Loader2,
-  UserPlus, Zap, Wind,
-  ArrowRight, Clock,
-  ClipboardCheck, Link as LinkIcon, Check,
-  Coffee, CalendarPlus, Target, GraduationCap, Sun, Heart, MessageSquare, Brain, Layers, Sparkles,
-  ChevronRight, Fingerprint, ShieldAlert, BookOpen, ShieldCheck, Trophy, LayoutDashboard, Grid
+  Activity, Loader2, Zap, ArrowRight, Clock,
+  Sparkles, BookOpen, LayoutDashboard, Grid,
+  Check, Sun, MessageSquare, Trophy, Calendar,
+  User, Target, ClipboardCheck, ShieldAlert, Heart,
+  Fingerprint, Layers, ShieldCheck
 } from "lucide-react";
-
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
-import ClientForm from "@/components/crm/ClientForm";
-import AppointmentForm from "@/components/crm/AppointmentForm";
-import RecentActivity from "@/components/crm/RecentActivity";
-import UpcomingAppointments from "@/components/crm/UpcomingAppointments";
-import { format, isToday, subDays, differenceInMinutes, startOfWeek, endOfWeek, isWithinInterval, formatDistanceToNow } from "date-fns";
+import { format, isToday, subDays, differenceInMinutes, formatDistanceToNow } from "date-fns";
 import { Skeleton } from "@/components/ui/skeleton";
-import MeridianClock from "@/components/crm/MeridianClock";
 import { AppointmentWithClient } from "@/types/crm";
 import DashboardStats from "@/components/crm/DashboardStats";
 import DailyBriefing from "@/components/crm/DailyBriefing";
@@ -44,7 +30,9 @@ import QuickActionsGrid from "@/components/crm/QuickActionsGrid";
 import IdentitySmartTool from "@/components/crm/IdentitySmartTool";
 import { Progress } from "@/components/ui/progress";
 import PageHeader from "@/components/shared/PageHeader";
-import { useSearchParams } from "react-router-dom";
+import UpcomingAppointments from "@/components/crm/UpcomingAppointments";
+import RecentActivity from "@/components/crm/RecentActivity";
+import MeridianClock from "@/components/crm/MeridianClock";
 
 const DailyMission = ({ mode, stats, morningProgress }: { mode: string, stats: any, morningProgress: number }) => {
   const missions = {
@@ -105,14 +93,13 @@ const Index = () => {
   const { isPrivate } = usePrivacyMode();
   const { mode, setMode } = useAppMode();
   const [searchParams, setSearchParams] = useSearchParams();
-  const view = searchParams.get('view') || 'hub';
+  const view = searchParams.get('view') || 'dashboard';
   
   const setView = (newView: 'hub' | 'dashboard') => {
     setSearchParams({ view: newView });
   };
 
   const [stats, setStats] = useState({
-
     clients: 0, 
     appointments: 0,
     newClients30d: 0,
@@ -124,12 +111,9 @@ const Index = () => {
   });
   const [todaySessions, setTodaySessions] = useState<AppointmentWithClient[]>([]);
   const [activeSession, setActiveSession] = useState<AppointmentWithClient | null>(null);
-  const [pendingOnboarding, setPendingOnboarding] = useState<any[]>([]);
+  const [lastJournalDate, setLastJournalDate] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
-  const [clientDialogOpen, setClientDialogOpen] = useState(false);
-  const [appDialogOpen, setAppDialogOpen] = useState(false);
   const [currentTime, setCurrentTime] = useState(new Date());
-  const [copiedId, setCopiedId] = useState<string | null>(null);
   const [morningProgress, setMorningProgress] = useState(0);
 
   useEffect(() => {
@@ -149,41 +133,25 @@ const Index = () => {
     }
   }, []);
 
-  const handleCopyLink = (e: React.MouseEvent, clientId: string) => {
-    e.preventDefault();
-    e.stopPropagation();
-    const url = `${window.location.origin}/onboarding/${clientId}`;
-    navigator.clipboard.writeText(url);
-    setCopiedId(clientId);
-    showSuccess("Onboarding link copied!");
-    setTimeout(() => setCopiedId(null), 2000);
-  };
-
   const fetchDashboardData = async () => {
     try {
       const thirtyDaysAgo = subDays(new Date(), 30).toISOString();
-      const weekStart = startOfWeek(new Date());
-      const weekEnd = endOfWeek(new Date());
 
       const [
         { count: clientCount }, 
         { count: appCount }, 
         { data: allAppsRaw },
-        { count: newClientsCount },
-        { count: recentAppsCount },
         { data: clinicalClients },
-        { data: recentOnboarding }
+        { data: lastJournal }
       ] = await Promise.all([
         supabase.from('clients').select('*', { count: 'exact', head: true }).or('is_practitioner.eq.false,is_practitioner.is.null'),
         supabase.from('appointments').select('*, clients!inner(is_practitioner)', { count: 'exact', head: true }).or('is_practitioner.eq.false,is_practitioner.is.null', { foreignTable: 'clients' }),
         supabase.from('appointments').select('*, clients!inner(name, is_practitioner)').or('is_practitioner.eq.false,is_practitioner.is.null', { foreignTable: 'clients' }).order('date', { ascending: true }),
-        supabase.from('clients').select('*', { count: 'exact', head: true }).or('is_practitioner.eq.false,is_practitioner.is.null').gte('created_at', thirtyDaysAgo),
-        supabase.from('appointments').select('*, clients!inner(is_practitioner)', { count: 'exact', head: true }).or('is_practitioner.eq.false,is_practitioner.is.null', { foreignTable: 'clients' }).gte('date', thirtyDaysAgo),
         supabase.from('clients').select('id, name, appointments(bolt_score, date)').or('is_practitioner.eq.false,is_practitioner.is.null'),
-        supabase.from('clients').select('id, name, created_at').or('is_practitioner.eq.false,is_practitioner.is.null').order('created_at', { ascending: false }).limit(3)
+        supabase.from('practitioner_reflections').select('created_at').order('created_at', { ascending: false }).limit(1).maybeSingle()
       ]);
 
-      setPendingOnboarding(recentOnboarding || []);
+      if (lastJournal) setLastJournalDate(lastJournal.created_at);
 
       const allApps = (allAppsRaw || []).map(a => ({
         ...a,
@@ -192,10 +160,7 @@ const Index = () => {
       })) as unknown as AppointmentWithClient[];
 
       const boltScores = allApps.filter(a => a.bolt_score).map(a => a.bolt_score as number);
-      const cohScores = allApps.filter(a => a.coherence_score).map(a => a.coherence_score as number);
-      
       const avgBolt = boltScores.length > 0 ? Math.round(boltScores.reduce((a, b) => a + b, 0) / boltScores.length) : 0;
-      const avgCoh = cohScores.length > 0 ? cohScores.reduce((a, b) => a + b, 0) / cohScores.length : 0;
 
       let imperativeAlerts = 0;
       clinicalClients?.forEach(client => {
@@ -209,18 +174,14 @@ const Index = () => {
         }
       });
 
-      const sessionsThisWeek = allApps.filter(app => 
-        isWithinInterval(app.date, { start: weekStart, end: weekEnd })
-      ).length;
-
       setStats({ 
         clients: clientCount || 0, 
         appointments: appCount || 0,
-        newClients30d: newClientsCount || 0,
-        sessions30d: recentAppsCount || 0,
-        sessionsThisWeek,
+        newClients30d: 0,
+        sessions30d: 0,
+        sessionsThisWeek: 0,
         avgBolt,
-        avgCoherence: avgCoh,
+        avgCoherence: 0,
         imperativeAlerts
       });
 
@@ -264,15 +225,14 @@ const Index = () => {
   };
 
   if (view === 'hub') {
+    const nextSession = todaySessions.find(s => s.status !== 'Completed' && s.date > new Date());
+
     return (
       <div className="min-h-screen flex flex-col items-center justify-center py-12 px-4 relative overflow-hidden bg-slate-50 dark:bg-slate-950">
-        {/* RADICAL BACKGROUND DECORATION */}
         <div className="absolute inset-0 pointer-events-none">
           <div className="absolute top-[-20%] left-[-10%] w-[60%] h-[60%] bg-indigo-400/20 blur-[150px] rounded-full animate-pulse" />
           <div className="absolute bottom-[-20%] right-[-10%] w-[60%] h-[60%] bg-emerald-400/20 blur-[150px] rounded-full animate-pulse delay-1000" />
           <div className="absolute top-[30%] right-[10%] w-[40%] h-[40%] bg-amber-400/20 blur-[150px] rounded-full animate-pulse delay-2000" />
-          
-          {/* GRID PATTERN */}
           <div className="absolute inset-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-20 mix-blend-overlay" />
           <div className="absolute inset-0 bg-[linear-gradient(to_right,#80808012_1px,transparent_1px),linear-gradient(to_bottom,#80808012_1px,transparent_1px)] bg-[size:40px_40px]" />
         </div>
@@ -284,35 +244,36 @@ const Index = () => {
               <span className="text-[10px] font-black uppercase tracking-[0.4em] text-slate-600 dark:text-slate-400">Resonance Practice Suite v2.0</span>
             </div>
             <h1 className="text-6xl md:text-8xl font-serif font-bold text-slate-900 dark:text-white tracking-tight leading-[0.95] animate-in fade-in slide-in-from-bottom-6 duration-1000 delay-200">
-              Choose your <br />
-              <span className="text-transparent bg-clip-text bg-gradient-to-r from-indigo-600 via-emerald-600 to-amber-600">clinical focus</span>.
+              Set your focus <br />
+              <span className="text-transparent bg-clip-text bg-gradient-to-r from-indigo-600 via-emerald-600 to-amber-600">for today</span>.
             </h1>
-            <p className="text-xl md:text-2xl text-slate-500 dark:text-slate-400 font-medium leading-relaxed max-w-2xl mx-auto animate-in fade-in slide-in-from-bottom-8 duration-1000 delay-400">
-              A unified workspace for clinical precision, personal integration, and knowledge mastery.
-            </p>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-10 px-4">
             {/* CLINICAL HUB */}
-            <button
-              onClick={() => handleEnterMode('clinical')}
-              className="group relative flex flex-col text-left h-full animate-in fade-in slide-in-from-bottom-10 duration-1000 delay-500"
-            >
-              <div className="absolute inset-0 bg-indigo-600 rounded-[3.5rem] translate-y-6 translate-x-6 opacity-0 group-hover:opacity-20 transition-all duration-700 blur-3xl" />
-              <Card className="relative h-full border-none shadow-2xl shadow-slate-200/50 dark:shadow-none rounded-[3.5rem] bg-white/90 dark:bg-slate-900/90 backdrop-blur-2xl overflow-hidden transition-all duration-700 group-hover:-translate-y-6 group-hover:ring-2 group-hover:ring-indigo-500/50">
+            <button onClick={() => handleEnterMode('clinical')} className="group relative flex flex-col text-left h-full animate-in fade-in slide-in-from-bottom-10 duration-1000 delay-500">
+              <div className={cn("absolute inset-0 bg-indigo-600 rounded-[3.5rem] translate-y-6 translate-x-6 transition-all duration-700 blur-3xl", mode === 'clinical' ? "opacity-30" : "opacity-0 group-hover:opacity-20")} />
+              <Card className={cn("relative h-full border-none shadow-2xl rounded-[3.5rem] overflow-hidden transition-all duration-700 group-hover:-translate-y-6", mode === 'clinical' ? "bg-indigo-50/90 dark:bg-indigo-900/20 ring-2 ring-indigo-500" : "bg-white/90 dark:bg-slate-900/90 backdrop-blur-2xl")}>
                 <CardContent className="p-12 flex flex-col h-full">
-                  <div className="w-20 h-20 rounded-[2rem] bg-indigo-600 text-white flex items-center justify-center mb-12 shadow-2xl shadow-indigo-500/40 group-hover:scale-110 group-hover:rotate-6 transition-all duration-700">
-                    <Activity size={40} />
+                  <div className="flex justify-between items-start mb-12">
+                    <div className="w-20 h-20 rounded-[2rem] bg-indigo-600 text-white flex items-center justify-center mb-12 shadow-2xl shadow-indigo-500/40 group-hover:scale-110 group-hover:rotate-6 transition-all duration-700">
+                      <Activity size={40} />
+                    </div>
+                    {mode === 'clinical' && <Badge className="bg-indigo-600 text-white border-none font-black text-[8px] uppercase tracking-widest px-3 py-1 rounded-full">Current Focus</Badge>}
                   </div>
                   <div className="space-y-6 mb-12">
                     <h3 className="text-4xl font-bold text-slate-900 dark:text-white tracking-tight">Clinical Hub</h3>
-                    <p className="text-lg text-slate-500 dark:text-slate-400 leading-relaxed font-medium">
-                      The command center for your practice. Manage clients, track progress, and execute sessions.
-                    </p>
+                    <p className="text-lg text-slate-500 dark:text-slate-400 leading-relaxed font-medium">Manage clients, track progress, and execute sessions.</p>
+                    {nextSession && (
+                      <div className="p-4 bg-indigo-600/10 rounded-2xl border border-indigo-600/20 flex items-center gap-3 animate-in fade-in duration-1000">
+                        <div className="w-2 h-2 bg-indigo-600 rounded-full animate-pulse" />
+                        <p className="text-xs font-bold text-indigo-900 dark:text-indigo-300">Next: {nextSession.clients.name} in {differenceInMinutes(nextSession.date, new Date())}m</p>
+                      </div>
+                    )}
                   </div>
                   <div className="mt-auto pt-10 border-t border-slate-100 dark:border-slate-800 flex items-center justify-between">
-                    <span className="text-[10px] font-black uppercase tracking-[0.3em] text-slate-400 group-hover:text-indigo-600 transition-colors">Enter Workspace</span>
-                    <div className="w-12 h-12 rounded-full bg-slate-900 dark:bg-white text-white dark:text-slate-900 flex items-center justify-center group-hover:bg-indigo-600 group-hover:text-white transition-all duration-500 shadow-lg">
+                    <span className="text-[10px] font-black uppercase tracking-[0.3em] text-slate-400 group-hover:text-indigo-600 transition-colors">{mode === 'clinical' ? 'CONTINUE' : 'SWITCH TO THIS'}</span>
+                    <div className={cn("w-12 h-12 rounded-full flex items-center justify-center transition-all duration-500 shadow-lg", mode === 'clinical' ? "bg-indigo-600 text-white" : "bg-slate-900 dark:bg-white text-white dark:text-slate-900 group-hover:bg-indigo-600 group-hover:text-white")}>
                       <ArrowRight size={24} />
                     </div>
                   </div>
@@ -321,25 +282,29 @@ const Index = () => {
             </button>
 
             {/* PRACTICE LAB */}
-            <button
-              onClick={() => handleEnterMode('lab')}
-              className="group relative flex flex-col text-left h-full animate-in fade-in slide-in-from-bottom-10 duration-1000 delay-600"
-            >
-              <div className="absolute inset-0 bg-emerald-600 rounded-[3.5rem] translate-y-6 translate-x-6 opacity-0 group-hover:opacity-20 transition-all duration-700 blur-3xl" />
-              <Card className="relative h-full border-none shadow-2xl shadow-slate-200/50 dark:shadow-none rounded-[3.5rem] bg-white/90 dark:bg-slate-900/90 backdrop-blur-2xl overflow-hidden transition-all duration-700 group-hover:-translate-y-6 group-hover:ring-2 group-hover:ring-emerald-500/50">
+            <button onClick={() => handleEnterMode('lab')} className="group relative flex flex-col text-left h-full animate-in fade-in slide-in-from-bottom-10 duration-1000 delay-600">
+              <div className={cn("absolute inset-0 bg-emerald-600 rounded-[3.5rem] translate-y-6 translate-x-6 transition-all duration-700 blur-3xl", mode === 'lab' ? "opacity-30" : "opacity-0 group-hover:opacity-20")} />
+              <Card className={cn("relative h-full border-none shadow-2xl rounded-[3.5rem] overflow-hidden transition-all duration-700 group-hover:-translate-y-6", mode === 'lab' ? "bg-emerald-50/90 dark:bg-emerald-900/20 ring-2 ring-emerald-500" : "bg-white/90 dark:bg-slate-900/90 backdrop-blur-2xl")}>
                 <CardContent className="p-12 flex flex-col h-full">
-                  <div className="w-20 h-20 rounded-[2rem] bg-emerald-600 text-white flex items-center justify-center mb-12 shadow-2xl shadow-emerald-500/40 group-hover:scale-110 group-hover:-rotate-6 transition-all duration-700">
-                    <Zap size={40} />
+                  <div className="flex justify-between items-start mb-12">
+                    <div className="w-20 h-20 rounded-[2rem] bg-emerald-600 text-white flex items-center justify-center shadow-2xl shadow-emerald-500/40 group-hover:scale-110 group-hover:-rotate-6 transition-all duration-700">
+                      <Zap size={40} />
+                    </div>
+                    {mode === 'lab' && <Badge className="bg-emerald-600 text-white border-none font-black text-[8px] uppercase tracking-widest px-3 py-1 rounded-full">Current Focus</Badge>}
                   </div>
                   <div className="space-y-6 mb-12">
                     <h3 className="text-4xl font-bold text-slate-900 dark:text-white tracking-tight">Practice Lab</h3>
-                    <p className="text-lg text-slate-500 dark:text-slate-400 leading-relaxed font-medium">
-                      Your personal sanctuary. Ground yourself, journal reflections, and shift your identity.
-                    </p>
+                    <p className="text-lg text-slate-500 dark:text-slate-400 leading-relaxed font-medium">Ground yourself, journal reflections, and shift your identity.</p>
+                    {lastJournalDate && (
+                      <div className="p-4 bg-emerald-600/10 rounded-2xl border border-emerald-600/20 flex items-center gap-3">
+                        <MessageSquare size={14} className="text-emerald-600" />
+                        <p className="text-xs font-bold text-emerald-900 dark:text-emerald-300">Last journal: {formatDistanceToNow(new Date(lastJournalDate))} ago</p>
+                      </div>
+                    )}
                   </div>
                   <div className="mt-auto pt-10 border-t border-slate-100 dark:border-slate-800 flex items-center justify-between">
-                    <span className="text-[10px] font-black uppercase tracking-[0.3em] text-slate-400 group-hover:text-emerald-600 transition-colors">Enter Workspace</span>
-                    <div className="w-12 h-12 rounded-full bg-slate-900 dark:bg-white text-white dark:text-slate-900 flex items-center justify-center group-hover:bg-emerald-600 group-hover:text-white transition-all duration-500 shadow-lg">
+                    <span className="text-[10px] font-black uppercase tracking-[0.3em] text-slate-400 group-hover:text-emerald-600 transition-colors">{mode === 'lab' ? 'CONTINUE' : 'SWITCH TO THIS'}</span>
+                    <div className={cn("w-12 h-12 rounded-full flex items-center justify-center transition-all duration-500 shadow-lg", mode === 'lab' ? "bg-emerald-600 text-white" : "bg-slate-900 dark:bg-white text-white dark:text-slate-900 group-hover:bg-emerald-600 group-hover:text-white")}>
                       <ArrowRight size={24} />
                     </div>
                   </div>
@@ -348,50 +313,33 @@ const Index = () => {
             </button>
 
             {/* KNOWLEDGE HUB */}
-            <button
-              onClick={() => handleEnterMode('library')}
-              className="group relative flex flex-col text-left h-full animate-in fade-in slide-in-from-bottom-10 duration-1000 delay-700"
-            >
-              <div className="absolute inset-0 bg-amber-600 rounded-[3.5rem] translate-y-6 translate-x-6 opacity-0 group-hover:opacity-20 transition-all duration-700 blur-3xl" />
-              <Card className="relative h-full border-none shadow-2xl shadow-slate-200/50 dark:shadow-none rounded-[3.5rem] bg-white/90 dark:bg-slate-900/90 backdrop-blur-2xl overflow-hidden transition-all duration-700 group-hover:-translate-y-6 group-hover:ring-2 group-hover:ring-amber-500/50">
+            <button onClick={() => handleEnterMode('library')} className="group relative flex flex-col text-left h-full animate-in fade-in slide-in-from-bottom-10 duration-1000 delay-700">
+              <div className={cn("absolute inset-0 bg-amber-600 rounded-[3.5rem] translate-y-6 translate-x-6 transition-all duration-700 blur-3xl", mode === 'library' ? "opacity-30" : "opacity-0 group-hover:opacity-20")} />
+              <Card className={cn("relative h-full border-none shadow-2xl rounded-[3.5rem] overflow-hidden transition-all duration-700 group-hover:-translate-y-6", mode === 'library' ? "bg-amber-50/90 dark:bg-amber-900/20 ring-2 ring-amber-500" : "bg-white/90 dark:bg-slate-900/90 backdrop-blur-2xl")}>
                 <CardContent className="p-12 flex flex-col h-full">
-                  <div className="w-20 h-20 rounded-[2rem] bg-amber-600 text-white flex items-center justify-center mb-12 shadow-2xl shadow-amber-500/40 group-hover:scale-110 group-hover:rotate-6 transition-all duration-700">
-                    <BookOpen size={40} />
+                  <div className="flex justify-between items-start mb-12">
+                    <div className="w-20 h-20 rounded-[2rem] bg-amber-600 text-white flex items-center justify-center shadow-2xl shadow-amber-500/40 group-hover:scale-110 group-hover:rotate-6 transition-all duration-700">
+                      <BookOpen size={40} />
+                    </div>
+                    {mode === 'library' && <Badge className="bg-amber-600 text-white border-none font-black text-[8px] uppercase tracking-widest px-3 py-1 rounded-full">Current Focus</Badge>}
                   </div>
                   <div className="space-y-6 mb-12">
                     <h3 className="text-4xl font-bold text-slate-900 dark:text-white tracking-tight">Knowledge Hub</h3>
-                    <p className="text-lg text-slate-500 dark:text-slate-400 leading-relaxed font-medium">
-                      The clinical oracle. Master protocols, study the bible, and sharpen your skills.
-                    </p>
+                    <p className="text-lg text-slate-500 dark:text-slate-400 leading-relaxed font-medium">The clinical oracle. Master protocols and study the bible.</p>
+                    <div className="p-4 bg-amber-600/10 rounded-2xl border border-amber-600/20 flex items-center gap-3">
+                      <Trophy size={14} className="text-amber-600" />
+                      <p className="text-xs font-bold text-amber-900 dark:text-amber-300">Daily Readiness: {morningProgress}%</p>
+                    </div>
                   </div>
                   <div className="mt-auto pt-10 border-t border-slate-100 dark:border-slate-800 flex items-center justify-between">
-                    <span className="text-[10px] font-black uppercase tracking-[0.3em] text-slate-400 group-hover:text-amber-600 transition-colors">Enter Workspace</span>
-                    <div className="w-12 h-12 rounded-full bg-slate-900 dark:bg-white text-white dark:text-slate-900 flex items-center justify-center group-hover:bg-amber-600 group-hover:text-white transition-all duration-500 shadow-lg">
+                    <span className="text-[10px] font-black uppercase tracking-[0.3em] text-slate-400 group-hover:text-amber-600 transition-colors">{mode === 'library' ? 'CONTINUE' : 'SWITCH TO THIS'}</span>
+                    <div className={cn("w-12 h-12 rounded-full flex items-center justify-center transition-all duration-500 shadow-lg", mode === 'library' ? "bg-amber-600 text-white" : "bg-slate-900 dark:bg-white text-white dark:text-slate-900 group-hover:bg-amber-600 group-hover:text-white")}>
                       <ArrowRight size={24} />
                     </div>
                   </div>
                 </CardContent>
               </Card>
             </button>
-          </div>
-
-          <div className="pt-12 flex justify-center animate-in fade-in duration-1000 delay-1000">
-            <div className="flex items-center gap-16 text-slate-400 bg-white/80 dark:bg-slate-900/80 backdrop-blur-2xl px-12 py-8 rounded-[3rem] border border-slate-200 dark:border-slate-800 shadow-2xl">
-              <div className="flex flex-col items-center gap-2">
-                <span className="text-3xl font-bold text-slate-900 dark:text-white">{stats.clients}</span>
-                <span className="text-[10px] font-black uppercase tracking-[0.3em]">Total Clients</span>
-              </div>
-              <div className="w-px h-12 bg-slate-200 dark:bg-slate-800" />
-              <div className="flex flex-col items-center gap-2">
-                <span className="text-3xl font-bold text-slate-900 dark:text-white">{stats.appointments}</span>
-                <span className="text-[10px] font-black uppercase tracking-[0.3em]">Total Sessions</span>
-              </div>
-              <div className="w-px h-12 bg-slate-200 dark:bg-slate-800" />
-              <div className="flex flex-col items-center gap-2">
-                <span className="text-3xl font-bold text-indigo-600">{morningProgress}%</span>
-                <span className="text-[10px] font-black uppercase tracking-[0.3em]">Daily Readiness</span>
-              </div>
-            </div>
           </div>
         </div>
       </div>
@@ -472,8 +420,8 @@ const Index = () => {
             </div>
 
             <QuickActionsGrid 
-              onNewClient={() => setClientDialogOpen(true)} 
-              onBookSession={() => setAppDialogOpen(true)} 
+              onNewClient={() => {}} 
+              onBookSession={() => {}} 
             />
 
             <DashboardStats stats={stats} />
@@ -481,53 +429,6 @@ const Index = () => {
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
               <div className="lg:col-span-8 space-y-10">
                 <DailyBriefing todaySessions={todaySessions} activeSession={activeSession} />
-                
-                {pendingOnboarding.length > 0 && (
-                  <div className="space-y-4">
-                    <div className="flex items-center justify-between px-1">
-                      <h2 className="text-xl font-bold text-slate-900 dark:text-white flex items-center gap-2">
-                        <ClipboardCheck size={20} className="text-indigo-600" /> Recent Onboarding
-                      </h2>
-                      <Badge variant="outline" className="text-[9px] font-bold uppercase border-slate-200">
-                        {pendingOnboarding.length} New
-                      </Badge>
-                    </div>
-                    <div className="grid grid-cols-1 gap-2">
-                      {pendingOnboarding.map(client => (
-                        <div key={client.id} className="p-4 bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 flex items-center justify-between group hover:border-indigo-200 transition-all">
-                          <Link to={`/clients/${client.id}`} className="flex items-center gap-4 flex-1 min-w-0">
-                            <div className="w-9 h-9 rounded-xl bg-slate-50 dark:bg-slate-800 text-indigo-600 flex items-center justify-center font-bold text-sm shrink-0">
-                              {client.name.charAt(0)}
-                            </div>
-                            <div className="min-w-0">
-                              <p className={cn("font-bold text-sm text-slate-900 dark:text-white truncate", isPrivate && "blur-sm")}>{client.name}</p>
-                              <p className="text-[9px] font-medium text-slate-400 uppercase tracking-wider mt-0.5">
-                                Added {formatDistanceToNow(new Date(client.created_at), { addSuffix: true })}
-                              </p>
-                            </div>
-                          </Link>
-                          <div className="flex items-center gap-2">
-                            <Button 
-                              variant="ghost" 
-                              size="sm" 
-                              className="h-8 px-3 rounded-lg text-indigo-600 hover:bg-indigo-50 font-bold text-[9px] uppercase tracking-widest"
-                              onClick={(e) => handleCopyLink(e, client.id)}
-                            >
-                              {copiedId === client.id ? <Check size={12} className="mr-1.5 text-emerald-500" /> : <LinkIcon size={12} className="mr-1.5" />}
-                              Link
-                            </Button>
-                            <Link to={`/clients/${client.id}`}>
-                              <div className="w-8 h-8 rounded-xl bg-slate-50 dark:bg-slate-800 text-slate-400 flex items-center justify-center group-hover:bg-indigo-600 group-hover:text-white transition-all">
-                                <ArrowRight size={16} />
-                              </div>
-                            </Link>
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                )}
-
                 <Scratchpad />
               </div>
 
@@ -708,28 +609,6 @@ const Index = () => {
         )}
 
       </div>
-
-      <Dialog open={clientDialogOpen} onOpenChange={setClientDialogOpen}>
-        <DialogContent className="sm:max-w-[600px] max-h-[90vh] overflow-y-auto rounded-[2rem] p-0">
-          <div className="p-8">
-            <DialogHeader className="mb-6">
-              <DialogTitle className="text-2xl font-serif font-bold tracking-tight">Add New Client</DialogTitle>
-            </DialogHeader>
-            <ClientForm onSuccess={() => { setClientDialogOpen(false); fetchDashboardData(); }} />
-          </div>
-        </DialogContent>
-      </Dialog>
-
-      <Dialog open={appDialogOpen} onOpenChange={setAppDialogOpen}>
-        <DialogContent className="sm:max-w-[550px] max-h-[90vh] overflow-y-auto rounded-[2rem] p-0">
-          <div className="p-8">
-            <DialogHeader className="mb-6">
-              <DialogTitle className="text-2xl font-serif font-bold tracking-tight">Schedule New Session</DialogTitle>
-            </DialogHeader>
-            <AppointmentForm onSuccess={() => { setAppDialogOpen(false); fetchDashboardData(); }} />
-          </div>
-        </DialogContent>
-      </Dialog>
     </AppLayout>
   );
 };

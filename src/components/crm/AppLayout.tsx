@@ -30,8 +30,8 @@ const AppLayout = ({
   return (
     <div
       className={cn(
-        "w-full min-h-screen mx-auto px-4 md:px-8 transition-all duration-300",
-        hasFixedHeader ? "pt-20 pb-12" : "pt-6 pb-12",
+        "w-full min-h-screen mx-auto px-4 md:px-8 transition-all duration-500",
+        hasFixedHeader ? "pt-24 pb-16" : "pt-8 pb-16",
         maxWidthClass,
         className
       )}
@@ -39,10 +39,13 @@ const AppLayout = ({
       <AnimatePresence mode="wait">
         <motion.div
           key={location.pathname}
-          initial={{ opacity: 0, y: 8 }}
+          initial={{ opacity: 0, y: 12 }}
           animate={{ opacity: 1, y: 0 }}
-          exit={{ opacity: 0, y: -8 }}
-          transition={{ duration: 0.3, ease: [0.23, 1, 0.32, 1] }}
+          exit={{ opacity: 0, y: -12 }}
+          transition={{ 
+            duration: 0.4, 
+            ease: [0.23, 1, 0.32, 1] 
+          }}
           className="w-full"
         >
           {children}

@@ -2,9 +2,15 @@
 
 import React, { useState, useEffect, useMemo } from 'react';
 import { cn } from '@/lib/utils';
-import { Clock, CheckCircle2, Target, Zap, AlertTriangle, Home, Check } from 'lucide-react';
+import { Clock, CheckCircle2, Target, Zap, AlertTriangle, Home, Check, ChevronDown, LogOut } from 'lucide-react';
 import { format, differenceInSeconds, isToday, formatDistanceToNow } from 'date-fns';
 import { Button } from '@/components/ui/button';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 
 interface SessionTimerProps {
   appointmentDate: Date;
@@ -18,7 +24,7 @@ const SESSION_STAGES = [
   { name: "Activation", duration: 15, color: "bg-blue-600", Icon: Zap },
   { name: "Correction", duration: 20, color: "bg-emerald-600", Icon: CheckCircle2 },
   { name: "Challenge", duration: 5, color: "bg-amber-600", Icon: AlertTriangle },
-  { name: "Home Reinforcement", duration: 5, color: "bg-rose-600", Icon: Home },
+  { name: "Home Reinforcement", duration: 5, icon: Home, color: "bg-rose-600", Icon: Home },
 ];
 const TOTAL_DURATION_MINUTES = SESSION_STAGES.reduce((sum, stage) => sum + stage.duration, 0);
 
@@ -96,88 +102,84 @@ const SessionTimer = ({ appointmentDate, status, onFixedHeaderChange, onComplete
   const [hours, minutes, seconds] = timeInSessionFormatted.split(':');
   const displayTime = `${parseInt(hours) > 0 ? `${parseInt(hours)}h ` : ''}${parseInt(minutes)}m ${seconds}s`;
 
-  let statusText = '';
-  let statusColor = 'bg-slate-900';
-  let statusIcon = <Clock size={14} className="text-white" />;
-  let StageIcon = currentStage.Icon;
-
-  if (isComplete) {
-    statusText = 'Session Complete';
-    statusColor = 'bg-emerald-600';
-    statusIcon = <CheckCircle2 size={14} className="text-white" />;
-  } else if (isUpcoming) {
-    statusText = `Starts in ${formatDistanceToNow(appointmentDate, { addSuffix: true })}`;
-    statusColor = 'bg-indigo-600';
-  } else if (isOngoing) {
-    statusText = `Stage: ${currentStage.name}`;
-    statusColor = currentStage.color;
-    statusIcon = <StageIcon size={14} className="text-white" />;
-  }
-
   if (isUpcoming) {
     return (
-      <div className="fixed top-20 left-1/2 -translate-x-1/2 z-50">
-        <div className={cn(
-          "px-6 py-3 rounded-full text-xs font-black uppercase tracking-widest flex items-center gap-2 shadow-2xl transition-all duration-300", 
-          statusColor
-        )}>
-          <Clock size={16} className="text-white" />
-          <span className="text-white">{statusText}</span>
+      <div className="w-full bg-indigo-600 text-white h-8 flex items-center justify-center px-4 z-[110] relative">
+        <div className="flex items-center gap-2 animate-in slide-in-from-top-full duration-500">
+          <Clock size={12} className="animate-pulse" />
+          <span className="text-[10px] font-black uppercase tracking-[0.2em]">
+            Session starts in {formatDistanceToNow(appointmentDate)}
+          </span>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="fixed top-0 left-0 right-0 z-50 shadow-2xl">
-      <div className="bg-white border-b border-slate-100 p-3 flex items-center justify-between">
-        <div className="flex items-center gap-4">
-          <div className={cn("px-4 py-1.5 rounded-xl text-[10px] font-black uppercase tracking-widest flex items-center gap-2 shadow-sm", statusColor)}>
-            {statusIcon}
-            <span className="text-white">{statusText}</span>
+    <div className="fixed top-0 left-0 right-0 z-[110] shadow-2xl">
+      <div className="bg-slate-950 border-b border-white/10 p-2 flex items-center justify-between px-6">
+        <div className="flex items-center gap-6">
+          <div className="flex items-center gap-3">
+            <div className="w-2 h-2 bg-emerald-500 rounded-full animate-pulse" />
+            <span className="text-[10px] font-black text-white uppercase tracking-[0.3em]">Session Live</span>
+            <span className="text-xs font-black text-emerald-400 tabular-nums font-mono">{displayTime}</span>
           </div>
           
-          {!isComplete && elapsedSeconds >= 0 && (
-            <div className="text-xs text-slate-500 font-bold hidden sm:flex items-center gap-2">
-              <Clock size={14} className="text-slate-300" />
-              Elapsed: <span className="text-slate-900">{displayTime}</span>
+          <div className="h-4 w-px bg-white/10 hidden sm:block" />
+          
+          <div className="hidden sm:flex items-center gap-3">
+            <div className={cn("px-3 py-1 rounded-lg text-[9px] font-black uppercase tracking-widest flex items-center gap-2", currentStage.color)}>
+              <currentStage.Icon size={12} className="text-white" />
+              <span className="text-white">{currentStage.name}</span>
             </div>
-          )}
+            <span className="text-[9px] font-bold text-slate-500 uppercase tracking-widest">
+              {timeRemainingInSession} remaining
+            </span>
+          </div>
         </div>
 
-        <div className="flex items-center gap-6">
-          {!isComplete && elapsedSeconds >= 0 && (
-            <div className="hidden sm:block text-right">
-              <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest">Time Remaining</p>
-              <p className="text-base font-black text-slate-900 tabular-nums">{timeRemainingInSession}</p>
-            </div>
-          )}
-          <div className="w-32 h-2 bg-slate-100 rounded-full overflow-hidden hidden sm:block">
+        <div className="flex items-center gap-4">
+          <div className="w-32 h-1.5 bg-white/5 rounded-full overflow-hidden hidden md:block">
             <div 
-              className={cn("h-full rounded-full transition-all duration-500", statusColor)}
+              className="h-full bg-indigo-500 transition-all duration-500"
               style={{ width: `${overallProgressPercent}%` }}
             />
           </div>
-          {isOngoing && onCompleteSession && (
-            <Button 
-              size="sm" 
-              className="bg-emerald-600 hover:bg-emerald-700 text-white font-black text-[10px] uppercase tracking-widest rounded-xl h-9 px-5 shadow-lg shadow-emerald-100"
-              onClick={onCompleteSession}
-            >
-              <Check size={14} className="mr-2" /> Complete Session
-            </Button>
-          )}
+
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button 
+                size="sm" 
+                className="bg-white/10 hover:bg-white/20 text-white border-none h-8 px-4 rounded-xl font-black text-[9px] uppercase tracking-widest"
+              >
+                Session Actions <ChevronDown size={12} className="ml-2 opacity-50" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end" className="w-56 rounded-2xl p-2 shadow-3xl border-none bg-slate-900 text-white">
+              <DropdownMenuItem 
+                onClick={onCompleteSession}
+                className="rounded-xl py-3 px-4 cursor-pointer flex items-center gap-3 text-emerald-400 focus:text-emerald-400 focus:bg-emerald-500/10"
+              >
+                <CheckCircle2 size={16} />
+                <span className="font-bold text-xs uppercase tracking-widest">Complete Session</span>
+              </DropdownMenuItem>
+              <DropdownMenuItem 
+                className="rounded-xl py-3 px-4 cursor-pointer flex items-center gap-3 text-rose-400 focus:text-rose-400 focus:bg-rose-500/10"
+              >
+                <LogOut size={16} />
+                <span className="font-bold text-xs uppercase tracking-widest">Pause / Exit</span>
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
         </div>
       </div>
       
-      {!isComplete && elapsedSeconds >= 0 && (
-        <div className="h-1 bg-slate-100 relative">
-          <div 
-            className={cn("h-full transition-all duration-500", currentStage.color)}
-            style={{ width: `${stageProgressPercent}%` }}
-          />
-        </div>
-      )}
+      <div className="h-0.5 bg-white/5 relative">
+        <div 
+          className={cn("h-full transition-all duration-500", currentStage.color)}
+          style={{ width: `${stageProgressPercent}%` }}
+        />
+      </div>
     </div>
   );
 };

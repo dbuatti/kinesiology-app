@@ -348,6 +348,7 @@ const AppointmentDetailPage = () => {
   }
 
   const isSessionToday = isToday(new Date(appointment.date));
+  const isOngoing = appointment.status !== 'Completed' && appointment.status !== 'Cancelled';
 
   return (
     <ErrorBoundary>
@@ -373,18 +374,19 @@ const AppointmentDetailPage = () => {
               </Button>
               <div className="space-y-1">
                 <div className="flex items-center gap-2">
-                  <Badge className="bg-indigo-600 text-white border-none font-black text-[9px] uppercase tracking-[0.3em] px-3 py-1">
-                    Session Workspace
-                  </Badge>
-                  {isSessionToday && (
-                    <Badge className="bg-rose-500 text-white border-none font-black text-[9px] uppercase tracking-[0.3em] px-3 py-1 animate-pulse">
-                      Live Today
+                  <h1 className="text-2xl font-black tracking-tight text-slate-900 dark:text-white">
+                    {appointment.clients.name} 
+                    <span className="text-slate-300 font-medium mx-2">/</span>
+                    <span className="text-slate-500 font-bold">
+                      {format(appointment.date, "EEE d MMM")} · {format(appointment.date, "h:mm a")}
+                    </span>
+                  </h1>
+                  {isSessionToday && isOngoing && (
+                    <Badge className="bg-emerald-500 text-white border-none font-black text-[8px] uppercase tracking-[0.3em] px-2 py-0.5 rounded-full animate-pulse">
+                      ● LIVE
                     </Badge>
                   )}
                 </div>
-                <h1 className="text-2xl font-black tracking-tight text-slate-900 dark:text-white">
-                  {appointment.clients.name} <span className="text-slate-300 font-medium ml-2">/ {appointment.display_id || "Session"}</span>
-                </h1>
               </div>
             </div>
 

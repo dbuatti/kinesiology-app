@@ -534,7 +534,7 @@ const SessionContentSwitcher = ({
           {activeView === 'kinesiology' && (
             <div className="space-y-12">
               <div className="flex items-center gap-4 px-4">
-                <div className="w-12 h-12 rounded-2xl bg-rose-500 text-white flex items-center justify-center shadow-xl">
+                <div className="w-12 h-12 rounded-2xl bg-rose-50 text-white flex items-center justify-center shadow-xl">
                   <Heart size={24} />
                 </div>
                 <div>
@@ -567,7 +567,7 @@ const SessionContentSwitcher = ({
           {activeView === 'gait' && (
             <div className="space-y-10">
               <div className="flex items-center gap-4 px-4">
-                <div className="w-12 h-12 rounded-2xl bg-emerald-500 text-white flex items-center justify-center shadow-xl">
+                <div className="w-12 h-12 rounded-2xl bg-emerald-50 text-white flex items-center justify-center shadow-xl">
                   <Footprints size={24} />
                 </div>
                 <div>

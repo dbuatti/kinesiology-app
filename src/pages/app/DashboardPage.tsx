@@ -11,7 +11,8 @@ import {
   ArrowRight, 
   Zap, 
   BookOpen,
-  Sparkles
+  Sparkles,
+  Loader2
 } from "lucide-react";
 import { format, isToday, differenceInMinutes } from "date-fns";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -140,16 +141,9 @@ const Index = () => {
   }, []);
 
   if (loading) return (
-    <AppLayout>
-      <div className="space-y-8">
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-          <div className="space-y-2"><Skeleton className="h-8 w-48 rounded-lg" /><Skeleton className="h-3 w-64 rounded-lg" /></div>
-        </div>
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-          {[1, 2, 3, 4].map((i) => <Skeleton key={i} className="h-24 w-full rounded-lg" />)}
-        </div>
-      </div>
-    </AppLayout>
+    <div className="flex min-h-screen items-center justify-center">
+      <Loader2 className="animate-spin text-indigo-600" size={48} />
+    </div>
   );
 
   const handleEnterMode = (newMode: 'clinical' | 'lab' | 'library') => {
@@ -225,7 +219,7 @@ const Index = () => {
                 </div>
                 <div className="mt-auto pt-10 border-t border-slate-50 dark:border-slate-800 flex items-center justify-between">
                   <span className="text-[10px] font-black uppercase tracking-widest text-slate-400 group-hover:text-amber-600 transition-colors">Enter Workspace</span>
-                  <div className="w-10 h-10 rounded-xl bg-slate-50 dark:bg-slate-800 flex items-center justify-center text-slate-300 group-hover:bg-amber-600 group-hover:text-white transition-all">
+                  <div className="w-10 h-10 rounded-xl bg-slate-50 dark:bg-slate-800 flex items-center justify-center text-slate-300 group-hover:bg-indigo-600 group-hover:text-white transition-all">
                     <ArrowRight size={20} className="group-hover:translate-x-1 transition-all" />
                   </div>
                 </div>

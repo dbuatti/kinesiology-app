@@ -277,14 +277,24 @@ const RecheckTab = ({ appointment, history, onUpdate, saveField, updatePriorityP
       )}>
         <div className="flex items-center justify-between mb-3">
           <div className="flex items-center gap-2">
-            <span className={cn(
-              "text-[9px] font-black px-2 py-0.5 rounded-md border tracking-widest",
-              sideLabel === 'LEFT' ? "bg-blue-50 text-blue-600 border-blue-100" : 
-              sideLabel === 'RIGHT' ? "bg-rose-50 text-rose-600 border-rose-100" :
-              "bg-slate-100 text-slate-600 border-slate-200"
-            )}>
+            <button 
+              onClick={(e) => {
+                e.stopPropagation();
+                if (item.currentStatus === 'Clear' || item.currentStatus === 'Normotonic') {
+                  handleMarkInhibited(item);
+                } else {
+                  handleMarkClear(item);
+                }
+              }}
+              className={cn(
+                "text-[9px] font-black px-2 py-0.5 rounded-md border tracking-widest transition-all hover:scale-110 active:scale-95",
+                sideLabel === 'LEFT' ? "bg-blue-50 text-blue-600 border-blue-100 hover:bg-blue-100" : 
+                sideLabel === 'RIGHT' ? "bg-rose-50 text-rose-600 border-rose-100 hover:bg-rose-100" :
+                "bg-slate-100 text-slate-600 border-slate-200 hover:bg-slate-200"
+              )}
+            >
               {sideLabel}
-            </span>
+            </button>
             <p className={cn(
               "text-[8px] font-bold uppercase tracking-widest",
               item.previousStatus === 'Inhibited' || item.previousStatus !== 'Normotonic' ? "text-rose-500" : "text-indigo-500"

@@ -128,34 +128,52 @@ const AssessmentItem = ({
         </div>
       )}
 
-      <div className="mt-auto flex flex-wrap gap-1.5 pt-3 md:pt-4 border-t border-slate-100 dark:border-slate-800">
+      <div className="mt-auto flex flex-wrap gap-1.5 pt-3 md:pt-4 border-t border-slate-100 dark:border-slate-800 relative z-50">
         {isLateralized ? (
           <>
             {statusL && (
-              <Badge className={cn(
-                "border-none text-white font-black text-[7px] md:text-[8px] uppercase tracking-widest px-2 py-1 rounded-md",
-                statusL === 'Clear' ? "bg-emerald-500" : "bg-rose-600"
-              )}>
+              <button 
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onSetStatus(statusL === 'Clear' ? 'Inhibited' : 'Clear', 'L');
+                }}
+                className={cn(
+                  "border-none text-white font-black text-[7px] md:text-[8px] uppercase tracking-widest px-2 py-1 rounded-md transition-all hover:scale-110 active:scale-95 shadow-sm",
+                  statusL === 'Clear' ? "bg-emerald-50 hover:bg-emerald-600" : "bg-rose-600 hover:bg-rose-700"
+                )}
+              >
                 L: {statusL}
-              </Badge>
+              </button>
             )}
             {statusR && (
-              <Badge className={cn(
-                "border-none text-white font-black text-[7px] md:text-[8px] uppercase tracking-widest px-2 py-1 rounded-md",
-                statusR === 'Clear' ? "bg-emerald-500" : "bg-rose-600"
-              )}>
+              <button 
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onSetStatus(statusR === 'Clear' ? 'Inhibited' : 'Clear', 'R');
+                }}
+                className={cn(
+                  "border-none text-white font-black text-[7px] md:text-[8px] uppercase tracking-widest px-2 py-1 rounded-md transition-all hover:scale-110 active:scale-95 shadow-sm",
+                  statusR === 'Clear' ? "bg-emerald-50 hover:bg-emerald-600" : "bg-rose-600 hover:bg-rose-700"
+                )}
+              >
                 R: {statusR}
-              </Badge>
+              </button>
             )}
           </>
         ) : (
           statusMidline && (
-            <Badge className={cn(
-              "border-none text-white font-black text-[7px] md:text-[8px] uppercase tracking-widest px-2 py-1 rounded-md",
-              statusMidline === 'Clear' ? "bg-emerald-500" : "bg-rose-600"
-            )}>
+            <button 
+              onClick={(e) => {
+                e.stopPropagation();
+                onSetStatus(statusMidline === 'Clear' ? 'Inhibited' : 'Clear');
+              }}
+              className={cn(
+                "border-none text-white font-black text-[7px] md:text-[8px] uppercase tracking-widest px-2 py-1 rounded-md transition-all hover:scale-110 active:scale-95 shadow-sm",
+                statusMidline === 'Clear' ? "bg-emerald-50 hover:bg-emerald-600" : "bg-rose-600 hover:bg-rose-700"
+              )}
+            >
               {statusMidline}
-            </Badge>
+            </button>
           )
         )}
       </div>

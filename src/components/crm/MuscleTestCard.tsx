@@ -47,12 +47,19 @@ const MuscleTestCard = ({
         <div className="flex items-center justify-between px-1">
           <div className="flex items-center gap-2">
             {side && (
-              <span className={cn(
-                "text-[9px] font-black px-2 py-0.5 rounded-md border tracking-widest",
-                side === 'L' ? "bg-blue-50 text-blue-600 border-blue-100" : "bg-rose-50 text-rose-600 border-rose-100"
-              )}>
+              <button 
+                onClick={(e) => {
+                  e.stopPropagation();
+                  const nextStatus = result?.status === 'Normotonic' ? 'Inhibition' : 'Normotonic';
+                  onStatusChange(muscle, nextStatus, side);
+                }}
+                className={cn(
+                  "text-[9px] font-black px-2 py-0.5 rounded-md border tracking-widest transition-all hover:scale-110 active:scale-95",
+                  side === 'L' ? "bg-blue-50 text-blue-600 border-blue-100 hover:bg-blue-100" : "bg-rose-50 text-rose-600 border-rose-100 hover:bg-rose-100"
+                )}
+              >
                 {side === 'L' ? 'LEFT' : 'RIGHT'}
-              </span>
+              </button>
             )}
             {isTested && (
               <div className={cn(

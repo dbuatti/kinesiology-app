@@ -59,7 +59,7 @@ const DYSFUNCTIONAL_STATUSES = ['Inhibited', 'Hypertonic', 'Switching', 'Inhibit
 const PathwayLogicWizard = ({ onSave, onClearItem, onCancel, priorityPattern, initialFinding, appointmentId }: PathwayLogicWizardProps) => {
   const [step, setStep] = useState<Step>('SELECT_START');
   const [history, setHistory] = useState<Step[]>([]);
-  const [selectedFinding, setSelectedFinding] = useState<string>("");
+  const [selectedFinding, setSelectedFinding] = useState<string>(initialFinding || "");
   const [customText, setCustomText] = useState<string>("");
   const [muscleFindings, setMuscleFindings] = useState<string[]>([]);
   const [loadingMuscles, setLoadingMuscles] = useState(false);
@@ -71,17 +71,20 @@ const PathwayLogicWizard = ({ onSave, onClearItem, onCancel, priorityPattern, in
   const onOpenActionTable = () => setActionTableOpen(true);
   const onOpenLigamentCharts = () => setLigamentModalOpen(true);
 
+  const isSandbox = !appointmentId || appointmentId.includes('00000000');
+
   useEffect(() => {
     if (initialFinding) {
       setSelectedFinding(initialFinding);
-      setStep('SELECT_START'); 
+    } else if (isSandbox) {
+      setSelectedFinding('CUSTOM');
     }
-  }, [initialFinding]);
+  }, [initialFinding, isSandbox]);
 
   // Fetch muscles from the separate muscle_tests table
   useEffect(() => {
     const fetchMuscles = async () => {
-      if (!appointmentId || appointmentId.includes('00000000')) return;
+      if (isSandbox) return;
       
       setLoadingMuscles(true);
       try {
@@ -104,7 +107,7 @@ const PathwayLogicWizard = ({ onSave, onClearItem, onCancel, priorityPattern, in
     };
 
     fetchMuscles();
-  }, [appointmentId]);
+  }, [appointmentId, isSandbox]);
 
   const effectiveItem = selectedFinding === 'CUSTOM' ? customText : selectedFinding;
 
@@ -197,7 +200,7 @@ const PathwayLogicWizard = ({ onSave, onClearItem, onCancel, priorityPattern, in
   const resetWizard = () => {
     setStep('SELECT_START');
     setHistory([]);
-    setSelectedFinding("");
+    setSelectedFinding(isSandbox ? 'CUSTOM' : "");
     setCustomText("");
   };
 
@@ -281,7 +284,7 @@ const PathwayLogicWizard = ({ onSave, onClearItem, onCancel, priorityPattern, in
   const renderStep = () => {
     switch (step) {
       case 'SELECT_START':
-        if (inhibitedItems.length === 0) {
+        if (inhibitedItems.length === 0 && !isSandbox) {
           return (
             <div className="py-12 flex flex-col items-center justify-center text-center space-y-6 animate-in fade-in zoom-in-95 duration-500">
               <div className={cn(
@@ -300,11 +303,6 @@ const PathwayLogicWizard = ({ onSave, onClearItem, onCancel, priorityPattern, in
                     : "Complete the Align phase first to populate correction targets."}
                 </p>
               </div>
-              {!hasAnyTested && (
-                <Button variant="outline" className="rounded-xl h-11 px-8 font-bold text-xs uppercase tracking-widest border-indigo-100 text-indigo-600">
-                  Go to Align Phase
-                </Button>
-              )}
               <div className="pt-4 border-t border-slate-100 w-full max-w-xs">
                 <Button 
                   variant="ghost" 

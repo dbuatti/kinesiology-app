@@ -35,6 +35,7 @@ import { CLINICAL_NAV_ITEMS, LAB_NAV_ITEMS, LIBRARY_NAV_ITEMS } from "@/config/n
 import { supabase } from "@/integrations/supabase/client";
 import { showSuccess } from "@/utils/toast";
 import SearchBar from "./SearchBar";
+import HubSwitcher from "./HubSwitcher";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import ClientForm from "./ClientForm";
 import AppointmentForm from "./AppointmentForm";
@@ -74,33 +75,21 @@ const SpaceHeader = () => {
 
   return (
     <header className="sticky top-0 z-[100] w-full bg-white/80 dark:bg-slate-950/80 backdrop-blur-xl border-b border-slate-200 dark:border-slate-800 px-4 md:px-8 h-16 flex items-center justify-between">
-      {/* LEFT: LOGO & HUB LINK */}
-      <div className="flex items-center gap-6">
+      {/* LEFT: LOGO & HUB SWITCHER */}
+      <div className="flex items-center gap-4 md:gap-8">
         <Link to="/?view=hub" className="flex items-center gap-3 group">
-          <div className="w-8 h-8 bg-slate-900 dark:bg-white rounded-xl flex items-center justify-center text-white dark:text-slate-900 font-black text-sm transition-transform group-hover:scale-110">
+          <div className="w-9 h-9 bg-slate-900 dark:bg-white rounded-xl flex items-center justify-center text-white dark:text-slate-900 font-black text-sm transition-all group-hover:scale-110 group-hover:rotate-3 shadow-lg">
             A
           </div>
-
-          <div className="hidden sm:block">
-            <h1 className="text-sm font-serif font-bold tracking-tight leading-none">Resonance</h1>
-            <p className="text-[7px] text-slate-400 uppercase font-black tracking-[0.2em] mt-1">Practice Suite</p>
-          </div>
         </Link>
 
-        <div className="h-6 w-px bg-slate-200 dark:bg-slate-800 hidden md:block" />
+        <div className="h-8 w-px bg-slate-200 dark:bg-slate-800 hidden md:block" />
 
-        <Link
-          to="/?view=hub"
-          className="flex items-center gap-2 px-3 py-1.5 rounded-xl text-slate-500 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-900 transition-all group"
-        >
-
-          <Grid size={14} className="group-hover:text-indigo-600" />
-          <span className="text-[10px] font-black uppercase tracking-widest hidden lg:block">Practice Hub</span>
-        </Link>
+        <HubSwitcher />
       </div>
 
       {/* CENTER: CONTEXTUAL NAV */}
-      <nav className="hidden md:flex items-center gap-1 bg-slate-100/50 dark:bg-slate-900/50 p-1 rounded-2xl border border-slate-200/50 dark:border-slate-800/50">
+      <nav className="hidden xl:flex items-center gap-1 bg-slate-100/50 dark:bg-slate-900/50 p-1 rounded-2xl border border-slate-200/50 dark:border-slate-800/50 backdrop-blur-md">
         {navItems.map((item) => {
           const isActive = location.pathname === item.path || (item.path !== "/" && location.pathname.startsWith(item.path));
           return (
@@ -108,14 +97,14 @@ const SpaceHeader = () => {
               key={item.path}
               to={item.path}
               className={cn(
-                "flex items-center gap-2 px-4 py-1.5 rounded-xl transition-all duration-300",
-                isActive 
-                  ? "bg-white dark:bg-slate-800 text-slate-900 dark:text-white shadow-sm" 
-                  : "text-slate-500 hover:text-slate-900 dark:hover:text-white"
+                "flex items-center gap-2 px-4 py-2 rounded-xl transition-all duration-500",
+                isActive
+                  ? "bg-white dark:bg-slate-800 text-slate-900 dark:text-white shadow-md scale-[1.02]"
+                  : "text-slate-500 hover:text-slate-900 dark:hover:text-white hover:bg-white/50 dark:hover:bg-slate-800/50"
               )}
             >
-              <item.icon size={14} className={cn(isActive && (mode === 'clinical' ? 'text-indigo-600' : mode === 'lab' ? 'text-emerald-600' : 'text-amber-600'))} />
-              <span className="text-[10px] font-black uppercase tracking-widest">{item.label}</span>
+              <item.icon size={14} className={cn("transition-colors duration-500", isActive && (mode === 'clinical' ? 'text-indigo-600' : mode === 'lab' ? 'text-emerald-600' : 'text-amber-600'))} />
+              <span className="text-[10px] font-black uppercase tracking-[0.15em]">{item.label}</span>
             </Link>
           );
         })}

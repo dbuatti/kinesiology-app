@@ -196,7 +196,7 @@ const Index = () => {
 
             {/* PRACTICE LAB */}
             <button onClick={() => handleEnterMode('lab')} className="group relative flex flex-col text-left h-full animate-in fade-in slide-in-from-bottom-8 duration-1000 delay-300">
-              <div className={cn("relative h-full border border-slate-100 dark:border-slate-800 rounded-3xl overflow-hidden transition-all duration-500 group-hover:border-emerald-200 group-hover:shadow-2xl group-hover:shadow-emerald-500/5 p-10 flex flex-col bg-white dark:bg-slate-900")}>
+              <div className={cn("relative h-full border border-slate-100 dark:border-slate-800 rounded-3xl overflow-hidden transition-all duration-500 group-hover:border-emerald-200 group-hover:shadow-2xl group-hover:shadow-indigo-500/5 p-10 flex flex-col bg-white dark:bg-slate-900")}>
                 <div className="w-14 h-14 rounded-2xl bg-slate-50 dark:bg-slate-800 text-slate-900 dark:text-white flex items-center justify-center mb-10 transition-all duration-500 group-hover:bg-emerald-600 group-hover:text-white">
                   <Zap size={28} />
                 </div>

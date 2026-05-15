@@ -12,7 +12,10 @@ import {
   Sparkles, 
   Printer, 
   Link as LinkIcon,
-  Activity
+  Activity,
+  ShieldCheck,
+  Clock,
+  Calendar
 } from "lucide-react";
 import { isToday, format } from "date-fns";
 
@@ -182,12 +185,6 @@ const AppointmentDetailPage = () => {
     showSuccess("Session started");
   }, [appointment, saveField]);
 
-  const handleCompleteSession = useCallback(async () => {
-    if (!appointment) return;
-    await saveField('status', 'Completed');
-    showSuccess("Session completed");
-  }, [appointment, saveField]);
-
   const handleCopySummary = useCallback(async () => {
     if (!appointment) return;
     const summary = generateSessionSummary(appointment);
@@ -199,7 +196,10 @@ const AppointmentDetailPage = () => {
 
   if (loading) return (
     <div className="flex min-h-screen items-center justify-center bg-background">
-      <Loader2 className="h-12 w-12 animate-spin text-indigo-600" />
+      <div className="flex flex-col items-center gap-4">
+        <Loader2 className="h-12 w-12 animate-spin text-indigo-600" />
+        <p className="text-[10px] font-black uppercase tracking-[0.3em] text-slate-400">Initializing Workspace</p>
+      </div>
     </div>
   );
 
@@ -227,52 +227,78 @@ const AppointmentDetailPage = () => {
   return (
     <ErrorBoundary>
       <AppLayout variant="full" className="pb-0">
-        <div className="max-w-[1600px] mx-auto space-y-6">
-          <div className="flex flex-col md:flex-row items-center justify-between gap-6">
-            <div className="flex items-center gap-4">
-              <Button variant="ghost" onClick={() => navigate(-1)} className="h-12 px-4 rounded-2xl bg-white border border-slate-200 shadow-sm text-slate-400 hover:text-indigo-600 transition-all gap-3">
-                <ArrowLeft size={20} />
-                <span className="text-[10px] font-black uppercase tracking-widest">Schedule</span>
+        <div className="max-w-[1600px] mx-auto space-y-8">
+          {/* PREMIUM SESSION HEADER */}
+          <div className="flex flex-col md:flex-row items-center justify-between gap-8 bg-white dark:bg-slate-900 p-8 rounded-[3rem] border border-slate-100 dark:border-slate-800 shadow-xl shadow-slate-200/50 dark:shadow-none">
+            <div className="flex items-center gap-8">
+              <Button variant="ghost" onClick={() => navigate(-1)} className="h-14 w-14 rounded-2xl bg-slate-50 dark:bg-slate-800 border border-slate-100 dark:border-slate-700 text-slate-400 hover:text-indigo-600 transition-all">
+                <ArrowLeft size={24} />
               </Button>
-              <div className="space-y-1">
-                <div className="flex items-center gap-2">
-                  <h1 className={cn("text-2xl md:text-4xl font-serif font-bold text-slate-900 dark:text-white tracking-tighter truncate leading-none", "privacy-mode-active:blur-sm")}>
+              <div className="space-y-2">
+                <div className="flex items-center gap-4">
+                  <h1 className={cn("text-3xl md:text-5xl font-serif font-bold text-slate-900 dark:text-white tracking-tighter truncate leading-none", "privacy-mode-active:blur-sm")}>
                     {appointment.clients.name} 
-                    <span className="text-slate-300 font-medium mx-2">/</span>
-                    <span className="text-slate-500 font-bold">{format(appointment.date, "EEE d MMM")} · {format(appointment.date, "h:mm a")}</span>
                   </h1>
-                  {isSessionToday && isOngoing && <Badge className="bg-emerald-500 text-white border-none font-black text-[8px] uppercase tracking-[0.3em] px-2 py-0.5 rounded-full animate-pulse">● LIVE</Badge>}
+                  {isSessionToday && isOngoing && (
+                    <Badge className="bg-emerald-500 text-white border-none font-black text-[9px] uppercase tracking-[0.3em] px-4 py-1.5 rounded-full animate-pulse shadow-lg shadow-emerald-500/20">
+                      ● LIVE SESSION
+                    </Badge>
+                  )}
+                </div>
+                <div className="flex items-center gap-6 text-slate-500 font-bold text-sm">
+                  <span className="flex items-center gap-2"><Calendar size={16} className="text-indigo-400" /> {format(appointment.date, "EEEE, MMMM d")}</span>
+                  <span className="flex items-center gap-2"><Clock size={16} className="text-indigo-400" /> {format(appointment.date, "h:mm a")}</span>
+                  <Badge variant="outline" className="bg-slate-50 dark:bg-slate-800 border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-400 font-black text-[9px] uppercase tracking-widest px-3 py-1">
+                    {appointment.tag}
+                  </Badge>
                 </div>
               </div>
             </div>
 
-            <div className="flex items-center gap-3">
-              <Button variant="outline" size="sm" onClick={() => setIsDocumentView(true)} className="h-12 w-[160px] gap-3 border-slate-200 bg-white rounded-2xl font-black text-[10px] uppercase tracking-widest text-slate-600 hover:bg-slate-50 hover:border-indigo-200 transition-all shadow-sm">
-                <FileText size={16} className="text-indigo-600" /> Document View
+            <div className="flex items-center gap-4">
+              <Button variant="outline" size="sm" onClick={() => setIsDocumentView(true)} className="h-14 px-8 gap-3 border-slate-200 bg-white rounded-2xl font-black text-[10px] uppercase tracking-widest text-slate-600 hover:bg-slate-50 hover:border-indigo-200 transition-all shadow-sm">
+                <FileText size={20} className="text-indigo-600" /> Document View
               </Button>
 
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                  <Button variant="outline" size="sm" className="h-12 w-[160px] gap-3 border-slate-200 bg-white rounded-2xl font-black text-[10px] uppercase tracking-widest text-slate-600 hover:bg-slate-50 transition-all shadow-sm">
-                    <MoreHorizontal size={16} className="text-slate-400" /> Session Actions <ChevronDown size={14} className="text-slate-300" />
+                  <Button variant="outline" size="sm" className="h-14 w-14 rounded-2xl border-slate-200 bg-white text-slate-400 hover:bg-slate-50 transition-all shadow-sm">
+                    <MoreHorizontal size={24} />
                   </Button>
                 </DropdownMenuTrigger>
-                <DropdownMenuContent align="end" className="w-64 p-2 rounded-[2rem] border-none shadow-3xl bg-white dark:bg-slate-900">
-                  <DropdownMenuItem onClick={handleCopyOnboardingLink} className="rounded-xl py-3 px-4 cursor-pointer"><LinkIcon size={16} className="mr-3 text-indigo-50" /> Copy Onboarding Link</DropdownMenuItem>
-                  <DropdownMenuItem onClick={handleSyncToNotion} className="rounded-xl py-3 px-4 cursor-pointer"><RefreshCw size={16} className="mr-3 text-emerald-500" /> Sync to Notion</DropdownMenuItem>
-                  <DropdownMenuItem onClick={handleCopyForAI} className="rounded-xl py-3 px-4 cursor-pointer"><Sparkles size={16} className="mr-3 text-amber-500" /> AI Case Prompt</DropdownMenuItem>
-                  <DropdownMenuSeparator className="my-2" />
-                  <DropdownMenuItem onClick={() => window.print()} className="rounded-xl py-3 px-4 cursor-pointer"><Printer size={16} className="mr-3 text-slate-400" /> Print Session Report</DropdownMenuItem>
+                <DropdownMenuContent align="end" className="w-72 p-3 rounded-[2rem] border-none shadow-3xl bg-white dark:bg-slate-900">
+                  <div className="px-4 py-2 mb-2">
+                    <p className="text-[8px] font-black text-slate-400 uppercase tracking-[0.4em]">Session Management</p>
+                  </div>
+                  <DropdownMenuItem onClick={handleCopyOnboardingLink} className="rounded-xl py-3.5 px-5 cursor-pointer flex items-center gap-4">
+                    <LinkIcon size={18} className="text-indigo-500" /> 
+                    <span className="font-bold text-xs uppercase tracking-widest">Copy Onboarding Link</span>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={handleSyncToNotion} className="rounded-xl py-3.5 px-5 cursor-pointer flex items-center gap-4">
+                    <RefreshCw size={18} className="text-emerald-500" /> 
+                    <span className="font-bold text-xs uppercase tracking-widest">Sync to Notion</span>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={handleCopyForAI} className="rounded-xl py-3.5 px-5 cursor-pointer flex items-center gap-4">
+                    <Sparkles size={18} className="text-amber-500" /> 
+                    <span className="font-bold text-xs uppercase tracking-widest">AI Case Prompt</span>
+                  </DropdownMenuItem>
+                  <DropdownMenuSeparator className="my-2 bg-slate-100 dark:bg-slate-800" />
+                  <DropdownMenuItem onClick={() => window.print()} className="rounded-xl py-3.5 px-5 cursor-pointer flex items-center gap-4">
+                    <Printer size={18} className="text-slate-400" /> 
+                    <span className="font-bold text-xs uppercase tracking-widest">Print Session Report</span>
+                  </DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>
 
               {isSessionToday && appointment.status === 'Scheduled' && (
-                <Button onClick={handleStartSession} className="h-12 px-8 bg-indigo-600 hover:bg-indigo-700 text-white rounded-2xl font-black text-[10px] uppercase tracking-widest shadow-xl shadow-indigo-100/20 transition-all hover:scale-105 active:scale-95">Start Session</Button>
+                <Button onClick={handleStartSession} className="h-14 px-10 bg-indigo-600 hover:bg-indigo-700 text-white rounded-2xl font-black text-xs uppercase tracking-widest shadow-xl shadow-indigo-500/20 transition-all hover:scale-105 active:scale-95">
+                  Start Session
+                </Button>
               )}
             </div>
           </div>
 
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
             <div className="lg:col-span-8">
               <WeeklyFocusBanner appointmentId={appointment.id} priorityPattern={appointment.priority_pattern} onSaveField={saveField} />
             </div>
@@ -281,10 +307,10 @@ const AppointmentDetailPage = () => {
             </div>
           </div>
 
-          <div className="grid grid-cols-1 xl:grid-cols-12 gap-10 items-start">
-            <div className={cn(showSidebar ? "xl:col-span-8" : "xl:col-span-12", "space-y-6 transition-all duration-500")}>
-              <div className="bg-white dark:bg-slate-900 rounded-[3rem] border border-slate-200 dark:border-slate-800 shadow-2xl shadow-slate-200/50 dark:shadow-none overflow-hidden">
-                <div className="p-8 md:p-12 space-y-8">
+          <div className="grid grid-cols-1 xl:grid-cols-12 gap-12 items-start">
+            <div className={cn(showSidebar ? "xl:col-span-8" : "xl:col-span-12", "space-y-8 transition-all duration-700")}>
+              <div className="bg-white dark:bg-slate-900 rounded-[3.5rem] border border-slate-200 dark:border-slate-800 shadow-2xl shadow-slate-200/50 dark:shadow-none overflow-hidden">
+                <div className="p-10 md:p-16 space-y-12">
                   <AppointmentHeader appointment={appointment} onSaveField={saveField} onUpdate={refresh} />
                   <div className="h-px bg-gradient-to-r from-transparent via-slate-100 dark:via-slate-800 to-transparent" />
                   <SessionContentSwitcher
@@ -306,7 +332,14 @@ const AppointmentDetailPage = () => {
                   />
                 </div>
               </div>
-              <div className="bg-slate-50 dark:bg-slate-950 rounded-[3rem] border border-dashed border-slate-200 dark:border-slate-800 p-12 mb-20">
+              
+              {/* PRINTABLE WORKSHEET PREVIEW */}
+              <div className="bg-slate-50 dark:bg-slate-950 rounded-[3.5rem] border border-dashed border-slate-200 dark:border-slate-800 p-16 mb-32 relative group">
+                <div className="absolute top-8 right-8 opacity-0 group-hover:opacity-100 transition-opacity">
+                  <Button variant="outline" onClick={() => window.print()} className="rounded-xl bg-white shadow-lg font-bold text-xs">
+                    <Printer size={16} className="mr-2" /> Print Worksheet
+                  </Button>
+                </div>
                 <div className="max-w-4xl mx-auto">
                   <SessionWorksheetTemplate clientName={appointment.clients.name} date={appointment.date} />
                 </div>

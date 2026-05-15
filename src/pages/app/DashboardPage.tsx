@@ -63,7 +63,7 @@ const Index = () => {
       try {
         const { tasks, date } = JSON.parse(saved);
         if (isToday(new Date(date))) {
-          setMorningProgress(Math.round((tasks.length / 4) * 100));
+          setMorningProgress(Math.round((tasks.length / 6) * 100));
         }
       } catch (e) {}
     }
@@ -159,71 +159,75 @@ const Index = () => {
   };
 
   if (view === 'hub') {
-    const nextSession = todaySessions.find(s => s.status !== 'Completed' && s.date > new Date());
-
     return (
       <div className="min-h-screen flex flex-col items-center justify-center py-12 px-4 relative overflow-hidden bg-white dark:bg-slate-950">
         <div className="absolute inset-0 pointer-events-none">
-          <div className="absolute top-[-10%] left-[-5%] w-[40%] h-[40%] bg-indigo-500/5 blur-[120px] rounded-full" />
-          <div className="absolute bottom-[-10%] right-[-5%] w-[40%] h-[40%] bg-emerald-500/5 blur-[120px] rounded-full" />
+          <div className="absolute top-[-10%] left-[-5%] w-[50%] h-[50%] bg-indigo-500/5 blur-[120px] rounded-full" />
+          <div className="absolute bottom-[-10%] right-[-5%] w-[50%] h-[50%] bg-emerald-500/5 blur-[120px] rounded-full" />
         </div>
 
         <div className="max-w-6xl w-full space-y-24 relative z-10">
           <div className="text-center space-y-6 max-w-3xl mx-auto">
             <p className="text-[10px] font-black uppercase tracking-[0.5em] text-slate-400">Resonance Practice Suite</p>
-            <h1 className="text-5xl md:text-7xl font-serif font-bold text-slate-900 dark:text-white tracking-tight leading-tight animate-in fade-in slide-in-from-bottom-4 duration-1000">
+            <h1 className="text-5xl md:text-8xl font-serif font-bold text-slate-900 dark:text-white tracking-tighter leading-tight animate-in fade-in slide-in-from-bottom-4 duration-1000">
               Select your focus.
             </h1>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 px-4">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-10 px-4">
             {/* CLINICAL HUB */}
             <button onClick={() => handleEnterMode('clinical')} className="group relative flex flex-col text-left h-full animate-in fade-in slide-in-from-bottom-8 duration-1000 delay-200">
-              <div className={cn("relative h-full border border-slate-100 dark:border-slate-800 rounded-3xl overflow-hidden transition-all duration-500 group-hover:border-indigo-200 group-hover:shadow-2xl group-hover:shadow-indigo-500/5 p-10 flex flex-col bg-white dark:bg-slate-900")}>
-                <div className="w-14 h-14 rounded-2xl bg-slate-50 dark:bg-slate-800 text-slate-900 dark:text-white flex items-center justify-center mb-10 transition-all duration-500 group-hover:bg-indigo-600 group-hover:text-white">
-                  <Activity size={28} />
+              <div className={cn("relative h-full border border-slate-100 dark:border-slate-800 rounded-[3rem] overflow-hidden transition-all duration-700 group-hover:border-indigo-200 group-hover:shadow-3xl group-hover:shadow-indigo-500/10 p-12 flex flex-col bg-white dark:bg-slate-900")}>
+                <div className="w-16 h-16 rounded-2xl bg-slate-50 dark:bg-slate-800 text-slate-900 dark:text-white flex items-center justify-center mb-12 transition-all duration-700 group-hover:bg-indigo-600 group-hover:text-white group-hover:scale-110 group-hover:rotate-3">
+                  <Activity size={32} />
                 </div>
-                <div className="space-y-4 mb-10">
-                  <h3 className="text-2xl font-bold text-slate-900 dark:text-white tracking-tight">Clinical Hub</h3>
-                  <p className="text-sm text-slate-500 dark:text-slate-400 leading-relaxed font-medium">Manage clients, track progress, and execute sessions.</p>
+                <div className="space-y-4 mb-12">
+                  <h3 className="text-3xl font-bold text-slate-900 dark:text-white tracking-tight">Clinical Hub</h3>
+                  <p className="text-base text-slate-500 dark:text-slate-400 leading-relaxed font-medium">Manage clients, track progress, and execute high-precision sessions.</p>
                 </div>
-                <div className="mt-auto pt-8 border-t border-slate-50 dark:border-slate-800 flex items-center justify-between">
-                  <span className="text-[9px] font-black uppercase tracking-widest text-slate-400 group-hover:text-indigo-600 transition-colors">Enter Workspace</span>
-                  <ArrowRight size={18} className="text-slate-300 group-hover:text-indigo-600 group-hover:translate-x-1 transition-all" />
+                <div className="mt-auto pt-10 border-t border-slate-50 dark:border-slate-800 flex items-center justify-between">
+                  <span className="text-[10px] font-black uppercase tracking-widest text-slate-400 group-hover:text-indigo-600 transition-colors">Enter Workspace</span>
+                  <div className="w-10 h-10 rounded-xl bg-slate-50 dark:bg-slate-800 flex items-center justify-center text-slate-300 group-hover:bg-indigo-600 group-hover:text-white transition-all">
+                    <ArrowRight size={20} className="group-hover:translate-x-1 transition-all" />
+                  </div>
                 </div>
               </div>
             </button>
 
             {/* PRACTICE LAB */}
             <button onClick={() => handleEnterMode('lab')} className="group relative flex flex-col text-left h-full animate-in fade-in slide-in-from-bottom-8 duration-1000 delay-300">
-              <div className={cn("relative h-full border border-slate-100 dark:border-slate-800 rounded-3xl overflow-hidden transition-all duration-500 group-hover:border-emerald-200 group-hover:shadow-2xl group-hover:shadow-indigo-500/5 p-10 flex flex-col bg-white dark:bg-slate-900")}>
-                <div className="w-14 h-14 rounded-2xl bg-slate-50 dark:bg-slate-800 text-slate-900 dark:text-white flex items-center justify-center mb-10 transition-all duration-500 group-hover:bg-emerald-600 group-hover:text-white">
-                  <Zap size={28} />
+              <div className={cn("relative h-full border border-slate-100 dark:border-slate-800 rounded-[3rem] overflow-hidden transition-all duration-700 group-hover:border-emerald-200 group-hover:shadow-3xl group-hover:shadow-emerald-500/10 p-12 flex flex-col bg-white dark:bg-slate-900")}>
+                <div className="w-16 h-16 rounded-2xl bg-slate-50 dark:bg-slate-800 text-slate-900 dark:text-white flex items-center justify-center mb-12 transition-all duration-700 group-hover:bg-emerald-600 group-hover:text-white group-hover:scale-110 group-hover:rotate-3">
+                  <Zap size={32} />
                 </div>
-                <div className="space-y-4 mb-10">
-                  <h3 className="text-2xl font-bold text-slate-900 dark:text-white tracking-tight">Practice Lab</h3>
-                  <p className="text-sm text-slate-500 dark:text-slate-400 leading-relaxed font-medium">Ground yourself, journal reflections, and shift your identity.</p>
+                <div className="space-y-4 mb-12">
+                  <h3 className="text-3xl font-bold text-slate-900 dark:text-white tracking-tight">Practice Lab</h3>
+                  <p className="text-base text-slate-500 dark:text-slate-400 leading-relaxed font-medium">Ground yourself, journal reflections, and shift your internal constructs.</p>
                 </div>
-                <div className="mt-auto pt-8 border-t border-slate-50 dark:border-slate-800 flex items-center justify-between">
-                  <span className="text-[9px] font-black uppercase tracking-widest text-slate-400 group-hover:text-emerald-600 transition-colors">Enter Workspace</span>
-                  <ArrowRight size={18} className="text-slate-300 group-hover:text-emerald-600 group-hover:translate-x-1 transition-all" />
+                <div className="mt-auto pt-10 border-t border-slate-50 dark:border-slate-800 flex items-center justify-between">
+                  <span className="text-[10px] font-black uppercase tracking-widest text-slate-400 group-hover:text-emerald-600 transition-colors">Enter Workspace</span>
+                  <div className="w-10 h-10 rounded-xl bg-slate-50 dark:bg-slate-800 flex items-center justify-center text-slate-300 group-hover:bg-emerald-600 group-hover:text-white transition-all">
+                    <ArrowRight size={20} className="group-hover:translate-x-1 transition-all" />
+                  </div>
                 </div>
               </div>
             </button>
 
             {/* KNOWLEDGE HUB */}
             <button onClick={() => handleEnterMode('library')} className="group relative flex flex-col text-left h-full animate-in fade-in slide-in-from-bottom-8 duration-1000 delay-400">
-              <div className={cn("relative h-full border border-slate-100 dark:border-slate-800 rounded-3xl overflow-hidden transition-all duration-500 group-hover:border-amber-200 group-hover:shadow-2xl group-hover:shadow-amber-500/5 p-10 flex flex-col bg-white dark:bg-slate-900")}>
-                <div className="w-14 h-14 rounded-2xl bg-slate-50 dark:bg-slate-800 text-slate-900 dark:text-white flex items-center justify-center mb-10 transition-all duration-500 group-hover:bg-amber-600 group-hover:text-white">
-                  <BookOpen size={28} />
+              <div className={cn("relative h-full border border-slate-100 dark:border-slate-800 rounded-[3rem] overflow-hidden transition-all duration-700 group-hover:border-amber-200 group-hover:shadow-3xl group-hover:shadow-amber-500/10 p-12 flex flex-col bg-white dark:bg-slate-900")}>
+                <div className="w-16 h-16 rounded-2xl bg-slate-50 dark:bg-slate-800 text-slate-900 dark:text-white flex items-center justify-center mb-12 transition-all duration-700 group-hover:bg-amber-600 group-hover:text-white group-hover:scale-110 group-hover:rotate-3">
+                  <BookOpen size={32} />
                 </div>
-                <div className="space-y-4 mb-10">
-                  <h3 className="text-2xl font-bold text-slate-900 dark:text-white tracking-tight">Knowledge Hub</h3>
-                  <p className="text-sm text-slate-500 dark:text-slate-400 leading-relaxed font-medium">The clinical oracle. Master protocols and study the bible.</p>
+                <div className="space-y-4 mb-12">
+                  <h3 className="text-3xl font-bold text-slate-900 dark:text-white tracking-tight">Knowledge Hub</h3>
+                  <p className="text-base text-slate-500 dark:text-slate-400 leading-relaxed font-medium">The clinical oracle. Master protocols and study the definitive bible.</p>
                 </div>
-                <div className="mt-auto pt-8 border-t border-slate-50 dark:border-slate-800 flex items-center justify-between">
-                  <span className="text-[9px] font-black uppercase tracking-widest text-slate-400 group-hover:text-amber-600 transition-colors">Enter Workspace</span>
-                  <ArrowRight size={18} className="text-slate-300 group-hover:text-amber-600 group-hover:translate-x-1 transition-all" />
+                <div className="mt-auto pt-10 border-t border-slate-50 dark:border-slate-800 flex items-center justify-between">
+                  <span className="text-[10px] font-black uppercase tracking-widest text-slate-400 group-hover:text-amber-600 transition-colors">Enter Workspace</span>
+                  <div className="w-10 h-10 rounded-xl bg-slate-50 dark:bg-slate-800 flex items-center justify-center text-slate-300 group-hover:bg-amber-600 group-hover:text-white transition-all">
+                    <ArrowRight size={20} className="group-hover:translate-x-1 transition-all" />
+                  </div>
                 </div>
               </div>
             </button>

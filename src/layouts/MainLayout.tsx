@@ -23,16 +23,17 @@ const MainLayout = () => {
       mode === 'lab' ? "bg-slate-50/50 dark:bg-slate-950" :
       "bg-slate-50/50 dark:bg-slate-950"
     )}>
-      {/* SUBTLE BACKGROUND ORBS */}
+      {/* SOPHISTICATED BACKGROUND ORBS */}
       <div className="fixed inset-0 pointer-events-none overflow-hidden z-0">
         <div className={cn(
-          "absolute top-[-15%] left-[-5%] w-[50%] h-[50%] blur-[140px] rounded-full transition-all duration-1000 opacity-10 dark:opacity-5",
-          mode === 'clinical' ? "bg-indigo-200" : mode === 'lab' ? "bg-emerald-200" : "bg-amber-200"
+          "absolute top-[-10%] left-[-10%] w-[60%] h-[60%] blur-[160px] rounded-full transition-all duration-1000 opacity-20 dark:opacity-10",
+          mode === 'clinical' ? "bg-indigo-300" : mode === 'lab' ? "bg-emerald-300" : "bg-amber-300"
         )} />
         <div className={cn(
-          "absolute bottom-[-10%] right-[-5%] w-[40%] h-[40%] blur-[120px] rounded-full transition-all duration-1000 opacity-10 dark:opacity-5 delay-500",
-          mode === 'clinical' ? "bg-blue-100" : mode === 'lab' ? "bg-teal-100" : "bg-orange-100"
+          "absolute bottom-[-10%] right-[-10%] w-[50%] h-[50%] blur-[140px] rounded-full transition-all duration-1000 opacity-20 dark:opacity-10 delay-500",
+          mode === 'clinical' ? "bg-blue-200" : mode === 'lab' ? "bg-teal-200" : "bg-orange-200"
         )} />
+        <div className="absolute top-[20%] right-[10%] w-[30%] h-[30%] bg-purple-200/10 blur-[120px] rounded-full animate-pulse-soft" />
       </div>
 
       <div className="relative z-10 flex flex-col min-h-screen">

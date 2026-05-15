@@ -34,7 +34,7 @@
     --input: 214.3 31.8% 91.4%;
     --ring: 222 47% 11%;
 
-    --radius: 1rem;
+    --radius: 1.25rem;
   }
 
   .dark {
@@ -87,8 +87,8 @@
 
   /* Minimalist Scrollbar */
   ::-webkit-scrollbar {
-    width: 5px;
-    height: 5px;
+    width: 6px;
+    height: 6px;
   }
   ::-webkit-scrollbar-track {
     @apply bg-transparent;
@@ -107,10 +107,29 @@
 
 @layer components {
   .premium-card {
-    @apply rounded-2xl border border-slate-100 bg-white shadow-sm dark:bg-slate-900/50 dark:border-slate-800 transition-all duration-300 hover:shadow-md p-6;
+    @apply rounded-[2.5rem] border border-slate-100 bg-white shadow-sm dark:bg-slate-900/50 dark:border-slate-800 transition-all duration-500 hover:shadow-xl p-8;
   }
 
   .glass-panel {
-    @apply bg-white/50 backdrop-blur-xl border border-white/20 dark:bg-slate-900/50 dark:border-slate-800/50;
+    @apply bg-white/70 backdrop-blur-xl border border-white/20 dark:bg-slate-950/70 dark:border-slate-800/50;
   }
+
+  .no-scrollbar::-webkit-scrollbar {
+    display: none;
+  }
+  .no-scrollbar {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+}
+
+/* Custom Animations */
+@keyframes float {
+  0% { transform: translateY(0px); }
+  50% { transform: translateY(-10px); }
+  100% { transform: translateY(0px); }
+}
+
+.animate-float {
+  animation: float 6s ease-in-out infinite;
 }

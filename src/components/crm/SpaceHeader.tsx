@@ -18,7 +18,8 @@ import {
   UserPlus,
   CalendarPlus,
   Menu,
-  X
+  X,
+  Sparkles
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useAppMode, AppMode } from "@/components/ModeProvider";
@@ -124,7 +125,7 @@ const SpaceHeader = () => {
                   <Plus size={18} />
                 </Button>
               </DropdownMenuTrigger>
-              <DropdownMenuContent align="end" className="w-56 rounded-2xl p-2 shadow-2xl border-none bg-white dark:bg-slate-900">
+              <DropdownMenuContent align="end" className="w-56 rounded-2xl p-2 shadow-3xl border-none bg-white dark:bg-slate-900">
                 <DropdownMenuItem onClick={() => setClientDialogOpen(true)} className="rounded-xl py-2.5 px-4 cursor-pointer gap-3">
                   <UserPlus size={16} className="text-indigo-600" />
                   <span className="font-bold text-xs uppercase tracking-widest">New Client</span>
@@ -143,7 +144,7 @@ const SpaceHeader = () => {
                 <Settings size={18} />
               </Button>
             </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" className="w-64 rounded-2xl p-2 shadow-2xl border-none bg-white dark:bg-slate-900">
+            <DropdownMenuContent align="end" className="w-64 rounded-2xl p-2 shadow-3xl border-none bg-white dark:bg-slate-900">
               <div className="px-4 py-3 border-b border-slate-100 dark:border-slate-800 mb-2">
                 <p className="text-[8px] font-black text-slate-400 uppercase tracking-widest mb-2">Active Workspace</p>
                 <div className={cn("flex items-center gap-3 p-2 rounded-xl", getModeColor(mode))}>

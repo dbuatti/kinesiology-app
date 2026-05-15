@@ -197,12 +197,12 @@ const AppointmentHeader = ({ appointment, onSaveField, onUpdate }: AppointmentHe
 
               <Select value={appointment.status} onValueChange={(newStatus) => onSaveField('status', newStatus)}>
                 <SelectTrigger className={cn(
-                  "h-8 w-[130px] text-[8px] font-black uppercase tracking-[0.2em] border-slate-200 bg-white rounded-lg shadow-sm transition-all",
+                  "h-8 w-auto min-w-[140px] text-[9px] font-black uppercase tracking-[0.15em] border-slate-200 bg-white rounded-lg shadow-sm transition-all px-3",
                   appointment.status === 'Completed' ? "text-emerald-600 border-emerald-100 bg-emerald-50/30" : "text-indigo-600"
                 )}>
                   <div className="flex items-center gap-2">
                     <div className={cn("w-1.5 h-1.5 rounded-full", appointment.status === 'Completed' ? "bg-emerald-500" : "bg-indigo-500")} />
-                    <SelectValue />
+                    <span className="truncate">{appointment.status}</span>
                   </div>
                 </SelectTrigger>
                 <SelectContent className="rounded-2xl border-none shadow-3xl p-2 bg-white dark:bg-slate-900">

@@ -142,8 +142,8 @@ const WeeklyFocusBanner = ({ appointmentId, priorityPattern, onSaveField, onJump
   return (
     <div className="w-full mb-4 animate-in slide-in-from-top-4 duration-700 print:hidden">
       <div className={cn(
-        "bg-indigo-600 text-white rounded-[2rem] p-4 shadow-lg border-2 border-indigo-400/30 relative overflow-hidden group transition-all duration-700",
-        isAllPracticed && "bg-emerald-600 border-emerald-400/30 shadow-emerald-200"
+        "bg-slate-900 text-white rounded-[2rem] p-4 shadow-lg border-2 border-slate-800 relative overflow-hidden group transition-all duration-700",
+        isAllPracticed && "bg-indigo-900 border-indigo-800 shadow-indigo-500/10"
       )}>
         <div className="absolute top-0 right-0 p-4 opacity-10 group-hover:scale-110 transition-transform duration-700">
           <Trophy size={80} />
@@ -155,13 +155,13 @@ const WeeklyFocusBanner = ({ appointmentId, priorityPattern, onSaveField, onJump
               "w-10 h-10 rounded-xl bg-white/10 backdrop-blur-md flex items-center justify-center border border-white/20 shadow-inner transition-all duration-500",
               celebratingItem ? "bg-emerald-400 border-emerald-200 scale-110 rotate-12" : ""
             )}>
-              {celebratingItem ? <Sparkles size={20} className="text-white" /> : <Target size={20} className="text-indigo-100" />}
+              {celebratingItem ? <Sparkles size={20} className="text-white" /> : <Target size={20} className="text-indigo-400" />}
             </div>
             <div className="space-y-1">
               <div className="flex items-center gap-3">
-                <p className="text-[8px] font-black uppercase tracking-[0.4em] text-indigo-200/80">Weekly Mastery Focus</p>
+                <p className="text-[8px] font-black uppercase tracking-[0.4em] text-slate-500">Weekly Mastery Focus</p>
                 {practicedCount === 0 && (
-                  <Badge variant="outline" className="bg-white/10 border-white/20 text-white text-[7px] font-black uppercase tracking-widest animate-pulse">
+                  <Badge variant="outline" className="bg-white/5 border-white/10 text-slate-400 text-[7px] font-black uppercase tracking-widest animate-pulse">
                     <MousePointer2 size={8} className="mr-1" /> Tap to log today's focus
                   </Badge>
                 )}
@@ -174,10 +174,10 @@ const WeeklyFocusBanner = ({ appointmentId, priorityPattern, onSaveField, onJump
                   if (!isInteractive) return (
                     <React.Fragment key={item}>
                       <div className="flex items-center gap-1.5">
-                        {videoUrl && <PlayCircle size={12} className="text-indigo-300" />}
+                        {videoUrl && <PlayCircle size={12} className="text-indigo-400" />}
                         <span className="text-sm font-black tracking-tight">{item}</span>
                       </div>
-                      {i < items.length - 1 && <span className="text-indigo-400/40 font-black">•</span>}
+                      {i < items.length - 1 && <span className="text-slate-700 font-black">•</span>}
                     </React.Fragment>
                   );
 
@@ -194,13 +194,13 @@ const WeeklyFocusBanner = ({ appointmentId, priorityPattern, onSaveField, onJump
                           status === 'Inhibited' ? "bg-rose-500/20 border-rose-400/50 text-white" :
                           status === 'Hypertonic' ? "bg-amber-500/20 border-amber-400/50 text-white" :
                           status === 'Switching' ? "bg-purple-500/20 border-purple-400/50 text-white" :
-                          "bg-white/10 border-white/10 text-indigo-100 hover:bg-white/20"
+                          "bg-white/5 border-white/10 text-slate-300 hover:bg-white/10"
                         )}>
                           {status === 'Clear' ? <CheckCircle2 size={14} className="text-emerald-300" /> :
                            status === 'Inhibited' ? <AlertCircle size={14} className="text-rose-300" /> :
                            status === 'Hypertonic' ? <ChevronsUp size={14} className="text-amber-300" /> :
                            status === 'Switching' ? <HelpCircle size={14} className="text-purple-300" /> :
-                           videoUrl ? <PlayCircle size={14} className="text-indigo-300" /> :
+                           videoUrl ? <PlayCircle size={14} className="text-indigo-400" /> :
                            <div className="w-3 h-3 rounded-full border-2 border-current opacity-30" />}
                           <span className="text-xs font-black tracking-tight">{item}</span>
                           <ChevronDown size={12} className="opacity-50" />
@@ -274,12 +274,12 @@ const WeeklyFocusBanner = ({ appointmentId, priorityPattern, onSaveField, onJump
           
           <div className="flex items-center gap-4">
             <div className="flex flex-col items-end">
-              <p className="text-[8px] font-black uppercase tracking-widest text-indigo-200/60 mb-1.5">Mastery Progress</p>
+              <p className="text-[8px] font-black uppercase tracking-widest text-slate-500 mb-1.5">Mastery Progress</p>
               <div className="flex items-center gap-3">
-                <div className="w-32 h-1.5 bg-white/10 rounded-full overflow-hidden shadow-inner">
-                  <div className="h-full bg-emerald-400 transition-all duration-1000 shadow-[0_0_10px_rgba(52,211,153,0.5)]" style={{ width: `${(practicedCount / items.length) * 100}%` }} />
+                <div className="w-32 h-1.5 bg-white/5 rounded-full overflow-hidden shadow-inner">
+                  <div className="h-full bg-indigo-500 transition-all duration-1000 shadow-[0_0_10px_rgba(79,70,229,0.5)]" style={{ width: `${(practicedCount / items.length) * 100}%` }} />
                 </div>
-                <span className="text-xs font-black tabular-nums">{practicedCount}/{items.length}</span>
+                <span className="text-xs font-black tabular-nums text-slate-400">{practicedCount}/{items.length}</span>
               </div>
             </div>
           </div>

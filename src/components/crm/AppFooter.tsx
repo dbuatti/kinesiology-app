@@ -1,7 +1,7 @@
 "use client";
 
 import React from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom';
 import { 
   Settings, 
   Database, 
@@ -16,6 +16,13 @@ import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 
 const AppFooter = () => {
+  const location = useLocation();
+  
+  // Hide footer on active session pages
+  if (location.pathname.startsWith('/appointments/')) {
+    return null;
+  }
+
   const links = [
     { label: "Settings", icon: Settings, path: "/settings" },
     { label: "Import", icon: Database, path: "/settings/import" },

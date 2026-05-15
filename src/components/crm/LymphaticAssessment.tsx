@@ -10,7 +10,7 @@ import {
   Droplets, ChevronDown, Zap, Search, 
   AlertCircle, HelpCircle, Brain, Move,
   CheckCircle2, ShieldCheck, RefreshCw, Image as ImageIcon,
-  Thermometer, BookOpen, ClipboardCheck, Sparkles, X
+  Thermometer, BookOpen, ClipboardCheck, Sparkles, X, ChevronRight
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
@@ -204,7 +204,7 @@ const LymphaticAssessment = ({
                   </Badge>
                 )}
                 <div className="w-10 h-10 rounded-full bg-muted flex items-center justify-center text-muted-foreground">
-                  <ChevronDown className={cn("h-6 w-6 transition-transform duration-300", isOpen && "rotate-180")} />
+                  {isOpen ? <ChevronDown className="h-6 w-6" /> : <ChevronRight className="h-6 w-6" />}
                 </div>
               </div>
             </div>

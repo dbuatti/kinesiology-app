@@ -3,11 +3,11 @@
 import React, { useState, useEffect, useMemo, useCallback } from "react";
 import { useParams, useNavigate, Link } from "react-router-dom";
 import { 
-  Loader2, Settings2, ChevronDown, PanelRightClose, MessageSquare, Brain,
-  Calendar, Clock, User, History, Copy, Check, Trash2, Printer, RefreshCw,
-  Activity, Zap, Target, ClipboardCheck, Link as LinkIcon, Sparkles, FileText,
-  LayoutDashboard, ChevronRight, PanelRightOpen, StickyNote, MoreHorizontal,
-  ArrowLeft, Share2, Download, ExternalLink
+  Loader2, PanelRightClose, Activity, Brain,
+  Calendar, Clock, Copy, Check, Trash2, Printer, RefreshCw,
+  Zap, Target, Link as LinkIcon, Sparkles, FileText,
+  ChevronRight, PanelRightOpen, MoreHorizontal,
+  ArrowLeft, ChevronDown
 } from "lucide-react";
 import { isToday, format } from "date-fns";
 
@@ -27,18 +27,10 @@ import SessionContentSwitcher from "@/components/crm/SessionContentSwitcher";
 import AppointmentContextCards from "@/components/crm/AppointmentContextCards";
 import BrainstemToneMap from "@/components/crm/BrainstemToneMap";
 import SessionWorksheetTemplate from "@/components/crm/SessionWorksheetTemplate";
-import PageHeader from "@/components/shared/PageHeader";
 import SessionDocumentView from "@/components/crm/SessionDocumentView";
 import ErrorBoundary from "@/components/shared/ErrorBoundary";
 
-import {
-  Button,
-} from "@/components/ui/button";
-import {
-  Collapsible,
-  CollapsibleContent,
-  CollapsibleTrigger,
-} from "@/components/ui/collapsible";
+import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import {
@@ -48,7 +40,6 @@ import {
   DropdownMenuTrigger,
   DropdownMenuSeparator,
 } from "@/components/ui/dropdown-menu";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 import { TCM_CHANNELS } from "@/data/tcm-channel-data";
 import { generateSessionSummary, generateAICasePrompt } from "@/utils/summary-generator";
@@ -138,9 +129,13 @@ const AppointmentDetailPage = () => {
     });
   }, [currentTime]);
 
-  // Memoized handlers to prevent unnecessary re-renders
+  // Memoized handlers
   const updateActionState = useCallback((key: keyof typeof actionStates, value: boolean) => {
     setActionStates(prev => ({ ...prev, [key]: value }));
+  }, []);
+
+  const handleToggleSidebar = useCallback(() => {
+    setShowSidebar(prev => !prev);
   }, []);
 
   const handleCopyOnboardingLink = useCallback(async () => {
@@ -251,7 +246,6 @@ const AppointmentDetailPage = () => {
 
     updateActionState('deleting', true);
     try {
-      // Delete external references first
       if (appointment.notion_page_id || appointment.notion_planner_id || appointment.calcom_booking_id) {
         await supabase.functions.invoke('delete-external-appointment', {
           body: {
@@ -304,7 +298,6 @@ const AppointmentDetailPage = () => {
     }
   }, [appointment]);
 
-  // Early returns
   if (loading) {
     return (
       <div className="flex min-h-screen items-center justify-center bg-background">
@@ -359,8 +352,8 @@ const AppointmentDetailPage = () => {
         onCompleteSession={handleCompleteSession}
       />
 
-      <AppLayout variant="full" hasFixedHeader={isFixedHeaderActive}>
-        <div className="max-w-[1600px] mx-auto space-y-10 pb-20">
+      <AppLayout variant="full" hasFixedHeader={isFixedHeaderActive} className="pb-0">
+        <div className="max-w-[1600px] mx-auto space-y-8">
           {/* TOP NAVIGATION & ACTIONS */}
           <div className="flex flex-col md:flex-row items-center justify-between gap-6">
             <div className="flex items-center gap-4">
@@ -374,7 +367,10 @@ const AppointmentDetailPage = () => {
               </Button>
               <div className="space-y-1">
                 <div className="flex items-center gap-2">
-                  <h1 className="text-2xl font-black tracking-tight text-slate-900 dark:text-white">
+                  <h1 className={cn(
+                    "text-2xl md:text-4xl font-serif font-bold text-slate-900 dark:text-white tracking-tighter truncate leading-none",
+                    "privacy-mode-active:blur-sm"
+                  )}>
                     {appointment.clients.name} 
                     <span className="text-slate-300 font-medium mx-2">/</span>
                     <span className="text-slate-500 font-bold">
@@ -418,7 +414,7 @@ const AppointmentDetailPage = () => {
                     <p className="text-[8px] font-black uppercase tracking-[0.3em] text-slate-400">Session Setup</p>
                   </div>
                   <DropdownMenuItem onClick={handleCopyOnboardingLink} className="rounded-xl py-3 px-4 cursor-pointer">
-                    <LinkIcon size={16} className="mr-3 text-indigo-500" /> Copy Onboarding Link
+                    <LinkIcon size={16} className="mr-3 text-indigo-50" /> Copy Onboarding Link
                   </DropdownMenuItem>
                   <DropdownMenuItem onClick={handleSyncToNotion} className="rounded-xl py-3 px-4 cursor-pointer">
                     <RefreshCw size={16} className="mr-3 text-emerald-500" /> Sync to Notion
@@ -486,7 +482,7 @@ const AppointmentDetailPage = () => {
                     history={history}
                     nucleiFilter={nucleiFilter}
                     showSidebar={showSidebar}
-                    onToggleSidebar={() => setShowSidebar(!showSidebar)}
+                    onToggleSidebar={handleToggleSidebar}
                     onClonePrevious={handleClonePrevious}
                     onPrint={handlePrint}
                     onCopySummary={handleCopySummary}
@@ -500,7 +496,7 @@ const AppointmentDetailPage = () => {
               </div>
 
               {/* WORKSHEET SECTION */}
-              <div className="bg-slate-50 dark:bg-slate-950 rounded-[3rem] border border-dashed border-slate-200 dark:border-slate-800 p-12">
+              <div className="bg-slate-50 dark:bg-slate-950 rounded-[3rem] border border-dashed border-slate-200 dark:border-slate-800 p-12 mb-20">
                 <div className="max-w-4xl mx-auto">
                   <SessionWorksheetTemplate 
                     clientName={appointment.clients.name} 
@@ -526,7 +522,7 @@ const AppointmentDetailPage = () => {
                       <Button
                         variant="ghost"
                         size="icon"
-                        onClick={() => setShowSidebar(false)}
+                        onClick={handleToggleSidebar}
                         className="h-10 w-10 rounded-xl text-slate-300 hover:text-rose-500 hover:bg-rose-50 transition-all"
                       >
                         <PanelRightClose size={20} />
@@ -549,7 +545,7 @@ const AppointmentDetailPage = () => {
                       <div className="flex items-center justify-between">
                         <div className="flex items-center gap-3">
                           <div className="w-10 h-10 rounded-xl bg-amber-50 text-amber-600 flex items-center justify-center">
-                            <MessageSquare size={20} />
+                            <Activity size={20} />
                           </div>
                           <h3 className="text-sm font-black text-slate-900 dark:text-white uppercase tracking-[0.2em]">Reflections</h3>
                         </div>

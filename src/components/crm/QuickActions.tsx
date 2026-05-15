@@ -37,20 +37,28 @@ const QuickActions = () => {
 
   return (
     <>
-      <div className="fixed bottom-8 right-8 z-50 print:hidden">
+      <div className="fixed bottom-8 right-8 z-50 print:hidden flex flex-col items-end gap-4">
         <Tooltip>
           <TooltipTrigger asChild>
             <DropdownMenu open={isOpen} onOpenChange={setIsOpen}>
               <DropdownMenuTrigger asChild>
-                <Button
-                  size="lg"
-                  className={cn(
-                    "h-16 w-16 md:h-20 md:w-20 rounded-[2rem] md:rounded-[2.5rem] shadow-2xl bg-indigo-600 hover:bg-indigo-700 transition-all duration-500",
-                    isOpen ? "rotate-45 scale-110" : "hover:scale-110 hover:rotate-90"
-                  )}
-                >
-                  <Plus size={36} />
-                </Button>
+                <div className="flex items-center gap-3 group cursor-pointer">
+                  <span className={cn(
+                    "bg-slate-900 text-white px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest shadow-2xl transition-all duration-500",
+                    isOpen ? "opacity-0 translate-x-4" : "opacity-0 group-hover:opacity-100 translate-x-0"
+                  )}>
+                    Quick Actions
+                  </span>
+                  <Button
+                    size="lg"
+                    className={cn(
+                      "h-16 w-16 md:h-20 md:w-20 rounded-[2rem] md:rounded-[2.5rem] shadow-2xl bg-indigo-600 hover:bg-indigo-700 transition-all duration-500",
+                      isOpen ? "rotate-45 scale-110" : "hover:scale-110 hover:rotate-90"
+                    )}
+                  >
+                    <Plus size={36} />
+                  </Button>
+                </div>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end" className="w-80 p-4 rounded-[2.5rem] shadow-3xl border-none mb-6">
                 <div className="px-2 py-1 mb-3">

@@ -136,9 +136,9 @@ const SessionContentSwitcher = ({
   const wizardRef = useRef<HTMLDivElement>(null);
   
   const tabStatus = useMemo(() => ({
-    baseline: !!(appointment.bolt_score || appointment.coherence_score || appointment.sagittal_plane_notes || appointment.fakuda_notes || appointment.lymphatic_priority_zone),
-    sympathetic: !!(appointment.harmonic_rocking_notes || appointment.t1_reset_notes || appointment.diaphragm_reset_notes || appointment.vagus_nerve_notes || appointment.additional_notes),
-    pathway: !!appointment.priority_pattern,
+    baseline: !!(appointment.goal && appointment.issue && (appointment.bolt_score || appointment.coherence_score)),
+    sympathetic: !!(appointment.harmonic_rocking_notes || appointment.t1_reset_notes || appointment.diaphragm_reset_notes || appointment.vagus_nerve_notes),
+    pathway: !!appointment.priority_pattern && appointment.priority_pattern !== "{}",
     calibration: !!appointment.modes_balances,
     reassessment: !!appointment.session_north_star
   }), [appointment]);
@@ -215,24 +215,13 @@ const SessionContentSwitcher = ({
   );
 
   const TabFooter = ({ nextLabel }: { nextLabel?: string }) => (
-    <div className="mt-16 pt-10 border-t border-slate-100 dark:border-slate-800 flex flex-col sm:flex-row items-center justify-between gap-8">
-      <div className="flex items-center gap-3 text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">
-        {tabStatus[activeTab as keyof typeof tabStatus] ? (
-          <div className="flex items-center gap-3 px-4 py-2 bg-emerald-50 text-emerald-600 rounded-full">
-            <CheckCircle2 size={16} /> SECTION COMPLETE
-          </div>
-        ) : (
-          <div className="flex items-center gap-3 px-4 py-2 bg-slate-50 text-slate-400 rounded-full">
-            <Activity size={16} className="animate-pulse" /> IN PROGRESS
-          </div>
-        )}
-      </div>
+    <div className="mt-16 pt-10 border-t border-slate-100 dark:border-slate-800 flex flex-col sm:flex-row items-center justify-end gap-8">
       {nextLabel && (
         <Button 
           onClick={handleNextTab}
           className="w-full sm:w-auto bg-indigo-600 hover:bg-indigo-700 text-white rounded-2xl h-14 px-10 font-black text-xs uppercase tracking-widest shadow-xl shadow-indigo-500/20 transition-all hover:scale-105 active:scale-95"
         >
-          Next: {nextLabel} <ArrowRight size={18} className="ml-3" />
+          Continue to {nextLabel} <ArrowRight size={18} className="ml-3" />
         </Button>
       )}
     </div>
@@ -285,12 +274,12 @@ const SessionContentSwitcher = ({
         <div className="mt-10 animate-in fade-in slide-in-from-bottom-4 duration-700">
           <TabsContent value="baseline" className="focus-visible:ring-0">
             <BaselineTab appointment={appointment} onUpdate={onUpdate} saveField={saveField} />
-            <TabFooter nextLabel="E — Ease" />
+            <TabFooter nextLabel="Ease" />
           </TabsContent>
 
           <TabsContent value="sympathetic" className="focus-visible:ring-0">
             <SympatheticTab appointment={appointment} onUpdate={onUpdate} saveField={saveField} />
-            <TabFooter nextLabel="A — Align" />
+            <TabFooter nextLabel="Align" />
           </TabsContent>
 
           <TabsContent value="pathway" className="focus-visible:ring-0">
@@ -308,7 +297,7 @@ const SessionContentSwitcher = ({
               }}
               nucleiFilter={nucleiFilter}
             />
-            <TabFooter nextLabel="C — Correct" />
+            <TabFooter nextLabel="Correct" />
           </TabsContent>
 
           <TabsContent value="calibration" className="focus-visible:ring-0">
@@ -320,7 +309,7 @@ const SessionContentSwitcher = ({
                 initialFinding={preselectedFinding}
               />
             </div>
-            <TabFooter nextLabel="E — Embed" />
+            <TabFooter nextLabel="Embed" />
           </TabsContent>
 
           <TabsContent value="reassessment" className="focus-visible:ring-0">
@@ -345,7 +334,7 @@ const SessionContentSwitcher = ({
         {/* NAVIGATION BAR */}
         <div className="flex flex-col md:flex-row items-center justify-between bg-slate-100/50 dark:bg-slate-800/50 p-2 rounded-2xl border border-slate-200 dark:border-slate-800 gap-4">
           <div className="flex items-center gap-2 overflow-x-auto no-scrollbar w-full md:w-auto px-1">
-            <NavItem view="home" label="PEACE" Icon={LayoutGrid} />
+            <NavItem view="home" label="PHASES" Icon={LayoutGrid} />
             
             <Button
               variant="ghost"

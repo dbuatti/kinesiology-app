@@ -48,7 +48,7 @@ const LabDashboard = ({ morningProgress, lastJournalDate }: LabDashboardProps) =
                     "flex items-center gap-3 px-5 py-3 rounded-2xl border-2 transition-all duration-500 hover:scale-105 active:scale-95",
                     m.status === 'done'
                       ? "bg-emerald-50 border-emerald-100 text-emerald-700 dark:bg-emerald-900/20 dark:border-emerald-800 dark:text-emerald-400 shadow-sm"
-                      : "bg-slate-50 border-slate-100 text-slate-400 dark:bg-slate-800/50 dark:border-slate-800 hover:border-emerald-200 hover:bg-emerald-50/30"
+                      : "bg-slate-50 border-slate-100 text-slate-400 dark:bg-slate-800/50 dark:border-slate-800 hover:border-emerald-200 hover:bg-amber-50/30"
                   )}
                 >
                   <m.icon size={18} className={cn(m.status === 'done' ? "text-emerald-500" : "text-slate-300")} />

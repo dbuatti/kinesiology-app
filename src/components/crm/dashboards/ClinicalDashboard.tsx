@@ -18,7 +18,15 @@ import RecentActivity from "../RecentActivity";
 import Scratchpad from "../Scratchpad";
 
 interface ClinicalDashboardProps {
-  stats: any;
+  stats: {
+    clients: number;
+    newClients30d: number;
+    sessionsThisWeek: number;
+    sessions30d: number;
+    avgBolt: number;
+    avgCoherence: number;
+    imperativeAlerts: number;
+  };
   todaySessions: any[];
   activeSession: any;
   morningProgress: number;

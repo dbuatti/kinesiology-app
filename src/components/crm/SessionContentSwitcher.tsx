@@ -35,7 +35,11 @@ import {
   Sparkles,
   ShieldCheck,
   Layers,
-  ChevronRight
+  ChevronRight,
+  AlertTriangle,
+  Clock,
+  Info,
+  Move
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Link, useLocation } from 'react-router-dom';
@@ -70,12 +74,14 @@ import {
   DialogTitle,
   DialogDescription,
 } from "@/components/ui/dialog";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 import { showSuccess, showError } from '@/utils/toast';
 import { safeParse } from '@/utils/safe-json';
 import ErrorBoundary from '@/components/shared/ErrorBoundary';
 import PathwayLogicWizard from './PathwayLogicWizard';
 
-type ActiveView = 'home' | 'kinesiology' | 'muscles' | 'gait' | 'previous' | 'context' | 'journal' | 'recheck';
+type ActiveView = 'home' | 'kinesiology' | 'muscles' | 'gait' | 'previous' | 'context' | 'journal' | 'recheck' | 'audit';
 
 interface SessionContentSwitcherProps {
   appointment: AppointmentWithClient;
@@ -126,8 +132,8 @@ const SessionContentSwitcher = ({
   const [activeTab, setActiveTab] = useState('baseline');
   const [preselectedFinding, setPreselectedFinding] = useState<string | null>(null);
   const [noteDialogOpen, setNoteDialogOpen] = useState(false);
+  const [cloneDialogOpen, setCloneDialogOpen] = useState(false);
   const wizardRef = useRef<HTMLDivElement>(null);
-  const location = useLocation();
   
   const tabStatus = useMemo(() => ({
     baseline: !!(appointment.bolt_score || appointment.coherence_score || appointment.sagittal_plane_notes || appointment.fakuda_notes || appointment.lymphatic_priority_zone),
@@ -331,7 +337,7 @@ const SessionContentSwitcher = ({
     </div>
   );
 
-  const isToolActive = ['kinesiology', 'muscles', 'gait', 'context', 'journal', 'recheck'].includes(activeView);
+  const isToolActive = ['kinesiology', 'muscles', 'gait', 'context', 'journal', 'recheck', 'audit'].includes(activeView);
 
   return (
     <ErrorBoundary>
@@ -416,6 +422,14 @@ const SessionContentSwitcher = ({
                 
                 <DropdownMenuSeparator className="my-1 bg-slate-100 dark:bg-slate-800" />
                 
+                <DropdownMenuItem onClick={() => setActiveView('audit')} className="rounded-xl py-3 px-4 cursor-pointer group">
+                  <Clock size={18} className="mr-3 text-slate-400 group-hover:scale-110 transition-transform" /> 
+                  <div className="flex flex-col">
+                    <span className="font-bold text-xs">Session Audit Log</span>
+                    <span className="text-[9px] text-slate-400 font-medium">Timestamped Findings</span>
+                  </div>
+                </DropdownMenuItem>
+
                 <DropdownMenuItem onClick={onOpenDocument} className="rounded-xl py-3 px-4 cursor-pointer group bg-indigo-50 text-indigo-600 hover:bg-indigo-100">
                   <FileText size={18} className="mr-3 group-hover:scale-110 transition-transform" /> 
                   <div className="flex flex-col">
@@ -458,10 +472,6 @@ const SessionContentSwitcher = ({
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end" className="w-60 p-2 rounded-2xl border-none shadow-3xl bg-white dark:bg-slate-900">
-                <DropdownMenuItem className="rounded-xl py-3 px-4 cursor-pointer flex items-center gap-3 group" onClick={onClonePrevious} disabled={isCloning}>
-                  {isCloning ? <Loader2 size={16} className="animate-spin" /> : <History size={16} className="text-indigo-500 group-hover:scale-110 transition-transform" />} 
-                  <span className="font-bold text-xs">Clone Previous</span>
-                </DropdownMenuItem>
                 <DropdownMenuItem className="rounded-xl py-3 px-4 cursor-pointer flex items-center gap-3 group" onClick={onPrint}>
                   <Printer size={16} className="text-slate-500 group-hover:scale-110 transition-transform" /> 
                   <span className="font-bold text-xs">Print Report</span>
@@ -470,7 +480,16 @@ const SessionContentSwitcher = ({
                   {isCopied ? <Check size={16} className="text-emerald-500" /> : <Copy size={16} className="text-indigo-500 group-hover:scale-110 transition-transform" />} 
                   <span className="font-bold text-xs">Copy Summary</span>
                 </DropdownMenuItem>
+                
                 <DropdownMenuSeparator className="my-1 bg-slate-100 dark:bg-slate-800" />
+                
+                <DropdownMenuItem className="rounded-xl py-3 px-4 cursor-pointer flex items-center gap-3 group" onClick={() => setCloneDialogOpen(true)} disabled={isCloning}>
+                  {isCloning ? <Loader2 size={16} className="animate-spin" /> : <History size={16} className="text-indigo-500 group-hover:scale-110 transition-transform" />} 
+                  <span className="font-bold text-xs">Clone Previous</span>
+                </DropdownMenuItem>
+
+                <DropdownMenuSeparator className="my-1 bg-slate-100 dark:bg-slate-800" />
+                
                 <DropdownMenuItem className="text-rose-600 focus:text-rose-600 rounded-xl py-3 px-4 cursor-pointer flex items-center gap-3 group" onClick={onDelete}>
                   <Trash2 size={16} className="group-hover:scale-110 transition-transform" /> 
                   <span className="font-bold text-xs">Delete Session</span>
@@ -600,7 +619,103 @@ const SessionContentSwitcher = ({
               />
             </div>
           )}
+          {activeView === 'audit' && (
+            <div className="space-y-10">
+              <div className="flex items-center gap-4 px-4">
+                <div className="w-12 h-12 rounded-2xl bg-slate-900 text-white flex items-center justify-center shadow-xl">
+                  <Clock size={24} />
+                </div>
+                <div>
+                  <h2 className="text-3xl font-black tracking-tight">Session Audit Log</h2>
+                  <p className="text-slate-500 font-medium">Timestamped record of all findings this session.</p>
+                </div>
+              </div>
+              <Card className="border-none shadow-sm bg-white rounded-[2rem] p-8">
+                <CardContent className="p-0 space-y-4">
+                  <div className="flex items-center gap-3 p-4 bg-indigo-50 rounded-2xl border border-indigo-100">
+                    <Info size={18} className="text-indigo-600" />
+                    <p className="text-xs text-indigo-900 font-medium">This log tracks every change made during the active session for error recovery and clinical review.</p>
+                  </div>
+                  <div className="text-center py-20 text-slate-300">
+                    <History size={48} className="mx-auto mb-4 opacity-20" />
+                    <p className="font-bold uppercase tracking-widest text-[10px]">Audit log feature coming soon</p>
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+          )}
         </div>
+
+        {/* CLONE PREVIEW DIALOG */}
+        <Dialog open={cloneDialogOpen} onOpenChange={setCloneDialogOpen}>
+          <DialogContent className="sm:max-w-[550px] rounded-[2.5rem] p-0 overflow-hidden border-none shadow-3xl bg-white">
+            <div className="p-10 space-y-8">
+              <DialogHeader>
+                <div className="flex items-center gap-4 mb-2">
+                  <div className="w-14 h-14 rounded-2xl bg-indigo-600 text-white flex items-center justify-center shadow-xl">
+                    <History size={28} />
+                  </div>
+                  <div>
+                    <DialogTitle className="text-2xl font-black">Clone Previous Session?</DialogTitle>
+                    <DialogDescription className="text-base font-medium">Inherit findings from the last recorded session.</DialogDescription>
+                  </div>
+                </div>
+              </DialogHeader>
+
+              <div className="space-y-6">
+                <div className="p-6 bg-slate-50 rounded-3xl border border-slate-100 space-y-4">
+                  <h4 className="text-[10px] font-black uppercase tracking-widest text-slate-400">What will be cloned:</h4>
+                  <div className="grid grid-cols-1 gap-2">
+                    {[
+                      { label: "BOLT & Coherence Scores", icon: Activity, color: "text-emerald-500" },
+                      { label: "ROM (Cogs) Readings", icon: Move, color: "text-blue-500" },
+                      { label: "Pathway Priorities (Inhibitions)", icon: GitBranch, color: "text-amber-500" },
+                      { label: "Acupoint Selections", icon: Target, color: "text-indigo-500" }
+                    ].map((item, i) => (
+                      <div key={i} className="flex items-center gap-3 text-sm font-bold text-slate-700">
+                        <item.icon size={16} className={item.color} />
+                        {item.label}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                <div className="p-6 bg-rose-50 rounded-3xl border border-rose-100 space-y-4">
+                  <h4 className="text-[10px] font-black uppercase tracking-widest text-rose-400">What will NOT be cloned:</h4>
+                  <div className="grid grid-cols-1 gap-2">
+                    {[
+                      { label: "Session Goal", icon: Target },
+                      { label: "Primary Concern / Issue", icon: ClipboardCheck },
+                      { label: "Practitioner Notes & Journal", icon: StickyNote }
+                    ].map((item, i) => (
+                      <div key={i} className="flex items-center gap-3 text-sm font-bold text-rose-700">
+                        <item.icon size={16} className="text-rose-400" />
+                        {item.label}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                <Alert className="bg-amber-50 border-amber-200 rounded-2xl">
+                  <AlertTriangle className="h-5 w-5 text-amber-600" />
+                  <AlertDescription className="text-xs text-amber-900 font-medium leading-relaxed">
+                    Cloning is a high-risk operation. Ensure the previous findings are still relevant before proceeding.
+                  </AlertDescription>
+                </Alert>
+              </div>
+
+              <div className="flex gap-3 pt-4">
+                <Button variant="ghost" onClick={() => setCloneDialogOpen(false)} className="flex-1 h-14 rounded-2xl font-black text-xs uppercase tracking-widest">Cancel</Button>
+                <Button 
+                  onClick={() => { onClonePrevious(); setCloneDialogOpen(false); }}
+                  className="flex-[2] bg-indigo-600 hover:bg-indigo-700 text-white rounded-2xl h-14 font-black text-xs uppercase tracking-widest shadow-xl shadow-indigo-500/20"
+                >
+                  Confirm Clone
+                </Button>
+              </div>
+            </div>
+          </DialogContent>
+        </Dialog>
 
         {/* QUICK NOTE DIALOG */}
         <Dialog open={noteDialogOpen} onOpenChange={setNoteDialogOpen}>

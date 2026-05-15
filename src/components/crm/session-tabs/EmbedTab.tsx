@@ -163,6 +163,15 @@ const EmbedTab = ({ appointment, onUpdate, saveField, updatePriorityPattern }: E
 
   return (
     <div className="space-y-12 animate-in fade-in duration-500">
+      {/* Session Status Banner */}
+      <div className="bg-emerald-500/10 border border-emerald-500/20 p-4 rounded-2xl flex items-center justify-between gap-4">
+        <div className="flex items-center gap-3">
+          <div className="w-2 h-2 bg-emerald-500 rounded-full animate-pulse" />
+          <p className="text-xs font-bold text-emerald-900 dark:text-emerald-100 uppercase tracking-tight">Session in Progress — Findings can be edited until finalized.</p>
+        </div>
+        <Badge variant="outline" className="bg-white border-emerald-200 text-emerald-600 font-black text-[8px] uppercase tracking-widest">Active Window</Badge>
+      </div>
+
       {/* 1. Next Steps & Scheduling - Elevated to Top */}
       <div className="p-8 bg-indigo-600 rounded-[2.5rem] text-white shadow-xl shadow-indigo-100 dark:shadow-none relative overflow-hidden">
         <div className="absolute top-0 right-0 p-8 opacity-10 pointer-events-none"><CalendarPlus size={150} /></div>
@@ -211,14 +220,19 @@ const EmbedTab = ({ appointment, onUpdate, saveField, updatePriorityPattern }: E
 
       {/* 2. Full Session Report Summary */}
       <div className="space-y-6">
-        <div className="flex items-center gap-3 px-2">
-          <div className="w-10 h-10 rounded-xl bg-slate-900 text-white flex items-center justify-center shadow-lg">
-            <FileText size={20} />
+        <div className="flex items-center justify-between px-2">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-xl bg-slate-900 text-white flex items-center justify-center shadow-lg">
+              <FileText size={20} />
+            </div>
+            <div>
+              <h2 className="text-xl font-black text-slate-900">Session Summary Report</h2>
+              <p className="text-xs text-slate-500 font-medium">A visual breakdown of everything recorded this session.</p>
+            </div>
           </div>
-          <div>
-            <h2 className="text-xl font-black text-slate-900">Session Summary Report</h2>
-            <p className="text-xs text-slate-500 font-medium">A visual breakdown of everything recorded this session.</p>
-          </div>
+          <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-2">
+            <RefreshCw size={12} className="animate-spin-slow" /> Auto-populating from session data
+          </p>
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">

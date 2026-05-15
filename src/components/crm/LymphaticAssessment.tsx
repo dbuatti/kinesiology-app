@@ -194,12 +194,12 @@ const LymphaticAssessment = ({
               </div>
               <div className="flex items-center gap-3">
                 {isVerified && (
-                  <Badge className="bg-emerald-500 text-white border-none font-black text-[10px] uppercase tracking-widest px-3 py-1">
+                  <Badge className="bg-emerald-500 text-white border-none font-black text-[10px] uppercase tracking-widest px-3 py-1 rounded-full shadow-sm">
                     Verified
                   </Badge>
                 )}
                 {priorityZones.length > 0 && !isVerified && (
-                  <Badge className="bg-blue-600 text-white border-none font-black text-[10px] uppercase tracking-widest px-3 py-1">
+                  <Badge className="bg-blue-600 text-white border-none font-black text-[10px] uppercase tracking-widest px-3 py-1 rounded-full">
                     {priorityZones.length} Zones Selected
                   </Badge>
                 )}
@@ -299,7 +299,7 @@ const LymphaticAssessment = ({
                         </label>
                         <Badge className={cn(
                           "font-black text-[10px] uppercase tracking-widest px-3 py-1",
-                          tenderness[0] <= 3 ? "bg-emerald-500 text-white" : "bg-amber-500 text-white"
+                          tenderness[0] <= 3 ? "bg-emerald-50 text-white" : "bg-amber-500 text-white"
                         )}>
                           {100 - (tenderness[0] * 10)}% Reduction
                         </Badge>
@@ -416,7 +416,7 @@ const LymphaticAssessment = ({
                       variant={isVerified ? "default" : "outline"}
                       size="sm"
                       onClick={() => setIsVerified(!isVerified)}
-                      className={cn("rounded-xl h-10 px-6 font-black text-[10px] uppercase tracking-widest transition-all", isVerified ? "bg-emerald-600 shadow-lg" : "border-emerald-500/20 text-emerald-600 dark:text-emerald-400 hover:bg-emerald-500/10")}
+                      className={cn("rounded-xl h-10 px-6 font-black text-[10px] uppercase tracking-widest transition-all", isVerified ? "bg-emerald-600 shadow-lg" : "border-emerald-500/20 text-emerald-600 dark:text-emerald-400 hover:bg-emerald-50/10")}
                     >
                       {isVerified ? <CheckCircle2 size={16} className="mr-2" /> : null}
                       {isVerified ? "Verified" : "Mark Verified"}

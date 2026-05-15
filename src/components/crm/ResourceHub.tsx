@@ -89,8 +89,8 @@ const ResourceHub = ({ categories }: ResourceHubProps) => {
                 </div>
               </div>
             </CardContent>
-          </Card>
-        </a>
+          </a>
+        </Link>
 
         <a href="https://kin-videos.vercel.app/" target="_blank" rel="noopener noreferrer" className="block group h-full">
           <Card className="h-full border-none shadow-xl rounded-[2.5rem] bg-indigo-600 text-white overflow-hidden relative cursor-pointer hover:shadow-2xl hover:-translate-y-1 transition-all duration-500">
@@ -111,8 +111,8 @@ const ResourceHub = ({ categories }: ResourceHubProps) => {
                 </div>
               </div>
             </CardContent>
-          </Card>
-        </a>
+          </a>
+        </Link>
 
         <Link to="/peace-framework" className="block group h-full">
           <Card className="h-full border-none shadow-xl rounded-[2.5rem] bg-slate-900 text-white overflow-hidden relative cursor-pointer hover:shadow-2xl hover:-translate-y-1 transition-all duration-500">
@@ -137,7 +137,7 @@ const ResourceHub = ({ categories }: ResourceHubProps) => {
                 </div>
               </div>
             </CardContent>
-          </Card>
+          </Link>
         </Link>
 
         <a href="https://functional-neuro-health.notion.site/Functional-Neuro-Health-The-PEACE-Method-28beacafb4a88026b9a9ccdefa4e1de9" target="_blank" rel="noopener noreferrer" className="block group h-full">
@@ -159,9 +159,8 @@ const ResourceHub = ({ categories }: ResourceHubProps) => {
                 </div>
               </div>
             </CardContent>
-          </Card>
-        </a>
-      </div>
+          </a>
+        </div>
 
       {/* Category Sections */}
       {categories.map((category) => (

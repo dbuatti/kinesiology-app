@@ -69,7 +69,7 @@ const HeartMathBreathing = () => {
         </div>
       </div>
 
-      <div className="w-full max-sm space-y-3">
+      <div className="w-full max-w-sm space-y-3">
         <Progress value={isActive ? progress : 0} className="h-2 bg-rose-100 dark:bg-rose-900/30 [&>div]:bg-rose-500" />
         <div className="flex justify-between text-[10px] font-black uppercase tracking-[0.3em] text-rose-400">
           <span>4s Inhale</span>

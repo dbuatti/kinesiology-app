@@ -385,7 +385,7 @@ const SessionContentSwitcher = ({
                   <p className="text-[8px] font-black uppercase tracking-[0.3em] text-slate-400">Clinical Utilities</p>
                 </div>
                 <DropdownMenuItem onClick={() => setActiveView('context')} className="rounded-xl py-3 px-4 cursor-pointer group">
-                  <UserCircle size={18} className="mr-3 text-indigo-500 group-hover:scale-110 transition-transform" /> 
+                  <UserCircle size={18} className="mr-3 text-indigo-50" /> 
                   <div className="flex flex-col">
                     <span className="font-bold text-xs">Client Context</span>
                     <span className="text-[9px] text-slate-400 font-medium">History & Background</span>
@@ -480,8 +480,7 @@ const SessionContentSwitcher = ({
                   <span className="font-bold text-xs">Print Report</span>
                 </DropdownMenuItem>
                 <DropdownMenuItem className="rounded-xl py-3 px-4 cursor-pointer flex items-center gap-3 group" onClick={onCopySummary}>
-                  {isCopied ? <Check size={16} className="text-emerald-500" /> : <Copy size={16} className="text-indigo-500 group-hover:scale-110 transition-transform" />} 
-                  <span className="font-bold text-xs">Copy Summary</span>
+                  {isCopied ? <><Check size={16} className="text-emerald-500" /> <span className="font-bold text-xs">Copied!</span></> : <><Copy size={16} className="text-indigo-500 group-hover:scale-110 transition-transform" /> <span className="font-bold text-xs">Copy Summary</span></>} 
                 </DropdownMenuItem>
                 
                 <DropdownMenuSeparator className="my-1 bg-slate-100 dark:bg-slate-800" />

@@ -23,11 +23,11 @@ interface SessionTimerProps {
 }
 
 const SESSION_STAGES = [
-  { id: 'baseline', name: "Preliminary", duration: 15, color: "bg-indigo-600", Icon: Target },
-  { id: 'sympathetic', name: "Ease", duration: 15, color: "bg-rose-600", Icon: Zap },
-  { id: 'pathway', name: "Align", duration: 15, color: "bg-amber-600", Icon: CheckCircle2 },
-  { id: 'calibration', name: "Correct", duration: 10, color: "bg-emerald-600", Icon: AlertTriangle },
-  { id: 'reassessment', name: "Embed", duration: 5, icon: Home, color: "bg-blue-600", Icon: Home },
+  { id: 'baseline', name: "PRELIMINARY", duration: 15, color: "bg-indigo-600", Icon: Target },
+  { id: 'sympathetic', name: "EASE", duration: 15, color: "bg-rose-600", Icon: Zap },
+  { id: 'pathway', name: "ALIGN", duration: 15, color: "bg-amber-600", Icon: CheckCircle2 },
+  { id: 'calibration', name: "CORRECT", duration: 10, color: "bg-emerald-600", Icon: AlertTriangle },
+  { id: 'reassessment', name: "EMBED", duration: 5, icon: Home, color: "bg-blue-600", Icon: Home },
 ];
 const TOTAL_DURATION_MINUTES = SESSION_STAGES.reduce((sum, stage) => sum + stage.duration, 0);
 
@@ -97,13 +97,14 @@ const SessionTimer = ({ appointmentDate, status, clientName, currentPhaseName, o
     };
   }, [appointmentDate, currentTime]);
 
-  const isRelevant = isToday(appointmentDate) && status !== 'Completed' && status !== 'Cancelled';
-  const isOngoing = isRelevant && elapsedSeconds >= 0;
+  const isRelevant = isToday(appointmentDate) && status !== 'Cancelled';
+  const isOngoing = isRelevant && elapsedSeconds >= 0 && status !== 'Completed';
   const isUpcoming = isRelevant && elapsedSeconds < 0;
+  const isFinished = status === 'Completed';
 
   useEffect(() => {
-    onFixedHeaderChange(isOngoing);
-  }, [isOngoing, onFixedHeaderChange]);
+    onFixedHeaderChange(isOngoing || isFinished);
+  }, [isOngoing, isFinished, onFixedHeaderChange]);
 
   if (!isRelevant) return null;
 
@@ -123,65 +124,78 @@ const SessionTimer = ({ appointmentDate, status, clientName, currentPhaseName, o
 
   const activePhase = SESSION_STAGES.find(s => s.id === currentPhaseName) || recommendedStage;
 
-  if (isUpcoming) {
-    return (
-      <div className="w-full bg-indigo-600 text-white h-8 flex items-center justify-center px-4 z-[110] relative">
-        <div className="flex items-center gap-2 animate-in slide-in-from-top-full duration-500">
-          <Clock size={12} className="animate-pulse" />
-          <span className="text-[10px] font-black uppercase tracking-[0.2em]">
-            Session starts in {formatDistanceToNow(appointmentDate)}
-          </span>
-        </div>
-      </div>
-    );
-  }
-
   return (
     <div className="fixed top-0 left-0 right-0 z-[110] shadow-2xl">
       <div className={cn(
         "transition-colors duration-1000 p-2 flex items-center justify-between px-6",
-        isOvertime ? "bg-rose-950 border-b border-rose-500/30" : "bg-slate-950 border-b border-white/10"
+        isOvertime && !isFinished ? "bg-rose-950 border-b border-rose-500/30" : "bg-slate-950 border-b border-white/10"
       )}>
-        <div className="flex items-center gap-6">
-          <div className="flex items-center gap-3">
+        <div className="flex items-center gap-4 overflow-hidden">
+          {/* STATUS INDICATOR */}
+          <div className="flex items-center gap-2 shrink-0">
+            {isFinished ? (
+              <div className="flex items-center gap-2 text-emerald-500">
+                <CheckCircle2 size={14} />
+                <span className="text-[10px] font-black uppercase tracking-[0.2em]">Session Complete</span>
+              </div>
+            ) : isOvertime ? (
+              <div className="flex items-center gap-2 text-rose-500 animate-pulse">
+                <AlertCircle size={14} />
+                <span className="text-[10px] font-black uppercase tracking-[0.2em]">Time Elapsed</span>
+              </div>
+            ) : isUpcoming ? (
+              <div className="flex items-center gap-2 text-indigo-400">
+                <Clock size={14} />
+                <span className="text-[10px] font-black uppercase tracking-[0.2em]">Starting in {formatDistanceToNow(appointmentDate)}</span>
+              </div>
+            ) : (
+              <div className="flex items-center gap-2 text-emerald-500">
+                <div className="w-2 h-2 rounded-full bg-current animate-pulse" />
+                <span className="text-[10px] font-black uppercase tracking-[0.2em]">Session Live</span>
+              </div>
+            )}
+          </div>
+
+          <div className="h-4 w-px bg-white/10" />
+
+          {/* TIMER */}
+          {!isFinished && (
             <div className={cn(
-              "w-2 h-2 rounded-full animate-pulse",
-              isOvertime ? "bg-rose-500" : "bg-emerald-500"
-            )} />
-            <span className="text-[10px] font-black text-white uppercase tracking-[0.3em]">
-              {isOvertime ? "Time Elapsed" : "Session Live"}
-            </span>
-            <span className={cn(
-              "text-xs font-black tabular-nums font-mono",
+              "text-xs font-black tabular-nums font-mono shrink-0",
               isOvertime ? "text-rose-400 animate-pulse" : "text-emerald-400"
             )}>
               {isOvertime ? `+${formatOvertime(overtimeSeconds)}` : timeRemainingInSession}
+            </div>
+          )}
+
+          <div className="h-4 w-px bg-white/10" />
+
+          {/* CANONICAL IDENTITY */}
+          <div className="flex items-center gap-2 min-w-0">
+            <span className="text-sm font-black text-white truncate privacy-mode-active:blur-sm">
+              {clientName}
             </span>
-          </div>
-          
-          <div className="h-4 w-px bg-white/10 hidden sm:block" />
-          
-          <div className="hidden md:flex items-center gap-4">
-            <div className="flex items-center gap-2">
-              <User size={14} className="text-indigo-400" />
-              <span className="text-xs font-bold text-white truncate max-w-[150px]">{clientName}</span>
-            </div>
-            <div className="flex items-center gap-2 opacity-60">
-              <Calendar size={12} className="text-slate-400" />
-              <span className="text-[10px] font-bold text-slate-300 uppercase tracking-widest">
-                {format(appointmentDate, "EEE d MMM")} · {format(appointmentDate, "h:mm a")}
-              </span>
-            </div>
+            <span className="text-[10px] font-bold text-slate-500 uppercase tracking-widest hidden sm:inline">
+              {format(appointmentDate, "EEE d MMM")} · {format(appointmentDate, "h:mm a")}
+            </span>
           </div>
 
           <div className="h-4 w-px bg-white/10 hidden md:block" />
 
-          <div className="hidden sm:flex items-center gap-3">
-            <Badge className={cn("border-none font-black text-[8px] uppercase tracking-widest px-2 py-0.5 rounded-md flex items-center gap-1.5", activePhase.color, "text-white")}>
-              <activePhase.Icon size={10} />
-              {activePhase.name}
+          {/* PHASE INDICATOR */}
+          {!isFinished && (
+            <div className="hidden sm:flex items-center gap-2">
+              <Badge className={cn("border-none font-black text-[8px] uppercase tracking-widest px-2 py-0.5 rounded-md", activePhase.color, "text-white")}>
+                {activePhase.name}
+              </Badge>
+            </div>
+          )}
+          
+          {isFinished && (
+            <Badge className="bg-emerald-600 text-white border-none font-black text-[8px] uppercase tracking-widest px-2 py-0.5 rounded-md">
+              REPORT READY
             </Badge>
-          </div>
+          )}
         </div>
 
         <div className="flex items-center gap-4">
@@ -189,9 +203,9 @@ const SessionTimer = ({ appointmentDate, status, clientName, currentPhaseName, o
             <div 
               className={cn(
                 "h-full transition-all duration-500",
-                isOvertime ? "bg-amber-500" : "bg-indigo-500"
+                isFinished ? "bg-emerald-500" : isOvertime ? "bg-amber-500" : "bg-indigo-500"
               )}
-              style={{ width: `${overallProgressPercent}%` }}
+              style={{ width: isFinished ? '100%' : `${overallProgressPercent}%` }}
             />
           </div>
 
@@ -201,21 +215,23 @@ const SessionTimer = ({ appointmentDate, status, clientName, currentPhaseName, o
                 size="sm" 
                 className={cn(
                   "border-none h-8 px-4 rounded-xl font-black text-[9px] uppercase tracking-widest transition-colors",
-                  isOvertime ? "bg-rose-600 hover:bg-rose-700 text-white" : "bg-white/10 hover:bg-white/20 text-white"
+                  isOvertime && !isFinished ? "bg-rose-600 hover:bg-rose-700 text-white" : "bg-white/10 hover:bg-white/20 text-white"
                 )}
               >
-                {isOvertime && <AlertCircle size={12} className="mr-2" />}
+                {isOvertime && !isFinished && <AlertCircle size={12} className="mr-2" />}
                 Session Actions <ChevronDown size={12} className="ml-2 opacity-50" />
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end" className="w-56 rounded-2xl p-2 shadow-3xl border-none bg-slate-900 text-white">
-              <DropdownMenuItem 
-                onClick={handleComplete}
-                className="rounded-xl py-3 px-4 cursor-pointer flex items-center gap-3 text-emerald-400 focus:text-emerald-400 focus:bg-emerald-500/10"
-              >
-                <CheckCircle2 size={16} />
-                <span className="font-bold text-xs uppercase tracking-widest">Complete Session</span>
-              </DropdownMenuItem>
+              {!isFinished && (
+                <DropdownMenuItem 
+                  onClick={handleComplete}
+                  className="rounded-xl py-3 px-4 cursor-pointer flex items-center gap-3 text-emerald-400 focus:text-emerald-400 focus:bg-emerald-500/10"
+                >
+                  <CheckCircle2 size={16} />
+                  <span className="font-bold text-xs uppercase tracking-widest">Complete Session</span>
+                </DropdownMenuItem>
+              )}
               <DropdownMenuItem 
                 className="rounded-xl py-3 px-4 cursor-pointer flex items-center gap-3 text-rose-400 focus:text-rose-400 focus:bg-rose-500/10"
               >
@@ -227,12 +243,14 @@ const SessionTimer = ({ appointmentDate, status, clientName, currentPhaseName, o
         </div>
       </div>
       
-      <div className="h-0.5 bg-white/5 relative">
-        <div 
-          className={cn("h-full transition-all duration-500", activePhase.color)}
-          style={{ width: `${stageProgressPercent}%` }}
-        />
-      </div>
+      {!isFinished && (
+        <div className="h-0.5 bg-white/5 relative">
+          <div 
+            className={cn("h-full transition-all duration-500", activePhase.color)}
+            style={{ width: `${stageProgressPercent}%` }}
+          />
+        </div>
+      )}
     </div>
   );
 };

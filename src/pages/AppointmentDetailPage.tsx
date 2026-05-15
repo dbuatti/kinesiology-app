@@ -48,6 +48,7 @@ import {
   DropdownMenuTrigger,
   DropdownMenuSeparator,
 } from "@/components/ui/dropdown-menu";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 import { TCM_CHANNELS } from "@/data/tcm-channel-data";
 import { generateSessionSummary, generateAICasePrompt } from "@/utils/summary-generator";

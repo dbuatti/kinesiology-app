@@ -1,15 +1,16 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
-import { Eye, EyeOff, Info, Save, Loader2, RotateCcw, Zap, Activity, RefreshCw } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
+import { Eye, EyeOff, Info, Save, Loader2, RotateCcw, Zap, Activity, RefreshCw, CheckCircle2 } from "lucide-react";
+import { cn } from "@/lib/utils";
 import { supabase } from "@/integrations/supabase/client";
 import { showSuccess, showError } from "@/utils/toast";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { Badge } from "@/components/ui/badge";
-import { cn } from "@/lib/utils";
+import { safeParse } from "@/utils/safe-json";
 
 interface RightingReflexesAssessmentProps {
   appointmentId: string;
@@ -25,42 +26,85 @@ const RightingReflexesAssessment = ({
   const [loading, setLoading] = useState(false);
   const [notes, setNotes] = useState(initialNotes || '');
   const [activeTest, setActiveTest] = useState<'ocular' | 'labyrinthine'>('ocular');
+  const [currentStatus, setCurrentStatus] = useState<'Clear' | 'Inhibited' | 'Recheck' | null>(null);
 
-  const handleSave = async () => {
+  useEffect(() => {
+    const fetchInitialState = async () => {
+      try {
+        const { data: app } = await supabase.from('appointments').select('priority_pattern').eq('id', appointmentId).single();
+        if (app?.priority_pattern) {
+          const pattern = safeParse(app.priority_pattern, {} as any);
+          const status = pattern.brainZones?.['Righting Reflexes'];
+          if (status) setCurrentStatus(status as any);
+        }
+      } catch (err) {
+        console.error("Error fetching initial state:", err);
+      }
+    };
+    fetchInitialState();
+  }, [appointmentId]);
+
+  const handleSetStatus = async (status: 'Clear' | 'Inhibited' | 'Recheck') => {
     setLoading(true);
     try {
+      const { data: app } = await supabase.from('appointments').select('priority_pattern').eq('id', appointmentId).single();
+      const pattern = safeParse(app?.priority_pattern, {} as any);
+      
+      if (!pattern.brainZones) pattern.brainZones = {};
+      pattern.brainZones['Righting Reflexes'] = status;
+
       const { error } = await supabase
         .from("appointments")
         .update({ 
-          righting_reflex_notes: notes || null,
+          priority_pattern: JSON.stringify(pattern),
+          righting_reflex_notes: notes || null 
         })
         .eq("id", appointmentId);
 
       if (error) throw error;
-      showSuccess("Righting Reflexes assessment saved!");
+      setCurrentStatus(status);
+      showSuccess(`Righting Reflexes result logged as ${status}`);
       onUpdate();
     } catch (error: any) {
-      showError(error.message || "Failed to save assessment.");
+      showError(error.message || "Failed to log result.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleSaveNotes = async () => {
+    setLoading(true);
+    try {
+      const { error } = await supabase.from("appointments").update({ righting_reflex_notes: notes || null }).eq("id", appointmentId);
+      if (error) throw error;
+      showSuccess("Notes saved.");
+      onUpdate();
+    } catch (error: any) {
+      showError(error.message || "Failed to save notes.");
     } finally {
       setLoading(false);
     }
   };
 
   const handleReset = async () => {
-    if (!confirm("Reset Righting Reflexes notes?")) return;
+    if (!confirm("Reset Righting Reflexes data?")) return;
     setLoading(true);
     try {
-      const { error } = await supabase
-        .from("appointments")
-        .update({ righting_reflex_notes: null })
-        .eq("id", appointmentId);
+      const { data: app } = await supabase.from('appointments').select('priority_pattern').eq('id', appointmentId).single();
+      const pattern = safeParse(app?.priority_pattern, {} as any);
+      if (pattern.brainZones) delete pattern.brainZones['Righting Reflexes'];
 
-      if (error) throw error;
+      await supabase.from("appointments").update({ 
+        righting_reflex_notes: null,
+        priority_pattern: JSON.stringify(pattern)
+      }).eq("id", appointmentId);
+      
       setNotes('');
-      showSuccess("Notes reset.");
+      setCurrentStatus(null);
+      showSuccess("Data reset.");
       onUpdate();
     } catch (error: any) {
-      showError("Failed to reset notes.");
+      showError(error.message || "Failed to reset.");
     } finally {
       setLoading(false);
     }
@@ -68,12 +112,48 @@ const RightingReflexesAssessment = ({
 
   return (
     <div className="space-y-6">
-      <Alert className="bg-indigo-50 border-indigo-200">
-        <Info className="h-4 w-4 text-indigo-600" />
-        <AlertDescription className="text-sm text-indigo-900">
-          <strong>Postural Reflexes:</strong> These take over once primitive reflexes integrate. They organize the head around the horizon/eyes.
-        </AlertDescription>
-      </Alert>
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 p-4 bg-slate-50 rounded-2xl border border-slate-100">
+        <div className="space-y-1">
+          <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Assessment Result</p>
+          <div className="flex gap-2">
+            <Button 
+              size="sm" 
+              onClick={() => handleSetStatus('Clear')}
+              className={cn(
+                "h-10 px-6 rounded-xl font-black text-[10px] uppercase tracking-widest transition-all",
+                currentStatus === 'Clear' ? "bg-emerald-600 text-white shadow-lg" : "bg-white text-slate-600 border-slate-200 hover:bg-emerald-50"
+              )}
+            >
+              <CheckCircle2 size={14} className="mr-2" /> Clear
+            </Button>
+            <Button 
+              size="sm" 
+              onClick={() => handleSetStatus('Inhibited')}
+              className={cn(
+                "h-10 px-6 rounded-xl font-black text-[10px] uppercase tracking-widest transition-all",
+                currentStatus === 'Inhibited' ? "bg-rose-600 text-white shadow-lg" : "bg-white text-slate-600 border-slate-200 hover:bg-rose-50"
+              )}
+            >
+              <Zap size={14} className="mr-2" /> Inhibited
+            </Button>
+            <Button 
+              size="sm" 
+              onClick={() => handleSetStatus('Recheck')}
+              className={cn(
+                "h-10 px-6 rounded-xl font-black text-[10px] uppercase tracking-widest transition-all",
+                currentStatus === 'Recheck' ? "bg-amber-500 text-white shadow-lg" : "bg-white text-slate-600 border-slate-200 hover:bg-amber-50"
+              )}
+            >
+              <RefreshCw size={14} className="mr-2" /> Recheck
+            </Button>
+          </div>
+        </div>
+        {currentStatus && (
+          <Badge className="bg-indigo-600 text-white border-none font-black text-[8px] uppercase tracking-widest px-3 py-1 rounded-full">
+            Auto-synced to Align phase
+          </Badge>
+        )}
+      </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
         <div className="space-y-6">
@@ -81,14 +161,14 @@ const RightingReflexesAssessment = ({
             <Button 
               variant={activeTest === 'ocular' ? 'default' : 'ghost'}
               onClick={() => setActiveTest('ocular')}
-              className={cn("flex-1 rounded-xl h-10 font-bold text-xs uppercase tracking-widest", activeTest === 'ocular' ? "bg-white text-indigo-600 shadow-sm" : "text-slate-500")}
+              className={cn("flex-1 rounded-xl h-10 font-bold text-xs uppercase tracking-widest", activeTest === 'ocular' ? "bg-white text-indigo-600 shadow-sm" : "text-slate-50")}
             >
               <Eye size={16} className="mr-2" /> Ocular
             </Button>
             <Button 
               variant={activeTest === 'labyrinthine' ? 'default' : 'ghost'}
               onClick={() => setActiveTest('labyrinthine')}
-              className={cn("flex-1 rounded-xl h-10 font-bold text-xs uppercase tracking-widest", activeTest === 'labyrinthine' ? "bg-white text-indigo-600 shadow-sm" : "text-slate-500")}
+              className={cn("flex-1 rounded-xl h-10 font-bold text-xs uppercase tracking-widest", activeTest === 'labyrinthine' ? "bg-white text-indigo-600 shadow-sm" : "text-slate-50")}
             >
               <EyeOff size={16} className="mr-2" /> Labyrinthine
             </Button>
@@ -111,21 +191,6 @@ const RightingReflexesAssessment = ({
               </div>
             </div>
           </div>
-
-          <div className="p-6 bg-amber-50 rounded-[2rem] border-2 border-amber-100 space-y-4">
-            <h4 className="font-black text-amber-900 flex items-center gap-2">
-              <Zap size={20} className="text-amber-600" /> Correction Logic
-            </h4>
-            <p className="text-xs text-amber-800 font-medium leading-relaxed">
-              If the reflex is dysfunctional (head stays tilted or IM inhibits), check for an <strong>Afferent (Mechanoreceptive)</strong> priority.
-            </p>
-            <div className="flex items-center gap-3 p-3 bg-white/60 rounded-xl border border-amber-200">
-              <RefreshCw size={16} className="text-amber-600" />
-              <p className="text-[10px] font-bold text-amber-900">
-                Protocol: Stretch priority ligament + Hold GV16 + 128Hz Tuning Fork.
-              </p>
-            </div>
-          </div>
         </div>
 
         <div className="space-y-4">
@@ -134,27 +199,17 @@ const RightingReflexesAssessment = ({
           </Label>
           <Textarea
             id="rightingNotes"
-            placeholder="e.g., Ocular reflex clear. Labyrinthine (eyes closed) showed significant lag on right tilt. Corrected via Right Knee MCL ligament stretch + GV16."
+            placeholder="Document observations..."
             value={notes}
             onChange={(e) => setNotes(e.target.value)}
-            className="min-h-[300px] rounded-2xl border-2 border-slate-100 p-6 text-base font-medium leading-relaxed resize-none"
+            className="min-h-[300px] resize-none"
           />
           <div className="flex gap-3">
-            <Button 
-              onClick={handleSave}
-              disabled={loading}
-              className="flex-1 bg-indigo-600 hover:bg-indigo-700 h-12 text-base font-semibold rounded-xl shadow-lg shadow-indigo-100"
-            >
-              {loading ? <Loader2 className="mr-2 h-5 w-5 animate-spin" /> : <Save size={20} className="mr-2" />}
-              Save Findings
+            <Button onClick={handleSaveNotes} disabled={loading} className="flex-1 bg-slate-900 hover:bg-slate-800 text-white h-12 font-semibold rounded-xl shadow-lg">
+              {loading ? <Loader2 className="mr-2 h-5 w-5 animate-spin" /> : "Save Notes"}
             </Button>
-            {initialNotes && (
-              <Button 
-                variant="outline" 
-                onClick={handleReset}
-                disabled={loading}
-                className="h-12 px-6 rounded-xl border-red-200 text-red-600 hover:bg-red-50"
-              >
+            {(initialNotes || currentStatus) && (
+              <Button variant="outline" onClick={handleReset} disabled={loading} className="h-12 px-6 rounded-xl border-red-200 text-red-600 hover:bg-red-50">
                 <RotateCcw size={16} />
               </Button>
             )}

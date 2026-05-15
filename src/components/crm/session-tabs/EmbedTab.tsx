@@ -20,7 +20,15 @@ import {
   Lightbulb,
   Target,
   CalendarPlus,
-  Plus
+  Plus,
+  Activity,
+  FlaskConical,
+  Heart,
+  Wind,
+  FileText,
+  Droplets,
+  GitBranch,
+  Sparkles
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { supabase } from "@/integrations/supabase/client";
@@ -36,6 +44,7 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import AppointmentForm from "../AppointmentForm";
+import PathwayFindingsList from "../PathwayFindingsList";
 
 interface EmbedTabProps {
   appointment: any;
@@ -72,7 +81,6 @@ const EmbedTab = ({ appointment, onUpdate, saveField, updatePriorityPattern }: E
   const inhibitedItems = useMemo(() => {
     const items: { id: string; name: string; category: string; type: 'pattern' | 'muscle'; status: string; side?: 'L' | 'R' }[] = [];
     
-    // 1. Parse Priority Pattern (Reflexes, Nerves, Brain Zones)
     const pattern = safeParse(appointment.priority_pattern, {} as any);
     Object.entries(pattern).forEach(([catKey, categoryItems]: [string, any]) => {
       Object.entries(categoryItems).forEach(([name, status]) => {
@@ -93,14 +101,12 @@ const EmbedTab = ({ appointment, onUpdate, saveField, updatePriorityPattern }: E
       });
     });
 
-    // 2. Add Non-Normotonic Muscles from table
     muscleTests.forEach(test => {
       if (test.status !== 'Normotonic') {
         const sideMatch = test.muscle_name.match(/\(([LR])\)$/);
         const side = sideMatch ? sideMatch[1] as 'L' | 'R' : undefined;
         const baseName = test.muscle_name.replace(/ \([LR]\)$/, '');
 
-        // Avoid duplicates if already in pattern
         if (!items.find(i => i.name === baseName && i.side === side)) {
           items.push({
             id: test.id,
@@ -148,9 +154,156 @@ const EmbedTab = ({ appointment, onUpdate, saveField, updatePriorityPattern }: E
     return Brain;
   };
 
+  // Summary Data Helpers
+  const hasSnsResets = !!(appointment.harmonic_rocking_notes || appointment.t1_reset_notes || appointment.diaphragm_reset_notes || appointment.vagus_nerve_notes);
+
   return (
-    <div className="space-y-10 animate-in fade-in duration-500">
-      {/* Re-challenge Section */}
+    <div className="space-y-12 animate-in fade-in duration-500">
+      {/* 1. Full Session Report Summary */}
+      <div className="space-y-6">
+        <div className="flex items-center gap-3 px-2">
+          <div className="w-10 h-10 rounded-xl bg-slate-900 text-white flex items-center justify-center shadow-lg">
+            <FileText size={20} />
+          </div>
+          <div>
+            <h2 className="text-xl font-black text-slate-900">Session Summary Report</h2>
+            <p className="text-xs text-slate-500 font-medium">A visual breakdown of everything recorded this session.</p>
+          </div>
+        </div>
+
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          {/* Column 1: Intake & Vitals */}
+          <div className="space-y-6">
+            <Card className="border-none shadow-sm bg-white rounded-2xl overflow-hidden">
+              <CardHeader className="pb-3 bg-indigo-50/50 border-b border-indigo-100">
+                <CardTitle className="text-[10px] font-black uppercase tracking-widest text-indigo-600 flex items-center gap-2">
+                  <Target size={14} /> Intake & Vitals
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="p-5 space-y-4">
+                <div className="space-y-1">
+                  <p className="text-[8px] font-black text-slate-400 uppercase">Goal</p>
+                  <p className="text-xs font-bold text-slate-700 leading-relaxed">{appointment.goal || 'Not set'}</p>
+                </div>
+                <div className="grid grid-cols-2 gap-3">
+                  <div className="p-3 bg-slate-50 rounded-xl border border-slate-100 text-center">
+                    <p className="text-[8px] font-black text-slate-400 uppercase mb-1">BOLT</p>
+                    <p className="text-lg font-black text-indigo-600">{appointment.bolt_score ? `${appointment.bolt_score}s` : '—'}</p>
+                  </div>
+                  <div className="p-3 bg-slate-50 rounded-xl border border-slate-100 text-center">
+                    <p className="text-[8px] font-black text-slate-400 uppercase mb-1">COH</p>
+                    <p className="text-lg font-black text-rose-600">{appointment.coherence_score ? appointment.coherence_score.toFixed(2) : '—'}</p>
+                  </div>
+                </div>
+                <div className="flex items-center justify-between p-2 bg-blue-50/50 rounded-lg border border-blue-100">
+                  <span className="text-[9px] font-black text-blue-600 uppercase">Hydration</span>
+                  <Badge className={cn("border-none font-black text-[8px] uppercase", appointment.hydrated ? "bg-emerald-500" : "bg-rose-500")}>
+                    {appointment.hydrated ? 'Passed' : 'Threat'}
+                  </Badge>
+                </div>
+              </CardContent>
+            </Card>
+
+            {hasSnsResets && (
+              <Card className="border-none shadow-sm bg-white rounded-2xl overflow-hidden">
+                <CardHeader className="pb-3 bg-rose-50/50 border-b border-rose-100">
+                  <CardTitle className="text-[10px] font-black uppercase tracking-widest text-rose-600 flex items-center gap-2">
+                    <Zap size={14} /> SNS Down-Regulation
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="p-5 space-y-3">
+                  {appointment.harmonic_rocking_notes && (
+                    <div className="flex items-center gap-2 text-[10px] font-bold text-slate-600">
+                      <CheckCircle2 size={12} className="text-emerald-500" /> Harmonic Rocking
+                    </div>
+                  )}
+                  {appointment.t1_reset_notes && (
+                    <div className="flex items-center gap-2 text-[10px] font-bold text-slate-600">
+                      <CheckCircle2 size={12} className="text-emerald-500" /> T1 Reset
+                    </div>
+                  )}
+                  {appointment.diaphragm_reset_notes && (
+                    <div className="flex items-center gap-2 text-[10px] font-bold text-slate-600">
+                      <CheckCircle2 size={12} className="text-emerald-500" /> Diaphragm Reset
+                    </div>
+                  )}
+                  {appointment.vagus_nerve_notes && (
+                    <div className="flex items-center gap-2 text-[10px] font-bold text-slate-600">
+                      <CheckCircle2 size={12} className="text-emerald-500" /> Vagus Process
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+            )}
+          </div>
+
+          {/* Column 2: Pathway Findings */}
+          <div className="lg:col-span-1">
+            <Card className="border-none shadow-sm bg-white rounded-2xl overflow-hidden h-full">
+              <CardHeader className="pb-3 bg-amber-50/50 border-b border-amber-100">
+                <CardTitle className="text-[10px] font-black uppercase tracking-widest text-amber-600 flex items-center gap-2">
+                  <GitBranch size={14} /> Pathway Findings
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="p-5">
+                <PathwayFindingsList 
+                  priorityPattern={appointment.priority_pattern} 
+                  showOnlyInhibited={false}
+                  className="max-h-[400px] overflow-y-auto pr-2 custom-scrollbar"
+                />
+              </CardContent>
+            </Card>
+          </div>
+
+          {/* Column 3: Corrections & Context */}
+          <div className="space-y-6">
+            <Card className="border-none shadow-sm bg-white rounded-2xl overflow-hidden">
+              <CardHeader className="pb-3 bg-emerald-50/50 border-b border-emerald-100">
+                <CardTitle className="text-[10px] font-black uppercase tracking-widest text-emerald-600 flex items-center gap-2">
+                  <Sparkles size={14} /> Corrections & Logic
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="p-5 space-y-4">
+                <div className="space-y-1">
+                  <p className="text-[8px] font-black text-slate-400 uppercase">Balances Applied</p>
+                  <p className="text-xs font-medium text-slate-600 leading-relaxed italic">
+                    {appointment.modes_balances || 'No specific corrections logged.'}
+                  </p>
+                </div>
+                <div className="space-y-1">
+                  <p className="text-[8px] font-black text-slate-400 uppercase">Acupoints</p>
+                  <p className="text-xs font-bold text-indigo-600">{appointment.acupoints || 'None recorded'}</p>
+                </div>
+              </CardContent>
+            </Card>
+
+            {appointment.emotion_primary_selection && (
+              <Card className="border-none shadow-sm bg-white rounded-2xl overflow-hidden">
+                <CardHeader className="pb-3 bg-rose-50/50 border-b border-rose-100">
+                  <CardTitle className="text-[10px] font-black uppercase tracking-widest text-rose-600 flex items-center gap-2">
+                    <Heart size={14} /> Emotional Context
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="p-5">
+                  <div className="flex items-center gap-2 mb-2">
+                    <Badge className="bg-rose-600 text-white border-none font-black text-[10px] uppercase">
+                      {appointment.emotion_primary_selection}
+                    </Badge>
+                    {appointment.luscher_color_1 && (
+                      <Badge variant="outline" className="border-rose-200 text-rose-600 text-[8px] font-black uppercase">
+                        Luscher: {appointment.luscher_color_1}+{appointment.luscher_color_2}
+                      </Badge>
+                    )}
+                  </div>
+                  <p className="text-xs text-slate-500 line-clamp-3 italic">"{appointment.emotion_notes}"</p>
+                </CardContent>
+              </Card>
+            )}
+          </div>
+        </div>
+      </div>
+
+      {/* 2. Clinical Verification (Re-challenge) */}
       <div className="space-y-6">
         <div className="flex items-center justify-between px-2">
           <div className="flex items-center gap-3">
@@ -221,7 +374,7 @@ const EmbedTab = ({ appointment, onUpdate, saveField, updatePriorityPattern }: E
         )}
       </div>
 
-      {/* Notes Section */}
+      {/* 3. Notes Section */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
         <div className="space-y-4">
           <div className="flex items-center gap-3 px-2">
@@ -260,7 +413,7 @@ const EmbedTab = ({ appointment, onUpdate, saveField, updatePriorityPattern }: E
         </div>
       </div>
 
-      {/* Next Steps & Scheduling */}
+      {/* 4. Next Steps & Scheduling */}
       <div className="pt-8 border-t border-slate-100">
         <div className="flex flex-col md:flex-row items-center justify-between gap-6 p-8 bg-indigo-600 rounded-[2.5rem] text-white shadow-xl shadow-indigo-100">
           <div className="flex items-center gap-5">

@@ -140,6 +140,12 @@ const PreviousSessionInsightsBar = ({ clientId, currentAppointmentId, manualData
                     Last BOLT: {previousSession.bolt_score}s
                   </span>
                 )}
+                {previousSession.goal && (
+                  <span className="hidden md:flex items-center gap-1.5 opacity-60 italic truncate max-w-[200px]">
+                    <Target size={12} />
+                    {previousSession.goal}
+                  </span>
+                )}
               </div>
             )}
           </div>
@@ -205,7 +211,7 @@ const PreviousSessionInsightsBar = ({ clientId, currentAppointmentId, manualData
                   </p>
                 </div>
               </div>
-              <Link to={`/appointments/${previousSession.id}`} className="block">
+              <Link to={clientId.includes('demo') ? '#' : `/appointments/${previousSession.id}`} className="block">
                 <Button variant="outline" size="sm" className="w-full bg-transparent border-white/20 text-white hover:bg-white/10 rounded-xl text-xs">
                   View Full Previous Session
                 </Button>

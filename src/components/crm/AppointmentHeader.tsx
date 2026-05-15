@@ -79,7 +79,7 @@ const VitalCard = ({ icon: Icon, label, value, subValue, color, onClick, childre
         <div 
           onClick={onClick}
           className={cn(
-            "flex-1 min-w-[140px] p-4 rounded-2xl border transition-all duration-500 group cursor-pointer relative overflow-hidden",
+            "flex-1 min-w-[120px] p-3 rounded-2xl border transition-all duration-500 group cursor-pointer relative overflow-hidden",
             color === 'rose' ? "bg-rose-50/30 border-rose-100 hover:border-rose-300" :
             color === 'emerald' ? "bg-emerald-50/30 border-emerald-100 hover:border-emerald-300" :
             color === 'blue' ? "bg-blue-50/30 border-blue-100 hover:border-blue-300" :
@@ -87,42 +87,33 @@ const VitalCard = ({ icon: Icon, label, value, subValue, color, onClick, childre
             "bg-slate-50/30 border-slate-100 hover:border-indigo-200"
           )}
         >
-          <div className="flex items-center justify-between mb-3 relative z-10">
+          <div className="flex items-center justify-between mb-2 relative z-10">
             <div className={cn(
-              "w-8 h-8 rounded-lg flex items-center justify-center transition-all duration-700 group-hover:scale-110 shadow-sm",
+              "w-7 h-7 rounded-lg flex items-center justify-center transition-all duration-700 group-hover:scale-110 shadow-sm",
               color === 'rose' ? "bg-white text-rose-600" :
               color === 'emerald' ? "bg-white text-emerald-600" :
               color === 'blue' ? "bg-white text-blue-600" :
               color === 'amber' ? "bg-white text-amber-600" :
               "bg-white text-slate-400"
             )}>
-              <Icon size={16} />
+              <Icon size={14} />
             </div>
             {children}
           </div>
           <div className="space-y-0.5 relative z-10">
-            <p className="text-[8px] font-black uppercase tracking-[0.2em] text-slate-400">{label}</p>
+            <p className="text-[7px] font-black uppercase tracking-[0.2em] text-slate-400">{label}</p>
             <div className="flex items-baseline gap-1.5">
               <span className={cn(
-                "text-lg font-black tracking-tight",
+                "text-base font-black tracking-tight",
                 color === 'rose' ? "text-rose-700" :
                 color === 'emerald' ? "text-emerald-700" :
                 color === 'blue' ? "text-blue-700" :
                 color === 'amber' ? "text-amber-700" :
                 "text-slate-900"
               )}>{value}</span>
-              {subValue && <span className="text-[9px] font-bold text-slate-400">{subValue}</span>}
+              {subValue && <span className="text-[8px] font-bold text-slate-400">{subValue}</span>}
             </div>
           </div>
-          
-          <div className={cn(
-            "absolute -right-4 -bottom-4 w-16 h-16 rounded-full blur-2xl opacity-10 transition-all duration-700 group-hover:scale-150",
-            color === 'rose' ? "bg-rose-400" :
-            color === 'emerald' ? "bg-emerald-400" :
-            color === 'blue' ? "bg-blue-400" :
-            color === 'amber' ? "bg-amber-400" :
-            "bg-indigo-400"
-          )} />
         </div>
       </TooltipTrigger>
       {tooltip && (
@@ -155,91 +146,64 @@ const AppointmentHeader = ({ appointment, onSaveField, onUpdate }: AppointmentHe
   };
 
   return (
-    <div className="space-y-8">
-      {/* MOBILE COMPACT HEADER */}
-      <div className="md:hidden flex items-center justify-between bg-slate-900 text-white p-4 rounded-2xl shadow-lg">
-        <div className="flex items-center gap-3 min-w-0">
-          <div className="w-10 h-10 rounded-xl bg-indigo-600 flex items-center justify-center font-black text-lg shrink-0">
-            {appointment.clients.name.charAt(0)}
-          </div>
-          <div className="min-w-0">
-            <h1 className="font-black text-base truncate">{appointment.clients.name}</h1>
-            <p className="text-[8px] font-bold text-indigo-300 uppercase tracking-widest">
-              {format(appointment.date, "h:mm a")} • {appointment.status}
-            </p>
-          </div>
-        </div>
-        <Link to={`/clients/${appointment.clients.id}`}>
-          <Button variant="ghost" size="icon" className="h-8 w-8 text-slate-400">
-            <User size={18} />
-          </Button>
-        </Link>
-      </div>
-
-      {/* DESKTOP FULL HEADER */}
-      <div className="hidden md:flex flex-col lg:flex-row lg:items-center justify-between gap-8">
-        <div className="flex items-center gap-6 min-w-0">
+    <div className="space-y-6">
+      {/* DESKTOP COMPACT HEADER */}
+      <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6">
+        <div className="flex items-center gap-5 min-w-0">
           <div className="relative shrink-0 group">
-            <div className="absolute inset-0 bg-indigo-600 rounded-3xl blur-2xl opacity-10 group-hover:opacity-30 transition-all duration-700" />
-            <div className="relative w-20 h-20 md:w-24 md:h-24 rounded-3xl bg-slate-900 text-white flex items-center justify-center text-3xl md:text-4xl font-black shadow-2xl transition-all duration-700 group-hover:scale-105 group-hover:rotate-3">
+            <div className="relative w-16 h-16 rounded-2xl bg-slate-900 text-white flex items-center justify-center text-2xl font-black shadow-xl transition-all duration-700 group-hover:scale-105">
               {appointment.clients.name.charAt(0)}
             </div>
             {isSessionToday && (
-              <div className="absolute -top-1 -right-1 w-6 h-6 bg-rose-500 border-2 border-white dark:border-slate-900 rounded-full flex items-center justify-center shadow-lg animate-pulse">
-                <Zap size={12} className="text-white fill-current" />
+              <div className="absolute -top-1 -right-1 w-5 h-5 bg-rose-500 border-2 border-white dark:border-slate-900 rounded-full flex items-center justify-center shadow-lg animate-pulse">
+                <Zap size={10} className="text-white fill-current" />
               </div>
             )}
           </div>
           
-          <div className="space-y-3 min-w-0">
-            <div className="space-y-1">
-              <div className="flex flex-wrap items-center gap-3">
-                <h1 className="text-3xl md:text-5xl font-serif font-bold text-slate-900 dark:text-white tracking-tighter truncate leading-none">
-                  {appointment.clients.name}
-                </h1>
-                <Link to={`/clients/${appointment.clients.id}`}>
-                  <Button variant="ghost" size="icon" className="h-8 w-8 rounded-xl bg-slate-50 text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 transition-all">
-                    <ExternalLink size={16} />
-                  </Button>
-                </Link>
-              </div>
-              <div className="flex items-center gap-3">
-                <Badge variant="outline" className="h-6 px-3 text-[8px] font-black border-indigo-100 text-indigo-600 bg-indigo-50/50 rounded-lg">
-                  {appointment.display_id || "SESSION"}
-                </Badge>
-                {clientBorn && (
-                  <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">
-                    {calculateAge(clientBorn)} YEARS OLD
-                  </span>
-                )}
-              </div>
+          <div className="space-y-2 min-w-0">
+            <div className="flex flex-wrap items-center gap-3">
+              <h1 className={cn(
+                "text-2xl md:text-4xl font-serif font-bold text-slate-900 dark:text-white tracking-tighter truncate leading-none",
+                "privacy-mode-active:blur-sm"
+              )}>
+                {appointment.clients.name}
+              </h1>
+              <Link to={`/clients/${appointment.clients.id}`}>
+                <Button variant="ghost" size="icon" className="h-7 w-7 rounded-lg bg-slate-50 text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 transition-all">
+                  <ExternalLink size={14} />
+                </Button>
+              </Link>
             </div>
             
-            <div className="flex flex-wrap items-center gap-4">
-              <div className="flex items-center gap-3 bg-slate-50 dark:bg-slate-800/50 p-1.5 rounded-xl border border-slate-100 dark:border-slate-800">
+            <div className="flex flex-wrap items-center gap-3">
+              <div className="flex items-center gap-2 bg-slate-50 dark:bg-slate-800/50 p-1 rounded-lg border border-slate-100 dark:border-slate-800">
                 <button 
                   onClick={() => setRescheduleOpen(true)}
-                  className="flex items-center gap-2 px-3 py-1 rounded-lg hover:bg-white dark:hover:bg-slate-800 transition-all group"
+                  className="flex items-center gap-1.5 px-2 py-0.5 rounded-md hover:bg-white dark:hover:bg-slate-800 transition-all group"
                 >
-                  <Calendar size={14} className="text-indigo-500" />
-                  <span className="text-[10px] font-black uppercase tracking-widest text-slate-600">{format(appointment.date, "EEE, MMM d")}</span>
+                  <Calendar size={12} className="text-indigo-500" />
+                  <span className="text-[9px] font-black uppercase tracking-widest text-slate-600">{format(appointment.date, "EEE, MMM d")}</span>
                 </button>
-                <div className="w-px h-4 bg-slate-200 dark:bg-slate-700" />
+                <div className="w-px h-3 bg-slate-200 dark:bg-slate-700" />
                 <button 
                   onClick={() => setRescheduleOpen(true)}
-                  className="flex items-center gap-2 px-3 py-1 rounded-lg hover:bg-white dark:hover:bg-slate-800 transition-all group"
+                  className="flex items-center gap-1.5 px-2 py-0.5 rounded-md hover:bg-white dark:hover:bg-slate-800 transition-all group"
                 >
-                  <Clock size={14} className="text-indigo-500" />
-                  <span className="text-[10px] font-black uppercase tracking-widest text-slate-600">{format(appointment.date, "h:mm a")}</span>
+                  <Clock size={12} className="text-indigo-500" />
+                  <span className="text-[9px] font-black uppercase tracking-widest text-slate-600">{format(appointment.date, "h:mm a")}</span>
                 </button>
               </div>
 
               <Select value={appointment.status} onValueChange={(newStatus) => onSaveField('status', newStatus)}>
                 <SelectTrigger className={cn(
-                  "h-10 w-[140px] text-[9px] font-black uppercase tracking-[0.2em] border-slate-200 bg-white rounded-xl shadow-sm transition-all",
+                  "h-8 w-[130px] text-[8px] font-black uppercase tracking-[0.2em] border-slate-200 bg-white rounded-lg shadow-sm transition-all",
                   appointment.status === 'Completed' ? "text-emerald-600 border-emerald-100 bg-emerald-50/30" : "text-indigo-600"
                 )}>
-                  <SelectValue placeholder="Status" />
+                  <div className="flex items-center gap-2">
+                    <div className={cn("w-1.5 h-1.5 rounded-full", appointment.status === 'Completed' ? "bg-emerald-500" : "bg-indigo-500")} />
+                    <SelectValue />
+                  </div>
                 </SelectTrigger>
                 <SelectContent className="rounded-2xl border-none shadow-3xl p-2 bg-white dark:bg-slate-900">
                   {APPOINTMENT_STATUSES.map(status => (
@@ -258,7 +222,7 @@ const AppointmentHeader = ({ appointment, onSaveField, onUpdate }: AppointmentHe
         </div>
 
         {/* VITALS GRID */}
-        <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 w-full lg:w-auto">
+        <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 w-full lg:w-auto">
           <VitalCard 
             icon={ShieldAlert} 
             label="Neural Load" 
@@ -298,7 +262,7 @@ const AppointmentHeader = ({ appointment, onSaveField, onUpdate }: AppointmentHe
             <Switch 
               checked={appointment.hydrated || false} 
               onCheckedChange={(checked) => onSaveField('hydrated', checked)} 
-              className="data-[state=checked]:bg-blue-500 data-[state=unchecked]:bg-amber-400 scale-75" 
+              className="data-[state=checked]:bg-blue-500 data-[state=unchecked]:bg-amber-400 scale-[0.6]" 
             />
           </VitalCard>
         </div>

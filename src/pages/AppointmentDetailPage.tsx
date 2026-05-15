@@ -68,7 +68,6 @@ const AppointmentDetailPage = () => {
 
   // UI States
   const [isFixedHeaderActive, setIsFixedHeaderActive] = useState(false);
-  const [showSetup, setShowSetup] = useState(false);
   const [showSidebar, setShowSidebar] = useState(true);
   const [isDocumentView, setIsDocumentView] = useState(false);
   const [nucleiFilter, setNucleiFilter] = useState<Nuclei | null>(null);
@@ -367,11 +366,11 @@ const AppointmentDetailPage = () => {
             <div className="flex items-center gap-4">
               <Button 
                 variant="ghost" 
-                size="icon" 
                 onClick={() => navigate(-1)}
-                className="h-12 w-12 rounded-2xl bg-white border border-slate-200 shadow-sm text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 transition-all"
+                className="h-12 px-4 rounded-2xl bg-white border border-slate-200 shadow-sm text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 transition-all gap-3"
               >
                 <ArrowLeft size={20} />
+                <span className="text-[10px] font-black uppercase tracking-widest">Schedule</span>
               </Button>
               <div className="space-y-1">
                 <div className="flex items-center gap-2">
@@ -409,12 +408,15 @@ const AppointmentDetailPage = () => {
                     size="sm" 
                     className="h-12 px-6 gap-3 border-slate-200 bg-white rounded-2xl font-black text-[10px] uppercase tracking-widest text-slate-600 hover:bg-slate-50 transition-all shadow-sm"
                   >
-                    <Settings2 size={16} className="text-slate-400" />
-                    Setup
+                    <MoreHorizontal size={16} className="text-slate-400" />
+                    Session Actions
                     <ChevronDown size={14} className="text-slate-300" />
                   </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end" className="w-64 p-2 rounded-[2rem] border-none shadow-3xl bg-white dark:bg-slate-900">
+                  <div className="px-4 py-2 mb-1">
+                    <p className="text-[8px] font-black uppercase tracking-[0.3em] text-slate-400">Session Setup</p>
+                  </div>
                   <DropdownMenuItem onClick={handleCopyOnboardingLink} className="rounded-xl py-3 px-4 cursor-pointer">
                     <LinkIcon size={16} className="mr-3 text-indigo-500" /> Copy Onboarding Link
                   </DropdownMenuItem>

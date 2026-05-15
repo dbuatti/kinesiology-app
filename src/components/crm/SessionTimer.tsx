@@ -11,6 +11,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { Badge } from '@/components/ui/badge';
 
 interface SessionTimerProps {
   appointmentDate: Date;
@@ -71,11 +72,10 @@ const SessionTimer = ({ appointmentDate, status, onFixedHeaderChange, onComplete
     const overallProgressPercent = Math.min(100, (elapsedMinutes / TOTAL_DURATION_MINUTES) * 100);
     const remainingSeconds = Math.max(0, totalDurationSeconds - elapsedSeconds);
     
-    const remainingHours = Math.floor(remainingSeconds / 3600);
-    const remainingMinutes = Math.floor((remainingSeconds % 3600) / 60);
+    const remainingMinutes = Math.floor(remainingSeconds / 60);
     const remainingSecs = remainingSeconds % 60;
     
-    const timeRemainingInSession = `${remainingHours > 0 ? `${remainingHours}h ` : ''}${remainingMinutes.toString().padStart(2, '0')}m ${remainingSecs.toString().padStart(2, '0')}s`;
+    const timeRemainingInSession = `${remainingMinutes}m ${remainingSecs.toString().padStart(2, '0')}s`;
 
     return {
       elapsedSeconds,
@@ -98,13 +98,8 @@ const SessionTimer = ({ appointmentDate, status, onFixedHeaderChange, onComplete
 
   if (!isRelevant) return null;
 
-  const timeInSessionFormatted = format(new Date(0, 0, 0, 0, 0, elapsedSeconds), 'H:mm:ss');
-  const [hours, minutes, seconds] = timeInSessionFormatted.split(':');
-  const displayTime = `${parseInt(hours) > 0 ? `${parseInt(hours)}h ` : ''}${parseInt(minutes)}m ${seconds}s`;
-
   const handleComplete = () => {
     if (onCompleteSession) {
-      // Simple confirmation for now, could be a more complex dialog
       if (confirm("Are you sure you want to complete this session? Please ensure billing status is correct.")) {
         onCompleteSession();
       }
@@ -131,19 +126,18 @@ const SessionTimer = ({ appointmentDate, status, onFixedHeaderChange, onComplete
           <div className="flex items-center gap-3">
             <div className="w-2 h-2 bg-emerald-500 rounded-full animate-pulse" />
             <span className="text-[10px] font-black text-white uppercase tracking-[0.3em]">Session Live</span>
-            <span className="text-xs font-black text-emerald-400 tabular-nums font-mono">{displayTime}</span>
+            <span className="text-xs font-black text-emerald-400 tabular-nums font-mono">
+              {timeRemainingInSession} remaining
+            </span>
           </div>
           
           <div className="h-4 w-px bg-white/10 hidden sm:block" />
           
           <div className="hidden sm:flex items-center gap-3">
-            <div className={cn("px-3 py-1 rounded-lg text-[9px] font-black uppercase tracking-widest flex items-center gap-2", currentStage.color)}>
-              <currentStage.Icon size={12} className="text-white" />
-              <span className="text-white">{currentStage.name}</span>
-            </div>
-            <span className="text-[9px] font-bold text-slate-500 uppercase tracking-widest">
-              {timeRemainingInSession} remaining
-            </span>
+            <Badge variant="outline" className={cn("border-none font-black text-[8px] uppercase tracking-widest px-2 py-0.5 rounded-md flex items-center gap-1.5", currentStage.color, "text-white")}>
+              <currentStage.Icon size={10} />
+              {currentStage.name}
+            </Badge>
           </div>
         </div>
 

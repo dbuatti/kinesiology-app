@@ -17,7 +17,7 @@ import {
   Activity, Shield, Layers, Dumbbell, RefreshCw,
   Eye, EyeOff, Save, ShieldCheck, LayoutGrid,
   ChevronRight, Settings2, Sparkles, Globe, ExternalLink,
-  PanelLeftClose, PanelLeftOpen
+  PanelLeftClose, PanelLeftOpen, ClipboardCheck
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Switch } from "@/components/ui/switch";
@@ -92,6 +92,8 @@ export default function ClinicalProtocolsPage() {
     );
   }
 
+  const activeProtocol = PROTOCOLS.find(p => p.id === activeTab);
+
   return (
     <div className="flex h-screen bg-white overflow-hidden">
       {/* 1. Slim Vertical Navigation Rail */}
@@ -149,13 +151,13 @@ export default function ClinicalProtocolsPage() {
             <div className="flex items-center gap-4">
               <div className={cn(
                 "w-12 h-12 rounded-2xl flex items-center justify-center text-white shadow-lg",
-                PROTOCOLS.find(p => p.id === activeTab)?.bg.replace('bg-', 'bg-').replace('-50', '-600') || "bg-indigo-600"
+                activeProtocol?.bg.replace('bg-', 'bg-').replace('-50', '-600') || "bg-indigo-600"
               )}>
-                {React.createElement(PROTOCOLS.find(p => p.id === activeTab)?.icon || Brain, { size: 24 })}
+                {React.createElement(activeProtocol?.icon || Brain, { size: 24 })}
               </div>
               <div>
-                <h2 className="text-2xl font-black text-slate-900 tracking-tight leading-none">
-                  {PROTOCOLS.find(p => p.id === activeTab)?.label}
+                <h2 className="text-2xl font-serif font-bold text-slate-900 tracking-tight leading-none">
+                  {activeProtocol?.label}
                 </h2>
                 <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mt-1.5">Protocol v2.4 • Clinical Standard</p>
               </div>
@@ -185,19 +187,6 @@ export default function ClinicalProtocolsPage() {
                 <Label htmlFor="show-images-global" className="text-[10px] font-black uppercase tracking-widest text-slate-500 cursor-pointer flex items-center gap-2">
                   {showImages ? <Eye size={16} className="text-indigo-600" /> : <EyeOff size={16} />}
                   Images
-                </Label>
-              </div>
-
-              <div className="flex items-center space-x-3">
-                <Switch 
-                  id="remember-settings" 
-                  checked={rememberSettings} 
-                  onCheckedChange={setRememberSettings}
-                  className="data-[state=checked]:bg-emerald-600"
-                />
-                <Label htmlFor="remember-settings" className="text-[10px] font-black uppercase tracking-widest text-slate-500 cursor-pointer flex items-center gap-2">
-                  <ShieldCheck size={16} className={rememberSettings ? "text-emerald-600" : ""} />
-                  Remember
                 </Label>
               </div>
             </div>
@@ -274,10 +263,10 @@ export default function ClinicalProtocolsPage() {
               <div className="flex items-center justify-between mb-8">
                 <div className="flex items-center gap-5">
                   <div className="w-14 h-14 rounded-2xl bg-slate-900 text-white flex items-center justify-center shadow-xl">
-                    <FileText size={28} />
+                    <ClipboardCheck size={28} />
                   </div>
                   <div>
-                    <h3 className="text-2xl font-black text-slate-900 tracking-tight">Integration Summary</h3>
+                    <h3 className="text-2xl font-serif font-bold text-slate-900 tracking-tight">Integration Summary</h3>
                     <p className="text-[10px] font-bold text-slate-400 uppercase tracking-[0.3em] mt-1">Session Notes & Homework</p>
                   </div>
                 </div>

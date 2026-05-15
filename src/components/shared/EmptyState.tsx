@@ -31,7 +31,7 @@ const EmptyState = ({
         <Icon className="text-muted-foreground/40" size={40} />
       </div>
       <h3 className="text-foreground font-black text-xl tracking-tight">{title}</h3>
-      <p className="text-muted-foreground mt-2 mb-8 font-medium max-w-xs mx-auto leading-relaxed">
+      <p className="text-muted-foreground mt-2 mb-8 font-medium max-xs mx-auto leading-relaxed">
         {description}
       </p>
       {actionLabel && onAction && (

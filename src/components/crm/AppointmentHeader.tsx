@@ -271,14 +271,14 @@ const AppointmentHeader = ({ appointment, onSaveField, onUpdate }: AppointmentHe
           <VitalCard 
             icon={Droplets} 
             label="Hydration" 
-            value={appointment.hydrated ? "PASS" : "FAIL"} 
-            color={appointment.hydrated ? 'blue' : 'rose'}
+            value={appointment.hydrated ? "PASS" : "Needs Water"} 
+            color={appointment.hydrated ? 'blue' : 'amber'}
             tooltip="Hydration status affects neurological testing accuracy."
           >
             <Switch 
               checked={appointment.hydrated || false} 
               onCheckedChange={(checked) => onSaveField('hydrated', checked)} 
-              className="data-[state=checked]:bg-blue-500 data-[state=unchecked]:bg-rose-400 scale-75" 
+              className="data-[state=checked]:bg-blue-500 data-[state=unchecked]:bg-amber-400 scale-75" 
             />
           </VitalCard>
         </div>

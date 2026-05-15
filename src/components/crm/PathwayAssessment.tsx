@@ -3,7 +3,7 @@
 import React, { useState, useMemo } from 'react';
 import { Button } from "@/components/ui/button";
 import { 
-  Zap, RefreshCw, Trash2, Layers, ImageIcon, Eye, EyeOff
+  Zap, RefreshCw, Trash2, Layers, ImageIcon, Eye, EyeOff, Activity, Brain, Dumbbell
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Switch } from "@/components/ui/switch";

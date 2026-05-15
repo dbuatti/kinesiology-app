@@ -7,6 +7,7 @@ import BrainstemToneMap from "./BrainstemToneMap";
 import AppointmentContextCards from "./AppointmentContextCards";
 import { Nuclei } from "@/utils/brainstem-logic";
 import { AppointmentWithClient } from "@/types/crm";
+import { Badge } from "@/components/ui/badge";
 
 interface AppointmentSidebarProps {
   appointment: AppointmentWithClient;

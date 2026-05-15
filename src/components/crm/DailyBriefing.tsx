@@ -6,6 +6,7 @@ import { Zap, ArrowRight, Target, Clock, Activity } from "lucide-react";
 import { format } from "date-fns";
 import { cn } from "@/lib/utils";
 import { AppointmentWithClient } from "@/types/crm";
+import { Button } from "@/components/ui/button";
 
 interface DailyBriefingProps {
   todaySessions: AppointmentWithClient[];

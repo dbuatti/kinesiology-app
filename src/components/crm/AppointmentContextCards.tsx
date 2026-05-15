@@ -4,7 +4,7 @@ import React, { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { 
   Zap, Clock, Target, Activity, Home, CreditCard, CheckCircle2, Loader2, QrCode, ChevronDown, DollarSign,
-  MessageSquare, Lightbulb, Layers, Check
+  MessageSquare, Lightbulb, Layers, Check, ShieldAlert
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import EditableField from "@/components/shared/EditableField";

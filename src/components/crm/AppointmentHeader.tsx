@@ -21,6 +21,7 @@ import {
 import { APPOINTMENT_STATUSES } from "@/data/appointment-data";
 import { AppointmentWithClient } from "@/types/crm";
 import { calculateBrainstemTone } from "@/utils/brainstem-logic";
+import { Badge } from "@/components/ui/badge";
 
 interface AppointmentHeaderProps {
   appointment: AppointmentWithClient;

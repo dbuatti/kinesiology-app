@@ -49,7 +49,7 @@ const MuscleTestItem = ({ name, statusL, statusR, statusMidline, isLateralized, 
               <div className="flex items-center gap-1">
                 <Checkbox 
                   checked={statusR === 'Inhibited'}
-                  onCheckedChange={(checked) => onUpdate('muscles', name, checked ? 'Inhibited' : 'Clear', 'R')}
+                  onCheckedChange={(checked) => onUpdate('brainZones', name, checked ? 'Inhibited' : 'Clear', 'R')}
                   className="h-3.5 w-3.5 border-slate-300 rounded-none"
                 />
                 <span className="text-[8px] font-black text-slate-400">R</span>
@@ -79,10 +79,12 @@ const MuscleTestItem = ({ name, statusL, statusR, statusMidline, isLateralized, 
 
 export function MuscleAssessment({ 
   priorityPattern, 
-  updatePriorityPattern 
+  updatePriorityPattern,
+  showImages
 }: { 
   priorityPattern?: string | null;
   updatePriorityPattern: (category: string, itemName: string, status: 'Clear' | 'Inhibited' | null, side?: 'L' | 'R') => Promise<void>;
+  showImages?: boolean;
 }) {
   const [searchQuery, setSearchQuery] = useState("");
   const pattern = useMemo(() => safeParse(priorityPattern, {} as any), [priorityPattern]);

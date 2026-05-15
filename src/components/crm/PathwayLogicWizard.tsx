@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useMemo } from 'react';
+import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { 
   GitBranch, Zap, ChevronLeft, ChevronRight, RefreshCw, CheckCircle2, Info
@@ -12,6 +12,7 @@ import EfferentBrainIntegration from './EfferentBrainIntegration';
 import MechanoreceptiveProcess from './MechanoreceptiveProcess';
 import EmotionalIntegrationProcess from './EmotionalIntegrationProcess';
 import VestibularProcess from './VestibularProcess';
+import { Input } from "@/components/ui/input";
 
 type Step = 'SELECT_START' | 'AFFERENT_SELECT' | 'EFFERENT_SELECT' | 'MECHANO_PROCESS' | 'VESTIBULAR_PROCESS' | 'NOCICEPTIVE_PROCESS' | 'EFFERENT_PROCESS' | 'EMOTIONS_PROCESS';
 

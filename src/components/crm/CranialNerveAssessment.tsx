@@ -87,11 +87,15 @@ const NerveTestItem = ({ nerve, test, statusL, statusR, statusMidline, isLateral
 export function CranialNerveAssessment({ 
   appointmentId, 
   priorityPattern, 
-  updatePriorityPattern 
+  updatePriorityPattern,
+  showImages,
+  onShowInfo
 }: { 
   appointmentId: string;
   priorityPattern?: string | null;
   updatePriorityPattern?: (category: string, itemName: string, status: 'Clear' | 'Inhibited' | null, side?: 'L' | 'R') => Promise<void>;
+  showImages?: boolean;
+  onShowInfo?: (nerveId: number) => void;
 }) {
   const { tests, loading, updateTest } = useCranialNerveTests(appointmentId, priorityPattern, updatePriorityPattern);
   const [searchQuery, setSearchQuery] = useState("");

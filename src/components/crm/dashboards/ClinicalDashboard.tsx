@@ -2,7 +2,7 @@
 
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { Sun, Activity, Zap, ShieldAlert, ClipboardCheck, Sparkles, Check, ArrowRight } from "lucide-react";
+import { Sun, Activity, Zap, ShieldAlert, ClipboardCheck, Sparkles, Check, ArrowRight, Target, CheckCircle2 } from "lucide-react";
 import { Progress } from "@/components/ui/progress";
 import { cn } from "@/lib/utils";
 import PractitionerGrounding from "../PractitionerGrounding";
@@ -10,6 +10,8 @@ import QuickActionsGrid from "../QuickActionsGrid";
 import DailyBriefing from "../DailyBriefing";
 import UpcomingAppointments from "../UpcomingAppointments";
 import RecentActivity from "../RecentActivity";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
 
 interface ClinicalDashboardProps {
   stats: any;

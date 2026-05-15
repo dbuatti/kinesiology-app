@@ -80,10 +80,12 @@ const ZoneTestItem = ({ point, statusL, statusR, statusMidline, isLateralized, o
 
 export function BrainZoneAssessment({ 
   priorityPattern, 
-  updatePriorityPattern 
+  updatePriorityPattern,
+  showImages
 }: { 
   priorityPattern?: string | null;
   updatePriorityPattern: (category: string, itemName: string, status: 'Clear' | 'Inhibited' | null, side?: 'L' | 'R') => Promise<void>;
+  showImages?: boolean;
 }) {
   const [searchQuery, setSearchQuery] = useState("");
   const pattern = useMemo(() => safeParse(priorityPattern, {} as any), [priorityPattern]);

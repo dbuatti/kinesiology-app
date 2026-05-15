@@ -219,7 +219,7 @@ const VagusNerveProcess = ({ appointmentId, initialNotes, onSaveField, onUpdate 
           <CardHeader className="bg-slate-50/50 border-b border-slate-100 pb-4 cursor-pointer hover:bg-slate-100/50 transition-colors">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-3">
-                <div className="w-10 h-10 bg-indigo-100 text-indigo-600 rounded-xl flex items-center justify-center">
+                <div className="w-10 h-10 rounded-xl bg-indigo-100 text-indigo-600 rounded-xl flex items-center justify-center">
                   <Activity size={20} />
                 </div>
                 <div>

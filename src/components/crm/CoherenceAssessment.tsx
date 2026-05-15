@@ -130,7 +130,7 @@ const CoherenceAssessment = ({
           <div className={cn(
             "p-4 flex items-center justify-between cursor-pointer transition-all duration-300",
             isOpen ? "bg-muted/50" : "hover:bg-muted/30",
-            calculatedScore && !isOpen && (isCoherent ? "bg-emerald-500/10" : "bg-rose-500/10"),
+            calculatedScore && !isOpen && (isCoherent ? "bg-emerald-50/10" : "bg-rose-50/10"),
             appointmentId === "temp" && "hidden"
           )}>
             <div className="flex items-center gap-4">

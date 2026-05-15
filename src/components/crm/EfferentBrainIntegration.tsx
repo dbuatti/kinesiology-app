@@ -325,29 +325,49 @@ const EfferentBrainIntegration = ({ onSave, onInhibited, onCancel, initialEntryP
         )}
 
         {step === 'CALIBRATE' && (
-          <div className="space-y-4 animate-in fade-in slide-in-from-right-2 duration-300">
-            <div className="bg-slate-950 text-white p-6 rounded-[2rem] shadow-xl relative overflow-hidden border border-slate-800">
+          <div className="space-y-3 animate-in fade-in slide-in-from-right-2 duration-300">
+            <div className="bg-slate-950 text-white p-5 rounded-[2rem] shadow-xl relative overflow-hidden border border-slate-800">
               <div className="absolute top-0 right-0 p-6 opacity-10 pointer-events-none"><Sparkles size={120} /></div>
-              <div className="flex items-center justify-between mb-6 relative z-10">
+              <div className="flex items-center justify-between mb-4 relative z-10">
                 <div className="flex items-center gap-3"><div className="w-10 h-10 rounded-xl bg-indigo-500/20 flex items-center justify-center border border-indigo-500/30"><Zap size={20} className="text-amber-400 fill-amber-400" /></div><div><h3 className="text-xl font-black tracking-tight">Calibration</h3><p className="text-slate-500 font-bold uppercase tracking-widest text-[8px]">Integrating Pathways</p></div></div>
                 <Badge className="bg-indigo-600 text-white border-none font-black text-[8px] uppercase tracking-widest px-3 py-1">{method}</Badge>
               </div>
-              <div className="relative z-10 mb-6 p-5 bg-white rounded-2xl text-slate-900 shadow-xl border-t-4 border-indigo-600">
-                <div className="flex items-center gap-2 mb-2"><Info size={14} className="text-indigo-600" /><p className="text-[8px] font-black text-slate-400 uppercase tracking-widest">Instructions</p></div>
-                <div className="space-y-4">
-                  {method === 'Tapping' && <p className="text-base font-black leading-tight text-slate-900">Simultaneously <span className="text-indigo-600 underline decoration-indigo-200 underline-offset-4">TAP</span> both reflex points for 3-5 seconds.</p>}
-                  {method === 'Holding + Intention' && <div className="space-y-3"><p className="text-xs font-bold leading-tight text-slate-700">Hold both points lightly and mentally repeat:</p><div className="p-3 bg-indigo-50 rounded-xl border border-indigo-100 text-center italic font-black text-indigo-600 text-sm">"{entryPoint} — {formatCoordLabel(coord1)} — {formatCoordLabel(coord2)}"</div></div>}
-                  {method === 'Tuning Fork' && <p className="text-base font-black leading-tight text-slate-900">TL both points and strike tuning fork on the <span className="text-indigo-600 underline decoration-indigo-200 underline-offset-4">Cranium</span>.</p>}
+              <div className="relative z-10 mb-4 p-4 bg-white rounded-2xl text-slate-900 shadow-xl border-t-4 border-indigo-600">
+                <div className="flex items-center gap-2 mb-1.5"><Info size={14} className="text-indigo-600" /><p className="text-[8px] font-black text-slate-400 uppercase tracking-widest">Instructions</p></div>
+                <div className="space-y-3">
+                  {method === 'Tapping' && <p className="text-sm font-black leading-tight text-slate-900">Simultaneously <span className="text-indigo-600 underline decoration-indigo-200 underline-offset-4">TAP</span> both reflex points for 3-5 seconds.</p>}
+                  {method === 'Holding + Intention' && <div className="space-y-2"><p className="text-[11px] font-bold leading-tight text-slate-700">Hold both points lightly and mentally repeat:</p><div className="p-2.5 bg-indigo-50 rounded-xl border border-indigo-100 text-center italic font-black text-indigo-600 text-xs">"{entryPoint} — {formatCoordLabel(coord1)} — {formatCoordLabel(coord2)}"</div></div>}
+                  {method === 'Tuning Fork' && <p className="text-sm font-black leading-tight text-slate-900">TL both points and strike tuning fork on the <span className="text-indigo-600 underline decoration-indigo-200 underline-offset-4">Cranium</span>.</p>}
                 </div>
               </div>
-              <div className="grid grid-cols-2 gap-4 relative z-10">
-                <div className="space-y-2"><div className="p-3 bg-white/5 rounded-xl border border-white/10 text-center"><p className="text-[8px] font-black text-indigo-400 uppercase tracking-widest mb-0.5">Coord 1</p><p className="text-[10px] font-black truncate">{formatCoordLabel(coord1)}</p></div>{coord1.point && (customizations[coord1.point.id]?.secondaryUrl || customizations[coord1.point.id]?.primaryUrl) && <div className="aspect-square rounded-xl overflow-hidden border-2 border-white/5 bg-white/5"><img src={customizations[coord1.point.id].secondaryUrl || customizations[coord1.point.id].primaryUrl || ""} alt="Reflex 1" className="w-full h-full object-cover opacity-80" /></div>}</div>
-                <div className="space-y-2"><div className="p-3 bg-white/5 rounded-xl border border-white/10 text-center"><p className="text-[8px] font-black text-purple-400 uppercase tracking-widest mb-0.5">Coord 2</p><p className="text-[10px] font-black truncate">{formatCoordLabel(coord2)}</p></div>{coord2.point && (customizations[coord2.point.id]?.secondaryUrl || customizations[coord2.point.id]?.primaryUrl) && <div className="aspect-square rounded-xl overflow-hidden border-2 border-white/5 bg-white/5"><img src={customizations[coord2.point.id].secondaryUrl || customizations[coord2.point.id].primaryUrl || ""} alt="Reflex 2" className="w-full h-full object-cover opacity-80" /></div>}</div>
+              <div className="grid grid-cols-2 gap-3 relative z-10">
+                <div className="space-y-1.5">
+                  <div className="p-2 bg-white/5 rounded-xl border border-white/10 text-center">
+                    <p className="text-[7px] font-black text-indigo-400 uppercase tracking-widest mb-0.5">Coord 1</p>
+                    <p className="text-[9px] font-black truncate">{formatCoordLabel(coord1)}</p>
+                  </div>
+                  {coord1.point && (customizations[coord1.point.id]?.secondaryUrl || customizations[coord1.point.id]?.primaryUrl) && (
+                    <div className="aspect-[16/10] rounded-xl overflow-hidden border-2 border-white/5 bg-white/5">
+                      <img src={customizations[coord1.point.id].secondaryUrl || customizations[coord1.point.id].primaryUrl || ""} alt="Reflex 1" className="w-full h-full object-cover opacity-80" />
+                    </div>
+                  )}
+                </div>
+                <div className="space-y-1.5">
+                  <div className="p-2 bg-white/5 rounded-xl border border-white/10 text-center">
+                    <p className="text-[7px] font-black text-purple-400 uppercase tracking-widest mb-0.5">Coord 2</p>
+                    <p className="text-[9px] font-black truncate">{formatCoordLabel(coord2)}</p>
+                  </div>
+                  {coord2.point && (customizations[coord2.point.id]?.secondaryUrl || customizations[coord2.point.id]?.primaryUrl) && (
+                    <div className="aspect-[16/10] rounded-xl overflow-hidden border-2 border-white/5 bg-white/5">
+                      <img src={customizations[coord2.point.id].secondaryUrl || customizations[coord2.point.id].primaryUrl || ""} alt="Reflex 2" className="w-full h-full object-cover opacity-80" />
+                    </div>
+                  )}
+                </div>
               </div>
             </div>
             <div className="flex gap-2">
-              <Button variant="ghost" onClick={() => prevStep('METHOD')} className="flex-1 h-11 rounded-xl font-bold text-xs"><ChevronLeft size={16} className="mr-1" /> Back</Button>
-              <Button onClick={() => nextStep('REASSESS')} className="flex-[2] h-11 rounded-xl bg-indigo-600 hover:bg-indigo-700 font-black text-xs uppercase tracking-widest shadow-lg">Complete <ChevronRight size={16} className="ml-1" /></Button>
+              <Button variant="ghost" onClick={() => prevStep('METHOD')} className="flex-1 h-10 rounded-xl font-bold text-xs"><ChevronLeft size={16} className="mr-1" /> Back</Button>
+              <Button onClick={() => nextStep('REASSESS')} className="flex-[2] h-10 rounded-xl bg-indigo-600 hover:bg-indigo-700 font-black text-xs uppercase tracking-widest shadow-lg">Complete <ChevronRight size={16} className="ml-1" /></Button>
             </div>
           </div>
         )}

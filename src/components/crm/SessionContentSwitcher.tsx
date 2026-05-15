@@ -197,13 +197,13 @@ const SessionContentSwitcher = ({
       variant="ghost"
       onClick={() => setActiveView(view)}
       className={cn(
-        "h-12 px-6 rounded-2xl transition-all font-black text-[10px] uppercase tracking-widest shrink-0 gap-3",
+        "h-10 px-5 rounded-xl transition-all font-black text-[9px] uppercase tracking-widest shrink-0 gap-2.5",
         activeView === view 
-          ? "bg-white text-indigo-600 shadow-xl shadow-indigo-500/10 border border-slate-100" 
+          ? "bg-white text-indigo-600 shadow-md border border-slate-100" 
           : "text-slate-500 hover:bg-white/50"
       )}
     >
-      <Icon size={18} className={cn(activeView === view ? "text-indigo-600" : "text-slate-400")} />
+      <Icon size={16} className={cn(activeView === view ? "text-indigo-600" : "text-slate-400")} />
       {label}
     </Button>
   );
@@ -224,9 +224,9 @@ const SessionContentSwitcher = ({
       {nextLabel && (
         <Button 
           onClick={handleNextTab}
-          className="w-full sm:w-auto bg-indigo-600 hover:bg-indigo-700 text-white rounded-[1.5rem] h-16 px-12 font-black text-xs uppercase tracking-widest shadow-2xl shadow-indigo-500/20 transition-all hover:scale-105 active:scale-95"
+          className="w-full sm:w-auto bg-indigo-600 hover:bg-indigo-700 text-white rounded-2xl h-14 px-10 font-black text-xs uppercase tracking-widest shadow-xl shadow-indigo-500/20 transition-all hover:scale-105 active:scale-95"
         >
-          Next: {nextLabel} <ArrowRight size={20} className="ml-3" />
+          Next: {nextLabel} <ArrowRight size={18} className="ml-3" />
         </Button>
       )}
     </div>
@@ -239,7 +239,7 @@ const SessionContentSwitcher = ({
         if (v === 'calibration') scrollToWizard();
       }} className="w-full">
         <div className="overflow-x-auto pb-6 no-scrollbar -mx-4 px-4">
-          <TabsList className="flex w-full h-auto bg-transparent p-0 gap-6 md:gap-10 border-b border-slate-100 dark:border-slate-800 rounded-none">
+          <TabsList className="flex w-full h-auto bg-transparent p-0 gap-4 md:gap-8 border-b border-slate-100 dark:border-slate-800 rounded-none">
             {TABS.map((tab) => {
               const isCompleted = (tabStatus as any)[tab.id];
               const isActive = activeTab === tab.id;
@@ -248,30 +248,27 @@ const SessionContentSwitcher = ({
                   key={tab.id} 
                   value={tab.id} 
                   className={cn(
-                    "flex flex-col items-center gap-3 pb-6 px-6 rounded-none border-b-4 transition-all duration-500 relative group min-w-[120px]",
+                    "flex flex-col items-center gap-3 pb-6 px-4 rounded-none border-b-4 transition-all duration-500 relative group min-w-[100px]",
                     isActive 
                       ? "border-indigo-600 text-indigo-600" 
                       : "border-transparent text-slate-400 hover:text-slate-600"
                   )}
                 >
                   <div className={cn(
-                    "w-14 h-14 rounded-[1.5rem] flex items-center justify-center transition-all duration-500 shadow-sm",
-                    isActive ? cn("text-white shadow-2xl", tab.activeBg) : 
+                    "w-12 h-12 rounded-2xl flex items-center justify-center transition-all duration-500 shadow-sm",
+                    isActive ? cn("text-white shadow-xl", tab.activeBg) : 
                     isCompleted ? "bg-emerald-50 text-emerald-500" : "bg-slate-50 text-slate-300 group-hover:bg-slate-100"
                   )}>
-                    {isCompleted && !isActive ? <CheckCircle2 size={28} /> : <tab.icon size={28} />}
+                    {isCompleted && !isActive ? <CheckCircle2 size={24} /> : <tab.icon size={24} />}
                   </div>
                   
                   <div className="flex flex-col items-center">
                     <div className="flex items-center gap-2">
-                      <span className="text-2xl font-black tracking-tighter">{tab.label}</span>
-                      <span className="hidden md:inline text-[10px] font-black uppercase tracking-[0.2em] opacity-60">
+                      <span className="text-xl font-black tracking-tighter">{tab.label}</span>
+                      <span className="hidden md:inline text-[9px] font-black uppercase tracking-[0.2em] opacity-60">
                         {tab.fullLabel}
                       </span>
                     </div>
-                    <span className="hidden lg:block text-[9px] font-bold uppercase tracking-widest opacity-40 mt-1">
-                      {tab.sub}
-                    </span>
                   </div>
                 </TabsTrigger>
               );
@@ -279,7 +276,7 @@ const SessionContentSwitcher = ({
           </TabsList>
         </div>
 
-        <div className="mt-12 animate-in fade-in slide-in-from-bottom-4 duration-700">
+        <div className="mt-10 animate-in fade-in slide-in-from-bottom-4 duration-700">
           <TabsContent value="baseline" className="focus-visible:ring-0">
             <BaselineTab appointment={appointment} onUpdate={onUpdate} saveField={saveField} />
             <TabFooter nextLabel="E — Ease" />
@@ -338,22 +335,22 @@ const SessionContentSwitcher = ({
 
   return (
     <ErrorBoundary>
-      <div className="space-y-12">
+      <div className="space-y-10">
         {/* NAVIGATION BAR */}
-        <div className="flex flex-col md:flex-row items-center justify-between bg-slate-50 dark:bg-slate-800/50 p-3 rounded-[2.5rem] border border-slate-100 dark:border-slate-800 gap-6">
-          <div className="flex items-center gap-3 overflow-x-auto no-scrollbar w-full md:w-auto px-2">
+        <div className="flex flex-col md:flex-row items-center justify-between bg-slate-100/50 dark:bg-slate-800/50 p-2 rounded-2xl border border-slate-200 dark:border-slate-800 gap-4">
+          <div className="flex items-center gap-2 overflow-x-auto no-scrollbar w-full md:w-auto px-1">
             <NavItem view="home" label="PEACE" Icon={LayoutGrid} />
             
             <Button
               variant="ghost"
               asChild
               className={cn(
-                "h-12 px-6 rounded-2xl transition-all font-black text-[10px] uppercase tracking-widest shrink-0 gap-3",
-                location.pathname.includes('/protocols') ? "bg-white text-purple-600 shadow-xl shadow-purple-500/10 border border-slate-100" : "text-slate-500 hover:bg-white/50"
+                "h-10 px-5 rounded-xl transition-all font-black text-[9px] uppercase tracking-widest shrink-0 gap-2.5",
+                location.pathname.includes('/protocols') ? "bg-white text-purple-600 shadow-md border border-slate-100" : "text-slate-500 hover:bg-white/50"
               )}
             >
               <Link to={`/appointments/${appointment.id}/protocols`}>
-                <Brain size={18} className={cn(location.pathname.includes('/protocols') ? "text-purple-600" : "text-purple-400")} />
+                <Brain size={16} className={cn(location.pathname.includes('/protocols') ? "text-purple-600" : "text-purple-400")} />
                 Protocols
               </Link>
             </Button>
@@ -365,79 +362,79 @@ const SessionContentSwitcher = ({
               <DropdownMenuTrigger asChild>
                 <button
                   className={cn(
-                    "h-12 px-6 rounded-2xl transition-all font-black text-[10px] uppercase tracking-widest shrink-0 flex items-center gap-3",
-                    isToolActive ? "bg-white text-indigo-600 shadow-xl shadow-indigo-500/10 border border-slate-100" : "text-slate-500 hover:bg-white/50"
+                    "h-10 px-5 rounded-xl transition-all font-black text-[9px] uppercase tracking-widest shrink-0 flex items-center gap-2.5",
+                    isToolActive ? "bg-white text-indigo-600 shadow-md border border-slate-100" : "text-slate-500 hover:bg-white/50"
                   )}
                 >
-                  <Wrench size={18} className={cn(isToolActive ? "text-indigo-600" : "text-slate-400")} />
+                  <Wrench size={16} className={cn(isToolActive ? "text-indigo-600" : "text-slate-400")} />
                   Tools
-                  <ChevronDown size={14} className="opacity-50" />
+                  <ChevronDown size={12} className="opacity-50" />
                 </button>
               </DropdownMenuTrigger>
-              <DropdownMenuContent align="start" className="w-80 p-3 rounded-[2.5rem] border-none shadow-3xl bg-white dark:bg-slate-900">
-                <div className="px-4 py-3 mb-2">
-                  <p className="text-[9px] font-black uppercase tracking-[0.3em] text-slate-400">Clinical Utilities</p>
+              <DropdownMenuContent align="start" className="w-72 p-2 rounded-2xl border-none shadow-3xl bg-white dark:bg-slate-900">
+                <div className="px-4 py-2 mb-1">
+                  <p className="text-[8px] font-black uppercase tracking-[0.3em] text-slate-400">Clinical Utilities</p>
                 </div>
-                <DropdownMenuItem onClick={() => setActiveView('context')} className="rounded-2xl py-4 px-5 cursor-pointer group">
-                  <UserCircle size={20} className="mr-4 text-indigo-500 group-hover:scale-110 transition-transform" /> 
+                <DropdownMenuItem onClick={() => setActiveView('context')} className="rounded-xl py-3 px-4 cursor-pointer group">
+                  <UserCircle size={18} className="mr-3 text-indigo-500 group-hover:scale-110 transition-transform" /> 
                   <div className="flex flex-col">
-                    <span className="font-bold text-sm">Client Context</span>
-                    <span className="text-[10px] text-slate-400 font-medium">History & Background</span>
+                    <span className="font-bold text-xs">Client Context</span>
+                    <span className="text-[9px] text-slate-400 font-medium">History & Background</span>
                   </div>
                 </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => setActiveView('journal')} className="rounded-2xl py-4 px-5 cursor-pointer group">
-                  <BookOpen size={20} className="mr-4 text-amber-500 group-hover:scale-110 transition-transform" /> 
+                <DropdownMenuItem onClick={() => setActiveView('journal')} className="rounded-xl py-3 px-4 cursor-pointer group">
+                  <BookOpen size={18} className="mr-3 text-amber-500 group-hover:scale-110 transition-transform" /> 
                   <div className="flex flex-col">
-                    <span className="font-bold text-sm">Session Journal</span>
-                    <span className="text-[10px] text-slate-400 font-medium">Practitioner Reflections</span>
+                    <span className="font-bold text-xs">Session Journal</span>
+                    <span className="text-[9px] text-slate-400 font-medium">Practitioner Reflections</span>
                   </div>
                 </DropdownMenuItem>
 
-                <DropdownMenuSeparator className="my-2 bg-slate-100 dark:bg-slate-800" />
+                <DropdownMenuSeparator className="my-1 bg-slate-100 dark:bg-slate-800" />
 
-                <DropdownMenuItem onClick={() => setActiveView('kinesiology')} className="rounded-2xl py-4 px-5 cursor-pointer group">
-                  <Heart size={20} className="mr-4 text-rose-500 group-hover:scale-110 transition-transform" /> 
+                <DropdownMenuItem onClick={() => setActiveView('kinesiology')} className="rounded-xl py-3 px-4 cursor-pointer group">
+                  <Heart size={18} className="mr-3 text-rose-500 group-hover:scale-110 transition-transform" /> 
                   <div className="flex flex-col">
-                    <span className="font-bold text-sm">Kinesiology Tools</span>
-                    <span className="text-[10px] text-slate-400 font-medium">Luscher & Emotions</span>
+                    <span className="font-bold text-xs">Kinesiology Tools</span>
+                    <span className="text-[9px] text-slate-400 font-medium">Luscher & Emotions</span>
                   </div>
                 </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => setActiveView('muscles')} className="rounded-2xl py-4 px-5 cursor-pointer group">
-                  <Dumbbell size={20} className="mr-4 text-indigo-500 group-hover:scale-110 transition-transform" /> 
+                <DropdownMenuItem onClick={() => setActiveView('muscles')} className="rounded-xl py-3 px-4 cursor-pointer group">
+                  <Dumbbell size={18} className="mr-3 text-indigo-500 group-hover:scale-110 transition-transform" /> 
                   <div className="flex flex-col">
-                    <span className="font-bold text-sm">Muscle Log</span>
-                    <span className="text-[10px] text-slate-400 font-medium">Detailed Testing</span>
+                    <span className="font-bold text-xs">Muscle Log</span>
+                    <span className="text-[9px] text-slate-400 font-medium">Detailed Testing</span>
                   </div>
                 </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => setActiveView('gait')} className="rounded-2xl py-4 px-5 cursor-pointer group">
-                  <Footprints size={20} className="mr-4 text-emerald-500 group-hover:scale-110 transition-transform" /> 
+                <DropdownMenuItem onClick={() => setActiveView('gait')} className="rounded-xl py-3 px-4 cursor-pointer group">
+                  <Footprints size={18} className="mr-3 text-emerald-500 group-hover:scale-110 transition-transform" /> 
                   <div className="flex flex-col">
-                    <span className="font-bold text-sm">Gait Integration</span>
-                    <span className="text-[10px] text-slate-400 font-medium">Movement Patterns</span>
+                    <span className="font-bold text-xs">Gait Integration</span>
+                    <span className="text-[9px] text-slate-400 font-medium">Movement Patterns</span>
                   </div>
                 </DropdownMenuItem>
                 
-                <DropdownMenuSeparator className="my-2 bg-slate-100 dark:bg-slate-800" />
+                <DropdownMenuSeparator className="my-1 bg-slate-100 dark:bg-slate-800" />
                 
-                <DropdownMenuItem onClick={onOpenDocument} className="rounded-2xl py-4 px-5 cursor-pointer group bg-indigo-50 text-indigo-600 hover:bg-indigo-100">
-                  <FileText size={20} className="mr-4 group-hover:scale-110 transition-transform" /> 
+                <DropdownMenuItem onClick={onOpenDocument} className="rounded-xl py-3 px-4 cursor-pointer group bg-indigo-50 text-indigo-600 hover:bg-indigo-100">
+                  <FileText size={18} className="mr-3 group-hover:scale-110 transition-transform" /> 
                   <div className="flex flex-col">
-                    <span className="font-bold text-sm">Document View</span>
-                    <span className="text-[10px] text-indigo-400 font-medium">Full Session Report</span>
+                    <span className="font-bold text-xs">Document View</span>
+                    <span className="text-[9px] text-indigo-400 font-medium">Full Session Report</span>
                   </div>
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
           </div>
 
-          <div className="flex items-center gap-3 w-full md:w-auto justify-end px-2">
+          <div className="flex items-center gap-2 w-full md:w-auto justify-end px-1">
             <Button 
               variant="ghost" 
               size="sm" 
-              className="h-12 px-6 font-black text-[10px] uppercase tracking-widest rounded-2xl text-slate-500 hover:text-indigo-600 hover:bg-white transition-all gap-3"
+              className="h-10 px-4 font-black text-[9px] uppercase tracking-widest rounded-xl text-slate-500 hover:text-indigo-600 hover:bg-white transition-all gap-2.5"
               onClick={() => setNoteDialogOpen(true)}
             >
-              <StickyNote size={18} className="text-amber-500" />
+              <StickyNote size={16} className="text-amber-500" />
               <span className="hidden sm:inline">Quick Note</span>
             </Button>
 
@@ -445,38 +442,38 @@ const SessionContentSwitcher = ({
               variant="outline" 
               size="sm" 
               className={cn(
-                "h-12 px-6 font-black text-[10px] uppercase tracking-widest rounded-2xl transition-all gap-3",
-                showSidebar ? "bg-indigo-600 text-white border-indigo-600 shadow-xl shadow-indigo-500/20" : "bg-white border-slate-200 text-slate-600"
+                "h-10 px-4 font-black text-[9px] uppercase tracking-widest rounded-xl transition-all gap-2.5",
+                showSidebar ? "bg-indigo-600 text-white border-indigo-600 shadow-md" : "bg-white border-slate-200 text-slate-600"
               )}
               onClick={onToggleSidebar}
             >
-              {showSidebar ? <PanelRightClose size={18} /> : <PanelRightOpen size={18} />}
+              {showSidebar ? <PanelRightClose size={16} /> : <PanelRightOpen size={16} />}
               <span className="hidden sm:inline">Sidebar</span>
             </Button>
 
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <Button variant="ghost" size="icon" className="h-12 w-12 rounded-2xl text-slate-400 hover:bg-white hover:text-indigo-600 transition-all">
-                  <MoreHorizontal size={24} />
+                <Button variant="ghost" size="icon" className="h-10 w-10 rounded-xl text-slate-400 hover:bg-white hover:text-indigo-600 transition-all">
+                  <MoreHorizontal size={20} />
                 </Button>
               </DropdownMenuTrigger>
-              <DropdownMenuContent align="end" className="w-64 p-2 rounded-[2rem] border-none shadow-3xl bg-white dark:bg-slate-900">
-                <DropdownMenuItem className="rounded-xl py-4 px-5 cursor-pointer flex items-center gap-4 group" onClick={onClonePrevious} disabled={isCloning}>
-                  {isCloning ? <Loader2 size={18} className="animate-spin" /> : <History size={18} className="text-indigo-500 group-hover:scale-110 transition-transform" />} 
-                  <span className="font-bold text-sm">Clone Previous</span>
+              <DropdownMenuContent align="end" className="w-60 p-2 rounded-2xl border-none shadow-3xl bg-white dark:bg-slate-900">
+                <DropdownMenuItem className="rounded-xl py-3 px-4 cursor-pointer flex items-center gap-3 group" onClick={onClonePrevious} disabled={isCloning}>
+                  {isCloning ? <Loader2 size={16} className="animate-spin" /> : <History size={16} className="text-indigo-500 group-hover:scale-110 transition-transform" />} 
+                  <span className="font-bold text-xs">Clone Previous</span>
                 </DropdownMenuItem>
-                <DropdownMenuItem className="rounded-xl py-4 px-5 cursor-pointer flex items-center gap-4 group" onClick={onPrint}>
-                  <Printer size={18} className="text-slate-500 group-hover:scale-110 transition-transform" /> 
-                  <span className="font-bold text-sm">Print Report</span>
+                <DropdownMenuItem className="rounded-xl py-3 px-4 cursor-pointer flex items-center gap-3 group" onClick={onPrint}>
+                  <Printer size={16} className="text-slate-500 group-hover:scale-110 transition-transform" /> 
+                  <span className="font-bold text-xs">Print Report</span>
                 </DropdownMenuItem>
-                <DropdownMenuItem className="rounded-xl py-4 px-5 cursor-pointer flex items-center gap-4 group" onClick={onCopySummary}>
-                  {isCopied ? <Check size={18} className="text-emerald-500" /> : <Copy size={18} className="text-indigo-500 group-hover:scale-110 transition-transform" />} 
-                  <span className="font-bold text-sm">Copy Summary</span>
+                <DropdownMenuItem className="rounded-xl py-3 px-4 cursor-pointer flex items-center gap-3 group" onClick={onCopySummary}>
+                  {isCopied ? <Check size={16} className="text-emerald-500" /> : <Copy size={16} className="text-indigo-500 group-hover:scale-110 transition-transform" />} 
+                  <span className="font-bold text-xs">Copy Summary</span>
                 </DropdownMenuItem>
-                <DropdownMenuSeparator className="my-2 bg-slate-100 dark:bg-slate-800" />
-                <DropdownMenuItem className="text-rose-600 focus:text-rose-600 rounded-xl py-4 px-5 cursor-pointer flex items-center gap-4 group" onClick={onDelete}>
-                  <Trash2 size={18} className="group-hover:scale-110 transition-transform" /> 
-                  <span className="font-bold text-sm">Delete Session</span>
+                <DropdownMenuSeparator className="my-1 bg-slate-100 dark:bg-slate-800" />
+                <DropdownMenuItem className="text-rose-600 focus:text-rose-600 rounded-xl py-3 px-4 cursor-pointer flex items-center gap-3 group" onClick={onDelete}>
+                  <Trash2 size={16} className="group-hover:scale-110 transition-transform" /> 
+                  <span className="font-bold text-xs">Delete Session</span>
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>

@@ -12,7 +12,7 @@ import {
   ArrowRight, Clock,
   ClipboardCheck, Link as LinkIcon, Check,
   Coffee, CalendarPlus, Target, GraduationCap, Sun, Heart, MessageSquare, Brain, Layers, Sparkles,
-  ChevronRight, Fingerprint, ShieldAlert, BookOpen, ShieldCheck, Trophy, LayoutDashboard
+  ChevronRight, Fingerprint, ShieldAlert, BookOpen, ShieldCheck, Trophy, LayoutDashboard, Grid
 } from "lucide-react";
 
 import {

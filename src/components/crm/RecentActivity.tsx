@@ -68,7 +68,7 @@ const RecentActivity = () => {
             id: app.id,
             type: "appointment",
             title: app.name || app.display_id || "SESSION",
-            subtitle: `${app.clients?.name.toUpperCase()} • ${format(new Date(app.date), "MMM D").toUpperCase()}`,
+            subtitle: `${app.clients?.name.toUpperCase()} • ${format(new Date(app.date), "MMM d").toUpperCase()}`,
             timestamp: new Date(app.date),
             link: `/appointments/${app.id}`,
           });
@@ -150,7 +150,10 @@ const RecentActivity = () => {
       </div>
       
       <Link to="/appointments" className="mt-8 block">
-        <Button variant="ghost" className="w-full h-12 text-[10px] font-bold uppercase tracking-widest text-muted-foreground hover:text-primary hover:bg-muted group">
+        <Button
+          variant="ghost"
+          className="w-full h-12 text-[10px] font-bold uppercase tracking-widest text-muted-foreground hover:text-primary hover:bg-muted group"
+        >
           View All Activity <ArrowRight size={14} className="ml-2 group-hover:translate-x-1 transition-transform" />
         </Button>
       </Link>

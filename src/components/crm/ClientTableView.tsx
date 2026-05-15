@@ -69,7 +69,7 @@ const ClientTableView = ({ clients, isPrivate, onQuickBook }: ClientTableViewPro
               </TableCell>
               <TableCell>
                 <div className="text-sm font-bold text-muted-foreground uppercase tracking-tight">
-                  {client.last_session_at ? format(new Date(client.last_session_at), "MMM D, YYYY").toUpperCase() : "NEVER"}
+                  {client.last_session_at ? format(new Date(client.last_session_at), "MMM d, yyyy").toUpperCase() : "NEVER"}
                 </div>
               </TableCell>
               <TableCell className="text-center">

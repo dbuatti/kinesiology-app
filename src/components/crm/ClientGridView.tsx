@@ -44,7 +44,7 @@ const ClientGridView = ({ clients, isPrivate, onQuickBook }: ClientGridViewProps
                 {client.session_count} Sessions
               </span>
               <div className="flex items-center gap-1 text-[8px] font-bold text-muted-foreground uppercase tracking-widest">
-                <Clock size={10} /> {client.last_session_at ? format(new Date(client.last_session_at), "MMM D").toUpperCase() : "NEVER"}
+                <Clock size={10} /> {client.last_session_at ? format(new Date(client.last_session_at), "MMM d").toUpperCase() : "NEVER"}
               </div>
             </div>
           </div>

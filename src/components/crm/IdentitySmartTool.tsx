@@ -194,9 +194,9 @@ const IdentitySmartTool = () => {
               {recentSessions.length > 0 ? (
                 <div className="space-y-0">
                   {recentSessions.slice(0, 3).map((session, i) => (
-                    <div key={i} className="flex items-center justify-between p-6 border-b border-border last:border-b-0 hover:bg-muted transition-colors">
+                    <div key={i} className="flex items-center justify-between p-6 border-b border-border last:border-b-0 hover:bg-muted transition-colors group">
                       <div className="flex items-center gap-4 min-w-0">
-                        <div className="w-8 h-8 border border-border flex items-center justify-center text-primary">
+                        <div className="w-8 h-8 border border-border flex items-center justify-center shrink-0 text-primary">
                           {session.type === 'shifting' ? <Fingerprint size={16} /> :
                            session.type === 'alignment' ? <Target size={16} /> :
                            <ShieldAlert size={16} />}
@@ -204,7 +204,7 @@ const IdentitySmartTool = () => {
                         <p className="text-xs font-bold uppercase tracking-tight truncate">"{session.label}"</p>
                       </div>
                       <span className="text-[8px] font-bold text-muted-foreground uppercase tracking-widest">
-                        {format(new Date(session.created_at), "MMM D")}
+                        {format(new Date(session.created_at), "MMM d")}
                       </span>
                     </div>
                   ))}

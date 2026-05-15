@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useMemo } from "react";
 import {
   Collapsible,
   CollapsibleContent,
@@ -28,6 +28,12 @@ const QUICK_TAGS = {
   sagittal: ["FX Restricted", "EX Restricted", "AT Priority", "PT Priority"],
   frontal: ["LFX Restricted", "RFX Restricted", "L Hip Hike", "R Hip Hike"],
   transverse: ["L Rotation", "R Rotation", "Pelvic Rot", "Rib Torque"],
+};
+
+const REFERENCE_RANGES = {
+  sagittal: "Normal: 45–50° Flexion",
+  frontal: "Normal: 35–40° Lateral",
+  transverse: "Normal: 70–90° Rotation",
 };
 
 const CogsAssessment = ({ 
@@ -74,6 +80,13 @@ const CogsAssessment = ({
     setter(prev => prev ? `${prev}, ${tag}` : tag);
   };
 
+  const getPlaneStatus = (notes: string) => {
+    const lower = notes.toLowerCase();
+    if (lower.includes('restricted') || lower.includes('pain')) return 'restricted';
+    if (lower.includes('clear') || lower.includes('normal')) return 'clear';
+    return 'pending';
+  };
+
   const handleReset = async () => {
     if (!confirm("Reset all ROM notes?")) return;
     setLoading(true);
@@ -99,36 +112,54 @@ const CogsAssessment = ({
     tags, 
     color, 
     icon: Icon
-  }: any) => (
-    <div className={cn("p-4 rounded-2xl border transition-all duration-300 space-y-3", color)}>
-      <div className="flex items-center gap-2">
-        <div className="w-7 h-7 bg-card rounded-lg flex items-center justify-center shadow-sm">
-          <Icon size={14} className={color.split(' ')[0].replace('bg-', 'text-')} />
+  }: any) => {
+    const status = getPlaneStatus(notes);
+    
+    return (
+      <div className={cn(
+        "p-4 rounded-2xl border transition-all duration-300 space-y-3",
+        status === 'restricted' ? "bg-rose-50 border-rose-200" : 
+        status === 'clear' ? "bg-emerald-50 border-emerald-200" :
+        color
+      )}>
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <div className="w-7 h-7 bg-card rounded-lg flex items-center justify-center shadow-sm">
+              <Icon size={14} className={cn(
+                status === 'restricted' ? "text-rose-600" :
+                status === 'clear' ? "text-emerald-600" :
+                color.split(' ')[0].replace('bg-', 'text-')
+              )} />
+            </div>
+            <h4 className="text-xs font-black text-foreground uppercase tracking-tight">{title}</h4>
+          </div>
+          <span className="text-[8px] font-black text-slate-400 uppercase tracking-widest">
+            {REFERENCE_RANGES[plane as keyof typeof REFERENCE_RANGES]}
+          </span>
         </div>
-        <h4 className="text-xs font-black text-foreground uppercase tracking-tight">{title}</h4>
-      </div>
 
-      <div className="space-y-2">
-        <div className="flex flex-wrap gap-1">
-          {tags.map((tag: string) => (
-            <button 
-              key={tag} 
-              onClick={() => addTag(plane, tag)}
-              className="px-1.5 py-0.5 rounded-md bg-card/60 border border-border hover:bg-card transition-all text-[8px] font-black uppercase tracking-wider text-muted-foreground"
-            >
-              + {tag}
-            </button>
-          ))}
+        <div className="space-y-2">
+          <div className="flex flex-wrap gap-1">
+            {tags.map((tag: string) => (
+              <button 
+                key={tag} 
+                onClick={() => addTag(plane, tag)}
+                className="px-1.5 py-0.5 rounded-md bg-card/60 border border-border hover:bg-card transition-all text-[8px] font-black uppercase tracking-wider text-muted-foreground"
+              >
+                + {tag}
+              </button>
+            ))}
+          </div>
+          <Textarea
+            value={notes}
+            onChange={(e) => setNotes(e.target.value)}
+            placeholder={`${REFERENCE_RANGES[plane as keyof typeof REFERENCE_RANGES]}...`}
+            className="min-h-[60px] rounded-lg border-none bg-card/80 focus:ring-1 focus:ring-indigo-500 font-medium text-[11px] p-2"
+          />
         </div>
-        <Textarea
-          value={notes}
-          onChange={(e) => setNotes(e.target.value)}
-          placeholder="Notes..."
-          className="min-h-[60px] rounded-lg border-none bg-card/80 focus:ring-1 focus:ring-indigo-500 font-medium text-[11px] p-2"
-        />
       </div>
-    </div>
-  );
+    );
+  };
 
   return (
     <div className="bg-card rounded-3xl border border-border shadow-sm overflow-hidden transition-all hover:shadow-md">

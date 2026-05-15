@@ -6,9 +6,10 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { 
   ChevronDown, ChevronUp, History, FlaskConical, 
-  Activity, Target, Calendar, Clock, AlertCircle, Sparkles
+  Activity, Target, Calendar, Clock, AlertCircle, Sparkles,
+  AlertTriangle
 } from "lucide-react";
-import { format } from "date-fns";
+import { format, differenceInDays } from "date-fns";
 import { cn } from "@/lib/utils";
 import { Link } from "react-router-dom";
 import { Badge } from "@/components/ui/badge";
@@ -32,7 +33,6 @@ const PreviousSessionInsightsBar = ({ clientId, currentAppointmentId, manualData
     }
 
     const fetchPreviousSession = async () => {
-      // Skip fetch if IDs are placeholders
       const isDemoId = clientId.includes('demo') || currentAppointmentId.includes('demo') || currentAppointmentId.includes('00000000');
       if (isDemoId) {
         setLoading(false);
@@ -40,7 +40,6 @@ const PreviousSessionInsightsBar = ({ clientId, currentAppointmentId, manualData
       }
 
       try {
-        // Fetch the last 20 sessions to find the most recent non-null scores
         const { data: recentApps, error } = await supabase
           .from('appointments')
           .select('*')
@@ -51,14 +50,11 @@ const PreviousSessionInsightsBar = ({ clientId, currentAppointmentId, manualData
 
         if (!error && recentApps && recentApps.length > 0) {
           const latest = recentApps[0];
-          
-          // Find the most recent BOLT assessment and its index
           const boltIndex = recentApps.findIndex(a => a.bolt_score !== null);
           const lastBolt = boltIndex !== -1 ? recentApps[boltIndex].bolt_score : null;
           const lastBoltDate = boltIndex !== -1 ? recentApps[boltIndex].date : null;
           const boltSessionsAgo = boltIndex !== -1 ? boltIndex + 1 : null;
           
-          // Find the most recent Coherence assessment and its index
           const cohIndex = recentApps.findIndex(a => a.coherence_score !== null);
           const lastCoh = cohIndex !== -1 ? recentApps[cohIndex].coherence_score : null;
           const lastCohDate = cohIndex !== -1 ? recentApps[cohIndex].date : null;
@@ -87,11 +83,12 @@ const PreviousSessionInsightsBar = ({ clientId, currentAppointmentId, manualData
 
   if (loading || !previousSession) return null;
 
+  const daysSinceLast = differenceInDays(new Date(), new Date(previousSession.date));
+  const isStale = daysSinceLast > 30;
   const hasNextSessionNote = !!previousSession.next_session_note;
 
   return (
     <div className="mb-4 space-y-3">
-      {/* Prominent Next Session Focus Alert */}
       {hasNextSessionNote && (
         <div className="animate-in slide-in-from-top-2 duration-500">
           <Card className="border-none shadow-lg bg-amber-600 text-white rounded-2xl overflow-hidden relative group">
@@ -115,7 +112,7 @@ const PreviousSessionInsightsBar = ({ clientId, currentAppointmentId, manualData
 
       <Card className={cn(
         "border-none shadow-md overflow-hidden transition-all duration-300",
-        isOpen ? "bg-slate-900 text-white" : "bg-indigo-50 border border-indigo-100"
+        isOpen ? "bg-slate-900 text-white" : isStale ? "bg-rose-50 border border-rose-100" : "bg-indigo-50 border border-indigo-100"
       )}>
         <div 
           className="px-4 py-1.5 flex items-center justify-between cursor-pointer hover:bg-black/5 transition-colors"
@@ -124,28 +121,23 @@ const PreviousSessionInsightsBar = ({ clientId, currentAppointmentId, manualData
           <div className="flex items-center gap-4 overflow-hidden">
             <div className={cn(
               "flex items-center gap-2 px-2 py-1 rounded-lg text-[10px] font-bold uppercase tracking-wider",
-              isOpen ? "bg-indigo-600 text-white" : "bg-indigo-100 text-indigo-700"
+              isOpen ? "bg-indigo-600 text-white" : isStale ? "bg-rose-600 text-white" : "bg-indigo-100 text-indigo-700"
             )}>
-              <History size={12} />
+              {isStale ? <AlertTriangle size={12} /> : <History size={12} />}
               Last Session
             </div>
             
             {!isOpen && (
               <div className="flex items-center gap-6 text-xs font-medium text-slate-600 truncate">
-                <span className="flex items-center gap-1.5">
-                  <Calendar size={12} className="text-indigo-400" />
+                <span className={cn("flex items-center gap-1.5", isStale && "text-rose-600 font-bold")}>
+                  <Calendar size={12} className={isStale ? "text-rose-500" : "text-indigo-400"} />
                   {format(new Date(previousSession.date), "MMM d")}
+                  {isStale && <span className="ml-1 opacity-70">— {Math.floor(daysSinceLast / 30)} months ago</span>}
                 </span>
                 {previousSession.bolt_score !== null && (
                   <span className="flex items-center gap-1.5">
                     <FlaskConical size={12} className="text-indigo-400" />
                     Last BOLT: {previousSession.bolt_score}s
-                  </span>
-                )}
-                {previousSession.goal && (
-                  <span className="flex items-center gap-1.5 truncate max-w-[300px]">
-                    <Target size={12} className="text-indigo-400" />
-                    Goal: {previousSession.goal}
                   </span>
                 )}
               </div>
@@ -154,7 +146,7 @@ const PreviousSessionInsightsBar = ({ clientId, currentAppointmentId, manualData
 
           <Button variant="ghost" size="sm" className={cn(
             "h-7 w-7 rounded-full",
-            isOpen ? "text-slate-400 hover:text-white hover:bg-white/10" : "text-indigo-400 hover:bg-indigo-100"
+            isOpen ? "text-slate-400 hover:text-white hover:bg-white/10" : isStale ? "text-rose-400 hover:bg-rose-100" : "text-indigo-400 hover:bg-indigo-100"
           )}>
             {isOpen ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
           </Button>
@@ -200,33 +192,8 @@ const PreviousSessionInsightsBar = ({ clientId, currentAppointmentId, manualData
                       </div>
                     )}
                   </div>
-
-                  <div className="p-4 bg-white/5 rounded-2xl border border-white/10">
-                    <div className="flex items-center justify-between mb-1">
-                      <p className="text-[10px] font-bold text-slate-400 uppercase">Coherence</p>
-                      <p className="text-2xl font-black text-rose-400">{previousSession.coherence_score !== null ? previousSession.coherence_score.toFixed(2) : 'N/A'}</p>
-                    </div>
-                    {previousSession.coherence_date && (
-                      <div className="flex items-center justify-between mt-1">
-                        <p className="text-[9px] font-bold text-slate-500 uppercase flex items-center gap-1">
-                          <Clock size={10} /> {format(new Date(previousSession.coherence_date), "MMM d")}
-                        </p>
-                        {previousSession.coherence_sessions_ago && (
-                          <Badge variant="outline" className="text-[8px] font-black border-none bg-rose-500/10 text-rose-400 px-1.5 py-0 rounded-md">
-                            {previousSession.coherence_sessions_ago} {previousSession.coherence_sessions_ago === 1 ? 'Session' : 'Sessions'} Ago
-                          </Badge>
-                        )}
-                      </div>
-                    )}
-                  </div>
                 </div>
               </div>
-              {previousSession.acupoints && (
-                <div>
-                  <p className="text-xs font-bold text-emerald-400">ACUPOINTS USED</p>
-                  <p className="text-sm">{previousSession.acupoints}</p>
-                </div>
-              )}
             </div>
 
             <div className="space-y-4">

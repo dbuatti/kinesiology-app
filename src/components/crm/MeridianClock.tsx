@@ -83,7 +83,7 @@ const MeridianClock = () => {
                 onMouseLeave={() => setHoveredId(null)}
                 className={cn(
                   "absolute top-0 left-1/2 -translate-x-1/2 w-10 h-12 border transition-colors flex flex-col items-center justify-center",
-                  isActive ? "bg-success text-success-foreground border-success" : 
+                  isActive ? "bg-rose-600 text-white border-rose-600 shadow-lg shadow-rose-200" : 
                   isHovered ? "bg-primary text-primary-foreground border-primary" :
                   "bg-background border-border text-muted-foreground"
                 )}

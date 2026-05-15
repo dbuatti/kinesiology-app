@@ -25,7 +25,7 @@ const BaselineTab = ({ appointment, onUpdate, saveField }: BaselineTabProps) => 
         <div className="p-4 bg-secondary/30 rounded-none space-y-3">
           <div className="flex items-center gap-2">
             <Compass size={14} className="text-primary" />
-            <h3 className="text-[11px] font-black uppercase tracking-widest">Session Goal</h3>
+            <h3 className="text-[11px] font-black uppercase tracking-widest">Primary Objective</h3>
           </div>
           <EditableField 
             key={`goal-${appointment.id}`} 
@@ -33,7 +33,7 @@ const BaselineTab = ({ appointment, onUpdate, saveField }: BaselineTabProps) => 
             label="" 
             value={appointment.goal} 
             multiline
-            placeholder="Primary objective..." 
+            placeholder="Define the primary objective for this session..." 
             onSave={saveField} 
             className="border-none p-0 shadow-none bg-transparent text-sm font-bold italic" 
           />
@@ -42,7 +42,7 @@ const BaselineTab = ({ appointment, onUpdate, saveField }: BaselineTabProps) => 
         <div className="p-4 bg-secondary/30 rounded-none space-y-3">
           <div className="flex items-center gap-2">
             <ClipboardList size={14} className="text-primary" />
-            <h3 className="text-[11px] font-black uppercase tracking-widest">Primary Concern</h3>
+            <h3 className="text-[11px] font-black uppercase tracking-widest">Presenting Concern</h3>
           </div>
           <EditableField 
             key={`issue-${appointment.id}`} 
@@ -50,7 +50,7 @@ const BaselineTab = ({ appointment, onUpdate, saveField }: BaselineTabProps) => 
             label="" 
             value={appointment.issue} 
             multiline
-            placeholder="Presenting symptoms..." 
+            placeholder="Document the client's presenting concern..." 
             onSave={saveField} 
             className="border-none p-0 shadow-none bg-transparent text-sm font-bold italic" 
           />

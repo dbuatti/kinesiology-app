@@ -144,7 +144,7 @@ const ClientWins = () => {
           ))
         ) : (
           <div className="p-12 text-center bg-muted/30">
-            <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">No wins logged yet.</p>
+            <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">Nothing logged yet.</p>
           </div>
         )}
         
@@ -186,7 +186,7 @@ const ClientWins = () => {
               <div className="space-y-2">
                 <label className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">Context</label>
                 <Input 
-                  placeholder="e.g. Post-session text, Email, In-person" 
+                  placeholder="e.g. Post-session feedback" 
                   value={newContext} 
                   onChange={e => setNewContext(e.target.value)} 
                   className="h-12 border-border focus:ring-primary focus:border-primary rounded-none"

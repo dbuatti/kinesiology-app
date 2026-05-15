@@ -82,7 +82,7 @@ const SessionTimer = ({ appointmentDate, status, clientName, currentPhaseName, o
     const remainingMinutes = Math.floor(remainingSeconds / 60);
     const remainingSecs = remainingSeconds % 60;
     
-    const timeRemainingInSession = `${remainingMinutes}m ${remainingSecs.toString().padStart(2, '0')}s`;
+    const timeRemainingInSession = `${remainingMinutes}:${remainingSecs.toString().padStart(2, '0')}`;
 
     return {
       elapsedSeconds,
@@ -119,7 +119,7 @@ const SessionTimer = ({ appointmentDate, status, clientName, currentPhaseName, o
   const formatOvertime = (seconds: number) => {
     const mins = Math.floor(seconds / 60);
     const secs = seconds % 60;
-    return `${mins}m ${secs.toString().padStart(2, '0')}s`;
+    return `${mins}:${secs.toString().padStart(2, '0')}`;
   };
 
   const activePhase = SESSION_STAGES.find(s => s.id === currentPhaseName) || recommendedStage;
@@ -127,79 +127,64 @@ const SessionTimer = ({ appointmentDate, status, clientName, currentPhaseName, o
   return (
     <div className="fixed top-0 left-0 right-0 z-[110] shadow-2xl">
       <div className={cn(
-        "transition-colors duration-1000 p-2 flex items-center justify-between px-6",
+        "transition-colors duration-1000 h-14 flex items-center justify-between px-6",
         isOvertime && !isFinished ? "bg-rose-950 border-b border-rose-500/30" : "bg-slate-950 border-b border-white/10"
       )}>
-        <div className="flex items-center gap-4 overflow-hidden">
+        <div className="flex items-center gap-6 overflow-hidden">
           {/* STATUS INDICATOR */}
-          <div className="flex items-center gap-2 shrink-0">
-            {isFinished ? (
-              <div className="flex items-center gap-2 text-emerald-500">
-                <CheckCircle2 size={14} />
-                <span className="text-[10px] font-black uppercase tracking-[0.2em]">Session Complete</span>
-              </div>
-            ) : isOvertime ? (
-              <div className="flex items-center gap-2 text-rose-500 animate-pulse">
-                <AlertCircle size={14} />
-                <span className="text-[10px] font-black uppercase tracking-[0.2em]">Time Elapsed</span>
-              </div>
-            ) : isUpcoming ? (
-              <div className="flex items-center gap-2 text-indigo-400">
-                <Clock size={14} />
-                <span className="text-[10px] font-black uppercase tracking-[0.2em]">Starting in {formatDistanceToNow(appointmentDate)}</span>
-              </div>
-            ) : (
-              <div className="flex items-center gap-2 text-emerald-500">
-                <div className="w-2 h-2 rounded-full bg-current animate-pulse" />
-                <span className="text-[10px] font-black uppercase tracking-[0.2em]">Session Live</span>
-              </div>
-            )}
+          <div className="flex flex-col justify-center shrink-0">
+            <span className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-500 leading-none mb-1">
+              {isFinished ? "SESSION COMPLETE" : isOvertime ? "TIME ELAPSED" : isUpcoming ? "UPCOMING" : "SESSION LIVE"}
+            </span>
+            <div className={cn(
+              "text-2xl font-black tabular-nums font-mono leading-none",
+              isFinished ? "text-emerald-400" : isOvertime ? "text-rose-400 animate-pulse" : "text-emerald-400"
+            )}>
+              {isFinished ? "00:00" : isOvertime ? `+${formatOvertime(overtimeSeconds)}` : timeRemainingInSession}
+            </div>
           </div>
 
-          <div className="h-4 w-px bg-white/10" />
-
-          {/* TIMER */}
-          {!isFinished && (
-            <div className={cn(
-              "text-xs font-black tabular-nums font-mono shrink-0",
-              isOvertime ? "text-rose-400 animate-pulse" : "text-emerald-400"
-            )}>
-              {isOvertime ? `+${formatOvertime(overtimeSeconds)}` : timeRemainingInSession}
-            </div>
-          )}
-
-          <div className="h-4 w-px bg-white/10" />
+          <div className="h-8 w-px bg-white/10" />
 
           {/* CANONICAL IDENTITY */}
-          <div className="flex items-center gap-2 min-w-0">
-            <span className="text-sm font-black text-white truncate privacy-mode-active:blur-sm">
-              {clientName}
+          <div className="flex flex-col justify-center min-w-0">
+            <span className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-500 leading-none mb-1">
+              ACTIVE CLIENT
             </span>
-            <span className="text-[10px] font-bold text-slate-500 uppercase tracking-widest hidden sm:inline">
-              {format(appointmentDate, "EEE d MMM")} · {format(appointmentDate, "h:mm a")}
+            <span className="text-lg font-black text-white truncate privacy-mode-active:blur-sm leading-none">
+              {clientName}
             </span>
           </div>
 
-          <div className="h-4 w-px bg-white/10 hidden md:block" />
+          <div className="h-8 w-px bg-white/10 hidden md:block" />
 
           {/* PHASE INDICATOR */}
           {!isFinished && (
-            <div className="hidden sm:flex items-center gap-2">
-              <Badge className={cn("border-none font-black text-[8px] uppercase tracking-widest px-2 py-0.5 rounded-md", activePhase.color, "text-white")}>
-                {activePhase.name}
-              </Badge>
+            <div className="hidden sm:flex flex-col justify-center">
+              <span className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-500 leading-none mb-1">
+                CURRENT PHASE
+              </span>
+              <div className="flex items-center gap-2">
+                <div className={cn("w-2 h-2 rounded-full", activePhase.color)} />
+                <span className="text-sm font-black text-white tracking-widest">{activePhase.name}</span>
+              </div>
             </div>
           )}
           
           {isFinished && (
-            <Badge className="bg-emerald-600 text-white border-none font-black text-[8px] uppercase tracking-widest px-2 py-0.5 rounded-md">
-              REPORT READY
-            </Badge>
+            <div className="hidden sm:flex flex-col justify-center">
+              <span className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-500 leading-none mb-1">
+                STATUS
+              </span>
+              <Badge className="bg-emerald-600 text-white border-none font-black text-[10px] uppercase tracking-widest px-2 py-0.5 rounded-none">
+                REPORT READY
+              </Badge>
+            </div>
           )}
         </div>
 
         <div className="flex items-center gap-4">
-          <div className="w-32 h-1.5 bg-white/5 rounded-full overflow-hidden hidden lg:block">
+          <div className="w-32 h-1.5 bg-white/5 rounded-none overflow-hidden hidden lg:block">
             <div 
               className={cn(
                 "h-full transition-all duration-500",
@@ -214,26 +199,26 @@ const SessionTimer = ({ appointmentDate, status, clientName, currentPhaseName, o
               <Button 
                 size="sm" 
                 className={cn(
-                  "border-none h-8 px-4 rounded-xl font-black text-[9px] uppercase tracking-widest transition-colors",
+                  "border-none h-10 px-6 rounded-none font-black text-[10px] uppercase tracking-widest transition-colors",
                   isOvertime && !isFinished ? "bg-rose-600 hover:bg-rose-700 text-white" : "bg-white/10 hover:bg-white/20 text-white"
                 )}
               >
                 {isOvertime && !isFinished && <AlertCircle size={12} className="mr-2" />}
-                Session Actions <ChevronDown size={12} className="ml-2 opacity-50" />
+                ACTIONS <ChevronDown size={12} className="ml-2 opacity-50" />
               </Button>
             </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" className="w-56 rounded-2xl p-2 shadow-3xl border-none bg-slate-900 text-white">
+            <DropdownMenuContent align="end" className="w-56 rounded-none p-1 shadow-3xl border-2 border-slate-900 bg-slate-900 text-white">
               {!isFinished && (
                 <DropdownMenuItem 
                   onClick={handleComplete}
-                  className="rounded-xl py-3 px-4 cursor-pointer flex items-center gap-3 text-emerald-400 focus:text-emerald-400 focus:bg-emerald-500/10"
+                  className="rounded-none py-3 px-4 cursor-pointer flex items-center gap-3 text-emerald-400 focus:text-emerald-400 focus:bg-emerald-500/10"
                 >
                   <CheckCircle2 size={16} />
                   <span className="font-bold text-xs uppercase tracking-widest">Complete Session</span>
                 </DropdownMenuItem>
               )}
               <DropdownMenuItem 
-                className="rounded-xl py-3 px-4 cursor-pointer flex items-center gap-3 text-rose-400 focus:text-rose-400 focus:bg-rose-500/10"
+                className="rounded-none py-3 px-4 cursor-pointer flex items-center gap-3 text-rose-400 focus:text-rose-400 focus:bg-rose-500/10"
               >
                 <LogOut size={16} />
                 <span className="font-bold text-xs uppercase tracking-widest">Pause / Exit</span>
@@ -244,7 +229,7 @@ const SessionTimer = ({ appointmentDate, status, clientName, currentPhaseName, o
       </div>
       
       {!isFinished && (
-        <div className="h-0.5 bg-white/5 relative">
+        <div className="h-1 bg-white/5 relative">
           <div 
             className={cn("h-full transition-all duration-500", activePhase.color)}
             style={{ width: `${stageProgressPercent}%` }}

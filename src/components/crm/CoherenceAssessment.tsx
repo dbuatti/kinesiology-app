@@ -67,25 +67,26 @@ const CoherenceAssessment = ({
       <Collapsible open={isOpen} onOpenChange={setIsOpen}>
         <CollapsibleTrigger asChild>
           <div className={cn(
-            "h-10 flex items-center justify-between px-4 cursor-pointer transition-all",
+            "h-14 flex items-center justify-between px-4 cursor-pointer transition-all",
             isOpen ? "bg-slate-900 text-white" : "hover:bg-slate-50",
             calculatedScore && !isOpen && (isCoherent ? "bg-emerald-50" : "bg-rose-50")
           )}>
-            <div className="flex items-center gap-3">
-              <Activity size={14} className={cn(isOpen ? "text-rose-400" : "text-primary")} />
-              <span className="text-[11px] font-black uppercase tracking-widest">Coherence</span>
-            </div>
-            <div className="flex items-center gap-3">
-              {calculatedScore !== null && (
+            <div className="flex flex-col justify-center">
+              <span className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-500 leading-none mb-1">
+                COHERENCE RATIO
+              </span>
+              <div className="flex items-center gap-2">
+                <Activity size={14} className={cn(isOpen ? "text-rose-400" : "text-primary")} />
                 <span className={cn(
-                  "text-[11px] font-black tabular-nums",
-                  isCoherent ? "text-emerald-600" : "text-rose-600"
+                  "text-2xl font-black tabular-nums leading-none",
+                  isCoherent ? "text-emerald-600" : "text-rose-600",
+                  isOpen && "text-white"
                 )}>
-                  {calculatedScore.toFixed(2)}
+                  {calculatedScore !== null ? calculatedScore.toFixed(2) : "—"}
                 </span>
-              )}
-              <ChevronDown size={14} className={cn("transition-transform duration-300", isOpen && "rotate-180")} />
+              </div>
             </div>
+            <ChevronDown size={14} className={cn("transition-transform duration-300", isOpen && "rotate-180")} />
           </div>
         </CollapsibleTrigger>
 

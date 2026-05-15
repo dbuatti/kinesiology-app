@@ -54,25 +54,26 @@ const BoltTestSection = ({ appointmentId, initialBoltScore, onUpdate }: BoltTest
       <Collapsible open={isOpen} onOpenChange={setIsOpen}>
         <CollapsibleTrigger asChild>
           <div className={cn(
-            "h-10 flex items-center justify-between px-4 cursor-pointer transition-all",
+            "h-14 flex items-center justify-between px-4 cursor-pointer transition-all",
             isOpen ? "bg-slate-900 text-white" : "hover:bg-slate-50",
             initialBoltScore && !isOpen && (isOptimal ? "bg-emerald-50" : needsImprovement ? "bg-rose-50" : "bg-indigo-50")
           )}>
-            <div className="flex items-center gap-3">
-              <FlaskConical size={14} className={cn(isOpen ? "text-indigo-400" : "text-primary")} />
-              <span className="text-[11px] font-black uppercase tracking-widest">BOLT Test</span>
-            </div>
-            <div className="flex items-center gap-3">
-              {initialBoltScore !== null && initialBoltScore !== undefined && (
+            <div className="flex flex-col justify-center">
+              <span className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-500 leading-none mb-1">
+                BOLT SCORE
+              </span>
+              <div className="flex items-center gap-2">
+                <FlaskConical size={14} className={cn(isOpen ? "text-indigo-400" : "text-primary")} />
                 <span className={cn(
-                  "text-[11px] font-black tabular-nums",
-                  isOptimal ? "text-emerald-600" : needsImprovement ? "text-rose-600" : "text-indigo-600"
+                  "text-2xl font-black tabular-nums leading-none",
+                  isOptimal ? "text-emerald-600" : needsImprovement ? "text-rose-600" : "text-indigo-600",
+                  isOpen && "text-white"
                 )}>
-                  {initialBoltScore}s
+                  {initialBoltScore !== null && initialBoltScore !== undefined ? `${initialBoltScore}s` : "—"}
                 </span>
-              )}
-              <ChevronDown size={14} className={cn("transition-transform duration-300", isOpen && "rotate-180")} />
+              </div>
             </div>
+            <ChevronDown size={14} className={cn("transition-transform duration-300", isOpen && "rotate-180")} />
           </div>
         </CollapsibleTrigger>
 

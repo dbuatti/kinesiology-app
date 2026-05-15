@@ -16,7 +16,8 @@ import {
   ChevronLeft, Brain, Loader2, Zap, FileText, Heart, 
   Activity, Shield, Layers, Dumbbell, RefreshCw,
   Eye, EyeOff, Save, ShieldCheck, LayoutGrid,
-  ChevronRight, Settings2, Sparkles, Globe, ExternalLink
+  ChevronRight, Settings2, Sparkles, Globe, ExternalLink,
+  PanelLeftClose, PanelLeftOpen
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Switch } from "@/components/ui/switch";
@@ -63,18 +64,28 @@ export default function ClinicalProtocolsPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex flex-col items-center justify-center gap-4">
-        <Loader2 className="w-10 h-10 text-blue-600 animate-spin" />
-        <p className="text-xs font-bold uppercase tracking-widest text-slate-500">Loading Protocols...</p>
+      <div className="min-h-screen flex flex-col items-center justify-center gap-4 bg-slate-50">
+        <div className="w-16 h-16 bg-indigo-600 rounded-[2rem] flex items-center justify-center text-white font-black text-2xl shadow-2xl animate-bounce">
+          A
+        </div>
+        <div className="flex items-center gap-2 text-muted-foreground font-black text-[10px] uppercase tracking-[0.3em]">
+          <Loader2 className="animate-spin" size={14} /> Loading Protocols
+        </div>
       </div>
     );
   }
 
   if (!appointment) {
     return (
-      <div className="container mx-auto p-6 text-center">
-        <h1 className="text-2xl font-bold">Appointment not found</h1>
-        <Button onClick={() => navigate("/appointments")} className="mt-4">
+      <div className="container mx-auto p-12 text-center space-y-6">
+        <div className="w-20 h-20 bg-rose-50 rounded-[2rem] flex items-center justify-center mx-auto text-rose-500 shadow-xl">
+          <Shield size={40} />
+        </div>
+        <div className="space-y-2">
+          <h1 className="text-3xl font-black text-slate-900">Appointment not found</h1>
+          <p className="text-slate-500 font-medium">The requested session could not be located in the database.</p>
+        </div>
+        <Button onClick={() => navigate("/appointments")} className="bg-indigo-600 hover:bg-indigo-700 rounded-xl h-12 px-8 font-bold">
           Back to Appointments
         </Button>
       </div>
@@ -84,17 +95,17 @@ export default function ClinicalProtocolsPage() {
   return (
     <div className="flex h-screen bg-white overflow-hidden">
       {/* 1. Slim Vertical Navigation Rail */}
-      <aside className="w-20 md:w-24 bg-slate-900 flex flex-col items-center py-6 gap-4 z-50 shrink-0">
+      <aside className="w-20 md:w-24 bg-slate-950 flex flex-col items-center py-8 gap-6 z-50 shrink-0 shadow-2xl">
         <Button 
           variant="ghost" 
           size="icon" 
           onClick={() => navigate(`/appointments/${id}`)}
-          className="h-12 w-12 rounded-2xl bg-white/10 text-white hover:bg-white/20 mb-4"
+          className="h-12 w-12 rounded-2xl bg-white/5 text-white hover:bg-white/10 mb-4 transition-all hover:scale-110"
         >
           <ChevronLeft size={24} />
         </Button>
 
-        <div className="flex-1 flex flex-col gap-2 w-full px-2">
+        <div className="flex-1 flex flex-col gap-3 w-full px-2">
           {PROTOCOLS.map((p) => {
             const isActive = activeTab === p.id;
             return (
@@ -102,14 +113,17 @@ export default function ClinicalProtocolsPage() {
                 key={p.id}
                 onClick={() => setActiveTab(p.id)}
                 className={cn(
-                  "flex flex-col items-center justify-center py-3 rounded-2xl transition-all duration-300 group",
+                  "flex flex-col items-center justify-center py-4 rounded-2xl transition-all duration-500 group relative",
                   isActive 
-                    ? "bg-indigo-600 text-white shadow-lg scale-105" 
+                    ? "bg-indigo-600 text-white shadow-xl scale-105" 
                     : "text-slate-500 hover:text-white hover:bg-white/5"
                 )}
               >
-                <p.icon size={20} className={cn("transition-transform duration-500", isActive ? "scale-110" : "group-hover:scale-110", !isActive && p.color)} />
-                <span className="text-[8px] font-black uppercase tracking-widest mt-1.5 text-center px-1">
+                {isActive && (
+                  <div className="absolute left-0 w-1 h-8 bg-white rounded-r-full" />
+                )}
+                <p.icon size={22} className={cn("transition-transform duration-500", isActive ? "scale-110" : "group-hover:scale-110", !isActive && p.color)} />
+                <span className="text-[8px] font-black uppercase tracking-widest mt-2 text-center px-1">
                   {p.label}
                 </span>
               </button>
@@ -117,74 +131,85 @@ export default function ClinicalProtocolsPage() {
           })}
         </div>
 
-        <div className="mt-auto flex flex-col gap-4 items-center">
-          <Badge variant="outline" className="border-white/20 text-white font-black text-[7px] uppercase tracking-widest px-1.5 py-0 rounded-none rotate-90 mb-4">
-            Clinical
+        <div className="mt-auto flex flex-col gap-6 items-center">
+          <div className="w-10 h-10 rounded-xl bg-white/5 flex items-center justify-center text-slate-500 hover:text-white transition-colors cursor-pointer">
+            <Settings2 size={20} />
+          </div>
+          <Badge variant="outline" className="border-white/10 text-slate-500 font-black text-[7px] uppercase tracking-widest px-2 py-0.5 rounded-none rotate-90 mb-6">
+            Clinical Rail
           </Badge>
         </div>
       </aside>
 
       {/* 2. Main Content Area */}
-      <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
+      <div className="flex-1 flex flex-col min-w-0 overflow-hidden bg-slate-50/30">
         {/* Top Settings Header */}
-        <header className="h-16 border-b border-slate-100 flex items-center justify-between px-8 bg-white shrink-0">
-          <div className="flex items-center gap-4">
-            <div className="flex items-center gap-2">
-              <h2 className="text-xl font-black text-slate-900 tracking-tight">
-                {PROTOCOLS.find(p => p.id === activeTab)?.label}
-              </h2>
-              <Badge className="bg-slate-100 text-slate-500 border-none font-black text-[8px] uppercase tracking-widest">
-                Protocol v2.4
-              </Badge>
+        <header className="h-20 border-b border-slate-100 flex items-center justify-between px-10 bg-white shrink-0 shadow-sm z-40">
+          <div className="flex items-center gap-6">
+            <div className="flex items-center gap-4">
+              <div className={cn(
+                "w-12 h-12 rounded-2xl flex items-center justify-center text-white shadow-lg",
+                PROTOCOLS.find(p => p.id === activeTab)?.bg.replace('bg-', 'bg-').replace('-50', '-600') || "bg-indigo-600"
+              )}>
+                {React.createElement(PROTOCOLS.find(p => p.id === activeTab)?.icon || Brain, { size: 24 })}
+              </div>
+              <div>
+                <h2 className="text-2xl font-black text-slate-900 tracking-tight leading-none">
+                  {PROTOCOLS.find(p => p.id === activeTab)?.label}
+                </h2>
+                <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mt-1.5">Protocol v2.4 • Clinical Standard</p>
+              </div>
             </div>
-            <div className="h-6 w-px bg-slate-100 mx-2" />
+            <div className="h-8 w-px bg-slate-100 mx-2" />
             <Button 
               asChild
               variant="ghost" 
               size="sm" 
-              className="h-9 px-3 rounded-xl text-indigo-600 hover:bg-indigo-50 font-black text-[9px] uppercase tracking-widest"
+              className="h-10 px-4 rounded-xl text-indigo-600 hover:bg-indigo-50 font-black text-[10px] uppercase tracking-widest"
             >
               <a href="https://fnhrefapp-ggs6ojfk.manus.space/brain-zones" target="_blank" rel="noopener noreferrer">
-                <Globe size={14} className="mr-2" /> Official App <ExternalLink size={10} className="ml-1 opacity-50" />
+                <Globe size={16} className="mr-2" /> Official App <ExternalLink size={12} className="ml-1.5 opacity-50" />
               </a>
             </Button>
           </div>
 
-          <div className="flex items-center gap-8">
-            <div className="flex items-center space-x-3">
-              <Switch 
-                id="show-images-global" 
-                checked={showImages} 
-                onCheckedChange={setShowImages}
-                className="data-[state=checked]:bg-indigo-600"
-              />
-              <Label htmlFor="show-images-global" className="text-[9px] font-black uppercase tracking-widest text-slate-400 cursor-pointer flex items-center gap-2">
-                {showImages ? <Eye size={14} className="text-indigo-600" /> : <EyeOff size={14} />}
-                Images
-              </Label>
-            </div>
-
-            <div className="flex items-center space-x-3">
-              <Switch 
-                id="remember-settings" 
-                checked={rememberSettings} 
-                onCheckedChange={setRememberSettings}
-                className="data-[state=checked]:bg-emerald-600"
-              />
-              <Label htmlFor="remember-settings" className="text-[9px] font-black uppercase tracking-widest text-slate-400 cursor-pointer flex items-center gap-2">
-                <ShieldCheck size={14} className={rememberSettings ? "text-emerald-600" : ""} />
-                Remember
-              </Label>
-            </div>
-
-            <div className="h-8 w-px bg-slate-100" />
-
-            <div className="flex items-center gap-3">
-              <div className="text-right hidden sm:block">
-                <p className="text-[8px] font-black text-slate-400 uppercase tracking-widest">Client</p>
-                <p className="text-xs font-bold text-slate-900">{appointment.clients.name}</p>
+          <div className="flex items-center gap-10">
+            <div className="flex items-center gap-8">
+              <div className="flex items-center space-x-3">
+                <Switch 
+                  id="show-images-global" 
+                  checked={showImages} 
+                  onCheckedChange={setShowImages}
+                  className="data-[state=checked]:bg-indigo-600"
+                />
+                <Label htmlFor="show-images-global" className="text-[10px] font-black uppercase tracking-widest text-slate-500 cursor-pointer flex items-center gap-2">
+                  {showImages ? <Eye size={16} className="text-indigo-600" /> : <EyeOff size={16} />}
+                  Images
+                </Label>
               </div>
-              <div className="w-9 h-9 rounded-xl bg-indigo-50 text-indigo-600 flex items-center justify-center font-black text-sm">
+
+              <div className="flex items-center space-x-3">
+                <Switch 
+                  id="remember-settings" 
+                  checked={rememberSettings} 
+                  onCheckedChange={setRememberSettings}
+                  className="data-[state=checked]:bg-emerald-600"
+                />
+                <Label htmlFor="remember-settings" className="text-[10px] font-black uppercase tracking-widest text-slate-500 cursor-pointer flex items-center gap-2">
+                  <ShieldCheck size={16} className={rememberSettings ? "text-emerald-600" : ""} />
+                  Remember
+                </Label>
+              </div>
+            </div>
+
+            <div className="h-10 w-px bg-slate-100" />
+
+            <div className="flex items-center gap-4">
+              <div className="text-right hidden sm:block">
+                <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest">Active Client</p>
+                <p className="text-sm font-bold text-slate-900">{appointment.clients.name}</p>
+              </div>
+              <div className="w-11 h-11 rounded-2xl bg-indigo-50 text-indigo-600 flex items-center justify-center font-black text-lg shadow-inner border border-indigo-100">
                 {appointment.clients.name.charAt(0)}
               </div>
             </div>
@@ -192,9 +217,9 @@ export default function ClinicalProtocolsPage() {
         </header>
 
         {/* Scrollable Assessment Area */}
-        <main className="flex-1 overflow-y-auto p-8 md:p-12 custom-scrollbar">
+        <main className="flex-1 overflow-y-auto p-10 md:p-16 custom-scrollbar">
           <div className="max-w-5xl mx-auto">
-            <div className="animate-in fade-in duration-500">
+            <div className="animate-in fade-in slide-in-from-bottom-4 duration-700">
               {activeTab === "cranial-nerves" && (
                 <CranialNerveAssessment 
                   appointmentId={id!} 
@@ -245,25 +270,30 @@ export default function ClinicalProtocolsPage() {
             </div>
 
             {/* Persistent Summary Area */}
-            <div className="mt-20 pt-12 border-t border-slate-100">
-              <div className="flex items-center justify-between mb-6">
-                <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-xl bg-slate-50 flex items-center justify-center text-slate-400">
-                    <FileText size={20} />
+            <div className="mt-24 pt-16 border-t border-slate-200">
+              <div className="flex items-center justify-between mb-8">
+                <div className="flex items-center gap-5">
+                  <div className="w-14 h-14 rounded-2xl bg-slate-900 text-white flex items-center justify-center shadow-xl">
+                    <FileText size={28} />
                   </div>
                   <div>
-                    <h3 className="text-lg font-black text-slate-900">Integration Summary</h3>
-                    <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Session Notes & Homework</p>
+                    <h3 className="text-2xl font-black text-slate-900 tracking-tight">Integration Summary</h3>
+                    <p className="text-[10px] font-bold text-slate-400 uppercase tracking-[0.3em] mt-1">Session Notes & Homework</p>
                   </div>
                 </div>
-                <Button variant="ghost" size="sm" className="text-[10px] font-black uppercase tracking-widest text-indigo-600 hover:bg-indigo-50">
-                  <Sparkles size={14} className="mr-2" /> AI Assist
+                <Button variant="ghost" size="sm" className="h-11 px-6 rounded-xl text-indigo-600 hover:bg-indigo-50 font-black text-[10px] uppercase tracking-widest border border-indigo-100">
+                  <Sparkles size={16} className="mr-2" /> AI Clinical Assist
                 </Button>
               </div>
               <textarea 
-                className="w-full min-h-[200px] bg-slate-50/50 border-none rounded-[2rem] p-8 text-base font-medium leading-relaxed focus:ring-2 focus:ring-indigo-500 transition-all placeholder:text-slate-300"
+                className="w-full min-h-[250px] bg-white border-2 border-slate-100 rounded-[2.5rem] p-10 text-lg font-medium leading-relaxed focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-500 transition-all shadow-inner placeholder:text-slate-200"
                 placeholder="Document the primary correction and prescribed homework here..."
               />
+              <div className="mt-6 flex justify-end">
+                <Button className="bg-indigo-600 hover:bg-indigo-700 text-white rounded-2xl h-14 px-12 font-black text-xs uppercase tracking-widest shadow-xl shadow-indigo-100">
+                  <Save size={18} className="mr-2" /> Save Integration
+                </Button>
+              </div>
             </div>
           </div>
         </main>

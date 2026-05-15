@@ -93,11 +93,11 @@ interface SessionContentSwitcherProps {
 }
 
 const TABS = [
-  { id: 'baseline', label: 'P', fullLabel: 'Preliminary', icon: Activity, color: 'text-indigo-600' },
-  { id: 'sympathetic', label: 'E', fullLabel: 'Ease', icon: Zap, color: 'text-rose-600' },
-  { id: 'pathway', label: 'A', fullLabel: 'Align', icon: GitBranch, color: 'text-amber-600' },
-  { id: 'calibration', label: 'C', fullLabel: 'Correct', icon: Target, color: 'text-emerald-600' },
-  { id: 'reassessment', label: 'E', fullLabel: 'Embed', icon: ClipboardCheck, color: 'text-blue-600' }
+  { id: 'baseline', label: 'P', fullLabel: 'Preliminary', sub: 'Intake & Vitals', icon: Activity, color: 'text-indigo-600', activeBg: 'bg-indigo-600' },
+  { id: 'sympathetic', label: 'E', fullLabel: 'Ease', sub: 'SNS Reset', icon: Zap, color: 'text-rose-600', activeBg: 'bg-rose-600' },
+  { id: 'pathway', label: 'A', fullLabel: 'Align', sub: 'Map Hierarchy', icon: GitBranch, color: 'text-amber-600', activeBg: 'bg-amber-600' },
+  { id: 'calibration', label: 'C', fullLabel: 'Correct', sub: 'Calibrate Logic', icon: Target, color: 'text-emerald-600', activeBg: 'bg-emerald-600' },
+  { id: 'reassessment', label: 'E', fullLabel: 'Embed', sub: 'Verify & Lock', icon: ClipboardCheck, color: 'text-blue-600', activeBg: 'bg-blue-600' }
 ];
 
 const SessionContentSwitcher = ({ 
@@ -233,8 +233,8 @@ const SessionContentSwitcher = ({
         setActiveTab(v);
         if (v === 'calibration') scrollToWizard();
       }} className="w-full">
-        <div className="overflow-x-auto pb-2 no-scrollbar -mx-4 px-4">
-          <TabsList className="flex w-full h-auto bg-transparent p-0 gap-8 border-b border-slate-100 rounded-none">
+        <div className="overflow-x-auto pb-4 no-scrollbar -mx-4 px-4">
+          <TabsList className="flex w-full h-auto bg-transparent p-0 gap-4 md:gap-8 border-b border-slate-100 rounded-none">
             {TABS.map((tab) => {
               const isCompleted = (tabStatus as any)[tab.id];
               const isActive = activeTab === tab.id;
@@ -243,23 +243,29 @@ const SessionContentSwitcher = ({
                   key={tab.id} 
                   value={tab.id} 
                   className={cn(
-                    "flex flex-col items-center gap-2 pb-5 px-2 rounded-none border-b-2 transition-all duration-300 relative group",
+                    "flex flex-col items-center gap-2 pb-5 px-4 rounded-none border-b-4 transition-all duration-500 relative group min-w-[100px]",
                     isActive 
                       ? "border-indigo-600 text-indigo-600" 
                       : "border-transparent text-slate-400 hover:text-slate-600"
                   )}
                 >
                   <div className={cn(
-                    "w-10 h-10 rounded-xl flex items-center justify-center transition-all duration-300",
-                    isCompleted ? "text-emerald-500" : cn(isActive ? "text-indigo-600" : "text-slate-300")
+                    "w-12 h-12 rounded-2xl flex items-center justify-center transition-all duration-500 shadow-sm",
+                    isActive ? cn("text-white shadow-lg", tab.activeBg) : 
+                    isCompleted ? "bg-emerald-50 text-emerald-500" : "bg-slate-50 text-slate-300 group-hover:bg-slate-100"
                   )}>
-                    {isCompleted ? <CheckCircle2 size={22} /> : <tab.icon size={22} />}
+                    {isCompleted && !isActive ? <CheckCircle2 size={24} /> : <tab.icon size={24} />}
                   </div>
                   
-                  <div className="flex items-center gap-2">
-                    <span className="text-lg font-black tracking-tighter">{tab.label}</span>
-                    <span className="hidden sm:inline text-[10px] font-black uppercase tracking-widest opacity-60">
-                      {tab.fullLabel}
+                  <div className="flex flex-col items-center">
+                    <div className="flex items-center gap-2">
+                      <span className="text-xl font-black tracking-tighter">{tab.label}</span>
+                      <span className="hidden md:inline text-[10px] font-black uppercase tracking-widest opacity-60">
+                        {tab.fullLabel}
+                      </span>
+                    </div>
+                    <span className="hidden lg:block text-[8px] font-bold uppercase tracking-widest opacity-40 mt-0.5">
+                      {tab.sub}
                     </span>
                   </div>
                 </TabsTrigger>
@@ -335,7 +341,10 @@ const SessionContentSwitcher = ({
             <Button
               variant="ghost"
               asChild
-              className="h-10 px-5 rounded-xl transition-all font-black text-[10px] uppercase tracking-widest shrink-0 text-slate-500 hover:bg-white hover:text-purple-600 hover:shadow-sm border border-transparent hover:border-slate-100"
+              className={cn(
+                "h-10 px-5 rounded-xl transition-all font-black text-[10px] uppercase tracking-widest shrink-0",
+                location.pathname.includes('/protocols') ? "bg-white !text-purple-600 shadow-md border border-slate-100" : "text-slate-500 hover:bg-white/50"
+              )}
             >
               <Link to={`/appointments/${appointment.id}/protocols`}>
                 <Brain size={16} className="mr-2 text-purple-500" />

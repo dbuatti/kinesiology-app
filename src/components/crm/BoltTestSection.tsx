@@ -87,7 +87,11 @@ const BoltTestSection = ({ appointmentId, initialBoltScore, onUpdate }: BoltTest
               </div>
               <div>
                 <h3 className="text-base font-black text-foreground tracking-tight">BOLT Test</h3>
-                <p className="text-[8px] font-black text-muted-foreground uppercase tracking-widest">Body Oxygen Level</p>
+                <p className="text-[8px] font-black text-muted-foreground uppercase tracking-widest">
+                  {initialBoltScore !== null && initialBoltScore !== undefined 
+                    ? `Current: ${initialBoltScore}s` 
+                    : "Not yet recorded this session"}
+                </p>
               </div>
             </div>
             <div className="flex items-center gap-3">

@@ -15,12 +15,17 @@ import {
   FileText,
   CheckCircle2,
   ArrowRightLeft,
-  Info
+  Info,
+  Search,
+  Activity
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { supabase } from "@/integrations/supabase/client";
 import { safeParse } from "@/utils/safe-json";
 import { CranialNerveTest } from "@/types/crm";
+import { Switch } from "@/components/ui/switch";
+import { Label } from "@/components/ui/label";
+import { Input } from "@/components/ui/input";
 
 interface NerveTestItemProps {
   nerve: CranialNerve;
@@ -256,6 +261,13 @@ const NerveTestItem = ({ nerve, test, statusL, statusR, statusMidline, isLateral
   );
 };
 
+const NERVE_CLUSTERS = [
+  { id: 'sensory', label: 'Sensory Nerves (I, II, VIII)', ids: [1, 2, 8] },
+  { id: 'eye-motor', label: 'Eye Motor Nerves (III, IV, VI)', ids: [3, 4, 6] },
+  { id: 'face-jaw', label: 'Face & Jaw (V, VII)', ids: [5, 7] },
+  { id: 'vagal-throat', label: 'Vagal & Throat (IX, X, XI, XII)', ids: [9, 10, 11, 12] }
+];
+
 export function CranialNerveAssessment({ 
   appointmentId, 
   priorityPattern, 
@@ -270,6 +282,8 @@ export function CranialNerveAssessment({
   onShowInfo?: (nerveId: number) => void;
 }) {
   const { tests, loading, updateTest } = useCranialNerveTests(appointmentId, priorityPattern, updatePriorityPattern);
+  const [showOnlyInhibited, setShowOnlyInhibited] = useState(false);
+  const [searchQuery, setSearchQuery] = useState("");
   const [customImages, setCustomImages] = useState<Record<string, { primary: string | null, secondary: string | null }>>({});
 
   const pattern = useMemo(() => safeParse(priorityPattern, {} as any), [priorityPattern]);
@@ -293,27 +307,24 @@ export function CranialNerveAssessment({
     fetchImages();
   }, []);
 
-  const sortedNerves = useMemo(() => {
-    return [...CRANIAL_NERVES].sort((a, b) => {
-      const testA = tests.find(t => t.nerve_id === a.id.toString());
-      const testB = tests.find(t => t.nerve_id === b.id.toString());
+  const filteredNerves = useMemo(() => {
+    return CRANIAL_NERVES.filter(nerve => {
+      const test = tests.find(t => t.nerve_id === nerve.id.toString()) || { is_inhibited: false };
+      const nerveName = `${nerve.name}: ${nerve.latinName}`;
       
-      const nerveNameA = `${a.name}: ${a.latinName}`;
-      const nerveNameB = `${b.name}: ${b.latinName}`;
+      const matchesSearch = nerveName.toLowerCase().includes(searchQuery.toLowerCase()) || 
+                           nerve.nuclei.toLowerCase().includes(searchQuery.toLowerCase());
       
-      const isAnyInhibA = nervePattern[`${nerveNameA} (L)`] === 'Inhibited' || nervePattern[`${nerveNameA} (R)`] === 'Inhibited' || nervePattern[nerveNameA] === 'Inhibited' || testA?.is_inhibited;
-      const isAnyInhibB = nervePattern[`${nerveNameB} (L)`] === 'Inhibited' || nervePattern[`${nerveNameB} (R)`] === 'Inhibited' || nervePattern[nerveNameB] === 'Inhibited' || testB?.is_inhibited;
+      const isAnyInhib = nervePattern[`${nerveName} (L)`] === 'Inhibited' || 
+                        nervePattern[`${nerveName} (R)`] === 'Inhibited' || 
+                        nervePattern[nerveName] === 'Inhibited' || 
+                        test.is_inhibited;
 
-      const isAnyClearA = nervePattern[`${nerveNameA} (L)`] === 'Clear' || nervePattern[`${nerveNameA} (R)`] === 'Clear' || nervePattern[nerveNameA] === 'Clear';
-      const isAnyClearB = nervePattern[`${nerveNameB} (L)`] === 'Clear' || nervePattern[`${nerveNameB} (R)`] === 'Clear' || nervePattern[nerveNameB] === 'Clear';
-
-      const scoreA = (testA?.is_primary_priority ? 1000 : 0) + (testA?.is_priority ? 500 : 0) + (isAnyInhibA ? 100 : 0) + (isAnyClearA ? -100 : 0);
-      const scoreB = (testB?.is_primary_priority ? 1000 : 0) + (testB?.is_priority ? 500 : 0) + (isAnyInhibB ? 100 : 0) + (isAnyClearB ? -100 : 0);
+      const matchesInhibited = showOnlyInhibited ? isAnyInhib : true;
       
-      if (scoreA !== scoreB) return scoreB - scoreA;
-      return a.id - b.id;
+      return matchesSearch && matchesInhibited;
     });
-  }, [tests, nervePattern]);
+  }, [tests, searchQuery, showOnlyInhibited, nervePattern]);
 
   if (loading) {
     return (
@@ -325,25 +336,76 @@ export function CranialNerveAssessment({
   }
 
   return (
-    <div className="space-y-4">
-      {sortedNerves.map((nerve) => {
-        const nerveName = `${nerve.name}: ${nerve.latinName}`;
-        return (
-          <NerveTestItem 
-            key={nerve.id}
-            nerve={nerve}
-            test={tests.find(t => t.nerve_id === nerve.id.toString()) || {}}
-            statusL={nervePattern[`${nerveName} (L)`]}
-            statusR={nervePattern[`${nerveName} (R)`]}
-            statusMidline={nervePattern[nerveName]}
-            isLateralized={nerve.isLateralized || false}
-            images={customImages[`cn${nerve.id}`]}
-            showImage={showImages}
-            onUpdate={updateTest}
-            onShowInfo={onShowInfo}
-          />
-        );
-      })}
+    <div className="space-y-6">
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 bg-slate-50/50 p-2 rounded-xl border border-slate-100 shadow-inner print:hidden mb-2">
+        <div className="flex items-center gap-3">
+          <div className="relative w-full md:w-48">
+            <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3 w-3 text-slate-400" />
+            <Input
+              placeholder="Search nerves..."
+              className="pl-8 h-7 rounded-lg border-slate-200 bg-white text-[10px]"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+            />
+          </div>
+          <div className="flex items-center space-x-2 px-3 border-l border-slate-200">
+            <Switch
+              id="inhibited-filter-nerve"
+              checked={showOnlyInhibited}
+              onCheckedChange={setShowOnlyInhibited}
+              className="data-[state=checked]:bg-rose-600 scale-[0.6]"
+            />
+            <Label htmlFor="inhibited-filter-nerve" className="text-[8px] font-black uppercase tracking-widest cursor-pointer text-slate-500">
+              Only Inhibited
+            </Label>
+          </div>
+        </div>
+        <div className="flex items-center gap-2">
+          <Badge variant="outline" className="bg-white border-slate-200 font-black text-[7px] uppercase tracking-widest px-2 py-0.5 rounded-full">
+            {tests.filter(t => t.is_inhibited).length} Active
+          </Badge>
+        </div>
+      </div>
+
+      <div className="space-y-10">
+        {NERVE_CLUSTERS.map(cluster => {
+          const clusterNerves = filteredNerves.filter(n => cluster.ids.includes(n.id));
+          if (clusterNerves.length === 0) return null;
+
+          return (
+            <div key={cluster.id} className="space-y-4">
+              <div className="flex items-center gap-3 px-2">
+                <div className="w-8 h-8 rounded-lg bg-slate-900 text-white flex items-center justify-center shadow-sm">
+                  <Activity size={16} />
+                </div>
+                <h3 className="text-sm font-black text-slate-900 uppercase tracking-widest">{cluster.label}</h3>
+                <div className="flex-1 h-px bg-slate-100" />
+              </div>
+              
+              <div className="grid grid-cols-1 gap-4">
+                {clusterNerves.map((nerve) => {
+                  const nerveName = `${nerve.name}: ${nerve.latinName}`;
+                  return (
+                    <NerveTestItem 
+                      key={nerve.id}
+                      nerve={nerve}
+                      test={tests.find(t => t.nerve_id === nerve.id.toString()) || {}}
+                      statusL={nervePattern[`${nerveName} (L)`]}
+                      statusR={nervePattern[`${nerveName} (R)`]}
+                      statusMidline={nervePattern[nerveName]}
+                      isLateralized={nerve.isLateralized || false}
+                      images={customImages[`cn${nerve.id}`]}
+                      showImage={showImages}
+                      onUpdate={updateTest}
+                      onShowInfo={onShowInfo}
+                    />
+                  );
+                })}
+              </div>
+            </div>
+          );
+        })}
+      </div>
     </div>
   );
 }

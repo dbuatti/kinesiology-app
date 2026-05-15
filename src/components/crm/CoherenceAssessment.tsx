@@ -125,7 +125,7 @@ const CoherenceAssessment = ({
 
   return (
     <div className="bg-card rounded-3xl border border-border shadow-sm overflow-hidden transition-all hover:shadow-md">
-      <Collapsible open={isOpen || appointmentId === "temp"} onOpenChange={setIsOpen}>
+      <Collapsible open={isOpen} onOpenChange={setIsOpen}>
         <CollapsibleTrigger asChild>
           <div className={cn(
             "p-4 flex items-center justify-between cursor-pointer transition-all duration-300",
@@ -143,7 +143,11 @@ const CoherenceAssessment = ({
               </div>
               <div>
                 <h3 className="text-base font-black text-foreground tracking-tight">Coherence</h3>
-                <p className="text-[8px] font-black text-muted-foreground uppercase tracking-widest">Autonomic Sync</p>
+                <p className="text-[8px] font-black text-muted-foreground uppercase tracking-widest">
+                  {calculatedScore !== null 
+                    ? `Score: ${calculatedScore.toFixed(2)}` 
+                    : "Not yet recorded this session"}
+                </p>
               </div>
             </div>
             <div className="flex items-center gap-3">

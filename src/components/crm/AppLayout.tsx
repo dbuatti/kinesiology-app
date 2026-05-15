@@ -20,26 +20,29 @@ const AppLayout = ({
 }: AppLayoutProps) => {
   const location = useLocation();
 
-  // Determine max width based on variant
-  const maxWidthClass = variant === "full" ? "max-w-none" : "max-w-7xl";
+  // Standardized max-width hierarchy
+  const maxWidthClass = 
+    variant === "full" ? "max-w-none" : 
+    variant === "wide" ? "max-w-[1600px]" :
+    variant === "workspace" ? "max-w-7xl" : 
+    "max-w-6xl";
 
   return (
     <div
       className={cn(
-        "w-full min-h-screen mx-auto px-6 transition-all duration-300",
-        hasFixedHeader ? "pt-16 pb-12" : "pt-4 pb-12",
+        "w-full min-h-screen mx-auto px-4 md:px-8 transition-all duration-300",
+        hasFixedHeader ? "pt-20 pb-12" : "pt-6 pb-12",
         maxWidthClass,
         className
       )}
     >
-
       <AnimatePresence mode="wait">
         <motion.div
           key={location.pathname}
-          initial={{ opacity: 0, y: 4 }}
+          initial={{ opacity: 0, y: 8 }}
           animate={{ opacity: 1, y: 0 }}
-          exit={{ opacity: 0, y: -4 }}
-          transition={{ duration: 0.2, ease: "easeOut" }}
+          exit={{ opacity: 0, y: -8 }}
+          transition={{ duration: 0.3, ease: [0.23, 1, 0.32, 1] }}
           className="w-full"
         >
           {children}

@@ -27,38 +27,38 @@ const PageHeader = ({
   className,
 }: PageHeaderProps) => {
   return (
-    <div className={cn("space-y-6 mb-10", className)}>
+    <div className={cn("space-y-6 mb-12", className)}>
       {breadcrumbs && <Breadcrumbs items={breadcrumbs} className="mb-0 opacity-60" />}
       
-      <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
-        <div className="space-y-2">
+      <div className="flex flex-col md:flex-row md:items-end justify-between gap-8">
+        <div className="space-y-3">
           {badge && (
-            <Badge variant="secondary" className="bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 border-none font-bold text-[9px] uppercase tracking-widest px-3 py-0.5 rounded-full mb-2">
+            <Badge variant="secondary" className="bg-indigo-50 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-400 border-none font-black text-[9px] uppercase tracking-[0.3em] px-4 py-1 rounded-full mb-2">
               {badge}
             </Badge>
           )}
-          <div className="flex items-center gap-4">
+          <div className="flex items-center gap-5">
             {Icon && (
               <div className={cn(
-                "w-10 h-10 rounded-xl bg-slate-900 text-white flex items-center justify-center shrink-0 dark:bg-white dark:text-slate-900",
+                "w-12 h-12 rounded-2xl bg-slate-900 text-white flex items-center justify-center shrink-0 dark:bg-white dark:text-slate-900 shadow-lg",
                 iconClassName
               )}>
-                <Icon size={20} />
+                <Icon size={24} />
               </div>
             )}
-            <h1 className="text-3xl md:text-4xl font-serif font-bold tracking-tight text-slate-900 dark:text-white">
+            <h1 className="text-4xl md:text-5xl font-serif font-bold tracking-tight text-slate-900 dark:text-white">
               {title}
             </h1>
           </div>
           {subtitle && (
-            <p className="text-sm text-slate-500 font-medium max-w-2xl leading-relaxed">
+            <p className="text-base md:text-lg text-slate-500 font-medium max-w-3xl leading-relaxed">
               {subtitle}
             </p>
           )}
         </div>
         
         {actions && (
-          <div className="flex items-center gap-2 shrink-0 animate-in fade-in slide-in-from-right-2 duration-500">
+          <div className="flex items-center gap-3 shrink-0 animate-in fade-in slide-in-from-right-4 duration-700">
             {actions}
           </div>
         )}

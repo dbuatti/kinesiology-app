@@ -60,17 +60,19 @@ const UpcomingAppointments = () => {
 
   if (loading) {
     return (
-      <div className="p-8 bg-white dark:bg-slate-900 rounded-[2rem] border border-secondary/30 flex items-center justify-center">
-        <Loader2 className="animate-spin text-primary" size={24} />
+      <div className="p-8 bg-white dark:bg-slate-900 rounded-[2rem] border border-slate-100 dark:border-slate-800 flex items-center justify-center">
+        <Loader2 className="animate-spin text-indigo-600" size={24} />
       </div>
     );
   }
 
   return (
-    <div className="p-6 md:p-8 bg-white dark:bg-slate-900 rounded-[2rem] border border-secondary/30 shadow-sm">
-      <div className="flex items-center justify-between mb-6">
-        <h3 className="text-xl font-serif font-bold flex items-center gap-3 text-primary">
-          <Calendar size={20} className="text-rose-500" />
+    <div className="p-8 bg-white dark:bg-slate-900 rounded-[2rem] border border-slate-100 dark:border-slate-800 shadow-sm">
+      <div className="flex items-center justify-between mb-8">
+        <h3 className="text-2xl font-serif font-bold flex items-center gap-4 text-slate-900 dark:text-white">
+          <div className="w-10 h-10 rounded-xl bg-rose-50 flex items-center justify-center text-rose-500 shadow-sm">
+            <Calendar size={20} />
+          </div>
           Upcoming Sessions
         </h3>
         {isPrivate && (
@@ -80,7 +82,7 @@ const UpcomingAppointments = () => {
         )}
       </div>
       
-      <div className="space-y-3">
+      <div className="space-y-4">
         {appointments.map((appointment) => {
           const dateLabel = getDateLabel(appointment.date);
           const isUrgent = isToday(appointment.date) || isTomorrow(appointment.date);
@@ -90,45 +92,45 @@ const UpcomingAppointments = () => {
               key={appointment.id}
               to={`/appointments/${appointment.id}`}
               className={cn(
-                "flex items-center gap-4 p-4 rounded-2xl transition-all duration-300 group border",
+                "flex items-center gap-5 p-5 rounded-2xl transition-all duration-500 group border",
                 isUrgent
-                  ? "border-amber-200 bg-amber-50/50 dark:bg-amber-900/10 hover:border-amber-400"
-                  : "border-secondary/30 bg-muted/30 hover:bg-muted/50"
+                  ? "border-amber-200 bg-amber-50/50 dark:bg-amber-900/10 hover:border-amber-400 hover:shadow-lg"
+                  : "border-slate-50 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-800/50 hover:border-indigo-200 hover:shadow-lg"
               )}
             >
               <div className="flex-1 min-w-0">
-                <div className="flex items-center gap-2 mb-1.5">
+                <div className="flex items-center gap-3 mb-2">
                   <Badge
                     className={cn(
-                      "text-[9px] font-black uppercase tracking-widest px-2 py-0.5 rounded-full",
+                      "text-[9px] font-black uppercase tracking-widest px-3 py-1 rounded-full border-none shadow-sm",
                       isUrgent
                         ? "bg-amber-500 text-white"
-                        : "bg-primary text-white"
+                        : "bg-indigo-600 text-white"
                     )}
                   >
                     {dateLabel}
                   </Badge>
-                  <span className="text-[10px] text-muted-foreground font-black uppercase tracking-widest flex items-center gap-1">
+                  <span className="text-[10px] text-slate-400 font-black uppercase tracking-widest flex items-center gap-1.5">
                     <Clock size={12} />
                     {format(appointment.date, "h:mm a")}
                   </span>
                 </div>
                 <p className={cn(
-                  "font-black text-sm text-foreground group-hover:text-primary transition-colors truncate",
+                  "font-black text-lg text-slate-900 dark:text-white group-hover:text-indigo-600 transition-colors truncate",
                   isPrivate && "blur-sm select-none"
                 )}>
                   {appointment.clients.name}
                 </p>
-                <div className="flex items-center gap-2 mt-1">
+                <div className="flex items-center gap-3 mt-1.5">
                   <p className={cn(
-                    "text-[10px] text-muted-foreground font-black uppercase tracking-widest truncate",
+                    "text-[10px] text-slate-500 font-bold uppercase tracking-widest truncate",
                     isPrivate && "blur-[2px] select-none"
                   )}>
                     {appointment.name || appointment.tag || "Clinical Session"}
                   </p>
                   {appointment.is_paid && (
                     <span className={cn(
-                      "px-1.5 py-0.5 rounded-full text-[8px] font-black uppercase tracking-widest",
+                      "px-2 py-0.5 rounded-md text-[8px] font-black uppercase tracking-widest",
                       appointment.payment_received ? "bg-emerald-100 text-emerald-600" : "bg-amber-100 text-amber-600"
                     )}>
                       {appointment.payment_received ? "Paid" : `Due ${appointment.price_amount ? `$${appointment.price_amount}` : ''}`}
@@ -136,17 +138,17 @@ const UpcomingAppointments = () => {
                   )}
                 </div>
               </div>
-              <div className="w-8 h-8 rounded-xl bg-white dark:bg-slate-800 flex items-center justify-center text-muted-foreground group-hover:text-primary group-hover:bg-primary/10 transition-all shadow-sm">
-                <ArrowRight size={16} className="group-hover:translate-x-1 transition-transform" />
+              <div className="w-10 h-10 rounded-xl bg-white dark:bg-slate-800 flex items-center justify-center text-slate-300 group-hover:text-indigo-600 group-hover:bg-indigo-50 transition-all shadow-sm">
+                <ArrowRight size={20} className="group-hover:translate-x-1 transition-transform" />
               </div>
             </Link>
           );
         })}
         {appointments.length === 0 && (
-          <div className="text-center py-12 bg-muted/30 rounded-2xl border border-dashed border-secondary/50">
-            <p className="text-muted-foreground text-sm font-medium mb-4">No upcoming sessions</p>
+          <div className="text-center py-16 bg-slate-50 dark:bg-slate-800/50 rounded-2xl border border-dashed border-slate-200 dark:border-slate-700">
+            <p className="text-slate-400 text-sm font-medium mb-6">No upcoming sessions</p>
             <Link to="/appointments">
-              <Button variant="outline" size="sm" className="text-[10px] font-black uppercase tracking-widest rounded-full px-6">
+              <Button variant="outline" className="rounded-xl px-8 h-12 font-black text-[10px] uppercase tracking-widest border-slate-200 hover:bg-white shadow-sm">
                 Schedule Session
               </Button>
             </Link>
@@ -155,12 +157,12 @@ const UpcomingAppointments = () => {
       </div>
       
       {appointments.length > 0 && (
-        <Link to="/appointments" className="mt-6 block">
+        <Link to="/appointments" className="mt-8 block">
           <Button
             variant="ghost"
-            className="w-full h-10 text-[10px] font-black uppercase tracking-widest text-muted-foreground hover:text-primary hover:bg-muted group rounded-xl"
+            className="w-full rounded-xl h-12 text-[10px] font-black uppercase tracking-widest text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 group transition-all"
           >
-            View All Appointments <ArrowRight size={14} className="ml-2 group-hover:translate-x-1 transition-transform" />
+            View All Appointments <ArrowRight size={16} className="ml-2 group-hover:translate-x-1 transition-transform" />
           </Button>
         </Link>
       )}

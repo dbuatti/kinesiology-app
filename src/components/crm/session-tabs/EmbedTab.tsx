@@ -27,8 +27,10 @@ import {
   Wind,
   FileText,
   GitBranch,
-  Sparkles
+  Sparkles,
+  Calendar
 } from "lucide-react";
+import { format } from "date-fns";
 import { cn } from "@/lib/utils";
 import { supabase } from "@/integrations/supabase/client";
 import { safeParse } from "@/utils/safe-json";
@@ -50,6 +52,7 @@ import {
 } from "@/components/ui/tooltip";
 import AppointmentForm from "../AppointmentForm";
 import PathwayFindingsList from "../PathwayFindingsList";
+import CompactAvailabilityPicker from "../CompactAvailabilityPicker";
 
 interface EmbedTabProps {
   appointment: any;
@@ -63,6 +66,9 @@ const EmbedTab = ({ appointment, onUpdate, saveField, updatePriorityPattern }: E
   const [loading, setLoading] = useState(true);
   const [clearingId, setClearingId] = useState<string | null>(null);
   const [bookNextOpen, setBookNextOpen] = useState(false);
+  
+  // Booking Flow State
+  const [selectedSlot, setSelectedSlot] = useState<{ date: Date; time: string; slotTime: string } | null>(null);
 
   const fetchMuscleTests = async () => {
     try {
@@ -186,13 +192,16 @@ const EmbedTab = ({ appointment, onUpdate, saveField, updatePriorityPattern }: E
             </div>
           </div>
           
-          <Dialog open={bookNextOpen} onOpenChange={setBookNextOpen}>
+          <Dialog open={bookNextOpen} onOpenChange={(open) => {
+            setBookNextOpen(open);
+            if (!open) setSelectedSlot(null);
+          }}>
             <DialogTrigger asChild>
               <Button className="w-full md:w-auto bg-white text-indigo-600 hover:bg-indigo-50 rounded-2xl h-14 px-12 font-black text-xs uppercase tracking-widest shadow-lg">
                 <Plus size={20} className="mr-2" /> Book Next Session
               </Button>
             </DialogTrigger>
-            <DialogContent className="sm:max-w-[550px] max-h-[90vh] overflow-y-auto rounded-[3rem] p-0">
+            <DialogContent className="sm:max-w-[600px] max-h-[90vh] overflow-y-auto rounded-[3rem] p-0">
               <div className="p-10">
                 <DialogHeader className="mb-8">
                   <div className="flex items-center gap-4 mb-2">
@@ -200,18 +209,60 @@ const EmbedTab = ({ appointment, onUpdate, saveField, updatePriorityPattern }: E
                       <CalendarPlus size={28} />
                     </div>
                     <div>
-                      <DialogTitle className="text-3xl font-black">Book Next Session</DialogTitle>
-                      <DialogDescription className="text-base font-medium">Schedule the follow-up for {appointment.clients.name}.</DialogDescription>
+                      <DialogTitle className="text-3xl font-black">
+                        {selectedSlot ? "Confirm Booking" : "Select Available Time"}
+                      </DialogTitle>
+                      <DialogDescription className="text-base font-medium">
+                        {selectedSlot 
+                          ? `Finalize details for ${appointment.clients.name}.`
+                          : `Live availability for ${appointment.clients.name}.`
+                        }
+                      </DialogDescription>
                     </div>
                   </div>
                 </DialogHeader>
-                <AppointmentForm 
-                  initialClientId={appointment.clients.id}
-                  onSuccess={() => {
-                    setBookNextOpen(false);
-                    onUpdate();
-                  }} 
-                />
+
+                {selectedSlot ? (
+                  <div className="space-y-6 animate-in slide-in-from-right-4 duration-300">
+                    <div className="p-4 bg-indigo-50 rounded-2xl border border-indigo-100 flex items-center justify-between">
+                      <div className="flex items-center gap-3">
+                        <div className="w-10 h-10 rounded-xl bg-white flex items-center justify-center text-indigo-600 shadow-sm">
+                          <Calendar size={20} />
+                        </div>
+                        <div>
+                          <p className="text-[10px] font-black text-indigo-400 uppercase tracking-widest">Selected Slot</p>
+                          <p className="text-sm font-bold text-indigo-900">
+                            {format(selectedSlot.date, "EEEE, MMM do")} @ {format(selectedSlot.date, "h:mm a")}
+                          </p>
+                        </div>
+                      </div>
+                      <Button 
+                        variant="ghost" 
+                        size="sm" 
+                        onClick={() => setSelectedSlot(null)}
+                        className="text-[10px] font-black uppercase tracking-widest text-indigo-600 hover:bg-indigo-100"
+                      >
+                        Change
+                      </Button>
+                    </div>
+
+                    <AppointmentForm 
+                      initialClientId={appointment.clients.id}
+                      initialDate={selectedSlot.date}
+                      initialTime={selectedSlot.time}
+                      slotTime={selectedSlot.slotTime}
+                      onSuccess={() => {
+                        setBookNextOpen(false);
+                        setSelectedSlot(null);
+                        onUpdate();
+                      }} 
+                    />
+                  </div>
+                ) : (
+                  <CompactAvailabilityPicker 
+                    onSlotSelect={(date, time, slotTime) => setSelectedSlot({ date, time, slotTime })}
+                  />
+                )}
               </div>
             </DialogContent>
           </Dialog>

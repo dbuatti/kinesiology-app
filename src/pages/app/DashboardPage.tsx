@@ -298,7 +298,7 @@ const Index = () => {
                     {lastJournalDate && (
                       <div className="p-4 bg-emerald-600/10 rounded-2xl border border-emerald-600/20 flex items-center gap-3">
                         <MessageSquare size={14} className="text-emerald-600" />
-                        <p className="text-xs font-bold text-emerald-900 dark:text-emerald-300">Last journal: {formatDistanceToNow(new Date(lastJournalDate))} ago</p>
+                        <p className="text-xs font-bold text-emerald-900 dark:text-indigo-300">Last journal: {formatDistanceToNow(new Date(lastJournalDate))} ago</p>
                       </div>
                     )}
                   </div>

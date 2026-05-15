@@ -45,10 +45,18 @@ import IdentitySmartTool from "@/components/crm/IdentitySmartTool";
 import { Progress } from "@/components/ui/progress";
 import PageHeader from "@/components/shared/PageHeader";
 
+import { useSearchParams } from "react-router-dom";
+
 const Index = () => {
   const { isPrivate } = usePrivacyMode();
   const { mode, setMode } = useAppMode();
-  const [view, setView] = useState<'hub' | 'dashboard'>('hub');
+  const [searchParams, setSearchParams] = useSearchParams();
+  const view = searchParams.get('view') || 'hub';
+  
+  const setView = (newView: 'hub' | 'dashboard') => {
+    setSearchParams({ view: newView });
+  };
+
   const [stats, setStats] = useState({
 
     clients: 0, 
@@ -203,126 +211,131 @@ const Index = () => {
 
   if (view === 'hub') {
     return (
-      <AppLayout>
-        <div className="min-h-[80vh] flex flex-col items-center justify-center py-12 px-4">
-          <div className="max-w-5xl w-full space-y-12">
-            <div className="text-center space-y-4">
-              <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-indigo-50 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-400 border border-indigo-100 dark:border-indigo-800/50 mb-4">
-                <Sparkles size={14} className="animate-pulse" />
-                <span className="text-[10px] font-black uppercase tracking-[0.2em]">Resonance Practice Suite</span>
+      <div className="min-h-[90vh] flex flex-col items-center justify-center py-12 px-4 relative overflow-hidden">
+        {/* BACKGROUND DECORATION */}
+        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full h-full -z-10 opacity-30 dark:opacity-20 pointer-events-none">
+          <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] bg-indigo-400 blur-[120px] rounded-full animate-pulse" />
+          <div className="absolute bottom-[-10%] right-[-10%] w-[40%] h-[40%] bg-emerald-400 blur-[120px] rounded-full animate-pulse delay-700" />
+          <div className="absolute top-[20%] right-[10%] w-[30%] h-[30%] bg-amber-400 blur-[120px] rounded-full animate-pulse delay-1000" />
+        </div>
+
+        <div className="max-w-6xl w-full space-y-16 relative z-10">
+          <div className="text-center space-y-6 max-w-3xl mx-auto">
+            <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/50 dark:bg-slate-900/50 backdrop-blur-md border border-slate-200 dark:border-slate-800 shadow-xl mb-4 animate-in fade-in slide-in-from-bottom-4 duration-700">
+              <Sparkles size={14} className="text-indigo-600 animate-pulse" />
+              <span className="text-[10px] font-black uppercase tracking-[0.3em] text-slate-600 dark:text-slate-400">Resonance Practice Suite</span>
+            </div>
+            <h1 className="text-5xl md:text-7xl font-serif font-bold text-slate-900 dark:text-white tracking-tight leading-[1.1] animate-in fade-in slide-in-from-bottom-6 duration-1000">
+              Where do you want to <span className="text-transparent bg-clip-text bg-gradient-to-r from-indigo-600 via-emerald-600 to-amber-600">focus</span> today?
+            </h1>
+            <p className="text-xl text-slate-500 dark:text-slate-400 font-medium leading-relaxed animate-in fade-in slide-in-from-bottom-8 duration-1000 delay-200">
+              Select a workspace to begin your clinical day, personal integration, or knowledge mastery.
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 px-4">
+            {/* CLINICAL HUB */}
+            <button
+              onClick={() => handleEnterMode('clinical')}
+              className="group relative flex flex-col text-left h-full animate-in fade-in slide-in-from-bottom-10 duration-1000 delay-300"
+            >
+              <div className="absolute inset-0 bg-indigo-600 rounded-[3rem] translate-y-4 translate-x-4 opacity-0 group-hover:opacity-20 transition-all duration-700 blur-2xl" />
+              <Card className="relative h-full border-none shadow-2xl shadow-slate-200/50 dark:shadow-none rounded-[3rem] bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl overflow-hidden transition-all duration-700 group-hover:-translate-y-4 group-hover:ring-2 group-hover:ring-indigo-500/50">
+                <CardContent className="p-10 flex flex-col h-full">
+                  <div className="w-16 h-16 rounded-2xl bg-indigo-600 text-white flex items-center justify-center mb-10 shadow-xl shadow-indigo-500/40 group-hover:scale-110 group-hover:rotate-3 transition-all duration-700">
+                    <Activity size={32} />
+                  </div>
+                  <div className="space-y-4 mb-10">
+                    <h3 className="text-3xl font-bold text-slate-900 dark:text-white">Clinical Hub</h3>
+                    <p className="text-base text-slate-500 dark:text-slate-400 leading-relaxed font-medium">
+                      Manage your practice, track client progress, and execute clinical sessions with precision.
+                    </p>
+                  </div>
+                  <div className="mt-auto pt-8 border-t border-slate-100 dark:border-slate-800 flex items-center justify-between">
+                    <span className="text-xs font-black uppercase tracking-[0.2em] text-slate-400 group-hover:text-indigo-600 transition-colors">Enter Workspace</span>
+                    <div className="w-10 h-10 rounded-full bg-slate-900 dark:bg-white text-white dark:text-slate-900 flex items-center justify-center group-hover:bg-indigo-600 group-hover:text-white transition-all duration-500">
+                      <ArrowRight size={20} />
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            </button>
+
+            {/* PRACTICE LAB */}
+            <button
+              onClick={() => handleEnterMode('lab')}
+              className="group relative flex flex-col text-left h-full animate-in fade-in slide-in-from-bottom-10 duration-1000 delay-400"
+            >
+              <div className="absolute inset-0 bg-emerald-600 rounded-[3rem] translate-y-4 translate-x-4 opacity-0 group-hover:opacity-20 transition-all duration-700 blur-2xl" />
+              <Card className="relative h-full border-none shadow-2xl shadow-slate-200/50 dark:shadow-none rounded-[3rem] bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl overflow-hidden transition-all duration-700 group-hover:-translate-y-4 group-hover:ring-2 group-hover:ring-emerald-500/50">
+                <CardContent className="p-10 flex flex-col h-full">
+                  <div className="w-16 h-16 rounded-2xl bg-emerald-600 text-white flex items-center justify-center mb-10 shadow-xl shadow-emerald-500/40 group-hover:scale-110 group-hover:-rotate-3 transition-all duration-700">
+                    <Zap size={32} />
+                  </div>
+                  <div className="space-y-4 mb-10">
+                    <h3 className="text-3xl font-bold text-slate-900 dark:text-white">Practice Lab</h3>
+                    <p className="text-base text-slate-500 dark:text-slate-400 leading-relaxed font-medium">
+                      Establish your practitioner state, journal reflections, and explore identity shifting tools.
+                    </p>
+                  </div>
+                  <div className="mt-auto pt-8 border-t border-slate-100 dark:border-slate-800 flex items-center justify-between">
+                    <span className="text-xs font-black uppercase tracking-[0.2em] text-slate-400 group-hover:text-emerald-600 transition-colors">Enter Workspace</span>
+                    <div className="w-10 h-10 rounded-full bg-slate-900 dark:bg-white text-white dark:text-slate-900 flex items-center justify-center group-hover:bg-emerald-600 group-hover:text-white transition-all duration-500">
+                      <ArrowRight size={20} />
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            </button>
+
+            {/* KNOWLEDGE HUB */}
+            <button
+              onClick={() => handleEnterMode('library')}
+              className="group relative flex flex-col text-left h-full animate-in fade-in slide-in-from-bottom-10 duration-1000 delay-500"
+            >
+              <div className="absolute inset-0 bg-amber-600 rounded-[3rem] translate-y-4 translate-x-4 opacity-0 group-hover:opacity-20 transition-all duration-700 blur-2xl" />
+              <Card className="relative h-full border-none shadow-2xl shadow-slate-200/50 dark:shadow-none rounded-[3rem] bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl overflow-hidden transition-all duration-700 group-hover:-translate-y-4 group-hover:ring-2 group-hover:ring-amber-500/50">
+                <CardContent className="p-10 flex flex-col h-full">
+                  <div className="w-16 h-16 rounded-2xl bg-amber-600 text-white flex items-center justify-center mb-10 shadow-xl shadow-amber-500/40 group-hover:scale-110 group-hover:rotate-3 transition-all duration-700">
+                    <BookOpen size={32} />
+                  </div>
+                  <div className="space-y-4 mb-10">
+                    <h3 className="text-3xl font-bold text-slate-900 dark:text-white">Knowledge Hub</h3>
+                    <p className="text-base text-slate-500 dark:text-slate-400 leading-relaxed font-medium">
+                      Master the FNH protocols, study the clinical bible, and sharpen your skills with quizzes.
+                    </p>
+                  </div>
+                  <div className="mt-auto pt-8 border-t border-slate-100 dark:border-slate-800 flex items-center justify-between">
+                    <span className="text-xs font-black uppercase tracking-[0.2em] text-slate-400 group-hover:text-amber-600 transition-colors">Enter Workspace</span>
+                    <div className="w-10 h-10 rounded-full bg-slate-900 dark:bg-white text-white dark:text-slate-900 flex items-center justify-center group-hover:bg-amber-600 group-hover:text-white transition-all duration-500">
+                      <ArrowRight size={20} />
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            </button>
+          </div>
+
+          <div className="pt-12 flex justify-center animate-in fade-in duration-1000 delay-700">
+            <div className="flex items-center gap-12 text-slate-400 bg-white/50 dark:bg-slate-900/50 backdrop-blur-md px-10 py-6 rounded-[2rem] border border-slate-200 dark:border-slate-800 shadow-lg">
+              <div className="flex flex-col items-center gap-1">
+                <span className="text-2xl font-bold text-slate-900 dark:text-white">{stats.clients}</span>
+                <span className="text-[9px] font-black uppercase tracking-[0.2em]">Total Clients</span>
               </div>
-              <h1 className="text-4xl md:text-6xl font-serif font-bold text-slate-900 dark:text-white tracking-tight">
-                Choose Your Focus.
-              </h1>
-              <p className="text-lg text-slate-500 dark:text-slate-400 max-w-2xl mx-auto font-medium">
-                Select a workspace to begin your clinical day, personal integration, or knowledge mastery.
-              </p>
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-              {/* CLINICAL HUB */}
-              <button
-                onClick={() => handleEnterMode('clinical')}
-                className="group relative flex flex-col text-left h-full"
-              >
-                <div className="absolute inset-0 bg-indigo-600 rounded-[2.5rem] translate-y-2 translate-x-2 opacity-0 group-hover:opacity-10 transition-all duration-500" />
-                <Card className="relative h-full border-2 border-slate-100 dark:border-slate-800 shadow-sm rounded-[2.5rem] bg-white dark:bg-slate-900 overflow-hidden transition-all duration-500 group-hover:-translate-y-2 group-hover:border-indigo-500/50 group-hover:shadow-2xl group-hover:shadow-indigo-500/10">
-                  <CardContent className="p-8 flex flex-col h-full">
-                    <div className="w-14 h-14 rounded-2xl bg-indigo-50 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-400 flex items-center justify-center mb-8 group-hover:scale-110 group-hover:bg-indigo-600 group-hover:text-white transition-all duration-500">
-                      <Activity size={28} />
-                    </div>
-                    <div className="space-y-3 mb-8">
-                      <h3 className="text-2xl font-bold text-slate-900 dark:text-white">Clinical Hub</h3>
-                      <p className="text-sm text-slate-500 dark:text-slate-400 leading-relaxed font-medium">
-                        Manage your practice, track client progress, and execute clinical sessions with precision.
-                      </p>
-                    </div>
-                    <div className="mt-auto pt-6 border-t border-slate-50 dark:border-slate-800 flex items-center justify-between">
-                      <span className="text-[10px] font-black uppercase tracking-widest text-slate-400 group-hover:text-indigo-600 transition-colors">Enter Workspace</span>
-                      <div className="w-8 h-8 rounded-full bg-slate-50 dark:bg-slate-800 flex items-center justify-center group-hover:bg-indigo-600 group-hover:text-white transition-all">
-                        <ArrowRight size={16} />
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
-              </button>
-
-              {/* PRACTICE LAB */}
-              <button
-                onClick={() => handleEnterMode('lab')}
-                className="group relative flex flex-col text-left h-full"
-              >
-                <div className="absolute inset-0 bg-emerald-600 rounded-[2.5rem] translate-y-2 translate-x-2 opacity-0 group-hover:opacity-10 transition-all duration-500" />
-                <Card className="relative h-full border-2 border-slate-100 dark:border-slate-800 shadow-sm rounded-[2.5rem] bg-white dark:bg-slate-900 overflow-hidden transition-all duration-500 group-hover:-translate-y-2 group-hover:border-emerald-500/50 group-hover:shadow-2xl group-hover:shadow-emerald-500/10">
-                  <CardContent className="p-8 flex flex-col h-full">
-                    <div className="w-14 h-14 rounded-2xl bg-emerald-50 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400 flex items-center justify-center mb-8 group-hover:scale-110 group-hover:bg-emerald-600 group-hover:text-white transition-all duration-500">
-                      <Zap size={28} />
-                    </div>
-                    <div className="space-y-3 mb-8">
-                      <h3 className="text-2xl font-bold text-slate-900 dark:text-white">Practice Lab</h3>
-                      <p className="text-sm text-slate-500 dark:text-slate-400 leading-relaxed font-medium">
-                        Establish your practitioner state, journal reflections, and explore identity shifting tools.
-                      </p>
-                    </div>
-                    <div className="mt-auto pt-6 border-t border-slate-50 dark:border-slate-800 flex items-center justify-between">
-                      <span className="text-[10px] font-black uppercase tracking-widest text-slate-400 group-hover:text-emerald-600 transition-colors">Enter Workspace</span>
-                      <div className="w-8 h-8 rounded-full bg-slate-50 dark:bg-slate-800 flex items-center justify-center group-hover:bg-emerald-600 group-hover:text-white transition-all">
-                        <ArrowRight size={16} />
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
-              </button>
-
-              {/* KNOWLEDGE HUB */}
-              <button
-                onClick={() => handleEnterMode('library')}
-                className="group relative flex flex-col text-left h-full"
-              >
-                <div className="absolute inset-0 bg-amber-600 rounded-[2.5rem] translate-y-2 translate-x-2 opacity-0 group-hover:opacity-10 transition-all duration-500" />
-                <Card className="relative h-full border-2 border-slate-100 dark:border-slate-800 shadow-sm rounded-[2.5rem] bg-white dark:bg-slate-900 overflow-hidden transition-all duration-500 group-hover:-translate-y-2 group-hover:border-amber-500/50 group-hover:shadow-2xl group-hover:shadow-amber-500/10">
-                  <CardContent className="p-8 flex flex-col h-full">
-                    <div className="w-14 h-14 rounded-2xl bg-amber-50 dark:bg-amber-900/30 text-amber-600 dark:text-amber-400 flex items-center justify-center mb-8 group-hover:scale-110 group-hover:bg-amber-600 group-hover:text-white transition-all duration-500">
-                      <BookOpen size={28} />
-                    </div>
-                    <div className="space-y-3 mb-8">
-                      <h3 className="text-2xl font-bold text-slate-900 dark:text-white">Knowledge Hub</h3>
-                      <p className="text-sm text-slate-500 dark:text-slate-400 leading-relaxed font-medium">
-                        Master the FNH protocols, study the clinical bible, and sharpen your skills with quizzes.
-                      </p>
-                    </div>
-                    <div className="mt-auto pt-6 border-t border-slate-50 dark:border-slate-800 flex items-center justify-between">
-                      <span className="text-[10px] font-black uppercase tracking-widest text-slate-400 group-hover:text-amber-600 transition-colors">Enter Workspace</span>
-                      <div className="w-8 h-8 rounded-full bg-slate-50 dark:bg-slate-800 flex items-center justify-center group-hover:bg-amber-600 group-hover:text-white transition-all">
-                        <ArrowRight size={16} />
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
-              </button>
-            </div>
-
-            <div className="pt-8 flex justify-center">
-              <div className="flex items-center gap-8 text-slate-400">
-                <div className="flex flex-col items-center gap-1">
-                  <span className="text-xl font-bold text-slate-900 dark:text-white">{stats.clients}</span>
-                  <span className="text-[8px] font-black uppercase tracking-widest">Total Clients</span>
-                </div>
-                <div className="w-px h-8 bg-slate-100 dark:bg-slate-800" />
-                <div className="flex flex-col items-center gap-1">
-                  <span className="text-xl font-bold text-slate-900 dark:text-white">{stats.appointments}</span>
-                  <span className="text-[8px] font-black uppercase tracking-widest">Total Sessions</span>
-                </div>
-                <div className="w-px h-8 bg-slate-100 dark:bg-slate-800" />
-                <div className="flex flex-col items-center gap-1">
-                  <span className="text-xl font-bold text-slate-900 dark:text-white">{morningProgress}%</span>
-                  <span className="text-[8px] font-black uppercase tracking-widest">Daily Readiness</span>
-                </div>
+              <div className="w-px h-10 bg-slate-200 dark:bg-slate-800" />
+              <div className="flex flex-col items-center gap-1">
+                <span className="text-2xl font-bold text-slate-900 dark:text-white">{stats.appointments}</span>
+                <span className="text-[9px] font-black uppercase tracking-[0.2em]">Total Sessions</span>
+              </div>
+              <div className="w-px h-10 bg-slate-200 dark:bg-slate-800" />
+              <div className="flex flex-col items-center gap-1">
+                <span className="text-2xl font-bold text-indigo-600">{morningProgress}%</span>
+                <span className="text-[9px] font-black uppercase tracking-[0.2em]">Daily Readiness</span>
               </div>
             </div>
           </div>
         </div>
-      </AppLayout>
+      </div>
     );
   }
 

@@ -26,12 +26,13 @@ const AppLayout = ({
   return (
     <div
       className={cn(
-        "w-full min-h-screen bg-background mx-auto px-6 transition-all duration-300",
+        "w-full min-h-screen mx-auto px-6 transition-all duration-300",
         hasFixedHeader ? "pt-16 pb-12" : "pt-4 pb-12",
         maxWidthClass,
         className
       )}
     >
+
       <AnimatePresence mode="wait">
         <motion.div
           key={location.pathname}

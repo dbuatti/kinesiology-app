@@ -104,7 +104,7 @@ const QuickActions = () => {
                   className="rounded-2xl py-5 px-6 cursor-pointer group transition-all hover:bg-rose-50"
                 >
                   <div className="w-12 h-12 rounded-xl bg-rose-50 flex items-center justify-center mr-5 group-hover:bg-rose-100 transition-colors shadow-inner">
-                    <Calendar size={24} className="text-rose-600" />
+                    <CalendarPlus size={24} className="text-rose-600" />
                   </div>
                   <div className="flex-1">
                     <span className="font-black text-base block text-slate-900">Book Session</span>

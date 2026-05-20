@@ -40,6 +40,7 @@ serve(async (req) => {
       'Notion-Version': '2022-06-28'
     }
 
+    const action = body.action;
     const clientId = body.clientId || body.client?.id;
     const appointmentId = body.appointmentId || body.appointment?.id;
 
@@ -343,6 +344,33 @@ serve(async (req) => {
 
       return { id: clientPageId, url: clientPageUrl };
     };
+
+    // Flow 0: Sync All Clients
+    if (action === 'sync-all-clients') {
+      console.log(`[${functionName}] Starting bulk client sync...`);
+      const { data: clients, error: fetchError } = await supabase
+        .from('clients')
+        .select('*')
+        .or('is_practitioner.eq.false,is_practitioner.is.null');
+
+      if (fetchError) throw fetchError;
+
+      let count = 0;
+      for (const client of (clients || [])) {
+        try {
+          await syncClientToNotion(client);
+          count++;
+        } catch (e) {
+          console.error(`[${functionName}] Failed to sync client ${client.name}:`, e.message);
+        }
+      }
+
+      console.log(`[${functionName}] Bulk client sync complete. Synced: ${count}`);
+      return new Response(JSON.stringify({ success: true, syncedCount: count }), { 
+        status: 200, 
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
+      });
+    }
 
     // Flow 1: Sync Client Only
     if (clientId && !appointmentId) {

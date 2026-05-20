@@ -37,6 +37,7 @@ const SettingsPage = () => {
   const [copied, setCopied] = useState<string | null>(null);
   const [initializingStripe, setInitializingStripe] = useState(false);
   const [syncingAll, setSyncingAll] = useState(false);
+  const [syncingNotionAll, setSyncingNotionAll] = useState(false);
 
   const projectRef = "xebtjnvfkroiplyzftas";
   const webhookUrl = `https://${projectRef}.supabase.co/functions/v1/calcom-webhook`;
@@ -170,8 +171,8 @@ const SettingsPage = () => {
                     <h4 className="font-black text-slate-900 dark:text-white text-sm uppercase tracking-tight">2. Bulk Sync Clients</h4>
                     <p className="text-xs text-slate-500 leading-relaxed">Push all existing CRM clients into your Stripe customer list.</p>
                   </div>
-                  <Button 
-                    onClick={handleSyncAllToStripe} 
+                  <Button
+                    onClick={handleSyncAllToStripe}
                     disabled={syncingAll}
                     className="w-full bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl h-10 font-black text-[10px] uppercase tracking-widest shadow-lg"
                   >
@@ -189,6 +190,31 @@ const SettingsPage = () => {
                 <p className="text-xs text-amber-800 dark:text-amber-200 font-medium">
                   New bookings from Cal.com will now automatically create Stripe customers. Use the button above to sync your current database.
                 </p>
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card className="border-none shadow-xl rounded-[2.5rem] bg-white dark:bg-slate-950 overflow-hidden border-2 border-purple-100">
+            <CardHeader className="p-8 pb-4 bg-purple-50/50">
+              <CardTitle className="text-xl font-black flex items-center gap-3 text-purple-900">
+                <Layers size={24} /> Notion Client Database Sync
+              </CardTitle>
+              <CardDescription className="text-purple-700 font-medium">Bulk sync all existing CRM clients to your Notion Client Database.</CardDescription>
+            </CardHeader>
+            <CardContent className="p-8 pt-0 space-y-6">
+              <div className="p-6 bg-white dark:bg-slate-900 rounded-3xl border border-purple-100 dark:border-purple-900/30 space-y-4">
+                <div className="space-y-1">
+                  <h4 className="font-black text-slate-900 dark:text-white text-sm uppercase tracking-tight">Bulk Sync Clients</h4>
+                  <p className="text-xs text-slate-500 leading-relaxed">Push all existing CRM clients into your Notion Client Database.</p>
+                </div>
+                <Button
+                  onClick={handleSyncAllToNotion}
+                  disabled={syncingNotionAll}
+                  className="w-full bg-purple-600 hover:bg-purple-700 text-white rounded-xl h-10 font-black text-[10px] uppercase tracking-widest shadow-lg"
+                >
+                  {syncingNotionAll ? <Loader2 className="mr-2 animate-spin" /> : <Layers size={16} className="mr-2" />}
+                  Sync All to Notion
+                </Button>
               </div>
             </CardContent>
           </Card>

@@ -127,7 +127,7 @@ serve(async (req) => {
           type: "bulleted_list_item",
           bulleted_list_item: {
             rich_text: [
-              { text: { content: "Pronouns: ", bold: true } },
+              { text: { content: "Pronouns: " }, annotations: { bold: true } },
               { text: { content: appointment.clients?.pronouns || "Not provided" } }
             ]
           }
@@ -137,7 +137,7 @@ serve(async (req) => {
           type: "bulleted_list_item",
           bulleted_list_item: {
             rich_text: [
-              { text: { content: "Date of Birth: ", bold: true } },
+              { text: { content: "Date of Birth: " }, annotations: { bold: true } },
               { text: { content: appointment.clients?.born ? new Date(appointment.clients.born).toLocaleDateString() : "Not provided" } }
             ]
           }
@@ -147,7 +147,7 @@ serve(async (req) => {
           type: "bulleted_list_item",
           bulleted_list_item: {
             rich_text: [
-              { text: { content: "Occupation: ", bold: true } },
+              { text: { content: "Occupation: " }, annotations: { bold: true } },
               { text: { content: appointment.clients?.occupation || "Not provided" } }
             ]
           }
@@ -157,7 +157,7 @@ serve(async (req) => {
           type: "bulleted_list_item",
           bulleted_list_item: {
             rich_text: [
-              { text: { content: "Medical History: ", bold: true } },
+              { text: { content: "Medical History: " }, annotations: { bold: true } },
               { text: { content: appointment.clients?.medical_history || "None reported" } }
             ]
           }
@@ -167,7 +167,7 @@ serve(async (req) => {
           type: "bulleted_list_item",
           bulleted_list_item: {
             rich_text: [
-              { text: { content: "Medications & Supplements: ", bold: true } },
+              { text: { content: "Medications & Supplements: " }, annotations: { bold: true } },
               { text: { content: appointment.medications_supplements || appointment.clients?.medications_supplements || "None" } }
             ]
           }
@@ -177,7 +177,7 @@ serve(async (req) => {
           type: "bulleted_list_item",
           bulleted_list_item: {
             rich_text: [
-              { text: { content: "Sleep Quality: ", bold: true } },
+              { text: { content: "Sleep Quality: " }, annotations: { bold: true } },
               { text: { content: appointment.sleep_quality || appointment.clients?.sleep_quality || "Not provided" } }
             ]
           }
@@ -187,7 +187,7 @@ serve(async (req) => {
           type: "bulleted_list_item",
           bulleted_list_item: {
             rich_text: [
-              { text: { content: "Digestive Health: ", bold: true } },
+              { text: { content: "Digestive Health: " }, annotations: { bold: true } },
               { text: { content: appointment.digestive_health || appointment.clients?.digestive_health || "Not provided" } }
             ]
           }
@@ -197,7 +197,7 @@ serve(async (req) => {
           type: "bulleted_list_item",
           bulleted_list_item: {
             rich_text: [
-              { text: { content: "Current Stress Level: ", bold: true } },
+              { text: { content: "Current Stress Level: " }, annotations: { bold: true } },
               { text: { content: String(appointment.current_stress_level || appointment.clients?.current_stress_level || "Not provided") } }
             ]
           }
@@ -207,7 +207,7 @@ serve(async (req) => {
           type: "bulleted_list_item",
           bulleted_list_item: {
             rich_text: [
-              { text: { content: "Emergency Contact: ", bold: true } },
+              { text: { content: "Emergency Contact: " }, annotations: { bold: true } },
               { text: { content: appointment.clients?.emergency_contact_name ? `${appointment.clients.emergency_contact_name} (${appointment.clients.emergency_contact_phone || 'No phone'})` : "Not provided" } }
             ]
           }
@@ -217,7 +217,7 @@ serve(async (req) => {
           type: "bulleted_list_item",
           bulleted_list_item: {
             rich_text: [
-              { text: { content: "Referral Source: ", bold: true } },
+              { text: { content: "Referral Source: " }, annotations: { bold: true } },
               { text: { content: appointment.clients?.referral_source || "Not provided" } }
             ]
           }
@@ -232,7 +232,7 @@ serve(async (req) => {
           type: "paragraph",
           paragraph: {
             rich_text: [
-              { text: { content: "🔗 Open in CRM: ", bold: true } },
+              { text: { content: "🔗 Open in CRM: " }, annotations: { bold: true } },
               { text: { content: `${origin}/appointments/${appointment.id}`, link: { url: `${origin}/appointments/${appointment.id}` } } }
             ]
           }

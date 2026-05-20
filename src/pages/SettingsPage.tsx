@@ -2,28 +2,29 @@
 
 import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
-import { 
-  Settings, 
-  User, 
-  LogOut, 
-  Mail, 
-  Loader2, 
-  RefreshCw, 
-  Zap, 
-  Info, 
-  Calendar, 
-  Copy, 
-  Check, 
-  ShieldCheck, 
-  Link as LinkIcon, 
-  Sparkles, 
-  Globe, 
-  CreditCard, 
+import {
+  Settings,
+  User,
+  LogOut,
+  Mail,
+  Loader2,
+  RefreshCw,
+  Zap,
+  Info,
+  Calendar,
+  Copy,
+  Check,
+  ShieldCheck,
+  Link as LinkIcon,
+  Sparkles,
+  Globe,
+  CreditCard,
   DollarSign,
   Users,
   FileText,
   ArrowRight,
-  LayoutGrid
+  LayoutGrid,
+  Layers
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";

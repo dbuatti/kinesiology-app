@@ -60,14 +60,14 @@ serve(async (req) => {
     console.log(`[${functionName}] Syncing appointment: ${appointmentName} (${appointmentId})`);
 
     // Prepare properties for Main Appointments DB
+    // Note: "🎛️ Modes & Balances" and "🔺 Acupoints" are relation properties in Notion,
+    // so we cannot write text to them. We omit them here and append them to the page body instead.
     const mainProps = {
       "Name": { title: [{ text: { content: appointmentName } }] },
       "Date": { date: { start: appointment.date } },
       "Goal": { rich_text: [{ text: { content: appointment.goal || "" } }] },
       "Issue": { multi_select: [{ name: appointment.tag || "Kinesiology" }] },
-      "Notes": { rich_text: [{ text: { content: `${appointment.issue ? `ISSUE: ${appointment.issue}\n\n` : ''}${appointment.notes || ""}` } }] },
-      "🎛️ Modes & Balances": { rich_text: [{ text: { content: appointment.modes_balances || "" } }] },
-      "🔺 Acupoints": { rich_text: [{ text: { content: appointment.acupoints || "" } }] }
+      "Notes": { rich_text: [{ text: { content: `${appointment.issue ? `ISSUE: ${appointment.issue}\n\n` : ''}${appointment.notes || ""}` } }] }
     }
 
     let mainPageId = appointment.notion_page_id;
@@ -219,6 +219,33 @@ serve(async (req) => {
             rich_text: [
               { text: { content: "Referral Source: " }, annotations: { bold: true } },
               { text: { content: appointment.clients?.referral_source || "Not provided" } }
+            ]
+          }
+        },
+        {
+          object: "block",
+          type: "heading_2",
+          heading_2: {
+            rich_text: [{ text: { content: "🎛️ Clinical Findings & Corrections" } }]
+          }
+        },
+        {
+          object: "block",
+          type: "bulleted_list_item",
+          bulleted_list_item: {
+            rich_text: [
+              { text: { content: "Modes & Balances: " }, annotations: { bold: true } },
+              { text: { content: appointment.modes_balances || "None recorded yet" } }
+            ]
+          }
+        },
+        {
+          object: "block",
+          type: "bulleted_list_item",
+          bulleted_list_item: {
+            rich_text: [
+              { text: { content: "Acupoints: " }, annotations: { bold: true } },
+              { text: { content: appointment.acupoints || "None recorded yet" } }
             ]
           }
         },

@@ -2,16 +2,17 @@
 
 import React, { useMemo, useState, useEffect } from 'react';
 import { format } from 'date-fns';
-import { 
-  Check, 
-  FileText, 
-  Printer, 
-  ArrowLeft, 
-  Save, 
+import {
+  Check,
+  FileText,
+  Printer,
+  ArrowLeft,
+  Save,
   Loader2,
   Clock,
   ChevronRight,
-  AlertCircle
+  AlertCircle,
+  ExternalLink
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Checkbox } from '@/components/ui/checkbox';
@@ -150,6 +151,13 @@ const SessionDocumentView = ({
             <p className="text-[8px] font-black text-slate-400 uppercase tracking-widest">Last Sync</p>
             <p className="text-[10px] font-bold tabular-nums">{format(lastSaved, "HH:mm:ss")}</p>
           </div>
+          {appointment.notion_link && (
+            <Button asChild variant="outline" size="sm" className="rounded-none border-black font-black text-[10px] uppercase tracking-widest h-9 px-4 hover:bg-slate-50">
+              <a href={appointment.notion_link} target="_blank" rel="noopener noreferrer">
+                <ExternalLink size={14} className="mr-2" /> Notion
+              </a>
+            </Button>
+          )}
           <Button variant="outline" size="sm" onClick={() => window.print()} className="rounded-none border-black font-black text-[10px] uppercase tracking-widest h-9 px-4 hover:bg-slate-50">
             <Printer size={14} className="mr-2" /> Print
           </Button>

@@ -2,20 +2,21 @@
 
 import React, { useState, useEffect, useMemo, useCallback } from "react";
 import { useParams, useNavigate, Link } from "react-router-dom";
-import { 
-  Loader2, 
-  ArrowLeft, 
-  FileText, 
-  MoreHorizontal, 
-  ChevronDown, 
-  RefreshCw, 
-  Sparkles, 
-  Printer, 
+import {
+  Loader2,
+  ArrowLeft,
+  FileText,
+  MoreHorizontal,
+  ChevronDown,
+  RefreshCw,
+  Sparkles,
+  Printer,
   Link as LinkIcon,
   Activity,
   ShieldCheck,
   Clock,
-  Calendar
+  Calendar,
+  ExternalLink
 } from "lucide-react";
 import { isToday, format } from "date-fns";
 
@@ -256,6 +257,14 @@ const AppointmentDetailPage = () => {
             </div>
 
             <div className="flex items-center gap-4">
+              {appointment.notion_link && (
+                <Button asChild variant="outline" size="sm" className="h-14 px-8 gap-3 border-slate-200 bg-white rounded-2xl font-black text-[10px] uppercase tracking-widest text-slate-600 hover:bg-slate-50 hover:border-indigo-200 transition-all shadow-sm">
+                  <a href={appointment.notion_link} target="_blank" rel="noopener noreferrer">
+                    <ExternalLink size={20} className="text-emerald-600" /> Open in Notion
+                  </a>
+                </Button>
+              )}
+
               <Button variant="outline" size="sm" onClick={() => setIsDocumentView(true)} className="h-14 px-8 gap-3 border-slate-200 bg-white rounded-2xl font-black text-[10px] uppercase tracking-widest text-slate-600 hover:bg-slate-50 hover:border-indigo-200 transition-all shadow-sm">
                 <FileText size={20} className="text-indigo-600" /> Document View
               </Button>

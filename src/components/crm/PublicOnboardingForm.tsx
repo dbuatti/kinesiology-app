@@ -133,6 +133,31 @@ const PublicOnboardingForm = ({ clientId, appointmentId, initialData, onSuccess 
         if (appError) console.error("Failed to update specific appointment:", appError);
       }
 
+      // Trigger Notion Sync to update the page with onboarding details
+      let targetAppointmentId = appointmentId;
+      if (!targetAppointmentId) {
+        const { data: recentApp } = await supabase
+          .from('appointments')
+          .select('id')
+          .eq('client_id', clientId)
+          .order('date', { ascending: false })
+          .limit(1)
+          .maybeSingle();
+        if (recentApp) {
+          targetAppointmentId = recentApp.id;
+        }
+      }
+
+      if (targetAppointmentId) {
+        try {
+          await supabase.functions.invoke('sync-to-notion', {
+            body: { appointmentId: targetAppointmentId, origin: window.location.origin }
+          });
+        } catch (notionErr) {
+          console.error("Notion sync failed, but continuing...", notionErr);
+        }
+      }
+
       // 3. Trigger Kit Sync
       setSyncStatus('syncing');
       try {

@@ -126,6 +126,8 @@ export interface Client {
   current_stress_level?: number | null;
   sleep_quality?: string | null;
   digestive_health?: string | null;
+  notion_page_id?: string | null;
+  notion_link?: string | null;
 }
 
 export interface AppointmentWithClient extends Appointment {

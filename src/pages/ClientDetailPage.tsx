@@ -60,6 +60,7 @@ const ClientDetailPage = () => {
   const [sendingEmail, setSendingEmail] = useState(false);
   const [syncingKit, setSyncingKit] = useState(false);
   const [syncingStripe, setSyncingStripe] = useState(false);
+  const [syncingNotion, setSyncingNotion] = useState(false);
   const [generatingLink, setGeneratingLink] = useState<string | null>(null);
   const [assessmentModal, setAssessmentModal] = useState<{ open: boolean; type: 'bolt' | 'coherence' } | null>(null);
   const { addRecentClient } = useRecentClients();
@@ -162,6 +163,28 @@ const ClientDetailPage = () => {
       showError(err.message || "Failed to sync to Stripe.");
     } finally {
       setSyncingStripe(false);
+    }
+  };
+
+  const handleSyncToNotion = async () => {
+    if (!client) return;
+    setSyncingNotion(true);
+    try {
+      const { data, error } = await supabase.functions.invoke('sync-to-notion', {
+        body: {
+          clientId: client.id,
+          origin: window.location.origin
+        }
+      });
+
+      if (error) throw error;
+
+      showSuccess(`Synced ${client.name} to Notion Client Database!`);
+      fetchClientData();
+    } catch (err: any) {
+      showError(err.message || "Failed to sync to Notion.");
+    } finally {
+      setSyncingNotion(false);
     }
   };
 
@@ -292,9 +315,9 @@ const ClientDetailPage = () => {
               >
                 <Activity size={14} className="mr-2" /> Log COH
               </Button>
-              <Button 
-                variant="outline" 
-                size="sm" 
+              <Button
+                variant="outline"
+                size="sm"
                 className="bg-indigo-50 border-indigo-100 text-indigo-600 hover:bg-indigo-100 rounded-xl font-bold h-10"
                 onClick={handleSendOnboardingEmail}
                 disabled={sendingEmail || !client.email}
@@ -302,6 +325,16 @@ const ClientDetailPage = () => {
                 {sendingEmail ? <Loader2 size={16} className="mr-2 animate-spin" /> : <Send size={16} className="mr-2" />}
                 Send Onboarding
               </Button>
+              {client.notion_link && (
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="bg-purple-50 border-purple-100 text-purple-600 hover:bg-purple-100 rounded-xl font-black text-[10px] uppercase tracking-widest h-10 px-4"
+                  onClick={() => window.open(client.notion_link, '_blank')}
+                >
+                  <ExternalLink size={14} className="mr-2" /> Open in Notion
+                </Button>
+              )}
               <Dialog open={editOpen} onOpenChange={setEditOpen}>
                 <DialogTrigger asChild>
                   <Button variant="outline" size="sm" className="bg-white rounded-xl border-slate-200 h-10">
@@ -402,9 +435,9 @@ const ClientDetailPage = () => {
                         </div>
                         <span className="text-xs font-bold text-slate-700">Stripe Sync</span>
                       </div>
-                      <Button 
-                        variant="ghost" 
-                        size="sm" 
+                      <Button
+                        variant="ghost"
+                        size="sm"
                         onClick={handleSyncToStripe}
                         disabled={syncingStripe}
                         className="h-8 text-[10px] font-black uppercase tracking-widest text-blue-600 hover:bg-blue-50"
@@ -412,6 +445,37 @@ const ClientDetailPage = () => {
                         {syncingStripe ? <Loader2 size={14} className="animate-spin" /> : <RefreshCw size={14} className="mr-1.5" />}
                         {(client as any).stripe_customer_id ? 'Update' : 'Sync'}
                       </Button>
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-3">
+                        <div className="w-8 h-8 rounded-lg bg-purple-50 flex items-center justify-center text-purple-600">
+                          <ExternalLink size={16} />
+                        </div>
+                        <span className="text-xs font-bold text-slate-700">Notion Sync</span>
+                      </div>
+                      <div className="flex items-center gap-1.5">
+                        {client.notion_link && (
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            onClick={() => window.open(client.notion_link, '_blank')}
+                            className="h-8 w-8 text-purple-600 hover:bg-purple-50 rounded-lg"
+                            title="Open in Notion"
+                          >
+                            <ExternalLink size={14} />
+                          </Button>
+                        )}
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={handleSyncToNotion}
+                          disabled={syncingNotion}
+                          className="h-8 text-[10px] font-black uppercase tracking-widest text-purple-600 hover:bg-purple-50"
+                        >
+                          {syncingNotion ? <Loader2 size={14} className="animate-spin" /> : <RefreshCw size={14} className="mr-1.5" />}
+                          {client.notion_link ? 'Update' : 'Sync'}
+                        </Button>
+                      </div>
                     </div>
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-3">

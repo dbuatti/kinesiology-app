@@ -1,0 +1,1 @@
+SELECT routine_name, routine_definition FROM information_schema.routines WHERE routine_schema = 'public' AND routine_name IN ('fn_sync_new_client', 'sync_client_to_kit');

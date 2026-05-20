@@ -80,6 +80,24 @@ const SettingsPage = () => {
     }
   };
 
+  const handleSyncAllToNotion = async () => {
+    setSyncingNotionAll(true);
+    try {
+      const { data, error } = await supabase.functions.invoke('sync-to-notion', {
+        body: { 
+          action: 'sync-all-clients',
+          origin: window.location.origin
+        }
+      });
+      if (error) throw error;
+      showSuccess(`Successfully synced ${data.syncedCount} clients to Notion!`);
+    } catch (err: any) {
+      showError(err.message);
+    } finally {
+      setSyncingNotionAll(false);
+    }
+  };
+
   const handleSignOut = async () => {
     try {
       await supabase.auth.signOut();
@@ -172,8 +190,8 @@ const SettingsPage = () => {
                     <h4 className="font-black text-slate-900 dark:text-white text-sm uppercase tracking-tight">2. Bulk Sync Clients</h4>
                     <p className="text-xs text-slate-500 leading-relaxed">Push all existing CRM clients into your Stripe customer list.</p>
                   </div>
-                  <Button
-                    onClick={handleSyncAllToStripe}
+                  <Button 
+                    onClick={handleSyncAllToStripe} 
                     disabled={syncingAll}
                     className="w-full bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl h-10 font-black text-[10px] uppercase tracking-widest shadow-lg"
                   >
@@ -208,8 +226,8 @@ const SettingsPage = () => {
                   <h4 className="font-black text-slate-900 dark:text-white text-sm uppercase tracking-tight">Bulk Sync Clients</h4>
                   <p className="text-xs text-slate-500 leading-relaxed">Push all existing CRM clients into your Notion Client Database.</p>
                 </div>
-                <Button
-                  onClick={handleSyncAllToNotion}
+                <Button 
+                  onClick={handleSyncAllToNotion} 
                   disabled={syncingNotionAll}
                   className="w-full bg-purple-600 hover:bg-purple-700 text-white rounded-xl h-10 font-black text-[10px] uppercase tracking-widest shadow-lg"
                 >

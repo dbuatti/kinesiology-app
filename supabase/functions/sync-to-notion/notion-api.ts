@@ -1,0 +1,112 @@
+// @ts-nocheck
+export const CLIENTS_DB_ID = "074e2c006bd541d88c502feb397ef31d";
+
+export const normalizeId = (id: string) => id ? id.replace(/-/g, "").toLowerCase() : "";
+
+export const fetchDatabaseSchema = async (dbId: string, notionHeaders: any) => {
+  try {
+    const dbRes = await fetch(`https://api.notion.com/v1/databases/${dbId}`, {
+      method: 'GET',
+      headers: notionHeaders
+    });
+    if (dbRes.ok) {
+      const dbData = await dbRes.json();
+      return dbData.properties || {};
+    } else {
+      const errData = await dbRes.json();
+      console.warn(`[notion-api] Failed to fetch DB schema for ${dbId}:`, errData);
+    }
+  } catch (schemaErr) {
+    console.warn(`[notion-api] Error fetching DB schema for ${dbId}:`, schemaErr);
+  }
+  return {};
+};
+
+export const findSchemaProperty = (schema: any, possibleNames: string[]) => {
+  const keys = Object.keys(schema);
+  for (const name of possibleNames) {
+    const match = keys.find(k => k.toLowerCase().trim() === name.toLowerCase().trim());
+    if (match) return { name: match, schema: schema[match] };
+  }
+  return null;
+};
+
+export const mapValueToNotionProperty = (value: any, propertySchema: any) => {
+  if (value === null || value === undefined || value === "") return null;
+  const type = propertySchema.type;
+  switch (type) {
+    case 'title':
+      return { title: [{ text: { content: String(value) } }] };
+    case 'rich_text':
+      return { rich_text: [{ text: { content: String(value) } }] };
+    case 'email':
+      return { email: String(value) };
+    case 'phone_number':
+      return { phone_number: String(value) };
+    case 'date':
+      return { date: { start: String(value).split('T')[0] } };
+    case 'number':
+      const num = Number(value);
+      return isNaN(num) ? null : { number: num };
+    case 'select':
+      return { select: { name: String(value).substring(0, 100) } };
+    case 'multi_select':
+      const items = Array.isArray(value) ? value : [value];
+      return { multi_select: items.map(item => ({ name: String(item).substring(0, 100) })) };
+    case 'url':
+      return { url: String(value) };
+    default:
+      return null;
+  }
+};
+
+export const findExistingNotionClient = async (client: any, schema: any, notionHeaders: any) => {
+  const titleProp = findSchemaProperty(schema, ['Name', 'Client Name', 'Full Name']);
+  const emailProp = findSchemaProperty(schema, ['Email', 'Email Address']);
+  
+  const filters = [];
+  if (titleProp && client.name) {
+    filters.push({
+      property: titleProp.name,
+      title: { equals: client.name }
+    });
+  }
+  if (emailProp && client.email) {
+    filters.push({
+      property: emailProp.name,
+      email: { equals: client.email }
+    });
+  }
+
+  if (filters.length === 0) return null;
+
+  try {
+    console.log(`[notion-api] Querying Notion for existing client matching name/email...`);
+    const queryRes = await fetch(`https://api.notion.com/v1/databases/${CLIENTS_DB_ID}/query`, {
+      method: 'POST',
+      headers: notionHeaders,
+      body: JSON.stringify({
+        filter: filters.length === 1 ? filters[0] : { or: filters },
+        page_size: 1
+      })
+    });
+
+    if (queryRes.ok) {
+      const queryData = await queryRes.json();
+      if (queryData.results && queryData.results.length > 0) {
+        const match = queryData.results[0];
+        console.log(`[notion-api] Found existing Notion page match: ${match.id}`);
+        return {
+          id: match.id,
+          url: match.url
+        };
+      }
+    } else {
+      const errData = await queryRes.json();
+      console.warn(`[notion-api] Notion query failed:`, errData);
+    }
+  } catch (err) {
+    console.warn(`[notion-api] Error querying existing client:`, err);
+  }
+  return null;
+};

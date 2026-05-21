@@ -12,6 +12,8 @@ const MAIN_DB_ID = "171f7156cdc645e8b689af13d217bc7c";
 const PLANNER_DB_ID = "11caad21cd0980d8a3eeeffb27fc43c0";
 const CLIENTS_DB_ID = "074e2c006bd541d88c502feb397ef31d";
 
+const normalizeId = (id: string) => id ? id.replace(/-/g, "").toLowerCase() : "";
+
 serve(async (req) => {
   const functionName = "sync-to-notion";
   console.log(`[${functionName}] Request received`);
@@ -457,7 +459,7 @@ serve(async (req) => {
       // Dynamically find the relation property pointing to the Clients DB
       const clientRelationProp = Object.keys(mainSchema).find(k => {
         const prop = mainSchema[k];
-        return prop.type === 'relation' && prop.relation?.database_id === CLIENTS_DB_ID;
+        return prop.type === 'relation' && prop.relation?.database_id && normalizeId(prop.relation.database_id) === normalizeId(CLIENTS_DB_ID);
       });
 
       if (clientRelationProp && clientPageId) {
@@ -738,7 +740,7 @@ serve(async (req) => {
           notion_planner_id: plannerPageId,
           notion_link: mainPageUrl
         })
-        .eq('id', appId);
+        .eq('id', appointmentId);
 
       if (updateError) {
         console.error(`[${functionName}] Failed to update appointment in Supabase:`, updateError);

@@ -3,25 +3,9 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import { 
-  Merge, 
-  Loader2, 
-  Sparkles, 
-  UserCheck, 
-  ArrowRightLeft, 
-  CheckCircle2
-} from "lucide-react";
+import { Merge, Loader2, CheckCircle2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { showSuccess, showError } from "@/utils/toast";
-import { cn } from "@/lib/utils";
 import { 
   getStringSimilarity, 
   normalizeName, 
@@ -29,6 +13,8 @@ import {
   normalizePhone 
 } from "@/utils/duplicate-detector";
 import MergeConflictDialog from "./MergeConflictDialog";
+import ManualMergeForm from "./ManualMergeForm";
+import DetectedDuplicatesList from "./DetectedDuplicatesList";
 
 interface DuplicateGroup {
   name: string;
@@ -49,8 +35,6 @@ const FIELDS_TO_MERGE = [
 const DuplicateResolutionCenter = () => {
   const [clients, setClients] = useState<any[]>([]);
   const [loadingClients, setLoadingClients] = useState(true);
-  const [sourceClientId, setSourceClientId] = useState<string>("");
-  const [targetClientId, setTargetClientId] = useState<string>("");
   const [merging, setMerging] = useState(false);
   const [isDetecting, setIsDetecting] = useState(false);
   const [detectedDuplicates, setDetectedDuplicates] = useState<DuplicateGroup[]>([]);
@@ -283,26 +267,13 @@ const DuplicateResolutionCenter = () => {
     return merged;
   };
 
-  const handleMergeClients = async () => {
-    if (!sourceClientId || !targetClientId) {
-      showError("Please select both a source and target client.");
-      return;
+  const handleMergeClients = (sourceId: string, targetId: string) => {
+    const sourceClient = clients.find(c => c.id === sourceId);
+    const targetClient = clients.find(c => c.id === targetId);
+
+    if (sourceClient && targetClient) {
+      startMergeSession(targetClient, sourceClient);
     }
-
-    if (sourceClientId === targetClientId) {
-      showError("Source and target clients cannot be the same.");
-      return;
-    }
-
-    const sourceClient = clients.find(c => c.id === sourceClientId);
-    const targetClient = clients.find(c => c.id === targetClientId);
-
-    if (!sourceClient || !targetClient) {
-      showError("Could not find selected clients.");
-      return;
-    }
-
-    startMergeSession(targetClient, sourceClient);
   };
 
   const handleAutoMergeGroup = async (group: DuplicateGroup) => {
@@ -378,133 +349,22 @@ const DuplicateResolutionCenter = () => {
         </div>
       </CardHeader>
       <CardContent className="p-8 pt-0 space-y-8">
-        {isDetecting ? (
-          <div className="py-12 flex flex-col items-center justify-center gap-4">
-            <Loader2 className="animate-spin text-amber-500" size={32} />
-            <p className="text-xs font-black uppercase tracking-widest text-slate-400">Scanning Database for Duplicates...</p>
-          </div>
-        ) : detectedDuplicates.length > 0 ? (
-          <div className="space-y-4 animate-in fade-in slide-in-from-top-4 duration-500">
-            <div className="flex items-center gap-2 px-1">
-              <Sparkles size={16} className="text-amber-500" />
-              <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Smart Duplicate Detector</p>
-            </div>
-            <div className="grid grid-cols-1 gap-3">
-              {detectedDuplicates.map((group, idx) => (
-                <div key={idx} className="p-5 bg-amber-50/50 rounded-3xl border border-amber-200 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-                  <div className="space-y-2">
-                    <div className="flex items-center gap-2">
-                      <h4 className="font-black text-base text-amber-900">"{group.name}"</h4>
-                      <Badge className="bg-amber-500 text-white border-none font-black text-[8px] uppercase tracking-widest px-2 py-0.5 rounded-full">
-                        {group.confidence}% Match Confidence
-                      </Badge>
-                    </div>
-                    <p className="text-xs text-amber-800 font-medium">
-                      <strong>Reason:</strong> {group.matchReason}
-                    </p>
-                    <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-amber-800">
-                      <span className="font-bold">Keep:</span>
-                      <code className="bg-white px-2 py-0.5 rounded border border-amber-100 text-[10px] font-mono">
-                        {group.primary.email || 'No Email'}
-                      </code>
-                      <span className="opacity-40">|</span>
-                      <span className="font-bold">Merge:</span>
-                      {group.duplicates.map(d => (
-                        <code key={d.id} className="bg-white px-2 py-0.5 rounded border border-amber-100 text-[10px] font-mono">
-                          {d.email || 'No Email'}
-                        </code>
-                      ))}
-                    </div>
-                  </div>
-                  <div className="flex gap-2">
-                    <Button 
-                      onClick={() => startMergeSession(group.primary, group.duplicates[0])}
-                      disabled={merging}
-                      variant="outline"
-                      className="border-amber-200 text-amber-700 hover:bg-amber-50 rounded-xl h-9 px-4 font-black text-[10px] uppercase tracking-widest"
-                    >
-                      Review & Merge
-                    </Button>
-                    <Button 
-                      onClick={() => handleAutoMergeGroup(group)}
-                      disabled={merging}
-                      className="bg-amber-600 hover:bg-amber-700 text-white rounded-xl h-9 px-4 font-black text-[10px] uppercase tracking-widest shadow-md"
-                    >
-                      {merging ? <Loader2 className="mr-1.5" /> : <Merge size={12} className="mr-1.5" />}
-                      Auto-Merge
-                    </Button>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-        ) : (
-          <div className="p-6 bg-emerald-50/50 rounded-3xl border border-emerald-100 flex items-center gap-4">
-            <div className="w-10 h-10 rounded-xl bg-emerald-500 text-white flex items-center justify-center shadow-sm">
-              <UserCheck size={20} />
-            </div>
-            <div className="space-y-0.5">
-              <p className="text-sm font-black text-emerald-900">No Duplicates Detected</p>
-              <p className="text-xs text-emerald-700 font-medium">Your client database is clean and fully consolidated.</p>
-            </div>
-          </div>
-        )}
+        <DetectedDuplicatesList 
+          detectedDuplicates={detectedDuplicates}
+          isDetecting={isDetecting}
+          merging={merging}
+          onReviewMerge={startMergeSession}
+          onAutoMerge={handleAutoMergeGroup}
+        />
 
         <div className="h-px bg-slate-100 dark:bg-slate-800" />
 
-        <div className="space-y-4">
-          <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Manual Merge Override</p>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div className="space-y-2">
-              <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-1">Duplicate Client (To Remove)</label>
-              <Select value={sourceClientId} onValueChange={setSourceClientId} disabled={loadingClients || merging}>
-                <SelectTrigger className="h-12 rounded-xl font-bold bg-slate-50 border-slate-200">
-                  <SelectValue placeholder={loadingClients ? "Loading..." : "Select duplicate..."} />
-                </SelectTrigger>
-                <SelectContent className="max-h-[250px]">
-                  {clients.map(c => (
-                    <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-
-            <div className="space-y-2">
-              <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-1">Primary Client (To Keep)</label>
-              <Select value={targetClientId} onValueChange={setTargetClientId} disabled={loadingClients || merging}>
-                <SelectTrigger className="h-12 rounded-xl font-bold bg-slate-50 border-slate-200">
-                  <SelectValue placeholder={loadingClients ? "Loading..." : "Select primary..."} />
-                </SelectTrigger>
-                <SelectContent className="max-h-[250px]">
-                  {clients.map(c => (
-                    <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-          </div>
-
-          {sourceClientId && targetClientId && (
-            <div className="p-5 bg-amber-50 rounded-2xl border border-amber-100 flex items-start gap-4 animate-in fade-in slide-in-from-top-2">
-              <ArrowRightLeft size={20} className="text-amber-600 shrink-0 mt-0.5" />
-              <div className="space-y-1">
-                <p className="text-xs font-bold text-amber-900">Merge Action Summary:</p>
-                <p className="text-xs text-amber-800 leading-relaxed">
-                  All appointments for <strong>{clients.find(c => c.id === sourceClientId)?.name}</strong> will be moved to <strong>{clients.find(c => c.id === targetClientId)?.name}</strong>. The duplicate page in Notion will be archived, and the duplicate profile in the CRM will be deleted.
-                </p>
-              </div>
-            </div>
-          )}
-
-          <Button 
-            onClick={handleMergeClients}
-            disabled={merging || !sourceClientId || !targetClientId}
-            className="w-full h-14 bg-amber-500 hover:bg-amber-600 text-white rounded-2xl font-black text-xs uppercase tracking-widest shadow-xl shadow-amber-100"
-          >
-            {merging ? <Loader2 className="mr-2 animate-spin" /> : <Merge size={18} className="mr-2" />}
-            Merge Client Profiles
-          </Button>
-        </div>
+        <ManualMergeForm 
+          clients={clients}
+          loadingClients={loadingClients}
+          merging={merging}
+          onMerge={handleMergeClients}
+        />
       </CardContent>
 
       <MergeConflictDialog

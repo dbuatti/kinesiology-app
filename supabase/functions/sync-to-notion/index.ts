@@ -137,14 +137,22 @@ serve(async (req) => {
               .eq('email', email.toLowerCase().trim())
               .maybeSingle();
             
-            if (emailMatch && emailMatch.notion_page_id !== page.id) {
-              const parts = email.split('@');
-              if (parts.length === 2) {
-                finalEmail = `${parts[0]}+dup-${page.id.slice(0,8)}@${parts[1]}`;
-              } else {
-                finalEmail = `${email}+dup-${page.id.slice(0,8)}`;
+            if (emailMatch) {
+              if (!emailMatch.notion_page_id) {
+                // The client exists in Supabase but hasn't been linked to Notion yet.
+                // Link them now instead of creating a duplicate!
+                targetId = emailMatch.id;
+                console.log(`[pull-from-notion] Linked existing Supabase client ${name} (${targetId}) to Notion page ${page.id} via email match.`);
+              } else if (emailMatch.notion_page_id !== page.id) {
+                // This is an actual duplicate client with the same email.
+                const parts = email.split('@');
+                if (parts.length === 2) {
+                  finalEmail = `${parts[0]}+dup-${page.id.slice(0,8)}@${parts[1]}`;
+                } else {
+                  finalEmail = `${email}+dup-${page.id.slice(0,8)}`;
+                }
+                console.log(`[pull-from-notion] Detected duplicate email. Renamed to ${finalEmail} to bypass unique constraint.`);
               }
-              console.log(`[pull-from-notion] Detected duplicate email. Renamed to ${finalEmail} to bypass unique constraint.`);
             }
           }
 

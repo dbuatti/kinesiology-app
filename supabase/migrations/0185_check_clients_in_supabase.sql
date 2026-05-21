@@ -1,0 +1,1 @@
+SELECT id, name, email, notion_page_id, created_at FROM clients ORDER BY name;

@@ -1,0 +1,1 @@
+SELECT id, name, email, notion_page_id FROM clients WHERE notion_page_id LIKE '367aad21%' OR id::text LIKE '367aad21%';

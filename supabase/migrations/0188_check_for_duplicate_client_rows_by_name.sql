@@ -1,0 +1,1 @@
+SELECT id, name, email, notion_page_id, created_at FROM clients WHERE name IN ('Anita La Terra', 'Enya Cai', 'Georg Gleeson', 'Keith Bowker', 'Kiana Emmett', 'Lauren Lee Innis-Youren', 'Natalie Annette', 'Rae Isbester', 'Steve Cotterill', 'Susan Elizabeth Lord');

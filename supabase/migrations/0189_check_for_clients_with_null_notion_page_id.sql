@@ -1,0 +1,1 @@
+SELECT id, name, email, notion_page_id FROM clients WHERE notion_page_id IS NULL;

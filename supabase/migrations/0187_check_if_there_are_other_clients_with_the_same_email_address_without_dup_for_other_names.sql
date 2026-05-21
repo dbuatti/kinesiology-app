@@ -1,0 +1,1 @@
+SELECT id, name, email, notion_page_id FROM clients WHERE email LIKE 'enyaxcai%' OR email LIKE 'grg.gleeson3%' OR email LIKE 'kdbowker%' OR email LIKE 'kianaemmettt%' OR email LIKE 'laurenleeinnisyouren%' OR email LIKE 'n.annette8%' OR email LIKE 'raeisbester%' OR email LIKE 'steveau7%' OR email LIKE 'susanlord2013%';

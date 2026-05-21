@@ -33,69 +33,6 @@ const cleanClientName = (clientString: string): string => {
   return name;
 };
 
-export async function importClientsFromCSV(csvText: string) {
-  const rows = parseCSV(csvText);
-  if (rows.length === 0) {
-    showError("No data found in CSV.");
-    return { success: 0, failed: 0 };
-  }
-
-  console.log(`Parsed ${rows.length} clients from CSV`);
-
-  const user = (await supabase.auth.getUser()).data.user;
-  if (!user) {
-    showError("User not authenticated.");
-    return { success: 0, failed: rows.length };
-  }
-
-  const clientsToInsert = [];
-  let failedCount = 0;
-
-  for (const row of rows) {
-    const name = row['Name'];
-    if (!name) {
-      failedCount++;
-      continue;
-    }
-
-    let bornDate = null;
-    if (row['Born']) {
-      try {
-        const parsedDate = new Date(row['Born']);
-        if (!isNaN(parsedDate.getTime())) {
-          bornDate = parsedDate.toISOString();
-        }
-      } catch (e) {}
-    }
-
-    const suburbsArray = row['Suburb'] 
-      ? [row['Suburb'].trim()] 
-      : [];
-
-    clientsToInsert.push({
-      user_id: user.id,
-      name: name.trim(),
-      email: row['Email'] || null,
-      phone: row['Phone'] || null,
-      born: bornDate,
-      suburbs: suburbsArray,
-      occupation: row['Occupation'] || null,
-      marital_status: row['Marital Status'] || null,
-      children: row['Children'] || null,
-      journal: row['Journal'] || null,
-      pronouns: row['Pronouns'] || null
-    });
-  }
-
-  const { error } = await supabase.from('clients').insert(clientsToInsert);
-  if (error) {
-    showError(`Failed to import clients: ${error.message}`);
-    return { success: 0, failed: rows.length };
-  }
-
-  return { success: clientsToInsert.length, failed: failedCount };
-}
-
 export async function importAppointmentsFromCSV(csvText: string) {
   const rows = parseCSV(csvText);
   if (rows.length === 0) {
@@ -156,42 +93,12 @@ export async function importAppointmentsFromCSV(csvText: string) {
       continue;
     }
 
-    let clientId = clientLookup[clientName.toLowerCase()];
+    const clientId = clientLookup[clientName.toLowerCase()];
     
     if (!clientId) {
-      console.log(`Client "${clientName}" not found. Creating new client profile...`);
-      try {
-        let bornDate = null;
-        if (row['Born']) {
-          try {
-            const parsedDate = new Date(row['Born']);
-            if (!isNaN(parsedDate.getTime())) {
-              bornDate = parsedDate.toISOString();
-            }
-          } catch (e) {}
-        }
-
-        const { data: newClient, error: createError } = await supabase
-          .from('clients')
-          .insert({
-            user_id: user_id,
-            name: clientName,
-            email: row['Email'] || null,
-            phone: row['Phone'] || null,
-            born: bornDate,
-            suburbs: row['Suburb'] ? [row['Suburb'].trim()] : []
-          })
-          .select('id')
-          .single();
-
-        if (createError) throw createError;
-        clientId = newClient.id;
-        clientLookup[clientName.toLowerCase()] = clientId; // Add to lookup cache
-      } catch (err) {
-        console.error(`Failed to create client "${clientName}":`, err);
-        failedCount++;
-        continue;
-      }
+      console.warn(`Skipping appointment ${row.Name}: Client "${clientName}" not found (raw: "${rawClientName}")`);
+      failedCount++;
+      continue;
     }
 
     // Check for duplicate display_id

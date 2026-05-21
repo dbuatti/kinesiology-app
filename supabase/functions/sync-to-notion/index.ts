@@ -1,14 +1,16 @@
 // @ts-nocheck
-import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.45.0'
 import { syncClientToNotion } from "./client-sync.ts";
 import { syncSingleAppointment } from "./appointment-sync.ts";
+import { fetchWithRetry, CLIENTS_DB_ID } from "./notion-api.ts";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type, x-supabase-client-platform',
   'Access-Control-Allow-Methods': 'POST, OPTIONS',
 }
+
+const MAIN_DB_ID = "171f7156cdc645e8b689af13d217bc7c";
 
 serve(async (req) => {
   const functionName = "sync-to-notion";
@@ -41,6 +43,82 @@ serve(async (req) => {
     const action = body.action;
     const clientId = body.clientId || body.client?.id;
     const appointmentId = body.appointmentId || body.appointment?.id;
+
+    // Flow: Configure Notion Schema (Create properties & relations)
+    if (action === 'configure-schema') {
+      console.log(`[${functionName}] Configuring Notion Database Schemas...`);
+
+      // 1. Configure Clients Database Properties
+      console.log(`[${functionName}] Updating Clients Database: ${CLIENTS_DB_ID}`);
+      const clientSchemaUpdate = {
+        properties: {
+          "Email": { "email": {} },
+          "Phone": { "phone_number": {} },
+          "Date of Birth": { "date": {} },
+          "Pronouns": { "rich_text": {} },
+          "Occupation": { "rich_text": {} },
+          "Medical History": { "rich_text": {} },
+          "Medications & Supplements": { "rich_text": {} },
+          "Sleep Quality": { "rich_text": {} },
+          "Digestive Health": { "rich_text": {} },
+          "Current Stress Level": { "number": {} },
+          "Emergency Contact": { "rich_text": {} },
+          "Referral Source": { "rich_text": {} },
+          "CRM Link": { "url": {} }
+        }
+      };
+
+      const clientRes = await fetchWithRetry(`https://api.notion.com/v1/databases/${CLIENTS_DB_ID}`, {
+        method: 'PATCH',
+        headers: notionHeaders,
+        body: JSON.stringify(clientSchemaUpdate)
+      });
+
+      if (!clientRes.ok) {
+        const err = await clientRes.json();
+        throw new Error(`Failed to configure Clients DB: ${err.message || JSON.stringify(err)}`);
+      }
+
+      // 2. Configure Main Appointments Database & Two-Way Relation
+      console.log(`[${functionName}] Updating Main Appointments Database: ${MAIN_DB_ID}`);
+      const mainSchemaUpdate = {
+        properties: {
+          "Date": { "date": {} },
+          "Goal": { "rich_text": {} },
+          "Issue": { "multi_select": {} },
+          "Notes": { "rich_text": {} },
+          // Create Two-Way Relation to Clients Database
+          "Client Profile": {
+            "relation": {
+              "database_id": CLIENTS_DB_ID,
+              "type": "dual_property",
+              "dual_property": {
+                "synced_property_name": "Appointments History"
+              }
+            }
+          }
+        }
+      };
+
+      const mainRes = await fetchWithRetry(`https://api.notion.com/v1/databases/${MAIN_DB_ID}`, {
+        method: 'PATCH',
+        headers: notionHeaders,
+        body: JSON.stringify(mainSchemaUpdate)
+      });
+
+      if (!mainRes.ok) {
+        const err = await mainRes.json();
+        throw new Error(`Failed to configure Main DB: ${err.message || JSON.stringify(err)}`);
+      }
+
+      return new Response(JSON.stringify({ 
+        success: true, 
+        message: "Notion databases successfully configured with all required properties and two-way relations!" 
+      }), { 
+        status: 200, 
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
+      });
+    }
 
     // Flow 0: Sync All Clients
     if (action === 'sync-all-clients') {

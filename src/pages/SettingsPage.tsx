@@ -58,6 +58,7 @@ const SettingsPage = () => {
   const [syncingAll, setSyncingAll] = useState(false);
   const [syncingNotionAll, setSyncingNotionAll] = useState(false);
   const [syncingAppointmentsAll, setSyncingAppointmentsAll] = useState(false);
+  const [configuringNotion, setConfiguringNotion] = useState(false);
   
   // Merge Clients State
   const [clients, setClients] = useState<any[]>([]);
@@ -167,6 +168,24 @@ const SettingsPage = () => {
       showError(err.message);
     } finally {
       setSyncingAll(false);
+    }
+  };
+
+  const handleConfigureNotionSchema = async () => {
+    setConfiguringNotion(true);
+    try {
+      const { data, error } = await supabase.functions.invoke('sync-to-notion', {
+        body: { 
+          action: 'configure-schema',
+          origin: window.location.origin
+        }
+      });
+      if (error) throw error;
+      showSuccess(data.message || "Notion databases successfully configured!");
+    } catch (err: any) {
+      showError(err.message || "Failed to configure Notion databases. Ensure your Notion integration has edit access.");
+    } finally {
+      setConfiguringNotion(false);
     }
   };
 
@@ -365,6 +384,21 @@ const SettingsPage = () => {
               <CardDescription className="text-purple-700 font-medium">Bulk sync your clients and appointments to Notion.</CardDescription>
             </CardHeader>
             <CardContent className="p-8 pt-0 space-y-6">
+              <div className="p-6 bg-white dark:bg-slate-900 rounded-3xl border border-purple-100 dark:border-purple-900/30 space-y-4">
+                <div className="space-y-1">
+                  <h4 className="font-black text-slate-900 dark:text-white text-sm uppercase tracking-tight">Notion Schema Auto-Configurator</h4>
+                  <p className="text-xs text-slate-500 leading-relaxed">Automatically create all required properties and establish two-way relations in your Notion databases.</p>
+                </div>
+                <Button 
+                  onClick={handleConfigureNotionSchema} 
+                  disabled={configuringNotion}
+                  className="w-full bg-purple-600 hover:bg-purple-700 text-white rounded-xl h-12 font-black text-[10px] uppercase tracking-widest shadow-lg"
+                >
+                  {configuringNotion ? <Loader2 className="mr-2 animate-spin" /> : <Sparkles size={16} className="mr-2" />}
+                  Configure Notion Schema
+                </Button>
+              </div>
+
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="p-6 bg-white dark:bg-slate-900 rounded-3xl border border-purple-100 dark:border-purple-900/30 space-y-4">
                   <div className="space-y-1">
@@ -374,7 +408,7 @@ const SettingsPage = () => {
                   <Button 
                     onClick={handleSyncAllToNotion} 
                     disabled={syncingNotionAll}
-                    className="w-full bg-purple-600 hover:bg-purple-700 text-white rounded-xl h-10 font-black text-[10px] uppercase tracking-widest shadow-lg"
+                    className="w-full bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl h-10 font-black text-[10px] uppercase tracking-widest shadow-lg"
                   >
                     {syncingNotionAll ? <Loader2 className="mr-2 animate-spin" /> : <Users size={16} className="mr-2" />}
                     Sync All to Notion
@@ -513,7 +547,7 @@ const SettingsPage = () => {
                   disabled={merging || !sourceClientId || !targetClientId}
                   className="w-full h-14 bg-amber-500 hover:bg-amber-600 text-white rounded-2xl font-black text-xs uppercase tracking-widest shadow-xl shadow-amber-100"
                 >
-                  {merging ? <Loader2 className="animate-spin mr-2" /> : <Merge size={18} className="mr-2" />}
+                  {merging ? <Loader2 className="mr-2 animate-spin" /> : <Merge size={18} className="mr-2" />}
                   Merge Client Profiles
                 </Button>
               </div>
@@ -539,7 +573,7 @@ const SettingsPage = () => {
                     disabled={initializingStripe}
                     className="w-full bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl h-10 font-black text-[10px] uppercase tracking-widest shadow-lg"
                   >
-                    {initializingStripe ? <Loader2 className="animate-spin" /> : <Zap size={16} className="mr-2" />}
+                    {initializingStripe ? <Loader2 className="mr-2 animate-spin" /> : <Zap size={16} className="mr-2" />}
                     Initialize
                   </Button>
                 </div>

@@ -89,6 +89,33 @@ export const mapValueToNotionProperty = (value: any, propertySchema: any) => {
   }
 };
 
+export const extractNotionPropertyValue = (property: any) => {
+  if (!property) return null;
+  const type = property.type;
+  switch (type) {
+    case 'title':
+      return property.title?.map((t: any) => t.plain_text).join('') || null;
+    case 'rich_text':
+      return property.rich_text?.map((t: any) => t.plain_text).join('') || null;
+    case 'email':
+      return property.email || null;
+    case 'phone_number':
+      return property.phone_number || null;
+    case 'date':
+      return property.date?.start || null;
+    case 'number':
+      return property.number !== undefined ? property.number : null;
+    case 'select':
+      return property.select?.name || null;
+    case 'multi_select':
+      return property.multi_select?.map((m: any) => m.name) || [];
+    case 'url':
+      return property.url || null;
+    default:
+      return null;
+  }
+};
+
 export const findExistingNotionClient = async (client: any, schema: any, notionHeaders: any) => {
   const titleProp = findSchemaProperty(schema, ['Name', 'Client Name', 'Full Name']);
   const emailProp = findSchemaProperty(schema, ['Email', 'Email Address']);

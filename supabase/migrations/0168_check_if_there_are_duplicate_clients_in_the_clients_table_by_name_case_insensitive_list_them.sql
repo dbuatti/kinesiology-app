@@ -1,0 +1,1 @@
+SELECT id, name, email, phone, born, suburbs, stripe_customer_id, notion_page_id FROM public.clients WHERE LOWER(name) IN (SELECT LOWER(name) FROM public.clients GROUP BY LOWER(name) HAVING COUNT(*) > 1);

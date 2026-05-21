@@ -1,0 +1,1 @@
+SELECT LOWER(name), COUNT(*) FROM public.clients GROUP BY LOWER(name) HAVING COUNT(*) > 1;

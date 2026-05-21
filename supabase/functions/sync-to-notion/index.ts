@@ -740,7 +740,7 @@ serve(async (req) => {
           notion_planner_id: plannerPageId,
           notion_link: mainPageUrl
         })
-        .eq('id', appointmentId);
+        .eq('id', appId);
 
       if (updateError) {
         console.error(`[${functionName}] Failed to update appointment in Supabase:`, updateError);

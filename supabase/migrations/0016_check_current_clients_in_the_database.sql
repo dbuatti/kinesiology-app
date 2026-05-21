@@ -1,0 +1,1 @@
+SELECT id, name, email, phone, born, suburbs, stripe_customer_id, notion_page_id FROM public.clients;

@@ -177,7 +177,7 @@ serve(async (req) => {
 
     // Flow: Merge Clients
     if (action === 'merge-clients') {
-      const { sourceClientId, targetClientId } = body;
+      const { sourceClientId, targetClientId, mergedFields } = body;
       if (!sourceClientId || !targetClientId) {
         throw new Error("Missing sourceClientId or targetClientId");
       }
@@ -192,6 +192,16 @@ serve(async (req) => {
         .single();
 
       if (sourceError) throw sourceError;
+
+      // 1.5 Update target client with merged fields if provided
+      if (mergedFields && Object.keys(mergedFields).length > 0) {
+        console.log(`[${functionName}] Updating target client ${targetClientId} with merged fields:`, Object.keys(mergedFields));
+        const { error: updateError } = await supabase
+          .from('clients')
+          .update(mergedFields)
+          .eq('id', targetClientId);
+        if (updateError) throw updateError;
+      }
 
       // 2. Move all appointments in Supabase
       const { error: appError } = await supabase

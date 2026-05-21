@@ -44,11 +44,24 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import { Label } from "@/components/ui/label";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
 
 interface DuplicateGroup {
   name: string;
   primary: any;
   duplicates: any[];
+  matchReason?: string;
 }
 
 const SettingsPage = () => {
@@ -71,6 +84,13 @@ const SettingsPage = () => {
   const [detectedDuplicates, setDetectedDuplicates] = useState<DuplicateGroup[]>([]);
   const [isDetecting, setIsDetecting] = useState(false);
 
+  // Active Merge Session for Side-by-Side Conflict Resolution
+  const [activeMerge, setActiveMerge] = useState<{
+    primary: any;
+    duplicate: any;
+    fields: Record<string, any>;
+  } | null>(null);
+
   const projectRef = "xebtjnvfkroiplyzftas";
   const webhookUrl = `https://${projectRef}.supabase.co/functions/v1/calcom-webhook`;
 
@@ -79,7 +99,13 @@ const SettingsPage = () => {
     try {
       const { data, error } = await supabase
         .from('clients')
-        .select('id, name, email, notion_page_id, stripe_customer_id, created_at')
+        .select(`
+          id, name, email, phone, pronouns, born, suburbs, occupation,
+          marital_status, children, chatgpt_url, journal, is_practitioner,
+          emergency_contact_name, emergency_contact_phone, medications_supplements,
+          current_stress_level, sleep_quality, digestive_health, medical_history,
+          referral_source, stripe_customer_id, notion_page_id, notion_link, created_at
+        `)
         .or('is_practitioner.eq.false,is_practitioner.is.null')
         .order('name');
       
@@ -95,36 +121,123 @@ const SettingsPage = () => {
 
   const detectDuplicates = (clientsList: any[]) => {
     setIsDetecting(true);
-    const groups: Record<string, any[]> = {};
     
-    // Group by normalized name
-    clientsList.forEach(client => {
-      const normalized = client.name.toLowerCase().trim().replace(/\s+/g, ' ');
-      if (!groups[normalized]) groups[normalized] = [];
-      groups[normalized].push(client);
-    });
-
+    const visited = new Set<string>();
     const duplicatesFound: DuplicateGroup[] = [];
 
-    Object.entries(groups).forEach(([name, list]) => {
-      if (list.length > 1) {
+    const normalizeName = (name: string) => (name || '').toLowerCase().trim().replace(/\s+/g, ' ');
+    const normalizeEmail = (email: string) => (email || '').toLowerCase().trim();
+    const normalizePhone = (phone: string) => {
+      if (!phone) return "";
+      const digits = phone.replace(/\D/g, "");
+      return digits.length >= 9 ? digits.slice(-9) : digits;
+    };
+
+    // Helper to check if names are fuzzy matches
+    const isFuzzyNameMatch = (name1: string, name2: string) => {
+      const n1 = normalizeName(name1);
+      const n2 = normalizeName(name2);
+      if (!n1 || !n2) return false;
+      if (n1 === n2) return true;
+      if (n1.includes(n2) || n2.includes(n1)) {
+        const shorter = n1.length < n2.length ? n1 : n2;
+        if (shorter.length >= 3) return true;
+      }
+      // Check word overlap
+      const words1 = n1.split(' ');
+      const words2 = n2.split(' ');
+      const commonWords = words1.filter(w => words2.includes(w) && w.length > 2);
+      if (commonWords.length >= 2) return true;
+
+      return false;
+    };
+
+    for (let i = 0; i < clientsList.length; i++) {
+      const clientA = clientsList[i];
+      if (visited.has(clientA.id)) continue;
+
+      const duplicates: any[] = [];
+      const matchReasons: string[] = [];
+
+      const emailA = normalizeEmail(clientA.email);
+      const phoneA = normalizePhone(clientA.phone);
+      const nameA = normalizeName(clientA.name);
+      const bornA = clientA.born;
+
+      for (let j = i + 1; j < clientsList.length; j++) {
+        const clientB = clientsList[j];
+        if (visited.has(clientB.id)) continue;
+
+        const emailB = normalizeEmail(clientB.email);
+        const phoneB = normalizePhone(clientB.phone);
+        const nameB = normalizeName(clientB.name);
+        const bornB = clientB.born;
+
+        let isMatch = false;
+        let reason = "";
+
+        if (emailA && emailB && emailA === emailB) {
+          isMatch = true;
+          reason = "Same Email";
+        } else if (phoneA && phoneB && phoneA === phoneB) {
+          isMatch = true;
+          reason = "Same Phone Number";
+        } else if (nameA && nameB && nameA === nameB) {
+          isMatch = true;
+          reason = "Same Name";
+        } else if (bornA && bornB && bornA === bornB && isFuzzyNameMatch(clientA.name, clientB.name)) {
+          isMatch = true;
+          reason = "Fuzzy Name & Same DOB";
+        }
+
+        if (isMatch) {
+          duplicates.push(clientB);
+          if (!matchReasons.includes(reason)) {
+            matchReasons.push(reason);
+          }
+        }
+      }
+
+      if (duplicates.length > 0) {
+        visited.add(clientA.id);
+        duplicates.forEach(d => visited.add(d.id));
+
+        const allInGroup = [clientA, ...duplicates];
+        
         // Sort to find the best "Primary" client
-        // Heuristic: 1. Has Stripe ID, 2. Has Notion ID, 3. Oldest created_at
-        const sorted = [...list].sort((a, b) => {
+        // Heuristic:
+        // 1. Has Stripe ID
+        // 2. Has Notion ID
+        // 3. Has more fields populated
+        // 4. Oldest created_at
+        const getPopulatedFieldCount = (c: any) => {
+          return Object.entries(c).filter(([key, val]) => {
+            if (key === 'id' || key === 'created_at' || key === 'user_id') return false;
+            return val !== null && val !== undefined && val !== "" && (Array.isArray(val) ? val.length > 0 : true);
+          }).length;
+        };
+
+        const sorted = [...allInGroup].sort((a, b) => {
           if (a.stripe_customer_id && !b.stripe_customer_id) return -1;
           if (!a.stripe_customer_id && b.stripe_customer_id) return 1;
           if (a.notion_page_id && !b.notion_page_id) return -1;
           if (!a.notion_page_id && b.notion_page_id) return 1;
+          
+          const fieldsA = getPopulatedFieldCount(a);
+          const fieldsB = getPopulatedFieldCount(b);
+          if (fieldsA !== fieldsB) return fieldsB - fieldsA; // More fields first
+
           return new Date(a.created_at).getTime() - new Date(b.created_at).getTime();
         });
 
         duplicatesFound.push({
-          name: list[0].name,
+          name: sorted[0].name,
           primary: sorted[0],
-          duplicates: sorted.slice(1)
+          duplicates: sorted.slice(1),
+          matchReason: matchReasons.join(", ")
         });
       }
-    });
+    }
 
     setDetectedDuplicates(duplicatesFound);
     setIsDetecting(false);
@@ -225,16 +338,77 @@ const SettingsPage = () => {
     }
   };
 
-  const executeMerge = async (sourceId: string, targetId: string) => {
+  const executeMerge = async (sourceId: string, targetId: string, mergedFields?: Record<string, any>) => {
     const { error } = await supabase.functions.invoke('sync-to-notion', {
       body: {
         action: 'merge-clients',
         sourceClientId: sourceId,
         targetClientId: targetId,
+        mergedFields,
         origin: window.location.origin
       }
     });
     if (error) throw error;
+  };
+
+  const startMergeSession = (primary: any, duplicate: any) => {
+    const initialFields: Record<string, any> = {};
+    const fieldsToMerge = [
+      'name', 'email', 'phone', 'born', 'suburbs', 'pronouns', 'occupation',
+      'marital_status', 'children', 'medical_history', 'medications_supplements',
+      'emergency_contact_name', 'emergency_contact_phone', 'referral_source',
+      'current_stress_level', 'sleep_quality', 'digestive_health', 'chatgpt_url',
+      'journal', 'stripe_customer_id', 'notion_page_id', 'notion_link'
+    ];
+
+    fieldsToMerge.forEach(field => {
+      const valPrimary = primary[field];
+      const valDuplicate = duplicate[field];
+
+      if (field === 'suburbs') {
+        const combined = [...(valPrimary || []), ...(valDuplicate || [])];
+        initialFields[field] = Array.from(new Set(combined.map(s => s.trim()).filter(Boolean)));
+      } else if (valPrimary !== null && valPrimary !== undefined && valPrimary !== "" && (Array.isArray(valPrimary) ? valPrimary.length > 0 : true)) {
+        initialFields[field] = valPrimary;
+      } else if (valDuplicate !== null && valDuplicate !== undefined && valDuplicate !== "" && (Array.isArray(valDuplicate) ? valDuplicate.length > 0 : true)) {
+        initialFields[field] = valDuplicate;
+      } else {
+        initialFields[field] = "";
+      }
+    });
+
+    setActiveMerge({
+      primary,
+      duplicate,
+      fields: initialFields
+    });
+  };
+
+  const getAutoMergedFields = (primary: any, duplicate: any) => {
+    const merged: Record<string, any> = {};
+    const fieldsToMerge = [
+      'name', 'email', 'phone', 'born', 'suburbs', 'pronouns', 'occupation',
+      'marital_status', 'children', 'medical_history', 'medications_supplements',
+      'emergency_contact_name', 'emergency_contact_phone', 'referral_source',
+      'current_stress_level', 'sleep_quality', 'digestive_health', 'chatgpt_url',
+      'journal', 'stripe_customer_id', 'notion_page_id', 'notion_link'
+    ];
+
+    fieldsToMerge.forEach(field => {
+      const valPrimary = primary[field];
+      const valDuplicate = duplicate[field];
+
+      if (field === 'suburbs') {
+        const combined = [...(valPrimary || []), ...(valDuplicate || [])];
+        merged[field] = Array.from(new Set(combined.map(s => s.trim()).filter(Boolean)));
+      } else if (valPrimary !== null && valPrimary !== undefined && valPrimary !== "" && (Array.isArray(valPrimary) ? valPrimary.length > 0 : true)) {
+        merged[field] = valPrimary;
+      } else if (valDuplicate !== null && valDuplicate !== undefined && valDuplicate !== "" && (Array.isArray(valDuplicate) ? valDuplicate.length > 0 : true)) {
+        merged[field] = valDuplicate;
+      }
+    });
+
+    return merged;
   };
 
   const handleMergeClients = async () => {
@@ -248,36 +422,29 @@ const SettingsPage = () => {
       return;
     }
 
-    const sourceName = clients.find(c => c.id === sourceClientId)?.name;
-    const targetName = clients.find(c => c.id === targetClientId)?.name;
+    const sourceClient = clients.find(c => c.id === sourceClientId);
+    const targetClient = clients.find(c => c.id === targetClientId);
 
-    if (!confirm(`Are you sure you want to merge "${sourceName}" into "${targetName}"?\n\nThis will:\n1. Move all appointments to "${targetName}"\n2. Archive "${sourceName}" in Notion\n3. Delete "${sourceName}" from the CRM\n\nThis action cannot be undone.`)) {
+    if (!sourceClient || !targetClient) {
+      showError("Could not find selected clients.");
       return;
     }
 
-    setMerging(true);
-    try {
-      await executeMerge(sourceClientId, targetClientId);
-      showSuccess(`Successfully merged "${sourceName}" into "${targetName}"!`);
-      setSourceClientId("");
-      setTargetClientId("");
-      fetchClients();
-    } catch (err: any) {
-      showError(err.message || "Failed to merge clients.");
-    } finally {
-      setMerging(false);
-    }
+    startMergeSession(targetClient, sourceClient);
   };
 
   const handleAutoMergeGroup = async (group: DuplicateGroup) => {
-    if (!confirm(`Are you sure you want to auto-merge all duplicates for "${group.name}" into the primary profile?`)) {
+    if (!confirm(`Are you sure you want to auto-merge all duplicates for "${group.name}" into the primary profile? This will automatically combine non-empty fields.`)) {
       return;
     }
 
     setMerging(true);
     try {
+      let currentPrimary = { ...group.primary };
       for (const duplicate of group.duplicates) {
-        await executeMerge(duplicate.id, group.primary.id);
+        const mergedFields = getAutoMergedFields(currentPrimary, duplicate);
+        await executeMerge(duplicate.id, currentPrimary.id, mergedFields);
+        currentPrimary = { ...currentPrimary, ...mergedFields };
       }
       showSuccess(`Successfully merged duplicates for "${group.name}"!`);
       fetchClients();
@@ -299,8 +466,11 @@ const SettingsPage = () => {
     let successCount = 0;
     try {
       for (const group of detectedDuplicates) {
+        let currentPrimary = { ...group.primary };
         for (const duplicate of group.duplicates) {
-          await executeMerge(duplicate.id, group.primary.id);
+          const mergedFields = getAutoMergedFields(currentPrimary, duplicate);
+          await executeMerge(duplicate.id, currentPrimary.id, mergedFields);
+          currentPrimary = { ...currentPrimary, ...mergedFields };
         }
         successCount++;
       }

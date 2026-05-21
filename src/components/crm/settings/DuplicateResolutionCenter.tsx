@@ -3,7 +3,7 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Merge, Loader2, CheckCircle2 } from "lucide-react";
+import { Merge, Loader2, CheckCircle2, RefreshCw } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { showSuccess, showError } from "@/utils/toast";
 import {
@@ -38,6 +38,7 @@ const DuplicateResolutionCenter = () => {
   const [loadingClients, setLoadingClients] = useState(true);
   const [merging, setMerging] = useState(false);
   const [isDetecting, setIsDetecting] = useState(false);
+  const [pullingNotion, setPullingNotion] = useState(false);
   const [detectedDuplicates, setDetectedDuplicates] = useState<DuplicateGroup[]>([]);
   const [activeMerge, setActiveMerge] = useState<{
     primary: any;
@@ -202,6 +203,26 @@ const DuplicateResolutionCenter = () => {
     setIsDetecting(false);
   };
 
+  const handlePullFromNotion = async () => {
+    setPullingNotion(true);
+    try {
+      const { data, error } = await supabase.functions.invoke('sync-to-notion', {
+        body: { 
+          action: 'pull-from-notion',
+          origin: window.location.origin
+        }
+      });
+
+      if (error) throw error;
+      showSuccess(data.message || "Successfully pulled all clients from Notion!");
+      fetchClients();
+    } catch (err: any) {
+      showError(err.message || "Failed to pull clients from Notion.");
+    } finally {
+      setPullingNotion(false);
+    }
+  };
+
   const cleanFieldsForDb = (fields: Record<string, any>) => {
     const cleaned: Record<string, any> = {};
     Object.entries(fields).forEach(([key, val]) => {
@@ -352,16 +373,27 @@ const DuplicateResolutionCenter = () => {
             </CardTitle>
             <CardDescription className="text-amber-700 font-medium">Consolidate duplicate client profiles in both the CRM and Notion.</CardDescription>
           </div>
-          {detectedDuplicates.length > 0 && (
+          <div className="flex items-center gap-2">
             <Button 
-              onClick={handleAutoMergeAll}
-              disabled={merging}
-              className="bg-amber-600 hover:bg-amber-700 text-white rounded-xl h-10 px-4 font-black text-[10px] uppercase tracking-widest shadow-lg"
+              onClick={handlePullFromNotion}
+              disabled={pullingNotion || merging}
+              variant="outline"
+              className="border-amber-200 text-amber-700 hover:bg-amber-50 rounded-xl h-10 px-4 font-black text-[10px] uppercase tracking-widest"
             >
-              {merging ? <Loader2 className="mr-2 animate-spin" /> : <CheckCircle2 size={14} className="mr-1.5" />}
-              Auto-Merge All ({detectedDuplicates.length})
+              {pullingNotion ? <Loader2 className="mr-2 animate-spin" /> : <RefreshCw size={14} className="mr-1.5" />}
+              Pull from Notion
             </Button>
-          )}
+            {detectedDuplicates.length > 0 && (
+              <Button 
+                onClick={handleAutoMergeAll}
+                disabled={merging}
+                className="bg-amber-600 hover:bg-amber-700 text-white rounded-xl h-10 px-4 font-black text-[10px] uppercase tracking-widest shadow-lg"
+              >
+                {merging ? <Loader2 className="mr-2 animate-spin" /> : <CheckCircle2 size={14} className="mr-1.5" />}
+                Auto-Merge All ({detectedDuplicates.length})
+              </Button>
+            )}
+          </div>
         </div>
       </CardHeader>
       <CardContent className="p-8 pt-0 space-y-8">

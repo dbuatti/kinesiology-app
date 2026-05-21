@@ -3,7 +3,7 @@ import { serve } from "https://deno.land/std@0.190.0/http/server.ts"
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.45.0'
 import { syncClientToNotion } from "./client-sync.ts";
 import { syncSingleAppointment } from "./appointment-sync.ts";
-import { fetchWithRetry, CLIENTS_DB_ID } from "./notion-api.ts";
+import { fetchWithRetry, CLIENTS_DB_ID, fetchDatabaseSchema, findSchemaProperty, extractNotionPropertyValue } from "./notion-api.ts";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -44,6 +44,139 @@ serve(async (req) => {
     const action = body.action;
     const clientId = body.clientId || body.client?.id;
     const appointmentId = body.appointmentId || body.appointment?.id;
+
+    const { data: profileData } = await supabase.from('profiles').select('id').limit(1).maybeSingle();
+    const PRACTITIONER_ID = profileData?.id;
+
+    // Flow: Pull all clients from Notion into Supabase
+    if (action === 'pull-from-notion') {
+      console.log(`[${functionName}] Pulling all clients from Notion Database: ${CLIENTS_DB_ID}`);
+      
+      let hasMore = true;
+      let startCursor = undefined;
+      let importedCount = 0;
+      const allNotionClients = [];
+
+      while (hasMore) {
+        const queryBody: any = { page_size: 100 };
+        if (startCursor) queryBody.start_cursor = startCursor;
+
+        const res = await fetchWithRetry(`https://api.notion.com/v1/databases/${CLIENTS_DB_ID}/query`, {
+          method: 'POST',
+          headers: notionHeaders,
+          body: JSON.stringify(queryBody)
+        });
+
+        if (!res.ok) {
+          const err = await res.json();
+          throw new Error(`Failed to query Notion Clients DB: ${JSON.stringify(err)}`);
+        }
+
+        const data = await res.json();
+        allNotionClients.push(...(data.results || []));
+        hasMore = data.has_more;
+        startCursor = data.next_cursor;
+      }
+
+      console.log(`[${functionName}] Found ${allNotionClients.length} clients in Notion. Syncing to Supabase...`);
+
+      const schema = await fetchDatabaseSchema(CLIENTS_DB_ID, notionHeaders);
+
+      for (const page of allNotionClients) {
+        try {
+          const props = page.properties;
+          
+          const nameProp = findSchemaProperty(schema, ['Name', 'Client Name', 'Full Name']);
+          const emailProp = findSchemaProperty(schema, ['Email', 'Email Address']);
+          const phoneProp = findSchemaProperty(schema, ['Phone', 'Phone Number', 'Contact Number', 'Mobile']);
+          const bornProp = findSchemaProperty(schema, ['Date of Birth', 'DOB', 'Born', 'Birth Date']);
+          const pronounsProp = findSchemaProperty(schema, ['Pronouns']);
+          const occupationProp = findSchemaProperty(schema, ['Occupation', 'Job', 'Work']);
+          const historyProp = findSchemaProperty(schema, ['Medical History', 'History', 'Conditions']);
+          const medsProp = findSchemaProperty(schema, ['Medications & Supplements', 'Medications', 'Supplements']);
+          const sleepProp = findSchemaProperty(schema, ['Sleep Quality', 'Sleep']);
+          const digestionProp = findSchemaProperty(schema, ['Digestive Health', 'Digestion']);
+          const stressProp = findSchemaProperty(schema, ['Current Stress Level', 'Stress Level', 'Stress']);
+          const referralProp = findSchemaProperty(schema, ['Referral Source', 'Referral', 'How did you find me']);
+          const stripeProp = findSchemaProperty(schema, ['Stripe Customer ID', 'Stripe ID', 'Stripe Customer']);
+
+          const name = nameProp ? extractNotionPropertyValue(props[nameProp.name]) : null;
+          if (!name) {
+            console.warn(`[${functionName}] Skipping page ${page.id}: No name property found.`);
+            continue;
+          }
+
+          const email = emailProp ? extractNotionPropertyValue(props[emailProp.name]) : null;
+          const phone = phoneProp ? extractNotionPropertyValue(props[phoneProp.name]) : null;
+          const born = bornProp ? extractNotionPropertyValue(props[bornProp.name]) : null;
+          const pronouns = pronounsProp ? extractNotionPropertyValue(props[pronounsProp.name]) : null;
+          const occupation = occupationProp ? extractNotionPropertyValue(props[occupationProp.name]) : null;
+          const medical_history = historyProp ? extractNotionPropertyValue(props[historyProp.name]) : null;
+          const medications_supplements = medsProp ? extractNotionPropertyValue(props[medsProp.name]) : null;
+          const sleep_quality = sleepProp ? extractNotionPropertyValue(props[sleepProp.name]) : null;
+          const digestive_health = digestionProp ? extractNotionPropertyValue(props[digestionProp.name]) : null;
+          const current_stress_level = stressProp ? extractNotionPropertyValue(props[stressProp.name]) : null;
+          const referral_source = referralProp ? extractNotionPropertyValue(props[referralProp.name]) : null;
+          const stripe_customer_id = stripeProp ? extractNotionPropertyValue(props[stripeProp.name]) : null;
+
+          // Check if client already exists in Supabase by notion_page_id
+          const { data: existingByNotion } = await supabase
+            .from('clients')
+            .select('id')
+            .eq('notion_page_id', page.id)
+            .maybeSingle();
+
+          let targetId = existingByNotion?.id;
+
+          // If not found by notion_page_id, check by email (if email exists)
+          if (!targetId && email) {
+            const { data: existingByEmail } = await supabase
+              .from('clients')
+              .select('id')
+              .eq('email', email.toLowerCase().trim())
+              .maybeSingle();
+            targetId = existingByEmail?.id;
+          }
+
+          const clientPayload = {
+            user_id: PRACTITIONER_ID,
+            name,
+            email: email || null,
+            phone: phone || null,
+            born: born || null,
+            pronouns: pronouns || null,
+            occupation: occupation || null,
+            medical_history: medical_history || null,
+            medications_supplements: medications_supplements || null,
+            sleep_quality: sleep_quality || null,
+            digestive_health: digestive_health || null,
+            current_stress_level: current_stress_level || null,
+            referral_source: referral_source || null,
+            stripe_customer_id: stripe_customer_id || null,
+            notion_page_id: page.id,
+            notion_link: page.url
+          };
+
+          if (targetId) {
+            await supabase.from('clients').update(clientPayload).eq('id', targetId);
+          } else {
+            await supabase.from('clients').insert(clientPayload);
+          }
+
+          importedCount++;
+        } catch (itemErr) {
+          console.error(`[${functionName}] Error importing page ${page.id}:`, itemErr.message);
+        }
+      }
+
+      return new Response(JSON.stringify({ 
+        success: true, 
+        message: `Successfully pulled and synced ${importedCount} clients from Notion to Supabase!` 
+      }), { 
+        status: 200, 
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
+      });
+    }
 
     // Flow: Configure Notion Schema (Create properties & relations)
     if (action === 'configure-schema') {

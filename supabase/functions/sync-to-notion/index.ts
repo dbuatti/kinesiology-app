@@ -104,6 +104,58 @@ serve(async (req) => {
       }
     };
 
+    // Helper to find an existing client page in Notion by name or email
+    const findExistingNotionClient = async (client: any, schema: any) => {
+      const titleProp = findSchemaProperty(schema, ['Name', 'Client Name', 'Full Name']);
+      const emailProp = findSchemaProperty(schema, ['Email', 'Email Address']);
+      
+      const filters = [];
+      if (titleProp && client.name) {
+        filters.push({
+          property: titleProp.name,
+          title: { equals: client.name }
+        });
+      }
+      if (emailProp && client.email) {
+        filters.push({
+          property: emailProp.name,
+          email: { equals: client.email }
+        });
+      }
+
+      if (filters.length === 0) return null;
+
+      try {
+        console.log(`[${functionName}] Querying Notion for existing client matching name/email...`);
+        const queryRes = await fetch(`https://api.notion.com/v1/databases/${CLIENTS_DB_ID}/query`, {
+          method: 'POST',
+          headers: notionHeaders,
+          body: JSON.stringify({
+            filter: filters.length === 1 ? filters[0] : { or: filters },
+            page_size: 1
+          })
+        });
+
+        if (queryRes.ok) {
+          const queryData = await queryRes.json();
+          if (queryData.results && queryData.results.length > 0) {
+            const match = queryData.results[0];
+            console.log(`[${functionName}] Found existing Notion page match: ${match.id}`);
+            return {
+              id: match.id,
+              url: match.url
+            };
+          }
+        } else {
+          const errData = await queryRes.json();
+          console.warn(`[${functionName}] Notion query failed:`, errData);
+        }
+      } catch (err) {
+        console.warn(`[${functionName}] Error querying existing client:`, err);
+      }
+      return null;
+    };
+
     // Helper to sync a client to the Client Database
     const syncClientToNotion = async (client: any) => {
       console.log(`[${functionName}] Syncing client to Client Database: ${client.name} (${client.id})`);
@@ -152,6 +204,15 @@ serve(async (req) => {
 
       let clientPageId = client.notion_page_id;
       let clientPageUrl = client.notion_link;
+
+      // If we don't have a page ID in Supabase, check if a page already exists in Notion with this name/email
+      if (!clientPageId) {
+        const existingMatch = await findExistingNotionClient(client, schema);
+        if (existingMatch) {
+          clientPageId = existingMatch.id;
+          clientPageUrl = existingMatch.url;
+        }
+      }
 
       if (clientPageId) {
         console.log(`[${functionName}] Updating existing Client page: ${clientPageId}`);
@@ -353,7 +414,7 @@ serve(async (req) => {
         .select('*')
         .or('is_practitioner.eq.false,is_practitioner.is.null');
 
-      if (fetchError) throw fetchError;
+      if (fetchError) throw error;
 
       let count = 0;
       for (const client of (clients || [])) {

@@ -67,16 +67,39 @@ serve(async (req) => {
       const calcomId = String(booking.uid || booking.id);
       const startTime = booking.start;
 
-      // 1. Upsert Client
-      const { data: dbClient, error: clientError } = await supabase
+      // Find existing client by email to avoid unique constraint issues
+      const { data: existingClient } = await supabase
         .from('clients')
-        .upsert({ user_id: PRACTITIONER_ID, name, email }, { onConflict: 'email' })
         .select('id')
-        .single();
+        .eq('email', email)
+        .maybeSingle();
 
-      if (clientError || !dbClient) {
-        console.error(`[${functionName}] Error upserting client ${email}:`, clientError);
-        continue;
+      let dbClient;
+      if (existingClient) {
+        const { data: updatedClient, error: clientError } = await supabase
+          .from('clients')
+          .update({ name })
+          .eq('id', existingClient.id)
+          .select('id')
+          .single();
+        
+        if (clientError) {
+          console.error(`[${functionName}] Error updating client ${email}:`, clientError);
+          continue;
+        }
+        dbClient = updatedClient;
+      } else {
+        const { data: newClient, error: clientError } = await supabase
+          .from('clients')
+          .insert({ user_id: PRACTITIONER_ID, name, email })
+          .select('id')
+          .single();
+
+        if (clientError) {
+          console.error(`[${functionName}] Error inserting client ${email}:`, clientError);
+          continue;
+        }
+        dbClient = newClient;
       }
 
       // 2. Check for existing record by Calcom ID

@@ -5,6 +5,7 @@ import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.45.0'
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type, x-supabase-client-platform',
+  'Access-Control-Allow-Methods': 'POST, OPTIONS',
 }
 
 // Only process these specific clinical event types
@@ -64,14 +65,33 @@ serve(async (req) => {
     const email = String(attendee.email || "").toLowerCase().trim();
     const startTime = payload.startTime || payload.start;
 
-    const { data: dbClient, error: clientError } = await supabase
+    // Find existing client by email to avoid unique constraint issues
+    const { data: existingClient } = await supabase
       .from('clients')
-      .upsert({ user_id: PRACTITIONER_ID, name, email }, { onConflict: 'email' })
-      .select('*')
-      .single();
+      .select('id')
+      .eq('email', email)
+      .maybeSingle();
 
-    if (clientError || !dbClient) {
-      throw new Error(`Failed to upsert client: ${clientError?.message}`);
+    let dbClient;
+    if (existingClient) {
+      const { data: updatedClient, error: clientError } = await supabase
+        .from('clients')
+        .update({ name })
+        .eq('id', existingClient.id)
+        .select('*')
+        .single();
+      
+      if (clientError) throw clientError;
+      dbClient = updatedClient;
+    } else {
+      const { data: newClient, error: clientError } = await supabase
+        .from('clients')
+        .insert({ user_id: PRACTITIONER_ID, name, email })
+        .select('*')
+        .single();
+
+      if (clientError) throw clientError;
+      dbClient = newClient;
     }
 
     const isCreationEvent = ['BOOKING_CREATED', 'BOOKING_RESCHEDULED'].includes(triggerEvent);

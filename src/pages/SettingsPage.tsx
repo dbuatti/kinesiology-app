@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import {
   Settings,
@@ -24,7 +24,10 @@ import {
   FileText,
   ArrowRight,
   LayoutGrid,
-  Layers
+  Layers,
+  Merge,
+  ArrowRightLeft,
+  CheckCircle2
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
@@ -32,6 +35,13 @@ import { showSuccess, showError } from "@/utils/toast";
 import { useNavigate, Link } from "react-router-dom";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 const SettingsPage = () => {
   const navigate = useNavigate();
@@ -39,9 +49,39 @@ const SettingsPage = () => {
   const [initializingStripe, setInitializingStripe] = useState(false);
   const [syncingAll, setSyncingAll] = useState(false);
   const [syncingNotionAll, setSyncingNotionAll] = useState(false);
+  const [syncingAppointmentsAll, setSyncingAppointmentsAll] = useState(false);
+  
+  // Merge Clients State
+  const [clients, setClients] = useState<{ id: string; name: string }[]>([]);
+  const [loadingClients, setLoadingClients] = useState(true);
+  const [sourceClientId, setSourceClientId] = useState<string>("");
+  const [targetClientId, setTargetClientId] = useState<string>("");
+  const [merging, setMerging] = useState(false);
 
   const projectRef = "xebtjnvfkroiplyzftas";
   const webhookUrl = `https://${projectRef}.supabase.co/functions/v1/calcom-webhook`;
+
+  const fetchClients = async () => {
+    setLoadingClients(true);
+    try {
+      const { data, error } = await supabase
+        .from('clients')
+        .select('id, name')
+        .or('is_practitioner.eq.false,is_practitioner.is.null')
+        .order('name');
+      
+      if (error) throw error;
+      setClients(data || []);
+    } catch (err) {
+      console.error("Failed to fetch clients:", err);
+    } finally {
+      setLoadingClients(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchClients();
+  }, []);
   
   const handleCopy = (text: string, id: string) => {
     navigator.clipboard.writeText(text);
@@ -95,6 +135,66 @@ const SettingsPage = () => {
       showError(err.message);
     } finally {
       setSyncingNotionAll(false);
+    }
+  };
+
+  const handleSyncAllAppointmentsToNotion = async () => {
+    setSyncingAppointmentsAll(true);
+    try {
+      const { data, error } = await supabase.functions.invoke('sync-to-notion', {
+        body: { 
+          action: 'sync-all-appointments',
+          origin: window.location.origin
+        }
+      });
+      if (error) throw error;
+      showSuccess(`Successfully synced ${data.syncedCount} appointments to Notion!`);
+    } catch (err: any) {
+      showError(err.message);
+    } finally {
+      setSyncingAppointmentsAll(false);
+    }
+  };
+
+  const handleMergeClients = async () => {
+    if (!sourceClientId || !targetClientId) {
+      showError("Please select both a source and target client.");
+      return;
+    }
+
+    if (sourceClientId === targetClientId) {
+      showError("Source and target clients cannot be the same.");
+      return;
+    }
+
+    const sourceName = clients.find(c => c.id === sourceClientId)?.name;
+    const targetName = clients.find(c => c.id === targetClientId)?.name;
+
+    if (!confirm(`Are you sure you want to merge "${sourceName}" into "${targetName}"?\n\nThis will:\n1. Move all appointments to "${targetName}"\n2. Archive "${sourceName}" in Notion\n3. Delete "${sourceName}" from the CRM\n\nThis action cannot be undone.`)) {
+      return;
+    }
+
+    setMerging(true);
+    try {
+      const { data, error } = await supabase.functions.invoke('sync-to-notion', {
+        body: {
+          action: 'merge-clients',
+          sourceClientId,
+          targetClientId,
+          origin: window.location.origin
+        }
+      });
+
+      if (error) throw error;
+
+      showSuccess(`Successfully merged "${sourceName}" into "${targetName}"!`);
+      setSourceClientId("");
+      setTargetClientId("");
+      fetchClients();
+    } catch (err: any) {
+      showError(err.message || "Failed to merge clients.");
+    } finally {
+      setMerging(false);
     }
   };
 
@@ -161,6 +261,110 @@ const SettingsPage = () => {
             </CardContent>
           </Card>
 
+          <Card className="border-none shadow-xl rounded-[2.5rem] bg-white dark:bg-slate-950 overflow-hidden border-2 border-purple-100">
+            <CardHeader className="p-8 pb-4 bg-purple-50/50">
+              <CardTitle className="text-xl font-black flex items-center gap-3 text-purple-900">
+                <Layers size={24} /> Notion Database Sync
+              </CardTitle>
+              <CardDescription className="text-purple-700 font-medium">Bulk sync your clients and appointments to Notion.</CardDescription>
+            </CardHeader>
+            <CardContent className="p-8 pt-0 space-y-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="p-6 bg-white dark:bg-slate-900 rounded-3xl border border-purple-100 dark:border-purple-900/30 space-y-4">
+                  <div className="space-y-1">
+                    <h4 className="font-black text-slate-900 dark:text-white text-sm uppercase tracking-tight">Bulk Sync Clients</h4>
+                    <p className="text-xs text-slate-500 leading-relaxed">Push all existing CRM clients into your Notion Client Database.</p>
+                  </div>
+                  <Button 
+                    onClick={handleSyncAllToNotion} 
+                    disabled={syncingNotionAll}
+                    className="w-full bg-purple-600 hover:bg-purple-700 text-white rounded-xl h-10 font-black text-[10px] uppercase tracking-widest shadow-lg"
+                  >
+                    {syncingNotionAll ? <Loader2 className="mr-2 animate-spin" /> : <Users size={16} className="mr-2" />}
+                    Sync All to Notion
+                  </Button>
+                </div>
+
+                <div className="p-6 bg-white dark:bg-slate-900 rounded-3xl border border-purple-100 dark:border-purple-900/30 space-y-4">
+                  <div className="space-y-1">
+                    <h4 className="font-black text-slate-900 dark:text-white text-sm uppercase tracking-tight">Bulk Sync Appointments</h4>
+                    <p className="text-xs text-slate-500 leading-relaxed">Push all existing appointments to Notion and link them to clients.</p>
+                  </div>
+                  <Button 
+                    onClick={handleSyncAllAppointmentsToNotion} 
+                    disabled={syncingAppointmentsAll}
+                    className="w-full bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl h-10 font-black text-[10px] uppercase tracking-widest shadow-lg"
+                  >
+                    {syncingAppointmentsAll ? <Loader2 className="mr-2 animate-spin" /> : <Calendar size={16} className="mr-2" />}
+                    Sync All Appointments
+                  </Button>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Merge Clients Card */}
+          <Card className="border-none shadow-xl rounded-[2.5rem] bg-white dark:bg-slate-950 overflow-hidden border-2 border-amber-100">
+            <CardHeader className="p-8 pb-4 bg-amber-50/50">
+              <CardTitle className="text-xl font-black flex items-center gap-3 text-amber-900">
+                <Merge size={24} /> Merge Duplicate Clients
+              </CardTitle>
+              <CardDescription className="text-amber-700 font-medium">Consolidate duplicate client profiles in both the CRM and Notion.</CardDescription>
+            </CardHeader>
+            <CardContent className="p-8 pt-0 space-y-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className="space-y-2">
+                  <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-1">1. Duplicate Client (To Remove)</label>
+                  <Select value={sourceClientId} onValueChange={setSourceClientId} disabled={loadingClients || merging}>
+                    <SelectTrigger className="h-12 rounded-xl font-bold bg-slate-50 border-slate-200">
+                      <SelectValue placeholder={loadingClients ? "Loading..." : "Select duplicate..."} />
+                    </SelectTrigger>
+                    <SelectContent className="max-h-[250px]">
+                      {clients.map(c => (
+                        <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                <div className="space-y-2">
+                  <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-1">2. Primary Client (To Keep)</label>
+                  <Select value={targetClientId} onValueChange={setTargetClientId} disabled={loadingClients || merging}>
+                    <SelectTrigger className="h-12 rounded-xl font-bold bg-slate-50 border-slate-200">
+                      <SelectValue placeholder={loadingClients ? "Loading..." : "Select primary..."} />
+                    </SelectTrigger>
+                    <SelectContent className="max-h-[250px]">
+                      {clients.map(c => (
+                        <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+
+              {sourceClientId && targetClientId && (
+                <div className="p-5 bg-amber-50 rounded-2xl border border-amber-200 flex items-start gap-4 animate-in fade-in slide-in-from-top-2">
+                  <ArrowRightLeft size={20} className="text-amber-600 shrink-0 mt-0.5" />
+                  <div className="space-y-1">
+                    <p className="text-xs font-bold text-amber-900">Merge Action Summary:</p>
+                    <p className="text-xs text-amber-800 leading-relaxed">
+                      All appointments for <strong>{clients.find(c => c.id === sourceClientId)?.name}</strong> will be moved to <strong>{clients.find(c => c.id === targetClientId)?.name}</strong>. The duplicate page in Notion will be archived, and the duplicate profile in the CRM will be deleted.
+                    </p>
+                  </div>
+                </div>
+              )}
+
+              <Button 
+                onClick={handleMergeClients}
+                disabled={merging || !sourceClientId || !targetClientId}
+                className="w-full h-14 bg-amber-500 hover:bg-amber-600 text-white rounded-2xl font-black text-xs uppercase tracking-widest shadow-xl shadow-amber-100"
+              >
+                {merging ? <Loader2 className="animate-spin mr-2" /> : <Merge size={18} className="mr-2" />}
+                Merge Client Profiles
+              </Button>
+            </CardContent>
+          </Card>
+
           <Card className="border-none shadow-xl rounded-[2.5rem] bg-white dark:bg-slate-950 overflow-hidden border-2 border-indigo-100">
             <CardHeader className="p-8 pb-4 bg-indigo-50/50">
               <CardTitle className="text-xl font-black flex items-center gap-3 text-indigo-900">
@@ -209,31 +413,6 @@ const SettingsPage = () => {
                 <p className="text-xs text-amber-800 dark:text-amber-200 font-medium">
                   New bookings from Cal.com will now automatically create Stripe customers. Use the button above to sync your current database.
                 </p>
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card className="border-none shadow-xl rounded-[2.5rem] bg-white dark:bg-slate-950 overflow-hidden border-2 border-purple-100">
-            <CardHeader className="p-8 pb-4 bg-purple-50/50">
-              <CardTitle className="text-xl font-black flex items-center gap-3 text-purple-900">
-                <Layers size={24} /> Notion Client Database Sync
-              </CardTitle>
-              <CardDescription className="text-purple-700 font-medium">Bulk sync all existing CRM clients to your Notion Client Database.</CardDescription>
-            </CardHeader>
-            <CardContent className="p-8 pt-0 space-y-6">
-              <div className="p-6 bg-white dark:bg-slate-900 rounded-3xl border border-purple-100 dark:border-purple-900/30 space-y-4">
-                <div className="space-y-1">
-                  <h4 className="font-black text-slate-900 dark:text-white text-sm uppercase tracking-tight">Bulk Sync Clients</h4>
-                  <p className="text-xs text-slate-500 leading-relaxed">Push all existing CRM clients into your Notion Client Database.</p>
-                </div>
-                <Button 
-                  onClick={handleSyncAllToNotion} 
-                  disabled={syncingNotionAll}
-                  className="w-full bg-purple-600 hover:bg-purple-700 text-white rounded-xl h-10 font-black text-[10px] uppercase tracking-widest shadow-lg"
-                >
-                  {syncingNotionAll ? <Loader2 className="mr-2 animate-spin" /> : <Layers size={16} className="mr-2" />}
-                  Sync All to Notion
-                </Button>
               </div>
             </CardContent>
           </Card>

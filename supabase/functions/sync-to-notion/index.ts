@@ -406,58 +406,8 @@ serve(async (req) => {
       return { id: clientPageId, url: clientPageUrl };
     };
 
-    // Flow 0: Sync All Clients
-    if (action === 'sync-all-clients') {
-      console.log(`[${functionName}] Starting bulk client sync...`);
-      const { data: clients, error: fetchError } = await supabase
-        .from('clients')
-        .select('*')
-        .or('is_practitioner.eq.false,is_practitioner.is.null');
-
-      if (fetchError) throw error;
-
-      let count = 0;
-      for (const client of (clients || [])) {
-        try {
-          await syncClientToNotion(client);
-          count++;
-        } catch (e) {
-          console.error(`[${functionName}] Failed to sync client ${client.name}:`, e.message);
-        }
-      }
-
-      console.log(`[${functionName}] Bulk client sync complete. Synced: ${count}`);
-      return new Response(JSON.stringify({ success: true, syncedCount: count }), { 
-        status: 200, 
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
-      });
-    }
-
-    // Flow 1: Sync Client Only
-    if (clientId && !appointmentId) {
-      const { data: client, error: clientError } = await supabase
-        .from('clients')
-        .select('*')
-        .eq('id', clientId)
-        .single()
-
-      if (clientError || !client) {
-        throw new Error(`Failed to fetch client: ${clientError?.message || "Not found"}`)
-      }
-
-      const result = await syncClientToNotion(client);
-      return new Response(JSON.stringify({ 
-        success: true, 
-        id: result.id, 
-        url: result.url 
-      }), { 
-        status: 200, 
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
-      })
-    }
-
-    // Flow 2: Sync Appointment (and optionally Client)
-    if (appointmentId) {
+    // Helper to sync a single appointment
+    const syncSingleAppointment = async (appId: string) => {
       // Fetch full appointment details including client
       const { data: appointment, error: appError } = await supabase
         .from('appointments')
@@ -467,7 +417,7 @@ serve(async (req) => {
             *
           )
         `)
-        .eq('id', appointmentId)
+        .eq('id', appId)
         .single()
 
       if (appError || !appointment) {
@@ -477,18 +427,23 @@ serve(async (req) => {
       const clientName = appointment.clients?.name || "Unknown Client";
       const appointmentName = appointment.name || `Session with ${clientName}`;
 
-      console.log(`[${functionName}] Syncing appointment: ${appointmentName} (${appointmentId})`);
+      console.log(`[${functionName}] Syncing appointment: ${appointmentName} (${appId})`);
 
       // Sync client first to ensure we have their Notion link
+      let clientPageId = appointment.clients?.notion_page_id;
       let clientPageUrl = appointment.clients?.notion_link;
       if (appointment.clients) {
         try {
           const clientResult = await syncClientToNotion(appointment.clients);
+          clientPageId = clientResult.id;
           clientPageUrl = clientResult.url;
         } catch (clientSyncErr) {
           console.error(`[${functionName}] Failed to sync client as part of appointment sync:`, clientSyncErr);
         }
       }
+
+      // Fetch database schema to map properties dynamically
+      const mainSchema = await fetchDatabaseSchema(MAIN_DB_ID);
 
       // Prepare properties for Main Appointments DB
       const mainProps = {
@@ -497,6 +452,17 @@ serve(async (req) => {
         "Goal": { rich_text: [{ text: { content: appointment.goal || "" } }] },
         "Issue": { multi_select: [{ name: appointment.tag || "Kinesiology" }] },
         "Notes": { rich_text: [{ text: { content: `${appointment.issue ? `ISSUE: ${appointment.issue}\n\n` : ''}${appointment.notes || ""}` } }] }
+      }
+
+      // Dynamically find the relation property pointing to the Clients DB
+      const clientRelationProp = Object.keys(mainSchema).find(k => {
+        const prop = mainSchema[k];
+        return prop.type === 'relation' && prop.relation?.database_id === CLIENTS_DB_ID;
+      });
+
+      if (clientRelationProp && clientPageId) {
+        console.log(`[${functionName}] Linking appointment to client page: ${clientPageId} via property: ${clientRelationProp}`);
+        mainProps[clientRelationProp] = { relation: [{ id: clientPageId }] };
       }
 
       let mainPageId = appointment.notion_page_id;
@@ -772,17 +738,164 @@ serve(async (req) => {
           notion_planner_id: plannerPageId,
           notion_link: mainPageUrl
         })
-        .eq('id', appointmentId);
+        .eq('id', appId);
 
       if (updateError) {
         console.error(`[${functionName}] Failed to update appointment in Supabase:`, updateError);
       }
 
+      return { id: mainPageId, url: mainPageUrl };
+    };
+
+    // Flow 0: Sync All Clients
+    if (action === 'sync-all-clients') {
+      console.log(`[${functionName}] Starting bulk client sync...`);
+      const { data: clients, error: fetchError } = await supabase
+        .from('clients')
+        .select('*')
+        .or('is_practitioner.eq.false,is_practitioner.is.null');
+
+      if (fetchError) throw error;
+
+      let count = 0;
+      for (const client of (clients || [])) {
+        try {
+          await syncClientToNotion(client);
+          count++;
+        } catch (e) {
+          console.error(`[${functionName}] Failed to sync client ${client.name}:`, e.message);
+        }
+      }
+
+      console.log(`[${functionName}] Bulk client sync complete. Synced: ${count}`);
+      return new Response(JSON.stringify({ success: true, syncedCount: count }), { 
+        status: 200, 
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
+      });
+    }
+
+    // Flow: Sync All Appointments
+    if (action === 'sync-all-appointments') {
+      console.log(`[${functionName}] Starting bulk appointment sync...`);
+      const { data: appointments, error: fetchError } = await supabase
+        .from('appointments')
+        .select('id')
+        .order('date', { ascending: false });
+
+      if (fetchError) throw fetchError;
+
+      let count = 0;
+      for (const app of (appointments || [])) {
+        try {
+          await syncSingleAppointment(app.id);
+          count++;
+        } catch (e) {
+          console.error(`[${functionName}] Failed to sync appointment ${app.id}:`, e.message);
+        }
+      }
+
+      console.log(`[${functionName}] Bulk appointment sync complete. Synced: ${count}`);
+      return new Response(JSON.stringify({ success: true, syncedCount: count }), { 
+        status: 200, 
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
+      });
+    }
+
+    // Flow: Merge Clients
+    if (action === 'merge-clients') {
+      const { sourceClientId, targetClientId } = body;
+      if (!sourceClientId || !targetClientId) {
+        throw new Error("Missing sourceClientId or targetClientId");
+      }
+
+      console.log(`[${functionName}] Merging client ${sourceClientId} into ${targetClientId}`);
+
+      // 1. Fetch source client to get their Notion Page ID
+      const { data: sourceClient, error: sourceError } = await supabase
+        .from('clients')
+        .select('*')
+        .eq('id', sourceClientId)
+        .single();
+
+      if (sourceError) throw sourceError;
+
+      // 2. Move all appointments in Supabase
+      const { error: appError } = await supabase
+        .from('appointments')
+        .update({ client_id: targetClientId })
+        .eq('client_id', sourceClientId);
+
+      if (appError) throw appError;
+
+      // 3. Archive the source client's Notion page if it exists
+      if (sourceClient.notion_page_id) {
+        console.log(`[${functionName}] Archiving source client page in Notion: ${sourceClient.notion_page_id}`);
+        await fetch(`https://api.notion.com/v1/pages/${sourceClient.notion_page_id}`, {
+          method: 'PATCH',
+          headers: notionHeaders,
+          body: JSON.stringify({ archived: true })
+        });
+      }
+
+      // 4. Delete the source client from Supabase
+      const { error: deleteError } = await supabase
+        .from('clients')
+        .delete()
+        .eq('id', sourceClientId);
+
+      if (deleteError) throw deleteError;
+
+      // 5. Fetch and sync the target client to update their appointments list in Notion
+      const { data: targetClient, error: targetError } = await supabase
+        .from('clients')
+        .select('*')
+        .eq('id', targetClientId)
+        .single();
+
+      if (targetError) throw targetError;
+
+      const syncResult = await syncClientToNotion(targetClient);
+
       return new Response(JSON.stringify({ 
         success: true, 
-        id: mainPageId, 
-        plannerId: plannerPageId,
-        url: mainPageUrl 
+        message: "Clients merged successfully in both CRM and Notion.",
+        targetNotionId: syncResult.id
+      }), { 
+        status: 200, 
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
+      });
+    }
+
+    // Flow 1: Sync Client Only
+    if (clientId && !appointmentId) {
+      const { data: client, error: clientError } = await supabase
+        .from('clients')
+        .select('*')
+        .eq('id', clientId)
+        .single()
+
+      if (clientError || !client) {
+        throw new Error(`Failed to fetch client: ${clientError?.message || "Not found"}`)
+      }
+
+      const result = await syncClientToNotion(client);
+      return new Response(JSON.stringify({ 
+        success: true, 
+        id: result.id, 
+        url: result.url 
+      }), { 
+        status: 200, 
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
+      })
+    }
+
+    // Flow 2: Sync Appointment (and optionally Client)
+    if (appointmentId) {
+      const result = await syncSingleAppointment(appointmentId);
+      return new Response(JSON.stringify({ 
+        success: true, 
+        id: result.id, 
+        url: result.url 
       }), { 
         status: 200, 
         headers: { ...corsHeaders, 'Content-Type': 'application/json' } 

@@ -29,7 +29,8 @@ import {
   ArrowRightLeft,
   CheckCircle2,
   AlertCircle,
-  Trash2
+  Trash2,
+  Edit3
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
@@ -48,11 +49,10 @@ import {
   Dialog,
   DialogContent,
   DialogDescription,
-  DialogFooter,
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -205,11 +205,6 @@ const SettingsPage = () => {
         const allInGroup = [clientA, ...duplicates];
         
         // Sort to find the best "Primary" client
-        // Heuristic:
-        // 1. Has Stripe ID
-        // 2. Has Notion ID
-        // 3. Has more fields populated
-        // 4. Oldest created_at
         const getPopulatedFieldCount = (c: any) => {
           return Object.entries(c).filter(([key, val]) => {
             if (key === 'id' || key === 'created_at' || key === 'user_id') return false;
@@ -338,13 +333,35 @@ const SettingsPage = () => {
     }
   };
 
+  const cleanFieldsForDb = (fields: Record<string, any>) => {
+    const cleaned: Record<string, any> = {};
+    Object.entries(fields).forEach(([key, val]) => {
+      if (val === "" || val === undefined) {
+        cleaned[key] = null;
+      } else if (key === 'current_stress_level') {
+        const num = parseInt(val);
+        cleaned[key] = isNaN(num) ? null : num;
+      } else if (key === 'born') {
+        try {
+          cleaned[key] = val ? new Date(val).toISOString() : null;
+        } catch (e) {
+          cleaned[key] = null;
+        }
+      } else {
+        cleaned[key] = val;
+      }
+    });
+    return cleaned;
+  };
+
   const executeMerge = async (sourceId: string, targetId: string, mergedFields?: Record<string, any>) => {
+    const cleaned = mergedFields ? cleanFieldsForDb(mergedFields) : undefined;
     const { error } = await supabase.functions.invoke('sync-to-notion', {
       body: {
         action: 'merge-clients',
         sourceClientId: sourceId,
         targetClientId: targetId,
-        mergedFields,
+        mergedFields: cleaned,
         origin: window.location.origin
       }
     });
@@ -652,14 +669,24 @@ const SettingsPage = () => {
                             ))}
                           </div>
                         </div>
-                        <Button 
-                          onClick={() => handleAutoMergeGroup(group)}
-                          disabled={merging}
-                          className="bg-amber-600 hover:bg-amber-700 text-white rounded-xl h-9 px-4 font-black text-[10px] uppercase tracking-widest shadow-md"
-                        >
-                          {merging ? <Loader2 className="animate-spin mr-1.5" /> : <Merge size={12} className="mr-1.5" />}
-                          Merge Group
-                        </Button>
+                        <div className="flex gap-2">
+                          <Button 
+                            onClick={() => startMergeSession(group.primary, group.duplicates[0])}
+                            disabled={merging}
+                            variant="outline"
+                            className="border-amber-200 text-amber-700 hover:bg-amber-50 rounded-xl h-9 px-4 font-black text-[10px] uppercase tracking-widest"
+                          >
+                            Review & Merge
+                          </Button>
+                          <Button 
+                            onClick={() => handleAutoMergeGroup(group)}
+                            disabled={merging}
+                            className="bg-amber-600 hover:bg-amber-700 text-white rounded-xl h-9 px-4 font-black text-[10px] uppercase tracking-widest shadow-md"
+                          >
+                            {merging ? <Loader2 className="animate-spin mr-1.5" /> : <Merge size={12} className="mr-1.5" />}
+                            Auto-Merge
+                          </Button>
+                        </div>
                       </div>
                     ))}
                   </div>
@@ -851,6 +878,227 @@ const SettingsPage = () => {
           </Card>
         </div>
       </div>
+
+      {/* SIDE-BY-SIDE CONFLICT RESOLUTION DIALOG */}
+      <Dialog open={!!activeMerge} onOpenChange={(open) => !open && setActiveMerge(null)}>
+        <DialogContent className="sm:max-w-[800px] max-h-[90vh] overflow-y-auto rounded-[2.5rem] p-0 border-none shadow-2xl bg-white">
+          <div className="p-10 space-y-6">
+            <DialogHeader>
+              <div className="flex items-center gap-4 mb-2">
+                <div className="w-14 h-14 rounded-2xl bg-amber-500 text-white flex items-center justify-center shadow-xl">
+                  <Merge size={28} />
+                </div>
+                <div>
+                  <DialogTitle className="text-2xl font-black">Resolve Merge Conflicts</DialogTitle>
+                  <DialogDescription className="text-base font-medium">
+                    Choose which values to keep for each field. You can also edit the final merged value.
+                  </DialogDescription>
+                </div>
+              </div>
+            </DialogHeader>
+
+            {activeMerge && (
+              <div className="space-y-6">
+                {/* Side-by-side comparison */}
+                <div className="border border-slate-200 rounded-2xl overflow-hidden">
+                  <div className="grid grid-cols-3 bg-slate-50 border-b border-slate-200 text-[10px] font-black uppercase tracking-widest text-slate-500 p-3">
+                    <div>Field</div>
+                    <div>Primary (Keep)</div>
+                    <div>Duplicate (Merge & Delete)</div>
+                  </div>
+                  <div className="divide-y divide-slate-100 max-h-[40vh] overflow-y-auto custom-scrollbar">
+                    {Object.keys(activeMerge.fields).map((field) => {
+                      const valPrimary = activeMerge.primary[field];
+                      const valDuplicate = activeMerge.duplicate[field];
+                      
+                      // Skip internal IDs or fields that are identical and empty
+                      if (['id', 'created_at', 'user_id', 'stripe_customer_id', 'notion_page_id', 'notion_link'].includes(field)) {
+                        return null;
+                      }
+
+                      const displayValue = (val: any) => {
+                        if (val === null || val === undefined || val === "") return <span className="text-slate-300 italic">Empty</span>;
+                        if (Array.isArray(val)) return val.join(", ");
+                        if (val instanceof Date) return val.toLocaleDateString();
+                        return String(val);
+                      };
+
+                      const isConflict = String(valPrimary) !== String(valDuplicate) && valPrimary && valDuplicate;
+
+                      return (
+                        <div key={field} className={cn(
+                          "grid grid-cols-3 p-3 items-center text-xs gap-4",
+                          isConflict ? "bg-amber-50/30" : ""
+                        )}>
+                          <div className="font-bold text-slate-700 capitalize">
+                            {field.replace('_', ' ')}
+                            {isConflict && <span className="text-amber-500 ml-1">*</span>}
+                          </div>
+                          
+                          {/* Primary Option */}
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setActiveMerge({
+                                ...activeMerge,
+                                fields: {
+                                  ...activeMerge.fields,
+                                  [field]: valPrimary
+                                }
+                              });
+                            }}
+                            className={cn(
+                              "p-2 rounded-xl text-left border transition-all",
+                              activeMerge.fields[field] === valPrimary
+                                ? "border-indigo-600 bg-indigo-50/50 font-bold text-indigo-900"
+                                : "border-slate-100 hover:border-slate-200 text-slate-600"
+                            )}
+                          >
+                            {displayValue(valPrimary)}
+                          </button>
+
+                          {/* Duplicate Option */}
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setActiveMerge({
+                                ...activeMerge,
+                                fields: {
+                                  ...activeMerge.fields,
+                                  [field]: valDuplicate
+                                }
+                              });
+                            }}
+                            className={cn(
+                              "p-2 rounded-xl text-left border transition-all",
+                              activeMerge.fields[field] === valDuplicate
+                                ? "border-indigo-600 bg-indigo-50/50 font-bold text-indigo-900"
+                                : "border-slate-100 hover:border-slate-200 text-slate-600"
+                            )}
+                          >
+                            {displayValue(valDuplicate)}
+                          </button>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+
+                {/* Custom Edit Area for Merged Fields */}
+                <div className="space-y-4 p-5 bg-slate-50 rounded-2xl border border-slate-200">
+                  <h4 className="text-xs font-black uppercase tracking-widest text-slate-500 flex items-center gap-2">
+                    <Edit3 size={14} /> Edit Merged Values
+                  </h4>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div className="space-y-1.5">
+                      <Label className="text-[10px] font-black uppercase tracking-widest text-slate-400">Name</Label>
+                      <Input
+                        value={activeMerge.fields.name || ""}
+                        onChange={(e) => {
+                          setActiveMerge({
+                            ...activeMerge,
+                            fields: { ...activeMerge.fields, name: e.target.value }
+                          });
+                        }}
+                        className="h-10 rounded-xl bg-white"
+                      />
+                    </div>
+                    <div className="space-y-1.5">
+                      <Label className="text-[10px] font-black uppercase tracking-widest text-slate-400">Email</Label>
+                      <Input
+                        value={activeMerge.fields.email || ""}
+                        onChange={(e) => {
+                          setActiveMerge({
+                            ...activeMerge,
+                            fields: { ...activeMerge.fields, email: e.target.value }
+                          });
+                        }}
+                        className="h-10 rounded-xl bg-white"
+                      />
+                    </div>
+                    <div className="space-y-1.5">
+                      <Label className="text-[10px] font-black uppercase tracking-widest text-slate-400">Phone</Label>
+                      <Input
+                        value={activeMerge.fields.phone || ""}
+                        onChange={(e) => {
+                          setActiveMerge({
+                            ...activeMerge,
+                            fields: { ...activeMerge.fields, phone: e.target.value }
+                          });
+                        }}
+                        className="h-10 rounded-xl bg-white"
+                      />
+                    </div>
+                    <div className="space-y-1.5">
+                      <Label className="text-[10px] font-black uppercase tracking-widest text-slate-400">Suburbs</Label>
+                      <Input
+                        value={Array.isArray(activeMerge.fields.suburbs) ? activeMerge.fields.suburbs.join(", ") : activeMerge.fields.suburbs || ""}
+                        onChange={(e) => {
+                          setActiveMerge({
+                            ...activeMerge,
+                            fields: { ...activeMerge.fields, suburbs: e.target.value.split(",").map(s => s.trim()).filter(Boolean) }
+                          });
+                        }}
+                        className="h-10 rounded-xl bg-white"
+                      />
+                    </div>
+                    <div className="space-y-1.5 sm:col-span-2">
+                      <Label className="text-[10px] font-black uppercase tracking-widest text-slate-400">Medical History</Label>
+                      <Textarea
+                        value={activeMerge.fields.medical_history || ""}
+                        onChange={(e) => {
+                          setActiveMerge({
+                            ...activeMerge,
+                            fields: { ...activeMerge.fields, medical_history: e.target.value }
+                          });
+                        }}
+                        className="min-h-[80px] rounded-xl bg-white resize-none"
+                      />
+                    </div>
+                    <div className="space-y-1.5 sm:col-span-2">
+                      <Label className="text-[10px] font-black uppercase tracking-widest text-slate-400">Medications & Supplements</Label>
+                      <Textarea
+                        value={activeMerge.fields.medications_supplements || ""}
+                        onChange={(e) => {
+                          setActiveMerge({
+                            ...activeMerge,
+                            fields: { ...activeMerge.fields, medications_supplements: e.target.value }
+                          });
+                        }}
+                        className="min-h-[80px] rounded-xl bg-white resize-none"
+                      />
+                    </div>
+                  </div>
+                </div>
+
+                <div className="flex gap-3 pt-4">
+                  <Button variant="ghost" onClick={() => setActiveMerge(null)} className="flex-1 h-14 rounded-2xl font-black text-xs uppercase tracking-widest">Cancel</Button>
+                  <Button 
+                    onClick={async () => {
+                      setMerging(true);
+                      try {
+                        await executeMerge(activeMerge.duplicate.id, activeMerge.primary.id, activeMerge.fields);
+                        showSuccess(`Successfully merged "${activeMerge.duplicate.name}" into "${activeMerge.primary.name}"!`);
+                        setActiveMerge(null);
+                        fetchClients();
+                      } catch (err: any) {
+                        showError(err.message || "Failed to merge clients.");
+                      } finally {
+                        setMerging(false);
+                      }
+                    }}
+                    disabled={merging}
+                    className="flex-[2] bg-indigo-600 hover:bg-indigo-700 text-white rounded-2xl h-14 font-black text-xs uppercase tracking-widest shadow-xl shadow-indigo-500/20"
+                  >
+                    {merging ? <Loader2 className="animate-spin mr-2" /> : <CheckCircle2 className="mr-2" />}
+                    Confirm & Execute Merge
+                  </Button>
+                </div>
+              </div>
+            )}
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };

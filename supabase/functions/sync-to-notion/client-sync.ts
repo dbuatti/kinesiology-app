@@ -4,7 +4,8 @@ import {
   fetchDatabaseSchema, 
   findSchemaProperty, 
   mapValueToNotionProperty, 
-  findExistingNotionClient 
+  findExistingNotionClient,
+  fetchWithRetry
 } from "./notion-api.ts";
 
 export const syncClientToNotion = async (client: any, supabase: any, notionHeaders: any, origin: string) => {
@@ -66,7 +67,7 @@ export const syncClientToNotion = async (client: any, supabase: any, notionHeade
 
   if (clientPageId) {
     console.log(`[client-sync] Updating existing Client page: ${clientPageId}`);
-    const updateRes = await fetch(`https://api.notion.com/v1/pages/${clientPageId}`, {
+    const updateRes = await fetchWithRetry(`https://api.notion.com/v1/pages/${clientPageId}`, {
       method: 'PATCH',
       headers: notionHeaders,
       body: JSON.stringify({ properties: clientProps })
@@ -219,7 +220,7 @@ export const syncClientToNotion = async (client: any, supabase: any, notionHeade
       }
     ];
 
-    const createRes = await fetch('https://api.notion.com/v1/pages', {
+    const createRes = await fetchWithRetry('https://api.notion.com/v1/pages', {
       method: 'POST',
       headers: notionHeaders,
       body: JSON.stringify({

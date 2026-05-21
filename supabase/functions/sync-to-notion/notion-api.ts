@@ -3,9 +3,38 @@ export const CLIENTS_DB_ID = "074e2c006bd541d88c502feb397ef31d";
 
 export const normalizeId = (id: string) => id ? id.replace(/-/g, "").toLowerCase() : "";
 
+/**
+ * Robust fetch helper with exponential backoff retry logic for handling Notion API rate limits (429)
+ */
+export const fetchWithRetry = async (url: string, options: any, retries = 3, delay = 1000) => {
+  for (let i = 0; i < retries; i++) {
+    try {
+      const res = await fetch(url, options);
+      
+      // If rate limited (429) or server error (502, 503, 504), retry with backoff
+      if ((res.status === 429 || res.status >= 502) && i < retries - 1) {
+        console.warn(`[notion-api] Rate limited or server error (${res.status}). Retrying in ${delay}ms...`);
+        await new Promise(resolve => setTimeout(resolve, delay));
+        delay *= 2; // Exponential backoff
+        continue;
+      }
+      return res;
+    } catch (err) {
+      if (i < retries - 1) {
+        console.warn(`[notion-api] Network error: ${err.message}. Retrying in ${delay}ms...`);
+        await new Promise(resolve => setTimeout(resolve, delay));
+        delay *= 2;
+        continue;
+      }
+      throw err;
+    }
+  }
+  throw new Error("Max retries reached");
+};
+
 export const fetchDatabaseSchema = async (dbId: string, notionHeaders: any) => {
   try {
-    const dbRes = await fetch(`https://api.notion.com/v1/databases/${dbId}`, {
+    const dbRes = await fetchWithRetry(`https://api.notion.com/v1/databases/${dbId}`, {
       method: 'GET',
       headers: notionHeaders
     });
@@ -82,7 +111,7 @@ export const findExistingNotionClient = async (client: any, schema: any, notionH
 
   try {
     console.log(`[notion-api] Querying Notion for existing client matching name/email...`);
-    const queryRes = await fetch(`https://api.notion.com/v1/databases/${CLIENTS_DB_ID}/query`, {
+    const queryRes = await fetchWithRetry(`https://api.notion.com/v1/databases/${CLIENTS_DB_ID}/query`, {
       method: 'POST',
       headers: notionHeaders,
       body: JSON.stringify({

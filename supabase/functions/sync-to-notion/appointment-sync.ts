@@ -3,7 +3,8 @@ import {
   CLIENTS_DB_ID, 
   fetchDatabaseSchema, 
   findSchemaProperty, 
-  normalizeId 
+  normalizeId,
+  fetchWithRetry
 } from "./notion-api.ts";
 import { syncClientToNotion } from "./client-sync.ts";
 
@@ -74,7 +75,7 @@ export const syncSingleAppointment = async (appId: string, supabase: any, notion
   // Try updating existing Main page if ID exists
   if (mainPageId) {
     console.log(`[appointment-sync] Updating existing Main page: ${mainPageId}`);
-    const updateRes = await fetch(`https://api.notion.com/v1/pages/${mainPageId}`, {
+    const updateRes = await fetchWithRetry(`https://api.notion.com/v1/pages/${mainPageId}`, {
       method: 'PATCH',
       headers: notionHeaders,
       body: JSON.stringify({ properties: mainProps })
@@ -237,115 +238,115 @@ export const syncSingleAppointment = async (appId: string, supabase: any, notion
             { text: { content: "Acupoints: " }, annotations: { bold: true } },
             { text: { content: appointment.acupoints || "None recorded yet" } }
           ]
-            }
-          },
-          {
-            object: "block",
-            type: "divider",
-            divider: {}
-          },
-          {
-            object: "block",
-            type: "paragraph",
-            paragraph: {
-              rich_text: [
-                { text: { content: "👤 Notion Client Profile: " }, annotations: { bold: true } },
-                { text: { content: clientPageUrl || "Not synced yet", link: clientPageUrl ? { url: clientPageUrl } : undefined } }
-              ]
-            }
-          },
-          {
-            object: "block",
-            type: "paragraph",
-            paragraph: {
-              rich_text: [
-                { text: { content: "🔗 Open in CRM: " }, annotations: { bold: true } },
-                { text: { content: `${origin}/appointments/${appointment.id}`, link: { url: `${origin}/appointments/${appointment.id}` } } }
-              ]
-            }
-          }
-        ];
-
-        const createRes = await fetch('https://api.notion.com/v1/pages', {
-          method: 'POST',
-          headers: notionHeaders,
-          body: JSON.stringify({
-            parent: { database_id: MAIN_DB_ID },
-            properties: mainProps,
-            children: childrenBlocks
-          })
-        });
-
-        if (!createRes.ok) {
-          const errData = await createRes.json();
-          throw new Error(`Failed to create Main page: ${JSON.stringify(errData)}`);
         }
-
-        const createData = await createRes.json();
-        mainPageId = createData.id;
-        mainPageUrl = createData.url;
-      }
-
-      // Prepare properties for Yearly Planner DB
-      const plannerProps = {
-        "Title": { title: [{ text: { content: appointmentName } }] },
-        "Date": { date: { start: appointment.date } },
-        "Project": { select: { name: "Kinesiology" } }
-      };
-
-      let plannerPageId = appointment.notion_planner_id;
-
-      // Try updating existing Planner page if ID exists
-      if (plannerPageId) {
-        console.log(`[appointment-sync] Updating existing Planner page: ${plannerPageId}`);
-        const updateRes = await fetch(`https://api.notion.com/v1/pages/${plannerPageId}`, {
-          method: 'PATCH',
-          headers: notionHeaders,
-          body: JSON.stringify({ properties: plannerProps })
-        });
-
-        if (!updateRes.ok) {
-          const errData = await updateRes.json();
-          console.warn(`[appointment-sync] Failed to update existing Planner page, will recreate:`, errData);
-          plannerPageId = null; // Reset to trigger recreation
+      },
+      {
+        object: "block",
+        type: "divider",
+        divider: {}
+      },
+      {
+        object: "block",
+        type: "paragraph",
+        paragraph: {
+          rich_text: [
+            { text: { content: "👤 Notion Client Profile: " }, annotations: { bold: true } },
+            { text: { content: clientPageUrl || "Not synced yet", link: clientPageUrl ? { url: clientPageUrl } : undefined } }
+          ]
+        }
+      },
+      {
+        object: "block",
+        type: "paragraph",
+        paragraph: {
+          rich_text: [
+            { text: { content: "🔗 Open in CRM: " }, annotations: { bold: true } },
+            { text: { content: `${origin}/appointments/${appointment.id}`, link: { url: `${origin}/appointments/${appointment.id}` } } }
+          ]
         }
       }
+    ];
 
-      // Create new Planner page if not exists or update failed
-      if (!plannerPageId) {
-        console.log(`[appointment-sync] Creating new Planner page in DB: ${PLANNER_DB_ID}`);
-        const createRes = await fetch('https://api.notion.com/v1/pages', {
-          method: 'POST',
-          headers: notionHeaders,
-          body: JSON.stringify({
-            parent: { database_id: PLANNER_DB_ID },
-            properties: plannerProps
-          })
-        });
+    const createRes = await fetchWithRetry('https://api.notion.com/v1/pages', {
+      method: 'POST',
+      headers: notionHeaders,
+      body: JSON.stringify({
+        parent: { database_id: MAIN_DB_ID },
+        properties: mainProps,
+        children: childrenBlocks
+      })
+    });
 
-        if (!createRes.ok) {
-          const errData = await createRes.json();
-          console.warn(`[appointment-sync] Failed to create Planner page:`, errData);
-        } else {
-          const createData = await createRes.json();
-          plannerPageId = createData.id;
-        }
-      }
+    if (!createRes.ok) {
+      const errData = await createRes.json();
+      throw new Error(`Failed to create Main page: ${JSON.stringify(errData)}`);
+    }
 
-      // Update appointment in Supabase with Notion IDs and Link
-      console.log(`[appointment-sync] Updating appointment in Supabase with Notion details`);
-      const { error: updateError } = await supabase
-        .from('appointments')
-        .update({
-          notion_page_id: mainPageId,
-          notion_planner_id: plannerPageId,
-          notion_link: mainPageUrl
-        })
-        .eq('id', appId);
+    const createData = await createRes.json();
+    mainPageId = createData.id;
+    mainPageUrl = createData.url;
+  }
 
-      if (updateError) {
-        console.error(`[appointment-sync] Failed to update appointment in Supabase:`, updateError);
-      }
+  // Prepare properties for Yearly Planner DB
+  const plannerProps = {
+    "Title": { title: [{ text: { content: appointmentName } }] },
+    "Date": { date: { start: appointment.date } },
+    "Project": { select: { name: "Kinesiology" } }
+  };
 
-      return { id: mainPageId, url: mainPageUrl };
+  let plannerPageId = appointment.notion_planner_id;
+
+  // Try updating existing Planner page if ID exists
+  if (plannerPageId) {
+    console.log(`[appointment-sync] Updating existing Planner page: ${plannerPageId}`);
+    const updateRes = await fetchWithRetry(`https://api.notion.com/v1/pages/${plannerPageId}`, {
+      method: 'PATCH',
+      headers: notionHeaders,
+      body: JSON.stringify({ properties: plannerProps })
+    });
+
+    if (!updateRes.ok) {
+      const errData = await updateRes.json();
+      console.warn(`[appointment-sync] Failed to update existing Planner page, will recreate:`, errData);
+      plannerPageId = null; // Reset to trigger recreation
+    }
+  }
+
+  // Create new Planner page if not exists or update failed
+  if (!plannerPageId) {
+    console.log(`[appointment-sync] Creating new Planner page in DB: ${PLANNER_DB_ID}`);
+    const createRes = await fetchWithRetry('https://api.notion.com/v1/pages', {
+      method: 'POST',
+      headers: notionHeaders,
+      body: JSON.stringify({
+        parent: { database_id: PLANNER_DB_ID },
+        properties: plannerProps
+      })
+    });
+
+    if (!createRes.ok) {
+      const errData = await createRes.json();
+      console.warn(`[appointment-sync] Failed to create Planner page:`, errData);
+    } else {
+      const createData = await createRes.json();
+      plannerPageId = createData.id;
+    }
+  }
+
+  // Update appointment in Supabase with Notion IDs and Link
+  console.log(`[appointment-sync] Updating appointment in Supabase with Notion details`);
+  const { error: updateError } = await supabase
+    .from('appointments')
+    .update({
+      notion_page_id: mainPageId,
+      notion_planner_id: plannerPageId,
+      notion_link: mainPageUrl
+    })
+    .eq('id', appId);
+
+  if (updateError) {
+    console.error(`[appointment-sync] Failed to update appointment in Supabase:`, updateError);
+  }
+
+  return { id: mainPageId, url: mainPageUrl };
 };

@@ -119,7 +119,7 @@ serve(async (req) => {
           const referral_source = referralProp ? extractNotionPropertyValue(props[referralProp.name]) : null;
           const stripe_customer_id = stripeProp ? extractNotionPropertyValue(props[stripeProp.name]) : null;
 
-          // Check if client already exists in Supabase by notion_page_id
+          // Check if client already exists in Supabase strictly by notion_page_id
           const { data: existingByNotion } = await supabase
             .from('clients')
             .select('id')
@@ -127,16 +127,6 @@ serve(async (req) => {
             .maybeSingle();
 
           let targetId = existingByNotion?.id;
-
-          // If not found by notion_page_id, check by email (if email exists)
-          if (!targetId && email) {
-            const { data: existingByEmail } = await supabase
-              .from('clients')
-              .select('id')
-              .eq('email', email.toLowerCase().trim())
-              .maybeSingle();
-            targetId = existingByEmail?.id;
-          }
 
           const clientPayload = {
             user_id: PRACTITIONER_ID,

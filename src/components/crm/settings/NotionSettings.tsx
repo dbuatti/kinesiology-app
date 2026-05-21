@@ -2,10 +2,10 @@
 
 import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Layers, Loader2, Sparkles, Users, Calendar } from "lucide-react";
+import { Layers, Sparkles, Users, Calendar } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { showSuccess, showError } from "@/utils/toast";
+import SettingsActionCard from "./SettingsActionCard";
 
 const NotionSettings = () => {
   const [configuringNotion, setConfiguringNotion] = useState(false);
@@ -75,51 +75,38 @@ const NotionSettings = () => {
         <CardDescription className="text-purple-700 font-medium">Bulk sync your clients and appointments to Notion.</CardDescription>
       </CardHeader>
       <CardContent className="p-8 pt-0 space-y-6">
-        <div className="p-6 bg-white dark:bg-slate-900 rounded-3xl border border-purple-100 dark:border-purple-900/30 space-y-4">
-          <div className="space-y-1">
-            <h4 className="font-black text-slate-900 dark:text-white text-sm uppercase tracking-tight">Notion Schema Auto-Configurator</h4>
-            <p className="text-xs text-slate-500 leading-relaxed">Automatically create all required properties and establish two-way relations in your Notion databases.</p>
-          </div>
-          <Button 
-            onClick={handleConfigureNotionSchema} 
-            disabled={configuringNotion}
-            className="w-full bg-purple-600 hover:bg-purple-700 text-white rounded-xl h-12 font-black text-[10px] uppercase tracking-widest shadow-lg"
-          >
-            {configuringNotion ? <Loader2 className="mr-2 animate-spin" /> : <Sparkles size={16} className="mr-2" />}
-            Configure Notion Schema
-          </Button>
+        <div className="w-full">
+          <SettingsActionCard
+            title="Notion Schema Auto-Configurator"
+            description="Automatically create all required properties and establish two-way relations in your Notion databases."
+            buttonText="Configure Notion Schema"
+            buttonIcon={Sparkles}
+            onClick={handleConfigureNotionSchema}
+            loading={configuringNotion}
+            themeColor="purple"
+          />
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div className="p-6 bg-white dark:bg-slate-900 rounded-3xl border border-purple-100 dark:border-purple-900/30 space-y-4">
-            <div className="space-y-1">
-              <h4 className="font-black text-slate-900 dark:text-white text-sm uppercase tracking-tight">Bulk Sync Clients</h4>
-              <p className="text-xs text-slate-500 leading-relaxed">Push all existing CRM clients into your Notion Client Database.</p>
-            </div>
-            <Button 
-              onClick={handleSyncAllToNotion} 
-              disabled={syncingNotionAll}
-              className="w-full bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl h-10 font-black text-[10px] uppercase tracking-widest shadow-lg"
-            >
-              {syncingNotionAll ? <Loader2 className="mr-2 animate-spin" /> : <Users size={16} className="mr-2" />}
-              Sync All to Notion
-            </Button>
-          </div>
+          <SettingsActionCard
+            title="Bulk Sync Clients"
+            description="Push all existing CRM clients into your Notion Client Database."
+            buttonText="Sync All to Notion"
+            buttonIcon={Users}
+            onClick={handleSyncAllToNotion}
+            loading={syncingNotionAll}
+            themeColor="indigo"
+          />
 
-          <div className="p-6 bg-white dark:bg-slate-900 rounded-3xl border border-purple-100 dark:border-purple-900/30 space-y-4">
-            <div className="space-y-1">
-              <h4 className="font-black text-slate-900 dark:text-white text-sm uppercase tracking-tight">Bulk Sync Appointments</h4>
-              <p className="text-xs text-slate-500 leading-relaxed">Push all existing appointments to Notion and link them to clients.</p>
-            </div>
-            <Button 
-              onClick={handleSyncAllAppointmentsToNotion} 
-              disabled={syncingAppointmentsAll}
-              className="w-full bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl h-10 font-black text-[10px] uppercase tracking-widest shadow-lg"
-            >
-              {syncingAppointmentsAll ? <Loader2 className="mr-2 animate-spin" /> : <Calendar size={16} className="mr-2" />}
-              Sync All Appointments
-            </Button>
-          </div>
+          <SettingsActionCard
+            title="Bulk Sync Appointments"
+            description="Push all existing appointments to Notion and link them to clients."
+            buttonText="Sync All Appointments"
+            buttonIcon={Calendar}
+            onClick={handleSyncAllAppointmentsToNotion}
+            loading={syncingAppointmentsAll}
+            themeColor="indigo"
+          />
         </div>
       </CardContent>
     </Card>

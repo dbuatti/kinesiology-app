@@ -128,10 +128,30 @@ serve(async (req) => {
 
           let targetId = existingByNotion?.id;
 
+          // Self-healing duplicate email logic to bypass unique constraints
+          let finalEmail = email;
+          if (email && !targetId) {
+            const { data: emailMatch } = await supabase
+              .from('clients')
+              .select('id, notion_page_id')
+              .eq('email', email.toLowerCase().trim())
+              .maybeSingle();
+            
+            if (emailMatch && emailMatch.notion_page_id !== page.id) {
+              const parts = email.split('@');
+              if (parts.length === 2) {
+                finalEmail = `${parts[0]}+dup-${page.id.slice(0,8)}@${parts[1]}`;
+              } else {
+                finalEmail = `${email}+dup-${page.id.slice(0,8)}`;
+              }
+              console.log(`[pull-from-notion] Detected duplicate email. Renamed to ${finalEmail} to bypass unique constraint.`);
+            }
+          }
+
           const clientPayload = {
             user_id: PRACTITIONER_ID,
             name,
-            email: email || null,
+            email: finalEmail || null,
             phone: phone || null,
             born: born || null,
             pronouns: pronouns || null,

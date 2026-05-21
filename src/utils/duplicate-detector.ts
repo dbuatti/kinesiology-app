@@ -38,11 +38,11 @@ export function getStringSimilarity(a: string, b: string): number {
  * Useful for matching names with middle names, transposed names, or nicknames.
  */
 export function getTokenSimilarity(a: string, b: string): number {
-  const normA = normalizeName(a);
-  const normB = normalizeName(b);
+  const textA = normalizeName(a);
+  const textB = normalizeName(b);
   
-  const tokensA = normA.split(' ').filter(t => t.length > 1);
-  const tokensB = normB.split(' ').filter(t => t.length > 1);
+  const tokensA = textA.split(' ').filter(t => t.length > 1);
+  const tokensB = textB.split(' ').filter(t => t.length > 1);
   
   if (tokensA.length === 0 || tokensB.length === 0) return 0;
   
@@ -58,10 +58,18 @@ export function getTokenSimilarity(a: string, b: string): number {
 export const normalizeName = (name: string) => (name || '').toLowerCase().trim().replace(/\s+/g, ' ');
 
 /**
- * Normalizes an email address, handling Gmail specific aliases.
+ * Normalizes an email address, handling Gmail specific aliases and temporary duplicate suffixes.
  */
 export const normalizeEmail = (email: string) => {
-  const clean = (email || '').toLowerCase().trim();
+  let clean = (email || '').toLowerCase().trim();
+  
+  // Strip any temporary duplicate suffix first
+  if (clean.includes('+dup-')) {
+    const parts = clean.split('@');
+    const localWithoutDup = parts[0].split('+dup-')[0];
+    clean = parts.length === 2 ? `${localWithoutDup}@${parts[1]}` : localWithoutDup;
+  }
+
   if (clean.endsWith('@gmail.com')) {
     const parts = clean.split('@');
     const local = parts[0].split('+')[0].replace(/\./g, '');

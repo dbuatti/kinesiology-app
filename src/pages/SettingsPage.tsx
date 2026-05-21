@@ -27,7 +27,9 @@ import {
   Layers,
   Merge,
   ArrowRightLeft,
-  CheckCircle2
+  CheckCircle2,
+  AlertCircle,
+  Trash2
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
@@ -43,6 +45,12 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 
+interface DuplicateGroup {
+  name: string;
+  primary: any;
+  duplicates: any[];
+}
+
 const SettingsPage = () => {
   const navigate = useNavigate();
   const [copied, setCopied] = useState<string | null>(null);
@@ -52,11 +60,15 @@ const SettingsPage = () => {
   const [syncingAppointmentsAll, setSyncingAppointmentsAll] = useState(false);
   
   // Merge Clients State
-  const [clients, setClients] = useState<{ id: string; name: string }[]>([]);
+  const [clients, setClients] = useState<any[]>([]);
   const [loadingClients, setLoadingClients] = useState(true);
   const [sourceClientId, setSourceClientId] = useState<string>("");
   const [targetClientId, setTargetClientId] = useState<string>("");
   const [merging, setMerging] = useState(false);
+  
+  // Automated Duplicates State
+  const [detectedDuplicates, setDetectedDuplicates] = useState<DuplicateGroup[]>([]);
+  const [isDetecting, setIsDetecting] = useState(false);
 
   const projectRef = "xebtjnvfkroiplyzftas";
   const webhookUrl = `https://${projectRef}.supabase.co/functions/v1/calcom-webhook`;
@@ -66,17 +78,55 @@ const SettingsPage = () => {
     try {
       const { data, error } = await supabase
         .from('clients')
-        .select('id, name')
+        .select('id, name, email, notion_page_id, stripe_customer_id, created_at')
         .or('is_practitioner.eq.false,is_practitioner.is.null')
         .order('name');
       
       if (error) throw error;
       setClients(data || []);
+      detectDuplicates(data || []);
     } catch (err) {
       console.error("Failed to fetch clients:", err);
     } finally {
       setLoadingClients(false);
     }
+  };
+
+  const detectDuplicates = (clientsList: any[]) => {
+    setIsDetecting(true);
+    const groups: Record<string, any[]> = {};
+    
+    // Group by normalized name
+    clientsList.forEach(client => {
+      const normalized = client.name.toLowerCase().trim().replace(/\s+/g, ' ');
+      if (!groups[normalized]) groups[normalized] = [];
+      groups[normalized].push(client);
+    });
+
+    const duplicatesFound: DuplicateGroup[] = [];
+
+    Object.entries(groups).forEach(([name, list]) => {
+      if (list.length > 1) {
+        // Sort to find the best "Primary" client
+        // Heuristic: 1. Has Stripe ID, 2. Has Notion ID, 3. Oldest created_at
+        const sorted = [...list].sort((a, b) => {
+          if (a.stripe_customer_id && !b.stripe_customer_id) return -1;
+          if (!a.stripe_customer_id && b.stripe_customer_id) return 1;
+          if (a.notion_page_id && !b.notion_page_id) return -1;
+          if (!a.notion_page_id && b.notion_page_id) return 1;
+          return new Date(a.created_at).getTime() - new Date(b.created_at).getTime();
+        });
+
+        duplicatesFound.push({
+          name: list[0].name,
+          primary: sorted[0],
+          duplicates: sorted.slice(1)
+        });
+      }
+    });
+
+    setDetectedDuplicates(duplicatesFound);
+    setIsDetecting(false);
   };
 
   useEffect(() => {
@@ -156,6 +206,18 @@ const SettingsPage = () => {
     }
   };
 
+  const executeMerge = async (sourceId: string, targetId: string) => {
+    const { error } = await supabase.functions.invoke('sync-to-notion', {
+      body: {
+        action: 'merge-clients',
+        sourceClientId: sourceId,
+        targetClientId: targetId,
+        origin: window.location.origin
+      }
+    });
+    if (error) throw error;
+  };
+
   const handleMergeClients = async () => {
     if (!sourceClientId || !targetClientId) {
       showError("Please select both a source and target client.");
@@ -176,23 +238,57 @@ const SettingsPage = () => {
 
     setMerging(true);
     try {
-      const { data, error } = await supabase.functions.invoke('sync-to-notion', {
-        body: {
-          action: 'merge-clients',
-          sourceClientId,
-          targetClientId,
-          origin: window.location.origin
-        }
-      });
-
-      if (error) throw error;
-
+      await executeMerge(sourceClientId, targetClientId);
       showSuccess(`Successfully merged "${sourceName}" into "${targetName}"!`);
       setSourceClientId("");
       setTargetClientId("");
       fetchClients();
     } catch (err: any) {
       showError(err.message || "Failed to merge clients.");
+    } finally {
+      setMerging(false);
+    }
+  };
+
+  const handleAutoMergeGroup = async (group: DuplicateGroup) => {
+    if (!confirm(`Are you sure you want to auto-merge all duplicates for "${group.name}" into the primary profile?`)) {
+      return;
+    }
+
+    setMerging(true);
+    try {
+      for (const duplicate of group.duplicates) {
+        await executeMerge(duplicate.id, group.primary.id);
+      }
+      showSuccess(`Successfully merged duplicates for "${group.name}"!`);
+      fetchClients();
+    } catch (err: any) {
+      showError(err.message || "Failed to auto-merge group.");
+    } finally {
+      setMerging(false);
+    }
+  };
+
+  const handleAutoMergeAll = async () => {
+    if (detectedDuplicates.length === 0) return;
+    
+    if (!confirm(`WARNING: This will automatically merge ALL ${detectedDuplicates.length} duplicate groups into their primary profiles.\n\nThis is a bulk operation. Are you sure you want to proceed?`)) {
+      return;
+    }
+
+    setMerging(true);
+    let successCount = 0;
+    try {
+      for (const group of detectedDuplicates) {
+        for (const duplicate of group.duplicates) {
+          await executeMerge(duplicate.id, group.primary.id);
+        }
+        successCount++;
+      }
+      showSuccess(`Successfully merged ${successCount} duplicate groups!`);
+      fetchClients();
+    } catch (err: any) {
+      showError(err.message || "Failed during bulk merge operation.");
     } finally {
       setMerging(false);
     }
@@ -306,62 +402,121 @@ const SettingsPage = () => {
           {/* Merge Clients Card */}
           <Card className="border-none shadow-xl rounded-[2.5rem] bg-white dark:bg-slate-950 overflow-hidden border-2 border-amber-100">
             <CardHeader className="p-8 pb-4 bg-amber-50/50">
-              <CardTitle className="text-xl font-black flex items-center gap-3 text-amber-900">
-                <Merge size={24} /> Merge Duplicate Clients
-              </CardTitle>
-              <CardDescription className="text-amber-700 font-medium">Consolidate duplicate client profiles in both the CRM and Notion.</CardDescription>
-            </CardHeader>
-            <CardContent className="p-8 pt-0 space-y-6">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div className="space-y-2">
-                  <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-1">1. Duplicate Client (To Remove)</label>
-                  <Select value={sourceClientId} onValueChange={setSourceClientId} disabled={loadingClients || merging}>
-                    <SelectTrigger className="h-12 rounded-xl font-bold bg-slate-50 border-slate-200">
-                      <SelectValue placeholder={loadingClients ? "Loading..." : "Select duplicate..."} />
-                    </SelectTrigger>
-                    <SelectContent className="max-h-[250px]">
-                      {clients.map(c => (
-                        <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                <div className="space-y-1">
+                  <CardTitle className="text-xl font-black flex items-center gap-3 text-amber-900">
+                    <Merge size={24} /> Merge Duplicate Clients
+                  </CardTitle>
+                  <CardDescription className="text-amber-700 font-medium">Consolidate duplicate client profiles in both the CRM and Notion.</CardDescription>
                 </div>
-
-                <div className="space-y-2">
-                  <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-1">2. Primary Client (To Keep)</label>
-                  <Select value={targetClientId} onValueChange={setTargetClientId} disabled={loadingClients || merging}>
-                    <SelectTrigger className="h-12 rounded-xl font-bold bg-slate-50 border-slate-200">
-                      <SelectValue placeholder={loadingClients ? "Loading..." : "Select primary..."} />
-                    </SelectTrigger>
-                    <SelectContent className="max-h-[250px]">
-                      {clients.map(c => (
-                        <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
+                {detectedDuplicates.length > 0 && (
+                  <Button 
+                    onClick={handleAutoMergeAll}
+                    disabled={merging}
+                    className="bg-amber-600 hover:bg-amber-700 text-white rounded-xl h-10 px-4 font-black text-[10px] uppercase tracking-widest shadow-lg"
+                  >
+                    {merging ? <Loader2 className="mr-2 animate-spin" /> : <CheckCircle2 size={14} className="mr-1.5" />}
+                    Auto-Merge All ({detectedDuplicates.length})
+                  </Button>
+                )}
               </div>
-
-              {sourceClientId && targetClientId && (
-                <div className="p-5 bg-amber-50 rounded-2xl border border-amber-200 flex items-start gap-4 animate-in fade-in slide-in-from-top-2">
-                  <ArrowRightLeft size={20} className="text-amber-600 shrink-0 mt-0.5" />
-                  <div className="space-y-1">
-                    <p className="text-xs font-bold text-amber-900">Merge Action Summary:</p>
-                    <p className="text-xs text-amber-800 leading-relaxed">
-                      All appointments for <strong>{clients.find(c => c.id === sourceClientId)?.name}</strong> will be moved to <strong>{clients.find(c => c.id === targetClientId)?.name}</strong>. The duplicate page in Notion will be archived, and the duplicate profile in the CRM will be deleted.
-                    </p>
+            </CardHeader>
+            <CardContent className="p-8 pt-0 space-y-8">
+              {/* Smart Duplicate Detector Section */}
+              {detectedDuplicates.length > 0 && (
+                <div className="space-y-4 animate-in fade-in slide-in-from-top-4 duration-500">
+                  <div className="flex items-center gap-2 px-1">
+                    <Sparkles size={16} className="text-amber-500" />
+                    <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Smart Duplicate Detector</p>
+                  </div>
+                  <div className="grid grid-cols-1 gap-3">
+                    {detectedDuplicates.map((group, idx) => (
+                      <div key={idx} className="p-5 bg-amber-50/50 rounded-3xl border border-amber-200 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                        <div className="space-y-2">
+                          <h4 className="font-black text-base text-amber-900">"{group.name}"</h4>
+                          <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-amber-800">
+                            <span className="font-bold">Keep:</span>
+                            <code className="bg-white px-2 py-0.5 rounded border border-amber-100 text-[10px] font-mono">
+                              {group.primary.email || 'No Email'}
+                            </code>
+                            <span className="opacity-40">|</span>
+                            <span className="font-bold">Merge:</span>
+                            {group.duplicates.map(d => (
+                              <code key={d.id} className="bg-white px-2 py-0.5 rounded border border-amber-100 text-[10px] font-mono">
+                                {d.email || 'No Email'}
+                              </code>
+                            ))}
+                          </div>
+                        </div>
+                        <Button 
+                          onClick={() => handleAutoMergeGroup(group)}
+                          disabled={merging}
+                          className="bg-amber-600 hover:bg-amber-700 text-white rounded-xl h-9 px-4 font-black text-[10px] uppercase tracking-widest shadow-md"
+                        >
+                          {merging ? <Loader2 className="animate-spin mr-1.5" /> : <Merge size={12} className="mr-1.5" />}
+                          Merge Group
+                        </Button>
+                      </div>
+                    ))}
                   </div>
                 </div>
               )}
 
-              <Button 
-                onClick={handleMergeClients}
-                disabled={merging || !sourceClientId || !targetClientId}
-                className="w-full h-14 bg-amber-500 hover:bg-amber-600 text-white rounded-2xl font-black text-xs uppercase tracking-widest shadow-xl shadow-amber-100"
-              >
-                {merging ? <Loader2 className="animate-spin mr-2" /> : <Merge size={18} className="mr-2" />}
-                Merge Client Profiles
-              </Button>
+              <div className="h-px bg-slate-100 dark:bg-slate-800" />
+
+              <div className="space-y-4">
+                <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Manual Merge Override</p>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <div className="space-y-2">
+                    <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-1">Duplicate Client (To Remove)</label>
+                    <Select value={sourceClientId} onValueChange={setSourceClientId} disabled={loadingClients || merging}>
+                      <SelectTrigger className="h-12 rounded-xl font-bold bg-slate-50 border-slate-200">
+                        <SelectValue placeholder={loadingClients ? "Loading..." : "Select duplicate..."} />
+                      </SelectTrigger>
+                      <SelectContent className="max-h-[250px]">
+                        {clients.map(c => (
+                          <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                  <div className="space-y-2">
+                    <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-1">Primary Client (To Keep)</label>
+                    <Select value={targetClientId} onValueChange={setTargetClientId} disabled={loadingClients || merging}>
+                      <SelectTrigger className="h-12 rounded-xl font-bold bg-slate-50 border-slate-200">
+                        <SelectValue placeholder={loadingClients ? "Loading..." : "Select primary..."} />
+                      </SelectTrigger>
+                      <SelectContent className="max-h-[250px]">
+                        {clients.map(c => (
+                          <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </div>
+
+                {sourceClientId && targetClientId && (
+                  <div className="p-5 bg-amber-50 rounded-2xl border border-amber-200 flex items-start gap-4 animate-in fade-in slide-in-from-top-2">
+                    <ArrowRightLeft size={20} className="text-amber-600 shrink-0 mt-0.5" />
+                    <div className="space-y-1">
+                      <p className="text-xs font-bold text-amber-900">Merge Action Summary:</p>
+                      <p className="text-xs text-amber-800 leading-relaxed">
+                        All appointments for <strong>{clients.find(c => c.id === sourceClientId)?.name}</strong> will be moved to <strong>{clients.find(c => c.id === targetClientId)?.name}</strong>. The duplicate page in Notion will be archived, and the duplicate profile in the CRM will be deleted.
+                      </p>
+                    </div>
+                  </div>
+                )}
+
+                <Button 
+                  onClick={handleMergeClients}
+                  disabled={merging || !sourceClientId || !targetClientId}
+                  className="w-full h-14 bg-amber-500 hover:bg-amber-600 text-white rounded-2xl font-black text-xs uppercase tracking-widest shadow-xl shadow-amber-100"
+                >
+                  {merging ? <Loader2 className="animate-spin mr-2" /> : <Merge size={18} className="mr-2" />}
+                  Merge Client Profiles
+                </Button>
+              </div>
             </CardContent>
           </Card>
 
@@ -419,7 +574,7 @@ const SettingsPage = () => {
 
           <Card className="border-none shadow-lg rounded-[2.5rem] bg-white dark:bg-slate-950 overflow-hidden">
             <CardHeader className="p-8 pb-4">
-              <CardTitle className="text-xl font-black flex items-center gap-3 text-slate-900 dark:text-white">
+              <CardTitle className="text-xl font-black flex items-center gap-3 text-indigo-500">
                 <FileText size={24} className="text-indigo-500" /> Documentation & Audit
               </CardTitle>
               <CardDescription className="font-medium">Export site structure and content breakdowns.</CardDescription>

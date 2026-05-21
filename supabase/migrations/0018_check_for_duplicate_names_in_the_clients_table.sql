@@ -1,0 +1,1 @@
+SELECT name, COUNT(*) FROM public.clients GROUP BY name HAVING COUNT(*) > 1;

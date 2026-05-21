@@ -1,0 +1,1 @@
+SELECT phone, COUNT(*) FROM public.clients WHERE phone IS NOT NULL GROUP BY phone HAVING COUNT(*) > 1;

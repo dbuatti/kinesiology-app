@@ -1,0 +1,1 @@
+SELECT client_id, COUNT(*) FROM public.appointments GROUP BY client_id HAVING COUNT(*) > 1;

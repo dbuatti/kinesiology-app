@@ -203,13 +203,24 @@ serve(async (req) => {
         if (updateError) throw updateError;
       }
 
-      // 2. Move all appointments in Supabase
-      const { error: appError } = await supabase
+      // 2. Move all appointments in Supabase and get their IDs
+      const { data: movedApps, error: appError } = await supabase
         .from('appointments')
+        .update({ client_id: targetClientId })
+        .eq('client_id', sourceClientId)
+        .select('id');
+
+      if (appError) throw appError;
+
+      // 2.5 Move all client wins in Supabase
+      const { error: winsError } = await supabase
+        .from('client_wins')
         .update({ client_id: targetClientId })
         .eq('client_id', sourceClientId);
 
-      if (appError) throw appError;
+      if (winsError) {
+        console.warn(`[${functionName}] Failed to move client wins:`, winsError.message);
+      }
 
       // 3. Archive the source client's Notion page if it exists
       if (sourceClient.notion_page_id) {
@@ -240,13 +251,25 @@ serve(async (req) => {
 
       const syncResult = await syncClientToNotion(targetClient, supabase, notionHeaders, origin);
 
-      return new Response(JSON.stringify({ 
-        success: true, 
+      // 6. Sync all moved appointments to Notion to update their relations
+      if (movedApps && movedApps.length > 0) {
+        console.log(`[${functionName}] Syncing ${movedApps.length} moved appointments to Notion...`);
+        for (const app of movedApps) {
+          try {
+            await syncSingleAppointment(app.id, supabase, notionHeaders, origin);
+          } catch (syncAppErr) {
+            console.error(`[${functionName}] Failed to sync moved appointment ${app.id} to Notion:`, syncAppErr.message);
+          }
+        }
+      }
+
+      return new Response(JSON.stringify({
+        success: true,
         message: "Clients merged successfully in both CRM and Notion.",
         targetNotionId: syncResult.id
-      }), { 
-        status: 200, 
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
+      }), {
+        status: 200,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' }
       });
     }
 

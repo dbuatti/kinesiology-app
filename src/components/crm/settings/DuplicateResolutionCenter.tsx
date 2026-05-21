@@ -6,11 +6,12 @@ import { Button } from "@/components/ui/button";
 import { Merge, Loader2, CheckCircle2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { showSuccess, showError } from "@/utils/toast";
-import { 
-  getStringSimilarity, 
-  normalizeName, 
-  normalizeEmail, 
-  normalizePhone 
+import {
+  getStringSimilarity,
+  getTokenSimilarity,
+  normalizeName,
+  normalizeEmail,
+  normalizePhone
 } from "@/utils/duplicate-detector";
 import MergeConflictDialog from "./MergeConflictDialog";
 import ManualMergeForm from "./ManualMergeForm";
@@ -118,10 +119,11 @@ const DuplicateResolutionCenter = () => {
           confidence = 90;
         } else {
           const similarity = getStringSimilarity(clientA.name, clientB.name);
+          const tokenSimilarity = getTokenSimilarity(clientA.name, clientB.name);
+          const sameDOB = bornA && bornB && bornA === bornB;
+          const sameSuburb = clientA.suburbs?.some((s: string) => clientB.suburbs?.includes(s));
+
           if (similarity >= 0.8) {
-            const sameDOB = bornA && bornB && bornA === bornB;
-            const sameSuburb = clientA.suburbs?.some((s: string) => clientB.suburbs?.includes(s));
-            
             if (sameDOB) {
               isMatch = true;
               reason = `Fuzzy Name Match (${Math.round(similarity * 100)}%) & Same DOB`;
@@ -134,6 +136,20 @@ const DuplicateResolutionCenter = () => {
               isMatch = true;
               reason = `High Similarity Name Match (${Math.round(similarity * 100)}%)`;
               confidence = 80;
+            }
+          } else if (tokenSimilarity >= 0.8) {
+            if (sameDOB) {
+              isMatch = true;
+              reason = `Token Name Match (${Math.round(tokenSimilarity * 100)}%) & Same DOB`;
+              confidence = 90;
+            } else if (sameSuburb) {
+              isMatch = true;
+              reason = `Token Name Match (${Math.round(tokenSimilarity * 100)}%) & Same Suburb`;
+              confidence = 80;
+            } else if (tokenSimilarity === 1.0) {
+              isMatch = true;
+              reason = `Subset Name Match (100%)`;
+              confidence = 75;
             }
           }
         }
@@ -196,7 +212,7 @@ const DuplicateResolutionCenter = () => {
         cleaned[key] = isNaN(num) ? null : num;
       } else if (key === 'born') {
         try {
-          cleaned[key] = val ? new Date(val).toISOString() : null;
+          cleaned[key] = val ? new Date(val).toISOString().split('T')[0] : null;
         } catch (e) {
           cleaned[key] = null;
         }

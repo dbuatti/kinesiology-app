@@ -34,6 +34,25 @@ export function getStringSimilarity(a: string, b: string): number {
 }
 
 /**
+ * Calculates token-based similarity between two strings (0.0 to 1.0).
+ * Useful for matching names with middle names, transposed names, or nicknames.
+ */
+export function getTokenSimilarity(a: string, b: string): number {
+  const normA = normalizeName(a);
+  const normB = normalizeName(b);
+  
+  const tokensA = normA.split(' ').filter(t => t.length > 1);
+  const tokensB = normB.split(' ').filter(t => t.length > 1);
+  
+  if (tokensA.length === 0 || tokensB.length === 0) return 0;
+  
+  const intersection = tokensA.filter(t => tokensB.includes(t));
+  const minLength = Math.min(tokensA.length, tokensB.length);
+  
+  return intersection.length / minLength;
+}
+
+/**
  * Normalizes a name string for comparison.
  */
 export const normalizeName = (name: string) => (name || '').toLowerCase().trim().replace(/\s+/g, ' ');

@@ -1,0 +1,1 @@
+SELECT table_name FROM information_schema.columns WHERE column_name = 'client_id' AND table_schema = 'public';

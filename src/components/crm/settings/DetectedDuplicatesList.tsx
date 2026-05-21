@@ -75,13 +75,13 @@ const DetectedDuplicatesList = ({
               <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-amber-800">
                 <span className="font-bold">Keep:</span>
                 <code className="bg-white px-2 py-0.5 rounded border border-amber-100 text-[10px] font-mono">
-                  {group.primary.email || 'No Email'}
+                  {group.primary.name} {group.primary.email ? `(${group.primary.email})` : '(No Email)'}
                 </code>
                 <span className="opacity-40">|</span>
                 <span className="font-bold">Merge:</span>
                 {group.duplicates.map(d => (
                   <code key={d.id} className="bg-white px-2 py-0.5 rounded border border-amber-100 text-[10px] font-mono">
-                    {d.email || 'No Email'}
+                    {d.name} {d.email ? `(${d.email})` : '(No Email)'}
                   </code>
                 ))}
               </div>

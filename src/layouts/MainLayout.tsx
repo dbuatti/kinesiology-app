@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from 'react';
-import { Outlet, useLocation } from 'react-router-dom';
+import { Outlet, useLocation, useNavigate } from 'react-router-dom';
 import SpaceHeader from '@/components/crm/SpaceHeader';
 import QuickActions from '@/components/crm/QuickActions';
 import BackToTop from '@/components/shared/BackToTop';
@@ -10,11 +10,13 @@ import SessionTimer from '@/components/crm/SessionTimer';
 import { useAppMode } from '@/components/ModeProvider';
 import { useActiveSession } from '@/hooks/useActiveSession';
 import { cn } from '@/lib/utils';
+import { showSuccess } from '@/utils/toast';
 
 const MainLayout = () => {
   const { mode } = useAppMode();
   const activeSession = useActiveSession();
   const location = useLocation();
+  const navigate = useNavigate();
 
   const [isFullScreen, setIsFullScreen] = useState(() => {
     return localStorage.getItem('antigravity_fullscreen') === 'true';
@@ -30,6 +32,37 @@ const MainLayout = () => {
       window.removeEventListener('antigravity_fullscreen_change', handleFullScreenChange);
     };
   }, []);
+
+  // Global Keyboard Shortcuts
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      const isInSessionPage = location.pathname.startsWith('/appointments/');
+      if (!isInSessionPage) return;
+
+      // Alt + F: Toggle Full Screen
+      if (e.altKey && e.key.toLowerCase() === 'f') {
+        e.preventDefault();
+        const nextState = !isFullScreen;
+        localStorage.setItem('antigravity_fullscreen', String(nextState));
+        window.dispatchEvent(new Event('antigravity_fullscreen_change'));
+        showSuccess(nextState ? "Full Screen Enabled" : "Full Screen Disabled");
+      }
+
+      // Alt + D: Toggle Document View
+      if (e.altKey && e.key.toLowerCase() === 'd') {
+        e.preventDefault();
+        const isDocViewActive = location.search.includes('view=document');
+        if (isDocViewActive) {
+          navigate(location.pathname);
+        } else {
+          navigate(`${location.pathname}?view=document`);
+        }
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [location.pathname, location.search, isFullScreen, navigate]);
 
   const isInSession = location.pathname.startsWith('/appointments/');
   const shouldHideHeader = isFullScreen && isInSession;

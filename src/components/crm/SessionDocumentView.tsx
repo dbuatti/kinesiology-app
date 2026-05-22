@@ -1,7 +1,7 @@
 "use client";
 
-import React, { useMemo, useState, useEffect } from 'react';
-import { format, isToday, isTomorrow } from 'date-fns';
+import React, { useMemo, useState, useEffect, useRef } from 'react';
+import { format, isToday, isTomorrow, differenceInSeconds, parseISO } from 'date-fns';
 import {
   Check,
   FileText,
@@ -26,7 +26,10 @@ import {
   ChevronDown,
   ChevronUp,
   BookOpen,
-  Calendar
+  Calendar,
+  X,
+  Maximize2,
+  Minimize2
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Checkbox } from '@/components/ui/checkbox';
@@ -67,6 +70,15 @@ interface SessionDocumentViewProps {
   onClose: () => void;
 }
 
+const TIMER_PRESETS = [
+  { label: '30s', value: 30 },
+  { label: '60s', value: 60 },
+  { label: '90s', value: 90 },
+  { label: '3m', value: 180 },
+  { label: '6m', value: 360 },
+  { label: '9m', value: 540 },
+];
+
 const SessionDocumentView = ({ 
   appointment, 
   onUpdate, 
@@ -80,6 +92,19 @@ const SessionDocumentView = ({
   const [activeSection, setActiveSection] = useState<string>("p-sec");
   const [currentMuscleTests, setCurrentMuscleTests] = useState<any[]>([]);
   const [loadingMuscles, setLoadingMuscles] = useState(true);
+  
+  // Live Clock & Progress State
+  const [currentTime, setCurrentTime] = useState(new Date());
+
+  // Full Screen State
+  const [isFullScreen, setIsFullScreen] = useState(() => {
+    return localStorage.getItem('antigravity_fullscreen') === 'true';
+  });
+
+  // Quick Timer State
+  const [activeTimerDuration, setActiveTimerDuration] = useState<number | null>(null);
+  const [timeLeft, setTimeLeft] = useState<number>(0);
+  const quickTimerRef = useRef<NodeJS.Timeout | null>(null);
   
   // Navigation Dropdown State
   const [allAppointments, setAllAppointments] = useState<any[]>([]);
@@ -140,6 +165,70 @@ const SessionDocumentView = ({
     fetchCurrentMuscleTests();
     fetchAllAppointments();
   }, [appointment.id]);
+
+  // Live Clock & Timer Effect
+  useEffect(() => {
+    const clockTimer = setInterval(() => {
+      setCurrentTime(new Date());
+    }, 1000);
+
+    const handleFullScreenChange = () => {
+      setIsFullScreen(localStorage.getItem('antigravity_fullscreen') === 'true');
+    };
+
+    window.addEventListener('antigravity_fullscreen_change', handleFullScreenChange);
+
+    return () => {
+      clearInterval(clockTimer);
+      window.removeEventListener('antigravity_fullscreen_change', handleFullScreenChange);
+      if (quickTimerRef.current) clearInterval(quickTimerRef.current);
+    };
+  }, []);
+
+  const toggleFullScreen = () => {
+    const nextState = !isFullScreen;
+    setIsFullScreen(nextState);
+    localStorage.setItem('antigravity_fullscreen', String(nextState));
+    window.dispatchEvent(new Event('antigravity_fullscreen_change'));
+    showSuccess(nextState ? "Full Screen Enabled" : "Full Screen Disabled");
+  };
+
+  const startQuickTimer = (duration: number) => {
+    if (quickTimerRef.current) clearInterval(quickTimerRef.current);
+    setActiveTimerDuration(duration);
+    setTimeLeft(duration);
+    
+    quickTimerRef.current = setInterval(() => {
+      setTimeLeft((prev) => {
+        if (prev <= 1) {
+          clearInterval(quickTimerRef.current!);
+          setActiveTimerDuration(null);
+          showSuccess("Timer complete!");
+          return 0;
+        }
+        return prev - 1;
+      });
+    }, 1000);
+  };
+
+  const stopQuickTimer = () => {
+    if (quickTimerRef.current) clearInterval(quickTimerRef.current);
+    setActiveTimerDuration(null);
+    setTimeLeft(0);
+  };
+
+  const formatCountdown = (seconds: number) => {
+    if (seconds < 60) return `${seconds}s`;
+    const mins = Math.floor(seconds / 60);
+    const secs = seconds % 60;
+    return `${mins}:${secs.toString().padStart(2, '0')}`;
+  };
+
+  const overallProgressPercent = useMemo(() => {
+    const elapsedSeconds = differenceInSeconds(currentTime, new Date(appointment.date));
+    const totalDurationSeconds = 60 * 60; // 60 minutes
+    return Math.min(100, Math.max(0, (elapsedSeconds / totalDurationSeconds) * 100));
+  }, [appointment.date, currentTime]);
 
   const metadata = useMemo(() => {
     if (!appointment.metadata) return {};
@@ -324,144 +413,198 @@ const SessionDocumentView = ({
   return (
     <div className="bg-white min-h-screen text-black font-sans pb-40 print:p-0 print:m-0">
       {/* Document Controls */}
-      <div className="sticky top-0 z-50 bg-white/95 backdrop-blur-md border-b-2 border-black px-6 py-3 flex items-center justify-between print:hidden">
-        <div className="flex items-center gap-6">
-          <Button variant="ghost" size="sm" onClick={onClose} className="rounded-none h-9 px-4 font-black text-[10px] uppercase tracking-widest border border-black hover:bg-black hover:text-white transition-all">
-            <ArrowLeft size={14} className="mr-2" /> Exit
-          </Button>
-          <div className="flex flex-col">
-            <span className="text-[10px] font-black uppercase tracking-widest text-slate-400">Clinical Record</span>
-            
-            {/* Live Client Switcher Dropdown */}
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <button className="flex items-center gap-1.5 hover:bg-slate-100 px-2 py-0.5 -ml-2 rounded-lg transition-colors text-left group">
-                  <span className="text-sm font-black text-slate-900">{appointment.clients.name}</span>
-                  <ChevronDown size={14} className="text-slate-400 group-hover:text-slate-900 transition-colors" />
-                </button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="start" className="w-80 max-h-[450px] overflow-y-auto rounded-2xl p-2 shadow-3xl border-none bg-white dark:bg-slate-900 z-[100]">
-                {loadingAppointments ? (
-                  <div className="py-6 flex justify-center"><Loader2 className="animate-spin text-indigo-600" size={20} /></div>
-                ) : (
-                  <>
-                    {groupedAppointments.today.length > 0 && (
-                      <div className="space-y-1">
-                        <div className="px-3 py-1.5 text-[8px] font-black uppercase tracking-widest text-rose-500 flex items-center gap-1.5">
-                          <div className="w-1.5 h-1.5 rounded-full bg-rose-500 animate-pulse" /> Today's Schedule
-                        </div>
-                        {groupedAppointments.today.map(app => (
-                          <DropdownMenuItem 
-                            key={app.id} 
-                            onClick={() => handleSwitchAppointment(app.id)}
-                            className={cn(
-                              "rounded-xl py-2.5 px-4 cursor-pointer flex items-center justify-between",
-                              app.id === appointment.id ? "bg-indigo-50 text-indigo-900 font-bold" : "hover:bg-slate-50"
-                            )}
-                          >
-                            <div className="min-w-0 flex-1">
-                              <p className="text-xs font-black truncate">{app.clients?.name}</p>
-                              <p className="text-[9px] font-bold text-slate-400 uppercase tracking-widest mt-0.5">
-                                {format(new Date(app.date), "h:mm a")} • {app.tag}
-                              </p>
-                            </div>
-                            <Badge className={cn(
-                              "border-none font-black text-[7px] uppercase tracking-widest px-1.5 py-0.5 rounded-md",
-                              app.status === 'Completed' ? "bg-emerald-500 text-white" : "bg-indigo-600 text-white"
-                            )}>
-                              {app.status}
-                            </Badge>
-                          </DropdownMenuItem>
-                        ))}
-                      </div>
-                    )}
-
-                    {groupedAppointments.upcoming.length > 0 && (
-                      <div className="space-y-1 mt-3">
-                        <div className="px-3 py-1.5 text-[8px] font-black uppercase tracking-widest text-slate-400 flex items-center gap-1.5">
-                          <Calendar size={10} /> Upcoming Sessions
-                        </div>
-                        {groupedAppointments.upcoming.slice(0, 10).map(app => (
-                          <DropdownMenuItem 
-                            key={app.id} 
-                            onClick={() => handleSwitchAppointment(app.id)}
-                            className={cn(
-                              "rounded-xl py-2.5 px-4 cursor-pointer flex items-center justify-between",
-                              app.id === appointment.id ? "bg-indigo-50 text-indigo-900 font-bold" : "hover:bg-slate-50"
-                            )}
-                          >
-                            <div className="min-w-0 flex-1">
-                              <p className="text-xs font-black truncate">{app.clients?.name}</p>
-                              <p className="text-[9px] font-bold text-slate-400 uppercase tracking-widest mt-0.5">
-                                {format(new Date(app.date), "MMM d, h:mm a")} • {app.tag}
-                              </p>
-                            </div>
-                          </DropdownMenuItem>
-                        ))}
-                      </div>
-                    )}
-
-                    {groupedAppointments.past.length > 0 && (
-                      <div className="space-y-1 mt-3">
-                        <div className="px-3 py-1.5 text-[8px] font-black uppercase tracking-widest text-slate-400 flex items-center gap-1.5">
-                          <Clock size={10} /> Recent Past Sessions
-                        </div>
-                        {groupedAppointments.past.map(app => (
-                          <DropdownMenuItem 
-                            key={app.id} 
-                            onClick={() => handleSwitchAppointment(app.id)}
-                            className={cn(
-                              "rounded-xl py-2.5 px-4 cursor-pointer flex items-center justify-between",
-                              app.id === appointment.id ? "bg-indigo-50 text-indigo-900 font-bold" : "hover:bg-slate-50"
-                            )}
-                          >
-                            <div className="min-w-0 flex-1">
-                              <p className="text-xs font-black truncate">{app.clients?.name}</p>
-                              <p className="text-[9px] font-bold text-slate-400 uppercase tracking-widest mt-0.5">
-                                {format(new Date(app.date), "MMM d, yyyy")} • {app.tag}
-                              </p>
-                            </div>
-                          </DropdownMenuItem>
-                        ))}
-                      </div>
-                    )}
-                  </>
-                )}
-              </DropdownMenuContent>
-            </DropdownMenu>
-          </div>
-          <Badge variant="outline" className="rounded-none border-black font-black text-[8px] uppercase px-2 py-0.5">
-            {appointment.status}
-          </Badge>
-        </div>
-
-        <div className="hidden lg:flex items-center gap-4 text-[9px] font-black uppercase tracking-widest text-slate-400">
-          <button onClick={() => scrollTo('p-sec')} className="hover:text-black transition-colors">P</button>
-          <span className="opacity-20">/</span>
-          <button onClick={() => scrollTo('e-sec')} className="hover:text-black transition-colors">E</button>
-          <span className="opacity-20">/</span>
-          <button onClick={() => scrollTo('a-sec')} className="hover:text-black transition-colors">A</button>
-          <span className="opacity-20">/</span>
-          <button onClick={() => scrollTo('c-sec')} className="hover:text-black transition-colors">C</button>
-          <span className="opacity-20">/</span>
-          <button onClick={() => scrollTo('e2-sec')} className="hover:text-black transition-colors">E</button>
-        </div>
-
-        <div className="flex items-center gap-4">
-          <div className="text-right hidden sm:block">
-            <p className="text-[8px] font-black text-slate-400 uppercase tracking-widest">Last Sync</p>
-            <p className="text-[10px] font-bold tabular-nums">{format(lastSaved, "HH:mm:ss")}</p>
-          </div>
-          {appointment.notion_link && (
-            <Button asChild variant="outline" size="sm" className="rounded-none border-black font-black text-[10px] uppercase tracking-widest h-9 px-4 hover:bg-slate-50">
-              <a href={appointment.notion_link} target="_blank" rel="noopener noreferrer">
-                <ExternalLink size={14} className="mr-2" /> Notion
-              </a>
+      <div className="sticky top-0 z-50 bg-white/95 backdrop-blur-md print:hidden">
+        <div className="px-6 py-3 flex items-center justify-between">
+          <div className="flex items-center gap-6">
+            <Button variant="ghost" size="sm" onClick={onClose} className="rounded-none h-9 px-4 font-black text-[10px] uppercase tracking-widest border border-black hover:bg-black hover:text-white transition-all">
+              <ArrowLeft size={14} className="mr-2" /> Exit
             </Button>
-          )}
-          <Button variant="outline" size="sm" onClick={() => window.print()} className="rounded-none border-black font-black text-[10px] uppercase tracking-widest h-9 px-4 hover:bg-slate-50">
-            <Printer size={14} className="mr-2" /> Print
-          </Button>
+            <div className="flex flex-col">
+              <span className="text-[10px] font-black uppercase tracking-widest text-slate-400">Clinical Record</span>
+              
+              {/* Live Client Switcher Dropdown */}
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <button className="flex items-center gap-1.5 hover:bg-slate-100 px-2 py-0.5 -ml-2 rounded-lg transition-colors text-left group">
+                    <span className="text-sm font-black text-slate-900">{appointment.clients.name}</span>
+                    <ChevronDown size={14} className="text-slate-400 group-hover:text-slate-900 transition-colors" />
+                  </button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="start" className="w-80 max-h-[450px] overflow-y-auto rounded-2xl p-2 shadow-3xl border-none bg-white dark:bg-slate-900 z-[100]">
+                  {loadingAppointments ? (
+                    <div className="py-6 flex justify-center"><Loader2 className="animate-spin text-indigo-600" size={20} /></div>
+                  ) : (
+                    <>
+                      {groupedAppointments.today.length > 0 && (
+                        <div className="space-y-1">
+                          <div className="px-3 py-1.5 text-[8px] font-black uppercase tracking-widest text-rose-500 flex items-center gap-1.5">
+                            <div className="w-1.5 h-1.5 rounded-full bg-rose-500 animate-pulse" /> Today's Schedule
+                          </div>
+                          {groupedAppointments.today.map(app => (
+                            <DropdownMenuItem 
+                              key={app.id} 
+                              onClick={() => handleSwitchAppointment(app.id)}
+                              className={cn(
+                                "rounded-xl py-2.5 px-4 cursor-pointer flex items-center justify-between",
+                                app.id === appointment.id ? "bg-indigo-50 text-indigo-900 font-bold" : "hover:bg-slate-50"
+                              )}
+                            >
+                              <div className="min-w-0 flex-1">
+                                <p className="text-xs font-black truncate">{app.clients?.name}</p>
+                                <p className="text-[9px] font-bold text-slate-400 uppercase tracking-widest mt-0.5">
+                                  {format(new Date(app.date), "h:mm a")} • {app.tag}
+                                </p>
+                              </div>
+                              <Badge className={cn(
+                                "border-none font-black text-[7px] uppercase tracking-widest px-1.5 py-0.5 rounded-md",
+                                app.status === 'Completed' ? "bg-emerald-500 text-white" : "bg-indigo-600 text-white"
+                              )}>
+                                {app.status}
+                              </Badge>
+                            </DropdownMenuItem>
+                          ))}
+                        </div>
+                      )}
+
+                      {groupedAppointments.upcoming.length > 0 && (
+                        <div className="space-y-1 mt-3">
+                          <div className="px-3 py-1.5 text-[8px] font-black uppercase tracking-widest text-slate-400 flex items-center gap-1.5">
+                            <Calendar size={10} /> Upcoming Sessions
+                          </div>
+                          {groupedAppointments.upcoming.slice(0, 10).map(app => (
+                            <DropdownMenuItem 
+                              key={app.id} 
+                              onClick={() => handleSwitchAppointment(app.id)}
+                              className={cn(
+                                "rounded-xl py-2.5 px-4 cursor-pointer flex items-center justify-between",
+                                app.id === appointment.id ? "bg-indigo-50 text-indigo-900 font-bold" : "hover:bg-slate-50"
+                              )}
+                            >
+                              <div className="min-w-0 flex-1">
+                                <p className="text-xs font-black truncate">{app.clients?.name}</p>
+                                <p className="text-[9px] font-bold text-slate-400 uppercase tracking-widest mt-0.5">
+                                  {format(new Date(app.date), "MMM d, h:mm a")} • {app.tag}
+                                </p>
+                              </div>
+                            </DropdownMenuItem>
+                          ))}
+                        </div>
+                      )}
+
+                      {groupedAppointments.past.length > 0 && (
+                        <div className="space-y-1 mt-3">
+                          <div className="px-3 py-1.5 text-[8px] font-black uppercase tracking-widest text-slate-400 flex items-center gap-1.5">
+                            <Clock size={10} /> Recent Past Sessions
+                          </div>
+                          {groupedAppointments.past.map(app => (
+                            <DropdownMenuItem 
+                              key={app.id} 
+                              onClick={() => handleSwitchAppointment(app.id)}
+                              className={cn(
+                                "rounded-xl py-2.5 px-4 cursor-pointer flex items-center justify-between",
+                                app.id === appointment.id ? "bg-indigo-50 text-indigo-900 font-bold" : "hover:bg-slate-50"
+                              )}
+                            >
+                              <div className="min-w-0 flex-1">
+                                <p className="text-xs font-black truncate">{app.clients?.name}</p>
+                                <p className="text-[9px] font-bold text-slate-400 uppercase tracking-widest mt-0.5">
+                                  {format(new Date(app.date), "MMM d, yyyy")} • {app.tag}
+                                </p>
+                              </div>
+                            </DropdownMenuItem>
+                          ))}
+                        </div>
+                      )}
+                    </>
+                  )}
+                </DropdownMenuContent>
+              </DropdownMenu>
+            </div>
+            <Badge variant="outline" className="rounded-none border-black font-black text-[8px] uppercase px-2 py-0.5">
+              {appointment.status}
+            </Badge>
+          </div>
+
+          <div className="hidden lg:flex items-center gap-4 text-[9px] font-black uppercase tracking-widest text-slate-400">
+            <button onClick={() => scrollTo('p-sec')} className="hover:text-black transition-colors">P</button>
+            <span className="opacity-20">/</span>
+            <button onClick={() => scrollTo('e-sec')} className="hover:text-black transition-colors">E</button>
+            <span className="opacity-20">/</span>
+            <button onClick={() => scrollTo('a-sec')} className="hover:text-black transition-colors">A</button>
+            <span className="opacity-20">/</span>
+            <button onClick={() => scrollTo('c-sec')} className="hover:text-black transition-colors">C</button>
+            <span className="opacity-20">/</span>
+            <button onClick={() => scrollTo('e2-sec')} className="hover:text-black transition-colors">E</button>
+          </div>
+
+          <div className="flex items-center gap-6">
+            {/* Quick Timers Panel */}
+            <div className="flex items-center gap-1.5 border-r border-slate-200 pr-4">
+              {TIMER_PRESETS.map(preset => (
+                <button
+                  key={preset.label}
+                  onClick={() => startQuickTimer(preset.value)}
+                  className={cn(
+                    "w-8 h-8 rounded-full border text-[9px] font-black flex items-center justify-center transition-all",
+                    activeTimerDuration === preset.value
+                      ? "bg-indigo-600 border-indigo-600 text-white animate-pulse"
+                      : "bg-slate-50 border-slate-200 text-slate-600 hover:border-indigo-500 hover:text-indigo-600"
+                  )}
+                >
+                  {activeTimerDuration === preset.value ? formatCountdown(timeLeft) : preset.label}
+                </button>
+              ))}
+              {activeTimerDuration && (
+                <button 
+                  onClick={stopQuickTimer} 
+                  className="w-6 h-6 rounded-full bg-rose-500 text-white flex items-center justify-center hover:bg-rose-600 transition-colors"
+                >
+                  <X size={12} />
+                </button>
+              )}
+            </div>
+
+            {/* Full Screen Toggle */}
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={toggleFullScreen}
+              className="h-9 px-3 rounded-xl text-[10px] font-black uppercase tracking-widest gap-1.5 text-slate-500 hover:bg-slate-100"
+              title="Toggle Full Screen (Alt + F)"
+            >
+              {isFullScreen ? <Minimize2 size={14} /> : <Maximize2 size={14} />}
+              <span>{isFullScreen ? "Exit Full" : "Full Screen"}</span>
+            </Button>
+
+            {/* Live Current Time Display */}
+            <div className="text-right hidden sm:block">
+              <p className="text-[8px] font-black text-slate-400 uppercase tracking-widest">Current Time</p>
+              <p className="text-sm font-black tabular-nums text-indigo-600">{format(currentTime, "HH:mm:ss")}</p>
+            </div>
+
+            <div className="text-right hidden sm:block">
+              <p className="text-[8px] font-black text-slate-400 uppercase tracking-widest">Last Sync</p>
+              <p className="text-[10px] font-bold tabular-nums">{format(lastSaved, "HH:mm:ss")}</p>
+            </div>
+            {appointment.notion_link && (
+              <Button asChild variant="outline" size="sm" className="rounded-none border-black font-black text-[10px] uppercase tracking-widest h-9 px-4 hover:bg-slate-50">
+                <a href={appointment.notion_link} target="_blank" rel="noopener noreferrer">
+                  <ExternalLink size={14} className="mr-2" /> Notion
+                </a>
+              </Button>
+            )}
+            <Button variant="outline" size="sm" onClick={() => window.print()} className="rounded-none border-black font-black text-[10px] uppercase tracking-widest h-9 px-4 hover:bg-slate-50">
+              <Printer size={14} className="mr-2" /> Print
+            </Button>
+          </div>
+        </div>
+
+        {/* Rainbow Progress Bar */}
+        <div className="h-[3px] w-full bg-slate-100 relative overflow-hidden">
+          <div 
+            className="h-full bg-gradient-to-r from-indigo-500 via-purple-500 via-pink-500 via-rose-500 via-amber-500 to-emerald-500 transition-all duration-1000 ease-linear"
+            style={{ width: `${overallProgressPercent}%` }}
+          />
         </div>
       </div>
 

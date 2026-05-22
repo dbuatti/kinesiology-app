@@ -93,6 +93,8 @@ export const isMeridianPeakNow = (peakTimeStr: string, currentHour: number): boo
   }
 };
 
-export const isDemoSession = (clientId: string, appointmentId: string): boolean => {
-  return clientId.includes('demo') || appointmentId.includes('demo') || appointmentId.includes('00000000');
+export const isDemoSession = (clientId: string | null | undefined, appointmentId: string | null | undefined): boolean => {
+  const cId = clientId || '';
+  const aId = appointmentId || '';
+  return cId.includes('demo') || aId.includes('demo') || aId.includes('00000000');
 };

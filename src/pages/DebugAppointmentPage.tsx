@@ -167,7 +167,7 @@ const DebugAppointmentPage = () => {
         }
       };
 
-      const { error } = await supabase.functions.invoke('calcom-webhook', {
+      const { error = null } = await supabase.functions.invoke('calcom-webhook', {
         body: payload
       });
 
@@ -261,7 +261,7 @@ const DebugAppointmentPage = () => {
           </CardDescription>
         </CardHeader>
         <CardContent className="p-10 pt-0 space-y-10 relative z-10">
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-10">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-10">
             <div className="space-y-6">
               <div className="space-y-4">
                 <div className="space-y-2">

@@ -3,6 +3,7 @@
 import { FINDING_TO_NUCLEI, Nuclei } from "@/utils/brainstem-logic";
 import { getMuscleInfo } from "@/data/muscle-info-data";
 import { TCM_CHANNELS } from "@/data/tcm-channel-data";
+import { isMeridianPeakNow } from "@/utils/crm-utils";
 
 /**
  * The Clinical Registry is the single source of truth for all neurological 
@@ -38,23 +39,7 @@ export const ClinicalRegistry = {
    */
   isMeridianPeak: (peakTimeStr: string | undefined): boolean => {
     if (!peakTimeStr || peakTimeStr === 'None') return false;
-    
     const currentHour = new Date().getHours();
-    const parts = peakTimeStr.toLowerCase().split('-').map(p => p.trim());
-    
-    const parseHour = (s: string) => {
-      const hour = parseInt(s);
-      if (s.includes('pm') && hour !== 12) return hour + 12;
-      if (s.includes('am') && hour === 12) return 0;
-      return hour;
-    };
-
-    try {
-      const start = parseHour(parts[0]);
-      const end = parseHour(parts[1]);
-      return start > end ? (currentHour >= start || currentHour < end) : (currentHour >= start && currentHour < end);
-    } catch (e) {
-      return false;
-    }
+    return isMeridianPeakNow(peakTimeStr, currentHour);
   }
 };

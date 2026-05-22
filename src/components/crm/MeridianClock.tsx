@@ -7,6 +7,7 @@ import { Clock, Zap, Info, Activity, ArrowRight } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { format } from "date-fns";
 import { Card, CardContent } from "@/components/ui/card";
+import { isMeridianPeakNow } from "@/utils/crm-utils";
 
 const MeridianClock = () => {
   const [currentTime, setCurrentTime] = useState(new Date());
@@ -20,20 +21,7 @@ const MeridianClock = () => {
   const currentHour = currentTime.getHours();
 
   const getActiveId = (hour: number) => {
-    const channel = TCM_CHANNELS.find(c => {
-      if (c.peakTime === 'None') return false;
-      const parts = c.peakTime.toLowerCase().split('-').map(p => p.trim());
-      const parseHour = (s: string) => {
-        const h = parseInt(s);
-        if (s.includes('pm') && h !== 12) return h + 12;
-        if (s.includes('am') && h === 12) return 0;
-        return h;
-      };
-      const start = parseHour(parts[0]);
-      const end = parseHour(parts[1]);
-      if (start > end) return hour >= start || hour < end;
-      return hour >= start && hour < end;
-    });
+    const channel = TCM_CHANNELS.find(c => isMeridianPeakNow(c.peakTime, hour));
     return channel?.id || null;
   };
 

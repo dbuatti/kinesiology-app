@@ -149,6 +149,31 @@ export function processNeurologicalHistory(appointments: any[]): FindingHistory[
     });
   });
 
+  // Post-process findingsMap to merge non-lateralized entries if lateralized ones exist for the same base name
+  const keys = Object.keys(findingsMap);
+  keys.forEach(key => {
+    const finding = findingsMap[key];
+    // If this is a non-lateralized finding (doesn't end with (L) or (R))
+    if (!finding.name.endsWith('(L)') && !finding.name.endsWith('(R)')) {
+      const categoryKey = key.split('-')[0];
+      const hasLeft = keys.includes(`${categoryKey}-${finding.name} (L)`);
+      const hasRight = keys.includes(`${categoryKey}-${finding.name} (R)`);
+      
+      if (hasLeft || hasRight) {
+        // Merge history of non-lateralized entry into the lateralized ones
+        if (hasLeft) {
+          findingsMap[`${categoryKey}-${finding.name} (L)`].history.push(...finding.history);
+          findingsMap[`${categoryKey}-${finding.name} (L)`].history.sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
+        }
+        if (hasRight) {
+          findingsMap[`${categoryKey}-${finding.name} (R)`].history.push(...finding.history);
+          findingsMap[`${categoryKey}-${finding.name} (R)`].history.sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
+        }
+        delete findingsMap[key];
+      }
+    }
+  });
+
   // Calculate resolutions
   return Object.values(findingsMap).map(finding => {
     const inhibitedDates = finding.history.filter(h => DYSFUNCTIONAL_STATUSES.includes(h.status.replace('_Cleared', '')));

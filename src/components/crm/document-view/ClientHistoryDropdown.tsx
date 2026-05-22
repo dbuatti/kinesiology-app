@@ -124,6 +124,11 @@ const ClientHistoryDropdown = ({ history, currentAppointmentId }: ClientHistoryD
                         .find(h => h.correction);
                       const recentCorrection = lastInhibitedSession?.correction;
 
+                      // Parse out L/R side for distinct badge rendering
+                      const sideMatch = finding.name.match(/(.+) \(([LR])\)$/);
+                      const baseName = sideMatch ? sideMatch[1] : finding.name;
+                      const side = sideMatch ? sideMatch[2] : null;
+
                       return (
                         <div key={finding.name} className="flex flex-col">
                           <div 
@@ -142,9 +147,19 @@ const ClientHistoryDropdown = ({ history, currentAppointmentId }: ClientHistoryD
                                 <Icon size={14} />
                               </div>
                               <div className="min-w-0">
-                                <p className={cn("text-xs font-bold truncate", finding.isResolved && "text-slate-400 line-through")}>
-                                  {finding.name}
-                                </p>
+                                <div className="flex items-center gap-2">
+                                  <p className={cn("text-xs font-bold truncate", finding.isResolved && "text-slate-400 line-through")}>
+                                    {baseName}
+                                  </p>
+                                  {side && (
+                                    <Badge className={cn(
+                                      "border-none font-black text-[8px] uppercase tracking-widest px-1.5 py-0.5 rounded-sm leading-none",
+                                      side === 'L' ? "bg-blue-100 text-blue-700" : "bg-rose-100 text-rose-700"
+                                    )}>
+                                      {side === 'L' ? 'Left' : 'Right'}
+                                    </Badge>
+                                  )}
+                                </div>
                                 <p className="text-[8px] font-black text-slate-400 uppercase tracking-widest">{finding.category}</p>
                               </div>
                             </div>

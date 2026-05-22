@@ -1,31 +1,34 @@
 "use client";
 
 import React, { useState, useEffect, useMemo, useCallback } from "react";
-import { useParams, useNavigate, Link } from "react-router-dom";
-import {
-  Loader2,
-  ArrowLeft,
-  FileText,
-  MoreHorizontal,
-  ChevronDown,
-  RefreshCw,
-  Sparkles,
-  Printer,
-  Link as LinkIcon,
-  Activity,
-  ShieldCheck,
-  Clock,
-  Calendar,
-  ExternalLink
-} from "lucide-react";
-import { isToday, format } from "date-fns";
-
-import { cn } from "@/lib/utils";
-import { showSuccess, showError } from "@/utils/toast";
+import { useParams, useNavigate, Link, useSearchParams } from "react-router-dom";
 import { useAppointment } from "@/hooks/useAppointment";
+import { CranialNerveAssessment } from "@/components/crm/CranialNerveAssessment";
+import { PrimitiveReflexAssessment } from "@/components/crm/PrimitiveReflexAssessment";
+import { BrainZoneAssessment } from "@/components/crm/BrainZoneAssessment";
+import { MuscleAssessment } from "@/components/crm/MuscleAssessment";
+import EmotionsProtocolReference from "@/components/crm/EmotionsProtocolReference";
+import MechanoreceptiveAssessment from "@/components/crm/MechanoreceptiveAssessment";
+import HeartWallProtocol from "@/components/crm/HeartWallProtocol";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { 
+  ChevronLeft, Brain, Loader2, Zap, FileText, Heart, 
+  Activity, Shield, Layers, Dumbbell, RefreshCw,
+  Eye, EyeOff, Save, ShieldCheck, LayoutGrid,
+  ChevronRight, Settings2, Sparkles, Globe, ExternalLink,
+  PanelLeftClose, PanelLeftOpen, ClipboardCheck, MoreHorizontal, Printer,
+  ArrowLeft, Calendar, Clock, Link as LinkIcon
+} from "lucide-react";
+import { cn } from "@/lib/utils";
+import { Switch } from "@/components/ui/switch";
+import { Label } from "@/components/ui/label";
+import { isToday, format } from "date-fns";
 import { supabase } from "@/integrations/supabase/client";
+import { showSuccess, showError } from "@/utils/toast";
 import { Nuclei } from "@/utils/brainstem-logic";
 
+// Layouts
 import AppLayout from "@/components/crm/AppLayout";
 import Breadcrumbs from "@/components/shared/Breadcrumbs";
 import AppointmentHeader from "@/components/crm/AppointmentHeader";
@@ -37,8 +40,6 @@ import SessionWorksheetTemplate from "@/components/crm/SessionWorksheetTemplate"
 import SessionDocumentView from "@/components/crm/SessionDocumentView";
 import ErrorBoundary from "@/components/shared/ErrorBoundary";
 
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -53,6 +54,7 @@ import { generateSessionSummary, generateAICasePrompt } from "@/utils/summary-ge
 const AppointmentDetailPage = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
+  const [searchParams, setSearchParams] = useSearchParams();
 
   const { 
     appointment, 
@@ -65,7 +67,6 @@ const AppointmentDetailPage = () => {
 
   // UI States
   const [showSidebar, setShowSidebar] = useState(true);
-  const [isDocumentView, setIsDocumentView] = useState(false);
   const [nucleiFilter, setNucleiFilter] = useState<Nuclei | null>(null);
   const [reflections, setReflections] = useState<any[]>([]);
   const [isCopied, setIsCopied] = useState(false);
@@ -73,6 +74,24 @@ const AppointmentDetailPage = () => {
 
   // Current time for meridian calculation
   const [currentTime, setCurrentTime] = useState(new Date());
+
+  // Manage Document View via URL search params
+  const isDocumentView = searchParams.get("view") === "document";
+  const setIsDocumentView = (val: boolean) => {
+    if (val) {
+      setSearchParams(prev => {
+        const next = new URLSearchParams(prev);
+        next.set("view", "document");
+        return next;
+      });
+    } else {
+      setSearchParams(prev => {
+        const next = new URLSearchParams(prev);
+        next.delete("view");
+        return next;
+      });
+    }
+  };
 
   useEffect(() => {
     const timer = setInterval(() => setCurrentTime(new Date()), 60000);
@@ -196,7 +215,7 @@ const AppointmentDetailPage = () => {
   }, [appointment]);
 
   if (loading) return (
-    <div className="flex min-h-screen items-center justify-center bg-background">
+    <div className="min-h-screen flex items-center justify-center bg-background">
       <div className="flex flex-col items-center gap-4">
         <Loader2 className="h-12 w-12 animate-spin text-indigo-600" />
         <p className="text-[10px] font-black uppercase tracking-[0.3em] text-slate-400">Initializing Workspace</p>

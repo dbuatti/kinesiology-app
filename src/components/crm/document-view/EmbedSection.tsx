@@ -100,6 +100,14 @@ const EmbedSection = ({ appointment, saveField, updatePriorityPattern, onToggleP
     
     Object.entries(pattern).forEach(([catKey, categoryItems]: [string, any]) => {
       Object.entries(categoryItems).forEach(([name, status]) => {
+        const strStatus = status as string;
+        const isCleared = strStatus.endsWith('_Cleared');
+        const baseStatus = strStatus.replace('_Cleared', '');
+
+        // Filter out non-dysfunctional 'Clear' items that were never active
+        if (baseStatus === 'Clear' && !isCleared) return;
+        if (baseStatus === 'Normotonic' && !isCleared) return;
+
         const sideMatch = name.match(/\(([LR])\)$/);
         const side = sideMatch ? sideMatch[1] : "";
         const base = getCanonicalName(name);
@@ -107,7 +115,7 @@ const EmbedSection = ({ appointment, saveField, updatePriorityPattern, onToggleP
 
         items.push({
           name: displayName,
-          status: status as string,
+          status: strStatus,
           category: catKey.replace(/([A-Z])/g, ' $1').trim(),
           type: 'pattern'
         });
@@ -115,6 +123,13 @@ const EmbedSection = ({ appointment, saveField, updatePriorityPattern, onToggleP
     });
 
     muscleTests.forEach(test => {
+      const strStatus = test.status as string;
+      const isCleared = strStatus.endsWith('_Cleared') || strStatus === 'Normotonic_Cleared';
+      const baseStatus = strStatus.replace('_Cleared', '');
+
+      // Filter out non-dysfunctional 'Normotonic' items that were never active
+      if (baseStatus === 'Normotonic' && !isCleared) return;
+
       const sideMatch = test.muscle_name.match(/\(([LR])\)$/);
       const side = sideMatch ? sideMatch[1] : "";
       const base = getCanonicalName(test.muscle_name);

@@ -50,6 +50,10 @@ const PathwayFindingsList = ({ priorityPattern, className, showOnlyInhibited = t
         if (showOnlyInhibited && isCleared) return;
         if (showOnlyInhibited && baseStatus !== 'Inhibited' && baseStatus !== 'Hypertonic') return;
         
+        // Filter out non-dysfunctional 'Clear' or 'Normotonic' items
+        if (!showOnlyInhibited && baseStatus === 'Clear' && !isCleared) return;
+        if (!showOnlyInhibited && baseStatus === 'Normotonic' && !isCleared) return;
+        
         const sideMatch = key.match(/\(([LR])\)$/);
         const side = sideMatch ? sideMatch[1] : "";
         const base = getCanonicalName(key);
@@ -108,7 +112,7 @@ const PathwayFindingsList = ({ priorityPattern, className, showOnlyInhibited = t
             <Badge 
               variant="outline" 
               className={cn(
-                "h-4 px-1.5 text-[7px] font-black uppercase border-none",
+                "h-4 px-1.5 text-[7px] font-black uppercase tracking-widest border-none",
                 isCleared ? "bg-emerald-600 text-white" : "bg-rose-600 text-white"
               )}
             >

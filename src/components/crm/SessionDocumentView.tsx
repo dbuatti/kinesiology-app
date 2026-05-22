@@ -24,7 +24,8 @@ import {
   Target,
   ClipboardCheck,
   ChevronDown,
-  ChevronUp
+  ChevronUp,
+  BookOpen
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Checkbox } from '@/components/ui/checkbox';
@@ -109,6 +110,7 @@ const SessionDocumentView = ({
 }: SessionDocumentViewProps) => {
   const [lastSaved, setLastSaved] = useState<Date>(new Date());
   const [openGuides, setOpenGuides] = useState<Record<string, boolean>>({});
+  const [activeSection, setActiveSection] = useState<string>("p-sec");
   const pattern = useMemo(() => safeParse(appointment.priority_pattern, {} as any), [appointment.priority_pattern]);
 
   const metadata = useMemo(() => {
@@ -125,6 +127,36 @@ const SessionDocumentView = ({
     setLastSaved(new Date());
     onUpdate();
   };
+
+  // Set up IntersectionObserver to track active section on scroll
+  useEffect(() => {
+    const scrollContainer = document.getElementById('main-scroll-container');
+    
+    const observerOptions = {
+      root: scrollContainer,
+      rootMargin: '-15% 0px -65% 0px', // Triggers when section header is in the upper-middle viewport
+      threshold: 0
+    };
+
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach((entry) => {
+        if (entry.isIntersecting) {
+          setActiveSection(entry.target.id);
+        }
+      });
+    }, observerOptions);
+
+    const targets = OUTLINE_ITEMS.map(item => document.getElementById(item.id));
+    targets.forEach(target => {
+      if (target) observer.observe(target);
+    });
+
+    return () => {
+      targets.forEach(target => {
+        if (target) observer.unobserve(target);
+      });
+    };
+  }, []);
 
   const SectionHeader = ({ id, title, subtitle }: { id: string, title: string, subtitle?: string }) => (
     <div id={id} className="border-b-2 border-black pb-1 mb-6 mt-16 first:mt-0 scroll-mt-24">
@@ -198,7 +230,12 @@ const SessionDocumentView = ({
 
   const scrollTo = (id: string) => {
     const el = document.getElementById(id);
-    if (el) el.scrollIntoView({ behavior: 'smooth' });
+    const scrollContainer = document.getElementById('main-scroll-container');
+    if (el && scrollContainer) {
+      const yOffset = -100; // Offset to account for sticky header
+      const y = el.getBoundingClientRect().top + scrollContainer.scrollTop + yOffset;
+      scrollContainer.scrollTo({ top: y, behavior: 'smooth' });
+    }
   };
 
   const toggleGuide = (title: string) => {
@@ -269,16 +306,24 @@ const SessionDocumentView = ({
           <div className="space-y-3">
             <p className="text-[10px] font-black text-slate-400 uppercase tracking-[0.3em] px-1">Document Outline</p>
             <div className="space-y-1">
-              {OUTLINE_ITEMS.map((item) => (
-                <button
-                  key={item.id}
-                  onClick={() => scrollTo(item.id)}
-                  className="w-full flex items-center gap-3 px-4 py-2.5 text-xs font-bold text-slate-600 hover:text-indigo-600 hover:bg-indigo-50/50 rounded-xl transition-all text-left"
-                >
-                  <item.icon size={14} className="text-slate-400" />
-                  {item.label}
-                </button>
-              ))}
+              {OUTLINE_ITEMS.map((item) => {
+                const isActive = activeSection === item.id;
+                return (
+                  <button
+                    key={item.id}
+                    onClick={() => scrollTo(item.id)}
+                    className={cn(
+                      "w-full flex items-center gap-3 px-4 py-2.5 text-xs font-bold rounded-xl transition-all text-left border-l-2",
+                      isActive 
+                        ? "bg-indigo-50 border-indigo-600 text-indigo-600 font-black" 
+                        : "border-transparent text-slate-600 hover:text-indigo-600 hover:bg-indigo-50/30"
+                    )}
+                  >
+                    <item.icon size={14} className={isActive ? "text-indigo-600" : "text-slate-400"} />
+                    {item.label}
+                  </button>
+                );
+              })}
             </div>
           </div>
 
@@ -705,6 +750,68 @@ const SessionDocumentView = ({
 
               <div className="pt-4 border-t border-slate-100">
                 <DocInput label="Acupoints Used" value={appointment.acupoints} field="acupoints" placeholder="e.g. GV20, KI27..." />
+              </div>
+            </div>
+
+            {/* Detailed Correction Protocols Reference */}
+            <div className="mt-8 p-8 border-2 border-black space-y-8 bg-white break-inside-avoid">
+              <div className="flex items-center gap-3 border-b border-black pb-3">
+                <BookOpen size={20} className="text-black" />
+                <h3 className="text-sm font-black uppercase tracking-widest">Clinical Correction Protocols Reference</h3>
+              </div>
+
+              <div className="space-y-6 text-xs">
+                {/* Afferent Protocols */}
+                <div className="space-y-4">
+                  <h4 className="font-black text-blue-600 uppercase tracking-wider text-[10px] border-b border-slate-100 pb-1">Afferent (Bottom-Up) Protocols</h4>
+                  
+                  <div className="space-y-3">
+                    <div>
+                      <p className="font-bold text-slate-900">1. Mechanoreceptor (Joint/Muscle)</p>
+                      <ul className="list-disc pl-4 space-y-1 text-slate-600 mt-1">
+                        <li><strong>Conscious (DCML):</strong> Hold contralateral M1/S1 brain zones. Perform 30-40% isometric contraction in the restricted action. Hold for 30-90 seconds with nasal breathing.</li>
+                        <li><strong>Unconscious (Spinocerebellar):</strong> Hold GV16 (Cerebellum). Stretch the priority ligament/tendon. Apply 128Hz tuning fork to cranium or tap for 3-5 seconds.</li>
+                      </ul>
+                    </div>
+
+                    <div>
+                      <p className="font-bold text-slate-900">2. Vestibular / Ocular</p>
+                      <p className="text-slate-600 mt-1">Place head into specific canal action (Anterior: Flexion, Posterior: Extension, Horizontal: Rotation, Utricle: Lateral Tilt). Maintain eye position (VOR, Smooth Pursuit, Saccades, Fixed Gaze). Hold GV16 (Cerebellum) + strike tuning fork on cranium or tap for 5-10 seconds.</p>
+                    </div>
+
+                    <div>
+                      <p className="font-bold text-slate-900">3. Physiological</p>
+                      <p className="text-slate-600 mt-1">Address biochemical or organ-specific reflexes. Check for nutritional or hydration priorities. Use specific neurolymphatic or neurovascular points. Consider meridian-based corrections.</p>
+                    </div>
+
+                    <div>
+                      <p className="font-bold text-slate-900">4. Nociceptive</p>
+                      <p className="text-slate-600 mt-1">Stimulate the threat (scar, old injury, movement). Test IM (should inhibit). Determine direction (Afferent vs Efferent). Apply correction (e.g., Mechanoreceptor, Cortical, etc.) with nasal breathing. Re-assess.</p>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Efferent Protocols */}
+                <div className="space-y-4 pt-4 border-t border-slate-100">
+                  <h4 className="font-black text-purple-600 uppercase tracking-wider text-[10px] border-b border-slate-100 pb-1">Efferent (Top-Down) Protocols</h4>
+                  
+                  <div className="space-y-3">
+                    <div>
+                      <p className="font-bold text-slate-900">1. Cortical</p>
+                      <p className="text-slate-600 mt-1">Identify primary cortical zone (PFC, PMC, M1, S1, etc.) and lateralize (Contralateral logic). Identify secondary zone. Apply correction: Tapping (3-5s), Holding + Intention (until pulse), or Tuning Fork. Include pathway name during intention.</p>
+                    </div>
+
+                    <div>
+                      <p className="font-bold text-slate-900">2. Subcortical</p>
+                      <p className="text-slate-600 mt-1">Identify subcortical zone (Limbic, Cerebellum, Pons, Medulla, Hippocampus, Thalamus, Basal Ganglia, Hypothalamus, ACC). Lateralize response (Ipsilateral logic for Cerebellum/Pons/Medulla/Limbic). Use rhythmic movements or breathing patterns. Apply correction method: Tapping, Holding + Intention, or Tuning Fork.</p>
+                    </div>
+
+                    <div>
+                      <p className="font-bold text-slate-900">3. Emotional (Neuro-Emotional Integration)</p>
+                      <p className="text-slate-600 mt-1">Standard 9-Step Neuro-Emotional Integration (NEI). Hold Frontal Lobe (ESR) + Pulse Point + Eye Position. Replay stress until shift (sigh, yawn, gurgle), then upload positive state.</p>
+                    </div>
+                  </div>
+                </div>
               </div>
             </div>
           </section>

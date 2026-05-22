@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -24,9 +24,15 @@ import {
   Heart,
   Zap,
   RefreshCw,
-  Target
+  Target,
+  Upload,
+  X,
+  Loader2,
+  ImageIcon
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { supabase } from "@/integrations/supabase/client";
+import { showSuccess, showError } from "@/utils/toast";
 
 interface Lesson {
   id: string;
@@ -42,6 +48,9 @@ interface MechanoLessonsProps {
   activeSubTab?: 'lessons' | 'anatomy' | 'sandbox';
 }
 
+const LESSON_URL = "https://share.descript.com/view/gDxcvRrEKGw?t=448.630353&autoplay=1";
+const BUCKET_NAME = 'ligament-images';
+
 const MechanoLessons = ({ activeSubTab = 'lessons' }: MechanoLessonsProps) => {
   const [currentLessonId, setCurrentLessonId] = useState<string | null>(null);
   const [lessonProgress, setLessonProgress] = useState<Record<string, boolean>>({
@@ -53,11 +62,148 @@ const MechanoLessons = ({ activeSubTab = 'lessons' }: MechanoLessonsProps) => {
   const [selectedAnatomyJoint, setSelectedAnatomyJoint] = useState<'knee' | 'ankle' | 'shoulder' | 'hip'>('knee');
   const [selectedStructure, setSelectedStructure] = useState<string | null>('mcl');
 
+  // Image Upload & Database States
+  const [userId, setUserId] = useState<string | null>(null);
+  const [dbImages, setDbImages] = useState<Record<string, string>>({});
+  const [isUploading, setIsUploading] = useState(false);
+  const [isDragging, setIsDragging] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
   // Sandbox State
   const [sandboxJoint, setSandboxJoint] = useState<string>('Knee');
   const [sandboxTissue, setSandboxTissue] = useState<'Ligament' | 'Tendon'>('Ligament');
   const [sandboxPlane, setSandboxPlane] = useState<string>('Sagittal');
   const [sandboxAction, setSandboxAction] = useState<string>('Flexion');
+
+  // Fetch User and Custom Images
+  const fetchImages = async () => {
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (user) {
+        setUserId(user.id);
+        const { data, error } = await supabase
+          .from('ligament_images')
+          .select('category, image_index, image_url')
+          .eq('user_id', user.id);
+
+        if (!error && data) {
+          const mapping: Record<string, string> = {};
+          const timestamp = Date.now();
+          data.forEach(item => {
+            if (item.image_url) {
+              mapping[`${item.category}_${item.image_index}`] = `${item.image_url}?t=${timestamp}`;
+            }
+          });
+          setDbImages(mapping);
+        }
+      }
+    } catch (err) {
+      console.error("Error fetching custom images:", err);
+    }
+  };
+
+  useEffect(() => {
+    fetchImages();
+  }, []);
+
+  // Map selected structure to database category and index
+  const structureMapping = useMemo(() => {
+    const mapping: Record<string, { category: string; index: number }> = {
+      // Knee
+      mcl: { category: 'knee_elbow', index: 0 },
+      lcl: { category: 'knee_elbow', index: 1 },
+      patellar: { category: 'knee_elbow', index: 2 },
+      quadriceps: { category: 'knee_elbow', index: 3 },
+      // Ankle
+      atfl: { category: 'ankle_wrist', index: 0 },
+      cfl: { category: 'ankle_wrist', index: 1 },
+      achilles: { category: 'ankle_wrist', index: 2 },
+      // Shoulder
+      supraspinatus: { category: 'hip_shoulder', index: 0 },
+      ghl: { category: 'hip_shoulder', index: 1 },
+      biceps: { category: 'hip_shoulder', index: 2 },
+      ac: { category: 'hip_shoulder', index: 3 },
+      // Hip
+      iliofemoral: { category: 'hip_shoulder', index: 0 },
+      gluteus_med: { category: 'hip_shoulder', index: 1 },
+      hamstring: { category: 'hip_shoulder', index: 2 }
+    };
+    return mapping;
+  }, []);
+
+  const activeMapping = selectedStructure ? structureMapping[selectedStructure] : null;
+  const activeImageUrl = activeMapping ? dbImages[`${activeMapping.category}_${activeMapping.index}`] : null;
+
+  // Handle Image Upload
+  const handleUpload = async (file: File) => {
+    if (!userId || !activeMapping || !selectedStructure) return;
+    if (!file.type.startsWith('image/')) {
+      showError("Please upload an image file.");
+      return;
+    }
+
+    setIsUploading(true);
+    try {
+      const fileExt = file.name.split('.').pop() || 'png';
+      const filePath = `${userId}/${activeMapping.category}_${activeMapping.index}.${fileExt}`;
+
+      const { error: uploadError } = await supabase.storage
+        .from(BUCKET_NAME)
+        .upload(filePath, file, { upsert: true, contentType: file.type });
+
+      if (uploadError) throw uploadError;
+
+      const { data: { publicUrl } } = supabase.storage
+        .from(BUCKET_NAME)
+        .getPublicUrl(filePath);
+
+      const { error: dbError } = await supabase
+        .from('ligament_images')
+        .upsert({
+          user_id: userId,
+          category: activeMapping.category,
+          image_index: activeMapping.index,
+          image_url: publicUrl
+        }, { onConflict: 'user_id,category,image_index' });
+
+      if (dbError) throw dbError;
+
+      showSuccess("Reference image updated successfully!");
+      fetchImages();
+    } catch (error: any) {
+      showError(error.message || "Failed to upload image.");
+    } finally {
+      setIsUploading(false);
+    }
+  };
+
+  const handleRemoveImage = async (e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (!userId || !activeMapping) return;
+    if (!confirm("Are you sure you want to remove this reference image?")) return;
+
+    try {
+      const { error } = await supabase
+        .from('ligament_images')
+        .update({ image_url: null })
+        .match({ user_id: userId, category: activeMapping.category, image_index: activeMapping.index });
+
+      if (error) throw error;
+
+      showSuccess("Reference image removed.");
+      fetchImages();
+    } catch (error) {
+      showError("Failed to remove image.");
+    }
+  };
+
+  const onDrop = useCallback((e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDragging(false);
+    const file = e.dataTransfer.files?.[0];
+    if (file) handleUpload(file);
+  }, [userId, activeMapping, selectedStructure]);
 
   const lessons: Lesson[] = [
     {
@@ -89,7 +235,7 @@ const MechanoLessons = ({ activeSubTab = 'lessons' }: MechanoLessonsProps) => {
                   <Smile className="text-slate-900" size={16} /> They are Passive Sensors
                 </p>
                 <p className="text-xs text-slate-600 leading-relaxed">
-                  Ligaments don't contract. They only sense stretch. If a joint is unstable, the ligament gets over-stretched, sending a "threat" signal to the brain.
+                  Ligaments don't contract. They only sense stretch. If a joint is unstable, the ligament gets over-stretched, sending a \"threat\" signal to the brain.
                 </p>
               </div>
               <div className="p-4 bg-slate-50 rounded-xl border border-slate-200 space-y-2">
@@ -154,7 +300,7 @@ const MechanoLessons = ({ activeSubTab = 'lessons' }: MechanoLessonsProps) => {
                   <Smile className="text-slate-900" size={16} /> They are Active Regulators
                 </p>
                 <p className="text-xs text-slate-600 leading-relaxed">
-                  Tendons respond to active muscle contraction. When a tendon's threshold is "smudged," the brain keeps the muscle weak or chronically tight to protect it.
+                  Tendons respond to active muscle contraction. When a tendon's threshold is \"smudged,\" the brain keeps the muscle weak or chronically tight to protect it.
                 </p>
               </div>
               <div className="p-4 bg-slate-50 rounded-xl border border-slate-200 space-y-2">
@@ -231,7 +377,7 @@ const MechanoLessons = ({ activeSubTab = 'lessons' }: MechanoLessonsProps) => {
           <div className="p-5 bg-slate-900 text-white rounded-xl space-y-3">
             <p className="text-xs font-bold text-slate-300 uppercase tracking-wider">The Golden Rule</p>
             <p className="text-xs font-bold leading-relaxed italic">
-              "Joints act, muscles and tissues react. Always focus on the joint action first, and let the muscles take care of themselves."
+              \"Joints act, muscles and tissues react. Always focus on the joint action first, and let the muscles take care of themselves.\"
             </p>
           </div>
         </div>
@@ -288,7 +434,7 @@ const MechanoLessons = ({ activeSubTab = 'lessons' }: MechanoLessonsProps) => {
             <div>
               <h4 className="font-bold text-slate-900 text-sm uppercase tracking-tight">Your Confidence Mantra</h4>
               <p className="text-xs text-slate-600 font-medium mt-1 italic">
-                "I am a facilitator of the brain's own healing. I don't need to be perfect; I just need to be curious, gentle, and systematic."
+                \"I am a facilitator of the brain's own healing. I don't need to be perfect; I just need to be curious, gentle, and systematic.\"
               </p>
             </div>
           </div>
@@ -319,7 +465,7 @@ const MechanoLessons = ({ activeSubTab = 'lessons' }: MechanoLessonsProps) => {
         type: "Ligament",
         desc: "Located on the outside of the knee. Resists varus (bow-leg) forces.",
         test: "Gently push the inside of the knee outwards while holding the ankle to stretch the LCL.",
-        correction: "Hold GV16 while applying a light stretch to the LCL. Tap the cranium or apply a tuning fork for 3-5 seconds."
+        correction: "Hold GV16 (base of skull) while applying a light stretch to the LCL. Tap the cranium or apply a tuning fork for 3-5 seconds."
       },
       patellar: {
         name: "Patellar Tendon",
@@ -444,7 +590,7 @@ const MechanoLessons = ({ activeSubTab = 'lessons' }: MechanoLessonsProps) => {
     if (sandboxTissue === 'Ligament') {
       return {
         title: `Unconscious Ligament Protocol: ${sandboxJoint}`,
-        pathway: "Spinocerebellar Tract -> Ipsilateral Cerebellum",
+        pathway: "Spinocerebellar Tract -> Unconscious Cerebellum",
         stimulus: `Gently stretch the priority ligament of the ${sandboxJoint} joint.`,
         correction: "Hold GV16 (base of skull) while maintaining the stretch. Tap the cranium or apply a tuning fork for 3-5 seconds.",
         tip: "Ligaments are passive sensors. Always use light, gentle stretch. Never force a joint into pain."
@@ -825,7 +971,7 @@ const MechanoLessons = ({ activeSubTab = 'lessons' }: MechanoLessonsProps) => {
               </CardContent>
             </Card>
 
-            {/* Right Column: Clinical Logic Card */}
+            {/* Right Column: Clinical Logic Card with Image Upload */}
             <div className="lg:col-span-5 space-y-6">
               {currentStructure ? (
                 <Card className="border border-slate-200 shadow-sm rounded-2xl bg-white overflow-hidden border-l-4 border-slate-900 animate-in fade-in slide-in-from-right-2 duration-300">
@@ -839,6 +985,56 @@ const MechanoLessons = ({ activeSubTab = 'lessons' }: MechanoLessonsProps) => {
                     <CardTitle className="text-lg font-bold text-slate-900">{currentStructure.name}</CardTitle>
                   </CardHeader>
                   <CardContent className="p-6 space-y-5">
+                    {/* Real-time Image Upload Zone */}
+                    <div className="space-y-2">
+                      <p className="text-[9px] font-bold text-slate-400 uppercase tracking-wider">Reference Image</p>
+                      <div 
+                        onDragOver={(e) => { e.preventDefault(); e.stopPropagation(); setIsDragging(true); }}
+                        onDragLeave={(e) => { e.preventDefault(); e.stopPropagation(); setIsDragging(false); }}
+                        onDrop={onDrop}
+                        onClick={() => fileInputRef.current?.click()}
+                        className={cn(
+                          "relative group/img aspect-video rounded-xl border-2 border-dashed flex flex-col items-center justify-center overflow-hidden cursor-pointer transition-all duration-300",
+                          activeImageUrl ? "border-transparent" : "border-slate-200 bg-slate-50/50 hover:border-indigo-400 hover:bg-indigo-50/30",
+                          isDragging && "border-indigo-600 bg-indigo-100/80 scale-[1.02]",
+                          isUploading && "opacity-50 pointer-events-none"
+                        )}
+                      >
+                        <input 
+                          type="file" 
+                          ref={fileInputRef} 
+                          className="hidden" 
+                          accept="image/*" 
+                          onChange={(e) => {
+                            const file = e.target.files?.[0];
+                            if (file) handleUpload(file);
+                          }}
+                        />
+                        {activeImageUrl ? (
+                          <>
+                            <img src={activeImageUrl} alt={currentStructure.name} className="w-full h-full object-cover" />
+                            <div className="absolute inset-0 bg-black/40 opacity-0 group-hover/img:opacity-100 transition-opacity flex items-center justify-center gap-2">
+                              <Button variant="secondary" size="icon" className="rounded-xl h-8 w-8 shadow-lg"><Upload size={14} /></Button>
+                              <Button variant="destructive" size="icon" className="rounded-xl h-8 w-8 shadow-lg" onClick={handleRemoveImage}><X size={14} /></Button>
+                            </div>
+                          </>
+                        ) : (
+                          <div className="text-center p-4 space-y-2">
+                            {isUploading ? (
+                              <Loader2 className="mx-auto text-indigo-500 animate-spin" size={24} />
+                            ) : (
+                              <>
+                                <div className="w-10 h-10 rounded-xl bg-white shadow-sm border border-slate-100 flex items-center justify-center mx-auto text-slate-400 group-hover/img:text-indigo-600 transition-all">
+                                  <ImageIcon size={20} />
+                                </div>
+                                <p className="text-[9px] font-black text-slate-500 uppercase tracking-widest">Click or Drop Reference Image</p>
+                              </>
+                            )}
+                          </div>
+                        )}
+                      </div>
+                    </div>
+
                     <div className="space-y-1">
                       <p className="text-[9px] font-bold text-slate-400 uppercase tracking-wider">Description</p>
                       <p className="text-xs text-slate-600 font-medium leading-relaxed">{currentStructure.desc}</p>

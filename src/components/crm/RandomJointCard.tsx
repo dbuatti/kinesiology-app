@@ -66,75 +66,71 @@ const RandomJointCard = () => {
   };
 
   return (
-    <Card className="border-none shadow-lg rounded-[2rem] bg-card overflow-hidden group">
-      <CardHeader className="bg-indigo-600 p-6 text-white relative overflow-hidden">
-        <div className="absolute top-0 right-0 p-4 opacity-10 group-hover:scale-110 transition-transform duration-700">
-          <Dumbbell size={60} />
-        </div>
+    <Card className="border border-slate-200 shadow-sm rounded-2xl bg-white overflow-hidden group">
+      <CardHeader className="bg-slate-50 border-b border-slate-200 p-5 text-slate-900 relative overflow-hidden">
         <div className="flex items-center justify-between relative z-10">
           <div className="space-y-1">
             <div className="flex gap-1.5 mb-1">
-              <Badge className="bg-white/20 text-white border-none font-black text-[7px] uppercase tracking-widest">
+              <Badge className="bg-slate-200 text-slate-800 border-none font-bold text-[7px] uppercase tracking-wider">
                 {joint.type}
               </Badge>
-              <Badge className="bg-white/20 text-white border-none font-black text-[7px] uppercase tracking-widest">
+              <Badge className="bg-slate-200 text-slate-800 border-none font-bold text-[7px] uppercase tracking-wider">
                 {joint.region}
               </Badge>
             </div>
-            <CardTitle className="text-xl font-black tracking-tight">{joint.name}</CardTitle>
+            <CardTitle className="text-base font-bold tracking-tight">{joint.name}</CardTitle>
           </div>
           <Button 
             variant="ghost" 
             size="icon" 
             onClick={handleManualRefresh}
             className={cn(
-              "h-10 w-10 rounded-xl text-white hover:bg-white/20 transition-all",
+              "h-8 w-8 rounded-lg text-slate-500 hover:bg-slate-200 transition-all",
               isRefreshing && "animate-spin"
             )}
           >
-            <RefreshCw size={20} />
+            <RefreshCw size={16} />
           </Button>
         </div>
       </CardHeader>
-      <CardContent className="p-6 space-y-6">
-        <div className="grid grid-cols-1 gap-3">
-          <div className="flex items-center justify-between p-3 bg-blue-50 dark:bg-blue-900/20 rounded-xl border border-blue-100 dark:border-blue-900/30">
-            <div className="flex items-center gap-2">
-              <Zap size={14} className="text-blue-500" />
-              <span className="text-[9px] font-black text-blue-600 dark:text-blue-400 uppercase tracking-widest">Sagittal</span>
+      <CardContent className="p-5 space-y-4">
+        <div className="grid grid-cols-1 gap-2">
+          <div className="flex items-center justify-between p-2.5 bg-slate-50 rounded-xl border border-slate-200">
+            <div className="flex items-center gap-1.5">
+              <Zap size={12} className="text-slate-600" />
+              <span className="text-[8px] font-bold text-slate-500 uppercase tracking-wider">Sagittal</span>
             </div>
-            <span className="text-xs font-bold text-slate-700 dark:text-slate-300">
+            <span className="text-xs font-bold text-slate-700">
               {joint.actions.Sagittal.map(a => a.label).join(', ')}
             </span>
           </div>
           
-          <div className="flex items-center justify-between p-3 bg-emerald-50 dark:bg-emerald-900/20 rounded-xl border border-emerald-100 dark:border-emerald-900/30">
-            <div className="flex items-center gap-2">
-              <Move size={14} className="text-emerald-500" />
-              <span className="text-[9px] font-black text-emerald-600 dark:text-emerald-400 uppercase tracking-widest">Frontal</span>
+          <div className="flex items-center justify-between p-2.5 bg-slate-50 rounded-xl border border-slate-200">
+            <div className="flex items-center gap-1.5">
+              <Move size={12} className="text-slate-600" />
+              <span className="text-[8px] font-bold text-slate-500 uppercase tracking-wider">Frontal</span>
             </div>
-            <span className="text-xs font-bold text-slate-700 dark:text-slate-300">
+            <span className="text-xs font-bold text-slate-700">
               {joint.actions.Frontal.map(a => a.label).join(', ')}
             </span>
           </div>
 
-          <div className="flex items-center justify-between p-3 bg-orange-50 dark:bg-orange-900/20 rounded-xl border border-orange-100 dark:border-orange-900/30">
-            <div className="flex items-center gap-2">
-              <RefreshCw size={14} className="text-orange-500" />
-              <span className="text-[9px] font-black text-orange-600 dark:text-orange-400 uppercase tracking-widest">Transverse</span>
+          <div className="flex items-center justify-between p-2.5 bg-slate-50 rounded-xl border border-slate-200">
+            <div className="flex items-center gap-1.5">
+              <RefreshCw size={12} className="text-slate-600" />
+              <span className="text-[8px] font-bold text-slate-500 uppercase tracking-wider">Transverse</span>
             </div>
-            <span className="text-xs font-bold text-slate-700 dark:text-slate-300">
+            <span className="text-xs font-bold text-slate-700">
               {joint.actions.Transverse.map(a => a.label).join(', ')}
             </span>
           </div>
         </div>
 
-        <div className="p-4 bg-slate-50 dark:bg-slate-900 rounded-2xl border border-slate-100 dark:border-slate-800 relative overflow-hidden">
-          <div className="absolute top-0 right-0 p-2 opacity-5"><Lightbulb size={30} /></div>
-          <p className="text-[8px] font-black text-slate-400 uppercase tracking-widest mb-1 flex items-center gap-1">
-            <Lightbulb size={10} className="text-amber-500" /> Clinical Pearl
+        <div className="p-3.5 bg-slate-50 rounded-xl border border-slate-200 relative overflow-hidden">
+          <p className="text-[8px] font-bold text-slate-400 uppercase tracking-wider mb-1 flex items-center gap-1">
+            <Lightbulb size={10} className="text-slate-600" /> Clinical Pearl
           </p>
-          <p className="text-[11px] text-slate-600 dark:text-slate-400 font-medium leading-relaxed">
+          <p className="text-[11px] text-slate-600 font-medium leading-relaxed">
             "{joint.pearl}"
           </p>
         </div>
@@ -143,9 +139,9 @@ const RandomJointCard = () => {
           variant="ghost" 
           onClick={handleManualRefresh}
           disabled={isRefreshing}
-          className="w-full h-10 rounded-xl text-[10px] font-black uppercase tracking-widest text-indigo-600 hover:bg-indigo-50 dark:hover:bg-indigo-900/20"
+          className="w-full h-9 rounded-xl text-[9px] font-bold uppercase tracking-wider text-slate-700 hover:bg-slate-100"
         >
-          {isRefreshing ? <Loader2 className="animate-spin mr-2" size={14} /> : <ChevronRight className="mr-2" size={14} />}
+          {isRefreshing ? <Loader2 className="animate-spin mr-1.5" size={12} /> : <ChevronRight className="mr-1.5" size={12} />}
           Next Joint
         </Button>
       </CardContent>

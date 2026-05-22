@@ -9,214 +9,270 @@ import {
   Target, BookOpen, Trophy, Sparkles,
   ChevronRight, LayoutGrid, ListChecks,
   ShieldCheck, Workflow, Lightbulb, CheckCircle2,
-  Book, HelpCircle, ArrowRightLeft, RefreshCw
+  Book, HelpCircle, ArrowRightLeft, RefreshCw,
+  Layers, Compass
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import DailyMechanoChallenge from './DailyMechanoChallenge';
 import JointActionExplorer from './JointActionExplorer';
-import MechanoBible from './MechanoBible';
 import RandomJointCard from './RandomJointCard';
 import MechanoTheoryDrills from './MechanoTheoryDrills';
 import MechanoLessons from './MechanoLessons';
 
-const MechanoMasteryModule = () => {
-  const [activeTab, setActiveTab] = useState<'academy' | 'lessons' | 'drills' | 'challenge' | 'explorer' | 'bible'>('academy');
+type TabType = 'academy' | 'anatomy' | 'sandbox' | 'lessons' | 'drills' | 'challenge' | 'explorer';
 
-  const NavButton = ({ id, label, icon: Icon }: any) => (
-    <Button
-      variant={activeTab === id ? 'default' : 'ghost'}
-      onClick={() => setActiveTab(id)}
-      className={cn(
-        "flex-1 h-14 rounded-2xl font-black text-[10px] uppercase tracking-widest transition-all",
-        activeTab === id 
-          ? "bg-indigo-600 text-white shadow-xl shadow-indigo-200" 
-          : "text-slate-500 hover:bg-indigo-50 hover:text-indigo-600"
-      )}
-    >
-      <Icon size={18} className="mr-2" />
-      {label}
-    </Button>
-  );
+const MechanoMasteryModule = () => {
+  const [activeTab, setActiveTab] = useState<TabType>('academy');
+
+  const navigationGroups = [
+    {
+      title: "Overview",
+      items: [
+        { id: 'academy' as TabType, label: "Academy Hub", icon: LayoutGrid, desc: "Curriculum overview & daily stats" }
+      ]
+    },
+    {
+      title: "Interactive Tools",
+      items: [
+        { id: 'anatomy' as TabType, label: "Interactive Anatomy", icon: Layers, desc: "Clickable joint & tissue models" },
+        { id: 'sandbox' as TabType, label: "Protocol Sandbox", icon: Compass, desc: "Generate custom clinical protocols" },
+        { id: 'explorer' as TabType, label: "Joint Explorer", icon: Target, desc: "Master the joint action table" }
+      ]
+    },
+    {
+      title: "Learning & Drills",
+      items: [
+        { id: 'lessons' as TabType, label: "Confidence Lessons", icon: Sparkles, desc: "Bite-sized reassuring guides" },
+        { id: 'drills' as TabType, label: "Theory Drills", icon: Brain, desc: "Test your neurological logic" },
+        { id: 'challenge' as TabType, label: "Daily Case", icon: Trophy, desc: "Solve today's clinical scenario" }
+      ]
+    }
+  ];
 
   return (
-    <div className="space-y-10">
-      {/* Module Header */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
-        <div className="flex items-center gap-5">
-          <div className="w-16 h-16 rounded-[1.5rem] bg-indigo-600 text-white flex items-center justify-center shadow-2xl shadow-indigo-200">
-            <GraduationCap size={32} />
+    <div className="space-y-8 max-w-7xl mx-auto">
+      {/* Minimalist Module Header */}
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-6 border-b border-slate-100">
+        <div className="flex items-center gap-4">
+          <div className="w-12 h-12 rounded-xl bg-slate-900 text-white flex items-center justify-center shrink-0">
+            <GraduationCap size={24} />
           </div>
           <div>
-            <h1 className="text-4xl font-black tracking-tight text-slate-900">Mechano Mastery Academy</h1>
-            <p className="text-slate-500 font-medium text-lg mt-1">Master the geometry of movement and neurological correction.</p>
+            <h1 className="text-2xl font-bold tracking-tight text-slate-900">Mechano Mastery Academy</h1>
+            <p className="text-slate-500 text-sm mt-0.5">Master the geometry of movement and neurological correction.</p>
           </div>
         </div>
-        <div className="flex items-center gap-3 bg-white p-2 rounded-2xl border border-slate-100 shadow-sm">
-          <div className="px-4 py-2 text-center border-r border-slate-100">
-            <p className="text-[8px] font-black text-slate-400 uppercase tracking-widest">Accuracy</p>
-            <p className="text-xl font-black text-indigo-600">95%</p>
+        <div className="flex items-center gap-2 bg-slate-50 p-1.5 rounded-xl border border-slate-200/60 self-start md:self-auto">
+          <div className="px-3 py-1 text-center border-r border-slate-200">
+            <p className="text-[9px] font-bold text-slate-400 uppercase tracking-wider">Accuracy</p>
+            <p className="text-sm font-bold text-slate-900">95%</p>
           </div>
-          <div className="px-4 py-2 text-center">
-            <p className="text-[8px] font-black text-slate-400 uppercase tracking-widest">Level</p>
-            <p className="text-xl font-black text-emerald-600">Master</p>
+          <div className="px-3 py-1 text-center">
+            <p className="text-[9px] font-bold text-slate-400 uppercase tracking-wider">Level</p>
+            <p className="text-sm font-bold text-slate-900">Master</p>
           </div>
         </div>
       </div>
 
-      {/* Navigation Tabs */}
-      <div className="flex flex-wrap gap-3 p-2 bg-slate-100 rounded-[2rem] border border-slate-200">
-        <NavButton id="academy" label="Academy Hub" icon={LayoutGrid} />
-        <NavButton id="lessons" label="Confidence & Lessons" icon={Sparkles} />
-        <NavButton id="drills" label="Theory Drills" icon={Brain} />
-        <NavButton id="challenge" label="Daily Case" icon={Trophy} />
-        <NavButton id="explorer" label="Joint Explorer" icon={Target} />
-        <NavButton id="bible" label="The Bible" icon={BookOpen} />
-      </div>
+      {/* Main Layout: Sidebar + Content */}
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+        
+        {/* Sidebar Navigation */}
+        <div className="lg:col-span-3 space-y-6 bg-slate-50/50 p-4 rounded-2xl border border-slate-100">
+          {navigationGroups.map((group, gIdx) => (
+            <div key={gIdx} className="space-y-1.5">
+              <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider px-3 mb-2">
+                {group.title}
+              </p>
+              <div className="space-y-1">
+                {group.items.map((item) => {
+                  const Icon = item.icon;
+                  const isActive = activeTab === item.id;
+                  return (
+                    <button
+                      key={item.id}
+                      onClick={() => setActiveTab(item.id)}
+                      className={cn(
+                        "w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-left transition-all",
+                        isActive 
+                          ? "bg-slate-900 text-white shadow-sm" 
+                          : "text-slate-600 hover:bg-slate-100 hover:text-slate-900"
+                      )}
+                    >
+                      <Icon size={16} className={cn("shrink-0", isActive ? "text-white" : "text-slate-400")} />
+                      <div className="min-w-0">
+                        <p className="text-xs font-bold leading-none">{item.label}</p>
+                        <p className={cn("text-[10px] mt-1 truncate font-medium", isActive ? "text-slate-300" : "text-slate-400")}>
+                          {item.desc}
+                        </p>
+                      </div>
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+          ))}
+        </div>
 
-      {/* Content Area */}
-      <div className="animate-in fade-in slide-in-from-bottom-4 duration-700">
-        {activeTab === 'academy' && (
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
-            <div className="lg:col-span-8 space-y-8">
-              <Card className="border-none shadow-xl rounded-[3rem] bg-slate-900 text-white overflow-hidden relative group">
-                <div className="absolute inset-0 bg-gradient-to-br from-indigo-600/20 to-transparent" />
-                <div className="absolute top-0 right-0 p-12 opacity-10 group-hover:scale-110 transition-transform duration-700"><Workflow size={200} /></div>
-                <CardHeader className="p-12 relative z-10">
-                  <Badge className="bg-indigo-500 text-white border-none font-black text-[10px] uppercase tracking-[0.3em] px-4 py-1 mb-4">Core Curriculum</Badge>
-                  <CardTitle className="text-5xl font-black tracking-tighter leading-none">The Path to <br/>Clinical Mastery</CardTitle>
-                  <CardDescription className="text-slate-400 text-xl font-medium mt-4 max-w-xl">
-                    "2 years experience ≈ 65% accuracy. 5+ years ≈ 95% clinical mastery. Stay loose in the saddle and trust the system."
-                  </CardDescription>
-                </CardHeader>
-                <CardContent className="p-12 pt-0 relative z-10">
-                  <div className="flex flex-wrap gap-4">
-                    <Button onClick={() => setActiveTab('lessons')} className="bg-white text-slate-900 hover:bg-indigo-50 h-14 px-10 rounded-2xl font-black text-xs uppercase tracking-widest shadow-2xl">
-                      Confidence Lessons <Sparkles size={16} className="ml-2 text-indigo-600" />
-                    </Button>
-                    <Button onClick={() => setActiveTab('challenge')} variant="outline" className="bg-transparent border-white/20 text-white hover:bg-white/10 h-14 px-10 rounded-2xl font-black text-xs uppercase tracking-widest">
-                      Start Today's Case <ChevronRight size={18} className="ml-2" />
-                    </Button>
-                  </div>
-                </CardContent>
-              </Card>
-
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                <Card className="border-none shadow-lg rounded-[2.5rem] bg-white overflow-hidden group hover:shadow-2xl transition-all">
-                  <CardHeader className="p-8 pb-4">
-                    <div className="w-12 h-12 rounded-2xl bg-blue-50 text-blue-600 flex items-center justify-center mb-4 group-hover:bg-blue-600 group-hover:text-white transition-all">
-                      <Brain size={24} />
-                    </div>
-                    <CardTitle className="text-2xl font-black">Conscious (DCML)</CardTitle>
-                    <CardDescription className="font-medium">15% of afferent input. Contralateral logic.</CardDescription>
+        {/* Content Area */}
+        <div className="lg:col-span-9 animate-in fade-in slide-in-from-bottom-2 duration-300">
+          {activeTab === 'academy' && (
+            <div className="grid grid-cols-1 xl:grid-cols-12 gap-8">
+              <div className="xl:col-span-8 space-y-8">
+                {/* Core Curriculum Card */}
+                <Card className="border border-slate-200 shadow-sm rounded-2xl bg-slate-900 text-white overflow-hidden relative">
+                  <CardHeader className="p-8 relative z-10">
+                    <Badge className="bg-white/10 text-white border-none font-bold text-[9px] uppercase tracking-wider px-3 py-0.5 mb-3 w-fit">
+                      Core Curriculum
+                    </Badge>
+                    <CardTitle className="text-3xl font-bold tracking-tight leading-tight">
+                      The Path to Clinical Mastery
+                    </CardTitle>
+                    <CardDescription className="text-slate-300 text-sm font-medium mt-2 max-w-xl">
+                      "2 years experience ≈ 65% accuracy. 5+ years ≈ 95% clinical mastery. Stay loose in the saddle and trust the system."
+                    </CardDescription>
                   </CardHeader>
-                  <CardContent className="p-8 pt-0 space-y-4">
-                    <ul className="space-y-3">
-                      {["Targets S1 Sensory Cortex", "Uses Isometric Contractions", "30-40% Effort / 60-90s", "Nasal Breathing Required"].map(item => (
-                        <li key={item} className="flex items-center gap-3 text-sm font-bold text-slate-600">
-                          <CheckCircle2 size={18} className="text-blue-500" /> {item}
-                        </li>
-                      ))}
-                    </ul>
+                  <CardContent className="p-8 pt-0 relative z-10">
+                    <div className="flex flex-wrap gap-3">
+                      <Button 
+                        onClick={() => setActiveTab('lessons')} 
+                        className="bg-white text-slate-900 hover:bg-slate-100 h-11 px-6 rounded-xl font-bold text-xs uppercase tracking-wider shadow-sm"
+                      >
+                        Confidence Lessons <Sparkles size={14} className="ml-1.5 text-slate-900" />
+                      </Button>
+                      <Button 
+                        onClick={() => setActiveTab('challenge')} 
+                        variant="outline" 
+                        className="bg-transparent border-white/20 text-white hover:bg-white/10 h-11 px-6 rounded-xl font-bold text-xs uppercase tracking-wider"
+                      >
+                        Start Today's Case <ChevronRight size={16} className="ml-1" />
+                      </Button>
+                    </div>
                   </CardContent>
                 </Card>
 
-                <Card className="border-none shadow-lg rounded-[2.5rem] bg-white overflow-hidden group hover:shadow-2xl transition-all">
-                  <CardHeader className="p-8 pb-4">
-                    <div className="w-12 h-12 rounded-2xl bg-emerald-50 text-emerald-600 flex items-center justify-center mb-4 group-hover:bg-emerald-600 group-hover:text-white transition-all">
-                      <Activity size={24} />
-                    </div>
-                    <CardTitle className="text-2xl font-black">Unconscious (SC)</CardTitle>
-                    <CardDescription className="font-medium">85% of afferent input. Ipsilateral logic.</CardDescription>
+                {/* Conscious vs Unconscious Cards */}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <Card className="border border-slate-200 shadow-sm rounded-2xl bg-white overflow-hidden">
+                    <CardHeader className="p-6 pb-3">
+                      <div className="w-10 h-10 rounded-xl bg-slate-50 border border-slate-200 text-slate-700 flex items-center justify-center mb-3">
+                        <Brain size={20} />
+                      </div>
+                      <CardTitle className="text-lg font-bold text-slate-900">Conscious (DCML)</CardTitle>
+                      <CardDescription className="text-xs font-medium text-slate-500">15% of afferent input. Contralateral logic.</CardDescription>
+                    </CardHeader>
+                    <CardContent className="p-6 pt-0 space-y-3">
+                      <ul className="space-y-2.5">
+                        {["Targets S1 Sensory Cortex", "Uses Isometric Contractions", "30-40% Effort / 60-90s", "Nasal Breathing Required"].map(item => (
+                          <li key={item} className="flex items-center gap-2.5 text-xs font-medium text-slate-600">
+                            <CheckCircle2 size={15} className="text-slate-900 shrink-0" /> {item}
+                          </li>
+                        ))}
+                      </ul>
+                    </CardContent>
+                  </Card>
+
+                  <Card className="border border-slate-200 shadow-sm rounded-2xl bg-white overflow-hidden">
+                    <CardHeader className="p-6 pb-3">
+                      <div className="w-10 h-10 rounded-xl bg-slate-50 border border-slate-200 text-slate-700 flex items-center justify-center mb-3">
+                        <Activity size={20} />
+                      </div>
+                      <CardTitle className="text-lg font-bold text-slate-900">Unconscious (SC)</CardTitle>
+                      <CardDescription className="text-xs font-medium text-slate-500">85% of afferent input. Ipsilateral logic.</CardDescription>
+                    </CardHeader>
+                    <CardContent className="p-6 pt-0 space-y-3">
+                      <ul className="space-y-2.5">
+                        {["Targets Cerebellum (GV16)", "Uses Ligament/Tendon Stretch", "Tuning Fork or Quick Tap", "Ipsilateral Brainstem Logic"].map(item => (
+                          <li key={item} className="flex items-center gap-2.5 text-xs font-medium text-slate-600">
+                            <CheckCircle2 size={15} className="text-slate-900 shrink-0" /> {item}
+                          </li>
+                        ))}
+                      </ul>
+                    </CardContent>
+                  </Card>
+                </div>
+
+                {/* Clinical Logic Visualizer */}
+                <Card className="border border-slate-200 shadow-sm rounded-2xl bg-slate-50/50 overflow-hidden">
+                  <CardHeader className="p-6">
+                    <CardTitle className="text-base font-bold flex items-center gap-2 text-slate-900">
+                      <ArrowRightLeft size={20} className="text-slate-700" /> Clinical Logic Flow
+                    </CardTitle>
                   </CardHeader>
-                  <CardContent className="p-8 pt-0 space-y-4">
-                    <ul className="space-y-3">
-                      {["Targets Cerebellum (GV16)", "Uses Ligament/Tendon Stretch", "Tuning Fork or Quick Tap", "Ipsilateral Brainstem Logic"].map(item => (
-                        <li key={item} className="flex items-center gap-3 text-sm font-bold text-slate-600">
-                          <CheckCircle2 size={18} className="text-emerald-500" /> {item}
-                        </li>
+                  <CardContent className="p-6 pt-0">
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                      {[
+                        { step: "Stimulate", icon: Zap, desc: "Aggravate the threat or movement." },
+                        { step: "Localize", icon: Target, desc: "Find the joint and plane of motion." },
+                        { step: "Calibrate", icon: RefreshCw, desc: "Apply the specific correction." }
+                      ].map((item, i) => (
+                        <div key={item.step} className="flex flex-col items-center text-center space-y-2 p-5 bg-white rounded-xl border border-slate-200 shadow-sm">
+                          <div className="w-10 h-10 rounded-xl bg-slate-50 border border-slate-200 flex items-center justify-center text-slate-700">
+                            <item.icon size={18} />
+                          </div>
+                          <h4 className="font-bold text-slate-900 text-xs uppercase tracking-wider">{item.step}</h4>
+                          <p className="text-[11px] text-slate-500 font-medium leading-relaxed">{item.desc}</p>
+                        </div>
                       ))}
-                    </ul>
+                    </div>
                   </CardContent>
                 </Card>
               </div>
 
-              {/* Clinical Logic Visualizer */}
-              <Card className="border-none shadow-lg rounded-[2.5rem] bg-indigo-50 border-2 border-indigo-100 overflow-hidden">
-                <CardHeader className="p-8">
-                  <CardTitle className="text-2xl font-black flex items-center gap-3 text-indigo-900">
-                    <ArrowRightLeft size={28} className="text-indigo-600" /> Clinical Logic Flow
-                  </CardTitle>
-                </CardHeader>
-                <CardContent className="p-8 pt-0">
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4 relative">
+              <div className="xl:col-span-4 space-y-8">
+                <RandomJointCard />
+
+                {/* Mastery Checklist */}
+                <Card className="border border-slate-200 shadow-sm rounded-2xl bg-white overflow-hidden">
+                  <CardHeader className="p-6">
+                    <CardTitle className="text-base font-bold flex items-center gap-2 text-slate-900">
+                      <ListChecks size={20} className="text-slate-700" /> Mastery Checklist
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent className="p-6 pt-0 space-y-4">
                     {[
-                      { step: "Stimulate", icon: Zap, color: "bg-amber-500", desc: "Aggravate the threat or movement." },
-                      { step: "Localize", icon: Target, color: "bg-indigo-600", desc: "Find the joint and plane of motion." },
-                      { step: "Calibrate", icon: RefreshCw, color: "bg-emerald-600", desc: "Apply the specific correction." }
+                      { label: "Localization Hierarchy", desc: "Axial vs Appendicular logic." },
+                      { label: "Planes of Motion", desc: "Sagittal, Frontal, Transverse." },
+                      { label: "Joint Actions", desc: "Mastering the Action Table." },
+                      { label: "Correction Protocols", desc: "Conscious vs Unconscious." }
                     ].map((item, i) => (
-                      <div key={item.step} className="flex flex-col items-center text-center space-y-3 p-6 bg-white rounded-3xl border border-indigo-100 shadow-sm relative z-10">
-                        <div className={cn("w-12 h-12 rounded-2xl flex items-center justify-center text-white shadow-lg", item.color)}>
-                          <item.icon size={24} />
+                      <div key={i} className="flex gap-3">
+                        <div className="w-5 h-5 rounded-full bg-slate-50 border border-slate-200 flex items-center justify-center shrink-0 mt-0.5">
+                          <div className="w-1.5 h-1.5 rounded-full bg-slate-900" />
                         </div>
-                        <h4 className="font-black text-indigo-900 uppercase tracking-widest text-xs">{item.step}</h4>
-                        <p className="text-xs text-indigo-600/70 font-medium">{item.desc}</p>
+                        <div>
+                          <p className="font-bold text-xs text-slate-900">{item.label}</p>
+                          <p className="text-[11px] text-slate-500 font-medium">{item.desc}</p>
+                        </div>
                       </div>
                     ))}
-                  </div>
-                </CardContent>
-              </Card>
+                  </CardContent>
+                </Card>
+
+                {/* Daily Tip */}
+                <Card className="border border-slate-200 shadow-sm rounded-2xl bg-slate-900 text-white overflow-hidden">
+                  <CardHeader className="p-6">
+                    <CardTitle className="text-sm font-bold flex items-center gap-2">
+                      <Lightbulb size={18} className="text-amber-400" /> Daily Tip
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent className="p-6 pt-0">
+                    <p className="text-slate-300 text-xs font-medium leading-relaxed italic">
+                      "If the IM remains inhibited after a correction, you haven't cleared the threat—you've just found another layer. Expect 5-15 layers in complex cases."
+                    </p>
+                  </CardContent>
+                </Card>
+              </div>
             </div>
+          )}
 
-            <div className="lg:col-span-4 space-y-8">
-              <RandomJointCard />
-
-              <Card className="border-none shadow-lg rounded-[2.5rem] bg-white overflow-hidden">
-                <CardHeader className="p-8">
-                  <CardTitle className="text-xl font-black flex items-center gap-3 text-slate-900">
-                    <ListChecks size={24} className="text-indigo-600" /> Mastery Checklist
-                  </CardTitle>
-                </CardHeader>
-                <CardContent className="p-8 pt-0 space-y-6">
-                  {[
-                    { label: "Localization Hierarchy", desc: "Axial vs Appendicular logic." },
-                    { label: "Planes of Motion", desc: "Sagittal, Frontal, Transverse." },
-                    { label: "Joint Actions", desc: "Mastering the Action Table." },
-                    { label: "Correction Protocols", desc: "Conscious vs Unconscious." }
-                  ].map((item, i) => (
-                    <div key={i} className="flex gap-4">
-                      <div className="w-6 h-6 rounded-full bg-slate-50 border-2 border-slate-100 flex items-center justify-center shrink-0 mt-1">
-                        <div className="w-2 h-2 rounded-full bg-indigo-600" />
-                      </div>
-                      <div>
-                        <p className="font-black text-sm text-slate-900">{item.label}</p>
-                        <p className="text-xs text-slate-500 font-medium">{item.desc}</p>
-                      </div>
-                    </div>
-                  ))}
-                </CardContent>
-              </Card>
-
-              <Card className="border-none shadow-lg rounded-[2.5rem] bg-slate-900 text-white overflow-hidden">
-                <CardHeader className="p-8">
-                  <CardTitle className="text-xl font-black flex items-center gap-3">
-                    <Lightbulb size={24} className="text-amber-400" /> Daily Tip
-                  </CardTitle>
-                </CardHeader>
-                <CardContent className="p-8 pt-0">
-                  <p className="text-slate-400 font-medium leading-relaxed italic">
-                    "If the IM remains inhibited after a correction, you haven't cleared the threat—you've just found another layer. Expect 5-15 layers in complex cases."
-                  </p>
-                </CardContent>
-              </Card>
-            </div>
-          </div>
-        )}
-
-        {activeTab === 'lessons' && <MechanoLessons />}
-        {activeTab === 'drills' && <MechanoTheoryDrills />}
-        {activeTab === 'challenge' && <DailyMechanoChallenge />}
-        {activeTab === 'explorer' && <JointActionExplorer />}
-        {activeTab === 'bible' && <MechanoBible />}
+          {activeTab === 'lessons' && <MechanoLessons activeSubTab="lessons" />}
+          {activeTab === 'anatomy' && <MechanoLessons activeSubTab="anatomy" />}
+          {activeTab === 'sandbox' && <MechanoLessons activeSubTab="sandbox" />}
+          {activeTab === 'drills' && <MechanoTheoryDrills />}
+          {activeTab === 'challenge' && <DailyMechanoChallenge />}
+          {activeTab === 'explorer' && <JointActionExplorer />}
+        </div>
       </div>
     </div>
   );

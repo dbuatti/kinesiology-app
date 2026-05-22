@@ -198,7 +198,7 @@ const SessionDocumentView = ({
       </div>
 
       {/* Split Layout: Sidebar + Document */}
-      <div className="max-w-[1400px] mx-auto px-4 md:px-8 flex gap-12 items-start justify-start pt-8 print:block print:p-0">
+      <div className="w-full px-6 flex gap-12 items-start justify-start pt-8 print:block print:p-0">
         
         {/* Left Sidebar: Outline & Corrections Guide */}
         <DocumentSidebar 

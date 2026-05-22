@@ -67,3 +67,19 @@ export function calculateBrainstemTone(priorityPattern: string | null): NucleiSt
 
   return Object.values(nucleiMap);
 }
+
+/**
+ * Calculates the total threat level across all brainstem regions.
+ */
+export function calculateTotalThreat(priorityPattern: string | null): number {
+  const tone = calculateBrainstemTone(priorityPattern);
+  return tone.reduce((sum, n) => sum + n.threatLevel, 0);
+}
+
+/**
+ * Calculates the average neural load percentage across the 4 brainstem/cortical regions.
+ */
+export function calculateNeuralLoad(priorityPattern: string | null): number {
+  const totalThreat = calculateTotalThreat(priorityPattern);
+  return Math.round(totalThreat / 4);
+}

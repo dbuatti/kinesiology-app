@@ -38,14 +38,8 @@ import {
 } from "@/components/ui/tooltip";
 import { APPOINTMENT_STATUSES } from "@/data/appointment-data";
 import { AppointmentWithClient } from "@/types/crm";
-import { calculateBrainstemTone } from "@/utils/brainstem-logic";
+import { calculateNeuralLoad } from "@/utils/brainstem-logic";
 import { showSuccess } from "@/utils/toast";
-
-interface AppointmentHeaderProps {
-  appointment: AppointmentWithClient;
-  onSaveField: (field: string, value: any) => Promise<void>;
-  onUpdate: () => void;
-}
 
 interface VitalCardProps {
   icon: LucideIcon;
@@ -111,10 +105,15 @@ const VitalCard = ({ icon: Icon, label, value, subValue, color, onClick, childre
   </TooltipProvider>
 );
 
+interface AppointmentHeaderProps {
+  appointment: AppointmentWithClient;
+  onSaveField: (field: string, value: any) => Promise<void>;
+  onUpdate: () => void;
+}
+
 const AppointmentHeader = ({ appointment, onSaveField, onUpdate }: AppointmentHeaderProps) => {
   const neuralLoad = useMemo(() => {
-    const nuclei = calculateBrainstemTone(appointment.priority_pattern || null);
-    return Math.round(nuclei.reduce((sum, n) => sum + n.threatLevel, 0) / 4);
+    return calculateNeuralLoad(appointment.priority_pattern || null);
   }, [appointment.priority_pattern]);
 
   const handlePaymentClick = () => {

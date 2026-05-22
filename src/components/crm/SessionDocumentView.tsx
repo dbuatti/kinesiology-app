@@ -456,7 +456,7 @@ const SessionDocumentView = ({
                               </div>
                               <Badge className={cn(
                                 "border-none font-black text-[7px] uppercase tracking-widest px-1.5 py-0.5 rounded-md",
-                                app.status === 'Completed' ? "bg-emerald-500 text-white" : "bg-indigo-600 text-white"
+                                app.status === 'Completed' ? "bg-emerald-50 text-white" : "bg-indigo-600 text-white"
                               )}>
                                 {app.status}
                               </Badge>
@@ -663,9 +663,6 @@ const SessionDocumentView = ({
 
         {/* Right Sidebar: Quick Timers, BOLT, and Coherence */}
         <DocumentRightSidebar 
-          appointment={appointment}
-          saveField={saveField}
-          onUpdate={onUpdate}
           activeTimerDuration={activeTimerDuration}
           timeLeft={timeLeft}
           startQuickTimer={startQuickTimer}

@@ -8,7 +8,7 @@ import CheckItem from './CheckItem';
 
 interface AlignSectionProps {
   pattern: any;
-  onToggle: (category: string, name: string, isChecked: boolean, side?: 'L' | 'R') => void;
+  onToggle: (category: string, name: string, nextStatus: string, side?: 'L' | 'R') => void;
 }
 
 const SubHeader = ({ children }: { children: React.ReactNode }) => (

@@ -180,7 +180,7 @@ const SessionDocumentView = ({
     if (!combined.muscles) combined.muscles = {};
     
     currentMuscleTests.forEach(test => {
-      combined.muscles[test.muscle_name] = test.status === 'Normotonic' ? 'Clear' : 'Inhibited';
+      combined.muscles[test.muscle_name] = test.status; // Keep exact status: 'Normotonic', 'Inhibition', 'Hypertonic', etc.
     });
     
     return combined;
@@ -191,7 +191,7 @@ const SessionDocumentView = ({
     const list: string[] = [];
     Object.entries(unifiedPattern).forEach(([category, items]: [string, any]) => {
       Object.entries(items).forEach(([name, status]) => {
-        if (status === 'Inhibited') {
+        if (status === 'Inhibited' || status === 'Inhibition' || status === 'Hypertonic') {
           list.push(name);
         }
       });
@@ -199,43 +199,50 @@ const SessionDocumentView = ({
     return list.sort();
   }, [unifiedPattern]);
 
-  const handleTogglePatternItem = async (category: string, name: string, isChecked: boolean, side?: 'L' | 'R') => {
+  const handleTogglePatternItem = (category: string, name: string, nextStatus: string, side?: 'L' | 'R') => {
     const fullName = side ? `${name} (${side})` : name;
-    const newStatus = isChecked ? 'Clear' : 'Inhibited';
 
     if (category === 'muscles') {
-      const dbStatus = isChecked ? 'Normotonic' : 'Inhibited';
+      const dbStatus = nextStatus === 'Clear' ? 'Normotonic' : nextStatus === 'Inhibited' ? 'Inhibition' : 'Hypertonic';
       const existing = currentMuscleTests.find(t => t.muscle_name === fullName);
       
-      try {
-        if (existing) {
-          const { error } = await supabase
-            .from('muscle_tests')
-            .update({ status: dbStatus })
-            .eq('id', existing.id);
-          if (error) throw error;
-        } else {
-          const { data: { user } } = await supabase.auth.getUser();
-          const { error } = await supabase
-            .from('muscle_tests')
-            .insert({
-              user_id: user?.id,
-              appointment_id: appointment.id,
-              muscle_name: fullName,
-              status: dbStatus
-            });
-          if (error) throw error;
+      const runUpdate = async () => {
+        try {
+          if (existing) {
+            const { error } = await supabase
+              .from('muscle_tests')
+              .update({ status: dbStatus })
+              .eq('id', existing.id);
+            if (error) throw error;
+          } else {
+            const { data: { user } } = await supabase.auth.getUser();
+            const { error } = await supabase
+              .from('muscle_tests')
+              .insert({
+                user_id: user?.id,
+                appointment_id: appointment.id,
+                muscle_name: fullName,
+                status: dbStatus
+              });
+            if (error) throw error;
+          }
+          await fetchCurrentMuscleTests();
+          showSuccess(`${fullName} marked as ${nextStatus}`);
+        } catch (err) {
+          showError("Failed to update muscle status");
         }
-        await fetchCurrentMuscleTests();
-        showSuccess(`${fullName} marked as ${isChecked ? 'Clear' : 'Inhibited'}`);
-      } catch (err) {
-        showError("Failed to update muscle status");
-      }
+        setLastSaved(new Date());
+        onUpdate();
+      };
+      runUpdate();
     } else {
-      await updatePriorityPattern(category, name, newStatus, side);
+      const runUpdatePattern = async () => {
+        await updatePriorityPattern(category, name, nextStatus === 'Clear' ? 'Clear' : 'Inhibited', side);
+        setLastSaved(new Date());
+        onUpdate();
+      };
+      runUpdatePattern();
     }
-    setLastSaved(new Date());
-    onUpdate();
   };
 
   return (

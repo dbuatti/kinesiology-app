@@ -95,7 +95,7 @@ const CorrectSection = ({
     return allPathways.find(p => p.id.toLowerCase().includes(metadata.wizard_system.toLowerCase()) || metadata.wizard_system.toLowerCase().includes(p.id.toLowerCase()));
   }, [metadata.wizard_system]);
 
-  const ProtocolBlock = ({ title, icon: Icon, color, steps, desc }: { title: string, icon: any, color: string, steps: string[], desc?: string }) => (
+  const ProtocolBlock = ({ title, icon: Icon, color, steps, desc, children }: { title: string, icon: any, color: string, steps: string[], desc?: string, children?: React.ReactNode }) => (
     <div className="p-5 bg-slate-50 border border-slate-200 rounded-xl space-y-3">
       <div className="flex items-center gap-2">
         <div className={cn("w-7 h-7 rounded-lg flex items-center justify-center text-white", color)}>
@@ -112,6 +112,7 @@ const CorrectSection = ({
           </div>
         ))}
       </div>
+      {children}
     </div>
   );
 
@@ -481,74 +482,37 @@ const CorrectSection = ({
 
           <div id="c-emotional">
             <ProtocolBlock 
-              title="Emotional"
+              title="Emotional (Neuro-Emotional Integration)"
               icon={Heart}
               color="bg-rose-500"
-              desc="Limbic system and emotional processing. Final check if afferent and efferent are clear."
+              desc="Limbic system and emotional processing. Standard 9-Step Clinical Protocol to identify, process, and clear trapped emotional charges."
               steps={[
-                "Apply ESR (Emotional Stress Release) points",
-                "Acknowledge and release associated stressors",
-                "Use specific meridian-based emotional balancing",
-                "Complete full emotional process before re-assessing"
+                "ESR Indicator Check: Hold Frontal Lobe (ESR) points (GB14) to see if the system is ready for emotional work.",
+                "Permission Check: Always ask: 'Do we have permission to correct this?' If denied, perform Harmonic Rocking first.",
+                "Timeline Selection: Determine if the stress is Current (happening now) or Historic (past event).",
+                "Timeline Regression: If historic, narrow down the specific age and month of origin using the indicator muscle.",
+                "Primary Emotion: Identify the core feeling: Hurt (Fire), Worry (Earth), Sadness (Metal), Fear (Water), or Anger (Wood).",
+                "Priority Organ: Find the organ acting as a surrogate for the charge. This MUST be an organ related to the emotion's element from Step 5 (Wood: LV/GB, Fire: HT/SI, Earth: SP/ST, Metal: LU/LI, Water: KI/BL).",
+                "Energy Polarity: Challenge for Energy IN (+) or Energy OUT (-). Usually OUT to release stress.",
+                "Eye Position (NLP Logic): Identify the sensory access point for the stress (Up/Left: Visual Memory, Horiz/Left: Auditory Memory, Down/Left: Internal Monologue, Up/Right: Visual Constructed, Horiz/Right: Auditory Constructed, Down/Right: Kinesthetic/Felt Sense).",
+                "Correction & Upload: Hold ESR + Pulse Point + Eye Position. Replay stress until shift (yawn, sigh, swallow, gurgle, deep breath), then upload positive state."
               ]}
-            />
+            >
+              <div className="p-4 bg-white rounded-xl border border-slate-200 space-y-2 text-[11px] leading-relaxed text-slate-700">
+                <div className="flex items-center gap-2 mb-1">
+                  <Info size={14} className="text-indigo-600" />
+                  <span className="font-black uppercase text-[9px] text-indigo-600">Clinical Mastery Note</span>
+                </div>
+                <p className="italic">
+                  "The shift occurs when the client can distinguish between the 'me' (the observer) and the 'not-me' (the identity/emotion). Always wait for a clear parasympathetic response: Yawning, Sighing, Swallowing, Gurgling, or a spontaneous Deep Breath before proceeding to the Positive Upload."
+                </p>
+                <p className="mt-2">
+                  <strong>Pulse Point Tip:</strong> Hold the pulse point corresponding to the priority organ identified in Step 6. Use light pressure for Yang organs and deep pressure for Yin organs.
+                </p>
+              </div>
+            </ProtocolBlock>
           </div>
         </div>
-      </div>
-
-      {/* DETAILED STEP-BY-STEP PROTOCOL INSTRUCTIONS */}
-      <div className="pt-6 border-t border-slate-100 space-y-4">
-        <p className="text-[9px] font-black uppercase tracking-widest text-slate-400">Detailed Correction Instructions</p>
-        
-        {activeProtocol ? (
-          <div className="p-6 bg-slate-50 border border-slate-200 rounded-xl space-y-4 animate-in fade-in duration-300">
-            <div className="flex items-center gap-3">
-              <div className="w-8 h-8 rounded-lg bg-black text-white flex items-center justify-center">
-                <Info size={16} />
-              </div>
-              <div>
-                <h4 className="text-sm font-black uppercase tracking-tight">{activeProtocol.label} Protocol</h4>
-                <p className="text-[9px] font-bold text-slate-400 uppercase tracking-widest">{activeProtocol.direction}</p>
-              </div>
-            </div>
-            
-            <p className="text-xs text-slate-600 font-medium leading-relaxed italic">
-              "{activeProtocol.description}"
-            </p>
-
-            <div className="space-y-2">
-              <p className="text-[8px] font-black text-slate-400 uppercase tracking-widest">Step-by-Step Steps:</p>
-              <div className="space-y-2">
-                {activeProtocol.protocols.map((stepText, idx) => (
-                  <div key={idx} className="flex gap-3 items-start text-xs leading-relaxed text-slate-700">
-                    <span className="font-black text-black shrink-0">{idx + 1}.</span>
-                    <p className="font-medium">{stepText}</p>
-                  </div>
-                ))}
-              </div>
-            </div>
-          </div>
-        ) : (
-          <div className="p-6 border border-dashed border-slate-200 rounded-xl text-center space-y-4">
-            <Info size={24} className="mx-auto text-slate-300" />
-            <div className="space-y-1">
-              <p className="text-xs font-bold text-slate-500">No Specific System Selected</p>
-              <p className="text-[10px] text-slate-400 leading-relaxed">
-                Select a **Pathway Direction** and **Specific System** on the left to view detailed step-by-step clinical instructions.
-              </p>
-            </div>
-          </div>
-        )}
-      </div>
-
-      <div className="pt-4 border-t border-slate-100">
-        <DocInput 
-          label="Acupoints Used" 
-          value={acupoints} 
-          field="acupoints" 
-          placeholder="e.g. GV20, KI27..." 
-          onChange={(field, val) => saveField(field, val)}
-        />
       </div>
     </div>
   );

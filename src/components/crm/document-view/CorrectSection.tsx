@@ -6,14 +6,18 @@ import { Zap, BookOpen, ExternalLink, Info, CheckCircle2, Sparkles, Brain, Activ
 import DocInput from './DocInput';
 import { cn } from '@/lib/utils';
 import { AFFERENT_PATHWAYS, EFFERENT_PATHWAYS } from '@/data/pathway-logic-data';
+import { Button } from '@/components/ui/button';
+import { showSuccess, showError } from '@/utils/toast';
 
 interface CorrectSectionProps {
   metadata: any;
   acupoints: string | null | undefined;
   brainZoneOptions: { id: string; name: string; category: string }[];
   inhibitedFindings: string[];
-  updateMetadataField: (key: string, value: any) => Promise<void>;
+  updateMetadataFields: (updates: Record<string, any>) => Promise<void>;
   saveField: (field: string, value: any) => Promise<void>;
+  onTogglePatternItem: (category: string, name: string, nextStatus: string, side?: 'L' | 'R') => void;
+  appointment: any;
 }
 
 const NOCICEPTIVE_PROTOCOL = {
@@ -38,8 +42,10 @@ const CorrectSection = ({
   acupoints, 
   brainZoneOptions, 
   inhibitedFindings,
-  updateMetadataField, 
-  saveField 
+  updateMetadataFields, 
+  saveField,
+  onTogglePatternItem,
+  appointment
 }: CorrectSectionProps) => {
   const corticalOptions = useMemo(() => brainZoneOptions.filter(o => o.category === 'Cortical'), [brainZoneOptions]);
   const subcorticalOptions = useMemo(() => brainZoneOptions.filter(o => o.category === 'Subcortical'), [brainZoneOptions]);
@@ -73,14 +79,14 @@ const CorrectSection = ({
     
     if (findingDebounceTimer.current) clearTimeout(findingDebounceTimer.current);
     findingDebounceTimer.current = setTimeout(() => {
-      updateMetadataField('wizard_finding', val);
+      updateMetadataFields({ wizard_finding: val });
     }, 1000);
   };
 
   const handleFindingBlur = () => {
     setIsFindingFocused(false);
     if (findingDebounceTimer.current) clearTimeout(findingDebounceTimer.current);
-    updateMetadataField('wizard_finding', localFinding);
+    updateMetadataFields({ wizard_finding: localFinding });
   };
 
   // Find active protocol based on selection
@@ -94,6 +100,60 @@ const CorrectSection = ({
     const allPathways = [...AFFERENT_PATHWAYS, ...EFFERENT_PATHWAYS];
     return allPathways.find(p => p.id.toLowerCase().includes(metadata.wizard_system.toLowerCase()) || metadata.wizard_system.toLowerCase().includes(p.id.toLowerCase()));
   }, [metadata.wizard_system]);
+
+  const handleLogCorrection = async () => {
+    if (!metadata.wizard_finding) {
+      showError("Please select a target finding first.");
+      return;
+    }
+
+    const direction = metadata.wizard_direction || "Unknown Direction";
+    const system = metadata.wizard_system || "";
+    const coord1 = metadata.wizard_coord1_name ? `${metadata.wizard_coord1_side || ""} ${metadata.wizard_coord1_name}`.trim() : "";
+    const coord2 = metadata.wizard_coord2_name ? `${metadata.wizard_coord2_side || ""} ${metadata.wizard_coord2_name}`.trim() : "";
+    const polarity = metadata.wizard_polarity ? `Polarity: ${metadata.wizard_polarity}` : "";
+    const method = metadata.wizard_method ? `via ${metadata.wizard_method}` : "";
+    
+    let summary = `${direction} Correction: ${metadata.wizard_finding}`;
+    if (system) summary += ` (${system})`;
+    if (coord1 || coord2) {
+      summary += ` -> ${[coord1, coord2].filter(Boolean).join(' + ')}`;
+    }
+    if (method) summary += ` ${method}`;
+    if (polarity) summary += ` [${polarity}]`;
+
+    // Append to existing modes_balances
+    const currentBalances = appointment.modes_balances || "";
+    const updatedBalances = currentBalances 
+      ? `${currentBalances}\n- ${summary}`
+      : `- ${summary}`;
+
+    try {
+      await saveField('modes_balances', updatedBalances);
+      
+      // Find category and clear the item
+      let category = 'muscles';
+      const sideMatch = metadata.wizard_finding.match(/\(([LR])\)$/);
+      const side = sideMatch ? sideMatch[1] as 'L' | 'R' : undefined;
+      const baseName = metadata.wizard_finding.replace(/ \([LR]\)$/, '').trim();
+
+      if (appointment.priority_pattern) {
+        try {
+          const pattern = JSON.parse(appointment.priority_pattern);
+          Object.keys(pattern).forEach(cat => {
+            if (pattern[cat][metadata.wizard_finding]) {
+              category = cat;
+            }
+          });
+        } catch (e) {}
+      }
+
+      onTogglePatternItem(category, baseName, 'Clear', side);
+      showSuccess(`Logged correction for "${metadata.wizard_finding}"!`);
+    } catch (err) {
+      showError("Failed to log correction.");
+    }
+  };
 
   const ProtocolBlock = ({ title, icon: Icon, color, steps, desc, children }: { title: string, icon: any, color: string, steps: string[], desc?: string, children?: React.ReactNode }) => (
     <div className="p-5 bg-slate-50 border border-slate-200 rounded-xl space-y-3">
@@ -137,10 +197,10 @@ const CorrectSection = ({
                   if (val === "CUSTOM_INPUT") {
                     setShowCustomInput(true);
                     setLocalFinding("");
-                    updateMetadataField('wizard_finding', "");
+                    updateMetadataFields({ wizard_finding: "" });
                   } else {
                     setShowCustomInput(false);
-                    updateMetadataField('wizard_finding', val);
+                    updateMetadataFields({ wizard_finding: val });
                   }
                 }}
                 className="w-full bg-transparent border-b border-slate-200 py-1.5 text-sm font-bold focus:border-black outline-none transition-all"
@@ -175,8 +235,10 @@ const CorrectSection = ({
                     id="dir-afferent"
                     checked={metadata.wizard_direction === 'Afferent'}
                     onCheckedChange={(checked) => {
-                      updateMetadataField('wizard_direction', checked ? 'Afferent' : null);
-                      updateMetadataField('wizard_system', null); // Reset system on direction change
+                      updateMetadataFields({
+                        wizard_direction: checked ? 'Afferent' : null,
+                        wizard_system: null // Reset system on direction change
+                      });
                     }}
                     className="h-4 w-4 border-black rounded-none data-[state=checked]:bg-black"
                   />
@@ -187,8 +249,10 @@ const CorrectSection = ({
                     id="dir-efferent"
                     checked={metadata.wizard_direction === 'Efferent'}
                     onCheckedChange={(checked) => {
-                      updateMetadataField('wizard_direction', checked ? 'Efferent' : null);
-                      updateMetadataField('wizard_system', null); // Reset system on direction change
+                      updateMetadataFields({
+                        wizard_direction: checked ? 'Efferent' : null,
+                        wizard_system: null // Reset system on direction change
+                      });
                     }}
                     className="h-4 w-4 border-black rounded-none data-[state=checked]:bg-black"
                   />
@@ -206,7 +270,7 @@ const CorrectSection = ({
                       <Checkbox 
                         id={`sys-${sys}`}
                         checked={metadata.wizard_system === sys}
-                        onCheckedChange={(checked) => updateMetadataField('wizard_system', checked ? sys : null)}
+                        onCheckedChange={(checked) => updateMetadataFields({ wizard_system: checked ? sys : null })}
                         className="h-4 w-4 border-black rounded-none data-[state=checked]:bg-black"
                       />
                       <label htmlFor={`sys-${sys}`} className="text-xs font-bold cursor-pointer">{sys}</label>
@@ -220,7 +284,7 @@ const CorrectSection = ({
                       <Checkbox 
                         id={`sys-${sys}`}
                         checked={metadata.wizard_system === sys}
-                        onCheckedChange={(checked) => updateMetadataField('wizard_system', checked ? sys : null)}
+                        onCheckedChange={(checked) => updateMetadataFields({ wizard_system: checked ? sys : null })}
                         className="h-4 w-4 border-black rounded-none data-[state=checked]:bg-black"
                       />
                       <label htmlFor={`sys-${sys}`} className="text-xs font-bold cursor-pointer">{sys}</label>
@@ -252,7 +316,7 @@ const CorrectSection = ({
                 <label className="text-[8px] font-black uppercase text-slate-400">Coordinate 1 (Zone Name)</label>
                 <select 
                   value={metadata.wizard_coord1_name || ""}
-                  onChange={(e) => updateMetadataField('wizard_coord1_name', e.target.value)}
+                  onChange={(e) => updateMetadataFields({ wizard_coord1_name: e.target.value })}
                   className="w-full bg-transparent border-b border-slate-200 py-1.5 text-xs font-bold focus:border-black outline-none transition-all"
                 >
                   <option value="" className="text-slate-400">Select Zone...</option>
@@ -277,7 +341,7 @@ const CorrectSection = ({
                       <Checkbox 
                         id={`c1-side-${side}`}
                         checked={metadata.wizard_coord1_side === side}
-                        onCheckedChange={(checked) => updateMetadataField('wizard_coord1_side', checked ? side : null)}
+                        onCheckedChange={(checked) => updateMetadataFields({ wizard_coord1_side: checked ? side : null })}
                         className="h-3.5 w-3.5 border-black rounded-none data-[state=checked]:bg-black"
                       />
                       <label htmlFor={`c1-side-${side}`} className="text-[10px] font-bold cursor-pointer">{side}</label>
@@ -290,7 +354,7 @@ const CorrectSection = ({
                 <label className="text-[8px] font-black uppercase text-slate-400">Coordinate 2 (Zone Name)</label>
                 <select 
                   value={metadata.wizard_coord2_name || ""}
-                  onChange={(e) => updateMetadataField('wizard_coord2_name', e.target.value)}
+                  onChange={(e) => updateMetadataFields({ wizard_coord2_name: e.target.value })}
                   className="w-full bg-transparent border-b border-slate-200 py-1.5 text-xs font-bold focus:border-black outline-none transition-all"
                 >
                   <option value="" className="text-slate-400">Select Zone...</option>
@@ -315,7 +379,7 @@ const CorrectSection = ({
                       <Checkbox 
                         id={`c2-side-${side}`}
                         checked={metadata.wizard_coord2_side === side}
-                        onCheckedChange={(checked) => updateMetadataField('wizard_coord2_side', checked ? side : null)}
+                        onCheckedChange={(checked) => updateMetadataFields({ wizard_coord2_side: checked ? side : null })}
                         className="h-3.5 w-3.5 border-black rounded-none data-[state=checked]:bg-black"
                       />
                       <label htmlFor={`c2-side-${side}`} className="text-[10px] font-bold cursor-pointer">{side}</label>
@@ -335,7 +399,7 @@ const CorrectSection = ({
                 <Checkbox 
                   id="pol-in"
                   checked={metadata.wizard_polarity === 'IN'}
-                  onCheckedChange={(checked) => updateMetadataField('wizard_polarity', checked ? 'IN' : null)}
+                  onCheckedChange={(checked) => updateMetadataFields({ wizard_polarity: checked ? 'IN' : null })}
                   className="h-4 w-4 border-black rounded-none data-[state=checked]:bg-black"
                 />
                 <label htmlFor="pol-in" className="text-xs font-bold cursor-pointer">Energy IN (+)</label>
@@ -344,7 +408,7 @@ const CorrectSection = ({
                 <Checkbox 
                   id="pol-out"
                   checked={metadata.wizard_polarity === 'OUT'}
-                  onCheckedChange={(checked) => updateMetadataField('wizard_polarity', checked ? 'OUT' : null)}
+                  onCheckedChange={(checked) => updateMetadataFields({ wizard_polarity: checked ? 'OUT' : null })}
                   className="h-4 w-4 border-black rounded-none data-[state=checked]:bg-black"
                 />
                 <label htmlFor="pol-out" className="text-xs font-bold cursor-pointer">Energy OUT (-)</label>
@@ -360,7 +424,7 @@ const CorrectSection = ({
                   <Checkbox 
                     id={`method-${method}`}
                     checked={metadata.wizard_method === method}
-                    onCheckedChange={(checked) => updateMetadataField('wizard_method', checked ? method : null)}
+                    onCheckedChange={(checked) => updateMetadataFields({ wizard_method: checked ? method : null })}
                     className="h-4 w-4 border-black rounded-none data-[state=checked]:bg-black"
                   />
                   <label htmlFor={`method-${method}`} className="text-xs font-bold cursor-pointer">{method}</label>
@@ -368,6 +432,20 @@ const CorrectSection = ({
               ))}
             </div>
           </div>
+        </div>
+
+        {/* Log Correction Button */}
+        <div className="pt-6 border-t border-slate-100 flex justify-between items-center">
+          <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">
+            Ready to log this correction?
+          </p>
+          <Button
+            onClick={handleLogCorrection}
+            disabled={!metadata.wizard_finding}
+            className="bg-black text-white hover:bg-slate-800 rounded-none h-10 px-6 font-black text-[10px] uppercase tracking-widest shadow-lg"
+          >
+            <CheckCircle2 size={14} className="mr-2" /> Log Correction
+          </Button>
         </div>
       </div>
 

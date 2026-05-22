@@ -256,8 +256,8 @@ const SessionDocumentView = ({
     return appointment.metadata;
   }, [appointment.metadata]);
 
-  const updateMetadataField = async (key: string, value: any) => {
-    const newMetadata = { ...metadata, [key]: value };
+  const updateMetadataFields = async (updates: Record<string, any>) => {
+    const newMetadata = { ...metadata, ...updates };
     await saveField('metadata', newMetadata);
     setLastSaved(new Date());
     onUpdate();
@@ -650,8 +650,10 @@ const SessionDocumentView = ({
               acupoints={appointment.acupoints} 
               brainZoneOptions={brainZoneOptions} 
               inhibitedFindings={inhibitedFindings}
-              updateMetadataField={updateMetadataField} 
+              updateMetadataFields={updateMetadataFields} 
               saveField={saveField} 
+              onTogglePatternItem={handleTogglePatternItem}
+              appointment={appointment}
             />
           </section>
 

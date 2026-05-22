@@ -79,8 +79,8 @@ interface SessionDocumentViewProps {
 }
 
 const SectionHeader = ({ id, title, subtitle }: { id: string, title: string, subtitle?: string }) => (
-  <div id={id} className="border-b-2 border-black pb-1 mb-6 mt-28 first:mt-0 scroll-mt-24">
-    <h2 className="text-2xl font-black uppercase tracking-tighter">{title}</h2>
+  <div id={id} className="border-b-2 border-black pb-1 mb-6 mt-16 md:mt-28 first:mt-0 scroll-mt-24">
+    <h2 className="text-xl md:text-2xl font-black uppercase tracking-tighter">{title}</h2>
     {subtitle && <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">{subtitle}</p>}
   </div>
 );
@@ -379,7 +379,7 @@ const SessionDocumentView = ({
         } catch (err) {
           showError("Failed to update muscle status");
         }
-        setLastSaved(new Date());
+          setLastSaved(new Date());
         onUpdate();
       };
       runUpdate();
@@ -424,24 +424,24 @@ const SessionDocumentView = ({
   return (
     <div className="bg-white min-h-screen text-black font-sans pb-40 print:p-0 print:m-0">
       {/* Document Controls */}
-      <div className="sticky top-0 z-50 bg-white/95 backdrop-blur-md print:hidden">
-        <div className="px-6 py-3 flex items-center justify-between">
-          <div className="flex items-center gap-6">
-            <Button variant="ghost" size="sm" onClick={onClose} className="rounded-none h-9 px-4 font-black text-[10px] uppercase tracking-widest border border-black hover:bg-black hover:text-white transition-all">
-              <ArrowLeft size={14} className="mr-2" /> Exit
+      <div className="sticky top-0 z-50 bg-white/95 backdrop-blur-md print:hidden border-b border-slate-200">
+        <div className="px-4 md:px-6 py-3 flex items-center justify-between gap-4">
+          <div className="flex items-center gap-2 md:gap-6 min-w-0">
+            <Button variant="ghost" size="sm" onClick={onClose} className="rounded-none h-9 px-2 md:px-4 font-black text-[10px] uppercase tracking-widest border border-black hover:bg-black hover:text-white transition-all shrink-0">
+              <ArrowLeft size={14} className="mr-1 md:mr-2" /> <span className="hidden sm:inline">Exit</span>
             </Button>
-            <div className="flex flex-col">
-              <span className="text-[10px] font-black uppercase tracking-widest text-slate-400">Clinical Record</span>
+            <div className="flex flex-col min-w-0">
+              <span className="text-[8px] md:text-[10px] font-black uppercase tracking-widest text-slate-400">Clinical Record</span>
               
               {/* Live Client Switcher Dropdown */}
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                  <button className="flex items-center gap-1.5 hover:bg-slate-100 px-2 py-0.5 -ml-2 rounded-lg transition-colors text-left group">
-                    <span className="text-sm font-black text-slate-900">{appointment.clients.name}</span>
-                    <ChevronDown size={14} className="text-slate-400 group-hover:text-slate-900 transition-colors" />
+                  <button className="flex items-center gap-1.5 hover:bg-slate-100 px-2 py-0.5 -ml-2 rounded-lg transition-colors text-left group min-w-0">
+                    <span className="text-xs md:text-sm font-black text-slate-900 truncate">{appointment.clients.name}</span>
+                    <ChevronDown size={14} className="text-slate-400 group-hover:text-slate-900 transition-colors shrink-0" />
                   </button>
                 </DropdownMenuTrigger>
-                <DropdownMenuContent align="start" className="w-80 max-h-[450px] overflow-y-auto rounded-2xl p-2 shadow-3xl border-none bg-white dark:bg-slate-900 z-[100]">
+                <DropdownMenuContent align="start" className="w-72 md:w-80 max-h-[450px] overflow-y-auto rounded-2xl p-2 shadow-3xl border-none bg-white dark:bg-slate-900 z-[100]">
                   {loadingAppointments ? (
                     <div className="py-6 flex justify-center"><Loader2 className="animate-spin text-indigo-600" size={20} /></div>
                   ) : (
@@ -534,7 +534,7 @@ const SessionDocumentView = ({
             
             {/* Editable Status Dropdown */}
             <Select value={appointment.status} onValueChange={(newStatus) => saveField('status', newStatus)}>
-              <SelectTrigger className="h-7 w-auto min-w-[100px] text-[8px] font-black uppercase tracking-widest border border-black rounded-none bg-white px-2 py-0.5 focus:ring-0 focus:ring-offset-0">
+              <SelectTrigger className="h-7 w-auto min-w-[80px] md:min-w-[100px] text-[8px] font-black uppercase tracking-widest border border-black rounded-none bg-white px-1.5 md:px-2 py-0.5 focus:ring-0 focus:ring-offset-0 shrink-0">
                 <SelectValue placeholder={appointment.status} />
               </SelectTrigger>
               <SelectContent className="rounded-none border border-black shadow-2xl bg-white">
@@ -559,7 +559,7 @@ const SessionDocumentView = ({
             <button onClick={() => scrollTo('e2-sec')} className="hover:text-black transition-colors">E</button>
           </div>
 
-          <div className="flex items-center gap-6">
+          <div className="flex items-center gap-2 md:gap-6 shrink-0">
             {/* Live Current Time Display */}
             <div className="text-right hidden sm:block">
               <p className="text-[8px] font-black text-slate-400 uppercase tracking-widest">Current Time</p>
@@ -571,14 +571,14 @@ const SessionDocumentView = ({
               <p className="text-[10px] font-bold tabular-nums">{format(lastSaved, "HH:mm:ss")}</p>
             </div>
             {appointment.notion_link && (
-              <Button asChild variant="outline" size="sm" className="rounded-none border-black font-black text-[10px] uppercase tracking-widest h-9 px-4 hover:bg-slate-50">
+              <Button asChild variant="outline" size="sm" className="rounded-none border-black font-black text-[10px] uppercase tracking-widest h-9 px-2 md:px-4 hover:bg-slate-50 hidden sm:inline-flex">
                 <a href={appointment.notion_link} target="_blank" rel="noopener noreferrer">
-                  <ExternalLink size={14} className="mr-2" /> Notion
+                  <ExternalLink size={14} className="mr-1 md:mr-2" /> Notion
                 </a>
               </Button>
             )}
-            <Button variant="outline" size="sm" onClick={() => window.print()} className="rounded-none border-black font-black text-[10px] uppercase tracking-widest h-9 px-4 hover:bg-slate-50">
-              <Printer size={14} className="mr-2" /> Print
+            <Button variant="outline" size="sm" onClick={() => window.print()} className="rounded-none border-black font-black text-[10px] uppercase tracking-widest h-9 px-2 md:px-4 hover:bg-slate-50 hidden sm:inline-flex">
+              <Printer size={14} className="mr-1 md:mr-2" /> Print
             </Button>
 
             {/* Full Screen Toggle (Arrows Only) */}
@@ -586,7 +586,7 @@ const SessionDocumentView = ({
               variant="outline"
               size="icon"
               onClick={toggleFullScreen}
-              className="h-9 w-9 rounded-none border-black text-black hover:bg-slate-50"
+              className="h-9 w-9 rounded-none border-black text-black hover:bg-slate-50 shrink-0"
               title="Toggle Full Screen (Alt + F)"
             >
               {isFullScreen ? <Minimize2 size={16} /> : <Maximize2 size={16} />}
@@ -604,7 +604,7 @@ const SessionDocumentView = ({
       </div>
 
       {/* Split Layout: Sidebar + Document + Right Sidebar */}
-      <div className="w-full px-6 flex gap-12 items-start justify-start pt-8 print:block print:p-0">
+      <div className="w-full px-4 md:px-6 flex gap-6 lg:gap-12 items-start justify-start pt-8 print:block print:p-0">
         
         {/* Left Sidebar: Outline & Corrections Guide */}
         <DocumentSidebar 
@@ -615,7 +615,7 @@ const SessionDocumentView = ({
         />
 
         {/* Right Side: The Document */}
-        <div className="flex-1 max-w-[850px] bg-white border-none md:border md:border-slate-200 md:shadow-sm p-6 sm:p-10 md:p-16 min-h-[1056px] print:border-none print:p-0">
+        <div className="flex-1 w-full max-w-[850px] mx-auto bg-white border-none md:border md:border-slate-200 md:shadow-sm p-4 sm:p-10 md:p-16 min-h-[1056px] print:border-none print:p-0">
           {/* Header */}
           <DocumentHeader 
             clientName={appointment.clients.name} 

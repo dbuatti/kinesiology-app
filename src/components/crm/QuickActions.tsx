@@ -37,14 +37,14 @@ const QuickActions = () => {
 
   return (
     <>
-      <div className="fixed bottom-10 right-10 z-50 print:hidden flex flex-col items-end gap-5">
+      <div className="fixed bottom-6 right-6 md:bottom-10 md:right-10 z-50 print:hidden flex items-center gap-3 md:gap-5">
         <Tooltip>
           <TooltipTrigger asChild>
             <DropdownMenu open={isOpen} onOpenChange={setIsOpen}>
               <DropdownMenuTrigger asChild>
-                <div className="flex items-center gap-4 group cursor-pointer">
+                <div className="flex items-center gap-3 md:gap-4 group cursor-pointer">
                   <span className={cn(
-                    "bg-slate-900 text-white px-6 py-3 rounded-2xl text-[10px] font-black uppercase tracking-[0.3em] shadow-3xl transition-all duration-700",
+                    "bg-slate-900 text-white px-4 py-2 md:px-6 md:py-3 rounded-xl md:rounded-2xl text-[9px] md:text-[10px] font-black uppercase tracking-[0.3em] shadow-3xl transition-all duration-700",
                     isOpen ? "opacity-0 translate-x-6" : "opacity-100 translate-x-0"
                   )}>
                     Quick Actions
@@ -52,47 +52,47 @@ const QuickActions = () => {
                   <Button
                     size="lg"
                     className={cn(
-                      "h-16 w-16 md:h-20 md:w-20 rounded-[2rem] md:rounded-[2.5rem] shadow-3xl bg-indigo-600 hover:bg-indigo-700 transition-all duration-700",
+                      "h-12 w-12 md:h-16 md:w-16 rounded-2xl md:rounded-[2rem] shadow-3xl bg-indigo-600 hover:bg-indigo-700 transition-all duration-700",
                       isOpen ? "rotate-45 scale-110" : "hover:scale-110 hover:rotate-90"
                     )}
                   >
-                    <Plus size={36} strokeWidth={3} />
+                    <Plus size={24} className="md:w-8 md:h-8" strokeWidth={3} />
                   </Button>
                 </div>
               </DropdownMenuTrigger>
-              <DropdownMenuContent align="end" className="w-80 p-4 rounded-[2.5rem] shadow-3xl border-none mb-8 animate-in slide-in-from-bottom-4 duration-500 bg-white dark:bg-slate-900">
-                <div className="px-3 py-2 mb-4">
-                  <p className="text-[10px] font-black text-slate-400 uppercase tracking-[0.4em]">Clinical Command</p>
+              <DropdownMenuContent align="end" className="w-72 md:w-80 p-3 md:p-4 rounded-[2rem] shadow-3xl border-none mb-4 md:mb-8 animate-in slide-in-from-bottom-4 duration-500 bg-white dark:bg-slate-900">
+                <div className="px-3 py-1.5 md:py-2 mb-2 md:mb-4">
+                  <p className="text-[9px] font-black text-slate-400 uppercase tracking-[0.4em]">Clinical Command</p>
                 </div>
                 
                 <DropdownMenuItem 
                   onClick={() => { navigate("/practice/calibrate"); setIsOpen(false); }} 
-                  className="rounded-2xl py-5 px-6 cursor-pointer group transition-all hover:bg-amber-50"
+                  className="rounded-2xl py-4 px-5 md:py-5 md:px-6 cursor-pointer group transition-all hover:bg-amber-50"
                 >
-                  <div className="w-12 h-12 rounded-xl bg-amber-50 flex items-center justify-center mr-5 group-hover:bg-amber-100 transition-colors shadow-inner">
-                    <Zap size={24} className="text-amber-600" />
+                  <div className="w-10 h-10 md:w-12 md:h-12 rounded-xl bg-amber-50 flex items-center justify-center mr-4 md:mr-5 group-hover:bg-amber-100 transition-colors shadow-inner">
+                    <Zap size={20} className="text-amber-600 md:w-6 md:h-6" />
                   </div>
-                  <div className="flex-1">
-                    <span className="font-black text-base block text-slate-900">Quick Calibrate</span>
-                    <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Instant Pathway Logic</span>
+                  <div className="flex-1 min-w-0">
+                    <span className="font-black text-sm md:text-base block text-slate-900 truncate">Quick Calibrate</span>
+                    <span className="text-[9px] md:text-[10px] font-bold text-slate-400 uppercase tracking-widest truncate block">Instant Pathway Logic</span>
                   </div>
                   <kbd className="hidden md:inline-flex ml-auto pointer-events-none h-5 select-none items-center gap-1 rounded border bg-slate-100 px-1.5 font-mono text-[10px] font-black text-slate-600">
                     ⌘Q
                   </kbd>
                 </DropdownMenuItem>
 
-                <DropdownMenuSeparator className="my-3 bg-slate-100" />
+                <DropdownMenuSeparator className="my-2 md:my-3 bg-slate-100" />
 
                 <DropdownMenuItem 
                   onClick={() => { setClientDialogOpen(true); setIsOpen(false); }} 
-                  className="rounded-2xl py-5 px-6 cursor-pointer group transition-all hover:bg-indigo-50"
+                  className="rounded-2xl py-4 px-5 md:py-5 md:px-6 cursor-pointer group transition-all hover:bg-indigo-50"
                 >
-                  <div className="w-12 h-12 rounded-xl bg-indigo-50 flex items-center justify-center mr-5 group-hover:bg-indigo-100 transition-colors shadow-inner">
-                    <UserPlus size={24} className="text-indigo-600" />
+                  <div className="w-10 h-10 md:w-12 md:h-12 rounded-xl bg-indigo-50 flex items-center justify-center mr-4 md:mr-5 group-hover:bg-indigo-100 transition-colors shadow-inner">
+                    <UserPlus size={20} className="text-indigo-600 md:w-6 md:h-6" />
                   </div>
-                  <div className="flex-1">
-                    <span className="font-black text-base block text-slate-900">New Client</span>
-                    <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Add to database</span>
+                  <div className="flex-1 min-w-0">
+                    <span className="font-black text-sm md:text-base block text-slate-900 truncate">New Client</span>
+                    <span className="text-[9px] md:text-[10px] font-bold text-slate-400 uppercase tracking-widest truncate block">Add to database</span>
                   </div>
                   <kbd className="hidden md:inline-flex ml-auto pointer-events-none h-5 select-none items-center gap-1 rounded border bg-slate-100 px-1.5 font-mono text-[10px] font-black text-slate-600">
                     ⌘N
@@ -101,50 +101,50 @@ const QuickActions = () => {
 
                 <DropdownMenuItem 
                   onClick={() => { setAppointmentDialogOpen(true); setIsOpen(false); }} 
-                  className="rounded-2xl py-5 px-6 cursor-pointer group transition-all hover:bg-rose-50"
+                  className="rounded-2xl py-4 px-5 md:py-5 md:px-6 cursor-pointer group transition-all hover:bg-rose-50"
                 >
-                  <div className="w-12 h-12 rounded-xl bg-rose-50 flex items-center justify-center mr-5 group-hover:bg-rose-100 transition-colors shadow-inner">
-                    <CalendarPlus size={24} className="text-rose-600" />
+                  <div className="w-10 h-10 md:w-12 md:h-12 rounded-xl bg-rose-50 flex items-center justify-center mr-4 md:mr-5 group-hover:bg-rose-100 transition-colors shadow-inner">
+                    <CalendarPlus size={20} className="text-rose-600 md:w-6 md:h-6" />
                   </div>
-                  <div className="flex-1">
-                    <span className="font-black text-base block text-slate-900">Book Session</span>
-                    <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Schedule appointment</span>
+                  <div className="flex-1 min-w-0">
+                    <span className="font-black text-sm md:text-base block text-slate-900 truncate">Book Session</span>
+                    <span className="text-[9px] md:text-[10px] font-bold text-slate-400 uppercase tracking-widest truncate block">Schedule appointment</span>
                   </div>
                   <kbd className="hidden md:inline-flex ml-auto pointer-events-none h-5 select-none items-center gap-1 rounded border bg-slate-100 px-1.5 font-mono text-[10px] font-black text-slate-600">
                     ⌘B
                   </kbd>
                 </DropdownMenuItem>
 
-                <DropdownMenuSeparator className="my-3 bg-slate-100" />
+                <DropdownMenuSeparator className="my-2 md:my-3 bg-slate-100" />
 
                 <DropdownMenuItem 
                   onClick={() => { navigate("/practice/procedures"); setIsOpen(false); }} 
-                  className="rounded-2xl py-5 px-6 cursor-pointer group transition-all hover:bg-emerald-50"
+                  className="rounded-2xl py-4 px-5 md:py-5 md:px-6 cursor-pointer group transition-all hover:bg-emerald-50"
                 >
-                  <div className="w-12 h-12 rounded-xl bg-emerald-50 flex items-center justify-center mr-5 group-hover:bg-emerald-100 transition-colors shadow-inner">
-                    <Target size={24} className="text-emerald-600" />
+                  <div className="w-10 h-10 md:w-12 md:h-12 rounded-xl bg-emerald-50 flex items-center justify-center mr-4 md:mr-5 group-hover:bg-emerald-100 transition-colors shadow-inner">
+                    <Target size={20} className="text-emerald-600 md:w-6 md:h-6" />
                   </div>
-                  <div className="flex-1">
-                    <span className="font-black text-base block text-slate-900">Procedures</span>
-                    <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Track progress</span>
+                  <div className="flex-1 min-w-0">
+                    <span className="font-black text-sm md:text-base block text-slate-900 truncate">Procedures</span>
+                    <span className="text-[9px] md:text-[10px] font-bold text-slate-400 uppercase tracking-widest truncate block">Track progress</span>
                   </div>
                   <kbd className="hidden md:inline-flex ml-auto pointer-events-none h-5 select-none items-center gap-1 rounded border bg-slate-100 px-1.5 font-mono text-[10px] font-black text-slate-600">
                     ⌘P
                   </kbd>
                 </DropdownMenuItem>
 
-                <DropdownMenuSeparator className="my-3 bg-slate-100" />
+                <DropdownMenuSeparator className="my-2 md:my-3 bg-slate-100" />
 
                 <DropdownMenuItem 
                   onClick={() => { setHelpOpen(true); setIsOpen(false); }} 
-                  className="rounded-2xl py-5 px-6 cursor-pointer group transition-all hover:bg-slate-50"
+                  className="rounded-2xl py-4 px-5 md:py-5 md:px-6 cursor-pointer group transition-all hover:bg-slate-50"
                 >
-                  <div className="w-12 h-12 rounded-xl bg-slate-50 flex items-center justify-center mr-5 group-hover:bg-slate-100 transition-colors shadow-inner">
-                    <HelpCircle size={24} className="text-slate-400" />
+                  <div className="w-10 h-10 md:w-12 md:h-12 rounded-xl bg-slate-50 flex items-center justify-center mr-4 md:mr-5 group-hover:bg-slate-100 transition-colors shadow-inner">
+                    <HelpCircle size={20} className="text-slate-400 md:w-6 md:h-6" />
                   </div>
-                  <div className="flex-1">
-                    <span className="font-black text-base block text-slate-900">Help & Shortcuts</span>
-                    <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">View all commands</span>
+                  <div className="flex-1 min-w-0">
+                    <span className="font-black text-sm md:text-base block text-slate-900 truncate">Help & Shortcuts</span>
+                    <span className="text-[9px] md:text-[10px] font-bold text-slate-400 uppercase tracking-widest truncate block">View all commands</span>
                   </div>
                   <kbd className="hidden md:inline-flex ml-auto pointer-events-none h-5 select-none items-center gap-1 rounded border bg-slate-100 px-1.5 font-mono text-[10px] font-black text-slate-600">
                     ⌘/

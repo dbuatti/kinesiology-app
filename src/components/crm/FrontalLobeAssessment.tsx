@@ -3,13 +3,21 @@
 import React, { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Hand, Info, Save, Loader2, RotateCcw, ImageOff, CheckCircle2, Zap, RefreshCw } from "lucide-react";
+import { Hand, Info, Save, Loader2, RotateCcw, ImageOff, CheckCircle2, Zap, RefreshCw, ArrowRightLeft } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { supabase } from "@/integrations/supabase/client";
 import { showSuccess, showError } from "@/utils/toast";
 import { Textarea } from "@/components/ui/textarea";
+import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Alert, AlertDescription } from "@/components/ui/alert";
+import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { safeParse } from "@/utils/safe-json";
 
 interface FrontalLobeAssessmentProps {
@@ -28,6 +36,11 @@ const FrontalLobeAssessment = ({
   const [imageError, setImageError] = useState(false);
   const [currentStatus, setCurrentStatus] = useState<'Clear' | 'Inhibited' | 'Recheck' | null>(null);
 
+  // Structured Fields
+  const [leftHandSpeed, setLeftHandSpeed] = useState<string>("");
+  const [rightHandSpeed, setRightHandSpeed] = useState<string>("");
+  const [asymmetryDetected, setAsymmetryDetected] = useState<string>("");
+
   const imagePath = "/images/frontal-lobe-assessment.png";
 
   useEffect(() => {
@@ -45,6 +58,59 @@ const FrontalLobeAssessment = ({
     };
     fetchInitialState();
   }, [appointmentId]);
+
+  // Parse initial notes to pre-fill structured fields if possible
+  useEffect(() => {
+    if (initialNotes) {
+      const leftMatch = initialNotes.match(/Left Hand Speed:\s*([^\n,]+)/i);
+      const rightMatch = initialNotes.match(/Right Hand Speed:\s*([^\n,]+)/i);
+      const asymMatch = initialNotes.match(/Asymmetry Detected:\s*([^\n,]+)/i);
+
+      if (leftMatch) setLeftHandSpeed(leftMatch[1].trim());
+      if (rightMatch) setRightHandSpeed(rightMatch[1].trim());
+      if (asymMatch) setAsymmetryDetected(asymMatch[1].trim());
+    }
+  }, [initialNotes]);
+
+  const generateNotes = (left: string, right: string, asym: string) => {
+    let generated = "FRONTAL LOBE ASSESSMENT:\n";
+    if (left) generated += `- Left Hand Speed: ${left}/10\n`;
+    if (right) generated += `- Right Hand Speed: ${right}/10\n`;
+    if (asym) generated += `- Asymmetry Detected: ${asym}\n`;
+    
+    // Append any existing manual notes that aren't part of the structured template
+    const lines = notes.split('\n');
+    const manualLines = lines.filter(line => 
+      !line.startsWith("FRONTAL LOBE ASSESSMENT:") &&
+      !line.startsWith("- Left Hand Speed:") &&
+      !line.startsWith("- Right Hand Speed:") &&
+      !line.startsWith("- Asymmetry Detected:")
+    );
+    
+    if (manualLines.length > 0) {
+      const manualText = manualLines.join('\n').trim();
+      if (manualText) {
+        generated += `\nAdditional Observations:\n${manualText}`;
+      }
+    }
+    
+    setNotes(generated);
+  };
+
+  const handleLeftSpeedChange = (val: string) => {
+    setLeftHandSpeed(val);
+    generateNotes(val, rightHandSpeed, asymmetryDetected);
+  };
+
+  const handleRightSpeedChange = (val: string) => {
+    setRightHandSpeed(val);
+    generateNotes(leftHandSpeed, val, asymmetryDetected);
+  };
+
+  const handleAsymChange = (val: string) => {
+    setAsymmetryDetected(val);
+    generateNotes(leftHandSpeed, rightHandSpeed, val);
+  };
 
   const handleSetStatus = async (status: 'Clear' | 'Inhibited' | 'Recheck') => {
     setLoading(true);
@@ -102,6 +168,9 @@ const FrontalLobeAssessment = ({
       }).eq("id", appointmentId);
       
       setNotes('');
+      setLeftHandSpeed('');
+      setRightHandSpeed('');
+      setAsymmetryDetected('');
       setCurrentStatus(null);
       showSuccess("Data reset.");
       onUpdate();
@@ -158,7 +227,7 @@ const FrontalLobeAssessment = ({
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <div className="space-y-4">
+        <div className="space-y-6">
           <div className="bg-indigo-50 border-2 border-indigo-200 rounded-xl p-4">
             <h3 className="text-lg font-bold text-indigo-900 mb-3 flex items-center gap-2">
               <Hand size={20} className="text-indigo-600" />
@@ -186,6 +255,48 @@ const FrontalLobeAssessment = ({
               <li>Client repeats with the right hand.</li>
               <li>Compare performance between the two hands.</li>
             </ol>
+          </div>
+
+          {/* Structured Clinical Fields */}
+          <div className="p-6 bg-slate-50 rounded-2xl border border-slate-100 space-y-4">
+            <h4 className="text-xs font-black text-slate-400 uppercase tracking-widest flex items-center gap-2">
+              <ArrowRightLeft size={14} className="text-indigo-500" /> Clinical Metrics
+            </h4>
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+              <div className="space-y-2">
+                <Label className="text-[10px] font-black uppercase tracking-widest text-slate-500">Left Hand Speed</Label>
+                <Select value={leftHandSpeed} onValueChange={handleLeftSpeedChange}>
+                  <SelectTrigger className="h-10 rounded-xl font-bold text-xs bg-white">
+                    <SelectValue placeholder="Rate 1-10" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {Array.from({ length: 10 }).map((_, i) => (
+                      <SelectItem key={i + 1} value={(i + 1).toString()}>{i + 1}/10</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="space-y-2">
+                <Label className="text-[10px] font-black uppercase tracking-widest text-slate-500">Right Hand Speed</Label>
+                <Select value={rightHandSpeed} onValueChange={handleRightSpeedChange}>
+                  <SelectTrigger className="h-10 rounded-xl font-bold text-xs bg-white">
+                    <SelectValue placeholder="Rate 1-10" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {Array.from({ length: 10 }).map((_, i) => (
+                      <SelectItem key={i + 1} value={(i + 1).toString()}>{i + 1}/10</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="space-y-2">
+                <Label className="text-[10px] font-black uppercase tracking-widest text-slate-500">Asymmetry</Label>
+                <ToggleGroup type="single" value={asymmetryDetected} onValueChange={handleAsymChange} className="justify-start gap-1">
+                  <ToggleGroupItem value="Yes" className="rounded-lg border border-slate-200 text-xs font-bold px-3 py-1.5">Yes</ToggleGroupItem>
+                  <ToggleGroupItem value="No" className="rounded-lg border border-slate-200 text-xs font-bold px-3 py-1.5">No</ToggleGroupItem>
+                </ToggleGroup>
+              </div>
+            </div>
           </div>
         </div>
 

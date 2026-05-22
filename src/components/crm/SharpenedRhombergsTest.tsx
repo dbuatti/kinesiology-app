@@ -3,12 +3,14 @@
 import React, { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Scale, Info, Save, Loader2, RotateCcw, ImageOff, CheckCircle2, Zap, RefreshCw } from "lucide-react";
+import { Scale, Info, Save, Loader2, RotateCcw, ImageOff, CheckCircle2, Zap, RefreshCw, ArrowRightLeft } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { supabase } from "@/integrations/supabase/client";
 import { showSuccess, showError } from "@/utils/toast";
 import { Textarea } from "@/components/ui/textarea";
+import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { safeParse } from "@/utils/safe-json";
 
@@ -28,6 +30,11 @@ const SharpenedRhombergsTest = ({
   const [imageError, setImageError] = useState(false);
   const [currentStatus, setCurrentStatus] = useState<'Clear' | 'Inhibited' | 'Recheck' | null>(null);
 
+  // Structured Fields
+  const [eyesOpenTime, setEyesOpenTime] = useState<string>("");
+  const [eyesClosedTime, setEyesClosedTime] = useState<string>("");
+  const [swayDirection, setSwayDirection] = useState<string>("");
+
   const imagePath = "/images/sharpened-rhombergs-test.png";
 
   useEffect(() => {
@@ -45,6 +52,59 @@ const SharpenedRhombergsTest = ({
     };
     fetchInitialState();
   }, [appointmentId]);
+
+  // Parse initial notes to pre-fill structured fields if possible
+  useEffect(() => {
+    if (initialNotes) {
+      const openMatch = initialNotes.match(/Eyes Open Hold Time:\s*([^\n,s]+)/i);
+      const closedMatch = initialNotes.match(/Eyes Closed Hold Time:\s*([^\n,s]+)/i);
+      const swayMatch = initialNotes.match(/Sway Direction:\s*([^\n,]+)/i);
+
+      if (openMatch) setEyesOpenTime(openMatch[1].trim());
+      if (closedMatch) setEyesClosedTime(closedMatch[1].trim());
+      if (swayMatch) setSwayDirection(swayMatch[1].trim());
+    }
+  }, [initialNotes]);
+
+  const generateNotes = (open: string, closed: string, sway: string) => {
+    let generated = "SHARPENED ROMBERG'S TEST ASSESSMENT:\n";
+    if (open) generated += `- Eyes Open Hold Time: ${open}s\n`;
+    if (closed) generated += `- Eyes Closed Hold Time: ${closed}s\n`;
+    if (sway) generated += `- Sway Direction: ${sway}\n`;
+    
+    // Append any existing manual notes that aren't part of the structured template
+    const lines = notes.split('\n');
+    const manualLines = lines.filter(line => 
+      !line.startsWith("SHARPENED ROMBERG'S TEST ASSESSMENT:") &&
+      !line.startsWith("- Eyes Open Hold Time:") &&
+      !line.startsWith("- Eyes Closed Hold Time:") &&
+      !line.startsWith("- Sway Direction:")
+    );
+    
+    if (manualLines.length > 0) {
+      const manualText = manualLines.join('\n').trim();
+      if (manualText) {
+        generated += `\nAdditional Observations:\n${manualText}`;
+      }
+    }
+    
+    setNotes(generated);
+  };
+
+  const handleOpenTimeChange = (val: string) => {
+    setEyesOpenTime(val);
+    generateNotes(val, eyesClosedTime, swayDirection);
+  };
+
+  const handleClosedTimeChange = (val: string) => {
+    setEyesClosedTime(val);
+    generateNotes(eyesOpenTime, val, swayDirection);
+  };
+
+  const handleSwayChange = (val: string) => {
+    setSwayDirection(val);
+    generateNotes(eyesOpenTime, eyesClosedTime, val);
+  };
 
   const handleSetStatus = async (status: 'Clear' | 'Inhibited' | 'Recheck') => {
     setLoading(true);
@@ -102,6 +162,9 @@ const SharpenedRhombergsTest = ({
       }).eq("id", appointmentId);
       
       setNotes('');
+      setEyesOpenTime('');
+      setEyesClosedTime('');
+      setSwayDirection('');
       setCurrentStatus(null);
       showSuccess("Data reset.");
       onUpdate();
@@ -158,7 +221,7 @@ const SharpenedRhombergsTest = ({
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <div className="space-y-4">
+        <div className="space-y-6">
           <div className="bg-purple-50 border-2 border-purple-200 rounded-xl p-4">
             <h3 className="text-lg font-bold text-purple-900 mb-3 flex items-center gap-2">
               <Scale size={20} className="text-purple-600" />
@@ -187,6 +250,38 @@ const SharpenedRhombergsTest = ({
               <li>Close the eyes.</li>
               <li>Maintain posture for a minimum of 20 seconds.</li>
             </ol>
+          </div>
+
+          {/* Structured Clinical Fields */}
+          <div className="p-6 bg-slate-50 rounded-2xl border border-slate-100 space-y-4">
+            <h4 className="text-xs font-black text-slate-400 uppercase tracking-widest flex items-center gap-2">
+              <ArrowRightLeft size={14} className="text-indigo-500" /> Clinical Metrics
+            </h4>
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+              <div className="space-y-2">
+                <Label className="text-[10px] font-black uppercase tracking-widest text-slate-500">Eyes Open Hold</Label>
+                <div className="relative">
+                  <Input type="number" placeholder="e.g. 30" value={eyesOpenTime} onChange={(e) => handleOpenTimeChange(e.target.value)} className="h-10 rounded-xl pr-8 text-xs font-bold" />
+                  <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs font-bold text-slate-400">s</span>
+                </div>
+              </div>
+              <div className="space-y-2">
+                <Label className="text-[10px] font-black uppercase tracking-widest text-slate-500">Eyes Closed Hold</Label>
+                <div className="relative">
+                  <Input type="number" placeholder="e.g. 15" value={eyesClosedTime} onChange={(e) => handleClosedTimeChange(e.target.value)} className="h-10 rounded-xl pr-8 text-xs font-bold" />
+                  <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs font-bold text-slate-400">s</span>
+                </div>
+              </div>
+              <div className="space-y-2">
+                <Label className="text-[10px] font-black uppercase tracking-widest text-slate-500">Sway Direction</Label>
+                <ToggleGroup type="single" value={swayDirection} onValueChange={handleSwayChange} className="justify-start gap-1">
+                  <ToggleGroupItem value="Left" className="rounded-lg border border-slate-200 text-xs font-bold px-2 py-1.5">L</ToggleGroupItem>
+                  <ToggleGroupItem value="Right" className="rounded-lg border border-slate-200 text-xs font-bold px-2 py-1.5">R</ToggleGroupItem>
+                  <ToggleGroupItem value="Anterior" className="rounded-lg border border-slate-200 text-xs font-bold px-2 py-1.5">Ant</ToggleGroupItem>
+                  <ToggleGroupItem value="Posterior" className="rounded-lg border border-slate-200 text-xs font-bold px-2 py-1.5">Post</ToggleGroupItem>
+                </ToggleGroup>
+              </div>
+            </div>
           </div>
         </div>
 

@@ -3,12 +3,14 @@
 import React, { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Eye, EyeOff, Info, Save, Loader2, RotateCcw, Zap, Activity, RefreshCw, CheckCircle2 } from "lucide-react";
+import { Eye, EyeOff, Info, Save, Loader2, RotateCcw, Zap, Activity, RefreshCw, CheckCircle2, ArrowRightLeft } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { supabase } from "@/integrations/supabase/client";
 import { showSuccess, showError } from "@/utils/toast";
 import { Textarea } from "@/components/ui/textarea";
+import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { safeParse } from "@/utils/safe-json";
 
@@ -28,6 +30,11 @@ const RightingReflexesAssessment = ({
   const [activeTest, setActiveTest] = useState<'ocular' | 'labyrinthine'>('ocular');
   const [currentStatus, setCurrentStatus] = useState<'Clear' | 'Inhibited' | 'Recheck' | null>(null);
 
+  // Structured Fields
+  const [ocularStatus, setOcularStatus] = useState<string>("");
+  const [labyrinthineStatus, setLabyrinthineStatus] = useState<string>("");
+  const [headTiltAngle, setHeadTiltAngle] = useState<string>("");
+
   useEffect(() => {
     const fetchInitialState = async () => {
       try {
@@ -43,6 +50,59 @@ const RightingReflexesAssessment = ({
     };
     fetchInitialState();
   }, [appointmentId]);
+
+  // Parse initial notes to pre-fill structured fields if possible
+  useEffect(() => {
+    if (initialNotes) {
+      const ocularMatch = initialNotes.match(/Ocular Righting:\s*([^\n,]+)/i);
+      const labMatch = initialNotes.match(/Labyrinthine Righting:\s*([^\n,]+)/i);
+      const tiltMatch = initialNotes.match(/Head Tilt Angle:\s*([^\n,°]+)/i);
+
+      if (ocularMatch) setOcularStatus(ocularMatch[1].trim());
+      if (labMatch) setLabyrinthineStatus(labMatch[1].trim());
+      if (tiltMatch) setHeadTiltAngle(tiltMatch[1].trim());
+    }
+  }, [initialNotes]);
+
+  const generateNotes = (ocular: string, lab: string, tilt: string) => {
+    let generated = "RIGHTING REFLEXES ASSESSMENT:\n";
+    if (ocular) generated += `- Ocular Righting: ${ocular}\n`;
+    if (lab) generated += `- Labyrinthine Righting: ${lab}\n`;
+    if (tilt) generated += `- Head Tilt Angle: ${tilt}°\n`;
+    
+    // Append any existing manual notes that aren't part of the structured template
+    const lines = notes.split('\n');
+    const manualLines = lines.filter(line => 
+      !line.startsWith("RIGHTING REFLEXES ASSESSMENT:") &&
+      !line.startsWith("- Ocular Righting:") &&
+      !line.startsWith("- Labyrinthine Righting:") &&
+      !line.startsWith("- Head Tilt Angle:")
+    );
+    
+    if (manualLines.length > 0) {
+      const manualText = manualLines.join('\n').trim();
+      if (manualText) {
+        generated += `\nAdditional Observations:\n${manualText}`;
+      }
+    }
+    
+    setNotes(generated);
+  };
+
+  const handleOcularChange = (val: string) => {
+    setOcularStatus(val);
+    generateNotes(val, labyrinthineStatus, headTiltAngle);
+  };
+
+  const handleLabyrinthineChange = (val: string) => {
+    setLabyrinthineStatus(val);
+    generateNotes(ocularStatus, val, headTiltAngle);
+  };
+
+  const handleTiltChange = (val: string) => {
+    setHeadTiltAngle(val);
+    generateNotes(ocularStatus, labyrinthineStatus, val);
+  };
 
   const handleSetStatus = async (status: 'Clear' | 'Inhibited' | 'Recheck') => {
     setLoading(true);
@@ -100,6 +160,9 @@ const RightingReflexesAssessment = ({
       }).eq("id", appointmentId);
       
       setNotes('');
+      setOcularStatus('');
+      setLabyrinthineStatus('');
+      setHeadTiltAngle('');
       setCurrentStatus(null);
       showSuccess("Data reset.");
       onUpdate();
@@ -188,6 +251,36 @@ const RightingReflexesAssessment = ({
               <div className="p-4 bg-slate-50 rounded-xl border border-slate-100">
                 <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2">Expected Response</p>
                 <p className="text-sm font-bold text-slate-800">Head should reflexivey tilt back towards the midline/horizon.</p>
+              </div>
+            </div>
+          </div>
+
+          {/* Structured Clinical Fields */}
+          <div className="p-6 bg-slate-50 rounded-2xl border border-slate-100 space-y-4">
+            <h4 className="text-xs font-black text-slate-400 uppercase tracking-widest flex items-center gap-2">
+              <ArrowRightLeft size={14} className="text-indigo-500" /> Clinical Metrics
+            </h4>
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+              <div className="space-y-2">
+                <Label className="text-[10px] font-black uppercase tracking-widest text-slate-500">Ocular Righting</Label>
+                <ToggleGroup type="single" value={ocularStatus} onValueChange={handleOcularChange} className="justify-start gap-1">
+                  <ToggleGroupItem value="Pass" className="rounded-lg border border-slate-200 text-xs font-bold px-2 py-1.5">Pass</ToggleGroupItem>
+                  <ToggleGroupItem value="Fail" className="rounded-lg border border-slate-200 text-xs font-bold px-2 py-1.5">Fail</ToggleGroupItem>
+                </ToggleGroup>
+              </div>
+              <div className="space-y-2">
+                <Label className="text-[10px] font-black uppercase tracking-widest text-slate-500">Labyrinthine</Label>
+                <ToggleGroup type="single" value={labyrinthineStatus} onValueChange={handleLabyrinthineChange} className="justify-start gap-1">
+                  <ToggleGroupItem value="Pass" className="rounded-lg border border-slate-200 text-xs font-bold px-2 py-1.5">Pass</ToggleGroupItem>
+                  <ToggleGroupItem value="Fail" className="rounded-lg border border-slate-200 text-xs font-bold px-2 py-1.5">Fail</ToggleGroupItem>
+                </ToggleGroup>
+              </div>
+              <div className="space-y-2">
+                <Label className="text-[10px] font-black uppercase tracking-widest text-slate-500">Head Tilt Angle</Label>
+                <div className="relative">
+                  <Input type="number" placeholder="e.g. 15" value={headTiltAngle} onChange={(e) => handleTiltChange(e.target.value)} className="h-10 rounded-xl pr-8 text-xs font-bold" />
+                  <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs font-bold text-slate-400">°</span>
+                </div>
               </div>
             </div>
           </div>

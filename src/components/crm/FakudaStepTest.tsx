@@ -3,12 +3,13 @@
 import React, { useState, useEffect, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Footprints, Info, Save, Loader2, RotateCcw, Plus, Target, Upload, X, ImageIcon, CheckCircle2, Zap, RefreshCw } from "lucide-react";
+import { Footprints, Info, Save, Loader2, RotateCcw, Plus, Target, Upload, X, ImageIcon, CheckCircle2, Zap, RefreshCw, ArrowRightLeft, Move } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { showSuccess, showError } from "@/utils/toast";
 import { Textarea } from "@/components/ui/textarea";
+import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Alert, AlertDescription } from "@/components/ui/alert";
+import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import { cn } from "@/lib/utils";
 import { safeParse } from "@/utils/safe-json";
 
@@ -60,7 +61,7 @@ const ImageZone = ({
         .getPublicUrl(filePath);
 
       const cacheBustedUrl = `${publicUrl}?t=${Date.now()}`;
-      const dbField = type === 'primary' ? 'image_url' : type === 'secondary' ? 'secondary_image_url' : 'tertiary_image_url';
+      const dbField = type === 'primary' ? 'image_url' : 'secondary_image_url';
 
       const { error: dbError } = await supabase
         .from('brain_reflex_customizations')
@@ -83,12 +84,12 @@ const ImageZone = ({
 
   const handleRemove = async (e: React.MouseEvent) => {
     e.stopPropagation();
-    if (!confirm(`Remove this image?`)) return;
+    if (!confirm("Remove this image?")) return;
 
     try {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) return;
-      const dbField = type === 'primary' ? 'image_url' : type === 'secondary' ? 'secondary_image_url' : 'tertiary_image_url';
+      const dbField = type === 'primary' ? 'image_url' : 'secondary_image_url';
       const { error } = await supabase
         .from('brain_reflex_customizations')
         .update({ [dbField]: null })
@@ -156,6 +157,11 @@ const FakudaStepTest = ({
     secondary: "/images/fakuda-2.png"
   });
 
+  // Structured Fields
+  const [driftDirection, setDriftDirection] = useState<string>("");
+  const [angleRotation, setAngleRotation] = useState<string>("");
+  const [distanceDisplaced, setDistanceDisplaced] = useState<string>("");
+
   useEffect(() => {
     const fetchInitialState = async () => {
       try {
@@ -181,6 +187,59 @@ const FakudaStepTest = ({
     };
     fetchInitialState();
   }, [appointmentId]);
+
+  // Parse initial notes to pre-fill structured fields if possible
+  useEffect(() => {
+    if (initialFakudaNotes) {
+      const driftMatch = initialFakudaNotes.match(/Drift Direction:\s*([^\n,]+)/i);
+      const angleMatch = initialFakudaNotes.match(/Angle of Rotation:\s*([^\n,°]+)/i);
+      const distMatch = initialFakudaNotes.match(/Distance Displaced:\s*([^\n,cm]+)/i);
+
+      if (driftMatch) setDriftDirection(driftMatch[1].trim());
+      if (angleMatch) setAngleRotation(angleMatch[1].trim());
+      if (distMatch) setDistanceDisplaced(distMatch[1].trim());
+    }
+  }, [initialFakudaNotes]);
+
+  const generateNotes = (drift: string, angle: string, dist: string) => {
+    let generated = "FUKUDA STEP TEST ASSESSMENT:\n";
+    if (drift) generated += `- Drift Direction: ${drift}\n`;
+    if (angle) generated += `- Angle of Rotation: ${angle}°\n`;
+    if (dist) generated += `- Distance Displaced: ${dist} cm\n`;
+    
+    // Append any existing manual notes that aren't part of the structured template
+    const lines = fakudaNotes.split('\n');
+    const manualLines = lines.filter(line => 
+      !line.startsWith("FUKUDA STEP TEST ASSESSMENT:") &&
+      !line.startsWith("- Drift Direction:") &&
+      !line.startsWith("- Angle of Rotation:") &&
+      !line.startsWith("- Distance Displaced:")
+    );
+    
+    if (manualLines.length > 0) {
+      const manualText = manualLines.join('\n').trim();
+      if (manualText) {
+        generated += `\nAdditional Observations:\n${manualText}`;
+      }
+    }
+    
+    setFakudaNotes(generated);
+  };
+
+  const handleDriftChange = (val: string) => {
+    setDriftDirection(val);
+    generateNotes(val, angleRotation, distanceDisplaced);
+  };
+
+  const handleAngleChange = (val: string) => {
+    setAngleRotation(val);
+    generateNotes(driftDirection, val, distanceDisplaced);
+  };
+
+  const handleDistanceChange = (val: string) => {
+    setDistanceDisplaced(val);
+    generateNotes(driftDirection, angleRotation, val);
+  };
 
   const handleSetStatus = async (status: 'Clear' | 'Inhibited' | 'Recheck') => {
     setLoading(true);
@@ -225,7 +284,7 @@ const FakudaStepTest = ({
   };
 
   const handleReset = async () => {
-    if (!confirm("Reset Fakuda Step Test data?")) return;
+    if (!confirm("Reset Fukuda Step Test data?")) return;
     setLoading(true);
     try {
       const { data: app } = await supabase.from('appointments').select('priority_pattern').eq('id', appointmentId).single();
@@ -238,6 +297,9 @@ const FakudaStepTest = ({
       }).eq("id", appointmentId);
       
       setFakudaNotes('');
+      setDriftDirection('');
+      setAngleRotation('');
+      setDistanceDisplaced('');
       setCurrentStatus(null);
       showSuccess("Data reset.");
       onUpdate();
@@ -294,14 +356,14 @@ const FakudaStepTest = ({
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <div className="space-y-4">
+        <div className="space-y-6">
           <div className="bg-green-50 border-2 border-green-200 rounded-xl overflow-hidden">
             <h3 className="text-lg font-bold text-green-900 p-4 flex items-center gap-2 border-b border-green-100">
               <Footprints size={20} className="text-green-600" />
               Test Protocol
             </h3>
             
-            <div className="grid grid-cols-2 h-[300px] bg-white border-b border-green-100">
+            <div className="grid grid-cols-2 h-[200px] bg-white border-b border-green-100">
               <ImageZone 
                 reflexId="fakuda-test" 
                 type="primary" 
@@ -322,6 +384,37 @@ const FakudaStepTest = ({
                 <li>Instruct the client to march on the spot for 30-60 seconds.</li>
                 <li>Observe final position relative to start position.</li>
               </ol>
+            </div>
+          </div>
+
+          {/* Structured Clinical Fields */}
+          <div className="p-6 bg-slate-50 rounded-2xl border border-slate-100 space-y-4">
+            <h4 className="text-xs font-black text-slate-400 uppercase tracking-widest flex items-center gap-2">
+              <ArrowRightLeft size={14} className="text-indigo-500" /> Clinical Metrics
+            </h4>
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+              <div className="space-y-2">
+                <Label className="text-[10px] font-black uppercase tracking-widest text-slate-500">Drift Direction</Label>
+                <ToggleGroup type="single" value={driftDirection} onValueChange={handleDriftChange} className="justify-start gap-1">
+                  <ToggleGroupItem value="Left" className="rounded-lg border border-slate-200 text-xs font-bold px-3 py-1.5">L</ToggleGroupItem>
+                  <ToggleGroupItem value="Right" className="rounded-lg border border-slate-200 text-xs font-bold px-3 py-1.5">R</ToggleGroupItem>
+                  <ToggleGroupItem value="Forward" className="rounded-lg border border-slate-200 text-xs font-bold px-3 py-1.5">Fwd</ToggleGroupItem>
+                </ToggleGroup>
+              </div>
+              <div className="space-y-2">
+                <Label className="text-[10px] font-black uppercase tracking-widest text-slate-500">Angle of Rotation</Label>
+                <div className="relative">
+                  <Input type="number" placeholder="e.g. 30" value={angleRotation} onChange={(e) => handleAngleChange(e.target.value)} className="h-10 rounded-xl pr-8 text-xs font-bold" />
+                  <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs font-bold text-slate-400">°</span>
+                </div>
+              </div>
+              <div className="space-y-2">
+                <Label className="text-[10px] font-black uppercase tracking-widest text-slate-500">Distance Displaced</Label>
+                <div className="relative">
+                  <Input type="number" placeholder="e.g. 50" value={distanceDisplaced} onChange={(e) => handleDistanceChange(e.target.value)} className="h-10 rounded-xl pr-10 text-xs font-bold" />
+                  <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs font-bold text-slate-400">cm</span>
+                </div>
+              </div>
             </div>
           </div>
         </div>

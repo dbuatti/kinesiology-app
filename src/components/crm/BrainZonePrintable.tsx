@@ -1,17 +1,22 @@
 "use client";
 
 import React, { useState, useEffect } from 'react';
-import { BRAIN_REFLEX_POINTS } from '@/data/brain-reflex-data';
+import { BRAIN_REFLEX_POINTS, BrainReflexPoint } from '@/data/brain-reflex-data';
 import { supabase } from "@/integrations/supabase/client";
 import { cn } from '@/lib/utils';
 import { Brain, Layers, Columns, Rows, Maximize2, Minimize2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import BrainReflexModal from './BrainReflexModal';
 
 const BrainZonePrintable = () => {
   const [orientation, setOrientation] = useState<'landscape' | 'portrait'>('portrait');
   const [isCompact, setIsCompact] = useState(true);
   const [customImages, setCustomImages] = useState<Record<string, { primary: string | null, secondary: string | null }>>({});
   const [loading, setLoading] = useState(true);
+  
+  // Modal States
+  const [selectedPoint, setSelectedPoint] = useState<BrainReflexPoint | null>(null);
+  const [modalOpen, setModalOpen] = useState(false);
 
   useEffect(() => {
     const fetchImages = async () => {
@@ -44,7 +49,12 @@ const BrainZonePrintable = () => {
   const corticalZones = BRAIN_REFLEX_POINTS.filter(p => p.category === 'Cortical');
   const subcorticalZones = BRAIN_REFLEX_POINTS.filter(p => p.category === 'Subcortical');
 
-  const ZoneCard = ({ point, color }: { point: any, color: string }) => {
+  const handleCardClick = (point: BrainReflexPoint) => {
+    setSelectedPoint(point);
+    setModalOpen(true);
+  };
+
+  const ZoneCard = ({ point, color, onClick }: { point: any, color: string, onClick: () => void }) => {
     const images = customImages[point.id];
     
     // Swap logic: Main area shows secondary (image 2) if available, otherwise primary (image 1).
@@ -53,7 +63,10 @@ const BrainZonePrintable = () => {
     const insetImage = images?.secondary ? images?.primary : null;
     
     return (
-      <div className="border border-black p-1.5 flex flex-col h-full break-inside-avoid bg-white">
+      <div 
+        onClick={onClick}
+        className="border border-black p-1.5 flex flex-col h-full break-inside-avoid bg-white cursor-pointer hover:border-indigo-500 hover:shadow-md transition-all print:cursor-default print:hover:border-black print:hover:shadow-none"
+      >
         <div className="flex items-center justify-between mb-1 border-b border-black/10 pb-1">
           <h4 className="font-black text-[9px] uppercase leading-none truncate pr-1">{point.name}</h4>
           <span className={cn("text-[7px] font-black px-1.5 py-0.5 rounded-sm text-white whitespace-nowrap leading-none shrink-0", color)}>
@@ -153,7 +166,14 @@ const BrainZonePrintable = () => {
             "grid gap-2",
             orientation === 'landscape' ? "grid-cols-4" : "grid-cols-3"
           )}>
-            {corticalZones.map(p => <ZoneCard key={p.id} point={p} color="bg-purple-600" />)}
+            {corticalZones.map(p => (
+              <ZoneCard 
+                key={p.id} 
+                point={p} 
+                color="bg-purple-600" 
+                onClick={() => handleCardClick(p)}
+              />
+            ))}
           </div>
         </div>
 
@@ -167,7 +187,14 @@ const BrainZonePrintable = () => {
             "grid gap-2",
             orientation === 'landscape' ? "grid-cols-4" : "grid-cols-3"
           )}>
-            {subcorticalZones.map(p => <ZoneCard key={p.id} point={p} color="bg-indigo-600" />)}
+            {subcorticalZones.map(p => (
+              <ZoneCard 
+                key={p.id} 
+                point={p} 
+                color="bg-indigo-600" 
+                onClick={() => handleCardClick(p)}
+              />
+            ))}
           </div>
         </div>
       </div>
@@ -184,6 +211,15 @@ const BrainZonePrintable = () => {
         </div>
         <p className="text-[8px] font-black text-slate-300 uppercase tracking-[0.5em]">Confidential Practitioner Resource</p>
       </div>
+
+      {/* Brain Reflex Modal */}
+      <BrainReflexModal 
+        point={selectedPoint}
+        primaryUrl={selectedPoint ? customImages[selectedPoint.id]?.primary : null}
+        secondaryUrl={selectedPoint ? customImages[selectedPoint.id]?.secondary : null}
+        open={modalOpen}
+        onOpenChange={setModalOpen}
+      />
 
       <style>{`
         @media print {

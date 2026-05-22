@@ -1,10 +1,9 @@
 "use client";
 
-import React from 'react';
-import { Outlet } from 'react-router-dom';
+import React, { useState, useEffect } from 'react';
+import { Outlet, useLocation } from 'react-router-dom';
 import SpaceHeader from '@/components/crm/SpaceHeader';
 import QuickActions from '@/components/crm/QuickActions';
-import AppFooter from '@/components/shared/BackToTop';
 import BackToTop from '@/components/shared/BackToTop';
 import UpcomingMarquee from '@/components/crm/UpcomingMarquee';
 import SessionTimer from '@/components/crm/SessionTimer';
@@ -15,6 +14,25 @@ import { cn } from '@/lib/utils';
 const MainLayout = () => {
   const { mode } = useAppMode();
   const activeSession = useActiveSession();
+  const location = useLocation();
+
+  const [isFullScreen, setIsFullScreen] = useState(() => {
+    return localStorage.getItem('antigravity_fullscreen') === 'true';
+  });
+
+  useEffect(() => {
+    const handleFullScreenChange = () => {
+      setIsFullScreen(localStorage.getItem('antigravity_fullscreen') === 'true');
+    };
+
+    window.addEventListener('antigravity_fullscreen_change', handleFullScreenChange);
+    return () => {
+      window.removeEventListener('antigravity_fullscreen_change', handleFullScreenChange);
+    };
+  }, []);
+
+  const isInSession = location.pathname.startsWith('/appointments/');
+  const shouldHideHeader = isFullScreen && isInSession;
 
   return (
     <div className={cn(
@@ -39,7 +57,7 @@ const MainLayout = () => {
       <div className="relative z-10 flex flex-col h-screen overflow-hidden">
         {/* UNIFIED STICKY HEADER STACK */}
         <div className="shrink-0 w-full shadow-sm z-[100]">
-          <UpcomingMarquee />
+          {!shouldHideHeader && <UpcomingMarquee />}
           {activeSession && (
             <SessionTimer 
               sessionId={activeSession.id}
@@ -48,7 +66,7 @@ const MainLayout = () => {
               clientName={activeSession.clientName}
             />
           )}
-          <SpaceHeader />
+          {!shouldHideHeader && <SpaceHeader />}
         </div>
         
         <div className="flex flex-col flex-1 overflow-hidden">
@@ -59,7 +77,7 @@ const MainLayout = () => {
           </main>
         </div>
       </div>
-      <QuickActions />
+      {!shouldHideHeader && <QuickActions />}
       <BackToTop />
     </div>
   );

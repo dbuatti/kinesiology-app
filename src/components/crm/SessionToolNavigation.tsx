@@ -1,6 +1,6 @@
 "use client";
 
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { 
   Heart, 
@@ -16,10 +16,12 @@ import {
   BookOpen, 
   ChevronDown,
   Brain,
-  LayoutGrid
+  LayoutGrid,
+  Maximize2,
+  Minimize2
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { Link, useLocation } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -44,7 +46,40 @@ const SessionToolNavigation = ({
   onOpenDocument 
 }: SessionToolNavigationProps) => {
   const location = useLocation();
+  const navigate = useNavigate();
   const isToolActive = ['kinesiology', 'muscles', 'gait', 'context', 'journal', 'recheck', 'audit'].includes(activeView);
+
+  const [isFullScreen, setIsFullScreen] = useState(() => {
+    return localStorage.getItem('antigravity_fullscreen') === 'true';
+  });
+
+  useEffect(() => {
+    const handleFullScreenChange = () => {
+      setIsFullScreen(localStorage.getItem('antigravity_fullscreen') === 'true');
+    };
+
+    window.addEventListener('antigravity_fullscreen_change', handleFullScreenChange);
+    return () => {
+      window.removeEventListener('antigravity_fullscreen_change', handleFullScreenChange);
+    };
+  }, []);
+
+  const toggleFullScreen = () => {
+    const nextState = !isFullScreen;
+    setIsFullScreen(nextState);
+    localStorage.setItem('antigravity_fullscreen', String(nextState));
+    window.dispatchEvent(new Event('antigravity_fullscreen_change'));
+  };
+
+  const isDocViewActive = location.search.includes('view=document');
+
+  const toggleDocumentView = () => {
+    if (isDocViewActive) {
+      navigate(location.pathname);
+    } else {
+      navigate(`${location.pathname}?view=document`);
+    }
+  };
 
   const NavItem = ({ view, label, Icon }: { view: ActiveView, label: string, Icon: React.ElementType }) => (
     <Button
@@ -159,6 +194,28 @@ const SessionToolNavigation = ({
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
+      </div>
+
+      {/* Quick Toggles */}
+      <div className="flex items-center gap-2 px-2">
+        <Button
+          variant="ghost"
+          size="sm"
+          onClick={toggleDocumentView}
+          className="h-9 px-3 rounded-xl text-[10px] font-black uppercase tracking-widest gap-1.5 text-slate-500 hover:bg-slate-100"
+        >
+          {isDocViewActive ? <LayoutGrid size={14} /> : <FileText size={14} />}
+          {isDocViewActive ? "Standard View" : "Doc View"}
+        </Button>
+        <Button
+          variant="ghost"
+          size="sm"
+          onClick={toggleFullScreen}
+          className="h-9 px-3 rounded-xl text-[10px] font-black uppercase tracking-widest gap-1.5 text-slate-500 hover:bg-slate-100"
+        >
+          {isFullScreen ? <Minimize2 size={14} /> : <Maximize2 size={14} />}
+          {isFullScreen ? "Exit Full" : "Full Screen"}
+        </Button>
       </div>
     </div>
   );

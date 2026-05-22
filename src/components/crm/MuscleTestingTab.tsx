@@ -17,6 +17,7 @@ import MuscleStatusLegend from "./MuscleStatusLegend";
 import MuscleTestAssistanceCard from "./MuscleTestAssistanceCard";
 import MuscleProgressCard from "./MuscleProgressCard";
 import { useMuscleProficiency } from "@/hooks/useMuscleProficiency";
+import { isMeridianPeakNow } from "@/utils/crm-utils";
 
 interface MuscleTestingTabProps {
   appointmentId: string;
@@ -52,20 +53,7 @@ const MuscleTestingTab = ({ appointmentId }: MuscleTestingTabProps) => {
 
   const currentPeakMeridian = useMemo(() => {
     const hour = new Date().getHours();
-    return TCM_CHANNELS.find(c => {
-      if (c.peakTime === 'None') return false;
-      const parts = c.peakTime.toLowerCase().split('-').map(p => p.trim());
-      const parseHour = (s: string) => {
-        const h = parseInt(s);
-        if (s.includes('pm') && h !== 12) return h + 12;
-        if (s.includes('am') && h === 12) return 0;
-        return h;
-      };
-      const start = parseHour(parts[0]);
-      const end = parseHour(parts[1]);
-      if (start > end) return hour >= start || hour < end;
-      return hour >= start && hour < end;
-    });
+    return TCM_CHANNELS.find(c => isMeridianPeakNow(c.peakTime, hour));
   }, []);
 
   const fetchMuscleTests = useCallback(async () => {
@@ -355,7 +343,7 @@ const MuscleTestingTab = ({ appointmentId }: MuscleTestingTabProps) => {
               onClick={() => setMeridianFilter(currentPeakMeridian.name)}
               className={cn(
                 "rounded-xl h-9 px-4 font-black text-[10px] uppercase tracking-widest transition-all",
-                meridianFilter === currentPeakMeridian.name ? "bg-amber-500 text-white border-none shadow-lg" : "border-amber-200 text-amber-600 hover:bg-amber-50"
+                meridianFilter === currentPeakMeridian.name ? "bg-amber-500 text-white border-none shadow-lg" : "border-slate-200 bg-white hover:bg-slate-50"
               )}
             >
               <Clock size={14} className="mr-2" /> Peak Now: {currentPeakMeridian.name}

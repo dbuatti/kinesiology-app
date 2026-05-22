@@ -65,8 +65,8 @@ const AppointmentDetailPage = () => {
     refresh 
   } = useAppointment(id);
 
-  // UI States
-  const [showSidebar, setShowSidebar] = useState(true);
+  // UI States - Hidden by default
+  const [showSidebar, setShowSidebar] = useState(false);
   const [nucleiFilter, setNucleiFilter] = useState<Nuclei | null>(null);
   const [reflections, setReflections] = useState<any[]>([]);
   const [isCopied, setIsCopied] = useState(false);
@@ -336,7 +336,7 @@ const AppointmentDetailPage = () => {
           </div>
 
           <div className="grid grid-cols-1 xl:grid-cols-12 gap-12 items-start">
-            <div className={cn(showSidebar ? "xl:col-span-8" : "xl:col-span-12", "space-y-8 transition-all duration-700")}>
+            <div className={cn(showSidebar ? "xl:col-span-8" : "xl:col-span-12", "space-y-8 transition-all duration-500")}>
               <div className="bg-white dark:bg-slate-900 rounded-[3.5rem] border border-slate-200 dark:border-slate-800 shadow-2xl shadow-slate-200/50 dark:shadow-none overflow-hidden">
                 <div className="p-10 md:p-16 space-y-12">
                   <AppointmentHeader appointment={appointment} onSaveField={saveField} onUpdate={refresh} />

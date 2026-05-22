@@ -99,6 +99,7 @@ export interface Appointment {
   digestive_health?: string | null;
   medications_supplements?: string | null;
   send_onboarding?: boolean;
+  metadata?: any;
 }
 
 export interface Client {

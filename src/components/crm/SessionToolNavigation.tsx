@@ -75,9 +75,9 @@ const SessionToolNavigation = ({
 
   const toggleDocumentView = () => {
     if (isDocViewActive) {
-      navigate(location.pathname);
+      navigate(location.pathname, { replace: true });
     } else {
-      navigate(`${location.pathname}?view=document`);
+      navigate(`${location.pathname}?view=document`, { replace: true });
     }
   };
 
@@ -132,7 +132,7 @@ const SessionToolNavigation = ({
               <ChevronDown size={12} className="opacity-50" />
             </button>
           </DropdownMenuTrigger>
-          <DropdownMenuContent align="start" className="w-72 p-2 rounded-2xl border-none shadow-3xl bg-white dark:bg-slate-900">
+          <DropdownMenuContent align="start" className="w-72 md:w-80 p-2 rounded-2xl border-none shadow-3xl bg-white dark:bg-slate-900">
             <div className="px-4 py-2 mb-1">
               <p className="text-[8px] font-black uppercase tracking-[0.3em] text-slate-400">Clinical Utilities</p>
             </div>
@@ -202,7 +202,7 @@ const SessionToolNavigation = ({
           variant="ghost"
           size="sm"
           onClick={toggleDocumentView}
-          className="h-9 px-3 rounded-xl text-[10px] font-black uppercase tracking-widest gap-1.5 text-slate-500 hover:bg-slate-100"
+          className="h-9 px-3 rounded-xl text-[10px] font-black uppercase tracking-widest gap-1 md:gap-1.5"
         >
           {isDocViewActive ? <LayoutGrid size={14} /> : <FileText size={14} />}
           {isDocViewActive ? "Standard View" : "Doc View"}
@@ -211,7 +211,7 @@ const SessionToolNavigation = ({
           variant="ghost"
           size="sm"
           onClick={toggleFullScreen}
-          className="h-9 px-3 rounded-xl text-[10px] font-black uppercase tracking-widest gap-1.5 text-slate-500 hover:bg-slate-100"
+          className="h-9 px-3 rounded-xl text-[10px] font-black uppercase tracking-widest gap-1 md:gap-1.5"
         >
           {isFullScreen ? <Minimize2 size={14} /> : <Maximize2 size={14} />}
           {isFullScreen ? "Exit Full" : "Full Screen"}

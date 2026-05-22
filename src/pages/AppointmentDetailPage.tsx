@@ -75,7 +75,7 @@ const AppointmentDetailPage = () => {
   // Current time for meridian calculation
   const [currentTime, setCurrentTime] = useState(new Date());
 
-  // Manage Document View via URL search params
+  // Manage Document View via URL search params with replace: true to avoid history pollution
   const isDocumentView = searchParams.get("view") === "document";
   const setIsDocumentView = (val: boolean) => {
     if (val) {
@@ -83,13 +83,13 @@ const AppointmentDetailPage = () => {
         const next = new URLSearchParams(prev);
         next.set("view", "document");
         return next;
-      });
+      }, { replace: true });
     } else {
       setSearchParams(prev => {
         const next = new URLSearchParams(prev);
         next.delete("view");
         return next;
-      });
+      }, { replace: true });
     }
   };
 

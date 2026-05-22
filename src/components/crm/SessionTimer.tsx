@@ -96,9 +96,9 @@ const SessionTimer = ({ sessionId, appointmentDate, status, clientName, currentP
     if (!location.pathname.startsWith('/appointments/')) return;
     
     if (isDocViewActive) {
-      navigate(location.pathname);
+      navigate(location.pathname, { replace: true });
     } else {
-      navigate(`${location.pathname}?view=document`);
+      navigate(`${location.pathname}?view=document`, { replace: true });
     }
   };
 

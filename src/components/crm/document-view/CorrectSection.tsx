@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useMemo } from 'react';
+import React, { useMemo, useState, useEffect } from 'react';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Zap, BookOpen, ExternalLink } from 'lucide-react';
 import DocInput from './DocInput';
@@ -9,13 +9,34 @@ interface CorrectSectionProps {
   metadata: any;
   acupoints: string | null | undefined;
   brainZoneOptions: { id: string; name: string; category: string }[];
+  inhibitedFindings: string[];
   updateMetadataField: (key: string, value: any) => Promise<void>;
   saveField: (field: string, value: any) => Promise<void>;
 }
 
-const CorrectSection = ({ metadata, acupoints, brainZoneOptions, updateMetadataField, saveField }: CorrectSectionProps) => {
+const CorrectSection = ({ 
+  metadata, 
+  acupoints, 
+  brainZoneOptions, 
+  inhibitedFindings,
+  updateMetadataField, 
+  saveField 
+}: CorrectSectionProps) => {
   const corticalOptions = useMemo(() => brainZoneOptions.filter(o => o.category === 'Cortical'), [brainZoneOptions]);
   const subcorticalOptions = useMemo(() => brainZoneOptions.filter(o => o.category === 'Subcortical'), [brainZoneOptions]);
+
+  const [showCustomInput, setShowCustomInput] = useState(() => {
+    if (!metadata.wizard_finding) return false;
+    return !inhibitedFindings.includes(metadata.wizard_finding);
+  });
+
+  useEffect(() => {
+    if (metadata.wizard_finding && !inhibitedFindings.includes(metadata.wizard_finding)) {
+      setShowCustomInput(true);
+    } else {
+      setShowCustomInput(false);
+    }
+  }, [metadata.wizard_finding, inhibitedFindings]);
 
   return (
     <div className="p-8 border-2 border-black space-y-8 bg-white">
@@ -29,13 +50,38 @@ const CorrectSection = ({ metadata, acupoints, brainZoneOptions, updateMetadataF
         <div className="space-y-6">
           <div className="space-y-2">
             <label className="text-[9px] font-black uppercase tracking-widest text-slate-400">Target Finding</label>
-            <input 
-              type="text"
-              value={metadata.wizard_finding || ""}
-              onChange={(e) => updateMetadataField('wizard_finding', e.target.value)}
+            <select 
+              value={showCustomInput ? "CUSTOM_INPUT" : (metadata.wizard_finding || "")}
+              onChange={(e) => {
+                const val = e.target.value;
+                if (val === "CUSTOM_INPUT") {
+                  setShowCustomInput(true);
+                  updateMetadataField('wizard_finding', "");
+                } else {
+                  setShowCustomInput(false);
+                  updateMetadataField('wizard_finding', val);
+                }
+              }}
               className="w-full bg-transparent border-b border-slate-200 py-1.5 text-sm font-bold focus:border-black outline-none transition-all"
-              placeholder="e.g. Left Psoas, Moro Reflex..."
-            />
+            >
+              <option value="" className="text-slate-400">Select inhibited finding...</option>
+              {inhibitedFindings.map(finding => (
+                <option key={finding} value={finding} className="text-black font-bold">
+                  {finding}
+                </option>
+              ))}
+              <option value="CUSTOM_INPUT" className="text-indigo-600 font-bold">+ Custom Entry...</option>
+            </select>
+
+            {showCustomInput && (
+              <input 
+                type="text"
+                value={metadata.wizard_finding || ""}
+                onChange={(e) => updateMetadataField('wizard_finding', e.target.value)}
+                className="w-full bg-transparent border-b border-slate-200 py-1.5 text-sm font-bold focus:border-black outline-none transition-all mt-2 animate-in slide-in-from-top-1"
+                placeholder="Type custom finding..."
+              />
+            )}
           </div>
 
           <div className="space-y-3">

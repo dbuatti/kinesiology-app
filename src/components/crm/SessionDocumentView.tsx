@@ -145,6 +145,19 @@ const SessionDocumentView = ({
       .sort((a, b) => a.name.localeCompare(b.name));
   }, []);
 
+  // Extract all currently inhibited findings from the priority pattern
+  const inhibitedFindings = useMemo(() => {
+    const list: string[] = [];
+    Object.entries(pattern).forEach(([category, items]: [string, any]) => {
+      Object.entries(items).forEach(([name, status]) => {
+        if (status === 'Inhibited') {
+          list.push(name);
+        }
+      });
+    });
+    return list.sort();
+  }, [pattern]);
+
   const handleTogglePatternItem = async (category: string, name: string, isChecked: boolean, side?: 'L' | 'R') => {
     await updatePriorityPattern(category, name, isChecked ? 'Clear' : 'Inhibited', side);
     setLastSaved(new Date());
@@ -243,6 +256,7 @@ const SessionDocumentView = ({
               metadata={metadata} 
               acupoints={appointment.acupoints} 
               brainZoneOptions={brainZoneOptions} 
+              inhibitedFindings={inhibitedFindings}
               updateMetadataField={updateMetadataField} 
               saveField={saveField} 
             />

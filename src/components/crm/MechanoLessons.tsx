@@ -4,6 +4,7 @@ import React, { useState, useEffect, useRef, useCallback, useMemo } from 'react'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { Switch } from "@/components/ui/switch";
 import { 
   Brain, 
   Activity, 
@@ -32,7 +33,11 @@ import {
   Maximize2,
   ArrowRightLeft,
   Move,
-  Volume2
+  Volume2,
+  AlertCircle,
+  Check,
+  Play,
+  Pause
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { supabase } from "@/integrations/supabase/client";
@@ -85,6 +90,17 @@ const MechanoLessons = ({ activeSubTab = 'lessons' }: MechanoLessonsProps) => {
   const [sandboxPlane, setSandboxPlane] = useState<string>('Sagittal');
   const [sandboxAction, setSandboxAction] = useState<string>('Flexion');
 
+  // Interactive Simulator State
+  const [simStep, setSimStep] = useState<'idle' | 'test_baseline' | 'apply_challenge' | 'apply_correction' | 'retest' | 'complete'>('idle');
+  const [simImStatus, setSimImStatus] = useState<'Normotonic' | 'Inhibited'>('Normotonic');
+  const [simHoldReflex, setSimHoldReflex] = useState(false);
+  const [simApplyStretch, setSimApplyStretch] = useState(false);
+  const [simApplyIsometric, setSimApplyIsometric] = useState(false);
+  const [simNasalBreathing, setSimNasalBreathing] = useState(false);
+  const [simTimer, setSimTimer] = useState(0);
+  const [simTimerActive, setSimTimerActive] = useState(false);
+  const simIntervalRef = useRef<NodeJS.Timeout | null>(null);
+
   // Fetch User and Custom Images
   const fetchImages = async () => {
     try {
@@ -115,6 +131,30 @@ const MechanoLessons = ({ activeSubTab = 'lessons' }: MechanoLessonsProps) => {
   useEffect(() => {
     fetchImages();
   }, []);
+
+  // Simulator Timer Effect
+  useEffect(() => {
+    if (simTimerActive && simTimer > 0) {
+      simIntervalRef.current = setInterval(() => {
+        setSimTimer(prev => {
+          if (prev <= 1) {
+            setSimTimerActive(false);
+            if (simIntervalRef.current) clearInterval(simIntervalRef.current);
+            setSimStep('retest');
+            setSimImStatus('Normotonic'); // Correction clears the threat
+            showSuccess("Correction phase complete! Ready to re-test.");
+            return 0;
+          }
+          return prev - 1;
+        });
+      }, 1000);
+    } else {
+      if (simIntervalRef.current) clearInterval(simIntervalRef.current);
+    }
+    return () => {
+      if (simIntervalRef.current) clearInterval(simIntervalRef.current);
+    };
+  }, [simTimerActive, simTimer]);
 
   // Map selected structure to database category and index
   const structureMapping = useMemo(() => {
@@ -422,7 +462,7 @@ const MechanoLessons = ({ activeSubTab = 'lessons' }: MechanoLessonsProps) => {
               {[
                 {
                   title: "1. The Body is Self-Correcting",
-                  desc: "If you apply the wrong correction, the brain simply ignores it. You cannot 'break' the client or make them worse by holding the wrong point or stretching the wrong way. It is completely safe."
+                  desc: "If you apply the wrong correction, the brain simply ignores it. You cannot 'break' the client or make them worse by holding the wrong point or stretching the wrong way. It is safe."
                 },
                 {
                   title: "2. You Don't Need to Memorize Everything",
@@ -761,6 +801,53 @@ const MechanoLessons = ({ activeSubTab = 'lessons' }: MechanoLessonsProps) => {
     }
 
     showSuccess(`Loaded ${currentStructure.name} into the Sandbox!`);
+  };
+
+  // Interactive Simulator Handlers
+  const handleStartSimulation = () => {
+    setSimStep('test_baseline');
+    setSimImStatus('Normotonic');
+    setSimHoldReflex(false);
+    setSimApplyStretch(false);
+    setSimApplyIsometric(false);
+    setSimNasalBreathing(false);
+    setSimTimer(0);
+    setSimTimerActive(false);
+  };
+
+  const handleTestBaseline = () => {
+    setSimImStatus('Normotonic');
+    showSuccess("Indicator Muscle (IM) is Normotonic (Strong). Ready to apply challenge.");
+    setSimStep('apply_challenge');
+  };
+
+  const handleApplyChallenge = () => {
+    setSimImStatus('Inhibited');
+    showSuccess("Challenge applied! The Indicator Muscle (IM) is now Inhibited (Weak).");
+    setSimStep('apply_correction');
+  };
+
+  const handleStartCorrectionTimer = () => {
+    if (sandboxTissue === 'Ligament') {
+      if (!simHoldReflex || !simApplyStretch) {
+        showError("You must hold the reflex point and apply the stretch first!");
+        return;
+      }
+      setSimTimer(5); // 5 seconds for ligament
+    } else {
+      if (!simHoldReflex || !simApplyIsometric || !simNasalBreathing) {
+        showError("You must hold the reflex point, apply isometric contraction, and enable nasal breathing!");
+        return;
+      }
+      setSimTimer(10); // 10 seconds for tendon
+    }
+    setSimTimerActive(true);
+  };
+
+  const handleRetest = () => {
+    setSimImStatus('Normotonic');
+    showSuccess("Indicator Muscle (IM) is Normotonic! The pathway is successfully integrated.");
+    setSimStep('complete');
   };
 
   return (
@@ -1355,42 +1442,179 @@ const MechanoLessons = ({ activeSubTab = 'lessons' }: MechanoLessonsProps) => {
               )}
             </Card>
 
-            {/* Right Column: Generated Protocol */}
-            <Card className="md:col-span-7 border border-slate-200 shadow-sm rounded-2xl bg-slate-900 text-white overflow-hidden flex flex-col justify-between">
-              <CardHeader className="p-6 pb-3">
-                <div className="flex items-center justify-between mb-2">
-                  <Badge className="bg-white/10 text-white border-none font-bold text-[8px] uppercase tracking-wider">
-                    {sandboxTissue} Priority
-                  </Badge>
-                  <span className="text-[9px] font-bold text-slate-400 uppercase tracking-wider">Generated Protocol</span>
-                </div>
-                <CardTitle className="text-xl font-bold">{sandboxProtocol.title}</CardTitle>
-                <p className="text-xs text-slate-300 font-bold mt-0.5">Pathway: {sandboxProtocol.pathway}</p>
-              </CardHeader>
-              <CardContent className="p-6 space-y-5">
-                <div className="p-4 bg-white/5 rounded-xl border border-white/10 space-y-1">
-                  <p className="text-[9px] font-bold text-slate-400 uppercase tracking-wider">Step 1: Stimulate (Find the Threat)</p>
-                  <p className="text-xs font-bold text-white leading-relaxed">{sandboxProtocol.stimulus}</p>
-                </div>
+            {/* Right Column: Generated Protocol & Interactive Simulator */}
+            <div className="md:col-span-7 space-y-6">
+              <Card className="border border-slate-200 shadow-sm rounded-2xl bg-slate-900 text-white overflow-hidden flex flex-col justify-between">
+                <CardHeader className="p-6 pb-3">
+                  <div className="flex items-center justify-between mb-2">
+                    <Badge className="bg-white/10 text-white border-none font-bold text-[8px] uppercase tracking-wider">
+                      {sandboxTissue} Priority
+                    </Badge>
+                    <span className="text-[9px] font-bold text-slate-400 uppercase tracking-wider">Generated Protocol</span>
+                  </div>
+                  <CardTitle className="text-xl font-bold">{sandboxProtocol.title}</CardTitle>
+                  <p className="text-xs text-slate-300 font-bold mt-0.5">Pathway: {sandboxProtocol.pathway}</p>
+                </CardHeader>
+                <CardContent className="p-6 space-y-5">
+                  <div className="p-4 bg-white/5 rounded-xl border border-white/10 space-y-1">
+                    <p className="text-[9px] font-bold text-slate-400 uppercase tracking-wider">Step 1: Stimulate (Find the Threat)</p>
+                    <p className="text-xs font-bold text-white leading-relaxed">{sandboxProtocol.stimulus}</p>
+                  </div>
 
-                <div className="p-4 bg-white/5 rounded-xl border border-white/10 space-y-1">
-                  <p className="text-[9px] font-bold text-slate-400 uppercase tracking-wider">Step 2: Calibrate (Apply Correction)</p>
-                  <p className="text-xs font-bold text-white leading-relaxed">{sandboxProtocol.correction}</p>
-                </div>
+                  <div className="p-4 bg-white/5 rounded-xl border border-white/10 space-y-1">
+                    <p className="text-[9px] font-bold text-slate-400 uppercase tracking-wider">Step 2: Calibrate (Apply Correction)</p>
+                    <p className="text-xs font-bold text-white leading-relaxed">{sandboxProtocol.correction}</p>
+                  </div>
 
-                <div className="p-4 bg-white/5 rounded-xl border border-white/10 flex items-start gap-3">
-                  <Lightbulb className="text-amber-400 shrink-0 mt-0.5" size={16} />
-                  <p className="text-xs text-slate-300 font-medium leading-relaxed">
-                    {sandboxProtocol.tip}
-                  </p>
-                </div>
-              </CardContent>
-            </Card>
+                  <div className="p-4 bg-white/5 rounded-xl border border-white/10 flex items-start gap-3">
+                    <Lightbulb className="text-amber-400 shrink-0 mt-0.5" size={16} />
+                    <p className="text-xs text-slate-300 font-medium leading-relaxed">
+                      {sandboxProtocol.tip}
+                    </p>
+                  </div>
+                </CardContent>
+              </Card>
+
+              {/* Interactive Simulator Panel */}
+              <Card className="border border-slate-200 shadow-lg rounded-2xl bg-white overflow-hidden">
+                <CardHeader className="bg-slate-50 border-b border-slate-200 p-6">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <Activity className="text-indigo-600" size={20} />
+                      <CardTitle className="text-base font-bold text-slate-900">Live Practice Simulator</CardTitle>
+                    </div>
+                    <Badge className={cn(
+                      "font-black text-[8px] uppercase tracking-widest px-2.5 py-1 rounded-full",
+                      simImStatus === 'Normotonic' ? "bg-emerald-500 text-white" : "bg-rose-500 text-white"
+                    )}>
+                      IM: {simImStatus}
+                    </Badge>
+                  </div>
+                </CardHeader>
+                <CardContent className="p-6 space-y-6">
+                  {simStep === 'idle' && (
+                    <div className="text-center py-8 space-y-4">
+                      <p className="text-sm text-slate-500 font-medium">Ready to test your clinical skills? Run a simulated walkthrough of this protocol.</p>
+                      <Button onClick={handleStartSimulation} className="bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl h-11 px-8 font-bold text-xs uppercase tracking-wider">
+                        Start Practice Simulator
+                      </Button>
+                    </div>
+                  )}
+
+                  {simStep === 'test_baseline' && (
+                    <div className="space-y-4 animate-in fade-in duration-300">
+                      <p className="text-sm font-bold text-slate-700">Step 1: Test the baseline Indicator Muscle (IM) to ensure it is strong (Normotonic).</p>
+                      <div className="flex justify-center py-4">
+                        <Button onClick={handleTestBaseline} className="bg-slate-900 hover:bg-slate-800 text-white rounded-xl h-12 px-8 font-bold text-xs uppercase tracking-wider">
+                          Test Indicator Muscle (IM)
+                        </Button>
+                      </div>
+                    </div>
+                  )}
+
+                  {simStep === 'apply_challenge' && (
+                    <div className="space-y-4 animate-in fade-in duration-300">
+                      <p className="text-sm font-bold text-slate-700">Step 2: Apply the physical challenge to find the threat.</p>
+                      <div className="p-4 bg-slate-50 rounded-xl border border-slate-200 text-xs text-slate-600 leading-relaxed">
+                        {sandboxTissue === 'Ligament' 
+                          ? `Action: Gently stretch the priority ligament of the ${sandboxJoint}.`
+                          : `Action: Place the ${sandboxJoint} into the restricted action (${sandboxAction}) and apply resistance.`}
+                      </div>
+                      <div className="flex justify-center py-4">
+                        <Button onClick={handleApplyChallenge} className="bg-rose-600 hover:bg-rose-700 text-white rounded-xl h-12 px-8 font-bold text-xs uppercase tracking-wider">
+                          {sandboxTissue === 'Ligament' ? 'Apply Ligament Stretch' : 'Apply Muscle Resistance'}
+                        </Button>
+                      </div>
+                    </div>
+                  )}
+
+                  {simStep === 'apply_correction' && (
+                    <div className="space-y-4 animate-in fade-in duration-300">
+                      <p className="text-sm font-bold text-slate-700">Step 3: Apply the correction coordinates and hold.</p>
+                      
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        {sandboxTissue === 'Ligament' ? (
+                          <>
+                            <div className="flex items-center justify-between p-3 bg-slate-50 rounded-xl border border-slate-200">
+                              <span className="text-xs font-bold text-slate-700">Hold GV16 (Cerebellum)</span>
+                              <Switch checked={simHoldReflex} onCheckedChange={setSimHoldReflex} />
+                            </div>
+                            <div className="flex items-center justify-between p-3 bg-slate-50 rounded-xl border border-slate-200">
+                              <span className="text-xs font-bold text-slate-700">Maintain Ligament Stretch</span>
+                              <Switch checked={simApplyStretch} onCheckedChange={setSimApplyStretch} />
+                            </div>
+                          </>
+                        ) : (
+                          <>
+                            <div className="flex items-center justify-between p-3 bg-slate-50 rounded-xl border border-slate-200">
+                              <span className="text-xs font-bold text-slate-700">Hold Contralateral S1</span>
+                              <Switch checked={simHoldReflex} onCheckedChange={setSimHoldReflex} />
+                            </div>
+                            <div className="flex items-center justify-between p-3 bg-slate-50 rounded-xl border border-slate-200">
+                              <span className="text-xs font-bold text-slate-700">30% Isometric Contraction</span>
+                              <Switch checked={simApplyIsometric} onCheckedChange={setSimApplyIsometric} />
+                            </div>
+                            <div className="flex items-center justify-between p-3 bg-slate-50 rounded-xl border border-slate-200 sm:col-span-2">
+                              <span className="text-xs font-bold text-slate-700">Nasal Breathing (In & Out)</span>
+                              <Switch checked={simNasalBreathing} onCheckedChange={setSimNasalBreathing} />
+                            </div>
+                          </>
+                        )}
+                      </div>
+
+                      <div className="bg-slate-900 text-white p-6 rounded-2xl flex flex-col items-center justify-center border border-slate-800">
+                        <div className="text-4xl font-black text-indigo-400 mb-4 font-mono">{simTimer}s</div>
+                        <Button 
+                          onClick={handleStartCorrectionTimer} 
+                          disabled={simTimerActive}
+                          className="bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl h-11 px-8 font-bold text-xs uppercase tracking-wider"
+                        >
+                          {simTimerActive ? "Calibrating..." : "Apply Correction"}
+                        </Button>
+                      </div>
+                    </div>
+                  )}
+
+                  {simStep === 'retest' && (
+                    <div className="space-y-4 animate-in fade-in duration-300">
+                      <p className="text-sm font-bold text-slate-700">Step 4: Re-test the Indicator Muscle (IM) to verify the correction.</p>
+                      <div className="flex justify-center py-4">
+                        <Button onClick={handleRetest} className="bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl h-12 px-8 font-bold text-xs uppercase tracking-wider">
+                          Re-Test Indicator Muscle (IM)
+                        </Button>
+                      </div>
+                    </div>
+                  )}
+
+                  {simStep === 'complete' && (
+                    <div className="text-center py-8 space-y-4 animate-in zoom-in-95 duration-300">
+                      <div className="w-16 h-16 bg-emerald-100 rounded-full flex items-center justify-center mx-auto text-emerald-600">
+                        <CheckCircle2 size={32} />
+                      </div>
+                      <div className="space-y-1">
+                        <h4 className="text-lg font-bold text-slate-900">Pathway Integrated!</h4>
+                        <p className="text-xs text-slate-500">Excellent work. You have successfully completed the clinical loop.</p>
+                      </div>
+                      <Button onClick={handleStartSimulation} className="bg-slate-900 hover:bg-slate-800 text-white rounded-xl h-10 px-6 font-bold text-xs uppercase tracking-wider">
+                        Practice Again
+                      </Button>
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+            </div>
           </div>
         </div>
       )}
     </div>
   );
+};
+
+const jointToCategoryMap: Record<string, string> = {
+  "Hip": "hip_shoulder", "Shoulder (GH Joint)": "hip_shoulder", "Scapula": "hip_shoulder",
+  "Knee": "knee_elbow", "Elbow": "knee_elbow",
+  "Foot/Ankle": "ankle_wrist", "Wrist": "ankle_wrist", "Hand/Fingers": "ankle_wrist",
+  "Cranium": "spinal", "Jaw": "spinal", "Cervical Spine": "spinal", "Thoracic Spine": "spinal", "Lumbar Spine": "spinal", "Pelvis": "spinal", "Sacrum": "spinal"
 };
 
 export default MechanoLessons;

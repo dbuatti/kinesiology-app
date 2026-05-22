@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useMemo, useState, useEffect } from 'react';
+import React, { useMemo, useState, useEffect, useRef } from 'react';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Zap, BookOpen, ExternalLink, Info, CheckCircle2, Sparkles, Brain, Activity, Heart, ShieldAlert, Wind, Droplets } from 'lucide-react';
 import DocInput from './DocInput';
@@ -48,6 +48,10 @@ const CorrectSection = ({
     return !inhibitedFindings.includes(metadata.wizard_finding);
   });
 
+  const [localFinding, setLocalFinding] = useState(metadata.wizard_finding || "");
+  const [isFindingFocused, setIsFindingFocused] = useState(false);
+  const findingDebounceTimer = useRef<NodeJS.Timeout | null>(null);
+
   useEffect(() => {
     if (metadata.wizard_finding && !inhibitedFindings.includes(metadata.wizard_finding)) {
       setShowCustomInput(true);
@@ -55,6 +59,28 @@ const CorrectSection = ({
       setShowCustomInput(false);
     }
   }, [metadata.wizard_finding, inhibitedFindings]);
+
+  useEffect(() => {
+    if (!isFindingFocused) {
+      setLocalFinding(metadata.wizard_finding || "");
+    }
+  }, [metadata.wizard_finding, isFindingFocused]);
+
+  const handleFindingChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const val = e.target.value;
+    setLocalFinding(val);
+    
+    if (findingDebounceTimer.current) clearTimeout(findingDebounceTimer.current);
+    findingDebounceTimer.current = setTimeout(() => {
+      updateMetadataField('wizard_finding', val);
+    }, 1000);
+  };
+
+  const handleFindingBlur = () => {
+    setIsFindingFocused(false);
+    if (findingDebounceTimer.current) clearTimeout(findingDebounceTimer.current);
+    updateMetadataField('wizard_finding', localFinding);
+  };
 
   // Find active protocol based on selection
   const activeProtocol = useMemo(() => {
@@ -86,6 +112,7 @@ const CorrectSection = ({
                 const val = e.target.value;
                 if (val === "CUSTOM_INPUT") {
                   setShowCustomInput(true);
+                  setLocalFinding("");
                   updateMetadataField('wizard_finding', "");
                 } else {
                   setShowCustomInput(false);
@@ -106,8 +133,10 @@ const CorrectSection = ({
             {showCustomInput && (
               <input 
                 type="text"
-                value={metadata.wizard_finding || ""}
-                onChange={(e) => updateMetadataField('wizard_finding', e.target.value)}
+                value={localFinding}
+                onChange={handleFindingChange}
+                onFocus={() => setIsFindingFocused(true)}
+                onBlur={handleFindingBlur}
                 className="w-full bg-transparent border-b border-slate-200 py-1.5 text-sm font-bold focus:border-black outline-none transition-all mt-2 animate-in slide-in-from-top-1"
                 placeholder="Type custom finding..."
               />

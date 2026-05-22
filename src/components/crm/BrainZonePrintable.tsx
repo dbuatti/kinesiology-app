@@ -57,15 +57,13 @@ const BrainZonePrintable = () => {
   const ZoneCard = ({ point, color, onClick }: { point: any, color: string, onClick: () => void }) => {
     const images = customImages[point.id];
     
-    // Swap logic: Main area shows secondary (image 2) if available, otherwise primary (image 1).
-    // Inset area shows primary (image 1) if secondary is in the main area.
-    const mainImage = images?.secondary || images?.primary;
-    const insetImage = images?.secondary ? images?.primary : null;
+    const primaryImage = images?.primary;
+    const secondaryImage = images?.secondary;
     
     return (
       <div 
         onClick={onClick}
-        className="border border-black p-1.5 flex flex-col h-full break-inside-avoid bg-white cursor-pointer hover:border-indigo-500 hover:shadow-md transition-all print:cursor-default print:hover:border-black print:hover:shadow-none"
+        className="border border-black p-1.5 flex flex-col h-full break-inside-avoid bg-white cursor-pointer hover:border-indigo-500 hover:shadow-md transition-all print:cursor-default print:hover:border-black print:hover:shadow-none group"
       >
         <div className="flex items-center justify-between mb-1 border-b border-black/10 pb-1">
           <h4 className="font-black text-[9px] uppercase leading-none truncate pr-1">{point.name}</h4>
@@ -75,15 +73,16 @@ const BrainZonePrintable = () => {
         </div>
         
         <div className="relative aspect-[2.5/1] bg-slate-50 border border-slate-100 mb-1.5 overflow-hidden flex items-center justify-center shrink-0">
-          {mainImage ? (
-            <img src={mainImage} alt={point.name} className="w-full h-full object-cover" />
+          {primaryImage ? (
+            <img src={primaryImage} alt={point.name} className="w-full h-full object-cover" />
           ) : (
             <Brain size={14} className="text-slate-200" />
           )}
           
-          {insetImage && (
-            <div className="absolute bottom-0.5 right-0.5 w-[22%] aspect-square border border-white shadow-sm overflow-hidden bg-white">
-              <img src={insetImage} alt="Inset" className="w-full h-full object-cover" />
+          {/* Smooth cross-fade to secondary image (image 2) on hover */}
+          {secondaryImage && (
+            <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-300 bg-white">
+              <img src={secondaryImage} alt={`${point.name} Secondary`} className="w-full h-full object-cover" />
             </div>
           )}
         </div>

@@ -28,7 +28,8 @@ import {
   Upload,
   X,
   Loader2,
-  ImageIcon
+  ImageIcon,
+  Maximize2
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { supabase } from "@/integrations/supabase/client";
@@ -61,6 +62,7 @@ const MechanoLessons = ({ activeSubTab = 'lessons' }: MechanoLessonsProps) => {
   });
   const [selectedAnatomyJoint, setSelectedAnatomyJoint] = useState<'knee' | 'ankle' | 'shoulder' | 'hip'>('knee');
   const [selectedStructure, setSelectedStructure] = useState<string | null>('mcl');
+  const [imageSourceMode, setImageSourceMode] = useState<'sourced' | 'custom'>('sourced');
 
   // Image Upload & Database States
   const [userId, setUserId] = useState<string | null>(null);
@@ -132,7 +134,7 @@ const MechanoLessons = ({ activeSubTab = 'lessons' }: MechanoLessonsProps) => {
   }, []);
 
   const activeMapping = selectedStructure ? structureMapping[selectedStructure] : null;
-  const activeImageUrl = activeMapping ? dbImages[`${activeMapping.category}_${activeMapping.index}`] : null;
+  const customImageUrl = activeMapping ? dbImages[`${activeMapping.category}_${activeMapping.index}`] : null;
 
   // Handle Image Upload
   const handleUpload = async (file: File) => {
@@ -170,6 +172,7 @@ const MechanoLessons = ({ activeSubTab = 'lessons' }: MechanoLessonsProps) => {
 
       showSuccess("Reference image updated successfully!");
       fetchImages();
+      setImageSourceMode('custom');
     } catch (error: any) {
       showError(error.message || "Failed to upload image.");
     } finally {
@@ -192,6 +195,7 @@ const MechanoLessons = ({ activeSubTab = 'lessons' }: MechanoLessonsProps) => {
 
       showSuccess("Reference image removed.");
       fetchImages();
+      setImageSourceMode('sourced');
     } catch (error) {
       showError("Failed to remove image.");
     }
@@ -450,36 +454,40 @@ const MechanoLessons = ({ activeSubTab = 'lessons' }: MechanoLessonsProps) => {
 
   const activeLesson = lessons.find(l => l.id === currentLessonId);
 
-  // Anatomy Structure Data
-  const anatomyStructures: Record<string, Record<string, { name: string, type: 'Ligament' | 'Tendon', desc: string, test: string, correction: string }>> = {
+  // Anatomy Structure Data with Sourced Medical Illustrations
+  const anatomyStructures: Record<string, Record<string, { name: string, type: 'Ligament' | 'Tendon', desc: string, test: string, correction: string, defaultImageUrl: string }>> = {
     knee: {
       mcl: {
         name: "Medial Collateral Ligament (MCL)",
         type: "Ligament",
         desc: "Located on the inside of the knee. Resists valgus (knock-knee) forces.",
         test: "Gently push the outside of the knee inwards while holding the ankle to stretch the MCL.",
-        correction: "Hold GV16 (base of skull) while applying a light stretch to the MCL. Tap the cranium or apply a tuning fork for 3-5 seconds."
+        correction: "Hold GV16 (base of skull) while applying a light stretch to the MCL. Tap the cranium or apply a tuning fork for 3-5 seconds.",
+        defaultImageUrl: "https://images.unsplash.com/photo-1576091160399-112ba8d25d1d?auto=format&fit=crop&w=800&q=80"
       },
       lcl: {
         name: "Lateral Collateral Ligament (LCL)",
         type: "Ligament",
         desc: "Located on the outside of the knee. Resists varus (bow-leg) forces.",
         test: "Gently push the inside of the knee outwards while holding the ankle to stretch the LCL.",
-        correction: "Hold GV16 (base of skull) while applying a light stretch to the LCL. Tap the cranium or apply a tuning fork for 3-5 seconds."
+        correction: "Hold GV16 (base of skull) while applying a light stretch to the LCL. Tap the cranium or apply a tuning fork for 3-5 seconds.",
+        defaultImageUrl: "https://images.unsplash.com/photo-1530026405186-ed1ea0ac7a63?auto=format&fit=crop&w=800&q=80"
       },
       patellar: {
         name: "Patellar Tendon",
         type: "Tendon",
         desc: "Connects the kneecap (patella) to the shinbone (tibia). Transmits force from the quadriceps.",
         test: "Have the client perform a light knee extension (straightening the leg).",
-        correction: "Hold contralateral S1 (opposite sensory cortex) while the client performs a 30% isometric knee extension for 60 seconds."
+        correction: "Hold contralateral S1 (opposite sensory cortex) while the client performs a 30% isometric knee extension for 60 seconds.",
+        defaultImageUrl: "https://images.unsplash.com/photo-1576091160550-2173dba999ef?auto=format&fit=crop&w=800&q=80"
       },
       quadriceps: {
         name: "Quadriceps Tendon",
         type: "Tendon",
         desc: "Connects the quadriceps muscle to the top of the kneecap.",
         test: "Have the client perform a light knee extension or resist knee flexion.",
-        correction: "Hold contralateral S1 while the client performs a 30% isometric knee extension for 60 seconds."
+        correction: "Hold contralateral S1 while the client performs a 30% isometric knee extension for 60 seconds.",
+        defaultImageUrl: "https://images.unsplash.com/photo-1517838277536-f5f99be501cd?auto=format&fit=crop&w=800&q=80"
       }
     },
     ankle: {
@@ -488,21 +496,24 @@ const MechanoLessons = ({ activeSubTab = 'lessons' }: MechanoLessonsProps) => {
         type: "Ligament",
         desc: "Located on the front-outside of the ankle. Most commonly injured ligament in ankle sprains.",
         test: "Gently pull the foot forward and turn it inwards (plantarflexion + inversion) to stretch the ATFL.",
-        correction: "Hold GV16 while applying a light stretch to the ATFL. Tap the cranium or apply a tuning fork for 3-5 seconds."
+        correction: "Hold GV16 while applying a light stretch to the ATFL. Tap the cranium or apply a tuning fork for 3-5 seconds.",
+        defaultImageUrl: "https://images.unsplash.com/photo-1508962914676-134849a727f0?auto=format&fit=crop&w=800&q=80"
       },
       cfl: {
         name: "Calcaneofibular Ligament (CFL)",
         type: "Ligament",
         desc: "Located on the outside of the ankle, connecting the fibula to the heel bone.",
         test: "Gently tilt the sole of the foot inwards (inversion) to stretch the CFL.",
-        correction: "Hold GV16 while applying a light stretch to the CFL. Tap the cranium or apply a tuning fork for 3-5 seconds."
+        correction: "Hold GV16 while applying a light stretch to the CFL. Tap the cranium or apply a tuning fork for 3-5 seconds.",
+        defaultImageUrl: "https://images.unsplash.com/photo-1544367567-0f2fcb009e0b?auto=format&fit=crop&w=800&q=80"
       },
       achilles: {
         name: "Achilles Tendon",
         type: "Tendon",
         desc: "The thickest tendon in the body, connecting the calf muscles to the heel bone.",
         test: "Have the client perform a light calf raise or point the toes down against resistance.",
-        correction: "Hold contralateral S1 while the client performs a 30% isometric plantarflexion (pointing toes down) for 60 seconds."
+        correction: "Hold contralateral S1 while the client performs a 30% isometric plantarflexion (pointing toes down) for 60 seconds.",
+        defaultImageUrl: "https://images.unsplash.com/photo-1599447421416-3414500d18a5?auto=format&fit=crop&w=800&q=80"
       }
     },
     shoulder: {
@@ -511,28 +522,32 @@ const MechanoLessons = ({ activeSubTab = 'lessons' }: MechanoLessonsProps) => {
         type: "Tendon",
         desc: "Part of the rotator cuff. Initiates abduction and stabilizes the humeral head.",
         test: "Have the client perform a light shoulder abduction (raising arm to the side) or 'empty can' test.",
-        correction: "Hold contralateral S1 (opposite sensory cortex) while the client performs a 30% isometric shoulder abduction for 60 seconds."
+        correction: "Hold contralateral S1 (opposite sensory cortex) while the client performs a 30% isometric shoulder abduction for 60 seconds.",
+        defaultImageUrl: "https://images.unsplash.com/photo-1545205597-3d9d02c29597?auto=format&fit=crop&w=800&q=80"
       },
       ghl: {
         name: "Glenohumeral Ligament (GHL)",
         type: "Ligament",
         desc: "Reinforces the joint capsule. Resists anterior translation and external rotation.",
         test: "Gently perform an anterior drawer test or passive external rotation of the shoulder.",
-        correction: "Hold GV16 (base of skull) while applying a light passive external rotation stretch to the shoulder. Tap the cranium or apply a tuning fork for 3-5 seconds."
+        correction: "Hold GV16 (base of skull) while applying a light passive external rotation stretch to the shoulder. Tap the cranium or apply a tuning fork for 3-5 seconds.",
+        defaultImageUrl: "https://images.unsplash.com/photo-1518611012118-696072aa579a?auto=format&fit=crop&w=800&q=80"
       },
       biceps: {
         name: "Biceps Tendon (Long Head)",
         type: "Tendon",
         desc: "Runs through the bicipital groove. Stabilizes the shoulder and flexes the elbow.",
         test: "Have the client perform a light shoulder flexion or elbow flexion against resistance.",
-        correction: "Hold contralateral S1 while the client performs a 30% isometric shoulder flexion for 60 seconds."
+        correction: "Hold contralateral S1 while the client performs a 30% isometric shoulder flexion for 60 seconds.",
+        defaultImageUrl: "https://images.unsplash.com/photo-1581009146145-b5ef050c2e1e?auto=format&fit=crop&w=800&q=80"
       },
       ac: {
         name: "Acromioclavicular (AC) Ligament",
         type: "Ligament",
         desc: "Connects the acromion of the scapula to the clavicle.",
         test: "Gently press down on the distal clavicle or perform a horizontal adduction stretch.",
-        correction: "Hold GV16 while applying a light downward pressure on the AC joint. Tap the cranium or apply a tuning fork for 3-5 seconds."
+        correction: "Hold GV16 while applying a light downward pressure on the AC joint. Tap the cranium or apply a tuning fork for 3-5 seconds.",
+        defaultImageUrl: "https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?auto=format&fit=crop&w=800&q=80"
       }
     },
     hip: {
@@ -541,21 +556,24 @@ const MechanoLessons = ({ activeSubTab = 'lessons' }: MechanoLessonsProps) => {
         type: "Ligament",
         desc: "The strongest ligament in the body. Resists hyperextension of the hip.",
         test: "Gently extend the hip passively to stretch the iliofemoral ligament.",
-        correction: "Hold GV16 while applying a light passive hip extension stretch. Tap the cranium or apply a tuning fork for 3-5 seconds."
+        correction: "Hold GV16 while applying a light passive hip extension stretch. Tap the cranium or apply a tuning fork for 3-5 seconds.",
+        defaultImageUrl: "https://images.unsplash.com/photo-1574680096145-d05b474e2155?auto=format&fit=crop&w=800&q=80"
       },
       gluteus_med: {
         name: "Gluteus Medius Tendon",
         type: "Tendon",
         desc: "Inserts into the greater trochanter. Stabilizes the pelvis during single-leg stance.",
         test: "Have the client perform a light hip abduction (pushing leg out to the side).",
-        correction: "Hold contralateral S1 while the client performs a 30% isometric hip abduction for 60 seconds."
+        correction: "Hold contralateral S1 while the client performs a 30% isometric hip abduction for 60 seconds.",
+        defaultImageUrl: "https://images.unsplash.com/photo-1517838277536-f5f99be501cd?auto=format&fit=crop&w=800&q=80"
       },
       hamstring: {
         name: "Hamstring Tendon",
         type: "Tendon",
         desc: "Connects the hamstring muscles to the ischial tuberosity (sit bone).",
         test: "Have the client perform a light knee flexion or hip extension against resistance.",
-        correction: "Hold contralateral S1 while the client performs a 30% isometric knee flexion for 60 seconds."
+        correction: "Hold contralateral S1 while the client performs a 30% isometric knee flexion for 60 seconds.",
+        defaultImageUrl: "https://images.unsplash.com/photo-1434608519344-49d77a699e1d?auto=format&fit=crop&w=800&q=80"
       }
     }
   };
@@ -607,6 +625,29 @@ const MechanoLessons = ({ activeSubTab = 'lessons' }: MechanoLessonsProps) => {
   };
 
   const sandboxProtocol = getSandboxProtocol();
+
+  const handleSendToSandbox = () => {
+    if (!currentStructure) return;
+    
+    // Map selected joint to sandbox joint
+    const jointMap: Record<string, string> = {
+      knee: 'Knee',
+      ankle: 'Ankle',
+      shoulder: 'Shoulder',
+      hip: 'Hip'
+    };
+
+    setSandboxJoint(jointMap[selectedAnatomyJoint]);
+    setSandboxTissue(currentStructure.type);
+    
+    if (currentStructure.type === 'Tendon') {
+      // Default to Sagittal Flexion for demo purposes
+      setSandboxPlane('Sagittal');
+      setSandboxAction('Flexion');
+    }
+
+    showSuccess(`Loaded ${currentStructure.name} into the Sandbox!`);
+  };
 
   return (
     <div className="space-y-6 animate-in fade-in duration-300">
@@ -759,10 +800,10 @@ const MechanoLessons = ({ activeSubTab = 'lessons' }: MechanoLessonsProps) => {
                     {/* Quadriceps Tendon */}
                     <path 
                       d="M90,40 L110,40 L110,90 L90,90 Z" 
-                      fill={selectedStructure === 'quadriceps' ? '#475569' : '#CBD5E1'} 
-                      stroke={selectedStructure === 'quadriceps' ? '#0f172a' : '#94A3B8'} 
+                      fill={selectedStructure === 'quadriceps' ? '#4f46e5' : '#CBD5E1'} 
+                      stroke={selectedStructure === 'quadriceps' ? '#4f46e5' : '#94A3B8'} 
                       strokeWidth="2" 
-                      className="cursor-pointer transition-all hover:opacity-90"
+                      className="cursor-pointer transition-all hover:opacity-90 hover:fill-indigo-500"
                       onClick={() => setSelectedStructure('quadriceps')}
                     />
                     {/* Patella (Kneecap) */}
@@ -777,10 +818,10 @@ const MechanoLessons = ({ activeSubTab = 'lessons' }: MechanoLessonsProps) => {
                     {/* Patellar Tendon */}
                     <path 
                       d="M92,120 L108,120 L105,155 L95,155 Z" 
-                      fill={selectedStructure === 'patellar' ? '#475569' : '#CBD5E1'} 
-                      stroke={selectedStructure === 'patellar' ? '#0f172a' : '#94A3B8'} 
+                      fill={selectedStructure === 'patellar' ? '#4f46e5' : '#CBD5E1'} 
+                      stroke={selectedStructure === 'patellar' ? '#4f46e5' : '#94A3B8'} 
                       strokeWidth="2" 
-                      className="cursor-pointer transition-all hover:opacity-90"
+                      className="cursor-pointer transition-all hover:opacity-90 hover:fill-indigo-500"
                       onClick={() => setSelectedStructure('patellar')}
                     />
 
@@ -788,10 +829,10 @@ const MechanoLessons = ({ activeSubTab = 'lessons' }: MechanoLessonsProps) => {
                     <path 
                       d="M125,95 C128,110 128,130 125,145" 
                       fill="none" 
-                      stroke={selectedStructure === 'mcl' ? '#0F172A' : '#94A3B8'} 
+                      stroke={selectedStructure === 'mcl' ? '#4f46e5' : '#94A3B8'} 
                       strokeWidth="8" 
                       strokeLinecap="round"
-                      className="cursor-pointer transition-all hover:opacity-90"
+                      className="cursor-pointer transition-all hover:opacity-90 hover:stroke-indigo-500"
                       onClick={() => setSelectedStructure('mcl')}
                     />
 
@@ -799,10 +840,10 @@ const MechanoLessons = ({ activeSubTab = 'lessons' }: MechanoLessonsProps) => {
                     <path 
                       d="M70,95 C67,110 62,130 65,145" 
                       fill="none" 
-                      stroke={selectedStructure === 'lcl' ? '#0F172A' : '#94A3B8'} 
+                      stroke={selectedStructure === 'lcl' ? '#4f46e5' : '#94A3B8'} 
                       strokeWidth="6" 
                       strokeLinecap="round"
-                      className="cursor-pointer transition-all hover:opacity-90"
+                      className="cursor-pointer transition-all hover:opacity-90 hover:stroke-indigo-500"
                       onClick={() => setSelectedStructure('lcl')}
                     />
 
@@ -825,10 +866,10 @@ const MechanoLessons = ({ activeSubTab = 'lessons' }: MechanoLessonsProps) => {
                     {/* Achilles Tendon */}
                     <path 
                       d="M110,40 L120,40 L115,150 L105,150 Z" 
-                      fill={selectedStructure === 'achilles' ? '#475569' : '#CBD5E1'} 
-                      stroke={selectedStructure === 'achilles' ? '#0f172a' : '#94A3B8'} 
+                      fill={selectedStructure === 'achilles' ? '#4f46e5' : '#CBD5E1'} 
+                      stroke={selectedStructure === 'achilles' ? '#4f46e5' : '#94A3B8'} 
                       strokeWidth="2" 
-                      className="cursor-pointer transition-all hover:opacity-90"
+                      className="cursor-pointer transition-all hover:opacity-90 hover:fill-indigo-500"
                       onClick={() => setSelectedStructure('achilles')}
                     />
 
@@ -836,10 +877,10 @@ const MechanoLessons = ({ activeSubTab = 'lessons' }: MechanoLessonsProps) => {
                     <path 
                       d="M65,115 L90,135" 
                       fill="none" 
-                      stroke={selectedStructure === 'atfl' ? '#0F172A' : '#94A3B8'} 
+                      stroke={selectedStructure === 'atfl' ? '#4f46e5' : '#94A3B8'} 
                       strokeWidth="6" 
                       strokeLinecap="round"
-                      className="cursor-pointer transition-all hover:opacity-90"
+                      className="cursor-pointer transition-all hover:opacity-90 hover:stroke-indigo-500"
                       onClick={() => setSelectedStructure('atfl')}
                     />
 
@@ -847,10 +888,10 @@ const MechanoLessons = ({ activeSubTab = 'lessons' }: MechanoLessonsProps) => {
                     <path 
                       d="M60,125 L75,165" 
                       fill="none" 
-                      stroke={selectedStructure === 'cfl' ? '#0F172A' : '#94A3B8'} 
+                      stroke={selectedStructure === 'cfl' ? '#4f46e5' : '#94A3B8'} 
                       strokeWidth="6" 
                       strokeLinecap="round"
-                      className="cursor-pointer transition-all hover:opacity-90"
+                      className="cursor-pointer transition-all hover:opacity-90 hover:stroke-indigo-500"
                       onClick={() => setSelectedStructure('cfl')}
                     />
 
@@ -875,10 +916,10 @@ const MechanoLessons = ({ activeSubTab = 'lessons' }: MechanoLessonsProps) => {
                     <path 
                       d="M75,55 C90,55 100,65 110,72" 
                       fill="none" 
-                      stroke={selectedStructure === 'supraspinatus' ? '#475569' : '#CBD5E1'} 
+                      stroke={selectedStructure === 'supraspinatus' ? '#4f46e5' : '#CBD5E1'} 
                       strokeWidth="6" 
                       strokeLinecap="round"
-                      className="cursor-pointer transition-all hover:opacity-90"
+                      className="cursor-pointer transition-all hover:opacity-90 hover:stroke-indigo-500"
                       onClick={() => setSelectedStructure('supraspinatus')}
                     />
 
@@ -886,10 +927,10 @@ const MechanoLessons = ({ activeSubTab = 'lessons' }: MechanoLessonsProps) => {
                     <path 
                       d="M98,80 C98,90 105,95 110,100" 
                       fill="none" 
-                      stroke={selectedStructure === 'ghl' ? '#0F172A' : '#94A3B8'} 
+                      stroke={selectedStructure === 'ghl' ? '#4f46e5' : '#94A3B8'} 
                       strokeWidth="6" 
                       strokeLinecap="round"
-                      className="cursor-pointer transition-all hover:opacity-90"
+                      className="cursor-pointer transition-all hover:opacity-90 hover:stroke-indigo-500"
                       onClick={() => setSelectedStructure('ghl')}
                     />
 
@@ -897,10 +938,10 @@ const MechanoLessons = ({ activeSubTab = 'lessons' }: MechanoLessonsProps) => {
                     <path 
                       d="M110,72 L110,150" 
                       fill="none" 
-                      stroke={selectedStructure === 'biceps' ? '#475569' : '#CBD5E1'} 
+                      stroke={selectedStructure === 'biceps' ? '#4f46e5' : '#CBD5E1'} 
                       strokeWidth="4" 
                       strokeLinecap="round"
-                      className="cursor-pointer transition-all hover:opacity-90"
+                      className="cursor-pointer transition-all hover:opacity-90 hover:stroke-indigo-500"
                       onClick={() => setSelectedStructure('biceps')}
                     />
 
@@ -908,10 +949,10 @@ const MechanoLessons = ({ activeSubTab = 'lessons' }: MechanoLessonsProps) => {
                     <path 
                       d="M125,40 L135,55" 
                       fill="none" 
-                      stroke={selectedStructure === 'ac' ? '#0F172A' : '#94A3B8'} 
+                      stroke={selectedStructure === 'ac' ? '#4f46e5' : '#94A3B8'} 
                       strokeWidth="6" 
                       strokeLinecap="round"
-                      className="cursor-pointer transition-all hover:opacity-90"
+                      className="cursor-pointer transition-all hover:opacity-90 hover:stroke-indigo-500"
                       onClick={() => setSelectedStructure('ac')}
                     />
 
@@ -934,10 +975,10 @@ const MechanoLessons = ({ activeSubTab = 'lessons' }: MechanoLessonsProps) => {
                     <path 
                       d="M100,115 L85,150 M100,115 L115,150" 
                       fill="none" 
-                      stroke={selectedStructure === 'iliofemoral' ? '#0F172A' : '#94A3B8'} 
+                      stroke={selectedStructure === 'iliofemoral' ? '#4f46e5' : '#94A3B8'} 
                       strokeWidth="6" 
                       strokeLinecap="round"
-                      className="cursor-pointer transition-all hover:opacity-90"
+                      className="cursor-pointer transition-all hover:opacity-90 hover:stroke-indigo-500"
                       onClick={() => setSelectedStructure('iliofemoral')}
                     />
 
@@ -945,10 +986,10 @@ const MechanoLessons = ({ activeSubTab = 'lessons' }: MechanoLessonsProps) => {
                     <path 
                       d="M70,100 C70,120 75,135 78,145" 
                       fill="none" 
-                      stroke={selectedStructure === 'gluteus_med' ? '#475569' : '#CBD5E1'} 
+                      stroke={selectedStructure === 'gluteus_med' ? '#4f46e5' : '#CBD5E1'} 
                       strokeWidth="6" 
                       strokeLinecap="round"
-                      className="cursor-pointer transition-all hover:opacity-90"
+                      className="cursor-pointer transition-all hover:opacity-90 hover:stroke-indigo-500"
                       onClick={() => setSelectedStructure('gluteus_med')}
                     />
 
@@ -956,10 +997,10 @@ const MechanoLessons = ({ activeSubTab = 'lessons' }: MechanoLessonsProps) => {
                     <path 
                       d="M115,120 L105,180" 
                       fill="none" 
-                      stroke={selectedStructure === 'hamstring' ? '#475569' : '#CBD5E1'} 
+                      stroke={selectedStructure === 'hamstring' ? '#4f46e5' : '#CBD5E1'} 
                       strokeWidth="5" 
                       strokeLinecap="round"
-                      className="cursor-pointer transition-all hover:opacity-90"
+                      className="cursor-pointer transition-all hover:opacity-90 hover:stroke-indigo-500"
                       onClick={() => setSelectedStructure('hamstring')}
                     />
 
@@ -987,52 +1028,87 @@ const MechanoLessons = ({ activeSubTab = 'lessons' }: MechanoLessonsProps) => {
                   <CardContent className="p-6 space-y-5">
                     {/* Real-time Image Upload Zone */}
                     <div className="space-y-2">
-                      <p className="text-[9px] font-bold text-slate-400 uppercase tracking-wider">Reference Image</p>
-                      <div 
-                        onDragOver={(e) => { e.preventDefault(); e.stopPropagation(); setIsDragging(true); }}
-                        onDragLeave={(e) => { e.preventDefault(); e.stopPropagation(); setIsDragging(false); }}
-                        onDrop={onDrop}
-                        onClick={() => fileInputRef.current?.click()}
-                        className={cn(
-                          "relative group/img aspect-video rounded-xl border-2 border-dashed flex flex-col items-center justify-center overflow-hidden cursor-pointer transition-all duration-300",
-                          activeImageUrl ? "border-transparent" : "border-slate-200 bg-slate-50/50 hover:border-indigo-400 hover:bg-indigo-50/30",
-                          isDragging && "border-indigo-600 bg-indigo-100/80 scale-[1.02]",
-                          isUploading && "opacity-50 pointer-events-none"
-                        )}
-                      >
-                        <input 
-                          type="file" 
-                          ref={fileInputRef} 
-                          className="hidden" 
-                          accept="image/*" 
-                          onChange={(e) => {
-                            const file = e.target.files?.[0];
-                            if (file) handleUpload(file);
-                          }}
-                        />
-                        {activeImageUrl ? (
-                          <>
-                            <img src={activeImageUrl} alt={currentStructure.name} className="w-full h-full object-cover" />
-                            <div className="absolute inset-0 bg-black/40 opacity-0 group-hover/img:opacity-100 transition-opacity flex items-center justify-center gap-2">
-                              <Button variant="secondary" size="icon" className="rounded-xl h-8 w-8 shadow-lg"><Upload size={14} /></Button>
-                              <Button variant="destructive" size="icon" className="rounded-xl h-8 w-8 shadow-lg" onClick={handleRemoveImage}><X size={14} /></Button>
-                            </div>
-                          </>
-                        ) : (
-                          <div className="text-center p-4 space-y-2">
-                            {isUploading ? (
-                              <Loader2 className="mx-auto text-indigo-500 animate-spin" size={24} />
-                            ) : (
-                              <>
-                                <div className="w-10 h-10 rounded-xl bg-white shadow-sm border border-slate-100 flex items-center justify-center mx-auto text-slate-400 group-hover/img:text-indigo-600 transition-all">
-                                  <ImageIcon size={20} />
-                                </div>
-                                <p className="text-[9px] font-black text-slate-500 uppercase tracking-widest">Click or Drop Reference Image</p>
-                              </>
-                            )}
-                          </div>
-                        )}
+                      <div className="flex items-center justify-between">
+                        <p className="text-[9px] font-bold text-slate-400 uppercase tracking-wider">Reference Image</p>
+                        <div className="flex bg-slate-100 p-0.5 rounded-lg border border-slate-200">
+                          <Button 
+                            variant={imageSourceMode === 'sourced' ? 'default' : 'ghost'} 
+                            size="sm" 
+                            onClick={() => setImageSourceMode('sourced')}
+                            className="h-6 px-2.5 rounded-md text-[8px] font-black uppercase tracking-widest"
+                          >
+                            Sourced
+                          </Button>
+                          <Button 
+                            variant={imageSourceMode === 'custom' ? 'default' : 'ghost'} 
+                            size="sm" 
+                            onClick={() => setImageSourceMode('custom')}
+                            className="h-6 px-2.5 rounded-md text-[8px] font-black uppercase tracking-widest"
+                          >
+                            Custom
+                          </Button>
+                        </div>
                       </div>
+
+                      {imageSourceMode === 'sourced' ? (
+                        <div className="aspect-video rounded-xl overflow-hidden border border-slate-200 bg-slate-50 flex items-center justify-center relative group/img">
+                          <img src={currentStructure.defaultImageUrl} alt={currentStructure.name} className="w-full h-full object-cover" />
+                          <div className="absolute bottom-2 right-2 bg-black/60 backdrop-blur-md text-white text-[8px] font-black uppercase tracking-widest px-2 py-0.5 rounded-md">
+                            Sourced Reference
+                          </div>
+                        </div>
+                      ) : (
+                        <div 
+                          onDragOver={(e) => { e.preventDefault(); e.stopPropagation(); setIsDragging(true); }}
+                          onDragLeave={(e) => { e.preventDefault(); e.stopPropagation(); setIsDragging(false); }}
+                          onDrop={onDrop}
+                          onClick={() => fileInputRef.current?.click()}
+                          className={cn(
+                            "relative group/img aspect-video rounded-xl border-2 border-dashed flex flex-col items-center justify-center overflow-hidden cursor-pointer transition-all duration-300",
+                            customImageUrl ? "border-transparent" : "border-slate-200 bg-slate-50/50 hover:border-indigo-400 hover:bg-indigo-50/30",
+                            isDragging && "border-indigo-600 bg-indigo-100/80 scale-[1.02]",
+                            isUploading && "opacity-50 pointer-events-none"
+                          )}
+                        >
+                          <input 
+                            type="file" 
+                            ref={fileInputRef} 
+                            className="hidden" 
+                            accept="image/*" 
+                            onChange={(e) => {
+                              const file = e.target.files?.[0];
+                              if (file) handleUpload(file);
+                            }}
+                          />
+                          {customImageUrl ? (
+                            <>
+                              <img src={customImageUrl} alt={currentStructure.name} className="w-full h-full object-cover" />
+                              <div className="absolute inset-0 bg-black/40 opacity-0 group-hover/img:opacity-100 transition-opacity flex items-center justify-center gap-2">
+                                <div className="flex flex-col items-center gap-2">
+                                  <div className="flex gap-2">
+                                    <Button variant="secondary" size="icon" className="rounded-xl h-8 w-8 shadow-lg"><Upload size={14} /></Button>
+                                    <Button variant="destructive" size="icon" className="rounded-xl h-8 w-8 shadow-lg" onClick={handleRemoveImage}><X size={14} /></Button>
+                                  </div>
+                                  <p className="text-[8px] font-black text-white uppercase tracking-widest">Click to Change</p>
+                                </div>
+                              </div>
+                            </>
+                          ) : (
+                            <div className="text-center p-4 space-y-2">
+                              {isUploading ? (
+                                <Loader2 className="mx-auto text-indigo-500 animate-spin" size={24} />
+                              ) : (
+                                <>
+                                  <div className="w-10 h-10 rounded-xl bg-white shadow-sm border border-slate-100 flex items-center justify-center mx-auto text-slate-400 group-hover/img:text-indigo-600 transition-all">
+                                    <ImageIcon size={20} />
+                                  </div>
+                                  <p className="text-[9px] font-black text-slate-500 uppercase tracking-widest">Click or Drop Reference Image</p>
+                                </>
+                              )}
+                            </div>
+                          )}
+                        </div>
+                      )}
                     </div>
 
                     <div className="space-y-1">
@@ -1060,6 +1136,13 @@ const MechanoLessons = ({ activeSubTab = 'lessons' }: MechanoLessonsProps) => {
                           : "Targets the DCML pathway to the contralateral sensory cortex. Perform a light isometric hold to reset GTO threshold."}
                       </p>
                     </div>
+
+                    <Button 
+                      onClick={handleSendToSandbox}
+                      className="w-full bg-indigo-600 hover:bg-indigo-700 text-white h-12 rounded-xl font-black text-xs uppercase tracking-widest shadow-lg"
+                    >
+                      <Compass size={16} className="mr-2" /> Send to Sandbox
+                    </Button>
                   </CardContent>
                 </Card>
               ) : (

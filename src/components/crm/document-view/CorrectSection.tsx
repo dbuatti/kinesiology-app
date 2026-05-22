@@ -2,7 +2,7 @@
 
 import React, { useMemo, useState, useEffect, useRef } from 'react';
 import { Checkbox } from '@/components/ui/checkbox';
-import { Zap, BookOpen, ExternalLink, Info, CheckCircle2, Sparkles, Brain, Activity, Heart, ShieldAlert, Wind, Droplets, ArrowDownCircle, ArrowUpCircle, Layers, Eye, Copy, Check } from 'lucide-react';
+import { Zap, BookOpen, ExternalLink, Info, CheckCircle2, Sparkles, Brain, Activity, Heart, ShieldAlert, Wind, Droplets, ArrowDownCircle, ArrowUpCircle, Layers, Eye, Copy, Check, History, Trash2, ArrowLeftRight } from 'lucide-react';
 import DocInput from './DocInput';
 import { cn } from '@/lib/utils';
 import { AFFERENT_PATHWAYS, EFFERENT_PATHWAYS } from '@/data/pathway-logic-data';
@@ -37,6 +37,80 @@ const NOCICEPTIVE_PROTOCOL = {
   ]
 };
 
+// Helper to parse a logged correction string back into wizard fields
+const parseCorrectionString = (str: string) => {
+  const cleanStr = str.replace(/^[-*\s]+/, '').trim();
+  
+  // Extract Direction
+  let direction: string | null = null;
+  if (cleanStr.startsWith('Afferent')) direction = 'Afferent';
+  else if (cleanStr.startsWith('Efferent')) direction = 'Efferent';
+
+  // Extract Finding and System
+  // Format: "Direction Correction: Finding (System) ->"
+  const mainRegex = /^(?:Afferent|Efferent)\s+Correction:\s*([^\(->]+)(?:\s*\(([^)]+)\))?\s*(?:->)?/i;
+  const mainMatch = cleanStr.match(mainRegex);
+  
+  const finding = mainMatch ? mainMatch[1].trim() : "";
+  const system = mainMatch && mainMatch[2] ? mainMatch[2].trim() : null;
+
+  // Extract Coordinates
+  // Format: "-> Coord1 + Coord2 via" or "-> Coord1 via"
+  const coordRegex = /->\s*([^\[]+?)(?:\s*via|\s*\[|$)/i;
+  const coordMatch = cleanStr.match(coordRegex);
+  const coordsStr = coordMatch ? coordMatch[1].trim() : "";
+  
+  let coord1Name: string | null = null;
+  let coord1Side: string | null = null;
+  let coord2Name: string | null = null;
+  let coord2Side: string | null = null;
+
+  if (coordsStr) {
+    const parts = coordsStr.split('+').map(p => p.trim());
+    
+    const parseCoord = (part: string) => {
+      const sideMatch = part.match(/^(Left|Right|Bilateral)\s+(.+)$/i);
+      if (sideMatch) {
+        return { side: sideMatch[1], name: sideMatch[2] };
+      }
+      return { side: 'Bilateral', name: part };
+    };
+
+    if (parts[0]) {
+      const c1 = parseCoord(parts[0]);
+      coord1Side = c1.side;
+      coord1Name = c1.name;
+    }
+    if (parts[1]) {
+      const c2 = parseCoord(parts[1]);
+      coord2Side = c2.side;
+      coord2Name = c2.name;
+    }
+  }
+
+  // Extract Method
+  const methodRegex = /via\s+([^\[]+)/i;
+  const methodMatch = cleanStr.match(methodRegex);
+  const method = methodMatch ? methodMatch[1].trim() : null;
+
+  // Extract Polarity
+  const polarityRegex = /\[Polarity:\s*([^\]]+)\]/i;
+  const polarityMatch = cleanStr.match(polarityRegex);
+  const polarity = polarityMatch ? polarityMatch[1].trim() : null;
+
+  return {
+    wizard_direction: direction,
+    wizard_finding: finding,
+    wizard_system: system,
+    wizard_coord1_name: coord1Name,
+    wizard_coord1_side: coord1Side,
+    wizard_coord2_name: coord2Name,
+    wizard_coord2_side: coord2Side,
+    wizard_polarity: polarity,
+    wizard_method: method
+  };
+};
+
 const CorrectSection = ({ 
   metadata, 
   acupoints, 
@@ -60,6 +134,17 @@ const CorrectSection = ({
   const findingDebounceTimer = useRef<NodeJS.Timeout | null>(null);
 
   const [copied, setCopied] = useState(false);
+  const [showLog, setShowLog] = useState(false);
+  const [copiedIndex, setCopiedIndex] = useState<number | null>(null);
+
+  // Parse past corrections from modes_balances
+  const pastCorrections = useMemo(() => {
+    if (!appointment.modes_balances) return [];
+    return appointment.modes_balances
+      .split('\n')
+      .map((line: string) => line.trim())
+      .filter((line: string) => line.length > 0);
+  }, [appointment.modes_balances]);
 
   const handleCopyWizard = () => {
     const direction = metadata.wizard_direction || "Unknown Direction";
@@ -84,6 +169,38 @@ Correction Method: ${method}`;
     setCopied(true);
     showSuccess("Wizard configuration copied to clipboard!");
     setTimeout(() => setCopied(false), 2000);
+  };
+
+  const handleCopySingleLog = (text: string, index: number) => {
+    const cleanText = text.replace(/^[-*\s]+/, '').trim();
+    navigator.clipboard.writeText(cleanText);
+    setCopiedIndex(index);
+    showSuccess("Correction copied to clipboard!");
+    setTimeout(() => setCopiedIndex(null), 2000);
+  };
+
+  const handleLoadSingleLog = async (text: string) => {
+    try {
+      const parsedFields = parseCorrectionString(text);
+      await updateMetadataFields(parsedFields);
+      setShowLog(false);
+      showSuccess("Correction loaded into Wizard!");
+    } catch (err) {
+      showError("Failed to parse and load correction.");
+    }
+  };
+
+  const handleDeleteSingleLog = async (indexToDelete: number) => {
+    if (!confirm("Are you sure you want to delete this logged correction?")) return;
+    
+    try {
+      const updatedLogs = pastCorrections.filter((_, idx) => idx !== indexToDelete);
+      const updatedText = updatedLogs.join('\n');
+      await saveField('modes_balances', updatedText === "" ? null : updatedText);
+      showSuccess("Correction removed from log.");
+    } catch (err) {
+      showError("Failed to delete correction.");
+    }
   };
 
   useEffect(() => {
@@ -210,281 +327,354 @@ Correction Method: ${method}`;
         <div className="flex items-center justify-between border-b border-black pb-3">
           <div className="flex items-center gap-2">
             <Zap size={20} className="text-black" />
-            <h3 className="text-sm font-black uppercase tracking-widest">Lofi Calibration Wizard</h3>
+            <h3 className="text-sm font-black uppercase tracking-widest">
+              {showLog ? "Calibration Log" : "Lofi Calibration Wizard"}
+            </h3>
           </div>
-          <Button
-            variant="ghost"
-            size="icon"
-            onClick={handleCopyWizard}
-            className="h-8 w-8 rounded-md border border-black hover:bg-black hover:text-white transition-all"
-            title="Copy wizard configuration to clipboard"
-          >
-            {copied ? <Check size={14} /> : <Copy size={14} />}
-          </Button>
-        </div>
-
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-          {/* Left Column: Target & Direction */}
-          <div className="space-y-6">
-            <div className="space-y-2">
-              <label className="text-[9px] font-black uppercase tracking-widest text-slate-400">Target Finding</label>
-              <select 
-                value={showCustomInput ? "CUSTOM_INPUT" : (metadata.wizard_finding || "")}
-                onChange={(e) => {
-                  const val = e.target.value;
-                  if (val === "CUSTOM_INPUT") {
-                    setShowCustomInput(true);
-                    setLocalFinding("");
-                    updateMetadataFields({ wizard_finding: "" });
-                  } else {
-                    setShowCustomInput(false);
-                    updateMetadataFields({ wizard_finding: val });
-                  }
-                }}
-                className="w-full bg-transparent border-b border-slate-200 py-1.5 text-sm font-bold focus:border-black outline-none transition-all"
+          <div className="flex items-center gap-2">
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => setShowLog(!showLog)}
+              className="h-8 px-3 rounded-md border border-black hover:bg-black hover:text-white transition-all text-[10px] font-black uppercase tracking-widest gap-1.5"
+            >
+              <History size={12} />
+              {showLog ? "Show Wizard" : `View Log (${pastCorrections.length})`}
+            </Button>
+            {!showLog && (
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={handleCopyWizard}
+                className="h-8 w-8 rounded-md border border-black hover:bg-black hover:text-white transition-all"
+                title="Copy wizard configuration to clipboard"
               >
-                <option value="" className="text-slate-400">Select inhibited finding...</option>
-                {inhibitedFindings.map(finding => (
-                  <option key={finding} value={finding} className="text-black font-bold">
-                    {finding}
-                  </option>
+                {copied ? <Check size={14} /> : <Copy size={14} />}
+              </Button>
+            )}
+          </div>
+        </div>
+
+        {showLog ? (
+          /* FLIPPED LOG VIEW */
+          <div className="space-y-4 animate-in fade-in zoom-in-95 duration-300">
+            {pastCorrections.length > 0 ? (
+              <div className="divide-y divide-slate-100 border border-black">
+                {pastCorrections.map((correction, idx) => (
+                  <div key={idx} className="p-4 flex items-center justify-between gap-4 hover:bg-slate-50 transition-colors">
+                    <div className="flex-1 min-w-0">
+                      <p className="text-xs font-mono font-bold text-slate-800 leading-relaxed break-words">
+                        {correction.replace(/^[-*\s]+/, '')}
+                      </p>
+                    </div>
+                    <div className="flex items-center gap-2 shrink-0">
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => handleLoadSingleLog(correction)}
+                        className="h-8 px-3 rounded-md border border-black hover:bg-black hover:text-white text-[9px] font-black uppercase tracking-widest"
+                      >
+                        Load
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        onClick={() => handleCopySingleLog(correction, idx)}
+                        className="h-8 w-8 rounded-md border border-slate-200 hover:bg-slate-100"
+                        title="Copy this correction"
+                      >
+                        {copiedIndex === idx ? <Check size={12} className="text-emerald-600" /> : <Copy size={12} />}
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        onClick={() => handleDeleteSingleLog(idx)}
+                        className="h-8 w-8 rounded-md border border-rose-100 text-rose-600 hover:bg-rose-50"
+                        title="Delete this correction"
+                      >
+                        <Trash2 size={12} />
+                      </Button>
+                    </div>
+                  </div>
                 ))}
-                <option value="CUSTOM_INPUT" className="text-indigo-600 font-bold">+ Custom Entry...</option>
-              </select>
-
-              {showCustomInput && (
-                <input 
-                  type="text"
-                  value={localFinding}
-                  onChange={handleFindingChange}
-                  onFocus={() => setIsFindingFocused(true)}
-                  onBlur={handleFindingBlur}
-                  className="w-full bg-transparent border-b border-slate-200 py-1.5 text-sm font-bold focus:border-black outline-none transition-all mt-2 animate-in slide-in-from-top-1"
-                  placeholder="Type custom finding..."
-                />
-              )}
-            </div>
-
-            <div className="space-y-3">
-              <label className="text-[9px] font-black uppercase tracking-widest text-slate-400">Pathway Direction</label>
-              <div className="flex gap-6">
-                <div className="flex items-center gap-2">
-                  <Checkbox 
-                    id="dir-afferent"
-                    checked={metadata.wizard_direction === 'Afferent'}
-                    onCheckedChange={(checked) => {
-                      updateMetadataFields({
-                        wizard_direction: checked ? 'Afferent' : null,
-                        wizard_system: null // Reset system on direction change
-                      });
-                    }}
-                    className="h-4 w-4 border-black rounded-none data-[state=checked]:bg-black"
-                  />
-                  <label htmlFor="dir-afferent" className="text-xs font-bold cursor-pointer">Afferent (Bottom-Up)</label>
-                </div>
-                <div className="flex items-center gap-2">
-                  <Checkbox 
-                    id="dir-efferent"
-                    checked={metadata.wizard_direction === 'Efferent'}
-                    onCheckedChange={(checked) => {
-                      updateMetadataFields({
-                        wizard_direction: checked ? 'Efferent' : null,
-                        wizard_system: null // Reset system on direction change
-                      });
-                    }}
-                    className="h-4 w-4 border-black rounded-none data-[state=checked]:bg-black"
-                  />
-                  <label htmlFor="dir-efferent" className="text-xs font-bold cursor-pointer">Efferent (Top-Down)</label>
-                </div>
               </div>
-            </div>
-
-            <div className="space-y-3">
-              <label className="text-[9px] font-black uppercase tracking-widest text-slate-400">Specific System</label>
-              {metadata.wizard_direction === 'Afferent' ? (
-                <div className="grid grid-cols-2 gap-2">
-                  {['Mechanoreceptor', 'Vestibular/Ocular', 'Physiological', 'Nociceptive'].map(sys => (
-                    <div key={sys} className="flex items-center gap-2">
-                      <Checkbox 
-                        id={`sys-${sys}`}
-                        checked={metadata.wizard_system === sys}
-                        onCheckedChange={(checked) => updateMetadataFields({ wizard_system: checked ? sys : null })}
-                        className="h-4 w-4 border-black rounded-none data-[state=checked]:bg-black"
-                      />
-                      <label htmlFor={`sys-${sys}`} className="text-xs font-bold cursor-pointer">{sys}</label>
-                    </div>
-                  ))}
-                </div>
-              ) : metadata.wizard_direction === 'Efferent' ? (
-                <div className="grid grid-cols-2 gap-2">
-                  {['Cortical', 'Subcortical', 'Emotional'].map(sys => (
-                    <div key={sys} className="flex items-center gap-2">
-                      <Checkbox 
-                        id={`sys-${sys}`}
-                        checked={metadata.wizard_system === sys}
-                        onCheckedChange={(checked) => updateMetadataFields({ wizard_system: checked ? sys : null })}
-                        className="h-4 w-4 border-black rounded-none data-[state=checked]:bg-black"
-                      />
-                      <label htmlFor={`sys-${sys}`} className="text-xs font-bold cursor-pointer">{sys}</label>
-                    </div>
-                  ))}
-                </div>
-              ) : (
-                <p className="text-xs text-slate-400 italic">Select a pathway direction first.</p>
-              )}
-            </div>
+            ) : (
+              <div className="text-center py-12 border border-dashed border-slate-200">
+                <History className="mx-auto text-slate-300 mb-3" size={32} />
+                <p className="text-xs font-bold text-slate-500 uppercase tracking-widest">No corrections logged yet</p>
+                <p className="text-[10px] text-slate-400 mt-1">Use the wizard to calibrate and log your first finding.</p>
+              </div>
+            )}
           </div>
-
-          {/* Right Column: Coordinates & Polarity */}
-          <div className="space-y-6">
-            <div className="space-y-4 border-l-2 border-slate-100 pl-4">
-              <div className="flex items-center justify-between border-b border-slate-100 pb-1">
-                <p className="text-[9px] font-black uppercase tracking-widest text-slate-400">Calibration Coordinates</p>
-                <a 
-                  href="/resources/brain-zones/print" 
-                  target="_blank" 
-                  rel="noopener noreferrer"
-                  className="text-[9px] font-black text-indigo-600 hover:text-indigo-800 hover:underline uppercase tracking-widest flex items-center gap-1 transition-colors"
-                >
-                  <ExternalLink size={10} /> View Brain Zone Map
-                </a>
-              </div>
-              
+        ) : (
+          /* STANDARD WIZARD VIEW */
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+            {/* Left Column: Target & Direction */}
+            <div className="space-y-6">
               <div className="space-y-2">
-                <label className="text-[8px] font-black uppercase text-slate-400">Coordinate 1 (Zone Name)</label>
+                <label className="text-[9px] font-black uppercase tracking-widest text-slate-400">Target Finding</label>
                 <select 
-                  value={metadata.wizard_coord1_name || ""}
-                  onChange={(e) => updateMetadataFields({ wizard_coord1_name: e.target.value })}
-                  className="w-full bg-transparent border-b border-slate-200 py-1.5 text-xs font-bold focus:border-black outline-none transition-all"
+                  value={showCustomInput ? "CUSTOM_INPUT" : (metadata.wizard_finding || "")}
+                  onChange={(e) => {
+                    const val = e.target.value;
+                    if (val === "CUSTOM_INPUT") {
+                      setShowCustomInput(true);
+                      setLocalFinding("");
+                      updateMetadataFields({ wizard_finding: "" });
+                    } else {
+                      setShowCustomInput(false);
+                      updateMetadataFields({ wizard_finding: val });
+                    }
+                  }}
+                  className="w-full bg-transparent border-b border-slate-200 py-1.5 text-sm font-bold focus:border-black outline-none transition-all"
                 >
-                  <option value="" className="text-slate-400">Select Zone...</option>
-                  <optgroup label="Cortical Brain Zones">
-                    {corticalOptions.map(option => (
-                      <option key={`c1-${option.id}`} value={option.name} className="text-black font-bold">
-                        {option.name}
-                      </option>
-                    ))}
-                  </optgroup>
-                  <optgroup label="Subcortical Brain Zones">
-                    {subcorticalOptions.map(option => (
-                      <option key={`c1-${option.id}`} value={option.name} className="text-black font-bold">
-                        {option.name}
-                      </option>
-                    ))}
-                  </optgroup>
-                </select>
-                <div className="flex gap-4 pt-1">
-                  {['Left', 'Right', 'Bilateral'].map(side => (
-                    <div key={side} className="flex items-center gap-1.5">
-                      <Checkbox 
-                        id={`c1-side-${side}`}
-                        checked={metadata.wizard_coord1_side === side}
-                        onCheckedChange={(checked) => updateMetadataFields({ wizard_coord1_side: checked ? side : null })}
-                        className="h-3.5 w-3.5 border-black rounded-none data-[state=checked]:bg-black"
-                      />
-                      <label htmlFor={`c1-side-${side}`} className="text-[10px] font-bold cursor-pointer">{side}</label>
-                    </div>
+                  <option value="" className="text-slate-400">Select inhibited finding...</option>
+                  {inhibitedFindings.map(finding => (
+                    <option key={finding} value={finding} className="text-black font-bold">
+                      {finding}
+                    </option>
                   ))}
-                </div>
-              </div>
-
-              <div className="space-y-2 pt-2">
-                <label className="text-[8px] font-black uppercase text-slate-400">Coordinate 2 (Zone Name)</label>
-                <select 
-                  value={metadata.wizard_coord2_name || ""}
-                  onChange={(e) => updateMetadataFields({ wizard_coord2_name: e.target.value })}
-                  className="w-full bg-transparent border-b border-slate-200 py-1.5 text-xs font-bold focus:border-black outline-none transition-all"
-                >
-                  <option value="" className="text-slate-400">Select Zone...</option>
-                  <optgroup label="Cortical Brain Zones">
-                    {corticalOptions.map(option => (
-                      <option key={`c2-${option.id}`} value={option.name} className="text-black font-bold">
-                        {option.name}
-                      </option>
-                    ))}
-                  </optgroup>
-                  <optgroup label="Subcortical Brain Zones">
-                    {subcorticalOptions.map(option => (
-                      <option key={`c2-${option.id}`} value={option.name} className="text-black font-bold">
-                        {option.name}
-                      </option>
-                    ))}
-                  </optgroup>
+                  <option value="CUSTOM_INPUT" className="text-indigo-600 font-bold">+ Custom Entry...</option>
                 </select>
-                <div className="flex gap-4 pt-1">
-                  {['Left', 'Right', 'Bilateral'].map(side => (
-                    <div key={side} className="flex items-center gap-1.5">
-                      <Checkbox 
-                        id={`c2-side-${side}`}
-                        checked={metadata.wizard_coord2_side === side}
-                        onCheckedChange={(checked) => updateMetadataFields({ wizard_coord2_side: checked ? side : null })}
-                        className="h-3.5 w-3.5 border-black rounded-none data-[state=checked]:bg-black"
-                      />
-                      <label htmlFor={`c2-side-${side}`} className="text-[10px] font-bold cursor-pointer">{side}</label>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-8 pt-6 border-t border-slate-100">
-          <div className="space-y-3">
-            <label className="text-[9px] font-black uppercase tracking-widest text-slate-400">Polarity</label>
-            <div className="flex gap-6">
-              <div className="flex items-center gap-2">
-                <Checkbox 
-                  id="pol-in"
-                  checked={metadata.wizard_polarity === 'IN'}
-                  onCheckedChange={(checked) => updateMetadataFields({ wizard_polarity: checked ? 'IN' : null })}
-                  className="h-4 w-4 border-black rounded-none data-[state=checked]:bg-black"
-                />
-                <label htmlFor="pol-in" className="text-xs font-bold cursor-pointer">Energy IN (+)</label>
-              </div>
-              <div className="flex items-center gap-2">
-                <Checkbox 
-                  id="pol-out"
-                  checked={metadata.wizard_polarity === 'OUT'}
-                  onCheckedChange={(checked) => updateMetadataFields({ wizard_polarity: checked ? 'OUT' : null })}
-                  className="h-4 w-4 border-black rounded-none data-[state=checked]:bg-black"
-                />
-                <label htmlFor="pol-out" className="text-xs font-bold cursor-pointer">Energy OUT (-)</label>
-              </div>
-            </div>
-          </div>
-
-          <div className="space-y-3">
-            <label className="text-[9px] font-black uppercase tracking-widest text-slate-400">Correction Method</label>
-            <div className="flex flex-wrap gap-4">
-              {['Tapping', 'Holding + Intention', 'Tuning Fork'].map(method => (
-                <div key={method} className="flex items-center gap-2">
-                  <Checkbox 
-                    id={`method-${method}`}
-                    checked={metadata.wizard_method === method}
-                    onCheckedChange={(checked) => updateMetadataFields({ wizard_method: checked ? method : null })}
-                    className="h-4 w-4 border-black rounded-none data-[state=checked]:bg-black"
+                {showCustomInput && (
+                  <input 
+                    type="text"
+                    value={localFinding}
+                    onChange={handleFindingChange}
+                    onFocus={() => setIsFindingFocused(true)}
+                    onBlur={handleFindingBlur}
+                    className="w-full bg-transparent border-b border-slate-200 py-1.5 text-sm font-bold focus:border-black outline-none transition-all mt-2 animate-in slide-in-from-top-1"
+                    placeholder="Type custom finding..."
                   />
-                  <label htmlFor={`method-${method}`} className="text-xs font-bold cursor-pointer">{method}</label>
+                )}
+              </div>
+
+              <div className="space-y-3">
+                <label className="text-[9px] font-black uppercase tracking-widest text-slate-400">Pathway Direction</label>
+                <div className="flex gap-6">
+                  <div className="flex items-center gap-2">
+                    <Checkbox 
+                      id="dir-afferent"
+                      checked={metadata.wizard_direction === 'Afferent'}
+                      onCheckedChange={(checked) => {
+                        updateMetadataFields({
+                          wizard_direction: checked ? 'Afferent' : null,
+                          wizard_system: null // Reset system on direction change
+                        });
+                      }}
+                      className="h-4 w-4 border-black rounded-none data-[state=checked]:bg-black"
+                    />
+                    <label htmlFor="dir-afferent" className="text-xs font-bold cursor-pointer">Afferent (Bottom-Up)</label>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <Checkbox 
+                      id="dir-efferent"
+                      checked={metadata.wizard_direction === 'Efferent'}
+                      onCheckedChange={(checked) => {
+                        updateMetadataFields({
+                          wizard_direction: checked ? 'Efferent' : null,
+                          wizard_system: null // Reset system on direction change
+                        });
+                      }}
+                      className="h-4 w-4 border-black rounded-none data-[state=checked]:bg-black"
+                    />
+                    <label htmlFor="dir-efferent" className="text-xs font-bold cursor-pointer">Efferent (Top-Down)</label>
+                  </div>
                 </div>
-              ))}
+              </div>
+
+              <div className="space-y-3">
+                <label className="text-[9px] font-black uppercase tracking-widest text-slate-400">Specific System</label>
+                {metadata.wizard_direction === 'Afferent' ? (
+                  <div className="grid grid-cols-2 gap-2">
+                    {['Mechanoreceptor', 'Vestibular/Ocular', 'Physiological', 'Nociceptive'].map(sys => (
+                      <div key={sys} className="flex items-center gap-2">
+                        <Checkbox 
+                          id={`sys-${sys}`}
+                          checked={metadata.wizard_system === sys}
+                          onCheckedChange={(checked) => updateMetadataFields({ wizard_system: checked ? sys : null })}
+                          className="h-4 w-4 border-black rounded-none data-[state=checked]:bg-black"
+                        />
+                        <label htmlFor={`sys-${sys}`} className="text-xs font-bold cursor-pointer">{sys}</label>
+                      </div>
+                    ))}
+                  </div>
+                ) : metadata.wizard_direction === 'Efferent' ? (
+                  <div className="grid grid-cols-2 gap-2">
+                    {['Cortical', 'Subcortical', 'Emotional'].map(sys => (
+                      <div key={sys} className="flex items-center gap-2">
+                        <Checkbox 
+                          id={`sys-${sys}`}
+                          checked={metadata.wizard_system === sys}
+                          onCheckedChange={(checked) => updateMetadataFields({ wizard_system: checked ? sys : null })}
+                          className="h-4 w-4 border-black rounded-none data-[state=checked]:bg-black"
+                        />
+                        <label htmlFor={`sys-${sys}`} className="text-xs font-bold cursor-pointer">{sys}</label>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <p className="text-xs text-slate-400 italic">Select a pathway direction first.</p>
+                )}
+              </div>
+            </div>
+
+            {/* Right Column: Coordinates & Polarity */}
+            <div className="space-y-6">
+              <div className="space-y-4 border-l-2 border-slate-100 pl-4">
+                <div className="flex items-center justify-between border-b border-slate-100 pb-1">
+                  <p className="text-[9px] font-black uppercase tracking-widest text-slate-400">Calibration Coordinates</p>
+                  <a 
+                    href="/resources/brain-zones/print" 
+                    target="_blank" 
+                    rel="noopener noreferrer"
+                    className="text-[9px] font-black text-indigo-600 hover:text-indigo-800 hover:underline uppercase tracking-widest flex items-center gap-1 transition-colors"
+                  >
+                    <ExternalLink size={10} /> View Brain Zone Map
+                  </a>
+                </div>
+                
+                <div className="space-y-2">
+                  <label className="text-[8px] font-black uppercase text-slate-400">Coordinate 1 (Zone Name)</label>
+                  <select 
+                    value={metadata.wizard_coord1_name || ""}
+                    onChange={(e) => updateMetadataFields({ wizard_coord1_name: e.target.value })}
+                    className="w-full bg-transparent border-b border-slate-200 py-1.5 text-xs font-bold focus:border-black outline-none transition-all"
+                  >
+                    <option value="" className="text-slate-400">Select Zone...</option>
+                    <optgroup label="Cortical Brain Zones">
+                      {corticalOptions.map(option => (
+                        <option key={`c1-${option.id}`} value={option.name} className="text-black font-bold">
+                          {option.name}
+                        </option>
+                      ))}
+                    </optgroup>
+                    <optgroup label="Subcortical Brain Zones">
+                      {subcorticalOptions.map(option => (
+                        <option key={`c1-${option.id}`} value={option.name} className="text-black font-bold">
+                          {option.name}
+                        </option>
+                      ))}
+                    </optgroup>
+                  </select>
+                  <div className="flex gap-4 pt-1">
+                    {['Left', 'Right', 'Bilateral'].map(side => (
+                      <div key={side} className="flex items-center gap-1.5">
+                        <Checkbox 
+                          id={`c1-side-${side}`}
+                          checked={metadata.wizard_coord1_side === side}
+                          onCheckedChange={(checked) => updateMetadataFields({ wizard_coord1_side: checked ? side : null })}
+                          className="h-3.5 w-3.5 border-black rounded-none data-[state=checked]:bg-black"
+                        />
+                        <label htmlFor={`c1-side-${side}`} className="text-[10px] font-bold cursor-pointer">{side}</label>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                <div className="space-y-2 pt-2">
+                  <label className="text-[8px] font-black uppercase text-slate-400">Coordinate 2 (Zone Name)</label>
+                  <select 
+                    value={metadata.wizard_coord2_name || ""}
+                    onChange={(e) => updateMetadataFields({ wizard_coord2_name: e.target.value })}
+                    className="w-full bg-transparent border-b border-slate-200 py-1.5 text-xs font-bold focus:border-black outline-none transition-all"
+                  >
+                    <option value="" className="text-slate-400">Select Zone...</option>
+                    <optgroup label="Cortical Brain Zones">
+                      {corticalOptions.map(option => (
+                        <option key={`c2-${option.id}`} value={option.name} className="text-black font-bold">
+                          {option.name}
+                        </option>
+                      ))}
+                    </optgroup>
+                    <optgroup label="Subcortical Brain Zones">
+                      {subcorticalOptions.map(option => (
+                        <option key={`c2-${option.id}`} value={option.name} className="text-black font-bold">
+                          {option.name}
+                        </option>
+                      ))}
+                    </optgroup>
+                  </select>
+                  <div className="flex gap-4 pt-1">
+                    {['Left', 'Right', 'Bilateral'].map(side => (
+                      <div key={side} className="flex items-center gap-1.5">
+                        <Checkbox 
+                          id={`c2-side-${side}`}
+                          checked={metadata.wizard_coord2_side === side}
+                          onCheckedChange={(checked) => updateMetadataFields({ wizard_coord2_side: checked ? side : null })}
+                          className="h-3.5 w-3.5 border-black rounded-none data-[state=checked]:bg-black"
+                        />
+                        <label htmlFor={`c2-side-${side}`} className="text-[10px] font-bold cursor-pointer">{side}</label>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
-        </div>
+        )}
 
-        {/* Log Correction Button */}
-        <div className="pt-6 border-t border-slate-100 flex justify-between items-center">
-          <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">
-            Ready to log this correction?
-          </p>
-          <Button
-            onClick={handleLogCorrection}
-            disabled={!metadata.wizard_finding}
-            className="bg-black text-white hover:bg-slate-800 rounded-none h-10 px-6 font-black text-[10px] uppercase tracking-widest shadow-lg"
-          >
-            <CheckCircle2 size={14} className="mr-2" /> Log Correction
-          </Button>
-        </div>
+        {!showLog && (
+          <>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-8 pt-6 border-t border-slate-100">
+              <div className="space-y-3">
+                <label className="text-[9px] font-black uppercase tracking-widest text-slate-400">Polarity</label>
+                <div className="flex gap-6">
+                  <div className="flex items-center gap-2">
+                    <Checkbox 
+                      id="pol-in"
+                      checked={metadata.wizard_polarity === 'IN'}
+                      onCheckedChange={(checked) => updateMetadataFields({ wizard_polarity: checked ? 'IN' : null })}
+                      className="h-4 w-4 border-black rounded-none data-[state=checked]:bg-black"
+                    />
+                    <label htmlFor="pol-in" className="text-xs font-bold cursor-pointer">Energy IN (+)</label>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <Checkbox 
+                      id="pol-out"
+                      checked={metadata.wizard_polarity === 'OUT'}
+                      onCheckedChange={(checked) => updateMetadataFields({ wizard_polarity: checked ? 'OUT' : null })}
+                      className="h-4 w-4 border-black rounded-none data-[state=checked]:bg-black"
+                    />
+                    <label htmlFor="pol-out" className="text-xs font-bold cursor-pointer">Energy OUT (-)</label>
+                  </div>
+                </div>
+              </div>
+
+              <div className="space-y-3">
+                <label className="text-[9px] font-black uppercase tracking-widest text-slate-400">Correction Method</label>
+                <div className="flex flex-wrap gap-4">
+                  {['Tapping', 'Holding + Intention', 'Tuning Fork'].map(method => (
+                    <div key={method} className="flex items-center gap-2">
+                      <Checkbox 
+                        id={`method-${method}`}
+                        checked={metadata.wizard_method === method}
+                        onCheckedChange={(checked) => updateMetadataFields({ wizard_method: checked ? method : null })}
+                        className="h-4 w-4 border-black rounded-none data-[state=checked]:bg-black"
+                      />
+                      <label htmlFor={`method-${method}`} className="text-xs font-bold cursor-pointer">{method}</label>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+
+            {/* Log Correction Button */}
+            <div className="pt-6 border-t border-slate-100 flex justify-between items-center">
+              <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">
+                Ready to log this correction?
+              </p>
+              <Button
+                onClick={handleLogCorrection}
+                disabled={!metadata.wizard_finding}
+                className="bg-black text-white hover:bg-slate-800 rounded-none h-10 px-6 font-black text-[10px] uppercase tracking-widest shadow-lg"
+              >
+                <CheckCircle2 size={14} className="mr-2" /> Log Correction
+              </Button>
+            </div>
+          </>
+        )}
       </div>
 
       {/* AFFERENT PROTOCOLS SECTION */}
@@ -608,7 +798,7 @@ Correction Method: ${method}`;
                 "Timeline Selection: Determine if the stress is Current (happening now) or Historic (past event).",
                 "Timeline Regression: If historic, narrow down the specific age and month of origin using the indicator muscle.",
                 "Primary Emotion: Identify the core feeling: Hurt (Fire), Worry (Earth), Sadness (Metal), Fear (Water), or Anger (Wood).",
-                "Priority Organ: Find the organ acting as a surrogate for the charge. This MUST be an organ related to the emotion's element from Step 5 (Wood: LV/GB, Fire: HT/SI, Earth: SP/ST, Metal: LU/LI, Water: KI/BL).",
+                "Priority Organ: Find the organ acting as a surrogate for the charge. This MUST be an organ related to the emotion's element from Step 5 (Wood: LV/GB, Fire: HT/SI, East: SP/ST, Metal: LU/LI, Water: KI/BL).",
                 "Energy Polarity: Challenge for Energy IN (+) or Energy OUT (-). Usually OUT to release stress.",
                 "Eye Position (NLP Logic): Identify the sensory access point for the stress (Up/Left: Visual Memory, Horiz/Left: Auditory Memory, Down/Left: Internal Monologue, Up/Right: Visual Constructed, Horiz/Right: Auditory Constructed, Down/Right: Kinesthetic/Felt Sense).",
                 "Correction & Upload: Hold ESR + Pulse Point + Eye Position. Replay stress until shift (yawn, sigh, swallow, gurgle, deep breath), then upload positive state."

@@ -2,7 +2,21 @@
 
 import React, { useState, useEffect, useMemo } from 'react';
 import { cn } from '@/lib/utils';
-import { Clock, CheckCircle2, Target, Zap, AlertTriangle, Home, ChevronDown, LogOut, AlertCircle } from 'lucide-react';
+import { 
+  Clock, 
+  CheckCircle2, 
+  Target, 
+  Zap, 
+  AlertTriangle, 
+  Home, 
+  ChevronDown, 
+  LogOut, 
+  AlertCircle,
+  Maximize2,
+  Minimize2,
+  FileText,
+  LayoutGrid
+} from 'lucide-react';
 import { format, differenceInSeconds, formatDistanceToNow } from 'date-fns';
 import { Button } from '@/components/ui/button';
 import {
@@ -14,6 +28,7 @@ import {
 import { Badge } from '@/components/ui/badge';
 import { supabase } from '@/integrations/supabase/client';
 import { showSuccess, showError } from '@/utils/toast';
+import { useLocation, useNavigate } from 'react-router-dom';
 
 interface SessionTimerProps {
   sessionId: string;
@@ -34,6 +49,12 @@ const TOTAL_DURATION_MINUTES = SESSION_STAGES.reduce((sum, stage) => sum + stage
 
 const SessionTimer = ({ sessionId, appointmentDate, status, clientName, currentPhaseName }: SessionTimerProps) => {
   const [currentTime, setCurrentTime] = useState(new Date());
+  const location = useLocation();
+  const navigate = useNavigate();
+
+  const [isFullScreen, setIsFullScreen] = useState(() => {
+    return localStorage.getItem('antigravity_fullscreen') === 'true';
+  });
 
   useEffect(() => {
     const timer = setInterval(() => {
@@ -41,6 +62,45 @@ const SessionTimer = ({ sessionId, appointmentDate, status, clientName, currentP
     }, 1000);
     return () => clearInterval(timer);
   }, []);
+
+  // Keyboard Shortcuts & Event Listeners (macOS & Windows Robust)
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      // Alt/Option + F: Toggle Full Screen
+      if (e.altKey && e.code === 'KeyF') {
+        e.preventDefault();
+        toggleFullScreen();
+      }
+      // Alt/Option + D: Toggle Document View
+      if (e.altKey && e.code === 'KeyD') {
+        e.preventDefault();
+        toggleDocumentView();
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.addEventListener('keydown', handleKeyDown);
+  }, [location.pathname, location.search, isFullScreen]);
+
+  const toggleFullScreen = () => {
+    const nextState = !isFullScreen;
+    setIsFullScreen(nextState);
+    localStorage.setItem('antigravity_fullscreen', String(nextState));
+    window.dispatchEvent(new Event('antigravity_fullscreen_change'));
+    showSuccess(nextState ? "Full Screen Mode Enabled" : "Full Screen Mode Disabled");
+  };
+
+  const isDocViewActive = location.search.includes('view=document');
+
+  const toggleDocumentView = () => {
+    if (!location.pathname.startsWith('/appointments/')) return;
+    
+    if (isDocViewActive) {
+      navigate(location.pathname);
+    } else {
+      navigate(`${location.pathname}?view=document`);
+    }
+  };
 
   const {
     elapsedSeconds,
@@ -116,10 +176,11 @@ const SessionTimer = ({ sessionId, appointmentDate, status, clientName, currentP
   const formatOvertime = (seconds: number) => {
     const mins = Math.floor(seconds / 60);
     const secs = seconds % 60;
-    return `${mins}m ${secs.toString().padStart(2, '0')}s`;
+    return `${mins}m ${secs.toString().padStart(2, '0')}`;
   };
 
   const activePhase = SESSION_STAGES.find(s => s.id === currentPhaseName) || recommendedStage;
+  const isInSessionPage = location.pathname.startsWith('/appointments/');
 
   return (
     <div className="w-full">
@@ -185,7 +246,33 @@ const SessionTimer = ({ sessionId, appointmentDate, status, clientName, currentP
           )}
         </div>
 
-        <div className="flex items-center gap-4">
+        <div className="flex items-center gap-3">
+          {/* Quick View Switcher (Doc vs Standard) */}
+          {isInSessionPage && (
+            <Button
+              size="sm"
+              onClick={toggleDocumentView}
+              className="h-8 px-3 rounded-xl bg-white/10 hover:bg-white/20 text-white font-black text-[9px] uppercase tracking-widest gap-1.5"
+              title="Toggle Document View (Option + D)"
+            >
+              {isDocViewActive ? <LayoutGrid size={14} /> : <FileText size={14} />}
+              <span className="hidden md:inline">{isDocViewActive ? "Standard View" : "Doc View"}</span>
+            </Button>
+          )}
+
+          {/* Full Screen Toggle */}
+          {isInSessionPage && (
+            <Button
+              size="sm"
+              onClick={toggleFullScreen}
+              className="h-8 px-3 rounded-xl bg-white/10 hover:bg-white/20 text-white font-black text-[9px] uppercase tracking-widest gap-1.5"
+              title="Toggle Full Screen (Option + F)"
+            >
+              {isFullScreen ? <Minimize2 size={14} /> : <Maximize2 size={14} />}
+              <span className="hidden md:inline">{isFullScreen ? "Exit Full" : "Full Screen"}</span>
+            </Button>
+          )}
+
           <div className="w-32 h-1.5 bg-white/5 rounded-full overflow-hidden hidden lg:block">
             <div 
               className={cn(

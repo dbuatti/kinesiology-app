@@ -33,14 +33,14 @@ const MainLayout = () => {
     };
   }, []);
 
-  // Global Keyboard Shortcuts
+  // Global Keyboard Shortcuts (macOS & Windows Robust)
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       const isInSessionPage = location.pathname.startsWith('/appointments/');
       if (!isInSessionPage) return;
 
-      // Alt + F: Toggle Full Screen
-      if (e.altKey && e.key.toLowerCase() === 'f') {
+      // Alt/Option + F: Toggle Full Screen
+      if (e.altKey && e.code === 'KeyF') {
         e.preventDefault();
         const nextState = !isFullScreen;
         localStorage.setItem('antigravity_fullscreen', String(nextState));
@@ -48,8 +48,8 @@ const MainLayout = () => {
         showSuccess(nextState ? "Full Screen Enabled" : "Full Screen Disabled");
       }
 
-      // Alt + D: Toggle Document View
-      if (e.altKey && e.key.toLowerCase() === 'd') {
+      // Alt/Option + D: Toggle Document View
+      if (e.altKey && e.code === 'KeyD') {
         e.preventDefault();
         const isDocViewActive = location.search.includes('view=document');
         if (isDocViewActive) {

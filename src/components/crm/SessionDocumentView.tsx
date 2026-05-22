@@ -25,11 +25,11 @@ import {
   ClipboardCheck,
   ChevronDown,
   ChevronUp,
-  BookOpen,
   Calendar,
   X,
   Maximize2,
-  Minimize2
+  Minimize2,
+  LayoutGrid
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Checkbox } from '@/components/ui/checkbox';
@@ -77,6 +77,13 @@ interface SessionDocumentViewProps {
   updatePriorityPattern: (category: string, itemName: string, status: 'Clear' | 'Inhibited' | null, side?: 'L' | 'R') => Promise<void>;
   onClose: () => void;
 }
+
+const SectionHeader = ({ id, title, subtitle }: { id: string, title: string, subtitle?: string }) => (
+  <div id={id} className="border-b-2 border-black pb-1 mb-6 mt-28 first:mt-0 scroll-mt-24">
+    <h2 className="text-2xl font-black uppercase tracking-tighter">{title}</h2>
+    {subtitle && <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">{subtitle}</p>}
+  </div>
+);
 
 const SessionDocumentView = ({ 
   appointment, 
@@ -189,7 +196,19 @@ const SessionDocumentView = ({
     setIsFullScreen(nextState);
     localStorage.setItem('antigravity_fullscreen', String(nextState));
     window.dispatchEvent(new Event('antigravity_fullscreen_change'));
-    showSuccess(nextState ? "Full Screen Enabled" : "Full Screen Disabled");
+    showSuccess(nextState ? "Full Screen Mode Enabled" : "Full Screen Mode Disabled");
+  };
+
+  const isDocViewActive = location.search.includes('view=document');
+
+  const toggleDocumentView = () => {
+    if (!location.pathname.startsWith('/appointments/')) return;
+    
+    if (isDocViewActive) {
+      navigate(location.pathname);
+    } else {
+      navigate(`${location.pathname}?view=document`);
+    }
   };
 
   const startQuickTimer = (duration: number) => {
@@ -277,13 +296,6 @@ const SessionDocumentView = ({
       scrollContainer.removeEventListener('scroll', handleScroll);
     };
   }, []);
-
-  const SectionHeader = ({ id, title, subtitle }: { id: string, title: string, subtitle?: string }) => (
-    <div id={id} className="border-b-2 border-black pb-1 mb-6 mt-16 first:mt-0 scroll-mt-24">
-      <h2 className="text-2xl font-black uppercase tracking-tighter">{title}</h2>
-      {subtitle && <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">{subtitle}</p>}
-    </div>
-  );
 
   const scrollTo = (id: string) => {
     const el = document.getElementById(id);

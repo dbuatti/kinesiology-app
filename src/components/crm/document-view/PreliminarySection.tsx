@@ -1,18 +1,20 @@
 "use client";
 
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useMemo } from 'react';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { 
   Play, Square, RotateCcw, Save, Loader2, 
-  Heart, Brain, Activity, FlaskConical, Check, Sparkles
+  Heart, Brain, Activity, FlaskConical, Check, Sparkles,
+  Footprints, Scale, Hand, RefreshCw, Info, AlertCircle
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { showSuccess, showError } from '@/utils/toast';
 import DocInput from './DocInput';
 import { Badge } from '@/components/ui/badge';
+import { safeParse } from '@/utils/safe-json';
 
 interface PreliminarySectionProps {
   appointment: any;
@@ -38,6 +40,27 @@ const PreliminarySection = ({ appointment, saveField }: PreliminarySectionProps)
     appointment.coherence_score || null
   );
   const [savingCoherence, setSavingCoherence] = useState(false);
+
+  // Parse priority pattern for statuses
+  const pattern = useMemo(() => {
+    return safeParse(appointment.priority_pattern, {} as any);
+  }, [appointment.priority_pattern]);
+
+  const getZoneStatus = (zoneName: string) => {
+    return pattern.brainZones?.[zoneName] || null;
+  };
+
+  const handleSetZoneStatus = async (zoneName: string, status: 'Clear' | 'Inhibited' | 'Recheck') => {
+    try {
+      const currentPattern = { ...pattern };
+      if (!currentPattern.brainZones) currentPattern.brainZones = {};
+      currentPattern.brainZones[zoneName] = status;
+      await saveField('priority_pattern', JSON.stringify(currentPattern));
+      showSuccess(`${zoneName} marked as ${status}`);
+    } catch (err) {
+      showError("Failed to update status");
+    }
+  };
 
   // Sync props
   useEffect(() => {
@@ -67,8 +90,13 @@ const PreliminarySection = ({ appointment, saveField }: PreliminarySectionProps)
   };
 
   const stopBolt = () => {
-    setBoltRunning(false);
+    setRunning(false);
     setBoltFinished(true);
+  };
+
+  // Fix for missing setRunning
+  const setRunning = (val: boolean) => {
+    setBoltRunning(val);
   };
 
   const saveBolt = async () => {
@@ -121,6 +149,25 @@ const PreliminarySection = ({ appointment, saveField }: PreliminarySectionProps)
 
   const isCoherent = coherenceScore !== null && Math.abs(coherenceScore - Math.round(coherenceScore)) < 0.01;
 
+  // Elegant Custom Toggle Component for Document View
+  const DocToggle = ({ options, value, onChange }: { options: { label: string, value: string }[], value: string, onChange: (val: string) => void }) => (
+    <div className="flex gap-1 bg-slate-100 p-0.5 rounded-md border border-slate-200 w-fit">
+      {options.map(opt => (
+        <button
+          key={opt.value}
+          type="button"
+          onClick={() => onChange(opt.value)}
+          className={cn(
+            "px-2 py-1 text-[9px] font-black uppercase rounded-sm transition-all",
+            value === opt.value ? "bg-black text-white" : "text-slate-500 hover:text-black"
+          )}
+        >
+          {opt.label}
+        </button>
+      ))}
+    </div>
+  );
+
   return (
     <div className="space-y-12">
       {/* Top Grid: Goal, Concern, Hydration, ROM Notes */}
@@ -166,7 +213,7 @@ const PreliminarySection = ({ appointment, saveField }: PreliminarySectionProps)
         </div>
       </div>
 
-      {/* Group BOLT and Coherence closely together to remove the large gap */}
+      {/* BOLT and Coherence */}
       <div className="space-y-4">
         {/* Horizontal BOLT Score Assessment */}
         <div className="space-y-3">
@@ -313,6 +360,310 @@ const PreliminarySection = ({ appointment, saveField }: PreliminarySectionProps)
                 </Badge>
               </div>
             )}
+          </div>
+        </div>
+      </div>
+
+      {/* Neurological Global Assessments Section */}
+      <div className="space-y-6 pt-6 border-t border-slate-200">
+        <div className="flex items-center gap-3">
+          <div className="w-8 h-8 rounded-lg bg-slate-900 text-white flex items-center justify-center">
+            <Brain size={18} />
+          </div>
+          <h3 className="text-sm font-black uppercase tracking-widest">Neurological Global Assessments</h3>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+          {/* Fukuda Step Test */}
+          <div className="p-6 border border-black space-y-4 bg-white">
+            <div className="flex items-center justify-between border-b border-slate-100 pb-2">
+              <div className="flex items-center gap-2">
+                <Footprints size={16} className="text-emerald-600" />
+                <h4 className="text-xs font-black uppercase tracking-widest">Fukuda Step Test</h4>
+              </div>
+              <DocToggle 
+                options={[
+                  { label: 'Clear', value: 'Clear' },
+                  { label: 'Inhib', value: 'Inhibited' },
+                  { label: 'Recheck', value: 'Recheck' }
+                ]}
+                value={getZoneStatus('Fakuda Step Test') || ""}
+                onChange={(val) => handleSetZoneStatus('Fakuda Step Test', val as any)}
+              />
+            </div>
+            
+            <div className="grid grid-cols-3 gap-2">
+              <div className="space-y-1">
+                <label className="text-[8px] font-black uppercase text-slate-400">Drift</label>
+                <input 
+                  type="text" 
+                  placeholder="e.g. Left"
+                  value={appointment.fakuda_notes?.match(/Drift Direction:\s*([^\n,]+)/i)?.[1] || ""}
+                  onChange={(e) => {
+                    const notes = appointment.fakuda_notes || "";
+                    const clean = notes.replace(/- Drift Direction:[^\n]*\n?/g, "");
+                    saveField('fakuda_notes', `${clean}- Drift Direction: ${e.target.value}\n`);
+                  }}
+                  className="w-full bg-transparent border-b border-slate-200 py-1 text-xs font-bold focus:border-black outline-none"
+                />
+              </div>
+              <div className="space-y-1">
+                <label className="text-[8px] font-black uppercase text-slate-400">Angle</label>
+                <input 
+                  type="text" 
+                  placeholder="e.g. 30°"
+                  value={appointment.fakuda_notes?.match(/Angle of Rotation:\s*([^\n,°]+)/i)?.[1] || ""}
+                  onChange={(e) => {
+                    const notes = appointment.fakuda_notes || "";
+                    const clean = notes.replace(/- Angle of Rotation:[^\n]*\n?/g, "");
+                    saveField('fakuda_notes', `${clean}- Angle of Rotation: ${e.target.value}°\n`);
+                  }}
+                  className="w-full bg-transparent border-b border-slate-200 py-1 text-xs font-bold focus:border-black outline-none"
+                />
+              </div>
+              <div className="space-y-1">
+                <label className="text-[8px] font-black uppercase text-slate-400">Distance</label>
+                <input 
+                  type="text" 
+                  placeholder="e.g. 50cm"
+                  value={appointment.fakuda_notes?.match(/Distance Displaced:\s*([^\n,cm]+)/i)?.[1] || ""}
+                  onChange={(e) => {
+                    const notes = appointment.fakuda_notes || "";
+                    const clean = notes.replace(/- Distance Displaced:[^\n]*\n?/g, "");
+                    saveField('fakuda_notes', `${clean}- Distance Displaced: ${e.target.value} cm\n`);
+                  }}
+                  className="w-full bg-transparent border-b border-slate-200 py-1 text-xs font-bold focus:border-black outline-none"
+                />
+              </div>
+            </div>
+
+            <DocInput 
+              label="Observations" 
+              value={appointment.fakuda_notes} 
+              field="fakuda_notes" 
+              placeholder="Fukuda observations..." 
+              multiline 
+              onChange={handleFieldChange}
+            />
+          </div>
+
+          {/* Sharpened Romberg's */}
+          <div className="p-6 border border-black space-y-4 bg-white">
+            <div className="flex items-center justify-between border-b border-slate-100 pb-2">
+              <div className="flex items-center gap-2">
+                <Activity size={16} className="text-purple-600" />
+                <h4 className="text-xs font-black uppercase tracking-widest">Sharpened Romberg's</h4>
+              </div>
+              <DocToggle 
+                options={[
+                  { label: 'Clear', value: 'Clear' },
+                  { label: 'Inhib', value: 'Inhibited' },
+                  { label: 'Recheck', value: 'Recheck' }
+                ]}
+                value={getZoneStatus('Sharpened Rhombergs Test') || ""}
+                onChange={(val) => handleSetZoneStatus('Sharpened Rhombergs Test', val as any)}
+              />
+            </div>
+
+            <div className="grid grid-cols-3 gap-2">
+              <div className="space-y-1">
+                <label className="text-[8px] font-black uppercase text-slate-400">Eyes Open</label>
+                <input 
+                  type="text" 
+                  placeholder="e.g. 30s"
+                  value={appointment.sharpened_rhombergs_notes?.match(/Eyes Open Hold Time:\s*([^\n,s]+)/i)?.[1] || ""}
+                  onChange={(e) => {
+                    const notes = appointment.sharpened_rhombergs_notes || "";
+                    const clean = notes.replace(/- Eyes Open Hold Time:[^\n]*\n?/g, "");
+                    saveField('sharpened_rhombergs_notes', `${clean}- Eyes Open Hold Time: ${e.target.value}s\n`);
+                  }}
+                  className="w-full bg-transparent border-b border-slate-200 py-1 text-xs font-bold focus:border-black outline-none"
+                />
+              </div>
+              <div className="space-y-1">
+                <label className="text-[8px] font-black uppercase text-slate-400">Eyes Closed</label>
+                <input 
+                  type="text" 
+                  placeholder="e.g. 15s"
+                  value={appointment.sharpened_rhombergs_notes?.match(/Eyes Closed Hold Time:\s*([^\n,s]+)/i)?.[1] || ""}
+                  onChange={(e) => {
+                    const notes = appointment.sharpened_rhombergs_notes || "";
+                    const clean = notes.replace(/- Eyes Closed Hold Time:[^\n]*\n?/g, "");
+                    saveField('sharpened_rhombergs_notes', `${clean}- Eyes Closed Hold Time: ${e.target.value}s\n`);
+                  }}
+                  className="w-full bg-transparent border-b border-slate-200 py-1 text-xs font-bold focus:border-black outline-none"
+                />
+              </div>
+              <div className="space-y-1">
+                <label className="text-[8px] font-black uppercase text-slate-400">Sway</label>
+                <input 
+                  type="text" 
+                  placeholder="e.g. Left"
+                  value={appointment.sharpened_rhombergs_notes?.match(/Sway Direction:\s*([^\n,]+)/i)?.[1] || ""}
+                  onChange={(e) => {
+                    const notes = appointment.sharpened_rhombergs_notes || "";
+                    const clean = notes.replace(/- Sway Direction:[^\n]*\n?/g, "");
+                    saveField('sharpened_rhombergs_notes', `${clean}- Sway Direction: ${e.target.value}\n`);
+                  }}
+                  className="w-full bg-transparent border-b border-slate-200 py-1 text-xs font-bold focus:border-black outline-none"
+                />
+              </div>
+            </div>
+
+            <DocInput 
+              label="Observations" 
+              value={appointment.sharpened_rhombergs_notes} 
+              field="sharpened_rhombergs_notes" 
+              placeholder="Romberg's observations..." 
+              multiline 
+              onChange={handleFieldChange}
+            />
+          </div>
+
+          {/* Frontal Lobe Assessment */}
+          <div className="p-6 border border-black space-y-4 bg-white">
+            <div className="flex items-center justify-between border-b border-slate-100 pb-2">
+              <div className="flex items-center gap-2">
+                <Hand size={16} className="text-indigo-600" />
+                <h4 className="text-xs font-black uppercase tracking-widest">Frontal Lobe</h4>
+              </div>
+              <DocToggle 
+                options={[
+                  { label: 'Clear', value: 'Clear' },
+                  { label: 'Inhib', value: 'Inhibited' },
+                  { label: 'Recheck', value: 'Recheck' }
+                ]}
+                value={getZoneStatus('Frontal Lobe Assessment') || ""}
+                onChange={(val) => handleSetZoneStatus('Frontal Lobe Assessment', val as any)}
+              />
+            </div>
+
+            <div className="grid grid-cols-3 gap-2">
+              <div className="space-y-1">
+                <label className="text-[8px] font-black uppercase text-slate-400">L Speed</label>
+                <input 
+                  type="text" 
+                  placeholder="e.g. 8/10"
+                  value={appointment.frontal_lobe_notes?.match(/Left Hand Speed:\s*([^\n,]+)/i)?.[1] || ""}
+                  onChange={(e) => {
+                    const notes = appointment.frontal_lobe_notes || "";
+                    const clean = notes.replace(/- Left Hand Speed:[^\n]*\n?/g, "");
+                    saveField('frontal_lobe_notes', `${clean}- Left Hand Speed: ${e.target.value}\n`);
+                  }}
+                  className="w-full bg-transparent border-b border-slate-200 py-1 text-xs font-bold focus:border-black outline-none"
+                />
+              </div>
+              <div className="space-y-1">
+                <label className="text-[8px] font-black uppercase text-slate-400">R Speed</label>
+                <input 
+                  type="text" 
+                  placeholder="e.g. 6/10"
+                  value={appointment.frontal_lobe_notes?.match(/Right Hand Speed:\s*([^\n,]+)/i)?.[1] || ""}
+                  onChange={(e) => {
+                    const notes = appointment.frontal_lobe_notes || "";
+                    const clean = notes.replace(/- Right Hand Speed:[^\n]*\n?/g, "");
+                    saveField('frontal_lobe_notes', `${clean}- Right Hand Speed: ${e.target.value}\n`);
+                  }}
+                  className="w-full bg-transparent border-b border-slate-200 py-1 text-xs font-bold focus:border-black outline-none"
+                />
+              </div>
+              <div className="space-y-1">
+                <label className="text-[8px] font-black uppercase text-slate-400">Asymmetry</label>
+                <input 
+                  type="text" 
+                  placeholder="e.g. Yes"
+                  value={appointment.frontal_lobe_notes?.match(/Asymmetry Detected:\s*([^\n,]+)/i)?.[1] || ""}
+                  onChange={(e) => {
+                    const notes = appointment.frontal_lobe_notes || "";
+                    const clean = notes.replace(/- Asymmetry Detected:[^\n]*\n?/g, "");
+                    saveField('frontal_lobe_notes', `${clean}- Asymmetry Detected: ${e.target.value}\n`);
+                  }}
+                  className="w-full bg-transparent border-b border-slate-200 py-1 text-xs font-bold focus:border-black outline-none"
+                />
+              </div>
+            </div>
+
+            <DocInput 
+              label="Observations" 
+              value={appointment.frontal_lobe_notes} 
+              field="frontal_lobe_notes" 
+              placeholder="Frontal lobe observations..." 
+              multiline 
+              onChange={handleFieldChange}
+            />
+          </div>
+
+          {/* Righting Reflexes */}
+          <div className="p-6 border border-black space-y-4 bg-white">
+            <div className="flex items-center justify-between border-b border-slate-100 pb-2">
+              <div className="flex items-center gap-2">
+                <RefreshCw size={16} className="text-blue-600" />
+                <h4 className="text-xs font-black uppercase tracking-widest">Righting Reflexes</h4>
+              </div>
+              <DocToggle 
+                options={[
+                  { label: 'Clear', value: 'Clear' },
+                  { label: 'Inhib', value: 'Inhibited' },
+                  { label: 'Recheck', value: 'Recheck' }
+                ]}
+                value={getZoneStatus('Righting Reflexes') || ""}
+                onChange={(val) => handleSetZoneStatus('Righting Reflexes', val as any)}
+              />
+            </div>
+
+            <div className="grid grid-cols-3 gap-2">
+              <div className="space-y-1">
+                <label className="text-[8px] font-black uppercase text-slate-400">Ocular</label>
+                <input 
+                  type="text" 
+                  placeholder="e.g. Pass"
+                  value={appointment.righting_reflex_notes?.match(/Ocular Righting:\s*([^\n,]+)/i)?.[1] || ""}
+                  onChange={(e) => {
+                    const notes = appointment.righting_reflex_notes || "";
+                    const clean = notes.replace(/- Ocular Righting:[^\n]*\n?/g, "");
+                    saveField('righting_reflex_notes', `${clean}- Ocular Righting: ${e.target.value}\n`);
+                  }}
+                  className="w-full bg-transparent border-b border-slate-200 py-1 text-xs font-bold focus:border-black outline-none"
+                />
+              </div>
+              <div className="space-y-1">
+                <label className="text-[8px] font-black uppercase text-slate-400">Labyrinthine</label>
+                <input 
+                  type="text" 
+                  placeholder="e.g. Fail"
+                  value={appointment.righting_reflex_notes?.match(/Labyrinthine Righting:\s*([^\n,]+)/i)?.[1] || ""}
+                  onChange={(e) => {
+                    const notes = appointment.righting_reflex_notes || "";
+                    const clean = notes.replace(/- Labyrinthine Righting:[^\n]*\n?/g, "");
+                    saveField('righting_reflex_notes', `${clean}- Labyrinthine Righting: ${e.target.value}\n`);
+                  }}
+                  className="w-full bg-transparent border-b border-slate-200 py-1 text-xs font-bold focus:border-black outline-none"
+                />
+              </div>
+              <div className="space-y-1">
+                <label className="text-[8px] font-black uppercase text-slate-400">Tilt Angle</label>
+                <input 
+                  type="text" 
+                  placeholder="e.g. 15°"
+                  value={appointment.righting_reflex_notes?.match(/Head Tilt Angle:\s*([^\n,°]+)/i)?.[1] || ""}
+                  onChange={(e) => {
+                    const notes = appointment.righting_reflex_notes || "";
+                    const clean = notes.replace(/- Head Tilt Angle:[^\n]*\n?/g, "");
+                    saveField('righting_reflex_notes', `${clean}- Head Tilt Angle: ${e.target.value}°\n`);
+                  }}
+                  className="w-full bg-transparent border-b border-slate-200 py-1 text-xs font-bold focus:border-black outline-none"
+                />
+              </div>
+            </div>
+
+            <DocInput 
+              label="Observations" 
+              value={appointment.righting_reflex_notes} 
+              field="righting_reflex_notes" 
+              placeholder="Righting reflexes observations..." 
+              multiline 
+              onChange={handleFieldChange}
+            />
           </div>
         </div>
       </div>

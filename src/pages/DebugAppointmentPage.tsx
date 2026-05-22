@@ -7,17 +7,15 @@ import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { showSuccess, showError } from "@/utils/toast";
 import { 
-  Loader2, FlaskConical, Activity, RefreshCw, Sparkles, 
-  UserPlus, Trash2, AlertTriangle, Mail, Send, 
-  DollarSign, CheckCircle2, ShieldCheck, Zap, Heart,
-  Globe, CreditCard, Beaker, ArrowRight, Info, Clock,
-  CalendarClock, MoveRight
+  Loader2, Beaker, Trash2, Info, Clock, CalendarClock, MoveRight,
+  Zap, Heart, Sparkles, Globe, Mail, ShieldCheck, RefreshCw
 } from "lucide-react";
-import { addHours, format, addMinutes, setHours, setMinutes, addDays } from "date-fns";
+import { addHours, format, addDays, setHours, setMinutes } from "date-fns";
 import { CALCOM_CONFIG } from "@/config/integrations";
 
 const DebugAppointmentPage = () => {
   const [loading, setLoading] = useState(false);
+  const [testName, setTestName] = useState("Daniele Buatti");
   const [testEmail, setTestEmail] = useState("daniele.buatti@gmail.com");
   const [debugClient, setDebugClient] = useState<any>(null);
   const [debugApp, setDebugApp] = useState<any>(null);
@@ -33,25 +31,42 @@ const DebugAppointmentPage = () => {
       // Create/Update Test Client
       const { data: client, error: clientError } = await supabase
         .from('clients')
-        .upsert({
-          user_id: user.id,
-          name: "DEBUG TESTER",
-          email: testEmail.toLowerCase().trim(),
+        .update({
+          name: testName,
           pronouns: "Test/Bot",
           occupation: "Quality Assurance"
-        }, { onConflict: 'email' })
-        .select()
-        .single();
+        })
+        .eq('email', testEmail.toLowerCase().trim())
+        .select();
 
-      if (clientError) throw clientError;
-      setDebugClient(client);
+      let finalClient = client?.[0];
+
+      if (clientError || !finalClient) {
+        // If update failed or client didn't exist, insert new
+        const { data: newClient, error: insertError } = await supabase
+          .from('clients')
+          .upsert({
+            user_id: user.id,
+            name: testName,
+            email: testEmail.toLowerCase().trim(),
+            pronouns: "Test/Bot",
+            occupation: "Quality Assurance"
+          }, { onConflict: 'email' })
+          .select()
+          .single();
+
+        if (insertError) throw insertError;
+        finalClient = newClient;
+      }
+
+      setDebugClient(finalClient);
 
       // Create Test Appointment with a dummy Cal.com ID for webhook testing
       const { data: app, error: appError } = await supabase
         .from('appointments')
         .insert({
           user_id: user.id,
-          client_id: client.id,
+          client_id: finalClient.id,
           date: new Date().toISOString(),
           tag: "Debug Test",
           status: "Scheduled",
@@ -147,7 +162,7 @@ const DebugAppointmentPage = () => {
         payload: {
           bookingId: "DEBUG-BOOKING-123",
           startTime: newTime,
-          attendees: [{ name: "DEBUG TESTER", email: testEmail }],
+          attendees: [{ name: testName, email: testEmail }],
           eventTypeId: parseInt(CALCOM_CONFIG.DEFAULT_EVENT_TYPE_ID)
         }
       };
@@ -189,7 +204,7 @@ const DebugAppointmentPage = () => {
           clientId: debugClient.id,
           startTime: messyTime,
           eventTypeId: CALCOM_CONFIG.DEFAULT_EVENT_TYPE_ID,
-          title: "DEBUG: Off-Grid Test",
+          title: `DEBUG: ${testName}`,
           is_paid: true
         }
       });
@@ -246,26 +261,35 @@ const DebugAppointmentPage = () => {
           </CardDescription>
         </CardHeader>
         <CardContent className="p-10 pt-0 space-y-10 relative z-10">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-10">
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-10">
             <div className="space-y-6">
-              <div className="space-y-3">
-                <Label className="text-[10px] font-black uppercase tracking-widest text-indigo-400">Test Email Address</Label>
-                <div className="flex gap-2">
+              <div className="space-y-4">
+                <div className="space-y-2">
+                  <Label className="text-[10px] font-black uppercase tracking-widest text-indigo-400">Test Client Name</Label>
+                  <Input 
+                    value={testName} 
+                    onChange={e => setTestName(e.target.value)}
+                    className="bg-white/5 border-white/10 text-white h-12 rounded-xl font-bold"
+                    placeholder="Daniele Buatti"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label className="text-[10px] font-black uppercase tracking-widest text-indigo-400">Test Email Address</Label>
                   <Input 
                     value={testEmail} 
                     onChange={e => setTestEmail(e.target.value)}
                     className="bg-white/5 border-white/10 text-white h-12 rounded-xl font-bold"
                     placeholder="your@email.com"
                   />
-                  <Button 
-                    onClick={setupTestEnvironment} 
-                    disabled={loading}
-                    className="bg-indigo-600 hover:bg-indigo-700 h-12 px-6 rounded-xl font-bold"
-                  >
-                    {loading ? <Loader2 className="animate-spin" /> : "1. Create Test Env"}
-                  </Button>
                 </div>
-                <p className="text-[10px] text-slate-500 italic">This creates a dummy client and appointment in your database.</p>
+                <Button 
+                  onClick={setupTestEnvironment} 
+                  disabled={loading}
+                  className="w-full bg-indigo-600 hover:bg-indigo-700 h-12 px-6 rounded-xl font-bold mt-2"
+                >
+                  {loading ? <Loader2 className="animate-spin" /> : "1. Create / Update Test Env"}
+                </Button>
+                <p className="text-[10px] text-slate-500 italic">This creates or updates a test client and appointment in your database.</p>
               </div>
 
               {debugClient && (

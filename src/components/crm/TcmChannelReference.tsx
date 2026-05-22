@@ -10,6 +10,7 @@ import { Search, Clock, Zap, Info, Heart, Activity, Dumbbell, Target, AlertCircl
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 import MuscleInfoModal from "./MuscleInfoModal";
+import { isMeridianPeakNow } from "@/utils/crm-utils";
 
 const TcmChannelReference = () => {
   const [search, setSearch] = useState("");
@@ -24,26 +25,6 @@ const TcmChannelReference = () => {
   }, []);
 
   const elements: (TcmElement | 'All')[] = ['All', 'Wood', 'Fire', 'Earth', 'Metal', 'Water'];
-
-  const isPeakNow = (peakTimeStr: string) => {
-    if (peakTimeStr === 'None') return false;
-    
-    const parts = peakTimeStr.toLowerCase().split('-').map(p => p.trim());
-    const parseHour = (s: string) => {
-      const hour = parseInt(s);
-      if (s.includes('pm') && hour !== 12) return hour + 12;
-      if (s.includes('am') && hour === 12) return 0;
-      return hour;
-    };
-
-    const start = parseHour(parts[0]);
-    const end = parseHour(parts[1]);
-
-    if (start > end) { // Crosses midnight
-      return currentTime >= start || currentTime < end;
-    }
-    return currentTime >= start && currentTime < end;
-  };
 
   const filteredChannels = TCM_CHANNELS.filter(c => {
     const matchesSearch = c.name.toLowerCase().includes(search.toLowerCase()) || 
@@ -89,7 +70,7 @@ const TcmChannelReference = () => {
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
         {filteredChannels.map(channel => {
-          const isPeak = isPeakNow(channel.peakTime);
+          const isPeak = isMeridianPeakNow(channel.peakTime, currentTime);
           const associatedPoints = ACUPOINTS.filter(p => 
             p.category === channel.name || 
             (channel.id === 'CV' && p.category === 'Conception') ||

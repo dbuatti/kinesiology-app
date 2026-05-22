@@ -15,12 +15,21 @@ interface PathwayFindingsListProps {
 }
 
 const getCanonicalName = (name: string): string => {
-  const cleanName = name.replace(/ \([LR]\)$/, '').trim().toLowerCase();
-  const reflex = PRIMITIVE_REFLEXES.find(r => r.id.toLowerCase() === cleanName || r.name.toLowerCase() === cleanName);
+  const cleanName = name.replace(/ \([LR]\)$/, '').trim();
+  const lowerClean = cleanName.toLowerCase();
+  const reflex = PRIMITIVE_REFLEXES.find(r => 
+    r.id.toLowerCase() === lowerClean || 
+    r.name.toLowerCase() === lowerClean ||
+    r.name.toLowerCase().includes(lowerClean)
+  );
   if (reflex) return reflex.name;
-  const point = BRAIN_REFLEX_POINTS.find(p => p.id.toLowerCase() === cleanName || p.name.toLowerCase() === cleanName);
+  const point = BRAIN_REFLEX_POINTS.find(p => 
+    p.id.toLowerCase() === lowerClean || 
+    p.name.toLowerCase() === lowerClean ||
+    p.name.toLowerCase().split(':')[0].trim() === lowerClean
+  );
   if (point) return point.name.split(':')[0].trim();
-  return name;
+  return cleanName;
 };
 
 const PathwayFindingsList = ({ priorityPattern, className, showOnlyInhibited = true }: PathwayFindingsListProps) => {

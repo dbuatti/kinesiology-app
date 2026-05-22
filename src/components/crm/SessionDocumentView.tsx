@@ -47,6 +47,7 @@ import EaseSection from './document-view/EaseSection';
 import AlignSection from './document-view/AlignSection';
 import CorrectSection from './document-view/CorrectSection';
 import EmbedSection from './document-view/EmbedSection';
+import ClientHistoryDropdown from './document-view/ClientHistoryDropdown';
 
 interface SessionDocumentViewProps {
   appointment: AppointmentWithClient;
@@ -54,6 +55,7 @@ interface SessionDocumentViewProps {
   saveField: (field: string, value: any) => Promise<void>;
   updatePriorityPattern: (category: string, itemName: string, status: 'Clear' | 'Inhibited' | null, side?: 'L' | 'R') => Promise<void>;
   onClose: () => void;
+  history?: any[];
 }
 
 const SectionHeader = ({ id, title, subtitle }: { id: string, title: string, subtitle?: string }) => (
@@ -68,7 +70,8 @@ const SessionDocumentView = ({
   onUpdate, 
   saveField, 
   updatePriorityPattern,
-  onClose
+  onClose,
+  history = []
 }: SessionDocumentViewProps) => {
   const navigate = useNavigate();
   const {
@@ -323,6 +326,9 @@ const SessionDocumentView = ({
             displayId={appointment.display_id} 
             id={appointment.id} 
           />
+
+          {/* Clinical History Dropdown */}
+          <ClientHistoryDropdown history={history} currentAppointmentId={appointment.id} />
 
           {/* P - PRELIMINARY */}
           <section>

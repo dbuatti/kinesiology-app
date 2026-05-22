@@ -173,12 +173,12 @@ const AppointmentDetailPage = () => {
     }
   }, [appointment, refresh]);
 
-  const handleCopyForAI = useCallback(() => {
+  const handleCopyForAI = () => {
     if (!appointment) return;
     const prompt = generateAICasePrompt(appointment.clients, [appointment]);
     navigator.clipboard.writeText(prompt);
     showSuccess("AI Case Prompt copied");
-  }, [appointment]);
+  };
 
   const handleClonePrevious = useCallback(async () => {
     if (!appointment || !id) return;
@@ -258,6 +258,7 @@ const AppointmentDetailPage = () => {
         saveField={saveField}
         updatePriorityPattern={updatePriorityPattern}
         onClose={() => setIsDocumentView(false)}
+        history={history}
       />
     );
   }

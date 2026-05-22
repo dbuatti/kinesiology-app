@@ -47,12 +47,21 @@ interface RecheckItem {
 }
 
 const getCanonicalName = (name: string): string => {
-  const cleanName = name.replace(/ \([LR]\)$/, '').trim().toLowerCase();
-  const reflex = PRIMITIVE_REFLEXES.find(r => r.id.toLowerCase() === cleanName || r.name.toLowerCase() === cleanName);
+  const cleanName = name.replace(/ \([LR]\)$/, '').trim();
+  const lowerClean = cleanName.toLowerCase();
+  const reflex = PRIMITIVE_REFLEXES.find(r => 
+    r.id.toLowerCase() === lowerClean || 
+    r.name.toLowerCase() === lowerClean ||
+    r.name.toLowerCase().includes(lowerClean)
+  );
   if (reflex) return reflex.name;
-  const point = BRAIN_REFLEX_POINTS.find(p => p.id.toLowerCase() === cleanName || p.name.toLowerCase() === cleanName);
+  const point = BRAIN_REFLEX_POINTS.find(p => 
+    p.id.toLowerCase() === lowerClean || 
+    p.name.toLowerCase() === lowerClean ||
+    p.name.toLowerCase().split(':')[0].trim() === lowerClean
+  );
   if (point) return point.name.split(':')[0].trim();
-  return name;
+  return cleanName;
 };
 
 const EmbedSection = ({ appointment, saveField, updatePriorityPattern, onTogglePatternItem, onUpdate }: EmbedSectionProps) => {
@@ -154,10 +163,10 @@ const EmbedSection = ({ appointment, saveField, updatePriorityPattern, onToggleP
 
     muscleTests.forEach(test => {
       const strStatus = test.status as string;
-      const isCleared = strStatus.endsWith('_Cleared') || strStatus === 'Normotonic';
+      const isCleared = strStatus.endsWith('_Cleared') || strStatus === 'Normotonic_Cleared';
       const baseStatus = strStatus.replace('_Cleared', '');
 
-      if (baseStatus !== 'Normotonic' || isCleared) {
+      if (baseStatus === 'Inhibition' || baseStatus === 'Hypertonic' || baseStatus === 'Switching' || baseStatus === 'Dysfunctional' || isCleared) {
         const sideMatch = test.muscle_name.match(/\(([LR])\)$/);
         const side = sideMatch ? sideMatch[1] as 'L' | 'R' : undefined;
         const baseName = test.muscle_name.replace(/ \([LR]\)$/, '').trim();
@@ -306,7 +315,7 @@ const EmbedSection = ({ appointment, saveField, updatePriorityPattern, onToggleP
         {allFindings.length > 0 ? (
           <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
             {allFindings.map((finding, idx) => {
-              const isClear = finding.status === 'Clear' || finding.status === 'Normotonic' || finding.status.endsWith('_Cleared');
+              const isClear = finding.status === 'Clear' || finding.status === 'Normotonic' || finding.status.endsWith('_Cleared') || finding.status === 'Normotonic_Cleared';
               return (
                 <div 
                   key={idx} 

@@ -9,7 +9,7 @@ import {
   Heart, Activity, FlaskConical, Brain, Plus, 
   Calendar, Clock, Loader2, TrendingUp, ArrowRight, 
   Zap, Info, History, Sparkles, CheckCircle2, Target, Move, Footprints,
-  LayoutDashboard
+  LayoutDashboard, Trash2
 } from "lucide-react";
 import { format, isToday, startOfToday, differenceInDays } from "date-fns";
 import { Link, useSearchParams } from "react-router-dom";
@@ -110,6 +110,25 @@ const SelfPracticePage = () => {
       showError(err.message || "Failed to create session");
     } finally {
       setCreating(false);
+    }
+  };
+
+  const handleDeleteSession = async (e: React.MouseEvent, id: string) => {
+    e.preventDefault();
+    e.stopPropagation();
+    if (!confirm("Are you sure you want to delete this self-practice session?")) return;
+
+    try {
+      const { error } = await supabase
+        .from('appointments')
+        .delete()
+        .eq('id', id);
+
+      if (error) throw error;
+      showSuccess("Self-practice session deleted.");
+      fetchSelfData();
+    } catch (err: any) {
+      showError(err.message || "Failed to delete session.");
     }
   };
 
@@ -355,8 +374,18 @@ const SelfPracticePage = () => {
                               {session.name || "Self Practice Session"}
                             </h3>
                           </div>
-                          <div className="w-10 h-10 rounded-xl bg-muted flex items-center justify-center text-muted-foreground group-hover:bg-rose-50 dark:group-hover:bg-rose-900/20 group-hover:text-rose-500 transition-colors">
-                            <ArrowRight size={20} />
+                          <div className="flex items-center gap-2 shrink-0">
+                            <Button 
+                              variant="ghost" 
+                              size="icon" 
+                              className="h-9 w-9 rounded-xl text-muted-foreground hover:text-rose-600 hover:bg-rose-50 opacity-0 group-hover:opacity-100 transition-all"
+                              onClick={(e) => handleDeleteSession(e, session.id)}
+                            >
+                              <Trash2 size={16} />
+                            </Button>
+                            <div className="w-10 h-10 rounded-xl bg-muted flex items-center justify-center text-muted-foreground group-hover:bg-rose-50 dark:group-hover:bg-rose-900/20 group-hover:text-rose-500 transition-colors">
+                              <ArrowRight size={20} />
+                            </div>
                           </div>
                         </div>
 

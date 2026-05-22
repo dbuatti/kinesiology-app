@@ -18,7 +18,7 @@ import {
   Eye, EyeOff, Save, ShieldCheck, LayoutGrid,
   ChevronRight, Settings2, Sparkles, Globe, ExternalLink,
   PanelLeftClose, PanelLeftOpen, ClipboardCheck, MoreHorizontal, Printer,
-  ArrowLeft, Calendar, Clock, Link as LinkIcon, Maximize2, Minimize2
+  ArrowLeft, Calendar, Clock, Link as LinkIcon, Maximize2, Minimize2, Trash2
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Switch } from "@/components/ui/switch";
@@ -310,19 +310,6 @@ const AppointmentDetailPage = () => {
                 <FileText size={16} className="text-indigo-600" /> Doc View
               </Button>
 
-              <Button 
-                variant="outline" 
-                size="sm" 
-                onClick={toggleFullScreen} 
-                className={cn(
-                  "flex-1 sm:flex-none h-10 md:h-14 px-4 md:px-8 gap-2 md:gap-3 border-slate-200 bg-white rounded-xl md:rounded-2xl font-black text-[9px] md:text-[10px] uppercase tracking-widest text-slate-600 hover:bg-slate-50 hover:border-indigo-200 transition-all shadow-sm shrink-0",
-                  isFullScreen && "border-indigo-600 text-indigo-600 bg-indigo-50"
-                )}
-              >
-                {isFullScreen ? <Minimize2 size={16} /> : <Maximize2 size={16} />}
-                {isFullScreen ? "Exit Full" : "Full Screen"}
-              </Button>
-
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
                   <Button variant="outline" size="sm" className="h-10 w-10 md:h-14 md:w-14 rounded-xl md:rounded-2xl border-slate-200 bg-white text-slate-400 hover:bg-slate-50 transition-all shadow-sm shrink-0">
@@ -333,6 +320,10 @@ const AppointmentDetailPage = () => {
                   <div className="px-4 py-2 mb-2">
                     <p className="text-[8px] font-black text-slate-400 uppercase tracking-0.4em">Session Management</p>
                   </div>
+                  <DropdownMenuItem onClick={toggleFullScreen} className="rounded-xl py-3.5 px-5 cursor-pointer flex items-center gap-4">
+                    {isFullScreen ? <Minimize2 size={18} className="text-indigo-500" /> : <Maximize2 size={18} className="text-indigo-500" />}
+                    <span className="font-bold text-xs uppercase tracking-widest">{isFullScreen ? "Exit Full Screen" : "Full Screen"}</span>
+                  </DropdownMenuItem>
                   <DropdownMenuItem onClick={handleCopyOnboardingLink} className="rounded-xl py-3.5 px-5 cursor-pointer flex items-center gap-4">
                     <LinkIcon size={18} className="text-indigo-500" /> 
                     <span className="font-bold text-xs uppercase tracking-widest">Copy Onboarding Link</span>

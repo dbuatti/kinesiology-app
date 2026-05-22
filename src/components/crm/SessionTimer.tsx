@@ -57,30 +57,12 @@ const SessionTimer = ({ sessionId, appointmentDate, status, clientName, currentP
   });
 
   useEffect(() => {
-    const timer = setInterval(() => {
-      setCurrentTime(new Date());
-    }, 1000);
-    return () => clearInterval(timer);
-  }, []);
-
-  // Keyboard Shortcuts & Event Listeners (macOS & Windows Robust)
-  useEffect(() => {
-    const handleKeyDown = (e: KeyboardEvent) => {
-      // Alt/Option + F: Toggle Full Screen
-      if (e.altKey && e.code === 'KeyF') {
-        e.preventDefault();
-        toggleFullScreen();
-      }
-      // Alt/Option + D: Toggle Document View
-      if (e.altKey && e.code === 'KeyD') {
-        e.preventDefault();
-        toggleDocumentView();
-      }
+    const handleFullScreenChange = () => {
+      setIsFullScreen(localStorage.getItem('antigravity_fullscreen') === 'true');
     };
-
-    window.addEventListener('keydown', handleKeyDown);
-    return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [location.pathname, location.search, isFullScreen]);
+    window.addEventListener('antigravity_fullscreen_change', handleFullScreenChange);
+    return () => window.removeEventListener('antigravity_fullscreen_change', handleFullScreenChange);
+  }, []);
 
   const toggleFullScreen = () => {
     const nextState = !isFullScreen;
@@ -257,19 +239,6 @@ const SessionTimer = ({ sessionId, appointmentDate, status, clientName, currentP
             >
               {isDocViewActive ? <LayoutGrid size={12} /> : <FileText size={12} />}
               <span className="hidden sm:inline">{isDocViewActive ? "Standard" : "Doc View"}</span>
-            </Button>
-          )}
-
-          {/* Full Screen Toggle */}
-          {isInSessionPage && (
-            <Button
-              size="sm"
-              onClick={toggleFullScreen}
-              className="h-7 md:h-8 px-2 md:px-3 rounded-xl bg-white/10 hover:bg-white/20 text-white font-black text-[8px] md:text-[9px] uppercase tracking-widest gap-1 md:gap-1.5"
-              title="Toggle Full Screen (Option + F)"
-            >
-              {isFullScreen ? <Minimize2 size={12} /> : <Maximize2 size={12} />}
-              <span className="hidden sm:inline">{isFullScreen ? "Exit" : "Full"}</span>
             </Button>
           )}
 

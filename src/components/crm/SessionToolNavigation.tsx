@@ -49,35 +49,13 @@ const SessionToolNavigation = ({
   const navigate = useNavigate();
   const isToolActive = ['kinesiology', 'muscles', 'gait', 'context', 'journal', 'recheck', 'audit'].includes(activeView);
 
-  const [isFullScreen, setIsFullScreen] = useState(() => {
-    return localStorage.getItem('antigravity_fullscreen') === 'true';
-  });
-
-  useEffect(() => {
-    const handleFullScreenChange = () => {
-      setIsFullScreen(localStorage.getItem('antigravity_fullscreen') === 'true');
-    };
-
-    window.addEventListener('antigravity_fullscreen_change', handleFullScreenChange);
-    return () => {
-      window.removeEventListener('antigravity_fullscreen_change', handleFullScreenChange);
-    };
-  }, []);
-
-  const toggleFullScreen = () => {
-    const nextState = !isFullScreen;
-    setIsFullScreen(nextState);
-    localStorage.setItem('antigravity_fullscreen', String(nextState));
-    window.dispatchEvent(new Event('antigravity_fullscreen_change'));
-  };
-
   const isDocViewActive = location.search.includes('view=document');
 
   const toggleDocumentView = () => {
     if (isDocViewActive) {
-      navigate(location.pathname, { replace: true });
+      navigate(location.pathname);
     } else {
-      navigate(`${location.pathname}?view=document`, { replace: true });
+      navigate(`${location.pathname}?view=document`);
     }
   };
 
@@ -206,15 +184,6 @@ const SessionToolNavigation = ({
         >
           {isDocViewActive ? <LayoutGrid size={14} /> : <FileText size={14} />}
           {isDocViewActive ? "Standard View" : "Doc View"}
-        </Button>
-        <Button
-          variant="ghost"
-          size="sm"
-          onClick={toggleFullScreen}
-          className="h-9 px-3 rounded-xl text-[10px] font-black uppercase tracking-widest gap-1 md:gap-1.5"
-        >
-          {isFullScreen ? <Minimize2 size={14} /> : <Maximize2 size={14} />}
-          {isFullScreen ? "Exit Full" : "Full Screen"}
         </Button>
       </div>
     </div>

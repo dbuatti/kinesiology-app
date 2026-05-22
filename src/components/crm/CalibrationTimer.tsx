@@ -15,16 +15,29 @@ const CalibrationTimer = ({ duration }: CalibrationTimerProps) => {
   const timerRef = useRef<NodeJS.Timeout | null>(null);
 
   useEffect(() => {
-    if (isActive && timeLeft > 0) {
+    if (isActive) {
       timerRef.current = setInterval(() => {
-        setTimeLeft(prev => prev - 1);
+        setTimeLeft((prev) => {
+          if (prev <= 1) {
+            setIsActive(false);
+            if (timerRef.current) clearInterval(timerRef.current);
+            return 0;
+          }
+          return prev - 1;
+        });
       }, 1000);
-    } else if (timeLeft === 0) {
-      setIsActive(false);
-      if (timerRef.current) clearInterval(timerRef.current);
+    } else {
+      if (timerRef.current) {
+        clearInterval(timerRef.current);
+      }
     }
-    return () => { if (timerRef.current) clearInterval(timerRef.current); };
-  }, [isActive, timeLeft]);
+
+    return () => {
+      if (timerRef.current) {
+        clearInterval(timerRef.current);
+      }
+    };
+  }, [isActive]);
 
   const toggleTimer = () => {
     if (!isActive && timeLeft === 0) {

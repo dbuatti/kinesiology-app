@@ -5,6 +5,8 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/com
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
+import { Textarea } from '@/components/ui/textarea';
+import { Input } from '@/components/ui/input';
 import { 
   Play, 
   Pause, 
@@ -24,13 +26,19 @@ import {
   Sparkles,
   Shield,
   MousePointer2,
-  Hand
+  Hand,
+  Volume2,
+  Check,
+  X,
+  ArrowRight,
+  ArrowRightLeft,
+  ShieldAlert
 } from 'lucide-react';
 import EditableField from '@/components/shared/EditableField';
 import { cn } from '@/lib/utils';
 import { VAGUS_ASSOCIATIONS, VAGAL_FUNCTIONS, HAND_REFLEXOLOGY, VAGAL_GLANDS } from '@/data/vagus-data';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { showSuccess } from '@/utils/toast';
+import { showSuccess, showError } from '@/utils/toast';
 import MuscleInfoModal from "./MuscleInfoModal";
 import {
   Collapsible,
@@ -54,6 +62,25 @@ const SHIFT_SIGNS = [
   { id: 'tearing', label: 'Tearing' },
   { id: 'deep_breath', label: 'Deep Breath' },
 ];
+
+const STIMULATION_METHODS: Record<string, { label: string; desc: string }> = {
+  'auricular': {
+    label: 'Auricular Branch Reset',
+    desc: 'Stimulate the tragus or concha of the ear using gentle massage, cold water, or microcurrent.'
+  },
+  'cervical': {
+    label: 'Cervical Branch Reset',
+    desc: 'Apply gentle carotid sinus massage, neck stretching, or a cold compress to the side of the neck.'
+  },
+  'abdominal': {
+    label: 'Abdominal Branch Reset',
+    desc: 'Perform deep diaphragmatic breathing, gentle visceral massage, or gut-directed stimulation.'
+  },
+  'pharyngeal': {
+    label: 'Pharyngeal/Laryngeal Reset',
+    desc: 'Engage the vocal cords and throat muscles via gargling, humming, singing, or gag reflex stimulation.'
+  }
+};
 
 const VagusNerveProcess = ({ appointmentId, initialNotes, onSaveField, onUpdate }: VagusNerveProcessProps) => {
   const [isOpen, setIsOpen] = useState(false);
@@ -192,9 +219,9 @@ const VagusNerveProcess = ({ appointmentId, initialNotes, onSaveField, onUpdate 
     const screenHeader = "VAGUS SCREEN & RESET:";
 
     if (mode === 'stimulation') {
-      const branchLabel = branch.charAt(0).toUpperCase() + branch.slice(1);
+      const methodInfo = STIMULATION_METHODS[branch];
       const shifts = selectedShifts.map(s => SHIFT_SIGNS.find(ss => ss.id === s)?.label).join(', ');
-      summary = `${stimHeader}\n- Branch: ${branchLabel}\n- Shifts: ${shifts || 'None observed'}\n- Duration: ${60 - timeLeft}s`;
+      summary = `${stimHeader}\n- Reset Type: ${methodInfo?.label || branch}\n- Description: ${methodInfo?.desc || ''}\n- Shifts Observed: ${shifts || 'None observed'}\n- Duration: ${60 - timeLeft}s`;
     } else {
       const assoc = VAGUS_ASSOCIATIONS.find(a => a.spinalSegment === selectedAssociation);
       const reflexLabel = reflexPoint === 'Auricular' ? `Auricular (${auricularSide})` : 'Occiput (Both)';
@@ -208,389 +235,403 @@ const VagusNerveProcess = ({ appointmentId, initialNotes, onSaveField, onUpdate 
     const currentNotes = initialNotes ? `${initialNotes}\n\n${summary}` : summary;
     await onSaveField('vagus_nerve_notes', currentNotes);
     onUpdate();
+    showSuccess("Vagus Nerve reset logged successfully.");
   };
 
   const currentOrgans = HAND_REFLEXOLOGY[pulseSide][pulseDepth];
 
   return (
-    <Collapsible open={isOpen} onOpenChange={setIsOpen}>
-      <Card className="border-none shadow-sm rounded-2xl bg-white overflow-hidden">
-        <CollapsibleTrigger asChild>
-          <CardHeader className="bg-slate-50/50 border-b border-slate-100 pb-4 cursor-pointer hover:bg-slate-100/50 transition-colors">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-xl bg-indigo-100 text-indigo-600 rounded-xl flex items-center justify-center">
-                  <Activity size={20} />
-                </div>
-                <div>
-                  <CardTitle className="text-lg font-black text-slate-900">Vagus Nerve Protocol</CardTitle>
-                  <div className="flex gap-2 mt-1" onClick={(e) => e.stopPropagation()}>
-                    <button 
-                      onClick={() => setMode('stimulation')}
-                      className={cn("text-[10px] font-black uppercase tracking-widest px-2 py-0.5 rounded-md transition-all", mode === 'stimulation' ? "bg-indigo-600 text-white" : "bg-slate-200 text-slate-500")}
-                    >
-                      Stimulation
-                    </button>
-                    <button 
-                      onClick={() => setMode('screen')}
-                      className={cn("text-[10px] font-black uppercase tracking-widest px-2 py-0.5 rounded-md transition-all", mode === 'screen' ? "bg-indigo-600 text-white" : "bg-slate-200 text-slate-500")}
-                    >
-                      Screen & Reset
-                    </button>
+    <>
+      <Collapsible open={isOpen} onOpenChange={setIsOpen}>
+        <Card className="border-none shadow-sm rounded-2xl bg-white overflow-hidden">
+          <CollapsibleTrigger asChild>
+            <CardHeader className="bg-slate-50/50 border-b border-slate-100 pb-4 cursor-pointer hover:bg-slate-100/50 transition-colors">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-xl bg-indigo-100 text-indigo-600 flex items-center justify-center">
+                    <Activity size={20} />
+                  </div>
+                  <div>
+                    <CardTitle className="text-lg font-black text-slate-900">Vagus Nerve Process</CardTitle>
+                    <div className="flex gap-2 mt-1" onClick={(e) => e.stopPropagation()}>
+                      <button 
+                        onClick={() => setMode('stimulation')}
+                        className={cn("text-[10px] font-black uppercase tracking-widest px-2 py-0.5 rounded-md transition-all", mode === 'stimulation' ? "bg-indigo-600 text-white" : "bg-slate-200 text-slate-500")}
+                      >
+                        Stimulation
+                      </button>
+                      <button 
+                        onClick={() => setMode('screen')}
+                        className={cn("text-[10px] font-black uppercase tracking-widest px-2 py-0.5 rounded-md transition-all", mode === 'screen' ? "bg-indigo-600 text-white" : "bg-slate-200 text-slate-500")}
+                      >
+                        Screen & Reset
+                      </button>
+                    </div>
                   </div>
                 </div>
-              </div>
-              <div className="flex items-center gap-2">
-                <div className="flex items-center gap-2" onClick={(e) => e.stopPropagation()}>
-                  <Button variant="ghost" size="sm" onClick={handleResetProtocol} className="h-8 text-[10px] font-black uppercase tracking-widest text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded-lg">
-                    <Trash2 size={14} className="mr-1" /> Reset
-                  </Button>
-                  <Badge variant="outline" className="bg-indigo-50 text-indigo-700 border-indigo-100 font-bold">
-                    SNS Stage
-                  </Badge>
-                </div>
-                <Button variant="ghost" size="icon" className="h-8 w-8">
-                  <ChevronDown className={cn("h-5 w-5 transition-transform text-slate-400", isOpen && "rotate-180")} />
-                </Button>
-              </div>
-            </div>
-          </CardHeader>
-        </CollapsibleTrigger>
-
-        <CollapsibleContent>
-          <CardContent className="p-6 space-y-8">
-            {mode === 'stimulation' ? (
-              <>
-                <div className="space-y-3">
-                  <label className="text-xs font-black uppercase tracking-widest text-slate-400 flex items-center gap-2">
-                    <Zap size={14} className="text-amber-500" /> Target Branch
-                  </label>
-                  <div className="flex flex-wrap gap-2">
-                    <ToggleGroup type="single" value={branch} onValueChange={(v) => v && setBranch(v)} className="justify-start gap-2">
-                      <ToggleGroupItem value="auricular" className="rounded-xl px-4 py-2 h-auto data-[state=on]:bg-indigo-600 data-[state=on]:text-white border border-slate-200">Auricular</ToggleGroupItem>
-                      <ToggleGroupItem value="cervical" className="rounded-xl px-4 py-2 h-auto data-[state=on]:bg-indigo-600 data-[state=on]:text-white border border-slate-200">Cervical</ToggleGroupItem>
-                      <ToggleGroupItem value="abdominal" className="rounded-xl px-4 py-2 h-auto data-[state=on]:bg-indigo-600 data-[state=on]:text-white border border-slate-200">Abdominal</ToggleGroupItem>
-                    </ToggleGroup>
-                  </div>
-                </div>
-
-                <div className="bg-slate-50 rounded-3xl p-6 flex flex-col items-center justify-center border border-slate-100">
-                  <div className="text-5xl font-black text-slate-900 mb-4 font-mono tracking-tighter">{formatTime(timeLeft)}</div>
-                  <div className="flex gap-3">
-                    <Button onClick={toggleTimer} variant={isActive ? "outline" : "default"} className={cn("rounded-2xl px-6 h-12 font-bold transition-all", !isActive && "bg-indigo-600 hover:bg-indigo-700 shadow-md shadow-indigo-200")}>
-                      {isActive ? <Pause size={18} className="mr-2" /> : <Play size={18} className="mr-2" />}
-                      {isActive ? "Pause" : "Start Stimulation"}
+                <div className="flex items-center gap-2">
+                  <div className="flex items-center gap-2" onClick={(e) => e.stopPropagation()}>
+                    <Button variant="ghost" size="sm" onClick={handleResetProtocol} className="h-8 text-[10px] font-black uppercase tracking-widest text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded-lg">
+                      <Trash2 size={14} className="mr-1" /> Reset
                     </Button>
-                    <Button onClick={resetTimer} variant="ghost" size="icon" className="rounded-2xl h-12 w-12 text-slate-400 hover:text-slate-600"><RotateCcw size={18} /></Button>
+                    <Badge variant="outline" className="bg-indigo-50 text-indigo-700 border-indigo-100 font-bold">
+                      SNS Stage
+                    </Badge>
                   </div>
+                  <Button variant="ghost" size="icon" className="h-8 w-8">
+                    <ChevronDown className={cn("h-5 w-5 transition-transform text-slate-400", isOpen && "rotate-180")} />
+                  </Button>
                 </div>
+              </div>
+            </CardHeader>
+          </CollapsibleTrigger>
 
-                <div className="space-y-4">
-                  <label className="text-xs font-black uppercase tracking-widest text-slate-400 flex items-center gap-2">
-                    <CheckCircle2 size={14} className="text-emerald-500" /> Signs of Shift
-                  </label>
-                  <div className="flex flex-wrap gap-2">
-                    {SHIFT_SIGNS.map((shift) => (
-                      <Badge key={shift.id} variant="outline" onClick={() => toggleShift(shift.id)} className={cn("px-4 py-2 rounded-xl cursor-pointer transition-all border-slate-200 text-sm font-medium", selectedShifts.includes(shift.id) ? "bg-emerald-50 text-white border-emerald-500 shadow-sm" : "bg-white text-slate-600 hover:bg-slate-50")}>
-                        {shift.label}
-                      </Badge>
-                    ))}
-                  </div>
-                </div>
-              </>
-            ) : (
-              <div className="space-y-6">
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                  <div className="space-y-3">
+          <CollapsibleContent>
+            <CardContent className="p-6 space-y-8">
+              {mode === 'stimulation' ? (
+                <>
+                  <div className="space-y-4">
                     <label className="text-xs font-black uppercase tracking-widest text-slate-400 flex items-center gap-2">
-                      <Zap size={14} className="text-amber-500" /> 1. Side
+                      <Zap size={14} className="text-amber-500" /> Select Vagus Reset Type
                     </label>
-                    <ToggleGroup type="single" value={vagusSide} onValueChange={(v) => v && setVagusSide(v as any)} className="justify-start gap-2">
-                      <ToggleGroupItem value="Left" className="flex-1 rounded-xl border border-slate-200 data-[state=on]:bg-indigo-600 data-[state=on]:text-white font-bold">Left</ToggleGroupItem>
-                      <ToggleGroupItem value="Right" className="flex-1 rounded-xl border border-slate-200 data-[state=on]:bg-indigo-600 data-[state=on]:text-white font-bold">Right</ToggleGroupItem>
-                    </ToggleGroup>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                      {Object.entries(STIMULATION_METHODS).map(([key, method]) => (
+                        <button
+                          key={key}
+                          type="button"
+                          onClick={() => setBranch(key)}
+                          className={cn(
+                            "p-4 rounded-2xl border-2 text-left transition-all flex flex-col gap-1",
+                            branch === key 
+                              ? "bg-indigo-50 border-indigo-600 text-indigo-900" 
+                              : "bg-white border-slate-100 hover:border-indigo-200 text-slate-600"
+                          )}
+                        >
+                          <span className="text-xs font-black uppercase tracking-wider">{method.label}</span>
+                          <span className="text-[10px] text-slate-500 leading-relaxed">{method.desc}</span>
+                        </button>
+                      ))}
+                    </div>
                   </div>
 
-                  <div className="space-y-3">
+                  <div className="bg-slate-50 rounded-3xl p-6 flex flex-col items-center justify-center border border-slate-100">
+                    <div className="text-5xl font-black text-slate-900 mb-4 font-mono tracking-tighter">{formatTime(timeLeft)}</div>
+                    <div className="flex gap-3">
+                      <Button onClick={toggleTimer} variant={isActive ? "outline" : "default"} className={cn("rounded-2xl px-6 h-12 font-bold transition-all", !isActive && "bg-indigo-600 hover:bg-indigo-700 shadow-md shadow-indigo-200")}>
+                        {isActive ? <Pause size={18} className="mr-2" /> : <Play size={18} className="mr-2" />}
+                        {isActive ? "Pause" : "Start Stimulation"}
+                      </Button>
+                      <Button onClick={resetTimer} variant="ghost" size="icon" className="rounded-2xl h-12 w-12 text-slate-400 hover:text-slate-600"><RotateCcw size={18} /></Button>
+                    </div>
+                  </div>
+
+                  <div className="space-y-4">
                     <label className="text-xs font-black uppercase tracking-widest text-slate-400 flex items-center gap-2">
-                      <Hand size={14} className="text-indigo-500" /> 2. Reflex Point
+                      <CheckCircle2 size={14} className="text-emerald-500" /> Signs of Shift
                     </label>
-                    <div className="space-y-2">
-                      <ToggleGroup type="single" value={reflexPoint} onValueChange={(v) => v && setReflexPoint(v)} className="justify-start gap-2">
-                        <ToggleGroupItem value="Occiput" className="flex-1 rounded-xl border border-slate-200 data-[state=on]:bg-indigo-600 data-[state=on]:text-white font-bold">Occiput</ToggleGroupItem>
-                        <ToggleGroupItem value="Auricular" className="flex-1 rounded-xl border border-slate-200 data-[state=on]:bg-indigo-600 data-[state=on]:text-white font-bold">Auricular</ToggleGroupItem>
+                    <div className="flex flex-wrap gap-2">
+                      {SHIFT_SIGNS.map((shift) => (
+                        <Badge key={shift.id} variant="outline" onClick={() => toggleShift(shift.id)} className={cn("px-4 py-2 rounded-xl cursor-pointer transition-all border-slate-200 text-sm font-medium", selectedShifts.includes(shift.id) ? "bg-emerald-50 text-white border-emerald-500 shadow-sm" : "bg-white text-slate-600 hover:bg-slate-50")}>
+                          {shift.label}
+                        </Badge>
+                      ))}
+                    </div>
+                  </div>
+                </>
+              ) : (
+                <div className="space-y-6">
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <div className="space-y-3">
+                      <label className="text-xs font-black uppercase tracking-widest text-slate-400 flex items-center gap-2">
+                        <Zap size={14} className="text-amber-500" /> 1. Side
+                      </label>
+                      <ToggleGroup type="single" value={vagusSide} onValueChange={(v) => v && setVagusSide(v as any)} className="justify-start gap-2">
+                        <ToggleGroupItem value="Left" className="flex-1 rounded-xl border border-slate-200 data-[state=on]:bg-indigo-600 data-[state=on]:text-white font-bold">Left</ToggleGroupItem>
+                        <ToggleGroupItem value="Right" className="flex-1 rounded-xl border border-slate-200 data-[state=on]:bg-indigo-600 data-[state=on]:text-white font-bold">Right</ToggleGroupItem>
                       </ToggleGroup>
-                      {reflexPoint === 'Auricular' && (
-                        <ToggleGroup type="single" value={auricularSide} onValueChange={(v) => v && setAuricularSide(v)} className="justify-start gap-2 animate-in fade-in slide-in-from-top-1">
-                          <ToggleGroupItem value="Left" className="flex-1 rounded-xl border border-slate-200 data-[state=on]:bg-indigo-500 data-[state=on]:text-white font-bold text-xs">L</ToggleGroupItem>
-                          <ToggleGroupItem value="Right" className="flex-1 rounded-xl border border-slate-200 data-[state=on]:bg-indigo-500 data-[state=on]:text-white font-bold text-xs">R</ToggleGroupItem>
+                    </div>
+
+                    <div className="space-y-3">
+                      <label className="text-xs font-black uppercase tracking-widest text-slate-400 flex items-center gap-2">
+                        <Hand size={14} className="text-indigo-500" /> 2. Reflex Point
+                      </label>
+                      <div className="space-y-2">
+                        <ToggleGroup type="single" value={reflexPoint} onValueChange={(v) => v && setReflexPoint(v)} className="justify-start gap-2">
+                          <ToggleGroupItem value="Occiput" className="flex-1 rounded-xl border border-slate-200 data-[state=on]:bg-indigo-600 data-[state=on]:text-white font-bold">Occiput</ToggleGroupItem>
+                          <ToggleGroupItem value="Auricular" className="flex-1 rounded-xl border border-slate-200 data-[state=on]:bg-indigo-600 data-[state=on]:text-white font-bold">Auricular</ToggleGroupItem>
                         </ToggleGroup>
-                      )}
+                        {reflexPoint === 'Auricular' && (
+                          <ToggleGroup type="single" value={auricularSide} onValueChange={(v) => v && setAuricularSide(v)} className="justify-start gap-2 animate-in fade-in slide-in-from-top-1">
+                            <ToggleGroupItem value="Left" className="flex-1 rounded-xl border border-slate-200 data-[state=on]:bg-indigo-500 data-[state=on]:text-white font-bold text-xs">L</ToggleGroupItem>
+                            <ToggleGroupItem value="Right" className="flex-1 rounded-xl border border-slate-200 data-[state=on]:bg-indigo-500 data-[state=on]:text-white font-bold text-xs">R</ToggleGroupItem>
+                          </ToggleGroup>
+                        )}
+                      </div>
+                    </div>
+
+                    <div className="space-y-3">
+                      <label className="text-xs font-black uppercase tracking-widest text-slate-400 flex items-center gap-2">
+                        <Brain size={14} className="text-purple-500" /> 3. Vagal Function
+                      </label>
+                      <Select value={selectedFunction} onValueChange={setSelectedFunction}>
+                        <SelectTrigger className="rounded-xl border-slate-200 h-11 font-bold">
+                          <SelectValue placeholder="Select function..." />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {VAGAL_FUNCTIONS.map(f => <SelectItem key={f} value={f}>{f}</SelectItem>)}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  </div>
+
+                  <div className="space-y-4 p-6 bg-slate-50 rounded-[2rem] border border-slate-100">
+                    <div className="flex items-center justify-between mb-2">
+                      <label className="text-xs font-black uppercase tracking-widest text-slate-400 flex items-center gap-2">
+                        <Heart size={14} className="text-rose-500" /> 4. Organ / Gland Challenge
+                      </label>
+                      <ToggleGroup type="single" value={challengeType} onValueChange={(v) => v && setChallengeType(v as any)} className="bg-white p-1 rounded-xl border border-slate-200">
+                        <ToggleGroupItem value="hand" className="rounded-lg px-4 py-1.5 text-[10px] font-black uppercase tracking-widest data-[state=on]:bg-indigo-600 data-[state=on]:text-white">Hand Reflex</ToggleGroupItem>
+                        <ToggleGroupItem value="gland" className="rounded-lg px-4 py-1.5 text-[10px] font-black uppercase tracking-widest data-[state=on]:bg-indigo-600 data-[state=on]:text-white">Gland Reflex</ToggleGroupItem>
+                      </ToggleGroup>
+                    </div>
+
+                    {challengeType === 'hand' ? (
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 animate-in fade-in duration-300">
+                        <div className="flex gap-2">
+                          <ToggleGroup type="single" value={pulseSide} onValueChange={(v) => v && setPulseSide(v as any)} className="flex-1">
+                            <ToggleGroupItem value="Left" className="flex-1 rounded-xl border border-slate-200 data-[state=on]:bg-rose-600 data-[state=on]:text-white font-bold">Left Hand</ToggleGroupItem>
+                            <ToggleGroupItem value="Right" className="flex-1 rounded-xl border border-slate-200 data-[state=on]:bg-rose-600 data-[state=on]:text-white font-bold">Right Hand</ToggleGroupItem>
+                          </ToggleGroup>
+                          <ToggleGroup type="single" value={pulseDepth} onValueChange={(v) => v && setPulseDepth(v as any)} className="flex-1">
+                            <ToggleGroupItem value="Light" className="flex-1 rounded-xl border border-slate-200 data-[state=on]:bg-rose-600 data-[state=on]:text-white font-bold">Light</ToggleGroupItem>
+                            <ToggleGroupItem value="Deep" className="flex-1 rounded-xl border border-slate-200 data-[state=on]:bg-rose-600 data-[state=on]:text-white font-bold">Deep</ToggleGroupItem>
+                          </ToggleGroup>
+                        </div>
+                        <div className="flex flex-wrap gap-2">
+                          {currentOrgans.map((org) => (
+                            <Button
+                              key={org.name}
+                              variant={selectedOrgan === org.name ? "default" : "outline"}
+                              onClick={() => {
+                                setSelectedOrgan(selectedOrgan === org.name ? "" : org.name);
+                                setSelectedGland("");
+                              }}
+                              className={cn(
+                                "h-auto py-2 flex flex-col items-center gap-0.5 rounded-xl transition-all",
+                                selectedOrgan === org.name ? "bg-slate-900 text-white" : "bg-white border-slate-200"
+                              )}
+                            >
+                              <div className="flex items-center">
+                                <span className={cn("w-2 h-2 rounded-full mr-2", org.color)} />
+                                <span className="text-[10px] font-black uppercase tracking-widest">{org.name}</span>
+                              </div>
+                              <span className="text-[7px] font-bold opacity-60 uppercase">{org.position}</span>
+                            </Button>
+                          ))}
+                        </div>
+                      </div>
+                    ) : (
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 animate-in fade-in duration-300">
+                        <div className="grid grid-cols-2 gap-2">
+                          {VAGAL_GLANDS.map((gland) => (
+                            <Button
+                              key={gland.name}
+                              variant={selectedGland === gland.name ? "default" : "outline"}
+                              onClick={() => {
+                                setSelectedGland(selectedGland === gland.name ? "" : gland.name);
+                                setSelectedOrgan("");
+                              }}
+                              className={cn(
+                                "h-auto py-3 flex flex-col items-center gap-1 rounded-xl transition-all",
+                                selectedGland === gland.name ? "bg-indigo-600 text-white shadow-md" : "bg-white border-slate-200 text-slate-600"
+                              )}
+                            >
+                              <span className="text-[10px] font-black uppercase tracking-widest">{gland.name}</span>
+                              <span className="text-[8px] font-bold opacity-70 text-center leading-tight">{gland.reflex}</span>
+                            </Button>
+                          ))}
+                        </div>
+                        
+                        {selectedGland ? (
+                          <div className="bg-indigo-50 border-2 border-indigo-100 rounded-2xl p-4 flex items-start gap-4">
+                            <div className="w-10 h-10 bg-indigo-600 rounded-xl flex items-center justify-center text-white shrink-0 shadow-lg">
+                              <Sparkles size={20} />
+                            </div>
+                            <div>
+                              <p className="text-[10px] font-black text-indigo-600 uppercase tracking-widest mb-1">Reflex Challenge</p>
+                              <p className="text-sm font-bold text-indigo-900 leading-tight">
+                                {VAGAL_GLANDS.find(g => g.name === selectedGland)?.reflex}
+                              </p>
+                              <p className="text-[10px] text-indigo-400 mt-2 italic">Challenge this reflex while testing the indicator muscle.</p>
+                            </div>
+                          </div>
+                        ) : (
+                          <div className="border-2 border-dashed border-slate-200 rounded-2xl flex flex-col items-center justify-center text-center p-4 text-slate-400">
+                            <MousePointer2 size={24} className="mb-2 opacity-20" />
+                            <p className="text-sm font-medium">Select a gland to see <br/>its reflex challenge</p>
+                          </div>
+                        )}
+                      </div>
+                    )}
+                  </div>
+
+                  <div className="space-y-3">
+                    <label className="text-xs font-black uppercase tracking-widest text-slate-400 flex items-center gap-2">
+                      <Zap size={14} className="text-amber-500" /> 5. Energy Polarity
+                    </label>
+                    <div className="grid grid-cols-2 gap-3">
+                      <Button 
+                        variant="outline" 
+                        className={cn(
+                          "h-16 flex-col gap-1 rounded-2xl border-2 transition-all",
+                          polarity === 'Energy OUT' ? "border-blue-600 bg-blue-50 text-blue-700" : "border-slate-100 hover:border-blue-200"
+                        )}
+                        onClick={() => setPolarity('Energy OUT')}
+                      >
+                        <span className="font-black text-xs">Energy OUT (-)</span>
+                        <span className="text-[8px] font-bold opacity-70 uppercase">Practitioner LEFT Hand</span>
+                      </Button>
+                      <Button 
+                        variant="outline" 
+                        className={cn(
+                          "h-16 flex-col gap-1 rounded-2xl border-2 transition-all",
+                          polarity === 'Energy IN' ? "border-rose-600 bg-rose-50 text-rose-700" : "border-slate-100 hover:border-blue-200"
+                        )}
+                        onClick={() => setPolarity('Energy IN')}
+                      >
+                        <span className="font-black text-xs">Energy IN (+)</span>
+                        <span className="text-[8px] font-bold opacity-70 uppercase">Practitioner RIGHT Hand</span>
+                      </Button>
                     </div>
                   </div>
 
                   <div className="space-y-3">
                     <label className="text-xs font-black uppercase tracking-widest text-slate-400 flex items-center gap-2">
-                      <Brain size={14} className="text-purple-500" /> 3. Vagal Function
+                      <Search size={14} className="text-indigo-500" /> 6. Associated Spinal Segment
                     </label>
-                    <Select value={selectedFunction} onValueChange={setSelectedFunction}>
+                    <Select value={selectedAssociation} onValueChange={setSelectedAssociation}>
                       <SelectTrigger className="rounded-xl border-slate-200 h-11 font-bold">
-                        <SelectValue placeholder="Select function..." />
+                        <SelectValue placeholder={(selectedOrgan || selectedGland) ? `Select segment for ${selectedOrgan || selectedGland}...` : "Find associated spinal segment..."} />
                       </SelectTrigger>
-                      <SelectContent>
-                        {VAGAL_FUNCTIONS.map(f => <SelectItem key={f} value={f}>{f}</SelectItem>)}
+                      <SelectContent className="max-h-[300px]">
+                        {filteredAssociations.map(a => (
+                          <SelectItem key={a.spinalSegment} value={a.spinalSegment}>
+                            {a.spinalSegment}: {a.muscle} ({a.organ})
+                          </SelectItem>
+                        ))}
+                        {filteredAssociations.length === 0 && (
+                          <SelectItem value="none" disabled>No direct spinal match found</SelectItem>
+                        )}
                       </SelectContent>
                     </Select>
-                  </div>
-                </div>
-
-                <div className="space-y-4 p-6 bg-slate-50 rounded-[2rem] border border-slate-100">
-                  <div className="flex items-center justify-between mb-2">
-                    <label className="text-xs font-black uppercase tracking-widest text-slate-400 flex items-center gap-2">
-                      <Heart size={14} className="text-rose-500" /> 4. Organ / Gland Challenge
-                    </label>
-                    <ToggleGroup type="single" value={challengeType} onValueChange={(v) => v && setChallengeType(v as any)} className="bg-white p-1 rounded-xl border border-slate-200">
-                      <ToggleGroupItem value="hand" className="rounded-lg px-4 py-1.5 text-[10px] font-black uppercase tracking-widest data-[state=on]:bg-indigo-600 data-[state=on]:text-white">Hand Reflex</ToggleGroupItem>
-                      <ToggleGroupItem value="gland" className="rounded-lg px-4 py-1.5 text-[10px] font-black uppercase tracking-widest data-[state=on]:bg-indigo-600 data-[state=on]:text-white">Gland Reflex</ToggleGroupItem>
-                    </ToggleGroup>
-                  </div>
-
-                  {challengeType === 'hand' ? (
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6 animate-in fade-in duration-300">
-                      <div className="flex gap-2">
-                        <ToggleGroup type="single" value={pulseSide} onValueChange={(v) => v && setPulseSide(v as any)} className="flex-1">
-                          <ToggleGroupItem value="Left" className="flex-1 rounded-xl border border-slate-200 data-[state=on]:bg-rose-600 data-[state=on]:text-white font-bold">Left Hand</ToggleGroupItem>
-                          <ToggleGroupItem value="Right" className="flex-1 rounded-xl border border-slate-200 data-[state=on]:bg-rose-600 data-[state=on]:text-white font-bold">Right Hand</ToggleGroupItem>
-                        </ToggleGroup>
-                        <ToggleGroup type="single" value={pulseDepth} onValueChange={(v) => v && setPulseDepth(v as any)} className="flex-1">
-                          <ToggleGroupItem value="Light" className="flex-1 rounded-xl border border-slate-200 data-[state=on]:bg-rose-600 data-[state=on]:text-white font-bold">Light</ToggleGroupItem>
-                          <ToggleGroupItem value="Deep" className="flex-1 rounded-xl border border-slate-200 data-[state=on]:bg-rose-600 data-[state=on]:text-white font-bold">Deep</ToggleGroupItem>
-                        </ToggleGroup>
-                      </div>
-                      <div className="flex flex-wrap gap-2">
-                        {currentOrgans.map((org) => (
-                          <Button
-                            key={org.name}
-                            variant={selectedOrgan === org.name ? "default" : "outline"}
-                            onClick={() => {
-                              setSelectedOrgan(selectedOrgan === org.name ? "" : org.name);
-                              setSelectedGland("");
-                            }}
-                            className={cn(
-                              "h-auto py-2 flex flex-col items-center gap-0.5 rounded-xl transition-all",
-                              selectedOrgan === org.name ? "bg-slate-900 text-white" : "bg-white border-slate-200"
-                            )}
-                          >
-                            <div className="flex items-center">
-                              <span className={cn("w-2 h-2 rounded-full mr-2", org.color)} />
-                              <span className="text-[10px] font-black uppercase tracking-widest">{org.name}</span>
-                            </div>
-                            <span className="text-[7px] font-bold opacity-60 uppercase">{org.position}</span>
-                          </Button>
-                        ))}
-                      </div>
-                    </div>
-                  ) : (
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6 animate-in fade-in duration-300">
-                      <div className="grid grid-cols-2 gap-2">
-                        {VAGAL_GLANDS.map((gland) => (
-                          <Button
-                            key={gland.name}
-                            variant={selectedGland === gland.name ? "default" : "outline"}
-                            onClick={() => {
-                              setSelectedGland(selectedGland === gland.name ? "" : gland.name);
-                              setSelectedOrgan("");
-                            }}
-                            className={cn(
-                              "h-auto py-3 flex flex-col items-center gap-1 rounded-xl transition-all",
-                              selectedGland === gland.name ? "bg-indigo-600 text-white shadow-md" : "bg-white border-slate-200 text-slate-600"
-                            )}
-                          >
-                            <span className="text-[10px] font-black uppercase tracking-widest">{gland.name}</span>
-                            <span className="text-[8px] font-bold opacity-70 text-center leading-tight">{gland.reflex}</span>
-                          </Button>
-                        ))}
-                      </div>
-                      
-                      {selectedGland ? (
-                        <div className="bg-indigo-50 border-2 border-indigo-100 rounded-2xl p-4 flex items-start gap-4">
-                          <div className="w-10 h-10 bg-indigo-600 rounded-xl flex items-center justify-center text-white shrink-0 shadow-lg">
-                            <Sparkles size={20} />
+                    {partnerInfo && (
+                      <div className="p-4 bg-indigo-50 rounded-2xl border border-indigo-100 animate-in fade-in slide-in-from-top-2">
+                        <div className="grid grid-cols-2 gap-6">
+                          <div className="space-y-2">
+                            <p className="text-[10px] font-black text-indigo-400 uppercase tracking-widest mb-1">Muscle to Test</p>
+                            <button 
+                              onClick={() => handleShowMuscleInfo(partnerInfo.currentMuscle)}
+                              className="text-lg font-black text-indigo-900 hover:underline decoration-indigo-300 underline-offset-4 text-left block"
+                            >
+                              {partnerInfo.currentMuscle}
+                            </button>
+                            <p className="text-[10px] font-bold text-indigo-600 mt-1">Organ: {partnerInfo.currentOrgan}</p>
+                            <p className="text-[10px] font-bold text-indigo-400">Segment: {selectedAssociation}</p>
                           </div>
-                          <div>
-                            <p className="text-[10px] font-black text-indigo-600 uppercase tracking-widest mb-1">Reflex Challenge</p>
-                            <p className="text-sm font-bold text-indigo-900 leading-tight">
-                              {VAGAL_GLANDS.find(g => g.name === selectedGland)?.reflex}
-                            </p>
-                            <p className="text-[10px] text-indigo-400 mt-2 italic">Challenge this reflex while testing the indicator muscle.</p>
+                          <div className="text-right space-y-2">
+                            <p className="text-[10px] font-black text-rose-400 uppercase tracking-widest mb-1">Lovett-Brother Partner</p>
+                            <button 
+                              onClick={() => handleShowMuscleInfo(partnerInfo.partnerMuscle)}
+                              className="text-lg font-black text-rose-900 hover:underline decoration-rose-300 underline-offset-4 text-right block w-full"
+                            >
+                              {partnerInfo.partnerMuscle}
+                            </button>
+                            <p className="text-[10px] font-bold text-rose-600 mt-1">Organ: {partnerInfo.partnerOrgan}</p>
+                            <p className="text-[10px] font-bold text-rose-400">Segment: {partnerInfo.partnerSegment}</p>
                           </div>
                         </div>
-                      ) : (
-                        <div className="border-2 border-dashed border-slate-200 rounded-2xl flex flex-col items-center justify-center text-center p-4 text-slate-400">
-                          <MousePointer2 size={24} className="mb-2 opacity-20" />
-                          <p className="text-sm font-medium">Select a gland to see <br/>its reflex challenge</p>
-                        </div>
-                      )}
-                    </div>
-                  )}
-                </div>
-
-                <div className="space-y-3">
-                  <label className="text-xs font-black uppercase tracking-widest text-slate-400 flex items-center gap-2">
-                    <Zap size={14} className="text-amber-500" /> 5. Energy Polarity
-                  </label>
-                  <div className="grid grid-cols-2 gap-3">
-                    <Button 
-                      variant="outline" 
-                      className={cn(
-                        "h-16 flex-col gap-1 rounded-2xl border-2 transition-all",
-                        polarity === 'Energy OUT' ? "border-blue-600 bg-blue-50 text-blue-700" : "border-slate-100 hover:border-blue-200"
-                      )}
-                      onClick={() => setPolarity('Energy OUT')}
-                    >
-                      <span className="font-black text-xs">Energy OUT (-)</span>
-                      <span className="text-[8px] font-bold opacity-70 uppercase">Practitioner LEFT Hand</span>
-                    </Button>
-                    <Button 
-                      variant="outline" 
-                      className={cn(
-                        "h-16 flex-col gap-1 rounded-2xl border-2 transition-all",
-                        polarity === 'Energy IN' ? "border-rose-600 bg-rose-50 text-rose-700" : "border-slate-100 hover:border-blue-200"
-                      )}
-                      onClick={() => setPolarity('Energy IN')}
-                    >
-                      <span className="font-black text-xs">Energy IN (+)</span>
-                      <span className="text-[8px] font-bold opacity-70 uppercase">Practitioner RIGHT Hand</span>
-                    </Button>
-                  </div>
-                </div>
-
-                <div className="space-y-3">
-                  <label className="text-xs font-black uppercase tracking-widest text-slate-400 flex items-center gap-2">
-                    <Search size={14} className="text-indigo-500" /> 6. Associated Spinal Segment
-                  </label>
-                  <Select value={selectedAssociation} onValueChange={setSelectedAssociation}>
-                    <SelectTrigger className="rounded-xl border-slate-200 h-11 font-bold">
-                      <SelectValue placeholder={(selectedOrgan || selectedGland) ? `Select segment for ${selectedOrgan || selectedGland}...` : "Find associated spinal segment..."} />
-                    </SelectTrigger>
-                    <SelectContent className="max-h-[300px]">
-                      {filteredAssociations.map(a => (
-                        <SelectItem key={a.spinalSegment} value={a.spinalSegment}>
-                          {a.spinalSegment}: {a.muscle} ({a.organ})
-                        </SelectItem>
-                      ))}
-                      {filteredAssociations.length === 0 && (
-                        <SelectItem value="none" disabled>No direct spinal match found</SelectItem>
-                      )}
-                    </SelectContent>
-                  </Select>
-                  {partnerInfo && (
-                    <div className="p-4 bg-indigo-50 rounded-2xl border border-indigo-100 animate-in fade-in slide-in-from-top-2">
-                      <div className="grid grid-cols-2 gap-6">
-                        <div className="space-y-2">
-                          <p className="text-[10px] font-black text-indigo-400 uppercase tracking-widest mb-1">Muscle to Test</p>
-                          <button 
-                            onClick={() => handleShowMuscleInfo(partnerInfo.currentMuscle)}
-                            className="text-lg font-black text-indigo-900 hover:underline decoration-indigo-300 underline-offset-4 text-left block"
-                          >
-                            {partnerInfo.currentMuscle}
-                          </button>
-                          <p className="text-[10px] font-bold text-indigo-600 mt-1">Organ: {partnerInfo.currentOrgan}</p>
-                          <p className="text-[10px] font-bold text-indigo-400">Segment: {selectedAssociation}</p>
-                        </div>
-                        <div className="text-right space-y-2">
-                          <p className="text-[10px] font-black text-rose-400 uppercase tracking-widest mb-1">Lovett-Brother Partner</p>
-                          <button 
-                            onClick={() => handleShowMuscleInfo(partnerInfo.partnerMuscle)}
-                            className="text-lg font-black text-rose-900 hover:underline decoration-rose-300 underline-offset-4 text-right block w-full"
-                          >
-                            {partnerInfo.partnerMuscle}
-                          </button>
-                          <p className="text-[10px] font-bold text-rose-600 mt-1">Organ: {partnerInfo.partnerOrgan}</p>
-                          <p className="text-[10px] font-bold text-rose-400">Segment: {partnerInfo.partnerSegment}</p>
-                        </div>
                       </div>
-                    </div>
-                  )}
-                </div>
-
-                <div className="space-y-4 p-6 bg-emerald-50 rounded-[2rem] border-2 border-emerald-100">
-                  <div className="flex items-center justify-between mb-2">
-                    <label className="text-xs font-black uppercase tracking-widest text-emerald-600 flex items-center gap-2">
-                      <Wind size={14} /> 7. Correction Phase
-                    </label>
-                    <div className="text-2xl font-black text-emerald-700 tabular-nums">{formatTime(correctionTime)}</div>
+                    )}
                   </div>
-                  
-                  <div className="space-y-4">
-                    <div className="p-4 bg-white rounded-2xl border border-emerald-200 shadow-sm space-y-3">
-                      <div className="flex items-center gap-2">
-                        <Hand size={16} className="text-emerald-600" />
-                        <p className="text-xs font-black text-emerald-900 uppercase tracking-tight">Practitioner Hand Instruction:</p>
-                      </div>
-                      <p className="text-sm font-bold text-emerald-800 leading-relaxed">
-                        Use your <span className="underline decoration-emerald-400 underline-offset-4">{polarity === 'Energy OUT' ? 'LEFT' : 'RIGHT'}</span> hand to hold the {challengeType === 'hand' ? `${selectedOrgan} pulse point` : `${selectedGland} reflex`}.
-                      </p>
-                    </div>
 
-                    <div className="flex flex-wrap gap-2">
-                      <ToggleGroup type="single" value={breathingPattern} onValueChange={setBreathingPattern} className="justify-start gap-2">
-                        <ToggleGroupItem value="Blocked Inhalation" className="rounded-xl px-4 py-2 h-auto data-[state=on]:bg-emerald-600 data-[state=on]:text-white border border-emerald-200 font-bold text-xs">Blocked Inhalation</ToggleGroupItem>
-                        <ToggleGroupItem value="Forced Exhalation" className="rounded-xl px-4 py-2 h-auto data-[state=on]:bg-emerald-600 data-[state=on]:text-white border border-emerald-200 font-bold text-xs">Forced Exhalation</ToggleGroupItem>
-                      </ToggleGroup>
-                    </div>
-
-                    <div className="flex gap-3">
-                      <Button onClick={toggleCorrectionTimer} variant={isCorrectionActive ? "outline" : "default"} className={cn("flex-1 rounded-2xl h-12 font-bold transition-all", !isCorrectionActive && "bg-emerald-600 hover:bg-emerald-700 shadow-md shadow-emerald-200")}>
-                        {isCorrectionActive ? <Pause size={18} className="mr-2" /> : <Play size={18} className="mr-2" />}
-                        {isCorrectionActive ? "Pause" : "Start Correction (15-30s)"}
-                      </Button>
-                      <Button onClick={resetCorrectionTimer} variant="ghost" size="icon" className="rounded-2xl h-12 w-12 text-emerald-400 hover:text-emerald-600"><RotateCcw size={18} /></Button>
+                  <div className="space-y-4 p-6 bg-emerald-50 rounded-[2rem] border-2 border-emerald-100">
+                    <div className="flex items-center justify-between mb-2">
+                      <label className="text-xs font-black uppercase tracking-widest text-emerald-600 flex items-center gap-2">
+                        <Wind size={14} /> 7. Correction Phase
+                      </label>
+                      <div className="text-2xl font-black text-emerald-700 tabular-nums">{formatTime(correctionTime)}</div>
                     </div>
                     
-                    <p className="text-[10px] text-emerald-700 font-medium leading-relaxed italic">
-                      "Hold Vagal Reflex + Stim Function + Hold Organ/Gland Reflex + Medulla Breathing Pattern"
-                    </p>
+                    <div className="space-y-4">
+                      <div className="p-4 bg-white rounded-2xl border border-emerald-200 shadow-sm space-y-3">
+                        <div className="flex items-center gap-2">
+                          <Hand size={16} className="text-emerald-600" />
+                          <p className="text-xs font-black text-emerald-900 uppercase tracking-tight">Practitioner Hand Instruction:</p>
+                        </div>
+                        <p className="text-sm font-bold text-emerald-800 leading-relaxed">
+                          Use your <span className="underline decoration-emerald-400 underline-offset-4">{polarity === 'Energy OUT' ? 'LEFT' : 'RIGHT'}</span> hand to hold the {challengeType === 'hand' ? `${selectedOrgan} pulse point` : `${selectedGland} reflex`}.
+                        </p>
+                      </div>
+
+                      <div className="flex flex-wrap gap-2">
+                        <ToggleGroup type="single" value={breathingPattern} onValueChange={setBreathingPattern} className="justify-start gap-2">
+                          <ToggleGroupItem value="Blocked Inhalation" className="rounded-xl px-4 py-2 h-auto data-[state=on]:bg-emerald-600 data-[state=on]:text-white border border-emerald-200 font-bold text-xs">Blocked Inhalation</ToggleGroupItem>
+                          <ToggleGroupItem value="Forced Exhalation" className="rounded-xl px-4 py-2 h-auto data-[state=on]:bg-emerald-600 data-[state=on]:text-white border border-emerald-200 font-bold text-xs">Forced Exhalation</ToggleGroupItem>
+                        </ToggleGroup>
+                      </div>
+
+                      <div className="flex gap-3">
+                        <Button onClick={toggleCorrectionTimer} variant={isCorrectionActive ? "outline" : "default"} className={cn("flex-1 rounded-2xl h-12 font-bold transition-all", !isCorrectionActive && "bg-emerald-600 hover:bg-emerald-700 shadow-md shadow-emerald-200")}>
+                          {isCorrectionActive ? <Pause size={18} className="mr-2" /> : <Play size={18} className="mr-2" />}
+                          {isCorrectionActive ? "Pause" : "Start Correction (15-30s)"}
+                        </Button>
+                        <Button onClick={resetCorrectionTimer} variant="ghost" size="icon" className="rounded-2xl h-12 w-12 text-emerald-400 hover:text-emerald-600"><RotateCcw size={18} /></Button>
+                      </div>
+                      
+                      <p className="text-[10px] text-emerald-700 font-medium leading-relaxed italic">
+                        "Hold Vagal Reflex + Stim Function + Hold Organ/Gland Reflex + Medulla Breathing Pattern"
+                      </p>
+                    </div>
+                  </div>
+
+                  <div className="pt-4 flex items-center justify-between border-t border-slate-100">
+                    <div className="flex items-center gap-2">
+                      <RefreshCw size={16} className="text-slate-400" />
+                      <span className="text-xs font-bold text-slate-600">8. Re-assess all indicators</span>
+                    </div>
+                    <Button 
+                      variant={isCleared ? "default" : "outline"} 
+                      size="sm" 
+                      onClick={() => setIsCleared(!isCleared)}
+                      className={cn("rounded-xl font-bold", isCleared ? "bg-emerald-600 hover:bg-emerald-700" : "border-slate-200")}
+                    >
+                      {isCleared ? <CheckCircle2 size={16} className="mr-2" /> : null}
+                      {isCleared ? "Balanced" : "Mark as Balanced"}
+                    </Button>
                   </div>
                 </div>
+              )}
 
-                <div className="pt-4 flex items-center justify-between border-t border-slate-100">
-                  <div className="flex items-center gap-2">
-                    <RefreshCw size={16} className="text-slate-400" />
-                    <span className="text-xs font-bold text-slate-600">8. Re-assess all indicators</span>
-                  </div>
-                  <Button 
-                    variant={isCleared ? "default" : "outline"} 
-                    size="sm" 
-                    onClick={() => setIsCleared(!isCleared)}
-                    className={cn("rounded-xl font-bold", isCleared ? "bg-emerald-600 hover:bg-emerald-700" : "border-slate-200")}
-                  >
-                    {isCleared ? <CheckCircle2 size={16} className="mr-2" /> : null}
-                    {isCleared ? "Balanced" : "Mark as Balanced"}
+              <div className="space-y-4 pt-4 border-t border-slate-100">
+                <div className="flex items-center justify-between">
+                  <label className="text-xs font-black uppercase tracking-widest text-slate-400">Procedure Notes</label>
+                  <Button variant="ghost" size="sm" onClick={handleAutoPopulate} className="text-[10px] font-black uppercase tracking-wider text-indigo-600 hover:text-indigo-700 hover:bg-indigo-50">
+                    <Zap size={12} className="mr-1" /> Auto-Populate Summary
                   </Button>
                 </div>
+                <EditableField field="vagus_nerve_notes" label="" value={initialNotes} multiline placeholder="Document stimulation details and client response..." onSave={(field, value) => onSaveField(field, value as string)} className="bg-slate-50/50 border-slate-100 rounded-2xl" />
               </div>
-            )}
-
-            <div className="space-y-4 pt-4 border-t border-slate-100">
-              <div className="flex items-center justify-between">
-                <label className="text-xs font-black uppercase tracking-widest text-slate-400">Procedure Notes</label>
-                <Button variant="ghost" size="sm" onClick={handleAutoPopulate} className="text-[10px] font-black uppercase tracking-wider text-indigo-600 hover:text-indigo-700 hover:bg-indigo-50">
-                  <Zap size={12} className="mr-1" /> Auto-Populate Summary
-                </Button>
-              </div>
-              <EditableField field="vagus_nerve_notes" label="" value={initialNotes} multiline placeholder="Document stimulation details and client response..." onSave={(field, value) => onSaveField(field, value as string)} className="bg-slate-50/50 border-slate-100 rounded-2xl" />
-            </div>
-          </CardContent>
-        </CollapsibleContent>
-      </Card>
+            </CardContent>
+          </CollapsibleContent>
+        </Card>
+      </Collapsible>
       
       <MuscleInfoModal 
         muscleName={selectedMuscleForInfo}
         open={infoModalOpen}
         onOpenChange={setInfoModalOpen}
       />
-    </Collapsible>
+    </>
   );
 };
 

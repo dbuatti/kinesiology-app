@@ -1,3 +1,5 @@
+"use client";
+
 import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 
@@ -5,11 +7,11 @@ export const useMuscleProficiency = (muscleName?: string) => {
   const [counts, setCounts] = useState<Record<string, number>>({});
   const [loading, setLoading] = useState(true);
 
-  const fetchProficiency = useCallback(async () => {
+  const fetchProficiency = useCallback(async (isMounted: { current: boolean }) => {
     setLoading(true);
     try {
       const { data: { user } } = await supabase.auth.getUser();
-      if (!user) return;
+      if (!user || !isMounted.current) return;
 
       const { data, error } = await supabase
         .from('muscle_tests')
@@ -18,7 +20,7 @@ export const useMuscleProficiency = (muscleName?: string) => {
 
       if (error) throw error;
 
-      if (data) {
+      if (data && isMounted.current) {
         const newCounts: Record<string, number> = {};
         data.forEach((test) => {
           const baseName = test.muscle_name.replace(/ \([LR]\)$/, '');
@@ -27,17 +29,22 @@ export const useMuscleProficiency = (muscleName?: string) => {
         setCounts(newCounts);
       }
     } catch (err: any) {
-      // Ignore abort errors as they are expected during rapid navigation or strict mode double-mounts
-      if (err.name !== 'AbortError') {
+      if (isMounted.current && err.name !== 'AbortError') {
         console.error("Failed to fetch muscle proficiency:", err);
       }
     } finally {
-      setLoading(false);
+      if (isMounted.current) {
+        setLoading(false);
+      }
     }
   }, []);
 
   useEffect(() => {
-    fetchProficiency();
+    const isMounted = { current: true };
+    fetchProficiency(isMounted);
+    return () => {
+      isMounted.current = false;
+    };
   }, [fetchProficiency]);
 
   const getCount = (name: string) => {
@@ -49,6 +56,6 @@ export const useMuscleProficiency = (muscleName?: string) => {
     count: muscleName ? getCount(muscleName) : 0, 
     counts, 
     loading, 
-    refresh: fetchProficiency 
+    refresh: () => fetchProficiency({ current: true }) 
   };
 };

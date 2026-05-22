@@ -55,6 +55,7 @@ import {
 
 // Modular Sub-components
 import DocumentSidebar, { OUTLINE_ITEMS } from './document-view/DocumentSidebar';
+import DocumentRightSidebar from './document-view/DocumentRightSidebar';
 import DocumentHeader from './document-view/DocumentHeader';
 import PreliminarySection from './document-view/PreliminarySection';
 import EaseSection from './document-view/EaseSection';
@@ -69,15 +70,6 @@ interface SessionDocumentViewProps {
   updatePriorityPattern: (category: string, itemName: string, status: 'Clear' | 'Inhibited' | null, side?: 'L' | 'R') => Promise<void>;
   onClose: () => void;
 }
-
-const TIMER_PRESETS = [
-  { label: '30s', value: 30 },
-  { label: '60s', value: 60 },
-  { label: '90s', value: 90 },
-  { label: '3m', value: 180 },
-  { label: '6m', value: 360 },
-  { label: '9m', value: 540 },
-];
 
 const SessionDocumentView = ({ 
   appointment, 
@@ -538,32 +530,6 @@ const SessionDocumentView = ({
           </div>
 
           <div className="flex items-center gap-6">
-            {/* Quick Timers Panel */}
-            <div className="flex items-center gap-1.5 border-r border-slate-200 pr-4">
-              {TIMER_PRESETS.map(preset => (
-                <button
-                  key={preset.label}
-                  onClick={() => startQuickTimer(preset.value)}
-                  className={cn(
-                    "w-8 h-8 rounded-full border text-[9px] font-black flex items-center justify-center transition-all",
-                    activeTimerDuration === preset.value
-                      ? "bg-indigo-600 border-indigo-600 text-white animate-pulse"
-                      : "bg-slate-50 border-slate-200 text-slate-600 hover:border-indigo-500 hover:text-indigo-600"
-                  )}
-                >
-                  {activeTimerDuration === preset.value ? formatCountdown(timeLeft) : preset.label}
-                </button>
-              ))}
-              {activeTimerDuration && (
-                <button 
-                  onClick={stopQuickTimer} 
-                  className="w-6 h-6 rounded-full bg-rose-500 text-white flex items-center justify-center hover:bg-rose-600 transition-colors"
-                >
-                  <X size={12} />
-                </button>
-              )}
-            </div>
-
             {/* Full Screen Toggle */}
             <Button
               variant="ghost"
@@ -608,7 +574,7 @@ const SessionDocumentView = ({
         </div>
       </div>
 
-      {/* Split Layout: Sidebar + Document */}
+      {/* Split Layout: Sidebar + Document + Right Sidebar */}
       <div className="w-full px-6 flex gap-12 items-start justify-start pt-8 print:block print:p-0">
         
         {/* Left Sidebar: Outline & Corrections Guide */}
@@ -676,6 +642,18 @@ const SessionDocumentView = ({
             <p className="text-[10px] font-bold text-slate-300 uppercase tracking-[0.5em]">Fractal Resolution OS • Resonance Clinical Infrastructure</p>
           </div>
         </div>
+
+        {/* Right Sidebar: Quick Timers, BOLT, and Coherence */}
+        <DocumentRightSidebar 
+          appointment={appointment}
+          saveField={saveField}
+          onUpdate={onUpdate}
+          activeTimerDuration={activeTimerDuration}
+          timeLeft={timeLeft}
+          startQuickTimer={startQuickTimer}
+          stopQuickTimer={stopQuickTimer}
+          formatCountdown={formatCountdown}
+        />
       </div>
     </div>
   );

@@ -18,7 +18,7 @@ import {
   Eye, EyeOff, Save, ShieldCheck, LayoutGrid,
   ChevronRight, Settings2, Sparkles, Globe, ExternalLink,
   PanelLeftClose, PanelLeftOpen, ClipboardCheck, MoreHorizontal, Printer,
-  ArrowLeft, Calendar, Clock, Link as LinkIcon
+  ArrowLeft, Calendar, Clock, Link as LinkIcon, Maximize2, Minimize2
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Switch } from "@/components/ui/switch";
@@ -74,6 +74,27 @@ const AppointmentDetailPage = () => {
 
   // Current time for meridian calculation
   const [currentTime, setCurrentTime] = useState(new Date());
+
+  // Full Screen State
+  const [isFullScreen, setIsFullScreen] = useState(() => {
+    return localStorage.getItem('antigravity_fullscreen') === 'true';
+  });
+
+  useEffect(() => {
+    const handleFullScreenChange = () => {
+      setIsFullScreen(localStorage.getItem('antigravity_fullscreen') === 'true');
+    };
+    window.addEventListener('antigravity_fullscreen_change', handleFullScreenChange);
+    return () => window.removeEventListener('antigravity_fullscreen_change', handleFullScreenChange);
+  }, []);
+
+  const toggleFullScreen = () => {
+    const nextState = !isFullScreen;
+    setIsFullScreen(nextState);
+    localStorage.setItem('antigravity_fullscreen', String(nextState));
+    window.dispatchEvent(new Event('antigravity_fullscreen_change'));
+    showSuccess(nextState ? "Full Screen Mode Enabled" : "Full Screen Mode Disabled");
+  };
 
   // Manage Document View via URL search params with replace: true to avoid history pollution
   const isDocumentView = searchParams.get("view") === "document";
@@ -286,6 +307,19 @@ const AppointmentDetailPage = () => {
 
               <Button variant="outline" size="sm" onClick={() => setIsDocumentView(true)} className="flex-1 sm:flex-none h-10 md:h-14 px-4 md:px-8 gap-2 md:gap-3 border-slate-200 bg-white rounded-xl md:rounded-2xl font-black text-[9px] md:text-[10px] uppercase tracking-widest text-slate-600 hover:bg-slate-50 hover:border-indigo-200 transition-all shadow-sm">
                 <FileText size={16} className="text-indigo-600" /> Doc View
+              </Button>
+
+              <Button 
+                variant="outline" 
+                size="sm" 
+                onClick={toggleFullScreen} 
+                className={cn(
+                  "flex-1 sm:flex-none h-10 md:h-14 px-4 md:px-8 gap-2 md:gap-3 border-slate-200 bg-white rounded-xl md:rounded-2xl font-black text-[9px] md:text-[10px] uppercase tracking-widest text-slate-600 hover:bg-slate-50 hover:border-indigo-200 transition-all shadow-sm",
+                  isFullScreen && "border-indigo-600 text-indigo-600 bg-indigo-50"
+                )}
+              >
+                {isFullScreen ? <Minimize2 size={16} /> : <Maximize2 size={16} />}
+                {isFullScreen ? "Exit Full" : "Full Screen"}
               </Button>
 
               <DropdownMenu>

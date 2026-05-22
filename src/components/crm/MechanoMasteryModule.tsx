@@ -17,9 +17,10 @@ import JointActionExplorer from './JointActionExplorer';
 import MechanoBible from './MechanoBible';
 import RandomJointCard from './RandomJointCard';
 import MechanoTheoryDrills from './MechanoTheoryDrills';
+import MechanoLessons from './MechanoLessons';
 
 const MechanoMasteryModule = () => {
-  const [activeTab, setActiveTab] = useState<'academy' | 'drills' | 'challenge' | 'explorer' | 'bible'>('academy');
+  const [activeTab, setActiveTab] = useState<'academy' | 'lessons' | 'drills' | 'challenge' | 'explorer' | 'bible'>('academy');
 
   const NavButton = ({ id, label, icon: Icon }: any) => (
     <Button
@@ -65,6 +66,7 @@ const MechanoMasteryModule = () => {
       {/* Navigation Tabs */}
       <div className="flex flex-wrap gap-3 p-2 bg-slate-100 rounded-[2rem] border border-slate-200">
         <NavButton id="academy" label="Academy Hub" icon={LayoutGrid} />
+        <NavButton id="lessons" label="Confidence & Lessons" icon={Sparkles} />
         <NavButton id="drills" label="Theory Drills" icon={Brain} />
         <NavButton id="challenge" label="Daily Case" icon={Trophy} />
         <NavButton id="explorer" label="Joint Explorer" icon={Target} />
@@ -88,11 +90,11 @@ const MechanoMasteryModule = () => {
                 </CardHeader>
                 <CardContent className="p-12 pt-0 relative z-10">
                   <div className="flex flex-wrap gap-4">
-                    <Button onClick={() => setActiveTab('challenge')} className="bg-white text-slate-900 hover:bg-indigo-50 h-14 px-10 rounded-2xl font-black text-xs uppercase tracking-widest shadow-2xl">
-                      Start Today's Case <ChevronRight size={18} className="ml-2" />
+                    <Button onClick={() => setActiveTab('lessons')} className="bg-white text-slate-900 hover:bg-indigo-50 h-14 px-10 rounded-2xl font-black text-xs uppercase tracking-widest shadow-2xl">
+                      Confidence Lessons <Sparkles size={16} className="ml-2 text-indigo-600" />
                     </Button>
-                    <Button onClick={() => setActiveTab('drills')} variant="outline" className="bg-transparent border-white/20 text-white hover:bg-white/10 h-14 px-10 rounded-2xl font-black text-xs uppercase tracking-widest">
-                      Theory Drills
+                    <Button onClick={() => setActiveTab('challenge')} variant="outline" className="bg-transparent border-white/20 text-white hover:bg-white/10 h-14 px-10 rounded-2xl font-black text-xs uppercase tracking-widest">
+                      Start Today's Case <ChevronRight size={18} className="ml-2" />
                     </Button>
                   </div>
                 </CardContent>
@@ -210,6 +212,7 @@ const MechanoMasteryModule = () => {
           </div>
         )}
 
+        {activeTab === 'lessons' && <MechanoLessons />}
         {activeTab === 'drills' && <MechanoTheoryDrills />}
         {activeTab === 'challenge' && <DailyMechanoChallenge />}
         {activeTab === 'explorer' && <JointActionExplorer />}

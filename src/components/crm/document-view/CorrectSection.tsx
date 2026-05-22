@@ -2,8 +2,9 @@
 
 import React, { useMemo, useState, useEffect } from 'react';
 import { Checkbox } from '@/components/ui/checkbox';
-import { Zap, BookOpen, ExternalLink } from 'lucide-react';
+import { Zap, BookOpen, ExternalLink, Info, CheckCircle2, Sparkles, Brain, Activity, Heart, ShieldAlert, Wind, Droplets } from 'lucide-react';
 import DocInput from './DocInput';
+import { AFFERENT_PATHWAYS, EFFERENT_PATHWAYS } from '@/data/pathway-logic-data';
 
 interface CorrectSectionProps {
   metadata: any;
@@ -13,6 +14,23 @@ interface CorrectSectionProps {
   updateMetadataField: (key: string, value: any) => Promise<void>;
   saveField: (field: string, value: any) => Promise<void>;
 }
+
+const NOCICEPTIVE_PROTOCOL = {
+  id: 'Nociceptive',
+  label: 'Nociceptive Threat',
+  direction: 'Afferent (Bottom-Up)',
+  icon: ShieldAlert,
+  color: 'text-orange-500',
+  description: 'Clearing threat from scars, old injuries, or specific movements.',
+  protocols: [
+    'Identify the threat (scar, old injury, movement, or visualization).',
+    'Stimulate/irritate the threat (prod, rub, perform movement, or visualize).',
+    'Test Indicator Muscle (IM) — should inhibit under threat.',
+    'Find correction direction (Afferent vs Efferent) and specific system.',
+    'Apply correction + Nasal breathing.',
+    'Re-assess: Re-stimulate threat and test IM (should be clear).'
+  ]
+};
 
 const CorrectSection = ({ 
   metadata, 
@@ -37,6 +55,18 @@ const CorrectSection = ({
       setShowCustomInput(false);
     }
   }, [metadata.wizard_finding, inhibitedFindings]);
+
+  // Find active protocol based on selection
+  const activeProtocol = useMemo(() => {
+    if (!metadata.wizard_system) return null;
+    
+    if (metadata.wizard_system === 'Nociceptive') {
+      return NOCICEPTIVE_PROTOCOL;
+    }
+
+    const allPathways = [...AFFERENT_PATHWAYS, ...EFFERENT_PATHWAYS];
+    return allPathways.find(p => p.id.toLowerCase().includes(metadata.wizard_system.toLowerCase()) || metadata.wizard_system.toLowerCase().includes(p.id.toLowerCase()));
+  }, [metadata.wizard_system]);
 
   return (
     <div className="p-8 border-2 border-black space-y-8 bg-white">
@@ -91,7 +121,10 @@ const CorrectSection = ({
                 <Checkbox 
                   id="dir-afferent"
                   checked={metadata.wizard_direction === 'Afferent'}
-                  onCheckedChange={(checked) => updateMetadataField('wizard_direction', checked ? 'Afferent' : null)}
+                  onCheckedChange={(checked) => {
+                    updateMetadataField('wizard_direction', checked ? 'Afferent' : null);
+                    updateMetadataField('wizard_system', null); // Reset system on direction change
+                  }}
                   className="h-4 w-4 border-black rounded-none data-[state=checked]:bg-black"
                 />
                 <label htmlFor="dir-afferent" className="text-xs font-bold cursor-pointer">Afferent (Bottom-Up)</label>
@@ -100,7 +133,10 @@ const CorrectSection = ({
                 <Checkbox 
                   id="dir-efferent"
                   checked={metadata.wizard_direction === 'Efferent'}
-                  onCheckedChange={(checked) => updateMetadataField('wizard_direction', checked ? 'Efferent' : null)}
+                  onCheckedChange={(checked) => {
+                    updateMetadataField('wizard_direction', checked ? 'Efferent' : null);
+                    updateMetadataField('wizard_system', null); // Reset system on direction change
+                  }}
                   className="h-4 w-4 border-black rounded-none data-[state=checked]:bg-black"
                 />
                 <label htmlFor="dir-efferent" className="text-xs font-bold cursor-pointer">Efferent (Top-Down)</label>
@@ -279,6 +315,51 @@ const CorrectSection = ({
             ))}
           </div>
         </div>
+      </div>
+
+      {/* DETAILED STEP-BY-STEP PROTOCOL INSTRUCTIONS */}
+      <div className="pt-6 border-t border-slate-100 space-y-4">
+        <p className="text-[9px] font-black uppercase tracking-widest text-slate-400">Detailed Correction Instructions</p>
+        
+        {activeProtocol ? (
+          <div className="p-6 bg-slate-50 border border-slate-200 rounded-xl space-y-4 animate-in fade-in duration-300">
+            <div className="flex items-center gap-3">
+              <div className="w-8 h-8 rounded-lg bg-black text-white flex items-center justify-center">
+                <Info size={16} />
+              </div>
+              <div>
+                <h4 className="text-sm font-black uppercase tracking-tight">{activeProtocol.label} Protocol</h4>
+                <p className="text-[9px] font-bold text-slate-400 uppercase tracking-widest">{activeProtocol.direction}</p>
+              </div>
+            </div>
+            
+            <p className="text-xs text-slate-600 font-medium leading-relaxed italic">
+              "{activeProtocol.description}"
+            </p>
+
+            <div className="space-y-2">
+              <p className="text-[8px] font-black text-slate-400 uppercase tracking-widest">Step-by-Step Steps:</p>
+              <div className="space-y-2">
+                {activeProtocol.protocols.map((stepText, idx) => (
+                  <div key={idx} className="flex gap-3 items-start text-xs leading-relaxed text-slate-700">
+                    <span className="font-black text-black shrink-0">{idx + 1}.</span>
+                    <p className="font-medium">{stepText}</p>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        ) : (
+          <div className="p-6 border border-dashed border-slate-200 rounded-xl text-center space-y-4">
+            <Info size={24} className="mx-auto text-slate-300" />
+            <div className="space-y-1">
+              <p className="text-xs font-bold text-slate-500">No Specific System Selected</p>
+              <p className="text-[10px] text-slate-400 leading-relaxed">
+                Select a **Pathway Direction** and **Specific System** on the left to view detailed step-by-step clinical instructions.
+              </p>
+            </div>
+          </div>
+        )}
       </div>
 
       <div className="pt-4 border-t border-slate-100">

@@ -1,27 +1,28 @@
-Make the document sidebar stick
- 
 "use client";
+
 import React from 'react';
 import { cn } from '@/lib/utils';
-import {
-  Compass,
-  ShieldCheck,
-  List,
-  Zap,
-  ClipboardCheck,
-  ChevronDown,
+import { 
+  Compass, 
+  ShieldCheck, 
+  List, 
+  Zap, 
+  ClipboardCheck, 
+  ChevronDown, 
   ChevronUp,
   Activity,
   Brain,
   Heart
 } from 'lucide-react';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
+
 interface DocumentSidebarProps {
   activeSection: string;
   scrollTo: (id: string) => void;
   openGuides: Record<string, boolean>;
   toggleGuide: (title: string) => void;
 }
+
 export const OUTLINE_ITEMS = [
   { id: "p-sec", label: "P — Preliminary", icon: Compass },
   { id: "e-sec", label: "E — Ease System", icon: ShieldCheck },
@@ -29,6 +30,7 @@ export const OUTLINE_ITEMS = [
   { id: "c-sec", label: "C — Correct (Wizard)", icon: Zap },
   { id: "e2-sec", label: "E — Embed (Homework)", icon: ClipboardCheck },
 ];
+
 export const CORRECTIONS_GUIDE = [
   {
     title: "T1 Sympathetic Reset",
@@ -74,6 +76,7 @@ export const CORRECTIONS_GUIDE = [
     ]
   }
 ];
+
 const DocumentSidebar = ({ activeSection, scrollTo, openGuides, toggleGuide }: DocumentSidebarProps) => {
   return (
     <aside className="w-80 shrink-0 sticky top-20 max-h-[calc(100vh-240px)] overflow-y-auto p-6 bg-slate-50 border border-slate-200 rounded-[2rem] space-y-8 print:hidden custom-scrollbar">
@@ -89,8 +92,8 @@ const DocumentSidebar = ({ activeSection, scrollTo, openGuides, toggleGuide }: D
                 onClick={() => scrollTo(item.id)}
                 className={cn(
                   "w-full flex items-center gap-3 px-4 py-2.5 text-xs font-bold rounded-xl transition-all text-left border-l-2",
-                  isActive
-                    ? "bg-indigo-50 border-indigo-600 text-indigo-600 font-black"
+                  isActive 
+                    ? "bg-indigo-50 border-indigo-600 text-indigo-600 font-black" 
                     : "border-transparent text-slate-600 hover:text-indigo-600 hover:bg-indigo-50/30"
                 )}
               >
@@ -101,7 +104,9 @@ const DocumentSidebar = ({ activeSection, scrollTo, openGuides, toggleGuide }: D
           })}
         </div>
       </div>
+
       <div className="h-px bg-slate-200" />
+
       {/* Corrections Guide */}
       <div className="space-y-4">
         <p className="text-[10px] font-black text-slate-400 uppercase tracking-[0.3em] px-1">Corrections Guide</p>
@@ -139,4 +144,5 @@ const DocumentSidebar = ({ activeSection, scrollTo, openGuides, toggleGuide }: D
     </aside>
   );
 };
+
 export default DocumentSidebar;

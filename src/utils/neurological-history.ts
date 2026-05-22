@@ -3,6 +3,7 @@
 import { format } from "date-fns";
 import { PRIMITIVE_REFLEXES } from "@/data/primitive-reflex-data";
 import { BRAIN_REFLEX_POINTS } from "@/data/brain-reflex-data";
+import { CRANIAL_NERVES } from "@/data/cranial-nerve-data";
 import { safeParse } from "./safe-json";
 
 export interface FindingHistory {
@@ -12,6 +13,7 @@ export interface FindingHistory {
     date: string;
     appointmentId: string;
     status: string;
+    correction?: string | null;
   }[];
   firstInhibited?: string;
   lastCleared?: string;
@@ -21,29 +23,62 @@ export interface FindingHistory {
 const DYSFUNCTIONAL_STATUSES = ['Inhibited', 'Hypertonic', 'Switching', 'Inhibition'];
 const CLEAR_STATUSES = ['Clear', 'Normotonic'];
 
+const arabicToRoman: Record<string, string> = {
+  '1': 'I', '2': 'II', '3': 'III', '4': 'IV', '5': 'V', '6': 'VI',
+  '7': 'VII', '8': 'VIII', '9': 'IX', '10': 'X', '11': 'XI', '12': 'XII'
+};
+
 /**
  * Normalizes messy IDs or short names into proper clinical display names.
  */
 const getCanonicalName = (name: string): string => {
-  const cleanName = name.replace(/ \([LR]\)$/, '').trim().toLowerCase();
+  // Recursively strip any (L), (R), or (Bilateral) suffixes
+  let clean = name
+    .replace(/\s*\([LR]\)/gi, '')
+    .replace(/\s*\(Bilateral\)/gi, '')
+    .trim();
   
+  // Normalize Arabic CN numbers (e.g., CN 10 -> CN X, CN 1 -> CN I)
+  const cnMatch = clean.match(/^CN\s+(\d+)(?:\s*:\s*(.+))?$/i);
+  if (cnMatch) {
+    const num = cnMatch[1];
+    const roman = arabicToRoman[num];
+    if (roman) {
+      const nerve = CRANIAL_NERVES.find(n => n.id.toString() === num);
+      if (nerve) {
+        return `${nerve.name}: ${nerve.latinName}`;
+      }
+    }
+  }
+
+  // Normalize Roman CN numbers (e.g., CN I -> CN I: Olfactory)
+  const cnRomanMatch = clean.match(/^CN\s+([IVXLCDM]+)(?:\s*:\s*(.+))?$/i);
+  if (cnRomanMatch) {
+    const roman = cnRomanMatch[1].toUpperCase();
+    const nerve = CRANIAL_NERVES.find(n => n.name === `CN ${roman}`);
+    if (nerve) {
+      return `${nerve.name}: ${nerve.latinName}`;
+    }
+  }
+
   // Check Primitive Reflexes
+  const lowerClean = clean.toLowerCase();
   const reflex = PRIMITIVE_REFLEXES.find(r => 
-    r.id.toLowerCase() === cleanName || 
-    r.name.toLowerCase() === cleanName ||
-    r.name.toLowerCase().includes(cleanName)
+    r.id.toLowerCase() === lowerClean || 
+    r.name.toLowerCase() === lowerClean ||
+    r.name.toLowerCase().includes(lowerClean)
   );
   if (reflex) return reflex.name;
 
   // Check Brain Points
   const point = BRAIN_REFLEX_POINTS.find(p => 
-    p.id.toLowerCase() === cleanName || 
-    p.name.toLowerCase() === cleanName ||
-    p.name.toLowerCase().split(':')[0].trim() === cleanName
+    p.id.toLowerCase() === lowerClean || 
+    p.name.toLowerCase() === lowerClean ||
+    p.name.toLowerCase().split(':')[0].trim() === lowerClean
   );
   if (point) return point.name.split(':')[0].trim();
 
-  return name;
+  return clean;
 };
 
 export function processNeurologicalHistory(appointments: any[]): FindingHistory[] {
@@ -63,13 +98,17 @@ export function processNeurologicalHistory(appointments: any[]): FindingHistory[
     Object.entries(pattern).forEach(([category, items]) => {
       if (!items || typeof items !== 'object') return;
 
-      // 1. Normalize all items in this category for this session first
+      // 1. Normalize all items in this category first
       const sessionItems: { base: string, side: string, status: string }[] = [];
       Object.entries(items).forEach(([key, status]) => {
+        const strStatus = status as string;
+        const isCleared = strStatus.endsWith('_Cleared');
+        const baseStatus = strStatus.replace('_Cleared', '');
+        
         const sideMatch = key.match(/\(([LR])\)$/);
         const side = sideMatch ? sideMatch[1] : "";
         const base = getCanonicalName(key);
-        sessionItems.push({ base, side, status: status as string });
+        sessionItems.push({ base, side, status: strStatus });
       });
 
       // 2. Filter out base items if lateralized ones exist for the same base name
@@ -103,7 +142,8 @@ export function processNeurologicalHistory(appointments: any[]): FindingHistory[
         findingsMap[key].history.push({
           date: dateStr,
           appointmentId: app.id,
-          status: item.status
+          status: item.status,
+          correction: app.modes_balances || app.notes || null
         });
       });
     });
@@ -111,7 +151,7 @@ export function processNeurologicalHistory(appointments: any[]): FindingHistory[
 
   // Calculate resolutions
   return Object.values(findingsMap).map(finding => {
-    const inhibitedDates = finding.history.filter(h => DYSFUNCTIONAL_STATUSES.includes(h.status));
+    const inhibitedDates = finding.history.filter(h => DYSFUNCTIONAL_STATUSES.includes(h.status.replace('_Cleared', '')));
     
     if (inhibitedDates.length > 0) {
       finding.firstInhibited = inhibitedDates[0].date;
@@ -119,7 +159,7 @@ export function processNeurologicalHistory(appointments: any[]): FindingHistory[
     
     // It's resolved if the LATEST test was 'Clear' or 'Normotonic'
     const latestTest = finding.history[finding.history.length - 1];
-    if (latestTest && CLEAR_STATUSES.includes(latestTest.status)) {
+    if (latestTest && (CLEAR_STATUSES.includes(latestTest.status) || latestTest.status.endsWith('_Cleared'))) {
       finding.isResolved = true;
       finding.lastCleared = latestTest.date;
     }

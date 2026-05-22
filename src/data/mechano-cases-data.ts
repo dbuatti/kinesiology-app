@@ -75,6 +75,51 @@ export const MECHANO_CASES: MechanoCase[] = [
       plane: 'Sagittal',
       actionOrTissue: 'Posterior Ligaments (Stretch)'
     },
-    logicExplanation: "Whiplash often creates unconscious ligamentous threat. GV16 facilitation confirms the Spinocerebellar pathway."
+    logicExplanation: "Whiplash often creates unconscious dural or ligamentous threat. GV16 facilitation confirms the Spinocerebellar pathway."
+  },
+  {
+    id: 'case-5',
+    symptom: "Clicking jaw and difficulty chewing on the left side.",
+    history: "Had extensive dental work done 1 month ago.",
+    diagnosticClue: "X-pattern facilitates. TL to the Right Motor Strip (M1) clears the jaw deviation.",
+    correctPath: 'Conscious',
+    localization: {
+      skeleton: 'Axial',
+      region: 'Upper',
+      joint: 'Jaw (TMJ)',
+      plane: 'Sagittal',
+      actionOrTissue: 'Opening'
+    },
+    logicExplanation: "Jaw opening is a sagittal plane action. Contralateral M1 facilitation indicates a Conscious (DCML) motor planning issue following dental work."
+  },
+  {
+    id: 'case-6',
+    symptom: "Deep pelvic pain when walking, specifically during the push-off phase.",
+    history: "Slipped on ice last winter, landing hard on the hip.",
+    diagnosticClue: "X-pattern facilitates. TL to GV16 (Cerebellum) stabilizes the pelvic girdle.",
+    correctPath: 'Unconscious',
+    localization: {
+      skeleton: 'Axial',
+      region: 'Lower',
+      joint: 'Pelvis',
+      plane: 'Transverse',
+      actionOrTissue: 'Rotation'
+    },
+    logicExplanation: "Gait push-off requires pelvic rotation in the transverse plane. GV16 facilitation confirms an Unconscious (Spinocerebellar) mapping issue from the past fall."
+  },
+  {
+    id: 'case-7',
+    symptom: "Vague dizziness and brain fog when tilting the head to the right.",
+    history: "No trauma, but spends 10 hours a day looking at dual monitors.",
+    diagnosticClue: "X-pattern facilitates. TL to Left Sensory Cortex (S1) clears the right lateral flexion challenge.",
+    correctPath: 'Conscious',
+    localization: {
+      skeleton: 'Axial',
+      region: 'Upper',
+      joint: 'Cervical Spine',
+      plane: 'Frontal',
+      actionOrTissue: 'Lateral Flexion'
+    },
+    logicExplanation: "Tilting the head to the side is lateral flexion in the frontal plane. Contralateral S1 facilitation confirms a Conscious (DCML) sensory mapping issue from repetitive monitor use."
   }
 ];

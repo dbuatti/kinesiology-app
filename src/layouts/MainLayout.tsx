@@ -4,7 +4,7 @@ import React from 'react';
 import { Outlet } from 'react-router-dom';
 import SpaceHeader from '@/components/crm/SpaceHeader';
 import QuickActions from '@/components/crm/QuickActions';
-import AppFooter from '@/components/crm/AppFooter';
+import AppFooter from '@/components/shared/BackToTop';
 import BackToTop from '@/components/shared/BackToTop';
 import UpcomingMarquee from '@/components/crm/UpcomingMarquee';
 import SessionTimer from '@/components/crm/SessionTimer';
@@ -18,7 +18,7 @@ const MainLayout = () => {
 
   return (
     <div className={cn(
-      "flex flex-col min-h-screen transition-all duration-1000 relative overflow-hidden",
+      "flex flex-col h-screen transition-all duration-1000 relative overflow-hidden",
       mode === 'clinical' ? "bg-white dark:bg-slate-950" :
       mode === 'lab' ? "bg-slate-50/50 dark:bg-slate-950" :
       "bg-slate-50/50 dark:bg-slate-950"
@@ -36,9 +36,9 @@ const MainLayout = () => {
         <div className="absolute top-[20%] right-[10%] w-[30%] h-[30%] bg-purple-200/10 blur-[120px] rounded-full animate-pulse-soft" />
       </div>
 
-      <div className="relative z-10 flex flex-col min-h-screen">
+      <div className="relative z-10 flex flex-col h-screen overflow-hidden">
         {/* UNIFIED STICKY HEADER STACK */}
-        <div className="sticky top-0 z-[100] w-full shadow-sm">
+        <div className="shrink-0 w-full shadow-sm z-[100]">
           <UpcomingMarquee />
           {activeSession && (
             <SessionTimer 
@@ -51,13 +51,11 @@ const MainLayout = () => {
           <SpaceHeader />
         </div>
         
-        <div className="flex flex-col flex-1">
+        <div className="flex flex-col flex-1 overflow-hidden">
           <main id="main-scroll-container" className="flex-1 flex flex-col overflow-auto relative">
             <div className="flex-1 p-0">
               <Outlet />
             </div>
-            
-            <AppFooter />
           </main>
         </div>
       </div>

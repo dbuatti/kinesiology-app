@@ -47,25 +47,30 @@ const BrainZonePrintable = () => {
   const ZoneCard = ({ point, color }: { point: any, color: string }) => {
     const images = customImages[point.id];
     
+    // Swap logic: Main area shows secondary (image 2) if available, otherwise primary (image 1).
+    // Inset area shows primary (image 1) if secondary is in the main area.
+    const mainImage = images?.secondary || images?.primary;
+    const insetImage = images?.secondary ? images?.primary : null;
+    
     return (
       <div className="border border-black p-1.5 flex flex-col h-full break-inside-avoid bg-white">
         <div className="flex items-center justify-between mb-1 border-b border-black/10 pb-1">
           <h4 className="font-black text-[9px] uppercase leading-none truncate pr-1">{point.name}</h4>
-          <span className={cn("text-[7px] font-black px-1.5 py-0.5 rounded-sm text-white leading-none shrink-0", color)}>
+          <span className={cn("text-[7px] font-black px-1.5 py-0.5 rounded-sm text-white whitespace-nowrap leading-none shrink-0", color)}>
             {point.acupoint || point.category[0]}
           </span>
         </div>
         
         <div className="relative aspect-[2.5/1] bg-slate-50 border border-slate-100 mb-1.5 overflow-hidden flex items-center justify-center shrink-0">
-          {images?.primary ? (
-            <img src={images.primary} alt={point.name} className="w-full h-full object-cover" />
+          {mainImage ? (
+            <img src={mainImage} alt={point.name} className="w-full h-full object-cover" />
           ) : (
             <Brain size={14} className="text-slate-200" />
           )}
           
-          {images?.secondary && (
+          {insetImage && (
             <div className="absolute bottom-0.5 right-0.5 w-[22%] aspect-square border border-white shadow-sm overflow-hidden bg-white">
-              <img src={images.secondary} alt="Inset" className="w-full h-full object-cover" />
+              <img src={insetImage} alt="Inset" className="w-full h-full object-cover" />
             </div>
           )}
         </div>

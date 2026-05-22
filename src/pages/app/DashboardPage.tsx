@@ -233,7 +233,7 @@ const Index = () => {
 
   return (
     <AppLayout>
-      <div className="space-y-12">
+      <div className="space-y-6 md:space-y-12">
         <PageHeader
           title={`${mode.charAt(0).toUpperCase() + mode.slice(1)} Dashboard`}
           subtitle={

@@ -17,7 +17,7 @@ import {
   Activity,
   Brain,
   Heart,
-  ShieldAlert
+  Shield
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Checkbox } from '@/components/ui/checkbox';
@@ -26,6 +26,7 @@ import { safeParse } from '@/utils/safe-json';
 import { PRIMITIVE_REFLEXES } from '@/data/primitive-reflex-data';
 import { CRANIAL_NERVES } from '@/data/cranial-nerve-data';
 import { MUSCLE_GROUPS, MIDLINE_MUSCLES } from '@/data/muscle-data';
+import { BRAIN_REFLEX_POINTS } from '@/data/brain-reflex-data';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 
@@ -136,6 +137,14 @@ const SessionDocumentView = ({
     const el = document.getElementById(id);
     if (el) el.scrollIntoView({ behavior: 'smooth' });
   };
+
+  // Get sorted list of brain zone names for the dropdowns
+  const brainZoneOptions = useMemo(() => {
+    return BRAIN_REFLEX_POINTS.map(p => {
+      const displayName = p.name.includes(':') ? p.name.split(':')[0].trim() : p.name;
+      return { id: p.id, name: displayName };
+    }).sort((a, b) => a.name.localeCompare(b.name));
+  }, []);
 
   return (
     <div className="bg-white min-h-screen text-black font-sans pb-40 print:p-0 print:m-0">
@@ -464,13 +473,18 @@ const SessionDocumentView = ({
                   
                   <div className="space-y-2">
                     <label className="text-[8px] font-black uppercase text-slate-400">Coordinate 1 (Zone Name)</label>
-                    <input 
-                      type="text"
+                    <select 
                       value={metadata.wizard_coord1_name || ""}
                       onChange={(e) => updateMetadataField('wizard_coord1_name', e.target.value)}
-                      className="w-full bg-transparent border-b border-slate-200 py-1 text-xs font-bold focus:border-black outline-none transition-all"
-                      placeholder="e.g. S1, Cerebellum..."
-                    />
+                      className="w-full bg-transparent border-b border-slate-200 py-1.5 text-xs font-bold focus:border-black outline-none transition-all"
+                    >
+                      <option value="" className="text-slate-400">Select Zone...</option>
+                      {brainZoneOptions.map(option => (
+                        <option key={`c1-${option.id}`} value={option.name} className="text-black font-bold">
+                          {option.name}
+                        </option>
+                      ))}
+                    </select>
                     <div className="flex gap-4 pt-1">
                       {['Left', 'Right', 'Bilateral'].map(side => (
                         <div key={side} className="flex items-center gap-1.5">
@@ -488,13 +502,18 @@ const SessionDocumentView = ({
 
                   <div className="space-y-2 pt-2">
                     <label className="text-[8px] font-black uppercase text-slate-400">Coordinate 2 (Zone Name)</label>
-                    <input 
-                      type="text"
+                    <select 
                       value={metadata.wizard_coord2_name || ""}
                       onChange={(e) => updateMetadataField('wizard_coord2_name', e.target.value)}
-                      className="w-full bg-transparent border-b border-slate-200 py-1 text-xs font-bold focus:border-black outline-none transition-all"
-                      placeholder="e.g. GV16, Left Limbic..."
-                    />
+                      className="w-full bg-transparent border-b border-slate-200 py-1.5 text-xs font-bold focus:border-black outline-none transition-all"
+                    >
+                      <option value="" className="text-slate-400">Select Zone...</option>
+                      {brainZoneOptions.map(option => (
+                        <option key={`c2-${option.id}`} value={option.name} className="text-black font-bold">
+                          {option.name}
+                        </option>
+                      ))}
+                    </select>
                     <div className="flex gap-4 pt-1">
                       {['Left', 'Right', 'Bilateral'].map(side => (
                         <div key={side} className="flex items-center gap-1.5">

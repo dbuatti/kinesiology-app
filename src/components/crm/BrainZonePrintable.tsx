@@ -59,11 +59,16 @@ const BrainZonePrintable = () => {
     
     const primaryImage = images?.primary;
     const secondaryImage = images?.secondary;
+
+    // Main image is Image 2 (secondary), fallback to Image 1 (primary)
+    const mainImage = secondaryImage || primaryImage;
+    // Inset image is Image 1 (primary) if Image 2 is displayed as main
+    const insetImage = secondaryImage ? primaryImage : null;
     
     return (
       <div 
         onClick={onClick}
-        className="border border-black p-1.5 flex flex-col h-full break-inside-avoid bg-white cursor-pointer hover:border-indigo-500 hover:shadow-md transition-all print:cursor-default print:hover:border-black print:hover:shadow-none group"
+        className="relative border border-black p-1.5 flex flex-col h-full break-inside-avoid bg-white cursor-pointer hover:border-indigo-500 hover:shadow-md transition-all print:cursor-default print:hover:border-black print:hover:shadow-none group"
       >
         <div className="flex items-center justify-between mb-1 border-b border-black/10 pb-1">
           <h4 className="font-black text-[9px] uppercase leading-none truncate pr-1">{point.name}</h4>
@@ -73,19 +78,25 @@ const BrainZonePrintable = () => {
         </div>
         
         <div className="relative aspect-[2.5/1] bg-slate-50 border border-slate-100 mb-1.5 overflow-hidden flex items-center justify-center shrink-0">
-          {primaryImage ? (
-            <img src={primaryImage} alt={point.name} className="w-full h-full object-cover" />
+          {mainImage ? (
+            <img src={mainImage} alt={point.name} className="w-full h-full object-cover" />
           ) : (
             <Brain size={14} className="text-slate-200" />
           )}
           
-          {/* Smooth cross-fade to secondary image (image 2) on hover */}
-          {secondaryImage && (
-            <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-300 bg-white">
-              <img src={secondaryImage} alt={`${point.name} Secondary`} className="w-full h-full object-cover" />
+          {insetImage && (
+            <div className="absolute bottom-0.5 right-0.5 w-[22%] aspect-square border border-white shadow-sm overflow-hidden bg-white">
+              <img src={insetImage} alt="Inset" className="w-full h-full object-cover" />
             </div>
           )}
         </div>
+
+        {/* Floating Hover Popup of Image 2 (mainImage) outside boundaries, uncropped */}
+        {mainImage && (
+          <div className="absolute -top-20 left-1/2 -translate-x-1/2 w-[150%] aspect-video bg-white border-2 border-indigo-500 shadow-2xl rounded-2xl p-1.5 opacity-0 pointer-events-none group-hover:opacity-100 transition-all duration-300 scale-90 group-hover:scale-100 z-50 flex items-center justify-center print:hidden">
+            <img src={mainImage} alt={`${point.name} Full`} className="w-full h-full object-contain rounded-xl" />
+          </div>
+        )}
 
         <div className={cn(
           "space-y-1 text-slate-800",

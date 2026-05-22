@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import { CRANIAL_NERVES, BRAINSTEM_KEYS, BrainstemNuclei } from "@/data/cranial-nerve-data";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -9,66 +9,24 @@ import {
   Search, 
   Zap, 
   Activity, 
-  Brain, 
   Info, 
-  ArrowRight, 
   ShieldAlert,
   Hand,
   PlayCircle,
   Layers,
   Workflow,
   Sparkles,
-  ImageIcon,
-  Target,
-  ChevronRight,
   ArrowRightLeft,
   Printer,
   FileText
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
-import { supabase } from "@/integrations/supabase/client";
 import { Link } from "react-router-dom";
-
-interface ReflexImageData {
-  primaryUrl: string | null;
-  secondaryUrl: string | null;
-}
 
 const CranialNerveReference = () => {
   const [search, setSearch] = useState("");
   const [selectedNuclei, setSelectedNuclei] = useState<BrainstemNuclei | 'All'>('All');
-  const [customizations, setCustomizations] = useState<Record<string, ReflexImageData>>({});
-  const [loadingImages, setLoadingImages] = useState(true);
-
-  useEffect(() => {
-    const fetchCustomizations = async () => {
-      setLoadingImages(true);
-      try {
-        const { data: { user } } = await supabase.auth.getUser();
-        if (!user) return;
-        const { data } = await supabase
-          .from('brain_reflex_customizations')
-          .select('reflex_id, image_url, secondary_image_url')
-          .eq('user_id', user.id);
-        
-        const mapping: Record<string, ReflexImageData> = {};
-        data?.forEach(item => { 
-          const timestamp = Date.now();
-          mapping[item.reflex_id] = {
-            primaryUrl: item.image_url ? `${item.image_url}?t=${timestamp}` : null,
-            secondaryUrl: item.secondary_image_url ? `${item.secondary_image_url}?t=${timestamp}` : null
-          };
-        });
-        setCustomizations(mapping);
-      } catch (err) {
-        console.error("Failed to fetch customizations:", err);
-      } finally {
-        setLoadingImages(false);
-      }
-    };
-    fetchCustomizations();
-  }, []);
 
   const filteredNerves = CRANIAL_NERVES.filter(n => {
     const matchesSearch = n.name.toLowerCase().includes(search.toLowerCase()) || 
@@ -156,9 +114,6 @@ const CranialNerveReference = () => {
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
         {filteredNerves.map(nerve => {
-          const reflexId = `cn${nerve.id}`;
-          const data = customizations[reflexId] || { primaryUrl: null, secondaryUrl: null };
-
           return (
             <Card key={nerve.id} className="border-none shadow-lg rounded-[2.5rem] bg-white hover:shadow-2xl transition-all group overflow-hidden">
               <CardHeader className={cn(

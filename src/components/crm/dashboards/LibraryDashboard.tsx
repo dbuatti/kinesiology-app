@@ -1,6 +1,6 @@
 "use client";
 
-import React from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { Link } from 'react-router-dom';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -14,11 +14,20 @@ interface LibraryDashboardProps {
 }
 
 const LibraryDashboard = ({ morningProgress }: LibraryDashboardProps) => {
-  const missions = [
-    { label: "Daily Quiz", status: 'pending', icon: Zap, path: "/practice/quiz" },
+  const [quizCompletedToday, setQuizCompletedToday] = useState(false);
+
+  useEffect(() => {
+    const lastQuizDate = localStorage.getItem('antigravity_last_quiz_date');
+    if (lastQuizDate === new Date().toDateString()) {
+      setQuizCompletedToday(true);
+    }
+  }, []);
+
+  const missions = useMemo(() => [
+    { label: "Daily Quiz", status: quizCompletedToday ? 'done' : 'pending', icon: Zap, path: "/practice/quiz" },
     { label: "Protocol Study", status: 'pending', icon: BookOpen, path: "/resources" },
     { label: "Mastery Check", status: 'pending', icon: Trophy, path: "/practice/procedures" },
-  ];
+  ], [quizCompletedToday]);
 
   return (
     <div className="space-y-10 animate-in fade-in duration-500">

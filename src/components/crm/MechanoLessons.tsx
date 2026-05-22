@@ -29,7 +29,10 @@ import {
   X,
   Loader2,
   ImageIcon,
-  Maximize2
+  Maximize2,
+  ArrowRightLeft,
+  Move,
+  Volume2
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { supabase } from "@/integrations/supabase/client";
@@ -54,11 +57,16 @@ const BUCKET_NAME = 'ligament-images';
 
 const MechanoLessons = ({ activeSubTab = 'lessons' }: MechanoLessonsProps) => {
   const [currentLessonId, setCurrentLessonId] = useState<string | null>(null);
-  const [lessonProgress, setLessonProgress] = useState<Record<string, boolean>>({
-    '1': false,
-    '2': false,
-    '3': false,
-    '4': false
+  const [lessonProgress, setLessonProgress] = useState<Record<string, boolean>>(() => {
+    const saved = localStorage.getItem('antigravity_mechano_lessons_progress');
+    return saved ? JSON.parse(saved) : {
+      '1': false,
+      '2': false,
+      '3': false,
+      '4': false,
+      '5': false,
+      '6': false
+    };
   });
   const [selectedAnatomyJoint, setSelectedAnatomyJoint] = useState<'knee' | 'ankle' | 'shoulder' | 'hip'>('knee');
   const [selectedStructure, setSelectedStructure] = useState<string | null>('mcl');
@@ -239,7 +247,7 @@ const MechanoLessons = ({ activeSubTab = 'lessons' }: MechanoLessonsProps) => {
                   <Smile className="text-slate-900" size={16} /> They are Passive Sensors
                 </p>
                 <p className="text-xs text-slate-600 leading-relaxed">
-                  Ligaments don't contract. They only sense stretch. If a joint is unstable, the ligament gets over-stretched, sending a \"threat\" signal to the brain.
+                  Ligaments don't contract. They only sense stretch. If a joint is unstable, the ligament gets over-stretched, sending a "threat" signal to the brain.
                 </p>
               </div>
               <div className="p-4 bg-slate-50 rounded-xl border border-slate-200 space-y-2">
@@ -304,7 +312,7 @@ const MechanoLessons = ({ activeSubTab = 'lessons' }: MechanoLessonsProps) => {
                   <Smile className="text-slate-900" size={16} /> They are Active Regulators
                 </p>
                 <p className="text-xs text-slate-600 leading-relaxed">
-                  Tendons respond to active muscle contraction. When a tendon's threshold is \"smudged,\" the brain keeps the muscle weak or chronically tight to protect it.
+                  Tendons respond to active muscle contraction. When a tendon's threshold is "smudged," the brain keeps the muscle weak or chronically tight to protect it.
                 </p>
               </div>
               <div className="p-4 bg-slate-50 rounded-xl border border-slate-200 space-y-2">
@@ -381,7 +389,7 @@ const MechanoLessons = ({ activeSubTab = 'lessons' }: MechanoLessonsProps) => {
           <div className="p-5 bg-slate-900 text-white rounded-xl space-y-3">
             <p className="text-xs font-bold text-slate-300 uppercase tracking-wider">The Golden Rule</p>
             <p className="text-xs font-bold leading-relaxed italic">
-              \"Joints act, muscles and tissues react. Always focus on the joint action first, and let the muscles take care of themselves.\"
+              "Joints act, muscles and tissues react. Always focus on the joint action first, and let the muscles take care of themselves."
             </p>
           </div>
         </div>
@@ -426,7 +434,7 @@ const MechanoLessons = ({ activeSubTab = 'lessons' }: MechanoLessonsProps) => {
                 }
               ].map((item, i) => (
                 <div key={i} className="p-4 bg-slate-50 rounded-xl border border-slate-200 space-y-1">
-                  <p className="font-bold text-slate-900 text-xs">{item.title}</p>
+                  <p className="font-bold text-xs text-slate-900">{item.title}</p>
                   <p className="text-xs text-slate-600 leading-relaxed">{item.desc}</p>
                 </div>
               ))}
@@ -438,9 +446,112 @@ const MechanoLessons = ({ activeSubTab = 'lessons' }: MechanoLessonsProps) => {
             <div>
               <h4 className="font-bold text-slate-900 text-sm uppercase tracking-tight">Your Confidence Mantra</h4>
               <p className="text-xs text-slate-600 font-medium mt-1 italic">
-                \"I am a facilitator of the brain's own healing. I don't need to be perfect; I just need to be curious, gentle, and systematic.\"
+                "I am a facilitator of the brain's own healing. I don't need to be perfect; I just need to be curious, gentle, and systematic."
               </p>
             </div>
+          </div>
+        </div>
+      )
+    },
+    {
+      id: '5',
+      title: "The Lovett-Brother Spinal Engine",
+      description: "Understand how spinal segments work in pairs and how to resolve reciprocal tension.",
+      duration: "6 mins",
+      icon: ArrowRightLeft,
+      difficulty: "Intermediate",
+      content: (
+        <div className="space-y-6 text-slate-700">
+          <div className="p-5 bg-slate-50 rounded-xl border border-slate-200 flex items-start gap-4">
+            <div className="w-10 h-10 rounded-xl bg-slate-900 text-white flex items-center justify-center shrink-0 shadow-md">
+              <ArrowRightLeft size={20} />
+            </div>
+            <div>
+              <h4 className="font-bold text-slate-900 text-sm uppercase tracking-tight">The Core Concept</h4>
+              <p className="text-xs text-slate-600 font-medium mt-1">
+                The spine operates as a reciprocal engine. Tension or fixation at one end of the spine (e.g., C1) immediately creates a compensatory dysfunction at the reciprocating partner (e.g., L5).
+              </p>
+            </div>
+          </div>
+
+          <div className="space-y-4">
+            <h4 className="font-bold text-slate-900 text-base">The Lovett-Brother Rules:</h4>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="p-4 bg-slate-50 rounded-xl border border-slate-200 space-y-2">
+                <p className="font-bold text-slate-900 text-sm flex items-center gap-2">
+                  <Layers className="text-slate-900" size={16} /> Parallel Motion
+                </p>
+                <p className="text-xs text-slate-600 leading-relaxed">
+                  Cervical and lumbar vertebrae rotate and lateral-flex in parallel directions. If C1 is locked, L5 will lock to compensate and preserve dural tension.
+                </p>
+              </div>
+              <div className="p-4 bg-slate-50 rounded-xl border border-slate-200 space-y-2">
+                <p className="font-bold text-slate-900 text-sm flex items-center gap-2">
+                  <Activity className="text-slate-900" size={16} /> Reciprocal Organs
+                </p>
+                <p className="text-xs text-slate-600 leading-relaxed">
+                  The associated organs and muscles of partner segments are also linked. For example, C1 (Buccinator/Pancreas) is paired with L5 (Hamstrings/Large Intestine).
+                </p>
+              </div>
+            </div>
+          </div>
+
+          <div className="p-4 bg-slate-50 rounded-xl border border-slate-200 flex items-start gap-3">
+            <Lightbulb className="text-slate-900 shrink-0 mt-0.5" size={18} />
+            <p className="text-xs text-slate-600 font-medium leading-relaxed">
+              <strong>Clinical Pearl:</strong> If a client presents with chronic, stubborn L5 lower back pain, do not just rub the lower back! Check C1 (atlas) rotation and the Buccinator muscle. Clearing the C1 restriction often instantly resolves the L5 pain.
+            </p>
+          </div>
+        </div>
+      )
+    },
+    {
+      id: '6',
+      title: "Planes of Motion & Joint Geometry",
+      description: "Master the three planes of motion to quickly isolate and correct joint restrictions.",
+      duration: "6 mins",
+      icon: Move,
+      difficulty: "Intermediate",
+      content: (
+        <div className="space-y-6 text-slate-700">
+          <div className="p-5 bg-slate-50 rounded-xl border border-slate-200 flex items-start gap-4">
+            <div className="w-10 h-10 rounded-xl bg-slate-900 text-white flex items-center justify-center shrink-0 shadow-md">
+              <Move size={20} />
+            </div>
+            <div>
+              <h4 className="font-bold text-slate-900 text-sm uppercase tracking-tight">The Core Concept</h4>
+              <p className="text-xs text-slate-600 font-medium mt-1">
+                The brain maps movement in three distinct geometric planes: Sagittal, Frontal, and Transverse. When a joint is threatened, the brain restricts movement in the specific plane of threat to protect the tissue.
+              </p>
+            </div>
+          </div>
+
+          <div className="space-y-4">
+            <h4 className="font-bold text-slate-900 text-base">The Three Planes:</h4>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div className="p-4 bg-blue-50 rounded-xl border border-blue-100 space-y-1">
+                <p className="font-bold text-blue-900 text-xs">1. Sagittal Plane</p>
+                <p className="text-[10px] text-blue-700 font-bold uppercase">Flexion / Extension</p>
+                <p className="text-[11px] text-slate-600 leading-relaxed">Forward and backward movement. E.g., nodding head, bending forward.</p>
+              </div>
+              <div className="p-4 bg-emerald-50 rounded-xl border border-emerald-100 space-y-1">
+                <p className="font-bold text-emerald-900 text-xs">2. Frontal Plane</p>
+                <p className="text-[10px] text-emerald-700 font-bold uppercase">Abduction / Adduction</p>
+                <p className="text-[11px] text-slate-600 leading-relaxed">Side-to-side movement. E.g., tilting head, raising arm to the side.</p>
+              </div>
+              <div className="p-4 bg-orange-50 rounded-xl border border-orange-100 space-y-1">
+                <p className="font-bold text-orange-900 text-xs">3. Transverse Plane</p>
+                <p className="text-[10px] text-orange-700 font-bold uppercase">Rotation</p>
+                <p className="text-[11px] text-slate-600 leading-relaxed">Twisting and rotational movement. E.g., turning head, rotating hip.</p>
+              </div>
+            </div>
+          </div>
+
+          <div className="p-4 bg-slate-50 rounded-xl border border-slate-200 flex items-start gap-3">
+            <Lightbulb className="text-slate-900 shrink-0 mt-0.5" size={18} />
+            <p className="text-xs text-slate-600 font-medium leading-relaxed">
+              <strong>Clinical Pearl:</strong> Always ask the body for the <strong>Plane of Motion</strong> first during your challenge. This instantly narrows down your search from dozens of possible joint actions to just 2 or 3, saving valuable session time.
+            </p>
           </div>
         </div>
       )
@@ -448,8 +559,11 @@ const MechanoLessons = ({ activeSubTab = 'lessons' }: MechanoLessonsProps) => {
   ];
 
   const handleCompleteLesson = (id: string) => {
-    setLessonProgress(prev => ({ ...prev, [id]: true }));
+    const nextProgress = { ...lessonProgress, [id]: true };
+    setLessonProgress(nextProgress);
+    localStorage.setItem('antigravity_mechano_lessons_progress', JSON.stringify(nextProgress));
     setCurrentLessonId(null);
+    showSuccess("Lesson completed! Your clinical confidence is growing.");
   };
 
   const activeLesson = lessons.find(l => l.id === currentLessonId);

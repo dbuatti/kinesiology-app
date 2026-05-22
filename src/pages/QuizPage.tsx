@@ -122,6 +122,7 @@ const QuizPage = () => {
 
   const finishQuiz = () => {
     setStatus('finished');
+    localStorage.setItem('antigravity_last_quiz_date', new Date().toDateString());
   };
 
   if (status === 'setup') {

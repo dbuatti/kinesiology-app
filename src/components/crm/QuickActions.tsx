@@ -60,7 +60,7 @@ const QuickActions = () => {
                   </Button>
                 </div>
               </DropdownMenuTrigger>
-              <DropdownMenuContent align="end" className="w-80 p-4 rounded-[2.5rem] shadow-3xl border-none mb-8 animate-in slide-in-from-bottom-4 duration-500">
+              <DropdownMenuContent align="end" className="w-80 p-4 rounded-[2.5rem] shadow-3xl border-none mb-8 animate-in slide-in-from-bottom-4 duration-500 bg-white dark:bg-slate-900">
                 <div className="px-3 py-2 mb-4">
                   <p className="text-[10px] font-black text-slate-400 uppercase tracking-[0.4em]">Clinical Command</p>
                 </div>

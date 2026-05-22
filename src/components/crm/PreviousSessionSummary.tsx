@@ -1,8 +1,8 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import { supabase } from "@/integrations/supabase/client";
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { 
   History, Calendar, Target, AlertCircle, FlaskConical, 
   Activity, Brain, Heart, Zap, ExternalLink, Loader2, Move
@@ -13,6 +13,7 @@ import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import PathwayFindingsList from "./PathwayFindingsList";
+import { isDemoSession } from "@/utils/crm-utils";
 
 interface PreviousSessionSummaryProps {
   clientId: string;
@@ -32,9 +33,7 @@ const PreviousSessionSummary = ({ clientId, currentAppointmentId, manualData }: 
     }
 
     const fetchPreviousSession = async () => {
-      // Skip fetch if IDs are placeholders
-      const isDemoId = clientId.includes('demo') || currentAppointmentId.includes('demo') || currentAppointmentId.includes('00000000');
-      if (isDemoId) {
+      if (isDemoSession(clientId, currentAppointmentId)) {
         setLoading(false);
         return;
       }

@@ -1,8 +1,8 @@
 import { differenceInYears, format, intervalToDuration } from "date-fns";
 import { Appointment } from "@/types/crm";
 
-export const calculateAge = (born: Date): number => {
-  return differenceInYears(new Date(), born);
+export const calculateAge = (date: Date): number => {
+  return differenceInYears(new Date(), date);
 };
 
 export const getStarSign = (date: Date): string => {
@@ -91,4 +91,8 @@ export const isMeridianPeakNow = (peakTimeStr: string, currentHour: number): boo
   } catch (e) {
     return false;
   }
+};
+
+export const isDemoSession = (clientId: string, appointmentId: string): boolean => {
+  return clientId.includes('demo') || appointmentId.includes('demo') || appointmentId.includes('00000000');
 };

@@ -13,6 +13,7 @@ import { format, differenceInDays } from "date-fns";
 import { cn } from "@/lib/utils";
 import { Link } from "react-router-dom";
 import { Badge } from "@/components/ui/badge";
+import { isDemoSession } from "@/utils/crm-utils";
 
 interface PreviousSessionInsightsBarProps {
   clientId: string;
@@ -33,8 +34,7 @@ const PreviousSessionInsightsBar = ({ clientId, currentAppointmentId, manualData
     }
 
     const fetchPreviousSession = async () => {
-      const isDemoId = clientId.includes('demo') || currentAppointmentId.includes('demo') || currentAppointmentId.includes('00000000');
-      if (isDemoId) {
+      if (isDemoSession(clientId, currentAppointmentId)) {
         setLoading(false);
         return;
       }

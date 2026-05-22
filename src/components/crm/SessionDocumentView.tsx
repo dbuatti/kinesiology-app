@@ -38,6 +38,8 @@ import { BRAIN_REFLEX_POINTS } from '@/data/brain-reflex-data';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
+import { supabase } from "@/integrations/supabase/client";
+import { showSuccess, showError } from '@/utils/toast';
 
 // Modular Sub-components
 import DocumentSidebar, { OUTLINE_ITEMS } from './document-view/DocumentSidebar';
@@ -66,7 +68,34 @@ const SessionDocumentView = ({
   const [lastSaved, setLastSaved] = useState<Date>(new Date());
   const [openGuides, setOpenGuides] = useState<Record<string, boolean>>({});
   const [activeSection, setActiveSection] = useState<string>("p-sec");
+  const [currentMuscleTests, setCurrentMuscleTests] = useState<any[]>([]);
+  const [loadingMuscles, setLoadingMuscles] = useState(true);
+
   const pattern = useMemo(() => safeParse(appointment.priority_pattern, {} as any), [appointment.priority_pattern]);
+
+  const fetchCurrentMuscleTests = async () => {
+    if (!appointment.id || appointment.id.includes('00000000')) {
+      setLoadingMuscles(false);
+      return;
+    }
+    try {
+      const { data, error } = await supabase
+        .from('muscle_tests')
+        .select('*')
+        .eq('appointment_id', appointment.id);
+      if (!error && data) {
+        setCurrentMuscleTests(data);
+      }
+    } catch (err) {
+      console.error("Error fetching current muscle tests:", err);
+    } finally {
+      setLoadingMuscles(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchCurrentMuscleTests();
+  }, [appointment.id]);
 
   const metadata = useMemo(() => {
     if (!appointment.metadata) return {};
@@ -145,10 +174,22 @@ const SessionDocumentView = ({
       .sort((a, b) => a.name.localeCompare(b.name));
   }, []);
 
-  // Extract all currently inhibited findings from the priority pattern
+  // Create a unified pattern that merges priority_pattern JSON and muscle_tests table
+  const unifiedPattern = useMemo(() => {
+    const combined = { ...pattern };
+    if (!combined.muscles) combined.muscles = {};
+    
+    currentMuscleTests.forEach(test => {
+      combined.muscles[test.muscle_name] = test.status === 'Normotonic' ? 'Clear' : 'Inhibited';
+    });
+    
+    return combined;
+  }, [pattern, currentMuscleTests]);
+
+  // Extract all currently inhibited findings from the unified pattern
   const inhibitedFindings = useMemo(() => {
     const list: string[] = [];
-    Object.entries(pattern).forEach(([category, items]: [string, any]) => {
+    Object.entries(unifiedPattern).forEach(([category, items]: [string, any]) => {
       Object.entries(items).forEach(([name, status]) => {
         if (status === 'Inhibited') {
           list.push(name);
@@ -156,11 +197,45 @@ const SessionDocumentView = ({
       });
     });
     return list.sort();
-  }, [pattern]);
+  }, [unifiedPattern]);
 
   const handleTogglePatternItem = async (category: string, name: string, isChecked: boolean, side?: 'L' | 'R') => {
-    await updatePriorityPattern(category, name, isChecked ? 'Clear' : 'Inhibited', side);
+    const fullName = side ? `${name} (${side})` : name;
+    const newStatus = isChecked ? 'Clear' : 'Inhibited';
+
+    if (category === 'muscles') {
+      const dbStatus = isChecked ? 'Normotonic' : 'Inhibited';
+      const existing = currentMuscleTests.find(t => t.muscle_name === fullName);
+      
+      try {
+        if (existing) {
+          const { error } = await supabase
+            .from('muscle_tests')
+            .update({ status: dbStatus })
+            .eq('id', existing.id);
+          if (error) throw error;
+        } else {
+          const { data: { user } } = await supabase.auth.getUser();
+          const { error } = await supabase
+            .from('muscle_tests')
+            .insert({
+              user_id: user?.id,
+              appointment_id: appointment.id,
+              muscle_name: fullName,
+              status: dbStatus
+            });
+          if (error) throw error;
+        }
+        await fetchCurrentMuscleTests();
+        showSuccess(`${fullName} marked as ${isChecked ? 'Clear' : 'Inhibited'}`);
+      } catch (err) {
+        showError("Failed to update muscle status");
+      }
+    } else {
+      await updatePriorityPattern(category, name, newStatus, side);
+    }
     setLastSaved(new Date());
+    onUpdate();
   };
 
   return (
@@ -246,7 +321,7 @@ const SessionDocumentView = ({
           {/* A - ALIGN */}
           <section>
             <SectionHeader id="a-sec" title="A — Align the Hierarchy" subtitle="Neurological Findings & Patterns" />
-            <AlignSection pattern={pattern} onToggle={handleTogglePatternItem} />
+            <AlignSection pattern={unifiedPattern} onToggle={handleTogglePatternItem} />
           </section>
 
           {/* C - CORRECT */}
@@ -279,8 +354,6 @@ const SessionDocumentView = ({
           </div>
         </div>
       </div>
-
-      {/* ... keep existing code (rest of the component) */}
     </div>
   );
 };

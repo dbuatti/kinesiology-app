@@ -2,7 +2,7 @@
 
 import React, { useMemo } from 'react';
 import { Checkbox } from '@/components/ui/checkbox';
-import { Zap, BookOpen } from 'lucide-react';
+import { Zap, BookOpen, ExternalLink } from 'lucide-react';
 import DocInput from './DocInput';
 
 interface CorrectSectionProps {
@@ -101,7 +101,17 @@ const CorrectSection = ({ metadata, acupoints, brainZoneOptions, updateMetadataF
         {/* Right Column: Coordinates & Polarity */}
         <div className="space-y-6">
           <div className="space-y-4 border-l-2 border-slate-100 pl-4">
-            <p className="text-[9px] font-black uppercase tracking-widest text-slate-400">Calibration Coordinates</p>
+            <div className="flex items-center justify-between border-b border-slate-100 pb-1">
+              <p className="text-[9px] font-black uppercase tracking-widest text-slate-400">Calibration Coordinates</p>
+              <a 
+                href="/resources/brain-zones/print" 
+                target="_blank" 
+                rel="noopener noreferrer"
+                className="text-[9px] font-black text-indigo-600 hover:text-indigo-800 hover:underline uppercase tracking-widest flex items-center gap-1 transition-colors"
+              >
+                <ExternalLink size={10} /> View Brain Zone Map
+              </a>
+            </div>
             
             <div className="space-y-2">
               <label className="text-[8px] font-black uppercase text-slate-400">Coordinate 1 (Zone Name)</label>

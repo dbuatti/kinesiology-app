@@ -299,7 +299,7 @@ const MechanoLessons = ({ activeSubTab = 'lessons' }: MechanoLessonsProps) => {
                   <Smile className="text-slate-900" size={16} /> They are Passive Sensors
                 </p>
                 <p className="text-xs text-slate-600 leading-relaxed">
-                  Ligaments don't contract. They only sense stretch. If a joint is unstable, the ligament gets over-stretched, sending a "threat" signal to the brain.
+                  Ligaments don't contract. They only sense stretch. If a joint is unstable, the ligament gets over-stretched, sending a \"threat\" signal to the brain.
                 </p>
               </div>
               <div className="p-4 bg-slate-50 rounded-xl border border-slate-200 space-y-2">
@@ -370,7 +370,7 @@ const MechanoLessons = ({ activeSubTab = 'lessons' }: MechanoLessonsProps) => {
                   <Smile className="text-slate-900" size={16} /> They are Active Regulators
                 </p>
                 <p className="text-xs text-slate-600 leading-relaxed">
-                  Tendons respond to active muscle contraction. When a tendon's threshold is "smudged," the brain keeps the muscle weak or chronically tight to protect it.
+                  Tendons respond to active muscle contraction. When a tendon's threshold is \"smudged,\" the brain keeps the muscle weak or chronically tight to protect it.
                 </p>
               </div>
               <div className="p-4 bg-slate-50 rounded-xl border border-slate-200 space-y-2">
@@ -453,7 +453,7 @@ const MechanoLessons = ({ activeSubTab = 'lessons' }: MechanoLessonsProps) => {
           <div className="p-5 bg-slate-900 text-white rounded-xl space-y-3">
             <p className="text-xs font-bold text-slate-300 uppercase tracking-wider">The Golden Rule</p>
             <p className="text-xs font-bold leading-relaxed italic">
-              "Joints act, muscles and tissues react. Always focus on the joint action first, and let the muscles take care of themselves."
+              \"Joints act, muscles and tissues react. Always focus on the joint action first, and let the muscles take care of themselves.\"
             </p>
           </div>
         </div>
@@ -516,7 +516,7 @@ const MechanoLessons = ({ activeSubTab = 'lessons' }: MechanoLessonsProps) => {
             <div>
               <h4 className="font-bold text-slate-900 text-sm uppercase tracking-tight">Your Confidence Mantra</h4>
               <p className="text-xs text-slate-600 font-medium mt-1 italic">
-                "I am a facilitator of the brain's own healing. I don't need to be perfect; I just need to be curious, gentle, and systematic."
+                \"I am a facilitator of the brain's own healing. I don't need to be perfect; I just need to be curious, gentle, and systematic.\"
               </p>
             </div>
           </div>
@@ -1010,7 +1010,7 @@ const MechanoLessons = ({ activeSubTab = 'lessons' }: MechanoLessonsProps) => {
                     </h4>
                     <p className="text-sm font-bold text-slate-900">{activeLesson.quiz.question}</p>
                     
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <div className="grid grid-cols-1 gap-3">
                       {activeLesson.quiz.options.map((option) => {
                         const isSelected = selectedQuizAnswer === option;
                         const isCorrectAnswer = option === activeLesson.quiz.correctAnswer;
@@ -1725,7 +1725,7 @@ const MechanoLessons = ({ activeSubTab = 'lessons' }: MechanoLessonsProps) => {
                   )}
 
                   {simStep === 'complete' && (
-                    <div className="text-center py-8 space-y-4 animate-in zoom-in-95 duration-300">
+                    <div className="text-center py-8 space-y-4 animate-in zoom-in-95 duration-500">
                       <div className="w-16 h-16 bg-emerald-100 rounded-full flex items-center justify-center mx-auto text-emerald-600">
                         <CheckCircle2 size={32} />
                       </div>

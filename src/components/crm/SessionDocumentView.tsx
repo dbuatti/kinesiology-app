@@ -102,17 +102,16 @@ const SessionDocumentView = ({
     updatePriorityPattern
   });
 
-  const isDocViewActive = location.search.includes('view=document');
+  // Bulletproof JS-based media query to prevent sidebars from rendering on mobile/tablet
+  const [isDesktop, setIsDesktop] = useState(false);
 
-  const toggleDocumentView = () => {
-    if (!location.pathname.startsWith('/appointments/')) return;
-    
-    if (isDocViewActive) {
-      navigate(location.pathname);
-    } else {
-      navigate(`${location.pathname}?view=document`);
-    }
-  };
+  useEffect(() => {
+    const media = window.matchMedia("(min-width: 1024px)");
+    const listener = () => setIsDesktop(media.matches);
+    listener();
+    media.addEventListener("change", listener);
+    return () => media.removeEventListener("change", listener);
+  }, []);
 
   const handleSwitchAppointment = (newId: string) => {
     navigate(`/appointments/${newId}?view=document`);
@@ -122,116 +121,119 @@ const SessionDocumentView = ({
     <div className="bg-white min-h-screen text-black font-sans pb-40 print:p-0 print:m-0">
       {/* Document Controls */}
       <div className="sticky top-0 z-50 bg-white/95 backdrop-blur-md print:hidden border-b border-slate-200">
-        <div className="px-4 md:px-6 py-3 flex items-center justify-between gap-4">
-          <div className="flex items-center gap-2 md:gap-6 min-w-0">
-            <Button variant="ghost" size="sm" onClick={onClose} className="rounded-none h-9 px-2 md:px-4 font-black text-[10px] uppercase tracking-widest border border-black hover:bg-black hover:text-white transition-all shrink-0">
-              <ArrowLeft size={14} className="mr-1 md:mr-2" /> <span className="hidden sm:inline">Exit</span>
-            </Button>
-            <div className="flex flex-col min-w-0">
-              <span className="text-[8px] md:text-[10px] font-black uppercase tracking-widest text-slate-400">Clinical Record</span>
-              
-              {/* Live Client Switcher Dropdown */}
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <button className="flex items-center gap-1.5 hover:bg-slate-100 px-2 py-0.5 -ml-2 rounded-lg transition-colors text-left group min-w-0">
-                    <span className="text-xs md:text-sm font-black text-slate-900 truncate">{appointment.clients.name}</span>
-                    <ChevronDown size={14} className="text-slate-400 group-hover:text-slate-900 transition-colors shrink-0" />
-                  </button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent align="start" className="w-72 md:w-80 max-h-[450px] overflow-y-auto rounded-2xl p-2 shadow-3xl border-none bg-white dark:bg-slate-900 z-[100]">
-                  {loadingAppointments ? (
-                    <div className="py-6 flex justify-center"><Loader2 className="animate-spin text-indigo-600" size={20} /></div>
-                  ) : (
-                    <>
-                      {groupedAppointments.today.length > 0 && (
-                        <div className="space-y-1">
-                          <div className="px-3 py-1.5 text-[8px] font-black uppercase tracking-widest text-rose-500 flex items-center gap-1.5">
-                            <div className="w-1.5 h-1.5 rounded-full bg-rose-500 animate-pulse" /> Today's Schedule
+        <div className="px-4 md:px-6 py-3 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+          {/* Left Side: Exit, Client Switcher, Status */}
+          <div className="flex items-center justify-between sm:justify-start gap-3 w-full sm:w-auto">
+            <div className="flex items-center gap-3 min-w-0">
+              <Button variant="ghost" size="sm" onClick={onClose} className="rounded-none h-9 px-3 font-black text-[10px] uppercase tracking-widest border border-black hover:bg-black hover:text-white transition-all shrink-0">
+                <ArrowLeft size={14} className="mr-1" /> Exit
+              </Button>
+              <div className="flex flex-col min-w-0">
+                <span className="text-[8px] font-black uppercase tracking-widest text-slate-400">Clinical Record</span>
+                
+                {/* Live Client Switcher Dropdown */}
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <button className="flex items-center gap-1 hover:bg-slate-100 px-1.5 py-0.5 -ml-1.5 rounded-lg transition-colors text-left group min-w-0">
+                      <span className="text-xs font-black text-slate-900 truncate">{appointment.clients.name}</span>
+                      <ChevronDown size={12} className="text-slate-400 group-hover:text-slate-900 transition-colors shrink-0" />
+                    </button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="start" className="w-72 md:w-80 max-h-[450px] overflow-y-auto rounded-2xl p-2 shadow-3xl border-none bg-white dark:bg-slate-900 z-[100]">
+                    {loadingAppointments ? (
+                      <div className="py-6 flex justify-center"><Loader2 className="animate-spin text-indigo-600" size={20} /></div>
+                    ) : (
+                      <>
+                        {groupedAppointments.today.length > 0 && (
+                          <div className="space-y-1">
+                            <div className="px-3 py-1.5 text-[8px] font-black uppercase tracking-widest text-rose-500 flex items-center gap-1.5">
+                              <div className="w-1.5 h-1.5 rounded-full bg-rose-500 animate-pulse" /> Today's Schedule
+                            </div>
+                            {groupedAppointments.today.map(app => (
+                              <DropdownMenuItem 
+                                key={app.id} 
+                                onClick={() => handleSwitchAppointment(app.id)}
+                                className={cn(
+                                  "rounded-xl py-2.5 px-4 cursor-pointer flex items-center justify-between",
+                                  app.id === appointment.id ? "bg-indigo-50 text-indigo-900 font-bold" : "hover:bg-slate-50"
+                                )}
+                              >
+                                <div className="min-w-0 flex-1">
+                                  <p className="text-xs font-black truncate">{app.clients?.name}</p>
+                                  <p className="text-[9px] font-bold text-slate-400 uppercase tracking-widest mt-0.5">
+                                    {format(new Date(app.date), "h:mm a")} • {app.tag}
+                                  </p>
+                                </div>
+                                <Badge className={cn(
+                                  "border-none font-black text-[7px] uppercase tracking-widest px-1.5 py-0.5 rounded-md",
+                                  app.status === 'Completed' ? "bg-emerald-50 text-white" : "bg-indigo-600 text-white"
+                                )}>
+                                  {app.status}
+                                </Badge>
+                              </DropdownMenuItem>
+                            ))}
                           </div>
-                          {groupedAppointments.today.map(app => (
-                            <DropdownMenuItem 
-                              key={app.id} 
-                              onClick={() => handleSwitchAppointment(app.id)}
-                              className={cn(
-                                "rounded-xl py-2.5 px-4 cursor-pointer flex items-center justify-between",
-                                app.id === appointment.id ? "bg-indigo-50 text-indigo-900 font-bold" : "hover:bg-slate-50"
-                              )}
-                            >
-                              <div className="min-w-0 flex-1">
-                                <p className="text-xs font-black truncate">{app.clients?.name}</p>
-                                <p className="text-[9px] font-bold text-slate-400 uppercase tracking-widest mt-0.5">
-                                  {format(new Date(app.date), "h:mm a")} • {app.tag}
-                                </p>
-                              </div>
-                              <Badge className={cn(
-                                "border-none font-black text-[7px] uppercase tracking-widest px-1.5 py-0.5 rounded-md",
-                                app.status === 'Completed' ? "bg-emerald-50 text-white" : "bg-indigo-600 text-white"
-                              )}>
-                                {app.status}
-                              </Badge>
-                            </DropdownMenuItem>
-                          ))}
-                        </div>
-                      )}
+                        )}
 
-                      {groupedAppointments.upcoming.length > 0 && (
-                        <div className="space-y-1 mt-3">
-                          <div className="px-3 py-1.5 text-[8px] font-black uppercase tracking-widest text-slate-400 flex items-center gap-1.5">
-                            <Calendar size={10} /> Upcoming Sessions
+                        {groupedAppointments.upcoming.length > 0 && (
+                          <div className="space-y-1 mt-3">
+                            <div className="px-3 py-1.5 text-[8px] font-black uppercase tracking-widest text-slate-400 flex items-center gap-1.5">
+                              <Calendar size={10} /> Upcoming Sessions
+                            </div>
+                            {groupedAppointments.upcoming.slice(0, 10).map(app => (
+                              <DropdownMenuItem 
+                                key={app.id} 
+                                onClick={() => handleSwitchAppointment(app.id)}
+                                className={cn(
+                                  "rounded-xl py-2.5 px-4 cursor-pointer flex items-center justify-between",
+                                  app.id === appointment.id ? "bg-indigo-50 text-indigo-900 font-bold" : "hover:bg-slate-50"
+                                )}
+                              >
+                                <div className="min-w-0 flex-1">
+                                  <p className="text-xs font-black truncate">{app.clients?.name}</p>
+                                  <p className="text-[9px] font-bold text-slate-400 uppercase tracking-widest mt-0.5">
+                                    {format(new Date(app.date), "MMM d, h:mm a")} • {app.tag}
+                                  </p>
+                                </div>
+                              </DropdownMenuItem>
+                            ))}
                           </div>
-                          {groupedAppointments.upcoming.slice(0, 10).map(app => (
-                            <DropdownMenuItem 
-                              key={app.id} 
-                              onClick={() => handleSwitchAppointment(app.id)}
-                              className={cn(
-                                "rounded-xl py-2.5 px-4 cursor-pointer flex items-center justify-between",
-                                app.id === appointment.id ? "bg-indigo-50 text-indigo-900 font-bold" : "hover:bg-slate-50"
-                              )}
-                            >
-                              <div className="min-w-0 flex-1">
-                                <p className="text-xs font-black truncate">{app.clients?.name}</p>
-                                <p className="text-[9px] font-bold text-slate-400 uppercase tracking-widest mt-0.5">
-                                  {format(new Date(app.date), "MMM d, h:mm a")} • {app.tag}
-                                </p>
-                              </div>
-                            </DropdownMenuItem>
-                          ))}
-                        </div>
-                      )}
+                        )}
 
-                      {groupedAppointments.past.length > 0 && (
-                        <div className="space-y-1 mt-3">
-                          <div className="px-3 py-1.5 text-[8px] font-black uppercase tracking-widest text-slate-400 flex items-center gap-1.5">
-                            <Clock size={10} /> Recent Past Sessions
+                        {groupedAppointments.past.length > 0 && (
+                          <div className="space-y-1 mt-3">
+                            <div className="px-3 py-1.5 text-[8px] font-black uppercase tracking-widest text-slate-400 flex items-center gap-1.5">
+                              <Clock size={10} /> Recent Past Sessions
+                            </div>
+                            {groupedAppointments.past.map(app => (
+                              <DropdownMenuItem 
+                                key={app.id} 
+                                onClick={() => handleSwitchAppointment(app.id)}
+                                className={cn(
+                                  "rounded-xl py-2.5 px-4 cursor-pointer flex items-center justify-between",
+                                  app.id === appointment.id ? "bg-indigo-50 text-indigo-900 font-bold" : "hover:bg-slate-50"
+                                )}
+                              >
+                                <div className="min-w-0 flex-1">
+                                  <p className="text-xs font-black truncate">{app.clients?.name}</p>
+                                  <p className="text-[9px] font-bold text-slate-400 uppercase tracking-widest mt-0.5">
+                                    {format(new Date(app.date), "MMM d, yyyy")} • {app.tag}
+                                  </p>
+                                </div>
+                              </DropdownMenuItem>
+                            ))}
                           </div>
-                          {groupedAppointments.past.map(app => (
-                            <DropdownMenuItem 
-                              key={app.id} 
-                              onClick={() => handleSwitchAppointment(app.id)}
-                              className={cn(
-                                "rounded-xl py-2.5 px-4 cursor-pointer flex items-center justify-between",
-                                app.id === appointment.id ? "bg-indigo-50 text-indigo-900 font-bold" : "hover:bg-slate-50"
-                              )}
-                            >
-                              <div className="min-w-0 flex-1">
-                                <p className="text-xs font-black truncate">{app.clients?.name}</p>
-                                <p className="text-[9px] font-bold text-slate-400 uppercase tracking-widest mt-0.5">
-                                  {format(new Date(app.date), "MMM d, yyyy")} • {app.tag}
-                                </p>
-                              </div>
-                            </DropdownMenuItem>
-                          ))}
-                        </div>
-                      )}
-                    </>
-                  )}
-                </DropdownMenuContent>
-              </DropdownMenu>
+                        )}
+                      </>
+                    )}
+                  </DropdownMenuContent>
+                </DropdownMenu>
+              </div>
             </div>
-            
+
             {/* Editable Status Dropdown */}
             <Select value={appointment.status} onValueChange={(newStatus) => saveField('status', newStatus)}>
-              <SelectTrigger className="h-7 w-auto min-w-[80px] md:min-w-[100px] text-[8px] font-black uppercase tracking-widest border border-black rounded-none bg-white px-1.5 md:px-2 py-0.5 focus:ring-0 focus:ring-offset-0 shrink-0">
+              <SelectTrigger className="h-8 w-auto min-w-[90px] text-[8px] font-black uppercase tracking-widest border border-black rounded-none bg-white px-2 py-0.5 focus:ring-0 focus:ring-offset-0 shrink-0">
                 <SelectValue placeholder={appointment.status} />
               </SelectTrigger>
               <SelectContent className="rounded-none border border-black shadow-2xl bg-white">
@@ -244,50 +246,34 @@ const SessionDocumentView = ({
             </Select>
           </div>
 
-          <div className="hidden lg:flex items-center gap-4 text-[9px] font-black uppercase tracking-widest text-slate-400">
-            <button onClick={() => scrollTo('p-sec')} className="hover:text-black transition-colors">P</button>
-            <span className="opacity-20">/</span>
-            <button onClick={() => scrollTo('e-sec')} className="hover:text-black transition-colors">E</button>
-            <span className="opacity-20">/</span>
-            <button onClick={() => scrollTo('a-sec')} className="hover:text-black transition-colors">A</button>
-            <span className="opacity-20">/</span>
-            <button onClick={() => scrollTo('c-sec')} className="hover:text-black transition-colors">C</button>
-            <span className="opacity-20">/</span>
-            <button onClick={() => scrollTo('e2-sec')} className="hover:text-black transition-colors">E</button>
-          </div>
-
-          <div className="flex items-center gap-2 md:gap-6 shrink-0">
-            {/* Live Current Time Display */}
-            <div className="text-right hidden sm:block">
-              <p className="text-[8px] font-black text-slate-400 uppercase tracking-widest">Current Time</p>
-              <p className="text-sm font-black tabular-nums text-indigo-600">{format(currentTime, "HH:mm:ss")}</p>
-            </div>
-
-            <div className="text-right hidden sm:block">
+          {/* Right Side: Sync, Notion, Full Screen */}
+          <div className="flex items-center justify-between sm:justify-end gap-3 w-full sm:w-auto border-t border-slate-100 pt-2 sm:pt-0 sm:border-t-0">
+            <div className="flex items-center gap-2 text-right">
               <p className="text-[8px] font-black text-slate-400 uppercase tracking-widest">Last Sync</p>
               <p className="text-[10px] font-bold tabular-nums">{format(lastSaved, "HH:mm:ss")}</p>
             </div>
-            {appointment.notion_link && (
-              <Button asChild variant="outline" size="sm" className="rounded-none border-black font-black text-[10px] uppercase tracking-widest h-9 px-2 md:px-4 hover:bg-slate-50 hidden sm:inline-flex">
-                <a href={appointment.notion_link} target="_blank" rel="noopener noreferrer">
-                  <ExternalLink size={14} className="mr-1 md:mr-2" /> Notion
-                </a>
+            
+            <div className="flex items-center gap-2">
+              {appointment.notion_link && (
+                <Button asChild variant="outline" size="sm" className="rounded-none border-black font-black text-[10px] uppercase tracking-widest h-8 px-3 hover:bg-slate-50">
+                  <a href={appointment.notion_link} target="_blank" rel="noopener noreferrer">
+                    <ExternalLink size={12} className="mr-1" /> Notion
+                  </a>
+                </Button>
+              )}
+              <Button variant="outline" size="sm" onClick={() => window.print()} className="rounded-none border-black font-black text-[10px] uppercase tracking-widest h-8 px-3 hover:bg-slate-50 hidden sm:inline-flex">
+                <Printer size={12} className="mr-1" /> Print
               </Button>
-            )}
-            <Button variant="outline" size="sm" onClick={() => window.print()} className="rounded-none border-black font-black text-[10px] uppercase tracking-widest h-9 px-2 md:px-4 hover:bg-slate-50 hidden sm:inline-flex">
-              <Printer size={14} className="mr-1 md:mr-2" /> Print
-            </Button>
-
-            {/* Full Screen Toggle (Arrows Only) */}
-            <Button
-              variant="outline"
-              size="icon"
-              onClick={toggleFullScreen}
-              className="h-9 w-9 rounded-none border-black text-black hover:bg-slate-50 shrink-0"
-              title="Toggle Full Screen (Alt + F)"
-            >
-              {isFullScreen ? <Minimize2 size={16} /> : <Maximize2 size={16} />}
-            </Button>
+              <Button
+                variant="outline"
+                size="icon"
+                onClick={toggleFullScreen}
+                className="h-8 w-8 rounded-none border-black text-black hover:bg-slate-50 shrink-0"
+                title="Toggle Full Screen"
+              >
+                {isFullScreen ? <Minimize2 size={14} /> : <Maximize2 size={14} />}
+              </Button>
+            </div>
           </div>
         </div>
 
@@ -301,17 +287,19 @@ const SessionDocumentView = ({
       </div>
 
       {/* Split Layout: Sidebar + Document + Right Sidebar */}
-      <div className="w-full px-4 md:px-6 flex gap-6 lg:gap-12 items-start justify-start pt-8 print:block print:p-0">
+      <div className="w-full px-4 md:px-6 flex flex-col lg:flex-row gap-6 lg:gap-12 items-start justify-start pt-8 print:block print:p-0">
         
-        {/* Left Sidebar: Outline & Corrections Guide */}
-        <DocumentSidebar 
-          activeSection={activeSection} 
-          scrollTo={scrollTo} 
-          openGuides={openGuides} 
-          toggleGuide={toggleGuide} 
-        />
+        {/* Left Sidebar: Outline & Corrections Guide (Only rendered on Desktop) */}
+        {isDesktop && (
+          <DocumentSidebar 
+            activeSection={activeSection} 
+            scrollTo={scrollTo} 
+            openGuides={openGuides} 
+            toggleGuide={toggleGuide} 
+          />
+        )}
 
-        {/* Right Side: The Document */}
+        {/* Center: The Document */}
         <div className="flex-1 w-full max-w-[850px] mx-auto bg-white border-none md:border md:border-slate-200 md:shadow-sm p-4 sm:p-10 md:p-16 min-h-[1056px] print:border-none print:p-0">
           {/* Header */}
           <DocumentHeader 
@@ -371,14 +359,16 @@ const SessionDocumentView = ({
           </div>
         </div>
 
-        {/* Right Sidebar: Quick Timers, BOLT, and Coherence */}
-        <DocumentRightSidebar 
-          activeTimerDuration={activeTimerDuration}
-          timeLeft={timeLeft}
-          startQuickTimer={startQuickTimer}
-          stopQuickTimer={stopQuickTimer}
-          formatCountdown={formatCountdown}
-        />
+        {/* Right Sidebar: Quick Timers, BOLT, and Coherence (Only rendered on Desktop) */}
+        {isDesktop && (
+          <DocumentRightSidebar 
+            activeTimerDuration={activeTimerDuration}
+            timeLeft={timeLeft}
+            startQuickTimer={startQuickTimer}
+            stopQuickTimer={stopQuickTimer}
+            formatCountdown={formatCountdown}
+          />
+        )}
       </div>
     </div>
   );

@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { format } from 'date-fns';
 import {
   FileText,
@@ -116,6 +116,21 @@ const SessionDocumentView = ({
   const handleSwitchAppointment = (newId: string) => {
     navigate(`/appointments/${newId}?view=document`);
   };
+
+  // Extract all currently and historically inhibited findings from the unified pattern
+  const activeInhibitedFindings = useMemo(() => {
+    const list: string[] = [];
+    Object.entries(unifiedPattern).forEach(([category, items]: [string, any]) => {
+      Object.entries(items).forEach(([name, status]) => {
+        const strStatus = status as string;
+        const baseStatus = strStatus.replace('_Cleared', '');
+        if (baseStatus === 'Inhibited' || baseStatus === 'Inhibition' || baseStatus === 'Hypertonic') {
+          list.push(name);
+        }
+      });
+    });
+    return list.sort();
+  }, [unifiedPattern]);
 
   return (
     <div className="bg-white min-h-screen text-black font-sans pb-40 print:p-0 print:m-0">
@@ -334,7 +349,7 @@ const SessionDocumentView = ({
               metadata={metadata} 
               acupoints={appointment.acupoints} 
               brainZoneOptions={brainZoneOptions} 
-              inhibitedFindings={inhibitedFindings}
+              inhibitedFindings={activeInhibitedFindings}
               updateMetadataFields={updateMetadataFields} 
               saveField={saveField} 
               onTogglePatternItem={handleTogglePatternItem}

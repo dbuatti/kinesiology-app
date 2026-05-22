@@ -34,12 +34,17 @@ const PathwayFindingsList = ({ priorityPattern, className, showOnlyInhibited = t
       // 1. Normalize all items in this category first
       const sessionItems: { base: string, side: string, status: string }[] = [];
       Object.entries(values).forEach(([key, status]) => {
-        if (showOnlyInhibited && status !== 'Inhibited') return;
+        const strStatus = status as string;
+        const isCleared = strStatus.endsWith('_Cleared');
+        const baseStatus = strStatus.replace('_Cleared', '');
+
+        if (showOnlyInhibited && isCleared) return;
+        if (showOnlyInhibited && baseStatus !== 'Inhibited' && baseStatus !== 'Hypertonic') return;
         
         const sideMatch = key.match(/\(([LR])\)$/);
         const side = sideMatch ? sideMatch[1] : "";
         const base = getCanonicalName(key);
-        sessionItems.push({ base, side, status: status as string });
+        sessionItems.push({ base, side, status: strStatus });
       });
 
       // 2. Filter out base items if lateralized ones exist
@@ -71,33 +76,38 @@ const PathwayFindingsList = ({ priorityPattern, className, showOnlyInhibited = t
 
   return (
     <div className={cn("space-y-2", className)}>
-      {findings.map((finding, idx) => (
-        <div 
-          key={idx} 
-          className={cn(
-            "flex items-center justify-between p-2 rounded-lg border text-[10px] font-bold transition-all",
-            finding.status === 'Inhibited' 
-              ? "bg-rose-50 border-rose-100 text-rose-700" 
-              : "bg-emerald-50 border-emerald-100 text-emerald-700"
-          )}
-        >
-          <div className="flex items-center gap-2 truncate mr-2">
-            {finding.category.toLowerCase().includes('primitive') ? <Baby size={12} /> :
-             finding.category.toLowerCase().includes('cranial') ? <Zap size={12} /> :
-             <Brain size={12} />}
-            <span className="truncate">{finding.name}</span>
-          </div>
-          <Badge 
-            variant="outline" 
+      {findings.map((finding, idx) => {
+        const isCleared = finding.status.endsWith('_Cleared') || finding.status === 'Normotonic';
+        const displayStatus = finding.status.replace('_Cleared', ' (Cleared)');
+        
+        return (
+          <div 
+            key={idx} 
             className={cn(
-              "h-4 px-1.5 text-[7px] font-black uppercase border-none",
-              finding.status === 'Inhibited' ? "bg-rose-600 text-white" : "bg-emerald-600 text-white"
+              "flex items-center justify-between p-2 rounded-lg border text-[10px] font-bold transition-all",
+              isCleared 
+                ? "bg-emerald-50 border-emerald-100 text-emerald-700"
+                : "bg-rose-50 border-rose-100 text-rose-700"
             )}
           >
-            {finding.status}
-          </Badge>
-        </div>
-      ))}
+            <div className="flex items-center gap-2 truncate mr-2">
+              {finding.category.toLowerCase().includes('primitive') ? <Baby size={12} /> :
+               finding.category.toLowerCase().includes('cranial') ? <Zap size={12} /> :
+               <Brain size={12} />}
+              <span className={cn("truncate", isCleared && "line-through text-slate-400")}>{finding.name}</span>
+            </div>
+            <Badge 
+              variant="outline" 
+              className={cn(
+                "h-4 px-1.5 text-[7px] font-black uppercase border-none",
+                isCleared ? "bg-emerald-600 text-white" : "bg-rose-600 text-white"
+              )}
+            >
+              {displayStatus}
+            </Badge>
+          </div>
+        );
+      })}
     </div>
   );
 };

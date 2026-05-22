@@ -47,7 +47,9 @@ const PreliminarySection = ({ appointment, saveField }: PreliminarySectionProps)
   }, [appointment.priority_pattern]);
 
   const getZoneStatus = (zoneName: string) => {
-    return pattern.brainZones?.[zoneName] || null;
+    const raw = pattern.brainZones?.[zoneName];
+    if (!raw) return null;
+    return raw.replace('_Cleared', '');
   };
 
   const handleSetZoneStatus = async (zoneName: string, status: 'Clear' | 'Inhibited' | 'Recheck') => {

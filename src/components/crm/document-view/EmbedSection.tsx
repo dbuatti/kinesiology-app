@@ -19,7 +19,8 @@ import {
   Info, 
   Target, 
   Sparkles,
-  Check
+  Check,
+  Trash2
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { showSuccess, showError } from '@/utils/toast';
@@ -30,7 +31,7 @@ import DocInput from './DocInput';
 interface EmbedSectionProps {
   appointment: any;
   saveField: (field: string, value: any) => Promise<void>;
-  updatePriorityPattern: (category: string, itemName: string, status: 'Clear' | 'Inhibited' | null, side?: 'L' | 'R') => Promise<void>;
+  updatePriorityPattern: (category: string, itemName: string, status: string | null, side?: 'L' | 'R') => Promise<void>;
   onTogglePatternItem: (category: string, name: string, nextStatus: string, side?: 'L' | 'R') => void;
   onUpdate?: () => void;
 }
@@ -42,6 +43,7 @@ interface RecheckItem {
   type: 'pattern' | 'muscle';
   status: string;
   side?: 'L' | 'R';
+  isCleared: boolean;
 }
 
 const getCanonicalName = (name: string): string => {
@@ -122,13 +124,17 @@ const EmbedSection = ({ appointment, saveField, updatePriorityPattern, onToggleP
     return items.sort((a, b) => a.name.localeCompare(b.name));
   }, [pattern, muscleTests]);
 
-  // 2. Filter out only currently inhibited findings for the "Clinical Verification" re-challenge list
+  // 2. Filter out only currently and historically inhibited findings for the "Clinical Verification" re-challenge list
   const inhibitedItems = useMemo(() => {
-    const items: { id: string; name: string; category: string; type: 'pattern' | 'muscle'; status: string; side?: 'L' | 'R' }[] = [];
+    const items: RecheckItem[] = [];
     
     Object.entries(pattern).forEach(([catKey, categoryItems]: [string, any]) => {
       Object.entries(categoryItems).forEach(([name, status]) => {
-        if (status === 'Inhibited') {
+        const strStatus = status as string;
+        const isCleared = strStatus.endsWith('_Cleared');
+        const baseStatus = strStatus.replace('_Cleared', '');
+
+        if (baseStatus === 'Inhibited' || baseStatus === 'Hypertonic') {
           const sideMatch = name.match(/\(([LR])\)$/);
           const side = sideMatch ? sideMatch[1] as 'L' | 'R' : undefined;
           const baseName = name.replace(/ \([LR]\)$/, '');
@@ -138,15 +144,20 @@ const EmbedSection = ({ appointment, saveField, updatePriorityPattern, onToggleP
             name: baseName,
             category: catKey,
             type: 'pattern',
-            status: 'Inhibited',
-            side
+            status: baseStatus,
+            side,
+            isCleared
           });
         }
       });
     });
 
     muscleTests.forEach(test => {
-      if (test.status !== 'Normotonic') {
+      const strStatus = test.status as string;
+      const isCleared = strStatus.endsWith('_Cleared') || strStatus === 'Normotonic';
+      const baseStatus = strStatus.replace('_Cleared', '');
+
+      if (baseStatus !== 'Normotonic' || isCleared) {
         const sideMatch = test.muscle_name.match(/\(([LR])\)$/);
         const side = sideMatch ? sideMatch[1] as 'L' | 'R' : undefined;
         const baseName = test.muscle_name.replace(/ \([LR]\)$/, '').trim();
@@ -157,8 +168,9 @@ const EmbedSection = ({ appointment, saveField, updatePriorityPattern, onToggleP
             name: baseName,
             category: 'Muscles',
             type: 'muscle',
-            status: test.status,
-            side
+            status: baseStatus === 'Normotonic' ? 'Inhibition' : baseStatus,
+            side,
+            isCleared
           });
         }
       }
@@ -167,24 +179,26 @@ const EmbedSection = ({ appointment, saveField, updatePriorityPattern, onToggleP
     return items.sort((a, b) => a.name.localeCompare(b.name));
   }, [pattern, muscleTests]);
 
-  const handleClearItem = async (item: any) => {
+  const handleClearItem = async (item: RecheckItem) => {
     setClearingId(item.id);
     try {
       if (item.type === 'pattern') {
-        await updatePriorityPattern(item.category, item.name, 'Clear', item.side);
+        const nextStatus = item.isCleared ? 'Inhibited' : 'Inhibited_Cleared';
+        await updatePriorityPattern(item.category, item.name, nextStatus, item.side);
       } else {
+        const nextStatus = item.isCleared ? 'Inhibition' : 'Inhibition_Cleared';
         const { error } = await supabase
           .from('muscle_tests')
-          .update({ status: 'Normotonic' })
+          .update({ status: nextStatus })
           .eq('id', item.id);
         
         if (error) throw error;
         await fetchMuscleTests();
       }
-      showSuccess(`${item.name} marked as Clear.`);
+      showSuccess(`${item.name} status updated.`);
       onUpdate?.();
     } catch (err) {
-      showError("Failed to clear item.");
+      showError("Failed to update item status.");
     } finally {
       setClearingId(null);
     }
@@ -201,6 +215,8 @@ const EmbedSection = ({ appointment, saveField, updatePriorityPattern, onToggleP
     if (cat.includes('muscle')) return Dumbbell;
     return Brain;
   };
+
+  const hasSnsResets = !!(appointment.harmonic_rocking_notes || appointment.t1_reset_notes || appointment.diaphragm_reset_notes || appointment.vagus_nerve_notes);
 
   return (
     <div className="space-y-12">
@@ -222,21 +238,32 @@ const EmbedSection = ({ appointment, saveField, updatePriorityPattern, onToggleP
               const isClearing = clearingId === item.id;
 
               return (
-                <div key={item.id} className="p-4 border border-black flex items-center justify-between gap-4 bg-white">
+                <div key={item.id} className={cn(
+                  "p-4 border flex items-center justify-between gap-4 bg-white transition-all",
+                  item.isCleared ? "border-emerald-200 bg-emerald-50/10" : "border-rose-200 bg-rose-50/10"
+                )}>
                   <div className="flex items-center gap-3 min-w-0">
-                    <div className="w-8 h-8 rounded-lg bg-slate-50 border border-slate-200 flex items-center justify-center shrink-0">
+                    <div className={cn(
+                      "w-8 h-8 rounded-lg flex items-center justify-center shrink-0",
+                      item.isCleared ? "bg-emerald-50 text-emerald-600" : "bg-rose-50 text-rose-600"
+                    )}>
                       <Icon size={16} />
                     </div>
                     <div className="min-w-0">
                       <div className="flex items-center gap-1.5">
-                        <p className="font-bold text-xs text-slate-900 truncate">{item.name}</p>
+                        <p className={cn("font-bold text-xs text-slate-900 truncate", item.isCleared && "text-slate-500 line-through")}>{item.name}</p>
                         {item.side && (
                           <span className="text-[8px] font-black uppercase px-1.5 py-0 border border-slate-200 text-slate-400">
                             {item.side}
                           </span>
                         )}
                       </div>
-                      <p className="text-[8px] font-black text-rose-500 uppercase tracking-widest">{item.status}</p>
+                      <p className={cn(
+                        "text-[8px] font-black uppercase tracking-widest",
+                        item.isCleared ? "text-emerald-600" : "text-rose-500"
+                      )}>
+                        {item.isCleared ? "Cleared" : item.status}
+                      </p>
                     </div>
                   </div>
 
@@ -245,10 +272,14 @@ const EmbedSection = ({ appointment, saveField, updatePriorityPattern, onToggleP
                     size="sm" 
                     onClick={() => handleClearItem(item)}
                     disabled={isClearing}
-                    className="h-8 px-3 rounded-none border border-black hover:bg-black hover:text-white text-[9px] font-black uppercase tracking-widest transition-all shrink-0"
+                    className={cn(
+                      "h-8 px-3 rounded-none border text-[9px] font-black uppercase tracking-widest transition-all shrink-0",
+                      item.isCleared 
+                        ? "border-slate-200 hover:bg-slate-100 text-slate-600" 
+                        : "border-emerald-500 hover:bg-emerald-600 hover:text-white text-emerald-600"
+                    )}
                   >
-                    {isClearing ? <Loader2 size={12} className="animate-spin" /> : <Check size={12} className="mr-1.5" />}
-                    Mark Clear
+                    {isClearing ? <Loader2 size={12} className="animate-spin" /> : item.isCleared ? "Undo" : "Mark Clear"}
                   </Button>
                 </div>
               );
@@ -275,7 +306,7 @@ const EmbedSection = ({ appointment, saveField, updatePriorityPattern, onToggleP
         {allFindings.length > 0 ? (
           <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
             {allFindings.map((finding, idx) => {
-              const isClear = finding.status === 'Clear' || finding.status === 'Normotonic';
+              const isClear = finding.status === 'Clear' || finding.status === 'Normotonic' || finding.status.endsWith('_Cleared');
               return (
                 <div 
                   key={idx} 
@@ -289,7 +320,7 @@ const EmbedSection = ({ appointment, saveField, updatePriorityPattern, onToggleP
                     "text-[7px] font-black uppercase tracking-widest px-1.5 py-0.5 rounded-sm",
                     isClear ? "bg-emerald-500 text-white" : "bg-rose-500 text-white"
                   )}>
-                    {finding.status}
+                    {finding.status.replace('_Cleared', ' (Cleared)')}
                   </span>
                 </div>
               );

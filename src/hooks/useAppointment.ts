@@ -89,7 +89,7 @@ export function useAppointment(id: string | undefined) {
     }
   }, [id, appointment]);
 
-  const updatePriorityPattern = useCallback(async (category: string, itemName: string, status: 'Clear' | 'Inhibited' | null, side?: 'L' | 'R') => {
+  const updatePriorityPattern = useCallback(async (category: string, itemName: string, status: string | null, side?: 'L' | 'R') => {
     if (!id || !appointment) return;
 
     // Always work off the latest ref to avoid overwriting parallel updates
@@ -101,7 +101,7 @@ export function useAppointment(id: string | undefined) {
 
     const finalItemName = side ? `${itemName} (${side})` : itemName;
 
-    if (status === null) {
+    if (status === null || status === 'Clear') {
       delete currentPattern[category][finalItemName];
     } else {
       currentPattern[category][finalItemName] = status;

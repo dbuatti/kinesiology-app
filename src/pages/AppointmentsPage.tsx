@@ -343,18 +343,18 @@ const AppointmentsPage = () => {
 
             {/* Main Info Column */}
             <div className="flex-1 p-6 md:p-8 space-y-4">
-              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-                <div className="space-y-1">
+              <div className="flex items-start justify-between gap-4">
+                <div className="space-y-1 min-w-0">
                   <div className="flex items-center gap-3">
                     <Link to={`/appointments/${app.id}`} className={cn(
-                      "font-black text-xl md:text-2xl tracking-tight hover:underline decoration-2 underline-offset-4",
+                      "font-black text-xl md:text-2xl tracking-tight hover:underline decoration-2 underline-offset-4 truncate block",
                       isTodaySession ? "text-white decoration-indigo-400" : "text-foreground decoration-indigo-600",
                       isPrivate && "blur-sm select-none"
                     )}>
                       {app.clients?.name || "Unknown Client"}
                     </Link>
                     {isHighRisk && !isCompleted && (
-                      <Badge className="bg-rose-500 text-white border-none font-black text-[8px] uppercase tracking-widest px-2 py-0.5 rounded-full animate-pulse">
+                      <Badge className="bg-rose-500 text-white border-none font-black text-[8px] uppercase tracking-widest px-2 py-0.5 rounded-full animate-pulse shrink-0">
                         High Priority
                       </Badge>
                     )}
@@ -379,7 +379,7 @@ const AppointmentsPage = () => {
                   </div>
                 </div>
 
-                <div className="flex items-center gap-2">
+                <div className="flex items-center gap-2 shrink-0">
                   {isTodaySession && !isCompleted && (
                     <Button 
                       size="sm" 

@@ -2,7 +2,7 @@
 
 import React, { useMemo, useState, useEffect, useRef } from 'react';
 import { Checkbox } from '@/components/ui/checkbox';
-import { Zap, BookOpen, ExternalLink, Info, CheckCircle2, Sparkles, Brain, Activity, Heart, ShieldAlert, Wind, Droplets, ArrowDownCircle, ArrowUpCircle, Layers, Eye } from 'lucide-react';
+import { Zap, BookOpen, ExternalLink, Info, CheckCircle2, Sparkles, Brain, Activity, Heart, ShieldAlert, Wind, Droplets, ArrowDownCircle, ArrowUpCircle, Layers, Eye, Copy, Check } from 'lucide-react';
 import DocInput from './DocInput';
 import { cn } from '@/lib/utils';
 import { AFFERENT_PATHWAYS, EFFERENT_PATHWAYS } from '@/data/pathway-logic-data';
@@ -58,6 +58,33 @@ const CorrectSection = ({
   const [localFinding, setLocalFinding] = useState(metadata.wizard_finding || "");
   const [isFindingFocused, setIsFindingFocused] = useState(false);
   const findingDebounceTimer = useRef<NodeJS.Timeout | null>(null);
+
+  const [copied, setCopied] = useState(false);
+
+  const handleCopyWizard = () => {
+    const direction = metadata.wizard_direction || "Unknown Direction";
+    const system = metadata.wizard_system || "Unknown System";
+    const coord1 = metadata.wizard_coord1_name ? `${metadata.wizard_coord1_side || ""} ${metadata.wizard_coord1_name}`.trim() : "None";
+    const coord2 = metadata.wizard_coord2_name ? `${metadata.wizard_coord2_side || ""} ${metadata.wizard_coord2_name}`.trim() : "None";
+    const polarity = metadata.wizard_polarity ? `Polarity: ${metadata.wizard_polarity}` : "None";
+    const method = metadata.wizard_method ? `Method: ${metadata.wizard_method}` : "None";
+    const finding = metadata.wizard_finding || "None";
+
+    const text = `LOFI CALIBRATION WIZARD REPORT
+---------------------------------
+Target Finding: ${finding}
+Pathway Direction: ${direction}
+Specific System: ${system}
+Coordinate 1: ${coord1}
+Coordinate 2: ${coord2}
+Polarity: ${polarity}
+Correction Method: ${method}`;
+
+    navigator.clipboard.writeText(text);
+    setCopied(true);
+    showSuccess("Wizard configuration copied to clipboard!");
+    setTimeout(() => setCopied(false), 2000);
+  };
 
   useEffect(() => {
     if (metadata.wizard_finding && !inhibitedFindings.includes(metadata.wizard_finding)) {
@@ -180,9 +207,20 @@ const CorrectSection = ({
     <div className="space-y-12">
       {/* Interactive Wizard Card */}
       <div className="p-8 border-2 border-black space-y-8 bg-white">
-        <div className="flex items-center gap-3 border-b border-black pb-3">
-          <Zap size={20} className="text-black" />
-          <h3 className="text-sm font-black uppercase tracking-widest">Lofi Calibration Wizard</h3>
+        <div className="flex items-center justify-between border-b border-black pb-3">
+          <div className="flex items-center gap-2">
+            <Zap size={20} className="text-black" />
+            <h3 className="text-sm font-black uppercase tracking-widest">Lofi Calibration Wizard</h3>
+          </div>
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={handleCopyWizard}
+            className="h-8 w-8 rounded-md border border-black hover:bg-black hover:text-white transition-all"
+            title="Copy wizard configuration to clipboard"
+          >
+            {copied ? <Check size={14} /> : <Copy size={14} />}
+          </Button>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8">

@@ -14,28 +14,28 @@ export async function fetchLatestProcedureScores(): Promise<LatestProcedureScore
     };
   }
 
-  // Fetch the latest appointment that has a BOLT score
-  const { data: latestBolt } = await supabase
-    .from('appointments')
-    .select('bolt_score')
-    .eq('user_id', user.id)
-    .not('bolt_score', 'is', null)
-    .order('date', { ascending: false })
-    .limit(1)
-    .single();
+  // Fetch the latest appointments concurrently using Promise.all
+  const [boltResult, coherenceResult] = await Promise.all([
+    supabase
+      .from('appointments')
+      .select('bolt_score')
+      .eq('user_id', user.id)
+      .not('bolt_score', 'is', null)
+      .order('date', { ascending: false })
+      .limit(1)
+      .maybeSingle(),
+    supabase
+      .from('appointments')
+      .select('coherence_score')
+      .eq('user_id', user.id)
+      .not('coherence_score', 'is', null)
+      .order('date', { ascending: false })
+      .limit(1)
+      .maybeSingle()
+  ]);
 
-  // Fetch the latest appointment that has a Coherence score
-  const { data: latestCoherence } = await supabase
-    .from('appointments')
-    .select('coherence_score')
-    .eq('user_id', user.id)
-    .not('coherence_score', 'is', null)
-    .order('date', { ascending: false })
-    .limit(1)
-    .single();
-    
   return {
-    bolt_score: latestBolt?.bolt_score ?? null,
-    coherence_score: latestCoherence?.coherence_score ?? null,
+    bolt_score: boltResult.data?.bolt_score ?? null,
+    coherence_score: coherenceResult.data?.coherence_score ?? null,
   };
 }

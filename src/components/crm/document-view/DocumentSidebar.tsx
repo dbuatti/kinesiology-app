@@ -12,7 +12,13 @@ import {
   ChevronUp,
   Activity,
   Brain,
-  Heart
+  Heart,
+  ArrowDownCircle,
+  ArrowUpCircle,
+  Eye,
+  Droplets,
+  ShieldAlert,
+  Layers
 } from 'lucide-react';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 
@@ -28,6 +34,17 @@ export const OUTLINE_ITEMS = [
   { id: "e-sec", label: "E — Ease System", icon: ShieldCheck },
   { id: "a-sec", label: "A — Align Hierarchy", icon: List },
   { id: "c-sec", label: "C — Correct (Wizard)", icon: Zap },
+  // Afferent Sub-sections
+  { id: "c-afferent", label: "  ├─ Afferent (Bottom-Up)", icon: ArrowDownCircle },
+  { id: "c-mechano", label: "  │  ├─ Mechanoreceptor", icon: Activity },
+  { id: "c-vestibular", label: "  │  ├─ Vestibular / Ocular", icon: Eye },
+  { id: "c-physiological", label: "  │  ├─ Physiological", icon: Droplets },
+  { id: "c-nociceptive", label: "  │  └─ Nociceptive Threat", icon: ShieldAlert },
+  // Efferent Sub-sections
+  { id: "c-efferent", label: "  ├─ Efferent (Top-Down)", icon: ArrowUpCircle },
+  { id: "c-cortical", label: "  │  ├─ Cortical", icon: Brain },
+  { id: "c-subcortical", label: "  │  ├─ Subcortical", icon: Layers },
+  { id: "c-emotional", label: "  │  └─ Emotional", icon: Heart },
   { id: "e2-sec", label: "E — Embed (Homework)", icon: ClipboardCheck },
 ];
 
@@ -91,7 +108,7 @@ const DocumentSidebar = ({ activeSection, scrollTo, openGuides, toggleGuide }: D
                 key={item.id}
                 onClick={() => scrollTo(item.id)}
                 className={cn(
-                  "w-full flex items-center gap-3 px-4 py-2.5 text-xs font-bold rounded-xl transition-all text-left border-l-2",
+                  "w-full flex items-center gap-3 px-4 py-2 text-xs font-bold rounded-xl transition-all text-left border-l-2 whitespace-pre",
                   isActive 
                     ? "bg-indigo-50 border-indigo-600 text-indigo-600 font-black" 
                     : "border-transparent text-slate-600 hover:text-indigo-600 hover:bg-indigo-50/30"

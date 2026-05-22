@@ -7,11 +7,12 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { 
   Play, Square, RotateCcw, Save, Loader2, 
-  Heart, Brain, Activity, FlaskConical, Check 
+  Heart, Brain, Activity, FlaskConical, Check, Sparkles
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { showSuccess, showError } from '@/utils/toast';
 import DocInput from './DocInput';
+import { Badge } from '@/components/ui/badge';
 
 interface PreliminarySectionProps {
   appointment: any;
@@ -118,45 +119,68 @@ const PreliminarySection = ({ appointment, saveField }: PreliminarySectionProps)
     saveField(field, value);
   };
 
-  return (
-    <div className="grid grid-cols-1 md:grid-cols-2 gap-16">
-      {/* Left Column: Goals, Concerns, and BOLT */}
-      <div className="space-y-10">
-        <DocInput 
-          label="Session Goal" 
-          value={appointment.goal} 
-          field="goal" 
-          placeholder="Primary objective..." 
-          onChange={handleFieldChange}
-        />
-        <DocInput 
-          label="Main Concern" 
-          value={appointment.issue} 
-          field="issue" 
-          placeholder="Presenting symptoms..." 
-          onChange={handleFieldChange}
-        />
-        
-        {/* Interactive BOLT Section */}
-        <div className="space-y-3">
-          <label className="text-[9px] font-black uppercase tracking-widest text-slate-400">BOLT Score Assessment</label>
-          <div className="border border-black p-6 space-y-4 bg-white">
-            <div className="flex items-baseline justify-between">
-              <span className="text-xs font-bold text-slate-500">Score</span>
-              <div className="flex items-baseline gap-0.5">
-                <span className="text-4xl font-black tabular-nums">
-                  {boltTime}
-                </span>
-                <span className="text-sm font-bold text-slate-400">s</span>
-              </div>
-            </div>
+  const isCoherent = coherenceScore !== null && Math.abs(coherenceScore - Math.round(coherenceScore)) < 0.01;
 
-            <div className="flex gap-2">
+  return (
+    <div className="space-y-12">
+      {/* Top Grid: Goal, Concern, Hydration, ROM Notes */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-16">
+        <div className="space-y-10">
+          <DocInput 
+            label="Session Goal" 
+            value={appointment.goal} 
+            field="goal" 
+            placeholder="Primary objective..." 
+            onChange={handleFieldChange}
+          />
+          <DocInput 
+            label="Main Concern" 
+            value={appointment.issue} 
+            field="issue" 
+            placeholder="Presenting symptoms..." 
+            onChange={handleFieldChange}
+          />
+        </div>
+
+        <div className="space-y-10">
+          <div className="flex items-center justify-between p-5 bg-slate-50 border border-slate-200">
+            <div className="space-y-0.5">
+              <p className="text-[11px] font-black uppercase tracking-widest">Hydration Check</p>
+              <p className="text-[8px] font-bold text-slate-400 uppercase">Systemic Conductivity</p>
+            </div>
+            <Checkbox 
+              checked={appointment.hydrated || false} 
+              onCheckedChange={(checked) => saveField('hydrated', !!checked)}
+              className="h-8 w-8 border-black rounded-none data-[state=checked]:bg-black"
+            />
+          </div>
+
+          <DocInput 
+            label="ROM / Cogs Notes" 
+            value={appointment.sagittal_plane_notes} 
+            field="sagittal_plane_notes" 
+            placeholder="Sagittal, Frontal, Transverse findings..." 
+            multiline 
+            onChange={handleFieldChange}
+          />
+        </div>
+      </div>
+
+      {/* Horizontal BOLT Score Assessment */}
+      <div className="space-y-3">
+        <label className="text-[9px] font-black uppercase tracking-widest text-slate-400">BOLT Score Assessment</label>
+        <div className="border border-black p-6 bg-white flex flex-col sm:flex-row sm:items-center justify-between gap-6">
+          <div className="space-y-2 flex-1">
+            <h4 className="text-sm font-black uppercase tracking-wider text-slate-900">Body Oxygen Level Test</h4>
+            <p className="text-xs text-slate-500 leading-relaxed max-w-md">
+              Measure comfortable breath-hold time after a normal exhalation to assess CO2 tolerance.
+            </p>
+            <div className="flex gap-2 pt-2">
               {boltRunning ? (
                 <Button 
                   type="button"
                   onClick={stopBolt} 
-                  className="flex-1 h-10 bg-rose-600 hover:bg-rose-700 text-white rounded-none text-xs font-black uppercase tracking-widest"
+                  className="h-10 px-6 bg-rose-600 hover:bg-rose-700 text-white rounded-none text-xs font-black uppercase tracking-widest"
                 >
                   Stop
                 </Button>
@@ -164,7 +188,7 @@ const PreliminarySection = ({ appointment, saveField }: PreliminarySectionProps)
                 <Button 
                   type="button"
                   onClick={startBolt} 
-                  className="flex-1 h-10 bg-black text-white hover:bg-slate-800 rounded-none text-xs font-black uppercase tracking-widest"
+                  className="h-10 px-6 bg-black text-white hover:bg-slate-800 rounded-none text-xs font-black uppercase tracking-widest"
                 >
                   Start BOLT
                 </Button>
@@ -174,7 +198,7 @@ const PreliminarySection = ({ appointment, saveField }: PreliminarySectionProps)
                   type="button"
                   onClick={saveBolt} 
                   disabled={savingBolt}
-                  className="flex-1 h-10 bg-emerald-600 hover:bg-emerald-700 text-white rounded-none text-xs font-black uppercase tracking-widest"
+                  className="h-10 px-6 bg-emerald-600 hover:bg-emerald-700 text-white rounded-none text-xs font-black uppercase tracking-widest"
                 >
                   {savingBolt ? <Loader2 size={14} className="animate-spin" /> : <Save size={14} className="mr-1.5" />}
                   Save Score
@@ -192,28 +216,33 @@ const PreliminarySection = ({ appointment, saveField }: PreliminarySectionProps)
               )}
             </div>
           </div>
+
+          <div className="flex items-center gap-6 shrink-0 border-l border-slate-100 pl-6">
+            <div className="text-right">
+              <p className="text-[8px] font-black text-slate-400 uppercase tracking-widest">Score</p>
+              <div className="flex items-baseline gap-0.5">
+                <span className="text-5xl font-black tabular-nums">{boltTime}</span>
+                <span className="text-sm font-bold text-slate-400">s</span>
+              </div>
+            </div>
+            {appointment.bolt_score && (
+              <Badge className={cn(
+                "border-none font-black text-[8px] uppercase tracking-widest px-2.5 py-1 rounded-sm",
+                appointment.bolt_score >= 25 ? "bg-emerald-600 text-white" : "bg-rose-600 text-white"
+              )}>
+                {appointment.bolt_score >= 25 ? "Functional" : "Below Target"}
+              </Badge>
+            )}
+          </div>
         </div>
       </div>
 
-      {/* Right Column: Hydration, Coherence, and ROM */}
-      <div className="space-y-10">
-        <div className="flex items-center justify-between p-5 bg-slate-50 border border-slate-100">
-          <div className="space-y-0.5">
-            <p className="text-[11px] font-black uppercase tracking-widest">Hydration Check</p>
-            <p className="text-[8px] font-bold text-slate-400 uppercase">Systemic Conductivity</p>
-          </div>
-          <Checkbox 
-            checked={appointment.hydrated || false} 
-            onCheckedChange={(checked) => saveField('hydrated', !!checked)}
-            className="h-8 w-8 border-black rounded-none data-[state=checked]:bg-black"
-          />
-        </div>
-
-        {/* Interactive Heart Coherence Section */}
-        <div className="space-y-3">
-          <label className="text-[9px] font-black uppercase tracking-widest text-slate-400">Heart Coherence Calculator</label>
-          <div className="border border-black p-6 space-y-4 bg-white">
-            <div className="grid grid-cols-2 gap-4">
+      {/* Horizontal Heart Coherence Calculator */}
+      <div className="space-y-3">
+        <label className="text-[9px] font-black uppercase tracking-widest text-slate-400">Heart Coherence Calculator</label>
+        <div className="border border-black p-6 bg-white flex flex-col lg:flex-row lg:items-center justify-between gap-6">
+          <div className="space-y-4 flex-1">
+            <div className="grid grid-cols-2 gap-4 max-w-md">
               <div className="space-y-1.5">
                 <Label className="text-[8px] font-black uppercase text-slate-400">Heart (30s)</Label>
                 <Input 
@@ -236,18 +265,11 @@ const PreliminarySection = ({ appointment, saveField }: PreliminarySectionProps)
               </div>
             </div>
 
-            {coherenceScore !== null && (
-              <div className="text-center pt-2 border-t border-slate-100">
-                <p className="text-[8px] font-black text-slate-400 uppercase tracking-widest">Coherence Ratio</p>
-                <p className="text-3xl font-black text-slate-900">{coherenceScore.toFixed(2)}</p>
-              </div>
-            )}
-
             <div className="flex gap-2">
               <Button 
                 type="button"
                 onClick={calculateCoherence}
-                className="flex-1 h-10 bg-black text-white hover:bg-slate-800 rounded-none text-xs font-black uppercase tracking-widest"
+                className="h-10 px-6 bg-black text-white hover:bg-slate-800 rounded-none text-xs font-black uppercase tracking-widest"
               >
                 Calculate
               </Button>
@@ -256,7 +278,7 @@ const PreliminarySection = ({ appointment, saveField }: PreliminarySectionProps)
                   type="button"
                   onClick={saveCoherence}
                   disabled={savingCoherence}
-                  className="flex-1 h-10 bg-emerald-600 hover:bg-emerald-700 text-white rounded-none text-xs font-black uppercase tracking-widest px-3"
+                  className="h-10 px-6 bg-emerald-600 hover:bg-emerald-700 text-white rounded-none text-xs font-black uppercase tracking-widest"
                 >
                   {savingCoherence ? <Loader2 size={14} className="animate-spin" /> : <Save size={14} className="mr-1.5" />}
                   Save Coherence
@@ -274,16 +296,22 @@ const PreliminarySection = ({ appointment, saveField }: PreliminarySectionProps)
               )}
             </div>
           </div>
-        </div>
 
-        <DocInput 
-          label="ROM / Cogs Notes" 
-          value={appointment.sagittal_plane_notes} 
-          field="sagittal_plane_notes" 
-          placeholder="Sagittal, Frontal, Transverse findings..." 
-          multiline 
-          onChange={handleFieldChange}
-        />
+          {coherenceScore !== null && (
+            <div className="flex items-center gap-6 shrink-0 border-l border-slate-100 pl-6">
+              <div className="text-right">
+                <p className="text-[8px] font-black text-slate-400 uppercase tracking-widest">Coherence Ratio</p>
+                <p className="text-5xl font-black tabular-nums">{coherenceScore.toFixed(2)}</p>
+              </div>
+              <Badge className={cn(
+                "border-none font-black text-[8px] uppercase tracking-widest px-2.5 py-1 rounded-sm",
+                isCoherent ? "bg-emerald-600 text-white" : "bg-rose-600 text-white"
+              )}>
+                {isCoherent ? "Coherent" : "Discordant"}
+              </Badge>
+            </div>
+          )}
+        </div>
       </div>
     </div>
   );

@@ -79,7 +79,7 @@ export const CORRECTIONS_GUIDE = [
 
 const DocumentSidebar = ({ activeSection, scrollTo, openGuides, toggleGuide }: DocumentSidebarProps) => {
   return (
-    <aside className="w-80 shrink-0 sticky top-20 max-h-[calc(100vh-240px)] overflow-y-auto p-6 bg-slate-50 border border-slate-200 rounded-[2rem] space-y-8 print:hidden custom-scrollbar">
+    <aside className="w-80 shrink-0 sticky top-[220px] max-h-[calc(100vh-260px)] overflow-y-auto p-6 bg-slate-50 border border-slate-200 rounded-[2rem] space-y-8 print:hidden custom-scrollbar">
       {/* Document Outline */}
       <div className="space-y-3">
         <p className="text-[10px] font-black text-slate-400 uppercase tracking-[0.3em] px-1">Document Outline</p>

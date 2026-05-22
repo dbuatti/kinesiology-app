@@ -134,12 +134,15 @@ const SessionDocumentView = ({
     setOpenGuides(prev => ({ ...prev, [title]: !prev[title] }));
   };
 
-  // Get sorted list of brain zone names for the dropdowns
+  // Get sorted list of brain zone names for the dropdowns (excluding Cranial Nerves)
   const brainZoneOptions = useMemo(() => {
-    return BRAIN_REFLEX_POINTS.map(p => {
-      const displayName = p.name.includes(':') ? p.name.split(':')[0].trim() : p.name;
-      return { id: p.id, name: displayName };
-    }).sort((a, b) => a.name.localeCompare(b.name));
+    return BRAIN_REFLEX_POINTS
+      .filter(p => p.category === 'Cortical' || p.category === 'Subcortical')
+      .map(p => {
+        const displayName = p.name.includes(':') ? p.name.split(':')[0].trim() : p.name;
+        return { id: p.id, name: displayName, category: p.category };
+      })
+      .sort((a, b) => a.name.localeCompare(b.name));
   }, []);
 
   const handleTogglePatternItem = async (category: string, name: string, isChecked: boolean, side?: 'L' | 'R') => {

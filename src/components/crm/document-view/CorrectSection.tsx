@@ -1,6 +1,6 @@
 "use client";
 
-import React from 'react';
+import React, { useMemo } from 'react';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Zap, BookOpen } from 'lucide-react';
 import DocInput from './DocInput';
@@ -8,12 +8,15 @@ import DocInput from './DocInput';
 interface CorrectSectionProps {
   metadata: any;
   acupoints: string | null | undefined;
-  brainZoneOptions: { id: string; name: string }[];
+  brainZoneOptions: { id: string; name: string; category: string }[];
   updateMetadataField: (key: string, value: any) => Promise<void>;
   saveField: (field: string, value: any) => Promise<void>;
 }
 
 const CorrectSection = ({ metadata, acupoints, brainZoneOptions, updateMetadataField, saveField }: CorrectSectionProps) => {
+  const corticalOptions = useMemo(() => brainZoneOptions.filter(o => o.category === 'Cortical'), [brainZoneOptions]);
+  const subcorticalOptions = useMemo(() => brainZoneOptions.filter(o => o.category === 'Subcortical'), [brainZoneOptions]);
+
   return (
     <div className="p-8 border-2 border-black space-y-8 bg-white">
       <div className="flex items-center gap-3 border-b border-black pb-3">
@@ -108,11 +111,20 @@ const CorrectSection = ({ metadata, acupoints, brainZoneOptions, updateMetadataF
                 className="w-full bg-transparent border-b border-slate-200 py-1.5 text-xs font-bold focus:border-black outline-none transition-all"
               >
                 <option value="" className="text-slate-400">Select Zone...</option>
-                {brainZoneOptions.map(option => (
-                  <option key={`c1-${option.id}`} value={option.name} className="text-black font-bold">
-                    {option.name}
-                  </option>
-                ))}
+                <optgroup label="Cortical Brain Zones">
+                  {corticalOptions.map(option => (
+                    <option key={`c1-${option.id}`} value={option.name} className="text-black font-bold">
+                      {option.name}
+                    </option>
+                  ))}
+                </optgroup>
+                <optgroup label="Subcortical Brain Zones">
+                  {subcorticalOptions.map(option => (
+                    <option key={`c1-${option.id}`} value={option.name} className="text-black font-bold">
+                      {option.name}
+                    </option>
+                  ))}
+                </optgroup>
               </select>
               <div className="flex gap-4 pt-1">
                 {['Left', 'Right', 'Bilateral'].map(side => (
@@ -137,11 +149,20 @@ const CorrectSection = ({ metadata, acupoints, brainZoneOptions, updateMetadataF
                 className="w-full bg-transparent border-b border-slate-200 py-1.5 text-xs font-bold focus:border-black outline-none transition-all"
               >
                 <option value="" className="text-slate-400">Select Zone...</option>
-                {brainZoneOptions.map(option => (
-                  <option key={`c2-${option.id}`} value={option.name} className="text-black font-bold">
-                    {option.name}
-                  </option>
-                ))}
+                <optgroup label="Cortical Brain Zones">
+                  {corticalOptions.map(option => (
+                    <option key={`c2-${option.id}`} value={option.name} className="text-black font-bold">
+                      {option.name}
+                    </option>
+                  ))}
+                </optgroup>
+                <optgroup label="Subcortical Brain Zones">
+                  {subcorticalOptions.map(option => (
+                    <option key={`c2-${option.id}`} value={option.name} className="text-black font-bold">
+                      {option.name}
+                    </option>
+                  ))}
+                </optgroup>
               </select>
               <div className="flex gap-4 pt-1">
                 {['Left', 'Right', 'Bilateral'].map(side => (

@@ -112,33 +112,37 @@ const SessionDocumentView = ({
     onUpdate();
   };
 
-  // Set up IntersectionObserver to track active section on scroll
+  // Set up real-time scroll listener to track active section on scroll
   useEffect(() => {
     const scrollContainer = document.getElementById('main-scroll-container');
-    
-    const observerOptions = {
-      root: scrollContainer,
-      rootMargin: '-15% 0px -65% 0px', // Triggers when section header is in the upper-middle viewport
-      threshold: 0
+    if (!scrollContainer) return;
+
+    const handleScroll = () => {
+      const scrollContainerRect = scrollContainer.getBoundingClientRect();
+      const threshold = scrollContainerRect.top + 120; // 120px offset from top of container
+
+      let active = OUTLINE_ITEMS[0].id;
+
+      for (const item of OUTLINE_ITEMS) {
+        const el = document.getElementById(item.id);
+        if (el) {
+          const rect = el.getBoundingClientRect();
+          if (rect.top <= threshold) {
+            active = item.id;
+          } else {
+            break; // Stop once we find a section below the threshold
+          }
+        }
+      }
+      setActiveSection(active);
     };
 
-    const observer = new IntersectionObserver((entries) => {
-      entries.forEach((entry) => {
-        if (entry.isIntersecting) {
-          setActiveSection(entry.target.id);
-        }
-      });
-    }, observerOptions);
-
-    const targets = OUTLINE_ITEMS.map(item => document.getElementById(item.id));
-    targets.forEach(target => {
-      if (target) observer.observe(target);
-    });
+    scrollContainer.addEventListener('scroll', handleScroll);
+    // Run once initially to set correct active section
+    handleScroll();
 
     return () => {
-      targets.forEach(target => {
-        if (target) observer.unobserve(target);
-      });
+      scrollContainer.removeEventListener('scroll', handleScroll);
     };
   }, []);
 

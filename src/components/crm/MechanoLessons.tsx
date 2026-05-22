@@ -37,7 +37,8 @@ import {
   AlertCircle,
   Check,
   Play,
-  Pause
+  Pause,
+  XCircle
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { supabase } from "@/integrations/supabase/client";
@@ -51,6 +52,12 @@ interface Lesson {
   icon: any;
   difficulty: 'Beginner' | 'Intermediate';
   content: React.ReactNode;
+  quiz: {
+    question: string;
+    options: string[];
+    correctAnswer: string;
+    explanation: string;
+  };
 }
 
 interface MechanoLessonsProps {
@@ -100,6 +107,11 @@ const MechanoLessons = ({ activeSubTab = 'lessons' }: MechanoLessonsProps) => {
   const [simTimer, setSimTimer] = useState(0);
   const [simTimerActive, setSimTimerActive] = useState(false);
   const simIntervalRef = useRef<NodeJS.Timeout | null>(null);
+
+  // Lesson Quiz State
+  const [selectedQuizAnswer, setSelectedQuizAnswer] = useState<string | null>(null);
+  const [quizSubmitted, setQuizSubmitted] = useState(false);
+  const [quizIsCorrect, setQuizIsCorrect] = useState(false);
 
   // Fetch User and Custom Images
   const fetchImages = async () => {
@@ -321,7 +333,13 @@ const MechanoLessons = ({ activeSubTab = 'lessons' }: MechanoLessonsProps) => {
             </p>
           </div>
         </div>
-      )
+      ),
+      quiz: {
+        question: "What percentage of afferent input is processed unconsciously by the cerebellum?",
+        options: ["15%", "50%", "85%", "100%"],
+        correctAnswer: "85%",
+        explanation: "85% of proprioceptive movement data is processed unconsciously by the cerebellum via the Spinocerebellar tracts, while only 15% is processed consciously by the sensory cortex."
+      }
     },
     {
       id: '2',
@@ -386,7 +404,13 @@ const MechanoLessons = ({ activeSubTab = 'lessons' }: MechanoLessonsProps) => {
             </p>
           </div>
         </div>
-      )
+      ),
+      quiz: {
+        question: "What effort level is recommended for a Conscious GTO tendon correction?",
+        options: ["100% maximum effort", "70-80% moderate effort", "30-40% light effort", "5% micro effort"],
+        correctAnswer: "30-40% light effort",
+        explanation: "A light, pain-free isometric contraction of 30-40% effort is optimal for resetting the GTO threshold without triggering protective muscle guarding."
+      }
     },
     {
       id: '3',
@@ -433,7 +457,13 @@ const MechanoLessons = ({ activeSubTab = 'lessons' }: MechanoLessonsProps) => {
             </p>
           </div>
         </div>
-      )
+      ),
+      quiz: {
+        question: "What is the correct order of the 3-step mechanoreceptive loop?",
+        options: ["Calibrate -> Stimulate -> Localize", "Stimulate -> Localize -> Calibrate", "Localize -> Stimulate -> Calibrate", "Stimulate -> Calibrate -> Localize"],
+        correctAnswer: "Stimulate -> Localize -> Calibrate",
+        explanation: "The clinical loop always begins by stimulating the threat, localizing the specific joint and plane of motion, and finally calibrating the correction."
+      }
     },
     {
       id: '4',
@@ -491,7 +521,13 @@ const MechanoLessons = ({ activeSubTab = 'lessons' }: MechanoLessonsProps) => {
             </div>
           </div>
         </div>
-      )
+      ),
+      quiz: {
+        question: "If you apply the wrong mechanoreceptive correction, what does the brain do?",
+        options: ["It locks into a permanent spasm", "It ignores the correction safely", "It triggers a panic attack", "It inhibits all muscles"],
+        correctAnswer: "It ignores the correction safely",
+        explanation: "The nervous system is highly resilient and self-correcting. If you apply an incorrect stimulus, the brain simply filters it out as noise and ignores it safely."
+      }
     },
     {
       id: '5',
@@ -543,7 +579,13 @@ const MechanoLessons = ({ activeSubTab = 'lessons' }: MechanoLessonsProps) => {
             </p>
           </div>
         </div>
-      )
+      ),
+      quiz: {
+        question: "If a client has chronic L5 lower back pain, which cervical segment should you check first?",
+        options: ["C1 (Atlas)", "C3", "C7", "T1"],
+        correctAnswer: "C1 (Atlas)",
+        explanation: "According to Lovett-Brother spinal reciprocation, C1 (Atlas) is the direct partner to L5. Resolving a C1 fixation often instantly clears L5 lower back pain."
+      }
     },
     {
       id: '6',
@@ -594,7 +636,13 @@ const MechanoLessons = ({ activeSubTab = 'lessons' }: MechanoLessonsProps) => {
             </p>
           </div>
         </div>
-      )
+      ),
+      quiz: {
+        question: "Which plane of motion divides the body into front and back halves?",
+        options: ["Sagittal", "Frontal", "Transverse"],
+        correctAnswer: "Frontal",
+        explanation: "The Frontal (or Coronal) plane divides the body into anterior (front) and posterior (back) halves, and is the plane of lateral flexion, abduction, and adduction."
+      }
     }
   ];
 
@@ -603,7 +651,22 @@ const MechanoLessons = ({ activeSubTab = 'lessons' }: MechanoLessonsProps) => {
     setLessonProgress(nextProgress);
     localStorage.setItem('antigravity_mechano_lessons_progress', JSON.stringify(nextProgress));
     setCurrentLessonId(null);
+    setSelectedQuizAnswer(null);
+    setQuizSubmitted(false);
+    setQuizIsCorrect(false);
     showSuccess("Lesson completed! Your clinical confidence is growing.");
+  };
+
+  const handleQuizSubmit = () => {
+    if (!activeLesson || !selectedQuizAnswer) return;
+    const correct = selectedQuizAnswer === activeLesson.quiz.correctAnswer;
+    setQuizIsCorrect(correct);
+    setQuizSubmitted(true);
+    if (correct) {
+      showSuccess("Correct! You've mastered this concept.");
+    } else {
+      showError("Not quite. Review the explanation and try again.");
+    }
   };
 
   const activeLesson = lessons.find(l => l.id === currentLessonId);
@@ -763,7 +826,7 @@ const MechanoLessons = ({ activeSubTab = 'lessons' }: MechanoLessonsProps) => {
       return {
         title: `Unconscious Ligament Protocol: ${sandboxJoint}`,
         pathway: "Spinocerebellar Tract -> Unconscious Cerebellum",
-        stimulus: `Gently stretch the priority ligament of the ${sandboxJoint} joint.`,
+        text: `Gently stretch the priority ligament of the ${sandboxJoint} joint.`,
         correction: "Hold GV16 (base of skull) while maintaining the stretch. Tap the cranium or apply a tuning fork for 3-5 seconds.",
         tip: "Ligaments are passive sensors. Always use light, gentle stretch. Never force a joint into pain."
       };
@@ -771,7 +834,7 @@ const MechanoLessons = ({ activeSubTab = 'lessons' }: MechanoLessonsProps) => {
       return {
         title: `Conscious Tendon Protocol: ${sandboxJoint} ${sandboxAction}`,
         pathway: "DCML Pathway -> Contralateral S1 Sensory Cortex",
-        stimulus: `Place the ${sandboxJoint} joint into the restricted action (${sandboxAction}).`,
+        text: `Place the ${sandboxJoint} joint into the restricted action (${sandboxAction}).`,
         correction: `Hold the contralateral (opposite side) S1 brain zone. Have the client perform a 30-40% isometric contraction in the direction of ${sandboxAction} for 60 seconds with nasal breathing.`,
         tip: "Tendons monitor active tension. Keep the effort light (30-40%) and completely pain-free."
       };
@@ -893,7 +956,12 @@ const MechanoLessons = ({ activeSubTab = 'lessons' }: MechanoLessonsProps) => {
                       </CardHeader>
                       <CardContent className="p-6 pt-0">
                         <Button 
-                          onClick={() => setCurrentLessonId(lesson.id)}
+                          onClick={() => {
+                            setCurrentLessonId(lesson.id);
+                            setSelectedQuizAnswer(null);
+                            setQuizSubmitted(false);
+                            setQuizIsCorrect(false);
+                          }}
                           className="w-full bg-slate-900 hover:bg-slate-800 h-10 rounded-xl font-bold text-xs uppercase tracking-wider shadow-sm transition-all"
                         >
                           Start Lesson <PlayCircle size={14} className="ml-1.5" />
@@ -934,6 +1002,72 @@ const MechanoLessons = ({ activeSubTab = 'lessons' }: MechanoLessonsProps) => {
               <CardContent className="p-6 space-y-6">
                 {activeLesson?.content}
 
+                {/* Check Your Understanding Mini-Quiz */}
+                {activeLesson && (
+                  <div className="mt-8 p-6 bg-slate-50 rounded-2xl border border-slate-200 space-y-4">
+                    <h4 className="text-sm font-black uppercase tracking-widest text-slate-500 flex items-center gap-2">
+                      <HelpCircle size={16} className="text-indigo-600" /> Check Your Understanding
+                    </h4>
+                    <p className="text-sm font-bold text-slate-900">{activeLesson.quiz.question}</p>
+                    
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                      {activeLesson.quiz.options.map((option) => {
+                        const isSelected = selectedQuizAnswer === option;
+                        const isCorrectAnswer = option === activeLesson.quiz.correctAnswer;
+                        
+                        return (
+                          <button
+                            key={option}
+                            type="button"
+                            disabled={quizSubmitted}
+                            onClick={() => setSelectedQuizAnswer(option)}
+                            className={cn(
+                              "p-4 rounded-xl border-2 text-left transition-all font-bold text-xs flex items-center justify-between",
+                              quizSubmitted
+                                ? isCorrectAnswer
+                                  ? "bg-emerald-50 border-emerald-500 text-emerald-700"
+                                  : isSelected
+                                    ? "bg-rose-50 border-rose-500 text-rose-700"
+                                    : "bg-slate-50 border-slate-100 text-slate-400"
+                                : isSelected
+                                  ? "bg-indigo-50 border-indigo-600 text-indigo-900"
+                                  : "bg-white border-slate-100 hover:border-indigo-200 text-slate-600"
+                            )}
+                          >
+                            <span>{option}</span>
+                            {quizSubmitted && isCorrectAnswer && <CheckCircle2 size={14} className="text-emerald-500 shrink-0" />}
+                            {quizSubmitted && isSelected && !isCorrectAnswer && <XCircle size={14} className="text-rose-500 shrink-0" />}
+                          </button>
+                        );
+                      })}
+                    </div>
+
+                    {quizSubmitted && (
+                      <div className="p-4 bg-white rounded-xl border border-slate-200 space-y-2 animate-in fade-in duration-300">
+                        <p className={cn(
+                          "text-xs font-black uppercase tracking-widest",
+                          quizIsCorrect ? "text-emerald-600" : "text-rose-600"
+                        )}>
+                          {quizIsCorrect ? "Correct!" : "Incorrect"}
+                        </p>
+                        <p className="text-xs text-slate-600 leading-relaxed font-medium">
+                          {activeLesson.quiz.explanation}
+                        </p>
+                      </div>
+                    )}
+
+                    {!quizSubmitted && (
+                      <Button 
+                        onClick={handleQuizSubmit}
+                        disabled={!selectedQuizAnswer}
+                        className="bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl h-10 px-6 font-bold text-xs uppercase tracking-wider"
+                      >
+                        Submit Answer
+                      </Button>
+                    )}
+                  </div>
+                )}
+
                 <div className="pt-4 border-t border-slate-200 flex justify-between items-center">
                   <Button 
                     variant="ghost" 
@@ -944,7 +1078,11 @@ const MechanoLessons = ({ activeSubTab = 'lessons' }: MechanoLessonsProps) => {
                   </Button>
                   <Button 
                     onClick={() => handleCompleteLesson(activeLesson!.id)}
-                    className="bg-slate-900 hover:bg-slate-800 h-10 px-6 rounded-xl font-bold text-xs uppercase tracking-wider shadow-sm"
+                    disabled={!quizIsCorrect}
+                    className={cn(
+                      "h-10 px-6 rounded-xl font-bold text-xs uppercase tracking-wider shadow-sm transition-all",
+                      quizIsCorrect ? "bg-slate-900 hover:bg-slate-800 text-white" : "bg-slate-200 text-slate-400 cursor-not-allowed"
+                    )}
                   >
                     Complete Lesson & Build Confidence <CheckCircle2 size={14} className="ml-1.5" />
                   </Button>
@@ -1458,7 +1596,7 @@ const MechanoLessons = ({ activeSubTab = 'lessons' }: MechanoLessonsProps) => {
                 <CardContent className="p-6 space-y-5">
                   <div className="p-4 bg-white/5 rounded-xl border border-white/10 space-y-1">
                     <p className="text-[9px] font-bold text-slate-400 uppercase tracking-wider">Step 1: Stimulate (Find the Threat)</p>
-                    <p className="text-xs font-bold text-white leading-relaxed">{sandboxProtocol.stimulus}</p>
+                    <p className="text-xs font-bold text-white leading-relaxed">{sandboxProtocol.text}</p>
                   </div>
 
                   <div className="p-4 bg-white/5 rounded-xl border border-white/10 space-y-1">
@@ -1608,13 +1746,6 @@ const MechanoLessons = ({ activeSubTab = 'lessons' }: MechanoLessonsProps) => {
       )}
     </div>
   );
-};
-
-const jointToCategoryMap: Record<string, string> = {
-  "Hip": "hip_shoulder", "Shoulder (GH Joint)": "hip_shoulder", "Scapula": "hip_shoulder",
-  "Knee": "knee_elbow", "Elbow": "knee_elbow",
-  "Foot/Ankle": "ankle_wrist", "Wrist": "ankle_wrist", "Hand/Fingers": "ankle_wrist",
-  "Cranium": "spinal", "Jaw": "spinal", "Cervical Spine": "spinal", "Thoracic Spine": "spinal", "Lumbar Spine": "spinal", "Pelvis": "spinal", "Sacrum": "spinal"
 };
 
 export default MechanoLessons;

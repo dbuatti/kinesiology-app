@@ -64,6 +64,7 @@ import CalendarView from "@/components/crm/CalendarView";
 import QuickAssessmentModal from "@/components/crm/QuickAssessmentModal";
 import { generateSessionSummary } from "@/utils/summary-generator";
 import { usePrivacyMode } from "@/hooks/use-privacy-mode";
+import EmptyState from "@/components/shared/EmptyState";
 
 interface AppointmentWithClient extends Appointment {
   clients: { name: string; id: string; latest_bolt?: number | null };
@@ -589,16 +590,13 @@ const AppointmentsPage = () => {
           ))}
 
           {filteredAppointments.length === 0 && (
-            <div className="text-center py-32 bg-muted/30 rounded-[3rem] border-2 border-dashed border-border">
-              <div className="w-20 h-20 bg-card rounded-3xl flex items-center justify-center mb-6 shadow-xl">
-                <CalendarIcon className="text-muted-foreground" size={40} />
-              </div>
-              <p className="text-foreground font-black text-xl">No appointments found</p>
-              <p className="text-muted-foreground mt-2 mb-8 font-medium">Try adjusting your search or schedule a new session.</p>
-              <Button variant="outline" className="h-12 px-8 border-border hover:bg-card rounded-2xl font-bold" onClick={() => { setSearch(""); setStatusFilter("all"); setOpen(true); }}>
-                Schedule First Session
-              </Button>
-            </div>
+            <EmptyState 
+              icon={CalendarIcon}
+              title="No appointments found"
+              description="Try adjusting your search or schedule a new session."
+              actionLabel="Schedule First Session"
+              onAction={() => { setSearch(""); setStatusFilter("all"); setOpen(true); }}
+            />
           )}
 
           {appointments.length < totalCount && (

@@ -51,7 +51,7 @@ const HubSwitcher = () => {
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
         <button className={cn(
-          "flex items-center gap-3 px-4 py-2 rounded-2xl border transition-all duration-500 hover:shadow-lg group",
+          "flex items-center gap-2 sm:gap-3 px-2.5 py-2 sm:px-4 rounded-2xl border transition-all duration-500 hover:shadow-lg group",
           activeMode.color
         )}>
           <div className="relative">
@@ -60,13 +60,14 @@ const HubSwitcher = () => {
               <div className="w-1 h-1 bg-current rounded-full animate-pulse" />
             </div>
           </div>
-          <div className="flex flex-col items-start">
+          <div className="hidden sm:flex flex-col items-start">
             <span className="text-[10px] font-black uppercase tracking-[0.2em] leading-none mb-0.5">Active Focus</span>
             <div className="flex items-center gap-1.5">
               <span className="text-xs font-bold tracking-tight">{activeMode.label}</span>
               <ChevronDown size={12} className="opacity-50 group-hover:translate-y-0.5 transition-transform" />
             </div>
           </div>
+          <ChevronDown size={14} className="sm:hidden opacity-50" />
         </button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="start" className="w-72 p-2 rounded-[2rem] border-none shadow-3xl bg-white/90 dark:bg-slate-900/90 backdrop-blur-xl z-[110]">

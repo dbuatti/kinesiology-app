@@ -150,7 +150,7 @@ const SessionDocumentView = ({
   return (
     <div className="bg-white min-h-screen text-black font-sans pb-40 print:p-0 print:m-0">
       {/* Document Controls */}
-      <div className="sticky top-[144px] z-50 bg-white/95 backdrop-blur-md border-b-2 border-black px-6 py-3 flex items-center justify-between print:hidden">
+      <div className="sticky top-0 z-50 bg-white/95 backdrop-blur-md border-b-2 border-black px-6 py-3 flex items-center justify-between print:hidden">
         <div className="flex items-center gap-6">
           <Button variant="ghost" size="sm" onClick={onClose} className="rounded-none h-9 px-4 font-black text-[10px] uppercase tracking-widest border border-black hover:bg-black hover:text-white transition-all">
             <ArrowLeft size={14} className="mr-2" /> Exit

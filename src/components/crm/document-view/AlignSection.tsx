@@ -11,14 +11,25 @@ interface AlignSectionProps {
   onToggle: (category: string, name: string, nextStatus: string, side?: 'L' | 'R') => void;
 }
 
-const SubHeader = ({ children }: { children: React.ReactNode }) => (
-  <h3 className="text-[11px] font-black uppercase tracking-[0.2em] text-slate-400 mb-4 mt-10 border-l-4 border-slate-200 pl-3">{children}</h3>
+const SubHeader = ({ id, children }: { id?: string; children: React.ReactNode }) => (
+  <h3 id={id} className="text-[11px] font-black uppercase tracking-[0.2em] text-slate-400 mb-4 mt-10 border-l-4 border-slate-200 pl-3 scroll-mt-24">{children}</h3>
 );
 
 const AlignSection = ({ pattern, onToggle }: AlignSectionProps) => {
+  // Helper to map group name to ID
+  const getGroupId = (groupName: string) => {
+    if (groupName.includes('Intrinsic')) return 'a-m-intrinsic';
+    if (groupName.includes('Upper')) return 'a-m-upper';
+    if (groupName.includes('Arm')) return 'a-m-arm';
+    if (groupName.includes('Head')) return 'a-m-head';
+    if (groupName.includes('Lower Body')) return 'a-m-lower';
+    if (groupName.includes('Lower Leg')) return 'a-m-foot';
+    return '';
+  };
+
   return (
     <div className="space-y-16">
-      <div>
+      <div id="a-reflexes" className="scroll-mt-24">
         <SubHeader>Primitive Reflexes</SubHeader>
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-x-4 gap-y-1">
           {PRIMITIVE_REFLEXES.map(reflex => (
@@ -36,7 +47,7 @@ const AlignSection = ({ pattern, onToggle }: AlignSectionProps) => {
         </div>
       </div>
 
-      <div>
+      <div id="a-nerves" className="scroll-mt-24">
         <SubHeader>Cranial Nerves</SubHeader>
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-x-4 gap-y-1">
           {CRANIAL_NERVES.map(nerve => {
@@ -57,11 +68,11 @@ const AlignSection = ({ pattern, onToggle }: AlignSectionProps) => {
         </div>
       </div>
 
-      <div>
+      <div id="a-muscles" className="scroll-mt-24">
         <SubHeader>Muscle Assessment</SubHeader>
         <div className="space-y-12">
           {Object.entries(MUSCLE_GROUPS).map(([group, muscles]) => (
-            <div key={group} className="space-y-3">
+            <div key={group} id={getGroupId(group)} className="space-y-3 scroll-mt-24">
               <h4 className="text-[9px] font-black uppercase text-slate-400 border-l-2 border-slate-200 pl-2 tracking-widest">{group}</h4>
               <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-x-4 gap-y-0.5">
                 {muscles.map(muscle => (

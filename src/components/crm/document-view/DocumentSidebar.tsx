@@ -18,7 +18,9 @@ import {
   Eye,
   Droplets,
   ShieldAlert,
-  Layers
+  Layers,
+  Baby,
+  Dumbbell
 } from 'lucide-react';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 
@@ -33,6 +35,17 @@ export const OUTLINE_ITEMS = [
   { id: "p-sec", label: "P — Preliminary", icon: Compass },
   { id: "e-sec", label: "E — Ease System", icon: ShieldCheck },
   { id: "a-sec", label: "A — Align Hierarchy", icon: List },
+  // Align Sub-sections
+  { id: "a-reflexes", label: "  ├─ Primitive Reflexes", icon: Baby },
+  { id: "a-nerves", label: "  ├─ Cranial Nerves", icon: Zap },
+  { id: "a-muscles", label: "  ├─ Muscle Assessment", icon: Dumbbell },
+  // Muscle Sub-sub-sections
+  { id: "a-m-intrinsic", label: "  │  ├─ Intrinsic Stabilisation", icon: Activity },
+  { id: "a-m-upper", label: "  │  ├─ Upper Body & Shoulder", icon: Activity },
+  { id: "a-m-arm", label: "  │  ├─ Arm & Hand", icon: Activity },
+  { id: "a-m-head", label: "  │  ├─ Head & Neck", icon: Activity },
+  { id: "a-m-lower", label: "  │  ├─ Lower Body", icon: Activity },
+  { id: "a-m-foot", label: "  │  └─ Lower Leg & Foot", icon: Activity },
   { id: "c-sec", label: "C — Correct (Wizard)", icon: Zap },
   // Afferent Sub-sections
   { id: "c-afferent", label: "  ├─ Afferent (Bottom-Up)", icon: ArrowDownCircle },

@@ -81,6 +81,37 @@ const getCanonicalName = (name: string): string => {
   return clean;
 };
 
+/**
+ * Extracts the specific correction line for a given finding name from the appointment's modes_balances or notes.
+ */
+const findSpecificCorrection = (findingName: string, modesBalances: string | null, notes: string | null): string | null => {
+  const cleanFinding = findingName.toLowerCase().trim();
+  
+  // Also try matching without the Roman numeral prefix if it's a CN, e.g., "olfactory (l)"
+  const parts = cleanFinding.split(':');
+  const altFinding = parts.length > 1 ? parts[1].trim() : null;
+
+  if (modesBalances) {
+    const lines = modesBalances.split('\n').map(l => l.trim()).filter(Boolean);
+    const match = lines.find(line => {
+      const cleanLine = line.toLowerCase();
+      return cleanLine.includes(cleanFinding) || (altFinding && cleanLine.includes(altFinding));
+    });
+    if (match) return match;
+  }
+  
+  if (notes) {
+    const lines = notes.split('\n').map(l => l.trim()).filter(Boolean);
+    const match = lines.find(line => {
+      const cleanLine = line.toLowerCase();
+      return cleanLine.includes(cleanFinding) || (altFinding && cleanLine.includes(altFinding));
+    });
+    if (match) return match;
+  }
+  
+  return null;
+};
+
 export function processNeurologicalHistory(appointments: any[]): FindingHistory[] {
   const findingsMap: Record<string, FindingHistory> = {};
   
@@ -143,35 +174,10 @@ export function processNeurologicalHistory(appointments: any[]): FindingHistory[
           date: dateStr,
           appointmentId: app.id,
           status: item.status,
-          correction: app.modes_balances || app.notes || null
+          correction: findSpecificCorrection(displayName, app.modes_balances, app.notes)
         });
       });
     });
-  });
-
-  // Post-process findingsMap to merge non-lateralized entries if lateralized ones exist for the same base name
-  const keys = Object.keys(findingsMap);
-  keys.forEach(key => {
-    const finding = findingsMap[key];
-    // If this is a non-lateralized finding (doesn't end with (L) or (R))
-    if (!finding.name.endsWith('(L)') && !finding.name.endsWith('(R)')) {
-      const categoryKey = key.split('-')[0];
-      const hasLeft = keys.includes(`${categoryKey}-${finding.name} (L)`);
-      const hasRight = keys.includes(`${categoryKey}-${finding.name} (R)`);
-      
-      if (hasLeft || hasRight) {
-        // Merge history of non-lateralized entry into the lateralized ones
-        if (hasLeft) {
-          findingsMap[`${categoryKey}-${finding.name} (L)`].history.push(...finding.history);
-          findingsMap[`${categoryKey}-${finding.name} (L)`].history.sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
-        }
-        if (hasRight) {
-          findingsMap[`${categoryKey}-${finding.name} (R)`].history.push(...finding.history);
-          findingsMap[`${categoryKey}-${finding.name} (R)`].history.sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
-        }
-        delete findingsMap[key];
-      }
-    }
   });
 
   // Calculate resolutions

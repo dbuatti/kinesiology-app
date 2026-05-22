@@ -90,7 +90,7 @@ export function useAppointment(id: string | undefined) {
   }, [id, appointment]);
 
   const updatePriorityPattern = useCallback(async (category: string, itemName: string, status: string | null, side?: 'L' | 'R') => {
-    if (!id || !appointment) return;
+    if (!id || !appointment) return null;
 
     // Always work off the latest ref to avoid overwriting parallel updates
     const currentPattern = { ...latestPatternRef.current };
@@ -101,7 +101,7 @@ export function useAppointment(id: string | undefined) {
 
     const finalItemName = side ? `${itemName} (${side})` : itemName;
 
-    if (status === null || status === 'Clear') {
+    if (status === null) {
       delete currentPattern[category][finalItemName];
     } else {
       currentPattern[category][finalItemName] = status;
@@ -123,6 +123,8 @@ export function useAppointment(id: string | undefined) {
     } catch (e) {
       console.error("Failed to persist pattern update:", e);
     }
+
+    return currentPattern; // Return the updated pattern object synchronously to prevent race conditions
   }, [id, appointment]);
 
   useEffect(() => {

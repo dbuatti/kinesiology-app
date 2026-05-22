@@ -9,7 +9,7 @@ import { safeParse } from "@/utils/safe-json";
 export function usePrimitiveReflexTests(
   appointmentId: string | undefined,
   priorityPattern?: string | null,
-  updatePriorityPattern?: (category: string, itemName: string, status: 'Clear' | 'Inhibited' | null, side?: 'L' | 'R') => Promise<void>
+  updatePriorityPattern?: (category: string, itemName: string, status: string | null, side?: 'L' | 'R') => Promise<any>
 ) {
   const [tests, setTests] = useState<PrimitiveReflexTest[]>([]);
   const [loading, setLoading] = useState(true);
@@ -40,18 +40,20 @@ export function usePrimitiveReflexTests(
       const { data: userData } = await supabase.auth.getUser();
       if (!userData.user) throw new Error("User not authenticated");
 
+      let latestPattern = null;
+
       // Handle inhibition sync to priority_pattern
       if (updates.is_inhibited !== undefined && updatePriorityPattern) {
         // Use the display name for the pattern key, fallback to ID
         const patternKey = reflexName || reflexId;
-        await updatePriorityPattern('primitiveReflexes', patternKey, updates.is_inhibited ? 'Inhibited' : 'Clear', side);
+        latestPattern = await updatePriorityPattern('primitiveReflexes', patternKey, updates.is_inhibited ? 'Inhibited' : 'Clear', side);
         
-        // Determine if the reflex is still inhibited globally (either L or R)
-        if (side) {
+        // Determine if the reflex is still inhibited globally (either L or R) using the latest pattern
+        if (side && latestPattern) {
           const otherSide = side === 'L' ? 'R' : 'L';
-          const pattern = safeParse(priorityPattern, {} as any);
-          const reflexPattern = pattern.primitiveReflexes || {};
-          const isOtherSideInhibited = reflexPattern[`${patternKey} (${otherSide})`] === 'Inhibited';
+          const reflexPattern = latestPattern.primitiveReflexes || {};
+          const otherSideStatus = reflexPattern[`${patternKey} (${otherSide})`] || '';
+          const isOtherSideInhibited = otherSideStatus.startsWith('Inhibited');
           
           if (!updates.is_inhibited && isOtherSideInhibited) {
             updates.is_inhibited = true;

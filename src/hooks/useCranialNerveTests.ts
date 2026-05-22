@@ -10,7 +10,7 @@ import { CRANIAL_NERVES } from "@/data/cranial-nerve-data";
 export function useCranialNerveTests(
   appointmentId: string | undefined,
   priorityPattern?: string | null,
-  updatePriorityPattern?: (category: string, itemName: string, status: 'Clear' | 'Inhibited' | null, side?: 'L' | 'R') => Promise<void>
+  updatePriorityPattern?: (category: string, itemName: string, status: string | null, side?: 'L' | 'R') => Promise<any>
 ) {
   const [tests, setTests] = useState<CranialNerveTest[]>([]);
   const [loading, setLoading] = useState(true);
@@ -41,20 +41,23 @@ export function useCranialNerveTests(
       const { data: userData } = await supabase.auth.getUser();
       if (!userData.user) throw new Error("User not authenticated");
 
+      let latestPattern = null;
+
       // Handle inhibition sync to priority_pattern
       if (updates.is_inhibited !== undefined && updatePriorityPattern) {
         // Find the full name to match PathwayAssessment (e.g. "CN I: Olfactory")
         const nerveData = CRANIAL_NERVES.find(n => n.id.toString() === nerveId);
         const nerveName = nerveData ? `${nerveData.name}: ${nerveData.latinName}` : `CN ${nerveId}`;
         
-        await updatePriorityPattern('cranialNerves', nerveName, updates.is_inhibited ? 'Inhibited' : 'Clear', side);
+        // Wait for the priority pattern to update and get the absolute latest pattern
+        latestPattern = await updatePriorityPattern('cranialNerves', nerveName, updates.is_inhibited ? 'Inhibited' : 'Clear', side);
         
-        // Determine if the nerve is still inhibited globally (either L or R)
-        if (side) {
+        // Determine if the nerve is still inhibited globally (either L or R) using the latest pattern
+        if (side && latestPattern) {
           const otherSide = side === 'L' ? 'R' : 'L';
-          const pattern = safeParse(priorityPattern, {} as any);
-          const nervePattern = pattern.cranialNerves || {};
-          const isOtherSideInhibited = nervePattern[`${nerveName} (${otherSide})`] === 'Inhibited';
+          const nervePattern = latestPattern.cranialNerves || {};
+          const otherSideStatus = nervePattern[`${nerveName} (${otherSide})`] || '';
+          const isOtherSideInhibited = otherSideStatus.startsWith('Inhibited');
           
           if (!updates.is_inhibited && isOtherSideInhibited) {
             updates.is_inhibited = true;

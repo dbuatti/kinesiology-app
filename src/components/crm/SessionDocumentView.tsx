@@ -548,18 +548,6 @@ const SessionDocumentView = ({
           </div>
 
           <div className="flex items-center gap-6">
-            {/* Full Screen Toggle */}
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={toggleFullScreen}
-              className="h-9 px-3 rounded-xl text-[10px] font-black uppercase tracking-widest gap-1.5 text-slate-500 hover:bg-slate-100"
-              title="Toggle Full Screen (Alt + F)"
-            >
-              {isFullScreen ? <Minimize2 size={14} /> : <Maximize2 size={14} />}
-              <span>{isFullScreen ? "Exit Full" : "Full Screen"}</span>
-            </Button>
-
             {/* Live Current Time Display */}
             <div className="text-right hidden sm:block">
               <p className="text-[8px] font-black text-slate-400 uppercase tracking-widest">Current Time</p>
@@ -579,6 +567,17 @@ const SessionDocumentView = ({
             )}
             <Button variant="outline" size="sm" onClick={() => window.print()} className="rounded-none border-black font-black text-[10px] uppercase tracking-widest h-9 px-4 hover:bg-slate-50">
               <Printer size={14} className="mr-2" /> Print
+            </Button>
+
+            {/* Full Screen Toggle (Arrows Only) */}
+            <Button
+              variant="outline"
+              size="icon"
+              onClick={toggleFullScreen}
+              className="h-9 w-9 rounded-none border-black text-black hover:bg-slate-50"
+              title="Toggle Full Screen (Alt + F)"
+            >
+              {isFullScreen ? <Minimize2 size={16} /> : <Maximize2 size={16} />}
             </Button>
           </div>
         </div>

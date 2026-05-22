@@ -196,7 +196,7 @@ const SessionTimer = ({ sessionId, appointmentDate, status, clientName, currentP
                 <span className="text-[10px] font-black uppercase tracking-[0.2em]">Session Complete</span>
               </div>
             ) : isOvertime ? (
-              <div className="flex items-center gap-2 text-rose-500 animate-pulse">
+              <div className="flex items-center gap-2 text-rose-500">
                 <AlertCircle size={14} />
                 <span className="text-[10px] font-black uppercase tracking-[0.2em]">Time Elapsed</span>
               </div>
@@ -218,7 +218,7 @@ const SessionTimer = ({ sessionId, appointmentDate, status, clientName, currentP
           {!isFinished && (
             <div className={cn(
               "text-xs font-black tabular-nums font-mono shrink-0",
-              isOvertime ? "text-rose-400 animate-pulse" : "text-emerald-400"
+              isOvertime ? "text-rose-400" : "text-emerald-400"
             )}>
               {isOvertime ? `+${formatOvertime(overtimeSeconds)}` : timeRemainingInSession}
             </div>

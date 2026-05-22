@@ -41,7 +41,7 @@ const DocumentRightSidebar = ({
               className={cn(
                 "w-12 h-12 rounded-full border-2 flex items-center justify-center text-xs font-black transition-all duration-300 shadow-md",
                 isActive
-                  ? "bg-indigo-600 border-indigo-600 text-white animate-pulse scale-110"
+                  ? "bg-indigo-600 border-indigo-600 text-white scale-110"
                   : "bg-white border-black text-black hover:bg-black hover:text-white hover:scale-105"
               )}
               title={isActive ? "Click to stop timer" : `Start ${preset.label} timer`}

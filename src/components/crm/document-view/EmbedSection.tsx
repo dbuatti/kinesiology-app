@@ -32,6 +32,7 @@ interface EmbedSectionProps {
   saveField: (field: string, value: any) => Promise<void>;
   updatePriorityPattern: (category: string, itemName: string, status: 'Clear' | 'Inhibited' | null, side?: 'L' | 'R') => Promise<void>;
   onTogglePatternItem: (category: string, name: string, nextStatus: string, side?: 'L' | 'R') => void;
+  onUpdate?: () => void;
 }
 
 interface RecheckItem {
@@ -52,7 +53,7 @@ const getCanonicalName = (name: string): string => {
   return name;
 };
 
-const EmbedSection = ({ appointment, saveField, updatePriorityPattern, onTogglePatternItem }: EmbedSectionProps) => {
+const EmbedSection = ({ appointment, saveField, updatePriorityPattern, onTogglePatternItem, onUpdate }: EmbedSectionProps) => {
   const [muscleTests, setMuscleTests] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [clearingId, setClearingId] = useState<string | null>(null);
@@ -181,7 +182,7 @@ const EmbedSection = ({ appointment, saveField, updatePriorityPattern, onToggleP
         await fetchMuscleTests();
       }
       showSuccess(`${item.name} marked as Clear.`);
-      onUpdate();
+      onUpdate?.();
     } catch (err) {
       showError("Failed to clear item.");
     } finally {

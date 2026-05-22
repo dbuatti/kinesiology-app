@@ -345,11 +345,12 @@ const SessionDocumentView = ({
           {/* E - EMBED */}
           <section>
             <SectionHeader id="e2-sec" title="E — Embed" subtitle="Re-Assessment & Homework" />
-            <EmbedSection 
-              appointment={appointment} 
-              saveField={saveField} 
+            <EmbedSection
+              appointment={appointment}
+              saveField={saveField}
               updatePriorityPattern={updatePriorityPattern}
               onTogglePatternItem={handleTogglePatternItem}
+              onUpdate={onUpdate}
             />
           </section>
 

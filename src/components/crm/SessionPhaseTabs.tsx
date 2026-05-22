@@ -19,8 +19,8 @@ import { Nuclei } from '@/utils/brainstem-logic';
 import BaselineTab from './session-tabs/BaselineTab';
 import SympatheticTab from './session-tabs/SympatheticTab';
 import EmbedTab from './session-tabs/EmbedTab';
-import CorrectTab from './session-tabs/CorrectTab';
 import PathwayAssessment from './PathwayAssessment';
+import PathwayLogicWizard from './PathwayLogicWizard';
 
 const TABS = [
   { id: 'baseline', label: 'P', fullLabel: 'Preliminary', icon: Activity, activeBg: 'bg-indigo-600' },
@@ -87,9 +87,6 @@ const SessionPhaseTabs = ({
                     : "border-transparent text-slate-400 hover:text-slate-600"
                 )}
               >
-                {isActive && (
-                  <div className="absolute left-0 w-1 h-8 bg-white rounded-r-full" />
-                )}
                 <div className={cn(
                   "w-12 h-12 rounded-2xl flex items-center justify-center transition-all duration-500 shadow-sm",
                   isActive ? cn("text-white shadow-xl", tab.activeBg) : 
@@ -145,11 +142,12 @@ const SessionPhaseTabs = ({
 
         <TabsContent value="calibration" className="focus-visible:ring-0">
           <div ref={wizardRef}>
-            <CorrectTab 
-              appointment={appointment}
-              onUpdate={onUpdate}
-              saveField={saveField}
-              updatePriorityPattern={updatePriorityPattern}
+            <PathwayLogicWizard
+              onSave={(summary) => saveField('modes_balances', summary)}
+              onClearItem={onClearItem}
+              priorityPattern={appointment.priority_pattern}
+              initialFinding={preselectedFinding}
+              appointmentId={appointment.id}
             />
           </div>
         </TabsContent>

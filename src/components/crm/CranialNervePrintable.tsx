@@ -72,7 +72,7 @@ const CranialNervePrintable = () => {
           )}
           
           {images?.secondary && (
-            <div className="absolute bottom-0.5 right-0.5 w-1/4 aspect-square border border-white shadow-sm overflow-hidden bg-white">
+            <div className="absolute bottom-0.5 right-0.5 w-[22%] aspect-square border border-white shadow-sm overflow-hidden bg-white">
               <img src={images.secondary} alt="Inset" className="w-full h-full object-cover" />
             </div>
           )}
@@ -87,7 +87,7 @@ const CranialNervePrintable = () => {
   };
 
   return (
-    <div className="bg-white text-black p-6 max-w-[297mm] mx-auto font-sans print:p-0 print:m-0">
+    <div className="bg-white text-black p-4 sm:p-6 max-w-[297mm] mx-auto font-sans print:p-0 print:m-0">
       {/* Header */}
       <div className="border-b-2 border-black pb-1.5 mb-4 flex justify-between items-end">
         <div className="space-y-0.5">
@@ -100,7 +100,7 @@ const CranialNervePrintable = () => {
       </div>
 
       {/* 4x3 Grid for 12 Nerves */}
-      <div className="grid grid-cols-4 gap-2">
+      <div className="grid gap-2 grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 print:grid-cols-4">
         {CRANIAL_NERVES.map(n => (
           <NerveCard key={n.id} nerve={n} />
         ))}
@@ -108,7 +108,7 @@ const CranialNervePrintable = () => {
 
       {/* Footer */}
       <div className="mt-4 pt-2 border-t border-slate-200 flex justify-between items-center">
-        <div className="flex gap-6 text-[7px] font-black uppercase tracking-widest text-slate-400">
+        <div className="flex gap-6 text-[8px] font-black uppercase tracking-widest text-slate-400">
           <div className="flex items-center gap-1.5">
             <div className="w-1.5 h-1.5 rounded-full bg-purple-600" /> Cortex
           </div>

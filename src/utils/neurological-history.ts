@@ -4,6 +4,7 @@ import { format } from "date-fns";
 import { PRIMITIVE_REFLEXES } from "@/data/primitive-reflex-data";
 import { BRAIN_REFLEX_POINTS } from "@/data/brain-reflex-data";
 import { CRANIAL_NERVES } from "@/data/cranial-nerve-data";
+import { MUSCLE_GROUPS, MIDLINE_MUSCLES } from "@/data/muscle-data";
 import { safeParse } from "./safe-json";
 
 export interface FindingHistory {
@@ -82,6 +83,34 @@ const getCanonicalName = (name: string): string => {
 };
 
 /**
+ * Determines if a specific finding name is lateralized.
+ */
+const isNameLateralized = (name: string): boolean => {
+  const cleanName = name.replace(/\s*\([LR]\)/gi, '').replace(/\s*\(Bilateral\)/gi, '').trim();
+  const lowerClean = cleanName.toLowerCase();
+  
+  // Check Cranial Nerves
+  const nerve = CRANIAL_NERVES.find(n => 
+    n.name.toLowerCase() === lowerClean || 
+    n.latinName.toLowerCase() === lowerClean ||
+    `${n.name}: ${n.latinName}`.toLowerCase() === lowerClean
+  );
+  if (nerve) return !!nerve.isLateralized;
+
+  // Check Primitive Reflexes
+  const reflex = PRIMITIVE_REFLEXES.find(r => r.name.toLowerCase() === lowerClean);
+  if (reflex) return !!reflex.isLateralized;
+
+  // Check Muscles (all except midline)
+  const isMidlineMuscle = MIDLINE_MUSCLES.includes(cleanName);
+  const allMuscles = Object.values(MUSCLE_GROUPS).flat();
+  const isMuscle = allMuscles.includes(cleanName);
+  if (isMuscle) return !isMidlineMuscle;
+
+  return false;
+};
+
+/**
  * Extracts the specific correction line for a given finding name from the appointment's modes_balances or notes.
  */
 const findSpecificCorrection = (findingName: string, modesBalances: string | null, notes: string | null): string | null => {
@@ -133,13 +162,18 @@ export function processNeurologicalHistory(appointments: any[]): FindingHistory[
       const sessionItems: { base: string, side: string, status: string }[] = [];
       Object.entries(items).forEach(([key, status]) => {
         const strStatus = status as string;
-        const isCleared = strStatus.endsWith('_Cleared');
-        const baseStatus = strStatus.replace('_Cleared', '');
         
         const sideMatch = key.match(/\(([LR])\)$/);
         const side = sideMatch ? sideMatch[1] : "";
         const base = getCanonicalName(key);
-        sessionItems.push({ base, side, status: strStatus });
+        
+        // If the item is lateralized but logged without a side, split it into both L and R
+        if (side === "" && isNameLateralized(base)) {
+          sessionItems.push({ base, side: 'L', status: strStatus });
+          sessionItems.push({ base, side: 'R', status: strStatus });
+        } else {
+          sessionItems.push({ base, side, status: strStatus });
+        }
       });
 
       // 2. Filter out base items if lateralized ones exist for the same base name

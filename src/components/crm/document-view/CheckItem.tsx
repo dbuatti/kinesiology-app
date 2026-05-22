@@ -15,7 +15,12 @@ interface CheckItemProps {
 
 const CheckItem = ({ category, name, side, pattern, onToggle }: CheckItemProps) => {
   const fullName = side ? `${name} (${side})` : name;
-  const rawStatus = pattern[category]?.[fullName];
+  let rawStatus = pattern[category]?.[fullName];
+
+  // Fallback to non-lateralized status if lateralized is not found
+  if (!rawStatus && side && pattern[category]?.[name]) {
+    rawStatus = pattern[category]?.[name];
+  }
 
   const isMuscle = category === 'muscles';
 

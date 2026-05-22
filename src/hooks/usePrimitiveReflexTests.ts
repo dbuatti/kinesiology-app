@@ -5,6 +5,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { PrimitiveReflexTest } from "@/types/crm";
 import { showError } from "@/utils/toast";
 import { safeParse } from "@/utils/safe-json";
+import { PRIMITIVE_REFLEXES } from "@/data/primitive-reflex-data";
 
 export function usePrimitiveReflexTests(
   appointmentId: string | undefined,
@@ -46,7 +47,15 @@ export function usePrimitiveReflexTests(
       if (updates.is_inhibited !== undefined && updatePriorityPattern) {
         // Use the display name for the pattern key, fallback to ID
         const patternKey = reflexName || reflexId;
-        latestPattern = await updatePriorityPattern('primitiveReflexes', patternKey, updates.is_inhibited ? 'Inhibited' : 'Clear', side);
+        const reflexData = PRIMITIVE_REFLEXES.find(r => r.id === reflexId || r.name === reflexName);
+        const isLat = reflexData?.isLateralized;
+
+        if (isLat && !side) {
+          await updatePriorityPattern('primitiveReflexes', patternKey, updates.is_inhibited ? 'Inhibited' : 'Clear', 'L');
+          latestPattern = await updatePriorityPattern('primitiveReflexes', patternKey, updates.is_inhibited ? 'Inhibited' : 'Clear', 'R');
+        } else {
+          latestPattern = await updatePriorityPattern('primitiveReflexes', patternKey, updates.is_inhibited ? 'Inhibited' : 'Clear', side);
+        }
         
         // Determine if the reflex is still inhibited globally (either L or R) using the latest pattern
         if (side && latestPattern) {

@@ -48,9 +48,15 @@ export function useCranialNerveTests(
         // Find the full name to match PathwayAssessment (e.g. "CN I: Olfactory")
         const nerveData = CRANIAL_NERVES.find(n => n.id.toString() === nerveId);
         const nerveName = nerveData ? `${nerveData.name}: ${nerveData.latinName}` : `CN ${nerveId}`;
+        const isLat = nerveData?.isLateralized;
         
         // Wait for the priority pattern to update and get the absolute latest pattern
-        latestPattern = await updatePriorityPattern('cranialNerves', nerveName, updates.is_inhibited ? 'Inhibited' : 'Clear', side);
+        if (isLat && !side) {
+          await updatePriorityPattern('cranialNerves', nerveName, updates.is_inhibited ? 'Inhibited' : 'Clear', 'L');
+          latestPattern = await updatePriorityPattern('cranialNerves', nerveName, updates.is_inhibited ? 'Inhibited' : 'Clear', 'R');
+        } else {
+          latestPattern = await updatePriorityPattern('cranialNerves', nerveName, updates.is_inhibited ? 'Inhibited' : 'Clear', side);
+        }
         
         // Determine if the nerve is still inhibited globally (either L or R) using the latest pattern
         if (side && latestPattern) {

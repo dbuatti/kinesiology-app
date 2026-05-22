@@ -57,14 +57,24 @@ const ReflexTestItem = ({ reflex, test, statusL, statusR, statusMidline, isLater
     if (isLateralized) {
       await onUpdate(reflex.id, { is_inhibited: false }, 'L', reflex.name);
       await onUpdate(reflex.id, { is_inhibited: false }, 'R', reflex.name);
+      await onUpdate(reflex.id, { 
+        is_inhibited: false, 
+        is_priority: false, 
+        is_primary_priority: false 
+      }, 'L', reflex.name);
+      await onUpdate(reflex.id, { 
+        is_inhibited: false, 
+        is_priority: false, 
+        is_primary_priority: false 
+      }, 'R', reflex.name);
     } else {
       await onUpdate(reflex.id, { is_inhibited: false }, undefined, reflex.name);
+      await onUpdate(reflex.id, { 
+        is_inhibited: false, 
+        is_priority: false, 
+        is_primary_priority: false 
+      }, undefined, reflex.name);
     }
-    await onUpdate(reflex.id, { 
-      is_inhibited: false, 
-      is_priority: false, 
-      is_primary_priority: false 
-    });
   };
 
   const handleBilateralToggle = async (checked: boolean) => {

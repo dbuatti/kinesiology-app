@@ -272,7 +272,7 @@ const AppointmentDetailPage = () => {
           {/* PREMIUM SESSION HEADER */}
           <div className="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-6 bg-white dark:bg-slate-900 p-6 md:p-8 rounded-[2rem] md:rounded-[3rem] border border-slate-100 dark:border-slate-800 shadow-xl shadow-slate-200/50 dark:shadow-none">
             <div className="flex items-start sm:items-center gap-4 md:gap-8 w-full lg:w-auto">
-              <Button variant="ghost" onClick={() => navigate(-1)} className="h-10 w-10 md:h-14 md:w-14 rounded-xl md:rounded-2xl bg-slate-50 dark:bg-slate-800 border border-slate-100 dark:border-slate-700 text-slate-400 hover:text-indigo-600 transition-all shrink-0">
+              <Button variant="ghost" onClick={() => navigate('/schedule?view=list')} className="h-10 w-10 md:h-14 md:w-14 rounded-xl md:rounded-2xl bg-slate-50 dark:bg-slate-800 border border-slate-100 dark:border-slate-700 text-slate-400 hover:text-indigo-600 transition-all shrink-0">
                 <ArrowLeft size={20} className="md:w-6 md:h-6" />
               </Button>
               <div className="space-y-1.5 min-w-0 flex-1">

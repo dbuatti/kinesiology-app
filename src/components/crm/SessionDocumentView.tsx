@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useMemo, useState, useEffect } from 'react';
-import { format } from 'date-fns';
+import { format, isToday, isTomorrow } from 'date-fns';
 import {
   Check,
   FileText,
@@ -25,7 +25,8 @@ import {
   ClipboardCheck,
   ChevronDown,
   ChevronUp,
-  BookOpen
+  BookOpen,
+  Calendar
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Checkbox } from '@/components/ui/checkbox';
@@ -40,6 +41,14 @@ import { Badge } from '@/components/ui/badge';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { supabase } from "@/integrations/supabase/client";
 import { showSuccess, showError } from '@/utils/toast';
+import { useNavigate } from 'react-router-dom';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+  DropdownMenuSeparator,
+} from "@/components/ui/dropdown-menu";
 
 // Modular Sub-components
 import DocumentSidebar, { OUTLINE_ITEMS } from './document-view/DocumentSidebar';
@@ -65,11 +74,16 @@ const SessionDocumentView = ({
   updatePriorityPattern,
   onClose
 }: SessionDocumentViewProps) => {
+  const navigate = useNavigate();
   const [lastSaved, setLastSaved] = useState<Date>(new Date());
   const [openGuides, setOpenGuides] = useState<Record<string, boolean>>({});
   const [activeSection, setActiveSection] = useState<string>("p-sec");
   const [currentMuscleTests, setCurrentMuscleTests] = useState<any[]>([]);
   const [loadingMuscles, setLoadingMuscles] = useState(true);
+  
+  // Navigation Dropdown State
+  const [allAppointments, setAllAppointments] = useState<any[]>([]);
+  const [loadingAppointments, setLoadingAppointments] = useState(true);
 
   const pattern = useMemo(() => safeParse(appointment.priority_pattern, {} as any), [appointment.priority_pattern]);
 
@@ -93,8 +107,38 @@ const SessionDocumentView = ({
     }
   };
 
+  const fetchAllAppointments = async () => {
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
+
+      const { data, error } = await supabase
+        .from('appointments')
+        .select(`
+          id,
+          date,
+          status,
+          tag,
+          clients (
+            id,
+            name
+          )
+        `)
+        .eq('user_id', user.id)
+        .order('date', { ascending: true });
+
+      if (error) throw error;
+      setAllAppointments(data || []);
+    } catch (err) {
+      console.error("Error fetching appointments for switcher:", err);
+    } finally {
+      setLoadingAppointments(false);
+    }
+  };
+
   useEffect(() => {
     fetchCurrentMuscleTests();
+    fetchAllAppointments();
   }, [appointment.id]);
 
   const metadata = useMemo(() => {
@@ -249,6 +293,34 @@ const SessionDocumentView = ({
     }
   };
 
+  // Group appointments for the dropdown switcher
+  const groupedAppointments = useMemo(() => {
+    const todayList: any[] = [];
+    const upcomingList: any[] = [];
+    const pastList: any[] = [];
+
+    allAppointments.forEach(app => {
+      const appDate = new Date(app.date);
+      if (isToday(appDate)) {
+        todayList.push(app);
+      } else if (appDate > new Date()) {
+        upcomingList.push(app);
+      } else {
+        pastList.push(app);
+      }
+    });
+
+    return {
+      today: todayList,
+      upcoming: upcomingList,
+      past: pastList.reverse().slice(0, 10) // Show last 10 past sessions
+    };
+  }, [allAppointments]);
+
+  const handleSwitchAppointment = (newId: string) => {
+    navigate(`/appointments/${newId}?view=document`);
+  };
+
   return (
     <div className="bg-white min-h-screen text-black font-sans pb-40 print:p-0 print:m-0">
       {/* Document Controls */}
@@ -259,7 +331,104 @@ const SessionDocumentView = ({
           </Button>
           <div className="flex flex-col">
             <span className="text-[10px] font-black uppercase tracking-widest text-slate-400">Clinical Record</span>
-            <span className="text-sm font-black">{appointment.clients.name}</span>
+            
+            {/* Live Client Switcher Dropdown */}
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <button className="flex items-center gap-1.5 hover:bg-slate-100 px-2 py-0.5 -ml-2 rounded-lg transition-colors text-left group">
+                  <span className="text-sm font-black text-slate-900">{appointment.clients.name}</span>
+                  <ChevronDown size={14} className="text-slate-400 group-hover:text-slate-900 transition-colors" />
+                </button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="start" className="w-80 max-h-[450px] overflow-y-auto rounded-2xl p-2 shadow-3xl border-none bg-white dark:bg-slate-900 z-[100]">
+                {loadingAppointments ? (
+                  <div className="py-6 flex justify-center"><Loader2 className="animate-spin text-indigo-600" size={20} /></div>
+                ) : (
+                  <>
+                    {groupedAppointments.today.length > 0 && (
+                      <div className="space-y-1">
+                        <div className="px-3 py-1.5 text-[8px] font-black uppercase tracking-widest text-rose-500 flex items-center gap-1.5">
+                          <div className="w-1.5 h-1.5 rounded-full bg-rose-500 animate-pulse" /> Today's Schedule
+                        </div>
+                        {groupedAppointments.today.map(app => (
+                          <DropdownMenuItem 
+                            key={app.id} 
+                            onClick={() => handleSwitchAppointment(app.id)}
+                            className={cn(
+                              "rounded-xl py-2.5 px-4 cursor-pointer flex items-center justify-between",
+                              app.id === appointment.id ? "bg-indigo-50 text-indigo-900 font-bold" : "hover:bg-slate-50"
+                            )}
+                          >
+                            <div className="min-w-0 flex-1">
+                              <p className="text-xs font-black truncate">{app.clients?.name}</p>
+                              <p className="text-[9px] font-bold text-slate-400 uppercase tracking-widest mt-0.5">
+                                {format(new Date(app.date), "h:mm a")} • {app.tag}
+                              </p>
+                            </div>
+                            <Badge className={cn(
+                              "border-none font-black text-[7px] uppercase tracking-widest px-1.5 py-0.5 rounded-md",
+                              app.status === 'Completed' ? "bg-emerald-500 text-white" : "bg-indigo-600 text-white"
+                            )}>
+                              {app.status}
+                            </Badge>
+                          </DropdownMenuItem>
+                        ))}
+                      </div>
+                    )}
+
+                    {groupedAppointments.upcoming.length > 0 && (
+                      <div className="space-y-1 mt-3">
+                        <div className="px-3 py-1.5 text-[8px] font-black uppercase tracking-widest text-slate-400 flex items-center gap-1.5">
+                          <Calendar size={10} /> Upcoming Sessions
+                        </div>
+                        {groupedAppointments.upcoming.slice(0, 10).map(app => (
+                          <DropdownMenuItem 
+                            key={app.id} 
+                            onClick={() => handleSwitchAppointment(app.id)}
+                            className={cn(
+                              "rounded-xl py-2.5 px-4 cursor-pointer flex items-center justify-between",
+                              app.id === appointment.id ? "bg-indigo-50 text-indigo-900 font-bold" : "hover:bg-slate-50"
+                            )}
+                          >
+                            <div className="min-w-0 flex-1">
+                              <p className="text-xs font-black truncate">{app.clients?.name}</p>
+                              <p className="text-[9px] font-bold text-slate-400 uppercase tracking-widest mt-0.5">
+                                {format(new Date(app.date), "MMM d, h:mm a")} • {app.tag}
+                              </p>
+                            </div>
+                          </DropdownMenuItem>
+                        ))}
+                      </div>
+                    )}
+
+                    {groupedAppointments.past.length > 0 && (
+                      <div className="space-y-1 mt-3">
+                        <div className="px-3 py-1.5 text-[8px] font-black uppercase tracking-widest text-slate-400 flex items-center gap-1.5">
+                          <Clock size={10} /> Recent Past Sessions
+                        </div>
+                        {groupedAppointments.past.map(app => (
+                          <DropdownMenuItem 
+                            key={app.id} 
+                            onClick={() => handleSwitchAppointment(app.id)}
+                            className={cn(
+                              "rounded-xl py-2.5 px-4 cursor-pointer flex items-center justify-between",
+                              app.id === appointment.id ? "bg-indigo-50 text-indigo-900 font-bold" : "hover:bg-slate-50"
+                            )}
+                          >
+                            <div className="min-w-0 flex-1">
+                              <p className="text-xs font-black truncate">{app.clients?.name}</p>
+                              <p className="text-[9px] font-bold text-slate-400 uppercase tracking-widest mt-0.5">
+                                {format(new Date(app.date), "MMM d, yyyy")} • {app.tag}
+                              </p>
+                            </div>
+                          </DropdownMenuItem>
+                        ))}
+                      </div>
+                    )}
+                  </>
+                )}
+              </DropdownMenuContent>
+            </DropdownMenu>
           </div>
           <Badge variant="outline" className="rounded-none border-black font-black text-[8px] uppercase px-2 py-0.5">
             {appointment.status}

@@ -52,6 +52,13 @@ import {
   DropdownMenuTrigger,
   DropdownMenuSeparator,
 } from "@/components/ui/dropdown-menu";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 // Modular Sub-components
 import DocumentSidebar, { OUTLINE_ITEMS } from './document-view/DocumentSidebar';
@@ -512,9 +519,20 @@ const SessionDocumentView = ({
                 </DropdownMenuContent>
               </DropdownMenu>
             </div>
-            <Badge variant="outline" className="rounded-none border-black font-black text-[8px] uppercase px-2 py-0.5">
-              {appointment.status}
-            </Badge>
+            
+            {/* Editable Status Dropdown */}
+            <Select value={appointment.status} onValueChange={(newStatus) => saveField('status', newStatus)}>
+              <SelectTrigger className="h-7 w-auto min-w-[100px] text-[8px] font-black uppercase tracking-widest border border-black rounded-none bg-white px-2 py-0.5 focus:ring-0 focus:ring-offset-0">
+                <SelectValue placeholder={appointment.status} />
+              </SelectTrigger>
+              <SelectContent className="rounded-none border border-black shadow-2xl bg-white">
+                {["Scheduled", "Completed", "Cancelled", "No Show"].map(status => (
+                  <SelectItem key={status} value={status} className="rounded-none text-[8px] font-black uppercase tracking-widest py-2 px-4 cursor-pointer">
+                    {status}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
           </div>
 
           <div className="hidden lg:flex items-center gap-4 text-[9px] font-black uppercase tracking-widest text-slate-400">

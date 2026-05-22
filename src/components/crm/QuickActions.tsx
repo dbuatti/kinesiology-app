@@ -44,7 +44,7 @@ const QuickActions = () => {
               <DropdownMenuTrigger asChild>
                 <div className="flex items-center gap-3 md:gap-4 group cursor-pointer">
                   <span className={cn(
-                    "bg-slate-900 text-white px-4 py-2 md:px-6 md:py-3 rounded-xl md:rounded-2xl text-[9px] md:text-[10px] font-black uppercase tracking-[0.3em] shadow-3xl transition-all duration-700",
+                    "hidden md:inline-block bg-slate-900 text-white px-4 py-2 md:px-6 md:py-3 rounded-xl md:rounded-2xl text-[9px] md:text-[10px] font-black uppercase tracking-[0.3em] shadow-3xl transition-all duration-700",
                     isOpen ? "opacity-0 translate-x-6" : "opacity-100 translate-x-0"
                   )}>
                     Quick Actions

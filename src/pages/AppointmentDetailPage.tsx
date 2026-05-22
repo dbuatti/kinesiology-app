@@ -296,16 +296,17 @@ const AppointmentDetailPage = () => {
               </div>
             </div>
 
-            <div className="flex flex-wrap items-center gap-2 md:gap-4 w-full lg:w-auto">
+            {/* Horizontally scrollable button row on mobile to prevent cutoff */}
+            <div className="flex items-center gap-2 md:gap-4 w-full lg:w-auto overflow-x-auto no-scrollbar pb-1">
               {appointment.notion_link && (
-                <Button asChild variant="outline" size="sm" className="flex-1 sm:flex-none h-10 md:h-14 px-4 md:px-8 gap-2 md:gap-3 border-slate-200 bg-white rounded-xl md:rounded-2xl font-black text-[9px] md:text-[10px] uppercase tracking-widest text-slate-600 hover:bg-slate-50 hover:border-indigo-200 transition-all shadow-sm">
+                <Button asChild variant="outline" size="sm" className="flex-1 sm:flex-none h-10 md:h-14 px-4 md:px-8 gap-2 md:gap-3 border-slate-200 bg-white rounded-xl md:rounded-2xl font-black text-[9px] md:text-[10px] uppercase tracking-widest text-slate-600 hover:bg-slate-50 hover:border-indigo-200 transition-all shadow-sm shrink-0">
                   <a href={appointment.notion_link} target="_blank" rel="noopener noreferrer">
                     <ExternalLink size={16} className="text-emerald-600" /> <span className="hidden sm:inline">Open in </span>Notion
                   </a>
                 </Button>
               )}
 
-              <Button variant="outline" size="sm" onClick={() => setIsDocumentView(true)} className="flex-1 sm:flex-none h-10 md:h-14 px-4 md:px-8 gap-2 md:gap-3 border-slate-200 bg-white rounded-xl md:rounded-2xl font-black text-[9px] md:text-[10px] uppercase tracking-widest text-slate-600 hover:bg-slate-50 hover:border-indigo-200 transition-all shadow-sm">
+              <Button variant="outline" size="sm" onClick={() => setIsDocumentView(true)} className="flex-1 sm:flex-none h-10 md:h-14 px-4 md:px-8 gap-2 md:gap-3 border-slate-200 bg-white rounded-xl md:rounded-2xl font-black text-[9px] md:text-[10px] uppercase tracking-widest text-slate-600 hover:bg-slate-50 hover:border-indigo-200 transition-all shadow-sm shrink-0">
                 <FileText size={16} className="text-indigo-600" /> Doc View
               </Button>
 
@@ -314,7 +315,7 @@ const AppointmentDetailPage = () => {
                 size="sm" 
                 onClick={toggleFullScreen} 
                 className={cn(
-                  "flex-1 sm:flex-none h-10 md:h-14 px-4 md:px-8 gap-2 md:gap-3 border-slate-200 bg-white rounded-xl md:rounded-2xl font-black text-[9px] md:text-[10px] uppercase tracking-widest text-slate-600 hover:bg-slate-50 hover:border-indigo-200 transition-all shadow-sm",
+                  "flex-1 sm:flex-none h-10 md:h-14 px-4 md:px-8 gap-2 md:gap-3 border-slate-200 bg-white rounded-xl md:rounded-2xl font-black text-[9px] md:text-[10px] uppercase tracking-widest text-slate-600 hover:bg-slate-50 hover:border-indigo-200 transition-all shadow-sm shrink-0",
                   isFullScreen && "border-indigo-600 text-indigo-600 bg-indigo-50"
                 )}
               >
@@ -353,7 +354,7 @@ const AppointmentDetailPage = () => {
               </DropdownMenu>
 
               {isSessionToday && appointment.status === 'Scheduled' && (
-                <Button onClick={handleStartSession} className="flex-1 sm:flex-none h-10 md:h-14 px-6 md:px-10 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl md:rounded-2xl font-black text-[9px] md:text-[10px] uppercase tracking-widest shadow-xl shadow-indigo-500/20 transition-all hover:scale-105 active:scale-95">
+                <Button onClick={handleStartSession} className="flex-1 sm:flex-none h-10 md:h-14 px-6 md:px-10 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl md:rounded-2xl font-black text-[9px] md:text-[10px] uppercase tracking-widest shadow-xl shadow-indigo-500/20 transition-all hover:scale-105 active:scale-95 shrink-0">
                   Start Session
                 </Button>
               )}

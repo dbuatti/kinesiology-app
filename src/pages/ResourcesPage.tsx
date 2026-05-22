@@ -137,7 +137,7 @@ const ResourcesPage = () => {
   };
 
   return (
-    <AppLayout>
+    <AppLayout variant="wide">
       <div className="p-4 md:p-8 max-w-full mx-auto space-y-8">
         <PageHeader 
           title="Clinical Bible"
@@ -146,7 +146,7 @@ const ResourcesPage = () => {
           breadcrumbs={[{ label: "Library" }, { label: "Clinical Bible" }]}
           actions={
             <div className="flex items-center gap-3">
-              <Button asChild variant="outline" className="rounded-xl h-12 px-6 font-bold text-xs uppercase tracking-widest h-12 px-6 border-indigo-100 bg-indigo-50 text-indigo-600 hover:bg-indigo-100">
+              <Button asChild variant="outline" className="rounded-xl h-12 px-6 font-bold text-xs uppercase tracking-widest border-indigo-100 text-indigo-600 hover:bg-indigo-50">
                 <Link to="/resources/print">
                   <Printer size={18} className="mr-2" /> Print Hub
                 </Link>

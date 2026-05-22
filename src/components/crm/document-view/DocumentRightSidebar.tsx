@@ -28,7 +28,7 @@ const DocumentRightSidebar = ({
   formatCountdown
 }: DocumentRightSidebarProps) => {
   return (
-    <aside className="w-20 shrink-0 sticky top-[64px] max-h-[calc(100vh-120px)] flex flex-col items-center py-6 space-y-4 print:hidden">
+    <aside className="w-20 shrink-0 sticky top-[64px] max-h-[calc(100vh-120px)] flex flex-col items-center py-6 space-y-4 print:hidden ml-auto">
       <p className="text-[8px] font-black text-slate-400 uppercase tracking-widest text-center mb-2">Timers</p>
       
       <div className="flex flex-col gap-3 items-center">

@@ -38,7 +38,7 @@ import {
   Sparkles,
   Instagram
 } from "lucide-react";
-import { format, addWeeks, subWeeks, startOfToday, endOfDay, eachDayOfInterval, addDays, isBefore, startOfDay, nextMonday, isMonday, startOfWeek } from "date-fns";
+import { format, addWeeks, subWeeks, startOfToday, endOfDay, eachDayOfInterval, addDays, isBefore, startOfDay, nextMonday, isMonday, startOfWeek, parseISO } from "date-fns";
 import { supabase } from "@/integrations/supabase/client";
 import { cn } from "@/lib/utils";
 import { showSuccess, showError } from "@/utils/toast";
@@ -379,6 +379,44 @@ const CalcomSlotsView = () => {
     setTimeout(() => setCopied(null), 2000);
   };
 
+  const handleCopyBookings = () => {
+    const allBookings: any[] = [];
+    Object.keys(bookings).forEach(date => {
+      const dayBookings = bookings[date] || [];
+      dayBookings.forEach(b => {
+        allBookings.push({
+          date,
+          ...b
+        });
+      });
+    });
+
+    if (allBookings.length === 0) {
+      showError("No booked appointments found to copy.");
+      return;
+    }
+
+    // Sort bookings chronologically
+    allBookings.sort((a, b) => new Date(a.start).getTime() - new Date(b.start).getTime());
+
+    let text = "📋 Booked Appointments Schedule:\n\n";
+    allBookings.forEach((b, idx) => {
+      const dateObj = new Date(b.start);
+      const formattedDate = format(dateObj, "EEEE, MMMM do, yyyy");
+      const formattedTime = format(dateObj, "h:mm a");
+      text += `${idx + 1}. ${b.attendeeName} (${b.attendeeEmail || 'No Email'})\n`;
+      text += `   Date: ${formattedDate}\n`;
+      text += `   Time: ${formattedTime}\n`;
+      if (b.title) text += `   Type: ${b.title}\n`;
+      text += `\n`;
+    });
+
+    navigator.clipboard.writeText(text.trim());
+    setCopied('bookings');
+    showSuccess("Booked appointments copied to clipboard!");
+    setTimeout(() => setCopied(null), 2000);
+  };
+
   const toggleDayExpansion = (date: string) => {
     setExpandedDays(prev => ({
       ...prev,
@@ -478,6 +516,15 @@ const CalcomSlotsView = () => {
               </Button>
             </div>
             
+            <Button 
+              variant="outline"
+              onClick={handleCopyBookings}
+              disabled={loading}
+              className="rounded-xl h-10 px-4 border-indigo-100 text-indigo-600 hover:bg-indigo-100 rounded-xl font-black text-[10px] uppercase tracking-widest"
+            >
+              {copied === 'bookings' ? <Check size={14} className="mr-2" /> : <Copy size={14} className="mr-2" />}
+              Copy Bookings
+            </Button>
             <Button 
               variant="outline"
               onClick={handleCopyAll}

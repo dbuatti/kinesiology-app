@@ -129,6 +129,8 @@ export interface Client {
   digestive_health?: string | null;
   notion_page_id?: string | null;
   notion_link?: string | null;
+  standard_rate?: number | null;
+  preferred_time?: string | null;
 }
 
 export interface AppointmentWithClient extends Appointment {

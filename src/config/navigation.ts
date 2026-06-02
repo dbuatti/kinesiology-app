@@ -1,21 +1,22 @@
 "use client";
 
-import { 
-  LayoutDashboard, 
-  Users, 
-  Calendar, 
-  TrendingUp, 
-  Briefcase, 
-  Mic, 
-  Sun, 
-  MessageSquare, 
-  Compass, 
-  Heart, 
-  BookOpen, 
-  ShieldCheck, 
-  Trophy, 
-  GraduationCap, 
-  Zap 
+import {
+  LayoutDashboard,
+  Users,
+  Calendar,
+  TrendingUp,
+  Briefcase,
+  Mic,
+  Sun,
+  MessageSquare,
+  Compass,
+  Heart,
+  BookOpen,
+  ShieldCheck,
+  Trophy,
+  GraduationCap,
+  Zap,
+  FileText
 } from "lucide-react";
 
 export const CLINICAL_NAV_ITEMS = [
@@ -25,6 +26,7 @@ export const CLINICAL_NAV_ITEMS = [
   { label: "Oversight", icon: TrendingUp, path: "/oversight" },
   { label: "Business Hub", icon: Briefcase, path: "/business" },
   { label: "Marketing Engine", icon: Mic, path: "/business/marketing-engine" },
+  { label: "Client Audit", icon: FileText, path: "/business/client-audit" },
 ];
 
 export const LAB_NAV_ITEMS = [

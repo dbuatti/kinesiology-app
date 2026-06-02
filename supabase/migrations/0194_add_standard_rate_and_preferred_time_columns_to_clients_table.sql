@@ -1,0 +1,2 @@
+ALTER TABLE public.clients ADD COLUMN IF NOT EXISTS standard_rate NUMERIC DEFAULT 50;
+ALTER TABLE public.clients ADD COLUMN IF NOT EXISTS preferred_time TEXT;

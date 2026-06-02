@@ -1,13 +1,13 @@
 "use client";
 
 import React from "react";
-import { 
-  Mic, 
-  MessageSquare, 
-  Sparkles, 
-  Volume2, 
-  ArrowRight, 
-  ExternalLink, 
+import {
+  Mic,
+  MessageSquare,
+  Sparkles,
+  Volume2,
+  ArrowRight,
+  ExternalLink,
   Briefcase,
   TrendingUp,
   Target,
@@ -19,7 +19,8 @@ import {
   Globe,
   Rocket,
   Heart,
-  Brain
+  Brain,
+  FileText
 } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -51,6 +52,19 @@ const MARKETING_TOOLS = [
     bgColor: "bg-indigo-50 dark:bg-indigo-900/20",
     category: "Distribution",
     isExternal: true
+  }
+];
+
+const FINANCIAL_TOOLS = [
+  {
+    id: "client-audit",
+    label: "Client Payment & Audit",
+    desc: "Review client rates, track appointment recency, identify follow-up needs, and perform financial audits with AI-driven pricing suggestions.",
+    icon: FileText,
+    path: "/business/client-audit",
+    color: "text-amber-600",
+    bgColor: "bg-amber-50 dark:bg-amber-900/20",
+    category: "Financials"
   }
 ];
 
@@ -206,6 +220,20 @@ const BusinessHubPage = () => {
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
             {MARKETING_TOOLS.map(tool => <ToolCard key={tool.id} tool={tool} />)}
+          </div>
+        </div>
+
+        {/* Section: Practice Financials & Audit */}
+        <div className="space-y-6">
+          <div className="flex items-center gap-3 px-2">
+            <div className="w-10 h-10 rounded-xl bg-amber-50 text-amber-600 flex items-center justify-center shadow-sm">
+              <FileText size={20} />
+            </div>
+            <h2 className="text-2xl font-black text-foreground tracking-tight">Practice Financials & Audit</h2>
+            <div className="flex-1 h-[2px] bg-border rounded-full ml-4" />
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+            {FINANCIAL_TOOLS.map(tool => <ToolCard key={tool.id} tool={tool} />)}
           </div>
         </div>
 

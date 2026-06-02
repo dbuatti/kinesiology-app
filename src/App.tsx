@@ -65,6 +65,7 @@ import JointActionPrintPage from "./pages/JointActionPrintPage";
 
 // --- Business & System ---
 import BusinessHubPage from "./pages/BusinessHubPage";
+import ClientAuditPage from "./pages/ClientAuditPage";
 import MarketingEnginePage from "./pages/MarketingEnginePage";
 import SettingsPage from "./pages/SettingsPage";
 import ImportPage from "./pages/ImportPage";
@@ -150,6 +151,7 @@ const AppRoutes = () => {
         {/* Business Tools */}
         <Route path="/business" element={<BusinessHubPage />} />
         <Route path="/business/marketing-engine" element={<MarketingEnginePage />} />
+        <Route path="/business/client-audit" element={<ClientAuditPage />} />
 
         {/* System */}
         <Route path="/settings" element={<SettingsPage />} />

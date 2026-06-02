@@ -36,13 +36,16 @@ interface TimetableVisualizerProps {
 }
 
 const DAYS = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"];
-const TIME_SLOTS = ["09:00", "11:00", "13:00", "15:00", "17:00"];
+const TIME_SLOTS = ["10:00", "11:00", "12:00", "13:00", "14:00", "15:00", "16:00", "17:00"];
 
 const TIME_LABELS: Record<string, string> = {
-  "09:00": "9:00 AM",
+  "10:00": "10:00 AM",
   "11:00": "11:00 AM",
-  "13:00": "1:00 PM",
+  "12:00": "12:00 PM (Blocked)",
+  "13:00": "1:00 PM (Blocked)",
+  "14:00": "2:00 PM",
   "15:00": "3:00 PM",
+  "16:00": "4:00 PM",
   "17:00": "5:00 PM"
 };
 
@@ -62,7 +65,7 @@ function parsePreferredTime(timeStr: string | null | undefined) {
   if (!day) return null;
 
   // Default to 10:00 AM if no hour found, map to closest slot
-  let hour = 10; 
+  let hour = 10;
   const hourMatch = lower.match(/(\d+):(\d+)\s*(am|pm)/i) || lower.match(/(\d+)\s*(am|pm)/i);
   if (hourMatch) {
     let h = parseInt(hourMatch[1]);
@@ -72,10 +75,11 @@ function parsePreferredTime(timeStr: string | null | undefined) {
     hour = h;
   }
 
-  // Map to closest standard slot
-  let closestSlot = "11:00";
+  // Map to closest standard slot (excluding blocked slots 12:00 and 13:00)
+  const activeSlots = TIME_SLOTS.filter(slot => slot !== "12:00" && slot !== "13:00");
+  let closestSlot = "10:00";
   let minDiff = Infinity;
-  TIME_SLOTS.forEach(slot => {
+  activeSlots.forEach(slot => {
     const slotHour = parseInt(slot.split(':')[0]);
     const diff = Math.abs(slotHour - hour);
     if (diff < minDiff) {
@@ -275,24 +279,31 @@ const TimetableVisualizer = ({ clients }: TimetableVisualizerProps) => {
                         const cell = scheduledData.grid[key];
                         const hasClients = cell.clients.length > 0;
 
+                        const isBlockedSlot = slot === "12:00" || slot === "13:00";
+
                         return (
-                          <td 
-                            key={day} 
+                          <td
+                            key={day}
                             className={cn(
                               "p-3 text-center border-r border-border/20 last:border-r-0 min-w-[140px] h-24 vertical-top",
-                              cell.hasConflict ? "bg-rose-50/30 dark:bg-rose-950/10" : ""
+                              cell.hasConflict ? "bg-rose-50/30 dark:bg-rose-950/10" : "",
+                              isBlockedSlot ? "bg-slate-100/80 dark:bg-slate-900/50" : ""
                             )}
                           >
-                            {hasClients ? (
+                            {isBlockedSlot ? (
+                              <span className="text-[10px] font-black text-slate-400 dark:text-slate-600 uppercase tracking-widest flex items-center justify-center gap-1">
+                                <Ban size={12} /> Blocked
+                              </span>
+                            ) : hasClients ? (
                               <div className="space-y-1.5">
                                 {cell.clients.map(client => (
-                                  <Link 
-                                    key={client.id} 
+                                  <Link
+                                    key={client.id}
                                     to={`/clients/${client.id}`}
                                     className={cn(
                                       "block p-2 rounded-xl text-xs font-bold border transition-all hover:scale-[1.02] truncate",
-                                      cell.hasConflict 
-                                        ? "bg-rose-100 text-rose-700 border-rose-200" 
+                                      cell.hasConflict
+                                        ? "bg-rose-100 text-rose-700 border-rose-200"
                                         : "bg-indigo-50 text-indigo-700 border-indigo-100 dark:bg-indigo-950/30 dark:text-indigo-400 dark:border-indigo-900/30"
                                     )}
                                     title={`${client.name} (${client.preferred_time || client.preferredTimeAnalyzed.text})`}

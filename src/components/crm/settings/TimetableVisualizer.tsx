@@ -91,8 +91,22 @@ function parsePreferredTime(timeStr: string | null | undefined) {
   return { day, slot: closestSlot };
 }
 
+interface ProposedMove {
+  clientId: string;
+  clientName: string;
+  originalDay: string;
+  originalSlot: string;
+  originalWeek: number;
+  newDay: string;
+  newSlot: string;
+  newWeek: number;
+  reason: string;
+}
+
 const TimetableVisualizer = ({ clients }: TimetableVisualizerProps) => {
   const [activeWeek, setActiveWeek] = useState<1 | 2>(1);
+  const [isOptimized, setIsOptimized] = useState(false);
+  const [applyingMoves, setApplyingMoves] = useState(false);
 
   // Filter to active clients (seen in last 30 days / last month) to keep the timetable relevant
   const activeClients = useMemo(() => {
@@ -171,6 +185,133 @@ const TimetableVisualizer = ({ clients }: TimetableVisualizerProps) => {
     return { grid, unscheduled, conflictsList };
   }, [activeClients]);
 
+  // Generate optimized schedule resolving conflicts
+  const optimizedData = useMemo(() => {
+    const grid: Record<string, { clients: ClientWithAppointments[]; hasConflict: boolean }> = {};
+    const proposedMoves: ProposedMove[] = [];
+
+    // Initialize optimized grid with a copy of scheduledData
+    for (const week of [1, 2]) {
+      for (const day of DAYS) {
+        for (const slot of TIME_SLOTS) {
+          const key = `${week}-${day}-${slot}`;
+          grid[key] = {
+            clients: [...(scheduledData.grid[key]?.clients || [])],
+            hasConflict: false
+          };
+        }
+      }
+    }
+
+    // Helper to find the nearest available slot for a client
+    const findNearestAvailableSlot = (
+      client: ClientWithAppointments,
+      startWeek: number,
+      startDay: string,
+      startSlot: string
+    ) => {
+      const activeSlots = TIME_SLOTS.filter(s => s !== "12:00" && s !== "13:00");
+      const dayIndex = DAYS.indexOf(startDay);
+
+      // 1. Try same day, adjacent time slots first
+      const currentSlotIndex = activeSlots.indexOf(startSlot);
+      const searchOffsets = [1, -1, 2, -2, 3, -3, 4, -4];
+
+      for (const offset of searchOffsets) {
+        const targetIndex = currentSlotIndex + offset;
+        if (targetIndex >= 0 && targetIndex < activeSlots.length) {
+          const targetSlot = activeSlots[targetIndex];
+          const key = `${startWeek}-${startDay}-${targetSlot}`;
+          if (grid[key].clients.length === 0) {
+            return { week: startWeek, day: startDay, slot: targetSlot, reason: `Moved to adjacent slot on same day (${startDay})` };
+          }
+        }
+      }
+
+      // 2. Try adjacent days, same time slot
+      const dayOffsets = [1, -1, 2, -2, 3, -3, 4, -4];
+      for (const offset of dayOffsets) {
+        const targetDayIndex = dayIndex + offset;
+        if (targetDayIndex >= 0 && targetDayIndex < DAYS.length) {
+          const targetDay = DAYS[targetDayIndex];
+          const key = `${startWeek}-${targetDay}-${startSlot}`;
+          if (grid[key].clients.length === 0) {
+            return { week: startWeek, day: targetDay, slot: startSlot, reason: `Moved to same time slot on adjacent day (${targetDay})` };
+          }
+        }
+      }
+
+      // 3. Try adjacent days, any available slot
+      for (const offset of dayOffsets) {
+        const targetDayIndex = dayIndex + offset;
+        if (targetDayIndex >= 0 && targetDayIndex < DAYS.length) {
+          const targetDay = DAYS[targetDayIndex];
+          for (const targetSlot of activeSlots) {
+            const key = `${startWeek}-${targetDay}-${targetSlot}`;
+            if (grid[key].clients.length === 0) {
+              return { week: startWeek, day: targetDay, slot: targetSlot, reason: `Moved to available slot on adjacent day (${targetDay} at ${TIME_LABELS[targetSlot]})` };
+            }
+          }
+        }
+      }
+
+      // 4. Try other week, same day, same slot
+      const otherWeek = startWeek === 1 ? 2 : 1;
+      const otherWeekKey = `${otherWeek}-${startDay}-${startSlot}`;
+      if (grid[otherWeekKey].clients.length === 0) {
+        return { week: otherWeek, day: startDay, slot: startSlot, reason: `Moved to same slot on alternate week (Week ${otherWeek})` };
+      }
+
+      return null;
+    };
+
+    // Resolve conflicts week by week, day by day, slot by slot
+    for (const week of [1, 2]) {
+      for (const day of DAYS) {
+        for (const slot of TIME_SLOTS) {
+          const key = `${week}-${day}-${slot}`;
+          const cell = grid[key];
+
+          if (cell.clients.length > 1) {
+            // Sort clients by priority: keep the one with most appointments
+            const sortedClients = [...cell.clients].sort((a, b) => b.appointments.length - a.appointments.length);
+            
+            // Keep the primary client
+            const primaryClient = sortedClients[0];
+            cell.clients = [primaryClient];
+
+            // Move the other conflicting clients
+            for (let i = 1; i < sortedClients.length; i++) {
+              const duplicateClient = sortedClients[i];
+              const newSlot = findNearestAvailableSlot(duplicateClient, week, day, slot);
+
+              if (newSlot) {
+                const newKey = `${newSlot.week}-${newSlot.day}-${newSlot.slot}`;
+                grid[newKey].clients.push(duplicateClient);
+                proposedMoves.push({
+                  clientId: duplicateClient.id,
+                  clientName: duplicateClient.name,
+                  originalDay: day,
+                  originalSlot: slot,
+                  originalWeek: week,
+                  newDay: newSlot.day,
+                  newSlot: newSlot.slot,
+                  newWeek: newSlot.week,
+                  reason: newSlot.reason
+                });
+              } else {
+                // Fallback: keep in original slot if no other slot is found
+                cell.clients.push(duplicateClient);
+              }
+            }
+          }
+        }
+      }
+    }
+
+    return { grid, proposedMoves };
+  }, [scheduledData]);
+
   // Generate smart suggestions based on conflicts and capacity
   const suggestions = useMemo(() => {
     const list: string[] = [];
@@ -188,7 +329,7 @@ const TimetableVisualizer = ({ clients }: TimetableVisualizerProps) => {
       let dayTotal = 0;
       for (const week of [1, 2]) {
         for (const slot of TIME_SLOTS) {
-          dayTotal += scheduledData.grid[`${week}-${day}-${slot}`].clients.length;
+          dayTotal += (isOptimized ? optimizedData.grid : scheduledData.grid)[`${week}-${day}-${slot}`].clients.length;
         }
       }
 
@@ -209,10 +350,45 @@ const TimetableVisualizer = ({ clients }: TimetableVisualizerProps) => {
     }
 
     return list;
-  }, [scheduledData]);
+  }, [scheduledData, optimizedData, isOptimized]);
+
+  const handleApplyOptimizedSchedule = async () => {
+    if (optimizedData.proposedMoves.length === 0) return;
+    
+    if (!confirm(`Are you sure you want to apply the resolved schedule? This will update the preferred times for ${optimizedData.proposedMoves.length} clients in the database.`)) {
+      return;
+    }
+
+    setApplyingMoves(true);
+    try {
+      const todayStr = new Date().toISOString();
+      
+      for (const move of optimizedData.proposedMoves) {
+        const formattedTime = `${move.newDay}s at ${TIME_LABELS[move.newSlot]}`;
+        
+        const { error } = await supabase
+          .from("clients")
+          .update({
+            preferred_time: formattedTime,
+            rate_updated_at: todayStr // Mark as reviewed
+          })
+          .eq("id", move.clientId);
+
+        if (error) throw error;
+      }
+
+      showSuccess(`Successfully resolved conflicts and updated preferred times for ${optimizedData.proposedMoves.length} clients!`);
+      setIsOptimized(false);
+      window.location.reload(); // Reload to fetch fresh data
+    } catch (err: any) {
+      showError(err.message || "Failed to apply resolved schedule.");
+    } finally {
+      setApplyingMoves(false);
+    }
+  };
 
   return (
-    <div className="space-y-8 animate-in fade-in duration-500">
+    <div className="space-y-8 animate-in fade-in duration-700">
       {/* Header & Week Switcher */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-card p-6 rounded-[2rem] border border-border shadow-sm">
         <div className="space-y-1">
@@ -225,35 +401,56 @@ const TimetableVisualizer = ({ clients }: TimetableVisualizerProps) => {
           </p>
         </div>
 
-        <div className="flex bg-muted p-1 rounded-xl shrink-0">
-          <Button 
-            variant={activeWeek === 1 ? 'default' : 'ghost'} 
-            size="sm" 
-            onClick={() => setActiveWeek(1)}
-            className={cn(
-              "rounded-lg h-9 px-6 font-bold text-xs uppercase tracking-widest",
-              activeWeek === 1 ? "bg-card text-indigo-600 shadow-sm" : "text-muted-foreground"
-            )}
-          >
-            Week 1
-          </Button>
-          <Button 
-            variant={activeWeek === 2 ? 'default' : 'ghost'} 
-            size="sm" 
-            onClick={() => setActiveWeek(2)}
-            className={cn(
-              "rounded-lg h-9 px-6 font-bold text-xs uppercase tracking-widest",
-              activeWeek === 2 ? "bg-card text-indigo-600 shadow-sm" : "text-muted-foreground"
-            )}
-          >
-            Week 2
-          </Button>
+        <div className="flex items-center gap-3 shrink-0">
+          {/* Resolve Conflicts Toggle */}
+          {scheduledData.conflictsList.length > 0 && (
+            <Button
+              onClick={() => setIsOptimized(!isOptimized)}
+              className={cn(
+                "rounded-xl h-10 px-6 font-black text-[10px] uppercase tracking-widest shadow-sm transition-all",
+                isOptimized
+                  ? "bg-emerald-600 hover:bg-emerald-700 text-white"
+                  : "bg-amber-500 hover:bg-amber-600 text-white"
+              )}
+            >
+              {isOptimized ? (
+                <><CheckCircle2 size={14} className="mr-2" /> View Original</>
+              ) : (
+                <><RefreshCw size={14} className="mr-2" /> Resolve Conflicts</>
+              )}
+            </Button>
+          )}
+
+          <div className="flex bg-muted p-1 rounded-xl">
+            <Button
+              variant={activeWeek === 1 ? 'default' : 'ghost'}
+              size="sm"
+              onClick={() => setActiveWeek(1)}
+              className={cn(
+                "rounded-lg h-9 px-6 font-bold text-xs uppercase tracking-widest",
+                activeWeek === 1 ? "bg-card text-indigo-600 shadow-sm" : "text-muted-foreground"
+              )}
+            >
+              Week 1
+            </Button>
+            <Button
+              variant={activeWeek === 2 ? 'default' : 'ghost'}
+              size="sm"
+              onClick={() => setActiveWeek(2)}
+              className={cn(
+                "rounded-lg h-9 px-6 font-bold text-xs uppercase tracking-widest",
+                activeWeek === 2 ? "bg-card text-indigo-600 shadow-sm" : "text-muted-foreground"
+              )}
+            >
+              Week 2
+            </Button>
+          </div>
         </div>
       </div>
 
       {/* Smart Suggestions & Capacity Alerts */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
-        <div className="lg:col-span-8">
+        <div className="lg:col-span-8 space-y-6">
           {/* Timetable Grid */}
           <div className="bg-card rounded-[2.5rem] border border-border shadow-xl overflow-hidden">
             <div className="overflow-x-auto">
@@ -276,7 +473,7 @@ const TimetableVisualizer = ({ clients }: TimetableVisualizerProps) => {
                       </td>
                       {DAYS.map(day => {
                         const key = `${activeWeek}-${day}-${slot}`;
-                        const cell = scheduledData.grid[key];
+                        const cell = (isOptimized ? optimizedData.grid : scheduledData.grid)[key];
                         const hasClients = cell.clients.length > 0;
 
                         const isBlockedSlot = slot === "12:00" || slot === "13:00";
@@ -296,21 +493,29 @@ const TimetableVisualizer = ({ clients }: TimetableVisualizerProps) => {
                               </span>
                             ) : hasClients ? (
                               <div className="space-y-1.5">
-                                {cell.clients.map(client => (
-                                  <Link
-                                    key={client.id}
-                                    to={`/clients/${client.id}`}
-                                    className={cn(
-                                      "block p-2 rounded-xl text-xs font-bold border transition-all hover:scale-[1.02] truncate",
-                                      cell.hasConflict
-                                        ? "bg-rose-100 text-rose-700 border-rose-200"
-                                        : "bg-indigo-50 text-indigo-700 border-indigo-100 dark:bg-indigo-950/30 dark:text-indigo-400 dark:border-indigo-900/30"
-                                    )}
-                                    title={`${client.name} (${client.preferred_time || client.preferredTimeAnalyzed.text})`}
-                                  >
-                                    {client.name}
-                                  </Link>
-                                ))}
+                                {cell.clients.map(client => {
+                                  const isMoved = isOptimized && optimizedData.proposedMoves.some(m => m.clientId === client.id && m.newDay === day && m.newSlot === slot && m.newWeek === activeWeek);
+                                  return (
+                                    <Link
+                                      key={client.id}
+                                      to={`/clients/${client.id}`}
+                                      className={cn(
+                                        "block p-2 rounded-xl text-xs font-bold border transition-all hover:scale-[1.02] truncate",
+                                        cell.hasConflict
+                                          ? "bg-rose-100 text-rose-700 border-rose-200"
+                                          : isMoved
+                                            ? "bg-amber-50 text-amber-700 border-amber-200 dark:bg-amber-950/30 dark:text-amber-400 dark:border-amber-900/30"
+                                            : "bg-indigo-50 text-indigo-700 border-indigo-100 dark:bg-indigo-950/30 dark:text-indigo-400 dark:border-indigo-900/30"
+                                      )}
+                                      title={`${client.name} (${client.preferred_time || client.preferredTimeAnalyzed.text})`}
+                                    >
+                                      <div className="flex items-center justify-center gap-1">
+                                        {isMoved && <Sparkles size={10} className="text-amber-500 shrink-0" />}
+                                        <span className="truncate">{client.name}</span>
+                                      </div>
+                                    </Link>
+                                  );
+                                })}
                                 {cell.hasConflict && (
                                   <span className="inline-flex items-center gap-1 text-[8px] font-black uppercase tracking-widest text-rose-600 bg-rose-100 px-2 py-0.5 rounded-md">
                                     <AlertTriangle size={10} /> Conflict
@@ -331,6 +536,49 @@ const TimetableVisualizer = ({ clients }: TimetableVisualizerProps) => {
               </table>
             </div>
           </div>
+
+          {/* Proposed Moves List */}
+          {isOptimized && optimizedData.proposedMoves.length > 0 && (
+            <Card className="border-none shadow-lg rounded-[2.5rem] bg-white border-2 border-emerald-100 overflow-hidden animate-in slide-in-from-top-4 duration-500">
+              <CardHeader className="p-6 pb-4 bg-emerald-50/50 border-b border-emerald-100">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                  <div className="space-y-1">
+                    <CardTitle className="text-lg font-black text-emerald-900 flex items-center gap-2">
+                      <Sparkles size={20} className="text-emerald-600" /> Proposed Conflict Resolutions
+                    </CardTitle>
+                    <CardDescription className="text-emerald-700 font-medium">
+                      The following clients have been moved to adjacent open slots to resolve conflicts.
+                    </CardDescription>
+                  </div>
+                  <Button
+                    onClick={handleApplyOptimizedSchedule}
+                    disabled={applyingMoves}
+                    className="bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl h-10 px-6 font-black text-[10px] uppercase tracking-widest shadow-lg"
+                  >
+                    {applyingMoves ? <Loader2 className="animate-spin mr-2" /> : <CheckCircle2 size={14} className="mr-2" />}
+                    Apply Resolved Schedule
+                  </Button>
+                </div>
+              </CardHeader>
+              <CardContent className="p-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  {optimizedData.proposedMoves.map((move) => (
+                    <div key={move.clientId} className="p-4 bg-slate-50 rounded-2xl border border-slate-100 flex flex-col justify-between gap-3">
+                      <div className="space-y-1">
+                        <p className="font-bold text-slate-900">"{move.clientName}"</p>
+                        <p className="text-[10px] text-slate-500 font-medium">
+                          Moved from <span className="font-bold text-rose-600">{move.originalDay} at {TIME_LABELS[move.originalSlot]} (W{move.originalWeek})</span> to <span className="font-bold text-emerald-600">{move.newDay} at {TIME_LABELS[move.newSlot]} (W{move.newWeek})</span>
+                        </p>
+                      </div>
+                      <div className="p-2.5 bg-white rounded-xl border border-slate-200 text-[10px] text-slate-600 font-medium italic">
+                        "{move.reason}"
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </CardContent>
+            </Card>
+          )}
         </div>
 
         {/* Sidebar: Suggestions & Unscheduled */}

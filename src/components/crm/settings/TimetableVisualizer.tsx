@@ -21,7 +21,9 @@ import {
   RefreshCw,
   Ban,
   Loader2,
-  DollarSign
+  DollarSign,
+  ChevronUp,
+  ChevronDown
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { showSuccess, showError } from "@/utils/toast";
@@ -51,7 +53,23 @@ const TIME_LABELS: Record<string, string> = {
 };
 
 // Helper to parse preferred time string
-function parsePreferredTime(timeStr: string | null | undefined) {
+function parsePreferredTime(timeStr: string | null | undefined, clientName: string) {
+  // Prioritize Susan Elizabeth Lord in the morning (10:00 AM)
+  if (clientName.toLowerCase().includes("susan") && clientName.toLowerCase().includes("lord")) {
+    // If she has a preferred day, keep it, otherwise default to Wednesday (preferred clinic day)
+    let day = "Wednesday";
+    if (timeStr) {
+      const lower = timeStr.toLowerCase();
+      for (const d of DAYS) {
+        if (lower.includes(d.toLowerCase())) {
+          day = d;
+          break;
+        }
+      }
+    }
+    return { day, slot: "10:00" };
+  }
+
   if (!timeStr || timeStr === "No data") return null;
   const lower = timeStr.toLowerCase();
   let day: string | null = null;
@@ -76,7 +94,7 @@ function parsePreferredTime(timeStr: string | null | undefined) {
     hour = h;
   }
 
-  // Map to closest standard slot (excluding blocked slots 12:00 and 13:00)
+  // Map to closest standard slot
   const activeSlots = TIME_SLOTS.filter(slot => slot !== "12:00" && slot !== "13:00");
   let closestSlot = "10:00";
   let minDiff = Infinity;
@@ -137,7 +155,7 @@ const TimetableVisualizer = ({ clients }: TimetableVisualizerProps) => {
 
     activeClients.forEach(client => {
       const prefTimeText = client.preferred_time || client.preferredTimeAnalyzed.text;
-      const parsed = parsePreferredTime(prefTimeText);
+      const parsed = parsePreferredTime(prefTimeText, client.name);
 
       if (!parsed) {
         unscheduled.push(client);
@@ -291,8 +309,14 @@ const TimetableVisualizer = ({ clients }: TimetableVisualizerProps) => {
           const cell = grid[key];
 
           if (cell.clients.length > 1) {
-            // Sort clients by priority: keep the one with most appointments
-            const sortedClients = [...cell.clients].sort((a, b) => b.appointments.length - a.appointments.length);
+            // Sort clients by priority: keep Susan Elizabeth Lord first, then sort by most appointments
+            const sortedClients = [...cell.clients].sort((a, b) => {
+              const aIsSusan = a.name.toLowerCase().includes("susan") && a.name.toLowerCase().includes("lord");
+              const bIsSusan = b.name.toLowerCase().includes("susan") && b.name.toLowerCase().includes("lord");
+              if (aIsSusan && !bIsSusan) return -1;
+              if (!aIsSusan && bIsSusan) return 1;
+              return b.appointments.length - a.appointments.length;
+            });
             
             // Keep the primary client
             const primaryClient = sortedClients[0];
@@ -585,7 +609,7 @@ const TimetableVisualizer = ({ clients }: TimetableVisualizerProps) => {
         </Card>
 
         {/* Fortnightly Total Card */}
-        <Card className="border-none shadow-md rounded-[2rem] bg-indigo-600 text-white overflow-hidden relative group">
+        <Card className="border-none shadow-lg rounded-[2.5rem] bg-indigo-600 text-white overflow-hidden relative group">
           <div className="absolute inset-0 bg-grid-white/[0.02] pointer-events-none" />
           <CardContent className="p-6 space-y-4 relative z-10">
             <div className="flex items-center justify-between">
@@ -730,7 +754,7 @@ const TimetableVisualizer = ({ clients }: TimetableVisualizerProps) => {
                     disabled={applyingMoves}
                     className="bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl h-10 px-6 font-black text-[10px] uppercase tracking-widest shadow-lg"
                   >
-                    {applyingMoves ? <Loader2 className="animate-spin mr-2" /> : <CheckCircle2 size={14} className="mr-2" />}
+                    {applyingMoves ? <Loader2 className="mr-2 animate-spin" /> : <CheckCircle2 size={14} className="mr-2" />}
                     Apply Resolved Schedule
                   </Button>
                 </div>

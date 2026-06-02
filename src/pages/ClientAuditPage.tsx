@@ -311,6 +311,7 @@ export default function ClientAuditPage() {
         const lastSeenDate = pastApps.length > 0 ? new Date(pastApps[0].date) : null;
 
         // Find future appointments
+        const futureApps = sortedApps.filter((app) => new Date(app.date) > now);
         const hasFuture = futureApps.length > 0;
 
         // Determine follow-up status
@@ -1732,7 +1733,7 @@ export default function ClientAuditPage() {
                           </Label>
                         </div>
                       </div>
-                    </Header>
+                    </CardHeader>
                     <CardContent className="p-8 space-y-8">
                       {/* Projections Table */}
                       <div className="border border-slate-200 dark:border-slate-800 rounded-2xl overflow-hidden">

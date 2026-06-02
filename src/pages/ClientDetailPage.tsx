@@ -14,6 +14,7 @@ import {
 } from "lucide-react";
 import { format } from "date-fns";
 import { Client, Appointment } from "@/types/crm";
+import { parseClientJournal } from "@/utils/journal-helper";
 import {
   Dialog,
   DialogContent,
@@ -704,7 +705,7 @@ const ClientDetailPage = () => {
                       </CardHeader>
                       <CardContent>
                         <p className="text-sm text-amber-900/80 whitespace-pre-wrap leading-relaxed font-medium">
-                          {client.journal || "No personal reflections recorded."}
+                          {parseClientJournal(client.journal).notes || "No personal reflections recorded."}
                         </p>
                       </CardContent>
                     </Card>

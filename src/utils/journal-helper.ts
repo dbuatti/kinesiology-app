@@ -1,0 +1,30 @@
+"use client";
+
+export interface ClientJournalData {
+  notes: string;
+  rate_increase_contacted?: boolean;
+  rate_increase_contacted_at?: string | null;
+  upgrade_count?: number;
+}
+
+export function parseClientJournal(raw: string | null | undefined): ClientJournalData {
+  if (!raw) return { notes: "" };
+  try {
+    const parsed = JSON.parse(raw);
+    if (parsed && typeof parsed === 'object' && ('notes' in parsed || 'rate_increase_contacted' in parsed || 'upgrade_count' in parsed)) {
+      return {
+        notes: parsed.notes || "",
+        rate_increase_contacted: parsed.rate_increase_contacted || false,
+        rate_increase_contacted_at: parsed.rate_increase_contacted_at || null,
+        upgrade_count: parsed.upgrade_count || 0
+      };
+    }
+  } catch (e) {
+    // Not JSON, treat as raw notes
+  }
+  return { notes: raw || "", rate_increase_contacted: false, rate_increase_contacted_at: null, upgrade_count: 0 };
+}
+
+export function stringifyClientJournal(data: ClientJournalData): string {
+  return JSON.stringify(data);
+}

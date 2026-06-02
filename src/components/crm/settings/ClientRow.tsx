@@ -6,7 +6,8 @@ import { format, formatDistanceToNow, differenceInMonths } from "date-fns";
 import { 
   Mail, Phone, CalendarPlus, Clock, CreditCard, ArrowRight,
   Check, X, Trash2, Loader2, Send, RefreshCw, AlertTriangle, Flame,
-  MoreHorizontal, CalendarPlus as CalendarPlusIcon, Edit2, Users
+  MoreHorizontal, CalendarPlus as CalendarPlusIcon, Edit2, Users,
+  MessageSquare, CheckCircle2, Copy, Sparkles, ArrowUpRight
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -25,11 +26,20 @@ import {
   DropdownMenuTrigger,
   DropdownMenuSeparator,
 } from "@/components/ui/dropdown-menu";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+} from "@/components/ui/dialog";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { supabase } from "@/integrations/supabase/client";
 import { showSuccess, showError } from "@/utils/toast";
 import { cn } from "@/lib/utils";
 import { Client, Appointment } from "@/types/crm";
+import { parseClientJournal, stringifyClientJournal } from "@/utils/journal-helper";
 
 interface ClientWithAppointments extends Client {
   appointments: Appointment[];
@@ -80,6 +90,10 @@ export const ClientRow = ({
   onQuickBook,
   onRefresh,
 }: ClientRowProps) => {
+  const [isEmailModalOpen, setIsEmailModalOpen] = useState(false);
+  const [copiedEmail, setCopiedEmail] = useState(false);
+  const [updatingStatus, setUpdatingStatus] = useState(false);
+
   const lastSeenText = client.lastSeenDate ? format(client.lastSeenDate, "MMM d, yyyy") : "Never";
   const relativeTime = client.lastSeenDate ? formatDistanceToNow(client.lastSeenDate, { addSuffix: true }) : "";
 
@@ -99,6 +113,9 @@ export const ClientRow = ({
   const rateUpdatedDate = rateUpdatedDateStr ? new Date(rateUpdatedDateStr) : new Date(Date.now() - 7 * 30 * 24 * 60 * 60 * 1000);
   const monthsSinceUpdate = differenceInMonths(new Date(), rateUpdatedDate);
   const needsReview = monthsSinceUpdate >= 6;
+
+  // Parse Journal JSON for contacted status and upgrade count
+  const journalData = useMemo(() => parseClientJournal(client.journal), [client.journal]);
 
   // Re-engagement Priority Calculations
   const reengagementTag = client.reengagement_tag;
@@ -204,6 +221,100 @@ export const ClientRow = ({
     }
   };
 
+  // Calculate next month name dynamically
+  const nextMonthName = useMemo(() => {
+    const nextMonth = new Date();
+    nextMonth.setMonth(nextMonth.getMonth() + 1);
+    return format(nextMonth, "MMMM");
+  }, []);
+
+  // Generate personalized email template
+  const emailTemplate = useMemo(() => {
+    const firstName = client.name.split(' ')[0];
+    return `Hi ${firstName},
+
+I hope you're doing well and having a great week!
+
+I wanted to reach out and say a huge thank you for working with me and trusting me with your health and integration journey. It is always a privilege to support you.
+
+I'm writing to let you know that starting next month (${nextMonthName}), my standard session rates will be increasing to $${targetRate}. 
+
+This adjustment allows me to continue investing in advanced clinical training, specialized protocols, and high-value integration resources to support your healing in the deepest way possible.
+
+If you have any questions or would like to discuss this, please feel free to reply directly to this email.
+
+Looking forward to our next session!
+
+Warmly,
+Daniele`;
+  }, [client.name, nextMonthName, targetRate]);
+
+  const handleCopyEmail = () => {
+    navigator.clipboard.writeText(emailTemplate);
+    setCopiedEmail(true);
+    showSuccess("Email template copied to clipboard!");
+    setTimeout(() => setCopiedEmail(false), 2000);
+  };
+
+  const handleMarkContacted = async () => {
+    setUpdatingStatus(true);
+    try {
+      const updatedJournal = stringifyClientJournal({
+        ...journalData,
+        rate_increase_contacted: true,
+        rate_increase_contacted_at: new Date().toISOString()
+      });
+
+      const { error } = await supabase
+        .from('clients')
+        .update({ journal: updatedJournal })
+        .eq('id', client.id);
+
+      if (error) throw error;
+      showSuccess(`${client.name} marked as Contacted.`);
+      setIsEmailModalOpen(false);
+      onRefresh();
+    } catch (err) {
+      showError("Failed to update contacted status.");
+    } finally {
+      setUpdatingStatus(false);
+    }
+  };
+
+  const handleConfirmUpgrade = async () => {
+    if (!confirm(`Confirm rate upgrade for ${client.name} to $${targetRate}? This will update their current standard rate, increment their upgrade counter, and reset their contacted status.`)) {
+      return;
+    }
+
+    setUpdatingStatus(true);
+    try {
+      const todayStr = new Date().toISOString();
+      const updatedJournal = stringifyClientJournal({
+        ...journalData,
+        rate_increase_contacted: false,
+        rate_increase_contacted_at: null,
+        upgrade_count: (journalData.upgrade_count || 0) + 1
+      });
+
+      const { error } = await supabase
+        .from('clients')
+        .update({ 
+          standard_rate: targetRate,
+          rate_updated_at: todayStr,
+          journal: updatedJournal
+        })
+        .eq('id', client.id);
+
+      if (error) throw error;
+      showSuccess(`Successfully upgraded ${client.name} to $${targetRate}!`);
+      onRefresh();
+    } catch (err) {
+      showError("Failed to execute rate upgrade.");
+    } finally {
+      setUpdatingStatus(false);
+    }
+  };
+
   return (
     <tr className={cn(
       "hover:bg-muted/10 transition-colors group",
@@ -239,6 +350,8 @@ export const ClientRow = ({
             {client.pronouns && <span>{client.pronouns}</span>}
             {client.pronouns && <span>•</span>}
             <span>Age: {calculateAge(client.born)}</span>
+            <span>•</span>
+            <span className="text-indigo-600 font-bold">Upgrades: {journalData.upgrade_count || 0}</span>
           </div>
         </div>
       </td>
@@ -453,6 +566,48 @@ export const ClientRow = ({
       {/* Row Actions */}
       <td className="p-4 pr-6 text-right">
         <div className="flex items-center justify-end gap-2">
+          {/* Rate Increase Follow-up Action */}
+          {client.standard_rate !== targetRate && (
+            <div className="flex items-center gap-1.5">
+              {journalData.rate_increase_contacted ? (
+                <TooltipProvider>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={handleConfirmUpgrade}
+                        disabled={updatingStatus}
+                        className="h-8 rounded-xl border-emerald-200 text-emerald-600 hover:bg-emerald-50 font-black text-[9px] uppercase tracking-widest flex items-center gap-1"
+                      >
+                        {updatingStatus ? <Loader2 className="animate-spin" size={10} /> : <ArrowUpRight size={12} />}
+                        Upgrade
+                      </Button>
+                    </TooltipTrigger>
+                    <TooltipContent className="rounded-xl font-bold text-xs p-2">Confirm Rate Upgrade</TooltipContent>
+                  </Tooltip>
+                </TooltipProvider>
+              ) : (
+                <TooltipProvider>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => setIsEmailModalOpen(true)}
+                        className="h-8 rounded-xl border-indigo-200 text-indigo-600 hover:bg-indigo-50 font-black text-[9px] uppercase tracking-widest flex items-center gap-1"
+                      >
+                        <MessageSquare size={12} />
+                        Contact
+                      </Button>
+                    </TooltipTrigger>
+                    <TooltipContent className="rounded-xl font-bold text-xs p-2">Generate Rate Increase Email</TooltipContent>
+                  </Tooltip>
+                </TooltipProvider>
+              )}
+            </div>
+          )}
+
           {/* Quick Book */}
           <TooltipProvider>
             <Tooltip>
@@ -460,7 +615,7 @@ export const ClientRow = ({
                 <Button
                   variant="ghost"
                   size="icon"
-                  onClick={(e) => { e.stopPropagation(); onQuickBook(client.id); }}
+                  onClick={(e) => { e.preventDefault(); e.stopPropagation(); onQuickBook(client.id); }}
                   className="h-8 w-8 rounded-xl text-indigo-600 hover:bg-indigo-50 dark:hover:bg-indigo-950/30"
                 >
                   <CalendarPlusIcon size={16} />
@@ -517,6 +672,69 @@ export const ClientRow = ({
           </DropdownMenu>
         </div>
       </td>
+
+      {/* RATE INCREASE EMAIL DIALOG */}
+      <Dialog open={isEmailModalOpen} onOpenChange={setIsEmailModalOpen}>
+        <DialogContent className="sm:max-w-[600px] rounded-[2.5rem] p-10">
+          <DialogHeader>
+            <div className="flex items-center gap-4 mb-2">
+              <div className="w-14 h-14 rounded-2xl bg-indigo-600 text-white flex items-center justify-center shadow-xl">
+                <MessageSquare size={28} />
+              </div>
+              <div>
+                <DialogTitle className="text-2xl font-black">Rate Increase Notification</DialogTitle>
+                <DialogDescription className="text-base font-medium">
+                  Personalized email template for {client.name}.
+                </DialogDescription>
+              </div>
+            </div>
+          </DialogHeader>
+
+          <div className="space-y-6 py-4">
+            <div className="p-4 bg-indigo-50 rounded-2xl border border-indigo-100 flex items-center justify-between">
+              <div className="space-y-0.5">
+                <p className="text-[9px] font-black text-indigo-600 uppercase tracking-widest">Target Rate</p>
+                <p className="text-lg font-black text-indigo-900">${targetRate} / session</p>
+              </div>
+              <Badge className="bg-indigo-600 text-white border-none font-black text-[8px] uppercase tracking-widest px-3 py-1 rounded-full">
+                Effective: {nextMonthName}
+              </Badge>
+            </div>
+
+            <div className="relative">
+              <Textarea
+                readOnly
+                value={emailTemplate}
+                className="min-h-[250px] rounded-2xl border-2 border-slate-100 bg-slate-50/50 p-6 text-sm font-medium leading-relaxed resize-none"
+              />
+              <Button
+                onClick={handleCopyEmail}
+                className={cn(
+                  "absolute bottom-4 right-4 h-10 px-4 rounded-xl font-black text-[10px] uppercase tracking-widest transition-all shadow-md",
+                  copiedEmail ? "bg-emerald-600 text-white" : "bg-slate-900 text-white hover:bg-slate-800"
+                )}
+              >
+                {copiedEmail ? <Check size={14} className="mr-1.5" /> : <Copy size={14} className="mr-1.5" />}
+                {copiedEmail ? "Copied!" : "Copy Email"}
+              </Button>
+            </div>
+          </div>
+
+          <DialogFooter className="gap-2">
+            <Button variant="outline" onClick={() => setIsEmailModalOpen(false)} className="rounded-xl">
+              Cancel
+            </Button>
+            <Button 
+              onClick={handleMarkContacted} 
+              disabled={updatingStatus}
+              className="rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-black text-xs uppercase tracking-widest px-6"
+            >
+              {updatingStatus ? <Loader2 className="animate-spin mr-2" /> : <CheckCircle2 size={16} className="mr-2" />}
+              Mark as Contacted
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </tr>
   );
 };

@@ -20,6 +20,7 @@ import { Loader2, User, Activity, ShieldAlert } from "lucide-react";
 import { showSuccess, showError } from "@/utils/toast";
 import { Client } from "@/types/crm";
 import { cn } from "@/lib/utils";
+import { parseClientJournal, stringifyClientJournal } from "@/utils/journal-helper";
 
 const formSchema = z.object({
   name: z.string().min(2, "Name must be at least 2 characters"),
@@ -52,6 +53,8 @@ const ClientForm = ({ onSuccess, initialData }: ClientFormProps) => {
   const { session } = useAuth();
   const [submitting, setSubmitting] = useState(false);
 
+  const journalData = useMemo(() => parseClientJournal(initialData?.journal), [initialData?.journal]);
+
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -65,7 +68,7 @@ const ClientForm = ({ onSuccess, initialData }: ClientFormProps) => {
       marital_status: initialData?.marital_status || "",
       children: initialData?.children || "",
       chatgpt_url: initialData?.chatgpt_url || "",
-      journal: initialData?.journal || "",
+      journal: journalData.notes || "",
       emergency_contact_name: initialData?.emergency_contact_name || "",
       emergency_contact_phone: initialData?.emergency_contact_phone || "",
       medications_supplements: initialData?.medications_supplements || "",
@@ -82,9 +85,14 @@ const ClientForm = ({ onSuccess, initialData }: ClientFormProps) => {
     setSubmitting(true);
 
     try {
-      const suburbsArray = values.suburbs 
-        ? values.suburbs.split(",").map(s => s.trim()).filter(s => s.length > 0) 
+      const suburbsArray = values.suburbs
+        ? values.suburbs.split(",").map(s => s.trim()).filter(s => s.length > 0)
         : [];
+
+      const updatedJournal = stringifyClientJournal({
+        ...journalData,
+        notes: values.journal || ""
+      });
 
       const payload = {
         user_id: session.user.id,
@@ -98,7 +106,7 @@ const ClientForm = ({ onSuccess, initialData }: ClientFormProps) => {
         marital_status: values.marital_status || null,
         children: values.children || null,
         chatgpt_url: values.chatgpt_url || null,
-        journal: values.journal || null,
+        journal: updatedJournal,
         emergency_contact_name: values.emergency_contact_name || null,
         emergency_contact_phone: values.emergency_contact_phone || null,
         medications_supplements: values.medications_supplements || null,

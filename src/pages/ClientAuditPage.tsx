@@ -287,6 +287,7 @@ export default function ClientAuditPage() {
         const lastSeenDate = pastApps.length > 0 ? new Date(pastApps[0].date) : null;
 
         // Find future appointments
+        const futureApps = sortedApps.filter((app) => new Date(app.date) > now);
         const hasFuture = futureApps.length > 0;
 
         // Determine follow-up status

@@ -11,6 +11,7 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Slider } from "@/components/ui/slider";
+import { Switch } from "@/components/ui/switch";
 import {
   Select,
   SelectContent,
@@ -45,7 +46,13 @@ import {
   Clock,
   Info,
   FileText,
-  HelpCircle
+  HelpCircle,
+  RefreshCw,
+  Check,
+  X,
+  ArrowRightLeft,
+  Target,
+  ShieldAlert
 } from "lucide-react";
 import { format, formatDistanceToNow } from "date-fns";
 import { Client, Appointment } from "@/types/crm";
@@ -98,6 +105,12 @@ export default function ClientAuditPage() {
   const [simulatorClients, setSimulatorClients] = useState(25);
   const [simulatorFrequency, setSimulatorFrequency] = useState(1.5);
 
+  // Salary Simulator State
+  const [isSandboxActive, setIsSandboxActive] = useState(false);
+  const [globalSimRate, setGlobalSimRate] = useState(150);
+  const [globalSimFrequency, setGlobalSimFrequency] = useState(1.5);
+  const [clientOverrides, setClientOverrides] = useState<Record<string, { rate?: number; frequency?: number; active?: boolean }>>({});
+
   useEffect(() => {
     fetchData();
   }, []);
@@ -123,7 +136,15 @@ export default function ClientAuditPage() {
 
       if (appointmentsError) throw appointmentsError;
 
-      const processedClients: ClientWithAppointments[] = (clientsData || []).map((client) => {
+      // Filter out practitioner self-profiles and test/bot accounts
+      const filteredRawClients = (clientsData || []).filter(
+        (client) => 
+          client.name !== "Daniele Buatti" && 
+          client.pronouns !== "Test/Bot" && 
+          client.is_practitioner !== true
+      );
+
+      const processedClients: ClientWithAppointments[] = filteredRawClients.map((client) => {
         const clientApps = (appointmentsData || []).filter(
           (app) => app.client_id === client.id
         );
@@ -487,6 +508,107 @@ export default function ClientAuditPage() {
   const revenueIncrease = targetProjectedRevenue - currentProjectedRevenue;
   const percentageIncrease = currentProjectedRevenue > 0 ? (revenueIncrease / currentProjectedRevenue) * 100 : 0;
 
+  // Salary Simulator Calculations (Last Month Clients)
+  const salaryMetrics = useMemo(() => {
+    const lastMonthClients = clients.filter(
+      (c) => c.lastSeenDate && c.lastSeenDate >= oneMonthAgo
+    );
+
+    let currentWeeklyTotal = 0;
+    let simWeeklyTotal = 0;
+
+    const clientDetails = lastMonthClients.map(client => {
+      const rate = client.standard_rate ?? 50;
+      
+      // Calculate actual monthly frequency based on last 90 days
+      const recentAppsCount = client.appointments.filter(app => {
+        const appDate = new Date(app.date);
+        const diffDays = (now.getTime() - appDate.getTime()) / (1000 * 60 * 60 * 24);
+        return diffDays >= 0 && diffDays <= 90;
+      }).length;
+      
+      let currentMonthlyFreq = recentAppsCount / 3;
+      if (currentMonthlyFreq === 0) {
+        currentMonthlyFreq = 1.0; // default fallback
+      }
+
+      const currentWeeklyFreq = currentMonthlyFreq / 4.33;
+      const currentWeeklyRev = rate * currentWeeklyFreq;
+      currentWeeklyTotal += currentWeeklyRev;
+
+      // Sandbox calculations
+      const override = clientOverrides[client.id] || {};
+      const isActive = override.active !== false; // default to active
+      
+      let simRate = rate;
+      let simFreq = currentMonthlyFreq;
+
+      if (isSandboxActive) {
+        if (override.rate !== undefined) {
+          simRate = override.rate;
+        } else {
+          simRate = globalSimRate;
+        }
+
+        if (override.frequency !== undefined) {
+          simFreq = override.frequency;
+        } else {
+          simFreq = globalSimFrequency;
+        }
+      }
+
+      const simWeeklyFreq = isActive ? (simFreq / 4.33) : 0;
+      const simWeeklyRev = simRate * simWeeklyFreq;
+      if (isActive) {
+        simWeeklyTotal += simWeeklyRev;
+      }
+
+      return {
+        id: client.id,
+        name: client.name,
+        currentRate: rate,
+        currentFreq: currentMonthlyFreq,
+        currentWeeklyRev,
+        simRate,
+        simFreq,
+        simWeeklyRev,
+        isActive
+      };
+    });
+
+    return {
+      clientsCount: lastMonthClients.length,
+      clientDetails,
+      current: {
+        weekly: currentWeeklyTotal,
+        fortnightly: currentWeeklyTotal * 2,
+        monthly: currentWeeklyTotal * 4.33,
+        annual: currentWeeklyTotal * 52,
+        avgRate: lastMonthClients.length > 0 ? lastMonthClients.reduce((acc, c) => acc + (c.standard_rate ?? 50), 0) / lastMonthClients.length : 0
+      },
+      simulated: {
+        weekly: simWeeklyTotal,
+        fortnightly: simWeeklyTotal * 2,
+        monthly: simWeeklyTotal * 4.33,
+        annual: simWeeklyTotal * 52,
+        avgRate: lastMonthClients.length > 0 ? clientDetails.reduce((acc, c) => acc + (c.isActive ? c.simRate : 0), 0) / clientDetails.filter(c => c.isActive).length : 0
+      }
+    };
+  }, [clients, isSandboxActive, globalSimRate, globalSimFrequency, clientOverrides]);
+
+  const handleClientOverrideChange = (clientId: string, field: 'rate' | 'frequency' | 'active', value: any) => {
+    setClientOverrides(prev => {
+      const current = prev[clientId] || {};
+      return {
+        ...prev,
+        [clientId]: {
+          ...current,
+          [field]: value
+        }
+      };
+    });
+  };
+
   return (
     <AppLayout>
       <div className="space-y-8 animate-in fade-in duration-700 pb-20">
@@ -505,9 +627,12 @@ export default function ClientAuditPage() {
           </div>
         ) : (
           <Tabs defaultValue="rates" className="space-y-8">
-            <TabsList className="bg-muted/50 p-1 rounded-2xl border border-border/50 w-full max-w-md grid grid-cols-3">
+            <TabsList className="bg-muted/50 p-1 rounded-2xl border border-border/50 w-full max-w-xl grid grid-cols-4">
               <TabsTrigger value="rates" className="rounded-xl font-bold text-xs py-2.5">
                 Rates & Recency
+              </TabsTrigger>
+              <TabsTrigger value="salary" className="rounded-xl font-bold text-xs py-2.5">
+                Salary Simulator
               </TabsTrigger>
               <TabsTrigger value="audit" className="rounded-xl font-bold text-xs py-2.5">
                 Full Audit
@@ -772,7 +897,242 @@ export default function ClientAuditPage() {
               </div>
             </TabsContent>
 
-            {/* TAB 2: FULL AUDIT & FINANCIALS */}
+            {/* TAB 2: SALARY SIMULATOR */}
+            <TabsContent value="salary" className="space-y-8">
+              {/* Top Row: Progress to $150/session & Active Client Base */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                {/* Progress to $150/session */}
+                <Card className="border-none shadow-md rounded-[2rem] bg-card overflow-hidden relative group">
+                  <CardContent className="p-8 space-y-4">
+                    <div className="flex items-center justify-between">
+                      <span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Progress to $150/Session</span>
+                      <div className="w-8 h-8 rounded-lg bg-indigo-50 dark:bg-indigo-950/30 text-indigo-600 flex items-center justify-center">
+                        <Target size={16} />
+                      </div>
+                    </div>
+                    <div className="space-y-2">
+                      <div className="flex items-baseline gap-2">
+                        <h3 className="text-4xl font-black text-foreground">
+                          ${isSandboxActive ? salaryMetrics.simulated.avgRate.toFixed(0) : salaryMetrics.current.avgRate.toFixed(0)}
+                        </h3>
+                        <span className="text-muted-foreground text-sm font-bold">/ $150 target</span>
+                      </div>
+                      <Progress 
+                        value={((isSandboxActive ? salaryMetrics.simulated.avgRate : salaryMetrics.current.avgRate) / 150) * 100} 
+                        className="h-2 bg-muted [&>div]:bg-indigo-600" 
+                      />
+                      <p className="text-xs text-muted-foreground font-medium">
+                        {isSandboxActive ? "Sandbox" : "Current"} average rate of clients seen in the last 30 days.
+                      </p>
+                    </div>
+                  </CardContent>
+                </Card>
+
+                {/* Active Client Base */}
+                <Card className="border-none shadow-md rounded-[2rem] bg-card overflow-hidden relative group">
+                  <CardContent className="p-8 space-y-4">
+                    <div className="flex items-center justify-between">
+                      <span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Active Client Base</span>
+                      <div className="w-8 h-8 rounded-lg bg-emerald-50 dark:bg-emerald-950/30 text-emerald-600 flex items-center justify-center">
+                        <Users size={16} />
+                      </div>
+                    </div>
+                    <div className="space-y-2">
+                      <div className="flex items-baseline gap-2">
+                        <h3 className="text-4xl font-black text-foreground">{salaryMetrics.clientsCount}</h3>
+                        <span className="text-muted-foreground text-sm font-bold">clients seen in last 30 days</span>
+                      </div>
+                      <p className="text-xs text-muted-foreground font-medium leading-relaxed">
+                        These clients represent your active recurring practice.
+                      </p>
+                    </div>
+                  </CardContent>
+                </Card>
+              </div>
+
+              {/* Main Grid: Projections vs Client Sandbox */}
+              <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
+                {/* Left Column: Projections */}
+                <div className="lg:col-span-7 space-y-6">
+                  <Card className="border-none shadow-lg rounded-[2.5rem] bg-card overflow-hidden">
+                    <CardHeader className="p-8 pb-4 border-b border-border bg-muted/30">
+                      <div className="flex items-center justify-between">
+                        <div className="space-y-1">
+                          <CardTitle className="text-xl font-black flex items-center gap-3">
+                            <TrendingUp size={22} className="text-indigo-600" /> Salary Projections
+                          </CardTitle>
+                          <CardDescription className="font-medium">Based on active clients seen in the last 30 days.</CardDescription>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <Switch 
+                            id="sandbox-mode-toggle"
+                            checked={isSandboxActive}
+                            onCheckedChange={setIsSandboxActive}
+                            className="data-[state=checked]:bg-indigo-600"
+                          />
+                          <Label htmlFor="sandbox-mode-toggle" className="text-[10px] font-black uppercase tracking-widest text-slate-500 cursor-pointer">
+                            Sandbox Mode
+                          </Label>
+                        </div>
+                      </div>
+                    </CardHeader>
+                    <CardContent className="p-8 space-y-8">
+                      {/* Projections Table */}
+                      <div className="border border-slate-200 rounded-2xl overflow-hidden">
+                        <div className="grid grid-cols-3 bg-slate-50 border-b border-slate-200 text-[10px] font-black uppercase tracking-widest text-slate-500 p-4">
+                          <div>Frequency</div>
+                          <div>Current Salary</div>
+                          <div className="text-indigo-600">Sandbox Salary</div>
+                        </div>
+                        <div className="divide-y divide-slate-100">
+                          {[
+                            { label: "Weekly", current: salaryMetrics.current.weekly, sim: salaryMetrics.simulated.weekly },
+                            { label: "Fortnightly", current: salaryMetrics.current.fortnightly, sim: salaryMetrics.simulated.fortnightly },
+                            { label: "Monthly", current: salaryMetrics.current.monthly, sim: salaryMetrics.simulated.monthly },
+                            { label: "Annual (Salary)", current: salaryMetrics.current.annual, sim: salaryMetrics.simulated.annual, highlight: true },
+                          ].map((row) => (
+                            <div key={row.label} className={cn(
+                              "grid grid-cols-3 p-4 items-center text-sm",
+                              row.highlight ? "bg-indigo-50/30 font-bold" : ""
+                            )}>
+                              <div className="font-bold text-slate-700">{row.label}</div>
+                              <div className="text-slate-600">${Math.round(row.current).toLocaleString()}</div>
+                              <div className={cn("font-black", isSandboxActive ? "text-indigo-600" : "text-slate-400")}>
+                                ${Math.round(row.sim).toLocaleString()}
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+
+                      {/* Global Sandbox Controls */}
+                      {isSandboxActive && (
+                        <div className="space-y-6 p-6 bg-slate-50 rounded-2xl border border-slate-200 animate-in slide-in-from-top-2 duration-300">
+                          <h4 className="text-xs font-black uppercase tracking-widest text-slate-500 flex items-center gap-2">
+                            <Sparkles size={14} className="text-indigo-500" /> Global Sandbox Controls
+                          </h4>
+                          
+                          {/* Global Rate Slider */}
+                          <div className="space-y-2">
+                            <div className="flex justify-between items-center">
+                              <label className="text-xs font-bold text-slate-600">
+                                Global Simulated Rate
+                              </label>
+                              <span className="text-sm font-black text-indigo-600">${globalSimRate}/session</span>
+                            </div>
+                            <Slider
+                              value={[globalSimRate]}
+                              onValueChange={(val) => setGlobalSimRate(val[0])}
+                              min={30}
+                              max={200}
+                              step={5}
+                            />
+                          </div>
+
+                          {/* Global Frequency Slider */}
+                          <div className="space-y-2">
+                            <div className="flex justify-between items-center">
+                              <label className="text-xs font-bold text-slate-600">
+                                Global Simulated Frequency
+                              </label>
+                              <span className="text-sm font-black text-indigo-600">{globalSimFrequency} sessions/mo</span>
+                            </div>
+                            <Slider
+                              value={[globalSimFrequency]}
+                              onValueChange={(val) => setGlobalSimFrequency(val[0])}
+                              min={0.5}
+                              max={4.0}
+                              step={0.1}
+                            />
+                          </div>
+                        </div>
+                      )}
+                    </CardContent>
+                  </Card>
+                </div>
+
+                {/* Right Column: Client-by-Client Sandbox */}
+                <div className="lg:col-span-5 space-y-6">
+                  <Card className="border-none shadow-lg rounded-[2.5rem] bg-card overflow-hidden">
+                    <CardHeader className="p-8 pb-4 border-b border-border bg-muted/30">
+                      <CardTitle className="text-lg font-bold flex items-center gap-2">
+                        <Users size={20} className="text-indigo-600" /> Client Sandbox
+                      </CardTitle>
+                      <CardDescription>Customize individual client rates and frequencies.</CardDescription>
+                    </CardHeader>
+                    <CardContent className="p-6">
+                      <ScrollArea className="h-[450px] pr-4">
+                        <div className="space-y-4">
+                          {salaryMetrics.clientDetails.map((client) => {
+                            const override = clientOverrides[client.id] || {};
+                            const isActive = override.active !== false;
+                            const rate = override.rate !== undefined ? override.rate : (isSandboxActive ? globalSimRate : client.currentRate);
+                            const freq = override.frequency !== undefined ? override.frequency : (isSandboxActive ? globalSimFrequency : client.currentFreq);
+
+                            return (
+                              <div key={client.id} className={cn(
+                                "p-4 rounded-2xl border transition-all space-y-3",
+                                isActive ? "bg-white border-slate-200 shadow-sm" : "bg-slate-50 border-slate-100 opacity-50"
+                              )}>
+                                <div className="flex items-center justify-between">
+                                  <div className="flex items-center gap-2">
+                                    <Switch 
+                                      checked={isActive}
+                                      onCheckedChange={(checked) => handleClientOverrideChange(client.id, 'active', checked)}
+                                      className="data-[state=checked]:bg-emerald-500 scale-75"
+                                    />
+                                    <span className="font-bold text-sm text-slate-900">{client.name}</span>
+                                  </div>
+                                  <Badge variant="outline" className="text-[8px] font-black uppercase">
+                                    ${Math.round(client.currentWeeklyRev * 52).toLocaleString()}/yr
+                                  </Badge>
+                                </div>
+
+                                {isActive && isSandboxActive && (
+                                  <div className="space-y-3 pt-2 border-t border-slate-100 animate-in fade-in duration-300">
+                                    {/* Individual Rate Slider */}
+                                    <div className="space-y-1">
+                                      <div className="flex justify-between text-[9px] font-bold text-slate-500">
+                                        <span>Simulated Rate</span>
+                                        <span className="text-indigo-600 font-black">${rate}</span>
+                                      </div>
+                                      <Slider 
+                                        value={[rate]}
+                                        onValueChange={(val) => handleClientOverrideChange(client.id, 'rate', val[0])}
+                                        min={0}
+                                        max={200}
+                                        step={5}
+                                      />
+                                    </div>
+
+                                    {/* Individual Frequency Slider */}
+                                    <div className="space-y-1">
+                                      <div className="flex justify-between text-[9px] font-bold text-slate-500">
+                                        <span>Simulated Sessions/Mo</span>
+                                        <span className="text-indigo-600 font-black">{freq.toFixed(1)}</span>
+                                      </div>
+                                      <Slider 
+                                        value={[freq]}
+                                        onValueChange={(val) => handleClientOverrideChange(client.id, 'frequency', val[0])}
+                                        min={0.5}
+                                        max={4.0}
+                                        step={0.1}
+                                      />
+                                    </div>
+                                  </div>
+                                )}
+                              </div>
+                            );
+                          })}
+                        </div>
+                      </ScrollArea>
+                    </CardContent>
+                  </Card>
+                </div>
+              </div>
+            </TabsContent>
+
+            {/* TAB 3: FULL AUDIT & FINANCIALS */}
             <TabsContent value="audit" className="space-y-8">
               {/* Key Metrics Grid */}
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6">
@@ -914,7 +1274,7 @@ export default function ClientAuditPage() {
               </Card>
             </TabsContent>
 
-            {/* TAB 3: AI SUGGESTIONS */}
+            {/* TAB 4: AI SUGGESTIONS */}
             <TabsContent value="suggestions" className="space-y-8">
               {/* Goal Banner */}
               <Card className="border-none shadow-2xl rounded-[3rem] bg-slate-900 text-white overflow-hidden relative group">

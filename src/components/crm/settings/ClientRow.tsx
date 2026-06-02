@@ -7,11 +7,12 @@ import {
   Mail, Phone, CalendarPlus, Clock, CreditCard, ArrowRight,
   Check, X, Trash2, Loader2, Send, RefreshCw, AlertTriangle, Flame,
   MoreHorizontal, CalendarPlus as CalendarPlusIcon, Edit2, Users,
-  MessageSquare, CheckCircle2, Copy, Sparkles, ArrowUpRight
+  MessageSquare, CheckCircle2, Copy, Sparkles, ArrowUpRight, Lock
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
 import {
   Select,
   SelectContent,
@@ -19,13 +20,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-  DropdownMenuSeparator,
-} from "@/components/ui/dropdown-menu";
 import {
   Dialog,
   DialogContent,
@@ -98,7 +92,7 @@ export const ClientRow = ({
   const relativeTime = client.lastSeenDate ? formatDistanceToNow(client.lastSeenDate, { addSuffix: true }) : "";
 
   const futureApps = client.appointments.filter(app => new Date(app.date) > new Date());
-  const nextApp = futureApps.length > 0 ? [...futureApps].sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime())[0] : null;
+  const nextApp = futureApps.length > 0 ? [...futureApps].sort((a, b) => new Date(a.date).getTime() - new Date(a.date).getTime())[0] : null;
   const nextAppText = nextApp ? format(new Date(nextApp.date), "MMM d, yyyy") : null;
   const nextAppRelative = nextApp ? formatDistanceToNow(new Date(nextApp.date), { addSuffix: true }) : null;
 
@@ -134,8 +128,8 @@ export const ClientRow = ({
     if (client.lastSeenDate) {
       const diffDays = (new Date().getTime() - client.lastSeenDate.getTime()) / (1000 * 60 * 60 * 24);
       // Closer to 90 days = higher score. If 90 days, 30 points. If 365 days, 0 points.
-      const recencyScore = Math.max(0, 30 - Math.floor((diffDays - 90) / 10));
-      score += recencyScore;
+      const textScore = Math.max(0, 30 - Math.floor((diffDays - 90) / 10));
+      score += textScore;
     }
     
     // 3. Manual Tag (max 30 points)
@@ -569,7 +563,21 @@ Daniele`;
           {/* Rate Increase Follow-up Action */}
           {client.standard_rate !== targetRate && (
             <div className="flex items-center gap-1.5">
-              {journalData.rate_increase_contacted ? (
+              {client.appointments.length < 8 ? (
+                <TooltipProvider>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <div className="h-8 px-3 rounded-xl border border-slate-200 bg-slate-50 text-slate-400 font-black text-[9px] uppercase tracking-widest flex items-center gap-1 cursor-help">
+                        <Lock size={12} />
+                        Locked ({client.appointments.length}/8)
+                      </div>
+                    </TooltipTrigger>
+                    <TooltipContent className="rounded-xl font-bold text-xs p-2">
+                      Clients need at least 8 sessions before they can be upgraded.
+                    </TooltipContent>
+                  </Tooltip>
+                </TooltipProvider>
+              ) : journalData.rate_increase_contacted ? (
                 <TooltipProvider>
                   <Tooltip>
                     <TooltipTrigger asChild>

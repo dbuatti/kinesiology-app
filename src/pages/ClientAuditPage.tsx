@@ -233,6 +233,19 @@ export default function ClientAuditPage() {
     };
   };
 
+  const getClientAge = (bornStr: string | Date | null) => {
+    if (!bornStr) return "N/A";
+    try {
+      const born = new Date(bornStr);
+      if (isNaN(born.getTime())) return "N/A";
+      const ageDifMs = Date.now() - born.getTime();
+      const ageDate = new Date(ageDifMs);
+      return Math.abs(ageDate.getUTCFullYear() - 1970);
+    } catch {
+      return "N/A";
+    }
+  };
+
   const handleRateChange = async (clientId: string, rateValue: number) => {
     if (rateValue === -1) {
       // Custom rate selected
@@ -363,8 +376,8 @@ export default function ClientAuditPage() {
       const rateB = b.standard_rate || 0;
       comparison = rateA - rateB;
     } else if (sortBy === "age") {
-      const ageA = typeof calculateAge(a.born) === "number" ? (calculateAge(a.born) as number) : 0;
-      const ageB = typeof calculateAge(b.born) === "number" ? (calculateAge(b.born) as number) : 0;
+      const ageA = typeof getClientAge(a.born) === "number" ? (getClientAge(a.born) as number) : 0;
+      const ageB = typeof getClientAge(b.born) === "number" ? (getClientAge(b.born) as number) : 0;
       comparison = ageA - ageB;
     }
 
@@ -530,7 +543,7 @@ export default function ClientAuditPage() {
                           <SelectTrigger className="w-[130px] rounded-xl border-border/60 bg-muted/30">
                             <SelectValue placeholder="Rate Tier" />
                           </SelectTrigger>
-                          <SelectContent className="rounded-xl">
+                          <SelectContent className="rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-2xl">
                             <SelectItem value="all">All Rates</SelectItem>
                             <SelectItem value="free">Free</SelectItem>
                             <SelectItem value="30">$30</SelectItem>
@@ -549,7 +562,7 @@ export default function ClientAuditPage() {
                         <SelectTrigger className="w-[150px] rounded-xl border-border/60 bg-muted/30">
                           <SelectValue placeholder="Follow-up" />
                         </SelectTrigger>
-                        <SelectContent className="rounded-xl">
+                        <SelectContent className="rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-2xl">
                           <SelectItem value="all">All Statuses</SelectItem>
                           <SelectItem value="Booked">Booked</SelectItem>
                           <SelectItem value="Needs Follow-up">Needs Follow-up</SelectItem>
@@ -562,7 +575,7 @@ export default function ClientAuditPage() {
                         <SelectTrigger className="w-[130px] rounded-xl border-border/60 bg-muted/30">
                           <SelectValue placeholder="Sort By" />
                         </SelectTrigger>
-                        <SelectContent className="rounded-xl">
+                        <SelectContent className="rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-2xl">
                           <SelectItem value="name">Name</SelectItem>
                           <SelectItem value="lastSeen">Last Seen</SelectItem>
                           <SelectItem value="rate">Standard Rate</SelectItem>
@@ -630,7 +643,7 @@ export default function ClientAuditPage() {
                                 <ClientRow
                                   key={client.id}
                                   client={client}
-                                  calculateAge={calculateAge}
+                                  calculateAge={getClientAge}
                                   handleRateChange={handleRateChange}
                                   handleOpenOverrideModal={handleOpenOverrideModal}
                                 />
@@ -687,7 +700,7 @@ export default function ClientAuditPage() {
                                 <ClientRow
                                   key={client.id}
                                   client={client}
-                                  calculateAge={calculateAge}
+                                  calculateAge={getClientAge}
                                   handleRateChange={handleRateChange}
                                   handleOpenOverrideModal={handleOpenOverrideModal}
                                 />
@@ -744,7 +757,7 @@ export default function ClientAuditPage() {
                                 <ClientRow
                                   key={client.id}
                                   client={client}
-                                  calculateAge={calculateAge}
+                                  calculateAge={getClientAge}
                                   handleRateChange={handleRateChange}
                                   handleOpenOverrideModal={handleOpenOverrideModal}
                                 />
@@ -1345,7 +1358,7 @@ function ClientRow({
             <SelectTrigger className="w-[120px] rounded-xl border-border/60 bg-muted/30">
               <SelectValue />
             </SelectTrigger>
-            <SelectContent className="rounded-xl">
+            <SelectContent className="rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-2xl">
               {RATE_OPTIONS.map((opt) => (
                 <SelectItem key={opt.value} value={opt.value.toString()}>
                   {opt.label}

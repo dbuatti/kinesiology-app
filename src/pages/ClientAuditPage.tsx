@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useEffect, useMemo } from "react";
+import { Link } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { showSuccess, showError } from "@/utils/toast";
 import AppLayout from "@/components/crm/AppLayout";
@@ -65,7 +66,10 @@ import {
   Trash2,
   CalendarCheck,
   CheckSquare,
-  Square
+  Square,
+  ExternalLink,
+  RotateCcw,
+  Sliders
 } from "lucide-react";
 import { format, formatDistanceToNow, differenceInMonths } from "date-fns";
 import { Client, Appointment } from "@/types/crm";
@@ -179,9 +183,6 @@ export default function ClientAuditPage() {
 
   // NEW FEATURES STATE
   const [selectedWeeklyClients, setSelectedWeeklyClients] = useState<string[]>([]);
-  const [targetRates, setTargetRates] = useState<Record<string, number>>({});
-  const [rateUpdatedDates, setRateUpdatedDates] = useState<Record<string, string>>({});
-  const [reengagementTags, setReengagementTags] = useState<Record<string, 'warm' | 'cold' | 'lost'>>({});
 
   useEffect(() => {
     fetchData();
@@ -197,16 +198,6 @@ export default function ClientAuditPage() {
         console.error("Failed to parse cached audit suggestions", e);
       }
     }
-
-    // Load new features state from localStorage
-    const cachedTargetRates = localStorage.getItem("antigravity_client_target_rates");
-    if (cachedTargetRates) setTargetRates(JSON.parse(cachedTargetRates));
-
-    const cachedRateUpdatedDates = localStorage.getItem("antigravity_client_rate_updated_dates");
-    if (cachedRateUpdatedDates) setRateUpdatedDates(JSON.parse(cachedRateUpdatedDates));
-
-    const cachedReengagementTags = localStorage.getItem("antigravity_client_reengagement_tags");
-    if (cachedReengagementTags) setReengagementTags(JSON.parse(cachedReengagementTags));
 
     const cachedWeeklyClients = localStorage.getItem("antigravity_selected_weekly_clients");
     if (cachedWeeklyClients) setSelectedWeeklyClients(JSON.parse(cachedWeeklyClients));
@@ -241,13 +232,51 @@ export default function ClientAuditPage() {
           client.is_practitioner !== true
       );
 
+      // Migrate localStorage data to database if present
+      const cachedTargetRates = localStorage.getItem("antigravity_client_target_rates");
+      const cachedRateUpdatedDates = localStorage.getItem("antigravity_client_rate_updated_dates");
+      const cachedReengagementTags = localStorage.getItem("antigravity_client_reengagement_tags");
+
+      if (cachedTargetRates || cachedRateUpdatedDates || cachedReengagementTags) {
+        const targetRatesMap = cachedTargetRates ? JSON.parse(cachedTargetRates) : {};
+        const rateUpdatedDatesMap = cachedRateUpdatedDates ? JSON.parse(cachedRateUpdatedDates) : {};
+        const reengagementTagsMap = cachedReengagementTags ? JSON.parse(cachedReengagementTags) : {};
+
+        for (const client of filteredRawClients) {
+          const updates: any = {};
+          if (targetRatesMap[client.id] && !client.target_rate) {
+            updates.target_rate = targetRatesMap[client.id];
+          }
+          if (rateUpdatedDatesMap[client.id] && !client.rate_updated_at) {
+            updates.rate_updated_at = rateUpdatedDatesMap[client.id];
+          }
+          if (reengagementTagsMap[client.id] && !client.reengagement_tag) {
+            updates.reengagement_tag = reengagementTagsMap[client.id];
+          }
+
+          if (Object.keys(updates).length > 0) {
+            await supabase
+              .from("clients")
+              .update(updates)
+              .eq("id", client.id);
+            
+            // Update local object
+            Object.assign(client, updates);
+          }
+        }
+
+        // Clear localStorage so we don't run this again
+        localStorage.removeItem("antigravity_client_target_rates");
+        localStorage.removeItem("antigravity_client_rate_updated_dates");
+        localStorage.removeItem("antigravity_client_reengagement_tags");
+      }
+
       const processedClients: ClientWithAppointments[] = filteredRawClients.map((client) => {
         const clientApps = (appointmentsData || []).filter(
           (app) => app.client_id === client.id
         );
 
         const now = new Date();
-        
         // Sort appointments by date descending
         const sortedApps = [...clientApps].sort(
           (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()
@@ -403,16 +432,15 @@ export default function ClientAuditPage() {
       return;
     }
 
-    // Optimistic UI update
-    setClients(prev => prev.map(c => c.id === clientId ? { ...c, standard_rate: rateValue } : c));
+    const todayStr = new Date().toISOString();
 
-    // Also update rate updated date to today
-    handleSetRateUpdatedDate(clientId, new Date().toISOString());
+    // Optimistic UI update
+    setClients(prev => prev.map(c => c.id === clientId ? { ...c, standard_rate: rateValue, rate_updated_at: todayStr } : c));
 
     try {
       const { error } = await supabase
         .from("clients")
-        .update({ standard_rate: rateValue })
+        .update({ standard_rate: rateValue, rate_updated_at: todayStr })
         .eq("id", clientId);
 
       if (error) throw error;
@@ -420,7 +448,6 @@ export default function ClientAuditPage() {
     } catch (error: any) {
       console.error("Error updating rate:", error);
       showError("Failed to update standard rate.");
-      // Revert on error
       fetchData();
     }
   };
@@ -433,17 +460,16 @@ export default function ClientAuditPage() {
       return;
     }
 
-    // Optimistic UI update
-    setClients(prev => prev.map(c => c.id === selectedClient.id ? { ...c, standard_rate: rateNum } : c));
-    setIsCustomRateModalOpen(false);
+    const todayStr = new Date().toISOString();
 
-    // Also update rate updated date to today
-    handleSetRateUpdatedDate(selectedClient.id, new Date().toISOString());
+    // Optimistic UI update
+    setClients(prev => prev.map(c => c.id === selectedClient.id ? { ...c, standard_rate: rateNum, rate_updated_at: todayStr } : c));
+    setIsCustomRateModalOpen(false);
 
     try {
       const { error } = await supabase
         .from("clients")
-        .update({ standard_rate: rateNum })
+        .update({ standard_rate: rateNum, rate_updated_at: todayStr })
         .eq("id", selectedClient.id);
 
       if (error) throw error;
@@ -491,24 +517,58 @@ export default function ClientAuditPage() {
   };
 
   // NEW FEATURES HANDLERS
-  const handleSetTargetRate = (clientId: string, rate: number) => {
-    const updated = { ...targetRates, [clientId]: rate };
-    setTargetRates(updated);
-    localStorage.setItem("antigravity_client_target_rates", JSON.stringify(updated));
-    showSuccess("Target rate updated.");
+  const handleSetTargetRate = async (clientId: string, rate: number) => {
+    // Optimistic UI update
+    setClients(prev => prev.map(c => c.id === clientId ? { ...c, target_rate: rate } : c));
+
+    try {
+      const { error } = await supabase
+        .from("clients")
+        .update({ target_rate: rate })
+        .eq("id", clientId);
+
+      if (error) throw error;
+      showSuccess("Target rate updated.");
+    } catch (error: any) {
+      console.error("Error updating target rate:", error);
+      showError("Failed to update target rate.");
+      fetchData();
+    }
   };
 
-  const handleSetRateUpdatedDate = (clientId: string, dateStr: string) => {
-    const updated = { ...rateUpdatedDates, [clientId]: dateStr };
-    setRateUpdatedDates(updated);
-    localStorage.setItem("antigravity_client_rate_updated_dates", JSON.stringify(updated));
+  const handleSetRateUpdatedDate = async (clientId: string, dateStr: string) => {
+    // Optimistic UI update
+    setClients(prev => prev.map(c => c.id === clientId ? { ...c, rate_updated_at: dateStr } : c));
+
+    try {
+      const { error } = await supabase
+        .from("clients")
+        .update({ rate_updated_at: dateStr })
+        .eq("id", clientId);
+
+      if (error) throw error;
+    } catch (error: any) {
+      console.error("Error updating rate updated date:", error);
+    }
   };
 
-  const handleSetReengagementTag = (clientId: string, tag: 'warm' | 'cold' | 'lost') => {
-    const updated = { ...reengagementTags, [clientId]: tag };
-    setReengagementTags(updated);
-    localStorage.setItem("antigravity_client_reengagement_tags", JSON.stringify(updated));
-    showSuccess(`Re-engagement status set to ${tag.toUpperCase()}.`);
+  const handleSetReengagementTag = async (clientId: string, tag: 'warm' | 'cold' | 'lost' | null) => {
+    // Optimistic UI update
+    setClients(prev => prev.map(c => c.id === clientId ? { ...c, reengagement_tag: tag } : c));
+
+    try {
+      const { error } = await supabase
+        .from("clients")
+        .update({ reengagement_tag: tag })
+        .eq("id", clientId);
+
+      if (error) throw error;
+      showSuccess(tag ? `Re-engagement status set to ${tag.toUpperCase()}.` : "Re-engagement status cleared.");
+    } catch (error: any) {
+      console.error("Error updating re-engagement status:", error);
+      showError("Failed to update re-engagement status.");
+      fetchData();
+    }
   };
 
   const handleToggleWeeklyClient = (clientId: string) => {
@@ -680,7 +740,7 @@ export default function ClientAuditPage() {
     let targetTotal = 0;
     const selectedClientsDetails = clients.filter(c => selectedWeeklyClients.includes(c.id)).map(c => {
       const currentRate = c.standard_rate ?? 50;
-      const targetRate = targetRates[c.id] ?? currentRate;
+      const targetRate = c.target_rate ?? currentRate;
       currentTotal += currentRate;
       targetTotal += targetRate;
       return {
@@ -702,7 +762,7 @@ export default function ClientAuditPage() {
       increase,
       annualizedImpact
     };
-  }, [clients, selectedWeeklyClients, targetRates]);
+  }, [clients, selectedWeeklyClients]);
 
   // Salary Simulator Calculations (Last Month Clients)
   const salaryMetrics = useMemo(() => {
@@ -805,6 +865,146 @@ export default function ClientAuditPage() {
     });
   };
 
+  // QUICK SELECT HANDLERS FOR SIMULATOR
+  const handleSelectAllActive = () => {
+    const activeIds = groups.lastMonth.map(c => c.id);
+    setSelectedWeeklyClients(activeIds);
+    localStorage.setItem("antigravity_selected_weekly_clients", JSON.stringify(activeIds));
+    showSuccess("Selected all active clients (seen in last 30 days).");
+  };
+
+  const handleSelectAllNeedsFollowUp = () => {
+    const needsFollowUpIds = clients.filter(c => c.followUpStatus === "Needs Follow-up").map(c => c.id);
+    setSelectedWeeklyClients(needsFollowUpIds);
+    localStorage.setItem("antigravity_selected_weekly_clients", JSON.stringify(needsFollowUpIds));
+    showSuccess("Selected all clients needing follow-up.");
+  };
+
+  const handleSelectAllOneToThreeMonths = () => {
+    const ids = groups.oneToThreeMonths.map(c => c.id);
+    setSelectedWeeklyClients(ids);
+    localStorage.setItem("antigravity_selected_weekly_clients", JSON.stringify(ids));
+    showSuccess("Selected all clients seen 1-3 months ago.");
+  };
+
+  // SECTION SELECT ALL HANDLERS
+  const isAllLastMonthSelected = groups.lastMonth.length > 0 && groups.lastMonth.every(c => selectedWeeklyClients.includes(c.id));
+  const handleToggleAllLastMonth = () => {
+    const lastMonthIds = groups.lastMonth.map(c => c.id);
+    if (isAllLastMonthSelected) {
+      setSelectedWeeklyClients(prev => {
+        const updated = prev.filter(id => !lastMonthIds.includes(id));
+        localStorage.setItem("antigravity_selected_weekly_clients", JSON.stringify(updated));
+        return updated;
+      });
+    } else {
+      setSelectedWeeklyClients(prev => {
+        const updated = Array.from(new Set([...prev, ...lastMonthIds]));
+        localStorage.setItem("antigravity_selected_weekly_clients", JSON.stringify(updated));
+        return updated;
+      });
+    }
+  };
+
+  const isAllOneToThreeMonthsSelected = groups.oneToThreeMonths.length > 0 && groups.oneToThreeMonths.every(c => selectedWeeklyClients.includes(c.id));
+  const handleToggleAllOneToThreeMonths = () => {
+    const ids = groups.oneToThreeMonths.map(c => c.id);
+    if (isAllOneToThreeMonthsSelected) {
+      setSelectedWeeklyClients(prev => {
+        const updated = prev.filter(id => !ids.includes(id));
+        localStorage.setItem("antigravity_selected_weekly_clients", JSON.stringify(updated));
+        return updated;
+      });
+    } else {
+      setSelectedWeeklyClients(prev => {
+        const updated = Array.from(new Set([...prev, ...ids]));
+        localStorage.setItem("antigravity_selected_weekly_clients", JSON.stringify(updated));
+        return updated;
+      });
+    }
+  };
+
+  const isAllThreePlusMonthsSelected = groups.threePlusMonths.length > 0 && groups.threePlusMonths.every(c => selectedWeeklyClients.includes(c.id));
+  const handleToggleAllThreePlusMonths = () => {
+    const ids = groups.threePlusMonths.map(c => c.id);
+    if (isAllThreePlusMonthsSelected) {
+      setSelectedWeeklyClients(prev => {
+        const updated = prev.filter(id => !ids.includes(id));
+        localStorage.setItem("antigravity_selected_weekly_clients", JSON.stringify(updated));
+        return updated;
+      });
+    } else {
+      setSelectedWeeklyClients(prev => {
+        const updated = Array.from(new Set([...prev, ...ids]));
+        localStorage.setItem("antigravity_selected_weekly_clients", JSON.stringify(updated));
+        return updated;
+      });
+    }
+  };
+
+  // SANDBOX PRESETS
+  const handleApplyPreset = (preset: 'conservative' | 'moderate' | 'target' | 'reset') => {
+    if (preset === 'reset') {
+      setIsSandboxActive(false);
+      setGlobalSimRate(150);
+      setGlobalSimFrequency(1.5);
+      setClientOverrides({});
+      showSuccess("Sandbox reset to actual values.");
+      return;
+    }
+
+    setIsSandboxActive(true);
+    if (preset === 'conservative') {
+      setGlobalSimRate(Math.round(averageSessionRate * 1.1));
+      setGlobalSimFrequency(1.5);
+      const overrides: Record<string, any> = {};
+      clients.forEach(c => {
+        overrides[c.id] = {
+          rate: Math.round((c.standard_rate ?? 50) * 1.1),
+          frequency: 1.5,
+          active: true
+        };
+      });
+      setClientOverrides(overrides);
+      showSuccess("Applied Conservative Preset (+10% rate increase).");
+    } else if (preset === 'moderate') {
+      setGlobalSimRate(Math.round(averageSessionRate * 1.25));
+      setGlobalSimFrequency(1.5);
+      const overrides: Record<string, any> = {};
+      clients.forEach(c => {
+        overrides[c.id] = {
+          rate: Math.round((c.standard_rate ?? 50) * 1.25),
+          frequency: 1.5,
+          active: true
+        };
+      });
+      setClientOverrides(overrides);
+      showSuccess("Applied Moderate Preset (+25% rate increase).");
+    } else if (preset === 'target') {
+      setGlobalSimRate(150);
+      setGlobalSimFrequency(1.5);
+      const overrides: Record<string, any> = {};
+      clients.forEach(c => {
+        overrides[c.id] = {
+          rate: 150,
+          frequency: 1.5,
+          active: true
+        };
+      });
+      setClientOverrides(overrides);
+      showSuccess("Applied Target Preset ($150 standard rate).");
+    }
+  };
+
+  // RESET FILTERS
+  const isFilterActive = filterRate !== "all" || filterFollowUp !== "all" || searchQuery !== "";
+  const handleResetFilters = () => {
+    setFilterRate("all");
+    setFilterFollowUp("all");
+    setSearchQuery("");
+    showSuccess("Filters reset.");
+  };
+
   const activeRoadmap = aiSuggestions?.roadmap || STATIC_ROADMAP;
   const activeStrategies = aiSuggestions?.strategies || STATIC_STRATEGIES;
   const activeSummary = aiSuggestions?.summary || "Reaching a $150 average session rate requires a gradual, value-driven transition plan. By elevating your clinical offerings, packaging sessions, and implementing structured rate increases, you can double your practice revenue while delivering exceptional client outcomes.";
@@ -845,7 +1045,7 @@ export default function ClientAuditPage() {
             {/* TAB 1: RATES & RECENCY */}
             <TabsContent value="rates" className="space-y-6">
               {/* WEEKLY BOOKING SIMULATOR CARD */}
-              <Card className="border-none shadow-lg rounded-[2.5rem] bg-gradient-to-br from-indigo-900 via-slate-900 to-slate-950 text-white overflow-hidden relative group">
+              <Card className="border-none shadow-lg rounded-[2.5rem] bg-gradient-to-br from-indigo-950 via-slate-900 to-slate-950 text-white overflow-hidden relative group">
                 <div className="absolute inset-0 bg-grid-white/[0.02] pointer-events-none" />
                 <CardContent className="p-8 space-y-6 relative z-10">
                   <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
@@ -861,15 +1061,48 @@ export default function ClientAuditPage() {
                         Select clients from the lists below to simulate this week's bookings and see the direct impact of your rate ladder.
                       </p>
                     </div>
-                    {weeklySimulatorMetrics.count > 0 && (
-                      <Button
-                        variant="ghost"
-                        onClick={handleClearWeeklyClients}
-                        className="text-slate-300 hover:text-white hover:bg-white/10 rounded-xl text-xs font-bold self-start md:self-center"
-                      >
-                        <Trash2 size={14} className="mr-2" /> Clear Simulator
-                      </Button>
-                    )}
+                    <div className="flex flex-wrap gap-2">
+                      {weeklySimulatorMetrics.count > 0 && (
+                        <Button
+                          variant="ghost"
+                          onClick={handleClearWeeklyClients}
+                          className="text-slate-300 hover:text-white hover:bg-white/10 rounded-xl text-xs font-bold"
+                        >
+                          <Trash2 size={14} className="mr-2" /> Clear Simulator
+                        </Button>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* Quick Select Buttons */}
+                  <div className="flex flex-wrap gap-2 p-3 bg-slate-900/60 rounded-2xl border border-slate-800/80">
+                    <span className="text-[10px] font-black uppercase tracking-widest text-slate-400 self-center px-2">
+                      Quick Select:
+                    </span>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={handleSelectAllActive}
+                      className="bg-slate-950/40 border-slate-800 text-slate-300 hover:text-white hover:bg-slate-800 rounded-xl text-xs font-bold h-8"
+                    >
+                      Active (Last 30 Days)
+                    </Button>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={handleSelectAllOneToThreeMonths}
+                      className="bg-slate-950/40 border-slate-800 text-slate-300 hover:text-white hover:bg-slate-800 rounded-xl text-xs font-bold h-8"
+                    >
+                      1-3 Months Ago
+                    </Button>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={handleSelectAllNeedsFollowUp}
+                      className="bg-slate-950/40 border-slate-800 text-slate-300 hover:text-white hover:bg-slate-800 rounded-xl text-xs font-bold h-8"
+                    >
+                      Needs Follow-up
+                    </Button>
                   </div>
 
                   {weeklySimulatorMetrics.count === 0 ? (
@@ -938,15 +1171,30 @@ export default function ClientAuditPage() {
               <Card className="border-none shadow-md rounded-[2rem] bg-card">
                 <CardContent className="p-6">
                   <div className="flex flex-col md:flex-row gap-4 items-center justify-between">
-                    {/* Search */}
-                    <div className="relative w-full md:max-w-xs">
-                      <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 text-muted-foreground" size={18} />
-                      <Input
-                        placeholder="Search clients..."
-                        value={searchQuery}
-                        onChange={(e) => setSearchQuery(e.target.value)}
-                        className="pl-10 rounded-xl border-border/60 bg-muted/30 focus-visible:ring-indigo-500"
-                      />
+                    {/* Search & Filter Indicator */}
+                    <div className="flex flex-col sm:flex-row sm:items-center gap-3 w-full md:max-w-md">
+                      <div className="relative w-full">
+                        <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 text-muted-foreground" size={18} />
+                        <Input
+                          placeholder="Search clients..."
+                          value={searchQuery}
+                          onChange={(e) => setSearchQuery(e.target.value)}
+                          className="pl-10 rounded-xl border-border/60 bg-muted/30 focus-visible:ring-indigo-500"
+                        />
+                      </div>
+                      {isFilterActive && (
+                        <div className="flex items-center gap-1.5 text-xs text-muted-foreground font-medium shrink-0">
+                          <span>Showing {filteredClients.length} of {clients.length}</span>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={handleResetFilters}
+                            className="h-7 px-2 text-indigo-600 hover:bg-indigo-50 dark:hover:bg-indigo-950/30 rounded-lg text-[10px] font-black uppercase tracking-wider"
+                          >
+                            Reset
+                          </Button>
+                        </div>
+                      )}
                     </div>
 
                     {/* Filters & Sorting */}
@@ -1018,11 +1266,11 @@ export default function ClientAuditPage() {
               <div className="space-y-4">
                 {/* Section 1: Last Month */}
                 <Card className="border-none shadow-sm rounded-[2rem] overflow-hidden bg-card">
-                  <button
-                    onClick={() => toggleSection("lastMonth")}
-                    className="w-full p-6 flex items-center justify-between bg-muted/20 hover:bg-muted/30 transition-colors text-left"
-                  >
-                    <div className="flex items-center gap-3">
+                  <div className="w-full p-6 flex flex-col sm:flex-row sm:items-center justify-between bg-muted/20 hover:bg-muted/30 transition-colors text-left gap-4">
+                    <button
+                      onClick={() => toggleSection("lastMonth")}
+                      className="flex items-center gap-3 flex-1"
+                    >
                       <div className="w-8 h-8 rounded-lg bg-emerald-50 dark:bg-emerald-950/30 text-emerald-600 flex items-center justify-center">
                         <CheckCircle2 size={18} />
                       </div>
@@ -1033,9 +1281,24 @@ export default function ClientAuditPage() {
                       <Badge variant="secondary" className="ml-2 bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-400 border-none font-bold">
                         {groups.lastMonth.length} {groups.lastMonth.length === 1 ? "client" : "clients"}
                       </Badge>
+                    </button>
+                    
+                    <div className="flex items-center gap-3 self-end sm:self-center">
+                      {groups.lastMonth.length > 0 && (
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={handleToggleAllLastMonth}
+                          className="h-8 rounded-xl text-xs font-bold border-border/60 bg-background hover:bg-muted"
+                        >
+                          {isAllLastMonthSelected ? "Deselect All" : "Select All for Sim"}
+                        </Button>
+                      )}
+                      <button onClick={() => toggleSection("lastMonth")} className="p-1">
+                        {collapsedSections.lastMonth ? <ChevronDown size={20} /> : <ChevronUp size={20} />}
+                      </button>
                     </div>
-                    {collapsedSections.lastMonth ? <ChevronDown size={20} /> : <ChevronUp size={20} />}
-                  </button>
+                  </div>
 
                   {!collapsedSections.lastMonth && (
                     <CardContent className="p-0 border-t border-border/40">
@@ -1064,9 +1327,6 @@ export default function ClientAuditPage() {
                                   calculateAge={getClientAge}
                                   handleRateChange={handleRateChange}
                                   handleOpenOverrideModal={handleOpenOverrideModal}
-                                  targetRates={targetRates}
-                                  rateUpdatedDates={rateUpdatedDates}
-                                  reengagementTags={reengagementTags}
                                   selectedWeeklyClients={selectedWeeklyClients}
                                   onToggleWeeklyClient={handleToggleWeeklyClient}
                                   onSetTargetRate={handleSetTargetRate}
@@ -1085,11 +1345,11 @@ export default function ClientAuditPage() {
 
                 {/* Section 2: 1-3 Months */}
                 <Card className="border-none shadow-sm rounded-[2rem] overflow-hidden bg-card">
-                  <button
-                    onClick={() => toggleSection("oneToThreeMonths")}
-                    className="w-full p-6 flex items-center justify-between bg-muted/20 hover:bg-muted/30 transition-colors text-left"
-                  >
-                    <div className="flex items-center gap-3">
+                  <div className="w-full p-6 flex flex-col sm:flex-row sm:items-center justify-between bg-muted/20 hover:bg-muted/30 transition-colors text-left gap-4">
+                    <button
+                      onClick={() => toggleSection("oneToThreeMonths")}
+                      className="flex items-center gap-3 flex-1"
+                    >
                       <div className="w-8 h-8 rounded-lg bg-amber-50 dark:bg-amber-950/30 text-amber-600 flex items-center justify-center">
                         <Clock size={18} />
                       </div>
@@ -1100,9 +1360,24 @@ export default function ClientAuditPage() {
                       <Badge variant="secondary" className="ml-2 bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-400 border-none font-bold">
                         {groups.oneToThreeMonths.length} {groups.oneToThreeMonths.length === 1 ? "client" : "clients"}
                       </Badge>
+                    </button>
+
+                    <div className="flex items-center gap-3 self-end sm:self-center">
+                      {groups.oneToThreeMonths.length > 0 && (
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={handleToggleAllOneToThreeMonths}
+                          className="h-8 rounded-xl text-xs font-bold border-border/60 bg-background hover:bg-muted"
+                        >
+                          {isAllOneToThreeMonthsSelected ? "Deselect All" : "Select All for Sim"}
+                        </Button>
+                      )}
+                      <button onClick={() => toggleSection("oneToThreeMonths")} className="p-1">
+                        {collapsedSections.oneToThreeMonths ? <ChevronDown size={20} /> : <ChevronUp size={20} />}
+                      </button>
                     </div>
-                    {collapsedSections.oneToThreeMonths ? <ChevronDown size={20} /> : <ChevronUp size={20} />}
-                  </button>
+                  </div>
 
                   {!collapsedSections.oneToThreeMonths && (
                     <CardContent className="p-0 border-t border-border/40">
@@ -1131,9 +1406,6 @@ export default function ClientAuditPage() {
                                   calculateAge={getClientAge}
                                   handleRateChange={handleRateChange}
                                   handleOpenOverrideModal={handleOpenOverrideModal}
-                                  targetRates={targetRates}
-                                  rateUpdatedDates={rateUpdatedDates}
-                                  reengagementTags={reengagementTags}
                                   selectedWeeklyClients={selectedWeeklyClients}
                                   onToggleWeeklyClient={handleToggleWeeklyClient}
                                   onSetTargetRate={handleSetTargetRate}
@@ -1152,11 +1424,11 @@ export default function ClientAuditPage() {
 
                 {/* Section 3: 3+ Months (Lapsed Clients with Re-engagement Priority) */}
                 <Card className="border-none shadow-sm rounded-[2rem] overflow-hidden bg-card">
-                  <button
-                    onClick={() => toggleSection("threePlusMonths")}
-                    className="w-full p-6 flex items-center justify-between bg-muted/20 hover:bg-muted/30 transition-colors text-left"
-                  >
-                    <div className="flex items-center gap-3">
+                  <div className="w-full p-6 flex flex-col sm:flex-row sm:items-center justify-between bg-muted/20 hover:bg-muted/30 transition-colors text-left gap-4">
+                    <button
+                      onClick={() => toggleSection("threePlusMonths")}
+                      className="flex items-center gap-3 flex-1"
+                    >
                       <div className="w-8 h-8 rounded-lg bg-rose-50 dark:bg-rose-950/30 text-rose-600 flex items-center justify-center">
                         <AlertCircle size={18} />
                       </div>
@@ -1167,9 +1439,24 @@ export default function ClientAuditPage() {
                       <Badge variant="secondary" className="ml-2 bg-rose-100 dark:bg-rose-900/30 text-rose-700 dark:text-rose-400 border-none font-bold">
                         {groups.threePlusMonths.length} {groups.threePlusMonths.length === 1 ? "client" : "clients"}
                       </Badge>
+                    </button>
+
+                    <div className="flex items-center gap-3 self-end sm:self-center">
+                      {groups.threePlusMonths.length > 0 && (
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={handleToggleAllThreePlusMonths}
+                          className="h-8 rounded-xl text-xs font-bold border-border/60 bg-background hover:bg-muted"
+                        >
+                          {isAllThreePlusMonthsSelected ? "Deselect All" : "Select All for Sim"}
+                        </Button>
+                      )}
+                      <button onClick={() => toggleSection("threePlusMonths")} className="p-1">
+                        {collapsedSections.threePlusMonths ? <ChevronDown size={20} /> : <ChevronUp size={20} />}
+                      </button>
                     </div>
-                    {collapsedSections.threePlusMonths ? <ChevronDown size={20} /> : <ChevronUp size={20} />}
-                  </button>
+                  </div>
 
                   {!collapsedSections.threePlusMonths && (
                     <CardContent className="p-0 border-t border-border/40">
@@ -1198,9 +1485,6 @@ export default function ClientAuditPage() {
                                   calculateAge={getClientAge}
                                   handleRateChange={handleRateChange}
                                   handleOpenOverrideModal={handleOpenOverrideModal}
-                                  targetRates={targetRates}
-                                  rateUpdatedDates={rateUpdatedDates}
-                                  reengagementTags={reengagementTags}
                                   selectedWeeklyClients={selectedWeeklyClients}
                                   onToggleWeeklyClient={handleToggleWeeklyClient}
                                   onSetTargetRate={handleSetTargetRate}
@@ -1272,6 +1556,49 @@ export default function ClientAuditPage() {
                 </Card>
               </div>
 
+              {/* Sandbox Presets Card */}
+              <Card className="border-none shadow-md rounded-[2rem] bg-card overflow-hidden">
+                <CardContent className="p-6 space-y-4">
+                  <div className="flex items-center gap-2">
+                    <Sliders className="text-indigo-600" size={18} />
+                    <h4 className="text-sm font-black uppercase tracking-wider text-foreground">Sandbox Presets</h4>
+                  </div>
+                  <p className="text-xs text-muted-foreground font-medium">
+                    Quickly apply pre-configured pricing scenarios to see their immediate impact on your practice financials.
+                  </p>
+                  <div className="flex flex-wrap gap-3">
+                    <Button
+                      variant="outline"
+                      onClick={() => handleApplyPreset('conservative')}
+                      className="rounded-xl text-xs font-bold border-indigo-100 dark:border-indigo-950/50 hover:bg-indigo-50 dark:hover:bg-indigo-950/30 text-indigo-600 dark:text-indigo-400"
+                    >
+                      Conservative (+10% Rate)
+                    </Button>
+                    <Button
+                      variant="outline"
+                      onClick={() => handleApplyPreset('moderate')}
+                      className="rounded-xl text-xs font-bold border-emerald-100 dark:border-emerald-950/50 hover:bg-emerald-50 dark:hover:bg-emerald-950/30 text-emerald-600 dark:text-emerald-400"
+                    >
+                      Moderate (+25% Rate)
+                    </Button>
+                    <Button
+                      variant="outline"
+                      onClick={() => handleApplyPreset('target')}
+                      className="rounded-xl text-xs font-bold border-purple-100 dark:border-purple-950/50 hover:bg-purple-50 dark:hover:bg-purple-950/30 text-purple-600 dark:text-purple-400"
+                    >
+                      Target ($150 Standard Rate)
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      onClick={() => handleApplyPreset('reset')}
+                      className="rounded-xl text-xs font-bold text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/30"
+                    >
+                      <RotateCcw size={14} className="mr-1.5" /> Reset Sandbox
+                    </Button>
+                  </div>
+                </CardContent>
+              </Card>
+
               {/* Main Grid: Projections vs Client Sandbox */}
               <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
                 {/* Left Column: Projections */}
@@ -1300,13 +1627,13 @@ export default function ClientAuditPage() {
                     </CardHeader>
                     <CardContent className="p-8 space-y-8">
                       {/* Projections Table */}
-                      <div className="border border-slate-200 rounded-2xl overflow-hidden">
-                        <div className="grid grid-cols-3 bg-slate-50 border-b border-slate-200 text-[10px] font-black uppercase tracking-widest text-slate-500 p-4">
+                      <div className="border border-slate-200 dark:border-slate-800 rounded-2xl overflow-hidden">
+                        <div className="grid grid-cols-3 bg-slate-50 dark:bg-slate-900/50 border-b border-slate-200 dark:border-slate-800 text-[10px] font-black uppercase tracking-widest text-slate-500 p-4">
                           <div>Frequency</div>
                           <div>Current Salary</div>
                           <div className="text-indigo-600">Sandbox Salary</div>
                         </div>
-                        <div className="divide-y divide-slate-100">
+                        <div className="divide-y divide-slate-100 dark:divide-slate-800">
                           {[
                             { label: "Weekly", current: salaryMetrics.current.weekly, sim: salaryMetrics.simulated.weekly },
                             { label: "Fortnightly", current: salaryMetrics.current.fortnightly, sim: salaryMetrics.simulated.fortnightly },
@@ -1315,11 +1642,11 @@ export default function ClientAuditPage() {
                           ].map((row) => (
                             <div key={row.label} className={cn(
                               "grid grid-cols-3 p-4 items-center text-sm",
-                              row.highlight ? "bg-indigo-50/30 font-bold" : ""
+                              row.highlight ? "bg-indigo-50/30 dark:bg-indigo-950/10 font-bold" : ""
                             )}>
-                              <div className="font-bold text-slate-700">{row.label}</div>
-                              <div className="text-slate-600">${Math.round(row.current).toLocaleString()}</div>
-                              <div className={cn("font-black", isSandboxActive ? "text-indigo-600" : "text-slate-400")}>
+                              <div className="font-bold text-slate-700 dark:text-slate-300">{row.label}</div>
+                              <div className="text-slate-600 dark:text-slate-400">${Math.round(row.current).toLocaleString()}</div>
+                              <div className={cn("font-black", isSandboxActive ? "text-indigo-600 dark:text-indigo-400" : "text-slate-400 dark:text-slate-600")}>
                                 ${Math.round(row.sim).toLocaleString()}
                               </div>
                             </div>
@@ -1329,7 +1656,7 @@ export default function ClientAuditPage() {
 
                       {/* Global Sandbox Controls */}
                       {isSandboxActive && (
-                        <div className="space-y-6 p-6 bg-slate-50 rounded-2xl border border-slate-200 animate-in slide-in-from-top-2 duration-300">
+                        <div className="space-y-6 p-6 bg-slate-50 dark:bg-slate-900/30 rounded-2xl border border-slate-200 dark:border-slate-800 animate-in slide-in-from-top-2 duration-300">
                           <h4 className="text-xs font-black uppercase tracking-widest text-slate-500 flex items-center gap-2">
                             <Sparkles size={14} className="text-indigo-500" /> Global Sandbox Controls
                           </h4>
@@ -1337,10 +1664,10 @@ export default function ClientAuditPage() {
                           {/* Global Rate Slider */}
                           <div className="space-y-2">
                             <div className="flex justify-between items-center">
-                              <label className="text-xs font-bold text-slate-600">
+                              <label className="text-xs font-bold text-slate-600 dark:text-slate-400">
                                 Global Simulated Rate
                               </label>
-                              <span className="text-sm font-black text-indigo-600">${globalSimRate}/session</span>
+                              <span className="text-sm font-black text-indigo-600 dark:text-indigo-400">${globalSimRate}/session</span>
                             </div>
                             <Slider
                               value={[globalSimRate]}
@@ -1354,10 +1681,10 @@ export default function ClientAuditPage() {
                           {/* Global Frequency Slider */}
                           <div className="space-y-2">
                             <div className="flex justify-between items-center">
-                              <label className="text-xs font-bold text-slate-600">
+                              <label className="text-xs font-bold text-slate-600 dark:text-slate-400">
                                 Global Simulated Frequency
                               </label>
-                              <span className="text-sm font-black text-indigo-600">{globalSimFrequency} sessions/mo</span>
+                              <span className="text-sm font-black text-indigo-600 dark:text-indigo-400">{globalSimFrequency} sessions/mo</span>
                             </div>
                             <Slider
                               value={[globalSimFrequency]}
@@ -1394,7 +1721,7 @@ export default function ClientAuditPage() {
                             return (
                               <div key={client.id} className={cn(
                                 "p-4 rounded-2xl border transition-all space-y-3",
-                                isActive ? "bg-white border-slate-200 shadow-sm" : "bg-slate-50 border-slate-100 opacity-50"
+                                isActive ? "bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800 shadow-sm" : "bg-slate-50 dark:bg-slate-950/20 border-slate-100 dark:border-slate-900 opacity-50"
                               )}>
                                 <div className="flex items-center justify-between">
                                   <div className="flex items-center gap-2">
@@ -1403,7 +1730,12 @@ export default function ClientAuditPage() {
                                       onCheckedChange={(checked) => handleClientOverrideChange(client.id, 'active', checked)}
                                       className="data-[state=checked]:bg-emerald-500 scale-75"
                                     />
-                                    <span className="font-bold text-sm text-slate-900">{client.name}</span>
+                                    <Link 
+                                      to={`/clients/${client.id}`}
+                                      className="font-bold text-sm text-slate-900 dark:text-slate-100 hover:underline hover:text-indigo-600 transition-colors"
+                                    >
+                                      {client.name}
+                                    </Link>
                                   </div>
                                   <Badge variant="outline" className="text-[8px] font-black uppercase">
                                     ${Math.round(client.currentWeeklyRev * 52).toLocaleString()}/yr
@@ -1411,12 +1743,12 @@ export default function ClientAuditPage() {
                                 </div>
 
                                 {isActive && isSandboxActive && (
-                                  <div className="space-y-3 pt-2 border-t border-slate-100 animate-in fade-in duration-300">
+                                  <div className="space-y-3 pt-2 border-t border-slate-100 dark:border-slate-800 animate-in fade-in duration-300">
                                     {/* Individual Rate Slider */}
                                     <div className="space-y-1">
                                       <div className="flex justify-between text-[9px] font-bold text-slate-500">
                                         <span>Simulated Rate</span>
-                                        <span className="text-indigo-600 font-black">${rate}</span>
+                                        <span className="text-indigo-600 dark:text-indigo-400 font-black">${rate}</span>
                                       </div>
                                       <Slider 
                                         value={[rate]}
@@ -1431,7 +1763,7 @@ export default function ClientAuditPage() {
                                     <div className="space-y-1">
                                       <div className="flex justify-between text-[9px] font-bold text-slate-500">
                                         <span>Simulated Sessions/Mo</span>
-                                        <span className="text-indigo-600 font-black">{freq.toFixed(1)}</span>
+                                        <span className="text-indigo-600 dark:text-indigo-400 font-black">{freq.toFixed(1)}</span>
                                       </div>
                                       <Slider 
                                         value={[freq]}
@@ -1938,14 +2270,11 @@ interface ClientRowProps {
   calculateAge: (born: string | Date | null) => string | number;
   handleRateChange: (clientId: string, rateValue: number) => void;
   handleOpenOverrideModal: (client: ClientWithAppointments) => void;
-  targetRates: Record<string, number>;
-  rateUpdatedDates: Record<string, string>;
-  reengagementTags: Record<string, 'warm' | 'cold' | 'lost'>;
   selectedWeeklyClients: string[];
   onToggleWeeklyClient: (clientId: string) => void;
   onSetTargetRate: (clientId: string, rate: number) => void;
   onSetRateUpdatedDate: (clientId: string, dateStr: string) => void;
-  onSetReengagementTag: (clientId: string, tag: 'warm' | 'cold' | 'lost') => void;
+  onSetReengagementTag: (clientId: string, tag: 'warm' | 'cold' | 'lost' | null) => void;
   isLapsedSection: boolean;
 }
 
@@ -1954,9 +2283,6 @@ function ClientRow({
   calculateAge,
   handleRateChange,
   handleOpenOverrideModal,
-  targetRates,
-  rateUpdatedDates,
-  reengagementTags,
   selectedWeeklyClients,
   onToggleWeeklyClient,
   onSetTargetRate,
@@ -1971,8 +2297,8 @@ function ClientRow({
   const currentRateValue = isCustomRate ? -1 : (client.standard_rate ?? 50);
 
   // Rate Tracking & Vision Calculations
-  const targetRate = targetRates[client.id] ?? (client.standard_rate ?? 50);
-  const rateUpdatedDateStr = rateUpdatedDates[client.id];
+  const targetRate = client.target_rate ?? (client.standard_rate ?? 50);
+  const rateUpdatedDateStr = client.rate_updated_at;
   
   // Default to 7 months ago if never set, to prompt review for old rates
   const rateUpdatedDate = rateUpdatedDateStr ? new Date(rateUpdatedDateStr) : new Date(Date.now() - 7 * 30 * 24 * 60 * 60 * 1000);
@@ -1980,7 +2306,7 @@ function ClientRow({
   const needsReview = monthsSinceUpdate >= 6;
 
   // Re-engagement Priority Calculations
-  const reengagementTag = reengagementTags[client.id];
+  const reengagementTag = client.reengagement_tag;
   
   const priorityScore = useMemo(() => {
     let score = 0;
@@ -2010,7 +2336,7 @@ function ClientRow({
 
   return (
     <tr className={cn(
-      "hover:bg-muted/10 transition-colors",
+      "hover:bg-muted/10 transition-colors group",
       isSelectedInSimulator ? "bg-indigo-50/20 dark:bg-indigo-950/10" : ""
     )}>
       {/* Simulator Checkbox */}
@@ -2030,7 +2356,15 @@ function ClientRow({
       {/* Client */}
       <td className="p-4">
         <div className="space-y-1">
-          <h4 className="font-black text-foreground text-sm">{client.name}</h4>
+          <div className="flex items-center gap-1.5">
+            <Link 
+              to={`/clients/${client.id}`}
+              className="font-black text-foreground text-sm hover:underline hover:text-indigo-600 transition-colors flex items-center gap-1"
+            >
+              {client.name}
+              <ArrowRight size={12} className="opacity-0 group-hover:opacity-100 transition-opacity text-indigo-600" />
+            </Link>
+          </div>
           <div className="flex items-center gap-2 text-xs text-muted-foreground font-medium">
             {client.pronouns && <span>{client.pronouns}</span>}
             {client.pronouns && <span>•</span>}
@@ -2123,7 +2457,7 @@ function ClientRow({
                   onSetRateUpdatedDate(client.id, new Date().toISOString());
                   showSuccess("Rate marked as reviewed today.");
                 }}
-                className="h-5 px-1.5 text-[9px] font-black uppercase tracking-wider text-indigo-600 hover:bg-indigo-50 rounded-md"
+                className="h-5 px-1.5 text-[9px] font-black uppercase tracking-wider text-indigo-600 hover:bg-indigo-50 dark:hover:bg-indigo-950/30 rounded-md"
               >
                 Mark Reviewed
               </Button>
@@ -2156,7 +2490,7 @@ function ClientRow({
                 <span className="text-[9px] font-black uppercase tracking-wider text-muted-foreground block">Status</span>
                 <Select
                   value={reengagementTag || "neutral"}
-                  onValueChange={(val: any) => onSetReengagementTag(client.id, val === "neutral" ? undefined : val)}
+                  onValueChange={(val: any) => onSetReengagementTag(client.id, val === "neutral" ? null : val)}
                 >
                   <SelectTrigger className={cn(
                     "w-[90px] h-8 rounded-xl text-xs font-bold border-none",

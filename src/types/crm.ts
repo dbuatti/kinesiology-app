@@ -131,6 +131,9 @@ export interface Client {
   notion_link?: string | null;
   standard_rate?: number | null;
   preferred_time?: string | null;
+  target_rate?: number | null;
+  rate_updated_at?: string | null;
+  reengagement_tag?: 'warm' | 'cold' | 'lost' | null;
 }
 
 export interface AppointmentWithClient extends Appointment {

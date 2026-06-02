@@ -311,7 +311,6 @@ export default function ClientAuditPage() {
         const lastSeenDate = pastApps.length > 0 ? new Date(pastApps[0].date) : null;
 
         // Find future appointments
-        const futureApps = sortedApps.filter((app) => new Date(app.date) > now);
         const hasFuture = futureApps.length > 0;
 
         // Determine follow-up status
@@ -1230,7 +1229,7 @@ export default function ClientAuditPage() {
                                 <span className="text-indigo-400 font-black">${c.currentRate}</span>
                                 <button
                                   onClick={() => handleToggleWeeklyClient(c.id)}
-                                  className="w-4 h-4 rounded-full bg-slate-700 hover:bg-rose-500/20 hover:text-rose-400 flex items-center justify-center transition-colors"
+                                  className="w-4 h-4 rounded-full bg-slate-700 hover:bg-rose-50/20 hover:text-rose-400 flex items-center justify-center transition-colors"
                                 >
                                   <X size={10} />
                                 </button>
@@ -1733,7 +1732,7 @@ export default function ClientAuditPage() {
                           </Label>
                         </div>
                       </div>
-                    </CardHeader>
+                    </Header>
                     <CardContent className="p-8 space-y-8">
                       {/* Projections Table */}
                       <div className="border border-slate-200 dark:border-slate-800 rounded-2xl overflow-hidden">
@@ -2900,7 +2899,7 @@ function ClientRow({
               <DropdownMenuSeparator className="my-1" />
               <DropdownMenuItem asChild className="rounded-xl py-2 px-4 cursor-pointer flex items-center gap-3">
                 <Link to={`/clients/${client.id}`}>
-                  <User size={14} className="text-slate-500" />
+                  <Users size={14} className="text-slate-500" />
                   <span className="font-bold text-xs uppercase tracking-widest">View Profile</span>
                 </Link>
               </DropdownMenuItem>

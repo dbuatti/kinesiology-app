@@ -287,12 +287,79 @@ export const syncSingleAppointment = async (appId: string, supabase: any, notion
     mainPageUrl = createData.url;
   }
 
-  // Prepare properties for Yearly Planner DB
-  const plannerProps = {
-    "Title": { title: [{ text: { content: appointmentName } }] },
-    "Date": { date: { start: appointment.date } },
-    "Project": { select: { name: "Kinesiology" } }
-  };
+  // Fetch database schema to map properties dynamically
+  const plannerSchema = await fetchDatabaseSchema(PLANNER_DB_ID, notionHeaders);
+
+  // Prepare properties for Yearly Planner / Finance DB
+  const plannerProps = {};
+
+  // 1. Title/Name
+  const titleProp = findSchemaProperty(plannerSchema, ['Title', 'Name', 'Item', 'Description', 'Appointment']);
+  if (titleProp) {
+    plannerProps[titleProp.name] = { title: [{ text: { content: appointmentName } }] };
+  } else {
+    // Fallback
+    plannerProps["Title"] = { title: [{ text: { content: appointmentName } }] };
+  }
+
+  // 2. Date
+  const dateProp = findSchemaProperty(plannerSchema, ['Date', 'Created', 'Time', 'Session Date']);
+  if (dateProp) {
+    plannerProps[dateProp.name] = { date: { start: appointment.date } };
+  } else {
+    // Fallback
+    plannerProps["Date"] = { date: { start: appointment.date } };
+  }
+
+  // 3. Project/Category
+  const projectProp = findSchemaProperty(plannerSchema, ['Project', 'Category', 'Type', 'Source', 'Service']);
+  if (projectProp) {
+    if (projectProp.schema.type === 'select') {
+      plannerProps[projectProp.name] = { select: { name: appointment.tag || "Kinesiology" } };
+    } else if (projectProp.schema.type === 'multi_select') {
+      plannerProps[projectProp.name] = { multi_select: [{ name: appointment.tag || "Kinesiology" }] };
+    } else if (projectProp.schema.type === 'rich_text') {
+      plannerProps[projectProp.name] = { rich_text: [{ text: { content: appointment.tag || "Kinesiology" } }] };
+    }
+  } else {
+    // Fallback
+    plannerProps["Project"] = { select: { name: "Kinesiology" } };
+  }
+
+  // 4. Amount/Price (Finance specific)
+  const amountProp = findSchemaProperty(plannerSchema, ['Amount', 'Price', 'Cost', 'Value', 'Income', 'Earnings', 'Fee']);
+  if (amountProp) {
+    const price = Number(appointment.price_amount) || 50;
+    if (amountProp.schema.type === 'number') {
+      plannerProps[amountProp.name] = { number: price };
+    } else if (amountProp.schema.type === 'rich_text') {
+      plannerProps[amountProp.name] = { rich_text: [{ text: { content: `$${price}` } }] };
+    }
+  }
+
+  // 5. Paid/Status (Finance specific)
+  const paidProp = findSchemaProperty(plannerSchema, ['Paid', 'Status', 'Received', 'Is Paid', 'Payment Status']);
+  if (paidProp) {
+    const isPaid = Boolean(appointment.payment_received || appointment.is_paid);
+    if (paidProp.schema.type === 'checkbox') {
+      plannerProps[paidProp.name] = { checkbox: isPaid };
+    } else if (paidProp.schema.type === 'select') {
+      plannerProps[paidProp.name] = { select: { name: isPaid ? "Paid" : "Unpaid" } };
+    } else if (paidProp.schema.type === 'rich_text') {
+      plannerProps[paidProp.name] = { rich_text: [{ text: { content: isPaid ? "Paid" : "Unpaid" } }] };
+    }
+  }
+
+  // 6. Payment Method (Finance specific)
+  const methodProp = findSchemaProperty(plannerSchema, ['Payment Method', 'Method', 'Account', 'Paid Via']);
+  if (methodProp) {
+    const method = appointment.payment_method || "Stripe";
+    if (methodProp.schema.type === 'select') {
+      plannerProps[methodProp.name] = { select: { name: method } };
+    } else if (methodProp.schema.type === 'rich_text') {
+      plannerProps[methodProp.name] = { rich_text: [{ text: { content: method } }] };
+    }
+  }
 
   let plannerPageId = appointment.notion_planner_id;
 

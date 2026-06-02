@@ -85,13 +85,17 @@ serve(async (req) => {
     // 1. Check for recent appointments (6-month rule)
     if (!force) {
       const sixMonthsAgo = subMonths(new Date(), 6).toISOString();
-      const { data: recentApps, error: historyError } = await supabase
+      let query = supabase
         .from('appointments')
         .select('id, date')
         .eq('client_id', clientId)
-        .gt('date', sixMonthsAgo)
-        .neq('id', appointmentId || '') // Exclude the current appointment
-        .limit(1);
+        .gt('date', sixMonthsAgo);
+
+      if (appointmentId) {
+        query = query.neq('id', appointmentId);
+      }
+
+      const { data: recentApps, error: historyError } = await query.limit(1);
 
       if (historyError) console.error("[send-manual-onboarding] History check error:", historyError);
 

@@ -84,6 +84,8 @@ export const mapValueToNotionProperty = (value: any, propertySchema: any) => {
       return { multi_select: items.map(item => ({ name: String(item).substring(0, 100) })) };
     case 'url':
       return { url: String(value) };
+    case 'checkbox':
+      return { checkbox: Boolean(value) };
     default:
       return null;
   }

@@ -719,21 +719,25 @@ export default function ClientAuditPage() {
 
   const groups = {
     lastMonth: sortedClients.filter(
-      (c) => c.lastSeenDate && c.lastSeenDate >= oneMonthAgo
+      (c) => (c.lastSeenDate && c.lastSeenDate >= oneMonthAgo) || c.appointments.some(app => new Date(app.date) > now)
     ),
     oneToThreeMonths: sortedClients.filter(
       (c) =>
+        !c.appointments.some(app => new Date(app.date) > now) &&
         c.lastSeenDate &&
         c.lastSeenDate < oneMonthAgo &&
         c.lastSeenDate >= threeMonthsAgo
     ),
     threePlusMonths: sortedClients.filter(
-      (c) => !c.lastSeenDate || c.lastSeenDate < threeMonthsAgo
+      (c) =>
+        !c.appointments.some(app => new Date(app.date) > now) &&
+        (!c.lastSeenDate || c.lastSeenDate < threeMonthsAgo)
     ),
   };
 
   // Financial Calculations
   const activeClients = clients.filter((c) => {
+    if (c.appointments.some(app => new Date(app.date) > now)) return true;
     if (!c.lastSeenDate) return false;
     const diffDays = (now.getTime() - c.lastSeenDate.getTime()) / (1000 * 60 * 60 * 24);
     return diffDays <= 90;
@@ -845,7 +849,7 @@ export default function ClientAuditPage() {
   // Salary Simulator Calculations (Last Month Clients)
   const salaryMetrics = useMemo(() => {
     const lastMonthClients = clients.filter(
-      (c) => c.lastSeenDate && c.lastSeenDate >= oneMonthAgo
+      (c) => (c.lastSeenDate && c.lastSeenDate >= oneMonthAgo) || c.appointments.some(app => new Date(app.date) > now)
     );
 
     let currentWeeklyTotal = 0;
@@ -1356,8 +1360,8 @@ export default function ClientAuditPage() {
                         <CheckCircle2 size={18} />
                       </div>
                       <div>
-                        <h3 className="font-black text-foreground text-base">Last Month</h3>
-                        <p className="text-xs text-muted-foreground font-medium">Seen in the last 30 days</p>
+                        <h3 className="font-black text-foreground text-base">Active & Upcoming</h3>
+                        <p className="text-xs text-muted-foreground font-medium">Seen in the last 30 days OR booked in the future</p>
                       </div>
                       <Badge variant="secondary" className="ml-2 bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-400 border-none font-bold">
                         {groups.lastMonth.length} {groups.lastMonth.length === 1 ? "client" : "clients"}
@@ -1394,7 +1398,7 @@ export default function ClientAuditPage() {
                               <tr className="border-b border-border/40 bg-muted/10 text-[10px] font-black uppercase tracking-wider text-muted-foreground">
                                 <th className="p-4 pl-6 w-12">Sim</th>
                                 <th className="p-4">Client</th>
-                                <th className="p-4">Last Seen</th>
+                                <th className="p-4">Last Seen / Next Booked</th>
                                 <th className="p-4">Rate Ladder (Current vs Target)</th>
                                 <th className="p-4">Preferred Time</th>
                                 <th className="p-4">Follow-up Status</th>
@@ -1476,7 +1480,7 @@ export default function ClientAuditPage() {
                               <tr className="border-b border-border/40 bg-muted/10 text-[10px] font-black uppercase tracking-wider text-muted-foreground">
                                 <th className="p-4 pl-6 w-12">Sim</th>
                                 <th className="p-4">Client</th>
-                                <th className="p-4">Last Seen</th>
+                                <th className="p-4">Last Seen / Next Booked</th>
                                 <th className="p-4">Rate Ladder (Current vs Target)</th>
                                 <th className="p-4">Preferred Time</th>
                                 <th className="p-4">Follow-up Status</th>

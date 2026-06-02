@@ -83,6 +83,11 @@ export const ClientRow = ({
   const lastSeenText = client.lastSeenDate ? format(client.lastSeenDate, "MMM d, yyyy") : "Never";
   const relativeTime = client.lastSeenDate ? formatDistanceToNow(client.lastSeenDate, { addSuffix: true }) : "";
 
+  const futureApps = client.appointments.filter(app => new Date(app.date) > new Date());
+  const nextApp = futureApps.length > 0 ? [...futureApps].sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime())[0] : null;
+  const nextAppText = nextApp ? format(new Date(nextApp.date), "MMM d, yyyy") : null;
+  const nextAppRelative = nextApp ? formatDistanceToNow(new Date(nextApp.date), { addSuffix: true }) : null;
+
   const isCustomRate = client.standard_rate !== null && client.standard_rate !== undefined && ![0, 30, 50, 70, 80, 90, 100, 120, 150].includes(client.standard_rate);
   const currentRateValue = isCustomRate ? -1 : (client.standard_rate ?? 50);
 
@@ -238,14 +243,28 @@ export const ClientRow = ({
         </div>
       </td>
 
-      {/* Last Seen */}
+      {/* Last Seen / Next Booked */}
       <td className="p-4">
         <div className="space-y-1">
-          <span className="text-sm font-bold text-foreground">{lastSeenText}</span>
-          {relativeTime && (
-            <span className="text-xs text-muted-foreground font-medium block">
-              {relativeTime}
-            </span>
+          <div className="flex flex-col">
+            <span className="text-xs text-muted-foreground font-medium">Last Seen:</span>
+            <span className="text-sm font-bold text-foreground">{lastSeenText}</span>
+            {relativeTime && (
+              <span className="text-[10px] text-muted-foreground font-medium">
+                ({relativeTime})
+              </span>
+            )}
+          </div>
+          {nextAppText && (
+            <div className="flex flex-col pt-1 border-t border-border/30 mt-1">
+              <span className="text-xs text-indigo-600 dark:text-indigo-400 font-black uppercase tracking-wider text-[9px]">Next Booked:</span>
+              <span className="text-sm font-black text-indigo-600 dark:text-indigo-400">{nextAppText}</span>
+              {nextAppRelative && (
+                <span className="text-[10px] text-indigo-500 font-medium">
+                  ({nextAppRelative})
+                </span>
+              )}
+            </div>
           )}
         </div>
       </td>

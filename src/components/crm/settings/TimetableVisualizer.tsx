@@ -4,21 +4,27 @@ import React, { useState, useMemo } from 'react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { 
-  Calendar, 
-  Clock, 
-  AlertTriangle, 
-  CheckCircle2, 
-  Sparkles, 
-  ChevronRight, 
+import {
+  Calendar,
+  Clock,
+  AlertTriangle,
+  CheckCircle2,
+  Sparkles,
+  ChevronRight,
   ChevronLeft,
   Info,
   User,
   CalendarDays,
   Plus,
   ArrowRight,
-  HelpCircle
+  HelpCircle,
+  RefreshCw,
+  Ban,
+  Loader2,
+  DollarSign
 } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
+import { showSuccess, showError } from "@/utils/toast";
 import { cn } from "@/lib/utils";
 import { Client, Appointment } from "@/types/crm";
 import { Link } from "react-router-dom";
@@ -108,10 +114,11 @@ const TimetableVisualizer = ({ clients }: TimetableVisualizerProps) => {
   const [isOptimized, setIsOptimized] = useState(false);
   const [applyingMoves, setApplyingMoves] = useState(false);
 
-  // Filter to active clients (seen in last 30 days / last month) to keep the timetable relevant
+  // Filter to active clients (seen in last 30 days OR booked in the future) to keep the timetable relevant
   const activeClients = useMemo(() => {
     const now = new Date();
     return clients.filter(c => {
+      if (c.appointments.some(app => new Date(app.date) > now)) return true;
       if (!c.lastSeenDate) return false;
       const diffDays = (now.getTime() - c.lastSeenDate.getTime()) / (1000 * 60 * 60 * 24);
       return diffDays <= 30;
@@ -408,6 +415,47 @@ const TimetableVisualizer = ({ clients }: TimetableVisualizerProps) => {
     return earnings;
   }, [activeWeek, isOptimized, optimizedData.grid, scheduledData.grid]);
 
+  // Calculate earnings for both weeks
+  const weeklyEarningsSummary = useMemo(() => {
+    const summary = {
+      week1: 0,
+      week2: 0,
+      fortnight: 0,
+      byDayWeek1: {} as Record<string, number>,
+      byDayWeek2: {} as Record<string, number>
+    };
+
+    DAYS.forEach(day => {
+      summary.byDayWeek1[day] = 0;
+      summary.byDayWeek2[day] = 0;
+
+      TIME_SLOTS.forEach(slot => {
+        // Week 1
+        const cell1 = (isOptimized ? optimizedData.grid : scheduledData.grid)[`1-${day}-${slot}`];
+        if (cell1 && cell1.clients) {
+          cell1.clients.forEach(client => {
+            const rate = client.standard_rate ?? 50;
+            summary.byDayWeek1[day] += rate;
+            summary.week1 += rate;
+          });
+        }
+
+        // Week 2
+        const cell2 = (isOptimized ? optimizedData.grid : scheduledData.grid)[`2-${day}-${slot}`];
+        if (cell2 && cell2.clients) {
+          cell2.clients.forEach(client => {
+            const rate = client.standard_rate ?? 50;
+            summary.byDayWeek2[day] += rate;
+            summary.week2 += rate;
+          });
+        }
+      });
+    });
+
+    summary.fortnight = summary.week1 + summary.week2;
+    return summary;
+  }, [isOptimized, optimizedData.grid, scheduledData.grid]);
+
   return (
     <div className="space-y-8 animate-in fade-in duration-700">
       {/* Header & Week Switcher */}
@@ -467,6 +515,93 @@ const TimetableVisualizer = ({ clients }: TimetableVisualizerProps) => {
             </Button>
           </div>
         </div>
+      </div>
+
+      {/* Earnings Summary Section */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        {/* Week 1 Earnings Card */}
+        <Card className="border-none shadow-md rounded-[2rem] bg-card overflow-hidden">
+          <CardContent className="p-6 space-y-4">
+            <div className="flex items-center justify-between">
+              <span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Week 1 Earnings</span>
+              <div className="w-8 h-8 rounded-lg bg-indigo-50 dark:bg-indigo-950/30 text-indigo-600 flex items-center justify-center">
+                <DollarSign size={16} />
+              </div>
+            </div>
+            <div className="space-y-1">
+              <h3 className="text-3xl font-black text-foreground">${weeklyEarningsSummary.week1}</h3>
+              <p className="text-xs text-muted-foreground font-medium">Total for Week 1 schedule</p>
+            </div>
+            <div className="pt-3 border-t border-border/40 space-y-1.5">
+              <span className="text-[9px] font-black uppercase tracking-wider text-muted-foreground block">Daily Breakdown</span>
+              <div className="grid grid-cols-5 gap-1 text-center">
+                {DAYS.map(day => (
+                  <div key={day} className="bg-muted/30 p-1.5 rounded-lg">
+                    <span className="text-[9px] font-bold text-muted-foreground block">{day.substring(0, 3)}</span>
+                    <span className="text-xs font-black text-foreground">${weeklyEarningsSummary.byDayWeek1[day] || 0}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Week 2 Earnings Card */}
+        <Card className="border-none shadow-md rounded-[2rem] bg-card overflow-hidden">
+          <CardContent className="p-6 space-y-4">
+            <div className="flex items-center justify-between">
+              <span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Week 2 Earnings</span>
+              <div className="w-8 h-8 rounded-lg bg-indigo-50 dark:bg-indigo-950/30 text-indigo-600 flex items-center justify-center">
+                <DollarSign size={16} />
+              </div>
+            </div>
+            <div className="space-y-1">
+              <h3 className="text-3xl font-black text-foreground">${weeklyEarningsSummary.week2}</h3>
+              <p className="text-xs text-muted-foreground font-medium">Total for Week 2 schedule</p>
+            </div>
+            <div className="pt-3 border-t border-border/40 space-y-1.5">
+              <span className="text-[9px] font-black uppercase tracking-wider text-muted-foreground block">Daily Breakdown</span>
+              <div className="grid grid-cols-5 gap-1 text-center">
+                {DAYS.map(day => (
+                  <div key={day} className="bg-muted/30 p-1.5 rounded-lg">
+                    <span className="text-[9px] font-bold text-muted-foreground block">{day.substring(0, 3)}</span>
+                    <span className="text-xs font-black text-foreground">${weeklyEarningsSummary.byDayWeek2[day] || 0}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Fortnightly Total Card */}
+        <Card className="border-none shadow-md rounded-[2rem] bg-indigo-600 text-white overflow-hidden relative group">
+          <div className="absolute inset-0 bg-grid-white/[0.02] pointer-events-none" />
+          <CardContent className="p-6 space-y-4 relative z-10">
+            <div className="flex items-center justify-between">
+              <span className="text-[10px] font-black uppercase tracking-widest text-indigo-200">Fortnightly Total</span>
+              <div className="w-8 h-8 rounded-lg bg-white/10 text-white flex items-center justify-center">
+                <Sparkles size={16} />
+              </div>
+            </div>
+            <div className="space-y-1">
+              <h3 className="text-3xl font-black">${weeklyEarningsSummary.fortnight}</h3>
+              <p className="text-xs text-indigo-200 font-medium">Combined 2-week schedule earnings</p>
+            </div>
+            <div className="pt-3 border-t border-white/10 space-y-1.5">
+              <span className="text-[9px] font-black uppercase tracking-wider text-indigo-200 block">Estimated Monthly / Annual</span>
+              <div className="grid grid-cols-2 gap-2 text-center">
+                <div className="bg-white/5 p-2 rounded-xl border border-white/10">
+                  <span className="text-[9px] font-bold text-indigo-200 block">Monthly</span>
+                  <span className="text-sm font-black">${Math.round(weeklyEarningsSummary.fortnight * 2.16)}</span>
+                </div>
+                <div className="bg-white/5 p-2 rounded-xl border border-white/10">
+                  <span className="text-[9px] font-bold text-indigo-200 block">Annual</span>
+                  <span className="text-sm font-black">${Math.round(weeklyEarningsSummary.fortnight * 26)}</span>
+                </div>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
       </div>
 
       {/* Smart Suggestions & Capacity Alerts */}

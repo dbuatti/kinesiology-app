@@ -213,9 +213,12 @@ const TimetableVisualizer = ({ clients }: TimetableVisualizerProps) => {
       startSlot: string
     ) => {
       const activeSlots = TIME_SLOTS.filter(s => s !== "12:00" && s !== "13:00");
-      const dayIndex = DAYS.indexOf(startDay);
+      
+      // Define preferred clinic days order
+      const preferredDays = ["Wednesday", "Friday"];
+      const otherDays = ["Monday", "Tuesday", "Thursday"];
 
-      // 1. Try same day, adjacent time slots first
+      // 1. Try same day, adjacent time slots first (keeps them on their preferred day)
       const currentSlotIndex = activeSlots.indexOf(startSlot);
       const searchOffsets = [1, -1, 2, -2, 3, -3, 4, -4];
 
@@ -230,34 +233,47 @@ const TimetableVisualizer = ({ clients }: TimetableVisualizerProps) => {
         }
       }
 
-      // 2. Try adjacent days, same time slot
-      const dayOffsets = [1, -1, 2, -2, 3, -3, 4, -4];
-      for (const offset of dayOffsets) {
-        const targetDayIndex = dayIndex + offset;
-        if (targetDayIndex >= 0 && targetDayIndex < DAYS.length) {
-          const targetDay = DAYS[targetDayIndex];
-          const key = `${startWeek}-${targetDay}-${startSlot}`;
+      // 2. Try preferred clinic days (Wednesday, Friday), same time slot
+      for (const targetDay of preferredDays) {
+        if (targetDay === startDay) continue;
+        const key = `${startWeek}-${targetDay}-${startSlot}`;
+        if (grid[key].clients.length === 0) {
+          return { week: startWeek, day: targetDay, slot: startSlot, reason: `Moved to same time slot on preferred clinic day (${targetDay})` };
+        }
+      }
+
+      // 3. Try preferred clinic days (Wednesday, Friday), any available slot
+      for (const targetDay of preferredDays) {
+        if (targetDay === startDay) continue;
+        for (const targetSlot of activeSlots) {
+          const key = `${startWeek}-${targetDay}-${targetSlot}`;
           if (grid[key].clients.length === 0) {
-            return { week: startWeek, day: targetDay, slot: startSlot, reason: `Moved to same time slot on adjacent day (${targetDay})` };
+            return { week: startWeek, day: targetDay, slot: targetSlot, reason: `Moved to available slot on preferred clinic day (${targetDay} at ${TIME_LABELS[targetSlot]})` };
           }
         }
       }
 
-      // 3. Try adjacent days, any available slot
-      for (const offset of dayOffsets) {
-        const targetDayIndex = dayIndex + offset;
-        if (targetDayIndex >= 0 && targetDayIndex < DAYS.length) {
-          const targetDay = DAYS[targetDayIndex];
-          for (const targetSlot of activeSlots) {
-            const key = `${startWeek}-${targetDay}-${targetSlot}`;
-            if (grid[key].clients.length === 0) {
-              return { week: startWeek, day: targetDay, slot: targetSlot, reason: `Moved to available slot on adjacent day (${targetDay} at ${TIME_LABELS[targetSlot]})` };
-            }
+      // 4. Try other days (Monday, Tuesday, Thursday), same time slot
+      for (const targetDay of otherDays) {
+        if (targetDay === startDay) continue;
+        const key = `${startWeek}-${targetDay}-${startSlot}`;
+        if (grid[key].clients.length === 0) {
+          return { week: startWeek, day: targetDay, slot: startSlot, reason: `Moved to same time slot on adjacent day (${targetDay})` };
+        }
+      }
+
+      // 5. Try other days (Monday, Tuesday, Thursday), any available slot
+      for (const targetDay of otherDays) {
+        if (targetDay === startDay) continue;
+        for (const targetSlot of activeSlots) {
+          const key = `${startWeek}-${targetDay}-${targetSlot}`;
+          if (grid[key].clients.length === 0) {
+            return { week: startWeek, day: targetDay, slot: targetSlot, reason: `Moved to available slot on adjacent day (${targetDay} at ${TIME_LABELS[targetSlot]})` };
           }
         }
       }
 
-      // 4. Try other week, same day, same slot
+      // 6. Try other week, same day, same slot
       const otherWeek = startWeek === 1 ? 2 : 1;
       const otherWeekKey = `${otherWeek}-${startDay}-${startSlot}`;
       if (grid[otherWeekKey].clients.length === 0) {

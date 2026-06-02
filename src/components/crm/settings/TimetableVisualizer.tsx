@@ -90,13 +90,13 @@ function parsePreferredTime(timeStr: string | null | undefined) {
 const TimetableVisualizer = ({ clients }: TimetableVisualizerProps) => {
   const [activeWeek, setActiveWeek] = useState<1 | 2>(1);
 
-  // Filter to active clients (seen in last 90 days) to keep the timetable relevant
+  // Filter to active clients (seen in last 30 days / last month) to keep the timetable relevant
   const activeClients = useMemo(() => {
     const now = new Date();
     return clients.filter(c => {
       if (!c.lastSeenDate) return false;
       const diffDays = (now.getTime() - c.lastSeenDate.getTime()) / (1000 * 60 * 60 * 24);
-      return diffDays <= 90;
+      return diffDays <= 30;
     });
   }, [clients]);
 
@@ -217,7 +217,7 @@ const TimetableVisualizer = ({ clients }: TimetableVisualizerProps) => {
             Supposed Timetable
           </h3>
           <p className="text-xs text-muted-foreground font-medium">
-            A simulated 2-week block based on active clients, their preferred times, and session regularity.
+            A simulated 2-week block based on active clients seen within the last month, their preferred times, and session regularity.
           </p>
         </div>
 

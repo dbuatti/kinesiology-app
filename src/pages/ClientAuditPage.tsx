@@ -654,7 +654,7 @@ export default function ClientAuditPage() {
           if (error) throw error;
           successCount++;
         } catch (err) {
-          console.error(`Failed to send onboarding to ${client.name}:`, err);
+          console.error(`Failed to send onboarding to ${client.name}: err`);
         }
       }
       showSuccess(`Successfully sent onboarding emails to ${successCount} of ${clientsWithEmail.length} clients.`);
@@ -1088,7 +1088,7 @@ export default function ClientAuditPage() {
   const activeSummary = aiSuggestions?.summary || "Reaching a $150 average session rate requires a gradual, value-driven transition plan. By elevating your clinical offerings, packaging sessions, and implementing structured rate increases, you can double your practice revenue while delivering exceptional client outcomes.";
 
   return (
-    <AppLayout>
+    <AppLayout variant="full">
       <div className="space-y-8 animate-in fade-in duration-700 pb-20">
         <PageHeader
           title="Client Payment & Audit"

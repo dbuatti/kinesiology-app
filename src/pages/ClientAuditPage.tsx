@@ -33,6 +33,19 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+  DropdownMenuSeparator,
+} from "@/components/ui/dropdown-menu";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
+import {
   Search,
   Filter,
   ArrowUpDown,
@@ -69,10 +82,16 @@ import {
   Square,
   ExternalLink,
   RotateCcw,
-  Sliders
+  Sliders,
+  Mail,
+  Send,
+  CreditCard,
+  MoreHorizontal,
+  CalendarPlus
 } from "lucide-react";
 import { format, formatDistanceToNow, differenceInMonths } from "date-fns";
 import { Client, Appointment } from "@/types/crm";
+import AppointmentForm from "@/components/crm/AppointmentForm";
 
 interface ClientWithAppointments extends Client {
   appointments: Appointment[];
@@ -161,6 +180,10 @@ export default function ClientAuditPage() {
   const [isCustomRateModalOpen, setIsCustomRateModalOpen] = useState(false);
   const [customRateValue, setCustomRateValue] = useState("");
 
+  // Quick Booking Modal State
+  const [isBookingModalOpen, setIsBookingModalOpen] = useState(false);
+  const [bookingClientId, setBookingClientId] = useState<string | null>(null);
+
   // Simulator State
   const [targetRate, setTargetRate] = useState(100);
   const [simulatorClients, setSimulatorClients] = useState(25);
@@ -183,6 +206,7 @@ export default function ClientAuditPage() {
 
   // NEW FEATURES STATE
   const [selectedWeeklyClients, setSelectedWeeklyClients] = useState<string[]>([]);
+  const [bulkActionLoading, setBulkActionLoading] = useState(false);
 
   useEffect(() => {
     fetchData();
@@ -585,6 +609,82 @@ export default function ClientAuditPage() {
     setSelectedWeeklyClients([]);
     localStorage.removeItem("antigravity_selected_weekly_clients");
     showSuccess("Weekly booking simulator cleared.");
+  };
+
+  // BULK ACTIONS HANDLERS
+  const handleBulkSetTargetRate = async (rate: number) => {
+    if (selectedWeeklyClients.length === 0) return;
+    setBulkActionLoading(true);
+    try {
+      const { error } = await supabase
+        .from("clients")
+        .update({ target_rate: rate })
+        .in("id", selectedWeeklyClients);
+
+      if (error) throw error;
+      
+      setClients(prev => prev.map(c => selectedWeeklyClients.includes(c.id) ? { ...c, target_rate: rate } : c));
+      showSuccess(`Successfully set target rate to $${rate} for ${selectedWeeklyClients.length} clients.`);
+    } catch (err: any) {
+      showError("Failed to apply bulk target rate.");
+    } finally {
+      setBulkActionLoading(false);
+    }
+  };
+
+  const handleBulkSetReengagementTag = async (tag: 'warm' | 'cold' | 'lost' | null) => {
+    if (selectedWeeklyClients.length === 0) return;
+    setBulkActionLoading(true);
+    try {
+      const { error } = await supabase
+        .from("clients")
+        .update({ reengagement_tag: tag })
+        .in("id", selectedWeeklyClients);
+
+      if (error) throw error;
+      
+      setClients(prev => prev.map(c => selectedWeeklyClients.includes(c.id) ? { ...c, reengagement_tag: tag } : c));
+      showSuccess(`Successfully set re-engagement status to ${tag ? tag.toUpperCase() : 'NONE'} for ${selectedWeeklyClients.length} clients.`);
+    } catch (err: any) {
+      showError("Failed to apply bulk re-engagement status.");
+    } finally {
+      setBulkActionLoading(false);
+    }
+  };
+
+  const handleBulkSendOnboarding = async () => {
+    if (selectedWeeklyClients.length === 0) return;
+    
+    const clientsWithEmail = clients.filter(c => selectedWeeklyClients.includes(c.id) && c.email);
+    if (clientsWithEmail.length === 0) {
+      showError("None of the selected clients have a valid email address.");
+      return;
+    }
+
+    if (!confirm(`Are you sure you want to send onboarding emails to ${clientsWithEmail.length} clients?`)) {
+      return;
+    }
+
+    setBulkActionLoading(true);
+    let successCount = 0;
+    try {
+      for (const client of clientsWithEmail) {
+        try {
+          const { error } = await supabase.functions.invoke('send-manual-onboarding', {
+            body: { clientId: client.id, force: true }
+          });
+          if (error) throw error;
+          successCount++;
+        } catch (err) {
+          console.error(`Failed to send onboarding to ${client.name}:`, err);
+        }
+      }
+      showSuccess(`Successfully sent onboarding emails to ${successCount} of ${clientsWithEmail.length} clients.`);
+    } catch (err: any) {
+      showError("Failed to complete bulk onboarding dispatch.");
+    } finally {
+      setBulkActionLoading(false);
+    }
   };
 
   // Filter and Sort Clients
@@ -1157,7 +1257,7 @@ export default function ClientAuditPage() {
                           <h4 className="text-2xl font-black text-emerald-400">
                             +${weeklySimulatorMetrics.increase}
                           </h4>
-                          <span className="text-[10px] text-emerald-500/80 font-bold block">
+                          <span className="text-[10px] text-slate-500 font-medium block">
                             +${weeklySimulatorMetrics.annualizedImpact.toLocaleString()}/yr
                           </span>
                         </div>
@@ -1316,7 +1416,8 @@ export default function ClientAuditPage() {
                                 <th className="p-4">Last Seen</th>
                                 <th className="p-4">Rate Ladder (Current vs Target)</th>
                                 <th className="p-4">Preferred Time</th>
-                                <th className="p-4 pr-6">Follow-up Status</th>
+                                <th className="p-4">Follow-up Status</th>
+                                <th className="p-4 pr-6 text-right">Actions</th>
                               </tr>
                             </thead>
                             <tbody className="divide-y divide-border/40">
@@ -1333,6 +1434,8 @@ export default function ClientAuditPage() {
                                   onSetRateUpdatedDate={handleSetRateUpdatedDate}
                                   onSetReengagementTag={handleSetReengagementTag}
                                   isLapsedSection={false}
+                                  onQuickBook={setBookingClientId}
+                                  onRefresh={fetchData}
                                 />
                               ))}
                             </tbody>
@@ -1395,7 +1498,8 @@ export default function ClientAuditPage() {
                                 <th className="p-4">Last Seen</th>
                                 <th className="p-4">Rate Ladder (Current vs Target)</th>
                                 <th className="p-4">Preferred Time</th>
-                                <th className="p-4 pr-6">Follow-up Status</th>
+                                <th className="p-4">Follow-up Status</th>
+                                <th className="p-4 pr-6 text-right">Actions</th>
                               </tr>
                             </thead>
                             <tbody className="divide-y divide-border/40">
@@ -1412,6 +1516,8 @@ export default function ClientAuditPage() {
                                   onSetRateUpdatedDate={handleSetRateUpdatedDate}
                                   onSetReengagementTag={handleSetReengagementTag}
                                   isLapsedSection={false}
+                                  onQuickBook={setBookingClientId}
+                                  onRefresh={fetchData}
                                 />
                               ))}
                             </tbody>
@@ -1474,7 +1580,8 @@ export default function ClientAuditPage() {
                                 <th className="p-4">Last Seen</th>
                                 <th className="p-4">Rate Ladder (Current vs Target)</th>
                                 <th className="p-4">Re-engagement Priority</th>
-                                <th className="p-4 pr-6">Follow-up Status</th>
+                                <th className="p-4">Follow-up Status</th>
+                                <th className="p-4 pr-6 text-right">Actions</th>
                               </tr>
                             </thead>
                             <tbody className="divide-y divide-border/40">
@@ -1491,6 +1598,8 @@ export default function ClientAuditPage() {
                                   onSetRateUpdatedDate={handleSetRateUpdatedDate}
                                   onSetReengagementTag={handleSetReengagementTag}
                                   isLapsedSection={true}
+                                  onQuickBook={setBookingClientId}
+                                  onRefresh={fetchData}
                                 />
                               ))}
                             </tbody>
@@ -2261,6 +2370,93 @@ export default function ClientAuditPage() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      {/* Quick Booking Modal */}
+      <Dialog open={isBookingModalOpen} onOpenChange={setIsBookingModalOpen}>
+        <DialogContent className="sm:max-w-[550px] max-h-[90vh] overflow-y-auto rounded-[2rem] p-0">
+          <div className="p-8">
+            <DialogHeader className="mb-6">
+              <DialogTitle className="text-2xl font-black">Quick Book Session</DialogTitle>
+              <DialogDescription className="font-medium">Schedule a new appointment for this client.</DialogDescription>
+            </DialogHeader>
+            {bookingClientId && (
+              <AppointmentForm 
+                initialClientId={bookingClientId} 
+                onSuccess={() => {
+                  setIsBookingModalOpen(false);
+                  fetchData();
+                }} 
+              />
+            )}
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* STICKY BULK ACTIONS BAR */}
+      {selectedWeeklyClients.length > 0 && (
+        <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 w-full max-w-3xl px-4 animate-in slide-in-from-bottom-10 duration-500">
+          <div className="bg-slate-950/95 text-white rounded-[2rem] p-4 shadow-2xl border border-slate-800/80 backdrop-blur-md flex flex-col sm:flex-row items-center justify-between gap-4">
+            <div className="flex items-center gap-3">
+              <div className="w-8 h-8 rounded-xl bg-indigo-600 text-white flex items-center justify-center font-black text-xs">
+                {selectedWeeklyClients.length}
+              </div>
+              <div>
+                <p className="text-xs font-black uppercase tracking-widest text-slate-400">Bulk Actions</p>
+                <p className="text-[10px] text-slate-500 font-bold uppercase">Apply changes to selected clients</p>
+              </div>
+            </div>
+
+            <div className="flex flex-wrap items-center gap-2 w-full sm:w-auto justify-end">
+              {/* Bulk Target Rate */}
+              <Select onValueChange={(val) => handleBulkSetTargetRate(parseInt(val))} disabled={bulkActionLoading}>
+                <SelectTrigger className="w-[120px] h-9 rounded-xl bg-slate-900 border-slate-800 text-[10px] font-black uppercase tracking-widest text-indigo-400">
+                  <SelectValue placeholder="Set Target" />
+                </SelectTrigger>
+                <SelectContent className="rounded-xl bg-slate-900 text-white border-slate-800">
+                  {RATE_OPTIONS.filter(opt => opt.value !== -1).map(opt => (
+                    <SelectItem key={opt.value} value={opt.value.toString()} className="text-xs font-bold">
+                      {opt.label}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+
+              {/* Bulk Re-engagement Tag */}
+              <Select onValueChange={(val: any) => handleBulkSetReengagementTag(val === "neutral" ? null : val)} disabled={bulkActionLoading}>
+                <SelectTrigger className="w-[120px] h-9 rounded-xl bg-slate-900 border-slate-800 text-[10px] font-black uppercase tracking-widest text-rose-400">
+                  <SelectValue placeholder="Set Status" />
+                </SelectTrigger>
+                <SelectContent className="rounded-xl bg-slate-900 text-white border-slate-800">
+                  <SelectItem value="neutral" className="text-xs font-bold">Neutral</SelectItem>
+                  <SelectItem value="warm" className="text-xs font-bold text-emerald-400">Warm</SelectItem>
+                  <SelectItem value="cold" className="text-xs font-bold text-blue-400">Cold</SelectItem>
+                  <SelectItem value="lost" className="text-xs font-bold text-slate-500">Lost</SelectItem>
+                </SelectContent>
+              </Select>
+
+              {/* Bulk Onboarding */}
+              <Button
+                size="sm"
+                onClick={handleBulkSendOnboarding}
+                disabled={bulkActionLoading}
+                className="bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl h-9 px-4 font-black text-[10px] uppercase tracking-widest"
+              >
+                {bulkActionLoading ? <Loader2 className="animate-spin" size={12} /> : <Send size={12} className="mr-1.5" />}
+                Onboard
+              </Button>
+
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={handleClearWeeklyClients}
+                className="text-slate-400 hover:text-white rounded-xl h-9 px-3 font-black text-[10px] uppercase tracking-widest"
+              >
+                Clear
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
     </AppLayout>
   );
 }
@@ -2276,6 +2472,8 @@ interface ClientRowProps {
   onSetRateUpdatedDate: (clientId: string, dateStr: string) => void;
   onSetReengagementTag: (clientId: string, tag: 'warm' | 'cold' | 'lost' | null) => void;
   isLapsedSection: boolean;
+  onQuickBook: (clientId: string) => void;
+  onRefresh: () => void;
 }
 
 function ClientRow({
@@ -2289,6 +2487,8 @@ function ClientRow({
   onSetRateUpdatedDate,
   onSetReengagementTag,
   isLapsedSection,
+  onQuickBook,
+  onRefresh,
 }: ClientRowProps) {
   const lastSeenText = client.lastSeenDate ? format(client.lastSeenDate, "MMM d, yyyy") : "Never";
   const relativeTime = client.lastSeenDate ? formatDistanceToNow(client.lastSeenDate, { addSuffix: true }) : "";
@@ -2307,6 +2507,9 @@ function ClientRow({
 
   // Re-engagement Priority Calculations
   const reengagementTag = client.reengagement_tag;
+  const [syncingStripe, setSyncingStripe] = useState(false);
+  const [syncingNotion, setSyncingNotion] = useState(false);
+  const [sendingOnboarding, setSendingOnboarding] = useState(false);
   
   const priorityScore = useMemo(() => {
     let score = 0;
@@ -2333,6 +2536,78 @@ function ClientRow({
   }, [client, reengagementTag]);
 
   const isSelectedInSimulator = selectedWeeklyClients.includes(client.id);
+
+  const handleSyncToStripe = async (e: React.MouseEvent) => {
+    e.stopPropagation();
+    setSyncingStripe(true);
+    try {
+      const { data, error } = await supabase.functions.invoke('stripe-manager', {
+        body: { 
+          action: 'sync-customer', 
+          clientId: client.id,
+          clientData: client
+        }
+      });
+
+      if (error) throw error;
+
+      if (data.stripeCustomerId) {
+        await supabase
+          .from('clients')
+          .update({ stripe_customer_id: data.stripeCustomerId })
+          .eq('id', client.id);
+        
+        showSuccess(`Synced ${client.name} to Stripe!`);
+        onRefresh();
+      }
+    } catch (err: any) {
+      showError(err.message || "Failed to sync to Stripe.");
+    } finally {
+      setSyncingStripe(false);
+    }
+  };
+
+  const handleSyncToNotion = async (e: React.MouseEvent) => {
+    e.stopPropagation();
+    setSyncingNotion(true);
+    try {
+      const { data, error } = await supabase.functions.invoke('sync-to-notion', {
+        body: {
+          clientId: client.id,
+          origin: window.location.origin
+        }
+      });
+
+      if (error) throw error;
+
+      showSuccess(`Synced ${client.name} to Notion Client Database!`);
+      onRefresh();
+    } catch (err: any) {
+      showError(err.message || "Failed to sync to Notion.");
+    } finally {
+      setSyncingNotion(false);
+    }
+  };
+
+  const handleSendOnboarding = async (e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (!client.email) {
+      showError("Client email is missing.");
+      return;
+    }
+    setSendingOnboarding(true);
+    try {
+      const { error } = await supabase.functions.invoke('send-manual-onboarding', {
+        body: { clientId: client.id, force: true }
+      });
+      if (error) throw error;
+      showSuccess(`Onboarding email sent to ${client.name}!`);
+    } catch (err: any) {
+      showError(err.message || "Failed to send onboarding email.");
+    } finally {
+      setSendingOnboarding(false);
+    }
+  };
 
   return (
     <tr className={cn(
@@ -2475,14 +2750,17 @@ function ClientRow({
               {/* Priority Score */}
               <div className="space-y-0.5">
                 <span className="text-[9px] font-black uppercase tracking-wider text-muted-foreground block">Priority Score</span>
-                <Badge className={cn(
-                  "font-black text-xs px-2.5 py-1 rounded-xl border-none",
-                  priorityScore >= 70 ? "bg-emerald-100 text-emerald-700 dark:bg-emerald-950/30 dark:text-emerald-400" :
-                  priorityScore >= 40 ? "bg-amber-100 text-amber-700 dark:bg-amber-950/30 dark:text-amber-400" :
-                  "bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-400"
-                )}>
-                  {priorityScore}/100
-                </Badge>
+                <div className="flex items-center gap-2">
+                  <Badge className={cn(
+                    "font-black text-xs px-2.5 py-1 rounded-xl border-none",
+                    priorityScore >= 70 ? "bg-emerald-100 text-emerald-700 dark:bg-emerald-950/30 dark:text-emerald-400" :
+                    priorityScore >= 40 ? "bg-amber-100 text-amber-700 dark:bg-amber-950/30 dark:text-amber-400" :
+                    "bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-400"
+                  )}>
+                    {priorityScore}/100
+                  </Badge>
+                  {priorityScore >= 70 && <Flame size={14} className="text-orange-500 animate-pulse" />}
+                </div>
               </div>
 
               {/* Re-engagement Tag */}
@@ -2547,13 +2825,13 @@ function ClientRow({
       </td>
 
       {/* Follow-up Status */}
-      <td className="p-4 pr-6">
+      <td className="p-4">
         {client.followUpStatus === "Booked" ? (
           <Badge className="bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-400 border-none font-bold text-xs px-2.5 py-0.5 rounded-full">
             Booked
           </Badge>
         ) : client.followUpStatus === "Needs Follow-up" ? (
-          <Badge className="bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-400 border-none font-bold text-xs px-2.5 py-0.5 rounded-full">
+          <Badge className="bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-400 border-none font-bold text-xs px-2.5 py-0.5 rounded-full animate-pulse">
             Needs Follow-up
           </Badge>
         ) : (
@@ -2561,6 +2839,74 @@ function ClientRow({
             No Future Bookings
           </Badge>
         )}
+      </td>
+
+      {/* Row Actions */}
+      <td className="p-4 pr-6 text-right">
+        <div className="flex items-center justify-end gap-2">
+          {/* Quick Book */}
+          <TooltipProvider>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  onClick={(e) => { e.stopPropagation(); onQuickBook(client.id); }}
+                  className="h-8 w-8 rounded-xl text-indigo-600 hover:bg-indigo-50 dark:hover:bg-indigo-950/30"
+                >
+                  <CalendarPlus size={16} />
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent className="rounded-xl font-bold text-xs p-2">Quick Book Session</TooltipContent>
+            </Tooltip>
+          </TooltipProvider>
+
+          {/* Send Onboarding */}
+          {client.email && (
+            <TooltipProvider>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    onClick={handleSendOnboarding}
+                    disabled={sendingOnboarding}
+                    className="h-8 w-8 rounded-xl text-emerald-600 hover:bg-emerald-50 dark:hover:bg-emerald-950/30"
+                  >
+                    {sendingOnboarding ? <Loader2 className="animate-spin" size={14} /> : <Send size={14} />}
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent className="rounded-xl font-bold text-xs p-2">Send Onboarding Email</TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
+          )}
+
+          {/* More Actions Dropdown */}
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="ghost" size="icon" className="h-8 w-8 rounded-xl text-slate-400 hover:text-slate-900">
+                <MoreHorizontal size={16} />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end" className="rounded-2xl p-2 shadow-2xl border-none bg-card">
+              <DropdownMenuItem onClick={handleSyncToNotion} disabled={syncingNotion} className="rounded-xl py-2 px-4 cursor-pointer flex items-center gap-3">
+                {syncingNotion ? <Loader2 className="animate-spin" size={14} /> : <RefreshCw size={14} className="text-purple-500" />}
+                <span className="font-bold text-xs uppercase tracking-widest">Sync to Notion</span>
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={handleSyncToStripe} disabled={syncingStripe} className="rounded-xl py-2 px-4 cursor-pointer flex items-center gap-3">
+                {syncingStripe ? <Loader2 className="animate-spin" size={14} /> : <CreditCard size={14} className="text-blue-500" />}
+                <span className="font-bold text-xs uppercase tracking-widest">Sync to Stripe</span>
+              </DropdownMenuItem>
+              <DropdownMenuSeparator className="my-1" />
+              <DropdownMenuItem asChild className="rounded-xl py-2 px-4 cursor-pointer flex items-center gap-3">
+                <Link to={`/clients/${client.id}`}>
+                  <User size={14} className="text-slate-500" />
+                  <span className="font-bold text-xs uppercase tracking-widest">View Profile</span>
+                </Link>
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+        </div>
       </td>
     </tr>
   );

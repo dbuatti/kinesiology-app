@@ -387,6 +387,27 @@ const TimetableVisualizer = ({ clients }: TimetableVisualizerProps) => {
     }
   };
 
+  // Calculate daily earnings based on scheduled clients and their standard rates
+  const dailyEarnings = useMemo(() => {
+    const earnings: Record<string, number> = {};
+    
+    DAYS.forEach(day => {
+      let daySum = 0;
+      TIME_SLOTS.forEach(slot => {
+        const key = `${activeWeek}-${day}-${slot}`;
+        const cell = (isOptimized ? optimizedData.grid : scheduledData.grid)[key];
+        if (cell && cell.clients) {
+          cell.clients.forEach(client => {
+            daySum += client.standard_rate ?? 50;
+          });
+        }
+      });
+      earnings[day] = daySum;
+    });
+    
+    return earnings;
+  }, [activeWeek, isOptimized, optimizedData.grid, scheduledData.grid]);
+
   return (
     <div className="space-y-8 animate-in fade-in duration-700">
       {/* Header & Week Switcher */}
@@ -458,11 +479,19 @@ const TimetableVisualizer = ({ clients }: TimetableVisualizerProps) => {
                 <thead>
                   <tr className="bg-muted/50 border-b border-border">
                     <th className="p-4 pl-6 font-black text-[10px] uppercase tracking-widest text-muted-foreground w-24">Time</th>
-                    {DAYS.map(day => (
-                      <th key={day} className="p-4 font-black text-[10px] uppercase tracking-widest text-muted-foreground text-center">
-                        {day}
-                      </th>
-                    ))}
+                    {DAYS.map(day => {
+                      const earnings = dailyEarnings[day] || 0;
+                      return (
+                        <th key={day} className="p-4 font-black text-[10px] uppercase tracking-widest text-muted-foreground text-center">
+                          <div>{day}</div>
+                          {earnings > 0 && (
+                            <div className="text-emerald-600 dark:text-emerald-400 font-black text-[9px] mt-1">
+                              ${earnings} Earned
+                            </div>
+                          )}
+                        </th>
+                      );
+                    })}
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-border/40">

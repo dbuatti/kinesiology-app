@@ -209,16 +209,26 @@ const AppointmentDetailPage = () => {
   }, [appointment, id, saveField, refresh]);
 
   const handleDeleteAppointment = useCallback(async () => {
-    if (!id || !confirm("Delete this appointment?")) return;
+    if (!id || !appointment || !confirm("Are you sure you want to delete this appointment? It will also be removed from Notion and Cal.com if linked.")) return;
     try {
+      if (appointment.notion_page_id || appointment.notion_planner_id || appointment.calcom_booking_id) {
+        await supabase.functions.invoke('delete-external-appointment', {
+          body: { 
+            notionPageId: appointment.notion_page_id, 
+            notionPlannerId: appointment.notion_planner_id,
+            calcomBookingId: appointment.calcom_booking_id 
+          }
+        });
+      }
+
       const { error = null } = await supabase.from('appointments').delete().eq('id', id);
       if (error) throw error;
-      showSuccess("Appointment deleted");
+      showSuccess("Appointment deleted from all platforms.");
       navigate('/appointments');
     } catch (err: any) {
       showError(err.message || "Failed to delete appointment");
     }
-  }, [id, navigate]);
+  }, [id, appointment, navigate]);
 
   const handleStartSession = useCallback(async () => {
     if (!appointment) return;
@@ -321,19 +331,19 @@ const AppointmentDetailPage = () => {
                   <div className="px-4 py-2 mb-2">
                     <p className="text-[8px] font-black text-slate-400 uppercase tracking-0.4em">Session Management</p>
                   </div>
-                  <DropdownMenuItem onClick={toggleFullScreen} className="rounded-xl py-3.5 px-5 cursor-pointer flex items-center gap-4">
+                  <DropdownMenuItem onClick={toggleFullScreen} className="rounded-xl py-2.5 px-4 cursor-pointer flex items-center gap-4">
                     {isFullScreen ? <Minimize2 size={18} className="text-indigo-500" /> : <Maximize2 size={18} className="text-indigo-500" />}
                     <span className="font-bold text-xs uppercase tracking-widest">{isFullScreen ? "Exit Full Screen" : "Full Screen"}</span>
                   </DropdownMenuItem>
-                  <DropdownMenuItem onClick={handleCopyOnboardingLink} className="rounded-xl py-3.5 px-5 cursor-pointer flex items-center gap-4">
+                  <DropdownMenuItem onClick={handleCopyOnboardingLink} className="rounded-xl py-2.5 px-4 cursor-pointer flex items-center gap-4">
                     <LinkIcon size={18} className="text-indigo-500" /> 
                     <span className="font-bold text-xs uppercase tracking-widest">Copy Onboarding Link</span>
                   </DropdownMenuItem>
-                  <DropdownMenuItem onClick={handleSyncToNotion} className="rounded-xl py-3.5 px-5 cursor-pointer flex items-center gap-4">
+                  <DropdownMenuItem onClick={handleSyncToNotion} className="rounded-xl py-2.5 px-4 cursor-pointer flex items-center gap-4">
                     <RefreshCw size={18} className="text-emerald-500" /> 
                     <span className="font-bold text-xs uppercase tracking-widest">Sync to Notion</span>
                   </DropdownMenuItem>
-                  <DropdownMenuItem onClick={handleCopyForAI} className="rounded-xl py-3.5 px-5 cursor-pointer flex items-center gap-4">
+                  <DropdownMenuItem onClick={handleCopyForAI} className="rounded-xl py-2.5 px-4 cursor-pointer flex items-center gap-4">
                     <Sparkles size={18} className="text-amber-500" /> 
                     <span className="font-bold text-xs uppercase tracking-widest">AI Case Prompt</span>
                   </DropdownMenuItem>
@@ -341,6 +351,14 @@ const AppointmentDetailPage = () => {
                   <DropdownMenuItem onClick={() => window.print()} className="rounded-xl py-3.5 px-5 cursor-pointer flex items-center gap-4">
                     <Printer size={18} className="text-slate-400" /> 
                     <span className="font-bold text-xs uppercase tracking-widest">Print Session Report</span>
+                  </DropdownMenuItem>
+                  <DropdownMenuSeparator className="my-2 bg-slate-100 dark:bg-slate-800" />
+                  <DropdownMenuItem 
+                    className="text-destructive focus:text-destructive rounded-xl py-3.5 px-5 cursor-pointer flex items-center gap-4"
+                    onClick={handleDeleteAppointment}
+                  >
+                    <Trash2 size={18} />
+                    <span className="font-bold text-xs uppercase tracking-widest">Delete Appointment</span>
                   </DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>

@@ -56,7 +56,9 @@ import {
   X,
   ArrowRightLeft,
   Target,
-  ShieldAlert
+  ShieldAlert,
+  Wand2,
+  Loader2
 } from "lucide-react";
 import { format, formatDistanceToNow } from "date-fns";
 import { Client, Appointment } from "@/types/crm";
@@ -77,6 +79,48 @@ const RATE_OPTIONS = [
   { label: "$120", value: 120 },
   { label: "$150", value: 150 },
   { label: "Custom", value: -1 }
+];
+
+const STATIC_ROADMAP = [
+  {
+    phase: "Phase 1: Q3 2026",
+    title: "Elevate Low-Tier Clients",
+    description: "Transition clients currently paying $30 to $50. Introduce basic homework tools and email support to justify the adjustment."
+  },
+  {
+    phase: "Phase 2: Q1 2027",
+    title: "Standardize Mid-Tier Clients",
+    description: "Transition $50 clients to $80, and $80 clients to $100. Offer custom integration worksheets and specialized neurological protocols."
+  },
+  {
+    phase: "Phase 3: Q3 2027",
+    title: "The Premium Shift",
+    description: "Transition $100 clients to $120. Introduce premium session packages (e.g., 5 sessions for $550) to lock in commitment and ease the transition."
+  },
+  {
+    phase: "Phase 4: Q4 2027",
+    title: "Target Goal Achieved",
+    description: "Transition all active clients to the standard rate of $150/session. All new clients onboarded from this point forward start at the $150 rate."
+  }
+];
+
+const STATIC_STRATEGIES = [
+  {
+    title: "Package Sessions",
+    description: "Offer packages of 5 or 10 sessions at a slight discount (e.g., 5 sessions for $650 instead of $750) to secure upfront commitment, increase lifetime value, and ease the transition to higher rates."
+  },
+  {
+    title: "Premium Support",
+    description: "Provide email/chat support between sessions, custom homework tools, and personalized integration worksheets. This positions you as a dedicated partner in their healing journey."
+  },
+  {
+    title: "Highlight Clinical Wins",
+    description: "Use the Marketing Engine and Wins Vault to document and share client breakthroughs. Demonstrating high-value outcomes and clinical success builds trust and justifies premium pricing."
+  },
+  {
+    title: "Specialized Protocols",
+    description: "Introduce advanced neurological and somatic protocols (e.g., Cranial Nerve, Primitive Reflex, Heart Wall) to justify specialist rates. Clients are willing to pay more for highly specialized expertise."
+  }
 ];
 
 export default function ClientAuditPage() {
@@ -115,8 +159,29 @@ export default function ClientAuditPage() {
   const [globalSimFrequency, setGlobalSimFrequency] = useState(1.5);
   const [clientOverrides, setClientOverrides] = useState<Record<string, { rate?: number; frequency?: number; active?: boolean }>>({});
 
+  // AI Suggestions State
+  const [aiSuggestions, setAiSuggestions] = useState<{
+    summary: string;
+    roadmap: { phase: string; title: string; description: string }[];
+    strategies: { title: string; description: string }[];
+  } | null>(null);
+  const [isAnalyzing, setIsAnalyzing] = useState(false);
+  const [lastAnalyzed, setLastAnalyzed] = useState<string | null>(null);
+
   useEffect(() => {
     fetchData();
+    
+    // Load cached AI suggestions
+    const cached = localStorage.getItem("antigravity_client_audit_suggestions");
+    if (cached) {
+      try {
+        const parsed = JSON.parse(cached);
+        setAiSuggestions(parsed.suggestions);
+        setLastAnalyzed(parsed.lastAnalyzed);
+      } catch (e) {
+        console.error("Failed to parse cached audit suggestions", e);
+      }
+    }
   }, []);
 
   const fetchData = async () => {
@@ -209,6 +274,33 @@ export default function ClientAuditPage() {
       showError("Failed to load client audit data.");
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleGenerateSuggestions = async () => {
+    setIsAnalyzing(true);
+    try {
+      const { data, error } = await supabase.functions.invoke('analyze-client-audit', {
+        body: { clients }
+      });
+
+      if (error) throw error;
+
+      setAiSuggestions(data);
+      const nowStr = new Date().toISOString();
+      setLastAnalyzed(nowStr);
+
+      localStorage.setItem("antigravity_client_audit_suggestions", JSON.stringify({
+        suggestions: data,
+        lastAnalyzed: nowStr
+      }));
+
+      showSuccess("AI Audit Suggestions generated successfully!");
+    } catch (err: any) {
+      console.error("Error generating audit suggestions:", err);
+      showError(err.message || "Failed to generate AI suggestions.");
+    } finally {
+      setIsAnalyzing(false);
     }
   };
 
@@ -612,6 +704,10 @@ export default function ClientAuditPage() {
       };
     });
   };
+
+  const activeRoadmap = aiSuggestions?.roadmap || STATIC_ROADMAP;
+  const activeStrategies = aiSuggestions?.strategies || STATIC_STRATEGIES;
+  const activeSummary = aiSuggestions?.summary || "Reaching a $150 average session rate requires a gradual, value-driven transition plan. By elevating your clinical offerings, packaging sessions, and implementing structured rate increases, you can double your practice revenue while delivering exceptional client outcomes.";
 
   return (
     <AppLayout>
@@ -1288,14 +1384,33 @@ export default function ClientAuditPage() {
                 </div>
                 <CardContent className="p-10 md:p-14 relative z-10">
                   <div className="max-w-3xl space-y-6">
-                    <Badge className="bg-amber-500/20 text-amber-300 border-amber-500/30 font-black text-[10px] uppercase tracking-[0.3em] px-4 py-1">
-                      Strategic AI Roadmap
-                    </Badge>
+                    <div className="flex items-center justify-between">
+                      <Badge className="bg-amber-500/20 text-amber-300 border-amber-500/30 font-black text-[10px] uppercase tracking-[0.3em] px-4 py-1">
+                        Strategic AI Roadmap
+                      </Badge>
+                      <Button
+                        onClick={handleGenerateSuggestions}
+                        disabled={isAnalyzing}
+                        className="bg-amber-500 hover:bg-amber-600 text-slate-950 font-black text-[10px] uppercase tracking-widest h-10 px-6 rounded-xl shadow-lg"
+                      >
+                        {isAnalyzing ? (
+                          <>
+                            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                            Analyzing...
+                          </>
+                        ) : (
+                          <>
+                            <Wand2 className="mr-2 h-4 w-4" />
+                            Generate AI Suggestions
+                          </>
+                        )}
+                      </Button>
+                    </div>
                     <h2 className="text-4xl md:text-5xl font-serif font-bold tracking-tighter leading-tight">
                       The Path to $150/Session <br/>by the End of 2027.
                     </h2>
                     <p className="text-lg text-slate-300 font-medium leading-relaxed">
-                      Reaching a $150 average session rate requires a gradual, value-driven transition plan. By elevating your clinical offerings, packaging sessions, and implementing structured rate increases, you can double your practice revenue while delivering exceptional client outcomes.
+                      {activeSummary}
                     </p>
                     <div className="flex flex-wrap gap-4 pt-4">
                       <div className="flex items-center gap-2">
@@ -1306,6 +1421,12 @@ export default function ClientAuditPage() {
                         <CheckCircle2 size={18} className="text-amber-400" />
                         <span className="text-sm font-bold text-slate-200">Value-Add Client Support</span>
                       </div>
+                      {lastAnalyzed && (
+                        <div className="flex items-center gap-2 text-slate-400 text-xs font-medium ml-auto">
+                          <Clock size={14} />
+                          <span>Last Analyzed {formatDistanceToNow(new Date(lastAnalyzed), { addSuffix: true })}</span>
+                        </div>
+                      )}
                     </div>
                   </div>
                 </CardContent>
@@ -1326,69 +1447,22 @@ export default function ClientAuditPage() {
                   </CardHeader>
                   <CardContent className="p-8 pt-4 space-y-6">
                     <div className="relative border-l-2 border-indigo-100 dark:border-indigo-950/50 pl-6 ml-4 space-y-8">
-                      {/* Step 1 */}
-                      <div className="relative">
-                        <div className="absolute -left-[31px] top-1.5 w-4 h-4 rounded-full bg-indigo-600 border-4 border-white dark:border-slate-900" />
-                        <div className="space-y-1">
-                          <div className="flex items-center gap-2">
-                            <Badge className="bg-indigo-50 dark:bg-indigo-950/30 text-indigo-600 dark:text-indigo-400 border-none font-bold text-[10px] uppercase tracking-wider">
-                              Phase 1: Q3 2026
-                            </Badge>
+                      {activeRoadmap.map((step, idx) => (
+                        <div key={idx} className="relative">
+                          <div className="absolute -left-[31px] top-1.5 w-4 h-4 rounded-full bg-indigo-600 border-4 border-white dark:border-slate-900" />
+                          <div className="space-y-1">
+                            <div className="flex items-center gap-2">
+                              <Badge className="bg-indigo-50 dark:bg-indigo-950/30 text-indigo-600 dark:text-indigo-400 border-none font-bold text-[10px] uppercase tracking-wider">
+                                {step.phase}
+                              </Badge>
+                            </div>
+                            <h4 className="font-black text-foreground text-base">{step.title}</h4>
+                            <p className="text-sm text-muted-foreground font-medium leading-relaxed">
+                              {step.description}
+                            </p>
                           </div>
-                          <h4 className="font-black text-foreground text-base">Elevate Low-Tier Clients</h4>
-                          <p className="text-sm text-muted-foreground font-medium leading-relaxed">
-                            Transition clients currently paying <strong className="text-foreground">$30</strong> to <strong className="text-foreground">$50</strong>. Introduce basic homework tools and email support to justify the adjustment.
-                          </p>
                         </div>
-                      </div>
-
-                      {/* Step 2 */}
-                      <div className="relative">
-                        <div className="absolute -left-[31px] top-1.5 w-4 h-4 rounded-full bg-indigo-600 border-4 border-white dark:border-slate-900" />
-                        <div className="space-y-1">
-                          <div className="flex items-center gap-2">
-                            <Badge className="bg-indigo-50 dark:bg-indigo-950/30 text-indigo-600 dark:text-indigo-400 border-none font-bold text-[10px] uppercase tracking-wider">
-                              Phase 2: Q1 2027
-                            </Badge>
-                          </div>
-                          <h4 className="font-black text-foreground text-base">Standardize Mid-Tier Clients</h4>
-                          <p className="text-sm text-muted-foreground font-medium leading-relaxed">
-                            Transition <strong className="text-foreground">$50</strong> clients to <strong className="text-foreground">$80</strong>, and <strong className="text-foreground">$80</strong> clients to <strong className="text-foreground">$100</strong>. Offer custom integration worksheets and specialized neurological protocols.
-                          </p>
-                        </div>
-                      </div>
-
-                      {/* Step 3 */}
-                      <div className="relative">
-                        <div className="absolute -left-[31px] top-1.5 w-4 h-4 rounded-full bg-indigo-600 border-4 border-white dark:border-slate-900" />
-                        <div className="space-y-1">
-                          <div className="flex items-center gap-2">
-                            <Badge className="bg-indigo-50 dark:bg-indigo-950/30 text-indigo-600 dark:text-indigo-400 border-none font-bold text-[10px] uppercase tracking-wider">
-                              Phase 3: Q3 2027
-                            </Badge>
-                          </div>
-                          <h4 className="font-black text-foreground text-base">The Premium Shift</h4>
-                          <p className="text-sm text-muted-foreground font-medium leading-relaxed">
-                            Transition <strong className="text-foreground">$100</strong> clients to <strong className="text-foreground">$120</strong>. Introduce premium session packages (e.g., 5 sessions for $550) to lock in commitment and ease the transition.
-                          </p>
-                        </div>
-                      </div>
-
-                      {/* Step 4 */}
-                      <div className="relative">
-                        <div className="absolute -left-[31px] top-1.5 w-4 h-4 rounded-full bg-indigo-600 border-4 border-white dark:border-slate-900" />
-                        <div className="space-y-1">
-                          <div className="flex items-center gap-2">
-                            <Badge className="bg-indigo-50 dark:bg-indigo-950/30 text-indigo-600 dark:text-indigo-400 border-none font-bold text-[10px] uppercase tracking-wider">
-                              Phase 4: Q4 2027
-                            </Badge>
-                          </div>
-                          <h4 className="font-black text-foreground text-base">Target Goal Achieved</h4>
-                          <p className="text-sm text-muted-foreground font-medium leading-relaxed">
-                            Transition all active clients to the standard rate of <strong className="text-foreground">$150/session</strong>. All new clients onboarded from this point forward start at the $150 rate.
-                          </p>
-                        </div>
-                      </div>
+                      ))}
                     </div>
                   </CardContent>
                 </Card>
@@ -1406,49 +1480,17 @@ export default function ClientAuditPage() {
                   </CardHeader>
                   <CardContent className="p-8 pt-4 space-y-6">
                     <div className="grid grid-cols-1 gap-4">
-                      {/* Strategy 1 */}
-                      <div className="p-5 rounded-2xl bg-muted/30 border border-border/40 space-y-2">
-                        <h4 className="font-black text-foreground text-sm flex items-center gap-2">
-                          <span className="w-2 h-2 rounded-full bg-indigo-600" />
-                          Package Sessions
-                        </h4>
-                        <p className="text-xs text-muted-foreground font-medium leading-relaxed">
-                          Offer packages of 5 or 10 sessions at a slight discount (e.g., 5 sessions for $650 instead of $750) to secure upfront commitment, increase lifetime value, and ease the transition to higher rates.
-                        </p>
-                      </div>
-
-                      {/* Strategy 2 */}
-                      <div className="p-5 rounded-2xl bg-muted/30 border border-border/40 space-y-2">
-                        <h4 className="font-black text-foreground text-sm flex items-center gap-2">
-                          <span className="w-2 h-2 rounded-full bg-indigo-600" />
-                          Premium Support
-                        </h4>
-                        <p className="text-xs text-muted-foreground font-medium leading-relaxed">
-                          Provide email/chat support between sessions, custom homework tools, and personalized integration worksheets. This positions you as a dedicated partner in their healing journey.
-                        </p>
-                      </div>
-
-                      {/* Strategy 3 */}
-                      <div className="p-5 rounded-2xl bg-muted/30 border border-border/40 space-y-2">
-                        <h4 className="font-black text-foreground text-sm flex items-center gap-2">
-                          <span className="w-2 h-2 rounded-full bg-indigo-600" />
-                          Highlight Clinical Wins
-                        </h4>
-                        <p className="text-xs text-muted-foreground font-medium leading-relaxed">
-                          Use the Marketing Engine and Wins Vault to document and share client breakthroughs. Demonstrating high-value outcomes and clinical success builds trust and justifies premium pricing.
-                        </p>
-                      </div>
-
-                      {/* Strategy 4 */}
-                      <div className="p-5 rounded-2xl bg-muted/30 border border-border/40 space-y-2">
-                        <h4 className="font-black text-foreground text-sm flex items-center gap-2">
-                          <span className="w-2 h-2 rounded-full bg-indigo-600" />
-                          Specialized Protocols
-                        </h4>
-                        <p className="text-xs text-muted-foreground font-medium leading-relaxed">
-                          Introduce advanced neurological and somatic protocols (e.g., Cranial Nerve, Primitive Reflex, Heart Wall) to justify specialist rates. Clients are willing to pay more for highly specialized expertise.
-                        </p>
-                      </div>
+                      {activeStrategies.map((strategy, idx) => (
+                        <div key={idx} className="p-5 rounded-2xl bg-muted/30 border border-border/40 space-y-2">
+                          <h4 className="font-black text-foreground text-sm flex items-center gap-2">
+                            <span className="w-2 h-2 rounded-full bg-indigo-600" />
+                            {strategy.title}
+                          </h4>
+                          <p className="text-xs text-muted-foreground font-medium leading-relaxed">
+                            {strategy.description}
+                          </p>
+                        </div>
+                      ))}
                     </div>
                   </CardContent>
                 </Card>

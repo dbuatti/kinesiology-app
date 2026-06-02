@@ -42,17 +42,12 @@ interface TimetableVisualizerProps {
 }
 
 const DAYS = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"];
-const TIME_SLOTS = ["10:00", "11:00", "12:00", "13:00", "14:00", "15:00", "16:00", "17:00"];
+const TIME_SLOTS = ["10:00", "14:00", "16:00"];
 
 const TIME_LABELS: Record<string, string> = {
   "10:00": "10:00 AM",
-  "11:00": "11:00 AM",
-  "12:00": "12:00 PM (Blocked)",
-  "13:00": "1:00 PM (Blocked)",
   "14:00": "2:00 PM",
-  "15:00": "3:00 PM",
-  "16:00": "4:00 PM",
-  "17:00": "5:00 PM"
+  "16:00": "4:00 PM"
 };
 
 // Helper to parse preferred time string

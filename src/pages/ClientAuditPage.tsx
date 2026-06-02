@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { showSuccess, showError } from "@/utils/toast";
 import AppLayout from "@/components/crm/AppLayout";
@@ -110,6 +110,7 @@ export default function ClientAuditPage() {
       const { data: clientsData, error: clientsError } = await supabase
         .from("clients")
         .select("*")
+        .or('is_practitioner.eq.false,is_practitioner.is.null')
         .order("name", { ascending: true });
 
       if (clientsError) throw clientsError;
@@ -230,19 +231,6 @@ export default function ClientAuditPage() {
       text: timeStr,
       isLowData: appointments.length < 3,
     };
-  };
-
-  const calculateAge = (bornStr: string | Date | null) => {
-    if (!bornStr) return "N/A";
-    try {
-      const born = new Date(bornStr);
-      if (isNaN(born.getTime())) return "N/A";
-      const ageDifMs = Date.now() - born.getTime();
-      const ageDate = new Date(ageDifMs);
-      return Math.abs(ageDate.getUTCFullYear() - 1970);
-    } catch {
-      return "N/A";
-    }
   };
 
   const handleRateChange = async (clientId: string, rateValue: number) => {
@@ -1240,7 +1228,7 @@ export default function ClientAuditPage() {
           </DialogHeader>
           <div className="py-4 space-y-4">
             <div className="space-y-2">
-              <label className="text-xs font-black uppercase tracking-wider text-muted-foreground">
+              <label className="text-xs font-black tracking-wider text-muted-foreground">
                 Preferred Appointment Time
               </label>
               <Input
@@ -1276,7 +1264,7 @@ export default function ClientAuditPage() {
           </DialogHeader>
           <div className="py-4 space-y-4">
             <div className="space-y-2">
-              <label className="text-xs font-black uppercase tracking-wider text-muted-foreground">
+              <label className="text-xs font-black tracking-wider text-muted-foreground">
                 Standard Rate ($)
               </label>
               <Input

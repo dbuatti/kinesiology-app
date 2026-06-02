@@ -58,9 +58,16 @@ import {
   Target,
   ShieldAlert,
   Wand2,
-  Loader2
+  Loader2,
+  AlertTriangle,
+  Flame,
+  Snowflake,
+  Trash2,
+  CalendarCheck,
+  CheckSquare,
+  Square
 } from "lucide-react";
-import { format, formatDistanceToNow } from "date-fns";
+import { format, formatDistanceToNow, differenceInMonths } from "date-fns";
 import { Client, Appointment } from "@/types/crm";
 
 interface ClientWithAppointments extends Client {
@@ -74,7 +81,9 @@ const RATE_OPTIONS = [
   { label: "Free", value: 0 },
   { label: "$30", value: 30 },
   { label: "$50", value: 50 },
+  { label: "$70", value: 70 },
   { label: "$80", value: 80 },
+  { label: "$90", value: 90 },
   { label: "$100", value: 100 },
   { label: "$120", value: 120 },
   { label: "$150", value: 150 },
@@ -168,6 +177,12 @@ export default function ClientAuditPage() {
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [lastAnalyzed, setLastAnalyzed] = useState<string | null>(null);
 
+  // NEW FEATURES STATE
+  const [selectedWeeklyClients, setSelectedWeeklyClients] = useState<string[]>([]);
+  const [targetRates, setTargetRates] = useState<Record<string, number>>({});
+  const [rateUpdatedDates, setRateUpdatedDates] = useState<Record<string, string>>({});
+  const [reengagementTags, setReengagementTags] = useState<Record<string, 'warm' | 'cold' | 'lost'>>({});
+
   useEffect(() => {
     fetchData();
     
@@ -182,6 +197,19 @@ export default function ClientAuditPage() {
         console.error("Failed to parse cached audit suggestions", e);
       }
     }
+
+    // Load new features state from localStorage
+    const cachedTargetRates = localStorage.getItem("antigravity_client_target_rates");
+    if (cachedTargetRates) setTargetRates(JSON.parse(cachedTargetRates));
+
+    const cachedRateUpdatedDates = localStorage.getItem("antigravity_client_rate_updated_dates");
+    if (cachedRateUpdatedDates) setRateUpdatedDates(JSON.parse(cachedRateUpdatedDates));
+
+    const cachedReengagementTags = localStorage.getItem("antigravity_client_reengagement_tags");
+    if (cachedReengagementTags) setReengagementTags(JSON.parse(cachedReengagementTags));
+
+    const cachedWeeklyClients = localStorage.getItem("antigravity_selected_weekly_clients");
+    if (cachedWeeklyClients) setSelectedWeeklyClients(JSON.parse(cachedWeeklyClients));
   }, []);
 
   const fetchData = async () => {
@@ -378,6 +406,9 @@ export default function ClientAuditPage() {
     // Optimistic UI update
     setClients(prev => prev.map(c => c.id === clientId ? { ...c, standard_rate: rateValue } : c));
 
+    // Also update rate updated date to today
+    handleSetRateUpdatedDate(clientId, new Date().toISOString());
+
     try {
       const { error } = await supabase
         .from("clients")
@@ -405,6 +436,9 @@ export default function ClientAuditPage() {
     // Optimistic UI update
     setClients(prev => prev.map(c => c.id === selectedClient.id ? { ...c, standard_rate: rateNum } : c));
     setIsCustomRateModalOpen(false);
+
+    // Also update rate updated date to today
+    handleSetRateUpdatedDate(selectedClient.id, new Date().toISOString());
 
     try {
       const { error } = await supabase
@@ -456,6 +490,43 @@ export default function ClientAuditPage() {
     }));
   };
 
+  // NEW FEATURES HANDLERS
+  const handleSetTargetRate = (clientId: string, rate: number) => {
+    const updated = { ...targetRates, [clientId]: rate };
+    setTargetRates(updated);
+    localStorage.setItem("antigravity_client_target_rates", JSON.stringify(updated));
+    showSuccess("Target rate updated.");
+  };
+
+  const handleSetRateUpdatedDate = (clientId: string, dateStr: string) => {
+    const updated = { ...rateUpdatedDates, [clientId]: dateStr };
+    setRateUpdatedDates(updated);
+    localStorage.setItem("antigravity_client_rate_updated_dates", JSON.stringify(updated));
+  };
+
+  const handleSetReengagementTag = (clientId: string, tag: 'warm' | 'cold' | 'lost') => {
+    const updated = { ...reengagementTags, [clientId]: tag };
+    setReengagementTags(updated);
+    localStorage.setItem("antigravity_client_reengagement_tags", JSON.stringify(updated));
+    showSuccess(`Re-engagement status set to ${tag.toUpperCase()}.`);
+  };
+
+  const handleToggleWeeklyClient = (clientId: string) => {
+    setSelectedWeeklyClients(prev => {
+      const updated = prev.includes(clientId)
+        ? prev.filter(id => id !== clientId)
+        : [...prev, clientId];
+      localStorage.setItem("antigravity_selected_weekly_clients", JSON.stringify(updated));
+      return updated;
+    });
+  };
+
+  const handleClearWeeklyClients = () => {
+    setSelectedWeeklyClients([]);
+    localStorage.removeItem("antigravity_selected_weekly_clients");
+    showSuccess("Weekly booking simulator cleared.");
+  };
+
   // Filter and Sort Clients
   const filteredClients = clients.filter((client) => {
     const matchesSearch = client.name.toLowerCase().includes(searchQuery.toLowerCase());
@@ -465,7 +536,7 @@ export default function ClientAuditPage() {
       if (filterRate === "free") {
         matchesRate = client.standard_rate === 0;
       } else if (filterRate === "custom") {
-        const standardValues = [0, 30, 50, 80, 100, 120, 150];
+        const standardValues = [0, 30, 50, 70, 80, 90, 100, 120, 150];
         matchesRate = client.standard_rate !== null && client.standard_rate !== undefined && !standardValues.includes(client.standard_rate);
       } else {
         matchesRate = client.standard_rate === parseInt(filterRate);
@@ -552,7 +623,6 @@ export default function ClientAuditPage() {
   const freeSessionRatio = totalSessions > 0 ? (freeSessions / totalSessions) * 100 : 0;
 
   // Projected Monthly Revenue
-  // Calculate dynamic frequency: total sessions in last 90 days / 3
   const totalSessionsLast90Days = clients.reduce((acc, c) => {
     const recentApps = c.appointments.filter(app => {
       const appDate = new Date(app.date);
@@ -564,8 +634,6 @@ export default function ClientAuditPage() {
 
   const dynamicMonthlyFrequency = totalSessionsLast90Days / 3;
   
-  // Projected Monthly Revenue = Sum of (client.standard_rate * client's monthly session frequency)
-  // If a client has no sessions in the last 90 days but is active (seen in last 30 days), assume 1 session/month.
   const projectedMonthlyRevenue = clients.reduce((acc, c) => {
     const recentAppsCount = c.appointments.filter(app => {
       const appDate = new Date(app.date);
@@ -586,13 +654,15 @@ export default function ClientAuditPage() {
     free: clients.filter(c => (c.standard_rate ?? 50) === 0).length,
     r30: clients.filter(c => (c.standard_rate ?? 50) === 30).length,
     r50: clients.filter(c => (c.standard_rate ?? 50) === 50).length,
+    r70: clients.filter(c => (c.standard_rate ?? 50) === 70).length,
     r80: clients.filter(c => (c.standard_rate ?? 50) === 80).length,
+    r90: clients.filter(c => (c.standard_rate ?? 50) === 90).length,
     r100: clients.filter(c => (c.standard_rate ?? 50) === 100).length,
     r120: clients.filter(c => (c.standard_rate ?? 50) === 120).length,
     r150: clients.filter(c => (c.standard_rate ?? 50) === 150).length,
     custom: clients.filter(c => {
       const rate = c.standard_rate ?? 50;
-      return ![0, 30, 50, 80, 100, 120, 150].includes(rate);
+      return ![0, 30, 50, 70, 80, 90, 100, 120, 150].includes(rate);
     }).length,
   };
 
@@ -603,6 +673,36 @@ export default function ClientAuditPage() {
   const targetProjectedRevenue = simulatorClients * targetRate * simulatorFrequency;
   const revenueIncrease = targetProjectedRevenue - currentProjectedRevenue;
   const percentageIncrease = currentProjectedRevenue > 0 ? (revenueIncrease / currentProjectedRevenue) * 100 : 0;
+
+  // Weekly Booking Simulator Calculations
+  const weeklySimulatorMetrics = useMemo(() => {
+    let currentTotal = 0;
+    let targetTotal = 0;
+    const selectedClientsDetails = clients.filter(c => selectedWeeklyClients.includes(c.id)).map(c => {
+      const currentRate = c.standard_rate ?? 50;
+      const targetRate = targetRates[c.id] ?? currentRate;
+      currentTotal += currentRate;
+      targetTotal += targetRate;
+      return {
+        id: c.id,
+        name: c.name,
+        currentRate,
+        targetRate
+      };
+    });
+
+    const increase = targetTotal - currentTotal;
+    const annualizedImpact = increase * 52;
+
+    return {
+      count: selectedClientsDetails.length,
+      details: selectedClientsDetails,
+      currentTotal,
+      targetTotal,
+      increase,
+      annualizedImpact
+    };
+  }, [clients, selectedWeeklyClients, targetRates]);
 
   // Salary Simulator Calculations (Last Month Clients)
   const salaryMetrics = useMemo(() => {
@@ -744,6 +844,96 @@ export default function ClientAuditPage() {
 
             {/* TAB 1: RATES & RECENCY */}
             <TabsContent value="rates" className="space-y-6">
+              {/* WEEKLY BOOKING SIMULATOR CARD */}
+              <Card className="border-none shadow-lg rounded-[2.5rem] bg-gradient-to-br from-indigo-900 via-slate-900 to-slate-950 text-white overflow-hidden relative group">
+                <div className="absolute inset-0 bg-grid-white/[0.02] pointer-events-none" />
+                <CardContent className="p-8 space-y-6 relative z-10">
+                  <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+                    <div className="space-y-1">
+                      <Badge className="bg-indigo-500/20 text-indigo-300 border-indigo-500/30 font-black text-[9px] uppercase tracking-widest px-3 py-0.5">
+                        Interactive Tool
+                      </Badge>
+                      <h3 className="text-2xl font-black tracking-tight flex items-center gap-2">
+                        <CalendarCheck className="text-indigo-400" size={24} />
+                        Weekly Booking Simulator
+                      </h3>
+                      <p className="text-xs text-slate-300 font-medium">
+                        Select clients from the lists below to simulate this week's bookings and see the direct impact of your rate ladder.
+                      </p>
+                    </div>
+                    {weeklySimulatorMetrics.count > 0 && (
+                      <Button
+                        variant="ghost"
+                        onClick={handleClearWeeklyClients}
+                        className="text-slate-300 hover:text-white hover:bg-white/10 rounded-xl text-xs font-bold self-start md:self-center"
+                      >
+                        <Trash2 size={14} className="mr-2" /> Clear Simulator
+                      </Button>
+                    )}
+                  </div>
+
+                  {weeklySimulatorMetrics.count === 0 ? (
+                    <div className="p-6 rounded-2xl border border-dashed border-slate-800 bg-slate-950/40 text-center space-y-2">
+                      <p className="text-sm font-bold text-slate-400">No clients selected for this week.</p>
+                      <p className="text-xs text-slate-500">
+                        Check the box next to any client's name in the lists below to add them to this week's schedule.
+                      </p>
+                    </div>
+                  ) : (
+                    <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-center">
+                      {/* Selected Badges */}
+                      <div className="lg:col-span-6 space-y-3">
+                        <span className="text-[10px] font-black uppercase tracking-widest text-slate-400 block">
+                          This Week's Schedule ({weeklySimulatorMetrics.count})
+                        </span>
+                        <ScrollArea className="h-[100px] pr-2">
+                          <div className="flex flex-wrap gap-2">
+                            {weeklySimulatorMetrics.details.map(c => (
+                              <Badge
+                                key={c.id}
+                                className="bg-slate-800/80 hover:bg-slate-800 text-slate-200 border-slate-700/50 pl-3 pr-1.5 py-1 rounded-xl flex items-center gap-1.5 text-xs font-bold"
+                              >
+                                {c.name}
+                                <span className="text-indigo-400 font-black">${c.currentRate}</span>
+                                <button
+                                  onClick={() => handleToggleWeeklyClient(c.id)}
+                                  className="w-4 h-4 rounded-full bg-slate-700 hover:bg-rose-500/20 hover:text-rose-400 flex items-center justify-center transition-colors"
+                                >
+                                  <X size={10} />
+                                </button>
+                              </Badge>
+                            ))}
+                          </div>
+                        </ScrollArea>
+                      </div>
+
+                      {/* Projections */}
+                      <div className="lg:col-span-6 grid grid-cols-1 sm:grid-cols-3 gap-4 bg-slate-950/50 p-5 rounded-3xl border border-slate-800/60">
+                        <div className="space-y-1">
+                          <span className="text-[9px] font-black uppercase tracking-widest text-slate-400 block">Current Earnings</span>
+                          <h4 className="text-2xl font-black text-white">${weeklySimulatorMetrics.currentTotal}</h4>
+                          <span className="text-[10px] text-slate-500 font-medium block">at current rates</span>
+                        </div>
+                        <div className="space-y-1 border-t sm:border-t-0 sm:border-l border-slate-800/80 pt-3 sm:pt-0 sm:pl-4">
+                          <span className="text-[9px] font-black uppercase tracking-widest text-indigo-400 block">Target Earnings</span>
+                          <h4 className="text-2xl font-black text-indigo-400">${weeklySimulatorMetrics.targetTotal}</h4>
+                          <span className="text-[10px] text-slate-500 font-medium block">at target rates</span>
+                        </div>
+                        <div className="space-y-1 border-t sm:border-t-0 sm:border-l border-slate-800/80 pt-3 sm:pt-0 sm:pl-4">
+                          <span className="text-[9px] font-black uppercase tracking-widest text-emerald-400 block">Weekly Increase</span>
+                          <h4 className="text-2xl font-black text-emerald-400">
+                            +${weeklySimulatorMetrics.increase}
+                          </h4>
+                          <span className="text-[10px] text-emerald-500/80 font-bold block">
+                            +${weeklySimulatorMetrics.annualizedImpact.toLocaleString()}/yr
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+
               {/* Controls Card */}
               <Card className="border-none shadow-md rounded-[2rem] bg-card">
                 <CardContent className="p-6">
@@ -773,7 +963,9 @@ export default function ClientAuditPage() {
                             <SelectItem value="free">Free</SelectItem>
                             <SelectItem value="30">$30</SelectItem>
                             <SelectItem value="50">$50</SelectItem>
+                            <SelectItem value="70">$70</SelectItem>
                             <SelectItem value="80">$80</SelectItem>
+                            <SelectItem value="90">$90</SelectItem>
                             <SelectItem value="100">$100</SelectItem>
                             <SelectItem value="120">$120</SelectItem>
                             <SelectItem value="150">$150</SelectItem>
@@ -856,9 +1048,10 @@ export default function ClientAuditPage() {
                           <table className="w-full text-left border-collapse">
                             <thead>
                               <tr className="border-b border-border/40 bg-muted/10 text-[10px] font-black uppercase tracking-wider text-muted-foreground">
-                                <th className="p-4 pl-6">Client</th>
+                                <th className="p-4 pl-6 w-12">Sim</th>
+                                <th className="p-4">Client</th>
                                 <th className="p-4">Last Seen</th>
-                                <th className="p-4">Standard Rate ($)</th>
+                                <th className="p-4">Rate Ladder (Current vs Target)</th>
                                 <th className="p-4">Preferred Time</th>
                                 <th className="p-4 pr-6">Follow-up Status</th>
                               </tr>
@@ -871,6 +1064,15 @@ export default function ClientAuditPage() {
                                   calculateAge={getClientAge}
                                   handleRateChange={handleRateChange}
                                   handleOpenOverrideModal={handleOpenOverrideModal}
+                                  targetRates={targetRates}
+                                  rateUpdatedDates={rateUpdatedDates}
+                                  reengagementTags={reengagementTags}
+                                  selectedWeeklyClients={selectedWeeklyClients}
+                                  onToggleWeeklyClient={handleToggleWeeklyClient}
+                                  onSetTargetRate={handleSetTargetRate}
+                                  onSetRateUpdatedDate={handleSetRateUpdatedDate}
+                                  onSetReengagementTag={handleSetReengagementTag}
+                                  isLapsedSection={false}
                                 />
                               ))}
                             </tbody>
@@ -913,9 +1115,10 @@ export default function ClientAuditPage() {
                           <table className="w-full text-left border-collapse">
                             <thead>
                               <tr className="border-b border-border/40 bg-muted/10 text-[10px] font-black uppercase tracking-wider text-muted-foreground">
-                                <th className="p-4 pl-6">Client</th>
+                                <th className="p-4 pl-6 w-12">Sim</th>
+                                <th className="p-4">Client</th>
                                 <th className="p-4">Last Seen</th>
-                                <th className="p-4">Standard Rate ($)</th>
+                                <th className="p-4">Rate Ladder (Current vs Target)</th>
                                 <th className="p-4">Preferred Time</th>
                                 <th className="p-4 pr-6">Follow-up Status</th>
                               </tr>
@@ -928,6 +1131,15 @@ export default function ClientAuditPage() {
                                   calculateAge={getClientAge}
                                   handleRateChange={handleRateChange}
                                   handleOpenOverrideModal={handleOpenOverrideModal}
+                                  targetRates={targetRates}
+                                  rateUpdatedDates={rateUpdatedDates}
+                                  reengagementTags={reengagementTags}
+                                  selectedWeeklyClients={selectedWeeklyClients}
+                                  onToggleWeeklyClient={handleToggleWeeklyClient}
+                                  onSetTargetRate={handleSetTargetRate}
+                                  onSetRateUpdatedDate={handleSetRateUpdatedDate}
+                                  onSetReengagementTag={handleSetReengagementTag}
+                                  isLapsedSection={false}
                                 />
                               ))}
                             </tbody>
@@ -938,7 +1150,7 @@ export default function ClientAuditPage() {
                   )}
                 </Card>
 
-                {/* Section 3: 3+ Months */}
+                {/* Section 3: 3+ Months (Lapsed Clients with Re-engagement Priority) */}
                 <Card className="border-none shadow-sm rounded-[2rem] overflow-hidden bg-card">
                   <button
                     onClick={() => toggleSection("threePlusMonths")}
@@ -949,7 +1161,7 @@ export default function ClientAuditPage() {
                         <AlertCircle size={18} />
                       </div>
                       <div>
-                        <h3 className="font-black text-foreground text-base">3+ Months</h3>
+                        <h3 className="font-black text-foreground text-base">3+ Months (Re-engagement Goldmine)</h3>
                         <p className="text-xs text-muted-foreground font-medium">Seen more than 90 days ago, or never seen</p>
                       </div>
                       <Badge variant="secondary" className="ml-2 bg-rose-100 dark:bg-rose-900/30 text-rose-700 dark:text-rose-400 border-none font-bold">
@@ -970,10 +1182,11 @@ export default function ClientAuditPage() {
                           <table className="w-full text-left border-collapse">
                             <thead>
                               <tr className="border-b border-border/40 bg-muted/10 text-[10px] font-black uppercase tracking-wider text-muted-foreground">
-                                <th className="p-4 pl-6">Client</th>
+                                <th className="p-4 pl-6 w-12">Sim</th>
+                                <th className="p-4">Client</th>
                                 <th className="p-4">Last Seen</th>
-                                <th className="p-4">Standard Rate ($)</th>
-                                <th className="p-4">Preferred Time</th>
+                                <th className="p-4">Rate Ladder (Current vs Target)</th>
+                                <th className="p-4">Re-engagement Priority</th>
                                 <th className="p-4 pr-6">Follow-up Status</th>
                               </tr>
                             </thead>
@@ -985,6 +1198,15 @@ export default function ClientAuditPage() {
                                   calculateAge={getClientAge}
                                   handleRateChange={handleRateChange}
                                   handleOpenOverrideModal={handleOpenOverrideModal}
+                                  targetRates={targetRates}
+                                  rateUpdatedDates={rateUpdatedDates}
+                                  reengagementTags={reengagementTags}
+                                  selectedWeeklyClients={selectedWeeklyClients}
+                                  onToggleWeeklyClient={handleToggleWeeklyClient}
+                                  onSetTargetRate={handleSetTargetRate}
+                                  onSetRateUpdatedDate={handleSetRateUpdatedDate}
+                                  onSetReengagementTag={handleSetReengagementTag}
+                                  isLapsedSection={true}
                                 />
                               ))}
                             </tbody>
@@ -1333,11 +1555,13 @@ export default function ClientAuditPage() {
                         { label: "Free", count: rateDistribution.free, color: "bg-rose-500" },
                         { label: "$30", count: rateDistribution.r30, color: "bg-amber-500" },
                         { label: "$50", count: rateDistribution.r50, color: "bg-yellow-500" },
+                        { label: "$70", count: rateDistribution.r70, color: "bg-orange-500" },
                         { label: "$80", count: rateDistribution.r80, color: "bg-emerald-500" },
-                        { label: "$100", count: rateDistribution.r100, color: "bg-teal-500" },
-                        { label: "$120", count: rateDistribution.r120, color: "bg-blue-500" },
-                        { label: "$150", count: rateDistribution.r150, color: "bg-indigo-500" },
-                        { label: "Custom", count: rateDistribution.custom, color: "bg-purple-500" },
+                        { label: "$90", count: rateDistribution.r90, color: "bg-teal-500" },
+                        { label: "$100", count: rateDistribution.r100, color: "bg-blue-500" },
+                        { label: "$120", count: rateDistribution.r120, color: "bg-indigo-500" },
+                        { label: "$150", count: rateDistribution.r150, color: "bg-purple-500" },
+                        { label: "Custom", count: rateDistribution.custom, color: "bg-pink-500" },
                       ].map((tier) => {
                         const percentage = clients.length > 0 ? (tier.count / clients.length) * 100 : 0;
                         const barHeight = (tier.count / maxDistributionCount) * 150; // max height 150px
@@ -1714,6 +1938,15 @@ interface ClientRowProps {
   calculateAge: (born: string | Date | null) => string | number;
   handleRateChange: (clientId: string, rateValue: number) => void;
   handleOpenOverrideModal: (client: ClientWithAppointments) => void;
+  targetRates: Record<string, number>;
+  rateUpdatedDates: Record<string, string>;
+  reengagementTags: Record<string, 'warm' | 'cold' | 'lost'>;
+  selectedWeeklyClients: string[];
+  onToggleWeeklyClient: (clientId: string) => void;
+  onSetTargetRate: (clientId: string, rate: number) => void;
+  onSetRateUpdatedDate: (clientId: string, dateStr: string) => void;
+  onSetReengagementTag: (clientId: string, tag: 'warm' | 'cold' | 'lost') => void;
+  isLapsedSection: boolean;
 }
 
 function ClientRow({
@@ -1721,17 +1954,81 @@ function ClientRow({
   calculateAge,
   handleRateChange,
   handleOpenOverrideModal,
+  targetRates,
+  rateUpdatedDates,
+  reengagementTags,
+  selectedWeeklyClients,
+  onToggleWeeklyClient,
+  onSetTargetRate,
+  onSetRateUpdatedDate,
+  onSetReengagementTag,
+  isLapsedSection,
 }: ClientRowProps) {
   const lastSeenText = client.lastSeenDate ? format(client.lastSeenDate, "MMM d, yyyy") : "Never";
   const relativeTime = client.lastSeenDate ? formatDistanceToNow(client.lastSeenDate, { addSuffix: true }) : "";
 
-  const isCustomRate = client.standard_rate !== null && client.standard_rate !== undefined && ![0, 30, 50, 80, 100, 120, 150].includes(client.standard_rate);
+  const isCustomRate = client.standard_rate !== null && client.standard_rate !== undefined && ![0, 30, 50, 70, 80, 90, 100, 120, 150].includes(client.standard_rate);
   const currentRateValue = isCustomRate ? -1 : (client.standard_rate ?? 50);
 
+  // Rate Tracking & Vision Calculations
+  const targetRate = targetRates[client.id] ?? (client.standard_rate ?? 50);
+  const rateUpdatedDateStr = rateUpdatedDates[client.id];
+  
+  // Default to 7 months ago if never set, to prompt review for old rates
+  const rateUpdatedDate = rateUpdatedDateStr ? new Date(rateUpdatedDateStr) : new Date(Date.now() - 7 * 30 * 24 * 60 * 60 * 1000);
+  const monthsSinceUpdate = differenceInMonths(new Date(), rateUpdatedDate);
+  const needsReview = monthsSinceUpdate >= 6;
+
+  // Re-engagement Priority Calculations
+  const reengagementTag = reengagementTags[client.id];
+  
+  const priorityScore = useMemo(() => {
+    let score = 0;
+    
+    // 1. Past appointments count (max 40 points)
+    const appCount = client.appointments.length;
+    score += Math.min(appCount * 5, 40);
+    
+    // 2. Recency (max 30 points)
+    if (client.lastSeenDate) {
+      const diffDays = (new Date().getTime() - client.lastSeenDate.getTime()) / (1000 * 60 * 60 * 24);
+      // Closer to 90 days = higher score. If 90 days, 30 points. If 365 days, 0 points.
+      const recencyScore = Math.max(0, 30 - Math.floor((diffDays - 90) / 10));
+      score += recencyScore;
+    }
+    
+    // 3. Manual Tag (max 30 points)
+    if (reengagementTag === 'warm') score += 30;
+    else if (reengagementTag === 'cold') score += 10;
+    else if (reengagementTag === 'lost') score += 0;
+    else score += 15; // default neutral
+    
+    return Math.min(score, 100);
+  }, [client, reengagementTag]);
+
+  const isSelectedInSimulator = selectedWeeklyClients.includes(client.id);
+
   return (
-    <tr className="hover:bg-muted/10 transition-colors">
-      {/* Client */}
+    <tr className={cn(
+      "hover:bg-muted/10 transition-colors",
+      isSelectedInSimulator ? "bg-indigo-50/20 dark:bg-indigo-950/10" : ""
+    )}>
+      {/* Simulator Checkbox */}
       <td className="p-4 pl-6">
+        <button
+          onClick={() => onToggleWeeklyClient(client.id)}
+          className="text-slate-400 hover:text-indigo-600 transition-colors"
+        >
+          {isSelectedInSimulator ? (
+            <CheckSquare className="text-indigo-600" size={18} />
+          ) : (
+            <Square size={18} />
+          )}
+        </button>
+      </td>
+
+      {/* Client */}
+      <td className="p-4">
         <div className="space-y-1">
           <h4 className="font-black text-foreground text-sm">{client.name}</h4>
           <div className="flex items-center gap-2 text-xs text-muted-foreground font-medium">
@@ -1754,65 +2051,165 @@ function ClientRow({
         </div>
       </td>
 
-      {/* Standard Rate */}
+      {/* Rate Ladder (Current vs Target) */}
       <td className="p-4">
-        <div className="flex items-center gap-2">
-          <Select
-            value={currentRateValue.toString()}
-            onValueChange={(val) => handleRateChange(client.id, parseInt(val))}
-          >
-            <SelectTrigger className="w-[120px] rounded-xl border-border/60 bg-muted/30">
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent className="rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-2xl">
-              {RATE_OPTIONS.map((opt) => (
-                <SelectItem key={opt.value} value={opt.value.toString()}>
-                  {opt.label}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-          {isCustomRate && (
-            <Badge variant="outline" className="rounded-lg border-indigo-200 dark:border-indigo-900/50 bg-indigo-50 dark:bg-indigo-950/30 text-indigo-600 dark:text-indigo-400 font-bold text-[10px]">
-              ${client.standard_rate}
-            </Badge>
-          )}
-        </div>
-      </td>
-
-      {/* Preferred Time */}
-      <td className="p-4">
-        <div className="flex items-center gap-2 group">
-          <div className="space-y-0.5">
-            {client.preferred_time ? (
+        <div className="space-y-2">
+          <div className="flex items-center gap-3">
+            {/* Current Rate */}
+            <div className="space-y-0.5">
+              <span className="text-[9px] font-black uppercase tracking-wider text-muted-foreground block">Current</span>
               <div className="flex items-center gap-1.5">
-                <span className="text-sm font-bold text-foreground">{client.preferred_time}</span>
-                <Badge className="bg-indigo-100 dark:bg-indigo-900/30 text-indigo-700 dark:text-indigo-400 border-none font-bold text-[8px] uppercase tracking-wider px-1.5 py-0">
-                  Manual
-                </Badge>
-              </div>
-            ) : (
-              <div className="flex items-center gap-1.5">
-                <span className="text-sm font-bold text-foreground">
-                  {client.preferredTimeAnalyzed.text}
-                </span>
-                {client.preferredTimeAnalyzed.isLowData && !client.preferred_time && (
-                  <Badge className="bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-400 border-none font-bold text-[8px] uppercase tracking-wider px-1.5 py-0">
-                    Low Data
+                <Select
+                  value={currentRateValue.toString()}
+                  onValueChange={(val) => handleRateChange(client.id, parseInt(val))}
+                >
+                  <SelectTrigger className="w-[90px] h-8 rounded-xl border-border/60 bg-muted/30 text-xs font-bold">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent className="rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-2xl">
+                    {RATE_OPTIONS.map((opt) => (
+                      <SelectItem key={opt.value} value={opt.value.toString()} className="text-xs font-bold">
+                        {opt.label}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                {isCustomRate && (
+                  <Badge variant="outline" className="rounded-lg border-indigo-200 dark:border-indigo-900/50 bg-indigo-50 dark:bg-indigo-950/30 text-indigo-600 dark:text-indigo-400 font-bold text-[10px] h-6">
+                    ${client.standard_rate}
                   </Badge>
                 )}
               </div>
+            </div>
+
+            <ArrowRight size={14} className="text-muted-foreground mt-4" />
+
+            {/* Target Rate */}
+            <div className="space-y-0.5">
+              <span className="text-[9px] font-black uppercase tracking-wider text-indigo-600 block">Target</span>
+              <Select
+                value={targetRate.toString()}
+                onValueChange={(val) => onSetTargetRate(client.id, parseInt(val))}
+              >
+                <SelectTrigger className="w-[90px] h-8 rounded-xl border-indigo-200 bg-indigo-50/30 text-indigo-600 text-xs font-black">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent className="rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-2xl">
+                  {RATE_OPTIONS.filter(opt => opt.value !== -1).map((opt) => (
+                    <SelectItem key={opt.value} value={opt.value.toString()} className="text-xs font-bold">
+                      {opt.label}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+
+          {/* Rate Age & Review Flag */}
+          <div className="flex items-center gap-2">
+            <span className="text-[10px] text-muted-foreground font-medium">
+              Rate set {monthsSinceUpdate === 0 ? "this month" : `${monthsSinceUpdate} ${monthsSinceUpdate === 1 ? "month" : "months"} ago`}
+            </span>
+            {needsReview ? (
+              <Badge className="bg-amber-100 dark:bg-amber-950/30 text-amber-700 dark:text-amber-400 border-none font-black text-[8px] uppercase tracking-wider px-2 py-0.5 flex items-center gap-1 animate-pulse">
+                <AlertTriangle size={10} /> Review Rate
+              </Badge>
+            ) : null}
+            {needsReview && (
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => {
+                  onSetRateUpdatedDate(client.id, new Date().toISOString());
+                  showSuccess("Rate marked as reviewed today.");
+                }}
+                className="h-5 px-1.5 text-[9px] font-black uppercase tracking-wider text-indigo-600 hover:bg-indigo-50 rounded-md"
+              >
+                Mark Reviewed
+              </Button>
             )}
           </div>
-          <Button
-            variant="ghost"
-            size="icon"
-            onClick={() => handleOpenOverrideModal(client)}
-            className="w-7 h-7 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity hover:bg-muted"
-          >
-            <Edit2 size={12} className="text-muted-foreground" />
-          </Button>
         </div>
+      </td>
+
+      {/* Preferred Time OR Re-engagement Priority */}
+      <td className="p-4">
+        {isLapsedSection ? (
+          <div className="space-y-2">
+            {/* Priority Score & Tag */}
+            <div className="flex items-center gap-3">
+              {/* Priority Score */}
+              <div className="space-y-0.5">
+                <span className="text-[9px] font-black uppercase tracking-wider text-muted-foreground block">Priority Score</span>
+                <Badge className={cn(
+                  "font-black text-xs px-2.5 py-1 rounded-xl border-none",
+                  priorityScore >= 70 ? "bg-emerald-100 text-emerald-700 dark:bg-emerald-950/30 dark:text-emerald-400" :
+                  priorityScore >= 40 ? "bg-amber-100 text-amber-700 dark:bg-amber-950/30 dark:text-amber-400" :
+                  "bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-400"
+                )}>
+                  {priorityScore}/100
+                </Badge>
+              </div>
+
+              {/* Re-engagement Tag */}
+              <div className="space-y-0.5">
+                <span className="text-[9px] font-black uppercase tracking-wider text-muted-foreground block">Status</span>
+                <Select
+                  value={reengagementTag || "neutral"}
+                  onValueChange={(val: any) => onSetReengagementTag(client.id, val === "neutral" ? undefined : val)}
+                >
+                  <SelectTrigger className={cn(
+                    "w-[90px] h-8 rounded-xl text-xs font-bold border-none",
+                    reengagementTag === 'warm' ? "bg-emerald-50 text-emerald-700 dark:bg-emerald-950/20 dark:text-emerald-400" :
+                    reengagementTag === 'cold' ? "bg-blue-50 text-blue-700 dark:bg-blue-950/20 dark:text-blue-400" :
+                    reengagementTag === 'lost' ? "bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-400" :
+                    "bg-muted/40 text-slate-500"
+                  )}>
+                    <SelectValue placeholder="Select" />
+                  </SelectTrigger>
+                  <SelectContent className="rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-2xl">
+                    <SelectItem value="neutral" className="text-xs font-bold">Neutral</SelectItem>
+                    <SelectItem value="warm" className="text-xs font-bold text-emerald-600">Warm</SelectItem>
+                    <SelectItem value="cold" className="text-xs font-bold text-blue-600">Cold</SelectItem>
+                    <SelectItem value="lost" className="text-xs font-bold text-slate-500">Lost</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+          </div>
+        ) : (
+          <div className="flex items-center gap-2 group">
+            <div className="space-y-0.5">
+              {client.preferred_time ? (
+                <div className="flex items-center gap-1.5">
+                  <span className="text-sm font-bold text-foreground">{client.preferred_time}</span>
+                  <Badge className="bg-indigo-100 dark:bg-indigo-900/30 text-indigo-700 dark:text-indigo-400 border-none font-bold text-[8px] uppercase tracking-wider px-1.5 py-0">
+                    Manual
+                  </Badge>
+                </div>
+              ) : (
+                <div className="flex items-center gap-1.5">
+                  <span className="text-sm font-bold text-foreground">
+                    {client.preferredTimeAnalyzed.text}
+                  </span>
+                  {client.preferredTimeAnalyzed.isLowData && !client.preferred_time && (
+                    <Badge className="bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-400 border-none font-bold text-[8px] uppercase tracking-wider px-1.5 py-0">
+                      Low Data
+                    </Badge>
+                  )}
+                </div>
+              )}
+            </div>
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={() => handleOpenOverrideModal(client)}
+              className="w-7 h-7 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity hover:bg-muted"
+            >
+              <Edit2 size={12} className="text-muted-foreground" />
+            </Button>
+          </div>
+        )}
       </td>
 
       {/* Follow-up Status */}

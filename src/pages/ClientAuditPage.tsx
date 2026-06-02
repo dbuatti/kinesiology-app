@@ -62,12 +62,14 @@ import {
   X,
   Target,
   Loader2,
-  Wand2
+  Wand2,
+  CalendarDays
 } from "lucide-react";
 import { format, formatDistanceToNow, differenceInMonths } from "date-fns";
 import { Client, Appointment } from "@/types/crm";
 import AppointmentForm from "@/components/crm/AppointmentForm";
 import { ClientRow } from "@/components/crm/settings/ClientRow";
+import TimetableVisualizer from "@/components/crm/settings/TimetableVisualizer";
 
 interface ClientWithAppointments extends Client {
   appointments: Appointment[];
@@ -1103,9 +1105,12 @@ export default function ClientAuditPage() {
           </div>
         ) : (
           <Tabs defaultValue="rates" className="space-y-8">
-            <TabsList className="bg-muted/50 p-1 rounded-2xl border border-border/50 w-full max-w-xl grid grid-cols-4">
+            <TabsList className="bg-muted/50 p-1 rounded-2xl border border-border/50 w-full max-w-2xl grid grid-cols-5">
               <TabsTrigger value="rates" className="rounded-xl font-bold text-xs py-2.5">
                 Rates & Recency
+              </TabsTrigger>
+              <TabsTrigger value="timetable" className="rounded-xl font-bold text-xs py-2.5">
+                Timetable
               </TabsTrigger>
               <TabsTrigger value="salary" className="rounded-xl font-bold text-xs py-2.5">
                 Salary Simulator
@@ -1588,7 +1593,12 @@ export default function ClientAuditPage() {
               </div>
             </TabsContent>
 
-            {/* TAB 2: SALARY SIMULATOR */}
+            {/* TAB 2: TIMETABLE VISUALIZER */}
+            <TabsContent value="timetable" className="space-y-8">
+              <TimetableVisualizer clients={clients} />
+            </TabsContent>
+
+            {/* TAB 3: SALARY SIMULATOR */}
             <TabsContent value="salary" className="space-y-8">
               {/* Top Row: Progress to $150/session & Active Client Base */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -1871,7 +1881,7 @@ export default function ClientAuditPage() {
               </div>
             </TabsContent>
 
-            {/* TAB 3: FULL AUDIT & FINANCIALS */}
+            {/* TAB 4: FULL AUDIT & FINANCIALS */}
             <TabsContent value="audit" className="space-y-8">
               {/* Key Metrics Grid */}
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6">
@@ -1927,10 +1937,9 @@ export default function ClientAuditPage() {
                 <Card className="border-none shadow-md rounded-[2rem] bg-card overflow-hidden relative group">
                   <CardContent className="p-6 space-y-2">
                     <div className="flex items-center justify-between">
-                      <span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Free Session Ratio</span>
-                      <div className="w-8 h-8 rounded-lg bg-rose-50 dark:bg-rose-950/30 text-rose-600 flex items-center justify-center">
+                      <span className="text-[10px] font-black uppercase tracking-widest text-rose-600 flex items-center justify-center">
                         <Percent size={16} />
-                      </div>
+                      </span>
                     </div>
                     <div className="space-y-1">
                       <h3 className="text-3xl font-black text-foreground">{freeSessionRatio.toFixed(1)}%</h3>
@@ -1940,7 +1949,7 @@ export default function ClientAuditPage() {
                 </Card>
 
                 {/* Metric 5: Projected Monthly Revenue */}
-                <Card className="border-none shadow-md rounded-[2rem] bg-indigo-600 text-white overflow-hidden relative group">
+                <Card className="border-none shadow-sm rounded-[2.5rem] bg-indigo-600 text-white overflow-hidden relative group">
                   <CardContent className="p-6 space-y-2">
                     <div className="flex items-center justify-between">
                       <span className="text-[10px] font-black uppercase tracking-widest text-indigo-200">Projected Monthly</span>

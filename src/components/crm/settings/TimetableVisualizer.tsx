@@ -131,7 +131,10 @@ const TimetableVisualizer = ({ clients }: TimetableVisualizerProps) => {
   const activeClients = useMemo(() => {
     const now = new Date();
     return clients.filter(c => {
-      if (c.appointments.some(app => new Date(app.date) > now)) return true;
+      // Safety check: ensure appointments exists before calling .some()
+      const hasFutureAppointment = c.appointments?.some(app => new Date(app.date) > now);
+      if (hasFutureAppointment) return true;
+      
       if (!c.lastSeenDate) return false;
       const diffDays = (now.getTime() - c.lastSeenDate.getTime()) / (1000 * 60 * 60 * 24);
       return diffDays <= 30;
@@ -154,7 +157,7 @@ const TimetableVisualizer = ({ clients }: TimetableVisualizerProps) => {
     }
 
     activeClients.forEach(client => {
-      const prefTimeText = client.preferred_time || client.preferredTimeAnalyzed.text;
+      const prefTimeText = client.preferred_time || client.preferredTimeAnalyzed?.text;
       const parsed = parsePreferredTime(prefTimeText, client.name);
 
       if (!parsed) {
@@ -163,7 +166,8 @@ const TimetableVisualizer = ({ clients }: TimetableVisualizerProps) => {
       }
 
       // Determine regularity / frequency
-      const recentAppsCount = client.appointments.filter(app => {
+      // Safety check: ensure appointments exists before calling .filter()
+      const recentAppsCount = (client.appointments || []).filter(app => {
         const appDate = new Date(app.date);
         const diffDays = (new Date().getTime() - appDate.getTime()) / (1000 * 60 * 60 * 24);
         return diffDays >= 0 && diffDays <= 90;
@@ -315,7 +319,7 @@ const TimetableVisualizer = ({ clients }: TimetableVisualizerProps) => {
               const bIsSusan = b.name.toLowerCase().includes("susan") && b.name.toLowerCase().includes("lord");
               if (aIsSusan && !bIsSusan) return -1;
               if (!aIsSusan && bIsSusan) return 1;
-              return b.appointments.length - a.appointments.length;
+              return (b.appointments?.length || 0) - (a.appointments?.length || 0);
             });
             
             // Keep the primary client
@@ -706,7 +710,7 @@ const TimetableVisualizer = ({ clients }: TimetableVisualizerProps) => {
                                             ? "bg-amber-50 text-amber-700 border-amber-200 dark:bg-amber-950/30 dark:text-amber-400 dark:border-amber-900/30"
                                             : "bg-indigo-50 text-indigo-700 border-indigo-100 dark:bg-indigo-950/30 dark:text-indigo-400 dark:border-indigo-900/30"
                                       )}
-                                      title={`${client.name} (${client.preferred_time || client.preferredTimeAnalyzed.text})`}
+                                      title={`${client.name} (${client.preferred_time || client.preferredTimeAnalyzed?.text})`}
                                     >
                                       <div className="flex items-center justify-center gap-1">
                                         {isMoved && <Sparkles size={10} className="text-amber-500 shrink-0" />}
